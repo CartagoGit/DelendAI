@@ -93,7 +93,6 @@ type InvocationTelemetrySummary = IUsageSummary & {
 	readonly invocationTelemetry: IInvocationTelemetryRollup;
 	/** Delegations with and without a manifest, per kind of task. */
 	readonly delegation: IDelegationRollup;
-	/** Log lines that were not a record: the totals leave them out. */
 	readonly skippedRows: number;
 };
 

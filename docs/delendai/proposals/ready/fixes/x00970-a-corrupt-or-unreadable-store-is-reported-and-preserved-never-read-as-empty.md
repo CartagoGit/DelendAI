@@ -54,7 +54,7 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
 
 ### S4 — notification and the error stream
 - **Status**: pending
-- **Files**: `plugins/notification/src/lib/services/watcher.ts`, `plugins/notification/src/lib/tools/tools.ts`, `plugins/notification/src/generated/tool-outputs.ts`, `plugins/notification/tests/src/lib/notification.spec.ts`, `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/tests/src/lib/shared/with-file-mutex-vanished-directory.spec.ts`
+- **Files**: `plugins/notification/src/lib/services/watcher.ts`, `plugins/notification/src/lib/tools/tools.ts`, `plugins/notification/src/generated/tool-outputs.ts`, `plugins/notification/tests/src/lib/notification.spec.ts`, `plugins/notification/src/lib/contracts/interfaces/in-flight-read.interface.ts`, `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/tests/src/lib/shared/with-file-mutex-vanished-directory.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An unreadable lock file is not a release; await_lock keeps waiting and reports the read error (D82, D73)."

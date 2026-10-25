@@ -14,6 +14,11 @@ import { isLockEntryExpired } from '@delendai/core/public';
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
+import type {
+	IInFlightRead,
+	IReleasedClaim,
+} from '../contracts/interfaces/in-flight-read.interface';
+
 /**
  * `fs/promises.stat` rejects on ENOENT; we only care whether the path
  * exists. Exported for `handoff-watcher.ts`, which was split out of this
@@ -29,12 +34,7 @@ export const pathExists = async (path: string): Promise<boolean> => {
 	}
 };
 
-/** A claim that was released (present last scan, gone this scan). */
-export interface IReleasedClaim {
-	readonly taskId: string;
-	readonly agent: string;
-	readonly files: readonly string[];
-}
+export type { IReleasedClaim };
 
 interface ILockEntryLite {
 	task_id?: string;
@@ -43,13 +43,6 @@ interface ILockEntryLite {
 	last_seen?: string;
 	host?: string;
 	pid?: number;
-}
-
-/** The in-flight claims, and why the lock file could not be read, if it could not. */
-export interface IInFlightRead {
-	readonly claims: Map<string, IReleasedClaim>;
-	/** Set when the file exists but cannot be read or parsed: nothing is known, not "nothing is held". */
-	readonly readError?: string | undefined;
 }
 
 /**

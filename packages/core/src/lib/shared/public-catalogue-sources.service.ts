@@ -29,6 +29,7 @@ import type {
 	IPublicCatalogueKind,
 } from '../contracts/interfaces/public-catalogue.interface';
 import { writeFileAtomic } from './atomic-write';
+import { isRecord } from './is-record';
 
 /**
  * The sources of `kind` in the order they are read: the person's, the
@@ -76,9 +77,6 @@ export const httpConditionalFetch: ICatalogueConditionalFetch = async (
 		lastModified: header(response, 'last-modified'),
 	};
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);
 
 /** A copy's provenance, field by field: `null` in place of one is not a copy. */
 const isCopyMeta = (value: unknown): value is ICatalogueCopyMeta =>
