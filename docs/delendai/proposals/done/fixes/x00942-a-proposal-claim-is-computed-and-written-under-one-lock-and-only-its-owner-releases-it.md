@@ -2,14 +2,16 @@
 id: x00942
 title: "A proposal claim is computed and written under one lock, and only its owner releases it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
-last-correlation-id: 5ea98d9a-2b47-459f-bd0c-8f3b56acade4
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T04:56:38.383Z
+last-transition-id: 12e718d8-010d-4fc5-88c2-3976b8ec34be
+last-correlation-id: 12e718d8-010d-4fc5-88c2-3976b8ec34be
+last-transition-from: review
+last-transition-at: 2026-10-24T18:28:08.921Z
+shipped-in:
+  - "ee0bd295c371f18c9ba5b08a72703898bf52fd96"
 ---
 
 # x00942 — A proposal claim is computed and written under one lock, and only its owner releases it
@@ -42,8 +44,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "Releasing an orphan removes its file-table rows in the same critical section (G91)."
   - "Inside the critical section the claim compares the holder's identity, so a second agent asking for the same slice is refused (sol C1)."
 - shipped-in: `8f4431d14ee2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 5/5: (1) one-critical-section.spec 'leave exactly one claim on the contested file and lose no live one' passes (2) zombie-reconcile.spec (+105 lines) covers stale removal; passes (heartbeat-newer-than-TTL kept) (3) one-critical-section.spec 'is an error, not ok, and leaves no file held' passes (4) recovery-tools.spec (+25) covers orphan release and its rows; passes (5) one-critical-section.spec 'is refused, and the holder keeps its files' passes — verified by code reading and spec runs
 
 ### S2 — The lock table is never read empty nor overwritten when corrupt
 - **Status**: done
@@ -53,8 +57,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
   - "A reader during writeFileAtomic's rename sees either the old or the new table; a spec that interleaves rename and read never observes zero claims (G51)."
   - "A table that does not parse is quarantined with its bytes kept and the claim refused, instead of being rewritten empty (sol C5)."
 - shipped-in: `8f4431d14ee2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 2/2: (1) file-lock-table-honest-reads.spec 'sees the old table or the new one, never no claims' passes (2) same spec 'refuses the claim, keeps its bytes aside, and the next claim starts clean' passes — verified by code reading and spec runs
 
 ### S3 — An expired gate frees admission
 - **Status**: done
@@ -63,8 +69,10 @@ Joint audit a00095. D1: the lock purge runs without the mutex and deletes live a
 - acceptance:
   - "A live gate past its expiry no longer blocks admission of another tree; a spec with an expired gate from a stopped tree admits the next one (sol PROP-GATE01)."
 - shipped-in: `91bf45d1b7b0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at ee0bd295c371, validate exit 0 and tests 67/67 claimed, no recorded run cited; acceptance 1/1: (1) close-slice-gate.spec 'admits the next tree once a running gate is past its timeout, though its own tree never came back' passes — verified by code reading and spec runs
 
 ## acceptance
 
