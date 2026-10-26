@@ -29,6 +29,8 @@ export const StatusRowSchema = z
 		declared: z.literal(true),
 		/** True while a cached child transport is live. */
 		running: z.boolean(),
+		/** The MCP session over that child: `open` is what makes a server callable. */
+		session: z.enum(['not-started', 'opening', 'open', 'failed', 'closed']),
 		/** OS pid of the cached child (only while running). */
 		pid: z.number().int().positive().optional(),
 		/** ISO timestamp of the current child's boot (only after a boot). */
@@ -50,14 +52,14 @@ export const buildStatusToolRegistration = (
 	id: 'status',
 	tags: ['external-mcps', 'lazy', 'subprocess'],
 	summary:
-		'Per-declared-server subprocess status: running, pid, bootedAt, lastError.',
+		'Per-declared-server subprocess status: running, session, pid, bootedAt, lastError.',
 	descriptionKey: 'delendai_external-mcps_status',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_status`,
 			{
 				description:
-					'Report the lazy subprocess registry: one compact row per server declared under plugins.external-mcps.servers — {id, declared, running, pid?, bootedAt?, lastError?}. Declared servers boot lazily on their first call, so `running: false` is the normal cold state, not a fault. Read-only: never boots, kills or probes a child.',
+					'Report the lazy subprocess registry: one compact row per server declared under plugins.external-mcps.servers — {id, declared, running, session, pid?, bootedAt?, lastError?}. `running` is the child process; `session` is its MCP session, and only `open` means the server answers calls. Declared servers boot lazily on their first call, so `running: false` is the normal cold state, not a fault. Read-only: never boots, kills or probes a child.',
 				inputSchema: InputSchema,
 				outputSchema: StatusOutputSchema,
 			},
