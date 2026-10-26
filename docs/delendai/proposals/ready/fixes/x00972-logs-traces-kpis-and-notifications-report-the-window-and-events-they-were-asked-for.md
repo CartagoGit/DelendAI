@@ -65,4 +65,4 @@ Joint audit a00095. D51: observability trims real records the wrong way and hide
 - D114: `claimDispatch` returns `claimed`, `held` (counted `deduplicated`) or `unreadable` (counted in the new `dispatchUnclaimed` stage); a counters file without the new stage reads it as 0.
 - D101: each status row carries `session` (`not-started`, `opening`, `open`, `failed`, `closed`) beside `running`.
 - D122: the reason is refused (`CloseMarkerTooLongError`), not wrapped: a close marker is one line by convention.
-- `plugins/observability/src/lib/traces/interfaces.ts` and `plugins/project-health/src/lib/services/project-health.service.ts` needed no interface change beyond what the lists show.
+- `plugins/observability/src/lib/traces/interfaces.ts` needed no change: the records already carry `ts`.
