@@ -21,6 +21,7 @@ import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { redactSecrets } from './redact';
 import { readStore, withStoreLock, writeStore } from './store-io';
 import { DEFAULT_MAX_NOTES, type INote, type ISaveResult } from './store-types';
+import { CorruptFileError } from '@delendai/core/public';
 
 const kebab = (value: string): string =>
 	value
@@ -129,8 +130,9 @@ export const removeNote = (absPath: string, id: string): Promise<boolean> =>
 /**
  * Read the durable store WITHOUT the lazy-TTL filter `readStore`
  * applies, so we can see (and count) the expired notes that are still
- * physically on disk. Missing/empty/corrupt → empty list (a corrupt
- * file is the read path's concern, not the sweeper's).
+ * physically on disk. Missing/empty → empty list. Corrupt → the sweep
+ * fails with the reason and the file stays as it is: read as empty, the
+ * sweep did nothing and said it had nothing to do, every time.
  */
 const readNotesRaw = async (absPath: string): Promise<INote[]> => {
 	const reader = new SafeWorkspaceReader(dirname(absPath));
@@ -142,12 +144,20 @@ const readNotesRaw = async (absPath: string): Promise<INote[]> => {
 		throw err;
 	}
 	if (!raw.trim()) return [];
+	let parsed: { notes?: unknown };
 	try {
-		const parsed = JSON.parse(raw) as { notes?: INote[] };
-		return Array.isArray(parsed.notes) ? parsed.notes : [];
-	} catch {
-		return [];
+		parsed = JSON.parse(raw) as { notes?: unknown };
+	} catch (err) {
+		throw new CorruptFileError(
+			absPath,
+			null,
+			`invalid JSON: ${String(err)}`,
+		);
 	}
+	if (!Array.isArray(parsed.notes)) {
+		throw new CorruptFileError(absPath, null, 'expected { notes: [...] }');
+	}
+	return parsed.notes as INote[];
 };
 
 /**
