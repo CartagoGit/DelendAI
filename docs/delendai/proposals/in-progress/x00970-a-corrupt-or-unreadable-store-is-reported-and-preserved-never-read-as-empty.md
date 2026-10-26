@@ -2,10 +2,14 @@
 id: x00970
 title: "A corrupt or unreadable store is reported and preserved, never read as empty"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 1883f433-9f28-4a93-b085-4861a2cc6ee5
+last-correlation-id: 1883f433-9f28-4a93-b085-4861a2cc6ee5
+last-transition-from: ready
+last-transition-at: 2026-10-26T23:50:38.851Z
 ---
 
 # x00970 — A corrupt or unreadable store is reported and preserved, never read as empty
