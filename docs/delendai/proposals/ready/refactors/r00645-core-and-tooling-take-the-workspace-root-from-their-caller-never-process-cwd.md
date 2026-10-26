@@ -28,7 +28,7 @@ Joint audit a00095. G1: shell-status.tool.ts builds InstallSuggestionsService wi
 
 ### S1 — core
 - **Status**: pending
-- **Files**: `packages/core/src/lib/tools/shell-status.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/manifest/discovery.ts`, `packages/core/src/lib/plugins/discovery.ts`, `packages/core/src/lib/shared/hook-free-environment.helper.ts`, `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`, `packages/core/tests/src/lib/tools/shell-status.spec.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.spec.ts`, `package.json`
+- **Files**: `packages/core/src/lib/tools/shell-status.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/manifest/discovery.ts`, `packages/core/src/lib/plugins/discovery.ts`, `packages/core/src/lib/shared/hook-free-environment.helper.ts`, `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`, `packages/core/tests/src/lib/tools/shell-status.spec.ts`, `packages/core/tests/src/lib/tools/shell-status-defaults.spec.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "A lint fails on process.cwd() in packages/core/src/lib outside entry points, with the current uses removed (G1, D8)."
