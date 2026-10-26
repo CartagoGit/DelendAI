@@ -1,4 +1,5 @@
 import { DELENDAI_VERSION } from '@delendai/core/version';
+import { EMPTY_FUNNEL_COUNTERS } from './lib/contracts/constants/funnel-stages.constant';
 
 import reporterPackageJson from '../package.json';
 
@@ -71,17 +72,7 @@ const EMPTY_TOOL_REGISTRY: IToolIdentityRegistry = {
  * observability and must never gate or change reporting behavior. */
 const NOOP_FUNNEL_STORE: IFunnelCounterStore = {
 	statePath: '',
-	read: async () => ({
-		observedFailures: 0,
-		ignoredNonFailures: 0,
-		notVertexInternal: 0,
-		privacyBlocked: 0,
-		deduplicated: 0,
-		rateLimited: 0,
-		submissionAttempted: 0,
-		submissionSucceeded: 0,
-		submissionFailed: 0,
-	}),
+	read: async () => EMPTY_FUNNEL_COUNTERS,
 	increment: async () => {},
 	markClassified: async () => {},
 };
@@ -155,13 +146,17 @@ export const buildReportErrorHandler = (input: {
 				});
 				return;
 			}
-			const claimed = await input.store.claimDispatch(
+			const claim = await input.store.claimDispatch(
 				redactedReport.fingerprint,
 				new Date(nowMs + REPORT_DISPATCH_CLAIM_MS).toISOString(),
 				at,
 			);
-			if (!claimed) {
-				await funnel.increment({ stage: 'deduplicated', at });
+			if (claim !== 'claimed') {
+				await funnel.increment({
+					stage:
+						claim === 'held' ? 'deduplicated' : 'dispatchUnclaimed',
+					at,
+				});
 				return;
 			}
 			await funnel.increment({ stage: 'submissionAttempted', at });

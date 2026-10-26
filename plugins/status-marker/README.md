@@ -23,7 +23,7 @@ Designed for [`@delendai/core`](../../docs/delendai/README-DELENDAI.md).
 
 - The closing line is `<marker>` alone, or `<marker> — <short-reason>`.
 - Separator between marker and reason: ` — ` (U+2014 with surrounding spaces).
-- The full line ≤ **120 chars** (helper truncates with `…` when needed).
+- The full line ≤ **120 chars** (the helper refuses a longer one: shorten the reason, it is never cut).
 - If a state that requires a reason is rendered without one, the helper
   appends literal `<reason-missing>` and the convention is broken.
 
