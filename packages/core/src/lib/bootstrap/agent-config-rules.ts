@@ -4,7 +4,7 @@
 // SOLID — Open/Closed. The previous `detectAgentConfigs` was a
 // 6-branch `if` cascade (one with an `||` and one with a `listDir`
 // check). Adding a new editor meant editing that body. The table
-// form lets you add an editor by appending one entry.
+// is now read from `AGENT_HOSTS`, so an editor is added there.
 //
 // SOLID — Single Responsibility. This module owns ONE thing: the
 // `file/dir evidence → editor id` mapping. The matcher that
@@ -14,6 +14,10 @@
 // SOLID — Dependency Inversion. Hosts inject their own rule list
 // (e.g. an internal editor with a corporate config file).
 
+import {
+	AGENT_HOST_INSTRUCTION_FILES,
+	AGENT_HOSTS,
+} from '../contracts/constants/agent-hosts.constant';
 import type { IFileReader } from './analyze-project';
 
 export type IAgentConfigMatchKind = 'file' | 'dir' | 'file-or-dir';
@@ -43,48 +47,26 @@ export interface IAgentConfigRule {
 	readonly priority: number;
 }
 
+/**
+ * One rule per file or folder a host reads its instructions or agents
+ * from, named by its path, read from `AGENT_HOSTS`: a host added there is
+ * recognised here with no edit. Earlier hosts rank first.
+ */
 export const DEFAULT_AGENT_CONFIG_RULES: readonly IAgentConfigRule[] = [
-	{
-		id: 'CLAUDE.md',
-		path: 'CLAUDE.md',
-		matchAs: 'file',
-		priority: 100,
-	},
-	{
-		id: 'AGENTS.md',
-		path: 'AGENTS.md',
-		matchAs: 'file',
-		priority: 90,
-	},
-	{
-		// Cursor can be detected from EITHER the legacy
-		// `.cursorrules` file OR the modern `.cursor` directory.
-		// One rule, two evidence paths, one id — the unique-id
-		// contract holds.
-		id: 'cursor',
-		paths: ['.cursorrules', '.cursor'],
-		matchAs: 'file-or-dir',
-		priority: 80,
-	},
-	{
-		id: 'copilot-instructions',
-		path: '.github/copilot-instructions.md',
-		matchAs: 'file',
-		priority: 70,
-	},
-	{
-		id: 'github-agents',
-		path: '.github/agents',
-		matchAs: 'dir',
-		priority: 60,
-	},
-	{
-		id: 'windsurf',
-		path: '.windsurfrules',
-		matchAs: 'file',
-		priority: 50,
-	},
-];
+	...AGENT_HOST_INSTRUCTION_FILES.map(({ path }) => ({
+		path,
+		matchAs: 'file' as const,
+	})),
+	...AGENT_HOSTS.flatMap((host) =>
+		host.agents === undefined
+			? []
+			: [{ path: host.agents.dir, matchAs: 'dir' as const }],
+	),
+].map((rule, index, all) => ({
+	id: rule.path,
+	...rule,
+	priority: all.length - index,
+}));
 
 /**
  * Pure: returns the list of agent-config ids detected in priority

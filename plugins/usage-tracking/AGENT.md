@@ -8,8 +8,9 @@
 ## Public API
 
 - default
+- agentKindOf
+- builtinClientMapping
 - detectAgent
-- BUILTIN_CLIENT_TABLE
 - RecordBuffer
 - StartClock
 - analyzeSessionHygiene
@@ -20,7 +21,6 @@
 - SessionTooLongAdvisorySource
 - sessionTooLongDedupeKey
 - readHostLifecycleEvents
-- summarizeHostLifecycle
 
 ## Depends on
 

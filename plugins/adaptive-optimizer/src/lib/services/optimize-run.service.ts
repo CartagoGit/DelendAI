@@ -10,11 +10,7 @@ import { recommendPlugins } from '@delendai/auto-plugin-selector/public';
 import { truncateIfTooLarge } from '@delendai/core/public';
 import { runProfileCapture } from '@delendai/perf/public';
 import { runEvalHarness } from '@delendai/prompt-eval/public';
-import {
-	BUILTIN_CLIENT_TABLE,
-	detectAgent,
-	RecordBuffer,
-} from '@delendai/usage-tracking/public';
+import { detectAgent, RecordBuffer } from '@delendai/usage-tracking/public';
 
 import {
 	ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL,
@@ -327,7 +323,7 @@ export const buildOptimizeRunPayload = async (
 		available: roster.available,
 		costQualityTradeoff: ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL,
 	});
-	const detectedAgent = detectAgent(options.hostName, BUILTIN_CLIENT_TABLE);
+	const detectedAgent = detectAgent(options.hostName);
 	const projectSignals = await buildProjectSignals(
 		options.workspaceRootAbs,
 		args.task,

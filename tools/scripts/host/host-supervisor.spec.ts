@@ -210,4 +210,14 @@ describe('the host supervisor', () => {
 		expect(children).toHaveLength(2);
 		expect(children[1]?.received[0]).toContain('initialize');
 	});
+
+	it('stops its server when it stops, and starts no other when that server exits', async () => {
+		const { supervisor, children, connect } = setup(() => fakeChild(true));
+		connect();
+		supervisor.stop();
+		expect(children[0]?.stopped).toBe(true);
+		children[0]?.exit(null);
+		await Promise.resolve();
+		expect(children).toHaveLength(1);
+	});
 });

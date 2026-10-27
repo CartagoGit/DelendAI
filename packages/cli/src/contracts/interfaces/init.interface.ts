@@ -420,3 +420,12 @@ export interface IConsolidationPlan {
 	readonly canonicalRel: string;
 	readonly writes: readonly IConsolidationWrite[];
 }
+
+/** One file `init` writes its host-instructions block into, and the hosts that read it. */
+export interface IHostInstructionTarget {
+	readonly relPath: string;
+	/** Host ids that read this file; `AGENTS.md` is read by several. */
+	readonly hosts: readonly string[];
+	/** The block's last line: which part of the bootstrap is in effect for them. */
+	readonly appendix: string;
+}
