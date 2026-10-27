@@ -174,6 +174,8 @@ export default definePlugin({
 				})
 				.catch(() => undefined);
 			const manager = buildDefaultInvocationManager({
+				currentHost: () =>
+					ctx.clientIdentity?.name() ?? ctx.hostIdentity?.host,
 				contextWindowOf: (modelId) =>
 					modelContextWindow(catalogue, modelId),
 				workspaceRoot: ctx.workspace.root,

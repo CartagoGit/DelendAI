@@ -155,6 +155,8 @@ export interface IBuildManagerOptions {
 	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
+	/** The host this server answers, once its client named itself. */
+	readonly currentHost?: (() => string | undefined) | undefined;
 	readonly health: HealthStore;
 	readonly defaultCostPreference: CostPreference;
 	readonly invokeTimeoutMs: number;
@@ -223,7 +225,10 @@ export const buildDefaultInvocationManager = (
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,
 	});
-	const subscriptionInvoker = createSubscriptionInvoker();
+	const subscriptionInvoker = createSubscriptionInvoker({
+		cli: cliInvoker,
+		currentHost: options.currentHost,
+	});
 	const acpInvoker = createAcpInvoker({
 		cwd: options.workspaceRoot,
 	});
