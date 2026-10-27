@@ -75,6 +75,8 @@ export const accountEnvironment = (input: {
 	readonly account: IProviderAccount | undefined;
 	readonly accountId: string | undefined;
 	readonly parentEnv: Readonly<Record<string, string | undefined>>;
+	/** The workspace whose declared clients the command is matched to. */
+	readonly workspaceRoot: string;
 	/** The variables the entry names it needs (`invoke.env`). */
 	readonly named?: readonly string[] | undefined;
 }): IAccountEnvironment => {
@@ -100,7 +102,7 @@ export const accountEnvironment = (input: {
 			kind: 'refused',
 			reason: `account "${account.accountId}" is not open to unattended work (permittedAutomation is false)`,
 		};
-	const known = knownClientOf(input.command);
+	const known = knownClientOf(input.command, input.workspaceRoot);
 	const client =
 		known?.command ??
 		basename(input.command.replaceAll('\\', '/')).replace(
