@@ -1,5 +1,5 @@
 /**
- * host-sampling.ts — the `host-sampling` invoker: ask the host editor to
+ * host-sampling-invoker.service.ts — the `host-sampling` invoker: ask the host editor to
  * run one of its own models through MCP sampling.
  *
  * A model the person serves through their editor's BYOK has its key in
@@ -14,11 +14,8 @@ import type {
 	IInvokeRequest,
 	IInvokeResult,
 	IKindInvoker,
-} from '../invoke/types';
-import type {
-	IHostSampler,
-	IHostSamplingInvokerOptions,
-} from '../contracts/interfaces/host-sampling.interface';
+} from './types';
+import type { IHostSamplingInvokerOptions } from '../contracts/interfaces/host-sampling.interface';
 
 export type {
 	IHostSampler,

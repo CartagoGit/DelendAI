@@ -11,7 +11,7 @@
  * (id, name, endpoint host, capabilities), and no other field of the file
  * — a key, a header, a token — reaches a result, a log or a comparison.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -35,7 +35,7 @@ import {
 	folderPathOf,
 	hostUserDirs,
 } from '../work-identity/host-chat-model.helper';
-import { writeFileAtomicSync } from './atomic-write';
+import { writeFileAtomic } from './atomic-write';
 import { isRecord } from './is-record';
 
 const text = (value: unknown): string | undefined =>
@@ -60,9 +60,9 @@ const hostOf = (value: unknown): string | undefined => {
 	}
 };
 
-const readJsonc = (path: string): unknown => {
+const readJsonc = async (path: string): Promise<unknown> => {
 	try {
-		return parseJsonc(readFileSync(path, 'utf8'));
+		return parseJsonc(await readFile(path, 'utf8'));
 	} catch {
 		return undefined;
 	}
@@ -94,14 +94,16 @@ const modelOf = (raw: unknown): IHostByokModel | undefined => {
 };
 
 /** The profile folders of a user directory, with the names the editor shows. */
-const profilesOf = (
+const profilesOf = async (
 	userDir: string,
-): readonly {
-	readonly folder: string;
-	readonly dir: string;
-	readonly name?: string | undefined;
-}[] => {
-	const storage = readJsonc(join(userDir, HOST_GLOBAL_STORAGE_FILE));
+): Promise<
+	readonly {
+		readonly folder: string;
+		readonly dir: string;
+		readonly name?: string | undefined;
+	}[]
+> => {
+	const storage = await readJsonc(join(userDir, HOST_GLOBAL_STORAGE_FILE));
 	const names = new Map<string, string>();
 	if (isRecord(storage) && Array.isArray(storage.userDataProfiles))
 		for (const profile of storage.userDataProfiles)
@@ -113,7 +115,7 @@ const profilesOf = (
 			}
 	let folders: string[] = [];
 	try {
-		folders = readdirSync(join(userDir, HOST_PROFILES_FOLDER));
+		folders = await readdir(join(userDir, HOST_PROFILES_FOLDER));
 	} catch {
 		folders = [];
 	}
@@ -131,15 +133,13 @@ const profilesOf = (
  * Every BYOK provider the editors on this machine keep, profile by
  * profile; nothing when none is configured.
  */
-export const hostByokRoster = (
+export const hostByokRoster = async (
 	env: NodeJS.ProcessEnv = process.env,
-): readonly IHostByokProvider[] => {
+): Promise<readonly IHostByokProvider[]> => {
 	const providers: IHostByokProvider[] = [];
 	for (const host of hostUserDirs(env)) {
-		for (const profile of profilesOf(host)) {
-			const path = join(profile.dir, HOST_BYOK_FILE);
-			if (!existsSync(path)) continue;
-			const listed = readJsonc(path);
+		for (const profile of await profilesOf(host)) {
+			const listed = await readJsonc(join(profile.dir, HOST_BYOK_FILE));
 			if (!Array.isArray(listed)) continue;
 			for (const raw of listed) {
 				if (!isRecord(raw)) continue;
@@ -171,11 +171,11 @@ export const hostByokRoster = (
  * folder under `profiles/`, `default`, or `undefined` when the editor does
  * not associate the workspace with one.
  */
-export const hostProfileOf = (
+export const hostProfileOf = async (
 	host: string,
 	workspace: string,
-): string | undefined => {
-	const storage = readJsonc(join(host, HOST_GLOBAL_STORAGE_FILE));
+): Promise<string | undefined> => {
+	const storage = await readJsonc(join(host, HOST_GLOBAL_STORAGE_FILE));
 	if (!isRecord(storage) || !isRecord(storage.profileAssociations))
 		return undefined;
 	const workspaces = storage.profileAssociations.workspaces;
@@ -213,22 +213,25 @@ export const hostByokCachePath = (
  * from that machine's editors, or finds none; nothing is read from or
  * written to the repository. Never fails its caller.
  */
-export const detectHostByok = (
+export const detectHostByok = async (
 	input: {
 		readonly env?: NodeJS.ProcessEnv | undefined;
 		readonly now?: Date | undefined;
 	} = {},
-): IHostByokSnapshot => {
+): Promise<IHostByokSnapshot> => {
 	const env = input.env ?? process.env;
 	const snapshot: IHostByokSnapshot = {
 		detectedAt: (input.now ?? new Date()).toISOString(),
 		hosts: hostUserDirs(env),
-		providers: hostByokRoster(env),
+		providers: await hostByokRoster(env),
 	};
 	try {
 		const path = hostByokCachePath(env);
-		mkdirSync(dirname(path), { recursive: true });
-		writeFileAtomicSync(path, `${JSON.stringify(snapshot, null, '\t')}\n`);
+		await mkdir(dirname(path), { recursive: true });
+		await writeFileAtomic(
+			path,
+			`${JSON.stringify(snapshot, null, '\t')}\n`,
+		);
 	} catch {
 		// An unwritable cache leaves the roster detected for this run only.
 	}

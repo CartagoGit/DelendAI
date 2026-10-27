@@ -1,5 +1,5 @@
 /**
- * host-sampling.spec.ts — a model the host serves on the person's key is
+ * host-sampling-invoker.service.spec.ts — a model the host serves on the person's key is
  * asked of the host, and every way the host can say no is a refusal,
  * never a quiet answer from another model.
  */
@@ -14,7 +14,7 @@ import {
 	createHostSamplingInvoker,
 	servedAsAsked,
 	type IHostSampler,
-} from '../../../../src/lib/subprocess/host-sampling';
+} from '../../../../src/lib/invoke/host-sampling-invoker.service';
 
 const request: IInvokeRequest = {
 	invocationId: 'inv-1',

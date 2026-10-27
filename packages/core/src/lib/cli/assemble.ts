@@ -329,7 +329,9 @@ export const assembleCliConfig = async (
 	// The models this machine's editors serve on the person's keys:
 	// detected at every start, from whatever editors this machine has, so a
 	// clone elsewhere configures itself; deferred, it never slows the boot.
-	setImmediate(() => detectHostByok());
+	setImmediate(() => {
+		void detectHostByok();
+	});
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the

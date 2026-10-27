@@ -46,6 +46,12 @@ export const formatHandoff = (
 	const invoke = decision.invoke;
 	const prompt = rewriteUnicodeForAgent(decision.prompt);
 	if (invoke.kind === 'acp') return acpHandoff(decision, invoke);
+	if (invoke.kind === 'host-sampling')
+		return {
+			kind: 'passthrough',
+			command: `# ask your editor to run ${invoke.model}`,
+			note: `${invoke.model} is served by your editor on your own key: Batuta asks the editor to run it (MCP sampling); there is nothing to paste.`,
+		};
 	switch (invoke.kind) {
 		case 'cli': {
 			const parts = [
@@ -80,13 +86,6 @@ export const formatHandoff = (
 					{ ...invoke.args, prompt },
 				)}`,
 				note: `Call the ${invoke.server} MCP server's ${invoke.tool} tool. Uses your subscription, not an API key.`,
-			};
-		}
-		case 'host-sampling': {
-			return {
-				kind: 'passthrough',
-				command: `# ask your editor to run ${invoke.model}`,
-				note: `${invoke.model} is served by your editor on your own key: Batuta asks the editor to run it (MCP sampling); there is nothing to paste.`,
 			};
 		}
 		case 'subscription': {

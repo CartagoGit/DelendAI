@@ -61,7 +61,7 @@ const proposeFromMachine =
 			catalogue,
 			env: process.env,
 			existing: [],
-			hostByok: hostByokRoster(),
+			hostByok: await hostByokRoster(),
 		});
 	};
 

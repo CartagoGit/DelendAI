@@ -137,7 +137,8 @@ export const offerFoundAccounts = async (input: {
 		seen: input.seen ?? seenModels(),
 		planTools: input.planTools,
 		fetchLocal: input.fetchLocal ?? fetchLocalModels,
-		hostByok: input.hostByok ?? hostByokRoster(input.env ?? process.env),
+		hostByok:
+			input.hostByok ?? (await hostByokRoster(input.env ?? process.env)),
 		onProgress: input.onProgress,
 		loadCatalogue:
 			input.loadCatalogue === undefined

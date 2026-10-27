@@ -59,9 +59,9 @@ const userDir = (): string => {
 			userDataProfiles: [{ location: 'p1', name: 'Work' }],
 			profileAssociations: {
 				workspaces: {
-					'vscode-remote://wsl%2Bubuntu/home/me':
+					'vscode-remote://wsl%2Bubuntu/work/me':
 						'__default__profile__',
-					'vscode-remote://wsl%2Bubuntu/home/me/project': 'p1',
+					'vscode-remote://wsl%2Bubuntu/work/me/project': 'p1',
 				},
 			},
 		}),
@@ -70,9 +70,9 @@ const userDir = (): string => {
 };
 
 describe('hostByokRoster', () => {
-	it('lists each profile provider and its models by name, and nothing of a credential', () => {
+	it('lists each profile provider and its models by name, and nothing of a credential', async () => {
 		const dir = userDir();
-		const roster = hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir });
+		const roster = await hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir });
 		expect(roster.map((each) => [each.profile, each.vendor])).toEqual([
 			['p1', 'customendpoint'],
 			['p1', 'minimax'],
@@ -98,28 +98,28 @@ describe('hostByokRoster', () => {
 		expect(out).not.toMatch(/apiKey|Authorization|maxOutputTokens/u);
 	});
 
-	it('is empty where no editor keeps a BYOK file', () => {
+	it('is empty where no editor keeps a BYOK file', async () => {
 		const empty = mkdtempSync(join(tmpdir(), 'host-byok-none-'));
-		expect(hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: empty })).toEqual(
-			[],
-		);
+		expect(
+			await hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: empty }),
+		).toEqual([]);
 	});
 });
 
 describe('hostProfileOf', () => {
-	it('names the profile the deepest associated folder opens in', () => {
+	it('names the profile the deepest associated folder opens in', async () => {
 		const dir = userDir();
-		expect(hostProfileOf(dir, '/home/me/project/sub')).toBe('p1');
-		expect(hostProfileOf(dir, '/home/me/other')).toBe('default');
-		expect(hostProfileOf(dir, '/elsewhere')).toBeUndefined();
+		expect(await hostProfileOf(dir, '/work/me/project/sub')).toBe('p1');
+		expect(await hostProfileOf(dir, '/work/me/other')).toBe('default');
+		expect(await hostProfileOf(dir, '/elsewhere')).toBeUndefined();
 	});
 });
 
 describe('a BYOK provider as an account', () => {
-	it('is offered as a host-held account, however the person says it is paid', () => {
+	it('is offered as a host-held account, however the person says it is paid', async () => {
 		const dir = userDir();
 		const [finding] = findingsFromHostByok(
-			hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir }),
+			await hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir }),
 		);
 		expect(finding).toMatchObject({
 			source: 'host-byok',
@@ -138,14 +138,14 @@ describe('a BYOK provider as an account', () => {
 });
 
 describe('detectHostByok', () => {
-	it('keeps the detected roster in the user cache, and an empty one on a machine without editors', () => {
+	it('keeps the detected roster in the user cache, and an empty one on a machine without editors', async () => {
 		const cache = join(
 			mkdtempSync(join(tmpdir(), 'host-byok-cache-')),
 			'deep',
 			'host-byok.json',
 		);
 		const dir = userDir();
-		const found = detectHostByok({
+		const found = await detectHostByok({
 			env: {
 				[HOST_USER_DIRS_VARIABLE]: dir,
 				[HOST_BYOK_CACHE_VARIABLE]: cache,
@@ -157,7 +157,7 @@ describe('detectHostByok', () => {
 		expect(kept).toEqual(found);
 		expect(readFileSync(cache, 'utf8')).not.toContain(KEY);
 
-		const none = detectHostByok({
+		const none = await detectHostByok({
 			env: {
 				[HOST_USER_DIRS_VARIABLE]: mkdtempSync(
 					join(tmpdir(), 'no-editor-'),

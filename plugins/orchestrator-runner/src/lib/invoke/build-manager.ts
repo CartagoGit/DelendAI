@@ -55,7 +55,7 @@ import { createStdioTransport } from '../subprocess/stdio-transport';
 import {
 	createHostSamplingInvoker,
 	type IHostSampler,
-} from '../subprocess/host-sampling';
+} from './host-sampling-invoker.service';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 import { createAcpInvoker } from './acp-invoker.service';
 
