@@ -11,7 +11,7 @@ const CALL_KEY =
 	/(?:\$?\bt|\bi18n\.t|\b__|\b(?:i18n\.)?translate)\(\s*(['"])([^'"]+?)\1/gu;
 /** A key given as a property or attribute: `i18nKey="a.b"`, `{ id: 'a.b' }` in a message descriptor. */
 const NAMED_KEY =
-	/\b(?:i18nKey|messageKey)\s*[=:]\s*\{?\s*(['"])([^'"]+?)\1|\bformatMessage\(\s*\{\s*id\s*:\s*(['"])([^'"]+?)\3/gu;
+	/\b(?:i18nKey|messageKey)\s*[=:]\s*(?:\{\s*)?(['"])([^'"]+?)\1|\bformatMessage\(\s*\{\s*id\s*:\s*(['"])([^'"]+?)\3/gu;
 /** Angular and Transloco pipes: `'a.b' | translate`. */
 const PIPE_KEY = /(['"])([^'"]+?)\1\s*\|\s*(?:translate|transloco)\b/gu;
 /** A key built at run time, `t(`errors.${code}`)`: everything under its fixed prefix is in use. */
