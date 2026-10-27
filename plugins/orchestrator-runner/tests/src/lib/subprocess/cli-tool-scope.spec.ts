@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 import { buildCliArgs } from '../../../../src/lib/subprocess/cli';
 
-const claude = knownClientOf('claude');
-const codex = knownClientOf('codex');
+const claude = knownClientOf('claude', '/work');
+const codex = knownClientOf('codex', '/work');
 
 describe('buildCliArgs', () => {
 	it('adds nothing to a hop that names no tools', () => {

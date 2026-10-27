@@ -228,7 +228,10 @@ export type {
 	IOfferPosition,
 	IOfferStep,
 } from '../lib/contracts/interfaces/account-offer.interface';
-export { knownClientOf } from '../lib/shared/known-client.helper';
+export {
+	catalogueClientOf,
+	knownClientOf,
+} from '../lib/shared/known-client.helper';
 export type {
 	IClientCommandRunner,
 	IClientDiscovery,
