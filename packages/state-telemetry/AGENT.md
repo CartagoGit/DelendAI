@@ -37,10 +37,10 @@ _(none)_
 
 ## Tests
 
+- packages/state-telemetry/src/lib/drain/journal-claim.helper.spec.ts
 - packages/state-telemetry/src/lib/drain/telemetry-drain.service.spec.ts
 - packages/state-telemetry/src/lib/eta/duration-history.spec.ts
 - packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts
-- packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts
 
 ## Do not
 

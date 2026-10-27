@@ -8,5 +8,8 @@ export interface IWorkEventSink {
 /** What one drain did with the lines it claimed. */
 export interface IWorkEventDrainResult {
 	readonly appended: number;
+	/** Lines that were not an event. */
 	readonly skipped: number;
+	/** Events the sink refused, written back to the journal for the next drain. */
+	readonly retained: number;
 }

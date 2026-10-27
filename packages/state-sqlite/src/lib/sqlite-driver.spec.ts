@@ -407,4 +407,27 @@ describe('SqliteStateRegistry', () => {
 		});
 		reader.close();
 	});
+
+	it('maps a persisted row with an unreadable scope to state_store_corrupt', () => {
+		const path = tmpDbPath();
+		const writer = new SqliteStateRegistry({ path, clock: () => 0 });
+		writer.defineProducer(makeProducer());
+		expect(writer.hydrate(input([['a', 1]]))).toMatchObject({ ok: true });
+		writer.close();
+
+		const database = new Database(path);
+		database.exec(
+			"UPDATE generations SET scope_locator_json = '{' WHERE id = 1;",
+		);
+		database.close(false);
+
+		const reader = new SqliteStateRegistry({ path, clock: () => 1 });
+		reader.defineProducer(makeProducer());
+		expect(reader.hydrate(input([['a', 2]]))).toMatchObject({
+			ok: false,
+			reason: 'state_store_corrupt',
+			storeFailure: { pragma: 'scope_locator_parse' },
+		});
+		reader.close();
+	});
 });

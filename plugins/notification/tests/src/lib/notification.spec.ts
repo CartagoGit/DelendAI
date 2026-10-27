@@ -282,6 +282,35 @@ describe('lock-release watcher [N14]', async () => {
 		});
 	});
 
+	it('awaitLockRelease keeps waiting on an unreadable lock and reports why', async () => {
+		writeFileSync(lockFile, '{ torn');
+		const r = await awaitLockRelease({
+			lockFile,
+			taskId: 't1',
+			pollMs: 100,
+			timeoutMs: 1_000,
+		});
+		expect(r).toMatchObject({ released: false, timedOut: true });
+		expect(r.readError).toContain('agents.lock.json');
+	});
+
+	it('an unreadable lock is not a release of the claims seen before it', async () => {
+		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
+		const seen: IReleasedClaim[] = [];
+		const watcher = createReleaseWatcher({
+			lockFile,
+			onRelease: (released) => seen.push(...released),
+		});
+		await watcher.check();
+		writeFileSync(lockFile, '{ torn');
+		expect(await watcher.check()).toEqual([]);
+		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
+		expect(await watcher.check()).toEqual([]);
+		writeFileSync(lockFile, lock([]));
+		expect((await watcher.check()).map((c) => c.taskId)).toEqual(['t1']);
+		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
+	});
+
 	it('awaitLockRelease resolves early when aborted', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
 		const ac = new AbortController();

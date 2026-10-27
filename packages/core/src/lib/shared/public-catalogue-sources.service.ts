@@ -23,11 +23,13 @@ import {
 import type {
 	ICatalogueConditionalFetch,
 	ICatalogueCopy,
+	ICatalogueCopyMeta,
 	ICatalogueRead,
 	ICatalogueSources,
 	IPublicCatalogueKind,
 } from '../contracts/interfaces/public-catalogue.interface';
 import { writeFileAtomic } from './atomic-write';
+import { isRecord } from './is-record';
 
 /**
  * The sources of `kind` in the order they are read: the person's, the
@@ -76,17 +78,33 @@ export const httpConditionalFetch: ICatalogueConditionalFetch = async (
 	};
 };
 
-/** A copy as written; nothing when the file is missing or not a copy. */
+/** A copy's provenance, field by field: `null` in place of one is not a copy. */
+const isCopyMeta = (value: unknown): value is ICatalogueCopyMeta =>
+	isRecord(value) &&
+	typeof value.source === 'string' &&
+	typeof value.format === 'number' &&
+	typeof value.fetchedAt === 'string' &&
+	typeof value.checkedAt === 'string' &&
+	typeof value.sha256 === 'string';
+
+/**
+ * A copy as written; nothing when the file is missing or not a copy. A
+ * malformed copy is no copy: read as one, a `null` field threw in the
+ * caller and aborted what the catalogue only helps with.
+ */
 export const readCatalogueCopy = async <T>(
 	path: string,
+	isData: (data: unknown) => data is T = (data): data is T => isRecord(data),
 ): Promise<ICatalogueCopy<T> | undefined> => {
 	const text = await readFile(path, 'utf8').catch(() => undefined);
 	if (text === undefined) return undefined;
 	try {
-		const parsed = JSON.parse(text) as Partial<ICatalogueCopy<T>>;
-		return parsed.meta === undefined || parsed.data === undefined
-			? undefined
-			: (parsed as ICatalogueCopy<T>);
+		const parsed: unknown = JSON.parse(text);
+		return isRecord(parsed) &&
+			isCopyMeta(parsed.meta) &&
+			isData(parsed.data)
+			? { meta: parsed.meta, data: parsed.data }
+			: undefined;
 	} catch {
 		return undefined;
 	}
@@ -109,6 +127,8 @@ export const readPublicCatalogue = async <T>(input: {
 	readonly sources: readonly string[];
 	/** The raw download reduced to what delendai keeps; nothing when it is not this catalogue. */
 	readonly compact: (raw: unknown) => T | undefined;
+	/** Whether a cached copy's data has the compact shape; a malformed one is not used. */
+	readonly isData?: ((data: unknown) => data is T) | undefined;
 	/** The compact shape's version: a cached copy of another one is not trusted. */
 	readonly format: number;
 	readonly snapshot: () => Promise<ICatalogueCopy<T> | undefined>;
@@ -119,7 +139,7 @@ export const readPublicCatalogue = async <T>(input: {
 }): Promise<ICatalogueRead<T> | undefined> => {
 	const path = catalogueCachePath(input.kind, input.cacheDir);
 	const now = input.now ?? new Date();
-	const read = await readCatalogueCopy<T>(path);
+	const read = await readCatalogueCopy<T>(path, input.isData);
 	const cached = read?.meta.format === input.format ? read : undefined;
 	// A copy is fresh only for the sources it was read under: one read
 	// before a source was added, removed or reordered is asked again
