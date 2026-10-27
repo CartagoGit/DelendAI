@@ -1,7 +1,10 @@
 import type { IProviderAccount } from '@delendai/core/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { accountEnvironment } from '../../../../src/lib/services/account-environment.service';
+import {
+	accountApiCredential,
+	accountEnvironment,
+} from '../../../../src/lib/services/account-environment.service';
 
 const parentEnv = {
 	PATH: '/usr/bin',
@@ -33,8 +36,11 @@ const run = (
 ) => accountEnvironment({ command, args, account: on, accountId, parentEnv });
 
 describe('accountEnvironment', () => {
-	it('keeps the server environment for an entry with no account', () => {
-		expect(run('claude', ['-p'], undefined)).toEqual({ kind: 'inherit' });
+	it('runs an entry with no account and no names on what any program needs only', () => {
+		expect(run('claude', ['-p'], undefined)).toEqual({
+			kind: 'isolated',
+			env: { PATH: '/usr/bin', HOME: '/home/someone', LC_ALL: 'C.UTF-8' },
+		});
 	});
 
 	it('runs an entry with no account on what it names, not on the whole environment', () => {
@@ -117,5 +123,45 @@ describe('accountEnvironment', () => {
 			'aider has no known way to keep account "claude-work" in its own profile directory',
 			'account "claude-work" names credential variable UNSET_KEY, which is not set',
 		]);
+	});
+});
+
+describe('accountApiCredential', () => {
+	const call = (
+		on: IProviderAccount | undefined,
+		accountId = on?.accountId,
+	) =>
+		accountApiCredential({
+			envVar: 'ANTHROPIC_API_KEY',
+			account: on,
+			accountId,
+			parentEnv,
+		});
+
+	it('reads the entry variable for no account, and the account variable on one', () => {
+		expect(call(undefined)).toEqual({ kind: 'key', key: 'server-key' });
+		expect(
+			call(
+				account({
+					credentialMode: 'byok-api-key',
+					credentialEnv: 'WORK_KEY',
+				}),
+			),
+		).toEqual({ kind: 'key', key: 'work-key' });
+	});
+
+	it('refuses what the account policy forbids', () => {
+		expect(call(undefined, 'ghost')).toMatchObject({ kind: 'refused' });
+		expect(
+			call(
+				account({
+					credentialMode: 'byok-api-key',
+					permittedAutomation: false,
+				}),
+			),
+		).toMatchObject({ kind: 'refused' });
+		expect(
+			call(account({ credentialMode: 'official-subscription-login' })),
+		).toMatchObject({ kind: 'refused' });
 	});
 });

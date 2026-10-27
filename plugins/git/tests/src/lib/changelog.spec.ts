@@ -104,4 +104,19 @@ describe('gitChangelog', () => {
 			total: 0,
 		});
 	});
+
+	it('never hands git a range it would read as an option', async () => {
+		const calls: (readonly string[])[] = [];
+		const run = async (args: readonly string[]) => {
+			calls.push(args);
+			return { ok: true, output: '' };
+		};
+		await gitChangelog(run, { range: '--output=/tmp/pwned' });
+		expect(calls).toEqual([]);
+		await gitChangelog(run, { range: 'v1.0.0..HEAD' });
+		expect(calls[0]?.slice(-2)).toEqual([
+			'--end-of-options',
+			'v1.0.0..HEAD',
+		]);
+	});
 });

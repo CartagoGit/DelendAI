@@ -21,6 +21,7 @@
  * dry-runs proposals against these schemas without booting anything.
  */
 import z from 'zod';
+import { DEFAULT_ALLOWED_COMMANDS } from './contracts/constants/allowed-commands.constant';
 
 /** Server ids are kebab-case: unique roster keys and `ext.<id>` roots. */
 export const KEBAB_CASE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -170,6 +171,14 @@ export const OptionsSchema = z
 		 * (S5).
 		 */
 		allowDiscoverySearch: z.boolean().default(false),
+		/**
+		 * The commands a server may be started with, by name. Only the
+		 * person's configuration sets it: an activation decided by the LLM
+		 * enables a declared server and can never add a command here.
+		 */
+		allowedCommands: z
+			.array(z.string().min(1))
+			.default([...DEFAULT_ALLOWED_COMMANDS]),
 	})
 	.strict();
 

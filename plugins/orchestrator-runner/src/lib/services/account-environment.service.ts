@@ -18,7 +18,10 @@ import { basename } from 'node:path';
 
 import { knownClientOf, type IProviderAccount } from '@delendai/core/contracts';
 
-import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
+import type {
+	IAccountApiCredential,
+	IAccountEnvironment,
+} from '../contracts/interfaces/account-environment.interface';
 
 /** What any program needs to run, on every OS. */
 const BASE_VARIABLES = [
@@ -76,12 +79,11 @@ export const accountEnvironment = (input: {
 	readonly named?: readonly string[] | undefined;
 }): IAccountEnvironment => {
 	if (input.accountId === undefined) {
-		// No account: the entry runs on what it named, or, naming
-		// nothing, on the server's environment as before accounts
-		// existed (the `accounts` tool lists those).
-		if (input.named === undefined) return { kind: 'inherit' };
+		// No account: the entry runs on what any program needs plus what
+		// it names. Naming nothing, it used to get the server's whole
+		// environment, every credential the server holds included.
 		const env = baseEnvironment(input.parentEnv);
-		for (const name of input.named) {
+		for (const name of input.named ?? []) {
 			const value = input.parentEnv[name];
 			if (value !== undefined) env[name] = value;
 		}
@@ -136,4 +138,46 @@ export const accountEnvironment = (input: {
 		env[variable] = account.profileDir;
 	}
 	return { kind: 'isolated', env };
+};
+
+/**
+ * The key an API provider is called with. On an account it comes from the
+ * account's own credential variable, under the same policy a process on
+ * it obeys: the account must exist and be open to unattended work, and a
+ * subscription login is not an API key. The API transport used to read
+ * the entry's variable whatever the account said.
+ */
+export const accountApiCredential = (input: {
+	readonly envVar: string;
+	readonly account: IProviderAccount | undefined;
+	readonly accountId: string | undefined;
+	readonly parentEnv: Readonly<Record<string, string | undefined>>;
+}): IAccountApiCredential => {
+	const read = (name: string): IAccountApiCredential => {
+		const key = input.parentEnv[name];
+		return key === undefined || key.length === 0
+			? {
+					kind: 'refused',
+					reason: `api provider missing env key ${name}`,
+				}
+			: { kind: 'key', key };
+	};
+	if (input.accountId === undefined) return read(input.envVar);
+	const account = input.account;
+	if (account === undefined)
+		return {
+			kind: 'refused',
+			reason: `account "${input.accountId}" is not in the account registry`,
+		};
+	if (!account.permittedAutomation)
+		return {
+			kind: 'refused',
+			reason: `account "${account.accountId}" is not open to unattended work (permittedAutomation is false)`,
+		};
+	if (account.credentialMode === 'official-subscription-login')
+		return {
+			kind: 'refused',
+			reason: `account "${account.accountId}" is a subscription login, not an API key: an API call cannot run on it`,
+		};
+	return read(account.credentialEnv ?? input.envVar);
 };

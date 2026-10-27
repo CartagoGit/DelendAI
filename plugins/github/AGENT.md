@@ -29,8 +29,8 @@ _(none)_
 
 - plugins/github/tests/diagnose-github-workflow.spec.ts
 - plugins/github/tests/diagnostics.spec.ts
+- plugins/github/tests/src/lib/catalog-sweep.spec.ts
 - plugins/github/tests/src/lib/client.spec.ts
-- plugins/github/tests/src/lib/plugin-options.spec.ts
 
 ## Do not
 

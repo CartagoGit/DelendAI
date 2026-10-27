@@ -67,14 +67,9 @@ export const buildNextActions = (
 			reason: `Bounded sample found ${signals.markerCount} debt marker(s) across ${signals.sampledFiles} file(s).`,
 		});
 	}
-	return actions.length > 0
-		? actions
-		: [
-				{
-					tool: PROJECT_HEALTH_DOMAIN_TOOLS.quality,
-					reason: 'All summary heuristics are green; run a real domain tool for ground truth if needed.',
-				},
-			];
+	// No axis reaches 100 (see PROJECT_HEALTH_INFERRED_CEILING), so each
+	// one always names the domain tool that would measure it.
+	return actions;
 };
 
 export const buildDomainHint = (

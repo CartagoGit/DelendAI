@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	CloseMarkerTooLongError,
 	BUILTIN_MARKER_TABLE,
 	CLOSE_MARKER_STATES,
 	CLOSE_SEPARATOR,
@@ -82,11 +83,15 @@ describe('markers — formatCloseMarker', async () => {
 		);
 	});
 
-	it('truncates to MAX_LINE_LEN with a trailing … when the reason overflows', async () => {
+	it('refuses a reason that does not fit instead of cutting it', async () => {
 		const long = 'x'.repeat(200);
-		const line = formatCloseMarker('CAP', long);
+		expect(() => formatCloseMarker('CAP', long)).toThrow(
+			CloseMarkerTooLongError,
+		);
+		const fits = 'x'.repeat(40);
+		const line = formatCloseMarker('CAP', fits);
 		expect(line.length).toBeLessThanOrEqual(MAX_LINE_LEN);
-		expect(line.endsWith('…')).toBe(true);
+		expect(line.endsWith(fits)).toBe(true);
 	});
 
 	it('exports formatLxAppCloseMarker as an alias with identical output', async () => {
@@ -238,14 +243,14 @@ describe('markers — bilingual rendering (f00070)', async () => {
 		);
 	});
 
-	it('truncates EN lines that overflow MAX_LINE_LEN exactly like ES', async () => {
+	it('refuses an overflowing EN line exactly like ES', async () => {
 		const long = 'x'.repeat(200);
-		const es = formatCloseMarker('CAP', long);
-		const en = formatCloseMarker('CAP', long, { locale: 'en' });
-		expect(es.length).toBeLessThanOrEqual(MAX_LINE_LEN);
-		expect(en.length).toBeLessThanOrEqual(MAX_LINE_LEN);
-		expect(es.endsWith('…')).toBe(true);
-		expect(en.endsWith('…')).toBe(true);
+		expect(() => formatCloseMarker('CAP', long)).toThrow(
+			CloseMarkerTooLongError,
+		);
+		expect(() => formatCloseMarker('CAP', long, { locale: 'en' })).toThrow(
+			CloseMarkerTooLongError,
+		);
 	});
 
 	it('exposes every locale × state pair in MARKERS_BY_LOCALE', async () => {
