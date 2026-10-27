@@ -12,6 +12,8 @@ import { isAbsolute, join, relative } from 'node:path';
 import {
 	DEFAULT_CONFIG_FILENAME,
 	parseConfigFile,
+	realpathContained,
+	resolveWorkspaceContained,
 	scaffoldPluginFiles,
 } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
@@ -291,6 +293,21 @@ export const createProjectPlugin = async (
 	options: IProjectPluginOptions,
 ): Promise<IProjectPluginResult> => projectPluginInternal(spec, options);
 
+/** `child` resolved under `root`, or a refusal naming what escaped. */
+const containedInWorkspace = async (
+	root: string,
+	child: string,
+	what: string,
+): Promise<string> => {
+	const lexical = resolveWorkspaceContained(root, child);
+	if (!lexical.ok || !(await realpathContained(lexical.abs, [root]))) {
+		throw new Error(
+			`createProjectPlugin: ${what} "${child}" resolves outside the workspace ${root}`,
+		);
+	}
+	return lexical.abs;
+};
+
 const projectPluginInternal = async (
 	spec: IProjectPluginSpec,
 	options: IProjectPluginOptions,
@@ -308,13 +325,20 @@ const projectPluginInternal = async (
 
 	const configFileName = options.configFileName ?? DEFAULT_CONFIG_FILENAME;
 	const { id, files } = generatePluginFiles(spec);
-	const pluginDir = options.pluginsRoot
-		? join(options.workspaceRoot, options.pluginsRoot, id)
-		: join(
-				options.workspaceRoot,
-				'packages/delendai/plugins',
-				`delendai_${id}`,
-			);
+	// Both paths are written to and registered, so both stay inside the
+	// workspace, symlinks followed: a `../` used to land in the config.
+	const pluginDir = await containedInWorkspace(
+		options.workspaceRoot,
+		options.pluginsRoot
+			? join(options.pluginsRoot, id)
+			: join('packages/delendai/plugins', `delendai_${id}`),
+		'the plugin directory',
+	);
+	const configFile = await containedInWorkspace(
+		options.workspaceRoot,
+		configFileName,
+		'configFileName',
+	);
 
 	const writeResult = await writeScaffoldedFiles(pluginDir, files, {
 		...(options.keepLegacy !== undefined
@@ -323,7 +347,6 @@ const projectPluginInternal = async (
 	});
 
 	const pluginPath = relativePluginPath(options.workspaceRoot, pluginDir);
-	const configFile = join(options.workspaceRoot, configFileName);
 	const prefix = spec.namespace ?? id;
 	const registration = await registerPluginPath(
 		configFile,

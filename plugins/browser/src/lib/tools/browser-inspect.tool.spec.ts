@@ -1,8 +1,8 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
 
@@ -90,11 +90,34 @@ describe('browser-inspect (f00125 S1)', () => {
 			})) as { url: string; path: string; status: string };
 			expect(output.status).toBe('ok');
 			expect(output.path).toMatch(
-				new RegExp(`^${cacheDir}/browser/\\d+\\.png$`),
+				new RegExp(`^${cacheDir}/browser/\\d+-[0-9a-f-]+\\.png$`),
 			);
 			const bytes = await readFile(output.path);
 			expect([...bytes]).toEqual([1, 2, 3, 4]);
 		} finally {
+			await rm(cacheDir, { recursive: true, force: true });
+		}
+	});
+
+	it('two screenshots in the same millisecond keep both files', async () => {
+		const cacheDir = await mkdtemp(join(tmpdir(), 'browser-inspect-'));
+		const now = vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+		try {
+			const captured = await captureToolRegistration(
+				registration('browser_screenshot', {
+					pluginCacheDir: cacheDir,
+					driver: fakeDriver(),
+				}),
+			);
+			const shots = (await Promise.all(
+				[1, 2].map(() =>
+					captured.invoke({ url: 'https://example.com/docs' }),
+				),
+			)) as Array<{ path: string }>;
+			expect(new Set(shots.map((shot) => shot.path)).size).toBe(2);
+			expect(await readdir(join(cacheDir, 'browser'))).toHaveLength(2);
+		} finally {
+			now.mockRestore();
 			await rm(cacheDir, { recursive: true, force: true });
 		}
 	});
