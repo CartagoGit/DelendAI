@@ -13,7 +13,7 @@ const sharedPrivateMarkers = {
 	awsKey: 'AKIAIOSFODNN7EXAMPLE',
 	githubPat: 'ghp_superSecretPrivateToken1234567890', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZUBhY21lLmNvbSIsInRlbmFudCI6ImFjbWUtaW50ZXJuYWwifQ.signature',
-	openAiKey: 'sk-private-openai-1234567890abcdefghijkl',
+	openAiKey: 'sk-private-openai-1234567890abcdefghijkl', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	anthropicKey: 'sk-ant-private-abcdefghijklmnopqrstuv',
 	postgresUrl:
 		'postgres://alice:pa55w0rd@db.internal.acme.local:5432/customer_ops',
@@ -31,9 +31,9 @@ const sharedPrivateMarkers = {
 	sqlFragment:
 		"SELECT * FROM customers WHERE tenant = 'acme-internal' AND email = 'alice@acme.com';",
 	graphqlFragment:
-		'mutation RotateKey { rotateKey(tenant: "acme-internal", token: "sk-private-openai-1234567890abcdefghijkl") }',
+		'mutation RotateKey { rotateKey(tenant: "acme-internal", token: "sk-private-openai-1234567890abcdefghijkl") }', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	sourceFragment:
-		'const leaked = process.env.OPENAI_API_KEY ?? "sk-private-openai-1234567890abcdefghijkl";',
+		'const leaked = process.env.OPENAI_API_KEY ?? "sk-private-openai-1234567890abcdefghijkl";', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	unicodeSecret: '顧客-機密-東京-Ωmega-🚫',
 	hugePrivateBlobSample: hugePrivateBlob.slice(0, 512),
 } as const;

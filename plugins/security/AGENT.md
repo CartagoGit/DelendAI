@@ -21,6 +21,7 @@
 
 ## Depends on
 
+- @delendai/contracts
 - @delendai/deps
 - @delendai/web-fetch
 - @modelcontextprotocol/sdk

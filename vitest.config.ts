@@ -66,6 +66,19 @@ export default defineConfig({
 		// tsconfig path aliases + customConditions), never against the
 		// `dist/` build artefact (now under `build/`).
 		conditions: ['@delendai/source', 'node', 'import', 'default'],
+		// The reporters load in this root context, without the projects'
+		// aliases: the test journal redacts through core, core takes its
+		// secret rule set from the contracts root, and a checkout with no
+		// built contracts failed to load the reporter at all.
+		alias: [
+			{
+				find: /^@delendai\/contracts$/,
+				replacement: join(
+					workspaceRoot,
+					'packages/contracts/src/index.ts',
+				),
+			},
+		],
 	},
 	test: {
 		// Projects run as their own vitest instances; the root shell walks
