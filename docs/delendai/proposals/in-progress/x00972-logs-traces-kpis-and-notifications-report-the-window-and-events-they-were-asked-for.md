@@ -2,10 +2,14 @@
 id: x00972
 title: "Logs, traces, KPIs and notifications report the window and events they were asked for"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 9756f210-be11-4847-b617-76dd0fce2174
+last-correlation-id: 9756f210-be11-4847-b617-76dd0fce2174
+last-transition-from: ready
+last-transition-at: 2026-10-27T04:49:27.394Z
 ---
 
 # x00972 — Logs, traces, KPIs and notifications report the window and events they were asked for
