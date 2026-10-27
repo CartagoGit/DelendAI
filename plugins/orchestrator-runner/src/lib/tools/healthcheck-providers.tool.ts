@@ -12,7 +12,11 @@
  * `pipeTo: 'sh'` (CRITICAL I4).
  */
 import { toolJson, type IProviderCapabilities } from '@delendai/core/public';
-import type { IToolRegistration } from '@delendai/core/contracts';
+import {
+	knownClientOf,
+	type IToolRegistration,
+} from '@delendai/core/contracts';
+import { listClientModels } from '@delendai/core/runtime';
 import z from 'zod';
 
 import {
@@ -20,6 +24,8 @@ import {
 	buildProviderHealth,
 	commandOf,
 } from '../healthcheck/report';
+import { probeLogin } from '../bootstrap';
+import type { IProviderChecks } from '../contracts/interfaces/provider-checks.interface';
 import { probeCli, type ProbeRunner } from '../healthcheck/probe';
 import type { HealthStore } from '../healthcheck/store';
 import { HealthcheckOutputSchema } from '../schemas';
@@ -34,6 +40,39 @@ export interface IHealthcheckToolOptions {
 }
 
 const InputSchema = z.object({});
+
+/**
+ * Ask an installed known client whether it is logged in, and which models
+ * it reaches when it lists them; a client nobody can ask says nothing.
+ */
+const askClient = async (
+	command: string,
+	runner: ProbeRunner,
+	cwd: string,
+): Promise<IProviderChecks> => {
+	const login = await probeLogin(command, runner, cwd);
+	const client = knownClientOf(command);
+	const listed =
+		client?.modelListArgs === undefined
+			? undefined
+			: await listClientModels(client, runner, cwd).catch(
+					() => undefined,
+				);
+	return {
+		verdict: login.verdict,
+		authTier: login.authTier,
+		...(listed?.listed === true
+			? {
+					models: listed.providers.flatMap(({ provider, models }) =>
+						models.flatMap((model) => [
+							model,
+							`${provider}/${model}`,
+						]),
+					),
+				}
+			: {}),
+	};
+};
 
 export const buildHealthcheckProvidersRegistration = (
 	options: IHealthcheckToolOptions,
@@ -66,7 +105,17 @@ export const buildHealthcheckProvidersRegistration = (
 										options.runner,
 										options.workspaceRoot,
 									);
-						return buildProviderHealth(provider, probe);
+						return buildProviderHealth(
+							provider,
+							probe,
+							command === null || probe?.installed !== true
+								? {}
+								: await askClient(
+										command,
+										options.runner,
+										options.workspaceRoot,
+									),
+						);
 					}),
 				);
 
