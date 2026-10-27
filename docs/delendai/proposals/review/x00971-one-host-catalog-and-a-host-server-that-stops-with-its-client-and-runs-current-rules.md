@@ -2,14 +2,14 @@
 id: x00971
 title: "One host catalog, and a host server that stops with its client and runs current rules"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 286fdf92-6469-499d-849e-21c160c66a18
-last-correlation-id: 286fdf92-6469-499d-849e-21c160c66a18
-last-transition-from: ready
-last-transition-at: 2026-10-27T09:04:09.562Z
+last-transition-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
+last-correlation-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T09:13:33.645Z
 shipped-in:
   - "97594eb67"
 ---
@@ -41,6 +41,8 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "Detection, scaffold and instructions read AGENT_HOSTS; a spec fails if a host appears in one and not the others (G65, D39)."
   - "Every host that declares an instructions file gets delendai's block from init when the project uses it, and every reader of instruction files (init, bootstrap analysis, the proposals scan) knows each file a host declares (G66)."
 - shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The server process
 - **Status**: done
@@ -50,6 +52,8 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "SIGINT and SIGTERM reach the child; no server survives its client (G113)."
   - "A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27)."
 - shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The bridge names a model only when one conversation can be at work
 - **Status**: done
@@ -58,6 +62,8 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 - acceptance:
   - "The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68)."
 - shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
