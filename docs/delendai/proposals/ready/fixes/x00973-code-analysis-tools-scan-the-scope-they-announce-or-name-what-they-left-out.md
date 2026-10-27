@@ -28,7 +28,7 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
 
 ### S1 — Explicit slices stay explicit
 - **Status**: pending
-- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/tools/context-for-change.tool.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `plugins/impact-analysis/src/lib/tools/impact-analyze.tool.ts`, `plugins/impact-analysis/src/lib/tools/tests-for-change.tool.ts`
+- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `plugins/impact-analysis/tests/src/lib/services/impact-analysis.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With files or a diff given, the working tree is not added (D116, D118)."
