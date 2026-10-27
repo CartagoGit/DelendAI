@@ -21,6 +21,7 @@ export {
 	readModelCatalogue,
 } from './lib/shared/model-catalogue.service';
 export {
+	answerAgentCandidate,
 	declareAgent,
 	installAgent,
 	listAgents,

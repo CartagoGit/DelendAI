@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import type { IDetectionMachine } from '../../../../src/lib/contracts/interfaces/agent-detection.interface';
 import type { IAgentRegistry } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
+	answerAgentCandidate,
 	declareAgent,
 	installAgent,
 	listAgents,
@@ -129,5 +130,55 @@ describe('agents flow', () => {
 				root: mkdtempSync(join(tmpdir(), 'r-')),
 			}),
 		).rejects.toThrow();
+	});
+
+	describe('an executable offered as an agent', () => {
+		// On PATH, named like a catalogue agent, and its help speaks ACP.
+		const machine: IDetectionMachine = {
+			executables: async () => ['qwen-helper'],
+			globalPackages: async () => [],
+			ideExtensions: async () => [],
+			help: async () => 'Usage: qwen-helper --acp',
+		};
+		const list = (ws: ReturnType<typeof setUp>) =>
+			listAgents({
+				workspace: ws.workspace,
+				personalRoot: ws.personalRoot,
+				machine,
+				registry: REGISTRY,
+				catalogue: { providers: [] },
+			});
+
+		it('is offered until answered, and a no is kept so it is not asked again', async () => {
+			const ws = setUp();
+			expect((await list(ws)).candidates.map((c) => c.name)).toEqual([
+				'qwen-helper',
+			]);
+			const kept = await answerAgentCandidate({
+				workspace: ws.workspace,
+				name: 'qwen-helper',
+				accept: false,
+				personalRoot: ws.personalRoot,
+			});
+			expect(kept.kept).toBe(true);
+			const after = await list(ws);
+			expect(after.candidates).toEqual([]);
+			expect(after.agents.map((a) => a.id)).not.toContain('qwen-helper');
+		});
+
+		it('a yes declares it, and the declaration stands for the candidate', async () => {
+			const ws = setUp();
+			await answerAgentCandidate({
+				workspace: ws.workspace,
+				name: 'qwen-helper',
+				accept: true,
+				personalRoot: ws.personalRoot,
+			});
+			const after = await list(ws);
+			expect(after.candidates).toEqual([]);
+			const declared = after.agents.filter((a) => a.id === 'qwen-helper');
+			expect(declared).toHaveLength(1);
+			expect(declared[0]?.origin).toBe('personal');
+		});
 	});
 });

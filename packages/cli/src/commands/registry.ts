@@ -286,6 +286,17 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		name: 'agents answer',
+		offline: true,
+		summary:
+			'Keep your answer about an executable offered as an agent, so it is not asked again.',
+		usage: 'agents answer <name> --yes|--no',
+		async run(args, ctx) {
+			const { agentsAnswerCommand } = await import('./agents.command');
+			return agentsAnswerCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'agents show',
 		offline: true,
 		summary:
