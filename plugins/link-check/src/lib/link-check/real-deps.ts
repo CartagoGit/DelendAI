@@ -5,8 +5,15 @@
  */
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
+import {
+	LINK_CHECK_DOC_GLOB,
+	LINK_CHECK_MAX_DOC_BYTES,
+	LINK_CHECK_MAX_DOCS,
+} from '../contracts/constants/link-check.constant';
 import type {
+	IDocScan,
 	ILinkScanDeps,
+	ISkippedDoc,
 	ISourceDoc,
 } from '../contracts/interfaces/link-check.interface';
 
@@ -20,9 +27,6 @@ const EXCLUDED = [
 	'/coverage/',
 	'/.astro/',
 ];
-
-const MAX_DOCS = 5000;
-const MAX_DOC_BYTES = 1024 * 1024;
 
 const isExcluded = (rel: string): boolean =>
 	EXCLUDED.some((fragment) => `/${rel}`.includes(fragment));
@@ -41,27 +45,34 @@ const addWithAncestors = (set: Set<string>, rel: string): void => {
 
 /** Production link-check deps rooted at `workspaceRootAbs`, via Bun.Glob. */
 export const realLinkScanDeps = (workspaceRootAbs: string): ILinkScanDeps => ({
-	listDocs: async () => {
+	listDocs: async (): Promise<IDocScan> => {
 		const reader = new SafeWorkspaceReader(workspaceRootAbs);
-		const out: ISourceDoc[] = [];
-		const glob = new Bun.Glob('**/*.md');
+		const docs: ISourceDoc[] = [];
+		const skipped: ISkippedDoc[] = [];
+		let capped = false;
+		const glob = new Bun.Glob(LINK_CHECK_DOC_GLOB);
 		for await (const rel of glob.scan({
 			cwd: workspaceRootAbs,
 			onlyFiles: true,
 			dot: false,
 		})) {
-			if (out.length >= MAX_DOCS) break;
 			if (isExcluded(rel)) continue;
+			if (docs.length >= LINK_CHECK_MAX_DOCS) {
+				capped = true;
+				break;
+			}
 			try {
 				const content = (await reader.readText(rel)).content;
-				if (content.length <= MAX_DOC_BYTES) {
-					out.push({ path: rel, content });
+				if (content.length <= LINK_CHECK_MAX_DOC_BYTES) {
+					docs.push({ path: rel, content });
+				} else {
+					skipped.push({ path: rel, reason: 'too-large' });
 				}
 			} catch {
-				// unreadable or vanished — skip it
+				skipped.push({ path: rel, reason: 'unreadable' });
 			}
 		}
-		return out;
+		return { docs, skipped, capped };
 	},
 	listKnownPaths: async () => {
 		const known = new Set<string>();

@@ -14,6 +14,11 @@ import {
 	worstSeverity,
 } from '@delendai/core/public';
 
+import {
+	TECH_DEBT_MAX_FILES,
+	TECH_DEBT_MAX_REPORTED,
+	TECH_DEBT_MAX_SKIPPED_REPORTED,
+} from '../contracts/constants/tech-debt.constant';
 import type { ITechDebtScanToolOptions } from '../contracts/interfaces/tech-debt.interface';
 import { realTechDebtDeps } from '../tech-debt/real-deps';
 import { scanMarkers } from '../tech-debt/scan-markers';
@@ -31,9 +36,6 @@ const FINDING = z.object({
 		})
 		.optional(),
 });
-
-/** Cap findings in the response; `total` still reports the true count. */
-const MAX_REPORTED = 200;
 
 export const buildDebtScanRegistration = (
 	options: ITechDebtScanToolOptions,
@@ -56,6 +58,17 @@ export const buildDebtScanRegistration = (
 					total: z.number(),
 					findings: z.array(FINDING),
 					truncated: z.boolean(),
+					coverage: z.object({
+						capped: z.boolean(),
+						maxFiles: z.number(),
+						skippedTotal: z.number(),
+						skipped: z.array(
+							z.object({
+								path: z.string(),
+								reason: z.enum(['too-large', 'unreadable']),
+							}),
+						),
+					}),
 					summary: z.object({
 						critical: z.number(),
 						high: z.number(),
@@ -69,8 +82,8 @@ export const buildDebtScanRegistration = (
 			async (args: { only?: string[] | undefined }) => {
 				const deps =
 					options.deps ?? realTechDebtDeps(options.workspaceRootAbs);
-				const files = await deps.listSourceFiles();
-				const all = sortFindings(scanMarkers(files));
+				const scan = await deps.listSourceFiles();
+				const all = sortFindings(scanMarkers(scan.files));
 				const filter =
 					args.only !== undefined && args.only.length > 0
 						? new Set(
@@ -85,10 +98,19 @@ export const buildDebtScanRegistration = (
 						? all
 						: all.filter((finding) => filter.has(finding.ruleId));
 				return toolJson({
-					filesScanned: files.length,
+					filesScanned: scan.files.length,
 					total: findings.length,
-					findings: findings.slice(0, MAX_REPORTED),
-					truncated: findings.length > MAX_REPORTED,
+					findings: findings.slice(0, TECH_DEBT_MAX_REPORTED),
+					truncated: findings.length > TECH_DEBT_MAX_REPORTED,
+					coverage: {
+						capped: scan.capped,
+						maxFiles: TECH_DEBT_MAX_FILES,
+						skippedTotal: scan.skipped.length,
+						skipped: scan.skipped.slice(
+							0,
+							TECH_DEBT_MAX_SKIPPED_REPORTED,
+						),
+					},
 					summary: summarizeFindings(findings),
 					worst: worstSeverity(findings) ?? 'none',
 				});
