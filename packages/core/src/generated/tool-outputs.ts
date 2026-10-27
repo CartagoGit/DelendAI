@@ -1287,6 +1287,8 @@ export interface DelendaiSecuritySecuritySastOutput {
 export interface DelendaiSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
+	ignoredScanned: string[];
+	ignoredSkipped: number;
 	findings: Array<{
 		ruleId: string;
 		severity: "critical" | "high" | "medium" | "low" | "info";

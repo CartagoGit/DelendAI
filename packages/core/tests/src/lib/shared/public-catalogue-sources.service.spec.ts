@@ -95,6 +95,33 @@ describe('readPublicCatalogue', () => {
 		expect(asked.map((each) => each.url)).toHaveLength(4);
 	});
 
+	it('asks again within the recheck window once the configured sources change', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
+		const first = recording({
+			'https://c.test': { status: 200, body: { items: ['old'] } },
+		});
+		await read(dir, first.fetch, ['https://c.test']);
+		const mine = recording({
+			'https://mine.test': { status: 200, body: { items: ['mine'] } },
+		});
+		const got = await read(dir, mine.fetch, [
+			'https://mine.test',
+			'https://c.test',
+		]);
+		expect(got?.origin).toBe('source');
+		expect(got?.data.items).toEqual(['mine']);
+		const soon = recording({});
+		expect(
+			(
+				await read(dir, soon.fetch, [
+					'https://mine.test',
+					'https://c.test',
+				])
+			)?.origin,
+		).toBe('cache');
+		expect(soon.asked).toEqual([]);
+	});
+
 	it('serves the copy without asking within the recheck window, then asks with its ETag', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
 		const first = recording({

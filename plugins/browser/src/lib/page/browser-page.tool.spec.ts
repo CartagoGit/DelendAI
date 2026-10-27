@@ -64,7 +64,7 @@ describe('browser page tools', () => {
 				url: 'https://example.test/docs',
 			})) as { path: string; status: string };
 			expect(output.path).toMatch(
-				new RegExp(`^${cacheDir}/browser/\\d+\\.png$`),
+				new RegExp(`^${cacheDir}/browser/\\d+-[0-9a-f-]{36}\\.png$`),
 			);
 			expect(output.status).toBe('ok');
 		} finally {

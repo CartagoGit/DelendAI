@@ -16,6 +16,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	probeTool,
 	realProbeDeps,
+	resolveExistingWorkspaceContained,
 	runExternalTool,
 	toolJson,
 } from '@delendai/core/public';
@@ -25,6 +26,8 @@ import { DOCKER_TOOL, KUBECTL_TOOL } from '../inspect/cli-tools';
 
 export interface IContainerBuildToolOptions {
 	readonly namespacePrefix: string;
+	/** The workspace a build's dockerfile and context must stay inside. */
+	readonly workspaceRootAbs: string;
 	readonly probeDeps?: IProbeDeps;
 	readonly runExec?: IArgvExec;
 }
@@ -141,6 +144,30 @@ export const buildContainerBuildToolRegistrations = (
 						outputSchema: BUILD_OUTPUT,
 					},
 					async (args) => {
+						// docker reads the context and the dockerfile itself, so
+						// a path outside the workspace was a build of anything
+						// on the machine.
+						for (const [what, path] of [
+							['dockerfile', args.dockerfile],
+							['context', args.context ?? '.'],
+						] as const) {
+							if (path === undefined) continue;
+							const contained =
+								await resolveExistingWorkspaceContained(
+									options.workspaceRootAbs,
+									path,
+								);
+							if (!contained.ok) {
+								return toolJson(
+									REFUSAL.parse({
+										ok: false,
+										reason: `${what} "${path}" is outside the workspace`,
+										nextAction:
+											'Pass a dockerfile and context inside the workspace.',
+									}),
+								);
+							}
+						}
 						const argv: readonly string[] = [
 							'build',
 							'-t',
@@ -168,6 +195,7 @@ export const buildContainerBuildToolRegistrations = (
 							{
 								tool: DOCKER_TOOL,
 								args: argv,
+								cwd: options.workspaceRootAbs,
 								timeoutMs: 5 * 60_000,
 							},
 							runExec,

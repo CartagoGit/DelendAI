@@ -26,3 +26,4 @@ export * from './host-capability-manifest.interface';
 export * from './host-subagent-runtime.interface';
 export * from './delegated-task.interface';
 export * from './state';
+export * from './secret-patterns';

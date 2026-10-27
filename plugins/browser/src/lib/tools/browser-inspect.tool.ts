@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 import z from 'zod';
@@ -100,10 +101,15 @@ const installMissing = (url: string, hint: string) =>
 		hint,
 	});
 
+/**
+ * A name of its own per call: named by the millisecond alone, two
+ * screenshots taken together wrote one file over the other.
+ */
 const screenshotPathFor = (
 	pluginCacheDir: string,
 	timestamp = Date.now(),
-): string => join(pluginCacheDir, 'browser', `${timestamp}.png`);
+): string =>
+	join(pluginCacheDir, 'browser', `${timestamp}-${randomUUID()}.png`);
 
 /** The screenshot lands whole or not at all: the core's atomic writer. */
 const writeScreenshotAtomic = (path: string, data: Uint8Array): Promise<void> =>

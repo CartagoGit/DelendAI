@@ -321,7 +321,7 @@ export const assembleCliConfig = async (
 	);
 	// The clients this process matches commands to: the catalogue, the
 	// project's, then the person's.
-	useConfiguredClients([
+	useConfiguredClients(args.workspace, [
 		...(sharedConfig.clients ?? []),
 		...(personal.layer.clients ?? []),
 	]);

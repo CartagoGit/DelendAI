@@ -9,6 +9,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { AGENT_HOSTS } from '@delendai/core/cli';
+
 import {
 	AGENT_INSTRUCTION_SOURCE_SPECS,
 	CANONICAL_AGENT_DOC_REL,
@@ -37,21 +39,25 @@ const plan = (
 
 describe('classifyInstructionSource (U3 detection)', () => {
 	it('classifies the common scattered agent-instruction sources', () => {
-		expect(classifyInstructionSource('CLAUDE.md')).toBe('Claude');
-		expect(classifyInstructionSource('AGENTS.md')).toBe('AGENTS');
+		expect(classifyInstructionSource('CLAUDE.md')).toBe('Claude Code');
+		expect(classifyInstructionSource('AGENTS.md')).toBe(
+			'Codex CLI / OpenCode / Terminal agents that read AGENTS.md',
+		);
 		expect(classifyInstructionSource('.cursorrules')).toBe('Cursor');
 		expect(
 			classifyInstructionSource('.github/copilot-instructions.md'),
-		).toBe('Copilot');
+		).toBe('GitHub Copilot (VS Code)');
 		expect(classifyInstructionSource('.windsurfrules')).toBe('Windsurf');
 		expect(classifyInstructionSource('.aider.conf.yml')).toBe('Aider');
 	});
 
 	it('matches nested CLAUDE.md / AGENTS.md and ad-hoc *.agent.md', () => {
 		expect(classifyInstructionSource('packages/x/CLAUDE.md')).toBe(
-			'Claude',
+			'Claude Code',
 		);
-		expect(classifyInstructionSource('apps/web/AGENTS.md')).toBe('AGENTS');
+		expect(classifyInstructionSource('apps/web/AGENTS.md')).toBe(
+			'Codex CLI / OpenCode / Terminal agents that read AGENTS.md',
+		);
 		expect(classifyInstructionSource('docs/onboarding.agent.md')).toBe(
 			'Ad-hoc agent doc',
 		);
@@ -65,7 +71,15 @@ describe('classifyInstructionSource (U3 detection)', () => {
 		).toBeUndefined();
 	});
 
-	it('exposes an extensible, non-empty spec list', () => {
+	it('recognises every instructions file a host in core declares', () => {
+		for (const host of AGENT_HOSTS)
+			for (const path of [
+				...(host.instructions === undefined ? [] : [host.instructions]),
+				...(host.legacyInstructions ?? []),
+			])
+				expect(classifyInstructionSource(path), path).toContain(
+					host.label,
+				);
 		expect(AGENT_INSTRUCTION_SOURCE_SPECS.length).toBeGreaterThan(5);
 	});
 });
@@ -139,9 +153,11 @@ describe('collapseToCanonicalBody (U3 collapse + provenance)', () => {
 		);
 		const body = collapseToCanonicalBody(sources);
 		expect(body).toContain('single source of truth');
-		expect(body).toContain('## From AGENTS.md (AGENTS)');
+		expect(body).toContain(
+			'## From AGENTS.md (Codex CLI / OpenCode / Terminal agents that read AGENTS.md)',
+		);
 		expect(body).toContain('agents rule two');
-		expect(body).toContain('## From CLAUDE.md (Claude)');
+		expect(body).toContain('## From CLAUDE.md (Claude Code)');
 		expect(body).toContain('claude rule one');
 	});
 

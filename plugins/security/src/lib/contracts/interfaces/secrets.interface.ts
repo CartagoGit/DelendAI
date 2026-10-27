@@ -10,6 +10,10 @@ import type { IFinding } from '@delendai/core/contracts';
 export interface ISecretScanOutcome {
 	readonly scanned: number;
 	readonly findings: readonly IFinding[];
+	/** Ignored files that were present and scanned (`.env.local` and the like). */
+	readonly ignoredScanned: readonly string[];
+	/** Ignored files present but not scanned: build output, dependencies, caches. */
+	readonly ignoredSkipped: number;
 }
 
 /** A high-precision secret-detection rule. */
@@ -41,6 +45,11 @@ export interface ISecretScanDeps {
 	) => Promise<readonly string[]>;
 	/** Read a repo-relative file's text, or undefined if unreadable. */
 	readonly readFile: (path: string) => Promise<string | undefined>;
+	/**
+	 * Files git ignores that are present: where a local leak lives. A seam
+	 * without it lists none.
+	 */
+	readonly listIgnored?: () => Promise<readonly string[]>;
 }
 
 /** Options for the `security_secrets` tool builder. */
