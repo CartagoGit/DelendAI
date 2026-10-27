@@ -29,7 +29,7 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
 
 ### S1 — One rule set for redaction and scanning
 - **Status**: pending
-- **Files**: `bun.lock`, `packages/client/package.json`, `packages/client/src/lib/shared/redact-secrets.ts`, `packages/contracts/src/index.ts`, `packages/contracts/src/secret-patterns.ts`, `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts`, `packages/core/tests/src/lib/shared/redact-key-shapes.spec.ts`, `plugins/security/package.json`, `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts`
+- **Files**: `bun.lock`, `packages/client/package.json`, `packages/client/src/lib/shared/redact-secrets.ts`, `packages/contracts/src/index.ts`, `packages/contracts/src/secret-patterns.ts`, `packages/core/src/lib/contracts/constants/secret-patterns.constant.ts`, `packages/core/tests/src/lib/shared/redact-key-shapes.spec.ts`, `plugins/security/package.json`, `plugins/security/src/lib/contracts/constants/secret-rules.constant.ts`, `vitest.config.ts`, `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "The scanner imports the core rule set; one list exists (G119)."
