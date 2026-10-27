@@ -6,6 +6,7 @@
 	"license": "BSD-3-Clause",
 	"description": "Host-agnostic UI shell (dashboard, panels, command palette, brand assets) consumed by every @delendai extension host (vscode today; jetbrains, zed, cursor, antigravity tomorrow). Pure HTML + CSS + vanilla JS, no host imports.",
 	"scripts": {
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/ui-extension",
 		"type": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",
 		"lint": "biome ci src tests"
