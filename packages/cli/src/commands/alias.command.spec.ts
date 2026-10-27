@@ -9,6 +9,7 @@ const BIN_DIR = '/opt/bin';
 const LAUNCH = {
 	canonicalPath: '/opt/delendai/dist/index.js',
 	binDir: BIN_DIR,
+	source: 'argv1',
 } as const;
 
 const ioOver = (files: Record<string, string> = {}) => ({
