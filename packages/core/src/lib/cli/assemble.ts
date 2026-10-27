@@ -1,3 +1,4 @@
+import { detectHostByok } from '../shared/host-model-roster.service';
 import { useConfiguredClients } from '../shared/known-client.helper';
 import { existsSync } from 'node:fs';
 import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
@@ -325,6 +326,12 @@ export const assembleCliConfig = async (
 		...(sharedConfig.clients ?? []),
 		...(personal.layer.clients ?? []),
 	]);
+	// The models this machine's editors serve on the person's keys:
+	// detected at every start, from whatever editors this machine has, so a
+	// clone elsewhere configures itself; deferred, it never slows the boot.
+	setImmediate(() => {
+		void detectHostByok();
+	});
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
