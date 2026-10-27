@@ -42,6 +42,23 @@ describe('proposal-already-implemented — slice parsing', () => {
 		]);
 	});
 
+	it('does not read a slice a reviewer sent back as already shipped', () => {
+		const parsed = collectPendingSlices(
+			slice(
+				[
+					'### S3 — rework after review',
+					'',
+					'- **Status**: pending',
+					'- **Files**: `packages/core/src/a.ts`',
+					'- **Gate**: type',
+					'- shipped-in: `60c3ebc41d53`',
+					'- review-state: changes_requested',
+				].join('\n'),
+			),
+		);
+		expect(parsed).toEqual([]);
+	});
+
 	it('never returns a pending slice with an empty file list when files are declared', () => {
 		// The exact regression: a non-empty Files block must not parse
 		// as zero files, because the caller skips those slices outright.
