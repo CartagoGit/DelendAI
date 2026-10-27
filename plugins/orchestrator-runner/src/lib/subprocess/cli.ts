@@ -63,6 +63,18 @@ const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
 	return { clear: () => clearTimeout(handle) };
 };
 
+/** Whether a line of output is a JSON value (a stream-json event). */
+const isJsonLine = (line: string): boolean => {
+	const trimmed = line.trim();
+	if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return false;
+	try {
+		JSON.parse(trimmed);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 /**
  * Parse one stream-json line into a text delta + optional usage. Unknown or
  * malformed lines are ignored (a provider may emit keep-alive noise).
@@ -186,9 +198,16 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 			let text = '';
 			let usage: IInvokeUsage | undefined;
 			let buffer = '';
+			// Lines that are not stream-json: the answer of a CLI that writes
+			// plain text, which read as an empty success.
+			const plain: string[] = [];
 
 			const promise = new Promise<IInvokeResult>((resolve, reject) => {
 				const drainLine = (line: string): void => {
+					if (!isJsonLine(line)) {
+						if (line.trim().length > 0) plain.push(line);
+						return;
+					}
 					const parsed = parseStreamJsonLine(line);
 					if (parsed.text !== undefined) text += parsed.text;
 					if (parsed.usage !== undefined) usage = parsed.usage;
@@ -223,7 +242,7 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 						return;
 					}
 					resolve({
-						text,
+						text: text.length > 0 ? text : plain.join('\n').trim(),
 						...(usage !== undefined ? { usage } : {}),
 					});
 				});
