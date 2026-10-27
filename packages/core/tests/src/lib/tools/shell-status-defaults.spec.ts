@@ -54,7 +54,7 @@ describe('shell_status over the real probes', () => {
 			snapshot.tools.find((each) => each.name === 'git')?.availability,
 		).toBe('present');
 		expect(snapshot.terminal.shell.name.length).toBeGreaterThan(0);
-	}, 30_000);
+	});
 });
 
 describe('suggested actions', () => {
