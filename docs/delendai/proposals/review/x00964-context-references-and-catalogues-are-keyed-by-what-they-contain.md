@@ -2,14 +2,14 @@
 id: x00964
 title: "Context references and catalogues are keyed by what they contain"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 43e89c30-d606-480b-9b64-f1687185d46e
-last-correlation-id: 43e89c30-d606-480b-9b64-f1687185d46e
-last-transition-from: ready
-last-transition-at: 2026-10-27T09:06:23.135Z
+last-transition-id: 468ed77f-d87b-4323-8269-f1c9f4addf65
+last-correlation-id: 468ed77f-d87b-4323-8269-f1c9f4addf65
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T09:15:19.708Z
 shipped-in:
   - "ceb5903cb"
 ---
@@ -40,6 +40,8 @@ gpt-6.1-sol's contribution to a00095. CTX-01: the delta reference embeds the ful
   - "A delta carries a reference and no second copy (CTX-01)."
   - "Expansion verifies contentHash and refuses a mismatch (CTX-02)."
 - shipped-in: `ceb5903cb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Catalogue and clients
 - **Status**: done
@@ -49,6 +51,8 @@ gpt-6.1-sol's contribution to a00095. CTX-01: the delta reference embeds the ful
   - "The cache key includes the source list (CATALOG-01)."
   - "Clients are resolved per workspace root (ACCOUNT-01)."
 - shipped-in: `ceb5903cb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
