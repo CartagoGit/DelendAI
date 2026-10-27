@@ -152,9 +152,13 @@ export const checkSchema = (
 	const declaredRequired = new Set(schemaRequired(schema));
 	const declaredKeys = new Set(schemaKeys(schema));
 	const seen = new Set<string>();
+	// The last assignment of each key wins at runtime; a required one left
+	// empty there is missing, not present.
+	const lastEmpty = new Map<string, boolean>();
 
 	for (const entry of parsed.entries) {
 		seen.add(entry.key);
+		lastEmpty.set(entry.key, entry.empty);
 		const varSchema: IEnvVarSchema | undefined = schema.vars[entry.key];
 		if (varSchema === undefined) {
 			findings.push(
@@ -175,8 +179,18 @@ export const checkSchema = (
 
 	// Detect missing declared keys.
 	for (const key of declaredKeys) {
-		if (seen.has(key)) continue;
 		const isRequired = declaredRequired.has(key);
+		if (isRequired && seen.has(key) && lastEmpty.get(key) === true) {
+			findings.push(
+				finding({
+					ruleId: 'missing-required',
+					severity: 'high',
+					message: `Required variable "${key}" is set to an empty value in .env.`,
+				}),
+			);
+			continue;
+		}
+		if (seen.has(key)) continue;
 		findings.push(
 			finding({
 				ruleId: isRequired ? 'missing-required' : 'missing-typed',

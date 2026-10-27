@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import {
 	POWERSHELL_READ_SCRIPT,
 	POWERSHELL_WRITE_SCRIPT,
@@ -20,6 +21,10 @@ import { buildRemoteCommand } from '../helpers/shell-quoting.helper';
 import { assertSshOptions, buildSshPrefix } from '../helpers/ssh-args.helper';
 import { createSpawnProcessRunner } from '../runners/spawn-process-runner.service';
 import { CommandOnlyEnvironment } from './command-only-environment.service';
+import {
+	DEFAULT_SSH_ALLOWED_PROGRAMS,
+	SSH_PROBE_PROGRAMS,
+} from '../contracts/constants/ssh.constant';
 
 /**
  * Runs commands on a remote host over ssh. Each command is its own
@@ -57,7 +62,7 @@ export class SshExecutionEnvironment extends CommandOnlyEnvironment {
 	}
 
 	async prepare(): Promise<IPrepareResult> {
-		const probe = await this.exec([
+		const probe = await this.runRemote([
 			this.dialect() === 'posix' ? 'true' : 'hostname',
 		]);
 		return {
@@ -71,7 +76,30 @@ export class SshExecutionEnvironment extends CommandOnlyEnvironment {
 		};
 	}
 
+	/**
+	 * A caller's command, held to the allowlist: quoting keeps its data from
+	 * becoming syntax, the allowlist keeps it from naming any program the
+	 * remote account can run.
+	 */
 	async exec(
+		command: readonly string[],
+		options: IExecOptions = {},
+	): Promise<IExecResult> {
+		const program = basename(command[0] ?? '');
+		const allowed = [
+			...(this.options.allowedPrograms ?? DEFAULT_SSH_ALLOWED_PROGRAMS),
+			...SSH_PROBE_PROGRAMS,
+		];
+		if (!allowed.includes(program)) {
+			throw new Error(
+				`"${program}" is not an allowed program for this host (${allowed.join(', ')})`,
+			);
+		}
+		return this.runRemote(command, options);
+	}
+
+	/** A command this adapter builds itself: probes, file moves, env reads. */
+	private async runRemote(
 		command: readonly string[],
 		options: IExecOptions = {},
 	): Promise<IExecResult> {
@@ -100,7 +128,7 @@ export class SshExecutionEnvironment extends CommandOnlyEnvironment {
 
 	override async putFile(path: string, content: string): Promise<void> {
 		if (this.dialect() === 'posix') return super.putFile(path, content);
-		const result = await this.exec(
+		const result = await this.runRemote(
 			['powershell', '-NoProfile', '-Command', POWERSHELL_WRITE_SCRIPT],
 			{ stdin: content, env: { [REMOTE_PATH_VARIABLE]: path } },
 		);
@@ -111,7 +139,7 @@ export class SshExecutionEnvironment extends CommandOnlyEnvironment {
 
 	override async getFile(path: string): Promise<string> {
 		if (this.dialect() === 'posix') return super.getFile(path);
-		const result = await this.exec(
+		const result = await this.runRemote(
 			['powershell', '-NoProfile', '-Command', POWERSHELL_READ_SCRIPT],
 			{ env: { [REMOTE_PATH_VARIABLE]: path } },
 		);
@@ -128,8 +156,8 @@ export class SshExecutionEnvironment extends CommandOnlyEnvironment {
 	async env(): Promise<IExecutionEnvVariables> {
 		const listing =
 			this.dialect() === 'posix'
-				? await this.exec(['env'])
-				: await this.exec(['cmd', '/c', 'set']);
+				? await this.runRemote(['env'])
+				: await this.runRemote(['cmd', '/c', 'set']);
 		if (listing.exitCode !== 0) {
 			throw new Error(
 				`could not read the remote environment: ${listing.stderr.trim()}`,

@@ -101,6 +101,12 @@ export interface IKpiAggregationOptions {
 		workspaceRootAbs: string,
 	) => Promise<IKpiWorkflowSection | undefined>;
 	readonly windowDays?: number;
+	/**
+	 * The exact span, in days, usage is counted over when it is not a whole
+	 * number of days (a query's from..to); `windowDays` stays the whole
+	 * days reported.
+	 */
+	readonly usageSpanDays?: number;
 	readonly maxBytes?: number;
 	readonly pathExists?: (path: string) => boolean | Promise<boolean>;
 	readonly readUsageSummary?: (

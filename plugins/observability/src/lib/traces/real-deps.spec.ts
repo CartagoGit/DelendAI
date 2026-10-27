@@ -118,6 +118,19 @@ describe('realReadTracesDeps', () => {
 		expect(records.map((r) => r.traceId)).toEqual(['t2', 't3']);
 	});
 
+	it('keeps the newest records across day files, whichever file is read first', async () => {
+		writeJsonl('2026-01-01.jsonl', [
+			{ traceId: 'old', ts: '2026-01-01T10:00:00Z' },
+		]);
+		writeJsonl('2026-01-02.jsonl', [
+			{ traceId: 'new-a', ts: '2026-01-02T09:00:00Z' },
+			{ traceId: 'new-b', ts: '2026-01-02T10:00:00Z' },
+		]);
+		const deps = realReadTracesDeps(root);
+		const recent = await deps.listTraceRecords({ limit: 2 });
+		expect(recent.map((each) => each.traceId)).toEqual(['new-a', 'new-b']);
+	});
+
 	it('reads traceId/service through the nested meta.result.structuredContent fallback', async () => {
 		writeJsonl('a.jsonl', [
 			{

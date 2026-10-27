@@ -105,6 +105,7 @@ describe('shell_status tool', () => {
 
 	it('combines terminal capabilities and tool availability', async () => {
 		const snapshot = await createShellStatusSnapshot({
+			workspaceRoot: process.cwd(),
 			probe: fakeProbe,
 			availability,
 			now: () => 42,
@@ -118,6 +119,7 @@ describe('shell_status tool', () => {
 	it('declares the orientation registration', () => {
 		const registration = buildShellStatusToolRegistration({
 			namespacePrefix: 'delendai',
+			workspaceRoot: process.cwd(),
 		});
 		expect(registration.id).toBe('shell_status');
 		expect(registration.tags).toEqual(['orientation', 'shell']);

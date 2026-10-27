@@ -26,6 +26,7 @@ import type {
 	IInvokeResult,
 	IKindInvoker,
 } from '../invoke/types';
+import type { IAccountApiCredential } from '../contracts/interfaces/account-environment.interface';
 
 /** Minimal structural view of a fetch Response the invoker needs. */
 export interface IHttpResponse {
@@ -53,6 +54,11 @@ export interface IApiInvokerOptions {
 	readonly fetchFn: HttpFetch;
 	/** Reads the provider key from the env var named on the decision. */
 	readonly readEnv?: (name: string) => string | undefined;
+	/**
+	 * The key for this request under its account's policy. When given it
+	 * decides, refusals included; without it the entry's variable is read.
+	 */
+	readonly credentialFor?: (request: IInvokeRequest) => IAccountApiCredential;
 	/** Optional sink for header-derived quota samples. */
 	readonly quotaSink?: QuotaSink;
 	/** The rate-limit window the provider's headers describe. Default hourly. */
@@ -117,10 +123,18 @@ export const createApiInvoker = (options: IApiInvokerOptions): IKindInvoker => {
 			}
 			const invoke = request.invoke;
 			const controller = new AbortController();
-			const key = readEnv(invoke.envVar);
+			const credential: IAccountApiCredential = options.credentialFor?.(
+				request,
+			) ?? {
+				kind: 'key',
+				key: readEnv(invoke.envVar) ?? '',
+			};
 
 			const promise = (async (): Promise<IInvokeResult> => {
-				if (key === undefined || key.length === 0) {
+				if (credential.kind === 'refused')
+					throw new Error(credential.reason);
+				const key = credential.key;
+				if (key.length === 0) {
 					throw new Error(
 						`api provider missing env key ${invoke.envVar}`,
 					);
