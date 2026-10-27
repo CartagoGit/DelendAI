@@ -12,7 +12,7 @@ date: 2026-10-24
 
 ## goal
 
-AGENT_HOSTS is the only list of hosts (scaffold, runtime detection, usage tracking, instructions), every declared host ships its material, the provider-model bridge is per conversation, the supervisor forwards SIGINT and SIGTERM, a long-lived server notices it runs stale rules, and read-only commands create no cache.
+AGENT_HOSTS is the only list of hosts (scaffold, runtime detection, usage tracking, instructions), every declared host ships its material, the provider-model bridge is per conversation, the supervisor forwards SIGINT and SIGTERM, and a long-lived server notices it runs stale rules (read-only commands creating a cache moved to x00984).
 
 ## why
 
