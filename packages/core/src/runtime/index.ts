@@ -23,6 +23,7 @@ export {
 } from '../lib/shared/model-ranking.service';
 // Which known vendor clients this machine has, and whether each can work.
 export {
+	clientLogin,
 	clientVerdict,
 	discoverClients,
 	listClientModels,

@@ -31,6 +31,7 @@ import {
 	type IClientVerdict,
 } from '@delendai/core/contracts';
 import {
+	clientLogin,
 	clientVerdict,
 	withFileMutex,
 	writeFileAtomic,
@@ -63,6 +64,8 @@ export interface IDiscoveredProvider {
 	readonly evidence?: IClientDiscovery['evidence'];
 	/** For a client that hosts several, the models it says it reaches. */
 	readonly models?: IClientModels;
+	/** How it is logged in and paid, as its own login answer says; absent when it does not say. */
+	readonly login?: IClientDiscovery['login'];
 }
 
 /** A provider CLI NOT on PATH, with structured install guidance (I4). */
@@ -157,7 +160,9 @@ export const probeLogin = async (
 	id: string,
 	runner: ProbeRunner,
 	cwd: string,
-): Promise<Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence'>> => {
+): Promise<
+	Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence' | 'login'>
+> => {
 	const client = knownClientOf(id);
 	const command = AUTH_STATUS_CMD[id];
 	if (client === undefined || command === undefined) {
@@ -172,6 +177,9 @@ export const probeLogin = async (
 				? parseAuthTier(answer.output)
 				: null,
 		...clientVerdict(client, answer),
+		...(clientLogin(client, answer) === undefined
+			? {}
+			: { login: clientLogin(client, answer) }),
 	};
 };
 
@@ -235,7 +243,19 @@ export interface IJsonPatchOp {
  */
 export const readConfirmedProviders = async (
 	configPath: string,
-): Promise<readonly { readonly id?: unknown }[] | null> => {
+): Promise<readonly { readonly id?: unknown }[] | null> =>
+	readConfirmedList(configPath, 'providers');
+
+/** The confirmed config's `accounts`, read the same way. */
+export const readConfirmedAccounts = async (
+	configPath: string,
+): Promise<readonly { readonly accountId?: unknown }[] | null> =>
+	readConfirmedList(configPath, 'accounts');
+
+const readConfirmedList = async (
+	configPath: string,
+	key: 'providers' | 'accounts',
+): Promise<readonly Record<string, unknown>[] | null> => {
 	let raw: string;
 	try {
 		raw = await readFile(configPath, 'utf8');
@@ -243,14 +263,42 @@ export const readConfirmedProviders = async (
 		return null;
 	}
 	try {
-		const parsed = JSON.parse(raw) as { providers?: unknown };
-		if (Array.isArray(parsed.providers)) {
-			return parsed.providers as readonly { id?: unknown }[];
-		}
-		return null;
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
+		const list = parsed[key];
+		return Array.isArray(list)
+			? (list as readonly Record<string, unknown>[])
+			: null;
 	} catch {
 		return null;
 	}
+};
+
+/**
+ * The account a discovered CLI runs on, when its own login answer says how
+ * it is logged in and paid and says it can work; `undefined` otherwise —
+ * an account is never drafted from a guess. Off for unattended work until
+ * the person turns it on.
+ */
+export const draftLoginAccount = (
+	discovered: IDiscoveredProvider,
+): Record<string, unknown> | undefined => {
+	const client = knownClientOf(discovered.id);
+	if (
+		client === undefined ||
+		discovered.login === undefined ||
+		discovered.verdict !== 'usable'
+	)
+		return undefined;
+	const accountId = `${discovered.id}-login`;
+	return {
+		accountId,
+		vendor: client.vendor,
+		displayName: client.label,
+		credentialMode: discovered.login.credentialMode,
+		billingMode: discovered.login.billingMode,
+		quotaGroups: [accountId],
+		permittedAutomation: false,
+	};
 };
 
 /**
@@ -282,13 +330,26 @@ export const draftProviderEntry = (
  *   (`{op:'add', path:'/providers/-', value:<entry>}`). Existing ids are
  *   left untouched — re-running the wizard is non-destructive (§3).
  *
+ * - Given the confirmed `accounts` (or `null` when there are none yet), each
+ *   detected CLI whose login answer says how it is logged in and paid also
+ *   gets its account under `/accounts`, and its provider entry names it:
+ *   a multi-account roster patched `/providers` only, and every provider
+ *   ran on no account.
+ *
  * The patch is RETURNED to the caller; the wizard never applies it itself.
  */
 export const buildProvidersPatch = (
 	confirmedProviders: readonly { readonly id?: unknown }[] | null,
 	detected: readonly IDiscoveredProvider[],
+	confirmedAccounts?: readonly { readonly accountId?: unknown }[] | null,
 ): readonly IJsonPatchOp[] => {
 	const ops: IJsonPatchOp[] = [];
+	const accountOps: IJsonPatchOp[] = [];
+	const existingAccounts = new Set(
+		(confirmedAccounts ?? [])
+			.map((entry) => entry.accountId)
+			.filter((id): id is string => typeof id === 'string'),
+	);
 	if (confirmedProviders === null) {
 		ops.push({ op: 'add', path: '/providers', value: [] });
 	}
@@ -299,13 +360,39 @@ export const buildProvidersPatch = (
 	);
 	for (const provider of detected) {
 		if (existingIds.has(provider.id)) continue;
+		const account =
+			confirmedAccounts === undefined
+				? undefined
+				: draftLoginAccount(provider);
+		const accountId =
+			typeof account?.accountId === 'string'
+				? account.accountId
+				: undefined;
+		if (
+			account !== undefined &&
+			accountId !== undefined &&
+			!existingAccounts.has(accountId)
+		) {
+			accountOps.push({ op: 'add', path: '/accounts/-', value: account });
+			existingAccounts.add(accountId);
+		}
 		ops.push({
 			op: 'add',
 			path: '/providers/-',
-			value: draftProviderEntry(provider),
+			value: {
+				...draftProviderEntry(provider),
+				...(accountId === undefined ? {} : { accountId }),
+			},
 		});
 	}
-	return ops;
+	if (accountOps.length === 0) return ops;
+	return [
+		...(confirmedAccounts === null
+			? [{ op: 'add' as const, path: '/accounts', value: [] }]
+			: []),
+		...accountOps,
+		...ops,
+	];
 };
 
 /**

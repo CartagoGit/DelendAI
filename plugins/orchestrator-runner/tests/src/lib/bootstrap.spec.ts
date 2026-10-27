@@ -116,6 +116,56 @@ describe('buildProvidersPatch (RFC 6902, CRITICAL I13)', () => {
 		expect((provider.value as { id: string }).id).toBe('codex');
 	});
 
+	it('adds the account a usable CLI says it is logged in with, and points its provider at it', () => {
+		const loggedIn: readonly IDiscoveredProvider[] = [
+			{
+				id: 'claude',
+				cliPath: '/c',
+				version: null,
+				authTier: 'Max',
+				verdict: 'usable',
+				login: {
+					credentialMode: 'official-subscription-login',
+					billingMode: 'subscription-included',
+				},
+			},
+			// Says nothing about its login: no account is drafted from a guess.
+			{
+				id: 'codex',
+				cliPath: '/x',
+				version: null,
+				authTier: null,
+				verdict: 'usable',
+			},
+		];
+		const ops = buildProvidersPatch(null, loggedIn, null);
+		expect(ops.map((op) => op.path)).toEqual([
+			'/accounts',
+			'/accounts/-',
+			'/providers',
+			'/providers/-',
+			'/providers/-',
+		]);
+		expect(ops[1]?.value).toMatchObject({
+			accountId: 'claude-login',
+			vendor: 'anthropic',
+			credentialMode: 'official-subscription-login',
+			billingMode: 'subscription-included',
+			permittedAutomation: false,
+		});
+		expect(ops[3]?.value).toMatchObject({
+			id: 'claude',
+			accountId: 'claude-login',
+		});
+		expect(ops[4]?.value).not.toHaveProperty('accountId');
+		const again = buildProvidersPatch([], loggedIn, [
+			{ accountId: 'claude-login' },
+		]);
+		expect(again.filter((op) => op.path.startsWith('/accounts'))).toEqual(
+			[],
+		);
+	});
+
 	it('emits well-typed cli provider entries with placeholders to edit', () => {
 		const entry = draftProviderEntry(detected[0] as IDiscoveredProvider);
 		expect(entry.kind).toBe('cli');

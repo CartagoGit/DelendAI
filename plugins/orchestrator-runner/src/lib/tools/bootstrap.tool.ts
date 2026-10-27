@@ -25,6 +25,7 @@ import {
 	composeBootstrapBrief,
 	discoverProviders,
 	probeLogin,
+	readConfirmedAccounts,
 	readConfirmedProviders,
 	writeRosterDraft,
 	type IDiscoveredProvider,
@@ -115,7 +116,11 @@ export const buildBootstrapProvidersRegistration = (
 				const confirmed = await readConfirmedProviders(
 					options.configPath,
 				);
-				const configPatch = buildProvidersPatch(confirmed, detected);
+				const configPatch = buildProvidersPatch(
+					confirmed,
+					detected,
+					await readConfirmedAccounts(options.configPath),
+				);
 
 				return toolJson({
 					consent,
@@ -124,7 +129,7 @@ export const buildBootstrapProvidersRegistration = (
 					rosterDraftPath: options.rosterDraftPath,
 					configPatch,
 					brief: composeBootstrapBrief(enriched),
-					note: 'This is a draft. Review `configPatch` and apply it to delendai.config.json#providers only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
+					note: 'This is a draft. Review `configPatch` and apply it to delendai.config.json (#accounts and #providers) only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
 				});
 			},
 		);
