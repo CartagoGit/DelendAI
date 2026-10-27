@@ -83,7 +83,7 @@ describe('usage-tracking plugin (register + hooks)', () => {
 		const row = rows[0]!;
 		expect(row.plugin).toBe('proposals');
 		expect(row.tool).toBe('auto_work');
-		expect(row.agent.kind).toBe('claude-code');
+		expect(row.agent.kind).toBe('claude');
 		expect(row.agent.extension).toBe('claude-code');
 		expect(row.sessionId).toBe('s_call');
 		expect(row.outcome).toBe('success');

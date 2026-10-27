@@ -200,7 +200,12 @@ export type {
 // The vendor clients delendai knows, once: discovery, install hints and
 // account isolation all read it.
 export { KNOWN_CLIENTS } from '../lib/contracts/constants/known-clients.constant';
-export { AGENT_HOST_SLUGS } from '../lib/contracts/constants/agent-hosts.constant';
+export {
+	AGENT_HOST_INSTRUCTION_FILES,
+	AGENT_HOST_SLUGS,
+	AGENT_HOSTS,
+} from '../lib/contracts/constants/agent-hosts.constant';
+export { agentHostOfName } from '../lib/hosts/agent-host-name.helper';
 // Vendor tools that hold a plan login, and the account sources' data.
 export { PLAN_TOOLS } from '../lib/contracts/constants/account-sources.constant';
 export type {
