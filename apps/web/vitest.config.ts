@@ -1,0 +1,64 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vitest/config';
+
+import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import { LOCAL_ALIASES } from './scripts/lib/local-aliases.mjs';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = resolve(here, '../..');
+
+/**
+ * Vitest config for `apps/web/`. The root `vitest.config.ts` aggregates
+ * this project alongside the core packages and plugins. Only the
+ * generation/utility scripts (gen-skills, gen-capabilities) and the
+ * `__tests__/` folder are picked up here — Astro components/pages
+ * are not unit-tested today.
+ */
+export default defineConfig({
+	resolve: {
+		alias: [
+			...workspaceAliases(workspaceRoot),
+			...Object.entries(LOCAL_ALIASES).map(([find, replacement]) => ({
+				find,
+				replacement,
+			})),
+		],
+	},
+	test: {
+		// Measured in isolation on 2026-09-14: the slowest
+		// test of this suite costs 138 ms (`resolveI18nDescriptions includes a 12-language block for every regi...`).
+		// A full run starts ~1,466 spec files at once, so a ceiling under
+		// 6x a measured cost is a coin flip rather than a decision.
+		testTimeout: 30_000,
+		hookTimeout: 30_000,
+		name: 'apps-web',
+		include: [
+			'scripts/**/*.spec.ts',
+			// f00030 S3 — pure helpers under `src/lib/` are unit-tested here.
+			'src/**/*.spec.ts',
+			'tests/**/*.spec.ts',
+		],
+		exclude: ['**/node_modules/**', '**/dist/**'],
+		coverage: {
+			provider: 'v8',
+			include: [
+				'src/lib/**/*.ts',
+				'src/data/**/*.ts',
+				'src/components/ui/**/*.ts',
+				'src/i18n/tools/index.ts',
+				'scripts/**/*.ts',
+			],
+			exclude: [
+				'**/*.spec.ts',
+				'**/__tests__/**',
+				'src/generated/**/*.generated.ts',
+				'scripts/lib/ensure-manifests.globalsetup.ts',
+			],
+		},
+		environment: 'node',
+		globals: false,
+		setupFiles: sharedSetupFiles(workspaceRoot),
+		globalSetup: ['./scripts/lib/ensure-manifests.globalsetup.ts'],
+	},
+});
