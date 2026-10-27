@@ -126,6 +126,47 @@ describe('discoverClients', () => {
 		);
 		expect(without[0]?.verdict).toBe('unknown');
 	});
+
+	it('tells each client as it is asked and answered, and reads a runner that throws as not installed', async () => {
+		const progress: { readonly command: string; readonly phase: string }[] =
+			[];
+		const found = await discoverClients(
+			async () => {
+				throw new Error('spawn failed');
+			},
+			'/ws',
+			{
+				login: true,
+				onClient: ({ command, phase }) => {
+					progress.push({ command, phase });
+				},
+			},
+			[client('claude')],
+		);
+		expect(found[0]?.verdict).toBe('not-installed');
+		expect(progress).toEqual([
+			{ command: 'claude', phase: 'asking' },
+			{ command: 'claude', phase: 'answered' },
+		]);
+	});
+
+	it('keeps an installed client whose version and login answers fail', async () => {
+		const found = await discoverClients(
+			async (command) => {
+				if (command === 'command -v claude')
+					return { code: 0, output: '/bin/claude' };
+				throw new Error('no answer');
+			},
+			'/ws',
+			{ login: true },
+			[client('claude')],
+		);
+		expect(found[0]).toMatchObject({
+			installed: true,
+			path: '/bin/claude',
+			version: null,
+		});
+	});
 });
 
 describe('the evidence a client gives', () => {
