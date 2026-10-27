@@ -32,3 +32,11 @@ export interface IConfigDiff {
 	readonly removes: readonly IConfigDiffStep[];
 	readonly keeps: readonly IConfigDiffStep[];
 }
+
+/** What the diff knows about plugins beyond the recommended set. */
+export interface IConfigDiffContext {
+	/** Every scored fit before limit / minScore were applied. */
+	readonly ranked?: readonly IPluginFit[];
+	/** Ids the catalog can recommend from. */
+	readonly catalogIds?: ReadonlySet<string>;
+}

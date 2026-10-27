@@ -62,6 +62,17 @@ describe('scoreProvider', () => {
 });
 
 describe('scoreReport', () => {
+	it('names the cheapest passing provider even when a pricier one ranks first', () => {
+		const report = scoreReport([
+			attempt('steady', 4, 0.01, true),
+			attempt('steady', 4, 0.01, true),
+			attempt('thrifty', 1, 0.001, true),
+			attempt('thrifty', 1, 0.001, false),
+		]);
+		expect(report.rows[0]?.providerId).toBe('steady');
+		expect(report.winner).toBe('thrifty');
+	});
+
 	it('ranks the cheapest passing provider first', () => {
 		const report = scoreReport([
 			attempt('cheap', 1, 0.02, true),
