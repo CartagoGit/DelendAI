@@ -47,6 +47,7 @@ const TriageListOutputSchema = z
 					number: z.number(),
 					title: z.string(),
 					labels: z.array(z.string()),
+					state: z.string(),
 					updatedAt: z.string(),
 				})
 				.strict(),
@@ -85,6 +86,7 @@ export const buildTriageListRegistration = (
 							number: issue.number,
 							title: issue.title,
 							labels: [...issue.labels],
+							state: issue.state,
 							updatedAt: issue.updatedAt,
 						})),
 					}),

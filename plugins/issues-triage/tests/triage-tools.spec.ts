@@ -47,6 +47,7 @@ const fakeGh = (
 						number: 7,
 						title: 'Crash',
 						labels: [{ name: 'bug' }],
+						state: 'OPEN',
 						updatedAt: '2026-09-24',
 					},
 				]),
@@ -110,11 +111,13 @@ const payload = (result: unknown): Record<string, unknown> => {
 };
 
 describe('triage_list', () => {
-	it('lists the open issues with their label names', async () => {
+	it('lists the open issues with their title, label names and state', async () => {
 		const { found } = await handlers(fakeGh().exec);
 		expect(payload(await found.get('triage_list')?.({}))).toMatchObject({
 			repo: 'o/r',
-			open: [{ number: 7, labels: ['bug'] }],
+			open: [
+				{ number: 7, title: 'Crash', labels: ['bug'], state: 'open' },
+			],
 		});
 	});
 
