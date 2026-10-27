@@ -92,6 +92,7 @@ export interface DelendaiAdaptiveOptimizerOptimizeRunOutput {
 		latencyTax: number;
 		permissionRisk: number;
 	}[];
+	spent: number;
 	budget: number;
 	consent: boolean;
 	bytes: number;

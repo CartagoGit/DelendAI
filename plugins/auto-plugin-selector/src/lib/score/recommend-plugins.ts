@@ -41,6 +41,8 @@ export type {
 const PACK_BONUS = 1;
 const LANGUAGE_BONUS = 0.5;
 const SHAPE_BONUS = 0.5;
+const TASK_BONUS = 0.5;
+const MAX_TASK_MATCHES = 3;
 const UNMATCHED_PENALTY = -0.05;
 const MAX_PERMISSION_RISK = 5;
 
@@ -70,6 +72,27 @@ const SHAPE_MAP: Readonly<
 	isCliTool: 'cli',
 	hasBackend: 'backend',
 	hasTests: 'tests',
+};
+
+const wordsOf = (text: string): readonly string[] =>
+	text
+		.toLowerCase()
+		.split(/[^a-z0-9]+/u)
+		.filter((word) => word.length >= 3);
+
+/** Words of the task hint that the candidate's id, tags or summary also carry. */
+const taskMatches = (
+	taskHint: string | undefined,
+	candidate: IPluginCandidate,
+): readonly string[] => {
+	if (taskHint === undefined) return [];
+	const surface = new Set(
+		wordsOf([candidate.id, ...candidate.tags, candidate.summary].join(' ')),
+	);
+	return [...new Set(wordsOf(taskHint))]
+		.filter((word) => surface.has(word))
+		.sort()
+		.slice(0, MAX_TASK_MATCHES);
 };
 
 /** Resolve the effective weights by overlaying the host's overrides. */
@@ -126,6 +149,13 @@ const scoreOne = (
 				matchedTags.add(tag);
 			}
 		}
+	}
+
+	// Task hint: words the hint shares with the candidate
+	for (const word of taskMatches(signals.taskHint, candidate)) {
+		matchRaw += TASK_BONUS;
+		reasons.add(`task:${word}`);
+		matchedTags.add(word);
 	}
 
 	// Unmatched penalty

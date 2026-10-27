@@ -311,6 +311,26 @@ const finalizeOutput = (
 	};
 };
 
+/**
+ * Walk the ranking best-first and stop before the cumulative token cost
+ * would exceed the budget: the ceiling governs what the plan keeps.
+ */
+const withinBudget = (
+	scored: readonly IOptimizationRankedCandidate[],
+	tokenCostById: ReadonlyMap<string, number>,
+	budget: number,
+): { ranked: IOptimizationRankedCandidate[]; spent: number } => {
+	const ranked: IOptimizationRankedCandidate[] = [];
+	let spent = 0;
+	for (const row of scored) {
+		const cost = tokenCostById.get(row.id) ?? 0;
+		if (spent + cost > budget) break;
+		spent += cost;
+		ranked.push(row);
+	}
+	return { ranked, spent };
+};
+
 export const buildOptimizeRunPayload = async (
 	args: IOptimizeRunToolArgs,
 	options: IOptimizeRunRuntimeOptions,
@@ -336,7 +356,8 @@ export const buildOptimizeRunPayload = async (
 	const optionalExperimentHooksAvailable =
 		typeof runEvalHarness === 'function' &&
 		typeof runProfileCapture === 'function';
-	const ranked: IOptimizationRankedCandidate[] = args.candidates
+	const tokenCostById = new Map<string, number>();
+	const scored: IOptimizationRankedCandidate[] = args.candidates
 		.map((candidate) => {
 			const signals = buildSignals(candidate, args, {
 				rankedProviders,
@@ -345,6 +366,7 @@ export const buildOptimizeRunPayload = async (
 				usageMirrorAvailable,
 				optionalExperimentHooksAvailable,
 			});
+			tokenCostById.set(candidate.id, signals.tokenCost);
 			return {
 				id: candidate.id,
 				...scoreOptimizationCandidate(candidate, signals),
@@ -354,9 +376,11 @@ export const buildOptimizeRunPayload = async (
 			(left, right) =>
 				right.score - left.score || left.id.localeCompare(right.id),
 		);
+	const { ranked, spent } = withinBudget(scored, tokenCostById, args.budget);
 	return finalizeOutput(
 		{
 			ranked,
+			spent,
 			budget: args.budget,
 			consent: args.consent,
 		},
