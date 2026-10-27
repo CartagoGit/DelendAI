@@ -208,12 +208,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 	{
 		"id": "browser",
 		"package": "@delendai/browser",
-		"summary": "Headless browser automation tools.",
+		"summary": "Headless browser automation tools; they need Playwright installed and answer with an install hint without it.",
 		"tags": [
 			"browser",
 			"automation"
 		],
-		"maturity": "stable",
+		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
 			"full"
