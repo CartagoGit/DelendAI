@@ -2,10 +2,14 @@
 id: x00983
 title: "Budget specs measure a complete boot, never a degraded one"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
+last-transition-id: ede889c2-3614-425a-a397-f4a47ad36912
+last-correlation-id: ede889c2-3614-425a-a397-f4a47ad36912
+last-transition-from: ready
+last-transition-at: 2026-10-27T10:32:13.764Z
 ---
 
 # x00983 — Budget specs measure a complete boot, never a degraded one
