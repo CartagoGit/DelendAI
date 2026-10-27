@@ -2,14 +2,14 @@
 id: x00975
 title: "The selectors and optimizers use every input they accept"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
-last-correlation-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
-last-transition-from: ready
-last-transition-at: 2026-10-27T17:52:48.110Z
+last-transition-id: 31fc3cf2-70a5-4d79-b63e-c68bea7e539a
+last-correlation-id: 31fc3cf2-70a5-4d79-b63e-c68bea7e539a
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T17:55:39.844Z
 shipped-in:
   - "1f0c5d911"
 ---
@@ -42,6 +42,8 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "The winner is the cheapest passing provider (D106)."
 - notes: optimize_run keeps ranked candidates while their cumulative token cost stays within budget and reports `spent`; a remove names whether the plugin is outside the catalog, cut by limit/minScore, or has no positive fit; taskHint words matching a plugin's id, tags or summary add score; auto_recommend maps taskType to a ranking mode; the eval_report winner is the passing provider with the lowest cost per attempt. optimize_run plus the auto-agent-selector, prompt-eval and plugins_recommend tool files needed no description change.
 - shipped-in: `1f0c5d911`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — agent-orchestrator, triage and changelog
 - **Status**: done
@@ -53,6 +55,8 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "release_plan runs with the default options (D59)."
 - notes: plan and classify now forward files and facts to the classifier and an override re-plans through the named mode so its steps change; triage_run returns the draft when it is not written and reports failed effects in `problems` with ok=false; release_plan derives its publish order from the workspace packages when none is injected. No agent-orchestrator description or output schema grew (execution_policy and the classifier already took files and facts).
 - shipped-in: `1f0c5d911`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
