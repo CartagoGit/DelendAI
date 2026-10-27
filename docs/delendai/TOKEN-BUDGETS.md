@@ -92,7 +92,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,229 | n/a | within hard | n/a | none |
 | full | full | native | managed | tokens-gate | 39 | 185 | 194,775 | 48694 | 150,004 | 15,771 | 46,477 | 103,527 | 10,929 | 5,614 | n/a | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,408 | n/a | within hard | n/a | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 235 | 301,742 | 75436 | 241,316 | 22,606 | 69,339 | 171,977 | 79,884 | 6,860 | 151 | within hard | over warning (70,000B) | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 235 | 302,382 | 75596 | 241,956 | 22,606 | 69,643 | 172,313 | 79,884 | 6,860 | 151 | within hard | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,439 | n/a | within hard | n/a | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 103 | 114,004 | 28501 | 89,016 | 8,896 | 27,641 | 61,375 | 8,663 | 3,164 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 982 | n/a | n/a | n/a | none |
@@ -200,7 +200,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | full | native | managed | tokens-gate | observability | 5 | 5,734 | 423 | 920 | 3,562 | 0 | 250 | 385 | 2.9% |
 | full | adaptive | managed | dynamic-client | core | 7 | 6,298 | 902 | 997 | 3,323 | 0 | 371 | 539 | 100.0% |
 | dogfood | native | managed | tokens-gate | core | 31 | 48,378 | 3,340 | 12,817 | 27,452 | 0 | 1,639 | 2,387 | 16.0% |
-| dogfood | native | managed | tokens-gate | adaptive-optimizer | 3 | 7,693 | 354 | 1,929 | 4,894 | 0 | 150 | 231 | 2.6% |
+| dogfood | native | managed | tokens-gate | adaptive-optimizer | 3 | 7,693 | 354 | 1,929 | 4,894 | 0 | 150 | 231 | 2.5% |
 | dogfood | native | managed | tokens-gate | audit | 4 | 9,736 | 800 | 1,757 | 6,557 | 0 | 200 | 308 | 3.2% |
 | dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 2.3% |
 | dogfood | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,726 | 154 | 1,148 | 2,248 | 0 | 50 | 77 | 1.2% |
@@ -213,7 +213,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | diagram | 4 | 3,277 | 337 | 984 | 1,317 | 0 | 200 | 308 | 1.1% |
 | dogfood | native | managed | tokens-gate | docs | 4 | 2,755 | 235 | 486 | 1,420 | 0 | 200 | 308 | 0.9% |
 | dogfood | native | managed | tokens-gate | env | 2 | 3,480 | 227 | 546 | 2,402 | 0 | 100 | 154 | 1.2% |
-| dogfood | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 1.6% |
+| dogfood | native | managed | tokens-gate | forge | 11 | 4,682 | 641 | 2,520 | 0 | 0 | 550 | 671 | 1.5% |
 | dogfood | native | managed | tokens-gate | git | 8 | 4,575 | 442 | 586 | 2,365 | 0 | 400 | 616 | 1.5% |
 | dogfood | native | managed | tokens-gate | i18n | 2 | 2,577 | 174 | 126 | 1,968 | 0 | 100 | 154 | 0.9% |
 | dogfood | native | managed | tokens-gate | impact-analysis | 2 | 1,904 | 248 | 300 | 1,018 | 0 | 100 | 154 | 0.6% |
@@ -223,10 +223,10 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | logs | 9 | 6,919 | 710 | 2,548 | 2,307 | 0 | 450 | 693 | 2.3% |
 | dogfood | native | managed | tokens-gate | memory | 9 | 8,202 | 553 | 2,342 | 3,930 | 0 | 450 | 693 | 2.7% |
 | dogfood | native | managed | tokens-gate | notification | 2 | 1,872 | 196 | 227 | 1,124 | 0 | 100 | 154 | 0.6% |
-| dogfood | native | managed | tokens-gate | orchestrator-runner | 13 | 22,444 | 1,248 | 5,974 | 12,988 | 0 | 650 | 1,001 | 7.4% |
+| dogfood | native | managed | tokens-gate | orchestrator-runner | 13 | 23,084 | 1,248 | 6,278 | 13,324 | 0 | 650 | 1,001 | 7.6% |
 | dogfood | native | managed | tokens-gate | agent-orchestrator | 5 | 10,929 | 554 | 1,967 | 7,589 | 0 | 250 | 385 | 3.6% |
 | dogfood | native | managed | tokens-gate | perf | 3 | 3,648 | 281 | 969 | 1,952 | 0 | 150 | 215 | 1.2% |
-| dogfood | native | managed | tokens-gate | proposals | 50 | 79,884 | 4,851 | 15,549 | 51,123 | 0 | 2,620 | 3,850 | 26.5% |
+| dogfood | native | managed | tokens-gate | proposals | 50 | 79,884 | 4,851 | 15,549 | 51,123 | 0 | 2,620 | 3,850 | 26.4% |
 | dogfood | native | managed | tokens-gate | project-kpis | 1 | 4,093 | 118 | 996 | 2,816 | 0 | 50 | 77 | 1.4% |
 | dogfood | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.2% |
 | dogfood | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 1.9% |
@@ -289,7 +289,7 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 
 | Tool | Owner | Total Bytes | Name Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Annotations Bytes | Other Bytes | Envelope Bytes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delendai_orchestrator-runner_discover_providers | orchestrator-runner | 4,878 | 49 | 113 | 33 | 4,556 | 0 | 50 | 77 |
+| delendai_orchestrator-runner_discover_providers | orchestrator-runner | 5,198 | 49 | 113 | 33 | 4,876 | 0 | 50 | 77 |
 | delendai_agent-orchestrator_dispatch | agent-orchestrator | 4,668 | 38 | 113 | 660 | 3,730 | 0 | 50 | 77 |
 | delendai_adaptive-optimizer_adaptive_facade | adaptive-optimizer | 4,589 | 45 | 127 | 757 | 3,533 | 0 | 50 | 77 |
 | delendai_proposals_close_slice | proposals | 4,216 | 32 | 75 | 932 | 3,050 | 0 | 50 | 77 |
@@ -303,12 +303,12 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | delendai_proposals_review_queue | proposals | 3,396 | 33 | 92 | 276 | 2,868 | 0 | 50 | 77 |
 | delendai_proposals_agent_lock | proposals | 3,179 | 31 | 136 | 436 | 2,449 | 0 | 50 | 77 |
 | delendai_proposals_proposal_transition | proposals | 3,127 | 40 | 78 | 1,072 | 1,810 | 0 | 50 | 77 |
+| delendai_orchestrator-runner_format_handoff | orchestrator-runner | 3,028 | 45 | 88 | 2,538 | 230 | 0 | 50 | 77 |
 | delendai_proposals_proposal_get | proposals | 2,916 | 33 | 44 | 33 | 2,679 | 0 | 50 | 77 |
 | delendai_audit_audit_consolidate | audit | 2,891 | 34 | 269 | 314 | 2,147 | 0 | 50 | 77 |
 | delendai_metrics | core | 2,813 | 18 | 72 | 88 | 2,505 | 0 | 53 | 77 |
 | delendai_scaffold | core | 2,741 | 19 | 103 | 1,756 | 732 | 0 | 54 | 77 |
 | delendai_create_plugin | core | 2,724 | 24 | 194 | 535 | 1,843 | 0 | 51 | 77 |
-| delendai_orchestrator-runner_format_handoff | orchestrator-runner | 2,724 | 45 | 88 | 2,234 | 230 | 0 | 50 | 77 |
 
 ## CHECK-007 — tokenizer cost by preset
 
@@ -326,7 +326,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 194,775 | 45672 | 45666 | 48694 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 301,742 | 71475 | 71350 | 75436 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 302,382 | 71629 | 71502 | 75596 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 114,004 | 26638 | 26686 | 28501 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 6,306 | 1427 | 1434 | 1577 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -350,7 +350,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 6,306 | ok | — | 130,999 | ok | — |
 | swarm | 6,306 | ok | — | 163,151 | ok | — |
 | full | 6,306 | ok | — | 194,775 | ok | — |
-| dogfood | 6,306 | ok | — | 301,742 | ok | — |
+| dogfood | 6,306 | ok | — | 302,382 | ok | — |
 | web-app | 6,306 | n/a | — | 114,004 | n/a | — |
 | backend-api | 6,306 | n/a | — | 112,382 | n/a | — |
 | cli-tool | 6,306 | n/a | — | 76,195 | n/a | — |

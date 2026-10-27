@@ -52,6 +52,10 @@ import {
 	type IJsonRpcTransport,
 } from '../subprocess/mcp-client';
 import { createStdioTransport } from '../subprocess/stdio-transport';
+import {
+	createHostSamplingInvoker,
+	type IHostSampler,
+} from '../subprocess/host-sampling';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 import { createAcpInvoker } from './acp-invoker.service';
 
@@ -155,6 +159,8 @@ export interface IBuildManagerOptions {
 	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
+	/** The sampler of the host this server runs in, once a client is connected. */
+	readonly hostSampler?: (() => IHostSampler | undefined) | undefined;
 	readonly health: HealthStore;
 	readonly defaultCostPreference: CostPreference;
 	readonly invokeTimeoutMs: number;
@@ -224,6 +230,11 @@ export const buildDefaultInvocationManager = (
 		transportFactory: mcpServerTransportFactory,
 	});
 	const subscriptionInvoker = createSubscriptionInvoker();
+	// A model the host editor serves on the person's key (BYOK) is asked of
+	// the host itself; outside a host that samples, every call says so.
+	const hostSamplingInvoker = createHostSamplingInvoker({
+		sampler: options.hostSampler ?? (() => undefined),
+	});
 	const acpInvoker = createAcpInvoker({
 		cwd: options.workspaceRoot,
 	});
@@ -237,6 +248,7 @@ export const buildDefaultInvocationManager = (
 			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
 			acp: acpInvoker,
+			'host-sampling': hostSamplingInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
 		invokeTimeoutMs: options.invokeTimeoutMs,

@@ -16,6 +16,8 @@ import { modelOutcomeStoreAt } from '@delendai/core/runtime';
 import { joinRel, runCommand } from '@delendai/core/public';
 import { modelContextWindow, readModelCatalogue } from '@delendai/core/cli';
 import { definePlugin } from '@delendai/core/plugin';
+import type { IHostSampler } from './lib/contracts/interfaces/host-sampling.interface';
+import { samplerOf } from './lib/services/host-sampler.service';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
@@ -158,6 +160,9 @@ export default definePlugin({
 			// elicitation; the server is known once the invoke tool registers.
 			const signer = new ConfirmationSigner();
 			let askUser: IConsentAsk | undefined;
+			// The host's sampling, once a client is connected: how a model the
+			// host serves on the person's key is run.
+			let hostSampler: IHostSampler | undefined;
 			const confirmationGate = elicitedConfirmationGate(
 				() => askUser,
 				signer,
@@ -174,6 +179,7 @@ export default definePlugin({
 				})
 				.catch(() => undefined);
 			const manager = buildDefaultInvocationManager({
+				hostSampler: () => hostSampler,
 				contextWindowOf: (modelId) =>
 					modelContextWindow(catalogue, modelId),
 				workspaceRoot: ctx.workspace.root,
@@ -264,6 +270,7 @@ export default definePlugin({
 					journalPath,
 					onServer: (server) => {
 						askUser = askThroughElicitation(server);
+						hostSampler = samplerOf(server);
 					},
 					discovery: options.discovery ?? 'auto-with-consent',
 					consentPath,
