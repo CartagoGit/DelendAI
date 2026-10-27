@@ -7,12 +7,8 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import {
-	sortFindings,
-	summarizeFindings,
-	toolJson,
-	worstSeverity,
-} from '@delendai/core/public';
+import { sortFindings, toolJson } from '@delendai/core/public';
+import { findingsReport } from '@delendai/core/runtime';
 
 import {
 	TECH_DEBT_MAX_FILES,
@@ -99,9 +95,7 @@ export const buildDebtScanRegistration = (
 						: all.filter((finding) => filter.has(finding.ruleId));
 				return toolJson({
 					filesScanned: scan.files.length,
-					total: findings.length,
-					findings: findings.slice(0, TECH_DEBT_MAX_REPORTED),
-					truncated: findings.length > TECH_DEBT_MAX_REPORTED,
+					...findingsReport(findings, TECH_DEBT_MAX_REPORTED),
 					coverage: {
 						capped: scan.capped,
 						maxFiles: TECH_DEBT_MAX_FILES,
@@ -111,8 +105,6 @@ export const buildDebtScanRegistration = (
 							TECH_DEBT_MAX_SKIPPED_REPORTED,
 						),
 					},
-					summary: summarizeFindings(findings),
-					worst: worstSeverity(findings) ?? 'none',
 				});
 			},
 		);

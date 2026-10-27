@@ -6,7 +6,10 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	isOutsideScanScope,
+	SafeWorkspaceReader,
+} from '@delendai/core/runtime';
 
 import {
 	TECH_DEBT_MAX_FILE_BYTES,
@@ -23,19 +26,7 @@ import type {
 const INCLUDE = 'ts,tsx,mts,cts,js,jsx,mjs,cjs,vue,svelte,astro,scss,css,md';
 const GLOB = `**/*.{${INCLUDE}}`;
 
-/** Path fragments whose presence excludes a file from the scan. */
-const EXCLUDED = [
-	'/node_modules/',
-	'/dist/',
-	'/build/',
-	'/.cache/',
-	'/.git/',
-	'/coverage/',
-	'/.astro/',
-];
-
-const isExcluded = (rel: string): boolean =>
-	EXCLUDED.some((fragment) => `/${rel}`.includes(fragment));
+const isExcluded = isOutsideScanScope;
 
 /** Production tech-debt deps rooted at `workspaceRootAbs`. */
 export const realTechDebtDeps = (

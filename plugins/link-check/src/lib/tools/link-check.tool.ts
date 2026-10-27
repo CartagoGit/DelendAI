@@ -7,12 +7,8 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import {
-	sortFindings,
-	summarizeFindings,
-	toolJson,
-	worstSeverity,
-} from '@delendai/core/public';
+import { sortFindings, toolJson } from '@delendai/core/public';
+import { findingsReport } from '@delendai/core/runtime';
 
 import {
 	LINK_CHECK_MAX_DOCS,
@@ -89,9 +85,7 @@ export const buildLinkCheckRegistration = (
 				);
 				return toolJson({
 					docsScanned: scan.docs.length,
-					total: findings.length,
-					findings: findings.slice(0, LINK_CHECK_MAX_REPORTED),
-					truncated: findings.length > LINK_CHECK_MAX_REPORTED,
+					...findingsReport(findings, LINK_CHECK_MAX_REPORTED),
 					coverage: {
 						capped: scan.capped,
 						maxDocs: LINK_CHECK_MAX_DOCS,
@@ -101,8 +95,6 @@ export const buildLinkCheckRegistration = (
 							LINK_CHECK_MAX_SKIPPED_REPORTED,
 						),
 					},
-					summary: summarizeFindings(findings),
-					worst: worstSeverity(findings) ?? 'none',
 				});
 			},
 		);

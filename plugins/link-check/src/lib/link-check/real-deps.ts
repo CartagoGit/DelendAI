@@ -3,7 +3,10 @@
  * existing repo path (files + ancestor dirs) so relative links can be resolved.
  * The only module here that touches the OS. Never throws.
  */
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	isOutsideScanScope,
+	SafeWorkspaceReader,
+} from '@delendai/core/runtime';
 
 import {
 	LINK_CHECK_DOC_GLOB,
@@ -17,19 +20,7 @@ import type {
 	ISourceDoc,
 } from '../contracts/interfaces/link-check.interface';
 
-/** Path fragments whose presence excludes a path from the scan. */
-const EXCLUDED = [
-	'/node_modules/',
-	'/dist/',
-	'/build/',
-	'/.cache/',
-	'/.git/',
-	'/coverage/',
-	'/.astro/',
-];
-
-const isExcluded = (rel: string): boolean =>
-	EXCLUDED.some((fragment) => `/${rel}`.includes(fragment));
+const isExcluded = isOutsideScanScope;
 
 /** Add a path plus each of its ancestor directories to the set. */
 const addWithAncestors = (set: Set<string>, rel: string): void => {

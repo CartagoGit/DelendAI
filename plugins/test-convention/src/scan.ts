@@ -1,5 +1,12 @@
 import type { ITestConvention } from './convention';
 import { effectiveMockStyle } from './convention';
+import {
+	isSpec,
+	isTsSource,
+	isSpecLikePath,
+	specStemOf,
+	stemOf,
+} from './scan-paths.helper';
 
 /**
  * Minimal recursive-directory-listing port for the scan engine
@@ -93,27 +100,6 @@ const findHits = (source: string, re: RegExp): readonly ILineHit[] => {
 	}
 	return hits;
 };
-
-const isSpec = (path: string, ext: string): boolean => path.endsWith(`.${ext}`);
-
-const SPEC_RE = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
-
-/**
- * A source file: script code under any `src/` folder, the repository's
- * own or a package's (`packages/x/src/…`), never a declaration or a spec.
- */
-const isTsSource = (path: string): boolean =>
-	/(?:^|\/)src\/.+\.[cm]?[jt]sx?$/u.test(path) &&
-	!/\.d\.[cm]?ts$/u.test(path) &&
-	!SPEC_RE.test(path);
-
-/** A file's name without folders or extension: `src/a/b.tsx` → `b`. */
-const stemOf = (path: string): string =>
-	(path.split('/').pop() ?? path).replace(/\.[^.]+$/u, '');
-
-/** A spec's name without its spec suffix: `tests/b.spec.ts` → `b`. */
-const specStemOf = (path: string): string =>
-	(path.split('/').pop() ?? path).replace(SPEC_RE, '');
 
 const exportNamesOf = (source: string): readonly string[] => {
 	const out: string[] = [];
@@ -279,7 +265,7 @@ export const scanDrift = async (
 	// (e.g. `foo.test.ts` when the convention is `*.spec.ts`). They
 	// get scanned so we can flag the wrong extension.
 	const misnamedSpecLike = all.filter(
-		(p) => !isSpec(p, specExt) && SPEC_RE.test(p),
+		(p) => !isSpec(p, specExt) && isSpecLikePath(p),
 	);
 
 	const targets =
@@ -320,7 +306,7 @@ export const scanDrift = async (
 		const looksSpec = looksLikeSpec(contents);
 		const isCanonicalSpec = isSpec(path, specExt);
 		const isMisnamedSpec =
-			!isCanonicalSpec && SPEC_RE.test(path) && looksSpec;
+			!isCanonicalSpec && isSpecLikePath(path) && looksSpec;
 		const isSpecLike = isCanonicalSpec || isMisnamedSpec;
 
 		// Spec-content rules (missing describe, mock API, forbidden
