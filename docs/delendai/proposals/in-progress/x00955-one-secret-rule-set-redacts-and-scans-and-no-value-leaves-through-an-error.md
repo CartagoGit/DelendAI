@@ -2,10 +2,14 @@
 id: x00955
 title: "One secret rule set redacts and scans, and no value leaves through an error"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 3494e305-3245-4fa6-84a5-b2d56ba01449
+last-correlation-id: 3494e305-3245-4fa6-84a5-b2d56ba01449
+last-transition-from: ready
+last-transition-at: 2026-10-27T09:05:38.866Z
 ---
 
 # x00955 — One secret rule set redacts and scans, and no value leaves through an error
