@@ -119,6 +119,12 @@ const areaKey = (areaDir: string): string =>
  * Build the rules manifest (pure). For each area: detect the preset (or
  * honour an override), then list eslint/typecheck configs priority-first
  * — the project's own config, then our materialised default behind it.
+ *
+ * @deprecated Legacy builder, removal date 2026-12-31. The tool surface
+ * builds the same manifest through `buildManifestViaComposition`
+ * (`./manifest-via-composition`); `ensureRulesCache` below must move onto
+ * it before this builder, `discoverAreas` and `IBuildManifestOptions` are
+ * deleted. Do not add callers.
  */
 export const buildRulesManifest = async (
 	options: IBuildManifestOptions,
