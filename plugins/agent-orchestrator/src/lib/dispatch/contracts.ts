@@ -70,6 +70,8 @@ export interface IDispatchPort {
 		readonly budget: number;
 		/** Stable id for this rotation slot (the executor generates). */
 		readonly slotId: string;
+		/** Aborted when the step gives up on this subagent (a timeout): stop it. */
+		readonly signal?: AbortSignal | undefined;
 		/** What the step is and may use; absent, it goes by instruction only. */
 		readonly task?: IDelegatedTask;
 	}): Promise<ISubagentResult>;
@@ -91,6 +93,11 @@ export interface IPlanOutcome {
 	readonly ok: boolean;
 	/** Diagnostic message when `ok === false`. */
 	readonly error?: string;
+	/**
+	 * The verify steps still to run, by order, when every other step went
+	 * well: the plan is not ok until the orchestrator has run them.
+	 */
+	readonly pendingVerify?: readonly number[];
 	/**
 	 * Where the token figures come from. The orchestrator's own spend is
 	 * `observed` only when the host hands the dispatcher a counter;

@@ -80,6 +80,7 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
+	pendingVerify: z.array(z.number()).optional(),
 	measurement: z.object({
 		orchestratorTokens: z.enum(['observed', 'unknown']),
 		subagentTokens: z.literal('reported'),
@@ -88,7 +89,7 @@ const PlanOutcomeSchema = z.object({
 		taskId: z.string(),
 		openedAt: z.number().int(),
 		closedAt: z.number().int(),
-		outcome: z.enum(['succeeded', 'failed', 'abandoned']),
+		outcome: z.enum(['succeeded', 'failed', 'unverified', 'abandoned']),
 		confidence: z.number().min(0).max(1),
 		route: z.string(),
 		features: z.object({
@@ -376,7 +377,11 @@ export function buildDispatchRegistration(
 				reviewers: 0,
 				tokens,
 			},
-			outcome.ok ? 'succeeded' : 'failed',
+			outcome.ok
+				? 'succeeded'
+				: outcome.pendingVerify !== undefined
+					? 'unverified'
+					: 'failed',
 			closedAt,
 		);
 		// The cache keeps the live outcome (Map and all) because

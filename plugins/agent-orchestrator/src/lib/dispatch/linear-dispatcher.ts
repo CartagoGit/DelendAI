@@ -127,10 +127,19 @@ export class LinearDispatcher {
 			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
 		);
 		const allOk = stepOutcomes.every((s) => s.ok || s.kind === 'verify');
-		const ok = allOk && nonSkipped.some((s) => s.ok);
+		// A plan whose verify stage has not run is not done: it ended ok
+		// with nothing checked, and read as verified.
+		const unverified = stepOutcomes
+			.filter((s) => s.kind === 'verify' && s.executed === false)
+			.map((s) => s.order);
+		const ran = allOk && nonSkipped.some((s) => s.ok);
+		const ok = ran && unverified.length === 0;
+		const pending = ran && unverified.length > 0;
 		const error = ok
 			? undefined
-			: `plan "${this.#plan.mode}" did not produce a successful step`;
+			: pending
+				? `plan "${this.#plan.mode}" has verify step(s) ${unverified.join(', ')} still to run: run them and judge the plan by what they report`
+				: `plan "${this.#plan.mode}" did not produce a successful step`;
 
 		return {
 			mode: this.#plan.mode,
@@ -138,6 +147,7 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
+			...(pending ? { pendingVerify: unverified } : {}),
 			measurement: {
 				orchestratorTokens:
 					this.#orchestratorTokens === undefined
@@ -202,10 +212,14 @@ export class LinearDispatcher {
 
 			let result: ISubagentResult;
 			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
+			// Stopped before the next one starts: a timed-out subagent left
+			// running kept working beside the one that replaced it.
+			const controller = new AbortController();
 			try {
 				const task = await this.#delegate?.(step);
 				result = await withTimeout(
 					this.#port.spawnSubagent({
+						signal: controller.signal,
 						...(task === undefined ? {} : { task }),
 						role,
 						instruction: step.instruction,
@@ -219,6 +233,7 @@ export class LinearDispatcher {
 						slotId,
 					}),
 					this.#plan.budget.timeoutMs,
+					controller,
 				);
 			} catch (err) {
 				// A thrown port call still settles the dispatch: the end
@@ -259,6 +274,26 @@ export class LinearDispatcher {
 			);
 			this.#budget.recordSubagent(subagentId, result.tokensUsed);
 			lastResult = result;
+
+			// The cap is enforced here, not only asked of the host: a
+			// subagent past it is cut whatever the host did with the request.
+			const cap = this.#plan.budget.maxTokensPerSubagent;
+			if (cap > 0 && result.tokensUsed > cap) {
+				const reason = 'token-budget-exhausted';
+				const note = `${reason}: used ${String(result.tokensUsed)} of ${String(cap)} tokens`;
+				if (!this.#plan.rotation.allow.includes(reason))
+					return failure(step, slotId, subagentIds, [
+						...rotations,
+						{ subagentId, reason: `forbidden: ${note}` },
+					]);
+				rotations.push({ subagentId, reason: note });
+				if (iter === maxIter)
+					return failure(step, slotId, subagentIds, rotations);
+				this.#telemetry.emit(
+					TelemetryEvent.rotate(this.#taskId, subagentId, note),
+				);
+				continue;
+			}
 
 			this.#detector.ingest(
 				{
@@ -319,6 +354,7 @@ export class LinearDispatcher {
 async function withTimeout<T>(
 	promise: Promise<T>,
 	timeoutMs: number,
+	controller: AbortController,
 ): Promise<T> {
 	if (timeoutMs === 0) return promise;
 	let timer: ReturnType<typeof setTimeout> | undefined;
@@ -326,15 +362,14 @@ async function withTimeout<T>(
 		return await Promise.race([
 			promise,
 			new Promise<T>((_, reject) => {
-				timer = setTimeout(
-					() =>
-						reject(
-							new Error(
-								`dispatch timed out after ${timeoutMs}ms`,
-							),
-						),
-					timeoutMs,
-				);
+				timer = setTimeout(() => {
+					// Cancel the subagent first: the caller rotates to a new one
+					// as soon as this rejects.
+					controller.abort();
+					reject(
+						new Error(`dispatch timed out after ${timeoutMs}ms`),
+					);
+				}, timeoutMs);
 			}),
 		]);
 	} finally {
