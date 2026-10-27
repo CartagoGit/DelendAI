@@ -2,10 +2,16 @@
 id: x00972
 title: "Logs, traces, KPIs and notifications report the window and events they were asked for"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 72b7742b-b843-40a7-b9d2-cd017268b83b
+last-correlation-id: 72b7742b-b843-40a7-b9d2-cd017268b83b
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T04:53:04.510Z
+shipped-in:
+  - "3f424423eb4c"
 ---
 
 # x00972 — Logs, traces, KPIs and notifications report the window and events they were asked for
@@ -27,16 +33,19 @@ Joint audit a00095. D51: observability trims real records the wrong way and hide
 - global_gate: type
 
 ### S1 — traces, KPIs and health
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/observability/src/lib/traces/real-deps.spec.ts`, `plugins/observability/src/lib/traces/real-deps.ts`, `plugins/project-health/src/generated/tool-outputs.ts`, `plugins/project-health/src/lib/contracts/constants/project-health.constant.ts`, `plugins/project-health/src/lib/contracts/interfaces/project-health.interface.ts`, `plugins/project-health/src/lib/services/project-health-signals.service.ts`, `plugins/project-health/src/lib/services/project-health.service.ts`, `plugins/project-health/src/lib/tools/project-health.tool.ts`, `plugins/project-health/tests/src/lib/services/project-health-signals.service.spec.ts`, `plugins/project-health/tests/src/lib/services/project-health.service.spec.ts`, `plugins/project-kpis/src/lib/contracts/kpi-snapshot.interface.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/src/lib/tools/project-kpis.tool.ts`, `plugins/project-kpis/tests/src/project-kpis-interval.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The newest records are kept (D51)."
   - "History and snapshot use the same from/to (D84, D76)."
   - "A score of 100 needs measured signals; missing signals lower confidence instead (D61)."
+- shipped-in: `3f424423eb4c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Notifications and status
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/generated/tool-outputs.ts`, `plugins/completion/src/lib/safe-logging.helper.ts`, `plugins/completion/src/lib/tools/completion-tools.ts`, `plugins/completion/tests/src/lib/completion-tools.spec.ts`, `plugins/env/src/lib/env/check-env.ts`, `plugins/env/src/lib/validate/check-schema.ts`, `plugins/env/tests/src/lib/check-env.spec.ts`, `plugins/env/tests/src/lib/validate/check-schema.spec.ts`, `plugins/error-reporting/src/index.ts`, `plugins/error-reporting/src/lib/contracts/constants/funnel-stages.constant.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/funnel-counters.interface.ts`, `plugins/error-reporting/src/lib/contracts/interfaces/report-store.interface.ts`, `plugins/error-reporting/src/lib/funnel-counter-store.service.ts`, `plugins/error-reporting/src/lib/report-store.service.ts`, `plugins/error-reporting/src/lib/tools/report-status.tool.ts`, `plugins/error-reporting/tests/report-store.spec.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/src/lib/tools/status.tool.ts`, `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`, `plugins/status-marker/README.md`, `plugins/status-marker/skills/status-marker-and-closure/SKILL.md`, `plugins/status-marker/src/lib/markers.ts`, `plugins/status-marker/src/lib/tools/close-tools.ts`, `plugins/status-marker/tests/markers.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -45,6 +54,9 @@ Joint audit a00095. D51: observability trims real records the wrong way and hide
   - "status reports session state separately from process state (D101)."
   - "An empty required value is missing-required (D113)."
   - "A reason too long for the line is wrapped or refused, never cut (D122)."
+- shipped-in: `3f424423eb4c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
