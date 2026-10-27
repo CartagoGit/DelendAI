@@ -27,7 +27,10 @@ export {
 	listAgents,
 } from './lib/plugins/agents-flow.service';
 export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
-export { writeAgentUsagePage } from './lib/shared/agent-usage-doc.service';
+export {
+	writeAgentUsagePage,
+	writeProviderUsagePage,
+} from './lib/shared/agent-usage-doc.service';
 // What the snapshot refresh script needs to write the shipped catalogues.
 export {
 	AGENT_REGISTRY_FORMAT,

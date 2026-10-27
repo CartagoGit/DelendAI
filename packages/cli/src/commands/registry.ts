@@ -300,7 +300,7 @@ export const registerAllCommands = async (): Promise<
 		name: 'agents show',
 		offline: true,
 		summary:
-			'Greet an ACP agent and show what it says it is; nothing is spent.',
+			"Greet an ACP agent, or read a model provider's catalogue entry, and show what it says it is; nothing is spent.",
 		usage: 'agents show <id> [--write]',
 		async run(args, ctx) {
 			const { agentsShowCommand } = await import('./agents.command');

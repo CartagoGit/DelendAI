@@ -75,7 +75,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 
 ### S3 — One adapter per API family for every provider
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/provider-api-client.service.ts`, `packages/core/src/lib/contracts/constants/provider-api-families.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-api.interface.ts`
+- **Files**: `packages/core/src/lib/shared/provider-api-client.service.ts`, `packages/core/src/lib/contracts/constants/provider-api-families.constant.ts`, `packages/core/src/lib/contracts/interfaces/provider-api.interface.ts`, `packages/core/tests/src/lib/shared/provider-api-client.service.spec.ts`, `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`
 - **Gate**: type
 - acceptance:
   - "A provider is reached at the catalogue's `api` URL through the family its `npm` field names (OpenAI-compatible, Anthropic, Google). The key is read from the provider's variable at call time and never written anywhere. A family delendai has no adapter for is reported, not guessed."
@@ -87,7 +87,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 
 ### S4 — Detection from every place an agent or provider can be
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/agent-detection.service.ts`, `packages/core/src/lib/shared/detection-machine.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-detection.interface.ts`
+- **Files**: `packages/core/src/lib/shared/agent-detection.service.ts`, `packages/core/src/lib/shared/detection-machine.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-detection.interface.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/tests/src/lib/plugins/agents-flow.service.spec.ts`, `packages/cli/src/commands/agents.command.ts`, `packages/cli/src/commands/agents.command.spec.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - "Registry agents are found where they are installed: a binary `cmd` on PATH, an npx/uvx package in a global package list (npm, pnpm, bun, pipx, uv), an IDE extension or host config (VS Code, Cursor, Windsurf, VSCodium, JetBrains extensions, on both sides of WSL), . Providers are found by their key variables and local servers by their ports (f00781/f00782)."
@@ -100,7 +100,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 
 ### S5 — Declarations in the registry's own shape
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/cli/src/commands/agents.command.ts`
+- **Files**: `packages/core/src/lib/contracts/constants/declared-agent-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/cli/src/commands/agents.command.ts`, `packages/core/src/lib/contracts/constants/declared-provider-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-provider.interface.ts`, `packages/core/src/lib/shared/declared-providers.helper.ts`, `packages/core/tests/src/lib/shared/declared-providers.helper.spec.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/contracts/constants/personal-layer-schema.constant.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`
 - **Gate**: type
 - acceptance:
   - "`agents[]` in delendai.config.json (or the person's own file) declares an agent with the ACP registry's agent.json fields. A non-ACP agent declares `kind: cli | exec | http | file | mcp` with what reaches it (a command, an executable or script, a URL, an MCP server name) and its probes (login, models, prompt, quota). `modelProviders[]` declares a provider in models.dev's shape (`providers[]` is the orchestrator's roster, another shape). A declaration overrides the catalogue entry of the same id."
@@ -113,7 +113,7 @@ Driving agents through ACP and providers through the catalogue's API families re
 
 ### S6 — A usage page per agent and provider, from what it says about itself
 - **Status**: pending
-- **Files**: `docs/delendai/models/README.md`, `packages/core/src/lib/shared/agent-usage-doc.service.ts`
+- **Files**: `docs/delendai/models/README.md`, `packages/core/src/lib/shared/agent-usage-doc.service.ts`, `packages/core/tests/src/lib/shared/agent-usage-doc.service.spec.ts`, `packages/cli/src/commands/agents.command.ts`
 - **Gate**: type
 - acceptance:
   - "Each agent or provider in use has a page `docs/delendai/models/<id>.md`. It is built from its catalogue entry and its own answers (ACP initialize, its model list), never from text delendai keeps. It says how it is reached, how it logs in, what a prompt may carry, whether it resumes sessions, and the version it was written for; nothing about the machine it was written on. A page is regenerated when that version or the declaration changes, and a person's edit in its marked section survives."
@@ -150,3 +150,9 @@ Driving agents through ACP and providers through the catalogue's API families re
 - `delendai agents list` shows every agent and where each came from (registry, project, personal, detected). `delendai agents add` writes a declaration from flags, and `delendai agents install <id>` installs a registry agent's binary after a yes, verifying its sha256, and `delendai agents show <id> [--write]` greets an ACP agent at no cost. Nobody edits a file by hand.
 - Each agent or provider in use has a page `docs/delendai/models/<id>.md`. It is built from its catalogue entry and its own answers (ACP initialize, its model list), never from text delendai keeps. It says how it is reached, how it logs in, what a prompt may carry, whether it resumes sessions, and the version it was written for; nothing about the machine it was written on. A page is regenerated when that version or the declaration changes, and a person's edit in its marked section survives.
 - Given a name, a command, an executable, a file or a URL, the tool first looks it up in both catalogues. When neither has it and it is not ACP, the model Batuta runs on reads the agent's own help or docs and drafts a declaration. Either way the tool shows the declaration and the usage page for the person's yes, writes them, points to the f00782 offer for its account, and proves it with one consented prompt. A failure leaves nothing half-written.
+
+## notes
+- 2026-10-27, rework after review. S3: the Google family (`@ai-sdk/google`) is reached through Google's Generative Language API (`x-goog-api-key`, `/models`, `/models/<id>:generateContent`); Vertex (`@ai-sdk/google-vertex`) signs in through Google Cloud and is still reported as unsupported. The family list is one constant the type and the provider schema read.
+- S4: `agents list` asks about each executable that looks like an agent, once (at a terminal; elsewhere it names `delendai agents answer <name> --yes|--no`). Yes declares it in the person's file, no is kept among their declined offers; a declared or answered candidate is not offered again.
+- S5: declarations in models.dev's shape live under `modelProviders[]` (project and person). `providers[]` stays the orchestrator's roster, another shape, so the acceptance names the key that ships. The agents and account offers read the catalogue with the declarations over it.
+- S6: `agents show <id> --write` writes a model provider's page from its own catalogue entry (API family and URL, key variables by name, models, the catalogue's date), with the agent page's rules: generated marker, the person's notes kept, rewritten only on change.

@@ -13,6 +13,7 @@ const core = vi.hoisted(() => ({
 	introduceAgent: vi.fn(),
 	writeAgentUsagePage: vi.fn(),
 	answerAgentCandidate: vi.fn(),
+	writeProviderUsagePage: vi.fn(),
 }));
 vi.mock('@delendai/core/cli', async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
@@ -158,6 +159,42 @@ describe('an executable offered as an agent', () => {
 	});
 });
 
+describe('agents show for a model provider', () => {
+	it('shows its catalogue entry and writes its page with --write', async () => {
+		const zai = {
+			id: 'zai',
+			name: 'Z.AI',
+			env: ['ZAI_API_KEY'],
+			models: [],
+		};
+		core.listAgents.mockResolvedValue({
+			agents: [],
+			detected: [],
+			candidates: [],
+			catalogue: {
+				fetchedAt: '2026-10-27T00:00:00.000Z',
+				providers: [zai],
+			},
+		});
+		core.writeProviderUsagePage.mockResolvedValue({
+			path: '/ws/docs/delendai/models/zai.md',
+			written: true,
+			reason: 'new',
+		});
+		expect(
+			(await agentsShowCommand.run(['zai', '--write'], ctx())).data,
+		).toMatchObject({ id: 'zai', provider: zai, page: { written: true } });
+		expect(core.writeProviderUsagePage).toHaveBeenCalledWith({
+			workspace: '/ws',
+			provider: zai,
+			catalogueDate: '2026-10-27T00:00:00.000Z',
+		});
+		expect((await agentsShowCommand.run(['nope'], ctx())).error).toContain(
+			'no agent or model provider nope',
+		);
+	});
+});
+
 describe('agents add', () => {
 	it('declares what the flags say, and needs an id and a kind', async () => {
 		core.declareAgent.mockResolvedValue({ added: true });
@@ -225,7 +262,7 @@ describe('agents show', () => {
 			JSON.stringify((await agentsShowCommand.run(['x'], ctx())).data),
 		).toContain('cannot start');
 		expect((await agentsShowCommand.run(['nope'], ctx())).error).toContain(
-			'no agent nope',
+			'no agent or model provider nope',
 		);
 		expect((await agentsShowCommand.run([], ctx())).code).toBe(2);
 		core.introduceAgent.mockRejectedValue(new Error('did not answer'));

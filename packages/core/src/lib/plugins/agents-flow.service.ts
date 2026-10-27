@@ -77,6 +77,8 @@ export const listAgents = async (input: {
 	readonly detected: readonly IDetectedAgent[];
 	/** Executables that look like agents, not yet answered nor declared. */
 	readonly candidates: readonly IDetectedAgent[];
+	/** The model catalogue with the declared providers over it. */
+	readonly catalogue?: IModelCatalogue | undefined;
 }> => {
 	const { personal, shared } = await layersOf(
 		input.workspace,

@@ -17,6 +17,7 @@ import {
 	introduceAgent,
 	listAgents,
 	writeAgentUsagePage,
+	writeProviderUsagePage,
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -194,9 +195,25 @@ const show = async (
 ): Promise<ICliCommandResult> => {
 	const id = args[1];
 	if (id === undefined) return usageError('agents show <id> [--write]');
-	const { agents } = await listAgents({ workspace: ctx.cwd, all: true });
+	const { agents, catalogue } = await listAgents({
+		workspace: ctx.cwd,
+		all: true,
+	});
 	const agent = agents.find((each) => each.id === id);
-	if (agent === undefined) return failed(new Error(`no agent ${id}`));
+	if (agent === undefined) {
+		// A model provider says about itself what its catalogue entry says.
+		const provider = catalogue?.providers.find((each) => each.id === id);
+		if (provider === undefined)
+			return failed(new Error(`no agent or model provider ${id}`));
+		const page = hasFlag(args, 'write')
+			? await writeProviderUsagePage({
+					workspace: ctx.cwd,
+					provider,
+					catalogueDate: catalogue?.fetchedAt,
+				})
+			: undefined;
+		return data({ id, provider, ...(page === undefined ? {} : { page }) });
+	}
 	if (agent.launch === undefined)
 		return data({
 			agent,
@@ -254,7 +271,7 @@ export const agentsShowCommand: ICliCommand = {
 	name: 'agents show',
 	offline: true,
 	summary:
-		'Greet an ACP agent and show what it says it is; nothing is spent.',
+		"Greet an ACP agent, or read a model provider's catalogue entry, and show what it says it is; nothing is spent.",
 	usage: 'agents show <id> [--write]',
 	run: (args, ctx) => show(['show', ...args], ctx),
 };
