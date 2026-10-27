@@ -2,10 +2,16 @@
 id: r00645
 title: "Core and tooling take the workspace root from their caller, never process.cwd()"
 kind: refactor
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 5ee2050d-92a8-448f-b37f-0294e07173a8
+last-correlation-id: 5ee2050d-92a8-448f-b37f-0294e07173a8
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T04:54:29.181Z
+shipped-in:
+  - "90b4a58faf62"
 ---
 
 # r00645 — Core and tooling take the workspace root from their caller, never process.cwd()
@@ -27,18 +33,24 @@ Joint audit a00095. G1: shell-status.tool.ts builds InstallSuggestionsService wi
 - global_gate: type
 
 ### S1 — core
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/tools/shell-status.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/manifest/discovery.ts`, `packages/core/src/lib/plugins/discovery.ts`, `packages/core/src/lib/shared/hook-free-environment.helper.ts`, `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`, `packages/core/tests/src/lib/tools/shell-status.spec.ts`, `packages/core/tests/src/lib/tools/shell-status-defaults.spec.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.ts`, `tools/scripts/lint/no-process-cwd-in-core.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "A lint fails on process.cwd() in packages/core/src/lib outside entry points, with the current uses removed (G1, D8)."
+- shipped-in: `90b4a58faf62`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — tooling
-- **Status**: pending
-- **Files**: `tools/scripts/build/stable-manifest.script.js`, `tools/scripts/build/stable-manifest.script.ts`, `tools/scripts/gen/quantitative.script.ts`, `tools/scripts/i18n/translate-tutorials.script.ts`, `tools/scripts/lib/zod-default-resolver.mjs`
+- **Status**: done
+- **Files**: `tools/scripts/build/stable-manifest.script.ts`, `tools/scripts/gen/quantitative.script.ts`, `tools/scripts/i18n/translate-tutorials.script.ts`
 - **Gate**: type
 - acceptance:
   - "Scripts resolve the root from their own location; the stray .js and .mjs files are gone: the .js was a stale copy of its .ts and nothing loads the .mjs (G14)."
+- shipped-in: `90b4a58faf62`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
