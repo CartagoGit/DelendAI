@@ -2,14 +2,14 @@
 id: x00983
 title: "Budget specs measure a complete boot, never a degraded one"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
-last-transition-id: ede889c2-3614-425a-a397-f4a47ad36912
-last-correlation-id: ede889c2-3614-425a-a397-f4a47ad36912
-last-transition-from: ready
-last-transition-at: 2026-10-27T10:32:13.764Z
+last-transition-id: cffef7a5-e5a9-4de9-98df-3e6a92f70b8f
+last-correlation-id: cffef7a5-e5a9-4de9-98df-3e6a92f70b8f
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T10:33:46.005Z
 shipped-in:
   - "55fbb80d2"
 ---
@@ -41,6 +41,8 @@ On a loaded machine the native overview listing test failed: 40 tools listed (no
   - "assembleCliConfig accepts pluginTimeoutMs and passes it to loadPlugins as timeoutMs; unset keeps the 15 s default."
   - "The token-budget spec connects with a 120 s plugin timeout and fails, listing each plugin and reason, when loadResult.errors is not empty."
 - shipped-in: `55fbb80d2`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
