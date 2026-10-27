@@ -12,25 +12,29 @@ date: 2026-10-27
 
 ## goal
 
-TODO: describe the goal.
+No package in the lockfile resolves `qs` to a version GHSA-6pq8-jhm2-2vcw affects.
 
 ## why
 
-TODO: why this work matters now.
+The advisory (moderate: `qs.stringify` with `arrayFormat: 'comma'` throws on array elements whose own `toString` is not callable) was published for `qs >=6.7.0 <=6.16.0`, patched in 6.16.1. The lockfile resolved the root `qs` to 6.16.0 (only `body-parser` had its own 6.16.1), so `lint:dependency-advisories` failed lint-security on every pull request from 2026-10-27, and `verify:security` with it.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Upgrading the packages that depend on `qs`.
 
 ## slices
 
 - global_gate: none
 
-### S1 — TODO
+### S1 — The override pins the patched version
 - **Status**: pending
-- **Files**: `TODO`
+- **Files**: `package.json`, `bun.lock`
 - **Gate**: none
+- acceptance:
+  - "package.json overrides qs to 6.16.1 and bun.lock resolves no qs below it."
+  - "lint:dependency-advisories passes."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- package.json overrides qs to 6.16.1 and bun.lock resolves no qs below it.
+- lint:dependency-advisories passes.
