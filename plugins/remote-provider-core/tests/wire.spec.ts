@@ -18,6 +18,18 @@ describe('remote-provider wire helpers', () => {
 			parseLinkRelation('<https://x/y?page=3>; rel="next"', 'next'),
 		).toBe('3');
 		expect(parseLinkRelation(null, 'next')).toBeNull();
+		expect(
+			parseLinkRelation('<>; rel="next", <u>; rel="next"', 'next'),
+		).toBeNull();
+		expect(parseLinkRelation('<>x<b>; rel="next"', 'next')).toBe('b');
+		expect(parseLinkRelation('<<a>; rel="next"', 'next')).toBe('<a');
+	});
+
+	it('stays fast on hostile Link headers', () => {
+		const hostile = `${'<='.repeat(50000)}; rel="next"`;
+		const started = Date.now();
+		expect(parseLinkRelation(hostile, 'next')).toBeNull();
+		expect(Date.now() - started).toBeLessThan(500);
 	});
 
 	it('returns null pagination and rate limit when no header is present', () => {

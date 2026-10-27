@@ -26,6 +26,21 @@ export const unixSecondsToIso = (raw: string | null): string | null => {
 	return new Date(seconds * 1000).toISOString();
 };
 
+/**
+ * The text of the first non-empty `<...>` in a Link header part, found by
+ * scanning (no backtracking pattern, so hostile input stays linear).
+ */
+const firstAngleTarget = (part: string): string | undefined => {
+	let start = part.indexOf('<');
+	while (start !== -1) {
+		const end = part.indexOf('>', start + 1);
+		if (end === -1) return undefined;
+		if (end > start + 1) return part.slice(start + 1, end);
+		start = part.indexOf('<', start + 1);
+	}
+	return undefined;
+};
+
 export const parseLinkRelation = (
 	linkHeader: string | null,
 	rel: 'next' | 'prev',
@@ -33,13 +48,13 @@ export const parseLinkRelation = (
 	if (linkHeader === null) return null;
 	for (const part of linkHeader.split(',')) {
 		if (!part.includes(`rel="${rel}"`)) continue;
-		const match = part.match(/<([^>]+)>/);
-		if (match?.[1] === undefined) return null;
+		const target = firstAngleTarget(part);
+		if (target === undefined) return null;
 		try {
-			const url = new URL(match[1]);
-			return url.searchParams.get('page') ?? match[1];
+			const url = new URL(target);
+			return url.searchParams.get('page') ?? target;
 		} catch {
-			return match[1];
+			return target;
 		}
 	}
 	return null;
