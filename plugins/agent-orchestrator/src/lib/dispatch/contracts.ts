@@ -97,7 +97,7 @@ export interface IPlanOutcome {
 	 * The verify steps still to run, by order, when every other step went
 	 * well: the plan is not ok until the orchestrator has run them.
 	 */
-	readonly pendingVerify?: readonly number[];
+	readonly unverified?: readonly number[];
 	/**
 	 * Where the token figures come from. The orchestrator's own spend is
 	 * `observed` only when the host hands the dispatcher a counter;

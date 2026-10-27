@@ -80,7 +80,7 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
-	pendingVerify: z.array(z.number()).optional(),
+	unverified: z.array(z.number()).optional(),
 	measurement: z.object({
 		orchestratorTokens: z.enum(['observed', 'unknown']),
 		subagentTokens: z.literal('reported'),
@@ -379,7 +379,7 @@ export function buildDispatchRegistration(
 			},
 			outcome.ok
 				? 'succeeded'
-				: outcome.pendingVerify !== undefined
+				: outcome.unverified !== undefined
 					? 'unverified'
 					: 'failed',
 			closedAt,
@@ -409,7 +409,7 @@ export function buildDispatchRegistration(
 				`${namespacePrefix}_dispatch`,
 				{
 					description:
-						'Plan and run a task under the policy: the receipt and output reference of each step, rotations and budget.',
+						"Plan and run a task under the policy: each step's receipt and output reference, rotations and budget.",
 					inputSchema: INPUT_SCHEMA,
 					outputSchema: PlanOutcomeSchema,
 				},

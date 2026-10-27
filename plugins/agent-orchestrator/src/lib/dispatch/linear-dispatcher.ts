@@ -145,7 +145,7 @@ export class LinearDispatcher {
 			budget: snap,
 			ok,
 			...(error !== undefined ? { error } : {}),
-			...(pending ? { pendingVerify: unverified } : {}),
+			...(pending ? { unverified } : {}),
 			measurement: {
 				orchestratorTokens:
 					this.#orchestratorTokens === undefined

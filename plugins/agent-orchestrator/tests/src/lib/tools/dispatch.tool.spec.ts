@@ -74,7 +74,7 @@ describe('ns_dispatch', () => {
 		// Every step that ran went well; the self-verify step is the
 		// orchestrator's, and the plan is not ok until it has run.
 		expect(structured(res)?.ok).toBe(false);
-		expect(structured(res)?.pendingVerify).toEqual([2]);
+		expect(structured(res)?.unverified).toEqual([2]);
 	});
 
 	it('returns the typed refusal envelope, not a throw, when the port cannot be resolved', async () => {
