@@ -28,7 +28,7 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 
 ### S1 — Seats and phases
 - **Status**: pending
-- **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/services/audit-seats.service.ts`
+- **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/services/audit-seats.service.ts`, `plugins/audit/src/lib/contracts/constants/audit-protocol.constant.ts`, `plugins/audit/src/lib/contracts/interfaces/audit-protocol.interface.ts`, `plugins/audit/tests/src/lib/services/audit-protocol.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A seat is claimed with an exclusive create and two reviewers cannot hold one (C2)."
@@ -36,7 +36,7 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 
 ### S2 — Contract, inventory and closure
 - **Status**: pending
-- **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`
+- **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/index.ts`, `apps/web/src/i18n/tools/delendai_audit_close.ts`, `apps/web/src/i18n/tools/index.ts`
 - **Gate**: type
 - acceptance:
   - "Each finding is checked for the required fields and listed when incomplete (G76, G74)."

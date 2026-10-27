@@ -29,11 +29,12 @@ import {
 	isCanonicalAuditDir,
 	resolveProposalsDir,
 } from '../services/audit-path-policy.service';
+import { mayReadOthers } from '../services/audit-seats.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 
 const DetailSchema = z.enum(DETAIL_LEVELS);
 
-const collectMarkdownFiles = async (
+export const collectMarkdownFiles = async (
 	root: string,
 	relative = '',
 ): Promise<readonly string[]> => {
@@ -148,6 +149,11 @@ const ConsolidateInputSchema = z.object({
 	 * validated against the workspace root like `auditDir`.
 	 */
 	proposalsDir: z.string().optional(),
+	/**
+	 * The reviewer reading the reports. When set, the reports are read only
+	 * after that reviewer's Phase A file is committed (`audit_close`).
+	 */
+	reviewer: z.string().optional(),
 });
 
 // --- builders --------------------------------------------------------------
@@ -223,6 +229,7 @@ export const buildConsolidateRegistration = (
 					topActions?: number | undefined;
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
+					reviewer?: string | undefined;
 				}) => {
 					const detail = args.detail ?? 'normal';
 					const auditType = args.auditType ?? 'plan';
@@ -248,6 +255,15 @@ export const buildConsolidateRegistration = (
 						);
 					}
 					const absDir = contained.abs;
+					if (args.reviewer !== undefined) {
+						const gate = await mayReadOthers(absDir, args.reviewer);
+						if (!gate.ok) {
+							return toolError(
+								'Phase A is not committed',
+								gate.reason,
+							);
+						}
+					}
 					const reader = new SafeWorkspaceReader(absDir);
 					let entries: readonly string[];
 					try {
