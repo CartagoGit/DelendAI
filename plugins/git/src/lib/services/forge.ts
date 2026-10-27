@@ -1,166 +1,83 @@
 /**
- * forge.ts — f00136 S2 / r00012 consumer: read-only GitHub pull-request +
- * CI visibility via the host's already-authenticated `gh` CLI. Parsers are
- * pure (unit-tested on real `gh --json` fixtures); the runner composes the
- * shared `runExternalTool` seam, so this file spawns nothing directly and
- * stays fully testable with an injected exec.
+ * forge.ts — the git plugin's opt-in `pr_list` / `pr_view` read model. The
+ * forge plugin is the one authority that reads pull requests (provider
+ * detection, `gh`/`glab` argv, parsing, auth remediation); this file only
+ * maps its result onto the git tools' stable output shapes, so a fix to a
+ * PR parser lands once.
  *
  * Network-gated + opt-in by the caller (registered only under
- * `allowForge: true`) and credential-free: it inherits the user's `gh` auth,
- * never storing or reading a token itself.
+ * `allowForge: true`) and credential-free: it inherits the user's CLI auth.
  */
-import { runExternalTool } from '@delendai/core/public';
-import type { IArgvExec, IExternalTool } from '@delendai/core/contracts';
+import {
+	listPullRequests,
+	showPullRequest,
+	type IForgeExec,
+	type IForgeFailure,
+} from '@delendai/forge/public';
 
 import type {
 	IForgeList,
 	IForgeView,
-	IPullRequest,
-	IPullRequestDetail,
 } from '../contracts/interfaces/forge.interface';
 
-const GH_TOOL: IExternalTool = {
-	id: 'gh',
-	bin: 'gh',
-	installHints: [
-		{ manager: 'brew', command: 'brew install gh' },
-		{ manager: 'apt', command: 'sudo apt install gh' },
-		{ manager: 'winget', command: 'winget install GitHub.cli' },
-	],
-};
+const isCliAbsent = (failure: IForgeFailure): boolean =>
+	failure.error.reason.endsWith('is not available on PATH');
 
-const GH_ABSENT_NOTE =
-	'gh (GitHub CLI) not found on PATH — install it (e.g. brew install gh) and run `gh auth login`';
+const noteOf = (failure: IForgeFailure): string =>
+	[failure.error.reason, failure.error.remediation]
+		.filter((part): part is string => part !== undefined && part !== '')
+		.join(' - ');
 
-const sliceJson = (
-	raw: string,
-	open: string,
-	close: string,
-): string | undefined => {
-	const start = raw.indexOf(open);
-	const end = raw.lastIndexOf(close);
-	return start >= 0 && end >= start ? raw.slice(start, end + 1) : undefined;
-};
-
-/** Parse `gh pr list --json ...` output. Pure; tolerant; never throws. */
-export const parsePrList = (raw: string): IPullRequest[] => {
-	const json = sliceJson(raw, '[', ']');
-	if (json === undefined) return [];
-	let data: unknown;
-	try {
-		data = JSON.parse(json);
-	} catch {
-		return [];
+/** List open pull requests through the forge plugin. Read-only; never throws. */
+export const listOpenPrs = async (
+	cwd: string,
+	exec?: IForgeExec,
+): Promise<IForgeList> => {
+	const result = await listPullRequests(cwd, exec);
+	if (!result.ok) {
+		return {
+			available: !isCliAbsent(result),
+			note: noteOf(result),
+			prs: [],
+		};
 	}
-	if (!Array.isArray(data)) return [];
-	return (data as Record<string, unknown>[]).map((pr) => ({
-		number: typeof pr.number === 'number' ? pr.number : 0,
-		title: String(pr.title ?? ''),
-		branch: String(pr.headRefName ?? ''),
-		url: String(pr.url ?? ''),
-		draft: pr.isDraft === true,
-	}));
-};
-
-/** Parse `gh pr view --json ...` output (with statusCheckRollup). Pure. */
-export const parsePrView = (raw: string): IPullRequestDetail | undefined => {
-	const json = sliceJson(raw, '{', '}');
-	if (json === undefined) return undefined;
-	let data: Record<string, unknown>;
-	try {
-		data = JSON.parse(json) as Record<string, unknown>;
-	} catch {
-		return undefined;
-	}
-	if (data === null || typeof data !== 'object') return undefined;
-	const rollup = Array.isArray(data.statusCheckRollup)
-		? (data.statusCheckRollup as Record<string, unknown>[])
-		: [];
 	return {
-		number: typeof data.number === 'number' ? data.number : 0,
-		title: String(data.title ?? ''),
-		state: String(data.state ?? ''),
-		url: String(data.url ?? ''),
-		mergeable: String(data.mergeable ?? ''),
-		reviewDecision: String(data.reviewDecision ?? ''),
-		checks: rollup.map((check) => ({
-			name: String(check.name ?? check.context ?? ''),
-			status: String(check.status ?? check.state ?? ''),
-			conclusion: String(check.conclusion ?? ''),
-			url: String(check.detailsUrl ?? check.targetUrl ?? ''),
+		available: true,
+		prs: result.data.prs.map((pr) => ({
+			number: pr.number,
+			title: pr.title,
+			branch: pr.branch,
+			url: pr.url,
+			draft: pr.draft,
 		})),
 	};
 };
 
-/** List open pull requests via `gh pr list`. Read-only; never throws. */
-export const listOpenPrs = async (
-	cwd: string,
-	exec?: IArgvExec,
-): Promise<IForgeList> => {
-	const run = await runExternalTool(
-		{
-			tool: GH_TOOL,
-			args: [
-				'pr',
-				'list',
-				'--state',
-				'open',
-				'--limit',
-				'50',
-				'--json',
-				'number,title,headRefName,url,isDraft',
-			],
-			cwd,
-		},
-		exec,
-	);
-	if (run.unavailable)
-		return { available: false, note: GH_ABSENT_NOTE, prs: [] };
-	if (!run.ok && !run.stdout.includes('[')) {
-		return {
-			available: true,
-			note: run.stderr.trim() || 'gh pr list failed',
-			prs: [],
-		};
-	}
-	return { available: true, prs: parsePrList(run.stdout || run.stderr) };
-};
-
 /**
- * View a pull request (+ CI check rollup) via `gh pr view`. `ref` may be a
- * PR number, branch, or url; omit it to use the current branch's PR.
- * Read-only; never throws.
+ * View a pull request (+ CI check rollup) through the forge plugin. `ref`
+ * may be a PR number, branch, or url; omit it to use the current branch's
+ * PR. Read-only; never throws.
  */
 export const viewPr = async (
 	cwd: string,
 	ref?: string,
-	exec?: IArgvExec,
+	exec?: IForgeExec,
 ): Promise<IForgeView> => {
-	const run = await runExternalTool(
-		{
-			tool: GH_TOOL,
-			args: [
-				'pr',
-				'view',
-				...(ref !== undefined && ref !== '' ? [ref] : []),
-				'--json',
-				'number,title,state,url,mergeable,reviewDecision,statusCheckRollup',
-			],
-			cwd,
-		},
-		exec,
-	);
-	if (run.unavailable) return { available: false, note: GH_ABSENT_NOTE };
-	if (!run.ok && !run.stdout.includes('{')) {
-		return {
-			available: true,
-			note:
-				run.stderr.trim() ||
-				`no pull request found for "${ref ?? 'current branch'}"`,
-		};
+	const result = await showPullRequest(cwd, ref, exec);
+	if (!result.ok) {
+		return { available: !isCliAbsent(result), note: noteOf(result) };
 	}
-	const pr = parsePrView(run.stdout || run.stderr);
-	return pr === undefined
-		? { available: true, note: 'could not parse gh output' }
-		: { available: true, pr };
+	const { pr } = result.data;
+	return {
+		available: true,
+		pr: {
+			number: pr.number,
+			title: pr.title,
+			state: pr.state,
+			url: pr.url,
+			mergeable: pr.mergeable,
+			reviewDecision: pr.reviewDecision,
+			checks: pr.checks.map((check) => ({ ...check })),
+		},
+	};
 };
