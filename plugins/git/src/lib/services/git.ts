@@ -305,10 +305,15 @@ export const gitShow = async (
 	ref = 'HEAD',
 	path?: string,
 ): Promise<IGitShowResult> => {
+	// A ref is never an option: `--output=<file>` made git write a file.
+	if (ref.startsWith('-')) {
+		return { ok: false, reason: `ref "${ref}" starts with "-": refused` };
+	}
 	const args = [
 		'show',
 		'--stat',
 		`--pretty=format:${SHOW_PRETTY_FORMAT}`,
+		'--end-of-options',
 		ref,
 	];
 	if (path !== undefined) args.push('--', path);

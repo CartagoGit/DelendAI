@@ -72,11 +72,16 @@ describe('q00013 — eventual settlement cycle', () => {
 		expect(drained.activeWorkers).toBe(0);
 		expect(drained.lastZeroAt).toBeDefined();
 
-		// Settlement runner with a guaranteed-passing command.
+		// Settlement runs only a script the project declares: one that
+		// always passes.
+		await writeFile(
+			join(workspace, 'package.json'),
+			JSON.stringify({ scripts: { validate: 'true' } }),
+		);
 		const outcome = await runSettlement({
 			cwd: workspace,
 			maxAttempts: 1,
-			validateCommand: 'true',
+			validateCommand: 'bun run validate',
 		});
 		expect(outcome.green).toBe(true);
 

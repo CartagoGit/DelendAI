@@ -32,3 +32,27 @@ export const REMOTE_PATH_VARIABLE = 'DELENDAI_REMOTE_PATH';
 
 /** Highest TCP port number. */
 export const MAX_TCP_PORT = 65_535;
+
+/**
+ * The programs an ssh execution may start when its options name none:
+ * build and test tooling. Quoting keeps data from becoming syntax; this
+ * keeps a caller from naming any program the remote account can run.
+ */
+export const DEFAULT_SSH_ALLOWED_PROGRAMS: readonly string[] = [
+	'bun',
+	'bunx',
+	'node',
+	'npm',
+	'npx',
+	'pnpm',
+	'yarn',
+	'git',
+	'make',
+	'python3',
+	'pytest',
+	'go',
+	'cargo',
+];
+
+/** What the adapter itself runs to probe a host: always allowed. */
+export const SSH_PROBE_PROGRAMS: readonly string[] = ['true', 'hostname'];

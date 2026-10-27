@@ -17,6 +17,11 @@ import {
 	type IGitHubTagDeleteArgs,
 	type IGitHubWorkflowDispatchArgs,
 } from '../mutations';
+import {
+	GITHUB_NUMBER_SCHEMA,
+	GITHUB_OWNER_SCHEMA,
+	GITHUB_REPOSITORY_SCHEMA,
+} from '../contracts/constants/github-selectors.constant';
 
 export interface IGitHubWriteToolOptions {
 	readonly namespacePrefix: string;
@@ -28,8 +33,8 @@ export interface IGitHubWriteToolOptions {
 const providerSchema = z.literal('github');
 const repoSelectorSchema = z
 	.object({
-		owner: z.string().min(1).optional(),
-		repository: z.string().min(1).optional(),
+		owner: GITHUB_OWNER_SCHEMA.optional(),
+		repository: GITHUB_REPOSITORY_SCHEMA.optional(),
 		confirm: z.boolean().optional(),
 		actor: z.string().min(1).optional(),
 		idempotencyKey: z.string().min(1).optional(),
@@ -295,10 +300,7 @@ export const buildGitHubWriteToolRegistrations = (
 			'Patch a GitHub issue title/body/state/labels. Requires confirm:true. Uses the shared remote mutation executor with redacted audit receipts and no automatic retries.',
 			repoSelectorSchema
 				.extend({
-					issue: z.union([
-						z.string().min(1),
-						z.number().int().positive(),
-					]),
+					issue: GITHUB_NUMBER_SCHEMA,
 					title: z.string().optional(),
 					body: z.string().optional(),
 					state: z.enum(['open', 'closed']).optional(),
@@ -319,10 +321,7 @@ export const buildGitHubWriteToolRegistrations = (
 			'Post a GitHub issue comment. Requires confirm:true. Uses the shared remote mutation executor with redacted audit receipts and no automatic retries.',
 			repoSelectorSchema
 				.extend({
-					issue: z.union([
-						z.string().min(1),
-						z.number().int().positive(),
-					]),
+					issue: GITHUB_NUMBER_SCHEMA,
 					body: z.string().min(1),
 				})
 				.strict(),

@@ -624,7 +624,9 @@ export class ExternalServerRegistry {
 		const safeEnv = buildSafeEnv({
 			entry: normalizedEnv === undefined ? {} : { env: normalizedEnv },
 			hostEnv: this.hostEnv,
-			requiredKeys: Object.keys(normalizedEnv ?? {}),
+			// The entry's own `$NAME` references say what must be present;
+			// the keys it sets are not host variables, and requiring them
+			// reported a set value as missing.
 		});
 		if (!safeEnv.ok) {
 			state.lastError = formatMissingEnvMessage(id, safeEnv.missing);

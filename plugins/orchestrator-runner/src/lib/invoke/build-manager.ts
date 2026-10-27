@@ -28,7 +28,10 @@ import type { IProviderAccount } from '@delendai/core/contracts';
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
 import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
-import { accountEnvironment } from '../services/account-environment.service';
+import {
+	accountApiCredential,
+	accountEnvironment,
+} from '../services/account-environment.service';
 import type { ConfirmationSigner, IConfirmationGate } from './token';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
@@ -216,6 +219,19 @@ export const buildDefaultInvocationManager = (
 	});
 	const apiInvoker = createApiInvoker({
 		fetchFn: globalHttpFetch,
+		credentialFor: (request) => {
+			const accountId = request.decision.targetProvider.accountId;
+			return accountApiCredential({
+				envVar:
+					request.invoke.kind === 'api' ? request.invoke.envVar : '',
+				accountId,
+				account:
+					accountId === undefined
+						? undefined
+						: accounts.get(accountId),
+				parentEnv: process.env,
+			});
+		},
 		...(options.quotaSink !== undefined
 			? { quotaSink: options.quotaSink }
 			: {}),

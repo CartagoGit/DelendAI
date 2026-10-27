@@ -581,9 +581,18 @@ describe('ExternalServerRegistry — failure paths', () => {
 		expect(h.spawnCalls).toHaveLength(0);
 	});
 
+	it('a set env value is not missing: a literal, or a reference that resolves', () => {
+		const h = makeHarness(
+			{ fs: entry({ env: { LOG_LEVEL: 'info', TOKEN: '$HOME' } }) },
+			{ hostEnv: BASE_HOST_ENV },
+		);
+		void h.registry.call('fs', 'read_file', {});
+		expect(h.spawnCalls).toHaveLength(1);
+	});
+
 	it('missing required host env fails closed with code:missing-env and does not spawn', async () => {
 		const h = makeHarness(
-			{ fs: entry({ env: { LOG_LEVEL: 'info' } }) },
+			{ fs: entry({ env: { LOG_LEVEL: '$LOG_LEVEL' } }) },
 			{ hostEnv: BASE_HOST_ENV },
 		);
 		const outcome = await h.registry.call('fs', 'read_file', {});
