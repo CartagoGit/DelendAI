@@ -33,16 +33,14 @@ import type {
 	IStepOutcome,
 	ISubagentResult,
 } from './contracts.js';
-
-/** Generate a stable, deterministic, host-independent slot id. */
-function makeSlotId(order: number, role: string): string {
-	return `slot-${order}-${role}`;
-}
-
-/** New subagent id inside a rotation slot. */
-function makeSubagentId(slotId: string, iter: number): string {
-	return `${slotId}#${iter}`;
-}
+import {
+	dependsOnFailedTransitively,
+	emptyStepOutcome,
+	failure,
+	makeSlotId,
+	makeSubagentId,
+	withTimeout,
+} from './linear-dispatcher.helper.js';
 
 /**
  * Public façade. Construct once per plan, then call `run()`.
@@ -349,80 +347,4 @@ export class LinearDispatcher {
 			ok,
 		};
 	}
-}
-
-async function withTimeout<T>(
-	promise: Promise<T>,
-	timeoutMs: number,
-	controller: AbortController,
-): Promise<T> {
-	if (timeoutMs === 0) return promise;
-	let timer: ReturnType<typeof setTimeout> | undefined;
-	try {
-		return await Promise.race([
-			promise,
-			new Promise<T>((_, reject) => {
-				timer = setTimeout(() => {
-					// Cancel the subagent first: the caller rotates to a new one
-					// as soon as this rejects.
-					controller.abort();
-					reject(
-						new Error(`dispatch timed out after ${timeoutMs}ms`),
-					);
-				}, timeoutMs);
-			}),
-		]);
-	} finally {
-		if (timer !== undefined) clearTimeout(timer);
-	}
-}
-
-function dependsOnFailedTransitively(
-	order: number,
-	failedOrders: ReadonlySet<number>,
-	stepsByOrder: ReadonlyMap<number, IPlanStep>,
-	visiting = new Set<number>(),
-): boolean {
-	if (failedOrders.has(order)) return true;
-	if (visiting.has(order)) return false;
-	const step = stepsByOrder.get(order);
-	if (!step) return false;
-	visiting.add(order);
-	return (step.dependsOn ?? []).some((dependency) =>
-		dependsOnFailedTransitively(
-			dependency,
-			failedOrders,
-			stepsByOrder,
-			visiting,
-		),
-	);
-}
-
-function emptyStepOutcome(step: IPlanStep): IStepOutcome {
-	return {
-		order: step.order,
-		kind: step.kind,
-		slotId: makeSlotId(step.order, step.subagentRole ?? 'orchestrator'),
-		subagentIds: [],
-		result: null,
-		rotations: [],
-		ok: false,
-	};
-}
-
-function failure(
-	step: IPlanStep,
-	slotId: string,
-	subagentIds: readonly string[],
-	rotations: readonly { subagentId: string; reason: string }[],
-): IStepOutcome {
-	return {
-		order: step.order,
-		kind: step.kind,
-		slotId,
-		subagentIds: [...subagentIds],
-		rotations: [...rotations],
-		result: null,
-		ok: false,
-	};
 }
