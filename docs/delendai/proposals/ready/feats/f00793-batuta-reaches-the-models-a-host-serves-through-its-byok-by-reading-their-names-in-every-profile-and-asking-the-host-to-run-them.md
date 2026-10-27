@@ -30,7 +30,7 @@ Owner's dogfood, 2026-10-27. The owner serves MiniMax, Alibaba (qwen3.8-max/flas
 
 ### S1 — The host's BYOK roster, by name, detected at start
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/host-model-roster.service.ts`, `packages/core/src/lib/contracts/interfaces/host-byok.interface.ts`, `packages/core/src/lib/contracts/constants/host-byok.constant.ts`, `packages/core/tests/src/lib/shared/host-model-roster.service.spec.ts`, `packages/core/src/lib/plugins/account-offers.service.ts`
+- **Files**: `packages/cli/src/contracts/constants/offer-messages.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/cli.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/constants/host-byok.constant.ts`, `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`, `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/contracts/interfaces/host-byok.interface.ts`, `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/account-offers.service.ts`, `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/shared/host-model-roster.service.ts`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/core/tests/src/lib/shared/host-model-roster.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every editor profile's `chatLanguageModels.json` (JSON with comments) is read for vendor, provider name, model id, display name, endpoint host, tool calling, vision, thinking, context window and reasoning efforts; no other field — a key, a header, a token — is returned, stored, logged or compared, and a spec proves no fixture key value appears in any output."
@@ -40,11 +40,11 @@ Owner's dogfood, 2026-10-27. The owner serves MiniMax, Alibaba (qwen3.8-max/flas
 
 ### S2 — Asking the host to run a model
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/subprocess/host-sampling.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`
+- **Files**: `plugins/orchestrator-runner/AGENT.md`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/host-sampling.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/handoff.ts`, `plugins/orchestrator-runner/src/lib/router/advise.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/services/host-sampler.service.ts`, `plugins/orchestrator-runner/src/lib/subprocess/host-sampling.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts`, `plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/unicode-safe-prompt.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/services/acp-roster.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/host-sampling.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A `host-sampling` invoker sends `sampling/createMessage` with the model as a hint and returns the host's reply, the model the host says it used and the stop reason; a host that does not offer sampling, refuses, or serves another model than the one hinted is a structured outcome, never a silent substitution."
-  - "Each BYOK model is a roster entry routed through `host-sampling`: `usable` only when the host allows this server that model, `not-allowed` with the exact setting that would allow it otherwise, `host-unavailable` when the server runs outside a host that samples."
+  - "Discovery proposes each BYOK model as a roster entry routed through `host-sampling`, for the person to confirm; a call says `host-unavailable` outside a host that samples, `host-refused` with the setting that would allow the model (VS Code: `chat.mcp.serverSampling`) when the host declines, and `host-substituted` when it answers with another model."
 
 ### S3 — Dogfood evidence
 - **Status**: pending
@@ -63,3 +63,5 @@ Owner's dogfood, 2026-10-27. The owner serves MiniMax, Alibaba (qwen3.8-max/flas
 ## notes
 
 - The roster code landed in a commit titled for the proposal text (be82afc7a): the code commit before it was refused by a hook, and the files it had staged went with the next one.
+- Whether a host allows a model is learned when it is asked, not read ahead from the editor's settings: the setting's keys name servers the way each editor labels them, and the answer the host gives is the evidence.
+- `host-sampling` stays a spending kind under the runner's spend guard: the model runs on the person's own key.
