@@ -15,7 +15,10 @@ import {
 	createUserHomeReader,
 	scanHostInstructions,
 } from '@delendai/proposals/lib/tools/scan-host-instructions.tool';
-import type { IFileReader } from '@delendai/core/contracts';
+import {
+	AGENT_HOST_INSTRUCTION_FILES,
+	type IFileReader,
+} from '@delendai/core/contracts';
 import type {
 	IHostInstructionFile,
 	IUserHomeReader,
@@ -48,7 +51,7 @@ const byPath = (
 };
 
 describe('scanHostInstructions', () => {
-	it('scope "repo" reads only the three in-repo files, never the home reader', async () => {
+	it('scope "repo" reads only the in-repo files every host declares, never the home reader', async () => {
 		const home = { readHome: vi.fn(async () => undefined) };
 		const inv = await scanHostInstructions(
 			{
@@ -59,13 +62,18 @@ describe('scanHostInstructions', () => {
 		);
 
 		expect(inv.scope).toBe('repo');
-		expect(inv.files).toHaveLength(3);
 		expect(inv.files.every((f) => f.surface === 'in-repo')).toBe(true);
-		expect(inv.files.map((f) => f.path)).toEqual([
-			'AGENTS.md',
-			'CLAUDE.md',
-			'.github/copilot-instructions.md',
-		]);
+		expect(inv.files.map((f) => f.path)).toEqual(
+			AGENT_HOST_INSTRUCTION_FILES.map(({ path }) => path),
+		);
+		expect(inv.files.map((f) => f.path)).toEqual(
+			expect.arrayContaining([
+				'AGENTS.md',
+				'CLAUDE.md',
+				'.github/copilot-instructions.md',
+				'.windsurfrules',
+			]),
+		);
 		expect(home.readHome).not.toHaveBeenCalled();
 	});
 
@@ -110,7 +118,7 @@ describe('scanHostInstructions', () => {
 			},
 			{ scope: 'all' },
 		);
-		expect(inv.files).toHaveLength(3 + 5);
+		expect(inv.files).toHaveLength(AGENT_HOST_INSTRUCTION_FILES.length + 5);
 		const cursor = byPath(inv.files, '~/.cursorrules');
 		expect(cursor.surface).toBe('user-home');
 		expect(cursor.present).toBe(true);
@@ -138,7 +146,7 @@ describe('scanHostInstructions', () => {
 			{ repo: fakeRepoReader({ 'AGENTS.md': 'x' }) },
 			{ scope: 'all' },
 		);
-		expect(inv.files).toHaveLength(3 + 5);
+		expect(inv.files).toHaveLength(AGENT_HOST_INSTRUCTION_FILES.length + 5);
 		expect(
 			inv.files
 				.filter((f) => f.surface === 'user-home')

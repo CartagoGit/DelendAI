@@ -16,6 +16,7 @@ import {
 } from '../rollup';
 import { percentile } from '../statistics.helper';
 import { readSummaryFile } from '../summary-file.service';
+import { agentKindOf } from '../detect-agent';
 import type {
 	IDegradation,
 	IInvocationRecord,
@@ -102,7 +103,6 @@ const ISO_DATE_LENGTH = 10;
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
 	const prefix = `${basename(absPath)}.`;
-	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	await Promise.all(
 		entries
@@ -139,7 +139,7 @@ const bucketKeyResolvers = {
 		`${record.plugin}/${record.tool}`,
 	model: (record: IInvocationRecordTelemetry) =>
 		record.dimensions?.model ?? 'unattributed',
-	agent: (record: IInvocationRecordTelemetry) => record.agent.kind,
+	agent: ({ agent }: IInvocationRecordTelemetry) => agentKindOf(agent.kind),
 	requestType: (record: IInvocationRecordTelemetry) =>
 		record.requestType ?? 'unknown',
 	outcome: (record: IInvocationRecordTelemetry) => record.outcome,
