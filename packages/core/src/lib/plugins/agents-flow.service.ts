@@ -7,6 +7,7 @@
  * person's own file for this project, checked against the schema first,
  * so nobody edits a file by hand and nothing invalid is written.
  */
+import { withDeclaredProviders } from '../shared/declared-providers.helper';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -82,7 +83,7 @@ export const listAgents = async (input: {
 		input.personalRoot,
 	);
 	const configured = [personal.catalogues, shared.catalogues];
-	const [registry, catalogue] = await Promise.all([
+	const [registry, catalogued] = await Promise.all([
 		input.registry ??
 			readAgentRegistry({
 				sources: catalogueSources('agents', configured),
@@ -91,6 +92,12 @@ export const listAgents = async (input: {
 			readModelCatalogue({
 				sources: catalogueSources('models', configured),
 			}),
+	]);
+	// The providers the project and the person declare replace the
+	// catalogue's entries of the same id, the person's own last.
+	const catalogue = withDeclaredProviders(catalogued, [
+		...(shared.modelProviders ?? []),
+		...(personal.modelProviders ?? []),
 	]);
 	const detected = await detectAgents({
 		machine:
