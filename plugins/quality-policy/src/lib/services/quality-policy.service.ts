@@ -5,7 +5,10 @@ import {
 	createWorkspaceFileReader,
 	parseConfigFile,
 } from '@delendai/core/public';
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	SafeWorkspaceReader,
+	workspacePackageDirs,
+} from '@delendai/core/runtime';
 import type { IFileReader } from '@delendai/core/contracts';
 import { classifyPath } from '@delendai/conventions/public';
 import { resolveScopes } from '@delendai/quality/public';
@@ -25,9 +28,7 @@ import {
 	QUALITY_POLICY_AREAS,
 	DEFAULT_QUALITY_POLICY_MAX_BYTES,
 	QUALITY_POLICY_DEPENDS_ON,
-	QUALITY_POLICY_LINT_AREAS,
 	QUALITY_POLICY_SAMPLE_LIMIT,
-	QUALITY_POLICY_SAMPLE_ROOTS,
 	QUALITY_POLICY_TYPESCRIPT_EXTENSIONS,
 } from '../contracts/constants/quality-policy.constant';
 import type {
@@ -96,7 +97,9 @@ const collectSamplePaths = async (
 	workspaceRootAbs: string,
 ): Promise<readonly string[]> => {
 	const reader = new SafeWorkspaceReader(workspaceRootAbs);
-	const queue: string[] = [...QUALITY_POLICY_SAMPLE_ROOTS];
+	// The project's own packages, or its root when it declares none.
+	const packages = await workspacePackageDirs(workspaceRootAbs);
+	const queue: string[] = packages.length > 0 ? [...packages] : ['.'];
 	const collected: string[] = [];
 	while (queue.length > 0 && collected.length < QUALITY_POLICY_SAMPLE_LIMIT) {
 		const next = queue.shift();
@@ -167,12 +170,16 @@ const buildConventionsEntry = async (
 
 const buildLintEntry = async (
 	reader: IFileReader,
+	workspaceRootAbs: string,
 ): Promise<IQualityPolicyEntry> => {
 	const scopes = Object.keys(await resolveScopes(reader, {})).sort(
 		(left, right) => left.localeCompare(right),
 	);
 	const presetSignals: IQualityPolicyPresetSignal[] = [];
-	for (const candidate of QUALITY_POLICY_LINT_AREAS) {
+	// The root and every workspace package: the areas the repository is
+	// made of, never a fixed sample of them.
+	const areas = ['root', ...(await workspacePackageDirs(workspaceRootAbs))];
+	for (const candidate of areas) {
 		if (
 			candidate !== 'root' &&
 			!(await reader.exists(`${candidate}/package.json`)) &&
@@ -251,7 +258,8 @@ const builders: Record<
 		buildTestsEntry(reader, workspaceSignals),
 	conventions: async ({ workspaceRootAbs }) =>
 		buildConventionsEntry(workspaceRootAbs),
-	lint: async ({ reader }) => buildLintEntry(reader),
+	lint: async ({ reader, workspaceRootAbs }) =>
+		buildLintEntry(reader, workspaceRootAbs),
 	types: async ({ workspaceRootAbs }) => buildTypesEntry(workspaceRootAbs),
 	coverage: async ({ reader, workspaceSignals }) =>
 		buildCoverageEntry(reader, workspaceSignals),
