@@ -26,12 +26,10 @@ export interface DelendaiAuditAuditCloseOutput {
 		findingId: string;
 		missing: string[];
 	}[];
+	threshold?: number;
 	consensus?: {
 		id: string;
-		seenBy: string[];
-		reviewers: number;
 		ratio: number;
-		threshold: number;
 		consensus: boolean;
 	}[];
 	inventoryMarkdown?: string;

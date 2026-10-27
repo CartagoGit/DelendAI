@@ -1,3 +1,4 @@
+// effect-boundary-authorized: writes the closure record inside a contained audit dir
 /**
  * `<prefix>_audit_close` — the verifiable side of the audit protocol: claim a seat,
  * commit a Phase A file, check the evidence contract, and close the audit with a
@@ -16,6 +17,7 @@ import {
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import type { IToolRegistration } from '@delendai/core/contracts';
 
+import type { ICloseToolOptions } from '../contracts/interfaces/audit-protocol.interface';
 import {
 	AUDIT_CLOSURE_FILE,
 	AUDIT_PROTOCOL_DIR,
@@ -30,8 +32,8 @@ import {
 } from '../services/audit-contract.service';
 import { consolidateAudits } from '../services/audit-consolidate.service';
 import {
-	canonicalAuditPathMessage,
-	isCanonicalAuditDir,
+	collectMarkdownFiles,
+	resolveAuditDir,
 } from '../services/audit-path-policy.service';
 import {
 	claimSeat,
@@ -40,7 +42,6 @@ import {
 	readPhaseA,
 } from '../services/audit-seats.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
-import { collectMarkdownFiles } from './audit-consolidate.tool';
 
 const InputSchema = z.object({
 	action: z.enum(['claim-seat', 'commit-phase-a', 'close']),
@@ -73,28 +74,20 @@ const OutputSchema = z.object({
 			}),
 		)
 		.optional(),
+	/** Share of the reviewers that must report a finding (close). */
+	threshold: z.number().optional(),
+	/** One entry per finding; the full record is written to the closure file. */
 	consensus: z
 		.array(
 			z.object({
 				id: z.string(),
-				seenBy: z.array(z.string()),
-				reviewers: z.number(),
 				ratio: z.number(),
-				threshold: z.number(),
 				consensus: z.boolean(),
 			}),
 		)
 		.optional(),
 	inventoryMarkdown: z.string().optional(),
 });
-
-export interface ICloseToolOptions {
-	readonly namespacePrefix: string;
-	readonly workspaceRoot: string;
-	readonly defaultAuditDir: string;
-	/** Workspace-relative proposals root (`<docsDir>/proposals`). */
-	readonly proposalsRoot: string;
-}
 
 type CloseArgs = z.infer<typeof InputSchema>;
 type CloseOutput = z.infer<typeof OutputSchema>;
@@ -126,24 +119,14 @@ export const buildCloseRegistration = (
 				const relDir = (
 					args.auditDir ?? options.defaultAuditDir
 				).replace(/^\.\//u, '');
-				if (!isCanonicalAuditDir(relDir)) {
-					return toolError(
-						`audit dir "${relDir}" is not allowed: not canonical`,
-						canonicalAuditPathMessage,
-					);
-				}
-				const contained = await resolveExistingWorkspaceContained(
+				const resolved = await resolveAuditDir(
 					options.workspaceRoot,
 					relDir,
 				);
-				if (!contained.ok) {
-					return toolError(
-						`audit dir "${relDir}" is not allowed`,
-						contained.reason ??
-							'Path must stay inside the workspace root.',
-					);
+				if (!resolved.ok) {
+					return toolError(resolved.error, resolved.hint);
 				}
-				const absDir = contained.abs;
+				const absDir = resolved.abs;
 
 				if (args.action === 'claim-seat') {
 					if (
@@ -259,7 +242,14 @@ export const buildCloseRegistration = (
 					closed,
 					pendingPhaseA,
 					incomplete,
-					consensus,
+					threshold,
+					consensus: consensus.map(
+						({ id, ratio, consensus: agreed }) => ({
+							id,
+							ratio,
+							consensus: agreed,
+						}),
+					),
 					inventoryMarkdown,
 				} satisfies CloseOutput);
 			},

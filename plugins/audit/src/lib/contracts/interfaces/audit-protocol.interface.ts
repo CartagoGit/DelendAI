@@ -4,7 +4,7 @@ export interface ISeatClaim {
 	readonly claimedAt: string;
 }
 
-export type SeatClaimResult =
+export type ISeatClaimResult =
 	| { readonly ok: true; readonly claim: ISeatClaim }
 	| { readonly ok: false; readonly reason: string };
 
@@ -18,15 +18,15 @@ export interface IPhaseACommit {
 export interface IFindingContractReport {
 	readonly source: string;
 	readonly findingId: string;
-	readonly missing: readonly string[];
+	readonly missing: string[];
 }
 
-export type InventoryState = 'open' | 'confirmed' | 'rejected' | 'fixed';
+export type IInventoryState = 'open' | 'confirmed' | 'rejected' | 'fixed';
 
 export interface IInventoryRow {
 	readonly findingId: string;
 	readonly source: string;
-	readonly state: InventoryState;
+	readonly state: IInventoryState;
 }
 
 export interface IProposalInventoryRow {
@@ -37,9 +37,17 @@ export interface IProposalInventoryRow {
 
 export interface IFindingConsensus {
 	readonly id: string;
-	readonly seenBy: readonly string[];
+	readonly seenBy: string[];
 	readonly reviewers: number;
 	readonly ratio: number;
 	readonly threshold: number;
 	readonly consensus: boolean;
+}
+
+export interface ICloseToolOptions {
+	readonly namespacePrefix: string;
+	readonly workspaceRoot: string;
+	readonly defaultAuditDir: string;
+	/** Workspace-relative proposals root (`<docsDir>/proposals`). */
+	readonly proposalsRoot: string;
 }

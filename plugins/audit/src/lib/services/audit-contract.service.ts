@@ -1,14 +1,19 @@
+// effect-boundary-authorized: lists the proposals tree under a contained root
 /**
  * The audit evidence contract, inventory and consensus: pure checks over the parsed
  * reports, plus the proposal inventory read from the proposals tree.
  */
-import { readdir, readFile } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import path from 'node:path';
+
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	ACTIVE_PROPOSAL_STATUS_DIRS,
 	AUDIT_EVIDENCE_FIELDS,
 	AUDIT_STATE_WORDS,
+	PROPOSAL_HEAD_BYTES,
 } from '../contracts/constants/audit-protocol.constant';
 import type {
 	IAuditDocument,
@@ -18,19 +23,24 @@ import type {
 	IFindingConsensus,
 	IFindingContractReport,
 	IInventoryRow,
-	InventoryState,
+	IInventoryState,
 	IProposalInventoryRow,
 } from '../contracts/interfaces/audit-protocol.interface';
 
 const escapeRe = (s: string): string =>
 	s.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
-const hasLabel = (text: string, labels: readonly string[]): boolean =>
-	labels.some((l) =>
+const stripAccents = (text: string): string =>
+	text.normalize('NFD').replace(/\p{M}/gu, '');
+
+const hasLabel = (text: string, labels: readonly string[]): boolean => {
+	const plain = stripAccents(text);
+	return labels.some((l) =>
 		new RegExp(`(?:^|[\\s*_>-])${escapeRe(l)}\\s*\\**\\s*:`, 'iu').test(
-			text,
+			plain,
 		),
 	);
+};
 
 /** Findings that miss required evidence fields (G76, G74). Complete ones are not listed. */
 export const checkEvidenceContract = (
@@ -48,7 +58,7 @@ export const checkEvidenceContract = (
 		}),
 	);
 
-const stateOf = (detail: string): InventoryState => {
+const stateOf = (detail: string): IInventoryState => {
 	const m = /(?:Estado|State|Status)\s*\**\s*:\s*([^\n]*)/iu.exec(detail);
 	const value = m?.[1] ?? '';
 	return AUDIT_STATE_WORDS.find((w) => w.re.test(value))?.state ?? 'open';
@@ -86,7 +96,7 @@ const frontmatterValue = (body: string, key: string): string | undefined =>
 	new RegExp(`^${key}:\\s*"?([^"\\n]*)"?\\s*$`, 'mu').exec(body)?.[1]?.trim();
 
 const walkMarkdown = async (dir: string): Promise<string[]> => {
-	let entries;
+	let entries: Dirent[];
 	try {
 		entries = await readdir(dir, { withFileTypes: true });
 	} catch {
@@ -106,12 +116,15 @@ const walkMarkdown = async (dir: string): Promise<string[]> => {
 export const buildProposalInventory = async (
 	proposalsRoot: string,
 ): Promise<IProposalInventoryRow[]> => {
+	const reader = new SafeWorkspaceReader(proposalsRoot);
 	const rows: IProposalInventoryRow[] = [];
 	for (const status of ACTIVE_PROPOSAL_STATUS_DIRS) {
 		for (const file of await walkMarkdown(
 			path.join(proposalsRoot, status),
 		)) {
-			const head = (await readFile(file, 'utf8')).slice(0, 2000);
+			const head = (
+				await reader.readText(path.relative(proposalsRoot, file))
+			).content.slice(0, PROPOSAL_HEAD_BYTES);
 			const id = frontmatterValue(head, 'id');
 			if (id === undefined) continue;
 			rows.push({
@@ -134,7 +147,7 @@ export const computeConsensus = (
 		const ratio = reviewers === 0 ? 0 : f.seenBy.length / reviewers;
 		return {
 			id: f.id,
-			seenBy: f.seenBy,
+			seenBy: [...f.seenBy],
 			reviewers,
 			ratio,
 			threshold,

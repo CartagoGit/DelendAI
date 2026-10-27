@@ -1,11 +1,14 @@
+// effect-boundary-authorized: seat and Phase A markers are created exclusively inside a contained audit dir
 /**
  * Seats and Phase A of the audit protocol. A seat is claimed with an exclusive
  * create (`wx`), so two reviewers cannot hold one; a reviewer's Phase A file is
  * committed (hashed) before the others' reports may be read.
  */
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import {
 	AUDIT_NAME_RE,
@@ -16,7 +19,7 @@ import {
 import type {
 	IPhaseACommit,
 	ISeatClaim,
-	SeatClaimResult,
+	ISeatClaimResult,
 } from '../contracts/interfaces/audit-protocol.interface';
 
 const protocolDir = (auditDir: string, sub: string): string =>
@@ -25,6 +28,9 @@ const protocolDir = (auditDir: string, sub: string): string =>
 const sha256 = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
 
+const readText = async (auditDir: string, rel: string): Promise<string> =>
+	(await new SafeWorkspaceReader(auditDir).readText(rel)).content;
+
 const isExists = (err: unknown): boolean =>
 	(err as NodeJS.ErrnoException).code === 'EEXIST';
 
@@ -32,7 +38,7 @@ export const claimSeat = async (
 	auditDir: string,
 	seat: string,
 	reviewer: string,
-): Promise<SeatClaimResult> => {
+): Promise<ISeatClaimResult> => {
 	if (!AUDIT_NAME_RE.test(seat) || !AUDIT_NAME_RE.test(reviewer)) {
 		return { ok: false, reason: 'seat and reviewer must be plain names' };
 	}
@@ -63,12 +69,9 @@ export const readSeat = async (
 	seat: string,
 ): Promise<ISeatClaim | undefined> => {
 	try {
-		const raw = await readFile(
-			path.join(
-				protocolDir(auditDir, AUDIT_SEATS_SUBDIR),
-				`${seat}.json`,
-			),
-			'utf8',
+		const raw = await readText(
+			auditDir,
+			`${AUDIT_PROTOCOL_DIR}/${AUDIT_SEATS_SUBDIR}/${seat}.json`,
 		);
 		return JSON.parse(raw) as ISeatClaim;
 	} catch {
@@ -96,7 +99,7 @@ export const commitPhaseA = async (
 	}
 	let body: string;
 	try {
-		body = await readFile(abs, 'utf8');
+		body = await readText(auditDir, file);
 	} catch {
 		return { ok: false, reason: `Phase A file "${file}" cannot be read` };
 	}
@@ -134,12 +137,9 @@ export const readPhaseA = async (
 ): Promise<IPhaseACommit | undefined> => {
 	if (!AUDIT_NAME_RE.test(reviewer)) return undefined;
 	try {
-		const raw = await readFile(
-			path.join(
-				protocolDir(auditDir, AUDIT_PHASE_A_SUBDIR),
-				`${reviewer}.json`,
-			),
-			'utf8',
+		const raw = await readText(
+			auditDir,
+			`${AUDIT_PROTOCOL_DIR}/${AUDIT_PHASE_A_SUBDIR}/${reviewer}.json`,
 		);
 		return JSON.parse(raw) as IPhaseACommit;
 	} catch {
@@ -160,7 +160,7 @@ export const mayReadOthers = async (
 		};
 	}
 	try {
-		const body = await readFile(path.join(auditDir, commit.file), 'utf8');
+		const body = await readText(auditDir, commit.file);
 		if (sha256(body) !== commit.sha256) {
 			return {
 				ok: false,
