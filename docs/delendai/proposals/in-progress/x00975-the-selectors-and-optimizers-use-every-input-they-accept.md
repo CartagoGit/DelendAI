@@ -2,10 +2,14 @@
 id: x00975
 title: "The selectors and optimizers use every input they accept"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
+last-correlation-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
+last-transition-from: ready
+last-transition-at: 2026-10-27T17:52:48.110Z
 ---
 
 # x00975 — The selectors and optimizers use every input they accept
