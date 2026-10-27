@@ -17,6 +17,7 @@
  */
 import { rankModels } from '@delendai/core/runtime';
 
+import { modeForTaskType } from './task-mode.service';
 import type { IProviderCandidate } from '../contracts/interfaces/roster.interface';
 import type {
 	IRankInput,
@@ -60,7 +61,7 @@ export const rankProviders = (
 			costTier: candidate.costTier,
 			available: true,
 		})),
-		{},
+		{ mode: modeForTaskType(input.taskType) },
 		{ dial, pinnedId: input.pinnedId, winRates: input.calibration },
 	).flatMap((ranked): IRankedProvider[] => {
 		const candidate = byId.get(ranked.id);

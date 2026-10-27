@@ -108,6 +108,20 @@ const uniqueProviderIds = (
 	return [...seen];
 };
 
+const costPerAttempt = (row: IProviderScore): number =>
+	row.attempts === 0 ? 0 : row.totalCostUsd / row.attempts;
+
+/** The passing provider with the lowest cost per attempt (tier, then id, break ties). */
+const cheapestPassing = (rows: readonly IProviderScore[]): string | null =>
+	[...rows]
+		.filter((row) => row.passes > 0)
+		.sort(
+			(left, right) =>
+				costPerAttempt(left) - costPerAttempt(right) ||
+				left.costTier - right.costTier ||
+				left.providerId.localeCompare(right.providerId),
+		)[0]?.providerId ?? null;
+
 /** Build a report over a flat attempt list. Pure. */
 export const scoreReport = (
 	attempts: readonly IEvalAttempt[],
@@ -119,10 +133,7 @@ export const scoreReport = (
 		(acc, a) => acc + (a.passed && a.skipped === undefined ? 1 : 0),
 		0,
 	);
-	const winners = rows.filter(
-		(row) => row.winRate !== null && row.winRate > 0,
-	);
-	const winner = winners[0]?.providerId ?? null;
+	const winner = cheapestPassing(rows);
 	const worst = rows[rows.length - 1]?.providerId ?? null;
 	return {
 		rows,

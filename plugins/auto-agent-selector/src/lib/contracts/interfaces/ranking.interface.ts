@@ -39,6 +39,8 @@ export interface IRankInput {
 	 * reachable it is forced to the top; the user's choice always wins.
 	 */
 	readonly pinnedId?: string | undefined;
+	/** The kind of task being routed; plan / review / explore / implement shape the preferred tier. */
+	readonly taskType?: string | undefined;
 	/**
 	 * Measured win-rate per provider id, with the samples it rests on
 	 * (empirical calibration). Blended into the score so a provider that

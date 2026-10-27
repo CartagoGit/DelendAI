@@ -38,6 +38,18 @@ describe('buildConfigDiff', () => {
 		expect(diff.keeps).toHaveLength(0);
 	});
 
+	it('names the real cause of each remove', () => {
+		const diff = buildConfigDiff(['cut', 'unknown', 'zero'], [], {
+			ranked: [pluginFit('cut', 0.4), pluginFit('zero', 0)],
+			catalogIds: new Set(['cut', 'zero']),
+		});
+		const cause = (id: string) =>
+			diff.removes.find((step) => step.pluginId === id)?.rationale;
+		expect(cause('unknown')).toContain('not in the plugin catalog');
+		expect(cause('cut')).toContain('outside the limit');
+		expect(cause('zero')).toContain('no positive fit');
+	});
+
 	it('classifies a current but-not-recommended plugin as "remove"', () => {
 		const diff = buildConfigDiff(['legacy'], []);
 		expect(diff.adds).toHaveLength(0);
