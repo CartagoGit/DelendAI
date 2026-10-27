@@ -6,17 +6,14 @@
  * `node:*`, no `process.env`, no clock — so every branch is deterministic in
  * tests and the same code runs in the server, the CLI and a future webview.
  */
-import {
-	allKnownClients,
-	findingsFromCredentialVariables,
-} from '@delendai/core/runtime';
+import { findingsFromCredentialVariables } from '@delendai/core/runtime';
 
 import {
 	KNOWN_APIS,
+	KNOWN_CLIS,
 	type IKnownApi,
 	type IKnownCli,
 } from '../contracts/constants/known-providers.constant';
-import { cliEntryOf } from './known-cli.helper';
 import type {
 	IDiscoveredRoster,
 	IDiscoveryDeps,
@@ -70,7 +67,7 @@ export const discoverRoster = async (
 
 	// CLIs — probe PATH in parallel, tolerating a rejecting probe.
 	const cliPresence = await Promise.all(
-		(deps.clis ?? allKnownClients().map(cliEntryOf)).map(async (cli) => ({
+		(deps.clis ?? KNOWN_CLIS).map(async (cli) => ({
 			cli,
 			present: await deps.commandExists(cli.command).catch(() => false),
 		})),

@@ -61,6 +61,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/client"
 	},
 	"dependencies": {
+		"@delendai/contracts": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.6.6"
 	},

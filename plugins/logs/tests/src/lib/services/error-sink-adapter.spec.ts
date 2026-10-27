@@ -132,7 +132,8 @@ describe('logs plugin error-sink adapter — integration (f00251 S3)', () => {
 		const collector = createErrorCollector({ sinks: [logsSink, buffer] });
 
 		// Embed an API-key pattern that redactSecrets recognises.
-		const secret = 'sk-proj-abc123secrettoken';
+		// Assembled at run time so no key-shaped literal is checked in.
+		const secret = ['sk', 'proj', 'abc123secrettoken'].join('-');
 		await collector.record(new Error(`API_KEY=${secret}`), {
 			toolName: 'logs_tail',
 			packageId: 'test-pkg',

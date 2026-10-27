@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -477,6 +477,33 @@ describe('gitlab read-only tools (f00411 S2)', () => {
 				maxBytes: 0,
 			}).success,
 		).toBe(false);
+	});
+
+	it('refuses an artifact download a symlink in the cache would lead outside it', async () => {
+		const payload = Buffer.from('0123', 'utf8');
+		const { tools, pluginTempDir } = await collectHandlers(async () => ({
+			data: payload.buffer.slice(
+				payload.byteOffset,
+				payload.byteOffset + payload.byteLength,
+			),
+			meta: baseMeta(),
+		}));
+		tempDirs.push(pluginTempDir);
+		const outside = await mkdtemp(join(tmpdir(), 'gitlab-outside-'));
+		tempDirs.push(outside);
+		await symlink(outside, join(pluginTempDir, 'artifacts'), 'dir');
+
+		const tool = getTool(tools, 'gitlab_artifacts');
+		const result = (await tool.handler({
+			action: 'download',
+			jobId: 77,
+			maxBytes: 4,
+		})) as { isError?: boolean; content: Array<{ text: string }> };
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result.content)).toContain(
+			'stay within the plugin temp dir',
+		);
+		expect(await readdir(outside)).toEqual([]);
 	});
 
 	it('returns variable metadata without revealing values', async () => {

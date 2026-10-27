@@ -17,13 +17,13 @@ export default definePluginManifest({
 	],
 	presets: ['standard', 'swarm', 'full', 'dogfood'],
 	startupActivation: true,
-	// f00180 S2 / MAN-004 — per-tool permission map. Even though
-	// error-reporting only ships ONE tool today (`report_status`),
-	// declaring the map explicitly documents what the plugin will
-	// need for future tools (e.g. a triage queue, a redaction
-	// preview) and lets a host run a per-tool grant review now.
+	// Per-tool permissions: each tool asks for what it does. Both tools
+	// read local state only; the reporter that opens issues is not a tool.
+	// report_status used to ask for network and forge-write, and
+	// diagnose_log, unlisted, inherited the plugin's whole set.
 	toolPermissions: {
-		report_status: ['network', 'forge-write'],
+		report_status: ['filesystem-read'],
+		diagnose_log: ['filesystem-read'],
 	},
 	tokenBudget: {
 		staticBytes: 3_500,

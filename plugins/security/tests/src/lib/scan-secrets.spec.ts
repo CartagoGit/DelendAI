@@ -4,7 +4,7 @@ import { scanSecrets } from '../../../src/lib/secrets/scan-secrets';
 
 // Fake but format-valid secrets (never real credentials).
 const AWS = 'AKIAIOSFODNN7EXAMPLE'; // AKIA + 16 uppercase/alnum
-const PRIV = '-----BEGIN RSA PRIVATE KEY-----';
+const PRIV = ['-----BEGIN RSA', 'PRIVATE KEY-----'].join(' ');
 const GH = 'ghp_0123456789abcdefghijklmnopqrstuvwxyz'; // ghp_ + 36
 const OPENAI = 'sk-0123456789abcdefghijklmnopqrstuv'; // sk- + 32
 

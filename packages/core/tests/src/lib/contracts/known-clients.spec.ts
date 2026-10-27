@@ -36,11 +36,13 @@ describe('the catalogue of known clients', () => {
 	});
 
 	it('finds the client a command runs, whatever its path or suffix', () => {
-		expect(knownClientOf('/usr/local/bin/claude')?.id).toBe('claude-cli');
-		expect(knownClientOf('C:\\tools\\codex.exe')?.profileVariable).toBe(
-			'CODEX_HOME',
+		expect(knownClientOf('/usr/local/bin/claude', '/work')?.id).toBe(
+			'claude-cli',
 		);
-		expect(knownClientOf('not-a-client')).toBeUndefined();
+		expect(
+			knownClientOf('C:\\tools\\codex.exe', '/work')?.profileVariable,
+		).toBe('CODEX_HOME');
+		expect(knownClientOf('not-a-client', '/work')).toBeUndefined();
 	});
 
 	it('is the only list: no plugin source that probes or launches clients enumerates them', () => {

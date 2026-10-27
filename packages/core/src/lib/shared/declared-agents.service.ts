@@ -8,8 +8,8 @@
  * shows it or when asked for all. A binary is installed only from the
  * archive the registry names, and only when its sha256 matches.
  */
-import { createHash } from 'node:crypto';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -26,11 +26,31 @@ import type {
 import { acpLaunchOf, registryPlatform } from './acp-client.service';
 import { runArgv } from './run-command';
 
-/** Where installed agent binaries live: one folder per id and version. */
+/** One path segment: no separator, no `.` or `..`, nothing empty. */
+const SAFE_SEGMENT = /^(?!\.{1,2}$)[^/\\\0]+$/u;
+
+/**
+ * Where installed agent binaries live: one folder per id and version. The
+ * id and version come from a registry, so each must be one segment: an id
+ * such as `../../bin` placed the install anywhere.
+ */
 export const agentInstallDir = (
 	agent: Pick<IRegistryAgent, 'id' | 'version'>,
 	root: string = join(homedir(), '.local', 'share', 'delendai', 'agents'),
-): string => join(root, agent.id, agent.version || 'unversioned');
+): string => {
+	const version = agent.version || 'unversioned';
+	for (const [what, value] of [
+		['id', agent.id],
+		['version', version],
+	] as const) {
+		if (!SAFE_SEGMENT.test(value)) {
+			throw new Error(
+				`agent ${what} "${value}" is not one path segment: not installed`,
+			);
+		}
+	}
+	return join(root, agent.id, version);
+};
 
 /** How a declared agent is started over ACP; nothing for another kind. */
 export const declaredLaunch = (
@@ -174,22 +194,31 @@ export const installAgentBinary = async (
 			`${build.archive} does not match its sha256 (got ${sum}): not installed`,
 		);
 	const dir = agentInstallDir(agent, options.root);
-	await rm(dir, { recursive: true, force: true });
-	await mkdir(dir, { recursive: true });
-	// The name is delendai's, not the URL's: only the format is read from it.
-	const archive = join(dir, archiveName(build.archive));
-	await writeFile(archive, bytes);
-	const done = await (options.run ?? runArgv)(
-		archive.endsWith('.zip')
-			? ['unzip', '-o', '-q', archive, '-d', dir]
-			: ['tar', '-xf', archive, '-C', dir],
-		{ cwd: dir },
-	);
-	if (done.code !== 0)
-		throw new Error(
-			`could not unpack ${archive}: ${done.stderr || done.stdout}`,
+	// Unpacked beside the install and swapped in only once it worked: the
+	// previous install used to be deleted first, so a failed unpack left
+	// none at all.
+	const staging = `${dir}.staging-${randomUUID()}`;
+	await mkdir(staging, { recursive: true });
+	try {
+		// The name is delendai's, not the URL's: only the format is read from it.
+		const archive = join(staging, archiveName(build.archive));
+		await writeFile(archive, bytes);
+		const done = await (options.run ?? runArgv)(
+			archive.endsWith('.zip')
+				? ['unzip', '-o', '-q', archive, '-d', staging]
+				: ['tar', '-xf', archive, '-C', staging],
+			{ cwd: staging },
 		);
-	await rm(archive, { force: true });
+		if (done.code !== 0)
+			throw new Error(
+				`could not unpack ${archive}: ${done.stderr || done.stdout}`,
+			);
+		await rm(archive, { force: true });
+		await rm(dir, { recursive: true, force: true });
+		await rename(staging, dir);
+	} finally {
+		await rm(staging, { recursive: true, force: true });
+	}
 	const launch = acpLaunchOf(agent, { platform, installedDir: dir });
 	if (launch === undefined)
 		throw new Error(`${agent.id} cannot start from ${dir}`);
