@@ -21,6 +21,7 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 ## non-goals
 
 - Identity spelling (x00923).
+- Read-only commands creating a cache (G124): cut to x00984.
 
 ## slices
 
@@ -36,19 +37,18 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 
 ### S2 — The server process
 - **Status**: pending
-- **Files**: `tools/scripts/host/host-supervisor.ts`, `tools/scripts/host/host-supervisor-process.ts`, `tools/scripts/host/host-server.script.ts`
+- **Files**: `tools/scripts/host/host-supervisor.spec.ts`
 - **Gate**: type
 - acceptance:
   - "SIGINT and SIGTERM reach the child; no server survives its client (G113)."
   - "A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27)."
 
-### S3 — The bridge and read-only commands
+### S3 — The bridge names a model only when one conversation can be at work
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`, `packages/core/src/lib/work-identity/provider-model-bridge.constant.ts`, `packages/cli/src/commands/doctor.ts`
+- **Files**: `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`, `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `docs/delendai/configuration/provider-model-bridge.md`
 - **Gate**: type
 - acceptance:
-  - "The bridge is keyed by conversation, so one conversation never reads another's model (G68)."
-  - "status, overview and adopt create no file (G124)."
+  - "The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68)."
 
 ## acceptance
 
@@ -56,10 +56,12 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 - Every host that declares an instructions file gets delendai's block from init when the project uses it, and every reader of instruction files (init, bootstrap analysis, the proposals scan) knows each file a host declares (G66).
 - SIGINT and SIGTERM reach the child; no server survives its client (G113).
 - A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27).
-- The bridge is keyed by conversation, so one conversation never reads another's model (G68).
-- status, overview and adopt create no file (G124).
+- The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68).
 
 ## notes
 - S1, 2026-10-27: `config/external/` holds this repository's own bridges (`.aider.conf.yml`, `.cursorrules`), not what delendai ships for a host, so G66 is read as the material delendai writes: init wrote its instructions block into three fixed files (`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`) whatever the project used, so Windsurf, Cursor, Gemini and Continue were declared and never written for. The block now goes into the instructions file of each host the project uses (declared, found, or Copilot, Claude Code and AGENTS.md agents by default), read from `AGENT_HOSTS`.
 - S1: the parallel host lists that remained were usage-tracking's client table (an object, so `agent-slots-in-sync` never saw it), bootstrap's agent-config rules, init's instruction sources and snapshot targets, and the proposals scan. Each is now derived from `AGENT_HOSTS`, with `legacyInstructions` for the files a host still reads but delendai never writes (`.cursorrules`, `.continuerules`, `.clinerules`, `.codex/instructions.md`, Aider's config). Usage records now name an agent by its host id (`claude`, not `claude-code`); rollups read older records through the same lookup, so history is not split.
 - S1 also fixes the snapshot's "already canonical" test: its copy of the block differed from what init writes, so a file init had written was never recognised as canonical.
+- S2, 2026-10-27: G113 and G27 were already fixed on develop when this slice was taken. The supervisor traps SIGINT, SIGTERM and SIGHUP and stops its child (`host-supervisor-process.ts`, `1b4aeb82f`), and moves to a fresh child when the checkout's runtime code changes. A stale server reports it on every tool result and in `delendai_status`, and the work publisher refuses to publish while the server runs older code (x00701). What was missing was a spec showing that stopping the supervisor stops its server and starts no other: added.
+- S3: a host does not tell an MCP server which conversation is calling, so the bridge cannot be read per conversation. What it can do is never pick one conversation's model for another. It used to name the freshest entry of the workspace. Providers can now write one entry per conversation under the workspace, and when the fresh entries name different models the reading is `ambiguous`, with the models listed, and the editor's own chat record is not consulted either.
+- S3: G124 (status, overview and adopt create `.cache/delendai/` in a project that has none) was reproduced and cut to x00984. Every CLI command starts a full server whose boot writes the cache, which is a boot-wide change rather than a fix to these commands.
