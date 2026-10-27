@@ -113,6 +113,10 @@ const TriageRunOutputSchema = z
 		severity: z.string(),
 		proposalId: z.string().optional(),
 		proposalWritten: z.boolean(),
+		/** The drafted proposal, returned whenever it was not written to disk. */
+		draft: z.string().optional(),
+		/** Each requested effect that did not happen, with the reason. */
+		problems: z.array(z.string()),
 		commentPosted: z.boolean(),
 		commentUrl: z.string().optional(),
 		labelsApplied: z.array(z.string()),
@@ -159,7 +163,8 @@ export const buildTriageRunRegistration = (
 
 				let proposalId = 'pending';
 				let proposalWritten = false;
-				const _draft = buildProposalDraft({
+				const problems: string[] = [];
+				let draft = buildProposalDraft({
 					id: proposalId,
 					issueNumber: issue.number,
 					issueUrl: `https://github.com/${options.repo}/issues/${issue.number}`,
@@ -170,6 +175,14 @@ export const buildTriageRunRegistration = (
 					date: isoDatePrefix(),
 				});
 
+				if (
+					args.writeProposal === true &&
+					options.proposals === undefined
+				) {
+					problems.push(
+						'writeProposal requested but no proposals directory is configured; the draft is returned instead',
+					);
+				}
 				if (
 					args.writeProposal === true &&
 					options.proposals !== undefined
@@ -197,6 +210,7 @@ export const buildTriageRunRegistration = (
 						withId,
 					);
 					proposalWritten = true;
+					draft = withId;
 				}
 
 				let commentPosted = false;
@@ -227,6 +241,8 @@ export const buildTriageRunRegistration = (
 					if (posted.ok) {
 						commentPosted = true;
 						commentUrl = posted.data.url;
+					} else {
+						problems.push(`comment not posted: ${posted.reason}`);
 					}
 				}
 
@@ -239,16 +255,19 @@ export const buildTriageRunRegistration = (
 						options.exec,
 					);
 					if (labelled.ok) labelsApplied.push(...labelled.data);
+					else problems.push(`label not applied: ${labelled.reason}`);
 				}
 
 				return toolJsonBounded(
 					TriageRunOutputSchema.parse({
-						ok: true,
+						ok: problems.length === 0,
 						issueNumber: issue.number,
 						category: analysis.category,
 						severity: analysis.severity,
 						...(proposalWritten ? { proposalId } : {}),
 						proposalWritten,
+						...(proposalWritten ? {} : { draft }),
+						problems,
 						commentPosted,
 						...(commentUrl !== undefined ? { commentUrl } : {}),
 						labelsApplied,

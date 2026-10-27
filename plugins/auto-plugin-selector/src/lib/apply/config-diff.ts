@@ -25,6 +25,7 @@
 import type { IPluginFit } from '../contracts/interfaces/plugin-fit.interface';
 import type {
 	IConfigDiff,
+	IConfigDiffContext,
 	IConfigDiffStep,
 } from '../contracts/interfaces/config-diff.interface';
 
@@ -39,6 +40,7 @@ import type {
 export const buildConfigDiff = (
 	current: readonly string[],
 	recommendations: readonly IPluginFit[],
+	context: IConfigDiffContext = {},
 ): IConfigDiff => {
 	const currentSet = new Set(current);
 	const recById = new Map<string, IPluginFit>();
@@ -79,7 +81,7 @@ export const buildConfigDiff = (
 			removes.push({
 				kind: 'remove',
 				pluginId: id,
-				rationale: 'no positive fit against project signals',
+				rationale: removalCause(id, context),
 			});
 		}
 	}
@@ -103,6 +105,17 @@ export const buildConfigDiff = (
 		removes,
 		keeps,
 	};
+};
+
+const removalCause = (id: string, context: IConfigDiffContext): string => {
+	if (context.catalogIds !== undefined && !context.catalogIds.has(id)) {
+		return 'not in the plugin catalog, so it cannot be scored';
+	}
+	const fit = context.ranked?.find((row) => row.plugin.id === id);
+	if (fit !== undefined && fit.fitScore > 0) {
+		return `fit ${fit.fitScore.toFixed(2)} fell outside the limit / minScore cut`;
+	}
+	return 'no positive fit against project signals';
 };
 
 const formatReasons = (reasons: readonly string[]): string => {

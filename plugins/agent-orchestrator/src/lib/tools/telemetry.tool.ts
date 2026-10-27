@@ -12,6 +12,7 @@ import type { TaskClassifier } from '../classifier/task-classifier.js';
 import { TelemetryEvent } from '../telemetry/event.js';
 import type { ITelemetrySink } from '../telemetry/event.js';
 import { OrchestrationModeSchema, TaskSchema } from '../policy/types.js';
+import type { ITask } from '../policy/types.js';
 
 const ClassifyOutputSchema = z.object({
 	mode: OrchestrationModeSchema,
@@ -69,16 +70,17 @@ export function buildReadOnlyToolRegistration(
 				async (task) => {
 					// Wrap in a synthetic policy so the classifier accepts the call.
 					// Rebuild an `ITask` with exact shape (exactOptionalPropertyTypes).
-					const fixed: {
-						id: string;
-						description: string;
-						tags: readonly string[];
-						hint?: 'trivial' | 'small' | 'medium' | 'large';
-					} = {
+					const fixed: ITask = {
 						id: task.id,
 						description: task.description,
 						tags: task.tags,
+						...(task.files !== undefined
+							? { files: task.files }
+							: {}),
 						...(task.hint !== undefined ? { hint: task.hint } : {}),
+						...(task.facts !== undefined
+							? { facts: task.facts }
+							: {}),
 					};
 					const verdict = classifier.classify(fixed, {
 						defaultMode: 'auto',

@@ -32,6 +32,33 @@ afterEach(async () => {
 });
 
 describe('optimize_run', () => {
+	it('stops before the cumulative token cost exceeds the budget', async () => {
+		const root = await makeWorkspace();
+		const result = await runOptimizeRun(
+			{
+				candidates: [
+					{ id: 'a', signals: { tokenCost: 40, successRate: 0.9 } },
+					{ id: 'b', signals: { tokenCost: 40, successRate: 0.8 } },
+					{ id: 'c', signals: { tokenCost: 40, successRate: 0.7 } },
+				],
+				budget: 100,
+				consent: true,
+			},
+			{
+				namespacePrefix: 'delendai',
+				workspaceRootAbs: root,
+				maxBytes: 4000,
+				discoverRosterFn: async () => ({ available: [], missing: [] }),
+			},
+		);
+		const out = result.structuredContent as {
+			ranked: { id: string }[];
+			spent: number;
+		};
+		expect(out.ranked.map((row) => row.id)).toEqual(['a', 'b']);
+		expect(out.spent).toBe(80);
+	});
+
 	it('returns an error when consent is false', async () => {
 		const root = await makeWorkspace();
 		const result = await runOptimizeRun(
@@ -110,7 +137,7 @@ describe('optimize_run', () => {
 						},
 					},
 				],
-				budget: 25,
+				budget: 5000,
 				consent: true,
 			},
 			{
@@ -145,7 +172,7 @@ describe('optimize_run', () => {
 		expect(result.isError).toBeUndefined();
 		const output = OptimizeRunOutputSchema.parse(result.structuredContent);
 		expect(output.consent).toBe(true);
-		expect(output.budget).toBe(25);
+		expect(output.budget).toBe(5000);
 		expect(output.ranked).toHaveLength(2);
 		expect(output.ranked[0]?.id).toBe('high-confidence');
 		expect(output.ranked[0]!.score).toBeGreaterThan(

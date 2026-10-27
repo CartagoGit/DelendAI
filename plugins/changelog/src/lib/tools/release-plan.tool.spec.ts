@@ -9,6 +9,10 @@
  * - no commits / docs-only → bump=none; version stays the same.
  * - per-package transition matches the same target (lockstep bump).
  */
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -47,10 +51,14 @@ const fakeServer = () => {
 	};
 };
 
-const mountHandler = async (publishOrder: readonly IPublishOrderEntry[]) => {
+const mountHandler = async (
+	publishOrder: readonly IPublishOrderEntry[] | undefined,
+	workspaceRootAbs?: string,
+) => {
 	const registration = buildReleasePlanToolRegistration({
 		namespacePrefix: 'changelog',
-		publishOrder,
+		...(publishOrder === undefined ? {} : { publishOrder }),
+		...(workspaceRootAbs === undefined ? {} : { workspaceRootAbs }),
 	});
 	const server = fakeServer();
 	await registration.register(server as never);
@@ -132,6 +140,44 @@ describe('f00131 S2.b release-plan', () => {
 	});
 
 	describe('release_plan tool', () => {
+		it('derives the publish order from the workspace with default options', async () => {
+			const root = mkdtempSync(join(tmpdir(), 'release-plan-'));
+			try {
+				writeFileSync(
+					join(root, 'package.json'),
+					JSON.stringify({ workspaces: ['packages/*'] }),
+				);
+				for (const [dir, pkg] of [
+					['core', { name: '@x/core', version: '1.2.3' }],
+					[
+						'app',
+						{ name: '@x/app', version: '1.2.3', private: true },
+					],
+				] as const) {
+					mkdirSync(join(root, 'packages', dir), { recursive: true });
+					writeFileSync(
+						join(root, 'packages', dir, 'package.json'),
+						JSON.stringify(pkg),
+					);
+				}
+				const handler = await mountHandler(undefined, root);
+				const body = await callHandler(handler, {
+					commits: [commit({ type: 'fix', subject: 'x' })],
+				});
+				expect(body.ok).toBe(true);
+				expect(body.entries).toEqual([
+					{
+						dir: 'packages/core',
+						name: '@x/core',
+						from: '1.2.3',
+						to: '1.2.4',
+					},
+				]);
+			} finally {
+				rmSync(root, { recursive: true, force: true });
+			}
+		});
+
 		it('returns publish-order-missing when the order is empty', async () => {
 			const handler = await mountHandler([]);
 			const body = await callHandler(handler, {});
