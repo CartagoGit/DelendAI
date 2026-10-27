@@ -146,7 +146,10 @@ describe('agents flow', () => {
 				personalRoot: ws.personalRoot,
 				machine,
 				registry: REGISTRY,
-				catalogue: { providers: [] },
+				catalogue: {
+					fetchedAt: '2026-10-27T00:00:00.000Z',
+					providers: [],
+				},
 			});
 
 		it('is offered until answered, and a no is kept so it is not asked again', async () => {

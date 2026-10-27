@@ -77,6 +77,7 @@ describe('createAcpInvoker', () => {
 				},
 			],
 			detected: [],
+			candidates: [],
 		}));
 		const run = vi.fn(async () => ({
 			agent: {},
@@ -101,7 +102,11 @@ describe('createAcpInvoker', () => {
 	it('fails a hop whose agent cannot start, and one of another kind', async () => {
 		const invoker = createAcpInvoker({
 			cwd: '/ws',
-			listAgents: async () => ({ agents: [], detected: [] }),
+			listAgents: async () => ({
+				agents: [],
+				detected: [],
+				candidates: [],
+			}),
 			run: vi.fn(),
 		});
 		await expect(
