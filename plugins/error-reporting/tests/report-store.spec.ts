@@ -99,14 +99,14 @@ describe('createReportStore', () => {
 			),
 		]);
 
-		expect(claims.filter(Boolean)).toHaveLength(1);
+		expect([...claims].sort()).toEqual(['claimed', 'held']);
 		expect(
 			await store.claimDispatch(
 				'fp',
 				'2026-08-24T00:10:00.000Z',
 				'2026-08-24T00:06:00.000Z',
 			),
-		).toBe(true);
+		).toBe('claimed');
 	});
 
 	it('migrates legacy signature records and treats success only when an issue exists', async () => {
@@ -173,6 +173,18 @@ describe('report store — a state file we cannot read', () => {
 		// The bytes are evidence of a torn write. Destroying them loses
 		// the de-duplication history AND any chance of diagnosing it.
 		expect(await readFile(statePath, 'utf8')).toBe(corrupt);
+	});
+
+	it('reports an unreadable store as unclaimed, not as a duplicate', async () => {
+		await writeFile(join(dir, 'reported.json'), '{"abc": tor', 'utf8');
+		const store = createReportStore(dir);
+		expect(
+			await store.claimDispatch(
+				'abc',
+				'2026-08-24T00:05:00.000Z',
+				'2026-08-24T00:00:00.000Z',
+			),
+		).toBe('unreadable');
 	});
 
 	it('still treats a MISSING file as an empty state, which it is', async () => {

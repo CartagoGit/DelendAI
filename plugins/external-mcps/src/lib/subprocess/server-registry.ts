@@ -326,7 +326,10 @@ export interface IServerRegistryOptions {
 export interface IServerStatusRow {
 	readonly id: string;
 	readonly declared: true;
+	/** The child process is alive; says nothing of its MCP session. */
 	readonly running: boolean;
+	/** The MCP session over that process: a live child can still be opening it, or have failed it. */
+	readonly session: 'not-started' | 'opening' | 'open' | 'failed' | 'closed';
 	readonly pid?: number;
 	readonly bootedAt?: string;
 	readonly lastError?: string;
@@ -391,6 +394,19 @@ interface IServerRuntime {
 }
 
 /**
+ * A server's session as a status row tells it. `running: true` alone read
+ * as "usable" while the session was still opening or had failed.
+ */
+const sessionOf = (
+	state: IServerRuntime | undefined,
+): IServerStatusRow['session'] => {
+	if (state === undefined) return 'not-started';
+	if (typeof state.session === 'object') return 'failed';
+	if (!state.running) return 'closed';
+	return state.session;
+};
+
+/**
  * The per-boot subprocess registry: one cached child per declared server
  * id, spawned lazily on first call (or at init for `eager: true`).
  */
@@ -440,6 +456,7 @@ export class ExternalServerRegistry {
 				id,
 				declared: true,
 				running: state?.running ?? false,
+				session: sessionOf(state),
 				...(state?.pid !== undefined ? { pid: state.pid } : {}),
 				...(state?.bootedAt !== undefined
 					? { bootedAt: state.bootedAt }
@@ -613,6 +630,7 @@ export class ExternalServerRegistry {
 		});
 		if (!safeEnv.ok) {
 			state.lastError = formatMissingEnvMessage(id, safeEnv.missing);
+			state.session = { failed: state.lastError };
 			throw new MissingEnvError(id, safeEnv.missing);
 		}
 		const transport = createChildTransport(entry.command, entry.args, {
