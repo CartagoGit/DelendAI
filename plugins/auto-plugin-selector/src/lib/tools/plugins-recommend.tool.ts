@@ -180,7 +180,21 @@ export const buildPluginsRecommendRegistration = (
 					recommendOptions,
 				);
 				const current = args.currentPlugins ?? [];
-				const diff: IConfigDiff = buildConfigDiff(current, fits);
+				const {
+					limit: _limit,
+					minScore: _minScore,
+					...uncut
+				} = recommendOptions;
+				const diff: IConfigDiff = buildConfigDiff(current, fits, {
+					ranked: recommendPlugins(
+						args.signals,
+						options.candidates ?? [],
+						uncut,
+					),
+					catalogIds: new Set(
+						(options.candidates ?? []).map((c) => c.id),
+					),
+				});
 				const refineRequested = args.refine ?? false;
 				const llmRationale = refineRequested
 					? buildLlmRationale(

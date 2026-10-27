@@ -28,6 +28,7 @@ export default definePlugin({
 				}),
 				buildReleasePlanToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
 				}),
 			],
 			knowledge: [
