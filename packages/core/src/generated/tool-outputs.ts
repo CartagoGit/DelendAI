@@ -862,6 +862,7 @@ export type DelendaiPerfPerfProfileOutput = {
 		info: number;
 	};
 	worst: string;
+	flamegraph?: string;
 } | {
 	ok: "skipped";
 	hint: string;

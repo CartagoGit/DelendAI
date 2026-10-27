@@ -36,6 +36,30 @@ describe('runProfileCapture', () => {
 		expect(result.hotspots[0]?.severity).toBe('high');
 	});
 
+	it('returns the flame graph a flamegraph capture saved', async () => {
+		const deps: IPerfProfileDeps = {
+			probeProfilers: async () => [
+				{ tool: 'node-prof', available: true, installHints: [] },
+			],
+			runProfiler: async () => ({
+				ok: true,
+				profiler: 'node-prof',
+				report: '    120   48.0%   22.0%  LazyCompile: *walk /tmp/w.js:1:1',
+				flamegraph: '/cache/perf/profile-1.cpuprofile',
+				code: 0,
+				timedOut: false,
+			}),
+		};
+		const result = await runProfileCapture(
+			{ ...input, format: 'flamegraph' },
+			deps,
+		);
+		expect(result).toMatchObject({
+			ok: true,
+			flamegraph: '/cache/perf/profile-1.cpuprofile',
+		});
+	});
+
 	it('gracefully skips when no profiler is available', async () => {
 		const deps: IPerfProfileDeps = {
 			probeProfilers: async () => [

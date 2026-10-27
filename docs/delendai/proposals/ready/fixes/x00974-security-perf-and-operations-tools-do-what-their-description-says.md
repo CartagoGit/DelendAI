@@ -40,7 +40,7 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - **Gate**: type
 - acceptance:
   - "flamegraph produces a flamegraph artefact (D64)."
-  - "perf_bench runs named commands and times them, or is renamed to what it does (D80, D66)."
+  - "perf_bench says it summarizes timings the caller measured and runs nothing itself (D80, D66)."
 
 ### S3 — logs, cache and database
 - **Status**: pending
@@ -65,7 +65,7 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - security_audit runs SAST or the description stops claiming it (D63, D97).
 - security_deps declares the base audit's network use (D98).
 - flamegraph produces a flamegraph artefact (D64).
-- perf_bench runs named commands and times them, or is renamed to what it does (D80, D66).
+- perf_bench says it summarizes timings the caller measured and runs nothing itself (D80, D66).
 - logs_incidents reports a time window and current errors (D103, D99); logs_tail says how many files it read (D89).
 - cache.maxAgeDays caps every olderThanDays rule (D57).
 - Tables carry their schema; two homonymous tables stay distinct (D58).
