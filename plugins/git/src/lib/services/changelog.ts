@@ -113,11 +113,17 @@ export const gitChangelog = async (
 	run: IGitRunner,
 	options: { range?: string; limit?: number } = {},
 ): Promise<IChangelog> => {
+	const range =
+		options.range !== undefined && options.range !== ''
+			? options.range
+			: undefined;
+	// A range is never an option: `--output=<file>` made git write a file.
+	if (range?.startsWith('-') === true) {
+		return { groups: [], bump: 'none', total: 0 };
+	}
 	const args = [
 		'log',
-		...(options.range !== undefined && options.range !== ''
-			? [options.range]
-			: ['-n', String(options.limit ?? 100)]),
+		...(range === undefined ? ['-n', String(options.limit ?? 100)] : []),
 		'--no-merges',
 		// x00185 (F15): %b (body) is where Conventional Commits 1.0.0 puts
 		// a `BREAKING CHANGE:` footer — the subject line alone almost
@@ -125,6 +131,7 @@ export const gitChangelog = async (
 		// are separated by %x1e (not "\n") to keep one commit's
 		// multi-line body from being split into several bogus records.
 		'--pretty=format:%h%x1f%s%x1f%b%x1e',
+		...(range === undefined ? [] : ['--end-of-options', range]),
 	];
 	const result = await run(args);
 	if (!result.ok) return { groups: [], bump: 'none', total: 0 };

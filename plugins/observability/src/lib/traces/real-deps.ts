@@ -93,12 +93,21 @@ const readJsonLines = async (
 	return out;
 };
 
-const takeRecent = <T>(
+/**
+ * The newest `limit` records, oldest first. The day files are read newest
+ * first, so cutting the tail of that order kept the oldest records and
+ * hid the newest sample; records are ordered by their time before the
+ * cut, undated ones (whose place is unknown) ahead of dated ones.
+ */
+const takeRecent = <T extends { readonly ts?: string | undefined }>(
 	items: readonly T[],
 	limit: number | undefined,
 ): readonly T[] => {
-	if (limit === undefined) return items;
-	return items.slice(Math.max(0, items.length - limit));
+	const ordered = [...items].sort((left, right) =>
+		(left.ts ?? '').localeCompare(right.ts ?? ''),
+	);
+	if (limit === undefined) return ordered;
+	return ordered.slice(Math.max(0, ordered.length - limit));
 };
 
 const normalizeTraceRecord = (

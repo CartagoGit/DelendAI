@@ -8,7 +8,13 @@ const build = (
 	runner: FakeProcessRunner,
 	options: Partial<ISshExecutionOptions> = {},
 ): SshExecutionEnvironment =>
-	new SshExecutionEnvironment({ host: 'build.example', runner, ...options });
+	new SshExecutionEnvironment({
+		host: 'build.example',
+		runner,
+		// The programs these specs quote and move files with.
+		allowedPrograms: ['echo', 'uname', 'sh', 'cat', 'ls'],
+		...options,
+	});
 
 describe('SshExecutionEnvironment connection defaults', () => {
 	it('never prompts, checks host keys, does not forward the agent and keeps the link alive', async () => {
@@ -223,5 +229,16 @@ describe('SshExecutionEnvironment files and environment', () => {
 			PATH: '/bin',
 			DB_PASSWORD: '[redacted]',
 		});
+	});
+
+	it('refuses a program outside the allowlist before quoting it', async () => {
+		const ssh = new SshExecutionEnvironment({
+			host: 'build.example',
+			dryRun: true,
+		});
+		await expect(ssh.exec(['rm', '-rf', '/'])).rejects.toThrow(
+			'"rm" is not an allowed program',
+		);
+		expect((await ssh.exec(['bun', 'test'])).dryRun).toBe(true);
 	});
 });

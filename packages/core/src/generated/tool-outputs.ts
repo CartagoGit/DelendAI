@@ -195,6 +195,7 @@ export interface DelendaiCompletionReportCompleteOutput {
 		reviewEvidence: string;
 		ts: string;
 	};
+	notified: boolean;
 }
 
 export interface DelendaiCompletionStatusOutput {

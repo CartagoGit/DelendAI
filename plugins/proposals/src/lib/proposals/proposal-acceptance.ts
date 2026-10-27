@@ -18,9 +18,10 @@
  * kill the WHOLE tree (`process.kill(-pid)`), not just the leader — a
  * pipeline like `a | b` must not leave `b` running as a zombie.
  * `bun` is resolved from PATH exactly as before (we keep the `Bun.which`
- * availability pre-check); commands with shell metacharacters (`|`, `>`,
- * `&&`, …) run through the shell, the rest are tokenised with a
- * quote-aware parser so a single quoted argument keeps its spaces.
+ * availability pre-check). A command is tokenised with a quote-aware
+ * parser (a quoted argument keeps its spaces) and run as argv: one with
+ * shell metacharacters (`|`, `>`, `&&`, …) is refused, never handed to a
+ * shell — a criterion that needs a pipeline names a script that runs it.
  * The working directory is injectable via `runAcceptanceCriteria`'s
  * `cwd` option instead of inheriting the server's cwd.
  *
@@ -49,6 +50,7 @@ import { killProcessTree } from '@delendai/core/public';
 
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';
+import { ACCEPTANCE_ENV_KEYS } from '../contracts/constants/acceptance-env.constant';
 
 export type IAcceptanceFailureKind =
 	| 'timeout'
@@ -217,8 +219,17 @@ const truncateCaptured = (raw: string): string => {
 	return `${raw.slice(0, MAX_CAPTURED_BYTES)}\n...[truncated ${raw.length - MAX_CAPTURED_BYTES} bytes]`;
 };
 
+/**
+ * The command's environment: the allowlisted variables of the server's,
+ * then the non-interactive switches. The whole environment, tokens and
+ * keys included, used to reach every criterion.
+ */
 const buildSpawnEnv = (): NodeJS.ProcessEnv => ({
-	...process.env,
+	...Object.fromEntries(
+		ACCEPTANCE_ENV_KEYS.flatMap((key) =>
+			process.env[key] === undefined ? [] : [[key, process.env[key]]],
+		),
+	),
 	...NON_INTERACTIVE_ENV,
 });
 
@@ -323,12 +334,15 @@ export const tokenizeArgv = (input: string): string[] => {
 };
 
 /**
- * A command needs a real shell when it carries pipes, redirects, command
- * chaining or subshells. Quotes alone do NOT need a shell — the argv
- * tokenizer handles those.
+ * A command would need a shell when it carries pipes, redirects, command
+ * chaining or subshells outside quotes — and is then refused, since no
+ * criterion reaches a shell. Quotes alone are handled by the tokenizer.
  */
 export const commandNeedsShell = (command: string): boolean =>
-	/[|&;<>`]|\$\(/.test(command);
+	/[|&;<>`]|\$\(/.test(
+		// Inside quotes these are characters of an argument, not operators.
+		command.replace(/"(?:[^"\\]|\\.)*"|'[^']*'/gu, ''),
+	);
 
 /**
  * Runs a single criterion to completion (or timeout). Returns a structured
@@ -402,32 +416,28 @@ const runOne = async (
 	// missing binary surfaces as a spawn 'error' (ENOENT) → structured
 	// `fail`, not a crash. (M8 dropped the old hard Bun pre-check so any
 	// host command — bun, npm, vitest, a shell script — can be a criterion.)
-	const useShell = commandNeedsShell(criterion.command);
+	// No shell: the criterion's text is a program and its arguments.
+	if (commandNeedsShell(criterion.command)) {
+		return fail(
+			'a pipeline, redirect or chain is not run: no criterion reaches a shell. Name a script that does it',
+			null,
+			{ failureKind: 'spawn' },
+		);
+	}
 	const cwd = options.cwd;
-
+	const argv = tokenizeArgv(criterion.command);
+	if (argv.length === 0) {
+		return fail('command is empty after tokenisation');
+	}
+	const [cmd, ...args] = argv as [string, ...string[]];
 	let child: ReturnType<typeof spawn>;
 	try {
-		if (useShell) {
-			child = spawn(criterion.command, {
-				...(cwd !== undefined ? { cwd } : {}),
-				env: buildSpawnEnv(),
-				shell: true,
-				detached: true,
-				stdio: ['ignore', 'pipe', 'pipe'],
-			});
-		} else {
-			const argv = tokenizeArgv(criterion.command);
-			if (argv.length === 0) {
-				return fail('command is empty after tokenisation');
-			}
-			const [cmd, ...args] = argv as [string, ...string[]];
-			child = spawn(cmd, args, {
-				...(cwd !== undefined ? { cwd } : {}),
-				env: buildSpawnEnv(),
-				detached: true,
-				stdio: ['ignore', 'pipe', 'pipe'],
-			});
-		}
+		child = spawn(cmd, args, {
+			...(cwd !== undefined ? { cwd } : {}),
+			env: buildSpawnEnv(),
+			detached: true,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
 	} catch (e) {
 		return fail(
 			`spawn failed: ${e instanceof Error ? e.message : String(e)}`,

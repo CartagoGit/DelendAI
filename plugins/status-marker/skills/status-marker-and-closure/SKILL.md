@@ -41,7 +41,8 @@ Source of truth: `MARKERS` in `plugins/status-marker/src/lib/markers.ts`.
 - Separator before the reason: ` — ` (em-dash, space on both sides),
   `CLOSE_SEPARATOR` in `markers.ts`.
 - Full line, including emoji and reason, must be ≤120 chars (`MAX_LINE_LEN`);
-  the formatter truncates and appends `…` if it would overflow.
+  a longer line is refused (`CloseMarkerTooLongError`): shorten the reason,
+  it is never cut.
 - Use the helper, never hand-format: `formatCloseMarker(state, reason?)`
   (importable from `@delendai/status-marker/public`) is what
   `<prefix>_close` calls internally — same output either way.
@@ -127,6 +128,6 @@ the line.
 - **Reason shape is preserved across locales**: the separator ` — ` and
   reason payload are emitted identically; only the bracket text inside
   `[...]` changes.
-- **Length budget is identical**: the `<reason-missing>` placeholder, the
-  120-char truncation rule (`MAX_LINE_LEN`) and the `…` ellipsis all
-  apply the same way to both locales.
+- **Length budget is identical**: the `<reason-missing>` placeholder and
+  the 120-char limit (`MAX_LINE_LEN`, refused beyond it) apply the same
+  way to both locales.

@@ -1,6 +1,7 @@
 import { toolJsonBounded, compactOutputSchema } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
+import { EMPTY_FUNNEL_COUNTERS } from '../contracts/constants/funnel-stages.constant';
 
 import { DEFAULT_TARGET_REPO } from '../contracts/constants/options.constant';
 import { SAFE_REPORTER_FAILURE_CODES } from '../contracts/constants/safe-reporter-failure-codes.constant';
@@ -97,6 +98,7 @@ const FunnelSchema = z
 		privacyBlocked: z.number(),
 		deduplicated: z.number(),
 		rateLimited: z.number(),
+		dispatchUnclaimed: z.number(),
 		submissionAttempted: z.number(),
 		submissionSucceeded: z.number(),
 		submissionFailed: z.number(),
@@ -295,17 +297,8 @@ export const buildReportStatusRegistration = (
 			async () => {
 				const nowMs = Date.now();
 				const records = await options.store.all();
-				const funnel = (await options.funnel?.read()) ?? {
-					observedFailures: 0,
-					ignoredNonFailures: 0,
-					notVertexInternal: 0,
-					privacyBlocked: 0,
-					deduplicated: 0,
-					rateLimited: 0,
-					submissionAttempted: 0,
-					submissionSucceeded: 0,
-					submissionFailed: 0,
-				};
+				const funnel =
+					(await options.funnel?.read()) ?? EMPTY_FUNNEL_COUNTERS;
 				return toolJsonBounded(
 					ReportStatusInternalSchema.parse(
 						buildOutput({
