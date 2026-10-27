@@ -2,14 +2,14 @@
 id: x00955
 title: "One secret rule set redacts and scans, and no value leaves through an error"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 3494e305-3245-4fa6-84a5-b2d56ba01449
-last-correlation-id: 3494e305-3245-4fa6-84a5-b2d56ba01449
-last-transition-from: ready
-last-transition-at: 2026-10-27T09:05:38.866Z
+last-transition-id: 9b6117c5-9378-4f07-950d-56af6133527c
+last-correlation-id: 9b6117c5-9378-4f07-950d-56af6133527c
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T09:25:00.541Z
 shipped-in:
   - "d23cc0b41"
 ---
@@ -42,6 +42,8 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "OpenAI, Anthropic, GitHub fine-grained and the other common key shapes are redacted; a spec feeds one of each (G117)."
   - "The Google key rule needs the AIza prefix at a word boundary and does not match the fixture strings G41 names."
 - shipped-in: `d23cc0b41`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The scanner sees ignored files
 - **Status**: done
@@ -50,6 +52,8 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
 - acceptance:
   - "security_secrets scans ignored-but-present files such as .env.local by default and says which it skipped (D79, D65)."
 - shipped-in: `d23cc0b41`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — No value through an error, a cache or a log
 - **Status**: done
@@ -60,6 +64,8 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "The raw-answer cache stores redacted content only (EXT-04)."
   - "The bypass-log fallback redacts the reason (PROP-LOG01)."
 - shipped-in: `d23cc0b41`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — error-reporting is opt-in and first-party only
 - **Status**: done
@@ -70,6 +76,8 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "The default matches the README: on, as the code and its spec decide, announced at every start with the line that turns it off (ER-02)."
   - "report_status needs only read; diagnose_log declares its own read-only set instead of inheriting the plugin's grants (ER-03)."
 - shipped-in: `d23cc0b41`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Personal accounts live in the personal layer
 - **Status**: done
@@ -79,6 +87,8 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "A login (profileDir or credentialEnv) in the committed config is never merged for everyone; the existing start-up migration moves it to the person's file (G31)."
   - "The personal file is keyed by host and port, so two remotes on different ports do not share it; a start-up migration renames a file keyed without the port (G61-CONFIG-01)."
 - shipped-in: `d23cc0b41`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
