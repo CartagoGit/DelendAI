@@ -2,14 +2,14 @@
 id: x00952
 title: "Plugin writes and installs stay inside the directory they were given"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: e7981bb7-6a12-4627-b81a-02a562efd5c6
-last-correlation-id: e7981bb7-6a12-4627-b81a-02a562efd5c6
-last-transition-from: ready
-last-transition-at: 2026-10-27T09:04:53.613Z
+last-transition-id: 25917f81-05de-4e48-9a99-732efe4afc79
+last-correlation-id: 25917f81-05de-4e48-9a99-732efe4afc79
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T09:14:30.035Z
 shipped-in:
   - "ce33cce00"
 ---
@@ -41,6 +41,8 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
   - "pluginsRoot, the plugin id and configFileName that resolve outside the workspace are refused, and no `../` path reaches the config (D22)."
   - "container_build refuses a dockerfile or context outside the workspace (D67)."
 - shipped-in: `ce33cce00`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Downloads and screenshots cannot collide or escape
 - **Status**: done
@@ -50,6 +52,8 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
   - "The artefact path is checked after realpath; a symlink in the cache pointing outside is refused (GLAB-01)."
   - "Screenshot names are unique per call (a random suffix after the millisecond); two concurrent calls in the same millisecond keep both files (D44)."
 - shipped-in: `ce33cce00`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Agent installs are contained, transactional and verified
 - **Status**: done
@@ -60,6 +64,8 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
   - "Extraction goes to a staging directory and replaces the install only on success; a failed unpack keeps the previous version (AGENT-INSTALL02)."
   - "The installer downloads nothing while no release publishes the binary: it refuses and names the checkout install instead (G108) — delivered earlier, in 4be71381e; scripts/install.spec.ts proves the refusal."
 - shipped-in: `ce33cce00`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The container risk model sees bind mounts
 - **Status**: done
@@ -68,6 +74,8 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 - acceptance:
   - "A bind mount of a host path outside the workspace (including / and $HOME) is a named risk that requires confirmRisk (D102)."
 - shipped-in: `ce33cce00`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
