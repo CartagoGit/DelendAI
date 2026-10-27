@@ -102,7 +102,9 @@ export const validateValue = (
 				return finding({
 					ruleId: 'mistyped-value',
 					severity: 'medium',
-					message: `Value "${trimmed}" is not in the allowed enum values.`,
+					// The allowed set, never the value: it may be a secret
+					// written into the wrong variable.
+					message: `Value is not one of the allowed enum values (${varSchema.enum.join(' | ')}).`,
 				});
 			}
 			return undefined;

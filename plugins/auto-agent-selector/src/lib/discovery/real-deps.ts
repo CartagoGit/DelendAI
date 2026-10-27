@@ -8,6 +8,7 @@
  */
 import { knownClientOf } from '@delendai/core/contracts';
 import {
+	allKnownClients,
 	listClientModels,
 	probeClientCommand,
 	runClientCommand,
@@ -15,6 +16,7 @@ import {
 
 import type { IDiscoveryDeps } from '../contracts/interfaces/roster.interface';
 import { discoverAndPersistRoster } from './discover-roster';
+import { cliEntryOf } from './known-cli.helper';
 import type { IRosterSnapshotStore } from './roster-store';
 
 /**
@@ -26,10 +28,12 @@ export const realDiscoveryDeps = (workspaceRoot: string): IDiscoveryDeps => ({
 		(await probeClientCommand(command, runClientCommand, workspaceRoot))
 			.installed,
 	env: process.env,
+	// The clients this workspace declares, over the catalogue.
+	clis: allKnownClients(workspaceRoot).map(cliEntryOf),
 	// The models a client reaches, as it lists them (OpenCode): ids the
 	// roster carries without checking them against any list.
 	listModels: async (command) => {
-		const client = knownClientOf(command);
+		const client = knownClientOf(command, workspaceRoot);
 		if (client === undefined) return [];
 		const listed = await listClientModels(
 			client,

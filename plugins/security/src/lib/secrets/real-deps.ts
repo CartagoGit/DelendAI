@@ -8,6 +8,7 @@ import { runExternalTool } from '@delendai/core/public';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import type { IExternalTool } from '@delendai/core/contracts';
 
+import { GIT_LISTING_MAX_OUTPUT_BYTES } from '../contracts/constants/git-listing.constant';
 import type { ISecretScanDeps } from '../contracts/interfaces/secrets.interface';
 
 const GIT_TOOL: IExternalTool = { id: 'git', bin: 'git' };
@@ -30,7 +31,25 @@ export const realScanDeps = (workspaceRootAbs: string): ISecretScanDeps => {
 				tool: GIT_TOOL,
 				args,
 				cwd: workspaceRootAbs,
-				maxOutputBytes: 4 * 1024 * 1024,
+				maxOutputBytes: GIT_LISTING_MAX_OUTPUT_BYTES,
+			});
+			if (!run.ok) return [];
+			return run.stdout
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0);
+		},
+		listIgnored: async () => {
+			const run = await runExternalTool({
+				tool: GIT_TOOL,
+				args: [
+					'ls-files',
+					'--others',
+					'--ignored',
+					'--exclude-standard',
+				],
+				cwd: workspaceRootAbs,
+				maxOutputBytes: GIT_LISTING_MAX_OUTPUT_BYTES,
 			});
 			if (!run.ok) return [];
 			return run.stdout

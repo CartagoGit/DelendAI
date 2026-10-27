@@ -141,8 +141,15 @@ export const readPublicCatalogue = async <T>(input: {
 	const now = input.now ?? new Date();
 	const read = await readCatalogueCopy<T>(path, input.isData);
 	const cached = read?.meta.format === input.format ? read : undefined;
+	// A copy is fresh only for the sources it was read under: one read
+	// before a source was added, removed or reordered is asked again
+	// instead of standing in for the new list for a whole day.
+	const sourcesKey = createHash('sha256')
+		.update(JSON.stringify(input.sources))
+		.digest('hex');
 	if (
 		cached !== undefined &&
+		cached.meta.sourcesKey === sourcesKey &&
 		now.getTime() - Date.parse(cached.meta.checkedAt) <
 			(input.recheckMs ?? CATALOGUE_RECHECK_MS)
 	)
@@ -159,7 +166,11 @@ export const readPublicCatalogue = async <T>(input: {
 			if (answer.status === 304 && cached !== undefined) {
 				const checked = {
 					...cached,
-					meta: { ...cached.meta, checkedAt: now.toISOString() },
+					meta: {
+						...cached.meta,
+						checkedAt: now.toISOString(),
+						sourcesKey,
+					},
 				};
 				await writeCopy(path, checked);
 				return { ...checked, origin: 'unchanged' };
@@ -178,6 +189,7 @@ export const readPublicCatalogue = async <T>(input: {
 						.digest('hex'),
 					etag: answer.etag,
 					lastModified: answer.lastModified,
+					sourcesKey,
 				},
 				data,
 			};

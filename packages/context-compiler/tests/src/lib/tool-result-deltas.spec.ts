@@ -75,7 +75,9 @@ describe('createToolResultDeltaSink', () => {
 		);
 
 		expect(delta.summary).toBe('2 passed, 1 failed');
-		expect(delta.ref).toEqual(delta.fullContent);
+		// One reference, and no copy of the result inside it.
+		expect(Object.keys(delta)).not.toContain('fullContent');
+		expect(delta.ref.id).not.toContain('passed');
 		expect(delta.contentHash).toHaveLength(64);
 	});
 

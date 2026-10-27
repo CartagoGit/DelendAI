@@ -461,6 +461,16 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			find: '@delendai/shared',
 			replacement: resolve(shared, 'public/index.ts'),
 		},
+		// The contracts root is read from source, like every other package:
+		// once core took a runtime value from it (the one secret rule set),
+		// a run with no built dist failed to resolve the package entry.
+		{
+			find: /^@delendai\/contracts$/,
+			replacement: resolve(
+				workspaceRoot,
+				'packages/contracts/src/index.ts',
+			),
+		},
 		{
 			find: '@delendai/core/version',
 			replacement: resolve(core, 'version.ts'),

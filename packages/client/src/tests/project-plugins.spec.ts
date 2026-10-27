@@ -7,7 +7,7 @@
  *  3. idempotent / non-destructive registration (re-run, existing entries);
  *  4. a plugin spec with several tools.
  */
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -314,5 +314,38 @@ describe('createProjectPlugin — guards', () => {
 				{ workspaceRoot: 'relative/path' },
 			),
 		).rejects.toThrow(/absolute path/);
+	});
+
+	it('refuses a pluginsRoot or configFileName outside the workspace', async () => {
+		const spec = { name: 'x', description: 'y' };
+		await expect(
+			createProjectPlugin(spec, {
+				workspaceRoot,
+				pluginsRoot: '../elsewhere',
+			}),
+		).rejects.toThrow(/outside the workspace/);
+		await expect(
+			createProjectPlugin(spec, {
+				workspaceRoot,
+				configFileName: '../delendai.config.json',
+			}),
+		).rejects.toThrow(/outside the workspace/);
+	});
+
+	it('refuses a pluginsRoot that is a symlink out of the workspace', async () => {
+		const outside = await mkdtemp(
+			join(tmpdir(), 'project-plugin-outside-'),
+		);
+		try {
+			await symlink(outside, join(workspaceRoot, 'linked'), 'dir');
+			await expect(
+				createProjectPlugin(
+					{ name: 'x', description: 'y' },
+					{ workspaceRoot, pluginsRoot: 'linked' },
+				),
+			).rejects.toThrow(/outside the workspace/);
+		} finally {
+			await rm(outside, { recursive: true, force: true });
+		}
 	});
 });

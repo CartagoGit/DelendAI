@@ -99,18 +99,28 @@ const bridgeReading = (
 				sameConversationWorkspace(entry.workspace, input.workspace),
 	);
 	if (mine.length === 0) return { reason: 'other-workspace', path };
-	const freshest = mine
-		.map((entry) => ({ entry, observed: Date.parse(String(entry.at)) }))
-		.filter(({ observed }) => !Number.isNaN(observed))
-		.sort((left, right) => right.observed - left.observed)[0];
+	const observed = mine
+		.map((entry) => ({ entry, at: Date.parse(String(entry.at)) }))
+		.filter(({ at }) => !Number.isNaN(at))
+		.sort((left, right) => right.at - left.at);
+	const freshest = observed[0];
 	if (freshest === undefined) return { reason: 'malformed', path };
-	const ageMs = now - freshest.observed;
-	if (ageMs > PROVIDER_MODEL_MAX_AGE_MS || -ageMs > PROVIDER_MODEL_MAX_AGE_MS)
-		return { reason: 'stale', path, ageMs };
+	const fresh = observed.filter(
+		({ at }) => Math.abs(now - at) <= PROVIDER_MODEL_MAX_AGE_MS,
+	);
+	if (fresh.length === 0)
+		return { reason: 'stale', path, ageMs: now - freshest.at };
+	// Two conversations at work in this workspace, on different models:
+	// nothing says which one is calling, and the latest is not it.
+	const models = [
+		...new Set(fresh.map(({ entry }) => String(entry.model).trim())),
+	];
+	if (models.length > 1) return { reason: 'ambiguous', path, models };
+	const [latest] = fresh;
 	return {
-		model: String(freshest.entry.model).trim(),
-		...(typeof freshest.entry.provider === 'string'
-			? { provider: freshest.entry.provider }
+		model: models[0] ?? '',
+		...(typeof latest?.entry.provider === 'string'
+			? { provider: latest.entry.provider }
 			: {}),
 	};
 };
@@ -140,7 +150,12 @@ export const providerModelReading = (
 			marker,
 		};
 	const published = bridgeReading(input);
-	if ('model' in published || input.workspace === undefined) return published;
+	if (
+		'model' in published ||
+		input.workspace === undefined ||
+		published.reason === 'ambiguous'
+	)
+		return published;
 	const seen = observedHostModel(input.workspace, input.now, input.env);
 	if (seen === undefined) return published;
 	rememberSeenModel(seen.model, seenModelsPath(input.env ?? process.env));
@@ -182,19 +197,26 @@ export const providerModelId = (
 
 /**
  * The entries a bridge file holds. One provider writes a single entry;
- * the per-workspace form keeps one entry per workspace under `entries`,
+ * the per-workspace form keeps, under `entries`, one entry per workspace
+ * or a list with one per conversation working in it,
  * so two windows on different workspaces no longer erase each other.
  */
 const entriesOf = (parsed: unknown): readonly IProviderModelEntry[] => {
 	if (typeof parsed !== 'object' || parsed === null) return [];
 	const record = parsed as Record<string, unknown>;
+	// Per workspace: one entry, or one per conversation in it.
 	const raw =
 		typeof record.entries === 'object' && record.entries !== null
-			? Object.entries(record.entries as Record<string, unknown>).map(
-					([workspace, entry]) =>
-						typeof entry === 'object' && entry !== null
-							? { workspace, ...(entry as IProviderModelEntry) }
-							: undefined,
+			? Object.entries(record.entries as Record<string, unknown>).flatMap(
+					([workspace, value]) =>
+						(Array.isArray(value) ? value : [value]).map((entry) =>
+							typeof entry === 'object' && entry !== null
+								? {
+										workspace,
+										...(entry as IProviderModelEntry),
+									}
+								: undefined,
+						),
 				)
 			: [record as IProviderModelEntry];
 	return raw.filter(
@@ -216,6 +238,7 @@ export const providerBridgeSilence = (
 		malformed: `${reading.path} holds no readable model entry`,
 		stale: `the last model a provider published is ${String(Math.round((reading.ageMs ?? 0) / 60_000))} min old, older than the ${String(PROVIDER_MODEL_MAX_AGE_MS / 60_000)} min that still say who is working now`,
 		'other-workspace': `${reading.path} names the model of another workspace's conversation, not this one's`,
+		ambiguous: `conversations in this workspace are working on different models (${(reading.models ?? []).join(', ')}) and nothing says which one is calling`,
 		'agent-host': `this process runs under an agent host (${reading.marker ?? 'unknown'} is set), which knows its own model; ${reading.path} names a chat conversation's, which may be another agent's`,
 	}[reading.reason];
 	return `${why}. A provider that writes the bridge (docs/delendai/configuration/provider-model-bridge.md), ${PROVIDER_MODEL_BRIDGE_VARIABLE} pointing at where yours writes, or DELENDAI_AGENT_ID names it.`;
