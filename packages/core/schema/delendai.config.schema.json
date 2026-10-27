@@ -751,7 +751,8 @@
 										"type": "string",
 										"enum": [
 											"openai",
-											"anthropic"
+											"anthropic",
+											"google"
 										]
 									},
 									"envVar": {

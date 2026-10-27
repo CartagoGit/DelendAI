@@ -6,6 +6,7 @@
  * and the orchestrator-runner's own roster option all validate with these,
  * so a roster is portable between them and none of them drifts.
  */
+import { PROVIDER_API_FAMILY_IDS } from './provider-api-families.constant';
 import z from 'zod';
 import {
 	BILLING_MODES,
@@ -33,7 +34,7 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 			url: z.string(),
 			method: z.enum(['GET', 'POST']).optional(),
 			family: z
-				.enum(['openai', 'anthropic'])
+				.enum(PROVIDER_API_FAMILY_IDS)
 				.optional()
 				.describe(
 					'The API family the model catalogue names for this provider; url is then its base URL.',
