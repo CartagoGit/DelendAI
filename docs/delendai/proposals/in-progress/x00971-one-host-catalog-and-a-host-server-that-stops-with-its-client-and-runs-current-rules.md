@@ -2,10 +2,14 @@
 id: x00971
 title: "One host catalog, and a host server that stops with its client and runs current rules"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 286fdf92-6469-499d-849e-21c160c66a18
+last-correlation-id: 286fdf92-6469-499d-849e-21c160c66a18
+last-transition-from: ready
+last-transition-at: 2026-10-27T09:04:09.562Z
 ---
 
 # x00971 — One host catalog, and a host server that stops with its client and runs current rules
