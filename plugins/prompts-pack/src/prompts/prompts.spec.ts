@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -170,8 +170,11 @@ describe('prompts-pack prompt registrations', () => {
 			name.endsWith('.ts'),
 		);
 		expect(sources.length).toBeGreaterThan(0);
+		const reader = new SafeWorkspaceReader(workspaceRoot);
+		const sourceDir = here.slice(workspaceRoot.length + 1);
 		for (const name of sources) {
-			const text = await readFile(join(here, name), 'utf8');
+			const text = (await reader.readText(`${sourceDir}/${name}`))
+				.content;
 			expect(text.includes(nul), name).toBe(false);
 		}
 	});

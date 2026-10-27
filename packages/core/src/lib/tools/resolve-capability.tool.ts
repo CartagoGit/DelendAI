@@ -48,10 +48,8 @@ import type {
 	IResolveCapabilityInput,
 	IResolveCapabilityResult,
 } from '../dispatch/capability-resolver';
-import {
-	RESOLVER_TERMINAL_REASONS,
-	type IResolverTerminalReason,
-} from '../dispatch/capability-resolver.error';
+import { RESOLVER_TERMINAL_REASONS } from '../contracts/constants/resolver-terminal-reasons.constant';
+import type { IResolverTerminalReason } from '../dispatch/capability-resolver.error';
 import { toolJson, type IToolTextResult } from '../shared/tool-response';
 
 const RESOLVE_CAPABILITY_INPUT = z

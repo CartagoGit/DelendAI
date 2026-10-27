@@ -22,7 +22,7 @@ import {
 import {
 	RESOLVER_DEFAULT_NEXT_ACTION,
 	RESOLVER_TERMINAL_REASONS,
-} from '../../../../src/lib/dispatch/capability-resolver.error';
+} from '../../../../src/lib/contracts/constants/resolver-terminal-reasons.constant';
 import {
 	buildFakeRuntime,
 	type FakeRuntimeAccess,
@@ -198,7 +198,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 
 	it('returns host_read_only while the runtime is not initialised', async () => {
 		const result = await resolveAndInvoke(
-			{ get: () => undefined },
+			{ get: () => undefined, bind: () => undefined },
 			{ domain: 'alpha', action: 'list' },
 			access.extra,
 		);

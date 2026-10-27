@@ -3,7 +3,7 @@ import z from 'zod';
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { resolveAndInvoke } from '../dispatch/capability-resolver';
-import { RESOLVER_DEFAULT_NEXT_ACTION } from '../dispatch/capability-resolver.error';
+import { RESOLVER_DEFAULT_NEXT_ACTION } from '../contracts/constants/resolver-terminal-reasons.constant';
 import {
 	injectToolResultMeta,
 	toolError,

@@ -6,7 +6,7 @@ import {
 	parsePaginationMeta,
 	parseRateLimitMeta,
 	unixSecondsToIso,
-} from '../src/lib/wire';
+} from '../src/lib/wire.helper';
 
 const headers = (values: Record<string, string>) => ({
 	get: (name: string): string | null => values[name.toLowerCase()] ?? null,

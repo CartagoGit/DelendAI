@@ -9,20 +9,6 @@ import type {
 	IRemoteRateLimitMeta,
 } from '@delendai/contracts/remote-provider';
 
-export const DEFAULT_TIMEOUT_MS = 15_000;
-
-export const DEFAULT_MAX_RETRIES = 2;
-
-export const DEFAULT_RETRY_DELAY_MS = 250;
-
-export const retryableStatuses = new Set([408, 425, 500, 502, 503, 504]);
-
-export const compatibilityHint =
-	/(unsupported|deprecated api|unsupported api|preview|incompatible|unknown version)/i;
-
-export const transientHint =
-	/(econnreset|econnrefused|eai_again|enotfound|network|socket|fetch failed|temporar)/i;
-
 export const header = (
 	headers: { get(name: string): string | null },
 	name: string,
