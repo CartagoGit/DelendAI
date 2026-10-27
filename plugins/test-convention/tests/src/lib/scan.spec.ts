@@ -169,4 +169,38 @@ describe('scanDrift', async () => {
 		});
 		expect(testsOnly.scannedFiles).toBe(2);
 	});
+
+	it('reads the sources of every package, and finds their specs in a mirrored tests tree', async () => {
+		const reader = fakeReader({
+			'packages/a/src/lib/tested.ts': 'export const tested = 1;',
+			'packages/a/tests/src/lib/tested.spec.ts':
+				'describe("tested", async () => { it("a", async () => {}); });',
+			'packages/a/src/lib/untested.mjs': 'export const untested = 1;',
+		});
+		const report = await scanDrift({
+			convention: DEFAULT_CONVENTION,
+			reader,
+			workspaceRoot: '/',
+		});
+		const missing = report.violations
+			.filter((v) => v.id === 'missing-spec-for-export')
+			.map((v) => v.file);
+		expect(missing).toEqual(['packages/a/src/lib/untested.mjs']);
+	});
+
+	it('says how many files in scope it did not read past its cap', async () => {
+		const reader = fakeReader({
+			'src/a.ts': 'export const a = 1;',
+			'src/b.ts': 'export const b = 1;',
+			'src/c.ts': 'export const c = 1;',
+		});
+		const report = await scanDrift({
+			convention: DEFAULT_CONVENTION,
+			reader,
+			workspaceRoot: '/',
+			maxFiles: 1,
+		});
+		expect(report.scannedFiles).toBe(1);
+		expect(report.skippedFiles).toBe(2);
+	});
 });

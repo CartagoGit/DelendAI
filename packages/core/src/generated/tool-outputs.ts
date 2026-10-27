@@ -652,6 +652,15 @@ export interface DelendaiLinkCheckLinkCheckOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxDocs: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;
@@ -1360,6 +1369,15 @@ export interface DelendaiTechDebtDebtScanOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxFiles: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;

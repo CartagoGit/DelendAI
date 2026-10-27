@@ -75,6 +75,8 @@ export interface IDriftReport {
 	readonly counts: IDriftCounts;
 	readonly violations: readonly IDrift[];
 	readonly scannedFiles: number;
+	/** Files in scope the scan did not read because it reached `maxFiles`. */
+	readonly skippedFiles: number;
 }
 
 interface ILineHit {
@@ -94,12 +96,24 @@ const findHits = (source: string, re: RegExp): readonly ILineHit[] => {
 
 const isSpec = (path: string, ext: string): boolean => path.endsWith(`.${ext}`);
 
-const SPEC_RE = /\.(?:spec|test)\.tsx?$/u;
+const SPEC_RE = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
 
+/**
+ * A source file: script code under any `src/` folder, the repository's
+ * own or a package's (`packages/x/src/…`), never a declaration or a spec.
+ */
 const isTsSource = (path: string): boolean =>
-	/^src\/.+\.tsx?$/u.test(path) &&
-	!path.endsWith('.d.ts') &&
+	/(?:^|\/)src\/.+\.[cm]?[jt]sx?$/u.test(path) &&
+	!/\.d\.[cm]?ts$/u.test(path) &&
 	!SPEC_RE.test(path);
+
+/** A file's name without folders or extension: `src/a/b.tsx` → `b`. */
+const stemOf = (path: string): string =>
+	(path.split('/').pop() ?? path).replace(/\.[^.]+$/u, '');
+
+/** A spec's name without its spec suffix: `tests/b.spec.ts` → `b`. */
+const specStemOf = (path: string): string =>
+	(path.split('/').pop() ?? path).replace(SPEC_RE, '');
 
 const exportNamesOf = (source: string): readonly string[] => {
 	const out: string[] = [];
@@ -287,9 +301,18 @@ export const scanDrift = async (
 		violations.push(d);
 	};
 
+	// A spec names its source by file name, beside it or in a mirrored
+	// tests tree (`plugins/x/tests/src/a.spec.ts` for `plugins/x/src/a.ts`).
+	const specStems = new Set(
+		[...specFiles, ...misnamedSpecLike].map(specStemOf),
+	);
 	let scanned = 0;
+	let skipped = 0;
 	for (const path of targets) {
-		if (scanned >= maxFiles) break;
+		if (scanned >= maxFiles) {
+			skipped += 1;
+			continue;
+		}
 		const contents = await reader.readFile(path);
 		if (contents === undefined) continue;
 		scanned += 1;
@@ -324,13 +347,16 @@ export const scanDrift = async (
 			// Missing spec companion: source exports but no spec file exists.
 			const exports = exportNamesOf(contents);
 			if (exports.length > 0) {
-				const expected = path.replace(/\.tsx?$/u, () => `.${specExt}`);
-				if (!all.includes(expected) && !specFiles.includes(expected)) {
+				const expected = path.replace(
+					/\.[cm]?[jt]sx?$/u,
+					() => `.${specExt}`,
+				);
+				if (!specStems.has(stemOf(path))) {
 					push({
 						id: 'missing-spec-for-export',
 						file: path,
 						severity: 'warning',
-						hint: `source exports "${exports.join(', ')}" but no ${expected} found`,
+						hint: `source exports "${exports.join(', ')}" but no spec named for it was found (expected ${expected} or a ${stemOf(path)} spec under tests/)`,
 					});
 				}
 			}
@@ -351,6 +377,7 @@ export const scanDrift = async (
 		counts: { error, warning, info },
 		violations,
 		scannedFiles: scanned,
+		skippedFiles: skipped,
 	};
 };
 
