@@ -2,10 +2,14 @@
 id: x00953
 title: "Commands a tool runs get an argv, an allowlist and a scoped environment"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 8bd80b8f-24a3-4081-a2b9-2686b92570ca
+last-correlation-id: 8bd80b8f-24a3-4081-a2b9-2686b92570ca
+last-transition-from: ready
+last-transition-at: 2026-10-27T04:48:40.602Z
 ---
 
 # x00953 — Commands a tool runs get an argv, an allowlist and a scoped environment
