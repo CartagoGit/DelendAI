@@ -88,7 +88,14 @@ func findCLIEntry() string {
 	if err != nil {
 		return ""
 	}
-	dir := filepath.Dir(exe)
+	return findCLIEntryFrom(filepath.Dir(exe))
+}
+
+// findCLIEntryFrom walks up to six directories from startDir (itself
+// included) looking for packages/cli/src/index.ts, and returns its path
+// or "" when no ancestor in that window holds one.
+func findCLIEntryFrom(startDir string) string {
+	dir := startDir
 	for i := 0; i < 6; i++ {
 		candidate := filepath.Join(dir, "packages", "cli", "src", "index.ts")
 		if _, err := os.Stat(candidate); err == nil {

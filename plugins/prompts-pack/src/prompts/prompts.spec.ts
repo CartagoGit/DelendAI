@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -156,6 +156,23 @@ describe('prompts-pack prompt registrations', () => {
 			for (const id of ids) {
 				expect(catalog.has(id)).toBe(true);
 			}
+		}
+	});
+
+	it('carries no NUL byte in rendered prompts or in the prompt sources', async () => {
+		const nul = String.fromCharCode(0);
+		for (const prompt of prompts()) {
+			const rendered = prompt.template(sampleArgs[prompt.name] ?? {});
+			expect(rendered.includes(nul)).toBe(false);
+			expect(prompt.description.includes(nul)).toBe(false);
+		}
+		const sources = (await readdir(here)).filter((name) =>
+			name.endsWith('.ts'),
+		);
+		expect(sources.length).toBeGreaterThan(0);
+		for (const name of sources) {
+			const text = await readFile(join(here, name), 'utf8');
+			expect(text.includes(nul), name).toBe(false);
 		}
 	});
 

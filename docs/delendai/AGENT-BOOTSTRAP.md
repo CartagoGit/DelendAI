@@ -558,27 +558,23 @@ or have their own config file. Use the same single-pointer pattern:
 
 ## Build / dist layout
 
-Compiled artifacts land under one root tree: `/build/{group}/{name}/{version}/`
-(e.g. `build/packages/core/0.1.1/index.js`). There is no persistent
-`packages/*/dist/` or `plugins/*/dist/`; `/build/` and `/dist/` are
-gitignored and `bun run build` is the only producer.
+Compiled artifacts land in `/build/{group}/{name}/{version}/`; `bun run
+build` is the only producer. The builder also mirrors each package's
+output into its own `dist/` (content-aware: unchanged files keep their
+mtime, deleted ones are removed) because manifests keep `"main":
+"./dist/index.js"` (npm forbids `exports` outside the package). `/build/`
+and `/dist/` are gitignored; nothing else writes `dist/`, and a
+publish stages a temporary one (`stageBuildForPublish` in
+`tools/scripts/publish/workspace-deps.ts`).
 
 **Scripts never resolve against `build/`.** `bun run`, `vitest` and
-`tsc --noEmit` all inject the `@delendai/source` condition
-(`bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`), so
-`@delendai/*` resolves to `src/`. If a call resolves into `build/`,
-that invocation is missing the condition — fix the call, don't chase it
-as a build bug.
-
-**Manifests keep `"main": "./dist/index.js"` on purpose**: npm forbids
-`exports` pointing outside the package, so `./dist/` is materialized
-only in a temporary staging dir at pack/publish time
-(`stageBuildForPublish` in `tools/scripts/publish/workspace-deps.ts`).
-No `dist/` is ever written back into the repo.
+`tsc --noEmit` inject the `@delendai/source` condition (`bunfig.toml`,
+`tsconfig.base.json`, `vitest.shared.ts`), so `@delendai/*` resolves to
+`src/`. A call that resolves into `build/` is missing the condition —
+fix the call, not the build.
 
 `lint:no-build-imports-from-src` fails if anything under `build/**/*.js`
-imports `../src/` — a compiled artifact must never reach back into
-source.
+imports `../src/`.
 
 ## Architecture decisions
 
