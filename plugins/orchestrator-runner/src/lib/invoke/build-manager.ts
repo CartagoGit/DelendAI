@@ -198,6 +198,7 @@ export const buildDefaultInvocationManager = (
 	);
 	const cliInvoker = createCliInvoker({
 		spawner: nodeCliSpawner,
+		workspaceRoot: options.workspaceRoot,
 		environmentFor: (request, args) => {
 			const accountId = request.decision.targetProvider.accountId;
 			return accountEnvironment({
@@ -210,6 +211,7 @@ export const buildDefaultInvocationManager = (
 						? undefined
 						: accounts.get(accountId),
 				parentEnv: process.env,
+				workspaceRoot: options.workspaceRoot,
 				named:
 					request.invoke.kind === 'cli'
 						? request.invoke.env

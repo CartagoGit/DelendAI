@@ -33,7 +33,15 @@ const run = (
 	args: string[],
 	on: IProviderAccount | undefined,
 	accountId = on?.accountId,
-) => accountEnvironment({ command, args, account: on, accountId, parentEnv });
+) =>
+	accountEnvironment({
+		workspaceRoot: '/work',
+		command,
+		args,
+		account: on,
+		accountId,
+		parentEnv,
+	});
 
 describe('accountEnvironment', () => {
 	it('runs an entry with no account and no names on what any program needs only', () => {
@@ -46,6 +54,7 @@ describe('accountEnvironment', () => {
 	it('runs an entry with no account on what it names, not on the whole environment', () => {
 		expect(
 			accountEnvironment({
+				workspaceRoot: '/work',
 				command: 'aider',
 				args: [],
 				account: undefined,

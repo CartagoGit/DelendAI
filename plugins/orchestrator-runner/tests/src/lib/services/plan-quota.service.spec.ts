@@ -94,6 +94,7 @@ describe('observePlanQuota', () => {
 		const seen: unknown[] = [];
 		expect(
 			await observePlanQuota({
+				workspaceRoot: '/work',
 				account: account(),
 				quotasPath,
 				parentEnv: { PATH: '/bin', HOME: '/h', SECRET_ELSEWHERE: 'x' },
@@ -121,6 +122,7 @@ describe('observePlanQuota', () => {
 		]) {
 			expect(
 				await observePlanQuota({
+					workspaceRoot: '/work',
 					account: each,
 					quotasPath,
 					parentEnv: {},
@@ -130,6 +132,7 @@ describe('observePlanQuota', () => {
 		}
 		expect(
 			await observePlanQuota({
+				workspaceRoot: '/work',
 				account: account(),
 				quotasPath,
 				parentEnv: {},
@@ -138,6 +141,7 @@ describe('observePlanQuota', () => {
 		).toBe(false);
 		expect(
 			await observePlanQuota({
+				workspaceRoot: '/work',
 				account: account(),
 				quotasPath,
 				parentEnv: {},

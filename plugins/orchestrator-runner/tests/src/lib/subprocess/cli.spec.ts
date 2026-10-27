@@ -38,6 +38,7 @@ describe('createCliInvoker — the account environment', () => {
 	it('starts the process with only the environment the account is given', async () => {
 		const { spawner, spawned } = recording();
 		const invoker = createCliInvoker({
+			workspaceRoot: '/work',
 			spawner,
 			environmentFor: () => ({
 				kind: 'isolated',
@@ -53,6 +54,7 @@ describe('createCliInvoker — the account environment', () => {
 	it('spawns nothing when the account is refused', async () => {
 		const { spawner, spawned } = recording();
 		const invoker = createCliInvoker({
+			workspaceRoot: '/work',
 			spawner,
 			environmentFor: () => ({
 				kind: 'refused',
@@ -67,7 +69,9 @@ describe('createCliInvoker — the account environment', () => {
 
 	it('keeps the inherited environment without an account seam', async () => {
 		const { spawner, spawned } = recording();
-		await createCliInvoker({ spawner }).start(request).promise;
+		await createCliInvoker({ workspaceRoot: '/work', spawner }).start(
+			request,
+		).promise;
 		expect(spawned).toEqual([{ command: 'claude', env: undefined }]);
 	});
 });
@@ -100,7 +104,10 @@ const scripted = () => {
 describe('createCliInvoker — what a hop answers', () => {
 	it('gathers streamed text and usage, a last line without a newline too', async () => {
 		const child = scripted();
-		const run = createCliInvoker({ spawner: child.spawner }).start(request);
+		const run = createCliInvoker({
+			workspaceRoot: '/work',
+			spawner: child.spawner,
+		}).start(request);
 		child.print('{"text":"he"}\n{"delta":{"text":"llo"}}\nnoise\n');
 		child.print('{"usage":{"input_tokens":3,"output_tokens":"x"}}');
 		child.end(0);
@@ -112,15 +119,17 @@ describe('createCliInvoker — what a hop answers', () => {
 
 	it('fails a non-zero exit, and an exit with no code (it never started)', async () => {
 		const failed = scripted();
-		const first = createCliInvoker({ spawner: failed.spawner }).start(
-			request,
-		);
+		const first = createCliInvoker({
+			workspaceRoot: '/work',
+			spawner: failed.spawner,
+		}).start(request);
 		failed.end(2);
 		await expect(first.promise).rejects.toThrow('code 2');
 		const missing = scripted();
-		const second = createCliInvoker({ spawner: missing.spawner }).start(
-			request,
-		);
+		const second = createCliInvoker({
+			workspaceRoot: '/work',
+			spawner: missing.spawner,
+		}).start(request);
 		missing.end(null);
 		await expect(second.promise).rejects.toThrow('without an exit code');
 	});
@@ -129,6 +138,7 @@ describe('createCliInvoker — what a hop answers', () => {
 		const child = scripted();
 		let fire: () => void = () => undefined;
 		const run = createCliInvoker({
+			workspaceRoot: '/work',
 			spawner: child.spawner,
 			sigkillGraceMs: 1,
 			setTimer: (fn) => {
@@ -147,6 +157,7 @@ describe('createCliInvoker — what a hop answers', () => {
 	it('escalates on the real timer when nothing is injected', async () => {
 		const child = scripted();
 		const run = createCliInvoker({
+			workspaceRoot: '/work',
 			spawner: child.spawner,
 			sigkillGraceMs: 1,
 		}).start(request);
@@ -164,15 +175,17 @@ describe('createCliInvoker — what a hop answers', () => {
 
 	it('refuses a decision that is not a cli one', async () => {
 		const { spawner, spawned } = recording();
-		const run = createCliInvoker({ spawner }).start({
-			...request,
-			invoke: {
-				kind: 'mcp-server',
-				server: 'srv',
-				tool: 'run',
-				args: {},
+		const run = createCliInvoker({ workspaceRoot: '/work', spawner }).start(
+			{
+				...request,
+				invoke: {
+					kind: 'mcp-server',
+					server: 'srv',
+					tool: 'run',
+					args: {},
+				},
 			},
-		});
+		);
 		await expect(run.promise).rejects.toThrow('cli invoker got');
 		run.cancel('user-cancel');
 		expect(spawned).toEqual([]);
