@@ -20,7 +20,9 @@
 import { readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-const REPO_ROOT = process.cwd();
+// The repository root, from this script's own location: run from any
+// directory, it reads and writes this repository's files.
+const REPO_ROOT = join(import.meta.dirname, '..', '..', '..');
 
 const LANGS = [
 	'es', // Español
