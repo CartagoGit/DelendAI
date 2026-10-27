@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { HOST_USER_DIRS_VARIABLE } from '../../../../src/lib/contracts/constants/host-chat-model.constant';
+import { classificationFromAnswer } from '../../../../src/lib/plugins/account-offers.service';
+import { findingsFromHostByok } from '../../../../src/lib/shared/account-sources.service';
 import {
 	hostByokRoster,
 	hostProfileOf,
@@ -108,5 +110,27 @@ describe('hostProfileOf', () => {
 		expect(hostProfileOf(dir, '/home/me/project/sub')).toBe('p1');
 		expect(hostProfileOf(dir, '/home/me/other')).toBe('default');
 		expect(hostProfileOf(dir, '/elsewhere')).toBeUndefined();
+	});
+});
+
+describe('a BYOK provider as an account', () => {
+	it('is offered as a host-held account, however the person says it is paid', () => {
+		const dir = userDir();
+		const [finding] = findingsFromHostByok(
+			hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir }),
+		);
+		expect(finding).toMatchObject({
+			source: 'host-byok',
+			accountId: 'coding-plan-byok',
+			hostHeld: true,
+			models: ['glm-5.3'],
+		});
+		expect(JSON.stringify(finding)).not.toContain(KEY);
+		if (finding === undefined) return;
+		for (const billing of ['prepaid-token-plan', 'pay-as-you-go'] as const)
+			expect(
+				classificationFromAnswer(finding, 'Z.AI', billing)
+					.credentialMode,
+			).toBe('host-held');
 	});
 });

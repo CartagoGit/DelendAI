@@ -1032,6 +1032,7 @@
 										"official-subscription-login",
 										"provider-plan-token",
 										"byok-api-key",
+										"host-held",
 										"local-none"
 									]
 								},
@@ -1311,6 +1312,7 @@
 							"official-subscription-login",
 							"provider-plan-token",
 							"byok-api-key",
+							"host-held",
 							"local-none"
 						]
 					},
