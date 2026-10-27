@@ -10,6 +10,8 @@ last-transition-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
 last-correlation-id: 6d5c38d8-7f09-40e2-9ec7-40776d683857
 last-transition-from: ready
 last-transition-at: 2026-10-27T17:52:48.110Z
+shipped-in:
+  - "1f0c5d911"
 ---
 
 # x00975 — The selectors and optimizers use every input they accept
@@ -31,7 +33,7 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
 - global_gate: type
 
 ### S1 — Budgets and recommendations
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`, `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts`, `plugins/adaptive-optimizer/src/lib/contracts/interfaces/adaptive-optimizer.interface.ts`, `plugins/adaptive-optimizer/src/generated/tool-outputs.ts`, `plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.spec.ts`, `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/routing/task-mode.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/src/lib/services/discover-ranked-providers.service.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/prompt-eval/src/lib/score/score.ts`, `plugins/prompt-eval/src/lib/score/score.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,9 +41,10 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "A remove names its real cause (D53); taskHint changes scores (D100); the task type shapes the ranking (D96)."
   - "The winner is the cheapest passing provider (D106)."
 - notes: optimize_run keeps ranked candidates while their cumulative token cost stays within budget and reports `spent`; a remove names whether the plugin is outside the catalog, cut by limit/minScore, or has no positive fit; taskHint words matching a plugin's id, tags or summary add score; auto_recommend maps taskType to a ranking mode; the eval_report winner is the passing provider with the lowest cost per attempt. optimize_run plus the auto-agent-selector, prompt-eval and plugins_recommend tool files needed no description change.
+- shipped-in: `1f0c5d911`
 
 ### S2 — agent-orchestrator, triage and changelog
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/agent-orchestrator/src/lib/tools/plan.tool.ts`, `plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/plan.tool.spec.ts`, `plugins/issues-triage/src/lib/tools/triage.tools.ts`, `plugins/issues-triage/tests/triage-tools.spec.ts`, `plugins/changelog/src/index.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.ts`, `plugins/changelog/src/lib/tools/discover-publish-order.service.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -49,6 +52,7 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "triage persists or returns its draft and says which (D55)."
   - "release_plan runs with the default options (D59)."
 - notes: plan and classify now forward files and facts to the classifier and an override re-plans through the named mode so its steps change; triage_run returns the draft when it is not written and reports failed effects in `problems` with ok=false; release_plan derives its publish order from the workspace packages when none is injected. No agent-orchestrator description or output schema grew (execution_policy and the classifier already took files and facts).
+- shipped-in: `1f0c5d911`
 
 ## acceptance
 
