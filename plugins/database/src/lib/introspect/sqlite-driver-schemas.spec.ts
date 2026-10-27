@@ -18,9 +18,9 @@ const answers: Readonly<Record<string, unknown[]>> = {
 		{ name: 'temp' },
 		{ name: 'archive' },
 	],
-	[`SELECT name FROM "main".sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`]:
+	"SELECT name FROM \"main\".sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name":
 		[{ name: 'users' }],
-	[`SELECT name FROM "archive".sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`]:
+	"SELECT name FROM \"archive\".sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name":
 		[{ name: 'orders' }, { name: 'users' }],
 	'PRAGMA "main".table_info("users")': [
 		{ name: 'id', type: 'INTEGER', notnull: 1, pk: 1, dflt_value: null },
