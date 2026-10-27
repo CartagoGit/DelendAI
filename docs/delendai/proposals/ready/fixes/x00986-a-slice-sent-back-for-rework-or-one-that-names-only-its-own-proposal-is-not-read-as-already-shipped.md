@@ -43,3 +43,7 @@ On 2026-10-27 the lint failed on develop with five findings, and failed lint-gov
 - A pending slice with `review-state: changes_requested` is not reported, whatever its files and the frontmatter's shipped-in say.
 - A slice's reference to its own proposal file is not counted among its files; a slice that names only that file is not reported.
 - On develop at 2026-10-27 the lint passes with f00783 S3–S6 and q00035 S1 still pending.
+
+## notes
+
+- 2026-10-27: this publication also carries c00536 (qs pinned past GHSA-6pq8-jhm2-2vcw). Each fix alone failed the other one's check on develop: this lint failed lint-governance on every pull request touching a proposal, c00536 included, and the advisory failed lint-security on every pull request, this one included.
