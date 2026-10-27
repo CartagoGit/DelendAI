@@ -59,3 +59,11 @@ export interface ISecuritySecretsToolOptions {
 	/** Injectable scan deps for tests; production uses the real git+fs adapter. */
 	readonly deps?: ISecretScanDeps;
 }
+
+/** Options for the `security_audit` tool builder: the secret scan's and the SAST pass's. */
+export interface ISecurityAuditToolOptions extends ISecuritySecretsToolOptions {
+	readonly sast?: Pick<
+		import('./sast.interface').ISecuritySastToolOptions,
+		'pluginCacheDir' | 'detectStack' | 'runSastRunner' | 'rules'
+	>;
+}

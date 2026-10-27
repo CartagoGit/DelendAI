@@ -1,6 +1,6 @@
 /**
  * security-audit.tool.ts — the `security_audit` tool: run every scanner
- * (leaked-secrets + dependency CVEs + dependency licenses) and return ONE
+ * (leaked-secrets + SAST + dependency CVEs + dependency licenses) and return ONE
  * ranked backlog (most-severe first) with a per-severity summary and the list
  * of scanners that were skipped. The self-improvement flywheel: one call →
  * the highest-value posture fix for this project.
@@ -15,7 +15,8 @@ import {
 	scanLicenses,
 } from '@delendai/deps/public';
 
-import type { ISecuritySecretsToolOptions } from '../contracts/interfaces/secrets.interface';
+import type { ISecurityAuditToolOptions } from '../contracts/interfaces/secrets.interface';
+import { runSastScan } from '../audit/sast-scan.helper';
 import { runSecurityAudit } from '../audit/run-audit';
 import { realScanDeps } from '../secrets/real-deps';
 import { runSecretScan } from '../secrets/run-scan';
@@ -35,11 +36,11 @@ const FINDING = z.object({
 });
 
 export const buildSecurityAuditRegistration = (
-	options: ISecuritySecretsToolOptions,
+	options: ISecurityAuditToolOptions,
 ): IToolRegistration => ({
 	id: 'security_audit',
 	summary:
-		'Run every scanner (secrets + dependency CVEs + licenses) and return one ranked backlog.',
+		'Run every scanner (secrets + SAST + dependency CVEs + licenses) and return one ranked backlog.',
 	tags: ['security', 'audit', 'network'],
 	effects: ['network'],
 	register: async (server) => {
@@ -47,7 +48,7 @@ export const buildSecurityAuditRegistration = (
 			`${options.namespacePrefix}_security_audit`,
 			{
 				description:
-					'Run all scanners against the project — leaked-secrets (offline), dependency CVEs (bun audit, network) and dependency licenses (offline) — and return ONE ranked backlog: findings sorted most-severe first, a per-severity summary, the scanners that ran, and any that were skipped (with a hint). The self-audit flywheel for project posture. Scanners degrade gracefully when a tool is missing.',
+					'Run all scanners against the project — leaked-secrets (offline), SAST (semgrep or ast-grep when installed, else the bounded regex pack; offline), dependency CVEs (bun audit, network) and dependency licenses (offline) — and return ONE ranked backlog: findings sorted most-severe first, a per-severity summary, the scanners that ran, and any that were skipped (with a hint). The self-audit flywheel for project posture. Scanners degrade gracefully when a tool is missing.',
 				inputSchema: z.object({}),
 				outputSchema: z.object({
 					scanned: z.number(),
@@ -78,6 +79,7 @@ export const buildSecurityAuditRegistration = (
 				);
 				const aggregate = await runSecurityAudit([
 					async () => toScanResult('secrets', secrets.findings),
+					() => runSastScan(workspace, options.sast),
 					() => runDepsAudit(workspace),
 					async () =>
 						toScanResult(
