@@ -31,3 +31,12 @@ export interface IHostByokProvider {
 	/** The models it lists; empty for a vendor whose models the editor asks it for. */
 	readonly models: readonly IHostByokModel[];
 }
+
+/** The roster as the server detected it on this machine. */
+export interface IHostByokSnapshot {
+	/** When it was detected, ISO 8601. */
+	readonly detectedAt: string;
+	/** The editor user directories looked in; empty when the machine has none. */
+	readonly hosts: readonly string[];
+	readonly providers: readonly IHostByokProvider[];
+}

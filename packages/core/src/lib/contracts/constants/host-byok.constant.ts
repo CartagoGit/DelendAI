@@ -18,3 +18,9 @@ export const HOST_DEFAULT_PROFILE = '__default__profile__';
 
 /** The profile name delendai gives the user directory's own profile. */
 export const DEFAULT_PROFILE_FOLDER = 'default';
+
+/** The file, in the user cache, holding the roster the server detected at start. */
+export const HOST_BYOK_CACHE_FILE = 'host-byok.json';
+
+/** Overrides where the detected roster is kept. */
+export const HOST_BYOK_CACHE_VARIABLE = 'DELENDAI_HOST_BYOK_FILE';

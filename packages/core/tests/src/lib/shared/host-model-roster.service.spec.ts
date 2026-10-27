@@ -2,16 +2,18 @@
  * host-model-roster.service.spec.ts — the BYOK providers of every editor
  * profile, by name, with not one byte of a credential in the result.
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { HOST_BYOK_CACHE_VARIABLE } from '../../../../src/lib/contracts/constants/host-byok.constant';
 import { HOST_USER_DIRS_VARIABLE } from '../../../../src/lib/contracts/constants/host-chat-model.constant';
 import { classificationFromAnswer } from '../../../../src/lib/plugins/account-offers.service';
 import { findingsFromHostByok } from '../../../../src/lib/shared/account-sources.service';
 import {
+	detectHostByok,
 	hostByokRoster,
 	hostProfileOf,
 } from '../../../../src/lib/shared/host-model-roster.service';
@@ -132,5 +134,38 @@ describe('a BYOK provider as an account', () => {
 				classificationFromAnswer(finding, 'Z.AI', billing)
 					.credentialMode,
 			).toBe('host-held');
+	});
+});
+
+describe('detectHostByok', () => {
+	it('keeps the detected roster in the user cache, and an empty one on a machine without editors', () => {
+		const cache = join(
+			mkdtempSync(join(tmpdir(), 'host-byok-cache-')),
+			'deep',
+			'host-byok.json',
+		);
+		const dir = userDir();
+		const found = detectHostByok({
+			env: {
+				[HOST_USER_DIRS_VARIABLE]: dir,
+				[HOST_BYOK_CACHE_VARIABLE]: cache,
+			},
+			now: new Date('2026-10-27T00:00:00.000Z'),
+		});
+		expect(found.providers).toHaveLength(2);
+		const kept = JSON.parse(readFileSync(cache, 'utf8'));
+		expect(kept).toEqual(found);
+		expect(readFileSync(cache, 'utf8')).not.toContain(KEY);
+
+		const none = detectHostByok({
+			env: {
+				[HOST_USER_DIRS_VARIABLE]: mkdtempSync(
+					join(tmpdir(), 'no-editor-'),
+				),
+				[HOST_BYOK_CACHE_VARIABLE]: cache,
+			},
+		});
+		expect(none.providers).toEqual([]);
+		expect(JSON.parse(readFileSync(cache, 'utf8')).providers).toEqual([]);
 	});
 });

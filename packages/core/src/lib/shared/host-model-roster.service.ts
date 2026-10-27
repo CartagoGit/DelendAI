@@ -11,13 +11,16 @@
  * (id, name, endpoint host, capabilities), and no other field of the file
  * — a key, a header, a token — reaches a result, a log or a comparison.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 import { parse as parseJsonc } from 'jsonc-parser';
 
 import {
 	DEFAULT_PROFILE_FOLDER,
+	HOST_BYOK_CACHE_FILE,
+	HOST_BYOK_CACHE_VARIABLE,
 	HOST_BYOK_FILE,
 	HOST_DEFAULT_PROFILE,
 	HOST_GLOBAL_STORAGE_FILE,
@@ -26,11 +29,13 @@ import {
 import type {
 	IHostByokModel,
 	IHostByokProvider,
+	IHostByokSnapshot,
 } from '../contracts/interfaces/host-byok.interface';
 import {
 	folderPathOf,
 	hostUserDirs,
 } from '../work-identity/host-chat-model.helper';
+import { writeFileAtomicSync } from './atomic-write';
 import { isRecord } from './is-record';
 
 const text = (value: unknown): string | undefined =>
@@ -190,4 +195,42 @@ export const hostProfileOf = (
 	return best.profile === HOST_DEFAULT_PROFILE
 		? DEFAULT_PROFILE_FOLDER
 		: best.profile;
+};
+
+/** Where the roster the server detected is kept. */
+export const hostByokCachePath = (
+	env: NodeJS.ProcessEnv = process.env,
+): string => {
+	const declared = env[HOST_BYOK_CACHE_VARIABLE]?.trim();
+	return declared !== undefined && declared.length > 0
+		? declared
+		: join(homedir(), '.cache', 'delendai', HOST_BYOK_CACHE_FILE);
+};
+
+/**
+ * Detect this machine's BYOK roster and keep it in the user cache. Run
+ * when the server starts, so a clone on another machine configures itself
+ * from that machine's editors, or finds none; nothing is read from or
+ * written to the repository. Never fails its caller.
+ */
+export const detectHostByok = (
+	input: {
+		readonly env?: NodeJS.ProcessEnv | undefined;
+		readonly now?: Date | undefined;
+	} = {},
+): IHostByokSnapshot => {
+	const env = input.env ?? process.env;
+	const snapshot: IHostByokSnapshot = {
+		detectedAt: (input.now ?? new Date()).toISOString(),
+		hosts: hostUserDirs(env),
+		providers: hostByokRoster(env),
+	};
+	try {
+		const path = hostByokCachePath(env);
+		mkdirSync(dirname(path), { recursive: true });
+		writeFileAtomicSync(path, `${JSON.stringify(snapshot, null, '\t')}\n`);
+	} catch {
+		// An unwritable cache leaves the roster detected for this run only.
+	}
+	return snapshot;
 };
