@@ -281,3 +281,19 @@ describe('git plugin', async () => {
 		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
 	});
 });
+
+describe('a ref is never an option', () => {
+	it('refuses a ref starting with "-" and ends options before a ref', async () => {
+		const calls: (readonly string[])[] = [];
+		const run: IGitRunner = async (args) => {
+			calls.push(args);
+			return { ok: true, output: '' };
+		};
+		expect(await gitShow(run, '--output=/tmp/pwned')).toMatchObject({
+			ok: false,
+		});
+		expect(calls).toEqual([]);
+		await gitShow(run, 'HEAD~1');
+		expect(calls[0]?.slice(-2)).toEqual(['--end-of-options', 'HEAD~1']);
+	});
+});

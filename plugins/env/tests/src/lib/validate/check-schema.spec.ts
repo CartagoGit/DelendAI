@@ -129,6 +129,19 @@ describe('checkSchema', () => {
 		expect(missing[0]?.severity).toBe('high');
 	});
 
+	it('treats a required var whose last assignment is empty as missing', () => {
+		const findings = checkSchema(
+			parseEnv('API_KEY=abc\nAPI_URL=https://x.com\nAPI_URL=\n'),
+			REQUIRED_ONLY,
+		);
+		const missing = findings.filter(
+			(f) => f.ruleId === 'env/missing-required',
+		);
+		expect(missing).toHaveLength(1);
+		expect(missing[0]?.message).toContain('empty');
+		expect(missing[0]?.message).not.toContain('x.com');
+	});
+
 	it('emits missing-typed for a typed var that is absent', () => {
 		const parsed = parseEnv(
 			'API_KEY=abc\nAPI_URL=https://x.com\nNUMERIC=42\n',

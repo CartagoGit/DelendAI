@@ -35,4 +35,6 @@ export interface ISshExecutionOptions {
 	readonly dryRun?: boolean;
 	readonly runner?: IProcessRunner;
 	readonly redaction?: IEnvRedactionPolicy;
+	/** The programs a command may start, by name. Defaults to build and test tooling. */
+	readonly allowedPrograms?: readonly string[];
 }

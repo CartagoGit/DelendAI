@@ -21,6 +21,7 @@ const score: IProjectHealthScore = {
 	deps: 60,
 	quality: 40,
 	debt: 30,
+	confidence: 'medium',
 };
 
 const signals: IProjectHealthSignals = {
