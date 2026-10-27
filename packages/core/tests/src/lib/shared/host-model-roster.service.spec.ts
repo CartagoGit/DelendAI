@@ -1,0 +1,112 @@
+/**
+ * host-model-roster.service.spec.ts — the BYOK providers of every editor
+ * profile, by name, with not one byte of a credential in the result.
+ */
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { describe, expect, it } from 'vitest';
+
+import { HOST_USER_DIRS_VARIABLE } from '../../../../src/lib/contracts/constants/host-chat-model.constant';
+import {
+	hostByokRoster,
+	hostProfileOf,
+} from '../../../../src/lib/shared/host-model-roster.service';
+
+// Assembled at run time: no credential-shaped literal is checked in.
+const KEY = ['fixture', 'key', 'value', '0123456789'].join('-');
+
+const userDir = (): string => {
+	const dir = join(mkdtempSync(join(tmpdir(), 'host-byok-')), 'User');
+	mkdirSync(join(dir, 'profiles', 'p1'), { recursive: true });
+	mkdirSync(join(dir, 'globalStorage'), { recursive: true });
+	writeFileSync(join(dir, 'chatLanguageModels.json'), '[]');
+	writeFileSync(
+		join(dir, 'profiles', 'p1', 'chatLanguageModels.json'),
+		`// the editor writes JSON with comments
+[
+	{
+		"name": "Coding Plan",
+		"vendor": "customendpoint",
+		"apiKey": "${KEY}",
+		"models": [
+			{
+				"id": "glm-5.3",
+				"name": "GLM 5.3",
+				"url": "https://api.example.test/v4/chat/completionsDELENDAI_REDACTED_SECRET_QUERY_TOKEN
+				"toolCalling": true,
+				"vision": false,
+				"contextWindow": 1000000,
+				"maxOutputTokens": 64000,
+				"requestHeaders": { "Authorization": "${KEY}" },
+				"supportsReasoningEffort": ["low", "max"]
+			},
+			{ "name": "no id" }
+		],
+	},
+	{ "name": "MiniMax", "vendor": "minimax", "apiKey": "${KEY}" },
+	{ "name": "no vendor" }
+]`,
+	);
+	writeFileSync(
+		join(dir, 'globalStorage', 'storage.json'),
+		JSON.stringify({
+			userDataProfiles: [{ location: 'p1', name: 'Work' }],
+			profileAssociations: {
+				workspaces: {
+					'vscode-remote://wsl%2Bubuntu/home/me':
+						'__default__profile__',
+					'vscode-remote://wsl%2Bubuntu/home/me/project': 'p1',
+				},
+			},
+		}),
+	);
+	return dir;
+};
+
+describe('hostByokRoster', () => {
+	it('lists each profile provider and its models by name, and nothing of a credential', () => {
+		const dir = userDir();
+		const roster = hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: dir });
+		expect(roster.map((each) => [each.profile, each.vendor])).toEqual([
+			['p1', 'customendpoint'],
+			['p1', 'minimax'],
+		]);
+		expect(roster[0]).toMatchObject({
+			host: dir,
+			profileName: 'Work',
+			name: 'Coding Plan',
+			models: [
+				{
+					id: 'glm-5.3',
+					name: 'GLM 5.3',
+					endpointHost: 'api.example.test',
+					toolCalling: true,
+					vision: false,
+					contextWindow: 1000000,
+					reasoningEfforts: ['low', 'max'],
+				},
+			],
+		});
+		const out = JSON.stringify(roster);
+		expect(out).not.toContain(KEY);
+		expect(out).not.toMatch(/apiKey|Authorization|maxOutputTokens/u);
+	});
+
+	it('is empty where no editor keeps a BYOK file', () => {
+		const empty = mkdtempSync(join(tmpdir(), 'host-byok-none-'));
+		expect(hostByokRoster({ [HOST_USER_DIRS_VARIABLE]: empty })).toEqual(
+			[],
+		);
+	});
+});
+
+describe('hostProfileOf', () => {
+	it('names the profile the deepest associated folder opens in', () => {
+		const dir = userDir();
+		expect(hostProfileOf(dir, '/home/me/project/sub')).toBe('p1');
+		expect(hostProfileOf(dir, '/home/me/other')).toBe('default');
+		expect(hostProfileOf(dir, '/elsewhere')).toBeUndefined();
+	});
+});
