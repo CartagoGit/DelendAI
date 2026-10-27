@@ -138,7 +138,7 @@ describe('an executable offered as an agent', () => {
 
 	it('keeps an answer given by flag, and needs exactly one of --yes and --no', async () => {
 		core.answerAgentCandidate.mockResolvedValue({
-			personalLayer: '/home/p/layer.json',
+			personalLayer: '/work/p/layer.json',
 			kept: true,
 		});
 		expect(
