@@ -10,6 +10,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	BUILTIN_MARKER_TABLE,
 	CLOSE_MARKER_STATES,
+	CloseMarkerTooLongError,
 	formatCloseMarker,
 	formatEffectiveMarker,
 	type CloseMarker,
@@ -142,16 +143,28 @@ export const buildCloseRegistration = (
 					locale?: CloseMarkerLocale | undefined;
 				}): Promise<IToolTextResult> => {
 					const locale: CloseMarkerLocale = args.locale ?? 'es';
-					const line = isBuiltin
-						? formatCloseMarker(args.state, args.reason, { locale })
-						: formatEffectiveMarker(
-								table,
-								args.state,
-								args.reason,
-								{
+					let line: string | undefined;
+					try {
+						line = isBuiltin
+							? formatCloseMarker(args.state, args.reason, {
 									locale,
-								},
-							);
+								})
+							: formatEffectiveMarker(
+									table,
+									args.state,
+									args.reason,
+									{
+										locale,
+									},
+								);
+					} catch (error) {
+						if (!(error instanceof CloseMarkerTooLongError))
+							throw error;
+						return toolError(
+							'close-marker reason too long',
+							error.message,
+						);
+					}
 					if (line === undefined) {
 						return toolError(
 							'unknown close-marker state',

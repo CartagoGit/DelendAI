@@ -275,8 +275,18 @@ describe('ExternalServerRegistry — lazy boot + caching', () => {
 		const h = makeHarness({ fs: entry(), gh: entry() });
 		expect(h.spawnCalls).toHaveLength(0);
 		expect(h.registry.status()).toEqual([
-			{ id: 'fs', declared: true, running: false },
-			{ id: 'gh', declared: true, running: false },
+			{
+				id: 'fs',
+				declared: true,
+				running: false,
+				session: 'not-started',
+			},
+			{
+				id: 'gh',
+				declared: true,
+				running: false,
+				session: 'not-started',
+			},
 		]);
 	});
 
@@ -588,6 +598,7 @@ describe('ExternalServerRegistry — failure paths', () => {
 				id: 'fs',
 				declared: true,
 				running: false,
+				session: 'failed',
 				lastError: expect.stringContaining('LOG_LEVEL'),
 			},
 		]);
@@ -621,6 +632,7 @@ describe('ExternalServerRegistry — failure paths', () => {
 				id: 'fs',
 				declared: true,
 				running: false,
+				session: expect.stringMatching(/^(closed|failed)$/u),
 				pid: 100,
 				bootedAt: expect.any(String),
 				lastError: expect.stringContaining('exited'),
@@ -698,6 +710,7 @@ describe('ExternalServerRegistry — close semantics', () => {
 			id: 'fs',
 			declared: true,
 			running: false,
+			session: 'closed',
 			pid: 100,
 			bootedAt: expect.any(String),
 		});
@@ -725,7 +738,14 @@ describe('status tool (compact, literal-precise rows)', () => {
 		);
 		expect(cold).toEqual({
 			ok: true,
-			servers: [{ id: 'fs', declared: true, running: false }],
+			servers: [
+				{
+					id: 'fs',
+					declared: true,
+					running: false,
+					session: 'not-started',
+				},
+			],
 		});
 
 		const pending = h.registry.call('fs', 'x', {});
@@ -739,6 +759,7 @@ describe('status tool (compact, literal-precise rows)', () => {
 				id: 'fs',
 				declared: true,
 				running: true,
+				session: 'open',
 				pid: 100,
 				bootedAt: '2026-07-09T12:00:00.000Z',
 			},

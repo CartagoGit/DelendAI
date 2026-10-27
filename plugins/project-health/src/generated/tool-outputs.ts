@@ -19,6 +19,7 @@ export interface DelendaiProjectHealthProjectHealthOutput {
 	deps?: number;
 	quality?: number;
 	debt?: number;
+	confidence?: "low" | "medium";
 	next?: {
 		tool: string;
 		reason: string;

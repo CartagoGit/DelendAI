@@ -43,6 +43,20 @@ describe('checkEnv', () => {
 		expect(missing?.message).toContain('MISSING');
 	});
 
+	it('treats a required variable set to nothing as not set', () => {
+		const findings = checkEnv('TOKEN=\nOTHER=x\n', ['TOKEN', 'OTHER']);
+		const missing = findings.filter((f) => f.ruleId === 'missing-required');
+		expect(missing.map((f) => f.message)).toEqual([
+			'required variable TOKEN is set to an empty value',
+		]);
+		// The last assignment is the one that counts.
+		expect(
+			checkEnv('TOKEN=\nTOKEN=set\n', ['TOKEN']).some(
+				(f) => f.ruleId === 'missing-required',
+			),
+		).toBe(false);
+	});
+
 	it('never includes a value in a finding message', () => {
 		const findings = checkEnv(
 			'SECRET=super-secret-value\nSECRET=other',
