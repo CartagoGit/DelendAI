@@ -65,6 +65,16 @@ describe('createHostSamplingInvoker', () => {
 		).rejects.toThrow(/got a cli decision/u);
 	});
 
+	it('names the setting that allows a model when the host refuses', async () => {
+		await expect(
+			createHostSamplingInvoker({
+				sampler: () => async () => {
+					throw new Error('Sampling request denied');
+				},
+			}).start(request).promise,
+		).rejects.toThrow(/host-refused.*chat\.mcp\.serverSampling/u);
+	});
+
 	it('aborts the request when cancelled', async () => {
 		let aborted = false;
 		const handle = createHostSamplingInvoker({

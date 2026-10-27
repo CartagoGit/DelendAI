@@ -78,4 +78,41 @@ describe('proposedRosterEntries', () => {
 			}),
 		).toEqual([]);
 	});
+
+	it('proposes each model the host serves on the person key, run through the host', () => {
+		const entries = proposedRosterEntries({
+			agents: [],
+			env: {},
+			existing: [],
+			hostByok: [
+				{
+					host: '/editor/User',
+					profile: 'p1',
+					name: 'Coding Plan',
+					vendor: 'customendpoint',
+					models: [
+						{
+							id: 'glm-5.3',
+							toolCalling: true,
+							contextWindow: 1_000_000,
+						},
+						{ id: 'glm-5.3-flash' },
+					],
+				},
+			],
+		});
+		expect(entries).toEqual([
+			expect.objectContaining({
+				id: 'byok-customendpoint-glm-5-3',
+				kind: 'host-sampling',
+				invoke: { kind: 'host-sampling', model: 'glm-5.3' },
+				contextWindow: 1_000_000,
+				strengths: ['code-edit', 'agentic'],
+			}),
+			expect.objectContaining({
+				id: 'byok-customendpoint-glm-5-3-flash',
+				strengths: ['code-edit'],
+			}),
+		]);
+	});
 });

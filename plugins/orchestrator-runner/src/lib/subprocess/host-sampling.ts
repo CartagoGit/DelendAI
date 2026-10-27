@@ -56,6 +56,11 @@ export const createHostSamplingInvoker = (
 				prompt: request.prompt,
 				maxTokens: options.maxTokens ?? DEFAULT_MAX_TOKENS,
 				signal: controller.signal,
+			}).catch((error: unknown) => {
+				if (controller.signal.aborted) throw error;
+				throw new Error(
+					`host-refused: the host did not run ${model} (${error instanceof Error ? error.message : String(error)}); a host allows a server its models in its own settings (VS Code: chat.mcp.serverSampling)`,
+				);
 			});
 			if (!servedAsAsked(model, reply.model))
 				throw new Error(

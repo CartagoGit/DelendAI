@@ -82,6 +82,13 @@ export const formatHandoff = (
 				note: `Call the ${invoke.server} MCP server's ${invoke.tool} tool. Uses your subscription, not an API key.`,
 			};
 		}
+		case 'host-sampling': {
+			return {
+				kind: 'passthrough',
+				command: `# ask your editor to run ${invoke.model}`,
+				note: `${invoke.model} is served by your editor on your own key: Batuta asks the editor to run it (MCP sampling); there is nothing to paste.`,
+			};
+		}
 		case 'subscription': {
 			return {
 				kind: 'passthrough',

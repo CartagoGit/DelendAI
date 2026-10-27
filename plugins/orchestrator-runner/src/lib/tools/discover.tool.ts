@@ -11,6 +11,7 @@
  * writes — that is `bootstrap_providers`' job. No probe runs before the
  * user consents (see `discovery-consent.service.ts`).
  */
+import { hostByokRoster } from '@delendai/core/cli';
 import { toolJson } from '@delendai/core/public';
 import {
 	KNOWN_CLIENTS,
@@ -60,6 +61,7 @@ const proposeFromMachine =
 			catalogue,
 			env: process.env,
 			existing: [],
+			hostByok: hostByokRoster(),
 		});
 	};
 
