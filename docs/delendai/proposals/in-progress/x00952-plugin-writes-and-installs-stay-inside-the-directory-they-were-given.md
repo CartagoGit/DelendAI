@@ -10,6 +10,8 @@ last-transition-id: e7981bb7-6a12-4627-b81a-02a562efd5c6
 last-correlation-id: e7981bb7-6a12-4627-b81a-02a562efd5c6
 last-transition-from: ready
 last-transition-at: 2026-10-27T09:04:53.613Z
+shipped-in:
+  - "ce33cce00"
 ---
 
 # x00952 — Plugin writes and installs stay inside the directory they were given
@@ -32,36 +34,40 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 - global_gate: type
 
 ### S1 — Scaffolds and builds are contained
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/client/src/node/scaffold/project-plugins.ts`, `packages/client/src/tests/project-plugins.spec.ts`, `plugins/container/src/index.ts`, `plugins/container/src/lib/tools/container-build.tool.spec.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`
 - **Gate**: type
 - acceptance:
   - "pluginsRoot, the plugin id and configFileName that resolve outside the workspace are refused, and no `../` path reaches the config (D22)."
   - "container_build refuses a dockerfile or context outside the workspace (D67)."
+- shipped-in: `ce33cce00`
 
 ### S2 — Downloads and screenshots cannot collide or escape
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/browser/src/lib/page/browser-page.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`, `plugins/gitlab/src/lib/tools/shared.ts`, `plugins/gitlab/tests/src/lib/tools-sweep.spec.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The artefact path is checked after realpath; a symlink in the cache pointing outside is refused (GLAB-01)."
   - "Screenshot names are unique per call (a random suffix after the millisecond); two concurrent calls in the same millisecond keep both files (D44)."
+- shipped-in: `ce33cce00`
 
 ### S3 — Agent installs are contained, transactional and verified
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent id that resolves outside the install directory is refused (AGENT-INSTALL01)."
   - "Extraction goes to a staging directory and replaces the install only on success; a failed unpack keeps the previous version (AGENT-INSTALL02)."
   - "The installer downloads nothing while no release publishes the binary: it refuses and names the checkout install instead (G108) — delivered earlier, in 4be71381e; scripts/install.spec.ts proves the refusal."
+- shipped-in: `ce33cce00`
 
 ### S4 — The container risk model sees bind mounts
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/container/src/lib/run/docker-risk.helper.spec.ts`, `plugins/container/src/lib/run/docker-risk.helper.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A bind mount of a host path outside the workspace (including / and $HOME) is a named risk that requires confirmRisk (D102)."
+- shipped-in: `ce33cce00`
 
 ## acceptance
 
