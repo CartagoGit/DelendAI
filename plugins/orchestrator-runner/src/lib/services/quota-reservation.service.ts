@@ -16,7 +16,7 @@
  * own, and pools of different units are never added together.
  */
 import { quarantineCorruptFile } from '@delendai/core/public';
-import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import { withFileMutex } from '@delendai/core/runtime';
 
 import type {
 	IAccountBudget,
@@ -25,72 +25,20 @@ import type {
 
 import type {
 	IQuotaGroupObservation,
-	IQuotaReservation,
 	IQuotaHold,
 	IQuotaReservationOutcome,
 	IQuotaGroupRemaining,
 } from '../contracts/interfaces/quota-reservation.interface';
 import { readQuotaSnapshot } from '../quota/read-quota';
-import { readCacheFile } from './read-cache-file.helper';
+import {
+	readLedger,
+	writeLedger,
+	type ISpentReservation,
+} from './quota-ledger.helper';
 import { QUOTA_WINDOW_MS } from '../contracts/constants/quota-window.constant';
-
-const LEDGER_SCHEMA = 'delendai/orchestrator-runner/quota-reservations/1';
-
-/** A hop that was reserved, kept to count what a declared budget has spent. */
-interface ISpentReservation {
-	readonly invocationId: string;
-	readonly groups: readonly string[];
-	readonly at: string;
-}
-
-type Ledger = {
-	readonly reservations: readonly IQuotaReservation[];
-	/** Additive: a ledger written before budgets reads as none spent. */
-	readonly history: readonly ISpentReservation[];
-};
 
 const WINDOW_MS: Readonly<Record<IAccountBudget['window'], number>> =
 	QUOTA_WINDOW_MS;
-
-const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
-	let raw: string | undefined;
-	try {
-		raw = await readCacheFile(path);
-	} catch {
-		return 'corrupt';
-	}
-	if (raw === undefined) return { reservations: [], history: [] };
-	try {
-		const parsed = JSON.parse(raw) as {
-			schema?: unknown;
-			reservations?: unknown;
-			history?: unknown;
-		};
-		if (
-			parsed.schema !== LEDGER_SCHEMA ||
-			!Array.isArray(parsed.reservations)
-		)
-			return 'corrupt';
-		return {
-			reservations: parsed.reservations as IQuotaReservation[],
-			history: Array.isArray(parsed.history)
-				? (parsed.history as ISpentReservation[])
-				: [],
-		};
-	} catch {
-		return 'corrupt';
-	}
-};
-
-const writeLedger = (
-	path: string,
-	reservations: readonly IQuotaReservation[],
-	history: readonly ISpentReservation[],
-) =>
-	writeFileAtomic(
-		path,
-		`${JSON.stringify({ schema: LEDGER_SCHEMA, reservations, history }, null, '\t')}\n`,
-	);
 
 /**
  * A group's windows as the reservation judges them: what was observed, if
@@ -181,11 +129,26 @@ export const reserveQuota = async (input: {
 			await quarantineCorruptFile(input.ledgerPath).catch(
 				() => undefined,
 			);
+			// Set aside, it left nothing behind, and the next call read an
+			// empty ledger and reserved room another process might hold. A
+			// fresh ledger says so until whatever it held would have expired.
+			const blockedUntil = new Date(now + input.ttlMs).toISOString();
+			await writeLedger(input.ledgerPath, [], [], blockedUntil).catch(
+				() => undefined,
+			);
 			return {
 				kind: 'refused',
-				reason: 'the quota reservation ledger could not be read, so what is already held is unknown; it was set aside',
+				reason: `the quota reservation ledger could not be read, so what is already held is unknown; it was set aside, and nothing is reserved until ${blockedUntil}`,
 			};
 		}
+		if (
+			ledger.blockedUntil !== undefined &&
+			Date.parse(ledger.blockedUntil) > now
+		)
+			return {
+				kind: 'refused',
+				reason: `a ledger that could not be read was set aside; what it held stays unknown until ${ledger.blockedUntil}, and nothing is reserved before then`,
+			};
 		const live = ledger.reservations.filter(
 			(reservation) => Date.parse(reservation.expiresAt) > now,
 		);
@@ -293,6 +256,7 @@ export const releaseQuota = async (
 				(reservation) => reservation.invocationId !== invocationId,
 			),
 			ledger.history,
+			ledger.blockedUntil,
 		);
 	});
 
