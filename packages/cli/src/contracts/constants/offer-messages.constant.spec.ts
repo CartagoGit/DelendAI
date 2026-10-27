@@ -43,9 +43,11 @@ const keysOf = (value: unknown, prefix = ''): readonly string[] =>
 
 describe('the account offer messages', () => {
 	it('has the same messages in every language', () => {
-		const english = keysOf(OFFER_MESSAGES.en).sort();
+		const english = [...keysOf(OFFER_MESSAGES.en)].sort();
 		for (const lang of OFFER_LANGS)
-			expect(keysOf(OFFER_MESSAGES[lang]).sort(), lang).toEqual(english);
+			expect([...keysOf(OFFER_MESSAGES[lang])].sort(), lang).toEqual(
+				english,
+			);
 	});
 
 	it('says something for every message, in every language', () => {
