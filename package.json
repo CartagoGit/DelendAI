@@ -308,6 +308,7 @@
 		"lint:cache-layout-ratchet": "bun tools/scripts/lint/cache-layout-ratchet.script.ts",
 		"lint:spec-timeout-undercut": "bun tools/scripts/lint/spec-timeout-undercut.script.ts",
 		"report:spec-timing": "bun tools/scripts/report/spec-timing.script.ts",
+		"report:plugin-size": "bun tools/scripts/report/plugin-size-report.script.ts",
 		"lint:test-zones-cover-projects": "bun tools/scripts/lint/test-zones-cover-projects.script.ts",
 		"lint:no-duplicate-release-triggers": "bun tools/scripts/lint/no-duplicate-release-triggers.script.ts",
 		"lint:plugin-permissions-declared": "bun tools/scripts/lint/plugin-permissions-declared.script.ts",
