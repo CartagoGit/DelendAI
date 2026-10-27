@@ -12,6 +12,7 @@
  * what every plugin actually needs today; size-based caps are
  * explicitly out of scope (see proposal f00068 §"Out of scope").
  */
+import { CORE_EVICTION_DAY_MS } from '../contracts/constants/core-eviction.constant';
 import { readdir, rm, stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
 
@@ -55,12 +56,20 @@ export interface IEvictionRegistryDeps {
 	 *  absolute, contained form so the registry never has to resolve
 	 *  relative paths itself. */
 	readonly cacheDirAbs: string;
+	/**
+	 * The project's cap on every age rule (`config.cache.maxAgeDays`): a
+	 * rule's lifetime is the shorter of its own and this, whichever owner
+	 * registered it.
+	 */
+	readonly maxAgeDays?: number | undefined;
 }
 
 export const createCacheEvictionRegistry = (
 	deps: IEvictionRegistryDeps,
 ): ICacheEvictionRegistry => {
 	const rules = new Map<string, ICacheEvictionRule>();
+	const cappedDays = (days: number): number =>
+		deps.maxAgeDays === undefined ? days : Math.min(days, deps.maxAgeDays);
 
 	const validateRule = (rule: ICacheEvictionRule): void => {
 		if (rule.id.length === 0) {
@@ -179,7 +188,8 @@ export const createCacheEvictionRegistry = (
 			nameMatch?.[1] !== undefined
 				? new Date(nameMatch[1]).getTime()
 				: (await stat(target.abs)).mtimeMs;
-		const threshold = now.getTime() - when.days * 24 * 60 * 60 * 1000;
+		const threshold =
+			now.getTime() - cappedDays(when.days) * CORE_EVICTION_DAY_MS;
 		if (timestamp >= threshold) return [];
 		const bytes = await sizeOf(target.abs);
 		if (!dryRun) await removeAbs(target.abs);
@@ -193,7 +203,8 @@ export const createCacheEvictionRegistry = (
 		when: ICacheEvictionOlderThanMtime,
 		dryRun: boolean,
 	): Promise<readonly ICacheEvictionRemoved[]> => {
-		const threshold = now.getTime() - when.days * 24 * 60 * 60 * 1000;
+		const threshold =
+			now.getTime() - cappedDays(when.days) * CORE_EVICTION_DAY_MS;
 		const info = await stat(target.abs);
 		if (info.mtimeMs >= threshold) return [];
 		const bytes = await sizeOf(target.abs);
