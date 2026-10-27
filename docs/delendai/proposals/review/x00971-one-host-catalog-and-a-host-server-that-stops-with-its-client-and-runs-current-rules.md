@@ -2,10 +2,16 @@
 id: x00971
 title: "One host catalog, and a host server that stops with its client and runs current rules"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
+last-correlation-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
+last-transition-from: in-progress
+last-transition-at: 2026-10-27T09:13:33.645Z
+shipped-in:
+  - "97594eb67"
 ---
 
 # x00971 — One host catalog, and a host server that stops with its client and runs current rules
@@ -28,27 +34,36 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 - global_gate: type
 
 ### S1 — One catalog with material for each host
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/contracts/interfaces/init.interface.ts`, `packages/cli/src/lib/init/init-host-instructions.service.spec.ts`, `packages/cli/src/lib/init/init-host-instructions.service.ts`, `packages/cli/src/lib/init/init-host-snapshot.service.spec.ts`, `packages/cli/src/lib/init/init-host-snapshot.service.ts`, `packages/cli/src/lib/init/init-hosts.helper.spec.ts`, `packages/cli/src/lib/init/init-hosts.helper.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/contracts/index.ts`, `packages/core/src/lib/bootstrap/agent-config-rules.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/hosts/agent-host-name.helper.ts`, `packages/core/tests/src/lib/bootstrap/agent-config-rules.spec.ts`, `packages/core/tests/src/lib/contracts/constants/agent-hosts.constant.spec.ts`, `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`, `plugins/proposals/src/lib/contracts/constants/host-instruction-files.constant.ts`, `plugins/proposals/tests/src/lib/tools/scan-host-instructions.tool.spec.ts`, `plugins/usage-tracking/src/lib/detect-agent.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/usage-tracking/tests/src/lib/detect-agent.spec.ts`, `plugins/usage-tracking/tests/src/lib/plugin.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Detection, scaffold and instructions read AGENT_HOSTS; a spec fails if a host appears in one and not the others (G65, D39)."
   - "Every host that declares an instructions file gets delendai's block from init when the project uses it, and every reader of instruction files (init, bootstrap analysis, the proposals scan) knows each file a host declares (G66)."
+- shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The server process
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/host/host-supervisor.spec.ts`
 - **Gate**: type
 - acceptance:
   - "SIGINT and SIGTERM reach the child; no server survives its client (G113)."
   - "A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27)."
+- shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The bridge names a model only when one conversation can be at work
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-identity/provider-model-bridge.helper.ts`, `packages/core/src/lib/contracts/interfaces/provider-model-reading.interface.ts`, `packages/core/tests/src/lib/work-identity/provider-model-bridge.spec.ts`, `docs/delendai/configuration/provider-model-bridge.md`
 - **Gate**: type
 - acceptance:
   - "The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68)."
+- shipped-in: `97594eb67`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
