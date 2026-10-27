@@ -264,6 +264,12 @@ export interface IAssembleCliDeps {
 	 * own, so they never read the accounts of whoever runs them.
 	 */
 	personalConfigRoot?: string;
+	/**
+	 * Per-step plugin import/register timeout in ms (default: the loader's
+	 * 15 s). Measuring fixtures raise it so a loaded machine cannot drop a
+	 * plugin and hand them a partial boot.
+	 */
+	pluginTimeoutMs?: number;
 }
 
 /**
@@ -764,6 +770,9 @@ export const assembleCliConfig = async (
 		buildContext,
 		peerRegistry,
 		...(deps.import !== undefined ? { importFn: deps.import } : {}),
+		...(deps.pluginTimeoutMs !== undefined
+			? { pluginTimeoutMs: deps.pluginTimeoutMs }
+			: {}),
 	});
 	const cacheReconcile = (apply: boolean) =>
 		bootstrapCacheLayout({

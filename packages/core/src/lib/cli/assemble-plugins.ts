@@ -110,6 +110,8 @@ export interface IAssemblePluginsInput {
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
 	readonly peerRegistry: ReturnType<typeof createPeerPluginRegistry>;
 	readonly importFn?: (specifier: string) => Promise<{ default: unknown }>;
+	/** Per-step plugin import/register timeout (ms); loader default when unset. */
+	readonly pluginTimeoutMs?: number;
 }
 
 /** Everything the rest of the assembly consumes from the plugin phase. */
@@ -936,6 +938,9 @@ export const assemblePlugins = async (
 		workspaceRoot: args.workspace,
 		buildContext,
 		import: pluginImport,
+		...(input.pluginTimeoutMs !== undefined
+			? { timeoutMs: input.pluginTimeoutMs }
+			: {}),
 	});
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',
