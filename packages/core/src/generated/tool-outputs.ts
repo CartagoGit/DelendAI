@@ -134,6 +134,7 @@ export type DelendaiBrowserBrowserOpenOutput = {
 export type DelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
+	truncated: boolean;
 	status: "ok";
 } | {
 	url: string;
