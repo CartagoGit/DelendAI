@@ -33,10 +33,31 @@ import {
 	captureHostFiles,
 	deriveWorkspaceHash,
 	hasNonCanonicalContent,
-	HOST_FILE_TARGETS,
 	isCanonicalHostBlock,
 	renderSnapshotHostInstructionsProposal,
 } from './init-host-snapshot.service';
+import { AGENT_HOSTS } from '@delendai/core/cli';
+import {
+	hostInstructionTargets,
+	hostInstructionsBody,
+} from './init-hosts.helper';
+import { renderHostInstructionsBlocks } from './init-render.service';
+
+/** The files init writes for a project that uses Copilot, Claude Code and AGENTS.md agents. */
+const TARGETS = hostInstructionTargets(
+	AGENT_HOSTS.filter((host) =>
+		['copilot', 'claude', 'agents-md'].includes(host.id),
+	),
+);
+const COPILOT = '.github/copilot-instructions.md';
+const targetOf = (relPath: string) => {
+	const target = TARGETS.find((each) => each.relPath === relPath);
+	if (target === undefined) throw new Error(`no target ${relPath}`);
+	return target;
+};
+/** The block init writes into a file, as it writes it. */
+const canonical = (relPath: string): string =>
+	`<!-- delendai:begin -->\n${hostInstructionsBody(targetOf(relPath))}\n<!-- delendai:end -->`;
 
 /** In-memory reader: keys are workspace-relative file paths. */
 const dirReader = (files: Readonly<Record<string, string>>): IFileReader => ({
@@ -73,7 +94,7 @@ const baseAnswers = InitAnswers.parse({
 
 describe('captureHostFiles (f00093)', () => {
 	it('marks all three as missing when no host files exist', async () => {
-		const captures = await captureHostFiles(dirReader({}));
+		const captures = await captureHostFiles(dirReader({}), TARGETS);
 		expect(captures).toHaveLength(3);
 		for (const c of captures) {
 			expect(c.missing).toBe(true);
@@ -88,11 +109,11 @@ describe('captureHostFiles (f00093)', () => {
 			'CLAUDE.md': '# claude legacy rule\n',
 			'AGENTS.md': '# agents legacy rule\n',
 		});
-		const captures = await captureHostFiles(reader);
-		expect(captures.map((c) => c.host)).toEqual([
-			'copilot',
-			'claude',
-			'agents',
+		const captures = await captureHostFiles(reader, TARGETS);
+		expect(captures.map((c) => c.relPath)).toEqual([
+			COPILOT,
+			'CLAUDE.md',
+			'AGENTS.md',
 		]);
 		expect(captures[0]?.preOverwrite).toContain('copilot legacy rule');
 		expect(captures[1]?.preOverwrite).toContain('claude legacy rule');
@@ -104,21 +125,16 @@ describe('captureHostFiles (f00093)', () => {
 	});
 
 	it('recognises a canonical block (with the host-specific footnote) as alreadyCanonical', async () => {
-		const canonicalCopilot =
-			'<!-- delendai:begin -->\n\n' +
-			'# delendai host hints\n\n' +
-			'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
-			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n' +
-			'<!-- delendai:end -->';
+		const canonicalCopilot = canonical(COPILOT);
 		const reader = dirReader({
 			'.github/copilot-instructions.md': canonicalCopilot,
 			'CLAUDE.md': '# legacy\n',
 			'AGENTS.md': '# legacy\n',
 		});
-		const captures = await captureHostFiles(reader);
-		const copilot = captures.find((c) => c.host === 'copilot');
+		const captures = await captureHostFiles(reader, TARGETS);
+		const copilot = captures.find((c) => c.relPath === COPILOT);
 		expect(copilot?.alreadyCanonical).toBe(true);
-		const claude = captures.find((c) => c.host === 'claude');
+		const claude = captures.find((c) => c.relPath === 'CLAUDE.md');
 		expect(claude?.alreadyCanonical).toBe(false);
 	});
 
@@ -134,50 +150,53 @@ describe('captureHostFiles (f00093)', () => {
 			'CLAUDE.md': '# legacy\n',
 			'AGENTS.md': '# legacy\n',
 		});
-		const captures = await captureHostFiles(reader);
-		const copilot = captures.find((c) => c.host === 'copilot');
+		const captures = await captureHostFiles(reader, TARGETS);
+		const copilot = captures.find((c) => c.relPath === COPILOT);
 		expect(copilot?.alreadyCanonical).toBe(false);
 	});
 });
 
 describe('isCanonicalHostBlock (f00093)', () => {
-	const canonical = (host: 'copilot' | 'claude' | 'agents') =>
-		'<!-- delendai:begin -->\n\n' +
-		'# delendai host hints\n\n' +
-		'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
-		(host === 'copilot'
-			? '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n'
-			: host === 'claude'
-				? '- Bootstrap §8.2 (keep the main thread cheap) is in effect.\n'
-				: '- Bootstrap §7 (repo-level rules) is in effect.\n') +
-		'<!-- delendai:end -->';
+	it('recognises the block init itself writes', async () => {
+		const [written] = await renderHostInstructionsBlocks(
+			'/nonexistent/workspace',
+			'overwrite',
+			[targetOf('CLAUDE.md')],
+		);
+		expect(
+			isCanonicalHostBlock(written?.content ?? '', targetOf('CLAUDE.md')),
+		).toBe(true);
+	});
 
 	it('accepts the exact canonical block for each host', () => {
-		expect(isCanonicalHostBlock(canonical('copilot'), 'copilot')).toBe(
-			true,
-		);
-		expect(isCanonicalHostBlock(canonical('claude'), 'claude')).toBe(true);
-		expect(isCanonicalHostBlock(canonical('agents'), 'agents')).toBe(true);
+		for (const target of TARGETS)
+			expect(
+				isCanonicalHostBlock(canonical(target.relPath), target),
+			).toBe(true);
 	});
 
 	it('rejects a block with no markers (predates init)', () => {
-		expect(isCanonicalHostBlock('# legacy rule\n', 'claude')).toBe(false);
+		expect(
+			isCanonicalHostBlock('# legacy rule\n', targetOf('CLAUDE.md')),
+		).toBe(false);
 	});
 
 	it('rejects a block with a non-canonical inner body', () => {
-		const tampered = canonical('claude').replace(
+		const tampered = canonical('CLAUDE.md').replace(
 			'# delendai host hints',
 			'# custom replacement',
 		);
-		expect(isCanonicalHostBlock(tampered, 'claude')).toBe(false);
+		expect(isCanonicalHostBlock(tampered, targetOf('CLAUDE.md'))).toBe(
+			false,
+		);
 	});
 });
 
 describe('hasNonCanonicalContent (f00093)', () => {
 	it('returns false when all three host files are missing', () => {
-		const captures = HOST_FILE_TARGETS.map((t) => ({
+		const captures = TARGETS.map((t) => ({
 			relPath: t.relPath,
-			host: t.host,
+			hosts: t.hosts,
 			missing: true,
 			preOverwrite: '',
 			canonicalReplacement: '',
@@ -187,9 +206,9 @@ describe('hasNonCanonicalContent (f00093)', () => {
 	});
 
 	it('returns false when all three host files are already canonical', () => {
-		const captures = HOST_FILE_TARGETS.map((t) => ({
+		const captures = TARGETS.map((t) => ({
 			relPath: t.relPath,
-			host: t.host,
+			hosts: t.hosts,
 			missing: false,
 			preOverwrite: 'canonical',
 			canonicalReplacement: '',
@@ -202,7 +221,7 @@ describe('hasNonCanonicalContent (f00093)', () => {
 		const captures = [
 			{
 				relPath: '.github/copilot-instructions.md',
-				host: 'copilot' as const,
+				hosts: ['copilot'],
 				missing: true,
 				preOverwrite: '',
 				canonicalReplacement: '',
@@ -210,7 +229,7 @@ describe('hasNonCanonicalContent (f00093)', () => {
 			},
 			{
 				relPath: 'CLAUDE.md',
-				host: 'claude' as const,
+				hosts: ['claude'],
 				missing: false,
 				preOverwrite: '# legacy\n',
 				canonicalReplacement: '',
@@ -218,7 +237,7 @@ describe('hasNonCanonicalContent (f00093)', () => {
 			},
 			{
 				relPath: 'AGENTS.md',
-				host: 'agents' as const,
+				hosts: ['agents-md'],
 				missing: false,
 				preOverwrite: 'canonical',
 				canonicalReplacement: '',
@@ -253,6 +272,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		});
 		const out = await renderSnapshotHostInstructionsProposal(answers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toEqual([]);
 	});
@@ -267,6 +287,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		});
 		const out = await renderSnapshotHostInstructionsProposal(answers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toEqual([]);
 	});
@@ -275,28 +296,20 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		const reader = dirReader({});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toEqual([]);
 	});
 
 	it('returns [] when all host files are already canonical (no audit needed)', async () => {
-		const canonical = (host: 'copilot' | 'claude' | 'agents') =>
-			'<!-- delendai:begin -->\n\n' +
-			'# delendai host hints\n\n' +
-			'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live catalog.\n\n' +
-			(host === 'copilot'
-				? '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.\n'
-				: host === 'claude'
-					? '- Bootstrap §8.2 (keep the main thread cheap) is in effect.\n'
-					: '- Bootstrap §7 (repo-level rules) is in effect.\n') +
-			'<!-- delendai:end -->';
 		const reader = dirReader({
-			'.github/copilot-instructions.md': canonical('copilot'),
-			'CLAUDE.md': canonical('claude'),
-			'AGENTS.md': canonical('agents'),
+			[COPILOT]: canonical(COPILOT),
+			'CLAUDE.md': canonical('CLAUDE.md'),
+			'AGENTS.md': canonical('AGENTS.md'),
 		});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toEqual([]);
 	});
@@ -310,6 +323,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toHaveLength(1);
 		const snap = out[0];
@@ -339,6 +353,7 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		});
 		const out = await renderSnapshotHostInstructionsProposal(baseAnswers, {
 			reader,
+			targets: TARGETS,
 		});
 		expect(out).toHaveLength(1);
 		// f00007 + 1 = f00008 — never a hardcoded f00001 when a collision
@@ -352,15 +367,11 @@ describe('renderSnapshotHostInstructionsProposal (f00093)', () => {
 		});
 		const first = await renderSnapshotHostInstructionsProposal(
 			baseAnswers,
-			{
-				reader,
-			},
+			{ reader, targets: TARGETS },
 		);
 		const second = await renderSnapshotHostInstructionsProposal(
 			baseAnswers,
-			{
-				reader,
-			},
+			{ reader, targets: TARGETS },
 		);
 		// Both runs land in the same pool so they get the same shape of
 		// id against the SAME counter — but the proposal filename ends up

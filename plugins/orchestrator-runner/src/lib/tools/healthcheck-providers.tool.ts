@@ -51,7 +51,7 @@ const askClient = async (
 	cwd: string,
 ): Promise<IProviderChecks> => {
 	const login = await probeLogin(command, runner, cwd);
-	const client = knownClientOf(command);
+	const client = knownClientOf(command, cwd);
 	const listed =
 		client?.modelListArgs === undefined
 			? undefined

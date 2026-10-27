@@ -120,6 +120,7 @@ export const buildBootstrapProvidersRegistration = (
 					confirmed,
 					detected,
 					await readConfirmedAccounts(options.configPath),
+					options.workspaceRoot,
 				);
 
 				return toolJson({

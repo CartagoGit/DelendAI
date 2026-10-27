@@ -196,7 +196,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			permissions: ['filesystem-read', 'filesystem-write', 'network', 'forge-write'],
 			tokenBudgetBytes: 3500,
 			startupActivation: true,
-			toolPermissions: { 'report_status': ['network', 'forge-write'] },
+			toolPermissions: { 'report_status': ['filesystem-read'], 'diagnose_log': ['filesystem-read'] },
 		},
 		{
 			origin: 'first-party',

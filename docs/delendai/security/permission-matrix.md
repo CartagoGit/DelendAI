@@ -37,7 +37,8 @@
 | diagram | public | * | filesystem-read, filesystem-write |
 | docs | public | * | filesystem-read, filesystem-write |
 | env | public | * | filesystem-read, env-read |
-| error-reporting | public | report_status | network, forge-write |
+| error-reporting | public | report_status | filesystem-read |
+| error-reporting | public | diagnose_log | filesystem-read |
 | execution-env | public | * | filesystem-read, filesystem-write, process, env-read |
 | external-mcps | public | * | filesystem-read, process, network, env-read |
 | forge | public | pr_list | forge-read, network |

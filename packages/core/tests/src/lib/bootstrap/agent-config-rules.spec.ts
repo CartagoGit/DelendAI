@@ -8,6 +8,7 @@ import {
 	DEFAULT_AGENT_CONFIG_RULES,
 	matchAgentConfigs,
 } from '@delendai/core/lib/bootstrap/agent-config-rules';
+import { AGENT_HOSTS } from '@delendai/core/lib/contracts/constants/agent-hosts.constant';
 
 /**
  * The reader mock:
@@ -30,33 +31,26 @@ const reader = (
 	},
 });
 
-describe('DEFAULT_AGENT_CONFIG_RULES (declarative table)', async () => {
-	it('lists the six built-in entries (CLAUDE.md, AGENTS.md, cursor, copilot-instructions, github-agents, windsurf)', async () => {
-		// The cursor case is now ONE rule with a `paths: [...]`
-		// array, not two rules with the same id. The unique-id
-		// contract holds.
+describe('DEFAULT_AGENT_CONFIG_RULES (read from AGENT_HOSTS)', async () => {
+	it('has a rule for every instructions file and agents folder a host declares, and no other', async () => {
 		const ids = DEFAULT_AGENT_CONFIG_RULES.map((r) => r.id);
-		expect(ids).toEqual([
-			'CLAUDE.md',
-			'AGENTS.md',
-			'cursor',
-			'copilot-instructions',
-			'github-agents',
-			'windsurf',
+		const declared = AGENT_HOSTS.flatMap((host) => [
+			...(host.instructions === undefined ? [] : [host.instructions]),
+			...(host.legacyInstructions ?? []),
+			...(host.agents === undefined ? [] : [host.agents.dir]),
 		]);
+		expect(new Set(ids)).toEqual(new Set(declared));
 	});
 	it('every id is unique (the strict contract — no tolerated duplicates)', async () => {
 		const ids = DEFAULT_AGENT_CONFIG_RULES.map((r) => r.id);
 		expect(new Set(ids).size).toBe(ids.length);
 	});
-	it('CLAUDE.md has the highest priority (the common reference)', async () => {
-		const claude = DEFAULT_AGENT_CONFIG_RULES.find(
-			(r) => r.id === 'CLAUDE.md',
+	it('ranks an earlier host first: CLAUDE.md above .windsurfrules', async () => {
+		const priority = (id: string): number =>
+			DEFAULT_AGENT_CONFIG_RULES.find((r) => r.id === id)?.priority ?? 0;
+		expect(priority('CLAUDE.md')).toBeGreaterThan(
+			priority('.windsurfrules'),
 		);
-		const windsurf = DEFAULT_AGENT_CONFIG_RULES.find(
-			(r) => r.id === 'windsurf',
-		);
-		expect(claude?.priority).toBeGreaterThan(windsurf?.priority ?? 0);
 	});
 });
 
@@ -77,37 +71,36 @@ describe('matchAgentConfigs', async () => {
 	it('detects cursor from .cursorrules (file)', async () => {
 		expect(
 			await matchAgentConfigs(reader({ '.cursorrules': 'rule' })),
-		).toContain('cursor');
+		).toContain('.cursorrules');
 	});
-	it('detects cursor from .cursor (dir)', async () => {
-		expect(await matchAgentConfigs(reader({ '.cursor': 'dir' }))).toContain(
-			'cursor',
-		);
+	it('detects the rules file delendai writes for Cursor', async () => {
+		expect(
+			await matchAgentConfigs(
+				reader({ '.cursor/rules/delendai.mdc': 'rule' }),
+			),
+		).toContain('.cursor/rules/delendai.mdc');
 	});
-	it('does NOT detect cursor when there is no .cursorrules and no .cursor', async () => {
-		// When neither `.cursorrules` nor `.cursor` exists, no cursor
-		// config is detected. (The `file-or-dir` rule for the empty
-		// dir case is intentionally permissive — see the
-		// `agent-config-rules.ts` comment — so we only assert the
-		// clear no-evidence case here.)
-		expect(await matchAgentConfigs(reader({}))).not.toContain('cursor');
+	it('detects nothing for Cursor when neither of its files exists', async () => {
+		const found = await matchAgentConfigs(reader({}));
+		expect(found).not.toContain('.cursorrules');
+		expect(found).not.toContain('.cursor/rules/delendai.mdc');
 	});
-	it('detects copilot-instructions', async () => {
+	it('detects the Copilot instructions file', async () => {
 		expect(
 			await matchAgentConfigs(
 				reader({ '.github/copilot-instructions.md': '# guide' }),
 			),
-		).toContain('copilot-instructions');
+		).toContain('.github/copilot-instructions.md');
 	});
-	it('detects github-agents from the .github/agents dir', async () => {
+	it('detects the .github/agents folder', async () => {
 		expect(
 			await matchAgentConfigs(reader({ '.github/agents': 'dir' })),
-		).toContain('github-agents');
+		).toContain('.github/agents');
 	});
-	it('detects windsurf from .windsurfrules', async () => {
+	it('detects .windsurfrules', async () => {
 		expect(
 			await matchAgentConfigs(reader({ '.windsurfrules': 'rule' })),
-		).toContain('windsurf');
+		).toContain('.windsurfrules');
 	});
 	it('returns all matches in priority order for a multi-config repo', async () => {
 		const result = await matchAgentConfigs(
@@ -117,8 +110,8 @@ describe('matchAgentConfigs', async () => {
 				'.windsurfrules': 'rule',
 			}),
 		);
-		// Priority order: CLAUDE.md > AGENTS.md > windsurf.
-		expect(result).toEqual(['CLAUDE.md', 'AGENTS.md', 'windsurf']);
+		// The order hosts are declared in: Claude, Codex, then Windsurf.
+		expect(result).toEqual(['CLAUDE.md', 'AGENTS.md', '.windsurfrules']);
 	});
 });
 

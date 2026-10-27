@@ -5,7 +5,11 @@
  */
 export { default } from '../index';
 
-export { detectAgent, BUILTIN_CLIENT_TABLE } from '../lib/detect-agent';
+export {
+	agentKindOf,
+	builtinClientMapping,
+	detectAgent,
+} from '../lib/detect-agent';
 export type { IClientMapping } from '../lib/detect-agent';
 export { RecordBuffer } from '../lib/record-buffer';
 export type { IRecordBufferOptions } from '../lib/record-buffer';

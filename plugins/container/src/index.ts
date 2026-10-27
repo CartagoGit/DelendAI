@@ -48,6 +48,7 @@ export default definePlugin({
 				}),
 				...buildContainerBuildToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
 				}),
 				...buildContainerDockerToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,

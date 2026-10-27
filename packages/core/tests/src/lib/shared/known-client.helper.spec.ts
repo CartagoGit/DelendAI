@@ -11,8 +11,10 @@ import {
 	useConfiguredClients,
 } from '../../../../src/lib/shared/known-client.helper';
 
+const ROOT = '/work/a';
+
 afterEach(() => {
-	useConfiguredClients([]);
+	useConfiguredClients(ROOT, []);
 });
 
 describe('known clients', () => {
@@ -57,12 +59,25 @@ describe('known clients', () => {
 		).toBe(4);
 	});
 
-	it('is what the process matches commands to once configured', () => {
-		expect(knownClientOf('/usr/local/bin/mimo')).toBeUndefined();
-		useConfiguredClients([{ command: 'mimo', vendor: 'xiaomi' }]);
-		expect(knownClientOf('/usr/local/bin/mimo.exe')?.vendor).toBe('xiaomi');
+	it('is what the workspace matches commands to once configured', () => {
+		expect(knownClientOf('/usr/local/bin/mimo', ROOT)).toBeUndefined();
+		useConfiguredClients(ROOT, [{ command: 'mimo', vendor: 'xiaomi' }]);
+		expect(knownClientOf('/usr/local/bin/mimo.exe', ROOT)?.vendor).toBe(
+			'xiaomi',
+		);
+		expect(knownClientOf('mimo', `${ROOT}/`)?.vendor).toBe('xiaomi');
 		expect(
-			allKnownClients().some((client) => client.command === 'claude'),
+			allKnownClients(ROOT).some((client) => client.command === 'claude'),
+		).toBe(true);
+	});
+
+	it('does not carry the clients of one workspace into another', () => {
+		useConfiguredClients(ROOT, [{ command: 'mimo', vendor: 'xiaomi' }]);
+		expect(knownClientOf('mimo', '/work/b')).toBeUndefined();
+		expect(
+			allKnownClients('/work/b').some(
+				(client) => client.command === 'claude',
+			),
 		).toBe(true);
 	});
 });

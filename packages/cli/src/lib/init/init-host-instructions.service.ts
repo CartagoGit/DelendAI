@@ -29,6 +29,7 @@
  * but a pointer is not collapsed a second time.
  */
 
+import { AGENT_HOST_INSTRUCTION_FILES, AGENT_HOSTS } from '@delendai/core/cli';
 import type {
 	IAgentInstructionSourceSpec,
 	IConsolidationPlan,
@@ -128,21 +129,21 @@ const POINTER_MARKER = '<!-- delendai:pointer -->';
 
 export const AGENT_INSTRUCTION_SOURCE_SPECS: readonly IAgentInstructionSourceSpec[] =
 	[
-		{ label: 'Claude', kind: 'basename', match: 'CLAUDE.md' },
-		{ label: 'AGENTS', kind: 'basename', match: 'AGENTS.md' },
-		{ label: 'Cursor', kind: 'file', match: '.cursorrules' },
-		{
-			label: 'Copilot',
-			kind: 'file',
-			match: '.github/copilot-instructions.md',
-		},
-		{ label: 'Windsurf', kind: 'file', match: '.windsurfrules' },
-		{ label: 'Aider', kind: 'extension', match: '.aider.conf.yml' },
-		{ label: 'Aider', kind: 'extension', match: '.aider.conf.yaml' },
-		{ label: 'Continue', kind: 'file', match: '.continuerules' },
-		{ label: 'Cline', kind: 'file', match: '.clinerules' },
-		{ label: 'Gemini', kind: 'basename', match: 'GEMINI.md' },
-		{ label: 'Codex', kind: 'file', match: '.codex/instructions.md' },
+		// Every file a host reads instructions from, from core's host catalog.
+		...AGENT_HOST_INSTRUCTION_FILES.map(({ path, hosts }) => ({
+			label: hosts
+				.map(
+					(id) =>
+						AGENT_HOSTS.find((host) => host.id === id)?.label ?? id,
+				)
+				.join(' / '),
+			// A bare name (`CLAUDE.md`) is read in any folder; a path or a dotfile at the root.
+			kind:
+				path.includes('/') || path.startsWith('.')
+					? ('file' as const)
+					: ('basename' as const),
+			match: path,
+		})),
 		{ label: 'Ad-hoc agent doc', kind: 'extension', match: '.agent.md' },
 	];
 

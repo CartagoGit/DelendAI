@@ -7,6 +7,7 @@
  */
 
 import type {
+	IHostInstructionTarget,
 	IRenderedBundle,
 	IRenderedFile,
 } from '../../contracts/interfaces/init.interface';
@@ -21,10 +22,8 @@ import {
 } from '@delendai/core/public';
 import type { IFileReader } from '@delendai/core/contracts';
 import {
-	AGENT_HOSTS,
 	DEFAULT_DELENDAI_SERVER_NAME,
 	hostToolSetReference,
-	projectAgentHosts,
 	renderAgentForHosts,
 	signAgent,
 	applyJsoncEdits,
@@ -43,6 +42,11 @@ import {
 	readHostInstructionsFile,
 } from './init-host-instructions.service';
 import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
+import {
+	hostInstructionsBody,
+	initHosts,
+	initInstructionTargets,
+} from './init-hosts.helper';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
 import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 
@@ -362,22 +366,7 @@ export const renderAgentFiles = async (
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
 	const serverName = options.serverName ?? DEFAULT_DELENDAI_SERVER_NAME;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
-	const found = await projectAgentHosts({
-		root: workspaceRoot,
-		declared: options.hosts,
-	});
-	// Declared hosts are the project's word; otherwise the ones found, and
-	// always the ones init itself configures the server for.
-	const hosts =
-		options.everyHost === true
-			? AGENT_HOSTS
-			: found.source === 'declared'
-				? found.hosts
-				: AGENT_HOSTS.filter(
-						(host) =>
-							INIT_CONFIGURED_HOSTS.includes(host.id) ||
-							found.hosts.includes(host),
-					);
+	const hosts = await initHosts(workspaceRoot, options);
 	return descriptors.flatMap((descriptor) =>
 		renderAgentForHosts(hosts, {
 			name: `${namespacePrefix}-${descriptor.role}`,
@@ -393,18 +382,6 @@ export const renderAgentFiles = async (
 	);
 };
 
-/** The hosts init writes the server's configuration for whatever it finds. */
-const INIT_CONFIGURED_HOSTS: readonly string[] = ['copilot', 'claude'];
-
-// f00092: the 3-fragment model collapsed to a single canonical fragment.
-// The host-specific footnote now lives inline in each hand-edited host
-// file (between its `<!-- delendai:begin -->` / `<!-- delendai:end -->`
-// markers), so the same canonical body is written into the 3 host files
-// and the footnote is appended per host by `hostFootnoteFor()`.
-const HOST_INSTRUCTIONS_CANONICAL_BODY =
-	'# delendai host hints (auto-generated)\n\n' +
-	'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live agent catalog.';
-
 /**
  * The file every host block points at. The block names it, so a project
  * that receives the block must receive the file; the server stays the
@@ -417,30 +394,6 @@ const HOST_HINTS_CONTENT =
 	'# delendai agent hints\n\n' +
 	'Start every session with `delendai_overview { compact: true }`, then route work with `delendai_agent_catalog`. Tools, skills and proposals change every week: read them from the server, never from a copy in this file.\n';
 
-const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
-	relPath: string;
-	host: 'copilot' | 'claude' | 'agents';
-}> = [
-	{ relPath: '.github/copilot-instructions.md', host: 'copilot' },
-	{ relPath: 'CLAUDE.md', host: 'claude' },
-	{ relPath: 'AGENTS.md', host: 'agents' },
-];
-
-// f00092: the 1-line footnote that used to live in each per-host fragment.
-// The footnote is host-specific by definition (it says "this appendix is
-// in effect for you") so it belongs in the hand-edited host file, where
-// the rest of the host file already lives.
-const HOST_FOOTNOTE: Readonly<Record<'copilot' | 'claude' | 'agents', string>> =
-	{
-		copilot:
-			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
-		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
-		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
-	};
-
-const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
-	`\n\n${HOST_FOOTNOTE[host]}`;
-
 /**
  * S4 — render host-instructions blocks honouring idempotent append.
  * When the file already has a `<!-- delendai:begin -->` /
@@ -450,16 +403,20 @@ const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
 export const renderHostInstructionsBlocks = async (
 	workspaceRoot: string,
 	mode: 'append' | 'overwrite' | 'skip',
+	targets: readonly IHostInstructionTarget[],
 ): Promise<readonly IRenderedFile[]> => {
 	if (mode === 'skip') return [];
 	const out: IRenderedFile[] = [];
-	for (const target of HOST_INSTRUCTIONS_TARGETS) {
-		const body = `${HOST_INSTRUCTIONS_CANONICAL_BODY}${hostFootnoteFor(target.host)}`;
+	for (const target of targets) {
 		const current = await readHostInstructionsFile(
 			workspaceRoot,
 			target.relPath,
 		);
-		const next = computeHostInstructionsWrite(current, body, mode);
+		const next = computeHostInstructionsWrite(
+			current,
+			hostInstructionsBody(target),
+			mode,
+		);
 		if (next === undefined) continue;
 		out.push({ relPath: target.relPath, content: next });
 	}
@@ -535,10 +492,15 @@ export const renderInitBundle = async (
 			})),
 		);
 	}
+	const instructionTargets = await initInstructionTargets(
+		answers.workspaceRoot,
+		{ hosts: answers.hosts },
+	);
 	files.push(
 		...(await renderHostInstructionsBlocks(
 			answers.workspaceRoot,
 			answers.hostInstructions,
+			instructionTargets,
 		)),
 	);
 	// f00093: snapshot pre-overwrite host-instructions into a `ready`
@@ -549,6 +511,7 @@ export const renderInitBundle = async (
 	try {
 		const snapshot = await renderSnapshotHostInstructionsProposal(answers, {
 			reader,
+			targets: instructionTargets,
 		});
 		files.push(...snapshot);
 	} catch (err) {

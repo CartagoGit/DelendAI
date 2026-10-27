@@ -16,8 +16,9 @@ import type { IDiscoveredProvider, IJsonPatchOp } from '../bootstrap';
  */
 export const draftLoginAccount = (
 	discovered: IDiscoveredProvider,
+	workspaceRoot: string,
 ): Record<string, unknown> | undefined => {
-	const client = knownClientOf(discovered.id);
+	const client = knownClientOf(discovered.id, workspaceRoot);
 	if (
 		client === undefined ||
 		discovered.login === undefined ||
@@ -77,6 +78,8 @@ export const buildProvidersPatch = (
 	confirmedProviders: readonly { readonly id?: unknown }[] | null,
 	detected: readonly IDiscoveredProvider[],
 	confirmedAccounts?: readonly { readonly accountId?: unknown }[] | null,
+	/** The project whose declared clients name the accounts' vendors. */
+	workspaceRoot?: string,
 ): readonly IJsonPatchOp[] => {
 	const ops: IJsonPatchOp[] = [];
 	const accountOps: IJsonPatchOp[] = [];
@@ -96,9 +99,9 @@ export const buildProvidersPatch = (
 	for (const provider of detected) {
 		if (existingIds.has(provider.id)) continue;
 		const account =
-			confirmedAccounts === undefined
+			confirmedAccounts === undefined || workspaceRoot === undefined
 				? undefined
-				: draftLoginAccount(provider);
+				: draftLoginAccount(provider, workspaceRoot);
 		const accountId =
 			typeof account?.accountId === 'string'
 				? account.accountId

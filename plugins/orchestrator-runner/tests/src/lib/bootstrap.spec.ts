@@ -140,7 +140,7 @@ describe('buildProvidersPatch (RFC 6902, CRITICAL I13)', () => {
 				verdict: 'usable',
 			},
 		];
-		const ops = buildProvidersPatch(null, loggedIn, null);
+		const ops = buildProvidersPatch(null, loggedIn, null, '/work');
 		expect(ops.map((op) => op.path)).toEqual([
 			'/accounts',
 			'/accounts/-',
@@ -160,9 +160,12 @@ describe('buildProvidersPatch (RFC 6902, CRITICAL I13)', () => {
 			accountId: 'claude-login',
 		});
 		expect(ops[4]?.value).not.toHaveProperty('accountId');
-		const again = buildProvidersPatch([], loggedIn, [
-			{ accountId: 'claude-login' },
-		]);
+		const again = buildProvidersPatch(
+			[],
+			loggedIn,
+			[{ accountId: 'claude-login' }],
+			'/work',
+		);
 		expect(again.filter((op) => op.path.startsWith('/accounts'))).toEqual(
 			[],
 		);

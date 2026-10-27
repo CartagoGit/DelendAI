@@ -160,7 +160,7 @@ export const probeLogin = async (
 ): Promise<
 	Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence' | 'login'>
 > => {
-	const client = knownClientOf(id);
+	const client = knownClientOf(id, cwd);
 	const command = AUTH_STATUS_CMD[id];
 	if (client === undefined || command === undefined) {
 		return { authTier: null, verdict: 'unknown', evidence: null };

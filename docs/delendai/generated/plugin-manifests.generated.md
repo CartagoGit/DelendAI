@@ -153,7 +153,7 @@
 | diagram | filesystem-read, filesystem-write |  |
 | docs | filesystem-read, filesystem-write |  |
 | env | filesystem-read, env-read |  |
-| error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
+| error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: filesystem-read; diagnose_log: filesystem-read |
 | execution-env | filesystem-read, filesystem-write, process, env-read |  |
 | external-mcps | filesystem-read, process, network, env-read |  |
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |

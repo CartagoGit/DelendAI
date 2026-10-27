@@ -46,6 +46,8 @@ export type CliSpawner = (
 
 export interface ICliInvokerOptions {
 	readonly spawner: CliSpawner;
+	/** The workspace whose declared clients a command is matched to. */
+	readonly workspaceRoot: string;
 	/** ms between SIGTERM and the escalating SIGKILL. Default 5000. */
 	readonly sigkillGraceMs?: number;
 	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
@@ -173,7 +175,7 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 				request.invoke.args ?? [],
 				request.prompt,
 				request.toolsAllow,
-				knownClientOf(request.invoke.command),
+				knownClientOf(request.invoke.command, options.workspaceRoot),
 			);
 			const environment = options.environmentFor?.(request, args) ?? {
 				kind: 'inherit',

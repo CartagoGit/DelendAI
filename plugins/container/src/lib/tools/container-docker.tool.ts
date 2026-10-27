@@ -125,10 +125,13 @@ export const buildContainerDockerToolRegistrations = (options: {
 		),
 		tool(
 			'container_run',
-			'Run a container. **Mutation**: needs `confirm: true`. A privileged container, a docker socket mount, or the host network/pid/ipc namespace also needs `confirmRisk: true`, which `confirm` never implies. `--rm` unless `name` is given.',
+			'Run a container. **Mutation**: needs `confirm: true`. A privileged container, a docker socket mount, a bind of a host folder outside the workspace, or the host network/pid/ipc namespace also needs `confirmRisk: true`, which `confirm` never implies. `--rm` unless `name` is given.',
 			RUN_INPUT,
 			async (args) => {
-				const risks = containerRisks(args);
+				const risks = containerRisks(
+					args,
+					callerCheckout.executionRootOr(options.workspaceRootAbs),
+				);
 				const argv = [
 					'run',
 					...(args.name === undefined
@@ -272,9 +275,12 @@ export const buildContainerDockerToolRegistrations = (options: {
 								(service) => service.name === args.service,
 							);
 				const risks = started.flatMap((service) =>
-					containerRisks({ mounts: service.mounts }).map(
-						(risk) => `${service.name} ${risk}`,
-					),
+					containerRisks(
+						{ mounts: service.mounts },
+						callerCheckout.executionRootOr(
+							options.workspaceRootAbs,
+						),
+					).map((risk) => `${service.name} ${risk}`),
 				);
 				return toolJson(
 					await runDocker(
