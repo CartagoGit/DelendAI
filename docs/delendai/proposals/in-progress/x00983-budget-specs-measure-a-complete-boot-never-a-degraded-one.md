@@ -10,6 +10,8 @@ last-transition-id: ede889c2-3614-425a-a397-f4a47ad36912
 last-correlation-id: ede889c2-3614-425a-a397-f4a47ad36912
 last-transition-from: ready
 last-transition-at: 2026-10-27T10:32:13.764Z
+shipped-in:
+  - "55fbb80d2"
 ---
 
 # x00983 — Budget specs measure a complete boot, never a degraded one
@@ -32,12 +34,13 @@ On a loaded machine the native overview listing test failed: 40 tools listed (no
 - global_gate: none
 
 ### S1 — assemble accepts a plugin timeout; the budget spec requires a complete boot
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "assembleCliConfig accepts pluginTimeoutMs and passes it to loadPlugins as timeoutMs; unset keeps the 15 s default."
   - "The token-budget spec connects with a 120 s plugin timeout and fails, listing each plugin and reason, when loadResult.errors is not empty."
+- shipped-in: `55fbb80d2`
 
 ## acceptance
 
