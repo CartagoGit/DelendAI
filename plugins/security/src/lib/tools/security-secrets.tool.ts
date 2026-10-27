@@ -43,7 +43,7 @@ export const buildSecuritySecretsRegistration = (
 			`${options.namespacePrefix}_security_secrets`,
 			{
 				description:
-					"Scan the project's source for leaked secrets (private keys, AWS/GitHub/Google/Slack/OpenAI tokens, ...) with high-precision offline rules. Returns normalized findings (severity critical..info, rule id, file:line, redacted match) + a per-severity summary. `scope`: 'changed' (default — git working-tree changes) or 'tracked' (all tracked files). Test/fixture files are skipped unless includeTests:true. No network.",
+					"Scan the project's source for leaked secrets (private keys, AWS/GitHub/Google/Slack/OpenAI tokens, ...) with high-precision offline rules. Returns normalized findings (severity critical..info, rule id, file:line, redacted match) + a per-severity summary. `scope`: 'changed' (default — git working-tree changes) or 'tracked' (all tracked files). Ignored files that hold secrets by name (`.env.local`, key files) are scanned too; `ignoredScanned` and `ignoredSkipped` say which. Test/fixture files are skipped unless includeTests:true. No network.",
 				inputSchema: z.object({
 					scope: z.enum(['changed', 'tracked']).optional(),
 					includeTests: z.boolean().optional(),
@@ -51,6 +51,8 @@ export const buildSecuritySecretsRegistration = (
 				outputSchema: z.object({
 					tool: z.string(),
 					scanned: z.number(),
+					ignoredScanned: z.array(z.string()),
+					ignoredSkipped: z.number(),
 					findings: z.array(FINDING),
 					summary: z.object({
 						critical: z.number(),
@@ -68,13 +70,16 @@ export const buildSecuritySecretsRegistration = (
 			}) => {
 				const deps =
 					options.deps ?? realScanDeps(options.workspaceRootAbs);
-				const { scanned, findings } = await runSecretScan(deps, {
-					scope: args.scope ?? 'changed',
-					includeTests: args.includeTests === true,
-				});
+				const { scanned, findings, ignoredScanned, ignoredSkipped } =
+					await runSecretScan(deps, {
+						scope: args.scope ?? 'changed',
+						includeTests: args.includeTests === true,
+					});
 				return toolJson({
 					tool: 'secrets',
 					scanned,
+					ignoredScanned,
+					ignoredSkipped,
 					findings,
 					summary: summarizeFindings(findings),
 					worst: worstSeverity(findings) ?? 'none',

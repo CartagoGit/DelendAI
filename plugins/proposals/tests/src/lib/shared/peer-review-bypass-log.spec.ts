@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	getPeerReviewBypassCount,
@@ -89,5 +89,24 @@ describe('peer-review-bypass-log (a00069 S11)', () => {
 		} finally {
 			Date.now = originalNow;
 		}
+	});
+
+	it('stores and prints the reason redacted, with no sink wired', () => {
+		const key = ['AK', 'IA', 'Q'.repeat(16)].join('');
+		const printed: string[] = [];
+		const warn = vi.spyOn(console, 'warn').mockImplementation((line) => {
+			printed.push(String(line));
+		});
+		try {
+			recordPeerReviewBypass({
+				proposalId: 'f1',
+				reason: `pasted ${key} by mistake`,
+				via: 'force',
+			});
+		} finally {
+			warn.mockRestore();
+		}
+		expect(listPeerReviewBypasses()[0]?.reason).not.toContain(key);
+		expect(printed.join('\n')).not.toContain(key);
 	});
 });

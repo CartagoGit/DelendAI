@@ -42,3 +42,6 @@ export const PERSONAL_DIRECTORY_MODE = 0o700;
 
 /** The migration that moves one person's accounts to their own file. */
 export const PERSONAL_ACCOUNTS_MIGRATOR_ID = 'personalAccountsMigrator:v1';
+
+/** The migration that renames a personal file an older delendai keyed without the remote's port. */
+export const PERSONAL_LAYER_PORT_MIGRATOR_ID = 'personalLayerPortMigrator:v1';
