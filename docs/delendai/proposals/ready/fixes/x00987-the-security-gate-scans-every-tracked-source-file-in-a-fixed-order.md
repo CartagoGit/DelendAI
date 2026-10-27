@@ -16,7 +16,9 @@ date: 2026-10-27
 
 ## why
 
-On 2026-10-27 PR #1537 (a lockfile change) failed `verify-runtime` with a "new" critical in `packages/state-sqlite/src/lib/coordination-store.ts:110`, a file the branch did not touch, while develop passed the same gate and a local run on the PR head passed too. The SAST file list came from `detectStack`, whose walk stopped at 4,000 files in the order the filesystem listed them: locally it read 3,387 source files of 6,671 tracked, CI read a different subset, and each saw a different single critical. The secret scan capped its candidates at 5,000 of 6,543 and silently skipped the tail of `git ls-files`. A full scan finds five criticals: three are test fixtures written vulnerable on purpose, and two are statements built from constant table names or fixed clauses (`coordination-store.ts`, and `roadmap-sqlite`'s timeline store, which c00534 deletes).
+On 2026-10-27 PR #1537 (a lockfile change) failed `verify-runtime` with a "new" critical in `packages/state-sqlite/src/lib/coordination-store.ts:110`, a file the branch did not touch, while develop passed the same gate and a local run on the PR head passed too. The SAST file list came from `detectStack`, whose walk stopped at 4,000 files in the order the filesystem listed them: locally it read 3,387 source files of 6,671 tracked, CI read a different subset, and each saw a different single critical. The secret scan capped its candidates at 5,000 of 6,543 and silently skipped the tail of `git ls-files`. A full scan finds five criticals: three are test fixtures written vulnerable on purpose, and two are statements built from constant table names or fixed clauses (`coordination-store.ts` and `roadmap-sqlite`'s timeline store).
+
+The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this one included, fails on the qs advisory and the shipped-rework lint until they land, and they fail this gate until it lands.
 
 ## non-goals
 
@@ -41,19 +43,19 @@ On 2026-10-27 PR #1537 (a lockfile change) failed `verify-runtime` with a "new" 
 - acceptance:
   - "verify:security's SAST input is `git ls-files` minus test paths, and an empty listing fails the gate instead of passing it."
   - "The secret scan in the gate has no file cap."
-  - "security.baseline.json holds no critical, and `bun run verify:security` passes on develop once c00534 has removed roadmap-sqlite."
+  - "security.baseline.json holds no critical, and `bun run verify:security` passes."
 
-### S3 — The coordination store's statements are written out in full
+### S3 — The flagged statements are written out in full
 - **Status**: pending
-- **Files**: `packages/state-sqlite/src/lib/contracts/constants/coordination.constant.ts`, `packages/state-sqlite/src/lib/coordination-store.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`
+- **Files**: `packages/state-sqlite/src/lib/contracts/constants/coordination.constant.ts`, `packages/state-sqlite/src/lib/coordination-store.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`
 - **Gate**: type
 - acceptance:
-  - "The full SAST scan reports no critical in packages/state-sqlite (its statements name their tables in full); `bun run test:sqlite` passes."
+  - "The full SAST scan reports no critical in packages/state-sqlite or packages/roadmap-sqlite (their statements name their tables and clauses in full); `bun run test:sqlite` and sqlite-timeline.store.spec.ts pass."
 
 ## acceptance
 
 - detectStack on a workspace of 4,100 source files lists all 4,100, sorted by path (stack-detect.spec.ts).
 - verify:security's SAST input is `git ls-files` minus test paths, and an empty listing fails the gate instead of passing it.
 - The secret scan in the gate has no file cap.
-- security.baseline.json holds no critical, and `bun run verify:security` passes on develop once c00534 has removed roadmap-sqlite.
-- The full SAST scan reports no critical in packages/state-sqlite (its statements name their tables in full); `bun run test:sqlite` passes.
+- security.baseline.json holds no critical, and `bun run verify:security` passes.
+- The full SAST scan reports no critical in packages/state-sqlite or packages/roadmap-sqlite (their statements name their tables and clauses in full); `bun run test:sqlite` and sqlite-timeline.store.spec.ts pass.
