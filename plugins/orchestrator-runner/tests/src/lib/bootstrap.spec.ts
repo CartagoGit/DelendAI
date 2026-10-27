@@ -6,16 +6,18 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-	buildProvidersPatch,
 	buildRosterDraft,
 	composeBootstrapBrief,
 	discoverProviders,
-	draftProviderEntry,
 	parseAuthTier,
 	readConfirmedProviders,
 	writeRosterDraft,
 	type IDiscoveredProvider,
 } from '../../../src/lib/bootstrap';
+import {
+	buildProvidersPatch,
+	draftProviderEntry,
+} from '../../../src/lib/services/providers-patch.helper';
 import type { ProbeRunner } from '../../../src/lib/healthcheck/probe';
 
 /**

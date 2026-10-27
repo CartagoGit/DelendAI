@@ -1,6 +1,8 @@
 /**
  * quota-ledger.helper.ts — the quota reservation ledger on disk: read,
  * written whole, and refused when it cannot be read.
+ *
+ * effect-boundary-authorized: the machine-wide ledger lives outside any workspace, so ctx.effects cannot reach it
  */
 import { appendFile, mkdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
@@ -8,6 +10,10 @@ import { dirname, join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
+import type {
+	ILedger,
+	ISpentReservation,
+} from '../contracts/interfaces/quota-ledger.interface';
 import type { IQuotaReservation } from '../contracts/interfaces/quota-reservation.interface';
 import {
 	QUOTA_LEDGER_FILE,
@@ -17,26 +23,9 @@ import { readCacheFile } from './read-cache-file.helper';
 
 const LEDGER_SCHEMA = 'delendai/orchestrator-runner/quota-reservations/1';
 
-/** A hop that was reserved, kept to count what a declared budget has spent. */
-export interface ISpentReservation {
-	readonly invocationId: string;
-	readonly groups: readonly string[];
-	readonly at: string;
-}
-
-export type Ledger = {
-	readonly reservations: readonly IQuotaReservation[];
-	/** Additive: a ledger written before budgets reads as none spent. */
-	readonly history: readonly ISpentReservation[];
-	/**
-	 * Until when nothing may be reserved: a ledger that could not be read
-	 * was set aside with whatever it held, and what it held stays unknown
-	 * until every reservation in it would have expired.
-	 */
-	readonly blockedUntil?: string | undefined;
-};
-
-export const readLedger = async (path: string): Promise<Ledger | 'corrupt'> => {
+export const readLedger = async (
+	path: string,
+): Promise<ILedger | 'corrupt'> => {
 	let raw: string | undefined;
 	try {
 		raw = await readCacheFile(path);

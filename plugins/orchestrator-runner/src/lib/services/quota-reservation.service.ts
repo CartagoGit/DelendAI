@@ -30,11 +30,8 @@ import type {
 	IQuotaGroupRemaining,
 } from '../contracts/interfaces/quota-reservation.interface';
 import { readQuotaSnapshot } from '../quota/read-quota';
-import {
-	readLedger,
-	writeLedger,
-	type ISpentReservation,
-} from './quota-ledger.helper';
+import { readLedger, writeLedger } from './quota-ledger.helper';
+import type { ISpentReservation } from '../contracts/interfaces/quota-ledger.interface';
 import { QUOTA_WINDOW_MS } from '../contracts/constants/quota-window.constant';
 
 const WINDOW_MS: Readonly<Record<IAccountBudget['window'], number>> =

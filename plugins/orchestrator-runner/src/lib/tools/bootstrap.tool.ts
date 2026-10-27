@@ -20,7 +20,6 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {
-	buildProvidersPatch,
 	buildRosterDraft,
 	composeBootstrapBrief,
 	discoverProviders,
@@ -30,6 +29,7 @@ import {
 	writeRosterDraft,
 	type IDiscoveredProvider,
 } from '../bootstrap';
+import { buildProvidersPatch } from '../services/providers-patch.helper';
 import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { BootstrapProvidersOutputSchema } from '../schemas';
