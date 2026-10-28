@@ -173,6 +173,77 @@ describe('runPendingMigrations', () => {
 		expect(result.outcomes).toHaveLength(1);
 	});
 
+	it('records a migration that cannot PLAN as failed instead of throwing', async () => {
+		// A migration that cannot read its input is a failed migration.
+		// Throwing it out of the engine took the server down with it, and
+		// left the operator with a dead editor integration and no report
+		// of what was wrong.
+		const applied: string[] = [];
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+			],
+			journal: journalOver(applied),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(result.outcomes[0]).toMatchObject({
+			status: 'failed',
+			id: 'v1',
+		});
+		const outcome = result.outcomes[0];
+		expect(outcome?.status === 'failed' ? outcome.reason : '').toContain(
+			'cannot read the host config',
+		);
+		// Not recorded: the next boot retries it.
+		expect(applied).toEqual([]);
+	});
+
+	it('stops at a migration that cannot plan', async () => {
+		const second = vi.fn(async () => undefined);
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+				migration('v2', { apply: second }),
+			],
+			journal: journalOver(),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(second).not.toHaveBeenCalled();
+		expect(result.outcomes).toHaveLength(1);
+	});
+
+	it('boots on a workspace whose migration cannot plan', async () => {
+		// The boot path: the guard runs before the server starts, and a
+		// guard that throws leaves the editor with a server that dies on
+		// every start.
+		const root = mkdtempSync(join(tmpdir(), 'x00989-plan-'));
+		roots.push(root);
+		mkdirSync(join(root, '.delendai'), { recursive: true });
+		const result = await ensureWorkspaceMigrated({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+			],
+			journal: journalOver(),
+			workspaceRoot: root,
+		});
+		expect(result.outcomes[0]).toMatchObject({
+			status: 'failed',
+			id: 'v1',
+		});
+	});
+
 	it('runs migrations in declaration order, not alphabetically', async () => {
 		// Declaration order IS the dependency statement; an alphabetical
 		// accident is not.
@@ -213,6 +284,94 @@ describe('runPendingMigrations', () => {
 		});
 		expect(apply).toHaveBeenCalledTimes(1);
 		expect(second.acted).toBe(false);
+	});
+});
+
+describe('runPendingMigrations — a standing check is not a one-shot rename', () => {
+	// The journal's contract is "this one-shot rename already happened".
+	// A convergent migration answers a question about the workspace's
+	// CURRENT state, and both halves of that question are editable at any
+	// moment — so the journal must not silence it.
+	it('asks a convergent migration even when the journal records it', async () => {
+		const apply = vi.fn(async () => undefined);
+		const result = await runPendingMigrations({
+			migrations: [migration('v1', { convergent: true, apply })],
+			journal: journalOver(['v1']),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(apply).toHaveBeenCalledTimes(1);
+		expect(result.outcomes[0]).toMatchObject({ status: 'migrated' });
+	});
+
+	it('does NOT record a convergent migration', async () => {
+		// The journal says which one-shot renames are done. A check that
+		// is asked on every boot has no "done" to record, and recording
+		// it would tell the operator a migration is finished when the
+		// next boot is going to ask it again.
+		const applied: string[] = [];
+		await runPendingMigrations({
+			migrations: [migration('v1', { convergent: true })],
+			journal: journalOver(applied),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(applied).toEqual([]);
+	});
+
+	it('keeps the skip for a one-shot rename', async () => {
+		const apply = vi.fn(async () => undefined);
+		await runPendingMigrations({
+			migrations: [migration('v1', { apply })],
+			journal: journalOver(['v1']),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(apply).not.toHaveBeenCalled();
+	});
+
+	it('a convergent migration with nothing to do is quiet', async () => {
+		const applied: string[] = [];
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					convergent: true,
+					detect: async () => false,
+				}),
+			],
+			journal: journalOver(applied),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(result.acted).toBe(false);
+		expect(result.outcomes).toEqual([{ status: 'not-needed' }]);
+	});
+
+	it('a convergent migration that fails still stops the run', async () => {
+		const second = vi.fn(async () => undefined);
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					convergent: true,
+					apply: async () => {
+						throw new Error('interrupted');
+					},
+				}),
+				migration('v2', { apply: second }),
+			],
+			journal: journalOver(),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(second).not.toHaveBeenCalled();
+		expect(result.outcomes).toHaveLength(1);
+	});
+
+	it('the dry run reports a convergent migration as planned', async () => {
+		const result = await runPendingMigrations({
+			migrations: [migration('v1', { convergent: true })],
+			journal: journalOver(['v1']),
+			ctx: { workspaceRoot: ROOT, dryRun: true },
+		});
+		expect(result.outcomes[0]).toMatchObject({
+			status: 'planned',
+			id: 'v1',
+		});
 	});
 });
 

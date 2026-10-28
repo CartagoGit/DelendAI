@@ -60,6 +60,8 @@ export interface IPerfProfileExecution {
 	readonly ok: boolean;
 	readonly profiler: string;
 	readonly report?: string;
+	/** For `flamegraph`: the saved CPU profile, loadable as a flame graph. */
+	readonly flamegraph?: string;
 	readonly code: number;
 	readonly timedOut: boolean;
 	readonly detail?: string;
@@ -71,6 +73,8 @@ export type IPerfProfileCaptureResult =
 			readonly ok: true;
 			readonly profiler: string;
 			readonly hotspots: readonly IHotspot[];
+			/** For `flamegraph`: the saved CPU profile, loadable as a flame graph. */
+			readonly flamegraph?: string;
 	  }
 	| {
 			readonly ok: 'skipped';

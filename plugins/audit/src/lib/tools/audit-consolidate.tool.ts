@@ -1,13 +1,9 @@
-import { readdir } from 'node:fs/promises';
-import path from 'node:path';
-
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@delendai/core/public';
 import {
 	DETAIL_LEVELS,
 	projectDetail, // Read path: physical. Write path (proposals dir): lexical until S3.
-	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 	type Detail,
@@ -25,37 +21,14 @@ import {
 	type IAutoScaffoldOptions,
 } from '../services/auto-scaffold-proposals.service';
 import {
-	canonicalAuditPathMessage,
-	isCanonicalAuditDir,
+	collectMarkdownFiles,
+	resolveAuditDir,
 	resolveProposalsDir,
 } from '../services/audit-path-policy.service';
+import { mayReadOthers } from '../services/audit-seats.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 
 const DetailSchema = z.enum(DETAIL_LEVELS);
-
-const collectMarkdownFiles = async (
-	root: string,
-	relative = '',
-): Promise<readonly string[]> => {
-	const entries = await readdir(path.join(root, relative), {
-		withFileTypes: true,
-	});
-	const files: string[] = [];
-	for (const entry of entries) {
-		const child =
-			relative.length > 0 ? `${relative}/${entry.name}` : entry.name;
-		if (entry.isDirectory()) {
-			files.push(...(await collectMarkdownFiles(root, child)));
-		} else if (
-			entry.isFile() &&
-			entry.name.endsWith('.md') &&
-			entry.name !== 'README.md'
-		) {
-			files.push(child);
-		}
-	}
-	return files.sort();
-};
 
 // --- output schemas --------------------------------------------------------
 
@@ -148,6 +121,11 @@ const ConsolidateInputSchema = z.object({
 	 * validated against the workspace root like `auditDir`.
 	 */
 	proposalsDir: z.string().optional(),
+	/**
+	 * The reviewer reading the reports. When set, the reports are read only
+	 * after that reviewer's Phase A file is committed (`audit_close`).
+	 */
+	reviewer: z.string().optional(),
 });
 
 // --- builders --------------------------------------------------------------
@@ -223,31 +201,30 @@ export const buildConsolidateRegistration = (
 					topActions?: number | undefined;
 					autoScaffoldProposals?: boolean | undefined;
 					proposalsDir?: string | undefined;
+					reviewer?: string | undefined;
 				}) => {
 					const detail = args.detail ?? 'normal';
 					const auditType = args.auditType ?? 'plan';
 					const relDir = (
 						args.auditDir ?? options.defaultAuditDir
 					).replace(/^\.\//u, '');
-					if (!isCanonicalAuditDir(relDir)) {
-						return toolError(
-							`audit dir "${relDir}" is not allowed: not canonical`,
-							canonicalAuditPathMessage,
-						);
-					}
-					// Physical: a symlinked audit dir would read another tree.
-					const contained = await resolveExistingWorkspaceContained(
+					const resolved = await resolveAuditDir(
 						options.workspaceRoot,
 						relDir,
 					);
-					if (!contained.ok) {
-						return toolError(
-							`audit dir "${relDir}" is not allowed`,
-							contained.reason ??
-								'Path must stay inside the workspace root.',
-						);
+					if (!resolved.ok) {
+						return toolError(resolved.error, resolved.hint);
 					}
-					const absDir = contained.abs;
+					const absDir = resolved.abs;
+					if (args.reviewer !== undefined) {
+						const gate = await mayReadOthers(absDir, args.reviewer);
+						if (!gate.ok) {
+							return toolError(
+								'Phase A is not committed',
+								gate.reason,
+							);
+						}
+					}
 					const reader = new SafeWorkspaceReader(absDir);
 					let entries: readonly string[];
 					try {

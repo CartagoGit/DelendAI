@@ -39,6 +39,7 @@ import type {
 	IMigrationContext,
 	IMigrationJournal,
 	IMigrationOutcome,
+	IMigrationPlanStep,
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
@@ -80,14 +81,44 @@ export const runPendingMigrations = async (input: {
 	const outcomes: IMigrationOutcome[] = [];
 
 	for (const migration of input.migrations) {
-		if (applied.has(migration.id)) continue;
+		// A standing check is asked EVERY time, whatever the journal says.
+		//
+		// The journal's contract is "this one-shot rename already
+		// happened". A convergent migration is not a rename: its job is to
+		// answer a question about the workspace's CURRENT state, and the
+		// config it reads and the profile that config declares are both
+		// editable at any moment. Skipping it because it ran once answers
+		// a question that was never asked, and the failure mode is the
+		// worst one: a setting the boot refuses over, in a workspace where
+		// the tool that would remove it has already been marked done.
+		if (!migration.convergent && applied.has(migration.id)) continue;
 
 		// Detect BEFORE plan: the whole point of the cheap probe is that a
 		// workspace with nothing to migrate never reaches the expensive
 		// half.
 		if (!(await migration.detect(input.ctx))) continue;
 
-		const steps = await migration.plan(input.ctx);
+		// A migration that cannot even PLAN failed for the same reason one
+		// that cannot apply did: the file it reads is not in a shape it can
+		// read. The failure is reported and the run STOPS, exactly as an
+		// apply failure does — but it is REPORTED, not thrown.
+		//
+		// A throw here reached the boot of every project that has such a
+		// file and took the server down with it: the operator was left with
+		// a dead editor integration and no report of what was wrong. A
+		// migration that cannot read its input is a failed migration, and
+		// a failed migration is a line on stderr.
+		let steps: readonly IMigrationPlanStep[];
+		try {
+			steps = await migration.plan(input.ctx);
+		} catch (error) {
+			outcomes.push({
+				status: 'failed',
+				id: migration.id,
+				reason: String(error),
+			});
+			return { outcomes, acted: true };
+		}
 
 		if (input.ctx.dryRun) {
 			outcomes.push({ status: 'planned', id: migration.id, steps });
@@ -135,7 +166,14 @@ export const runPendingMigrations = async (input: {
 
 		// Recorded only after `apply` returns. Recording first would mark a
 		// crashed migration as done and make the damage permanent.
-		await input.journal.record(input.ctx.workspaceRoot, migration.id);
+		//
+		// A standing check is NOT recorded: the journal says which one-shot
+		// renames are done, and a check that is asked on every boot has no
+		// "done" to record. Recording it would tell the operator a
+		// migration is finished when the next boot is going to ask it
+		// again.
+		if (!migration.convergent)
+			await input.journal.record(input.ctx.workspaceRoot, migration.id);
 		outcomes.push({ status: 'migrated', id: migration.id, steps });
 	}
 

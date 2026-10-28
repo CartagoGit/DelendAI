@@ -68,10 +68,13 @@ const structured = (res: unknown): Record<string, unknown> | undefined =>
 const TASK = { id: 't1', description: 'Fix typo.', tags: [] };
 
 describe('ns_dispatch', () => {
-	it('plans and runs a single-mode task to a successful outcome, without touching the port', async () => {
+	it('plans and runs a single-mode task without touching the port, and leaves its verify step to the orchestrator', async () => {
 		const handlers = await captureHandlers(() => unreachablePort);
 		const res = await handlers.ns_dispatch!({ task: TASK });
-		expect(structured(res)?.ok).toBe(true);
+		// Every step that ran went well; the self-verify step is the
+		// orchestrator's, and the plan is not ok until it has run.
+		expect(structured(res)?.ok).toBe(false);
+		expect(structured(res)?.unverified).toEqual([2]);
 	});
 
 	it('returns the typed refusal envelope, not a throw, when the port cannot be resolved', async () => {

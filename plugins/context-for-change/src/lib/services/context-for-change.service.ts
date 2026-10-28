@@ -8,12 +8,7 @@ import {
 } from '@delendai/core/runtime';
 import { classifyPath } from '@delendai/conventions/public';
 import { readDoc, searchDocs } from '@delendai/docs/public';
-import {
-	checkRepo,
-	createGitRunner,
-	gitChanged,
-	gitDiffStat,
-} from '@delendai/git/public';
+import { checkRepo, createGitRunner, gitDiffStat } from '@delendai/git/public';
 import { recall } from '@delendai/memory/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
@@ -254,12 +249,9 @@ export const runContextForChangeService = async (
 			args.files?.map((file) => toWorkspacePath(reader, file)) ?? [];
 		const runner = createGitRunner(options.workspaceRootAbs);
 		const repo = await checkRepo(runner);
-		const changedFiles = repo.ok ? await gitChanged(runner) : [];
-		const anchorFiles = unique([
-			...inputFiles,
-			...gitDiffFiles,
-			...changedFiles,
-		])
+		// The context is anchored on what the caller named, never on the
+		// working tree's other edits: those are another change's.
+		const anchorFiles = unique([...inputFiles, ...gitDiffFiles])
 			.filter((file) => isSourceFile(file))
 			.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
 
@@ -283,7 +275,7 @@ export const runContextForChangeService = async (
 		}
 
 		const sections: IContextForChangeSection[] = [];
-		if (args.gitDiff !== undefined || changedFiles.length > 0) {
+		if (args.gitDiff !== undefined) {
 			const diffPath = anchorFiles[0];
 			const diffSummary =
 				repo.ok && diffPath !== undefined
@@ -292,9 +284,6 @@ export const runContextForChangeService = async (
 			const gitParts = [
 				gitDiffFiles.length > 0
 					? `diff files: ${gitDiffFiles.join(', ')}`
-					: undefined,
-				changedFiles.length > 0
-					? `working tree: ${changedFiles.slice(0, 4).join(', ')}${changedFiles.length > 4 ? ` (+${changedFiles.length - 4})` : ''}`
 					: undefined,
 				diffSummary && diffSummary.length > 0 ? diffSummary : undefined,
 				repo.ok ? undefined : repo.reason,

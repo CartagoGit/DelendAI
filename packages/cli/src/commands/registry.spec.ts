@@ -52,6 +52,7 @@ const EXPECTED_COMMANDS = [
 	'agents list',
 	'agents add',
 	'agents install',
+	'agents answer',
 	'agents show',
 	'language',
 	'alias',
