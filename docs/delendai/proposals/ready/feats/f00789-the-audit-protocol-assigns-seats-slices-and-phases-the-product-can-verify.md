@@ -36,7 +36,7 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 
 ### S2 — Contract, inventory and closure
 - **Status**: pending
-- **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/index.ts`, `apps/web/src/i18n/tools/delendai_audit_close.ts`, `apps/web/src/i18n/tools/index.ts`
+- **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/index.ts`, `apps/web/src/i18n/tools/delendai_audit_close.ts`, `apps/web/src/i18n/tools/index.ts`, `plugins/audit/tests/src/lib/tools/audit-close.tool.spec.ts`, `plugins/audit/src/lib/services/audit-path-policy.service.ts`, `plugins/audit/skills/audit-runner/SKILL.md`
 - **Gate**: type
 - acceptance:
   - "Each finding is checked for the required fields and listed when incomplete (G76, G74)."
