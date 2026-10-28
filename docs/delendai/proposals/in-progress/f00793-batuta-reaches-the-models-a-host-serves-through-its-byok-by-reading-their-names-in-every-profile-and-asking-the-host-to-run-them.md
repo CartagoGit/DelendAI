@@ -2,10 +2,14 @@
 id: f00793
 title: "Batuta reaches the models a host serves through its BYOK, by reading their names in every profile and asking the host to run them"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: batuta
 date: 2026-10-27
+last-transition-id: b146b6be-4696-4876-8a8b-289be1e020a7
+last-correlation-id: b146b6be-4696-4876-8a8b-289be1e020a7
+last-transition-from: ready
+last-transition-at: 2026-10-28T09:23:44.213Z
 ---
 
 # f00793 — Batuta reaches the models a host serves through its BYOK, by reading their names in every profile and asking the host to run them
