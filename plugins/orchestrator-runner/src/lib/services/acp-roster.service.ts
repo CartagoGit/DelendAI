@@ -1,13 +1,18 @@
 /**
  * acp-roster.service.ts — roster entries proposed from what this machine
- * shows: an entry per agent that can start here over ACP, and one per
- * model-catalogue provider whose key is set.
+ * shows: an entry per agent that can start here over ACP, one per
+ * model-catalogue provider whose key is set, and one per model the host
+ * editor serves on the person's key (BYOK), run through the host.
  *
  * They are proposals: discovery returns them for the person to confirm,
  * and nothing is written to the roster without that. Each one validates
  * against the roster schema before it is offered.
  */
-import { isReachable, providerEndpoint } from '@delendai/core/cli';
+import {
+	isReachable,
+	providerEndpoint,
+	type IHostByokProvider,
+} from '@delendai/core/cli';
 import {
 	PROVIDER_ENTRY_SCHEMA,
 	type IModelCatalogue,
@@ -32,6 +37,8 @@ export const proposedRosterEntries = (input: {
 	readonly catalogue?: IModelCatalogue | undefined;
 	readonly env: Readonly<Record<string, string | undefined>>;
 	readonly existing: readonly IProviderCapabilities[];
+	/** The models this machine's editors serve on the person's keys. */
+	readonly hostByok?: readonly IHostByokProvider[] | undefined;
 }): readonly IProviderCapabilities[] => {
 	const taken = new Set(input.existing.map((entry) => entry.id));
 	const candidates: unknown[] = [
@@ -69,6 +76,21 @@ export const proposedRosterEntries = (input: {
 				},
 			];
 		}),
+		...(input.hostByok ?? []).flatMap((provider) =>
+			provider.models.map((model) => ({
+				id: kebab(`byok-${provider.vendor}-${model.id}`),
+				kind: 'host-sampling',
+				invoke: { kind: 'host-sampling', model: model.id },
+				modelId: model.id,
+				contextWindow: model.contextWindow ?? AGENT_CONTEXT_WINDOW,
+				costTier: DEFAULT_COST_TIER,
+				strengths:
+					model.toolCalling === true
+						? ['code-edit', 'agentic']
+						: ['code-edit'],
+				weaknesses: [],
+			})),
+		),
 	];
 	return candidates.flatMap((candidate) => {
 		const parsed = PROVIDER_ENTRY_SCHEMA.safeParse(candidate);
