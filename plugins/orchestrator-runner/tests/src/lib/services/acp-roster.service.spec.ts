@@ -50,8 +50,19 @@ describe('proposedRosterEntries', () => {
 		expect(entries.map((entry) => entry.id)).toEqual([
 			'acp-opencode',
 			'api-zai',
+			'api-google',
 		]);
 		expect(entries[0]?.invoke).toEqual({ kind: 'acp', agent: 'opencode' });
+		// Google is reached through its own family, at its default API.
+		expect(entries[2]).toMatchObject({
+			modelId: 'gemini-3',
+			invoke: {
+				kind: 'api',
+				url: 'https://generativelanguage.googleapis.com/v1beta',
+				envVar: 'GOOGLE_API_KEY',
+				family: 'google',
+			},
+		});
 		expect(entries[1]).toMatchObject({
 			kind: 'api',
 			modelId: 'glm-5',
