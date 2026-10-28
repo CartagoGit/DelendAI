@@ -65,14 +65,89 @@ describe('providerEndpoint', () => {
 			reason: 'no-key',
 			variables: ['ZHIPU_API_KEY', 'ZAI_API_KEY'],
 		});
+		// Vertex signs in through Google Cloud, not with a key.
 		expect(
 			providerEndpoint(
-				{ ...zai, npm: '@ai-sdk/google' },
+				{ ...zai, npm: '@ai-sdk/google-vertex' },
 				{ ZAI_API_KEY: 'k' },
 			),
 		).toEqual({
 			reason: 'unsupported-family',
-			npm: '@ai-sdk/google',
+			npm: '@ai-sdk/google-vertex',
+		});
+	});
+});
+
+describe('the Google family', () => {
+	const google: ICatalogueProvider = {
+		id: 'google',
+		name: 'Google',
+		env: ['GOOGLE_GENERATIVE_AI_API_KEY', 'GEMINI_API_KEY'],
+		models: ['gemini-2.5-pro'],
+		npm: '@ai-sdk/google',
+	};
+	const endpoint = () => {
+		const reached = providerEndpoint(google, { GEMINI_API_KEY: 'g' });
+		if (!isReachable(reached)) throw new Error('google is unreachable');
+		return reached;
+	};
+
+	it('reaches a provider whose npm is @ai-sdk/google at its default API', () => {
+		expect(endpoint()).toEqual({
+			providerId: 'google',
+			family: 'google',
+			baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+			keyVariable: 'GEMINI_API_KEY',
+		});
+	});
+
+	it('lists its models with the key in its own header', async () => {
+		const { calls, http } = recording({
+			status: 200,
+			json: {
+				models: [{ name: 'models/gemini-2.5-pro' }, { name: 'x' }],
+			},
+		});
+		expect(
+			await listProviderModels(endpoint(), {
+				env: { GEMINI_API_KEY: 'g' },
+				http,
+			}),
+		).toEqual(['gemini-2.5-pro', 'x']);
+		expect(calls[0]?.url).toBe(
+			'https://generativelanguage.googleapis.com/v1beta/models',
+		);
+		expect(calls[0]?.headers['x-goog-api-key']).toBe('g');
+		expect(calls[0]?.headers.authorization).toBeUndefined();
+	});
+
+	it('prompts generateContent and reads the candidate and its usage', async () => {
+		const { calls, http } = recording({
+			status: 200,
+			json: {
+				candidates: [
+					{ content: { parts: [{ text: 'hel' }, { text: 'lo' }] } },
+				],
+				usageMetadata: { promptTokenCount: 4, candidatesTokenCount: 2 },
+			},
+		});
+		const answer = await promptProvider(endpoint(), {
+			model: 'gemini-2.5-pro',
+			prompt: 'hi',
+			maxTokens: 8,
+			env: { GEMINI_API_KEY: 'g' },
+			http,
+		});
+		expect(answer).toEqual({
+			text: 'hello',
+			usage: { inputTokens: 4, outputTokens: 2 },
+		});
+		expect(calls[0]?.url).toBe(
+			'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent',
+		);
+		expect(JSON.parse(calls[0]?.body ?? '{}')).toEqual({
+			contents: [{ role: 'user', parts: [{ text: 'hi' }] }],
+			generationConfig: { maxOutputTokens: 8 },
 		});
 	});
 });

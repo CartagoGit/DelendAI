@@ -170,7 +170,7 @@
 | memory | filesystem-read, filesystem-write |  |
 | notification | filesystem-read, filesystem-write |  |
 | observability | filesystem-read, filesystem-write, network, env-read |  |
-| orchestrator-runner | filesystem-read, process, network, env-read |  |
+| orchestrator-runner | filesystem-read, filesystem-write, process, network, env-read |  |
 | perf | filesystem-read, filesystem-write, process |  |
 | project-health | filesystem-read |  |
 | project-kpis | filesystem-read, filesystem-write |  |

@@ -16,8 +16,13 @@ import { modelOutcomeStoreAt } from '@delendai/core/runtime';
 import { joinRel, runCommand } from '@delendai/core/public';
 import { modelContextWindow, readModelCatalogue } from '@delendai/core/cli';
 import { definePlugin } from '@delendai/core/plugin';
+import { WORKSPACE_LEDGER_FILE } from './lib/contracts/constants/quota-ledger.constant';
 import type { IHostSampler } from './lib/contracts/interfaces/host-sampling.interface';
 import { samplerOf } from './lib/services/host-sampler.service';
+import {
+	adoptWorkspaceLedger,
+	machineLedgerPath,
+} from './lib/services/quota-ledger.helper';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
@@ -152,9 +157,18 @@ export default definePlugin({
 				joinRel(ctx.pluginCacheDir, 'invocations.jsonl'),
 			);
 			void interruptOrphans(journalPath);
-			const ledgerPath = ctx.workspace.resolve(
-				joinRel(ctx.pluginCacheDir, 'quota-reservations.json'),
-			);
+			// Quota is the account's, used from every workspace: the ledger is
+			// the machine's. A workspace's own ledger from before is moved in.
+			const ledgerPath = machineLedgerPath();
+			void adoptWorkspaceLedger({
+				workspaceLedger: ctx.workspace.resolve(
+					joinRel(ctx.pluginCacheDir, WORKSPACE_LEDGER_FILE),
+				),
+				machineLedger: ledgerPath,
+				journal: ctx.workspace.resolve(
+					joinRel(ctx.pluginCacheDir, 'migrations.jsonl'),
+				),
+			});
 
 			// A spend that needs confirmation asks the user through the host's
 			// elicitation; the server is known once the invoke tool registers.
@@ -179,6 +193,8 @@ export default definePlugin({
 				})
 				.catch(() => undefined);
 			const manager = buildDefaultInvocationManager({
+				currentHost: () =>
+					ctx.clientIdentity?.name() ?? ctx.hostIdentity?.host,
 				hostSampler: () => hostSampler,
 				contextWindowOf: (modelId) =>
 					modelContextWindow(catalogue, modelId),

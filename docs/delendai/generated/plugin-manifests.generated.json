@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-25T04:14:51.420Z",
+	"generatedAt": "2026-10-27T10:14:34.493Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1583,6 +1583,7 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -3396,6 +3397,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -5037,6 +5039,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -6524,6 +6527,7 @@
 			"id": "orchestrator-runner",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
