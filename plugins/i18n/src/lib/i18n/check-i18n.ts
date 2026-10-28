@@ -46,6 +46,8 @@ const sameSet = (a: Set<string>, b: Set<string>): boolean =>
 
 export interface ICheckLocalesOptions {
 	readonly usedKeys?: Iterable<string>;
+	/** Fixed prefixes of keys built at run time; a key under one is in use. */
+	readonly usedKeyPrefixes?: Iterable<string>;
 }
 
 /**
@@ -107,10 +109,15 @@ export const checkLocales = (
 	const usedKeys = options.usedKeys
 		? new Set([...options.usedKeys].filter((key) => key.length > 0))
 		: undefined;
+	const usedPrefixes = [...(options.usedKeyPrefixes ?? [])].filter(
+		(prefix) => prefix.length > 0,
+	);
 	if (usedKeys !== undefined && usedKeys.size > 0) {
 		for (const entry of flat) {
 			for (const key of Object.keys(entry.keys).sort()) {
 				if (usedKeys.has(key)) continue;
+				if (usedPrefixes.some((prefix) => key.startsWith(prefix)))
+					continue;
 				findings.push({
 					ruleId: 'unused-key',
 					severity: 'low',

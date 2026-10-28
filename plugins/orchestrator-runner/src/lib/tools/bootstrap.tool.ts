@@ -20,15 +20,16 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import {
-	buildProvidersPatch,
 	buildRosterDraft,
 	composeBootstrapBrief,
 	discoverProviders,
 	probeLogin,
+	readConfirmedAccounts,
 	readConfirmedProviders,
 	writeRosterDraft,
 	type IDiscoveredProvider,
 } from '../bootstrap';
+import { buildProvidersPatch } from '../services/providers-patch.helper';
 import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { BootstrapProvidersOutputSchema } from '../schemas';
@@ -115,7 +116,12 @@ export const buildBootstrapProvidersRegistration = (
 				const confirmed = await readConfirmedProviders(
 					options.configPath,
 				);
-				const configPatch = buildProvidersPatch(confirmed, detected);
+				const configPatch = buildProvidersPatch(
+					confirmed,
+					detected,
+					await readConfirmedAccounts(options.configPath),
+					options.workspaceRoot,
+				);
 
 				return toolJson({
 					consent,
@@ -124,7 +130,7 @@ export const buildBootstrapProvidersRegistration = (
 					rosterDraftPath: options.rosterDraftPath,
 					configPatch,
 					brief: composeBootstrapBrief(enriched),
-					note: 'This is a draft. Review `configPatch` and apply it to delendai.config.json#providers only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
+					note: 'This is a draft. Review `configPatch` and apply it to delendai.config.json (#accounts and #providers) only on user confirm (RFC 6902 JSON Patch). Re-running is non-destructive: it never overwrites an already-confirmed provider id.',
 				});
 			},
 		);
