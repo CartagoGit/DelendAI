@@ -10,50 +10,23 @@
  * argument stands in for the user's answer.
  */
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
+import {
+	DISCOVERY_CONSENT_COMMAND,
+	DISCOVERY_CONSENT_QUESTION,
+} from '@delendai/core/contracts';
+import {
+	readDiscoveryConsent,
+	recordDiscoveryConsent,
+} from '@delendai/core/runtime';
 
-import { DISCOVERY_CONSENT_QUESTION } from '../contracts/constants/discovery-consent.constant';
-import { readCacheFile } from './read-cache-file.helper';
 import type {
 	IConsentAsk,
 	IDiscoveryMode,
 	IDiscoveryConsent,
 } from '../contracts/interfaces/discovery-consent.interface';
 
-const DISCOVERY_CONSENT_SCHEMA =
-	'delendai/orchestrator-runner/discovery-consent/1' as const;
-
 const MANUAL_NEXT =
 	'Onboard by questions: ask the user which AI clients they use, one account per sign-in, the isolated profile directory of each, its plan (subscription, token plan, own API key, local) and whether unattended work may use it; then propose the `accounts` and `providers` entries for delendai.config.json.';
-
-const recordedGrant = async (consentPath: string): Promise<boolean> => {
-	try {
-		const raw = await readCacheFile(consentPath);
-		if (raw === undefined) return false;
-		const parsed: unknown = JSON.parse(raw);
-		return (
-			typeof parsed === 'object' &&
-			parsed !== null &&
-			(parsed as { schema?: unknown }).schema === DISCOVERY_CONSENT_SCHEMA
-		);
-	} catch {
-		return false;
-	}
-};
-
-const recordGrant = async (consentPath: string, now: Date): Promise<void> => {
-	const record = {
-		schema: DISCOVERY_CONSENT_SCHEMA,
-		grantedAt: now.toISOString(),
-		question: DISCOVERY_CONSENT_QUESTION,
-	};
-	await withFileMutex(consentPath, async () => {
-		await writeFileAtomic(
-			consentPath,
-			`${JSON.stringify(record, null, '\t')}\n`,
-		);
-	});
-};
 
 export const discoveryConsent = async (input: {
 	readonly mode: IDiscoveryMode;
@@ -67,11 +40,18 @@ export const discoveryConsent = async (input: {
 			next: 'Discovery is off in this project (`discovery: "off"`); declare `accounts` and `providers` in delendai.config.json by hand.',
 		};
 	if (input.mode === 'manual') return { state: 'manual', next: MANUAL_NEXT };
-	if (await recordedGrant(input.consentPath)) return { state: 'granted' };
+	const recorded = await readDiscoveryConsent(input.consentPath);
+	if (recorded === 'granted') return { state: 'granted' };
+	if (recorded === 'declined')
+		return {
+			state: 'declined',
+			next: `The user declined discovery (\`${DISCOVERY_CONSENT_COMMAND}\` changes the answer). ${MANUAL_NEXT}`,
+		};
 	const answer = await input.ask(DISCOVERY_CONSENT_QUESTION);
 	if (answer === 'accept') {
-		await recordGrant(
+		await recordDiscoveryConsent(
 			input.consentPath,
+			'granted',
 			(input.now ?? (() => new Date()))(),
 		);
 		return { state: 'granted' };
@@ -79,7 +59,9 @@ export const discoveryConsent = async (input: {
 	if (answer === 'decline')
 		return {
 			state: 'declined',
-			next: `The user declined discovery. ${MANUAL_NEXT}`,
+			// Some hosts decline without ever showing the question; the
+			// person can still answer in a terminal.
+			next: `The host answered no. If no question was shown, the person can answer with \`${DISCOVERY_CONSENT_COMMAND}\`. ${MANUAL_NEXT}`,
 		};
 	return {
 		state: 'unavailable',

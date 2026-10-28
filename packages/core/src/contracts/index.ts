@@ -268,3 +268,8 @@ export {
 	MODE_TIER,
 	UNAVAILABLE_SCORE,
 } from '../lib/contracts/constants/model-ranking.constant';
+export {
+	DISCOVERY_CONSENT_COMMAND,
+	DISCOVERY_CONSENT_QUESTION,
+} from '../lib/contracts/constants/discovery-consent.constant';
+export type { IDiscoveryConsentAnswer } from '../lib/contracts/interfaces/discovery-consent-answer.interface';

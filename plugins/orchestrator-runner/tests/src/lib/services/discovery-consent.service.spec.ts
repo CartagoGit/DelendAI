@@ -1,8 +1,10 @@
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { recordDiscoveryConsent } from '@delendai/core/runtime';
 
 import type { IConsentAsk } from '../../../../src/lib/contracts/interfaces/discovery-consent.interface';
 import { discoveryConsent } from '../../../../src/lib/services/discovery-consent.service';
@@ -21,6 +23,51 @@ const answering = (...answers: ('accept' | 'decline' | 'unavailable')[]) => {
 };
 
 describe('discoveryConsent', () => {
+	it('takes an answer given in a terminal, a no as well as a yes, without asking', async () => {
+		const path = consentPath();
+		const user = answering('accept');
+		await recordDiscoveryConsent(path, 'declined', new Date(0));
+		const declined = await discoveryConsent({
+			mode: 'auto-with-consent',
+			consentPath: path,
+			ask: user.ask,
+		});
+		expect(declined.state).toBe('declined');
+		expect(declined.next).toContain('delendai accounts consent');
+		expect(user.asked).toHaveLength(0);
+	});
+
+	it('reads a record written before answers were kept both ways as a yes', async () => {
+		const path = consentPath();
+		writeFileSync(
+			path,
+			JSON.stringify({
+				schema: 'delendai/orchestrator-runner/discovery-consent/1',
+				grantedAt: '2026-10-28T04:00:00.000Z',
+			}),
+		);
+		const user = answering();
+		expect(
+			(
+				await discoveryConsent({
+					mode: 'auto-with-consent',
+					consentPath: path,
+					ask: user.ask,
+				})
+			).state,
+		).toBe('granted');
+	});
+
+	it('tells a host that declined how the person can still answer', async () => {
+		const user = answering('decline');
+		const result = await discoveryConsent({
+			mode: 'auto-with-consent',
+			consentPath: consentPath(),
+			ask: user.ask,
+		});
+		expect(result.next).toContain('delendai accounts consent --yes|--no');
+	});
+
 	it('asks once: a yes is recorded and not asked again', async () => {
 		const path = consentPath();
 		const user = answering('accept');

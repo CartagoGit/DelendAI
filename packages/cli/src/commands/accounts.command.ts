@@ -1,6 +1,7 @@
 /**
  * accounts.command.ts — `delendai accounts offer [--yes [--allow-automation]]`
- * and `delendai accounts automation <id> on|off`.
+ * , `delendai accounts automation <id> on|off` and
+ * `delendai accounts consent --yes|--no`.
  *
  * The accounts this machine's clients are logged in with, offered one by
  * one; a yes goes to the person's own project file (never the committed
@@ -9,8 +10,11 @@
  * offers are only listed. Nobody has to edit the file by hand.
  */
 import {
+	DEFAULT_CORE_PATHS,
+	discoveryConsentPath,
 	offerFoundAccounts,
 	readModelCatalogue,
+	recordDiscoveryConsent,
 	runClientCommand,
 	setAccountAutomation,
 } from '@delendai/core/cli';
@@ -37,7 +41,7 @@ import { offerProgress } from '../lib/init/offer-progress.service';
 import { isInteractive, openRl } from '../lib/init/init-prompts.service';
 
 const USAGE =
-	'accounts offer [--yes [--allow-automation]] [--no-catalogue] | accounts automation <account-id> on|off';
+	'accounts offer [--yes [--allow-automation]] [--no-catalogue] | accounts automation <account-id> on|off | accounts consent --yes|--no';
 
 const offer = async (
 	args: readonly string[],
@@ -143,6 +147,27 @@ const automation = async (
 	}
 };
 
+/**
+ * The answer to the discovery question, given in a terminal: a host that
+ * never shows the question (it declines on its own) leaves no other way.
+ */
+const consent = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const yes = hasFlag(args, 'yes');
+	if (yes === hasFlag(args, 'no')) {
+		return { code: EXIT_CODE.USAGE, error: `usage: delendai ${USAGE}` };
+	}
+	const answer = yes ? 'granted' : 'declined';
+	const path = discoveryConsentPath(
+		ctx.cwd,
+		ctx.globals.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir,
+	);
+	await recordDiscoveryConsent(path, answer, new Date());
+	return data({ answer, recordedIn: path });
+};
+
 export const accountsCommand: ICliCommand = {
 	name: 'accounts',
 	offline: true,
@@ -152,6 +177,7 @@ export const accountsCommand: ICliCommand = {
 	run: async (args, ctx) => {
 		if (args[0] === 'offer') return offer(args, ctx);
 		if (args[0] === 'automation') return automation(args, ctx);
+		if (args[0] === 'consent') return consent(args, ctx);
 		return { code: EXIT_CODE.USAGE, error: `usage: delendai ${USAGE}` };
 	},
 };
