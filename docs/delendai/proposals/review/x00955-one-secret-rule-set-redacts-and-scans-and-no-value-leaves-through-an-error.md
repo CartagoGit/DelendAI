@@ -54,8 +54,10 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
 - acceptance:
   - "security_secrets scans ignored-but-present files such as .env.local by default and says which it skipped (D79, D65)."
 - shipped-in: `d23cc0b41`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d23cc0b41, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) run-scan.ts:58-62 adds the ignored files to the candidates without an option gate, and security-secrets.tool.ts:70-86 publishes ignoredScanned and ignoredSkipp… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 8 tests, exit 0. Recorded rather than blocked: the criterion says the tool says which it skipped, and the output reports ignoredSkipped as a count, so the skipped set is named only in aggregate; the ignored listing is also capped at GIT_LISTING_MAX_OUTPUT_BYTES (4 MiB), which this checkout's listing (3926160 bytes) stays under but which is not reported when it is hit.
 
 ### S3 — No value through an error, a cache or a log
 - **Status**: done
