@@ -41,8 +41,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "Detection, scaffold and instructions read AGENT_HOSTS; a spec fails if a host appears in one and not the others (G65, D39)."
   - "Every host that declares an instructions file gets delendai's block from init when the project uses it, and every reader of instruction files (init, bootstrap analysis, the proposals scan) knows each file a host declares (G66)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 2/2: (1) agent-config-rules.ts derives its rule table from AGENT_HOST_INSTRUCTION_FILES and from each host's agents folder, init-hosts.helper.ts:5-10 imports AGENT_HOST… (2) init-hosts.helper.ts:78-98 computes the instruction targets for the hosts and the targets init writes for, one per distinct instructions path, and the spec ass… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the init, agent-config-rules and agent-hosts suites are green, exit 0. Recorded rather than blocked: the slice narrows runtime detection to the files each host declares (its instructions and its legacy instructions), so a Cursor project whose only evidence is a .cursor directory without the legacy .cursorrules file is no longer detected - the pre-slice spec asserted that case and the shipped commit rewrote it. Also, the goal line says every declared host ships its material while 9 of the 15 hosts declare an instructions file, and plugins/usage-tracking/AGENT.md changed without appearing in any slice's Files list.
 
 ### S2 — The server process
 - **Status**: done
