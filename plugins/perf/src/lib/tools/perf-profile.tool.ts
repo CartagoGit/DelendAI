@@ -63,7 +63,7 @@ export const buildPerfProfileRegistration = (
 			`${options.namespacePrefix}_perf_profile`,
 			{
 				description:
-					'Probe for a profiler toolchain, capture a short hotspot summary against the workspace and return normalized hotspots. When no profiler is present, the tool skips with an install hint instead of crashing.',
+					"Profile a short, bounded workload over the workspace with Node's CPU profiler and return normalized hotspots. `format: flamegraph` also saves the recorded CPU profile and returns its path (`flamegraph`), loadable as a flame graph in Chrome DevTools or speedscope. When Node's profiler is not available, the tool skips with an install hint instead of crashing.",
 				inputSchema: z
 					.object({
 						cwd: z.string().optional(),
@@ -84,6 +84,7 @@ export const buildPerfProfileRegistration = (
 							info: z.number(),
 						}),
 						worst: z.string(),
+						flamegraph: z.string().optional(),
 					}),
 					z.object({
 						ok: z.literal('skipped'),
@@ -141,6 +142,9 @@ export const buildPerfProfileRegistration = (
 					hotspots: result.hotspots,
 					summary: summarizeHotspots(result.hotspots),
 					worst: hotspotWorst(result.hotspots),
+					...(result.flamegraph === undefined
+						? {}
+						: { flamegraph: result.flamegraph }),
 				});
 			},
 		);

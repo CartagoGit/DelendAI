@@ -226,6 +226,43 @@ describe('createCacheEvictionRegistry', () => {
 		});
 	});
 
+	describe('the project cap on age rules', () => {
+		it("shortens every owner's age rule to the project cap, and lengthens none", async () => {
+			const capped = createCacheEvictionRegistry({
+				workspaceRootAbs: workspace,
+				cacheDirAbs: cacheDir,
+				maxAgeDays: 10,
+			});
+			const old = join(cacheDir, 'old.json');
+			const young = join(cacheDir, 'young.json');
+			await writeFile(old, '{}');
+			await writeFile(young, '{}');
+			await utimes(old, daysAgo(NOW, 20), daysAgo(NOW, 20));
+			await utimes(young, daysAgo(NOW, 2), daysAgo(NOW, 2));
+			capped.register({
+				id: 'long-lived',
+				owner: 'evidence',
+				path: 'old.json',
+				when: { kind: 'olderThanMtimeDays', days: 90 },
+			});
+			capped.register({
+				id: 'short-lived',
+				owner: 'notification',
+				path: 'young.json',
+				when: { kind: 'olderThanMtimeDays', days: 1 },
+			});
+			const report = await capped.run({ dryRun: true, now: NOW });
+			// 20 days old is past the 10-day cap though its owner said 90;
+			// 2 days old is past its owner's own 1 day, which the cap keeps.
+			expect(report.removed.map((r) => r.path).sort()).toEqual([
+				'old.json',
+				'young.json',
+			]);
+			const uncapped = await registry.run({ dryRun: true, now: NOW });
+			expect(uncapped.removed).toEqual([]);
+		});
+	});
+
 	describe('keepLastN', () => {
 		it('keeps the most-recent N entries by mtime, removes the rest', async () => {
 			const dir = join(cacheDir, 'journal');

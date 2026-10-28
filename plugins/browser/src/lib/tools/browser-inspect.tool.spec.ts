@@ -136,8 +136,33 @@ describe('browser-inspect (f00125 S1)', () => {
 		expect(output).toEqual({
 			url: 'https://example.com/',
 			matches: ['h1:first', 'h1:second'],
+			truncated: false,
 			status: 'ok',
 		});
+	});
+
+	it('browser_query returns at most maxResults matches and says the page held more', async () => {
+		const asked: number[] = [];
+		const captured = await captureToolRegistration(
+			registration('browser_query', {
+				pluginCacheDir: UNUSED_CACHE_DIR,
+				driver: {
+					...fakeDriver(),
+					query: async ({ url, limit }) => {
+						asked.push(limit ?? 0);
+						return { url, matches: ['a', 'b', 'c'] };
+					},
+				},
+			}),
+		);
+		const output = (await captured.invoke({
+			url: 'https://example.com',
+			selector: 'li',
+			maxResults: 2,
+		})) as { matches: readonly string[]; truncated: boolean };
+		expect(output.matches).toEqual(['a', 'b']);
+		expect(output.truncated).toBe(true);
+		expect(asked).toEqual([3]);
 	});
 
 	it('missing Playwright returns install-missing for all three actions', async () => {

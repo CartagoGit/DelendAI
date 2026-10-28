@@ -102,7 +102,8 @@ export interface IActualCost {
 	readonly tokens?: number | undefined;
 }
 
-export type TTaskOutcome = 'succeeded' | 'failed' | 'abandoned';
+/** `unverified`: the work ran and its verify stage has not; learned as neither a success nor a failure. */
+export type TTaskOutcome = 'succeeded' | 'failed' | 'unverified' | 'abandoned';
 
 /** A receipt opened at decision time, not yet closed. */
 export interface IOpenReceipt {
