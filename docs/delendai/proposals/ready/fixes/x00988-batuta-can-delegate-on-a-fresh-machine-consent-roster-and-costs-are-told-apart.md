@@ -36,31 +36,31 @@ f00793 makes the roster detected at server start; this proposal makes what is de
 
 ### S1 — A lazy tool is listed with its own summary
 - **Status**: pending
-- **Files**: `packages/core/src/lib/cli/assemble-plugins.ts`
+- **Files**: `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`
 - **Gate**: type
 - acceptance:
   - "tool_search over an inactive plugin shows each tool's own one-line summary, generated from its registered description, and no two tools of orchestrator-runner share one."
 
 ### S2 — Consent that the host cannot ask is asked another way
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`, `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`, `packages/core/src/lib/contracts/constants/discovery-consent.constant.ts`, `packages/core/src/lib/contracts/interfaces/discovery-consent-answer.interface.ts`, `packages/core/src/lib/shared/discovery-consent-record.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/cli.ts`, `packages/core/src/contracts/index.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/accounts.command.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "An elicitation the host declines without showing (no response content, immediate) is reported as `unavailable`, not `declined`."
-  - "`delendai providers consent --yes|--no` records the person's answer in the same record the elicitation writes."
+  - "A decline from the host, or a host that cannot ask, names `delendai accounts consent --yes|--no` as the way to answer, and a recorded answer of either kind is used without asking again (a host that declines on its own cannot be told from a person who said no)."
+  - "`delendai accounts consent --yes|--no` records the person's answer in the same record the elicitation writes."
 
 ### S3 — Proposals differ by cost and serve the models the client lists
 - **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-roster.interface.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/tests/src/lib/services/acp-roster.service.spec.ts`, `plugins/orchestrator-runner/src/lib/tools/get-quota.tool.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_get_quota.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/tests/src/lib/shared/model-catalogue.service.spec.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts`, `packages/core/data/model-catalogue.snapshot.json`
 - **Gate**: type
 - acceptance:
-  - "A model a client lists as free is proposed with the lowest cost tier; a provider's proposed model is one its own client lists, when it lists any."
+  - "A model the catalogue prices at nothing is proposed in the lowest cost tier and a priced one by its price (the catalogue keeps each model's price, format 4); a provider's proposed model is the first its own client lists that the catalogue knows."
   - "get_quota's description and note name the observation that fills it, and say what to declare when it is empty."
 
 ## acceptance
 
 - tool_search over an inactive plugin shows each tool's own one-line summary, generated from its registered description, and no two tools of orchestrator-runner share one.
-- An elicitation the host declines without showing (no response content, immediate) is reported as `unavailable`, not `declined`.
-- `delendai providers consent --yes|--no` records the person's answer in the same record the elicitation writes.
-- A model a client lists as free is proposed with the lowest cost tier; a provider's proposed model is one its own client lists, when it lists any.
+- A decline from the host, or a host that cannot ask, names `delendai accounts consent --yes|--no` as the way to answer, and a recorded answer of either kind is used without asking again (a host that declines on its own cannot be told from a person who said no).
+- `delendai accounts consent --yes|--no` records the person's answer in the same record the elicitation writes.
+- A model the catalogue prices at nothing is proposed in the lowest cost tier and a priced one by its price (the catalogue keeps each model's price, format 4); a provider's proposed model is the first its own client lists that the catalogue knows.
 - get_quota's description and note name the observation that fills it, and say what to declare when it is empty.

@@ -37,6 +37,63 @@ const CATALOGUE: IModelCatalogue = {
 };
 
 describe('proposedRosterEntries', () => {
+	const priced = (
+		costs: Record<string, { input: number; output: number }>,
+	) => ({
+		fetchedAt: '2026-10-28T00:00:00.000Z',
+		providers: [
+			{
+				id: 'minimax',
+				name: 'MiniMax',
+				env: ['MINIMAX_API_KEY'],
+				models: ['MiniMax-M2.1', 'MiniMax-M3', 'MiniMax-M3.1-Flash'],
+				costs,
+				api: 'https://api.minimax.test/anthropic/v1',
+				npm: '@ai-sdk/anthropic',
+			},
+		],
+	});
+	const minimax = (
+		costs: Record<string, { input: number; output: number }>,
+		clientModels?: { provider: string; models: string[] }[],
+	) =>
+		proposedRosterEntries({
+			agents: [],
+			catalogue: priced(costs),
+			env: { MINIMAX_API_KEY: 'k' },
+			existing: [],
+			...(clientModels === undefined ? {} : { clientModels }),
+		})[0];
+
+	it("proposes the model the provider's own client lists, not the catalogue's first", () => {
+		expect(
+			minimax({}, [
+				{
+					provider: 'minimax',
+					models: ['MiniMax-M3', 'MiniMax-M3.1-Flash'],
+				},
+			])?.modelId,
+		).toBe('MiniMax-M3');
+		expect(minimax({})?.modelId).toBe('MiniMax-M2.1');
+	});
+
+	it('tiers a proposal by the price of its model, a free one lowest', () => {
+		const listed = [{ provider: 'minimax', models: ['MiniMax-M3'] }];
+		expect(
+			minimax({ 'MiniMax-M3': { input: 0, output: 0 } }, listed)
+				?.costTier,
+		).toBe(1);
+		expect(
+			minimax({ 'MiniMax-M3': { input: 0.3, output: 1.2 } }, listed)
+				?.costTier,
+		).toBe(3);
+		expect(
+			minimax({ 'MiniMax-M3': { input: 15, output: 75 } }, listed)
+				?.costTier,
+		).toBe(5);
+		expect(minimax({}, listed)?.costTier).toBe(3);
+	});
+
 	it('proposes an acp entry per agent that can start, and an api entry per reachable provider', () => {
 		const entries = proposedRosterEntries({
 			agents: [

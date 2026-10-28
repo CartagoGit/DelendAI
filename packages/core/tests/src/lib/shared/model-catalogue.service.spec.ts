@@ -304,6 +304,29 @@ describe('context windows', () => {
 		expect(catalogue.providers[0]).not.toHaveProperty('contextWindows');
 	});
 
+	it("keeps each model's price where the catalogue states both halves", () => {
+		const priced = compactCatalogue(
+			{
+				zai: {
+					name: 'Z.AI',
+					env: [],
+					models: {
+						'glm-5': { cost: { input: 0.6, output: 2.2 } },
+						'glm-free': { cost: { input: 0, output: 0 } },
+						'glm-half': { cost: { input: 1 } },
+						'glm-x': {},
+					},
+				},
+			},
+			NOW,
+		);
+		expect(priced?.providers[0]?.costs).toEqual({
+			'glm-5': { input: 0.6, output: 2.2 },
+			'glm-free': { input: 0, output: 0 },
+		});
+		expect(catalogue.providers[0]).not.toHaveProperty('costs');
+	});
+
 	it('finds a model by its listed id or its last path part, the largest stated', () => {
 		expect(modelContextWindow(windowed, 'glm-5')).toBe(200_000);
 		expect(modelContextWindow(windowed, 'z-ai/glm-5')).toBe(200_000);

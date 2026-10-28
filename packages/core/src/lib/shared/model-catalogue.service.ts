@@ -47,6 +47,32 @@ const contextWindowsOf = (
 	return Object.keys(windows).length === 0 ? undefined : windows;
 };
 
+/** Each model's `cost.input` / `cost.output`, where the catalogue states both. */
+const costsOf = (
+	models: unknown,
+):
+	| Readonly<
+			Record<string, { readonly input: number; readonly output: number }>
+	  >
+	| undefined => {
+	if (models === null || typeof models !== 'object') return undefined;
+	const costs: Record<string, { input: number; output: number }> = {};
+	for (const [id, model] of Object.entries(models)) {
+		const cost =
+			model !== null && typeof model === 'object' && 'cost' in model
+				? (model.cost as { input?: unknown; output?: unknown } | null)
+				: undefined;
+		if (
+			typeof cost?.input === 'number' &&
+			typeof cost.output === 'number' &&
+			cost.input >= 0 &&
+			cost.output >= 0
+		)
+			costs[id] = { input: cost.input, output: cost.output };
+	}
+	return Object.keys(costs).length === 0 ? undefined : costs;
+};
+
 /** The raw catalogue reduced to what naming and calling a provider need. */
 export const compactCatalogue = (
 	raw: unknown,
@@ -72,6 +98,9 @@ export const compactCatalogue = (
 			...(contextWindowsOf(entry.models) === undefined
 				? {}
 				: { contextWindows: contextWindowsOf(entry.models) }),
+			...(costsOf(entry.models) === undefined
+				? {}
+				: { costs: costsOf(entry.models) }),
 			...(text(entry.api) === undefined ? {} : { api: text(entry.api) }),
 			...(text(entry.npm) === undefined ? {} : { npm: text(entry.npm) }),
 			...(text(entry.doc) === undefined ? {} : { doc: text(entry.doc) }),
