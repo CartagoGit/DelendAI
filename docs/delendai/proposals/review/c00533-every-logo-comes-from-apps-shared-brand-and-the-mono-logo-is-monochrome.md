@@ -50,8 +50,10 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
 - acceptance:
   - "logo-mono.svg uses one fill colour (currentColor) and differs from logo.svg (G72)."
 - shipped-in: `1a1bb4ab2ae2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1a1bb4ab2ae2, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 1/1: (1) All three logo-mono.svg files were rewritten with currentColor and no gradient, and the three are now one blob that differs from the colour logo.svg (md5 dc977… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice checks: the brand spec (1 file / 2 tests) and bun run lint:brand, both exit 0. The mono geometry is unchanged (only the paint) and apps/shared/brand/logo.svg is untouched, as the proposal's non-goals require.
 
 ## acceptance
 
