@@ -3,7 +3,7 @@ id: orchestrator-runner
 package: @delendai/orchestrator-runner
 version: 0.2.4
 maturity: stable
-generated: 2026-10-23T22:26:16.592Z
+generated: 2026-10-27T05:42:06.947Z
 ---
 
 # Orchestrator Runner
@@ -26,6 +26,7 @@ Orchestrator-runner runtime utilities.
 ## Permissions
 
 - filesystem-read
+- filesystem-write
 - process
 - network
 - env-read

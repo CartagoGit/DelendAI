@@ -55,8 +55,6 @@ export {
 	buildRosterDraft,
 	writeRosterDraft,
 	readConfirmedProviders,
-	draftProviderEntry,
-	buildProvidersPatch,
 	composeBootstrapBrief,
 	ROSTER_DRAFT_SCHEMA,
 	type DiscoverableCli,
@@ -66,6 +64,10 @@ export {
 	type IRosterDraft,
 	type IJsonPatchOp,
 } from '../lib/bootstrap';
+export {
+	draftProviderEntry,
+	buildProvidersPatch,
+} from '../lib/services/providers-patch.helper';
 export {
 	buildDiscoverProvidersRegistration,
 	buildBootstrapProvidersRegistration,
