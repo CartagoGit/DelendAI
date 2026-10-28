@@ -82,8 +82,10 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "The default matches the README: on, as the code and its spec decide, announced at every start with the line that turns it off (ER-02)."
   - "report_status needs only read; diagnose_log declares its own read-only set instead of inheriting the plugin's grants (ER-03)."
 - shipped-in: `d23cc0b41`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d23cc0b41, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 3/3: (1) frame-extractor.helper.ts:189-190 takes the stack only from a real Error instance (the loose stack branch is deleted) and internal-classifier.helper.ts:33-35 r… (2) options.service.ts:56 already read the enabled flag as the data value or true and the options spec already decided that the default is true; the slice changed … (3) error-reporting/plugin.manifest.ts:24-27 declares report_status and diagnose_log with the filesystem-read grant, and resolveToolPermissions (packages/core/src/… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 6 tests, exit 0.
 
 ### S5 — Personal accounts live in the personal layer
 - **Status**: done
