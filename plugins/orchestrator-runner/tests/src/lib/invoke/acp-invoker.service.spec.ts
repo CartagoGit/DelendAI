@@ -129,6 +129,7 @@ describe('an acp hop through the manager', () => {
 				api: acp,
 				'mcp-server': acp,
 				subscription: acp,
+				'host-sampling': acp,
 			},
 			defaultCostPreference: 'balanced',
 			invokeTimeoutMs: 20_000,
