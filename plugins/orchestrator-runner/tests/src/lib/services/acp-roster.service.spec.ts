@@ -50,8 +50,19 @@ describe('proposedRosterEntries', () => {
 		expect(entries.map((entry) => entry.id)).toEqual([
 			'acp-opencode',
 			'api-zai',
+			'api-google',
 		]);
 		expect(entries[0]?.invoke).toEqual({ kind: 'acp', agent: 'opencode' });
+		// Google is reached through its own family, at its default API.
+		expect(entries[2]).toMatchObject({
+			modelId: 'gemini-3',
+			invoke: {
+				kind: 'api',
+				url: 'https://generativelanguage.googleapis.com/v1beta',
+				envVar: 'GOOGLE_API_KEY',
+				family: 'google',
+			},
+		});
 		expect(entries[1]).toMatchObject({
 			kind: 'api',
 			modelId: 'glm-5',
@@ -77,5 +88,42 @@ describe('proposedRosterEntries', () => {
 				existing,
 			}),
 		).toEqual([]);
+	});
+
+	it('proposes each model the host serves on the person key, run through the host', () => {
+		const entries = proposedRosterEntries({
+			agents: [],
+			env: {},
+			existing: [],
+			hostByok: [
+				{
+					host: '/editor/User',
+					profile: 'p1',
+					name: 'Coding Plan',
+					vendor: 'customendpoint',
+					models: [
+						{
+							id: 'glm-5.3',
+							toolCalling: true,
+							contextWindow: 1_000_000,
+						},
+						{ id: 'glm-5.3-flash' },
+					],
+				},
+			],
+		});
+		expect(entries).toEqual([
+			expect.objectContaining({
+				id: 'byok-customendpoint-glm-5-3',
+				kind: 'host-sampling',
+				invoke: { kind: 'host-sampling', model: 'glm-5.3' },
+				contextWindow: 1_000_000,
+				strengths: ['code-edit', 'agentic'],
+			}),
+			expect.objectContaining({
+				id: 'byok-customendpoint-glm-5-3-flash',
+				strengths: ['code-edit'],
+			}),
+		]);
 	});
 });

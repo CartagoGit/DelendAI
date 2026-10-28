@@ -80,6 +80,7 @@ const PlanOutcomeSchema = z.object({
 	budget: SpendSchema,
 	ok: z.boolean(),
 	error: z.string().optional(),
+	unverified: z.array(z.number()).optional(),
 	measurement: z.object({
 		orchestratorTokens: z.enum(['observed', 'unknown']),
 		subagentTokens: z.literal('reported'),
@@ -88,7 +89,7 @@ const PlanOutcomeSchema = z.object({
 		taskId: z.string(),
 		openedAt: z.number().int(),
 		closedAt: z.number().int(),
-		outcome: z.enum(['succeeded', 'failed', 'abandoned']),
+		outcome: z.enum(['succeeded', 'failed', 'unverified', 'abandoned']),
 		confidence: z.number().min(0).max(1),
 		route: z.string(),
 		features: z.object({
@@ -376,7 +377,11 @@ export function buildDispatchRegistration(
 				reviewers: 0,
 				tokens,
 			},
-			outcome.ok ? 'succeeded' : 'failed',
+			outcome.ok
+				? 'succeeded'
+				: outcome.unverified !== undefined
+					? 'unverified'
+					: 'failed',
 			closedAt,
 		);
 		// The cache keeps the live outcome (Map and all) because
@@ -404,7 +409,7 @@ export function buildDispatchRegistration(
 				`${namespacePrefix}_dispatch`,
 				{
 					description:
-						'Plan and run a task under the policy: the receipt and output reference of each step, rotations and budget.',
+						"Plan and run a task under the policy: each step's receipt and output reference, rotations and budget.",
 					inputSchema: INPUT_SCHEMA,
 					outputSchema: PlanOutcomeSchema,
 				},

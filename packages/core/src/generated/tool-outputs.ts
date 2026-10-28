@@ -134,6 +134,7 @@ export type DelendaiBrowserBrowserOpenOutput = {
 export type DelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
+	truncated: boolean;
 	status: "ok";
 } | {
 	url: string;
@@ -652,6 +653,15 @@ export interface DelendaiLinkCheckLinkCheckOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxDocs: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;
@@ -862,6 +872,7 @@ export type DelendaiPerfPerfProfileOutput = {
 		info: number;
 	};
 	worst: string;
+	flamegraph?: string;
 } | {
 	ok: "skipped";
 	hint: string;
@@ -1362,6 +1373,15 @@ export interface DelendaiTechDebtDebtScanOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxFiles: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;
