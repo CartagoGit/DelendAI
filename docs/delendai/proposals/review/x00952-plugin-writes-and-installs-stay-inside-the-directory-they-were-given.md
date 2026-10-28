@@ -41,8 +41,10 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
   - "pluginsRoot, the plugin id and configFileName that resolve outside the workspace are refused, and no `../` path reaches the config (D22)."
   - "container_build refuses a dockerfile or context outside the workspace (D67)."
 - shipped-in: `ce33cce00`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ce33cce00, validate exit 0 and tests 21/21 claimed, no recorded run cited; acceptance 2/2: (1) project-plugins.ts:296-309 and :328-343 refuse a plugins root or a config file name that resolves outside the workspace; the spec 'refuses a pluginsRoot or con… (2) container-build.tool.ts:147-170 refuses a dockerfile or a context outside the workspace and the spec asserts the refusal for a parent-relative context and for … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 21 tests, exit 0. The plugin id is structurally safe because the kebab-case form keeps it to one path segment.
 
 ### S2 — Downloads and screenshots cannot collide or escape
 - **Status**: done
