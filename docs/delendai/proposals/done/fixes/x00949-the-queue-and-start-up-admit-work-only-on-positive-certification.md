@@ -2,14 +2,16 @@
 id: x00949
 title: "The queue and start-up admit work only on positive certification"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
-last-correlation-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T16:19:56.129Z
+last-transition-id: 5ee9fdc9-b862-4232-b495-f561a3d8c39c
+last-correlation-id: 5ee9fdc9-b862-4232-b495-f561a3d8c39c
+last-transition-from: review
+last-transition-at: 2026-10-28T07:28:36.810Z
+shipped-in:
+  - "1b69e8c34ebeea829de02132f71b89acb4b3328d"
 ---
 
 # x00949 — The queue and start-up admit work only on positive certification
@@ -39,8 +41,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
   - "A candidate with a pending, missing or failed required check on its current head is not armed; a spec feeds a check-run list with one pending required check and gets 'not armed' (MAINT-05)."
   - "The reap tolerates a candidate whose branch vanished between the listing and the deletion: `deleteForgeBranch` answers 'gone' and the run goes on, proved by a spec; the stale-candidate doctor still fails on a real stall, by design (G83)."
 - shipped-in: `506741770b0b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 64/64 claimed, no recorded run cited; acceptance 2/2: (1) queue-arming.spec.ts proves it: the case 'arms nothing while one required check is still running' asserts {passed:false, pending:['delendai-validate']} for a c… (2) ref-lifecycle-guard.script.ts:387 adds deleteForgeBranch returning deleted, gone or failed; the call site at :558 logs and continues on failed and treats gone … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. The slice's own specs ran green (3 files / 64 tests). Two observations that do not affect the verdict: the proposal's goal line about the stale-candidate report stopping the queue is not delivered by this slice, because the red step of that job is the doctor, which no slice touched; and the arming is proven at verdict level, not at the queue's landing set.
 
 ### S2 — Start-up reads every verdict and the journal by identity
 - **Status**: done
@@ -51,8 +55,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
   - "Generation validation aggregates all check runs of the head; reordering the response changes nothing (MAINT-07)."
   - "A checkpoint is marked integrated only when the merged PR's head sha equals it; the ref-name fallback is gone (MAINT-08)."
 - shipped-in: `abc0fef4c0de`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 3/3: (1) import-journal.ts:43 calls source.read() with no cursor and the seam in seams.interface.ts takes no request; journal-ref.service.ts no longer filters by sinceO… (2) reconcile-forge.ts:64 aggregateCheckState folds every check run of the head into one verdict, and reconcile-forge.spec.ts:120 ('records one verdict from every … (3) reconcile-forge.ts:177 adds pull.headSha === target.sha to the integration condition and reconcile-forge.spec.ts:92 asserts integrated stays empty for a foreig… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 8 tests, exit 0. Record hygiene only, no code change required: this slice's shipped-in sha does not carry two of its eight declared files (reconcile-forge.ts and reconcile-forge.spec.ts landed in fdc44b601), and three test-support files it touched are not in its Files list.
 
 ### S3 — The forge adapter checks the merge it reports
 - **Status**: done
@@ -61,8 +67,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
 - acceptance:
   - "A merge response without `merged: true` and a sha is a failed merge step (MAINT-09)."
 - shipped-in: `b926cfd10134`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) github-forge.ts:354 returns {status:'failed', mergeSha:'', integrationSha: current.sha} when the merge body has no merged:true and no sha, before any ref read … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. The slice touched exactly its two declared files, no later commit changed them, and its own spec is green (1 file / 10 tests, exit 0).
 
 ### S4 — CI runs the gates of the scripts a change touches
 - **Status**: done
@@ -71,8 +79,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
 - acceptance:
   - "A change to build.script.ts, build-clean.script.ts or pack.script.ts selects the build and pack-smoke jobs; a spec on job-scope proves each mapping (ORCH-05)."
 - shipped-in: `dcf6e1248619`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 1/1: (1) job-scope.script.spec.ts:284 ('planJobs - a change to a job's own scripts runs that job') maps compile/build.script.ts and compile/build-clean.script.ts to the… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 28 tests, exit 0. Wording note: there is no job named 'build' (the job is build-clean) and pack.script.ts selects pack-smoke only; the spec asserts the positive mappings. A later commit f41e28700 touched job-scope.constant.ts only in the unrelated sqlite-cutover-ready scope, and the S4 mappings are unchanged at HEAD.
 
 ## acceptance
 

@@ -12,6 +12,29 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface DelendaiAuditAuditCloseOutput {
+	action: "claim-seat" | "commit-phase-a" | "close";
+	ok: boolean;
+	reason?: string;
+	seat?: string;
+	reviewer?: string;
+	sha256?: string;
+	closed?: boolean;
+	pendingPhaseA?: string[];
+	incomplete?: {
+		source: string;
+		findingId: string;
+		missing: string[];
+	}[];
+	threshold?: number;
+	consensus?: {
+		id: string;
+		ratio: number;
+		consensus: boolean;
+	}[];
+	inventoryMarkdown?: string;
+}
+
 export interface DelendaiAuditAuditConsolidateOutput {
 	detail: "compact" | "normal" | "full";
 	auditType: "plan" | "valuation";
@@ -149,6 +172,7 @@ export interface DelendaiAuditSelfAuditOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface IAuditToolOutputs {
+	"delendai_audit_audit_close": DelendaiAuditAuditCloseOutput;
 	"delendai_audit_audit_consolidate": DelendaiAuditAuditConsolidateOutput;
 	"delendai_audit_audit_plan": DelendaiAuditAuditPlanOutput;
 	"delendai_audit_audit_run": DelendaiAuditAuditRunOutput;
