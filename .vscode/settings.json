@@ -1,4 +1,12 @@
 {
+	// `delendai.config.json` is JSONC by contract: it carries a comment
+	// above every block and every plugin entry. VS Code treats a `.json`
+	// file as strict JSON, so without this association every `//` in it
+	// is flagged as a syntax error.
+	"files.associations": {
+		"delendai.config.json": "jsonc"
+	},
+
 	"terminal.integrated.profiles.linux": {
 		"Bash (login)": {
 			"path": "/bin/bash",

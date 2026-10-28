@@ -11,6 +11,7 @@ import { readFile } from 'node:fs/promises';
 import type {
 	IInitWrite,
 	IHostServerEntryWriteResult,
+	IVscodeSettingsWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { applyJsoncEdits, parseJsonc } from '@delendai/core/cli';
@@ -25,8 +26,16 @@ import {
 	mergeDelendaiServerEntry,
 	renderDelendaiServerEntry,
 } from './init-render.service';
+import {
+	mergeVscodeSettings,
+	renderVscodeSettings,
+} from './init-vscode-settings';
 
-export type { IInitWrite, IHostServerEntryWriteResult };
+export type {
+	IInitWrite,
+	IHostServerEntryWriteResult,
+	IVscodeSettingsWriteResult,
+};
 
 /**
  * Writes the canonical `delendai.config.json` for the workspace. A valid
@@ -320,6 +329,44 @@ export const writeGenericMcpJson = (
 		mode,
 		serverName,
 	);
+
+/**
+ * f00794 S4: make sure the project associates `delendai.config.json`
+ * with the `jsonc` language, so the editor stops reporting the
+ * comments in it as syntax errors.
+ *
+ * The project's `.vscode/settings.json` is the owner's file: it is
+ * merged, never rewritten from scratch. A fresh project gets one with
+ * the association in it; an existing one keeps every other key, every
+ * comment and its own formatting. A file that cannot carry the
+ * association is left untouched and reported as `exists`.
+ */
+export const writeVscodeSettings = async (
+	workspace: string,
+): Promise<IVscodeSettingsWriteResult> => {
+	const relPath = '.vscode/settings.json';
+	const path = `${workspace}/${relPath}`;
+	if (!existsSync(path)) {
+		const written = await writeWorkspaceFileSafely(
+			workspace,
+			relPath,
+			renderVscodeSettings(),
+		);
+		return { kind: 'written', path: written };
+	}
+	const current = await readFile(path, 'utf8');
+	const merged = mergeVscodeSettings(current);
+	if (merged.kind === 'refused') return { kind: 'exists', path };
+	// The association was already there: the file is left byte-for-byte
+	// as it was, so a second `init` does not rewrite it.
+	if (merged.kind === 'unchanged') return { kind: 'merged', path };
+	const written = await writeWorkspaceFileSafely(
+		workspace,
+		relPath,
+		merged.content,
+	);
+	return { kind: 'merged', path: written };
+};
 
 /** Append-or-overwrite semantics for a generic file inside the workspace. */
 export const writeWorkspaceText = async (

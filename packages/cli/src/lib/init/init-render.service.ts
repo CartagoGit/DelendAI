@@ -37,6 +37,7 @@ import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-laun
 import { buildCanonicalLaunch } from '../server-args.service';
 import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
+import { buildConfigBlockEdits } from './init-config-comments';
 import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
@@ -180,38 +181,45 @@ export const renderDelendaiConfig = (
 			leadingComment: buildPluginComment(plugin, enabled, answers.preset),
 		});
 	}
-	const config: Record<string, unknown> = {
-		$schema:
-			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
-		cacheDir: '.cache/delendai',
-		docsDir: 'docs/delendai',
-		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
-		plugins: {},
-		...(development === undefined ? {} : { development }),
-	};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
 	// `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2) and any
 	// downstream tool that wants to scaffold code under the
 	// project's natural root can read it. The block is advisory
 	// only — the loader ignores it.
-	if (
+	const convention =
 		answers.detected !== undefined &&
 		answers.detected.pluginPathsRoot !== 'plugins'
-	) {
-		config.convention = {
-			pluginPathsRoot: answers.detected.pluginPathsRoot,
-			sourceRoot: answers.detected.sourceRoot,
-		};
-	}
-	// The plugin block is written through the JSONC editor rather than
-	// stringified: that is what puts each comment above its entry, and
-	// it is the same path a later `config sync` takes, so a re-run does
-	// not duplicate what init wrote.
-	const content = applyJsoncEdits(
-		`${JSON.stringify(config, null, '\t')}\n`,
-		pluginEdits,
-	);
+			? {
+					pluginPathsRoot: answers.detected.pluginPathsRoot,
+					sourceRoot: answers.detected.sourceRoot,
+				}
+			: undefined;
+	// f00794 S3: the base object holds ONLY `$schema`. Every other
+	// top-level block is CREATED by an edit, because `applyJsoncEdits`
+	// writes a `leadingComment` only when the edit creates the member
+	// — and the comment is the whole point of the block edits.
+	const config: Record<string, unknown> = {
+		$schema:
+			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
+	};
+	const blockEdits = buildConfigBlockEdits({
+		cacheDir: '.cache/delendai',
+		docsDir: 'docs/delendai',
+		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
+		...(development === undefined ? {} : { development }),
+		...(convention === undefined ? {} : { convention }),
+	});
+	// The blocks AND the plugin entries are written through the JSONC
+	// editor rather than stringified: that is what puts each comment
+	// above its member, and it is the same path a later `config sync`
+	// takes, so a re-run does not duplicate what init wrote. The block
+	// edits come first so the `plugins` block exists — and carries its
+	// comment — before the plugin entries are written inside it.
+	const content = applyJsoncEdits(`${JSON.stringify(config, null, '\t')}\n`, [
+		...blockEdits,
+		...pluginEdits,
+	]);
 	return {
 		relPath: 'delendai.config.json',
 		content,

@@ -109,6 +109,8 @@ export {
 	DEFAULT_CONFIG_FILENAME,
 	parseConfigFile,
 } from '../lib/plugins/load-config-file';
+// @adopter-api a host that writes `delendai.config.json` comments the same prose the schema carries, so the file and the schema never disagree
+export { renderConfigBlockComments } from '../lib/plugins/config-block-docs';
 export { loadPlugins, resolvePluginSpecifier } from '../plugin';
 import { nodeDynamicImport as nodeDynamicImportImpl } from '../node';
 /**

@@ -77,6 +77,7 @@ import {
 	writeGenericMcpJson,
 	writeDelendaiConfig,
 	writeVscodeMcpJson,
+	writeVscodeSettings,
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
 
@@ -765,6 +766,15 @@ export const runInitWithAnswers = async (
 		);
 		written.push({ path: result.path, kind: result.kind });
 	}
+
+	// f00794 S4: the config file is JSONC — it carries a comment above
+	// every block and every plugin entry, and the owner is expected to
+	// add their own — so the editor has to be told to treat it as JSONC
+	// instead of strict JSON, where every `//` is a syntax error. The
+	// association is MERGED into the project's own
+	// `.vscode/settings.json`, which is never reformatted.
+	const settingsResult = await writeVscodeSettings(answers.workspaceRoot);
+	written.push({ path: settingsResult.path, kind: settingsResult.kind });
 
 	if (answers.generateAgentMd) {
 		const everyHost = await renderAgentFiles(answers.workspaceRoot, {

@@ -197,6 +197,24 @@ export type IHostServerEntryWriteResult =
 	| { kind: 'skipped'; path: string }
 	| { kind: 'merged'; path: string; preserved: readonly string[] };
 
+/**
+ * Outcome of making sure the project associates `delendai.config.json`
+ * with the `jsonc` language (f00794 S4).
+ *
+ *   - `written` — the project had no `.vscode/settings.json`; one was
+ *     created carrying the association.
+ *   - `merged`  — the project had one; the association was merged into
+ *     it, or was already there. Every other key and every comment the
+ *     owner wrote survived.
+ *   - `exists`  — the file existed but could not carry the association
+ *     (it is not a JSON object, or `files.associations` is not a map);
+ *     it was left untouched for the owner to hand-edit.
+ */
+export type IVscodeSettingsWriteResult =
+	| { kind: 'written'; path: string }
+	| { kind: 'merged'; path: string }
+	| { kind: 'exists'; path: string };
+
 // ----------------------------------------------------------------
 // Foreign-detect inventory (f00089 U1)
 // ----------------------------------------------------------------

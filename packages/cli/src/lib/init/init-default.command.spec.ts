@@ -273,6 +273,16 @@ describe('init:default (f00103)', () => {
 		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');
 		expect(agentsContent).toContain('<!-- delendai:begin -->');
 		expect(agentsContent).toContain('<!-- delendai:end -->');
+
+		// f00794 S4: the config file is JSONC, so the editor must be
+		// told to treat it as JSONC — otherwise every `//` in it is
+		// reported as a syntax error.
+		const vscodeSettings = parseGeneratedConfig<{
+			'files.associations'?: Record<string, string>;
+		}>(await readFile(join(tmp, '.vscode/settings.json'), 'utf8'));
+		expect(
+			vscodeSettings['files.associations']?.['delendai.config.json'],
+		).toBe('jsonc');
 	});
 
 	it('does not project skills when a malformed project config was preserved', async () => {
