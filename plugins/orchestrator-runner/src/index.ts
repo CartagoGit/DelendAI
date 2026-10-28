@@ -17,6 +17,8 @@ import { joinRel, runCommand } from '@delendai/core/public';
 import { modelContextWindow, readModelCatalogue } from '@delendai/core/cli';
 import { definePlugin } from '@delendai/core/plugin';
 import { WORKSPACE_LEDGER_FILE } from './lib/contracts/constants/quota-ledger.constant';
+import type { IHostSampler } from './lib/contracts/interfaces/host-sampling.interface';
+import { samplerOf } from './lib/services/host-sampler.service';
 import {
 	adoptWorkspaceLedger,
 	machineLedgerPath,
@@ -172,6 +174,9 @@ export default definePlugin({
 			// elicitation; the server is known once the invoke tool registers.
 			const signer = new ConfirmationSigner();
 			let askUser: IConsentAsk | undefined;
+			// The host's sampling, once a client is connected: how a model the
+			// host serves on the person's key is run.
+			let hostSampler: IHostSampler | undefined;
 			const confirmationGate = elicitedConfirmationGate(
 				() => askUser,
 				signer,
@@ -190,6 +195,7 @@ export default definePlugin({
 			const manager = buildDefaultInvocationManager({
 				currentHost: () =>
 					ctx.clientIdentity?.name() ?? ctx.hostIdentity?.host,
+				hostSampler: () => hostSampler,
 				contextWindowOf: (modelId) =>
 					modelContextWindow(catalogue, modelId),
 				workspaceRoot: ctx.workspace.root,
@@ -281,6 +287,7 @@ export default definePlugin({
 					journalPath,
 					onServer: (server) => {
 						askUser = askThroughElicitation(server);
+						hostSampler = samplerOf(server);
 					},
 					discovery: options.discovery ?? 'auto-with-consent',
 					consentPath,

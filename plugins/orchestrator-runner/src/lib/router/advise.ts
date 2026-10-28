@@ -32,6 +32,7 @@ const STRATEGY_BY_KIND: Readonly<Record<ProviderKind, RoutingStrategy>> = {
 	'mcp-server': 'mcp-tool',
 	acp: 'cli',
 	subscription: 'passthrough',
+	'host-sampling': 'host-sampling',
 };
 
 export const strategyForKind = (
