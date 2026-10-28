@@ -7,6 +7,13 @@
  * so a roster is portable between them and none of them drifts.
  */
 import z from 'zod';
+/**
+ * `config-schema-docs.ts` and `declared-agent-schema.constant.ts` import
+ * each other, so whichever of the two a consumer reaches first decides
+ * whether `documentedEnum` is bound yet. Reaching the agent schema first
+ * settles that cycle in the order that works, whatever module a consumer
+ * happens to load first.
+ */
 import {
 	BILLING_MODES,
 	CREDENTIAL_MODES,
@@ -39,25 +46,7 @@ const CAPABILITY_TAG_VALUES = CAPABILITY_TAGS as readonly [
 	...(typeof CAPABILITY_TAGS)[number][],
 ];
 
-/**
- * `documentedEnum` carries the per-value prose into the emitted JSON
- * Schema, but its declared return type widens the enum to `z.ZodEnum<T>`
- * over a tuple — and a tuple's `keyof` drags every array method into the
- * inferred value type. This wrapper keeps the prose and restores the
- * precise `{ value: value }` shape `z.enum` produces, so every schema
- * that embeds one infers exactly what it inferred before.
- */
-export const documentedEnumSchema = <
-	const T extends readonly [string, ...string[]],
->(
-	values: T,
-	docs: Readonly<Record<T[number], string>>,
-): z.ZodEnum<z.util.ToEnum<T[number]>> =>
-	documentedEnum(values, docs) as unknown as z.ZodEnum<
-		z.util.ToEnum<T[number]>
-	>;
-
-export const CAPABILITY_TAG_SCHEMA = documentedEnumSchema(
+export const CAPABILITY_TAG_SCHEMA = documentedEnum(
 	CAPABILITY_TAG_VALUES,
 	CAPABILITY_TAG_DOCS,
 ).describe(
@@ -83,15 +72,12 @@ export const PROVIDER_INVOKE_SCHEMA = z
 					.describe(
 						'The API base URL of this provider (e.g. "https://api.openai.com/v1"). Take it from the provider\'s catalogue entry; the request is built on top of it.',
 					),
-				method: documentedEnumSchema(
-					['GET', 'POST'],
-					INVOKE_API_METHOD_DOCS,
-				)
+				method: documentedEnum(['GET', 'POST'], INVOKE_API_METHOD_DOCS)
 					.optional()
 					.describe(
 						'The HTTP method the request is made with. Leave it out for the usual POST that carries the prompt.',
 					),
-				family: documentedEnumSchema(
+				family: documentedEnum(
 					['openai', 'anthropic'],
 					INVOKE_API_FAMILY_DOCS,
 				)
@@ -270,16 +256,13 @@ export const PROVIDER_ACCOUNT_SCHEMA = z
 			.describe(
 				'A label for people, shown instead of the id. Purely cosmetic — nothing is derived from it, so change it whenever it reads better.',
 			),
-		credentialMode: documentedEnumSchema(
+		credentialMode: documentedEnum(
 			CREDENTIAL_MODES,
 			CREDENTIAL_MODE_DOCS,
 		).describe(
 			"Who holds the credential this account uses: the vendor's own client, a plan token, a key the person brought, the editor, or nobody. It decides where the runner looks for the credential.",
 		),
-		billingMode: documentedEnumSchema(
-			BILLING_MODES,
-			BILLING_MODE_DOCS,
-		).describe(
+		billingMode: documentedEnum(BILLING_MODES, BILLING_MODE_DOCS).describe(
 			'How the use of this account is paid for. It decides which budget pool its calls are counted against.',
 		),
 		credentialEnv: z
@@ -319,7 +302,7 @@ export const PROVIDER_ACCOUNT_SCHEMA = z
 			.array(
 				z
 					.object({
-						window: documentedEnumSchema(
+						window: documentedEnum(
 							['hourly', 'weekly', 'monthly'],
 							BUDGET_WINDOW_DOCS,
 						).describe(
@@ -359,7 +342,7 @@ export const PROVIDER_ENTRY_SCHEMA = z
 			.string()
 			.regex(KEBAB_ID_PATTERN)
 			.describe('Unique kebab-case provider id (e.g. "claude-sonnet").'),
-		kind: documentedEnumSchema(
+		kind: documentedEnum(
 			[
 				'api',
 				'subscription',

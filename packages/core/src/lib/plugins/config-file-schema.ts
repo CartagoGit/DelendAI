@@ -531,16 +531,31 @@ export const CONFIG_FILE_SCHEMA = z
 			// whole entries; the Zod side compares ids and is the
 			// source of truth for `--check`).
 			.meta({ uniqueItems: true })
-			.optional(),
+			.optional()
+			.describe(
+				'The providers the multi-model orchestrator may reach, with how each one is invoked and what it is good at. Omit it to use only the built-in roster.',
+			),
 		// The accounts the roster entries run on. Optional + additive: an
 		// entry without \`accountId\` predates accounts and still validates.
 		// Clients a project declares beside the built-in catalogue, merged
 		// over it by command (a person's file can add its own).
-		clients: z.array(KNOWN_CLIENT_SCHEMA).optional(),
+		clients: z
+			.array(KNOWN_CLIENT_SCHEMA)
+			.optional()
+			.describe(
+				'Clients a project declares beside the built-in catalogue, merged over it by command. Use it for a vendor CLI the catalogue does not know yet.',
+			),
 		// Public catalogues of agents and models, read before the defaults.
-		catalogues: CATALOGUE_SOURCES_SCHEMA.optional(),
+		catalogues: CATALOGUE_SOURCES_SCHEMA.optional().describe(
+			'Public catalogues of agents and models, read before the built-in defaults. Use it to follow a registry the project does not ship.',
+		),
 		// Agents the catalogues miss, or reached another way than they say.
-		agents: z.array(DECLARED_AGENT_SCHEMA).optional(),
+		agents: z
+			.array(DECLARED_AGENT_SCHEMA)
+			.optional()
+			.describe(
+				'Agents the catalogues miss, or reached another way than they say. Use it to declare an agent this project uses that no registry lists.',
+			),
 		accounts: z
 			.array(PROVIDER_ACCOUNT_SCHEMA)
 			.superRefine((accounts, ctx) => {
@@ -551,7 +566,10 @@ export const CONFIG_FILE_SCHEMA = z
 						message: issue.message,
 					});
 			})
-			.optional(),
+			.optional()
+			.describe(
+				'The accounts the roster entries run on. Each one names where a credential lives, never the credential itself.',
+			),
 		// Cache eviction policy. Without this block the boot sweep applies
 		// the owners' rules (`runOnBoot: 'apply'`); `'dry-run'` reports
 		// without deleting, `'off'` skips it.

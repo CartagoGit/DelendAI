@@ -12,6 +12,13 @@ import {
 /** One property of the emitted schema, addressed by its dotted path. */
 interface ISchemaProperty {
 	readonly path: string;
+	/**
+	 * True when the node is a member somebody NAMES in the file.
+	 *
+	 * The `items` of an array of plain strings is not named: `hosts` is
+	 * the member, and its items are just "a string".
+	 */
+	readonly named: boolean;
 	readonly description?: string;
 	readonly enum?: readonly unknown[];
 	readonly enumDescriptions?: Readonly<Record<string, string>>;
@@ -51,6 +58,7 @@ const propertiesOf = (schema: unknown): readonly ISchemaProperty[] => {
 		if (named || hasEnum) {
 			found.push({
 				path,
+				named,
 				...(record.description === undefined
 					? {}
 					: { description: record.description }),
@@ -102,7 +110,10 @@ describe('delendai.config.json JSON Schema (drift guard)', async () => {
 	it('every property says what it is for', () => {
 		const properties = propertiesOf(JSON.parse(buildConfigSchema()));
 		const undocumented = properties
-			.filter((property) => property.description === undefined)
+			.filter(
+				(property) =>
+					property.named && property.description === undefined,
+			)
 			.map((property) => property.path);
 		expect(
 			undocumented,

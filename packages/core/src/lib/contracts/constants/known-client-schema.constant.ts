@@ -7,6 +7,7 @@
  */
 import { z } from 'zod';
 
+import { documentedEnum } from '../../plugins/config-schema-docs';
 import {
 	BILLING_MODES,
 	CREDENTIAL_MODES,
@@ -15,7 +16,6 @@ import {
 	BILLING_MODE_DOCS,
 	CREDENTIAL_MODE_DOCS,
 } from '../../plugins/config-schema-docs';
-import { documentedEnumSchema } from './provider-entry-schema.constant';
 
 const FLAGS = z.array(
 	z
@@ -84,13 +84,13 @@ export const KNOWN_CLIENT_SCHEMA = z
 							.describe(
 								'A regular expression source, matched case-insensitively against what the client reports about the session. The first kind that matches wins.',
 							),
-						credentialMode: documentedEnumSchema(
+						credentialMode: documentedEnum(
 							CREDENTIAL_MODES,
 							CREDENTIAL_MODE_DOCS,
 						).describe(
 							'Who holds the credential behind a login of this kind.',
 						),
-						billingMode: documentedEnumSchema(
+						billingMode: documentedEnum(
 							BILLING_MODES,
 							BILLING_MODE_DOCS,
 						).describe('How a login of this kind is paid for.'),

@@ -97,10 +97,6 @@ export const DECLARED_AGENT_KINDS = [
  * to the concrete type here. The runtime object is the same enum with
  * the same values either way; only the description travels with it.
  */
-type DeclaredAgentKindEnum = z.ZodEnum<{
-	readonly [K in (typeof DECLARED_AGENT_KINDS)[number]]: K;
-}>;
-
 export const DECLARED_AGENT_SCHEMA = z
 	.object({
 		id: z
@@ -114,11 +110,9 @@ export const DECLARED_AGENT_SCHEMA = z
 			.describe(
 				'The name to show for this agent in rosters and reports. Use it when the id is an internal handle and a person should read something friendlier; leave it out to fall back to the id.',
 			),
-		kind: (
-			documentedEnum(
-				DECLARED_AGENT_KINDS,
-				DECLARED_AGENT_KIND_DOCS,
-			) as unknown as DeclaredAgentKindEnum
+		kind: documentedEnum(
+			DECLARED_AGENT_KINDS,
+			DECLARED_AGENT_KIND_DOCS,
 		).describe('How it is reached.'),
 		command: z
 			.string()

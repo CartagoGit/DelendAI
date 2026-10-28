@@ -25,18 +25,22 @@
  */
 import { z } from 'zod';
 
-import { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
-import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
-import { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
-import {
+import type { CAPABILITY_TAGS } from '../contracts/interfaces/provider-capabilities.interface';
+import type { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
+import type { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
+import type {
 	BILLING_MODES,
 	CREDENTIAL_MODES,
 } from '../contracts/constants/provider-account-modes.constant';
-import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
-import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
-import { DECLARED_AGENT_KINDS } from '../contracts/constants/declared-agent-schema.constant';
-import { STARTUP_REPORT_LEVEL_INPUTS } from '../startup-report/level';
-import { PRESET_KIND } from './preset-catalog';
+import type { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
+import type { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
+import type { STARTUP_REPORT_LEVEL_INPUTS } from '../startup-report/level';
+import type { PRESET_KIND } from './preset-catalog';
+// Type-only on purpose: the agent kinds are needed for their NAMES here,
+// not their value. Importing the value would make this module depend on
+// the agent schema, which depends on `documentedEnum` from this module —
+// a cycle that cost a barrel import its evaluation order.
+import type { DECLARED_AGENT_KINDS } from '../contracts/constants/declared-agent-schema.constant';
 
 /**
  * An enum that carries the meaning of each of its values.
@@ -47,13 +51,15 @@ import { PRESET_KIND } from './preset-catalog';
 export const documentedEnum = <const T extends readonly [string, ...string[]]>(
 	values: T,
 	docs: Readonly<Record<T[number], string>>,
-): z.ZodEnum<T> =>
+): z.ZodEnum<z.util.ToEnum<T[number]>> =>
 	// The cast is not laziness: `z.enum` re-widens a generic tuple to its
 	// own mapped type, and `.meta()` keeps that widened type. The values
 	// are exactly `T` — `documentedEnum` refuses a doc map that does not
 	// cover every one of them, and the emitted schema carries the same
 	// list the caller passed.
-	z.enum(values).meta({ enumDescriptions: docs }) as unknown as z.ZodEnum<T>;
+	z.enum(values).meta({ enumDescriptions: docs }) as unknown as z.ZodEnum<
+		z.util.ToEnum<T[number]>
+	>;
 
 /** How much of the tool surface the MCP server exposes to the model. */
 export const SURFACE_MODE_DOCS: Readonly<
