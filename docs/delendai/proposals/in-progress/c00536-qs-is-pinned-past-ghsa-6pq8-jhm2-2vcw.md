@@ -2,10 +2,14 @@
 id: c00536
 title: "qs is pinned past GHSA-6pq8-jhm2-2vcw"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: security
 date: 2026-10-27
+last-transition-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
+last-correlation-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
+last-transition-from: ready
+last-transition-at: 2026-10-28T09:22:01.024Z
 ---
 
 # c00536 — qs is pinned past GHSA-6pq8-jhm2-2vcw
