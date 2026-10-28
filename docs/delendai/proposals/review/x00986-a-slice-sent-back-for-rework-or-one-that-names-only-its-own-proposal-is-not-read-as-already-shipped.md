@@ -2,14 +2,14 @@
 id: x00986
 title: "A slice sent back for rework, or one that names only its own proposal, is not read as already shipped"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: governance
 date: 2026-10-27
-last-transition-id: b60b0e7f-0efb-494d-9357-2864b5f08223
-last-correlation-id: b60b0e7f-0efb-494d-9357-2864b5f08223
-last-transition-from: ready
-last-transition-at: 2026-10-28T09:15:13.839Z
+last-transition-id: 49697d0e-5f59-4ee0-93d7-c0b1481103fc
+last-correlation-id: 49697d0e-5f59-4ee0-93d7-c0b1481103fc
+last-transition-from: in-progress
+last-transition-at: 2026-10-28T09:18:44.154Z
 shipped-in:
   - "8ef9ed654"
 ---
@@ -44,6 +44,8 @@ On 2026-10-27 the lint failed on develop with five findings, and failed lint-gov
   - "A slice's reference to its own proposal file is not counted among its files; a slice that names only that file is not reported."
   - "On develop at 2026-10-27 the lint passes with f00783 S3–S6 and q00035 S1 still pending."
 - shipped-in: `8ef9ed654`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
