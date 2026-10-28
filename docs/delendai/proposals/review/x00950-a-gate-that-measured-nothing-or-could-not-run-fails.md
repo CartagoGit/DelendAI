@@ -79,8 +79,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "Only one of the two proposal-file lints checks that a slice's Files exist; the other is narrowed to what it alone checks, so one baseline holds that fact (G26) — delivered earlier, in 64aa83743."
   - "The web build generates its manifests strictly, so a PR's site job fails on an undocumented tool or skill as main's does; pages-audit.spec fails a page tree that drifted from the audited inventory (D13)."
 - shipped-in: `131dcb824033`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 2/2: (1) 64aa83743 ('fix(lint): one check for a declared file') is an ancestor of this slice's shipped-in commit and removed the file-existence check from the other pro… (2) apps/web/package.json:11 makes the build run the strict manifest generation (gen:pages, gen-capabilities and gen:skills, each with --strict) and the root site … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the apps/web pages-audit suite 1 file / 4 tests plus the lint specs, exit 0.
 
 ## acceptance
 
