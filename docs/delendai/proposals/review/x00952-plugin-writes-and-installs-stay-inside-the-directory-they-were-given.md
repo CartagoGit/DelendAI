@@ -78,8 +78,10 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 - acceptance:
   - "A bind mount of a host path outside the workspace (including / and $HOME) is a named risk that requires confirmRisk (D102)."
 - shipped-in: `ce33cce00`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ce33cce00, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 1/1: (1) docker-risk.helper.ts:19-27 names a bind mount of a host path outside the workspace as a risk and the spec asserts that the root, the home directory, a dot ssh… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 9 tests, exit 0.
 
 ## acceptance
 
