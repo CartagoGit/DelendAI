@@ -47,7 +47,7 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A standing check that has nothing to do reports no steps and changes no byte — it is asked, it answers, and it is quiet."
   - "A standing check that has something to do applies it, and the engine still stops at the first failure rather than stacking the next migration on an unfinished one."
   - "The dry run reports the standing check's steps as planned, exactly as it reports a one-shot rename's."
-- shipped-in: `S1-commit`
+- shipped-in: `5fe3e9334`
 
 ### S2 — The policy-alignment migrator is a standing check
 - **Status**: pending
@@ -58,7 +58,7 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A `push.branch` naming the integration branch under a profile that reaches it through the forge is removed, keeping the file's comments, its key order and the rest of the push settings."
   - "A `push.branch` naming any other branch is left alone, exactly as before."
   - "A workspace whose config agrees with its profile is left byte-identical, on every boot."
-- shipped-in: `S2-commit`
+- shipped-in: `5fe3e9334`
 
 ## acceptance
 
