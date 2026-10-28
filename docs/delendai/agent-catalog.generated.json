@@ -35,6 +35,10 @@
 			"name": "delendai_analyze_project"
 		},
 		{
+			"name": "delendai_audit_audit_close",
+			"plugin": "audit"
+		},
+		{
 			"name": "delendai_audit_audit_consolidate",
 			"plugin": "audit"
 		},

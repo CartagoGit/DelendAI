@@ -2,14 +2,14 @@
 id: x00956
 title: "Canonical orders and digests use code-unit order, never the locale"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: state
 date: 2026-10-23
-last-transition-id: 23a03aa4-b944-499b-b4ee-99be42ad6ff0
-last-correlation-id: 23a03aa4-b944-499b-b4ee-99be42ad6ff0
-last-transition-from: in-progress
-last-transition-at: 2026-10-25T07:37:23.955Z
+last-transition-id: d70026c6-b00d-44b5-b8a1-773d72b35934
+last-correlation-id: d70026c6-b00d-44b5-b8a1-773d72b35934
+last-transition-from: review
+last-transition-at: 2026-10-28T08:25:30.463Z
 shipped-in:
   - "3409efa5b15f"
   - "1e088923ac3d96ab526931b4fb90e35e86a3c721"
@@ -48,16 +48,18 @@ The forward sync of 0.2.2 (#1425) failed the required sqlite-cutover-ready check
 - review-log: approved by claude-sonnet-5-5 — verified at 1e088923ac3d, validate exit 0 and tests 13/13 claimed, no recorded run cited; acceptance 2/2: (1) compare-code-units.helper.spec covers the tie pair and equality/antisymmetry; passes (2) sqlite-driver.ts:914 sorts with compareCodeUnits; equivalence-property.helper.ts has the shrunk U+19D2/U+0C7D case with seed -1973392993 as a fixed case; sqlit… — ran specs
 
 ### S2 — Digests and projections elsewhere
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/repository/digest.ts`, `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`, `packages/context-compiler/src/lib/context-compiler.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.service.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.service.ts`, `packages/proposals-sqlite/tests/src/lib/repository/digest.spec.ts`, `tools/scripts/lint/no-locale-order-in-canonical.script.ts`, `tools/scripts/lint/no-locale-order-in-canonical.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Each sort uses the code-unit comparator; a spec per package shows two keys localeCompare ties ordered the same in both insertion orders."
   - "A lint fails on localeCompare inside a function that returns or feeds a digest or canonical hash, or the remaining uses are listed with why they are display order."
 - shipped-in: `3409efa5b15f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by claude-sonnet-5-5 — Code is converted everywhere and the lint (wired into lint:architecture, 153 files clean) plus its spec pass. But criterion 1 asks for a spec per package showing two localeCompare-tie keys ordered the same in both insertion orders: only proposals-sqlite digest.spec was added; context-compiler (context-compiler.ts), state-telemetry (progress-weighting, work-progress-snapshot) and reconciler-markdown have no such spec.
+- review-log: requested_changes by minimax-m3.1-flash-preview — Two things the criterion asks for are still missing. First, the tie-order spec per package: the telemetry work-item order has none. work-progress-snapshot.service.ts:134 sorts rows by work item id with the comparator, but its spec 'orders rows by work item id whatever order events arrive in' (work-progress-snapshot.service.spec.ts:52) uses the ascii ids p/S1 and p/S2, which localeCompare does not tie, and no spec in packages/state-telemetry uses a localeCompare-tied pair such as the U+19D2 and U+0C7D pair. progress-weighting.service.spec.ts:73-92 does use canonically equivalent ids but asserts only that the aggregate is identical across the six permutations, never that the order is the same. The earlier reviewer's requested changes named exactly these two files (progress-weighting and work-progress-snapshot), and the rework commit 3409efa5b15f added the context-compiler and reconciler-markdown specs but not this one. What must hold: a spec that first asserts localeCompare is 0 for its pair and then asserts the identical order for both insertion orders, for the work-item sort. Second, the second branch of the lint criterion: no-locale-order-in-canonical.script.ts:13-19 hard-codes the canonical roots as five package roots, so a canonical sort outside them is invisible to the lint, and the proposal lists no inventory of the remaining uses with why they are display order - for instance plugins/search/src/lib/embed/index-store.ts:65, where the embed index is ordered by hash with localeCompare and that serialisation is canonical, and packages/cli/src/lib/stable-json.service.ts:6. What must hold: either a list that names every remaining localeCompare site with why it is display order, or a lint scope that covers the canonical producers outside those five roots. The first half of the criterion is met: every canonical sort uses the comparator, the lint is wired into lint:architecture and reports '154 files order with code units' (exit 0), and the proposals-sqlite and context-compiler tie specs are green.
 
 ## acceptance
 

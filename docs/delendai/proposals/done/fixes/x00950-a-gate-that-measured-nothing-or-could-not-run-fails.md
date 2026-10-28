@@ -2,14 +2,16 @@
 id: x00950
 title: "A gate that measured nothing, or could not run, fails"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: fffe77ea-919c-4526-8930-57690002b017
-last-correlation-id: fffe77ea-919c-4526-8930-57690002b017
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T17:40:46.371Z
+last-transition-id: 37d535e1-adb6-4b5c-aafe-d1147234c0da
+last-correlation-id: 37d535e1-adb6-4b5c-aafe-d1147234c0da
+last-transition-from: review
+last-transition-at: 2026-10-28T07:58:10.482Z
+shipped-in:
+  - "1ee97d05727f11d9f5a4d124e01b59d1105f54b3"
 ---
 
 # x00950 — A gate that measured nothing, or could not run, fails
@@ -39,8 +41,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "no-silent-gates runs every lint the gate chains reach over a git tree holding only tools/ and fails each one that exits 0 there, unless an allowlist names it with the reason its surface is in that tree; the lints that passed over nothing refuse a missing scan root through one helper, and the host-manifest-drift run that compared nothing leaves the chains."
   - "verify:tools with zero discovered plugins exits non-zero with the cause (G157)."
 - shipped-in: `25d07003fc50`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 2/2: (1) empty-root-probe.lib.ts:60 runs each lint over a git tree holding only tools/ and fails the ones that exit 0 there, unless the reviewed allowlist names the lin… (2) plugin-tool-verify.script.ts:512-519 returns 1 with the cause 'verify:tools: no plugin was discovered under <root>/plugins; nothing was verified.'; running it … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 19 tests, exit 0; bun run lint:architecture exits 0 and the two script runs above are green.
 
 ### S2 — The security gate scans the repo and fails when it cannot
 - **Status**: done
@@ -50,8 +54,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "The repo root resolves to the checkout; a spec plants a fake key in a fixture tree and the gate fails (G154)."
   - "A missing baseline and a failed or unparsable bun audit fail the gate with the cause, instead of `skipped` (G155, G156)."
 - shipped-in: `78b875261b3d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 2/2: (1) security.script.ts resolves the repo root from the checkout (resolve of the here root three levels up) and the security-gate spec case 'resolves the checkout a… (2) The skipped state is gone from the result type; a missing baseline pushes 'No baseline at <path>' into the failures and returns ok false (security.script.ts:18… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 6 tests, exit 0; bun run verify:security exits 0.
 
 ### S3 — Wiring, links and control bytes are enforced in CI
 - **Status**: done
@@ -62,8 +68,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "A new lint rejects any C0 byte other than tab/newline inside source string literals and runs in CI (G61)."
   - "A link-check script over the root docs runs in a CI-run chain and fails on a broken internal link (G40)."
 - shipped-in: `601342c2b3f6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 3/3: (1) validate:run contains the plugin wiring verification without --report and the old advisory script is gone from package.json; the four unwired plugins (executio… (2) no-control-bytes.script.ts:22 rejects every C0 byte plus DEL over the tracked source files (:38) and reports the path, and it runs in the CI chain; bun run lin… (3) doc-links.script.ts checks the links of the root documents and returns 1 with the broken links listed, and it is in lint:architecture and therefore in CI; bun … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 6 files / 30 tests, exit 0, plus lint:doc-links and lint:no-control-bytes green.
 
 ### S4 — One lint per fact, and the web audit gates
 - **Status**: done
@@ -73,8 +81,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "Only one of the two proposal-file lints checks that a slice's Files exist; the other is narrowed to what it alone checks, so one baseline holds that fact (G26) — delivered earlier, in 64aa83743."
   - "The web build generates its manifests strictly, so a PR's site job fails on an undocumented tool or skill as main's does; pages-audit.spec fails a page tree that drifted from the audited inventory (D13)."
 - shipped-in: `131dcb824033`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 2/2: (1) 64aa83743 ('fix(lint): one check for a declared file') is an ancestor of this slice's shipped-in commit and removed the file-existence check from the other pro… (2) apps/web/package.json:11 makes the build run the strict manifest generation (gen:pages, gen-capabilities and gen:skills, each with --strict) and the root site … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the apps/web pages-audit suite 1 file / 4 tests plus the lint specs, exit 0.
 
 ## acceptance
 
