@@ -2,14 +2,14 @@
 id: f00778
 title: "The workflow was available and was not used: an agent that writes into the shared checkout instead of its unit is not caught until the commit"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-10-20
-last-transition-id: 843d6c52-3cb1-430c-bbf0-00f0b5c56f54
-last-correlation-id: 843d6c52-3cb1-430c-bbf0-00f0b5c56f54
-last-transition-from: in-progress
-last-transition-at: 2026-10-25T07:30:35.306Z
+last-transition-id: 3ffa3532-f844-46ef-9938-d5e4bd46946a
+last-correlation-id: 3ffa3532-f844-46ef-9938-d5e4bd46946a
+last-transition-from: review
+last-transition-at: 2026-10-28T07:35:11.877Z
 shipped-in:
   - "374da03bfb92"
   - "0157ad716b28"
@@ -89,9 +89,11 @@ What this deliberately does not do: add a hook or a filesystem watcher that bloc
   - "The knowledge entry `proposals-workflow` (registered in `plugins/proposals/src/index.ts`) carries the same authoring step, so an agent that reads knowledge rather than skills reaches it too."
   - "A lint or spec fails when the authoring step is absent from both surfaces, so the procedure cannot silently disappear back into a refusal message."
 - shipped-in: `0157ad716b28`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
 - review-log: requested_changes by claude-sonnet-5-5 — Criteria 1-4 hold (SKILL.md lines 53-70 and the proposals-workflow knowledge entry in plugins/proposals/src/index.ts carry the create-unit authoring step). Criterion 5 is not met: no lint or spec asserts the authoring step is present in both surfaces; the commit added none (only tool-search and agent-claims specs). Add a spec that fails when SKILL.md or the knowledge entry lacks the 'proposal=new' authoring step.
+- review-log: approved by minimax-m3.1-flash-preview — verified at 0157ad716b28, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 5/5: (1) SKILL.md:46-71 adds an 'Authoring a new proposal' section whose code block enters a unit with --kind=create --proposal=new and calls create_proposal inside tha… (2) SKILL.md:58-59 states that create_proposal allocates the id and that a hand-written id is not the contract; SKILL.md:60-61 states the unit branch is renamed fr… (3) SKILL.md:69-71 states the recovery for an author who already wrote files by hand: keep the text, enter a create unit, re-author it there and let the tool alloc… (4) plugins/proposals/src/index.ts:1409 carries the same authoring step inside the knowledge entry proposals-workflow registered at :1400. (5) plugins/proposals/tests/src/lib/authoring-step-surface.spec.ts asserts the three markers (the create unit, create_proposal and the id allocation) against the p… — This slice declares gate none, so the counts below are concrete document and state checks, not a test suite: 7 checks performed (the spec read at HEAD and at the shipped sha, SKILL.md read at HEAD and at the shipped sha, the knowledge entry located by id, the spec run, and the later commits on those files checked). The one spec the slice names was run green (1 file / 1 test, exit 0). The recorded review-state and the earlier requested_changes log are stale: the rework spec the earlier reviewer asked for exists and passes, so this verdict supersedes it. Provenance nit: shipped-in 0157ad716b28 does not carry the documentation half of S1, which is 374da03bfb92.
 
 ### S2 — Reaching the hidden authoring tool is the obvious next step
 - **Status**: done
