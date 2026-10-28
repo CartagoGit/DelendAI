@@ -2,6 +2,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildCloseRegistration } from '../../../../src/lib/tools/audit-close.tool';
@@ -9,17 +11,17 @@ import { buildConsolidateRegistration } from '../../../../src/lib/tools/audit-co
 
 const AUDITS = 'docs/delendai/proposals/done/audits';
 
-const handlerOf = async (
-	reg: ReturnType<typeof buildCloseRegistration>,
-): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
-	let handler:
-		| ((a: unknown) => Promise<{ content: Array<{ text: string }> }>)
-		| undefined;
-	await reg.register({
-		registerTool: (_n: string, _d: unknown, fn: typeof handler): void => {
-			handler = fn;
-		},
-	} as never);
+type Handler = (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
+
+const handlerOf = async (reg: IToolRegistration): Promise<Handler> => {
+	let handler: Handler | undefined;
+	await reg.register(
+		createFakeToolServer({
+			onRegisterTool: (t) => {
+				handler = t.handler as Handler;
+			},
+		}),
+	);
 	if (!handler) throw new Error('no handler');
 	return handler;
 };
@@ -136,22 +138,15 @@ describe('audit_close and the Phase A gate (f00789)', () => {
 			defaultAuditDir: AUDITS,
 			autoScaffoldProposals: false,
 		});
-		let h:
-			| ((a: unknown) => Promise<{ content: Array<{ text: string }> }>)
-			| undefined;
-		await reg.register({
-			registerTool: (_n: string, _d: unknown, fn: typeof h): void => {
-				h = fn;
-			},
-		} as never);
-		const blocked = await h!({ reviewer: 'alice' });
+		const h = await handlerOf(reg);
+		const blocked = await h({ reviewer: 'alice' });
 		expect(JSON.stringify(blocked)).toContain('Phase A');
 		await call({
 			action: 'commit-phase-a',
 			reviewer: 'alice',
 			file: '01-01-2026- Host (Alice).md',
 		});
-		const ok = parse(await h!({ reviewer: 'alice' }));
+		const ok = parse(await h({ reviewer: 'alice' }));
 		expect(ok.auditsFound).toBe(1);
 	});
 });
