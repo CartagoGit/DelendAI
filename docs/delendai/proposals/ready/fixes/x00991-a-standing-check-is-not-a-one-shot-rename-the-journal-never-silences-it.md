@@ -38,7 +38,7 @@ The engine has no way to express the difference today, because `IMigration` says
 - global_gate: lint
 
 ### S1 — The engine tells a standing check from a one-shot rename
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/workspace-migration.interface.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -48,6 +48,8 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A standing check that has something to do applies it, and the engine still stops at the first failure rather than stacking the next migration on an unfinished one."
   - "The dry run reports the standing check's steps as planned, exactly as it reports a one-shot rename's."
 - shipped-in: `5fe3e9334`
+- review-state: in_review
+- review-implementer: minimax-m3.1-flash-preview
 
 ### S2 — The policy-alignment migrator is a standing check
 - **Status**: review
