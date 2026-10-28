@@ -15,7 +15,8 @@ export type IAccountSource =
 	| 'credential-variable'
 	| 'seen-models'
 	| 'plan-tool'
-	| 'local-endpoint';
+	| 'local-endpoint'
+	| 'host-byok';
 
 /** Who the account is with and how it is paid: what an offer needs. */
 export interface IAccountClassification {
@@ -47,6 +48,8 @@ export interface IAccountFinding {
 	readonly classification?: IAccountClassification | undefined;
 	/** The variable holding the credential, for a credential-variable finding. */
 	readonly credentialEnv?: string | undefined;
+	/** The credential is kept by an editor that runs the model when asked (BYOK). */
+	readonly hostHeld?: boolean | undefined;
 	readonly models: readonly string[];
 	/** What was seen, in a line a person can check. */
 	readonly evidence: string;
