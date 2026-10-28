@@ -2,14 +2,14 @@
 id: r00645
 title: "Core and tooling take the workspace root from their caller, never process.cwd()"
 kind: refactor
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 5ee2050d-92a8-448f-b37f-0294e07173a8
-last-correlation-id: 5ee2050d-92a8-448f-b37f-0294e07173a8
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T04:54:29.181Z
+last-transition-id: d87b0edf-2e4d-415e-830f-72826bcdc48d
+last-correlation-id: d87b0edf-2e4d-415e-830f-72826bcdc48d
+last-transition-from: review
+last-transition-at: 2026-10-28T07:56:34.137Z
 shipped-in:
   - "90b4a58faf62"
 ---
@@ -39,8 +39,10 @@ Joint audit a00095. G1: shell-status.tool.ts builds InstallSuggestionsService wi
 - acceptance:
   - "A lint fails on process.cwd() in packages/core/src/lib outside entry points, with the current uses removed (G1, D8)."
 - shipped-in: `90b4a58faf62`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 90b4a58faf62, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 1/1: (1) The lint exists at tools/scripts/lint/no-process-cwd-in-core.script.ts with SCAN_ROOT = packages/core/src/lib (line 21), so the entry points under packages/cor… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 15 tests, exit 0, and the lint itself exits 0. Non-blocking observation: the lint's failure path has no automated test, only its detector helpers are unit-tested.
 
 ### S2 — tooling
 - **Status**: pending
