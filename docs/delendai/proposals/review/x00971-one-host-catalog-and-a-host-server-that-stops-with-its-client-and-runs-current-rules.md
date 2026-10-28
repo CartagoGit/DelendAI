@@ -54,8 +54,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "SIGINT and SIGTERM reach the child; no server survives its client (G113)."
   - "A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 2/2: (1) host-supervisor-process.ts:123-125 registers the termination, interrupt and hangup signals and the handler calls supervisor.stop(), whose child stop sends SIGT… (2) assemble-core-tools.ts:376-385 puts the code freshness reading in the delendai status collector and code-freshness.service.ts:14-21 reports the stale flag, the… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 7 tests, exit 0. Recorded rather than blocked: the criterion's refusal until restart is realised by the pre-existing publish guard rather than by new code in this slice, and the slice added no spec that raises the signals against the supervisor process itself (host-supervisor-process.spec.ts has no signal case).
 
 ### S3 — The bridge names a model only when one conversation can be at work
 - **Status**: done
