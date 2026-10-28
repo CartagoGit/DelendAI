@@ -12,3 +12,12 @@ export interface ILogStoreOptions {
 	 */
 	readonly maxLineBytes?: number;
 }
+
+/** A tail page: the newest events, and how many day-files were read for them. */
+export interface ILogTailPage<TEvent> {
+	readonly events: readonly TEvent[];
+	/** Day-files opened, newest first, until the page was full. */
+	readonly filesRead: number;
+	/** Day-files retained. */
+	readonly filesTotal: number;
+}

@@ -70,3 +70,62 @@ export const parseOriginLine = (line: string): IGitFileOrigin | undefined => {
 	const [, sha = '', iso = ''] = match;
 	return { sha, iso, date: iso.slice(0, 10) };
 };
+
+/**
+ * The origin of every path git ever added, from one walk of the history.
+ *
+ * `gitFileOrigin` spawns a `git log --follow` per path; a lint asking for
+ * thousands of them took minutes and ran lint-governance past its CI time
+ * limit. Here the history is read once, oldest first: an added path takes
+ * the commit that added it, and a renamed one keeps its old name's origin,
+ * the way `--follow` traces it.
+ */
+export const gitFileOrigins = (
+	cwd: string,
+): ReadonlyMap<string, IGitFileOrigin> => {
+	let stdout: string;
+	try {
+		stdout = execFileSync(
+			'git',
+			[
+				'-c',
+				'core.quotePath=false',
+				'log',
+				'--reverse',
+				'--diff-filter=AR',
+				'-M',
+				'--name-status',
+				'--format=@%H %aI',
+			],
+			{
+				cwd,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'ignore'],
+				maxBuffer: 1024 * 1024 * 1024,
+			},
+		);
+	} catch {
+		return new Map();
+	}
+	return originsFromLog(stdout);
+};
+
+/** The origins a `--reverse --name-status` log names, split out for its spec. */
+export const originsFromLog = (
+	log: string,
+): ReadonlyMap<string, IGitFileOrigin> => {
+	const origins = new Map<string, IGitFileOrigin>();
+	let current: IGitFileOrigin | undefined;
+	for (const line of log.split(/\r?\n/u)) {
+		if (line.startsWith('@')) {
+			current = parseOriginLine(line.slice(1));
+			continue;
+		}
+		if (current === undefined || line.length === 0) continue;
+		const [status = '', first = '', second] = line.split('\t');
+		if (status === 'A' && !origins.has(first)) origins.set(first, current);
+		if (status.startsWith('R') && second !== undefined)
+			origins.set(second, origins.get(first) ?? current);
+	}
+	return origins;
+};

@@ -752,7 +752,8 @@
 										"type": "string",
 										"enum": [
 											"openai",
-											"anthropic"
+											"anthropic",
+											"google"
 										]
 									},
 									"envVar": {
@@ -1304,6 +1305,71 @@
 				"required": [
 					"id",
 					"kind"
+				],
+				"additionalProperties": false
+			}
+		},
+		"modelProviders": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9][a-z0-9-]*$",
+						"description": "The provider id, as models.dev names it."
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"npm": {
+						"description": "The SDK package that names its API family (@ai-sdk/openai-compatible…).",
+						"type": "string",
+						"minLength": 1
+					},
+					"api": {
+						"description": "Its API base URL.",
+						"type": "string",
+						"format": "uri"
+					},
+					"env": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[A-Z][A-Z0-9_]*$"
+						},
+						"description": "The variables its key is read from, by name."
+					},
+					"models": {
+						"anyOf": [
+							{
+								"type": "array",
+								"items": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							{
+								"type": "object",
+								"propertyNames": {
+									"type": "string"
+								},
+								"additionalProperties": {}
+							}
+						],
+						"description": "Its model ids: a list, or models.dev's map keyed by id."
+					},
+					"doc": {
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"env",
+					"models"
 				],
 				"additionalProperties": false
 			}

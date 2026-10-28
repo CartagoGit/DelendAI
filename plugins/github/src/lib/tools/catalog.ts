@@ -9,6 +9,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IRemoteProviderError } from '@delendai/contracts/remote-provider';
 
 import { GitHubRequestError } from '../client';
+import { allWorkflowRunJobs } from './workflow-run-jobs.helper';
 import type { IGitHubProviderContext } from '../config';
 import {
 	GITHUB_NUMBER_SCHEMA,
@@ -335,6 +336,8 @@ const workflowRunSchema = z
 					.strict(),
 			)
 			.optional(),
+		/** False when jobs were left past the page bound. */
+		jobsComplete: z.boolean().optional(),
 	})
 	.strict();
 const jobSchema = z
@@ -1462,10 +1465,10 @@ export const buildGitHubWorkflowsToolRegistrations = (
 					path: `/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}`,
 					responseSchema: z.record(z.string(), z.unknown()),
 				}),
-				options.client.request({
-					path: `/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}/jobs`,
-					responseSchema: z.record(z.string(), z.unknown()),
-				}),
+				allWorkflowRunJobs(
+					options.client,
+					`/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}/jobs`,
+				),
 			]);
 			return {
 				ok: true as const,
@@ -1473,9 +1476,8 @@ export const buildGitHubWorkflowsToolRegistrations = (
 				data: {
 					run: {
 						...mapWorkflowRun(runResult.data),
-						jobs: asArray(asRecord(jobsResult.data).jobs).map(
-							mapJob,
-						),
+						jobs: jobsResult.jobs.map(mapJob),
+						jobsComplete: jobsResult.complete,
 					},
 				},
 				meta: runResult.meta,

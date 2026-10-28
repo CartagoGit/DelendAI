@@ -78,7 +78,7 @@
 | memory | public | * | filesystem-read, filesystem-write |
 | notification | public | * | filesystem-read, filesystem-write |
 | observability | public | * | filesystem-read, filesystem-write, network, env-read |
-| orchestrator-runner | public | * | filesystem-read, process, network, env-read |
+| orchestrator-runner | public | * | filesystem-read, filesystem-write, process, network, env-read |
 | perf | public | * | filesystem-read, filesystem-write, process |
 | project-health | public | * | filesystem-read |
 | project-kpis | public | * | filesystem-read, filesystem-write |

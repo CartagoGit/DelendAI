@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-25T04:14:51.420Z",
+	"generatedAt": "2026-10-28T10:47:34.169Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -258,12 +258,12 @@
 			"package": "@delendai/browser",
 			"version": "0.2.4",
 			"visibility": "public",
-			"summary": "Headless browser automation tools.",
+			"summary": "Headless browser automation tools; they need Playwright installed and answer with an install hint without it.",
 			"tags": [
 				"browser",
 				"automation"
 			],
-			"maturity": "stable",
+			"maturity": "experimental",
 			"permissions": [
 				"filesystem-write",
 				"process",
@@ -1583,6 +1583,7 @@
 			"maturity": "stable",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -2697,7 +2698,7 @@
 			"origin": "first-party",
 			"id": "browser",
 			"package": "@delendai/browser",
-			"summary": "Headless browser automation tools.",
+			"summary": "Headless browser automation tools; they need Playwright installed and answer with an install hint without it.",
 			"tags": [
 				"browser",
 				"automation"
@@ -3396,6 +3397,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -4176,12 +4178,12 @@
 		{
 			"id": "browser",
 			"package": "@delendai/browser",
-			"summary": "Headless browser automation tools.",
+			"summary": "Headless browser automation tools; they need Playwright installed and answer with an install hint without it.",
 			"tags": [
 				"browser",
 				"automation"
 			],
-			"maturity": "stable",
+			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
 				"full"
@@ -5037,6 +5039,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"
@@ -6524,6 +6527,7 @@
 			"id": "orchestrator-runner",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"network",
 				"env-read"

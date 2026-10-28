@@ -25,11 +25,19 @@ export interface DelendaiLogsErrorsTailOutput {
 	events: unknown[];
 	oldestTs: string;
 	newestTs: string;
+	filesRead?: number;
+	filesTotal?: number;
 }
 
 export interface DelendaiLogsIncidentsOutput {
 	incidents: unknown;
 	totalIncidents: number;
+	window?: {
+		since: string;
+		until: string;
+		newestFailureAgeMs: number;
+	};
+	belowMinCount: number;
 }
 
 export interface DelendaiLogsLogOutput {
@@ -69,6 +77,8 @@ export interface DelendaiLogsTailOutput {
 	events: unknown[];
 	oldestTs: string;
 	newestTs: string;
+	filesRead?: number;
+	filesTotal?: number;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

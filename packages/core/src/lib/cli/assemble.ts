@@ -522,6 +522,7 @@ export const assembleCliConfig = async (
 	const cacheEvictionRegistry = createCacheEvictionRegistry({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
+		maxAgeDays: fileConfig.cache?.maxAgeDays,
 	});
 	for (const rule of coreEvictionRules())
 		cacheEvictionRegistry.register(rule);

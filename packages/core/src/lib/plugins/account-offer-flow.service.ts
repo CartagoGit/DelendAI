@@ -8,6 +8,7 @@
  * nothing in the committed configuration, and leaves every account it
  * writes closed to unattended work.
  */
+import { withDeclaredProviders } from '../shared/declared-providers.helper';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { IHostByokProvider } from '../contracts/interfaces/host-byok.interface';
@@ -143,13 +144,21 @@ export const offerFoundAccounts = async (input: {
 		loadCatalogue:
 			input.loadCatalogue === undefined
 				? undefined
-				: () =>
-						input.loadCatalogue?.(
-							catalogueSources('models', [
-								personal.catalogues,
-								shared.catalogues,
-							]),
-						) ?? Promise.resolve(undefined),
+				: async () =>
+						// Declared providers replace the catalogue's entries of the
+						// same id, the person's own last.
+						withDeclaredProviders(
+							await (input.loadCatalogue?.(
+								catalogueSources('models', [
+									personal.catalogues,
+									shared.catalogues,
+								]),
+							) ?? Promise.resolve(undefined)),
+							[
+								...(shared.modelProviders ?? []),
+								...(personal.modelProviders ?? []),
+							],
+						),
 	});
 	const learnedPath = learnedAccountsPath(input.personalRoot);
 	const known = {

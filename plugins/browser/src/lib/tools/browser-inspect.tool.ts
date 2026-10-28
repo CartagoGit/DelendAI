@@ -9,6 +9,7 @@ import { writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	PLAYWRIGHT_INSTALL_HINT,
+	planPageRequest,
 	probePlaywright,
 	type IBrowserDriver,
 } from '../page';
@@ -35,6 +36,8 @@ const OPEN_INPUT = URL_INPUT.extend({
 }).strict();
 const QUERY_INPUT = URL_INPUT.extend({
 	selector: z.string().min(1).max(512),
+	/** Matches returned at most; the planner's bounds apply (default 20, max 100). */
+	maxResults: z.number().int().min(1).max(100).optional(),
 }).strict();
 const SCREENSHOT_INPUT = URL_INPUT.extend({
 	fullPage: z.boolean().optional(),
@@ -71,6 +74,8 @@ const QUERY_OUTPUT = z.discriminatedUnion('status', [
 	z.object({
 		url: z.string(),
 		matches: z.array(z.string()),
+		/** True when the page held more matches than `maxResults`. */
+		truncated: z.boolean(),
 		status: z.literal('ok'),
 	}),
 	z.object({
@@ -262,22 +267,37 @@ export const buildBrowserInspectToolRegistrations = (
 				`${options.namespacePrefix}_browser_query`,
 				{
 					description:
-						'Query a page with a CSS selector through the injected browser driver and return matched texts. Missing Playwright returns an install hint without crashing.',
+						'Query a page with a CSS selector through the injected browser driver and return matched texts, at most `maxResults` (default 20, max 100), with `truncated` when the page held more. Missing Playwright returns an install hint without crashing.',
 					inputSchema: QUERY_INPUT,
 					outputSchema: QUERY_OUTPUT,
 				},
-				async (args: { url: string; selector: string }) => {
+				async (args: {
+					url: string;
+					selector: string;
+					maxResults?: number | undefined;
+				}) => {
 					const url = normalizeHttpUrl(args.url);
+					// The planner bounds the selector and the match count;
+					// the driver is asked for one more to tell a full page
+					// from a cut one.
+					const plan = planPageRequest({
+						url,
+						selector: args.selector,
+						maxResults: args.maxResults,
+					});
+					const limit = plan.maxResults ?? 1;
 					const probed = await probeDriver(options);
 					if (!probed.available)
 						return installMissing(url, probed.hint);
 					const result = await probed.driver.query({
 						url,
-						selector: args.selector,
+						selector: plan.selector ?? args.selector,
+						limit: limit + 1,
 					});
 					return toolJson({
 						url: result.url,
-						matches: result.matches,
+						matches: result.matches.slice(0, limit),
+						truncated: result.matches.length > limit,
 						status: 'ok' as const,
 					});
 				},
