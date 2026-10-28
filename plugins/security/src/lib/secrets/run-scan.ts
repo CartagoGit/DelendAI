@@ -16,7 +16,7 @@ const TEXT_EXT =
 	/\.(ts|tsx|js|jsx|mjs|cjs|json|md|mdx|ya?ml|env|toml|sh|bash|zsh|astro|scss|css|html|txt|xml|ini|cfg|conf)$/i;
 
 /** Test/fixture paths hold sample secrets by design — skipped unless asked. */
-const isTestPath = (path: string): boolean =>
+export const isTestPath = (path: string): boolean =>
 	/(?:^|\/)(?:tests?|__tests__|fixtures?|__fixtures__)(?:\/|$)|\.spec\.|\.test\./.test(
 		path,
 	);
