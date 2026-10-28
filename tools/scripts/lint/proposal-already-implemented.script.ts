@@ -153,7 +153,7 @@ const trackedFilesOf = (root: string): ReadonlySet<string> => {
 				maxBuffer: 256 * 1024 * 1024,
 			})
 				.split('\0')
-				.filter((path) => path.length > 0),
+				.filter((path) => path.length > 0)
 		);
 	} catch {
 		return new Set();
@@ -170,7 +170,7 @@ const shippedInOk = (fm: Record<string, unknown>): boolean => {
 	const list = fm['shipped-in'];
 	if (!Array.isArray(list)) return false;
 	return list.some(
-		(v) => typeof v === 'string' && /^[0-9a-f]{7,40}$/.test(v.trim()),
+		(v) => typeof v === 'string' && /^[0-9a-f]{7,40}$/.test(v.trim())
 	);
 };
 
@@ -182,7 +182,7 @@ const shippedInOk = (fm: Record<string, unknown>): boolean => {
  * without needing a git fixture.
  */
 export const collectPendingSlices = (
-	markdown: string,
+	markdown: string
 ): Array<{ sliceId: string; status: string; files: string[] }> => {
 	const slices: Array<{ sliceId: string; status: string; files: string[] }> =
 		[];
@@ -237,7 +237,7 @@ export const classifyFullyTracked = (
 	 * instant: a file created earlier the same day is one the slice edits,
 	 * which the frontmatter's day alone cannot tell.
 	 */
-	proposalSince?: string,
+	proposalSince?: string
 ):
 	| {
 			readonly kind: 'modifies-existing';
@@ -259,7 +259,7 @@ export const classifyFullyTracked = (
 							(Number.isNaN(since)
 								? proposalDate !== undefined &&
 									origin.date < proposalDate
-								: Date.parse(origin.iso) < since),
+								: Date.parse(origin.iso) < since)
 					)
 					.map(({ file }) => file);
 	if (preExisting.length > 0)
@@ -269,7 +269,7 @@ export const classifyFullyTracked = (
 			origins
 				.flatMap(({ origin }) => (origin === undefined ? [] : [origin]))
 				.sort((left, right) => left.iso.localeCompare(right.iso))
-				.map((origin) => origin.sha),
+				.map((origin) => origin.sha)
 		),
 	];
 	return { kind: 'files-already-tracked', evidence };
@@ -290,7 +290,7 @@ const proposalDateOf = (fm: Record<string, unknown>): string | undefined => {
 
 export const scanAlreadyImplemented = (
 	proposalsDirAbs: string,
-	options: { readonly proposalId?: string } = {},
+	options: { readonly proposalId?: string } = {}
 ): readonly Finding[] => {
 	const root = repoRoot();
 	const findings: Finding[] = [];
@@ -322,13 +322,13 @@ export const scanAlreadyImplemented = (
 				};
 				if (slice.files.length === 0) continue;
 				const trackedFlags = slice.files.map(
-					(file) => tracked.has(file) && existsSync(join(root, file)),
+					(file) => tracked.has(file) && existsSync(join(root, file))
 				);
 				const allTracked = trackedFlags.every(Boolean);
 				const someTracked = trackedFlags.some(Boolean);
 				if (!someTracked) continue;
 				const missingFiles = slice.files.filter(
-					(_f, idx) => !trackedFlags[idx],
+					(_f, idx) => !trackedFlags[idx]
 				);
 				const hasShippedIn = shippedInOk(fm);
 				// A slice that edits files older than its proposal and adds new
@@ -337,7 +337,7 @@ export const scanAlreadyImplemented = (
 				// every new proposal that modifies code and adds a module
 				// reddened the integration branch the day it was written.
 				const trackedFiles = slice.files.filter(
-					(_f, idx) => trackedFlags[idx],
+					(_f, idx) => trackedFlags[idx]
 				);
 				const classifiedTracked = classifyFullyTracked(
 					proposalDateOf(fm),
@@ -346,7 +346,7 @@ export const scanAlreadyImplemented = (
 						origin: originOf(file),
 					})),
 					originOf(relative(root, proposalAbs).split('\\').join('/'))
-						?.iso,
+						?.iso
 				);
 				const classified =
 					allTracked ||
@@ -415,7 +415,7 @@ export const scanAlreadyImplemented = (
 	findings.sort((a, b) =>
 		a.relPath === b.relPath
 			? a.sliceId.localeCompare(b.sliceId)
-			: a.relPath.localeCompare(b.relPath),
+			: a.relPath.localeCompare(b.relPath)
 	);
 	return findings;
 };
@@ -444,11 +444,11 @@ const render = (findings: readonly Finding[]): string => {
 	}
 	if (stuck.length > 0)
 		lines.push(
-			`\n  Fix each finding with proposals_proposal_transition (when fully shipped) or by editing the **Files**: list to match the actually-delivered scope.`,
+			`\n  Fix each finding with proposals_proposal_transition (when fully shipped) or by editing the **Files**: list to match the actually-delivered scope.`
 		);
 	if (touched.length > 0) {
 		lines.push(
-			`\n  ${touched.length} more slice(s) only MODIFY files that predate their proposal. That is not evidence of completion, so they are listed for information and never counted as stuck:`,
+			`\n  ${touched.length} more slice(s) only MODIFY files that predate their proposal. That is not evidence of completion, so they are listed for information and never counted as stuck:`
 		);
 		for (const f of touched) lines.push(`  ${f.relPath} :: ${f.sliceId}`);
 	}
@@ -471,11 +471,11 @@ const main = (): number => {
 	// In strict mode only block on `ready/` findings — those are
 	// the proposals that genuinely block the swarm.
 	const blocking = findings.filter(
-		(f) => isStuck(f) && f.relPath.startsWith('ready/'),
+		(f) => isStuck(f) && f.relPath.startsWith('ready/')
 	);
 	if (blocking.length > 0) {
 		process.stderr.write(
-			`� proposal-already-implemented (strict): ${blocking.length} ready/ proposal(s) are stuck.\n`,
+			`� proposal-already-implemented (strict): ${blocking.length} ready/ proposal(s) are stuck.\n`
 		);
 		return 1;
 	}
