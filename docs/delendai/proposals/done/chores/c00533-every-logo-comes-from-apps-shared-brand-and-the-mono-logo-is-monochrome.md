@@ -2,14 +2,14 @@
 id: c00533
 title: "Every logo comes from apps/shared/brand and the mono logo is monochrome"
 kind: chore
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: fead9f4a-8650-4938-9e2c-a009d4b827a5
-last-correlation-id: fead9f4a-8650-4938-9e2c-a009d4b827a5
-last-transition-from: in-progress
-last-transition-at: 2026-10-25T07:38:10.074Z
+last-transition-id: 699e56be-060d-43d3-8e99-4df399818bca
+last-correlation-id: 699e56be-060d-43d3-8e99-4df399818bca
+last-transition-from: review
+last-transition-at: 2026-10-28T07:29:49.386Z
 shipped-in:
   - "1a1bb4ab2ae2"
 ---
@@ -40,8 +40,10 @@ Joint audit a00095. G9: apps/shared/README declares apps/shared/brand the source
   - "lint:brand checks every copy of logo.svg and logo-mono.svg against apps/shared/brand (G9, G46)."
 
 - shipped-in: `1a1bb4ab2ae2`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1a1bb4ab2ae2, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 1/1: (1) package.json:56 runs lint:brand as scripts/sync-logo.ts without --write, so the run is a check; sync-logo.ts:20-29 declares the four copies of logo.svg and log… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0.
 
 ### S2 — A monochrome mark
 - **Status**: done
