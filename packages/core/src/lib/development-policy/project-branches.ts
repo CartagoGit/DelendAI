@@ -14,6 +14,7 @@
  * single place that should. This reads it, so the last resort is the
  * project's own configuration rather than this repository's habits.
  */
+import { parseJsonc } from '../config/jsonc-document';
 import { gitVerbatim } from '../shared/git-read.helper';
 import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -35,9 +36,14 @@ const declaredDevelopment = async (
 	workspaceRoot: string,
 ): Promise<Record<string, unknown> | undefined> => {
 	try {
-		const parsed = JSON.parse(
+		// The config file is JSONC by contract, so a commented file is a
+		// valid file. `JSON.parse` threw on it, the catch swallowed the
+		// error, and the project silently fell back to the default
+		// integration branch instead of the one it had declared.
+		const { value } = parseJsonc(
 			await readFile(join(workspaceRoot, 'delendai.config.json'), 'utf8'),
-		) as Record<string, unknown>;
+		);
+		const parsed = (value ?? {}) as Record<string, unknown>;
 		const development = parsed.development;
 		return development === null || typeof development !== 'object'
 			? undefined

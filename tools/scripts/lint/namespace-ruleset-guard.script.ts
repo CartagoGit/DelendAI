@@ -25,6 +25,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import { namespaceRuleset } from '../governance/forge-settings.lib';
@@ -56,9 +57,16 @@ const gh = (args: readonly string[], stdin?: string): string =>
 	});
 
 const desired = (): Readonly<Record<string, unknown>> => {
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	return namespaceRuleset(
 		resolveDevelopmentPolicy(
 			config.development === undefined

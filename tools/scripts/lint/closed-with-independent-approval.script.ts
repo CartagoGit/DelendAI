@@ -25,6 +25,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import {
 	approvalsAdded,
 	approvalsNotBy,
@@ -57,9 +58,16 @@ const reviewPolicyOf = (
 } => {
 	let options: Record<string, unknown> = {};
 	try {
-		const config = JSON.parse(
+		const { value, errors } = parseJsonc(
 			readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-		) as {
+		);
+		const [first] = errors;
+		if (first !== undefined) {
+			throw new Error(
+				`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+			);
+		}
+		const config = value as {
 			plugins?: { proposals?: { options?: Record<string, unknown> } };
 		};
 		options = config.plugins?.proposals?.options ?? {};

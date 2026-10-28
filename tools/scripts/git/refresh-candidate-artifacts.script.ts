@@ -31,6 +31,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -426,9 +427,16 @@ export const shouldAskQueueToRun = (input: {
 
 const main = (): void => {
 	const root = repoRoot();
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	if (config.development === undefined) return;
 	const policy = resolveDevelopmentPolicy({
 		development: config.development,

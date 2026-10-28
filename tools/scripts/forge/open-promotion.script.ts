@@ -21,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	gatherGateEvidence,
@@ -66,7 +67,10 @@ export const promotionPlanOf = (
 ): IPromotionPlan | undefined => {
 	const schedule = declaredRoadmap(configText)?.promotion?.schedule;
 	if (configText === undefined || schedule === undefined) return undefined;
-	const config = JSON.parse(configText) as {
+	const { value, errors } = parseJsonc(configText);
+	// A config that does not parse declares no promotion.
+	if (errors.length > 0) return undefined;
+	const config = value as {
 		development?: Record<string, unknown>;
 	};
 	const policy = resolveDevelopmentPolicy(
@@ -147,7 +151,15 @@ export const roadmapVerdict = async (
 	const options = declaredRoadmap(configText);
 	if (options === undefined) return undefined;
 	// Where the proposals a gate names live: the project's docs directory.
-	const docsDir = (JSON.parse(configText) as { docsDir?: unknown }).docsDir;
+	const { value, errors } = parseJsonc(configText);
+	if (errors.length > 0) {
+		return {
+			version: '?',
+			status: 'unknown',
+			reason: 'delendai.config.json does not parse',
+		};
+	}
+	const docsDir = (value as { docsDir?: unknown }).docsDir;
 	const workspace = await openRoadmapWorkspace({
 		workspaceRoot: root,
 		docsDir: join(root, typeof docsDir === 'string' ? docsDir : 'docs'),

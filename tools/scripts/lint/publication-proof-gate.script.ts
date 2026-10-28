@@ -47,6 +47,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
@@ -109,9 +110,16 @@ const isDelete = (update: IPrePushRefUpdate): boolean =>
 
 /** The publication prefix as the resolved policy defines it. */
 export const publicationPrefix = (): string => {
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	return resolveDevelopmentPolicy({
 		...(config.development === undefined
 			? {}

@@ -27,6 +27,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -95,9 +96,13 @@ const readDevelopmentConfig = (): {
 	readonly development?: Record<string, unknown>;
 } => {
 	try {
-		const parsed = JSON.parse(
+		const { value, errors } = parseJsonc(
 			readFileSync('delendai.config.json', 'utf8'),
-		) as Record<string, unknown>;
+		);
+		// A config that does not parse declares no policy: the defaults
+		// stand, exactly as they did when the read threw.
+		if (errors.length > 0) return {};
+		const parsed = value as Record<string, unknown>;
 		const development = parsed.development;
 		return development === null || typeof development !== 'object'
 			? {}

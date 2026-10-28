@@ -24,6 +24,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
+
 import {
 	mergeMarkerTable,
 	type IMergeError,
@@ -116,12 +118,11 @@ if (isMainModule()) {
 			);
 			return;
 		}
-		let config: unknown;
-		try {
-			config = JSON.parse(raw);
-		} catch (err) {
+		const { value: config, errors } = parseJsonc(raw);
+		const [first] = errors;
+		if (first !== undefined) {
 			console.error(
-				`✖ user-markers: delendai.config.json is not valid JSON: ${String(err)}`,
+				`✖ user-markers: delendai.config.json is not valid JSON: ${first.line}:${first.column} ${first.message}`,
 			);
 			process.exit(1);
 		}

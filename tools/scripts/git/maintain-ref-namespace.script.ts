@@ -35,6 +35,7 @@ import { join } from 'node:path';
 // with, not a second reading of the same template: a maintenance pass
 // that disagreed with the reader would rename work into names the reader
 // can no longer attribute.
+import { parseJsonc } from '@delendai/core/cli';
 import {
 	compileWorkRefParser,
 	resolveDevelopmentPolicy,
@@ -575,9 +576,16 @@ const rename = (
 
 const main = (): void => {
 	const root = repoRoot();
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	if (config.development === undefined) return;
 	const policy = resolveDevelopmentPolicy({
 		development: config.development,

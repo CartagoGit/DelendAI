@@ -63,6 +63,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { scopeViolations } from '../lint/publication-scope.script';
@@ -110,9 +111,16 @@ const args = (name: string): readonly string[] =>
 
 /** The policy's own names, never a raw read of the config file. */
 export const policyBranches = () => {
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	return resolveDevelopmentPolicy({
 		...(config.development === undefined
 			? {}
