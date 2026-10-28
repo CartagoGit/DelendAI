@@ -45,6 +45,7 @@ const OutputSchema = z.object({
 	}),
 	violations: z.array(ViolationSchema),
 	scannedFiles: z.number(),
+	skippedFiles: z.number(),
 });
 
 /**

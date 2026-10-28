@@ -11,7 +11,7 @@
 | audit-orchestrator | @delendai/audit-orchestrator | public | experimental | full |
 | auto-agent-selector | @delendai/auto-agent-selector | public | stable | standard, swarm, full, dogfood |
 | auto-plugin-selector | @delendai/auto-plugin-selector | public | stable | dogfood |
-| browser | @delendai/browser | public | stable | full |
+| browser | @delendai/browser | public | experimental | full |
 | cache | @delendai/cache | public | stable | full |
 | commit-policy | @delendai/commit-policy | public | experimental | dogfood |
 | completion | @delendai/completion | public | stable | swarm, full, dogfood |
@@ -170,7 +170,7 @@
 | memory | filesystem-read, filesystem-write |  |
 | notification | filesystem-read, filesystem-write |  |
 | observability | filesystem-read, filesystem-write, network, env-read |  |
-| orchestrator-runner | filesystem-read, process, network, env-read |  |
+| orchestrator-runner | filesystem-read, filesystem-write, process, network, env-read |  |
 | perf | filesystem-read, filesystem-write, process |  |
 | project-health | filesystem-read |  |
 | project-kpis | filesystem-read, filesystem-write |  |

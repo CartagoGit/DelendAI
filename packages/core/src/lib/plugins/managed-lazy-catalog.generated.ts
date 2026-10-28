@@ -215,7 +215,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			[],
 			[],
 			{
-				summary: 'Headless browser automation tools.',
+				summary:
+					'Headless browser automation tools; they need Playwright installed and answer with an install hint without it.',
 				tags: ['browser', 'automation'],
 			},
 		),
