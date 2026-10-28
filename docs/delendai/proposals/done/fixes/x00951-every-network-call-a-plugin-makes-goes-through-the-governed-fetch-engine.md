@@ -2,14 +2,14 @@
 id: x00951
 title: "Every network call a plugin makes goes through the governed fetch engine"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
-last-correlation-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T22:02:51.524Z
+last-transition-id: 2c4d850e-cd40-4f59-b559-e7e7084b7231
+last-correlation-id: 2c4d850e-cd40-4f59-b559-e7e7084b7231
+last-transition-from: review
+last-transition-at: 2026-10-28T09:20:27.388Z
 shipped-in:
   - "ff2b7f7e209c782f4ac4d22a3cb31434e444f4c2"
 ---
@@ -70,8 +70,10 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "obs_errors makes one capped credentialed request through the engine, reports a source it cannot read (G104), and declares its effect (G102)."
   - "The price table is not fetched unless the user sets refreshPrices, under the plugin's declared network permission (G103)."
 - shipped-in: `30cb0c07d84e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ff2b7f7e209c, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 4/4: (1) gitlab/client.ts:589-594 clears the timeout only after the body is parsed and the error path clears it after the body is read (:569-571), and the abort signal … (2) forge-write.ts:148-172 bounds the linked proposal at 4096 bytes on a line boundary and :188-206 appends the pointer to the full document; the spec 'bounds the … (3) observability/src/lib/errors/list-errors.ts:133-157 makes one capped credentialed request through the engine (the allow list, the credential header, a 200000 b… (4) usage-tracking/src/index.ts:79 declares refreshPrices as an optional boolean and :262-264 passes refresh only when it is true, and pricing.ts:198-204 and :235 … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 32 tests and 3 files / 27 tests, exit 0.
 
 ## acceptance
 
