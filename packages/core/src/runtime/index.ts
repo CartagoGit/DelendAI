@@ -89,3 +89,8 @@ export {
 	recordCommitMaker,
 	recordUnitCommit,
 } from '../lib/work-units/commit-maker-notes.service';
+export {
+	discoveryConsentPath,
+	readDiscoveryConsent,
+	recordDiscoveryConsent,
+} from '../lib/shared/discovery-consent-record.service';
