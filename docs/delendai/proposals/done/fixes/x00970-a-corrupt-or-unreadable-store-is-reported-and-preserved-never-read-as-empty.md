@@ -2,14 +2,14 @@
 id: x00970
 title: "A corrupt or unreadable store is reported and preserved, never read as empty"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 8fadd700-824b-405c-8527-9cfe767ce2c3
-last-correlation-id: 8fadd700-824b-405c-8527-9cfe767ce2c3
-last-transition-from: in-progress
-last-transition-at: 2026-10-26T23:51:55.190Z
+last-transition-id: 3429c655-d9db-46a9-9518-aa058962db58
+last-correlation-id: 3429c655-d9db-46a9-9518-aa058962db58
+last-transition-from: review
+last-transition-at: 2026-10-28T09:27:14.737Z
 shipped-in:
   - "cef464f50fec"
 ---
@@ -41,8 +41,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "Rollups report how many rows they skipped (D83, D75)."
   - "A successful issue collection is not recorded as a schema incongruence (USAGE-01)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 3/3: (1) kpi-history.service.ts:129-144 wraps parseStore in a try/catch, calls quarantineCorruptFile and returns an empty store with a degraded reason; IKpiHistoryReadR… (2) rollup.ts:63-91 splits readInvocationLog into records plus skippedRows, counting every non-blank unparseable line; the count reaches the persisted summary (usa… (3) invocation-recorder.service.ts:254-282 now requires result.ok !== true and a validation-issue shape (a path array plus a message string) before reporting an in… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 3 files / 18 tests, exit 0, plus a plugin sweep of 36 files / 219 tests, exit 0. Non-blocking gaps for a follow-up: the tool-level degraded answer is asserted only at service level, skippedRows is asserted only at reader level, and the packages/state-sqlite specs are invisible to vitest (that package sets include to an empty list) and must be run with bun test.
 
 ### S2 — memory, state and i18n
 - **Status**: done
@@ -53,8 +55,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An invalid persisted scope is reported as corruption (D94)."
   - "A corrupt catalogue is an error naming the file; the base language does not change (G61-I18N-01)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 3/3: (1) store-records.ts:147-159 throws CorruptFileError with the reason (invalid JSON, or expected a notes array) instead of returning an empty list, and expireExpire… (2) sqlite-driver.ts:543-546 throws stateStoreCorrupt('scope_locator_parse') for an unreadable scope, defineProducer catches it into restoreFailure (:152-160) and … (3) real-deps.ts:92-110 throws 'locale catalogue <path> cannot be read' or 'is not an object of messages', and both tools catch it and return toolError before sour… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 12 tests, exit 0, plus bun test on packages/state-sqlite/src/lib/sqlite-driver.spec.ts, 11 pass / 0 fail, exit 0. Non-blocking observations: the CorruptFileError message says the backup rename failed although the file is deliberately kept, and an unknown scope kind now hard-fails the hydrate, a deliberate consequence of reporting an invalid scope as corruption.
 
 ### S3 — accounts and the model catalogue
 - **Status**: done
@@ -64,8 +68,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An unreadable history is preserved aside before a save (ACCOUNT-02)."
   - "A malformed catalogue cache, null fields included, degrades to no catalogue (ACCOUNT-03)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) learned-accounts.service.ts:86-91 quarantines an unreadable history under the file mutex before writing and refuses to overwrite it when the quarantine returns… (2) public-catalogue-sources.service.ts:82-105 checks the copy metadata and the data shape per catalogue (isCopyMeta plus an isData predicate defaulting to isRecor… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 22 tests, exit 0. Non-blocking observation for a follow-up: the read path still answers empty for an unreadable learned-accounts history, which the proposal's goal wording covers but ACCOUNT-02 does not.
 
 ### S4 — notification and the error stream
 - **Status**: done
@@ -75,8 +81,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An unreadable lock file is not a release; await_lock keeps waiting and reports the read error (D82, D73)."
   - "The error stream creates its mutex sidecar directory before locking; no ENOENT at start-up (G62)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 25/25 claimed, no recorded run cited; acceptance 2/2: (1) watcher.ts:53-88 introduces readInFlightState returning claims and an optional readError; isFree at :155-159 is false whenever readError is set, the timeout re… (2) with-file-mutex.ts:490 creates the lock directory before the acquire loop and :497-534 re-creates it on ENOENT up to MAX_DIRECTORY_RECREATIONS = 3, absorbing a… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 25 tests, exit 0, plus the generated-output drift guard packages/core/tests/tool-types-sdk.spec.ts, 1 file / 8 tests, exit 0. Non-blocking observation: the await_lock timeout diagnosis still reads the lock through the untouched lock-snapshot helper, so the verdict printed beside the readError can still read free-now for a corrupt lock.
 
 ## acceptance
 
