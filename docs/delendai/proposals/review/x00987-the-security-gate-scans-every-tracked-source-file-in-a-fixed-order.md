@@ -2,14 +2,14 @@
 id: x00987
 title: "The security gate scans every tracked source file, in a fixed order"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-27
-last-transition-id: ad6a8535-162b-4858-8f8b-2577d48000d2
-last-correlation-id: ad6a8535-162b-4858-8f8b-2577d48000d2
-last-transition-from: ready
-last-transition-at: 2026-10-28T09:22:50.402Z
+last-transition-id: 4cb8a2aa-f26c-49b8-9580-44efa30a67e2
+last-correlation-id: 4cb8a2aa-f26c-49b8-9580-44efa30a67e2
+last-transition-from: in-progress
+last-transition-at: 2026-10-28T09:31:50.230Z
 shipped-in:
   - "53f8cbf5d"
 ---
@@ -42,6 +42,8 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
 - acceptance:
   - "detectStack on a workspace of 4,100 source files lists all 4,100, sorted by path (stack-detect.spec.ts)."
 - shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The gate reads every tracked file and its baseline is empty
 - **Status**: done
@@ -52,6 +54,8 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
   - "The secret scan in the gate has no file cap."
   - "security.baseline.json holds no critical, and `bun run verify:security` passes."
 - shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The flagged statements are written out in full
 - **Status**: done
@@ -60,6 +64,8 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
 - acceptance:
   - "The full SAST scan reports no critical in packages/state-sqlite or packages/roadmap-sqlite (their statements name their tables and clauses in full); `bun run test:sqlite` and sqlite-timeline.store.spec.ts pass."
 - shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
