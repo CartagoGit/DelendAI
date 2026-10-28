@@ -672,11 +672,12 @@ const tryAssembleManagedLazy = async (input: {
 		for (const toolId of plugin.toolIds) {
 			const name = pluginToolName(input.corePrefix, namespace, toolId);
 			const tags = [...(plugin.tags ?? []), 'lazy'];
+			const summary = plugin.toolSummaries?.[toolId] ?? plugin.summary;
 			pluginToolEntries.push({
 				name,
 				plugin: namespace,
 				id: toolId,
-				summary: plugin.summary,
+				summary,
 				tags,
 			});
 			toolSurfaceDescriptors.push({
@@ -685,7 +686,7 @@ const tryAssembleManagedLazy = async (input: {
 				toolId,
 				pluginId: plugin.id,
 				namespace,
-				summary: plugin.summary,
+				summary,
 				tags,
 				...(plugin.toolDisclosure?.[toolId] !== undefined
 					? { disclosure: plugin.toolDisclosure[toolId] }
