@@ -10,6 +10,8 @@ last-transition-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
 last-correlation-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T16:19:56.129Z
+shipped-in:
+  - "1b69e8c34ebeea829de02132f71b89acb4b3328d"
 ---
 
 # x00949 — The queue and start-up admit work only on positive certification
@@ -61,8 +63,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
 - acceptance:
   - "A merge response without `merged: true` and a sha is a failed merge step (MAINT-09)."
 - shipped-in: `b926cfd10134`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) github-forge.ts:354 returns {status:'failed', mergeSha:'', integrationSha: current.sha} when the merge body has no merged:true and no sha, before any ref read … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. The slice touched exactly its two declared files, no later commit changed them, and its own spec is green (1 file / 10 tests, exit 0).
 
 ### S4 — CI runs the gates of the scripts a change touches
 - **Status**: done
