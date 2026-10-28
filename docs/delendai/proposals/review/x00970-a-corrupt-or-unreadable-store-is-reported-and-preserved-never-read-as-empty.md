@@ -68,8 +68,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An unreadable history is preserved aside before a save (ACCOUNT-02)."
   - "A malformed catalogue cache, null fields included, degrades to no catalogue (ACCOUNT-03)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) learned-accounts.service.ts:86-91 quarantines an unreadable history under the file mutex before writing and refuses to overwrite it when the quarantine returns… (2) public-catalogue-sources.service.ts:82-105 checks the copy metadata and the data shape per catalogue (isCopyMeta plus an isData predicate defaulting to isRecor… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 22 tests, exit 0. Non-blocking observation for a follow-up: the read path still answers empty for an unreadable learned-accounts history, which the proposal's goal wording covers but ACCOUNT-02 does not.
 
 ### S4 — notification and the error stream
 - **Status**: done
