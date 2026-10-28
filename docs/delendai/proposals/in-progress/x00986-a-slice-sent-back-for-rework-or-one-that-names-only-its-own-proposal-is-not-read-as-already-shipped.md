@@ -10,6 +10,8 @@ last-transition-id: b60b0e7f-0efb-494d-9357-2864b5f08223
 last-correlation-id: b60b0e7f-0efb-494d-9357-2864b5f08223
 last-transition-from: ready
 last-transition-at: 2026-10-28T09:15:13.839Z
+shipped-in:
+  - "8ef9ed654"
 ---
 
 # x00986 — A slice sent back for rework, or one that names only its own proposal, is not read as already shipped
@@ -34,13 +36,14 @@ On 2026-10-27 the lint failed on develop with five findings, and failed lint-gov
 - global_gate: type
 
 ### S1 — Rework and self-named files are not evidence
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/proposal-already-implemented.script.ts`, `tools/tests/lint/proposal-already-implemented.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A pending slice with `review-state: changes_requested` is not reported, whatever its files and the frontmatter's shipped-in say."
   - "A slice's reference to its own proposal file is not counted among its files; a slice that names only that file is not reported."
   - "On develop at 2026-10-27 the lint passes with f00783 S3–S6 and q00035 S1 still pending."
+- shipped-in: `8ef9ed654`
 
 ## acceptance
 
