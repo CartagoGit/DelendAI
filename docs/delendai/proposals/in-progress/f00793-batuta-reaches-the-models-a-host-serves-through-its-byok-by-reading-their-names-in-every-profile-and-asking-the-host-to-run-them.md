@@ -10,6 +10,8 @@ last-transition-id: b146b6be-4696-4876-8a8b-289be1e020a7
 last-correlation-id: b146b6be-4696-4876-8a8b-289be1e020a7
 last-transition-from: ready
 last-transition-at: 2026-10-28T09:23:44.213Z
+shipped-in:
+  - "1d3756a3a"
 ---
 
 # f00793 — Batuta reaches the models a host serves through its BYOK, by reading their names in every profile and asking the host to run them
@@ -33,7 +35,7 @@ Owner's dogfood, 2026-10-27. The owner serves MiniMax, Alibaba (qwen3.8-max/flas
 - global_gate: type
 
 ### S1 — The host's BYOK roster, by name, detected at start
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/src/contracts/constants/offer-messages.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/cli.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/constants/host-byok.constant.ts`, `packages/core/src/lib/contracts/constants/provider-account-modes.constant.ts`, `packages/core/src/lib/contracts/constants/provider-entry-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/contracts/interfaces/host-byok.interface.ts`, `packages/core/src/lib/contracts/interfaces/provider-capabilities.interface.ts`, `packages/core/src/lib/plugins/account-offer-flow.service.ts`, `packages/core/src/lib/plugins/account-offers.service.ts`, `packages/core/src/lib/shared/account-sources.service.ts`, `packages/core/src/lib/shared/host-model-roster.service.ts`, `packages/core/tests/src/lib/plugins/account-offers.service.spec.ts`, `packages/core/tests/src/lib/shared/host-model-roster.service.spec.ts`, `packages/cli/src/contracts/constants/offer-messages.constant.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,14 +43,16 @@ Owner's dogfood, 2026-10-27. The owner serves MiniMax, Alibaba (qwen3.8-max/flas
   - "The roster names each model's profile and which profile the workspace opens in (the editor's own association); on the owner's machine it lists the delendai workspace's profile, not the empty root file."
   - "Nothing is configured per machine: the roster is detected when the MCP server starts, on whatever layout it runs (Windows from WSL, macOS, Linux, no profiles, no editor), kept in the user cache, and a machine without BYOK gets an empty roster and says so; the repository holds no machine's providers."
   - "The account offer (f00781) offers each BYOK provider as an account whose credential mode is `host-held`."
+- shipped-in: `1d3756a3a`
 
 ### S2 — Asking the host to run a model
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/orchestrator-runner/AGENT.md`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/host-sampling.interface.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/handoff.ts`, `plugins/orchestrator-runner/src/lib/router/advise.ts`, `plugins/orchestrator-runner/src/lib/schemas.ts`, `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/services/host-sampler.service.ts`, `plugins/orchestrator-runner/src/lib/invoke/host-sampling-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/tests/e2e/fallback-chain.e2e.spec.ts`, `plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/unicode-safe-prompt.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/services/acp-roster.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/host-sampling-invoker.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A `host-sampling` invoker sends `sampling/createMessage` with the model as a hint and returns the host's reply, the model the host says it used and the stop reason; a host that does not offer sampling, refuses, or serves another model than the one hinted is a structured outcome, never a silent substitution."
   - "Discovery proposes each BYOK model as a roster entry routed through `host-sampling`, for the person to confirm; a call says `host-unavailable` outside a host that samples, `host-refused` with the setting that would allow the model (VS Code: `chat.mcp.serverSampling`) when the host declines, and `host-substituted` when it answers with another model."
+- shipped-in: `1d3756a3a`
 
 ### S3 — Dogfood evidence
 - **Status**: pending
