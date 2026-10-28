@@ -33,6 +33,7 @@ import {
 import { normalizeWorkAgentId } from '../work-identity/resolve-work-agent.service';
 import { DEVELOPMENT_PROFILES } from './profiles';
 import { policyAlignmentAdvisories } from './policy-alignment-advisories';
+import { pushTargetContradiction } from './push-target-contradiction';
 import { persistenceRouteKind } from './resolve';
 import { validateCombinations } from './validate-combinations';
 
@@ -332,15 +333,11 @@ const validateBlockingAlignment = (
 
 	const push = commitPolicyOptions?.push;
 	if (typeof push !== 'object' || push === null) return violations;
-	const branch = (push as { readonly branch?: unknown }).branch;
-	if (branch !== policy.branches.integration) return violations;
-	return [
-		...violations,
-		{
-			rule: 'push-target-contradicts-policy',
-			path: 'plugins.commit-policy.options.push.branch',
-			message: `\`${policy.profile}\` reaches \`${policy.branches.integration}\` through the forge and never by a direct push, but this config names \`${policy.branches.integration}\` as the push target. The push can never succeed, and the setting says the opposite of the profile.`,
-			remedy: 'Remove `push.branch`. The development policy decides where work goes; that setting only exists to override a policy that permits it.',
-		},
-	];
+	// The push target, judged by the module that owns the rule: the
+	// migration that removes the setting this names asks the SAME
+	// question, and a second derivation of the condition is a second
+	// answer waiting to disagree.
+	const contradiction = pushTargetContradiction(policy, commitPolicyOptions);
+	if (contradiction === undefined) return violations;
+	return [...violations, contradiction];
 };
