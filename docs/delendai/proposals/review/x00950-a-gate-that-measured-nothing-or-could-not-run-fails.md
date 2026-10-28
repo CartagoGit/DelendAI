@@ -10,6 +10,8 @@ last-transition-id: fffe77ea-919c-4526-8930-57690002b017
 last-correlation-id: fffe77ea-919c-4526-8930-57690002b017
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T17:40:46.371Z
+shipped-in:
+  - "1ee97d05727f11d9f5a4d124e01b59d1105f54b3"
 ---
 
 # x00950 — A gate that measured nothing, or could not run, fails
@@ -50,8 +52,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "The repo root resolves to the checkout; a spec plants a fake key in a fixture tree and the gate fails (G154)."
   - "A missing baseline and a failed or unparsable bun audit fail the gate with the cause, instead of `skipped` (G155, G156)."
 - shipped-in: `78b875261b3d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 2/2: (1) security.script.ts resolves the repo root from the checkout (resolve of the here root three levels up) and the security-gate spec case 'resolves the checkout a… (2) The skipped state is gone from the result type; a missing baseline pushes 'No baseline at <path>' into the failures and returns ok false (security.script.ts:18… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 6 tests, exit 0; bun run verify:security exits 0.
 
 ### S3 — Wiring, links and control bytes are enforced in CI
 - **Status**: done
