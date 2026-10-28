@@ -109,6 +109,34 @@ export const zonesReadingRootFiles = (
 	return zones;
 };
 
+/**
+ * The specs of each zone that read a changed path, or list the directory
+ * of one that was added or removed. A zone the map holds no per-spec reads
+ * for is left out: nobody can say which of its specs read the file.
+ */
+export const readersOf = (
+	changes: readonly IRootChange[],
+	map: IZoneReadMap | undefined,
+): ReadonlyMap<string, readonly string[]> => {
+	const readers = new Map<string, readonly string[]>();
+	for (const [zone, touched] of Object.entries(map?.zones ?? {})) {
+		if (touched.specs === undefined) continue;
+		const specs = Object.entries(touched.specs)
+			.filter(([, reads]) =>
+				changes.some(
+					(change) =>
+						reads.read.includes(change.path) ||
+						(change.listing &&
+							reads.listed.includes(dirname(change.path))),
+				),
+			)
+			.map(([spec]) => spec)
+			.sort();
+		readers.set(zone, specs);
+	}
+	return readers;
+};
+
 /** Parse a committed map; anything unexpected is "no map". */
 export const parseZoneReadMap = (
 	text: string | undefined,
