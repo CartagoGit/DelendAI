@@ -41,8 +41,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "Rollups report how many rows they skipped (D83, D75)."
   - "A successful issue collection is not recorded as a schema incongruence (USAGE-01)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 3/3: (1) kpi-history.service.ts:129-144 wraps parseStore in a try/catch, calls quarantineCorruptFile and returns an empty store with a degraded reason; IKpiHistoryReadR… (2) rollup.ts:63-91 splits readInvocationLog into records plus skippedRows, counting every non-blank unparseable line; the count reaches the persisted summary (usa… (3) invocation-recorder.service.ts:254-282 now requires result.ok !== true and a validation-issue shape (a path array plus a message string) before reporting an in… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 3 files / 18 tests, exit 0, plus a plugin sweep of 36 files / 219 tests, exit 0. Non-blocking gaps for a follow-up: the tool-level degraded answer is asserted only at service level, skippedRows is asserted only at reader level, and the packages/state-sqlite specs are invisible to vitest (that package sets include to an empty list) and must be run with bun test.
 
 ### S2 — memory, state and i18n
 - **Status**: done
