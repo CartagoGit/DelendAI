@@ -24,6 +24,7 @@
 			"!apps/web/src/data/skills.json",
 			"!apps/web/src/data/manifests",
 			"!docs/delendai/api/stable.json",
+			"!tools/scripts/ci/zone-reads.generated.json",
 			"!docs/delendai/examples/custom-plugin/node_modules",
 			"!packages/*/dist",
 			"!packages/*/node_modules",

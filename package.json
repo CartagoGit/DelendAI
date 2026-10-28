@@ -44,6 +44,7 @@
 		"test:failures": "bun tools/scripts/test/read-test-journal.script.ts",
 		"test:failures:json": "bun tools/scripts/test/read-test-journal.script.ts --json",
 		"test:history": "bun tools/scripts/test/read-test-journal.script.ts --history",
+		"prove": "bun tools/scripts/ci/prove-plan.script.ts",
 		"test:shard": "VITEST_SHARDED_RUN=true bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run --coverage --reporter=blob --reporter=default",
 		"test:merged": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest --mergeReports=.vitest-reports --coverage && bun run lint:no-dead-modules",
 		"test:merged:changed": "VITEST_CHANGED_RUN=true bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest --mergeReports=.vitest-reports --coverage && bun tools/scripts/ci/changed-file-coverage.script.ts --base=\"$DELENDAI_COVERAGE_BASE\" && bun run lint:no-dead-modules -- --changed-since=\"$DELENDAI_COVERAGE_BASE\"",

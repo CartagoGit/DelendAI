@@ -74,6 +74,19 @@ export interface IZoneReadMap {
 				 * or removed from one of them changes what the zone sees.
 				 */
 				readonly listed: readonly string[];
+				/**
+				 * The same reads, by the spec that made them. A zone reached
+				 * only by a read runs these specs and no others.
+				 */
+				readonly specs?: Readonly<
+					Record<
+						string,
+						{
+							readonly read: readonly string[];
+							readonly listed: readonly string[];
+						}
+					>
+				>;
 			}
 		>
 	>;
@@ -100,4 +113,10 @@ export interface IZoneReach {
 	 * disk: none of their own code, and nothing they import, changed.
 	 */
 	readonly readOnly: ReadonlySet<string>;
+	/**
+	 * For a zone reached only by reads: the specs that read or list a
+	 * changed path. Absent when the map does not say which spec read what,
+	 * and then the whole zone runs, unfiltered.
+	 */
+	readonly readers?: ReadonlyMap<string, readonly string[]>;
 }
