@@ -2,14 +2,14 @@
 id: x00971
 title: "One host catalog, and a host server that stops with its client and runs current rules"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
-last-correlation-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T09:13:33.645Z
+last-transition-id: aa0b3fce-6014-4978-9f43-fb8d4c22f04d
+last-correlation-id: aa0b3fce-6014-4978-9f43-fb8d4c22f04d
+last-transition-from: review
+last-transition-at: 2026-10-28T08:59:47.298Z
 shipped-in:
   - "97594eb67"
 ---
@@ -66,8 +66,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 - acceptance:
   - "The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 1/1: (1) provider-model-bridge.helper.ts:200-220 keeps one entry per conversation and bridgeReading names no model when the fresh entries of a workspace name more than … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 18 tests, exit 0.
 
 ## acceptance
 
