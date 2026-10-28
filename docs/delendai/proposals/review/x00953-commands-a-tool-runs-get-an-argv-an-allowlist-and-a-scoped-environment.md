@@ -55,8 +55,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "db_query hands its read classification to the driver, and SQLite runs every read on a connection opened read-only, so a WITH ... DELETE fails there (G114)."
   - "The settlement runner executes validateCommand only as `bun run <script>` for a script in the project's package.json, as argv, never `bash -c` on free text; its cwd stays in the workspace (G120)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 2/2: (1) query-engine.ts:378 passes readOnly: classification === 'read' to the driver and sqlite-query-driver.ts:99-108 opens the read connection with readonly and file… (2) settlement-runner.ts:31-52 accepts only a bun run script that is declared in the project's package.json and :78 runs it as execFile with the script name as an … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 18 tests and the e2e file 1 file / 2 tests, all exit 0. Recorded rather than blocked: no automated test drives the real SQLite driver, because better-sqlite3 is an optional peer dependency that is not installed in this workspace, so the read-only refusal rests on the shipped code; the criterion should say so. The shipped commit also re-fitted this criterion's wording to the implementation, which the proposal author should note.
 
 ### S3 — Spawned servers and providers get an allowlist and their own env
 - **Status**: done
