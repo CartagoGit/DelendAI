@@ -2,14 +2,14 @@
 id: x00949
 title: "The queue and start-up admit work only on positive certification"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
-last-correlation-id: 2406ca93-19b0-4d4c-9a23-0f8b999496a2
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T16:19:56.129Z
+last-transition-id: 5ee9fdc9-b862-4232-b495-f561a3d8c39c
+last-correlation-id: 5ee9fdc9-b862-4232-b495-f561a3d8c39c
+last-transition-from: review
+last-transition-at: 2026-10-28T07:28:36.810Z
 shipped-in:
   - "1b69e8c34ebeea829de02132f71b89acb4b3328d"
 ---
@@ -79,8 +79,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
 - acceptance:
   - "A change to build.script.ts, build-clean.script.ts or pack.script.ts selects the build and pack-smoke jobs; a spec on job-scope proves each mapping (ORCH-05)."
 - shipped-in: `dcf6e1248619`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 1/1: (1) job-scope.script.spec.ts:284 ('planJobs - a change to a job's own scripts runs that job') maps compile/build.script.ts and compile/build-clean.script.ts to the… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 28 tests, exit 0. Wording note: there is no job named 'build' (the job is build-clean) and pack.script.ts selects pack-smoke only; the spec asserts the positive mappings. A later commit f41e28700 touched job-scope.constant.ts only in the unrelated sqlite-cutover-ready scope, and the S4 mappings are unchanged at HEAD.
 
 ## acceptance
 
