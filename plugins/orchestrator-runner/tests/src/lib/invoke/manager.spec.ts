@@ -79,6 +79,9 @@ const makeManager = (opts: {
 		subscription: opts.recordAllKinds
 			? recordingInvoker(opts.startedIds)
 			: failingInvoker,
+		'host-sampling': opts.recordAllKinds
+			? recordingInvoker(opts.startedIds)
+			: failingInvoker,
 		acp: opts.recordAllKinds
 			? recordingInvoker(opts.startedIds)
 			: failingInvoker,
@@ -276,6 +279,7 @@ describe('InvocationManager execution environment', () => {
 				api: invoker,
 				'mcp-server': invoker,
 				subscription: invoker,
+				'host-sampling': invoker,
 				acp: invoker,
 			},
 			defaultCostPreference: 'balanced',

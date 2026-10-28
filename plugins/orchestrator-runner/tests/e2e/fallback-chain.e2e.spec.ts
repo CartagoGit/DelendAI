@@ -95,6 +95,7 @@ describe('f00067 S10 — fallback chain (quota-exceeded → next-best → reset 
 			api: failing,
 			'mcp-server': failing,
 			subscription: recordingInvoker(startedIds),
+			'host-sampling': recordingInvoker(startedIds),
 			acp: recordingInvoker(startedIds),
 		};
 		const manager = new InvocationManager({
