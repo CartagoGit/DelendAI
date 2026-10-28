@@ -98,6 +98,24 @@ const removalReason = (keys: readonly string[]): string =>
 
 export const createPolicyAlignmentMigrator = (): IMigration => ({
 	id: POLICY_ALIGNMENT_MIGRATOR_ID,
+	// A STANDING CHECK, not a rename.
+	//
+	// What it removes is a setting that contradicts the profile the same
+	// file declares — and both are editable at any moment. A person
+	// changes the profile, or copies a config from another project, or
+	// adds a setting back by hand, and the setting the boot refuses over
+	// is there again.
+	//
+	// The journal would say "already done" from the first time this ran
+	// and never ask again, so the auto-heal that names the remedy would
+	// be dead in exactly the workspaces that need it. The failure mode
+	// is a server that exits on every start with an error naming a
+	// setting the tool is supposed to remove and cannot.
+	//
+	// The cost is one read of the config per boot, and the answer is
+	// quiet: a config that agrees with its profile produces no steps and
+	// changes no byte.
+	convergent: true,
 	detect: async (ctx: IMigrationContext): Promise<boolean> =>
 		(await contradictedPushKeys(ctx.workspaceRoot)) !== undefined,
 	plan: async (
