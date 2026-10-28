@@ -95,6 +95,17 @@ export const PROVIDER_INVOKE_SCHEMA = z.discriminatedUnion('kind', [
 				message: 'an acp invoke names an agent or a command',
 			},
 		),
+	z
+		.object({
+			kind: z.literal('host-sampling'),
+			model: z
+				.string()
+				.min(1)
+				.describe(
+					'The model the host editor is asked to run (MCP sampling), as the host names it; its key stays with the host.',
+				),
+		})
+		.strict(),
 ]);
 
 /**
@@ -155,7 +166,14 @@ export const PROVIDER_ENTRY_SCHEMA = z
 			.string()
 			.regex(KEBAB_ID_PATTERN)
 			.describe('Unique kebab-case provider id (e.g. "claude-sonnet").'),
-		kind: z.enum(['api', 'subscription', 'cli', 'mcp-server', 'acp']),
+		kind: z.enum([
+			'api',
+			'subscription',
+			'cli',
+			'mcp-server',
+			'acp',
+			'host-sampling',
+		]),
 		invoke: PROVIDER_INVOKE_SCHEMA,
 		modelId: z.string().min(1),
 		contextWindow: z.number().int().nonnegative(),

@@ -34,6 +34,7 @@ const StrategySchema = z.enum([
 	'api',
 	'cli',
 	'mcp-tool',
+	'host-sampling',
 	'handoff',
 ]);
 const ScoreEntrySchema = z.object({
@@ -197,7 +198,14 @@ export const FormatHandoffOutputSchema = z.object({
 
 const ModelSummarySchema = z.object({
 	id: z.string(),
-	kind: z.enum(['api', 'subscription', 'cli', 'mcp-server', 'acp']),
+	kind: z.enum([
+		'api',
+		'subscription',
+		'cli',
+		'mcp-server',
+		'acp',
+		'host-sampling',
+	]),
 	modelId: z.string(),
 	costTier: CostTierSchema,
 	contextWindow: z.number(),
