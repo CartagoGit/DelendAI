@@ -45,11 +45,22 @@ CREATE TABLE IF NOT EXISTS state_swarm_claims (
 );
 `;
 
-/** The tables the coordination store owns, for a reset to empty in one place. */
-export const COORDINATION_TABLES = [
-	'state_fencing_tokens',
-	'state_holders',
-	'state_swarm_claims',
+/**
+ * The coordination store's tables emptied for one scope, written out in
+ * full: a statement built from a table name reads to a SQL scan as one built
+ * from input.
+ */
+export const COORDINATION_SCOPE_DELETE_SQL = [
+	'DELETE FROM state_fencing_tokens WHERE scope_kind = ? AND scope_locator_json = ?',
+	'DELETE FROM state_holders WHERE scope_kind = ? AND scope_locator_json = ?',
+	'DELETE FROM state_swarm_claims WHERE scope_kind = ? AND scope_locator_json = ?',
+] as const;
+
+/** The coordination store's tables emptied, for a reset in one place. */
+export const COORDINATION_RESET_SQL = [
+	'DELETE FROM state_fencing_tokens;',
+	'DELETE FROM state_holders;',
+	'DELETE FROM state_swarm_claims;',
 ] as const;
 
 /** Publishes between two passive WAL checkpoints, unless the caller says. */

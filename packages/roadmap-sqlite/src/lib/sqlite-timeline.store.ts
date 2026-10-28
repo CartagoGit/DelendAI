@@ -91,23 +91,14 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
 		filter: IRoadmapTimelineFilter = {},
 	): Promise<IRoadmapResult<readonly IRoadmapTimelineEvent[]>> {
 		try {
-			const clauses: string[] = [];
-			const values: string[] = [];
-			if (filter.entryId !== undefined) {
-				clauses.push('entry_id = ?');
-				values.push(filter.entryId);
-			}
-			if (filter.horizon !== undefined) {
-				clauses.push('horizon = ?');
-				values.push(filter.horizon);
-			}
-			const where =
-				clauses.length === 0 ? '' : ` WHERE ${clauses.join(' AND ')}`;
+			// One statement for every filter: an absent filter binds NULL.
+			const entryId = filter.entryId ?? null;
+			const horizon = filter.horizon ?? null;
 			const rows = this.open()
 				.query(
-					`SELECT event_json FROM timeline_events${where} ORDER BY seq;`,
+					'SELECT event_json FROM timeline_events WHERE (? IS NULL OR entry_id = ?) AND (? IS NULL OR horizon = ?) ORDER BY seq;',
 				)
-				.all(...values) as IEventRow[];
+				.all(entryId, entryId, horizon, horizon) as IEventRow[];
 			const events: IRoadmapTimelineEvent[] = [];
 			for (const row of rows) {
 				const parsed = timelineEventSchema.safeParse(
