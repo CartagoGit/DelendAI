@@ -202,6 +202,10 @@ export const collectPendingSlices = (
 		const statusMatch = body.match(/^\s*-\s*\*\*Status\*\*:\s*(\w+)/m);
 		const status = statusMatch?.[1] ?? 'unknown';
 		if (status !== 'pending') continue;
+		// A slice a reviewer sent back has files from its first delivery
+		// and is pending because its rework is: it is not shipped.
+		if (/^\s*-\s*review-state:\s*changes_requested\b/mu.test(body))
+			continue;
 		const filesBlockMatch = body.match(FILES_BLOCK_RE);
 		const files = filesBlockMatch
 			? extractPathCandidates(filesBlockMatch[1] ?? '')
@@ -301,7 +305,13 @@ export const scanAlreadyImplemented = (
 			if (options.proposalId && proposalId !== options.proposalId) {
 				continue;
 			}
-			for (const slice of collectPendingSlices(markdown)) {
+			for (const pending of collectPendingSlices(markdown)) {
+				// A slice that names its own proposal (a plan's closing slice)
+				// says nothing about code by it: that file is always tracked.
+				const slice = {
+					...pending,
+					files: pending.files.filter((file) => file !== rel),
+				};
 				if (slice.files.length === 0) continue;
 				const trackedFlags = slice.files.map((file) =>
 					fileTracked(root, file),
