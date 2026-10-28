@@ -321,8 +321,8 @@ describe('context windows', () => {
 			NOW,
 		);
 		expect(priced?.providers[0]?.costs).toEqual({
-			'glm-5': { input: 0.6, output: 2.2 },
-			'glm-free': { input: 0, output: 0 },
+			'glm-5': [0.6, 2.2],
+			'glm-free': [0, 0],
 		});
 		expect(catalogue.providers[0]).not.toHaveProperty('costs');
 	});

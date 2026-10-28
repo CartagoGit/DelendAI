@@ -47,16 +47,12 @@ const contextWindowsOf = (
 	return Object.keys(windows).length === 0 ? undefined : windows;
 };
 
-/** Each model's `cost.input` / `cost.output`, where the catalogue states both. */
+/** Each model's `[cost.input, cost.output]`, where the catalogue states both. */
 const costsOf = (
 	models: unknown,
-):
-	| Readonly<
-			Record<string, { readonly input: number; readonly output: number }>
-	  >
-	| undefined => {
+): Readonly<Record<string, readonly [number, number]>> | undefined => {
 	if (models === null || typeof models !== 'object') return undefined;
-	const costs: Record<string, { input: number; output: number }> = {};
+	const costs: Record<string, readonly [number, number]> = {};
 	for (const [id, model] of Object.entries(models)) {
 		const cost =
 			model !== null && typeof model === 'object' && 'cost' in model
@@ -68,7 +64,7 @@ const costsOf = (
 			cost.input >= 0 &&
 			cost.output >= 0
 		)
-			costs[id] = { input: cost.input, output: cost.output };
+			costs[id] = [cost.input, cost.output];
 	}
 	return Object.keys(costs).length === 0 ? undefined : costs;
 };

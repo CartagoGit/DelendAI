@@ -20,6 +20,7 @@ import {
 } from '@delendai/core/contracts';
 import type { IProviderCapabilities } from '@delendai/core/public';
 
+import { COST_TIER_CEILINGS } from '../contracts/constants/cost-tier.constant';
 import type {
 	IClientListedModels,
 	IProposedAgent,
@@ -28,18 +29,16 @@ import type {
 /** Until the agent or the person says otherwise: a capable default. */
 const AGENT_CONTEXT_WINDOW = 200_000;
 const DEFAULT_COST_TIER = 3;
-/** The highest price (US$ per million tokens) of tiers 1 to 5. */
-const COST_TIER_CEILINGS = [0, 0.5, 3, 15, Number.POSITIVE_INFINITY];
 
 /**
  * A price's tier: what the catalogue prices at nothing is the cheapest a
  * router can pick, and an unpriced model keeps the capable default.
  */
 const costTierOf = (
-	cost: { readonly input: number; readonly output: number } | undefined,
+	cost: readonly [number, number] | undefined,
 ): 1 | 2 | 3 | 4 | 5 => {
 	if (cost === undefined) return DEFAULT_COST_TIER;
-	const price = Math.max(cost.input, cost.output);
+	const price = Math.max(...cost);
 	return (COST_TIER_CEILINGS.findIndex((ceiling) => price <= ceiling) + 1) as
 		| 1
 		| 2

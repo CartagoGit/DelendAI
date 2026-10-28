@@ -90,14 +90,12 @@ export interface ICatalogueProvider {
 	readonly models: readonly string[];
 	/** Each model's context window in tokens, where the catalogue states one. */
 	readonly contextWindows?: Readonly<Record<string, number>> | undefined;
-	/** Each model's price in US dollars per million tokens, where the catalogue states one. */
+	/**
+	 * Each model's price in US dollars per million tokens, `[input, output]`,
+	 * where the catalogue states both (a pair keeps the shipped snapshot small).
+	 */
 	readonly costs?:
-		| Readonly<
-				Record<
-					string,
-					{ readonly input: number; readonly output: number }
-				>
-		  >
+		| Readonly<Record<string, readonly [number, number]>>
 		| undefined;
 	/** Its API base URL, when it has one to call directly. */
 	readonly api?: string | undefined;

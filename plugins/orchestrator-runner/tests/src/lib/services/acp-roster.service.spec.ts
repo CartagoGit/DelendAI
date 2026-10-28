@@ -37,9 +37,7 @@ const CATALOGUE: IModelCatalogue = {
 };
 
 describe('proposedRosterEntries', () => {
-	const priced = (
-		costs: Record<string, { input: number; output: number }>,
-	) => ({
+	const priced = (costs: Record<string, [number, number]>) => ({
 		fetchedAt: '2026-10-28T00:00:00.000Z',
 		providers: [
 			{
@@ -54,7 +52,7 @@ describe('proposedRosterEntries', () => {
 		],
 	});
 	const minimax = (
-		costs: Record<string, { input: number; output: number }>,
+		costs: Record<string, [number, number]>,
 		clientModels?: { provider: string; models: string[] }[],
 	) =>
 		proposedRosterEntries({
@@ -79,18 +77,9 @@ describe('proposedRosterEntries', () => {
 
 	it('tiers a proposal by the price of its model, a free one lowest', () => {
 		const listed = [{ provider: 'minimax', models: ['MiniMax-M3'] }];
-		expect(
-			minimax({ 'MiniMax-M3': { input: 0, output: 0 } }, listed)
-				?.costTier,
-		).toBe(1);
-		expect(
-			minimax({ 'MiniMax-M3': { input: 0.3, output: 1.2 } }, listed)
-				?.costTier,
-		).toBe(3);
-		expect(
-			minimax({ 'MiniMax-M3': { input: 15, output: 75 } }, listed)
-				?.costTier,
-		).toBe(5);
+		expect(minimax({ 'MiniMax-M3': [0, 0] }, listed)?.costTier).toBe(1);
+		expect(minimax({ 'MiniMax-M3': [0.3, 1.2] }, listed)?.costTier).toBe(3);
+		expect(minimax({ 'MiniMax-M3': [15, 75] }, listed)?.costTier).toBe(5);
 		expect(minimax({}, listed)?.costTier).toBe(3);
 	});
 
