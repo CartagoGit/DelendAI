@@ -2,14 +2,14 @@
 id: x00950
 title: "A gate that measured nothing, or could not run, fails"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: fffe77ea-919c-4526-8930-57690002b017
-last-correlation-id: fffe77ea-919c-4526-8930-57690002b017
-last-transition-from: in-progress
-last-transition-at: 2026-10-24T17:40:46.371Z
+last-transition-id: 37d535e1-adb6-4b5c-aafe-d1147234c0da
+last-correlation-id: 37d535e1-adb6-4b5c-aafe-d1147234c0da
+last-transition-from: review
+last-transition-at: 2026-10-28T07:58:10.482Z
 shipped-in:
   - "1ee97d05727f11d9f5a4d124e01b59d1105f54b3"
 ---
@@ -41,8 +41,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "no-silent-gates runs every lint the gate chains reach over a git tree holding only tools/ and fails each one that exits 0 there, unless an allowlist names it with the reason its surface is in that tree; the lints that passed over nothing refuse a missing scan root through one helper, and the host-manifest-drift run that compared nothing leaves the chains."
   - "verify:tools with zero discovered plugins exits non-zero with the cause (G157)."
 - shipped-in: `25d07003fc50`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 2/2: (1) empty-root-probe.lib.ts:60 runs each lint over a git tree holding only tools/ and fails the ones that exit 0 there, unless the reviewed allowlist names the lin… (2) plugin-tool-verify.script.ts:512-519 returns 1 with the cause 'verify:tools: no plugin was discovered under <root>/plugins; nothing was verified.'; running it … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 19 tests, exit 0; bun run lint:architecture exits 0 and the two script runs above are green.
 
 ### S2 — The security gate scans the repo and fails when it cannot
 - **Status**: done
