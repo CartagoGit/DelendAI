@@ -34,7 +34,7 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 
 ### S1 — The read map says which spec read what
 - **Status**: pending
-- **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.script.ts`, `tools/scripts/ci/zone-reads.script.spec.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/zone-reads.generated.json`
+- **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.script.ts`, `tools/scripts/ci/zone-reads.script.spec.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/zone-reads.generated.json`, `biome.json`
 - **Gate**: type
 - acceptance:
   - "The recorder writes each read with the spec that made it (`expect.getState().testPath`), and the committed map holds, per zone, the specs and the files and directories each read, next to the zone totals it holds today."
