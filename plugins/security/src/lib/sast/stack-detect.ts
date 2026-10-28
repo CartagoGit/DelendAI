@@ -57,24 +57,26 @@ const readManifestDeps = async (cwd: string): Promise<readonly string[]> => {
 	}
 };
 
+/**
+ * Every file under `dir`, in name order: a capped walk read whichever files
+ * the filesystem listed first, so two machines scanned different halves of
+ * the same checkout.
+ */
 const walkFiles = async (
 	cwd: string,
 	dir = cwd,
 	accumulator: string[] = [],
-	budget = { count: 0 },
 ): Promise<string[]> => {
-	if (budget.count >= 4000) return accumulator;
-	// / B19
-	const entries = (await safeListDir(dir)).entries;
+	const entries = [...(await safeListDir(dir)).entries].sort((a, b) =>
+		a.name.localeCompare(b.name),
+	);
 	for (const entry of entries) {
-		if (budget.count >= 4000) break;
 		if (IGNORE_DIRS.has(entry.name)) continue;
 		const absolute = join(dir, entry.name);
 		if (entry.isDirectory()) {
-			await walkFiles(cwd, absolute, accumulator, budget);
+			await walkFiles(cwd, absolute, accumulator);
 			continue;
 		}
-		budget.count += 1;
 		const relative = absolute.slice(cwd.length + 1);
 		if (languageFromPath(relative) !== undefined)
 			accumulator.push(relative);

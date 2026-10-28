@@ -13,7 +13,11 @@ import {
 	runSastRunner,
 	SAST_RULES,
 } from '@delendai/security/public';
-import { realScanDeps, runSecretScan } from '@delendai/security/public';
+import {
+	isTestPath,
+	realScanDeps,
+	runSecretScan,
+} from '@delendai/security/public';
 
 // Lazy REPO_ROOT: resolved on first access so vitest can import this
 // module without choking on `import.meta.dir` (bun extension) under the
@@ -114,6 +118,8 @@ const realSecrets = async (cwd: string): Promise<readonly IFinding[]> =>
 		await runSecretScan(realScanDeps(cwd), {
 			scope: 'tracked',
 			includeTests: false,
+			// A gate reads every file: the scan's cap left the tail unread.
+			maxFiles: Number.POSITIVE_INFINITY,
 		})
 	).findings;
 
@@ -125,14 +131,23 @@ const realDeps = async (cwd: string): Promise<readonly IFinding[]> => {
 	return parseAuditJson(audit.raw, { ecosystem: packageManager });
 };
 
+/**
+ * Every tracked source file but the tests, whose fixtures are vulnerable
+ * on purpose. The stack walk only names the languages: it reads whatever
+ * the checkout holds, ignored files included.
+ */
 const realSast = async (cwd: string): Promise<readonly IFinding[]> => {
+	const tracked = await realScanDeps(cwd).listFiles('tracked');
+	if (tracked.length === 0) {
+		throw new Error('git ls-files listed nothing to scan');
+	}
 	const stack = await detectStack(cwd);
 	return (
 		await runSastRunner({
 			cwd,
 			rules: SAST_RULES,
 			languages: stack.languages,
-			files: stack.files,
+			files: tracked.filter((path) => !isTestPath(path)),
 		})
 	).findings;
 };
