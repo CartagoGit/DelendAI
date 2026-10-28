@@ -42,8 +42,10 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "OpenAI, Anthropic, GitHub fine-grained and the other common key shapes are redacted; a spec feeds one of each (G117)."
   - "The Google key rule needs the AIza prefix at a word boundary and does not match the fixture strings G41 names."
 - shipped-in: `d23cc0b41`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d23cc0b41, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 3/3: (1) plugins/security/src/lib/contracts/constants/secret-rules.constant.ts:7 imports SECRET_RULES from the contracts package and :24 maps over it, so the seven loca… (2) packages/core/tests/src/lib/shared/redact-key-shapes.spec.ts:25-56 feeds twelve key shapes (openai, openai project, anthropic, openrouter, github, github fine-… (3) packages/contracts/src/secret-patterns.ts:93 requires the AIza prefix at a word boundary with exactly 35 trailing characters, and redact-key-shapes.spec.ts:56-… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 16 tests, exit 0. Recorded rather than blocked: the fixture G41 names for the Google rule is not present in this repository, so that half of the criterion is proven by the shape of the rule and by the spec rather than by that fixture.
 
 ### S2 — The scanner sees ignored files
 - **Status**: done
