@@ -10,6 +10,8 @@ last-transition-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
 last-correlation-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
 last-transition-from: ready
 last-transition-at: 2026-10-28T09:22:01.024Z
+shipped-in:
+  - "a0754d0a7"
 ---
 
 # c00536 — qs is pinned past GHSA-6pq8-jhm2-2vcw
@@ -31,12 +33,13 @@ The advisory (moderate: `qs.stringify` with `arrayFormat: 'comma'` throws on arr
 - global_gate: none
 
 ### S1 — The override pins the patched version
-- **Status**: pending
+- **Status**: done
 - **Files**: `package.json`, `bun.lock`
 - **Gate**: none
 - acceptance:
   - "package.json overrides qs to 6.16.1 and bun.lock resolves no qs below it."
   - "lint:dependency-advisories passes."
+- shipped-in: `a0754d0a7`
 
 ## acceptance
 
