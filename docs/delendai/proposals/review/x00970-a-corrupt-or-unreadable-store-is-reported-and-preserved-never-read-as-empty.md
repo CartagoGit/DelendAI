@@ -55,8 +55,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An invalid persisted scope is reported as corruption (D94)."
   - "A corrupt catalogue is an error naming the file; the base language does not change (G61-I18N-01)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 3/3: (1) store-records.ts:147-159 throws CorruptFileError with the reason (invalid JSON, or expected a notes array) instead of returning an empty list, and expireExpire… (2) sqlite-driver.ts:543-546 throws stateStoreCorrupt('scope_locator_parse') for an unreadable scope, defineProducer catches it into restoreFailure (:152-160) and … (3) real-deps.ts:92-110 throws 'locale catalogue <path> cannot be read' or 'is not an object of messages', and both tools catch it and return toolError before sour… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 12 tests, exit 0, plus bun test on packages/state-sqlite/src/lib/sqlite-driver.spec.ts, 11 pass / 0 fail, exit 0. Non-blocking observations: the CorruptFileError message says the backup rename failed although the file is deliberately kept, and an unknown scope kind now hard-fails the hydrate, a deliberate consequence of reporting an invalid scope as corruption.
 
 ### S3 — accounts and the model catalogue
 - **Status**: done
