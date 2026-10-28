@@ -74,6 +74,15 @@ describe('requiredChecksVerdict', () => {
 });
 
 describe('integrationAllowsArming', () => {
+	it('arms while the full run is going on a commit whose parent was certified', () => {
+		expect(integrationAllowsArming('pending', 'certified')).toBe(true);
+		for (const parent of ['pending', 'uncertified', 'red', undefined]) {
+			expect(integrationAllowsArming('pending', parent)).toBe(false);
+		}
+		expect(integrationAllowsArming('red', 'certified')).toBe(false);
+		expect(integrationAllowsArming('uncertified', 'certified')).toBe(false);
+	});
+
 	it('allows arming only on a certified integration branch', () => {
 		expect(integrationAllowsArming('certified')).toBe(true);
 		for (const state of ['pending', 'uncertified', 'red']) {
