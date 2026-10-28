@@ -84,7 +84,7 @@ export const runFrameworkGuidance = async (
 		return toolOk({
 			status: 'unresolved',
 			topic: args.topic,
-			note: 'No known framework dependency was found in package.json.',
+			note: 'No known framework dependency was found in package.json or its workspace packages.',
 		});
 	}
 	if (installed.version === undefined || installed.lockEntry === undefined) {

@@ -17,6 +17,14 @@ export interface ISourceFile {
 	readonly content: string;
 }
 
+/** How the scanned sources name translation keys. */
+export interface II18nKeyUsage {
+	/** Keys named literally (and, under a bound namespace, with it). */
+	readonly keys: ReadonlySet<string>;
+	/** Fixed prefixes of keys built at run time: every key under one is in use. */
+	readonly prefixes: ReadonlySet<string>;
+}
+
 /** Injected I/O seam so the check is unit-testable without a filesystem. */
 export interface II18nScanDeps {
 	/** List every locale file under the configured directory. */

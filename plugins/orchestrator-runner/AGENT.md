@@ -57,8 +57,8 @@
 
 ## Token hotspots
 
-- `delendai_orchestrator-runner_discover_providers` — 4,878 B total, 4,556 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_orchestrator-runner_format_handoff` — 2,724 B total, 230 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_orchestrator-runner_discover_providers` — 5,207 B total, 4,885 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_orchestrator-runner_format_handoff` — 3,037 B total, 230 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

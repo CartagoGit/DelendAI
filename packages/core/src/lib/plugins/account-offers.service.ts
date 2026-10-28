@@ -92,10 +92,17 @@ export const accountOffers = (
  * needs none.
  */
 export const classificationFromAnswer = (
-	finding: Pick<IAccountFinding, 'credentialEnv'>,
+	finding: Pick<IAccountFinding, 'credentialEnv' | 'hostHeld'>,
 	vendor: string,
 	billingMode: IAccountClassification['billingMode'],
 ): IAccountClassification => {
+	// However it is paid, a key an editor keeps is the editor's to use.
+	if (finding.hostHeld === true)
+		return {
+			vendor: toKebabCase(vendor),
+			credentialMode: 'host-held',
+			billingMode,
+		};
 	const planPaid =
 		billingMode === 'subscription-included' ||
 		billingMode === 'prepaid-token-plan';

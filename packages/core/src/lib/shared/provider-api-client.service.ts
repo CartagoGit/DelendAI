@@ -12,6 +12,7 @@ import {
 	FAMILY_DEFAULT_BASE_URL,
 	PROVIDER_API_FAMILIES,
 	PROVIDER_CALL_TIMEOUT_MS,
+	DEFAULT_PROMPT_MAX_TOKENS,
 } from '../contracts/constants/provider-api-families.constant';
 import type { ICatalogueProvider } from '../contracts/interfaces/account-finding.interface';
 import type {
@@ -61,17 +62,20 @@ export const isReachable = (
 const headersFor = (
 	endpoint: Pick<IProviderEndpoint, 'family'>,
 	key: string,
-) =>
-	endpoint.family === 'anthropic'
-		? {
-				'x-api-key': key,
-				'anthropic-version': ANTHROPIC_API_VERSION,
-				'content-type': 'application/json',
-			}
-		: {
-				authorization: `Bearer ${key}`,
-				'content-type': 'application/json',
-			};
+): Readonly<Record<string, string>> => {
+	if (endpoint.family === 'anthropic')
+		return {
+			'x-api-key': key,
+			'anthropic-version': ANTHROPIC_API_VERSION,
+			'content-type': 'application/json',
+		};
+	if (endpoint.family === 'google')
+		return { 'x-goog-api-key': key, 'content-type': 'application/json' };
+	return {
+		authorization: `Bearer ${key}`,
+		'content-type': 'application/json',
+	};
+};
 
 const keyOf = (endpoint: IProviderEndpoint, env: IEnv): string => {
 	const key = env[endpoint.keyVariable]?.trim();
@@ -120,6 +124,18 @@ export const listProviderModels = async (
 		},
 	);
 	if (answer.status >= 400) throw providerRefusal(answer.status, answer.json);
+	// Google lists `models: [{ name: 'models/<id>' }]`; the others `data: [{ id }]`.
+	if (endpoint.family === 'google') {
+		const models = record(answer.json).models;
+		return Array.isArray(models)
+			? models.flatMap((model) => {
+					const name = record(model).name;
+					return typeof name === 'string'
+						? [name.replace(/^models\//u, '')]
+						: [];
+				})
+			: [];
+	}
 	const data = record(answer.json).data;
 	return Array.isArray(data)
 		? data.flatMap((model) => {
@@ -142,15 +158,49 @@ export const providerPromptRequest = (
 	readonly url: string;
 	readonly headers: Readonly<Record<string, string>>;
 	readonly body: string;
-} => ({
-	url: `${trimSlash(endpoint.baseUrl)}/${endpoint.family === 'anthropic' ? 'messages' : 'chat/completions'}`,
-	headers: headersFor(endpoint, key),
-	body: JSON.stringify({
-		model: input.model,
-		max_tokens: input.maxTokens ?? 1024,
-		messages: [{ role: 'user', content: input.prompt }],
-	}),
-});
+} => {
+	const base = trimSlash(endpoint.baseUrl);
+	const maxTokens = input.maxTokens ?? DEFAULT_PROMPT_MAX_TOKENS;
+	if (endpoint.family === 'google')
+		return {
+			url: `${base}/models/${encodeURIComponent(input.model)}:generateContent`,
+			headers: headersFor(endpoint, key),
+			body: JSON.stringify({
+				contents: [{ role: 'user', parts: [{ text: input.prompt }] }],
+				generationConfig: { maxOutputTokens: maxTokens },
+			}),
+		};
+	return {
+		url: `${base}/${endpoint.family === 'anthropic' ? 'messages' : 'chat/completions'}`,
+		headers: headersFor(endpoint, key),
+		body: JSON.stringify({
+			model: input.model,
+			max_tokens: maxTokens,
+			messages: [{ role: 'user', content: input.prompt }],
+		}),
+	};
+};
+
+/** Google writes `candidates[0].content.parts[].text` and `usageMetadata`. */
+const googleAnswer = (body: IRecord): IProviderAnswer => {
+	const candidates = Array.isArray(body.candidates) ? body.candidates : [];
+	const parts = record(record(candidates[0]).content).parts;
+	const usage = record(body.usageMetadata);
+	return {
+		text: (Array.isArray(parts) ? parts : [])
+			.map((part) => record(part).text)
+			.filter((text): text is string => typeof text === 'string')
+			.join(''),
+		usage:
+			typeof usage.promptTokenCount === 'number' &&
+			typeof usage.candidatesTokenCount === 'number'
+				? {
+						inputTokens: usage.promptTokenCount,
+						outputTokens: usage.candidatesTokenCount,
+					}
+				: undefined,
+	};
+};
 
 /** A provider's answer read the way its family writes it. */
 export const parseProviderAnswer = (
@@ -158,6 +208,7 @@ export const parseProviderAnswer = (
 	json: unknown,
 ): IProviderAnswer => {
 	const body = record(json);
+	if (family === 'google') return googleAnswer(body);
 	const usage = record(body.usage);
 	if (family === 'anthropic') {
 		const content = Array.isArray(body.content) ? body.content : [];

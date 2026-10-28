@@ -5,9 +5,11 @@ export default definePluginManifest({
 	package: '@delendai/browser',
 	version: '0.2.4',
 	visibility: 'public',
-	summary: 'Headless browser automation tools.',
+	summary:
+		'Headless browser automation tools; they need Playwright installed and answer with an install hint without it.',
 	tags: ['browser', 'automation'],
-	maturity: 'stable',
+	// Without a detected Playwright no page can be opened.
+	maturity: 'experimental',
 	permissions: ['filesystem-write', 'process', 'network', 'browser'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
