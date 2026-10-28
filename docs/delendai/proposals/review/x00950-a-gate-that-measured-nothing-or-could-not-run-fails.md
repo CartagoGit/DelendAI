@@ -66,8 +66,10 @@ Joint audit a00095. G153: the wiring gate is wired as `--report`, which cannot f
   - "A new lint rejects any C0 byte other than tab/newline inside source string literals and runs in CI (G61)."
   - "A link-check script over the root docs runs in a CI-run chain and fails on a broken internal link (G40)."
 - shipped-in: `601342c2b3f6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1ee97d05727f, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 3/3: (1) validate:run contains the plugin wiring verification without --report and the old advisory script is gone from package.json; the four unwired plugins (executio… (2) no-control-bytes.script.ts:22 rejects every C0 byte plus DEL over the tracked source files (:38) and reports the path, and it runs in the CI chain; bun run lin… (3) doc-links.script.ts checks the links of the root documents and returns 1 with the broken links listed, and it is in lint:architecture and therefore in CI; bun … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 6 files / 30 tests, exit 0, plus lint:doc-links and lint:no-control-bytes green.
 
 ### S4 — One lint per fact, and the web audit gates
 - **Status**: done
