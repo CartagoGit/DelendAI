@@ -19,9 +19,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parseJsonc } from '@delendai/core/lib/config/jsonc-document';
 import {
 	HOST_CONFIG_NAME,
-	HostConfigParseError,
 	createHostConfigMigrator,
 } from '@delendai/core/lib/workspace-migration/migrators/host-config.migrator';
+import { HostConfigParseError } from '@delendai/core/lib/workspace-migration/migrators/host-config-parse.error';
 
 let workspaceRoot: string;
 

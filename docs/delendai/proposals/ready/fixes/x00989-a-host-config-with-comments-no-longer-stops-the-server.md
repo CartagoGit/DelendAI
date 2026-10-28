@@ -45,6 +45,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A plain-JSON `.vscode/mcp.json` is written exactly as today: the same bytes, the same tab indentation, the same trailing newline."
   - "A commented `.vscode/mcp.json` that names the old identity is rewritten, and the file keeps its comments outside the rewritten member, its key order and its own formatting."
   - "A commented `.vscode/mcp.json` that names nothing old is not written at all — byte-identical before and after."
+- shipped-in: `724cbf9f8`
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
 - **Status**: pending
@@ -55,6 +56,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The run still stops at the failed migration — the rule that a failure must not be followed by more migrations on top of an unfinished one is unchanged."
   - "The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr."
   - "A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it."
+- shipped-in: `e705aa7c4`
 
 ### S3 — The push target the profile refuses is removed, not just reported
 - **Status**: pending
@@ -66,6 +68,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A `push.branch` naming ANY OTHER branch is left alone: a feature branch is a legitimate push target."
   - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
   - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
+- shipped-in: `9767d0086`
 
 ## acceptance
 

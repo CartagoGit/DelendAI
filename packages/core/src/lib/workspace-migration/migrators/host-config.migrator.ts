@@ -49,12 +49,12 @@ import type {
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
 
-import {
-	applyJsoncEdits,
-	parseJsonc,
-	type IJsoncEdit,
-} from '../../config/jsonc-document';
+import { parseJsonc } from '../../config/jsonc-document';
 import { writeFileAtomic } from '../../shared/atomic-write';
+import {
+	readProjectHostConfig,
+	rewrittenDocumentText,
+} from './host-config-jsonc';
 import {
 	rewriteCodexConfig,
 	rewriteServerArrays,
@@ -105,95 +105,11 @@ const SERVER_MAPS = ['servers', 'mcpServers'] as const;
 /** Within one server entry, these are the string-typed fields. */
 const SERVER_STRING_FIELDS = ['command', 'cwd', 'type', 'description'] as const;
 
-export class HostConfigParseError extends Error {
-	readonly file: string;
-	constructor(file: string, reason: string) {
-		super(`host config ${file} is not valid JSON: ${reason}`);
-		this.name = 'HostConfigParseError';
-		this.file = file;
-	}
-}
-
 const pathExists = async (absolutePath: string): Promise<boolean> =>
 	access(absolutePath).then(
 		() => true,
 		() => false,
 	);
-
-/**
- * A host config, and the text it was read from.
- *
- * The text is kept because a JSONC document is edited in place: the
- * rewritten value is not what the file becomes — the file becomes the
- * original with the rewritten members applied to it.
- */
-interface IHostConfigDocument {
-	readonly text: string;
-	readonly value: Record<string, unknown>;
-	/**
-	 * Whether plain JSON could parse it. A plain JSON file is rewritten
-	 * exactly as it always was; only a file that needs the lenient reader
-	 * is edited in place.
-	 */
-	readonly plain: boolean;
-}
-
-/**
- * Read a host config the editor reads.
- *
- * A file plain JSON can parse is a plain JSON file. A file plain JSON
- * cannot parse is a JSONC document — a comment, a trailing comma — and
- * it is read leniently. A document that is neither is refused with the
- * same error as before, so a file that is genuinely broken is reported
- * instead of half-understood.
- */
-const readHostConfig = async (
-	absolutePath: string,
-): Promise<IHostConfigDocument> => {
-	const text = await readFile(absolutePath, 'utf8');
-	let strict: unknown;
-	try {
-		strict = JSON.parse(text);
-	} catch {
-		strict = undefined;
-	}
-	if (strict !== undefined) {
-		if (
-			strict === null ||
-			typeof strict !== 'object' ||
-			Array.isArray(strict)
-		) {
-			throw new HostConfigParseError(
-				absolutePath,
-				'top-level value is not an object',
-			);
-		}
-		return {
-			text,
-			value: strict as Record<string, unknown>,
-			plain: true,
-		};
-	}
-	const parsed = parseJsonc(text);
-	const first = parsed.errors[0];
-	if (first !== undefined)
-		throw new HostConfigParseError(absolutePath, first.message);
-	if (
-		parsed.value === null ||
-		typeof parsed.value !== 'object' ||
-		Array.isArray(parsed.value)
-	) {
-		throw new HostConfigParseError(
-			absolutePath,
-			'top-level value is not an object',
-		);
-	}
-	return {
-		text,
-		value: parsed.value as Record<string, unknown>,
-		plain: false,
-	};
-};
 
 /**
  * Rewrite one server entry's string-typed fields and any string in
@@ -324,70 +240,6 @@ const rewriteHostConfig = (
 	return { changed, next };
 };
 
-/** A plain object — the shape whose members can be compared one by one. */
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	value !== null && typeof value === 'object' && !Array.isArray(value);
-
-/**
- * The member-level differences between two values, as JSONC edits.
- *
- * A member that disappeared is a rename — the rewrite renames a server
- * by its own id — and a rename is applied by removing the old name and
- * adding the new one, which moves the server to the end of its map.
- * The caller replaces the whole map instead when that would happen, so
- * a renamed server keeps its place.
- */
-const diffEdits = (
-	before: unknown,
-	after: unknown,
-	path: readonly (string | number)[],
-): readonly IJsoncEdit[] => {
-	if (JSON.stringify(before) === JSON.stringify(after)) return [];
-	if (!isRecord(before) || !isRecord(after)) return [{ path, value: after }];
-	const edits: IJsoncEdit[] = [];
-	for (const [key, child] of Object.entries(before)) {
-		if (!Object.hasOwn(after, key)) {
-			edits.push({ path: [...path, key], value: undefined });
-			continue;
-		}
-		edits.push(...diffEdits(child, after[key], [...path, key]));
-	}
-	for (const [key, child] of Object.entries(after)) {
-		if (!Object.hasOwn(before, key))
-			edits.push({ path: [...path, key], value: child });
-	}
-	return edits;
-};
-
-/**
- * The edits that turn a parsed host config into its rewritten self.
- *
- * Every changed member is edited where it stands, so the comments
- * around it, the key order and the owner's own formatting all survive.
- */
-const hostConfigEdits = (
-	before: Record<string, unknown>,
-	after: Record<string, unknown>,
-): readonly IJsoncEdit[] => {
-	const edits: IJsoncEdit[] = [];
-	for (const [key, child] of Object.entries(after)) {
-		const previous = before[key];
-		if (previous === undefined) {
-			edits.push({ path: [key], value: child });
-			continue;
-		}
-		if (JSON.stringify(previous) === JSON.stringify(child)) continue;
-		const nested = diffEdits(previous, child, [key]);
-		// A member that disappeared was RENAMED. Removing it and adding
-		// its new name would move the server to the end of its map, so
-		// the map is replaced whole and keeps its order instead.
-		if (nested.some((edit) => edit.value === undefined))
-			edits.push({ path: [key], value: child });
-		else edits.push(...nested);
-	}
-	return edits;
-};
-
 /**
  * The config's new text, or `undefined` when it names nothing to change.
  * The editor's and the root config are read leniently and rewritten in
@@ -399,17 +251,10 @@ const rewrittenText = async (
 	absolute: string,
 ): Promise<string | undefined> => {
 	if (!TOLERANT_HOST_CONFIG_NAMES.has(name)) {
-		const document = await readHostConfig(absolute);
+		const document = await readProjectHostConfig(absolute);
 		const { changed, next } = rewriteHostConfig(document.value);
 		if (!changed) return undefined;
-		// A plain JSON file is rewritten as it always was: the same
-		// bytes, the same indentation, the same trailing newline. A file
-		// that needed the lenient reader is edited in place instead, so
-		// the comments it carries are still there afterwards.
-		if (document.plain) return `${JSON.stringify(next, null, '\t')}\n`;
-		const edits = hostConfigEdits(document.value, next);
-		if (edits.length === 0) return undefined;
-		return applyJsoncEdits(document.text, edits);
+		return rewrittenDocumentText(document, next);
 	}
 	const raw = await readFile(absolute, 'utf8');
 	const parsed = parseJsonc(raw);
@@ -500,3 +345,8 @@ export const createHostConfigMigrator = (): IMigration => {
 };
 
 export { stringHasLegacyIdentity };
+
+// The error this migrator raises is part of its surface: a caller that
+// catches it catches it by name, and the name does not change because
+// the class moved to the module that owns it.
+export { HostConfigParseError } from './host-config-parse.error';
