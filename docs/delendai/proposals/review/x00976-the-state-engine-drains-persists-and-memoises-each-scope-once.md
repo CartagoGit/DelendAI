@@ -42,8 +42,10 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
   - "An abandoned duration is closed, not overwritten (STATE03)."
 
 - shipped-in: `c373f00b0f40`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c373f00b0f40, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 3/3: (1) journal-claim.helper.ts:50 puts the owner pid in the claim name and :56 skips a live owner's claim; journal-claim.helper.spec.ts ('takes the live journal under… (2) work-event-journal-drain.service.ts:78 pushes a refused raw line into the retained list and :81-82 appends it back to the live journal before the claim is remo… (3) duration-journal.service.ts:60 claims through claimJournal, so a leftover draining journal is recorded as an abandoned claim and the live journal is never rena… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the state-telemetry drain and eta suites are green, exit 0.
 
 ### S2 — Coordination and memo
 - **Status**: done
