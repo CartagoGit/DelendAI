@@ -25,8 +25,13 @@ import {
 	mergeDelendaiServerEntry,
 	renderDelendaiServerEntry,
 } from './init-render.service';
+import {
+	ensureJsoncAssociation,
+	type IVscodeSettingsResult,
+} from './init-vscode-settings';
 
 export type { IInitWrite, IHostServerEntryWriteResult };
+export type { IVscodeSettingsResult };
 
 /**
  * Writes the canonical `delendai.config.json` for the workspace. A valid
@@ -320,6 +325,20 @@ export const writeGenericMcpJson = (
 		mode,
 		serverName,
 	);
+
+/**
+ * Write `.vscode/settings.json` with the JSONC association.
+ *
+ * The settings file is the operator's, so the writer MERGES: an
+ * existing file keeps every other key and every comment, and only the
+ * association is added. The outcome mirrors the other writers —
+ * `written` when something changed, `merged` when the file already
+ * said it, `exists` when the file is not a settings object we may
+ * touch.
+ */
+export const writeVscodeSettings = (
+	workspace: string,
+): Promise<IVscodeSettingsResult> => ensureJsoncAssociation(workspace);
 
 /** Append-or-overwrite semantics for a generic file inside the workspace. */
 export const writeWorkspaceText = async (

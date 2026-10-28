@@ -109,6 +109,9 @@ export {
 	DEFAULT_CONFIG_FILENAME,
 	parseConfigFile,
 } from '../lib/plugins/load-config-file';
+// @adopter-api a host that writes a config file for a person puts the
+// schema's own prose above each block, so the file explains itself
+export { renderConfigBlockComments } from '../lib/plugins/config-block-docs';
 export { loadPlugins, resolvePluginSpecifier } from '../plugin';
 import { nodeDynamicImport as nodeDynamicImportImpl } from '../node';
 /**
