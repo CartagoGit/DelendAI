@@ -2,14 +2,14 @@
 id: x00955
 title: "One secret rule set redacts and scans, and no value leaves through an error"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 9b6117c5-9378-4f07-950d-56af6133527c
-last-correlation-id: 9b6117c5-9378-4f07-950d-56af6133527c
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T09:25:00.541Z
+last-transition-id: f3cd8abf-da63-4084-9fc7-ce886c9255a2
+last-correlation-id: f3cd8abf-da63-4084-9fc7-ce886c9255a2
+last-transition-from: review
+last-transition-at: 2026-10-28T08:52:51.394Z
 shipped-in:
   - "d23cc0b41"
 ---
@@ -95,8 +95,10 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "A login (profileDir or credentialEnv) in the committed config is never merged for everyone; the existing start-up migration moves it to the person's file (G31)."
   - "The personal file is keyed by host and port, so two remotes on different ports do not share it; a start-up migration renames a file keyed without the port (G61-CONFIG-01)."
 - shipped-in: `d23cc0b41`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d23cc0b41, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 2/2: (1) personal-layer.service.ts:165-172 skips any shared account with a profileDir or a credentialEnv, so a login left in the committed config is never merged for ev… (2) personal-layer.service.ts:33-53 keeps the port in the identity and personalLayerPath hashes it, so two remotes on different ports get two files, and the start-… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 16 tests, exit 0. Recorded rather than blocked: the rewrite left the merge half of withPersonalLayer uncovered (the spec passes an empty personal layer, and the parsePersonalLayer group is gone), so a personal account replacing a shared one of the same id is not asserted; a follow-up should restore that coverage.
 
 ## acceptance
 
