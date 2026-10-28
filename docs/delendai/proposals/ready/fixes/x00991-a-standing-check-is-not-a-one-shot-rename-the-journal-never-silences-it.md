@@ -50,7 +50,7 @@ The engine has no way to express the difference today, because `IMigration` says
 - shipped-in: `5fe3e9334`
 
 ### S2 — The policy-alignment migrator is a standing check
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -59,6 +59,8 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A `push.branch` naming any other branch is left alone, exactly as before."
   - "A workspace whose config agrees with its profile is left byte-identical, on every boot."
 - shipped-in: `5fe3e9334`
+- review-state: in_review
+- review-implementer: minimax-m3.1-flash-preview
 
 ## acceptance
 
