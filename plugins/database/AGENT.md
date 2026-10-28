@@ -40,9 +40,9 @@
 ## Tests
 
 - plugins/database/src/lib/erd/build-mermaid-er.spec.ts
+- plugins/database/src/lib/erd/render-erd-schemas.spec.ts
 - plugins/database/src/lib/erd/render-erd.spec.ts
 - plugins/database/src/lib/introspect/introspect-engine.spec.ts
-- plugins/database/src/lib/query/query-engine.spec.ts
 
 ## Do not
 

@@ -41,8 +41,11 @@ The report lists `removed` (id, path, bytes), `skipped`, `errors`,
 | `s4-s5-driver-snapshots` | `s4-s5-driver/*` | `olderThanDays: 7` |
 | `rules-snapshots` | `rules/*` | `olderThanDays: 30` |
 
-Every `olderThanDays` lifetime is capped at `maxAgeDays` (default 30)
-so a host can **shorten** (never silently lengthen) the defaults.
+The plugin's option `maxAgeDays` (default 30) caps the rules above. The
+project's `config.cache.maxAgeDays`, when set, caps every age rule of
+every owner (the core's evidence, the notification handoffs, these):
+a host can **shorten** every lifetime, never lengthen one. Unset, each
+rule keeps its own.
 
 No rule touches the units (`.worktrees/`), delendai's records or the
 state database: the core refuses a rule over them. Units are removed by

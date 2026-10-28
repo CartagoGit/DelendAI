@@ -218,4 +218,10 @@ describe('accountPromptsOn', () => {
 		expect(await prompts.classify(finding)).toBeUndefined();
 		expect(prompts.stopped()).toBe(true);
 	});
+
+	it('stops at q given for how it is paid, instead of taking the default', async () => {
+		const prompts = accountPromptsOn(prompt(['', 'q']).rl);
+		expect(await prompts.classify(finding)).toBeUndefined();
+		expect(prompts.stopped()).toBe(true);
+	});
 });

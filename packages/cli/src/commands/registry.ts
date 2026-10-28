@@ -286,10 +286,21 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		name: 'agents answer',
+		offline: true,
+		summary:
+			'Keep your answer about an executable offered as an agent, so it is not asked again.',
+		usage: 'agents answer <name> --yes|--no',
+		async run(args, ctx) {
+			const { agentsAnswerCommand } = await import('./agents.command');
+			return agentsAnswerCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'agents show',
 		offline: true,
 		summary:
-			'Greet an ACP agent and show what it says it is; nothing is spent.',
+			"Greet an ACP agent, or read a model provider's catalogue entry, and show what it says it is; nothing is spent.",
 		usage: 'agents show <id> [--write]',
 		async run(args, ctx) {
 			const { agentsShowCommand } = await import('./agents.command');
