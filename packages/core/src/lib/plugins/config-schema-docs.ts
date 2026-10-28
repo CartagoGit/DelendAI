@@ -48,6 +48,11 @@ export const documentedEnum = <const T extends readonly [string, ...string[]]>(
 	values: T,
 	docs: Readonly<Record<T[number], string>>,
 ): z.ZodEnum<T> =>
+	// The cast is not laziness: `z.enum` re-widens a generic tuple to its
+	// own mapped type, and `.meta()` keeps that widened type. The values
+	// are exactly `T` — `documentedEnum` refuses a doc map that does not
+	// cover every one of them, and the emitted schema carries the same
+	// list the caller passed.
 	z.enum(values).meta({ enumDescriptions: docs }) as unknown as z.ZodEnum<T>;
 
 /** How much of the tool surface the MCP server exposes to the model. */
