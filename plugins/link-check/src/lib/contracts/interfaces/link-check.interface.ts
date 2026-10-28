@@ -25,10 +25,24 @@ export interface IParsedTarget {
 	readonly anchor: string | undefined;
 }
 
+/** A document the scan found and did not check, and why. */
+export interface ISkippedDoc {
+	readonly path: string;
+	readonly reason: 'too-large' | 'unreadable';
+}
+
+/** The documents a scan read, and what it left out. */
+export interface IDocScan {
+	readonly docs: readonly ISourceDoc[];
+	readonly skipped: readonly ISkippedDoc[];
+	/** True when the scan stopped at its document cap. */
+	readonly capped: boolean;
+}
+
 /** Injected I/O seam so the scan is unit-testable without a filesystem. */
 export interface ILinkScanDeps {
-	/** The markdown docs to scan (path + content). */
-	readonly listDocs: () => Promise<readonly ISourceDoc[]>;
+	/** The markdown and MDX docs to scan, with the ones it left out. */
+	readonly listDocs: () => Promise<IDocScan>;
 	/** Every repo-relative path that exists (files and their ancestor dirs). */
 	readonly listKnownPaths: () => Promise<ReadonlySet<string>>;
 }

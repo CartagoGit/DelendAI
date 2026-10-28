@@ -8,7 +8,6 @@ import type {
 	IPerfProfileCaptureInput,
 	IPerfProfileCaptureResult,
 	IPerfProfileDeps,
-	PerfProfileFormat,
 } from '../contracts/interfaces/perf.interface';
 
 const HOTSPOT_LINE =
@@ -49,18 +48,15 @@ const parseHotspots = (report: string): readonly IHotspot[] => {
 };
 
 const pickProfiler = (
-	format: PerfProfileFormat,
 	probes: readonly {
 		tool: string;
 		available: boolean;
 		installHint?: { command: string };
 	}[],
 ): { tool: string } | undefined => {
-	const preferred =
-		format === 'flamegraph'
-			? ['0x', 'clinic-flame', 'node-prof']
-			: ['node-prof', '0x', 'clinic-flame'];
-	for (const tool of preferred) {
+	// Both formats run Node's own profiler: `flamegraph` also saves the CPU
+	// profile it records.
+	for (const tool of ['node-prof']) {
 		const match = probes.find(
 			(probe) => probe.tool === tool && probe.available,
 		);
@@ -70,15 +66,12 @@ const pickProfiler = (
 };
 
 const skipHint = (
-	format: PerfProfileFormat,
 	probes: readonly { installHint?: { command: string } }[],
 ): string => {
 	const hinted = probes.find((probe) => probe.installHint !== undefined)
 		?.installHint?.command;
 	if (hinted !== undefined) return hinted;
-	return format === 'flamegraph'
-		? 'Install 0x or clinic on PATH, or rerun with format: hotspots.'
-		: 'Install Node.js with profiler support, or add 0x/clinic to PATH.';
+	return 'Install Node.js with profiler support and put `node` on PATH.';
 };
 
 export const runProfileCapture = async (
@@ -86,11 +79,11 @@ export const runProfileCapture = async (
 	deps: IPerfProfileDeps,
 ): Promise<IPerfProfileCaptureResult> => {
 	const probes = await deps.probeProfilers(input.format);
-	const profiler = pickProfiler(input.format, probes);
+	const profiler = pickProfiler(probes);
 	if (profiler === undefined) {
 		return {
 			ok: 'skipped',
-			hint: skipHint(input.format, probes),
+			hint: skipHint(probes),
 		};
 	}
 
@@ -132,5 +125,8 @@ export const runProfileCapture = async (
 		ok: true,
 		profiler: execution.profiler,
 		hotspots,
+		...(execution.flamegraph === undefined
+			? {}
+			: { flamegraph: execution.flamegraph }),
 	};
 };

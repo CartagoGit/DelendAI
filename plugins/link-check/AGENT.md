@@ -32,6 +32,7 @@
 ## Tests
 
 - plugins/link-check/tests/src/lib/check-links.spec.ts
+- plugins/link-check/tests/src/lib/link-check-coverage.spec.ts
 
 ## Do not
 

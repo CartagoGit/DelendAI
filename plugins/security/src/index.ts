@@ -39,6 +39,7 @@ export default definePlugin({
 				buildSecurityAuditRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,
+					sast: { pluginCacheDir: ctx.pluginCacheDir },
 				}),
 			],
 			knowledge: [

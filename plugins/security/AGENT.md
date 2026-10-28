@@ -8,6 +8,7 @@
 ## Public API
 
 - scanSecrets
+- isTestPath
 - runSecretScan
 - realScanDeps
 - parseAuditJson
