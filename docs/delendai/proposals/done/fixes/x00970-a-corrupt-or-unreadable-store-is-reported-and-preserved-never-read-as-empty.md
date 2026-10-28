@@ -2,14 +2,14 @@
 id: x00970
 title: "A corrupt or unreadable store is reported and preserved, never read as empty"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 8fadd700-824b-405c-8527-9cfe767ce2c3
-last-correlation-id: 8fadd700-824b-405c-8527-9cfe767ce2c3
-last-transition-from: in-progress
-last-transition-at: 2026-10-26T23:51:55.190Z
+last-transition-id: 3429c655-d9db-46a9-9518-aa058962db58
+last-correlation-id: 3429c655-d9db-46a9-9518-aa058962db58
+last-transition-from: review
+last-transition-at: 2026-10-28T09:27:14.737Z
 shipped-in:
   - "cef464f50fec"
 ---
@@ -81,8 +81,10 @@ Joint audit a00095 and gpt-6.1-sol. D48: a corrupt history.json crashes project-
   - "An unreadable lock file is not a release; await_lock keeps waiting and reports the read error (D82, D73)."
   - "The error stream creates its mutex sidecar directory before locking; no ENOENT at start-up (G62)."
 - shipped-in: `cef464f50fec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at cef464f50fec, validate exit 0 and tests 25/25 claimed, no recorded run cited; acceptance 2/2: (1) watcher.ts:53-88 introduces readInFlightState returning claims and an optional readError; isFree at :155-159 is false whenever readError is set, the timeout re… (2) with-file-mutex.ts:490 creates the lock directory before the acquire loop and :497-534 re-creates it on ENOENT up to MAX_DIRECTORY_RECREATIONS = 3, absorbing a… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 25 tests, exit 0, plus the generated-output drift guard packages/core/tests/tool-types-sdk.spec.ts, 1 file / 8 tests, exit 0. Non-blocking observation: the await_lock timeout diagnosis still reads the lock through the untouched lock-snapshot helper, so the verdict printed beside the readError can still read free-now for a corrupt lock.
 
 ## acceptance
 
