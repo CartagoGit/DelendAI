@@ -27,6 +27,7 @@ import { discoverProviders } from '../bootstrap';
 import type { IDiscoveryMode } from '../contracts/interfaces/discovery-consent.interface';
 import type { ProbeRunner } from '../healthcheck/probe';
 import { DiscoverProvidersOutputSchema } from '../schemas';
+import type { IClientListedModels } from '../contracts/interfaces/acp-roster.interface';
 import { proposedRosterEntries } from '../services/acp-roster.service';
 import {
 	askThroughElicitation,
@@ -41,14 +42,18 @@ export interface IDiscoverProvidersToolOptions {
 	readonly consentPath: string;
 	/** Roster entries proposed from ACP agents and catalogue keys; injected by specs. */
 	readonly propose?:
-		| (() => Promise<readonly IProviderCapabilities[]>)
+		| ((
+				clientModels: readonly IClientListedModels[],
+		  ) => Promise<readonly IProviderCapabilities[]>)
 		| undefined;
 }
 
 /** What this machine's agents and keys make possible, as roster entries. */
 const proposeFromMachine =
 	(workspace: string) =>
-	async (): Promise<readonly IProviderCapabilities[]> => {
+	async (
+		clientModels: readonly IClientListedModels[],
+	): Promise<readonly IProviderCapabilities[]> => {
 		const [{ agents }, catalogue] = await Promise.all([
 			listAgents({ workspace }),
 			readModelCatalogue(),
@@ -59,6 +64,7 @@ const proposeFromMachine =
 				canStart: agent.launch !== undefined,
 			})),
 			catalogue,
+			clientModels,
 			env: process.env,
 			existing: [],
 			hostByok: await hostByokRoster(),
@@ -114,9 +120,14 @@ export const buildDiscoverProvidersRegistration = (
 								};
 					}),
 				);
+				const clientModels = detected.flatMap((provider) =>
+					'models' in provider && provider.models?.listed === true
+						? provider.models.providers
+						: [],
+				);
 				const proposed = await (
 					options.propose ?? proposeFromMachine(options.workspaceRoot)
-				)().catch(() => []);
+				)(clientModels).catch(() => []);
 				return toolJson({
 					consent,
 					detected,

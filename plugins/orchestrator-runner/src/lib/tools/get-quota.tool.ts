@@ -28,14 +28,14 @@ export const buildGetQuotaRegistration = (
 	id: 'get_quota',
 	tags: ['orchestrator-runner', 'lazy', 'quota'],
 	summary:
-		'Read the per-provider quota snapshot (populated by the bootstrap layer in a later slice).',
+		'Read what each account has left per window, as its providers reported it on their last calls.',
 	descriptionKey: 'delendai_orchestrator-runner_get_quota',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_get_quota`,
 			{
 				description:
-					'Read the recorded per-provider quota snapshot (limits, usage and reset times per window). The snapshot is written by the bootstrap/quota layer in a later slice; until then this returns {present:false} with an empty roster and a note, never an error — a quota miss must not break routing.',
+					"Read the recorded per-provider quota snapshot (limits, usage and reset times per window). Each call through invoke writes what its provider reports (rate-limit headers, or the vendor's own quota command such as `mmx quota show`) into the groups of the account it runs on, so the snapshot is empty until a provider on a declared account has been called. Returns {present:false} with a note saying what to declare, never an error — a quota miss must not break routing.",
 				inputSchema: InputSchema,
 				outputSchema: GetQuotaOutputSchema,
 			},
@@ -48,7 +48,7 @@ export const buildGetQuotaRegistration = (
 					...(snapshot.present
 						? {}
 						: {
-								note: 'No quota snapshot yet. Run the bootstrap/quota layer (a later slice) to populate it.',
+								note: 'No quota recorded yet: it is written by calls through invoke to providers that run on a declared account. Declare the accounts with `delendai accounts offer`, then route work through invoke.',
 							}),
 				});
 			},

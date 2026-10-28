@@ -60,6 +60,17 @@ export const requiredChecksVerdict = (
 	};
 };
 
-/** The integration branch certifies arming only once its full run is green. */
-export const integrationAllowsArming = (state: string): boolean =>
-	state === 'certified';
+/**
+ * Whether the integration branch lets the queue arm: once its full run is
+ * green, or while that run is still going on a commit whose parent was
+ * certified. Waiting for every merge's own full run (nine minutes) before
+ * arming the next made the queue land one change a run; a red verdict
+ * still stops everything and arms only the repair, so at most one merge
+ * goes in on a base that is not proven yet.
+ */
+export const integrationAllowsArming = (
+	state: string,
+	parentState?: string,
+): boolean =>
+	state === 'certified' ||
+	(state === 'pending' && parentState === 'certified');

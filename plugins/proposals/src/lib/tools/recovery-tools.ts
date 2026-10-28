@@ -45,6 +45,7 @@ import {
 	logForcedTransition,
 } from '../services/proposal-state';
 import type { IForceTransitions } from '../contracts/interfaces/forced-transition.interface';
+import { isKnownStatus } from './transition/dfa.tool';
 /** Lock-file schema version written when no lock exists yet. */
 const DEFAULT_LOCK_VERSION = 1;
 /** Minutes after which an unrefreshed claim is considered abandoned. */
@@ -127,9 +128,6 @@ interface ILocatedProposal {
 	readonly frontmatter: Record<string, unknown>;
 	readonly status: string;
 }
-
-const isKnownStatus = (value: string): value is IProposalStatus =>
-	value in PROPOSAL_STATUSES;
 
 const RECOVERY_EVENT_SCHEMA = z.object({
 	kind: z.enum(['agent-alive', 'agent-idle', 'agent-dead']),
