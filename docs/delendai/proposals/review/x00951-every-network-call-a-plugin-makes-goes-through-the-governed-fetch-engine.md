@@ -55,8 +55,10 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "A `path` that is an absolute URL or leaves baseUrl's origin is refused before the token is attached (D54)."
   - "api_call declares its network effect in `effects:` (G102)."
 - shipped-in: `1a0ef9778616`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ff2b7f7e209c, validate exit 0 and tests 50/50 claimed, no recorded run cited; acceptance 3/3: (1) openapi.ts:369-400 fetches the spec through the allow-listed engine (or webFetch) with the allow list, the max bytes, the timeout and the Accept header, and a … (2) http-client.ts:204-235 resolves the path against the base and throws an invalid-config error when the origin differs or the path leaves the base path, before t… (3) api-call.tool.ts:119-121 declares the network effect in the effects field and drops the free-form effects tag; the classifier reads that field (packages/contra… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 24 tests and 4 files / 26 tests, exit 0. Observation outside the criterion's wording: api_validate also reaches the network for a specUrl but does not declare the effect.
 
 ### S3 — gitlab, forge, observability and usage-tracking cap and declare
 - **Status**: done
