@@ -176,6 +176,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Read every *.md audit in the audits directory, parse + deduplicate + average scores, and return the master view + markdown. By default, auto-scaffold a native plan with linked fix proposals when the `proposals` plugin is loaded and `autoScaffoldProposals` is enabled.',
 					audit_run:
 						'Dispatch the audit brief (general / specific / monorepo modes) to one or more LLM targets in parallel, save the markdown reports, consolidate the findings into a native plan by default, and scaffold linked child proposals for every actionable severity band (FATAL/BAD/MINOR).',
+					audit_close:
+						'Audit protocol: claim a reviewer seat (exclusive), commit a Phase A file, and close the audit with the evidence-contract check, the inventories and a recorded consensus per finding.',
 					self_audit:
 						'Aggregate self-audit findings into one ranked action backlog.',
 				},
