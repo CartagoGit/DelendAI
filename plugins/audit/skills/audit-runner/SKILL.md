@@ -1,6 +1,7 @@
 ---
 name: delendai-audit-runner
 appliesTo: ['@delendai/audit']
+tools: ['delendai_audit_audit_close']
 description: The tool-level workflow for running and consolidating an delendai audit (audit_plan -> fresh session -> save .md -> audit_consolidate), the 5-band/9-dimension rubric, and the ready-vs-done lifecycle decision. For the exhaustive code-reading methodology itself, see the delendai-audit-playbook skill instead — this one is the surface contract, not the reading checklist.
 ---
 
@@ -18,6 +19,11 @@ description: The tool-level workflow for running and consolidating an delendai a
    reviewers' outputs comparable.
 4. Save that session's output as a `.md` following the exact filename rule
    (below) under `docs/delendai/proposals/in-progress/` (or wherever the brief says).
+4b. Reviewers: claim a seat with `audit_close { action: "claim-seat", reviewer, seat }`
+   (a held seat is refused) and commit your own report with
+   `audit_close { action: "commit-phase-a", reviewer, file }`; then
+   `audit_consolidate { reviewer }` may read the others'. Close the audit with
+   `audit_close { action: "close", threshold? }`.
 5. Have 2+ reports? -> `audit_consolidate { auditDir?, topActions? }` to
    dedupe findings by title+file and average per-dimension scores.
 6. Closing the audit -> internal slices exist? `ready/` with `status: ready`.
