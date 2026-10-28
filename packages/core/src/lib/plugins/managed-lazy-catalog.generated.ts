@@ -1081,7 +1081,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				tags: ['perf', 'benchmark'],
 				toolSummaries: {
 					perf_bench:
-						'Run named benchmark samples, compute ops/s, and compare against an optional inline baseline.',
+						'Summarize benchmark timings the caller measured: ops/s, mean, p95, and regressions against an optional baseline.',
 					perf_bundle:
 						'Measure files matching globs and flag those over per-file / total byte budgets. Offline.',
 					perf_profile:
@@ -1552,7 +1552,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					security_sast:
 						'Scan source for SAST findings via semgrep or ast-grep rule packs, with a bounded regex fallback.',
 					security_audit:
-						'Run every scanner (secrets + dependency CVEs + licenses) and return one ranked backlog.',
+						'Run every scanner (secrets + SAST + dependency CVEs + licenses) and return one ranked backlog.',
 				},
 			},
 		),
