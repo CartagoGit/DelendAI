@@ -68,8 +68,10 @@ Joint audit a00095 and gpt-6.1-sol. G117: redactSecrets, the only barrier of the
   - "The raw-answer cache stores redacted content only (EXT-04)."
   - "The bypass-log fallback redacts the reason (PROP-LOG01)."
 - shipped-in: `d23cc0b41`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at d23cc0b41, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 3/3: (1) check-schema.ts:105 reports that the value is not one of the allowed enum values and :133 re-attaches the variable key, so the finding names the variable and t… (2) capability-gateway.service.ts:47 writes the redacted text into the raw-answer cache and capability-gateway.service.spec.ts:55-72 writes an answer quoting an AW… (3) peer-review-bypass-log.ts:97 redacts at the source and the console.warn fallback prints the already-redacted reason; plan-closure-bypass-log.ts:81 does the sam… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the env suite 1 file / 18 tests plus the external-mcps and proposals suites, exit 0.
 
 ### S4 — error-reporting is opt-in and first-party only
 - **Status**: done
