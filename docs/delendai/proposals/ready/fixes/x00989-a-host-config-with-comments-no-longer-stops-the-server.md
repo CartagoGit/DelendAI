@@ -22,11 +22,13 @@ The premise the strictness rested on is false. The migrator's own header says th
 
 The second half is the same defect seen from the other side: a file delendai does not own, in a format delendai chose, took down an editor integration that had nothing to do with it. The repository already has the answer for that shape of problem — the boot-time reconciliation refuses to start a DEGRADED workspace unless `DELENDAI_STARTUP_STRICT=1`, because a degraded workspace is exactly the situation in which an operator needs the server up to ask it what is wrong. The migration engine answered the same situation with a crash.
 
+A third shape showed up in the same workspace once the comments were gone (2026-10-28, 07:09): the start refused to boot over `plugins.commit-policy.options.push.branch`. The refusal itself is correct — the profile reaches `develop` through the forge and never by a direct push, so naming `develop` as the push target says the opposite of the profile. What is wrong is that the setting was still there: the `policyAlignmentMigrator` removes the settings the profile contradicts, but only the ones the advisories name (`onCommit`, `everyNCommits`, `everyNMinutes`), and not the one the refusal names. The settings that merely warn are healed automatically; the one that stops the server is left for the owner to find. The same file, written by an older delendai, is healed in one case and fatal in the other.
+
 ## non-goals
 
 - Not changing WHAT a host config is rewritten into. The rewrite rules, the fields walked, the identity renames and the resulting content are exactly today's; a plain-JSON `.vscode/mcp.json` must come out byte-for-byte as it does now.
 - Not changing `.cursor/mcp.json` or `.continue/config.json`: they are already read tolerantly, and they are left exactly as they are.
-- Not changing the fail-closed behaviour of a development-policy contradiction (`push-target-contradicts-policy` and its siblings). That one is a configuration error with a stated remedy — removing `push.branch` from the offending `delendai.config.json` — and not a crash; the remedy is the owner's to apply.
+- Not changing the fail-closed behaviour of a development-policy contradiction (`push-target-contradicts-policy` and its siblings). The refusal stays: the start still refuses a policy it cannot honour. What changes is that the setting the refusal names is now removed automatically, the same way the settings the non-blocking advisories name already are.
 - Not touching the Codex TOML path or the `mcpServers`-array shape: they are rewritten by their own rules and are not affected by comments in a JSON file.
 
 ## slices
@@ -54,6 +56,17 @@ The second half is the same defect seen from the other side: a file delendai doe
   - "The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr."
   - "A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it."
 
+### S3 — The push target the profile refuses is removed, not just reported
+- **Status**: pending
+- **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
+- **Gate**: lint
+- acceptance:
+  - "The rule that refuses a start lives in ONE module, and both the validator and the migration read it there: the migration removes exactly the setting the refusal names, never a condition of its own."
+  - "`plugins.commit-policy.options.push.branch` naming the integration branch under a profile that reaches it through the forge is removed by the policy-alignment migration, keeping the file's comments, its key order and the rest of the push settings."
+  - "A `push.branch` naming ANY OTHER branch is left alone: a feature branch is a legitimate push target."
+  - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
+  - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
+
 ## acceptance
 
 - A `.vscode/mcp.json` whose only departure from JSON is a line comment is planned and applied without throwing, and the migration rewrites it exactly as the plain-JSON path does.
@@ -65,3 +78,8 @@ The second half is the same defect seen from the other side: a file delendai doe
 - The run still stops at the failed migration — the rule that a failure must not be followed by more migrations on top of an unfinished one is unchanged.
 - The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr.
 - A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it.
+- The rule that refuses a start lives in ONE module, and both the validator and the migration read it there: the migration removes exactly the setting the refusal names, never a condition of its own.
+- `plugins.commit-policy.options.push.branch` naming the integration branch under a profile that reaches it through the forge is removed by the policy-alignment migration, keeping the file's comments, its key order and the rest of the push settings.
+- A `push.branch` naming ANY OTHER branch is left alone: a feature branch is a legitimate push target.
+- The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy.
+- The migration is idempotent: a second run finds nothing to remove and changes no byte.
