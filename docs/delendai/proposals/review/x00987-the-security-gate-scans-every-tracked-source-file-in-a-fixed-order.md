@@ -2,10 +2,16 @@
 id: x00987
 title: "The security gate scans every tracked source file, in a fixed order"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-10-27
+last-transition-id: 4cb8a2aa-f26c-49b8-9580-44efa30a67e2
+last-correlation-id: 4cb8a2aa-f26c-49b8-9580-44efa30a67e2
+last-transition-from: in-progress
+last-transition-at: 2026-10-28T09:31:50.230Z
+shipped-in:
+  - "53f8cbf5d"
 ---
 
 # x00987 — The security gate scans every tracked source file, in a fixed order
@@ -30,27 +36,36 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
 - global_gate: type
 
 ### S1 — The stack walk lists every source file, in name order
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/security/src/lib/sast/stack-detect.ts`, `plugins/security/src/lib/sast/stack-detect.spec.ts`
 - **Gate**: type
 - acceptance:
   - "detectStack on a workspace of 4,100 source files lists all 4,100, sorted by path (stack-detect.spec.ts)."
+- shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The gate reads every tracked file and its baseline is empty
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/security.script.ts`, `tools/scripts/verify/security.baseline.json`, `plugins/security/src/lib/secrets/run-scan.ts`, `plugins/security/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "verify:security's SAST input is `git ls-files` minus test paths, and an empty listing fails the gate instead of passing it."
   - "The secret scan in the gate has no file cap."
   - "security.baseline.json holds no critical, and `bun run verify:security` passes."
+- shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The flagged statements are written out in full
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state-sqlite/src/lib/contracts/constants/coordination.constant.ts`, `packages/state-sqlite/src/lib/coordination-store.ts`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`
 - **Gate**: type
 - acceptance:
   - "The full SAST scan reports no critical in packages/state-sqlite or packages/roadmap-sqlite (their statements name their tables and clauses in full); `bun run test:sqlite` and sqlite-timeline.store.spec.ts pass."
+- shipped-in: `53f8cbf5d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
