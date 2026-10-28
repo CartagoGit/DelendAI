@@ -43,6 +43,8 @@ export {
 	providerPromptRequest,
 } from './lib/shared/provider-api-client.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
+export type { IHostByokProvider } from './lib/contracts/interfaces/host-byok.interface';
+export { hostByokRoster } from './lib/shared/host-model-roster.service';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
 export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';

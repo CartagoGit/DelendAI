@@ -173,6 +173,77 @@ describe('runPendingMigrations', () => {
 		expect(result.outcomes).toHaveLength(1);
 	});
 
+	it('records a migration that cannot PLAN as failed instead of throwing', async () => {
+		// A migration that cannot read its input is a failed migration.
+		// Throwing it out of the engine took the server down with it, and
+		// left the operator with a dead editor integration and no report
+		// of what was wrong.
+		const applied: string[] = [];
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+			],
+			journal: journalOver(applied),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(result.outcomes[0]).toMatchObject({
+			status: 'failed',
+			id: 'v1',
+		});
+		const outcome = result.outcomes[0];
+		expect(outcome?.status === 'failed' ? outcome.reason : '').toContain(
+			'cannot read the host config',
+		);
+		// Not recorded: the next boot retries it.
+		expect(applied).toEqual([]);
+	});
+
+	it('stops at a migration that cannot plan', async () => {
+		const second = vi.fn(async () => undefined);
+		const result = await runPendingMigrations({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+				migration('v2', { apply: second }),
+			],
+			journal: journalOver(),
+			ctx: { workspaceRoot: ROOT, dryRun: false },
+		});
+		expect(second).not.toHaveBeenCalled();
+		expect(result.outcomes).toHaveLength(1);
+	});
+
+	it('boots on a workspace whose migration cannot plan', async () => {
+		// The boot path: the guard runs before the server starts, and a
+		// guard that throws leaves the editor with a server that dies on
+		// every start.
+		const root = mkdtempSync(join(tmpdir(), 'x00989-plan-'));
+		roots.push(root);
+		mkdirSync(join(root, '.delendai'), { recursive: true });
+		const result = await ensureWorkspaceMigrated({
+			migrations: [
+				migration('v1', {
+					plan: async () => {
+						throw new Error('cannot read the host config');
+					},
+				}),
+			],
+			journal: journalOver(),
+			workspaceRoot: root,
+		});
+		expect(result.outcomes[0]).toMatchObject({
+			status: 'failed',
+			id: 'v1',
+		});
+	});
+
 	it('runs migrations in declaration order, not alphabetically', async () => {
 		// Declaration order IS the dependency statement; an alphabetical
 		// accident is not.

@@ -4,7 +4,7 @@
  * self-audit aggregator).
  */
 export { scanSecrets } from '../lib/secrets/scan-secrets';
-export { runSecretScan } from '../lib/secrets/run-scan';
+export { isTestPath, runSecretScan } from '../lib/secrets/run-scan';
 export { realScanDeps } from '../lib/secrets/real-deps';
 export { parseAuditJson, queryOsv, runAuditCommand } from '../lib/deps/exports';
 export {
