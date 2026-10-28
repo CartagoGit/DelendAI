@@ -1,20 +1,20 @@
 /**
  * real-deps.ts — the production I/O adapter: discover workspace packages by
- * reading each manifest under the conventional workspace roots and collecting
- * their declared dependency names. The only module here that touches the OS.
+ * reading each manifest the root `package.json` workspaces name and
+ * collecting their declared dependency names. The only module here that
+ * touches the OS.
  */
-import { readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	SafeWorkspaceReader,
+	workspacePackageDirs,
+} from '@delendai/core/runtime';
 
 import type {
 	IDiagramDeps,
 	IWorkspacePackage,
 } from '../contracts/interfaces/graph.interface';
-
-/** Conventional monorepo roots that hold workspace packages. */
-const WORKSPACE_ROOTS = ['packages', 'plugins', 'apps', 'extensions'];
 
 const DEP_SECTIONS = [
 	'dependencies',
@@ -52,21 +52,20 @@ const readManifest = async (
 export const realDiagramDeps = (workspaceRootAbs: string): IDiagramDeps => ({
 	listWorkspacePackages: async () => {
 		const out: IWorkspacePackage[] = [];
+		const seen = new Set<string>();
+		const add = (manifest: IWorkspacePackage | undefined): void => {
+			if (manifest === undefined || seen.has(manifest.name)) return;
+			seen.add(manifest.name);
+			out.push(manifest);
+		};
 		// The repo root itself is a package too.
-		const root = await readManifest(join(workspaceRootAbs, 'package.json'));
-		if (root !== undefined) out.push(root);
-		for (const dir of WORKSPACE_ROOTS) {
-			const entries = await readdir(join(workspaceRootAbs, dir), {
-				withFileTypes: true,
-			}).catch(() => []);
-			for (const entry of entries) {
-				if (!entry.isDirectory()) continue;
-				const manifest = await readManifest(
-					join(workspaceRootAbs, dir, entry.name, 'package.json'),
-				);
-				if (manifest !== undefined) out.push(manifest);
-			}
-		}
+		add(await readManifest(join(workspaceRootAbs, 'package.json')));
+		for (const folder of await workspacePackageDirs(workspaceRootAbs))
+			add(
+				await readManifest(
+					join(workspaceRootAbs, folder, 'package.json'),
+				),
+			);
 		return out;
 	},
 });

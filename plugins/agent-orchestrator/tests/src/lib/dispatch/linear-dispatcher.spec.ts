@@ -87,7 +87,10 @@ describe('LinearDispatcher', () => {
 		// from a later A,B,A loop signal.
 		const port = new FakeDispatchPort();
 		const out = await new LinearDispatcher(PLAN, port, 't1').run();
-		expect(out.ok).toBe(true);
+		// The verify step is the orchestrator's own and has not run yet: the
+		// plan is not done until it has.
+		expect(out.ok).toBe(false);
+		expect(out.error).toMatch(/verify step\(s\) 3 still to run/u);
 		expect(out.steps).toHaveLength(3);
 		expect(out.steps[0]?.ok).toBe(true);
 		expect(out.steps[0]?.subagentIds).toHaveLength(3);

@@ -189,11 +189,25 @@ export interface ILogIncidentsOptions {
 	readonly agent?: string | undefined;
 	/** Max recent events kept per cluster. Default 5. */
 	readonly recentLimit?: number | undefined;
+	/** The clock, for the age of the newest failure. */
+	readonly now?: (() => number) | undefined;
 }
 
 export interface ILogIncidentsResult {
 	readonly incidents: readonly ILogIncident[];
 	readonly totalIncidents: number;
+	/**
+	 * The span the clusters were counted over: the one asked for, or the
+	 * day up to the newest failure, so a recurrence from last month does not
+	 * read as broken now. `newestFailureAgeMs` says how current that is.
+	 */
+	readonly window?: {
+		readonly since: string;
+		readonly until: string;
+		readonly newestFailureAgeMs: number;
+	};
+	/** Clusters below `minCount` in the window, left out of `incidents`. */
+	readonly belowMinCount: number;
 }
 
 const messageOfEvent = (event: ILogEvent): string => {
@@ -218,6 +232,9 @@ const hasStackOfEvent = (event: ILogEvent): boolean => {
 	return typeof (error as Record<string, unknown>).stack === 'string';
 };
 
+/** Without a `since`, incidents are counted over the day up to the newest failure. */
+const LOG_INCIDENTS_DEFAULT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 const sha1 = (input: string): string =>
 	createHash('sha1').update(input).digest('hex').slice(0, 16);
 
@@ -236,7 +253,30 @@ export const logIncidents = async (
 		...(options.agent !== undefined ? { agent: options.agent } : {}),
 	};
 	const events = await store.readRange(filter);
-	const failing = events.filter((event) => isErrorOutcome(event.outcome));
+	const allFailing = events.filter((event) => isErrorOutcome(event.outcome));
+	const newest = allFailing.reduce<string | undefined>(
+		(latest, event) =>
+			latest === undefined || compareIso(event.ts, latest) > 0
+				? event.ts
+				: latest,
+		undefined,
+	);
+	// Without a `since`, "broken right now" is the day up to the newest
+	// failure, never the whole retained history.
+	const windowSince =
+		options.since ??
+		(newest === undefined
+			? undefined
+			: new Date(
+					new Date(newest).getTime() -
+						LOG_INCIDENTS_DEFAULT_WINDOW_MS,
+				).toISOString());
+	const failing =
+		windowSince === undefined
+			? allFailing
+			: allFailing.filter(
+					(event) => compareIso(event.ts, windowSince) >= 0,
+				);
 	// Cluster deterministically: same (toolName, error.message hash) collapse
 	// into one cluster. We use a sha1-prefixed key (16 hex chars) so cluster
 	// ids are stable across processes — the operator can grep the cache
@@ -282,8 +322,12 @@ export const logIncidents = async (
 		}
 	}
 	const incidents: ILogIncident[] = [];
+	let belowMinCount = 0;
 	for (const cluster of clusters.values()) {
-		if (cluster.events.length < minCount) continue;
+		if (cluster.events.length < minCount) {
+			belowMinCount += 1;
+			continue;
+		}
 		// sort events ascending for stable recent slice
 		const sorted = [...cluster.events].sort((a, b) =>
 			compareIso(a.ts, b.ts),
@@ -308,8 +352,23 @@ export const logIncidents = async (
 		if (b.count !== a.count) return b.count - a.count;
 		return compareIso(a.firstSeen, b.firstSeen);
 	});
+	const until = options.until ?? newest;
 	return {
 		incidents,
 		totalIncidents: incidents.length,
+		...(windowSince === undefined ||
+		until === undefined ||
+		newest === undefined
+			? {}
+			: {
+					window: {
+						since: windowSince,
+						until,
+						newestFailureAgeMs:
+							(options.now ?? Date.now)() -
+							new Date(newest).getTime(),
+					},
+				}),
+		belowMinCount,
 	};
 };

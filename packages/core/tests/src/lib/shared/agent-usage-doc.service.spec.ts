@@ -14,7 +14,9 @@ import type { IKnownAgent } from '../../../../src/lib/contracts/interfaces/decla
 import { USAGE_PAGES_DIR } from '../../../../src/lib/contracts/constants/agent-usage-doc.constant';
 import {
 	renderAgentUsagePage,
+	renderProviderUsagePage,
 	writeAgentUsagePage,
+	writeProviderUsagePage,
 } from '../../../../src/lib/shared/agent-usage-doc.service';
 
 const agent: IKnownAgent = {
@@ -114,5 +116,55 @@ describe('writeAgentUsagePage', () => {
 			reason: 'a page written by hand is never replaced',
 		});
 		expect(readFileSync(hand, 'utf8')).toBe('# my notes');
+	});
+});
+
+describe("a model provider's usage page", () => {
+	const provider = {
+		id: 'zai',
+		name: 'Z.AI',
+		env: ['ZHIPU_API_KEY', 'ZAI_API_KEY'],
+		models: ['glm-5', 'glm-5.3'],
+		api: 'https://api.z.ai/api/paas/v4',
+		npm: '@ai-sdk/openai-compatible',
+	};
+
+	it('says how it is reached, how it logs in and its models, from its entry alone', () => {
+		const page = renderProviderUsagePage({
+			provider,
+			catalogueDate: '2026-10-27T00:00:00.000Z',
+		});
+		expect(page).toContain('# Z.AI');
+		expect(page).toContain(
+			'the `@ai-sdk/openai-compatible` family at https://api.z.ai/api/paas/v4',
+		);
+		expect(page).toContain('a key in `ZHIPU_API_KEY`, `ZAI_API_KEY`');
+		expect(page).toContain('`glm-5`, `glm-5.3`');
+		expect(page).toContain(
+			'the model catalogue of 2026-10-27T00:00:00.000Z',
+		);
+	});
+
+	it("is written beside the agents' pages, keeps the person's notes, and is rewritten only on change", async () => {
+		const workspace = mkdtempSync(join(tmpdir(), 'provider-page-'));
+		const first = await writeProviderUsagePage({ workspace, provider });
+		expect(first.written).toBe(true);
+		expect(first.path).toBe(join(workspace, 'docs/delendai/models/zai.md'));
+		const page = readFileSync(first.path, 'utf8').replace(
+			'Anything written here is kept when the page is regenerated.',
+			'Our proxy needs the VPN.',
+		);
+		writeFileSync(first.path, page);
+		expect(
+			(await writeProviderUsagePage({ workspace, provider })).written,
+		).toBe(false);
+		const changed = await writeProviderUsagePage({
+			workspace,
+			provider: { ...provider, models: ['glm-6'] },
+		});
+		expect(changed.written).toBe(true);
+		expect(readFileSync(first.path, 'utf8')).toContain(
+			'Our proxy needs the VPN.',
+		);
 	});
 });

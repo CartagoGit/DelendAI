@@ -124,7 +124,7 @@ export const buildSecurityDepsRegistration = (
 			`${options.namespacePrefix}_security_deps`,
 			{
 				description:
-					"Scan the project's dependencies for known vulnerabilities via bun/npm/yarn audit, normalize each result into the shared finding shape, and optionally enrich with OSV lookups. `json` selects the package manager (`auto` prefers the detected lockfile, else bun). `includeOsv` is opt-in and the only network call.",
+					"Scan the project's dependencies for known vulnerabilities via bun/npm/yarn audit, normalize each result into the shared finding shape, and optionally enrich with OSV lookups. `json` selects the package manager (`auto` prefers the detected lockfile, else bun). The audit itself asks the package registry (network); `includeOsv` adds OSV lookups (also network) and is opt-in.",
 				inputSchema: z
 					.object({
 						cwd: z.string().optional(),

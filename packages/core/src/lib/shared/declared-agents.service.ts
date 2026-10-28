@@ -103,6 +103,8 @@ export const knownAgents = (input: {
 	readonly installedDir?:
 		| ((agent: IRegistryAgent) => string | undefined)
 		| undefined;
+	/** Candidates the person already answered, by name: never offered again. */
+	readonly answered?: ReadonlySet<string> | undefined;
 }): readonly IKnownAgent[] => {
 	const detected = input.detected ?? [];
 	const foundFor = (id: string) =>
@@ -140,8 +142,26 @@ export const knownAgents = (input: {
 			found,
 		});
 	}
+	// A candidate the person answered, or declared since, is not offered
+	// again: the declaration stands for it.
+	const declaredNames = new Set(
+		[...(input.project ?? []), ...(input.personal ?? [])].flatMap(
+			(agent) => [
+				agent.id,
+				...(agent.command === undefined
+					? []
+					: [agent.command.split('/').pop() ?? agent.command]),
+			],
+		),
+	);
 	for (const each of detected)
-		if (each.registryId === undefined)
+		if (
+			each.registryId === undefined &&
+			!(
+				each.foundIn === 'path-candidate' &&
+				(declaredNames.has(each.name) || input.answered?.has(each.name))
+			)
+		)
 			byId.set(`${each.foundIn}:${each.name}`, {
 				id: each.name,
 				name: each.name,
