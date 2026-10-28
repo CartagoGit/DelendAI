@@ -42,8 +42,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "A ref or range starting with `-` is refused, and git receives `--end-of-options` before it (G115)."
   - "Repository and ticket selectors are validated against owner/name and numeric patterns before reaching gh, glab or a URL path (G116)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 75/75 claimed, no recorded run cited; acceptance 3/3: (1) proposal-acceptance.ts:341 strips quoted spans before testing for shell metacharacters and :419 refuses with the reason that no criterion reaches a shell, with… (2) git.ts:309 refuses a ref starting with a hyphen and :317 passes --end-of-options before it; changelog.ts:118 refuses a range starting with a hyphen and :134 pa… (3) github-selectors.constant.ts defines the owner, repository and number patterns and they are applied in catalog.ts:184 and :989, write-tools.ts:36, :303 and :32… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: proposals and git 4 files / 52 tests, github 3 files / 15 tests, plus the forge regression 2 files / 8 tests, all exit 0. Residual outside the criterion's wording, for a follow-up: catalog.ts still accepts a bare non-empty string for workflowId, runId, jobId, releaseId, deploymentId and for sha, ref and branch, each interpolated into a repository URL path.
 
 ### S2 — Read-only queries and settlement commands
 - **Status**: done
