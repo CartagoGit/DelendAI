@@ -23,6 +23,7 @@ import type {
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
 import { policyAlignmentAdvisories } from '../../development-policy/policy-alignment-advisories';
+import { pushTargetContradiction } from '../../development-policy/push-target-contradiction';
 import { readWorkspacePolicy } from '../../work-units/development-policy.service';
 import { DEVELOPMENT_POLICY_CONFIG_FILE } from './development-policy.constant';
 import {
@@ -60,19 +61,40 @@ const contradictedPushKeys = async (
 		() => undefined,
 	);
 	if (policy === undefined) return undefined;
-	const contradicted = policyAlignmentAdvisories(
+	const keys = CONTRADICTED_PUSH_KEYS.filter(
+		(key) => push[key] !== undefined,
+	);
+	// The setting that makes the start IMPOSSIBLE, not merely unwise.
+	// The automatic push settings are a warning the owner reads; this
+	// one is a refusal that stops the server, and the owner learns it
+	// as a dead editor integration rather than as a message. It is
+	// removed here for the same reason the others are: the file was
+	// written by an older delendai, and the start already says which
+	// setting to remove.
+	const targetContradicted =
+		pushTargetContradiction(policy, options) !== undefined;
+	if (targetContradicted) keys.push('branch');
+	const automationContradicted = policyAlignmentAdvisories(
 		policy,
 		options,
 		bag(bag(bag(config?.plugins)?.git)?.options),
 	).some(
 		(violation) => violation.rule === 'push-automation-contradicts-policy',
 	);
-	if (!contradicted) return undefined;
-	const keys = CONTRADICTED_PUSH_KEYS.filter(
-		(key) => push[key] !== undefined,
-	);
+	if (!targetContradicted && !automationContradicted) return undefined;
 	return keys.length === 0 ? undefined : { text, keys };
 };
+
+/**
+ * Why the keys are being removed, in the words the start would have
+ * used. A migration that removes a setting reports the reason it
+ * removed it, so the journal and the report say the same thing the
+ * refusal said.
+ */
+const removalReason = (keys: readonly string[]): string =>
+	keys.includes('branch')
+		? 'the development profile reaches the integration branch through the forge and never by a direct push, so naming it as the push target made every start refuse'
+		: 'the development profile never pushes the checked-out branch, so every automatic push was refused';
 
 export const createPolicyAlignmentMigrator = (): IMigration => ({
 	id: POLICY_ALIGNMENT_MIGRATOR_ID,
@@ -87,7 +109,7 @@ export const createPolicyAlignmentMigrator = (): IMigration => ({
 			: [
 					{
 						kind: 'remove-contradicted-settings',
-						detail: `remove ${found.keys.map((key) => `\`${PUSH_PATH.join('.')}.${key}\``).join(', ')} from ${DEVELOPMENT_POLICY_CONFIG_FILE}: the development profile never pushes the checked-out branch, so every automatic push was refused`,
+						detail: `remove ${found.keys.map((key) => `\`${PUSH_PATH.join('.')}.${key}\``).join(', ')} from ${DEVELOPMENT_POLICY_CONFIG_FILE}: ${removalReason(found.keys)}`,
 					},
 				];
 	},
