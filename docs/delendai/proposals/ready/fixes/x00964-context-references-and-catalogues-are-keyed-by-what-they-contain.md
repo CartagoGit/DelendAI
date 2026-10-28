@@ -2,14 +2,14 @@
 id: x00964
 title: "Context references and catalogues are keyed by what they contain"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 468ed77f-d87b-4323-8269-f1c9f4addf65
-last-correlation-id: 468ed77f-d87b-4323-8269-f1c9f4addf65
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T09:15:19.708Z
+last-transition-id: eba54e8a-0318-489c-a23c-5808e8adf33f
+last-correlation-id: eba54e8a-0318-489c-a23c-5808e8adf33f
+last-transition-from: review
+last-transition-at: 2026-10-28T09:03:35.562Z
 shipped-in:
   - "ceb5903cb"
 ---
@@ -46,15 +46,17 @@ gpt-6.1-sol's contribution to a00095. CTX-01: the delta reference embeds the ful
 - review-log: approved by minimax-m3.1-flash-preview — verified at ceb5903cb, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 2/2: (1) tool-result-deltas.ts:41-52 builds one reference from the content digest and returns exactly one ref, with no second copy of the payload; the delta spec covers… (2) ref-expander.ts:18-29 verifies contentHash before any manifest recursion and refuses a mismatch; ref-expander.spec.ts:97-117 ('refuses content replaced under a… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 5 tests, exit 0.
 
 ### S2 — Catalogue and clients
-- **Status**: done
+- **Status**: pending
 - **Files**: `packages/core/src/contracts/index.ts`, `packages/core/tests/src/lib/shared/client-discovery.service.spec.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/contracts/interfaces/public-catalogue.interface.ts`, `packages/core/src/lib/shared/client-discovery.service.ts`, `packages/core/src/lib/shared/known-client.helper.ts`, `packages/core/src/lib/shared/public-catalogue-sources.service.ts`, `packages/core/tests/src/lib/contracts/known-clients.spec.ts`, `packages/core/tests/src/lib/shared/known-client.helper.spec.ts`, `packages/core/tests/src/lib/shared/public-catalogue-sources.service.spec.ts`, `packages/core/tests/src/lib/shared/public-catalogue-http.spec.ts`, `plugins/auto-agent-selector/src/lib/discovery/discover-roster.ts`, `plugins/auto-agent-selector/src/lib/discovery/real-deps.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/src/lib/bootstrap.ts`, `plugins/orchestrator-runner/src/lib/healthcheck/install-hints.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/services/account-environment.service.ts`, `plugins/orchestrator-runner/src/lib/services/plan-quota.service.ts`, `plugins/orchestrator-runner/src/lib/subprocess/cli.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/tests/src/lib/services/account-environment.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/services/plan-quota.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli-tool-scope.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/subprocess/cli.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The cache key includes the source list (CATALOG-01)."
   - "Clients are resolved per workspace root (ACCOUNT-01)."
 - shipped-in: `ceb5903cb`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — The 304 path stamps the new source list onto a copy that was never read under it. In packages/core/src/lib/shared/public-catalogue-sources.service.ts:166-177, when a source answers 304 the code writes meta.sourcesKey = sourcesKey (the new list) onto the old copy and returns origin unchanged. The loop starts at the first source, so a copy read under one source that answers 304 is stamped with the key for the longer list and the second source is never requested; the next read then serves that copy as fresh for the longer list. That defeats the rule the slice itself states at :145-147, that a copy is fresh only for the sources it was read under. How to reproduce: read a catalogue with one source, then read it again with that source plus a second one; the second source is never fetched and the stale data is returned. What must hold to approve: a copy may only be stamped with the sourcesKey it was actually read under - on a 304, re-stamp only when the answered source set equals the configured list, otherwise drop the stale copy and re-read from the first source without validators - and a spec in packages/core/tests/src/lib/shared/public-catalogue-sources.service.spec.ts that appends a source after the answering one and asserts the appended source is requested and its content appears. The second criterion of this slice is met: known-client.helper.ts:56-61 keys the configured client list by the workspace root and allKnownClients falls back to the built-in catalogue for an unconfigured root.
 
 ## acceptance
 
