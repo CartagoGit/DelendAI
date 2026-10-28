@@ -2,6 +2,7 @@
  * What a person's project file may hold: accounts, and the account each
  * provider uses. Read by the personal layer and its migration.
  */
+import { DECLARED_PROVIDER_SCHEMA } from './declared-provider-schema.constant';
 import { z } from 'zod';
 
 import { CATALOGUE_SOURCES_SCHEMA } from './catalogue-sources-schema.constant';
@@ -28,6 +29,8 @@ export const PERSONAL_LAYER_SCHEMA = z
 		catalogues: CATALOGUE_SOURCES_SCHEMA.optional(),
 		/** Agents this person declares beside the catalogues. */
 		agents: z.array(DECLARED_AGENT_SCHEMA).optional(),
+		/** Model providers this person declares, in models.dev's shape. */
+		modelProviders: z.array(DECLARED_PROVIDER_SCHEMA).optional(),
 		/** Accounts this person was offered and said no to: not offered again. */
 		declinedOffers: z.array(z.string().min(1)).optional(),
 	})

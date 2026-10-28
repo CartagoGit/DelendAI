@@ -7,6 +7,7 @@
  * person's own file for this project, checked against the schema first,
  * so nobody edits a file by hand and nothing invalid is written.
  */
+import { withDeclaredProviders } from '../shared/declared-providers.helper';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -74,13 +75,17 @@ export const listAgents = async (input: {
 }): Promise<{
 	readonly agents: readonly IKnownAgent[];
 	readonly detected: readonly IDetectedAgent[];
+	/** Executables that look like agents, not yet answered nor declared. */
+	readonly candidates: readonly IDetectedAgent[];
+	/** The model catalogue with the declared providers over it. */
+	readonly catalogue?: IModelCatalogue | undefined;
 }> => {
 	const { personal, shared } = await layersOf(
 		input.workspace,
 		input.personalRoot,
 	);
 	const configured = [personal.catalogues, shared.catalogues];
-	const [registry, catalogue] = await Promise.all([
+	const [registry, catalogued] = await Promise.all([
 		input.registry ??
 			readAgentRegistry({
 				sources: catalogueSources('agents', configured),
@@ -89,6 +94,12 @@ export const listAgents = async (input: {
 			readModelCatalogue({
 				sources: catalogueSources('models', configured),
 			}),
+	]);
+	// The providers the project and the person declare replace the
+	// catalogue's entries of the same id, the person's own last.
+	const catalogue = withDeclaredProviders(catalogued, [
+		...(shared.modelProviders ?? []),
+		...(personal.modelProviders ?? []),
 	]);
 	const detected = await detectAgents({
 		machine:
@@ -102,17 +113,69 @@ export const listAgents = async (input: {
 		if (agent.distribution.binary !== undefined && (await isDir(dir)))
 			installed.set(agent.id, dir);
 	}
+	const answered = answeredCandidates(personal.declinedOffers);
+	const agents = knownAgents({
+		registry,
+		project: shared.agents,
+		personal: personal.agents,
+		detected,
+		all: input.all,
+		installedDir: (agent) => installed.get(agent.id),
+		answered,
+	});
+	const offered = new Set(
+		agents.filter((agent) => agent.origin === 'detected').map((a) => a.id),
+	);
 	return {
 		detected,
-		agents: knownAgents({
-			registry,
-			project: shared.agents,
-			personal: personal.agents,
-			detected,
-			all: input.all,
-			installedDir: (agent) => installed.get(agent.id),
-		}),
+		agents,
+		candidates: detected.filter(
+			(each) =>
+				each.foundIn === 'path-candidate' && offered.has(each.name),
+		),
 	};
+};
+
+/** How a declined candidate is kept among the person's declined offers. */
+const CANDIDATE_OFFER_PREFIX = 'agent-candidate:';
+
+/** The candidate names the person declined. */
+const answeredCandidates = (
+	declined: readonly string[] | undefined,
+): ReadonlySet<string> =>
+	new Set(
+		(declined ?? [])
+			.filter((offer) => offer.startsWith(CANDIDATE_OFFER_PREFIX))
+			.map((offer) => offer.slice(CANDIDATE_OFFER_PREFIX.length)),
+	);
+
+/**
+ * Keep the person's answer about an executable offered as an agent, so it
+ * is never asked again: yes declares it (a CLI agent started by its name),
+ * no records the refusal in their file.
+ */
+export const answerAgentCandidate = async (input: {
+	readonly workspace: string;
+	readonly name: string;
+	readonly accept: boolean;
+	readonly personalRoot?: string | undefined;
+}): Promise<{ readonly personalLayer: string; readonly kept: boolean }> => {
+	if (input.accept) {
+		const declared = await declareAgent({
+			workspace: input.workspace,
+			agent: { id: input.name, kind: 'cli', command: input.name },
+			personalRoot: input.personalRoot,
+		});
+		return { personalLayer: declared.personalLayer, kept: declared.added };
+	}
+	const { personalPath } = await layersOf(
+		input.workspace,
+		input.personalRoot,
+	);
+	const merged = await addToPersonalLayer(personalPath, {
+		declinedOffers: [`${CANDIDATE_OFFER_PREFIX}${input.name}`],
+	});
+	return { personalLayer: personalPath, kept: merged.declinedOffers > 0 };
 };
 
 /** Declare an agent in the person's file for this project; refused, unwritten, when invalid. */
