@@ -2,14 +2,14 @@
 id: x00958
 title: "A foreign project gets the plugins, policy and diagnostics that fit it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 55321a9b-1686-4f63-b5c9-bace3a5fac93
-last-correlation-id: 55321a9b-1686-4f63-b5c9-bace3a5fac93
-last-transition-from: in-progress
-last-transition-at: 2026-10-25T07:39:43.071Z
+last-transition-id: d46746ca-f770-4a23-af2f-a549e738791a
+last-correlation-id: d46746ca-f770-4a23-af2f-a549e738791a
+last-transition-from: review
+last-transition-at: 2026-10-28T09:07:37.665Z
 shipped-in:
   - "bd5c4d8a3b37"
 ---
@@ -54,8 +54,10 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
   - "context-for-change reads the project's workspaces or root (G82)."
   - "A configured forge host (GHE, self-hosted GitLab) is detected (D21)."
 - shipped-in: `bd5c4d8a3b37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bd5c4d8a3b37, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 2/2: (1) context-for-change/src/lib/services/project-roots.helper.ts:22-56 reads the manifest through the safe workspace reader, so a malformed or absent manifest yield… (2) forge.ts:481-492 consults the configured hosts, populated from the plugin options at index.ts:32, before the label heuristic, and both entry points share it (f… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 3 files / 15 tests, exit 0. The shipped-in sha is the merge of the pull request, which also carries the three branch commits behind this slice's files.
 
 ## acceptance
 
