@@ -11,6 +11,8 @@ contains:
     - a00095
   proposals:
     - x00939
+    - x00984
+    - q00034
     - x00940
     - x00942
     - x00943
@@ -149,7 +151,7 @@ a00095 is the multi-LLM joint audit of develop: 286 findings (145 G, 124 D, 14 C
 | a00095/G28 | settled-by: x00909 |
 | a00095/G29 | settled-by: f00551 |
 | a00095/D17 | settled-by: x00966 |
-| a00095/G30 | settled-by: f00790 |
+| a00095/G30 | settled-by: q00034 |
 | a00095/G31 | settled-by: x00955 |
 | a00095/G32 | settled-by: f00790 |
 | a00095/G33 | settled-by: x00944 |
@@ -372,7 +374,7 @@ a00095 is the multi-LLM joint audit of develop: 286 findings (145 G, 124 D, 14 C
 | a00095/G121 | settled-by: f00791 |
 | a00095/G122 | settled-by: f00791 |
 | a00095/G123 | settled-by: f00790 |
-| a00095/G124 | settled-by: x00971 |
+| a00095/G124 | settled-by: x00984 |
 | a00095/G125 | settled-by: x00958 |
 | a00095/G126 | settled-by: x00958 |
 | a00095/G127 | settled-by: x00946 |
