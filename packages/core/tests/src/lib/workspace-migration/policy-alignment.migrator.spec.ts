@@ -137,4 +137,13 @@ describe('policyAlignmentMigrator — the push target that stops the start', () 
 			}),
 		).toBe(false);
 	});
+
+	it('is a standing check, not a one-shot rename', async () => {
+		// A person changes the profile, or copies a config from another
+		// project, or adds the setting back by hand — and the setting the
+		// boot refuses over is there again. A migration the journal has
+		// already recorded must still be asked, or the auto-heal that
+		// names the remedy is dead in exactly the workspaces that need it.
+		expect(createPolicyAlignmentMigrator().convergent).toBe(true);
+	});
 });
