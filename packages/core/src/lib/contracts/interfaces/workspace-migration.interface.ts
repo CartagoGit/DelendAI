@@ -25,6 +25,29 @@ export interface IMigrationPlanStep {
 export interface IMigration {
 	readonly id: IMigrationId;
 	/**
+	 * Whether this migration is a STANDING CHECK rather than a one-shot
+	 * rename.
+	 *
+	 * A rename is done when it is done: the old identity becomes the new
+	 * one, and the fact that it happened is a fact forever. The journal
+	 * records it and the engine never asks again.
+	 *
+	 * A standing check answers a question about the workspace's CURRENT
+	 * state: "does this config still agree with the policy the same file
+	 * declares?". Both halves of that question are editable at any
+	 * moment — the config is a file a person edits, and the profile it
+	 * declares can change — so the answer can change after the migration
+	 * ran. Such a migration is asked on every boot, and its id in the
+	 * journal means nothing.
+	 *
+	 * The difference is not cosmetic. A rename that does not re-run
+	 * leaves an old string in a file. A standing check that does not
+	 * re-run leaves a SETTING THE BOOT REFUSES OVER: the server exits on
+	 * every start, the host restarts it in a loop, and the error names a
+	 * remedy the tool is supposed to apply and cannot.
+	 */
+	readonly convergent?: boolean;
+	/**
 	 * Cheap probe: does this workspace carry the old identity at all?
 	 *
 	 * Must be fast and must not write. It runs before every server start,

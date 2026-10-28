@@ -81,6 +81,11 @@ export default defineConfig({
 		],
 	},
 	test: {
+		// Transformed modules are kept on disk and reused by the next run and
+		// by every project (node_modules/.vitest-cache, invalidated with the
+		// dependencies). Cold, a run spent most of its time transforming the
+		// same modules again; CI restores the directory between runs.
+		fsModuleCache: true,
 		// Projects run as their own vitest instances; the root shell walks
 		// the listed globs to wire them up. Plugins that need to pause
 		// their own runtime tests temporarily (e.g. while still in
