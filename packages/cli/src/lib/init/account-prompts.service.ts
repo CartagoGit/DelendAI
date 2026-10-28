@@ -185,7 +185,9 @@ export const accountPromptsOn = (
 				messages.skipWords.includes(vendor.toLowerCase())
 			)
 				return undefined;
-			const paid = await askChoice(
+			// `q` quits here as it does at the vendor question: read as no
+			// number, it fell to the default and the flow went on.
+			const paid = await askChoice<IPaid | 'stop'>(
 				rl,
 				`${QUESTION_INDENT}${messages.payQuestion(vendor)}`,
 				PAID.map((value) => ({
@@ -193,7 +195,12 @@ export const accountPromptsOn = (
 					value,
 				})),
 				'skip',
+				{ words: messages.yesNo.stop, value: 'stop' },
 			);
+			if (paid === 'stop') {
+				stopped = true;
+				return undefined;
+			}
 			return paid === 'skip'
 				? undefined
 				: classificationFromAnswer(finding, vendor, paid);

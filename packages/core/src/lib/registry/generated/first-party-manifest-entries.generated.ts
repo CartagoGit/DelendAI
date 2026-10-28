@@ -378,7 +378,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/orchestrator-runner',
 			summary: 'Orchestrator-runner runtime utilities.',
 			tags: ['orchestrator', 'runner'],
-			permissions: ['filesystem-read', 'process', 'network', 'env-read'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'env-read'],
 			tokenBudgetBytes: 2700,
 		},
 		{
