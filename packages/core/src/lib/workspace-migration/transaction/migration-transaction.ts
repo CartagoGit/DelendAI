@@ -122,7 +122,10 @@ export const createDefaultPhases = (input: {
 					: await input.journal.read(ctx.workspaceRoot);
 			const matched: IMigration[] = [];
 			for (const migration of input.migrations) {
-				if (applied.includes(migration.id)) continue;
+				// A standing check is asked every time, whatever the
+				// journal says — the same rule the engine applies.
+				if (!migration.convergent && applied.includes(migration.id))
+					continue;
 				if (
 					await migration.detect({
 						workspaceRoot: ctx.workspaceRoot,
@@ -168,6 +171,10 @@ export const createDefaultPhases = (input: {
 		commit: async (backups, manifest, ctx) => {
 			if (input.journal !== undefined) {
 				for (const migration of discovered) {
+					// A standing check has no "done" to record: it is
+					// asked on every boot, and the journal says which
+					// one-shot renames are done.
+					if (migration.convergent) continue;
 					await input.journal.record(ctx.workspaceRoot, migration.id);
 				}
 			}
