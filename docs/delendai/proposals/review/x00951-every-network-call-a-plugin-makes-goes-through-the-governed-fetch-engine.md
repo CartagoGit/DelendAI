@@ -10,6 +10,8 @@ last-transition-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
 last-correlation-id: d25bdc71-2f05-4de8-92e5-7087d8ee596c
 last-transition-from: in-progress
 last-transition-at: 2026-10-24T22:02:51.524Z
+shipped-in:
+  - "ff2b7f7e209c782f4ac4d22a3cb31434e444f4c2"
 ---
 
 # x00951 — Every network call a plugin makes goes through the governed fetch engine
@@ -39,8 +41,10 @@ Joint audit a00095 and gpt-6.1-sol. NET-01 (P1) and D40: api_call's specUrl load
   - "The engine resolves the host of every hop and refuses a private, loopback or link-local address unless the allow-list names it or allowPrivateAddresses is set; a spec with a host resolving to 127.0.0.1 is refused before any request. The runtime's fetch takes no pinned address, so the README states the remaining resolver race (D121)."
   - "A malformed Location returns a typed redirect error (NET-02)."
 - shipped-in: `3f36999f94e0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ff2b7f7e209c, validate exit 0 and tests 61/61 claimed, no recorded run cited; acceptance 2/2: (1) engine.ts:213-264 resolves the host of every hop and refuses a private, loopback or link-local address unless the allow-list names it or allowPrivateAddresses … (2) engine.ts:301-319 wraps the Location header in a try/catch and returns a typed redirect error with the reason redirect-invalid and the offending value; the rea… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 26 tests and the engine, plugin-options and network-capability suites 4 files / 35 tests, exit 0.
 
 ### S2 — api and remote-provider-core use the engine and their base
 - **Status**: done
