@@ -41,8 +41,10 @@ Joint audit a00095 (probes in a throwaway consumer project). G79: plugin doctor 
   - "plugin doctor --workspace=<dir> reports that workspace (G79)."
 
 - shipped-in: `bd5c4d8a3b37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at bd5c4d8a3b37, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 1/1: (1) packages/cli/src/commands/groups/plugins.ts:116 reads the workspace from the context globals and parser.service.ts:217 resolves the --workspace flag; plugins.s… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 4 tests, exit 0. The slice's files were shipped by the same merge that carries S3's work.
 
 ### S3 — Context and forge in other layouts and hosts
 - **Status**: done
