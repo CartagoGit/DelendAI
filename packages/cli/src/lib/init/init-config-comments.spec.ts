@@ -24,8 +24,8 @@ import { renderDelendaiConfig } from './init-render.service';
 import {
 	ensureJsoncAssociation,
 	mergeJsoncAssociation,
-	VSCODE_SETTINGS_RELPATH,
 } from './init-vscode-settings';
+import { VSCODE_SETTINGS_RELPATH } from '../../contracts/constants/init.constant';
 
 const roots: string[] = [];
 

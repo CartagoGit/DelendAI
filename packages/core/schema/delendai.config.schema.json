@@ -24,7 +24,7 @@
 			"type": "string"
 		},
 		"docsDir": {
-			"description": "Where the server writes the documents a person reads and edits — proposals, generated guides. Relative to the workspace root. Change it when the project keeps its documentation somewhere other than `docs/delendai`.",
+			"description": "Where the server writes the documents a person reads and edits — the workflow files, the generated guides. Relative to the workspace root. Change it when the project keeps its documentation somewhere other than `docs/delendai`.",
 			"type": "string"
 		},
 		"surfaceMode": {
@@ -330,7 +330,7 @@
 						"integration": {
 							"type": "string",
 							"minLength": 1,
-							"description": "The branch agents integrate into — `develop` here, never the forge’s default branch by accident. Set it to the branch your forge treats as the integration target."
+							"description": "The branch agents integrate into, and the one your pull requests merge into. Name the branch your forge treats as the integration target — never the forge default branch by accident, and never a branch the project merely got used to."
 						},
 						"publicationRefPrefix": {
 							"type": "string",
@@ -1917,7 +1917,7 @@
 			"additionalProperties": false
 		},
 		"loopDetector": {
-			"description": "How the server notices an agent that is stuck in a loop instead of making progress. Read by the proposals plugin; a project that does not use it never sees this.",
+			"description": "How the server notices an agent that is stuck in a loop instead of making progress. Read by the workflow plugin; a project that does not use it never sees this.",
 			"type": "object",
 			"properties": {
 				"enabled": {

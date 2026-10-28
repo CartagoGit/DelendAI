@@ -10,10 +10,8 @@
  */
 import { z } from 'zod';
 
-import {
-	DECLARED_AGENT_KIND_DOCS,
-	documentedEnum,
-} from '../../plugins/config-schema-docs';
+import { documentedEnum } from '../../plugins/config-schema-docs';
+import { DECLARED_AGENT_KIND_DOCS } from './config-schema-docs.constant';
 
 const KEBAB_ID = /^[a-z0-9][a-z0-9-]*$/u;
 

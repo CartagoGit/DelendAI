@@ -16,23 +16,12 @@
  * being a plain object that gets stringified. A member that was already
  * in the object would keep its value and silently lose its comment.
  */
-import { renderConfigBlockComments } from '@delendai/core/public';
+import { renderConfigBlockComments } from '@delendai/core/cli';
 
 import type { IJsoncEdit } from '@delendai/core/cli';
 
-/** Where the published schema lives; the editor reads it from here. */
-export const CONFIG_SCHEMA_URL =
-	'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json';
-
-/** What `init` writes at the top level, beyond the blocks themselves. */
-export interface IConfigBlockInput {
-	/** The hosts the project uses, when the operator named any. */
-	readonly hosts?: readonly string[];
-	/** The development policy, when the project declared one. */
-	readonly development?: Record<string, unknown>;
-	/** The project's own layout, when it differs from the default. */
-	readonly convention?: Record<string, unknown>;
-}
+import { CONFIG_SCHEMA_URL } from '../../contracts/constants/init.constant';
+import type { IConfigBlockInput } from '../../contracts/interfaces/init.interface';
 
 /**
  * The comment for one block, or nothing when the schema has none.

@@ -15,7 +15,7 @@ import {
 import {
 	BILLING_MODE_DOCS,
 	CREDENTIAL_MODE_DOCS,
-} from '../../plugins/config-schema-docs';
+} from './config-schema-docs.constant';
 
 const FLAGS = z.array(
 	z

@@ -53,7 +53,7 @@ import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 import {
 	JSONC_ASSOCIATION,
 	VSCODE_SETTINGS_RELPATH,
-} from './init-vscode-settings';
+} from '../../contracts/constants/init.constant';
 
 // Single source of truth for preset membership lives in
 // `@delendai/core`'s preset catalog. We delegate to

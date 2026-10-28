@@ -31,35 +31,13 @@ import {
 
 import { writeWorkspaceFileSafely } from '../config-file.service';
 
-/** Where the association lives, relative to the workspace root. */
-export const VSCODE_SETTINGS_RELPATH = '.vscode/settings.json';
-
-/** The file whose language the association changes. */
-export const CONFIG_FILENAME = 'delendai.config.json';
-
-/** The dotted key VS Code itself writes. */
-export const DOTTED_ASSOCIATIONS_KEY = 'files.associations';
-
-/**
- * Outcome of ensuring the association.
- *
- * `written` — the settings file did not exist, or the association was
- * added to it.
- * `merged` — the file already said it, and was left alone.
- * `exists` — the settings file is not a settings object; the operator
- * has to hand-edit it. Touching it would destroy whatever is in there.
- */
-export interface IVscodeSettingsResult {
-	readonly kind: 'written' | 'merged' | 'exists';
-	readonly path: string;
-}
-
-/** The association, as the editor expects it. */
-export const JSONC_ASSOCIATION = {
-	[DOTTED_ASSOCIATIONS_KEY]: {
-		[CONFIG_FILENAME]: 'jsonc',
-	},
-} as const;
+import {
+	CONFIG_FILENAME,
+	DOTTED_ASSOCIATIONS_KEY,
+	JSONC_ASSOCIATION,
+	VSCODE_SETTINGS_RELPATH,
+} from '../../contracts/constants/init.constant';
+import type { IVscodeSettingsResult } from '../../contracts/interfaces/init.interface';
 
 /**
  * The member at a path, or nothing.

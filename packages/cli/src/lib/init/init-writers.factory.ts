@@ -25,10 +25,8 @@ import {
 	mergeDelendaiServerEntry,
 	renderDelendaiServerEntry,
 } from './init-render.service';
-import {
-	ensureJsoncAssociation,
-	type IVscodeSettingsResult,
-} from './init-vscode-settings';
+import { ensureJsoncAssociation } from './init-vscode-settings';
+import type { IVscodeSettingsResult } from '../../contracts/interfaces/init.interface';
 
 export type { IInitWrite, IHostServerEntryWriteResult };
 export type { IVscodeSettingsResult };
