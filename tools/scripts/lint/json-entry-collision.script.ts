@@ -65,6 +65,9 @@ const IGNORE_DIRS = new Set([
 const IGNORE_FILES = new Set([
 	'apps/web/src/data/capabilities.json',
 	'apps/web/src/data/skills.json',
+	// Written whole by refresh-public-catalogues and never edited by hand;
+	// Biome keeps a model's short price map on one line.
+	'packages/core/data/model-catalogue.snapshot.json',
 ]);
 
 const _isJsonLike = (name: string): boolean =>
