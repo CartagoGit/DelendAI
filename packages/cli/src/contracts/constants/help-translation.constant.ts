@@ -204,7 +204,9 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'agents install':
 		"Install a registry agent's binary after a yes, checked by its sha256.",
 	'agents show':
-		'Greet an ACP agent and show what it says it is; nothing is spent.',
+		"Greet an ACP agent, or read a model provider's catalogue entry, and show what it says it is; nothing is spent.",
+	'agents answer':
+		'Keep your answer about an executable offered as an agent, so it is not asked again.',
 	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:

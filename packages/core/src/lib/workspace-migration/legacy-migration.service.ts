@@ -39,6 +39,7 @@ import type {
 	IMigrationContext,
 	IMigrationJournal,
 	IMigrationOutcome,
+	IMigrationPlanStep,
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
@@ -87,7 +88,27 @@ export const runPendingMigrations = async (input: {
 		// half.
 		if (!(await migration.detect(input.ctx))) continue;
 
-		const steps = await migration.plan(input.ctx);
+		// A migration that cannot even PLAN failed for the same reason one
+		// that cannot apply did: the file it reads is not in a shape it can
+		// read. The failure is reported and the run STOPS, exactly as an
+		// apply failure does — but it is REPORTED, not thrown.
+		//
+		// A throw here reached the boot of every project that has such a
+		// file and took the server down with it: the operator was left with
+		// a dead editor integration and no report of what was wrong. A
+		// migration that cannot read its input is a failed migration, and
+		// a failed migration is a line on stderr.
+		let steps: readonly IMigrationPlanStep[];
+		try {
+			steps = await migration.plan(input.ctx);
+		} catch (error) {
+			outcomes.push({
+				status: 'failed',
+				id: migration.id,
+				reason: String(error),
+			});
+			return { outcomes, acted: true };
+		}
 
 		if (input.ctx.dryRun) {
 			outcomes.push({ status: 'planned', id: migration.id, steps });

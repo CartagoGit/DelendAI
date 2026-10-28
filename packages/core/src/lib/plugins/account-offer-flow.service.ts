@@ -8,8 +8,11 @@
  * nothing in the committed configuration, and leaves every account it
  * writes closed to unattended work.
  */
+import { withDeclaredProviders } from '../shared/declared-providers.helper';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { IHostByokProvider } from '../contracts/interfaces/host-byok.interface';
+import { hostByokRoster } from '../shared/host-model-roster.service';
 
 import type {
 	IClientCommandRunner,
@@ -96,6 +99,8 @@ export const offerFoundAccounts = async (input: {
 	readonly seen?: readonly string[] | undefined;
 	readonly planTools?: readonly IPlanTool[] | undefined;
 	readonly fetchLocal?: ILocalFetch | undefined;
+	/** The editors' BYOK providers; read from this machine's editors when absent. */
+	readonly hostByok?: readonly IHostByokProvider[] | undefined;
 	/** Told each step as it starts: discovery takes seconds, and silence looks stuck. */
 	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
 	/** Reads the public model catalogue, so any provider's keys and models are named; absent, none is read. */
@@ -133,17 +138,27 @@ export const offerFoundAccounts = async (input: {
 		seen: input.seen ?? seenModels(),
 		planTools: input.planTools,
 		fetchLocal: input.fetchLocal ?? fetchLocalModels,
+		hostByok:
+			input.hostByok ?? (await hostByokRoster(input.env ?? process.env)),
 		onProgress: input.onProgress,
 		loadCatalogue:
 			input.loadCatalogue === undefined
 				? undefined
-				: () =>
-						input.loadCatalogue?.(
-							catalogueSources('models', [
-								personal.catalogues,
-								shared.catalogues,
-							]),
-						) ?? Promise.resolve(undefined),
+				: async () =>
+						// Declared providers replace the catalogue's entries of the
+						// same id, the person's own last.
+						withDeclaredProviders(
+							await (input.loadCatalogue?.(
+								catalogueSources('models', [
+									personal.catalogues,
+									shared.catalogues,
+								]),
+							) ?? Promise.resolve(undefined)),
+							[
+								...(shared.modelProviders ?? []),
+								...(personal.modelProviders ?? []),
+							],
+						),
 	});
 	const learnedPath = learnedAccountsPath(input.personalRoot);
 	const known = {

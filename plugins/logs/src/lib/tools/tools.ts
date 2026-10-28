@@ -20,6 +20,7 @@ import {
 	LOG_SEVERITIES,
 } from '../services/kinds';
 import { logIncidents, logSearch } from '../services/log-search-incidents';
+import { filesOf, tailPageOf } from '../services/log-tail-page.helper';
 import { LOG_OUTCOMES, type LogEventKind } from '../services/normalize-event';
 import type { ILogEvent } from '../services/normalize-event';
 import type { LogOutcome } from '../services/normalize-event';
@@ -439,6 +440,8 @@ export const buildLogToolRegistrations = (
 							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
+							filesRead: z.number().optional(),
+							filesTotal: z.number().optional(),
 						}),
 					},
 					async (args: {
@@ -450,9 +453,11 @@ export const buildLogToolRegistrations = (
 					}) => {
 						try {
 							const detail = resolveEventDetail(args, 'normal');
-							const storedEvents = await store.tail(
+							const tail = await tailPageOf(
+								store,
 								tailOptionsFrom(args),
 							);
+							const storedEvents = tail.events;
 							const events = compactEvents(storedEvents, detail);
 							const oldestTs = storedEvents[0]?.ts ?? null;
 							const newestTs = storedEvents.at(-1)?.ts ?? null;
@@ -462,6 +467,7 @@ export const buildLogToolRegistrations = (
 									events,
 									oldestTs,
 									newestTs,
+									...filesOf(tail),
 								},
 								`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`,
 							);
@@ -494,6 +500,8 @@ export const buildLogToolRegistrations = (
 							events: LogEventListOutputSchema,
 							oldestTs: z.string().nullable(),
 							newestTs: z.string().nullable(),
+							filesRead: z.number().optional(),
+							filesTotal: z.number().optional(),
 						}),
 					},
 					async (args: {
@@ -504,18 +512,21 @@ export const buildLogToolRegistrations = (
 					}) => {
 						try {
 							const detail = resolveEventDetail(args, 'normal');
-							const storedEvents = await stores.errors.tail(
+							const tail = await tailPageOf(
+								stores.errors,
 								tailOptionsFrom({
 									limit: args.limit,
 									kindFilter: args.kindFilter,
 								}),
 							);
+							const storedEvents = tail.events;
 							const events = compactEvents(storedEvents, detail);
 							return toolJson({
 								detail,
 								events,
 								oldestTs: storedEvents[0]?.ts ?? null,
 								newestTs: storedEvents.at(-1)?.ts ?? null,
+								...filesOf(tail),
 							});
 						} catch {
 							return publicReadFailure('errors_tail');
@@ -838,7 +849,7 @@ export const buildLogToolRegistrations = (
 					`${prefix}_incidents`,
 					{
 						description:
-							'Read the curated error stream and group failing events by tool plus a stable redacted error fingerprint. Each cluster carries `count`, `distinctAgents`, `firstSeen`, `lastSeen`, `sampleSummary`, `errorFingerprint` and the most recent sanitized `recentEvents`. Clusters with fewer than `minCount` (default 2) matches are dropped. Use this for the "what is broken right now" question \u2014 it returns the same bug many times, ONCE.',
+							'Read the curated error stream and group failing events by tool plus a stable redacted error fingerprint. Each cluster carries `count`, `distinctAgents`, `firstSeen`, `lastSeen`, `sampleSummary`, `errorFingerprint` and the most recent sanitized `recentEvents`. Without `since`, failures are counted over the day up to the newest one, and `window` says that span and how old its newest failure is. Clusters with fewer than `minCount` (default 2) matches are left out and counted in `belowMinCount`. Use this for the "what is broken right now" question \u2014 it returns the same bug many times, ONCE.',
 						inputSchema: z.object({
 							since: z.string().optional(),
 							until: z.string().optional(),
@@ -849,6 +860,14 @@ export const buildLogToolRegistrations = (
 						outputSchema: z.object({
 							incidents: z.unknown(),
 							totalIncidents: z.number(),
+							window: z
+								.object({
+									since: z.string(),
+									until: z.string(),
+									newestFailureAgeMs: z.number(),
+								})
+								.optional(),
+							belowMinCount: z.number(),
 						}),
 					},
 					async (args: {
@@ -868,6 +887,10 @@ export const buildLogToolRegistrations = (
 									publicIncident(incident),
 								),
 								totalIncidents: incidents.totalIncidents,
+								...(incidents.window === undefined
+									? {}
+									: { window: incidents.window }),
+								belowMinCount: incidents.belowMinCount,
 							});
 						} catch {
 							return publicReadFailure('incidents');
