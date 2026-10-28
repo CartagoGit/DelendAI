@@ -724,7 +724,8 @@
 							"subscription",
 							"cli",
 							"mcp-server",
-							"acp"
+							"acp",
+							"host-sampling"
 						]
 					},
 					"invoke": {
@@ -868,6 +869,25 @@
 								},
 								"required": [
 									"kind"
+								],
+								"additionalProperties": false
+							},
+							{
+								"type": "object",
+								"properties": {
+									"kind": {
+										"type": "string",
+										"const": "host-sampling"
+									},
+									"model": {
+										"type": "string",
+										"minLength": 1,
+										"description": "The model the host editor is asked to run (MCP sampling), as the host names it; its key stays with the host."
+									}
+								},
+								"required": [
+									"kind",
+									"model"
 								],
 								"additionalProperties": false
 							}
@@ -1032,6 +1052,7 @@
 										"official-subscription-login",
 										"provider-plan-token",
 										"byok-api-key",
+										"host-held",
 										"local-none"
 									]
 								},
@@ -1311,6 +1332,7 @@
 							"official-subscription-login",
 							"provider-plan-token",
 							"byok-api-key",
+							"host-held",
 							"local-none"
 						]
 					},
