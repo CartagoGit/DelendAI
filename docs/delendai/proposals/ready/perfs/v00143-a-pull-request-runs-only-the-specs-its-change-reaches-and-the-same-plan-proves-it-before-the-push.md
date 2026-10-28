@@ -34,25 +34,25 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 
 ### S1 — The read map says which spec read what
 - **Status**: pending
-- **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/zone-reads.generated.json`
+- **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.script.ts`, `tools/scripts/ci/zone-reads.script.spec.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/zone-reads.generated.json`
 - **Gate**: type
 - acceptance:
   - "The recorder writes each read with the spec that made it (`expect.getState().testPath`), and the committed map holds, per zone, the specs and the files and directories each read, next to the zone totals it holds today."
 
 ### S2 — A job runs the specs the change reaches, or does not start
 - **Status**: pending
-- **Files**: `tools/scripts/ci/test-zones.script.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "For a change outside every workspace, a zone's jobs receive the list of its specs that read or list a changed path and run exactly those; with none, the zone does not start (a change to one proposal file starts only the specs that read the proposals)."
+  - "For a change outside every workspace, a zone's jobs receive the list of its specs that read or list a changed path and run exactly those; with none, the zone does not start (the move of one proposal, #1552's change, starts 4 jobs running the 6 specs that read it instead of 12 jobs running none)."
   - "A change inside a workspace still runs `--changed` for the specs its imports reach, plus the listed readers of any changed root file."
 
 ### S3 — The push is proved by the same plan
 - **Status**: pending
-- **Files**: `tools/scripts/ci/prove-plan.script.ts`
+- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.interface.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "`bun run prove` plans the change against the integration branch exactly as CI does and runs the selected specs, the lints CI runs for the touched kinds of file, and the typecheck; it prints the plan, the time and the verdict, and the pre-push hook records it for the pushed head."
+  - "`bun run prove` plans the change against the integration branch exactly as CI does and runs the selected specs, the lints CI runs for the touched kinds of file, and the typecheck; it prints the plan, the time of each step and the verdict."
 
 ### S4 — Documentation-only changes skip the code analyses
 - **Status**: pending
@@ -64,7 +64,7 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 ## acceptance
 
 - The recorder writes each read with the spec that made it (`expect.getState().testPath`), and the committed map holds, per zone, the specs and the files and directories each read, next to the zone totals it holds today.
-- For a change outside every workspace, a zone's jobs receive the list of its specs that read or list a changed path and run exactly those; with none, the zone does not start (a change to one proposal file starts only the specs that read the proposals).
+- For a change outside every workspace, a zone's jobs receive the list of its specs that read or list a changed path and run exactly those; with none, the zone does not start (the move of one proposal, #1552's change, starts 4 jobs running the 6 specs that read it instead of 12 jobs running none).
 - A change inside a workspace still runs `--changed` for the specs its imports reach, plus the listed readers of any changed root file.
-- `bun run prove` plans the change against the integration branch exactly as CI does and runs the selected specs, the lints CI runs for the touched kinds of file, and the typecheck; it prints the plan, the time and the verdict, and the pre-push hook records it for the pushed head.
+- `bun run prove` plans the change against the integration branch exactly as CI does and runs the selected specs, the lints CI runs for the touched kinds of file, and the typecheck; it prints the plan, the time of each step and the verdict.
 - A pull request that changes only Markdown under docs/ reports CodeQL, lint-security, verify-runtime, pack smoke and the web build as passed without running them (a required check still reports), and runs the proposal and documentation lints.
