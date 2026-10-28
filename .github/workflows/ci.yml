@@ -587,6 +587,23 @@ jobs:
               if: matrix.zone.run
               run: rm -rf .cache/delendai
 
+            # vitest keeps the modules it transformed (`fsModuleCache`,
+            # node_modules/.vitest-cache): a cold zone spent most of its time
+            # transforming the same modules every run. Restored AFTER the
+            # install, which owns node_modules, from the newest run on the
+            # same lockfile and vitest configs, and saved when the job ends.
+            # vitest checks each entry against its file's hash, so a stale
+            # entry is never used.
+            - name: Restore the vitest module cache
+              if: matrix.zone.run && ! env.ACT
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.vitest-cache
+                  key: vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-${{ matrix.zone.name }}-${{ github.sha }}
+                  restore-keys: |
+                      vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-${{ matrix.zone.name }}-
+                      vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-
+
             # A pull request runs the tests its change can reach, and
             # nothing else. Measured on this repo, shard 4 of #99 spent
             # 113s transforming and 184s importing modules to run 19s of

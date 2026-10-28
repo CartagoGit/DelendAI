@@ -9,6 +9,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { discoveryConsentPath, readDiscoveryConsent } from '@delendai/core/cli';
+
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { accountsCommand } from './accounts.command';
 
@@ -64,5 +66,25 @@ describe('accounts command', () => {
 		);
 		expect(missing.code).toBe(3);
 		expect(missing.error).toContain('nobody-here');
+	});
+
+	it('records a consent answer the discovery reads, and wants exactly one of --yes or --no', async () => {
+		const cwd = mkdtempSync(join(tmpdir(), 'accounts-consent-'));
+		expect(
+			(await accountsCommand.run(['consent'], context(cwd))).code,
+		).not.toBe(0);
+		expect(
+			(
+				await accountsCommand.run(
+					['consent', '--yes', '--no'],
+					context(cwd),
+				)
+			).code,
+		).not.toBe(0);
+		await accountsCommand.run(['consent', '--no'], context(cwd));
+		const path = discoveryConsentPath(cwd, '.cache/delendai');
+		expect(await readDiscoveryConsent(path)).toBe('declined');
+		await accountsCommand.run(['consent', '--yes'], context(cwd));
+		expect(await readDiscoveryConsent(path)).toBe('granted');
 	});
 });

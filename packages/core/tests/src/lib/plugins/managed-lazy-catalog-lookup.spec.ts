@@ -41,3 +41,15 @@ describe('the generated catalog module', () => {
 		expect(runtimeExports).toEqual(['MANAGED_LAZY_PLUGIN_CATALOG']);
 	});
 });
+
+describe("an inactive plugin's tools", () => {
+	it('each carry their own summary, so a search tells them apart', () => {
+		const runner = managedLazyPluginEntry('orchestrator-runner');
+		const summaries = runner?.toolIds.map(
+			(toolId) => runner.toolSummaries?.[toolId],
+		);
+		expect(summaries?.every((summary) => summary !== undefined)).toBe(true);
+		expect(new Set(summaries).size).toBe(runner?.toolIds.length);
+		expect(summaries).not.toContain(runner?.summary);
+	});
+});
