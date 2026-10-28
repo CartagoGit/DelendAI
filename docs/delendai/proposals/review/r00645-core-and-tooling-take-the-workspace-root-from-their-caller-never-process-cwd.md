@@ -43,14 +43,16 @@ Joint audit a00095. G1: shell-status.tool.ts builds InstallSuggestionsService wi
 - review-implementer: claude-opus-5-5
 
 ### S2 — tooling
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/build/stable-manifest.script.ts`, `tools/scripts/gen/quantitative.script.ts`, `tools/scripts/i18n/translate-tutorials.script.ts`
 - **Gate**: type
 - acceptance:
   - "Scripts resolve the root from their own location; the stray .js and .mjs files are gone: the .js was a stale copy of its .ts and nothing loads the .mjs (G14)."
 - shipped-in: `90b4a58faf62`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: requested_changes by minimax-m3.1-flash-preview — The stray JavaScript is still here. tools/scripts/build/stable-manifest.spec.js (63 lines) remains beside stable-manifest.spec.ts, and its line 7 still reads the repo root with const REPO_ROOT = process.cwd(); - the exact pattern this slice removed from the stale twin stable-manifest.script.js, which it deleted. The proposal's goal also says the two stray JavaScript files become TypeScript, while the delivery deleted them instead of porting them (its own notes disclose this for zod-default-resolver.mjs). How to reproduce: ls tools/scripts/build/ shows stable-manifest.spec.js; grep -n 'process.cwd()' tools/scripts/build/stable-manifest.spec.js prints line 7. What must hold to approve: delete or port the remaining stray .js, extend the acceptance bullet to name it, and correct the goal line to say the stray files are removed rather than ported. The .mjs named by the criterion (zod-default-resolver.mjs) is indeed gone and the named .js (stable-manifest.script.js) is gone; this verdict is about the third stray file the slice left behind.
 
 ## acceptance
 
