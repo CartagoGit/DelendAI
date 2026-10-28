@@ -33,7 +33,7 @@ import {
 } from '@delendai/state';
 
 import {
-	COORDINATION_TABLES,
+	COORDINATION_RESET_SQL,
 	DEFAULT_CHECKPOINT_EVERY_PUBLISHES,
 } from './contracts/constants/coordination.constant';
 import { readCoordination, writeCoordination } from './coordination-store';
@@ -337,8 +337,8 @@ export class SqliteStateRegistry
 		this.restoreFailure = undefined;
 		this.db.exec('DELETE FROM generations;');
 		this.db.exec('DELETE FROM drivers;');
-		for (const table of COORDINATION_TABLES) {
-			this.db.exec(`DELETE FROM ${table};`);
+		for (const statement of COORDINATION_RESET_SQL) {
+			this.db.exec(statement);
 		}
 	}
 
