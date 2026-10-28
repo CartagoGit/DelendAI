@@ -2,10 +2,14 @@
 id: x00986
 title: "A slice sent back for rework, or one that names only its own proposal, is not read as already shipped"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: governance
 date: 2026-10-27
+last-transition-id: b60b0e7f-0efb-494d-9357-2864b5f08223
+last-correlation-id: b60b0e7f-0efb-494d-9357-2864b5f08223
+last-transition-from: ready
+last-transition-at: 2026-10-28T09:15:13.839Z
 ---
 
 # x00986 — A slice sent back for rework, or one that names only its own proposal, is not read as already shipped
