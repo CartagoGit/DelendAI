@@ -6,6 +6,7 @@
  * and the orchestrator-runner's own roster option all validate with these,
  * so a roster is portable between them and none of them drifts.
  */
+import { PROVIDER_API_FAMILY_IDS } from './provider-api-families.constant';
 import z from 'zod';
 /**
  * `config-schema-docs.ts` and `declared-agent-schema.constant.ts` import
@@ -78,7 +79,7 @@ export const PROVIDER_INVOKE_SCHEMA = z
 						'The HTTP method the request is made with. Leave it out for the usual POST that carries the prompt.',
 					),
 				family: documentedEnum(
-					['openai', 'anthropic'],
+					PROVIDER_API_FAMILY_IDS,
 					INVOKE_API_FAMILY_DOCS,
 				)
 					.optional()

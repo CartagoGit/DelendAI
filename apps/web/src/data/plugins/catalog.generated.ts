@@ -45,7 +45,7 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 	{
 		"slug": "browser",
 		"displayName": "Browser",
-		"purpose": "Headless browser automation tools.",
+		"purpose": "Headless browser automation tools; they need Playwright installed and answer with an install hint without it.",
 		"category": "integration"
 	},
 	{

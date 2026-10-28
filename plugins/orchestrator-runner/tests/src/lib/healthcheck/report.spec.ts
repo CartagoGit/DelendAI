@@ -73,8 +73,42 @@ describe('buildProviderHealth', () => {
 			path: '/usr/bin/claude',
 			version: '1.2.3',
 		});
-		expect(r.model.available).toBe(true);
+		// Nobody asked it which models it reaches: unknown, not yes.
+		expect(r.model.available).toBeNull();
 		expect(r.installHint).toBeUndefined();
+	});
+
+	it('is available only once the client agrees: logged in, and listing the model', () => {
+		const probe: ICliProbeResult = {
+			installed: true,
+			path: '/usr/bin/claude',
+			version: '1.2.3',
+		};
+		const provider = cliProvider('claude');
+		const ready = buildProviderHealth(provider, probe, {
+			verdict: 'usable',
+			authTier: 'max',
+			models: [`anthropic/${provider.modelId}`],
+		});
+		expect(ready).toMatchObject({
+			overall: 'available',
+			auth: { authenticated: true, tier: 'max' },
+			model: { available: true },
+		});
+		expect(
+			buildProviderHealth(provider, probe, { verdict: 'needs-login' })
+				.overall,
+		).toBe('unauthenticated');
+		expect(
+			buildProviderHealth(provider, probe, { verdict: 'quota-exhausted' })
+				.overall,
+		).toBe('quota-exceeded');
+		expect(
+			buildProviderHealth(provider, probe, {
+				verdict: 'usable',
+				models: ['some-other-model'],
+			}).overall,
+		).toBe('model-unavailable');
 	});
 
 	it('marks a missing CLI not-installed and attaches an install hint', () => {

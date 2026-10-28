@@ -19,6 +19,7 @@
  * exactly — `.strict()` everywhere so a typo in the config file is
  * reported as a schema violation instead of being silently ignored.
  */
+import { DECLARED_PROVIDER_SCHEMA } from '../contracts/constants/declared-provider-schema.constant';
 import { CATALOGUE_SOURCES_SCHEMA } from '../contracts/constants/catalogue-sources-schema.constant';
 import { DECLARED_AGENT_SCHEMA } from '../contracts/constants/declared-agent-schema.constant';
 import { KNOWN_CLIENT_SCHEMA } from '../contracts/constants/known-client-schema.constant';
@@ -555,6 +556,14 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional()
 			.describe(
 				'Agents the catalogues miss, or reached another way than they say. Use it to declare an agent this project uses that no registry lists.',
+			),
+		// Model providers in models.dev's shape: each replaces the
+		// catalogue's entry of the same id.
+		modelProviders: z
+			.array(DECLARED_PROVIDER_SCHEMA)
+			.optional()
+			.describe(
+				'Model providers in the shape models.dev publishes them, keyed by the same id as the catalogue entry each one replaces.',
 			),
 		accounts: z
 			.array(PROVIDER_ACCOUNT_SCHEMA)

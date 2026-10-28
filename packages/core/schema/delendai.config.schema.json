@@ -983,11 +983,13 @@
 										"type": "string",
 										"enum": [
 											"openai",
-											"anthropic"
+											"anthropic",
+											"google"
 										],
 										"enumDescriptions": {
 											"openai": "The OpenAI request/response shape. The `url` is the provider’s base URL.",
-											"anthropic": "The Anthropic messages shape. The `url` is the provider’s base URL."
+											"anthropic": "The Anthropic messages shape. The `url` is the provider’s base URL.",
+											"google": "The Google Generative Language shape. The `url` is the provider’s base URL."
 										}
 									},
 									"envVar": {
@@ -1670,6 +1672,74 @@
 				],
 				"additionalProperties": false,
 				"description": "An agent the catalogues do not know about, or one to reach in a way its catalogue entry does not describe. Give it an id, say how it is reached, and, for a command line agent, the commands that answer its probes."
+			}
+		},
+		"modelProviders": {
+			"description": "Model providers in the shape models.dev publishes them, keyed by the same id as the catalogue entry each one replaces.",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[a-z0-9][a-z0-9-]*$",
+						"description": "The provider id, as models.dev names it."
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"description": "The provider name to show in a roster or a report."
+					},
+					"npm": {
+						"description": "The SDK package that names its API family (@ai-sdk/openai-compatible…).",
+						"type": "string",
+						"minLength": 1
+					},
+					"api": {
+						"description": "Its API base URL.",
+						"type": "string",
+						"format": "uri"
+					},
+					"env": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[A-Z][A-Z0-9_]*$"
+						},
+						"description": "The variables its key is read from, by name."
+					},
+					"models": {
+						"anyOf": [
+							{
+								"type": "array",
+								"items": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							{
+								"type": "object",
+								"propertyNames": {
+									"type": "string"
+								},
+								"additionalProperties": {}
+							}
+						],
+						"description": "Its model ids: a list, or models.dev's map keyed by id."
+					},
+					"doc": {
+						"description": "Where to read about the provider.",
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"env",
+					"models"
+				],
+				"additionalProperties": false
 			}
 		},
 		"accounts": {

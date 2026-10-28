@@ -117,6 +117,19 @@ describe('createCliInvoker — what a hop answers', () => {
 		});
 	});
 
+	it('answers with the plain text of a CLI that writes no stream-json', async () => {
+		const child = scripted();
+		const run = createCliInvoker({
+			workspaceRoot: '/work',
+			spawner: child.spawner,
+		}).start(request);
+		child.print('Here is the fix.\n\nIt touches two files.');
+		child.end(0);
+		expect(await run.promise).toEqual({
+			text: 'Here is the fix.\nIt touches two files.',
+		});
+	});
+
 	it('fails a non-zero exit, and an exit with no code (it never started)', async () => {
 		const failed = scripted();
 		const first = createCliInvoker({

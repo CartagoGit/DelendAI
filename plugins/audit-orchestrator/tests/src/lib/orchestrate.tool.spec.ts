@@ -126,6 +126,9 @@ describe('audit orchestrator tools', () => {
 		);
 		expect(out.dryRun).toBe(false);
 		expect(out.results).toHaveLength(1);
-		expect(out.results[0].ok).toBe(true);
+		// The task ran; its plan's verify stage is not run by the
+		// dispatcher, so it is reported unverified rather than ok.
+		expect(out.results[0].ok).toBe(false);
+		expect(out.results[0].unverified?.length).toBeGreaterThan(0);
 	});
 });

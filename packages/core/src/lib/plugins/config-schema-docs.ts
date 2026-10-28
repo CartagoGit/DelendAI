@@ -191,6 +191,7 @@ export const INVOKE_API_FAMILY_DOCS = {
 	openai: 'The OpenAI request/response shape. The `url` is the provider’s base URL.',
 	anthropic:
 		'The Anthropic messages shape. The `url` is the provider’s base URL.',
+	google: 'The Google Generative Language shape. The `url` is the provider’s base URL.',
 } as const;
 
 /** The HTTP method an API provider is called with. */

@@ -47,6 +47,7 @@ export interface DelendaiTestConventionScanDriftOutput {
 		excerpt?: string;
 	}>;
 	scannedFiles: number;
+	skippedFiles: number;
 }
 
 export interface DelendaiTestConventionSuggestSpecPathOutput {

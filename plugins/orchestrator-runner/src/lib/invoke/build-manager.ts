@@ -162,6 +162,8 @@ export interface IBuildManagerOptions {
 	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
+	/** The host this server answers, once its client named itself. */
+	readonly currentHost?: (() => string | undefined) | undefined;
 	/** The sampler of the host this server runs in, once a client is connected. */
 	readonly hostSampler?: (() => IHostSampler | undefined) | undefined;
 	readonly health: HealthStore;
@@ -247,7 +249,10 @@ export const buildDefaultInvocationManager = (
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,
 	});
-	const subscriptionInvoker = createSubscriptionInvoker();
+	const subscriptionInvoker = createSubscriptionInvoker({
+		cli: cliInvoker,
+		currentHost: options.currentHost,
+	});
 	// A model the host editor serves on the person's key (BYOK) is asked of
 	// the host itself; outside a host that samples, every call says so.
 	const hostSamplingInvoker = createHostSamplingInvoker({
