@@ -2,14 +2,14 @@
 id: x00953
 title: "Commands a tool runs get an argv, an allowlist and a scoped environment"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 08934cbf-1733-4dca-8095-cd6fa07f886a
-last-correlation-id: 08934cbf-1733-4dca-8095-cd6fa07f886a
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T04:52:06.333Z
+last-transition-id: 4c0d3c58-b675-4401-b8cc-644500320282
+last-correlation-id: 4c0d3c58-b675-4401-b8cc-644500320282
+last-transition-from: review
+last-transition-at: 2026-10-28T08:34:45.964Z
 shipped-in:
   - "ee98acec2fa4"
 ---
@@ -71,8 +71,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "The API transport reads credentials through the account's credentialEnv and refuses a call the account policy forbids (sol C2)."
   - "execution-env refuses programs outside its allowlist before quoting them (D123)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 83/83 claimed, no recorded run cited; acceptance 5/5: (1) external-mcps/options-schema.ts:174-181 adds allowedCommands to a strict options schema, so it is config only; index.ts:111-121 refuses an enabled server whose… (2) server-registry.ts:624-630 drops requiredKeys derived from the whole environment, so only the entry's own dollar-name references are required; server-registry.… (3) account-environment.service.ts:79-92 replaces the no-account inherit branch with baseEnvironment(parentEnv) plus the declared named keys, and cli.ts:166-178 sp… (4) account-environment.service.ts:143-181 refuses an unknown account, an account with permittedAutomation false and an account whose credentialMode is official-su… (5) ssh.service.ts:79-98 checks the basename of the program against allowedPrograms or the default list plus the probe list, and throws before the private runRemot… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 83 tests, exit 0. Recorded rather than blocked: the criterion names the API transport, but no spec exercises the credentialFor refusal path (grep for credentialFor in the orchestrator-runner tests returns nothing), so that path is proven by reading the shipped code only. Residual: the external-mcps allowlist compares the basename while the spawned program is the full command, so a relative path such as ./npx passes as npx.
 
 ## acceptance
 
