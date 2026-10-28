@@ -80,6 +80,9 @@ export function resolveDispatchPort(
 							: input.instruction,
 					budget: input.budget,
 					slotId: input.slotId,
+					...(input.signal === undefined
+						? {}
+						: { signal: input.signal }),
 					metadata: {
 						step: input.step,
 						override: input.override,

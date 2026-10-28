@@ -19,10 +19,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import {
-	redactSecrets,
-	type IProviderCapabilities,
-} from '@delendai/core/public';
+import { redactSecrets } from '@delendai/core/public';
 import {
 	KNOWN_CLIENTS,
 	knownClientOf,
@@ -31,6 +28,7 @@ import {
 	type IClientVerdict,
 } from '@delendai/core/contracts';
 import {
+	clientLogin,
 	clientVerdict,
 	withFileMutex,
 	writeFileAtomic,
@@ -63,6 +61,8 @@ export interface IDiscoveredProvider {
 	readonly evidence?: IClientDiscovery['evidence'];
 	/** For a client that hosts several, the models it says it reaches. */
 	readonly models?: IClientModels;
+	/** How it is logged in and paid, as its own login answer says; absent when it does not say. */
+	readonly login?: IClientDiscovery['login'];
 }
 
 /** A provider CLI NOT on PATH, with structured install guidance (I4). */
@@ -157,7 +157,9 @@ export const probeLogin = async (
 	id: string,
 	runner: ProbeRunner,
 	cwd: string,
-): Promise<Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence'>> => {
+): Promise<
+	Pick<IDiscoveredProvider, 'authTier' | 'verdict' | 'evidence' | 'login'>
+> => {
 	const client = knownClientOf(id, cwd);
 	const command = AUTH_STATUS_CMD[id];
 	if (client === undefined || command === undefined) {
@@ -172,6 +174,9 @@ export const probeLogin = async (
 				? parseAuthTier(answer.output)
 				: null,
 		...clientVerdict(client, answer),
+		...(clientLogin(client, answer) === undefined
+			? {}
+			: { login: clientLogin(client, answer) }),
 	};
 };
 
@@ -235,7 +240,19 @@ export interface IJsonPatchOp {
  */
 export const readConfirmedProviders = async (
 	configPath: string,
-): Promise<readonly { readonly id?: unknown }[] | null> => {
+): Promise<readonly { readonly id?: unknown }[] | null> =>
+	readConfirmedList(configPath, 'providers');
+
+/** The confirmed config's `accounts`, read the same way. */
+export const readConfirmedAccounts = async (
+	configPath: string,
+): Promise<readonly { readonly accountId?: unknown }[] | null> =>
+	readConfirmedList(configPath, 'accounts');
+
+const readConfirmedList = async (
+	configPath: string,
+	key: 'providers' | 'accounts',
+): Promise<readonly Record<string, unknown>[] | null> => {
 	let raw: string;
 	try {
 		raw = await readFile(configPath, 'utf8');
@@ -243,69 +260,14 @@ export const readConfirmedProviders = async (
 		return null;
 	}
 	try {
-		const parsed = JSON.parse(raw) as { providers?: unknown };
-		if (Array.isArray(parsed.providers)) {
-			return parsed.providers as readonly { id?: unknown }[];
-		}
-		return null;
+		const parsed = JSON.parse(raw) as Record<string, unknown>;
+		const list = parsed[key];
+		return Array.isArray(list)
+			? (list as readonly Record<string, unknown>[])
+			: null;
 	} catch {
 		return null;
 	}
-};
-
-/**
- * Build the draft `IProviderCapabilities` entry for a discovered CLI. The
- * concrete `modelId`/`costTier`/capabilities are placeholders the user
- * refines — the wizard only knows the CLI exists, not which model it should
- * front. Kept a well-typed core contract shape so the patch value is valid.
- */
-export const draftProviderEntry = (
-	discovered: IDiscoveredProvider,
-): IProviderCapabilities => ({
-	id: discovered.id,
-	kind: 'cli',
-	invoke: { kind: 'cli', command: discovered.id },
-	modelId: 'PLEASE-SET-MODEL-ID',
-	contextWindow: 0,
-	costTier: 3,
-	strengths: [],
-	weaknesses: [],
-});
-
-/**
- * Build the RFC 6902 JSON Patch (CRITICAL I13) that copies newly-discovered
- * providers into `delendai.config.json#providers` on user confirm.
- *
- * - If the confirmed config has no `/providers` array yet, the first op
- *   creates it (`{op:'add', path:'/providers', value:[]}`).
- * - Each discovered provider whose `id` is NOT already confirmed is appended
- *   (`{op:'add', path:'/providers/-', value:<entry>}`). Existing ids are
- *   left untouched — re-running the wizard is non-destructive (§3).
- *
- * The patch is RETURNED to the caller; the wizard never applies it itself.
- */
-export const buildProvidersPatch = (
-	confirmedProviders: readonly { readonly id?: unknown }[] | null,
-	detected: readonly IDiscoveredProvider[],
-): readonly IJsonPatchOp[] => {
-	const ops: IJsonPatchOp[] = [];
-	if (confirmedProviders === null) {
-		ops.push({ op: 'add', path: '/providers', value: [] });
-	}
-	const existingIds = new Set(
-		(confirmedProviders ?? [])
-			.map((entry) => entry.id)
-			.filter((id): id is string => typeof id === 'string'),
-	);
-	for (const provider of detected) {
-		if (existingIds.has(provider.id)) continue;
-		ops.push({
-			op: 'add',
-			path: '/providers/-',
-			value: draftProviderEntry(provider),
-		});
-	}
-	return ops;
 };
 
 /**
