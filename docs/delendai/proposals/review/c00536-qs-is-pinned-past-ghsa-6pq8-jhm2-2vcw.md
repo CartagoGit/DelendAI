@@ -2,14 +2,14 @@
 id: c00536
 title: "qs is pinned past GHSA-6pq8-jhm2-2vcw"
 kind: chore
-status: in-progress
+status: review
 type: proposal
 track: security
 date: 2026-10-27
-last-transition-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
-last-correlation-id: 90e42022-9da5-46ae-b2bf-b08e8e38d702
-last-transition-from: ready
-last-transition-at: 2026-10-28T09:22:01.024Z
+last-transition-id: 4e124d04-af11-434f-8213-c19e515b6c3b
+last-correlation-id: 4e124d04-af11-434f-8213-c19e515b6c3b
+last-transition-from: in-progress
+last-transition-at: 2026-10-28T09:30:38.575Z
 shipped-in:
   - "a0754d0a7"
 ---
@@ -40,6 +40,8 @@ The advisory (moderate: `qs.stringify` with `arrayFormat: 'comma'` throws on arr
   - "package.json overrides qs to 6.16.1 and bun.lock resolves no qs below it."
   - "lint:dependency-advisories passes."
 - shipped-in: `a0754d0a7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
