@@ -2,14 +2,14 @@
 id: x00971
 title: "One host catalog, and a host server that stops with its client and runs current rules"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
-last-correlation-id: dc853ce3-b71b-409b-bfc5-a64a73d55d00
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T09:13:33.645Z
+last-transition-id: aa0b3fce-6014-4978-9f43-fb8d4c22f04d
+last-correlation-id: aa0b3fce-6014-4978-9f43-fb8d4c22f04d
+last-transition-from: review
+last-transition-at: 2026-10-28T08:59:47.298Z
 shipped-in:
   - "97594eb67"
 ---
@@ -41,8 +41,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "Detection, scaffold and instructions read AGENT_HOSTS; a spec fails if a host appears in one and not the others (G65, D39)."
   - "Every host that declares an instructions file gets delendai's block from init when the project uses it, and every reader of instruction files (init, bootstrap analysis, the proposals scan) knows each file a host declares (G66)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 30/30 claimed, no recorded run cited; acceptance 2/2: (1) agent-config-rules.ts derives its rule table from AGENT_HOST_INSTRUCTION_FILES and from each host's agents folder, init-hosts.helper.ts:5-10 imports AGENT_HOST… (2) init-hosts.helper.ts:78-98 computes the instruction targets for the hosts and the targets init writes for, one per distinct instructions path, and the spec ass… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: the init, agent-config-rules and agent-hosts suites are green, exit 0. Recorded rather than blocked: the slice narrows runtime detection to the files each host declares (its instructions and its legacy instructions), so a Cursor project whose only evidence is a .cursor directory without the legacy .cursorrules file is no longer detected - the pre-slice spec asserted that case and the shipped commit rewrote it. Also, the goal line says every declared host ships its material while 9 of the 15 hosts declare an instructions file, and plugins/usage-tracking/AGENT.md changed without appearing in any slice's Files list.
 
 ### S2 — The server process
 - **Status**: done
@@ -52,8 +54,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
   - "SIGINT and SIGTERM reach the child; no server survives its client (G113)."
   - "A server whose source changed since start reports itself stale in delendai_status and refuses mutations until restarted (G27)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 2/2: (1) host-supervisor-process.ts:123-125 registers the termination, interrupt and hangup signals and the handler calls supervisor.stop(), whose child stop sends SIGT… (2) assemble-core-tools.ts:376-385 puts the code freshness reading in the delendai status collector and code-freshness.service.ts:14-21 reports the stale flag, the… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 7 tests, exit 0. Recorded rather than blocked: the criterion's refusal until restart is realised by the pre-existing publish guard rather than by new code in this slice, and the slice added no spec that raises the signals against the supervisor process itself (host-supervisor-process.spec.ts has no signal case).
 
 ### S3 — The bridge names a model only when one conversation can be at work
 - **Status**: done
@@ -62,8 +66,10 @@ Joint audit a00095. G65: three host catalogs and none matches the others. G66: w
 - acceptance:
   - "The bridge keeps an entry per conversation, and when a workspace's fresh entries name more than one model it names none and says which it saw, so one conversation never reads another's model (G68)."
 - shipped-in: `97594eb67`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 97594eb67, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 1/1: (1) provider-model-bridge.helper.ts:200-220 keeps one entry per conversation and bridgeReading names no model when the fresh entries of a workspace name more than … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice spec: 1 file / 18 tests, exit 0.
 
 ## acceptance
 
