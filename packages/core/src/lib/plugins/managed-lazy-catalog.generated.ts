@@ -153,7 +153,13 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'audit',
 			'@delendai/audit',
-			['audit_plan', 'audit_consolidate', 'audit_run', 'self_audit'],
+			[
+				'audit_plan',
+				'audit_consolidate',
+				'audit_run',
+				'audit_close',
+				'self_audit',
+			],
 			[],
 			[],
 			['audit-overview', 'audit-scopes'],

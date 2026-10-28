@@ -2,14 +2,14 @@
 id: x00953
 title: "Commands a tool runs get an argv, an allowlist and a scoped environment"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 08934cbf-1733-4dca-8095-cd6fa07f886a
-last-correlation-id: 08934cbf-1733-4dca-8095-cd6fa07f886a
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T04:52:06.333Z
+last-transition-id: 4c0d3c58-b675-4401-b8cc-644500320282
+last-correlation-id: 4c0d3c58-b675-4401-b8cc-644500320282
+last-transition-from: review
+last-transition-at: 2026-10-28T08:34:45.964Z
 shipped-in:
   - "ee98acec2fa4"
 ---
@@ -42,8 +42,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "A ref or range starting with `-` is refused, and git receives `--end-of-options` before it (G115)."
   - "Repository and ticket selectors are validated against owner/name and numeric patterns before reaching gh, glab or a URL path (G116)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 75/75 claimed, no recorded run cited; acceptance 3/3: (1) proposal-acceptance.ts:341 strips quoted spans before testing for shell metacharacters and :419 refuses with the reason that no criterion reaches a shell, with… (2) git.ts:309 refuses a ref starting with a hyphen and :317 passes --end-of-options before it; changelog.ts:118 refuses a range starting with a hyphen and :134 pa… (3) github-selectors.constant.ts defines the owner, repository and number patterns and they are applied in catalog.ts:184 and :989, write-tools.ts:36, :303 and :32… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: proposals and git 4 files / 52 tests, github 3 files / 15 tests, plus the forge regression 2 files / 8 tests, all exit 0. Residual outside the criterion's wording, for a follow-up: catalog.ts still accepts a bare non-empty string for workflowId, runId, jobId, releaseId, deploymentId and for sha, ref and branch, each interpolated into a repository URL path.
 
 ### S2 — Read-only queries and settlement commands
 - **Status**: done
@@ -53,8 +55,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "db_query hands its read classification to the driver, and SQLite runs every read on a connection opened read-only, so a WITH ... DELETE fails there (G114)."
   - "The settlement runner executes validateCommand only as `bun run <script>` for a script in the project's package.json, as argv, never `bash -c` on free text; its cwd stays in the workspace (G120)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 2/2: (1) query-engine.ts:378 passes readOnly: classification === 'read' to the driver and sqlite-query-driver.ts:99-108 opens the read connection with readonly and file… (2) settlement-runner.ts:31-52 accepts only a bun run script that is declared in the project's package.json and :78 runs it as execFile with the script name as an … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 18 tests and the e2e file 1 file / 2 tests, all exit 0. Recorded rather than blocked: no automated test drives the real SQLite driver, because better-sqlite3 is an optional peer dependency that is not installed in this workspace, so the read-only refusal rests on the shipped code; the criterion should say so. The shipped commit also re-fitted this criterion's wording to the implementation, which the proposal author should note.
 
 ### S3 — Spawned servers and providers get an allowlist and their own env
 - **Status**: done
@@ -67,8 +71,10 @@ Joint audit a00095 and gpt-6.1-sol. G107: the acceptance-criteria runner execute
   - "The API transport reads credentials through the account's credentialEnv and refuses a call the account policy forbids (sol C2)."
   - "execution-env refuses programs outside its allowlist before quoting them (D123)."
 - shipped-in: `ee98acec2fa4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ee98acec2fa4, validate exit 0 and tests 83/83 claimed, no recorded run cited; acceptance 5/5: (1) external-mcps/options-schema.ts:174-181 adds allowedCommands to a strict options schema, so it is config only; index.ts:111-121 refuses an enabled server whose… (2) server-registry.ts:624-630 drops requiredKeys derived from the whole environment, so only the entry's own dollar-name references are required; server-registry.… (3) account-environment.service.ts:79-92 replaces the no-account inherit branch with baseEnvironment(parentEnv) plus the declared named keys, and cli.ts:166-178 sp… (4) account-environment.service.ts:143-181 refuses an unknown account, an account with permittedAutomation false and an account whose credentialMode is official-su… (5) ssh.service.ts:79-98 checks the basename of the program against allowedPrograms or the default list plus the probe list, and throws before the private runRemot… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 83 tests, exit 0. Recorded rather than blocked: the criterion names the API transport, but no spec exercises the credentialFor refusal path (grep for credentialFor in the orchestrator-runner tests returns nothing), so that path is proven by reading the shipped code only. Residual: the external-mcps allowlist compares the basename while the spawned program is the full command, so a relative path such as ./npx passes as npx.
 
 ## acceptance
 
