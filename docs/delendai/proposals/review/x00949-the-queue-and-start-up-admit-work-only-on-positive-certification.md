@@ -41,8 +41,10 @@ gpt-6.1-sol's contribution to a00095: MAINT-05 the queue arms accepted candidate
   - "A candidate with a pending, missing or failed required check on its current head is not armed; a spec feeds a check-run list with one pending required check and gets 'not armed' (MAINT-05)."
   - "The reap tolerates a candidate whose branch vanished between the listing and the deletion: `deleteForgeBranch` answers 'gone' and the run goes on, proved by a spec; the stale-candidate doctor still fails on a real stall, by design (G83)."
 - shipped-in: `506741770b0b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 1b69e8c34ebe, validate exit 0 and tests 64/64 claimed, no recorded run cited; acceptance 2/2: (1) queue-arming.spec.ts proves it: the case 'arms nothing while one required check is still running' asserts {passed:false, pending:['delendai-validate']} for a c… (2) ref-lifecycle-guard.script.ts:387 adds deleteForgeBranch returning deleted, gone or failed; the call site at :558 logs and continues on failed and treats gone … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. The slice's own specs ran green (3 files / 64 tests). Two observations that do not affect the verdict: the proposal's goal line about the stale-candidate report stopping the queue is not delivered by this slice, because the red step of that job is the doctor, which no slice touched; and the arming is proven at verdict level, not at the queue's landing set.
 
 ### S2 — Start-up reads every verdict and the journal by identity
 - **Status**: done
