@@ -40,8 +40,10 @@ gpt-6.1-sol's contribution to a00095. CTX-01: the delta reference embeds the ful
   - "A delta carries a reference and no second copy (CTX-01)."
   - "Expansion verifies contentHash and refuses a mismatch (CTX-02)."
 - shipped-in: `ceb5903cb`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at ceb5903cb, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 2/2: (1) tool-result-deltas.ts:41-52 builds one reference from the content digest and returns exactly one ref, with no second copy of the payload; the delta spec covers… (2) ref-expander.ts:18-29 verifies contentHash before any manifest recursion and refuses a mismatch; ref-expander.spec.ts:97-117 ('refuses content replaced under a… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 2 files / 5 tests, exit 0.
 
 ### S2 — Catalogue and clients
 - **Status**: done
