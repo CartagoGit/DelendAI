@@ -2,14 +2,14 @@
 id: x00976
 title: "The state engine drains, persists and memoises each scope once"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 4843f75b-fcbe-40a8-b1e8-82614acfa17e
-last-correlation-id: 4843f75b-fcbe-40a8-b1e8-82614acfa17e
-last-transition-from: in-progress
-last-transition-at: 2026-10-25T07:38:55.293Z
+last-transition-id: 0891947b-1bba-4d4e-a077-aa2301bb9b05
+last-correlation-id: 0891947b-1bba-4d4e-a077-aa2301bb9b05
+last-transition-from: review
+last-transition-at: 2026-10-28T08:44:20.667Z
 shipped-in:
   - "c373f00b0f40"
 ---
@@ -69,8 +69,10 @@ gpt-6.1-sol's contribution and a00095. G61-STATE01: two live drains consume the 
   - "Driver parity runs in a required check (G111)."
   - "Every IStateRegistry method has a spec and the coverage lint fails when one is missing (G112)."
 - shipped-in: `c373f00b0f40`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at c373f00b0f40, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 2/2: (1) The parity step moved into the sqlite-cutover-ready job (ci.yml:1109-1110), that job is in delendai-validate's needs (ci.yml:1166), and branch protection requi… (2) The coverage lint derives the method list from packages/contracts/src/state.ts and fails when a method has no spec; re-deriving the interface list with the scr… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: packages/state/tests/src/registry.spec.ts 1 file / 15 tests plus the state-engine-coverage script spec, exit 0.
 
 ## acceptance
 
