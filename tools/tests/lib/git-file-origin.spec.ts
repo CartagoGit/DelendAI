@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	gitFileOrigin,
+	gitFileOrigins,
 	originsFromLog,
 	parseOriginLine,
 } from '../../scripts/lib/git-file-origin';
@@ -152,5 +153,23 @@ describe('originsFromLog', () => {
 		expect(origins.get('src/renamed.ts')?.sha).toBe('aaaaaaa');
 		expect(origins.get('src/b.ts')?.date).toBe('2026-01-01');
 		expect(origins.get('src/missing.ts')).toBeUndefined();
+	});
+});
+
+describe('gitFileOrigins', () => {
+	it('dates every path of a real history in one walk, a renamed one by its first name', () => {
+		writeFileSync(join(repo, 'a.ts'), '1');
+		git('add', 'a.ts');
+		commitAt('add a', '2026-06-01T10:00:00Z');
+		git('mv', 'a.ts', 'b.ts');
+		writeFileSync(join(repo, 'c.ts'), '3');
+		git('add', 'c.ts');
+		commitAt('rename a, add c', '2026-09-01T10:00:00Z');
+
+		const origins = gitFileOrigins(repo);
+
+		expect(origins.get('b.ts')?.date).toBe('2026-06-01');
+		expect(origins.get('c.ts')?.date).toBe('2026-09-01');
+		expect(gitFileOrigins(join(repo, 'not-a-repo')).size).toBe(0);
 	});
 });
