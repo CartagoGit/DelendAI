@@ -48,13 +48,13 @@ export const buildPerfBenchRegistration = (options: {
 }): IToolRegistration => ({
 	id: 'perf_bench',
 	summary:
-		'Run named benchmark samples, compute ops/s, and compare against an optional inline baseline.',
+		'Summarize benchmark timings the caller measured: ops/s, mean, p95, and regressions against an optional baseline.',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_perf_bench`,
 			{
 				description:
-					'Run named benchmark sample sets, derive ops/s from mean sample time, and optionally flag regressions against an inline baseline. Offline, read-only.',
+					'Summarize benchmark timings you measured: pass each bench `name` with its `samples` (milliseconds per run) and get ops/s from the mean, the mean and p95, and the regressions against an inline baseline. It runs nothing itself; time the code first. Offline, read-only.',
 				inputSchema: z.object({
 					benches: z.array(BenchInputSchema).min(1),
 					baseline: BenchmarkYamlSchema.optional(),
@@ -73,7 +73,6 @@ export const buildPerfBenchRegistration = (options: {
 				baseline?: IBenchmarkYaml | undefined;
 				threshold?: number | undefined;
 			}) => {
-				void options.workspaceRootAbs;
 				const results = args.benches.map((bench) =>
 					runBench(bench.name, bench.samples),
 				);

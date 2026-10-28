@@ -16,12 +16,16 @@ export type IDriverKind = 'sqlite' | 'postgres' | 'mysql';
  * does the projection / parallelisation. New engines (postgres, mysql)
  * can be slotted in without touching the tool layer.
  */
+import type { ITableRef } from '../contracts/interfaces/table-ref.interface';
+
+export type { ITableRef };
+
 export interface IDatabaseDriver {
 	readonly kind: IDriverKind;
-	listTables(): Promise<string[]>;
-	listColumns(table: string): Promise<IColumnInfo[]>;
-	listIndexes(table: string): Promise<IIndexInfo[]>;
-	listForeignKeys(table: string): Promise<IForeignKeyInfo[]>;
+	listTables(): Promise<ITableRef[]>;
+	listColumns(table: ITableRef): Promise<IColumnInfo[]>;
+	listIndexes(table: ITableRef): Promise<IIndexInfo[]>;
+	listForeignKeys(table: ITableRef): Promise<IForeignKeyInfo[]>;
 }
 
 /** Canonical lowercase projection of a column type. */
@@ -54,6 +58,8 @@ export interface IForeignKeyInfo {
 	readonly fromTable: string;
 	readonly fromColumns: string[];
 	readonly toTable: string;
+	/** The schema of `toTable`; absent means the from-table's own. */
+	readonly toSchema?: string | null;
 	readonly toColumns: string[];
 }
 
@@ -241,21 +247,27 @@ export const redactDsn = (message: string): string => {
 export const buildSchema = async (
 	driver: IDatabaseDriver,
 ): Promise<IDatabaseSchema> => {
-	let tableNames: string[];
+	let tableRefs: ITableRef[];
 	try {
-		tableNames = await driver.listTables();
+		tableRefs = await driver.listTables();
 	} catch (err) {
 		throw new Error(redactDsn((err as Error).message));
 	}
 	const tables: ITableInfo[] = await Promise.all(
-		tableNames.map(async (name): Promise<ITableInfo> => {
+		tableRefs.map(async (ref): Promise<ITableInfo> => {
 			try {
 				const [columns, indexes, foreignKeys] = await Promise.all([
-					driver.listColumns(name),
-					driver.listIndexes(name),
-					driver.listForeignKeys(name),
+					driver.listColumns(ref),
+					driver.listIndexes(ref),
+					driver.listForeignKeys(ref),
 				]);
-				return { name, schema: null, columns, indexes, foreignKeys };
+				return {
+					name: ref.name,
+					schema: ref.schema,
+					columns,
+					indexes,
+					foreignKeys,
+				};
 			} catch (err) {
 				throw new Error(redactDsn((err as Error).message));
 			}
@@ -266,4 +278,4 @@ export const buildSchema = async (
 
 /** Convenience: log everything on a single line, used by debug envelopes. */
 export const formatSchemaOneLine = (schema: IDatabaseSchema): string =>
-	`${schema.driver}:${schema.tables.map((t) => t.name).join(',')}`;
+	`${schema.driver}:${schema.tables.map((t) => (t.schema === null ? t.name : `${t.schema}.${t.name}`)).join(',')}`;

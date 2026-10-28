@@ -134,6 +134,7 @@ export type DelendaiBrowserBrowserOpenOutput = {
 export type DelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
+	truncated: boolean;
 	status: "ok";
 } | {
 	url: string;
@@ -871,6 +872,7 @@ export type DelendaiPerfPerfProfileOutput = {
 		info: number;
 	};
 	worst: string;
+	flamegraph?: string;
 } | {
 	ok: "skipped";
 	hint: string;

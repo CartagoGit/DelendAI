@@ -72,7 +72,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			origin: 'first-party',
 			id: 'browser',
 			package: '@delendai/browser',
-			summary: 'Headless browser automation tools.',
+			summary: 'Headless browser automation tools; they need Playwright installed and answer with an install hint without it.',
 			tags: ['browser', 'automation'],
 			permissions: ['filesystem-write', 'process', 'network', 'browser'],
 			tokenBudgetBytes: 2700,
