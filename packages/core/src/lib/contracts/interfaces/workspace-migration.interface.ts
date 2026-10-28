@@ -28,9 +28,9 @@ export interface IMigration {
 	 * Whether this migration is a STANDING CHECK rather than a one-shot
 	 * rename.
 	 *
-	 * A rename is done when it is done: `mcp-vertex` becomes `delendai`,
-	 * and the fact that it happened is a fact forever. The journal records
-	 * it and the engine never asks again.
+	 * A rename is done when it is done: the old identity becomes the new
+	 * one, and the fact that it happened is a fact forever. The journal
+	 * records it and the engine never asks again.
 	 *
 	 * A standing check answers a question about the workspace's CURRENT
 	 * state: "does this config still agree with the policy the same file
