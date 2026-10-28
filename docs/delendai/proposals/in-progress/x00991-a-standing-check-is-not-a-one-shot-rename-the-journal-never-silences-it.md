@@ -2,10 +2,14 @@
 id: x00991
 title: "A standing check is not a one-shot rename: the journal never silences it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-28
+last-transition-id: 86ecba88-5372-4804-87ed-f1e9b1bc3656
+last-correlation-id: 86ecba88-5372-4804-87ed-f1e9b1bc3656
+last-transition-from: ready
+last-transition-at: 2026-10-28T19:08:08.251Z
 ---
 
 # x00991 — A standing check is not a one-shot rename: the journal never silences it
