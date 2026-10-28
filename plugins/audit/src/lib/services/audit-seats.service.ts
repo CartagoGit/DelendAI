@@ -5,7 +5,7 @@
  * committed (hashed) before the others' reports may be read.
  */
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, open, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
@@ -31,6 +31,19 @@ const sha256 = (text: string): string =>
 const readText = async (auditDir: string, rel: string): Promise<string> =>
 	(await new SafeWorkspaceReader(auditDir).readText(rel)).content;
 
+/** Create the file only if it does not exist (`wx`); EEXIST when it does. */
+const createExclusive = async (
+	file: string,
+	content: string,
+): Promise<void> => {
+	const handle = await open(file, 'wx');
+	try {
+		await handle.writeFile(content, 'utf8');
+	} finally {
+		await handle.close();
+	}
+};
+
 const isExists = (err: unknown): boolean =>
 	(err as NodeJS.ErrnoException).code === 'EEXIST';
 
@@ -50,9 +63,10 @@ export const claimSeat = async (
 	const dir = protocolDir(auditDir, AUDIT_SEATS_SUBDIR);
 	await mkdir(dir, { recursive: true });
 	try {
-		await writeFile(path.join(dir, `${seat}.json`), JSON.stringify(claim), {
-			flag: 'wx',
-		});
+		await createExclusive(
+			path.join(dir, `${seat}.json`),
+			JSON.stringify(claim),
+		);
 	} catch (err) {
 		if (!isExists(err)) throw err;
 		const holder = await readSeat(auditDir, seat);
@@ -112,12 +126,9 @@ export const commitPhaseA = async (
 	const dir = protocolDir(auditDir, AUDIT_PHASE_A_SUBDIR);
 	await mkdir(dir, { recursive: true });
 	try {
-		await writeFile(
+		await createExclusive(
 			path.join(dir, `${reviewer}.json`),
 			JSON.stringify(commit),
-			{
-				flag: 'wx',
-			},
 		);
 	} catch (err) {
 		if (isExists(err)) {

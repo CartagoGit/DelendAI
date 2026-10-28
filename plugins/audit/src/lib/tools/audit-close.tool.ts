@@ -4,7 +4,6 @@
  * commit a Phase A file, check the evidence contract, and close the audit with a
  * recorded consensus.
  */
-import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import z from 'zod';
@@ -14,7 +13,7 @@ import {
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
 import type { IToolRegistration } from '@delendai/core/contracts';
 
 import type { ICloseToolOptions } from '../contracts/interfaces/audit-protocol.interface';
@@ -225,8 +224,7 @@ export const buildCloseRegistration = (
 				const closed = pendingPhaseA.length === 0;
 				if (closed) {
 					const dir = path.join(absDir, AUDIT_PROTOCOL_DIR);
-					await mkdir(dir, { recursive: true });
-					await writeFile(
+					await writeFileAtomic(
 						path.join(dir, AUDIT_CLOSURE_FILE),
 						JSON.stringify({ threshold, consensus }),
 					);
