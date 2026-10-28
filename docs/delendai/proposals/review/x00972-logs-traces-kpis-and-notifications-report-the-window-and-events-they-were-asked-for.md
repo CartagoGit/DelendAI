@@ -41,8 +41,10 @@ Joint audit a00095. D51: observability trims real records the wrong way and hide
   - "History and snapshot use the same from/to (D84, D76)."
   - "A score of 100 needs measured signals; missing signals lower confidence instead (D61)."
 - shipped-in: `3f424423eb4c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash-preview
+- review-log: approved by minimax-m3.1-flash-preview — verified at 3f424423eb4c, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 3/3: (1) observability/src/lib/traces/real-deps.ts:96-113 sorts by ts and keeps the last limit of that order, and both listTraceRecords (:250) and listReleaseHealthReco… (2) project-kpis.tool.ts:1133-1139 reads the history with query.from and query.to, and the snapshot is now built with snapshotIntervalOf(currentQuery) (:1092-1099)… (3) project-health-signals.service.ts:172-195 caps an inferred score at PROJECT_HEALTH_INFERRED_CEILING = 90 (project-health.constant.ts:61-68) and lowers the conf… — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: observability 1 file / 16 tests, project-health 2 files / 5 tests, project-kpis 1 file / 1 test, all exit 0.
 
 ### S2 — Notifications and status
 - **Status**: done
