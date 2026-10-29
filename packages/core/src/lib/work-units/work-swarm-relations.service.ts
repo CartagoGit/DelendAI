@@ -123,16 +123,19 @@ export const relationsOf = (input: {
 			});
 		}
 	}
-	// A unit with work of its own whose base moved: nothing brings it
-	// forward but its agent, and the conflicts it is gathering surface
-	// only when it publishes. One that holds nothing is brought forward
-	// when it is entered again; a publication, by the queue.
+	// A unit with work of its own whose base moved. Said, not prescribed:
+	// a pull request is judged on its merge with the integration branch,
+	// so bringing the unit forward buys nothing unless the two conflict —
+	// and every merge into a published unit re-runs its whole forge run.
+	// Of 74 such merges in 40 pull requests, 7 shared a single file with
+	// what they brought (2026-10-29). One that holds nothing is brought
+	// forward when it is entered again; a publication, by the queue.
 	for (const unit of input.units) {
 		if (unit.ahead === 0 || unit.behind === 0) continue;
 		relations.push({
 			kind: 'behind',
 			refs: [unit.ref],
-			detail: `its base moved ${String(unit.behind)} commit(s) on: in its worktree, merge the integration branch into it (\`git merge <remote>/<integration>\`) before it publishes`,
+			detail: `its base moved ${String(unit.behind)} commit(s) on; it need not be brought forward — merge the integration branch into it only when publishing or its pull request reports a conflict`,
 		});
 	}
 	return relations;

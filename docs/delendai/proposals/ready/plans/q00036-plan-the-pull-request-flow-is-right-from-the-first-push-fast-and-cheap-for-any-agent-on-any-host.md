@@ -83,7 +83,7 @@ The parts, in order; each one depends only on those before it where it says so.
    - First because it removes the private scripts and the most expensive failure: a red push.
 2. **v00147 — The local proof runs the static checks a pull request runs, read from ci.yml.** Rescoped after measuring: merging the forge's jobs would save neither money (public repository) nor time (no queue), and the queue reads their names. The cost was the other gap, lints only the forge ran (#1582).
 3. **v00148 — Test shards are balanced by measured time.** The full run's slowest shard drops from 244 s toward the mean, about 140 s.
-4. **v00149 — A derived file is not an overlap.** Measure which shared files send candidates back, stop bringing a candidate forward for a derived file alone, and split or stop committing the worst offenders.
+4. **v00149 — A unit is brought forward only when it must be.** Measured: of 74 merges of develop into 40 pull requests, 7 shared any file and 49 were merges the product itself told agents to make before republishing. The advice is corrected, every `.gitattributes`-derived file leaves the overlap rule, and a report measures it again.
 5. **v00150 — A configuration change runs only what it configures.** `package.json` by changed fields, the lockfile by moved packages, and the read recorder sees spawned processes.
 6. **v00144 S6 — Every unit ends clean** (`work gc`). Also v00144's own record: S1-S5 shipped in #1565, #1566, #1573 and #1574 while the proposal still says `pending` in `ready/`. Its statuses are brought in line with what shipped.
 
@@ -95,7 +95,7 @@ Targets, against the baseline above:
 |---|---|
 | Full run | wall 250 s or less, runner time 35 minutes or less |
 | Created → merged for a green small change | 10 minutes or less, unchanged under a burst of pull requests, since the queue arms every green candidate in one pass |
-| Rebuilds | no candidate brought forward for a derived file alone |
+| Rebuilds | no merge of the integration branch into a pull request without a conflict, an overlap or a red verdict |
 | Red publications | a pull request whose author ran the product's hand-over is never red on a check the proof covers |
 
 ## non-goals
@@ -128,12 +128,12 @@ Targets, against the baseline above:
 - acceptance:
   - "v00148 is done and a full run's slowest test shard is within 20% of the mean shard."
 
-### S4 — Derived files do not send candidates back (v00149)
+### S4 — A unit is brought forward only when it must be (v00149)
 - **Status**: pending
-- **Files**: `docs/delendai/proposals/ready/perfs/v00149-two-pull-requests-never-regenerate-the-same-file-so-one-landing-does-not-send-the-others-back.md`
+- **Files**: `docs/delendai/proposals/ready/perfs/v00149-a-unit-is-brought-forward-only-when-it-must-be-so-one-landing-does-not-send-the-others-back.md`
 - **Gate**: type
 - acceptance:
-  - "v00149 is done and its overlap report over the following week names no derived file."
+  - "v00149 is done and its report over the following week shows most merges of the integration branch into pull requests sharing a file with what they brought."
 
 ### S5 — Configuration runs what it configures (v00150)
 - **Status**: pending
@@ -154,6 +154,6 @@ Targets, against the baseline above:
 - f00796 is done and a hand-over by an agent with none of the orchestrator's scripts proves, publishes, and is refused when red.
 - v00147 is done and a pull request whose author ran the proof is never red on a static check.
 - v00148 is done and a full run's slowest test shard is within 20% of the mean shard.
-- v00149 is done and its overlap report over the following week names no derived file.
+- v00149 is done and its report over the following week shows most merges of the integration branch into pull requests sharing a file with what they brought.
 - v00150 is done and a scripts-only `package.json` change runs only the specs that read it.
 - v00144 records S1-S5 as shipped and S6 is done: after a unit ends, `work gc` leaves no local branch, worktree or ref of it.
