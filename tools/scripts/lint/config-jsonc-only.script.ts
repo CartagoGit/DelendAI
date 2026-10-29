@@ -27,6 +27,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /** The roots that hold source that can read the config file. */
 const SCAN_ROOTS = ['packages', 'plugins', 'tools', 'apps', 'bin'] as const;
@@ -125,6 +126,15 @@ const violationsIn = (file: string): readonly IViolation[] =>
 
 const main = (): number => {
 	const root = repoRoot();
+	// A tree without the sources measures nothing; passing over it would
+	// read as "every reader goes through parseJsonc".
+	if (
+		refuseMissingScanRoots('config-jsonc-only', root, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	const violations: IViolation[] = [];
 	for (const scanRoot of SCAN_ROOTS) {
 		for (const file of sourceFiles(join(root, scanRoot))) {
