@@ -2,14 +2,14 @@
 id: x00996
 title: "A file a proposal shipped still names what it shipped after a later change deletes it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: e9ac5f6e-1d31-48e6-b771-cdfb2f596b16
-last-correlation-id: e9ac5f6e-1d31-48e6-b771-cdfb2f596b16
-last-transition-from: ready
-last-transition-at: 2026-10-29T03:59:50.578Z
+last-transition-id: f4b623c6-5329-4637-a919-18e3d5801a77
+last-correlation-id: f4b623c6-5329-4637-a919-18e3d5801a77
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T04:00:52.824Z
 ---
 
 # x00996 — A file a proposal shipped still names what it shipped after a later change deletes it
@@ -31,11 +31,14 @@ On 2026-10-29 #1538 (c00534, which removes the unused `roadmap-sqlite` package) 
 - global_gate: type
 
 ### S1 — Files are judged at the commit that shipped them
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`, `tools/scripts/lint/proposal-files-exist.script.spec.ts`, `tools/scripts/lint/proposal-files-exist.baseline.json`
 - **Gate**: type
 - acceptance:
   - "A missing `Files` path passes when `git cat-file -e <sha>:<path>` succeeds for one of the proposal's `shipped-in` commits (frontmatter or slice lines); a path no shipped commit held still fails (proposal-files-exist.script.spec.ts); the baseline shrinks from 421 to 367."
+- shipped-in: `39b6241b0eef`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
