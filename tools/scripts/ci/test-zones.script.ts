@@ -334,13 +334,16 @@ export const zoneReach = (
 	);
 	for (const zone of rootReached) zones.add(zone);
 	const known = readersOf(rootChanges, readMap);
+	// Every zone the root change reaches, the code-reached ones included:
+	// `--changed` follows imports and misses their specs that READ the
+	// file, so those specs run beside it, in the shared readers job.
 	const readers = new Map(
-		[...readOnly].flatMap((zone) => {
+		[...rootReached].flatMap((zone) => {
 			const specs = known.get(zone);
 			return specs === undefined ? [] : [[zone, specs] as const];
 		}),
 	);
-	return { zones, readOnly, readers };
+	return { zones, readOnly, readers, rootReached };
 };
 
 /**
@@ -527,7 +530,12 @@ const main = (): number => {
 		if (full === undefined) return { filter: 'all', readers: [] };
 		if (!full.zones.has(job.zone)) return { filter: 'none', readers: [] };
 		if (!full.readOnly.has(job.zone))
-			return { filter: 'changed', readers: [] };
+			// A root change it reads, with no record of which specs read
+			// it: `--changed` alone would miss them.
+			return full.rootReached?.has(job.zone) === true &&
+				full.readers?.get(job.zone) === undefined
+				? { filter: 'all', readers: [] }
+				: { filter: 'changed', readers: [] };
 		const readers = full.readers?.get(job.zone);
 		if (readers === undefined) return { filter: 'all', readers: [] };
 		return readers.length === 0 || job.shard !== 1
@@ -535,19 +543,44 @@ const main = (): number => {
 			: { filter: 'readers', readers };
 	};
 
+	/** The readers of a root change in zones that also run `--changed`. */
+	const codeReachedReaders = (): readonly (readonly [
+		string,
+		readonly string[],
+	])[] =>
+		[...(full?.readers ?? new Map<string, readonly string[]>())].filter(
+			([zone, specs]) =>
+				specs.length > 0 &&
+				full?.readOnly.has(zone) === false &&
+				jobs.some(
+					(job) =>
+						job.zone === zone && planFor(job).filter === 'changed',
+				),
+		);
+
 	if (process.argv.includes('--matrix')) {
 		// stdout is the matrix the workflow reads; the reason goes to the log.
 		if (reach === undefined) {
 			console.error(`test-zones: every zone runs — ${everyZoneBecause}`);
 		}
-		const entries = jobs.map((job) => ({
-			name: job.name,
-			paths: job.paths.join(' '),
-			shard: `${job.shard}/${job.shards}`,
-			run: planFor(job).filter !== 'none',
-			filter: planFor(job).filter,
-			readers: planFor(job).readers.join(' '),
-		}));
+		const entries = [
+			...jobs.map((job) => ({
+				name: job.name,
+				paths: job.paths.join(' '),
+				shard: `${job.shard}/${job.shards}`,
+				run: planFor(job).filter !== 'none',
+				filter: planFor(job).filter,
+				readers: planFor(job).readers.join(' '),
+			})),
+			...codeReachedReaders().map(([zone, specs]) => ({
+				name: `${zone} readers`,
+				paths: '',
+				shard: '1/1',
+				run: true,
+				filter: 'readers',
+				readers: specs.join(' '),
+			})),
+		];
 		// What does not run is stated here, on the log, and does not start
 		// a job: each one took a runner and its setup to report `skipped`.
 		for (const entry of entries.filter((each) => !each.run)) {

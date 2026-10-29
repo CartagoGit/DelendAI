@@ -114,9 +114,11 @@ export interface IZoneReach {
 	 */
 	readonly readOnly: ReadonlySet<string>;
 	/**
-	 * For a zone reached only by reads: the specs that read or list a
-	 * changed path. Absent when the map does not say which spec read what,
-	 * and then the whole zone runs, unfiltered.
+	 * For a zone a changed root file reaches: the specs that read or list
+	 * it. Absent for a zone when the map does not say which spec read
+	 * what, and then the whole zone runs, unfiltered.
 	 */
 	readonly readers?: ReadonlyMap<string, readonly string[]>;
+	/** The zones a changed root file reaches by being read. */
+	readonly rootReached?: ReadonlySet<string>;
 }
