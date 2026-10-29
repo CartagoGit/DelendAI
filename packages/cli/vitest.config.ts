@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -12,6 +16,7 @@ export default defineConfig({
 		alias: workspaceAliases(workspaceRoot),
 	},
 	test: {
+		...sharedTestOptions,
 		// f00037 S5: tests are co-located next to the source they cover
 		// (`*.spec.ts` next to the implementation). The historical
 		// `tests/src/**` mirror was retired by the S4 slice (every

@@ -1,7 +1,11 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 import { defineConfig } from 'vitest/config';
 
@@ -13,6 +17,7 @@ export default defineConfig({
 		alias: workspaceAliases(workspaceRoot),
 	},
 	test: {
+		...sharedTestOptions,
 		// Measured in isolation on 2026-09-14: the slowest
 		// test of this suite costs 8020 ms (`obs-errors (f00129 S1) rejects a hung observability API within the ...`).
 		// A full run starts ~1,466 spec files at once, so a ceiling under
