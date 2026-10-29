@@ -4,7 +4,7 @@
  * what would be published, and a passing proof is not run twice.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -207,6 +207,58 @@ describe('proveUnit', () => {
 		});
 		expect(report.passed).toBe(false);
 		expect(describeFailedProof(report)).toContain('no network');
+	});
+});
+
+describe('a proof across a proposal transition', () => {
+	const TRANSITION =
+		'chore(delendai): delendai_proposals_proposal_transition x00001 review';
+	const commitOn = (root: string, path: string, subject: string): string => {
+		mkdirSync(join(root, path, '..'), { recursive: true });
+		writeFileSync(join(root, path), `${subject}\n`);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', subject);
+		return git(root, 'rev-parse', 'HEAD');
+	};
+	const proved = async (root: string, tip: string) =>
+		proveUnit({
+			root,
+			worktree: root,
+			tipSha: tip,
+			integrationSha: git(root, 'rev-list', '--max-parents=0', 'HEAD'),
+			run: () => ({ code: 0, output: '' }),
+		});
+
+	it('is remembered when only transitions of proposal documents came after it', async () => {
+		const root = repoWith(PROVING);
+		await proved(root, git(root, 'rev-parse', 'HEAD'));
+		commitOn(
+			root,
+			'docs/delendai/proposals/review/x00001-a.md',
+			TRANSITION,
+		);
+		const tip = commitOn(
+			root,
+			'docs/delendai/proposals/review/x00001-a.md',
+			`${TRANSITION} again`,
+		);
+		expect((await proved(root, tip)).remembered).toBe(true);
+	});
+
+	it('is proved again after any other commit, or a transition that touched more', async () => {
+		const root = repoWith(PROVING);
+		await proved(root, git(root, 'rev-parse', 'HEAD'));
+		const edited = commitOn(
+			root,
+			'docs/delendai/proposals/review/x00001-a.md',
+			'docs(proposals): x00001 by hand',
+		);
+		expect((await proved(root, edited)).remembered).toBeUndefined();
+
+		const other = repoWith(PROVING);
+		await proved(other, git(other, 'rev-parse', 'HEAD'));
+		const wide = commitOn(other, 'src/a.ts', TRANSITION);
+		expect((await proved(other, wide)).remembered).toBeUndefined();
 	});
 });
 
