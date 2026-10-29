@@ -46,6 +46,8 @@ concurrency:
 permissions:
     contents: write
     pull-requests: write
+    # The open code scanning alerts of the integration branch are read below.
+    security-events: read
     # `update-branch` writes its commit as a bot, and the forge will not
     # start workflows on a bot's commit — it parks them as
     # `action_required`. Without this the job can refresh a candidate and
@@ -181,3 +183,14 @@ jobs:
             - name: Fail while something hangs on the forge
               if: always()
               run: bun run work:doctor -- --forge
+
+            # A pull request's CodeQL check fails only on what its own diff
+            # brings, and only from a severity up: two medium alerts sat open
+            # on develop for two and four days with every check green (x00995).
+            # The release gate counted them only at a promotion; this counts
+            # them every hour and after every merge.
+            - name: Fail while a code scanning alert is open on the integration branch
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run forge:promotion-alerts -- --branch=develop
