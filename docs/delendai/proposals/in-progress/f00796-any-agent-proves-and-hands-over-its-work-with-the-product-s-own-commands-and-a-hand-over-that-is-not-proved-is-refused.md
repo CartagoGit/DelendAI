@@ -2,10 +2,14 @@
 id: f00796
 title: "Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: workflow
 date: 2026-10-29
+last-transition-id: c2c72e9f-1382-43d5-b2c2-561e768da6e2
+last-correlation-id: c2c72e9f-1382-43d5-b2c2-561e768da6e2
+last-transition-from: ready
+last-transition-at: 2026-10-29T19:36:14.524Z
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
