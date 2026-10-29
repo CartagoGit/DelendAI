@@ -237,6 +237,7 @@ jobs:
                   set -euo pipefail
                   bun run lint:privacy
                   bun run lint:no-cleartext-secrets
+                  bun run lint:config-jsonc
                   # The gate that refuses a credential-shaped literal in
                   # a commit. It existed, it was RED, and no workflow ran
                   # it — so it guarded nothing, which is the worst of the
