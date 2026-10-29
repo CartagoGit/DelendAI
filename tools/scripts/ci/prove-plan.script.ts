@@ -20,7 +20,11 @@
  * bun suite when state or proposals code changed. About 90 s where the
  * plan takes minutes; the forge still runs the plan, and is the authority.
  */
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
+
+import { RUN_ALONE, staticChecksOf } from './ci-static-steps';
 
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
@@ -44,13 +48,108 @@ export const vitestArgsOf = (
 		: [...paths, `--shard=${job.shard}`];
 };
 
-/** The repository-wide gates every pull request runs, cheapest first. */
+/** The gate CI runs in a job of its own, beside the static checks. */
 export const PROVE_GATES: readonly (readonly string[])[] = [
 	['bun', 'run', 'typecheck'],
-	['bun', 'tools/scripts/lint/biome-baseline.script.ts'],
-	['bun', 'run', 'lint:architecture'],
-	['bun', 'run', 'lint:proposals'],
 ];
+
+/** How many lines of a failed check's output the proof prints. */
+const FAILED_TAIL_LINES = 30;
+
+/** Run labelled bash scripts at once, at most `limit` together. */
+const runTogether = async (
+	scripts: readonly (readonly [string, string])[],
+	limit: number,
+): Promise<boolean> => {
+	let ok = true;
+	const queue = [...scripts];
+	const worker = async (): Promise<void> => {
+		for (
+			let next = queue.shift();
+			next !== undefined;
+			next = queue.shift()
+		) {
+			const [label, script] = next;
+			const started = Date.now();
+			const { code, output } = await new Promise<{
+				code: number | null;
+				output: string;
+			}>((done) => {
+				let output = '';
+				// stdin closed: a check that reads it (as a pre-push hook does)
+				// must see an end, not wait for one.
+				const child = spawn(
+					'bash',
+					['-euo', 'pipefail', '-c', script],
+					{
+						stdio: ['ignore', 'pipe', 'pipe'],
+						env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
+					},
+				);
+				child.stdout.on('data', (chunk) => {
+					output += String(chunk);
+				});
+				child.stderr.on('data', (chunk) => {
+					output += String(chunk);
+				});
+				child.on('close', (status) => done({ code: status, output }));
+			});
+			const passed = code === 0;
+			ok = passed && ok;
+			console.log(
+				`prove: ${passed ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
+			);
+			if (!passed) {
+				console.log(
+					output
+						.trimEnd()
+						.split('\n')
+						.slice(-FAILED_TAIL_LINES)
+						.join('\n'),
+				);
+			}
+		}
+	};
+	await Promise.all(
+		Array.from(
+			{ length: Math.max(1, Math.min(limit, scripts.length)) },
+			worker,
+		),
+	);
+	return ok;
+};
+
+/**
+ * The checks every pull request runs before its tests, read from ci.yml:
+ * the typecheck and the static checks together, then those that must run
+ * alone.
+ */
+const runChecks = async (base: string): Promise<boolean> => {
+	const checks = staticChecksOf(
+		readFileSync('.github/workflows/ci.yml', 'utf8'),
+		base,
+		'develop',
+	);
+	const first = await runTogether(
+		[
+			...PROVE_GATES.map(
+				(command) =>
+					[command.slice(1).join(' '), command.join(' ')] as const,
+			),
+			...checks
+				.filter((check) => !RUN_ALONE.has(check.job))
+				.map((check) => [check.job, check.script] as const),
+		],
+		availableParallelism(),
+	);
+	const alone = await runTogether(
+		checks
+			.filter((check) => RUN_ALONE.has(check.job))
+			.map((check) => [check.job, check.script] as const),
+		1,
+	);
+	return first && alone;
+};
 
 const step = (label: string, command: readonly string[]): boolean => {
 	const started = Date.now();
@@ -104,7 +203,7 @@ export const fastSteps = (
 		: []),
 ];
 
-const main = (): number => {
+const main = async (): Promise<number> => {
 	const base = execFileSync(
 		'git',
 		['merge-base', arg('base') ?? 'origin/develop', 'HEAD'],
@@ -114,10 +213,7 @@ const main = (): number => {
 	if (process.argv.includes('--fast')) {
 		const root = process.cwd();
 		const changed = changedSince(root, base);
-		let ok = true;
-		for (const command of PROVE_GATES) {
-			ok = step(command.slice(1).join(' '), command) && ok;
-		}
+		let ok = await runChecks(base);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
@@ -144,10 +240,7 @@ const main = (): number => {
 			{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
 		),
 	) as readonly IProveJob[];
-	let ok = true;
-	for (const command of PROVE_GATES) {
-		ok = step(command.slice(1).join(' '), command) && ok;
-	}
+	let ok = await runChecks(base);
 	for (const job of jobs) {
 		const args = vitestArgsOf(job, base);
 		if (args === undefined) continue;
@@ -166,4 +259,4 @@ const main = (): number => {
 	return ok ? 0 : 1;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) process.exit(await main());
