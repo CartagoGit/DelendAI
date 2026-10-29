@@ -48,7 +48,7 @@ jobs:
         with:
           # A pull request's analysis is scoped to what it changed (v00144),
           # which needs the base to diff against.
-          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+          fetch-depth: '0'
 
       # A pull request is analysed where it changed, with security-extended:
       # the whole repository with security-and-quality took 312 s and set the
