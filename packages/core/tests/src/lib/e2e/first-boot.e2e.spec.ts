@@ -67,7 +67,9 @@ const start = async (root: string, name: string): Promise<string> => {
 const read = (root: string, path: string): string =>
 	readFileSync(join(root, path), 'utf8');
 
-describe('e2e: delendai in a consumer project', () => {
+// Each start builds on the project the one before it left behind, so the
+// four run in the order written, even when a run shuffles its tests.
+describe('e2e: delendai in a consumer project', { shuffle: false }, () => {
 	let root = '';
 	beforeAll(() => {
 		root = mkdtempSync(join(tmpdir(), 'consumer-'));
