@@ -2,10 +2,14 @@
 id: v00149
 title: "A unit is brought forward only when it must be, so one landing does not send the others back"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: 95b048f8-8b8a-438f-a944-ff144040fbcc
+last-correlation-id: 95b048f8-8b8a-438f-a944-ff144040fbcc
+last-transition-from: ready
+last-transition-at: 2026-10-29T21:22:39.296Z
 ---
 
 # v00149 — A unit is brought forward only when it must be, so one landing does not send the others back
