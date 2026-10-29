@@ -166,6 +166,25 @@ describe('a certified integration branch releases the queue (x00637 S4)', () => 
 	});
 });
 
+describe('a publication that goes green wakes the queue', () => {
+	it('dispatches keep-the-queue-moving after a green delendai-validate on its own publication branches only', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const workflow = readFileSync(
+			join(import.meta.dirname, '../../../.github/workflows/ci.yml'),
+			'utf8',
+		);
+		const start = workflow.indexOf('    wake-the-queue:');
+		const whole = workflow.slice(start, start + 1500);
+		expect(start).toBeGreaterThan(0);
+		expect(whole).toContain('needs: [delendai-validate]');
+		expect(whole).toContain("needs.delendai-validate.result == 'success'");
+		expect(whole).toContain("startsWith(github.head_ref, 'delendai/pr/')");
+		expect(whole).toContain('head.repo.full_name == github.repository');
+		expect(whole).toContain('gh workflow run keep-the-queue-moving.yml');
+	});
+});
+
 describe('certificationRecord', () => {
 	const now = new Date('2026-09-26T10:00:00Z');
 

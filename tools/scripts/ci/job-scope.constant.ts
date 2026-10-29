@@ -143,6 +143,12 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
 	},
 	{
+		job: 'wake-the-queue',
+		touches: 'always',
+		because:
+			'it wakes the queue when a publication goes green, which no file change describes.',
+	},
+	{
 		job: 'develop-protection-live',
 		touches: 'always',
 		because:

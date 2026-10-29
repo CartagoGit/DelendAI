@@ -674,27 +674,13 @@ jobs:
                   fi
                   if [ "${{ github.event_name }}" = "pull_request" ] && [ "${ZONE_FILTER:-}" != "all" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
-                    # ...unless the change touches something a module
-                    # graph cannot see. `--changed` selects a spec when
-                    # its IMPORTS reach a changed file, and several specs
-                    # here assert things about files they READ instead:
-                    # the workflows, `.gitattributes`, `lefthook.yml`.
-                    #
-                    # Measured: a change to this very workflow file
-                    # merged while breaking the spec that asserts the
-                    # workflow and its script agree, because no import
-                    # anywhere reaches a `.yml`. The filter was not
-                    # wrong; it was blind by construction, and the fix
-                    # is to stop filtering when the subject is one of
-                    # the things it cannot see.
-                    UNIMPORTABLE="$(git diff --name-only \
-                      "${{ github.event.pull_request.base.sha }}...HEAD" \
-                      -- '.github/**' '*.yml' '*.yaml' '.gitattributes' \
-                         '.gitignore' 'lefthook.yml' | head -1)"
-                    if [ -n "$UNIMPORTABLE" ]; then
-                      echo "zone: running unfiltered — the change touches ${UNIMPORTABLE}, which no module graph reaches."
-                      CHANGED=""
-                    fi
+                    # A spec that READS a changed workflow or root file
+                    # is not reached by `--changed`, which follows imports;
+                    # the planner sends it to the `readers` job (from the
+                    # read map), or plans this zone `all` when no map says
+                    # who reads it. This step used to run the zone
+                    # unfiltered on any `.github/**` or `*.yml` change,
+                    # which made every workflow edit pay for every shard.
                   fi
                   # The blob name has to survive a zone name with a slash
                   # or a space in it (`core 1/2`), or the upload below
@@ -1443,3 +1429,31 @@ jobs:
                   gh workflow run codeql.yml \
                     --ref develop --repo "${GITHUB_REPOSITORY}" \
                     || echo "::warning::could not dispatch code scanning on develop"
+
+    # A publication that goes green wakes the queue, which arms every
+    # candidate that is green at that moment. Before, the queue woke only
+    # after a certification of the integration branch or on the hourly
+    # schedule, so a pull request green at :18 waited until :17 of the next
+    # hour to be armed, and a hundred of them landed in hourly waves.
+    # Waking per green run coalesces by itself: the queue's concurrency
+    # group keeps one run waiting, so a burst of green runs costs one pass
+    # that arms them together. Only the repository's own publication
+    # branches: a fork's token cannot dispatch, and nothing else is a
+    # candidate.
+    wake-the-queue:
+        name: wake-the-queue
+        needs: [delendai-validate]
+        if: ${{ github.event_name == 'pull_request' && needs.delendai-validate.result == 'success' && startsWith(github.head_ref, 'delendai/pr/') && github.event.pull_request.head.repo.full_name == github.repository }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write
+            contents: read
+        steps:
+            - name: Dispatch the queue on the integration branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run keep-the-queue-moving.yml \
+                    --ref develop --repo "${GITHUB_REPOSITORY}" \
+                    || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
