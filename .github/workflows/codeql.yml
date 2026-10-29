@@ -88,3 +88,28 @@ jobs:
         uses: github/codeql-action/analyze@v4.37.9
         with:
           category: "/language:${{ matrix.language }}"
+
+  # The integration branch's analysis is the last evidence a promotion
+  # waits for: `release-the-queue` dispatches it once develop is certified
+  # green, and `open-promotion` counts the required `CodeQL` check from
+  # this analysis. Asking here, when it lands, opens a ready promotion
+  # within minutes instead of at the next hourly run; the hourly run stays
+  # as the fallback. Asking is read-only unless the promotion is ready,
+  # and a project without the workflow is told so in a warning.
+  ask-for-the-promotion:
+    name: ask-for-the-promotion
+    needs: [analyze]
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && needs.analyze.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch open-promotion on the integration branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run open-promotion.yml \
+            --ref develop --repo "${GITHUB_REPOSITORY}" \
+            || echo "::warning::could not dispatch open-promotion; its hourly schedule will ask"

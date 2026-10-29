@@ -346,3 +346,20 @@ describe('openPromotion', () => {
 		expect(asked).toEqual([]);
 	});
 });
+
+describe('the promotion is asked for when its last evidence lands', () => {
+	it("dispatches open-promotion after the integration branch's code scanning succeeds", async () => {
+		const { readFileSync } = await import('node:fs');
+		const workflow = readFileSync(
+			join(import.meta.dirname, '../../../.github/workflows/codeql.yml'),
+			'utf8',
+		);
+		const job = workflow.slice(
+			workflow.indexOf('  ask-for-the-promotion:'),
+		);
+		expect(job).toContain('needs: [analyze]');
+		expect(job).toContain("github.ref == 'refs/heads/develop'");
+		expect(job).toContain("needs.analyze.result == 'success'");
+		expect(job).toContain('gh workflow run open-promotion.yml');
+	});
+});
