@@ -147,10 +147,27 @@ const arg = (name: string): string | undefined => {
 	return hit?.slice(name.length + 3);
 };
 
+/**
+ * The jobs a valid local proof stands in for (`./proof.ts`): what `bun run
+ * prove` ran. The lints, CodeQL and the builds still run on the forge.
+ */
+export const PROVED_JOBS = ['typecheck', 'plan-tests', 'tests-zone', 'tests'];
+
 const main = (): number => {
 	const base = arg('base');
 	const changed = base === undefined ? [] : changedSince(base);
-	const plan = planJobs({ changed });
+	const proved = process.argv.includes('--proved');
+	const plan = Object.fromEntries(
+		Object.entries(planJobs({ changed })).map(([job, runs]) => [
+			job,
+			runs && !(proved && PROVED_JOBS.includes(job)),
+		]),
+	);
+	if (proved) {
+		console.log(
+			`job-scope: proved locally; ${PROVED_JOBS.join(', ')} stand on the proof.`,
+		);
+	}
 
 	for (const { job, runs, why } of explainJobs({ changed })) {
 		console.log(`  ${runs ? 'run ' : 'skip'} ${job} — ${why}`);
