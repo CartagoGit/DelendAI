@@ -2,14 +2,14 @@
 id: v00146
 title: "A pull request starts only the test jobs that run, and the specs that read a change share one job"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: f292be32-64a2-44df-b599-3eafb680a3bb
-last-correlation-id: f292be32-64a2-44df-b599-3eafb680a3bb
-last-transition-from: review
-last-transition-at: 2026-10-29T14:15:40.924Z
+last-transition-id: 0ebbd4b6-893f-4190-802e-da38e5724437
+last-correlation-id: 0ebbd4b6-893f-4190-802e-da38e5724437
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T14:16:39.672Z
 ---
 
 # v00146 — A pull request starts only the test jobs that run, and the specs that read a change share one job
@@ -61,18 +61,24 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-implementer: claude-opus-5-5
 
 ### S4 — A publication that goes green wakes the queue
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/forge/certify-integration.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run."
+- shipped-in: `15f8c5aaa2c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Prose reaches its readers, and readers run beside a changed zone
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "A changed root `*.md`, `LICENSE`, `.mailmap` or `.github/` file outside workflows and actions reaches only the specs that read it, while configuration (`delendai.config.json`, `package.json`, the lockfile, `tsconfig`, the vitest configs) still runs every zone (zone-reads.spec.ts); in a zone its code reaches too, the specs that read the root file run in the shared readers job (test-zones.script.spec.ts), so the shard step no longer runs a zone unfiltered because a workflow or `.yml` changed."
+- shipped-in: `15f8c5aaa2c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
