@@ -2,10 +2,14 @@
 id: v00147
 title: "The local proof runs the static checks a pull request runs, read from the workflow"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: de17cfba-f8dd-46aa-b9a4-ef2796448d4e
+last-correlation-id: de17cfba-f8dd-46aa-b9a4-ef2796448d4e
+last-transition-from: ready
+last-transition-at: 2026-10-29T20:34:12.394Z
 ---
 
 # v00147 — The local proof runs the static checks a pull request runs, read from the workflow
