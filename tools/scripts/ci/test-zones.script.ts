@@ -30,6 +30,7 @@ import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
 import { pathImportersOf } from './path-importers';
+import { balanceByTime } from './spec-timings';
 import {
 	TARGET_SPECS_PER_JOB,
 	TEST_WORKFLOW,
@@ -74,6 +75,8 @@ export const planZones = (input: {
 	readonly workspaceDirs: readonly string[];
 	readonly target?: number;
 	readonly rules?: readonly IZoneRule[];
+	/** Each spec's measured duration; with it, a split zone is split by time. */
+	readonly timings?: Readonly<Record<string, number>>;
 }): readonly IZoneJob[] => {
 	const rules = input.rules ?? ZONE_RULES;
 	const target = input.target ?? TARGET_SPECS_PER_JOB;
@@ -100,7 +103,20 @@ export const planZones = (input: {
 		const weighted = specs * (rule.costWeight ?? 1);
 		const shards = Math.max(1, Math.round(weighted / target));
 		const paths = rule.paths(input.workspaceDirs);
+		// By time when there are timings to split by: `--shard` splits by
+		// count, and one full run's shards took between 75 s and 244 s.
+		const byTime =
+			shards > 1 && Object.keys(input.timings ?? {}).length > 0
+				? balanceByTime(
+						input.specs.filter(
+							(spec) => zoneOf(spec, rules) === rule.id,
+						),
+						shards,
+						input.timings ?? {},
+					)
+				: undefined;
 		for (let shard = 1; shard <= shards; shard += 1) {
+			const files = byTime?.[shard - 1];
 			jobs.push({
 				name: shards === 1 ? rule.id : `${rule.id} ${shard}/${shards}`,
 				zone: rule.id,
@@ -108,6 +124,7 @@ export const planZones = (input: {
 				shard,
 				shards,
 				specs,
+				...(files === undefined ? {} : { files }),
 			});
 		}
 	}
@@ -469,11 +486,33 @@ const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
 	}
 };
 
+const withTimings = (
+	timings: Readonly<Record<string, number>> | undefined,
+): { readonly timings?: Readonly<Record<string, number>> } =>
+	timings === undefined ? {} : { timings };
+
+/** The timings at `path`, or none: without them the split is by count. */
+const readTimings = (
+	path: string | undefined,
+): Readonly<Record<string, number>> | undefined => {
+	if (path === undefined) return undefined;
+	try {
+		const parsed = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+		return typeof parsed === 'object' && parsed !== null
+			? (parsed as Record<string, number>)
+			: undefined;
+	} catch {
+		// Absent or unreadable timings split by count, as before them.
+		return undefined;
+	}
+};
+
 const main = (): number => {
 	const files = tracked();
 	const jobs = planZones({
 		specs: files.filter((file) => file.endsWith('.spec.ts')),
 		workspaceDirs: workspaceDirs(files),
+		...withTimings(readTimings(arg('timings'))),
 	});
 
 	const wanted = arg('paths');
@@ -568,6 +607,7 @@ const main = (): number => {
 				name: job.name,
 				paths: job.paths.join(' '),
 				shard: `${job.shard}/${job.shards}`,
+				files: job.files?.join(' ') ?? '',
 				run: planFor(job).filter !== 'none',
 				filter: planFor(job).filter,
 				readers: planFor(job).readers.join(' '),
@@ -576,6 +616,7 @@ const main = (): number => {
 				name: `${zone} readers`,
 				paths: '',
 				shard: '1/1',
+				files: '',
 				run: true,
 				filter: 'readers',
 				readers: specs.join(' '),

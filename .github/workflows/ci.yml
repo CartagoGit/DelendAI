@@ -514,6 +514,10 @@ jobs:
     plan-tests:
         name: plan-tests
         runs-on: ubuntu-latest
+        # `actions: read` downloads the timings artifact of another run.
+        permissions:
+            contents: read
+            actions: read
         # No `needs`. It once waited for `typecheck` and `lint-biome`,
         # after one badly formatted file launched the whole matrix and its
         # ~16 MB of blobs exhausted the Actions artifact storage in a night.
@@ -540,17 +544,43 @@ jobs:
                   # every zone: every pull request ran all eleven.
                   fetch-depth: '0'
 
+            # How long each spec took on the integration branch's latest
+            # full run, to split a zone's shards by time instead of count
+            # (`--shard` gave shards of 75 s to 244 s on one run). Not
+            # committed: a timings file every change rewrote would send
+            # every open pull request back. Absent, the split is by count.
+            - name: Fetch the latest spec timings
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -uo pipefail
+                  mkdir -p .cache/spec-timings
+                  for id in $(gh run list --repo "${GITHUB_REPOSITORY}" --workflow ci.yml \
+                      --branch develop --status success --limit 5 \
+                      --json databaseId --jq '.[].databaseId'); do
+                    if gh run download "$id" --repo "${GITHUB_REPOSITORY}" \
+                        --name spec-timings --dir .cache/spec-timings 2>/dev/null; then
+                      echo "spec timings from run $id"
+                      break
+                    fi
+                  done
+                  [ -f .cache/spec-timings/spec-timings.json ] \
+                    || echo "::notice::no spec timings found; the zones are split by count"
+
             - name: Plan the test zones
               id: plan
               run: |
                   set -euo pipefail
+                  TIMINGS=""
+                  [ -f .cache/spec-timings/spec-timings.json ] \
+                    && TIMINGS="--timings=.cache/spec-timings/spec-timings.json"
                   # The report is for the same base as the matrix, so the log
                   # says what was selected and why.
-                  bun tools/scripts/ci/test-zones.script.ts \
+                  bun tools/scripts/ci/test-zones.script.ts ${TIMINGS} \
                     --base=${{ github.event.pull_request.base.sha || '' }}
                   {
                     printf 'zones='
-                    bun tools/scripts/ci/test-zones.script.ts --matrix \
+                    bun tools/scripts/ci/test-zones.script.ts --matrix ${TIMINGS} \
                       --base=${{ github.event.pull_request.base.sha || '' }}
                   } >> "$GITHUB_OUTPUT"
 
@@ -649,6 +679,7 @@ jobs:
                   ZONE_SHARD: ${{ matrix.zone.shard }}
                   ZONE_FILTER: ${{ matrix.zone.filter }}
                   ZONE_READERS: ${{ matrix.zone.readers }}
+                  ZONE_FILES: ${{ matrix.zone.files }}
               run: |
                   set -euo pipefail
                   CHANGED=""
@@ -688,8 +719,7 @@ jobs:
                   SLUG="$(printf '%s' "$ZONE" | tr -c 'A-Za-z0-9' '-')"
                   echo "BLOB_SLUG=${SLUG}" >> "$GITHUB_ENV"
                   bun run test:shard -- \
-                    ${ZONE_PATHS} \
-                    --shard="${ZONE_SHARD}" \
+                    ${ZONE_FILES:-${ZONE_PATHS} --shard=${ZONE_SHARD}} \
                     --outputFile.blob=".vitest-reports/blob-${SLUG}.json" \
                     --passWithNoTests \
                     ${CHANGED}
@@ -821,8 +851,34 @@ jobs:
                       "${DELENDAI_COVERAGE_BASE}...HEAD")"
                     bun run test:merged:changed
                   else
-                    bun run test:merged
+                    # The full run times every spec, for the planner.
+                    mkdir -p .cache/spec-timings
+                    VITEST_TIMINGS_OUT=.cache/spec-timings/report.json bun run test:merged
                   fi
+
+            - name: Record how long each spec took
+              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
+              # An optimisation of the next pull requests' split: it never
+              # fails the run it measures.
+              continue-on-error: true
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/ci/spec-timings.script.ts \
+                    --from=.cache/spec-timings/report.json \
+                    --out=.cache/spec-timings/spec-timings.json
+
+            - name: Upload the spec timings
+              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
+              # An optimisation of the next pull requests' split: it never
+              # fails the run it measures.
+              continue-on-error: true
+              uses: actions/upload-artifact@v7
+              with:
+                  name: spec-timings
+                  path: .cache/spec-timings/spec-timings.json
+                  retention-days: 14
+                  if-no-files-found: error
+                  include-hidden-files: true
 
             # The gate prints four percentages; deciding what to COVER
             # needs the per-file report, and re-running a 12-minute suite
