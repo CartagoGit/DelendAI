@@ -226,6 +226,14 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
+                  # A pull request is judged where it changed (v00144): the secret
+                  # scan reads its diff, and the generator-determinism and IDE
+                  # suites run only when what they judge changed. A push to
+                  # develop runs all of them over the whole tree.
+                  PR_BASE="${{ github.event.pull_request.base.sha || '' }}"
+                  CHANGED=""
+                  if [ -n "$PR_BASE" ]; then CHANGED="$(git diff --name-only "$PR_BASE"...HEAD)"; fi
+                  touches() { [ -z "$PR_BASE" ] || printf '%s\n' "$CHANGED" | grep -qE "$1"; }
                   set -euo pipefail
                   bun run lint:privacy
                   bun run lint:no-cleartext-secrets
@@ -236,7 +244,11 @@ jobs:
                   # cleared and its prose false-positives fixed before
                   # wiring it, because a gate introduced red is a gate
                   # someone disables.
-                  bun run lint:no-secrets
+                  if [ -n "$PR_BASE" ]; then
+                    bun tools/scripts/lint/no-secrets.script.ts --range "$PR_BASE...HEAD"
+                  else
+                    bun run lint:no-secrets
+                  fi
                   # The rule that refuses a rule nothing runs, which
                   # nothing ran. It appeared in this file only inside a
                   # COMMENT, so it reported its own unreachability to
@@ -251,7 +263,11 @@ jobs:
                   bun run lint:no-global-git-config-in-tests
                   bun run lint:shell-is-bash
                   bun run lint:web-absolute-api-urls
-                  bun run lint:cross-ide
+                  if touches '^(packages/(ui-extension|client|core)|extensions)/|^(package\.json|bun\.lock|tsconfig)'; then
+                    bun run lint:cross-ide
+                  else
+                    echo "lint:cross-ide: not run — the change touches neither the UI extension, the client nor core."
+                  fi
                   bun run lint:host-hints-fragments
                   bun run lint:bootstrap-canonical
                   bun run lint:brand
@@ -282,7 +298,11 @@ jobs:
                   bun run lint:check-adr-coverage
                   bun run lint:proposals-locks-file-size
                   bun run lint:no-proposal-id-comments-in-source
-                  bun run lint:generated-determinism
+                  if touches '^tools/scripts/(gen|generate|catalog|report|lib)/|^package\.json$'; then
+                    bun run lint:generated-determinism
+                  else
+                    echo "lint:generated-determinism: not run — no generator changed (generated-artifacts-check still checks their output)."
+                  fi
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
                   # i00004: a .d.ts next to a .ts source is a build accident,
@@ -587,6 +607,23 @@ jobs:
               if: matrix.zone.run
               run: rm -rf .cache/delendai
 
+            # vitest keeps the modules it transformed (`fsModuleCache`,
+            # node_modules/.vitest-cache): a cold zone spent most of its time
+            # transforming the same modules every run. Restored AFTER the
+            # install, which owns node_modules, from the newest run on the
+            # same lockfile and vitest configs, and saved when the job ends.
+            # vitest checks each entry against its file's hash, so a stale
+            # entry is never used.
+            - name: Restore the vitest module cache
+              if: matrix.zone.run && ! env.ACT
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.vitest-cache
+                  key: vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-${{ matrix.zone.name }}-${{ github.sha }}
+                  restore-keys: |
+                      vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-${{ matrix.zone.name }}-
+                      vitest-modules-${{ runner.os }}-${{ hashFiles('bun.lock', 'vitest.config.ts', 'vitest.shared.ts') }}-
+
             # A pull request runs the tests its change can reach, and
             # nothing else. Measured on this repo, shard 4 of #99 spent
             # 113s transforming and 184s importing modules to run 19s of
@@ -613,10 +650,26 @@ jobs:
                   ZONE: ${{ matrix.zone.name }}
                   ZONE_PATHS: ${{ matrix.zone.paths }}
                   ZONE_SHARD: ${{ matrix.zone.shard }}
+                  ZONE_FILTER: ${{ matrix.zone.filter }}
+                  ZONE_READERS: ${{ matrix.zone.readers }}
               run: |
                   set -euo pipefail
                   CHANGED=""
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                  # The planner says what this job runs (v00143): `readers`,
+                  # the specs that read a file the change touched outside the
+                  # workspaces, and only those; `all`, the zone unfiltered,
+                  # because a read reached it that no spec is on record for.
+                  # `--changed` alone ran none of the specs that read a file.
+                  if [ "${ZONE_FILTER:-}" = "readers" ]; then
+                    SLUG="$(printf '%s' "$ZONE" | tr -c 'A-Za-z0-9' '-')"
+                    echo "BLOB_SLUG=${SLUG}" >> "$GITHUB_ENV"
+                    echo "zone: running the specs that read the change: ${ZONE_READERS}"
+                    bun run test:shard -- ${ZONE_READERS} \
+                      --outputFile.blob=".vitest-reports/blob-${SLUG}.json" \
+                      --passWithNoTests
+                    exit 0
+                  fi
+                  if [ "${{ github.event_name }}" = "pull_request" ] && [ "${ZONE_FILTER:-}" != "all" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
                     # ...unless the change touches something a module
                     # graph cannot see. `--changed` selects a spec when

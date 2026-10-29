@@ -34,6 +34,10 @@ import type { IJobScope } from './job-scope.interface';
 export { JOB_SCOPES } from './job-scope.constant';
 export type { IJobScope } from './job-scope.interface';
 
+/** Markdown under docs/ or at the repository root: prose, not code. */
+export const isProse = (file: string): boolean =>
+	file.endsWith('.md') && (file.startsWith('docs/') || !file.includes('/'));
+
 /**
  * Whether one job has to run for this set of changed files.
  *
@@ -49,10 +53,13 @@ export const jobMustRun = (input: {
 		(each) => each.job === input.job,
 	);
 	if (scope === undefined) return true;
-	if (scope.touches === 'always') return true;
 	// A change with no files is not evidence that nothing is affected —
 	// it is evidence that the diff could not be read.
 	if (input.changed.length === 0) return true;
+	if (scope.docs === 'skip' && input.changed.every(isProse)) return false;
+	if (scope.matches !== undefined)
+		return input.changed.some((file) => scope.matches?.test(file) === true);
+	if (scope.touches === 'always') return true;
 	return input.changed.some((file) =>
 		(scope.touches as readonly string[]).some((prefix) =>
 			file.startsWith(prefix),

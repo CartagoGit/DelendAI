@@ -1,9 +1,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { getProposalIndexReadStats } from '../../../../src/lib/proposals/index-read-stats';
+import {
+	getProposalIndexReadStats,
+	resetProposalIndexReadStats,
+} from '../../../../src/lib/proposals/index-read-stats';
 import { readProposalIndex } from '../../../../src/lib/proposals/index-reader';
 import { ProposalIndexSqlUnavailableError } from '../../../../src/lib/proposals/proposal-errors';
 import {
@@ -12,6 +15,11 @@ import {
 	emptyWorkspace,
 	fakeFs,
 } from './index-reader-workspace';
+
+// The read counters live for the whole worker: start from zero, and leave
+// zero behind for the next file.
+beforeEach(resetProposalIndexReadStats);
+afterEach(resetProposalIndexReadStats);
 
 describe('readProposalIndex — sql rebuilds from markdown before giving up (q00022 S4 phase 2)', () => {
 	it('rebuilds when the database is missing, then serves the rebuilt projection', async () => {

@@ -15,15 +15,59 @@ import {
 } from '@delendai/core/cli';
 import {
 	PROVIDER_ENTRY_SCHEMA,
+	type ICatalogueProvider,
 	type IModelCatalogue,
 } from '@delendai/core/contracts';
 import type { IProviderCapabilities } from '@delendai/core/public';
 
-import type { IProposedAgent } from '../contracts/interfaces/acp-roster.interface';
+import { COST_TIER_CEILINGS } from '../contracts/constants/cost-tier.constant';
+import type {
+	IClientListedModels,
+	IProposedAgent,
+} from '../contracts/interfaces/acp-roster.interface';
 
 /** Until the agent or the person says otherwise: a capable default. */
 const AGENT_CONTEXT_WINDOW = 200_000;
 const DEFAULT_COST_TIER = 3;
+
+/**
+ * A price's tier: what the catalogue prices at nothing is the cheapest a
+ * router can pick, and an unpriced model keeps the capable default.
+ */
+const costTierOf = (
+	cost: readonly [number, number] | undefined,
+): 1 | 2 | 3 | 4 | 5 => {
+	if (cost === undefined) return DEFAULT_COST_TIER;
+	const price = Math.max(...cost);
+	return (COST_TIER_CEILINGS.findIndex((ceiling) => price <= ceiling) + 1) as
+		| 1
+		| 2
+		| 3
+		| 4
+		| 5;
+};
+
+/**
+ * The model to propose: the first the provider's own client lists that the
+ * catalogue knows (the client says what the account serves today), else the
+ * catalogue's first.
+ */
+const proposedModel = (
+	provider: ICatalogueProvider,
+	clientModels: readonly IClientListedModels[],
+): string | undefined => {
+	const listed =
+		clientModels.find((entry) => entry.provider === provider.id)?.models ??
+		[];
+	const known = new Set(
+		provider.models.map((model) => model.split('/').pop() ?? model),
+	);
+	return (
+		listed.find((model) => known.has(model)) ??
+		listed[0] ??
+		provider.models[0]
+	);
+};
 
 const kebab = (text: string): string =>
 	text
@@ -37,6 +81,8 @@ export const proposedRosterEntries = (input: {
 	readonly catalogue?: IModelCatalogue | undefined;
 	readonly env: Readonly<Record<string, string | undefined>>;
 	readonly existing: readonly IProviderCapabilities[];
+	/** The models each detected client lists, by the provider it names. */
+	readonly clientModels?: readonly IClientListedModels[] | undefined;
 	/** The models this machine's editors serve on the person's keys. */
 	readonly hostByok?: readonly IHostByokProvider[] | undefined;
 }): readonly IProviderCapabilities[] => {
@@ -56,8 +102,9 @@ export const proposedRosterEntries = (input: {
 			})),
 		...(input.catalogue?.providers ?? []).flatMap((provider) => {
 			const endpoint = providerEndpoint(provider, input.env);
-			const model = provider.models[0];
+			const model = proposedModel(provider, input.clientModels ?? []);
 			if (!isReachable(endpoint) || model === undefined) return [];
+			const modelId = model.split('/').pop() ?? model;
 			return [
 				{
 					id: kebab(`api-${provider.id}`),
@@ -68,9 +115,11 @@ export const proposedRosterEntries = (input: {
 						envVar: endpoint.keyVariable,
 						family: endpoint.family,
 					},
-					modelId: model.split('/').pop() ?? model,
+					modelId,
 					contextWindow: AGENT_CONTEXT_WINDOW,
-					costTier: DEFAULT_COST_TIER,
+					costTier: costTierOf(
+						provider.costs?.[model] ?? provider.costs?.[modelId],
+					),
 					strengths: ['code-edit'],
 					weaknesses: [],
 				},

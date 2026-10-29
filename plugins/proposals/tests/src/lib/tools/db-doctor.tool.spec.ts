@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 import { createFakeToolServer } from '@delendai/test-kit/public';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	recordProposalIndexRead,
@@ -23,6 +23,9 @@ import {
 } from '../../../../src/lib/tools/db-doctor.tool';
 
 const roots: string[] = [];
+
+// Counters outlive a file in a shared worker: start from zero too.
+beforeEach(resetProposalIndexReadStats);
 
 afterEach(() => {
 	resetProposalIndexReadStats();

@@ -420,3 +420,8 @@ export {
 export { describeOffRoster } from './lib/work-units/agent-alias.service';
 /** Who holds a slice: other agents' units, and the writer's own ref. */
 export { readSliceOwnership } from './lib/work-units/slice-holders.service';
+export {
+	discoveryConsentPath,
+	readDiscoveryConsent,
+	recordDiscoveryConsent,
+} from './lib/shared/discovery-consent-record.service';

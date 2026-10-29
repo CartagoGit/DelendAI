@@ -1,12 +1,17 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
-const root = resolve(__dirname, '../..');
+const root = resolve(import.meta.dirname, '../..');
 
 export default defineConfig({
 	test: {
+		...sharedTestOptions,
 		// Measured in isolation on 2026-09-14: the slowest
 		// test of this suite costs 23 ms (`test-convention plugin — options validation (r00003 S9-residual) re...`).
 		// A full run starts ~1,466 spec files at once, so a ceiling under

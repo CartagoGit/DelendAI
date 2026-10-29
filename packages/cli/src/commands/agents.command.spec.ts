@@ -26,6 +26,10 @@ const prompts = vi.hoisted(() => ({
 }));
 vi.mock('../lib/init/init-prompts.service', () => prompts);
 
+// A worker that ran another spec first holds this command bound to the real
+// core; the mocks above only bind to a module loaded after this reset.
+vi.resetModules();
+
 const {
 	agentsAddCommand,
 	agentsAnswerCommand,
@@ -75,6 +79,10 @@ beforeEach(() => {
 });
 afterEach(() => {
 	vi.restoreAllMocks();
+	// restoreAllMocks leaves a vi.fn()'s queued and permanent return values,
+	// so a test that made the terminal interactive would leak into the next.
+	prompts.isInteractive.mockReset();
+	prompts.askConfirm.mockReset();
 });
 
 describe('agents list', () => {

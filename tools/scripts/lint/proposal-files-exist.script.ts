@@ -25,6 +25,7 @@
  *   bun tools/scripts/lint/proposal-files-exist.script.ts --update   # rewrite baseline
  *   bun tools/scripts/lint/proposal-files-exist.script.ts --report   # counts only
  */
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 
 import { declaredPathExists } from './lib/declared-path-exists.lib';
@@ -159,6 +160,39 @@ export const isInsidePendingSlice = (
 		.some((line) => PENDING_SLICE_STATUS_RE.test(line));
 };
 
+/** The commits a proposal records as what delivered it (frontmatter and slice lines). */
+export const shippedInCommits = (text: string): readonly string[] => [
+	...new Set(
+		[
+			...text.matchAll(
+				/shipped-in:([^\n]*(?:\n\s+-\s*"?[0-9a-f]{7,40}"?)*)/gu,
+			),
+		].flatMap((match) => match[1]?.match(/\b[0-9a-f]{7,40}\b/gu) ?? []),
+	),
+];
+
+/**
+ * Whether `path` existed in a commit that shipped the proposal. Files name
+ * what shipped: a file a later change deleted (c00534 removed a package
+ * x00987 had edited) still names what x00987 delivered.
+ */
+const existedWhenShipped = (
+	root: string,
+	commits: readonly string[],
+	path: string,
+): boolean =>
+	commits.some((commit) => {
+		try {
+			execFileSync('git', ['cat-file', '-e', `${commit}:${path}`], {
+				cwd: root,
+				stdio: 'ignore',
+			});
+			return true;
+		} catch {
+			return false;
+		}
+	});
+
 /** Returns `{ relProposalPath: [missingPath, ...] }` for proposals with dangling Files: refs. */
 export const scanMissingFiles = (root: string): Record<string, string[]> => {
 	const result: Record<string, string[]> = {};
@@ -170,6 +204,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 		for (const proposalAbs of files) {
 			const text = readFileSync(proposalAbs, 'utf8');
 			const missing: string[] = [];
+			const shipped = shippedInCommits(text);
 			for (const m of text.matchAll(FILES_BLOCK_RE)) {
 				if (isInsidePendingSlice(text, m.index ?? 0)) continue;
 				// A slice that ran names the files it shipped: a pattern
@@ -188,7 +223,11 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 					// the only person who can fix it.
 					if (isRuntimeStatePath(p)) continue;
 					const base = stripLineRefs(p);
-					if (!declaredPathExists(root, base)) missing.push(p);
+					if (
+						!declaredPathExists(root, base) &&
+						!existedWhenShipped(root, shipped, base)
+					)
+						missing.push(p);
 				}
 			}
 			if (missing.length > 0) {

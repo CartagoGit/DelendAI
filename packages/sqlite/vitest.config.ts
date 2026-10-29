@@ -1,7 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
+import { sharedTestOptions } from '../../vitest.shared.ts';
+
 export default defineConfig({
 	test: {
+		...sharedTestOptions,
 		// Every spec here opens a real database under `bun test`
 		// (`bun run test:sqlite`, BUN_OWNED_SPECS); vitest runs none.
 		include: [],

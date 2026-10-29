@@ -53,3 +53,42 @@ describe('recordedPathsOf', () => {
 		expect(buildZoneReadMap(recordedPathsOf(map), kindOf)).toEqual(map);
 	});
 });
+
+describe('reads kept by spec', () => {
+	const kindOf = (path: string) =>
+		path.endsWith('/') || !path.includes('.')
+			? ('dir' as const)
+			: ('file' as const);
+
+	it('keeps the zone totals and, beside them, what each spec read', () => {
+		const map = buildZoneReadMap(
+			{
+				plugins: [
+					'plugins/x/a.spec.ts\tdocs/a.md',
+					'plugins/y/b.spec.ts\tdocs/delendai/proposals',
+					'docs/legacy.md',
+				],
+			},
+			kindOf,
+		);
+		expect(map.zones.plugins?.read).toEqual([
+			'docs/a.md',
+			'docs/legacy.md',
+		]);
+		expect(map.zones.plugins?.specs).toEqual({
+			'plugins/x/a.spec.ts': { read: ['docs/a.md'], listed: [] },
+			'plugins/y/b.spec.ts': {
+				read: [],
+				listed: ['docs/delendai/proposals'],
+			},
+		});
+	});
+
+	it('survives a prune: the map rebuilt from itself is the same map', () => {
+		const map = buildZoneReadMap(
+			{ plugins: ['plugins/x/a.spec.ts\tdocs/a.md', 'docs/legacy.md'] },
+			kindOf,
+		);
+		expect(buildZoneReadMap(recordedPathsOf(map), kindOf)).toEqual(map);
+	});
+});
