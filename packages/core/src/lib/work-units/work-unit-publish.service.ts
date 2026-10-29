@@ -1,3 +1,4 @@
+import { carriesNothingBeyond } from './landed-work.service';
 import { deletedDocuments } from './review-pack-deletions.service';
 import {
 	describeCarriedPacks,
@@ -244,6 +245,22 @@ export const published = async (
 		return refused(
 			target.refusal,
 			'Publish from a work ref under the policy prefix.',
+		);
+	}
+	// A unit whose commits the integration branch already holds (merges of
+	// it, or work that landed through another pull request) has nothing to
+	// publish. Republishing such a unit after its pull request merged opened
+	// a second pull request with an empty diff (#1563).
+	const tipOfUnit = readGit(root, ['rev-parse', '-q', '--verify', workRef]);
+	if (
+		tipOfUnit !== undefined &&
+		(readGit(root, ['merge-base', '--is-ancestor', tipOfUnit, base]) !==
+			undefined ||
+			carriesNothingBeyond(root, tipOfUnit, base))
+	) {
+		return refused(
+			`${workRef} holds nothing ${policy.branches.integration} lacks: its work already landed.`,
+			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
 		);
 	}
 	const outcome = await publishWorkUnitExclusively({
