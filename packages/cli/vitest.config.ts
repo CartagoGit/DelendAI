@@ -17,6 +17,9 @@ export default defineConfig({
 	},
 	test: {
 		...sharedTestOptions,
+		// Isolated until these specs stop depending on a fresh module
+		// registry (they fail when run after another file): agents.command.spec.ts.
+		isolate: true,
 		// f00037 S5: tests are co-located next to the source they cover
 		// (`*.spec.ts` next to the implementation). The historical
 		// `tests/src/**` mirror was retired by the S4 slice (every

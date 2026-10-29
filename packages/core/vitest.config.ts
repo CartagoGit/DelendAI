@@ -17,6 +17,9 @@ export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		...sharedTestOptions,
+		// Isolated until these specs stop depending on a fresh module
+		// registry (they fail when run after another file): with-file-mutex-fs-injection.spec.ts, with-file-mutex-errno.spec.ts, first-boot.e2e.spec.ts.
+		isolate: true,
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).

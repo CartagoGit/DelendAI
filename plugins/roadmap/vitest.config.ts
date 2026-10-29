@@ -18,6 +18,9 @@ export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		...sharedTestOptions,
+		// Isolated until these specs stop depending on a fresh module
+		// registry (they fail when run after another file): roadmap-bump-intent.service.spec.ts.
+		isolate: true,
 		testTimeout: SUITE_TIMEOUT_MS,
 		hookTimeout: SUITE_TIMEOUT_MS,
 		name: 'roadmap',
