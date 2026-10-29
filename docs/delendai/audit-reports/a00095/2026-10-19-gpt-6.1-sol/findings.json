@@ -1,0 +1,13 @@
+{
+	"format": "JSONL",
+	"data": "findings.jsonl",
+	"records": 133,
+	"severityCounts": {
+		"P1": 8,
+		"P2": 108,
+		"P3": 17
+	},
+	"qualifiedKeysUnique": true,
+	"originalArchive": "ORIGINALS.tar.gz",
+	"originalRecordBase": "archive root; preserve each recorded snapshot and evidence boundary"
+}

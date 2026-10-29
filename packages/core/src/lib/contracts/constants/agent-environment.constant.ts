@@ -1,0 +1,61 @@
+/**
+ * agent-environment.constant.ts — the variables an agent runtime sets in
+ * the shells it drives, which a person's shell does not.
+ *
+ * delendai exists to keep agents from leaving a mess behind; it must not
+ * get in the way of a person using their own repository. Some rules
+ * (never `git stash`, never commit on the integration branch) therefore
+ * apply to agents only, and this is the one place that says what "an
+ * agent is running this" looks like, whatever its model or host.
+ *
+ * Any runtime can identify itself through `DELENDAI_AGENT_ID`, which is
+ * also how delendai names the agent's work refs. The host markers below
+ * are a second net for runtimes that never heard of delendai.
+ */
+import {
+	AGENT_HOST_VARIABLE_PREFIXES,
+	AGENT_HOST_VARIABLES,
+} from './agent-hosts.constant';
+
+/** delendai's own declaration of who is working. */
+export const AGENT_IDENTITY_VARIABLE = 'DELENDAI_AGENT_ID';
+
+/**
+ * Exported by the delendai CLI and server for every process they start,
+ * so a git call that a delendai tool makes is recognised as an agent's
+ * even when the host sets nothing. Kept apart from the host markers: it
+ * is a statement about the call, not about the shell, and it never
+ * overrides the CI exemption.
+ */
+export const DELENDAI_SESSION_VARIABLE = 'DELENDAI_SESSION';
+
+/**
+ * A cross-runtime convention, e.g. `claude-code_<version>_agent`: it says
+ * an agent is running, not which host runs it.
+ */
+export const CROSS_RUNTIME_AGENT_MARKER = 'AI_AGENT';
+
+/** Variables that name an agent host exactly, from `AGENT_HOSTS`. */
+export const AGENT_HOST_MARKERS: readonly string[] = [
+	CROSS_RUNTIME_AGENT_MARKER,
+	...AGENT_HOST_VARIABLES,
+];
+
+/** Prefixes whose variables only an agent host sets, from `AGENT_HOSTS`. */
+export const AGENT_HOST_MARKER_PREFIXES: readonly string[] =
+	AGENT_HOST_VARIABLE_PREFIXES;
+
+/** Every environment variable that identifies an agent, in precedence order. */
+export const AGENT_ENVIRONMENT_MARKERS: readonly string[] = [
+	AGENT_IDENTITY_VARIABLE,
+	...AGENT_HOST_MARKERS,
+];
+
+/**
+ * Every agent, whatever its model or host, is held to the workflow above
+ * and names itself the same way. The id is the exact model id, because it
+ * names work refs and commit authors and is how reviewers tell whose work
+ * a unit is.
+ */
+export const AGENT_IDENTITY_INSTRUCTION =
+	'Whatever your model or host, these rules bind you. Set DELENDAI_AGENT_ID to your exact model id before any delendai or git call: write the model id your host or your maker has told you, not one you infer — delendai records the channel each claim came through (declared, observed or reported) and the project decides what an unverified claim may do; how it is written is fixed — lowercase, maker first in letters, then the version your maker publishes for you in a part of its own, then the tier (`glm-5.3-flash`, `qwen-3.8-flash`, never `qwen3-flash`), with no effort word such as `-high`; never a shortened, invented or borrowed id (a re-spelling of an identity already at work is refused); a shell with no declared agent is held to the same rules where the project says unidentified actors are agents. If your host exposes no model id to you at all, do not invent one: a chat provider serving this conversation may publish the model it observed to the provider bridge, and delendai reads it itself when nothing is declared — never read the bridge yourself or copy it into DELENDAI_AGENT_ID: it names the latest chat conversation in this workspace, which may be another agent’s; the project rules on both through its declared `identity` policy axis (close the bridge, or name a default for identities no model named); failing either, say plainly that your host does not supply your model id and stop, instead of guessing. Never unset or override these variables to get a git or delendai call past a refusal (`env -u AI_AGENT git commit`, a cleared DELENDAI_AGENT_ID): the refusal names the unit of work your change belongs in, and a commit made that way is one nobody can trace or review. Never act under another agent’s name or inside its unit: a reviewer that went quiet loses its claims by itself.';
