@@ -73,6 +73,40 @@ describe('zoneOf', () => {
 	});
 });
 
+describe('planZones by measured time', () => {
+	const rules = [
+		{ id: 'tools', match: () => true, paths: () => ['tools'] },
+	] as const;
+	const specs = Array.from(
+		{ length: 8 },
+		(_, index) => `tools/s${String(index)}.spec.ts`,
+	);
+
+	it('gives each shard of a split zone its own spec list, every spec once', () => {
+		const timings = Object.fromEntries(
+			specs.map((spec, index) => [spec, index === 0 ? 800 : 100]),
+		);
+		const jobs = planZones({
+			specs,
+			workspaceDirs: [],
+			target: 4,
+			rules,
+			timings,
+		});
+		expect(jobs.map((job) => job.name)).toEqual(['tools 1/2', 'tools 2/2']);
+		expect(jobs.flatMap((job) => job.files ?? []).sort()).toEqual(
+			[...specs].sort(),
+		);
+		// The 800 ms spec alone balances the seven of 100 ms.
+		expect(jobs[0]?.files).toEqual(['tools/s0.spec.ts']);
+	});
+
+	it('splits by count, with no lists, when there are no timings', () => {
+		const jobs = planZones({ specs, workspaceDirs: [], target: 4, rules });
+		expect(jobs.every((job) => job.files === undefined)).toBe(true);
+	});
+});
+
 describe('planZones', () => {
 	it('gives a zone one job when it fits', () => {
 		const jobs = planZones({
