@@ -54,7 +54,7 @@ The same day the repository held, besides live work: two worktree directories gi
 
 ### S4 — What a start finds left over and holding nothing is removed
 - **Status**: pending
-- **Files**: `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
+- **Files**: `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts)."

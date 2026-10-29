@@ -29,10 +29,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
-import {
-	dropLandedStrandedEdits,
-	keepStrandedEditsAtStart,
-} from './stranded-edits.service';
+import { keepStrandedEditsAtStart } from './stranded-edits.service';
 import { readUnitStandings } from './unit-standings.service';
 import { listWorkRefs } from './work-swarm.service';
 import { integrationBase, readGit } from './work-unit-shared.service';
@@ -354,16 +351,6 @@ export const syncUnitsAtStart = async (input: {
 	if (env[UNIT_FORGE_SYNC_VARIABLE] === 'off') return [];
 	// Before anything moves: what an agent left in the shared checkout.
 	await keepStrandedEditsAtStart(input.root, input.policy, write);
-	const landed = dropLandedStrandedEdits({
-		root: input.root,
-		policy: input.policy,
-		integration: input.policy.branches.integration,
-	});
-	if (landed.length > 0) {
-		write(
-			`[delendai] dropped ${String(landed.length)} stranded ref(s) whose edits ${input.policy.branches.integration} now holds: ${landed.join(', ')}\n`,
-		);
-	}
 	try {
 		const run = createGitRunner(input.root);
 		const remote = await resolveDurabilityRemote(run, undefined);

@@ -160,6 +160,16 @@ export const keepStrandedEditsAtStart = async (
 	write: (line: string) => void,
 ): Promise<IStrandedEdits> => {
 	const stranded = await keepStrandedEdits({ root, policy });
+	const landed = dropLandedStrandedEdits({
+		root,
+		policy,
+		integration: policy.branches.integration,
+	});
+	if (landed.length > 0) {
+		write(
+			`[delendai] dropped ${String(landed.length)} stranded ref(s) that keep nothing found nowhere else: ${landed.join(', ')}\n`,
+		);
+	}
 	if (stranded.outcome === 'kept') {
 		write(
 			`[delendai] ${String(stranded.paths.length)} path(s) left uncommitted in the shared checkout are kept at ${stranded.ref} (for ${stranded.agent}). To resume: ${resumeStrandedEdits(stranded.ref)}\n`,
