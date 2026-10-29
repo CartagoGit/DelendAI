@@ -81,6 +81,7 @@ const project = (state: string, proposalFolder = 'done'): string => {
 /** A forge that answers from a table and remembers what it was asked. */
 const forgeWith = (answers: {
 	readonly checks?: string;
+	readonly analyses?: string;
 	readonly alerts?: string | { readonly error: string };
 	readonly openPullRequest?: string;
 	readonly create?: string | { readonly error: string };
@@ -107,6 +108,9 @@ const forgeWith = (answers: {
 						},
 					]),
 			};
+		}
+		if (call.includes('/code-scanning/analyses')) {
+			return { ok: true, out: answers.analyses ?? '[]' };
 		}
 		if (call.includes('/code-scanning/alerts')) {
 			const alerts = answers.alerts ?? '0';
@@ -214,6 +218,24 @@ describe('openPromotion', () => {
 		expect(said).toContain('roadmap 2.4.0');
 	});
 
+	it('is held back while the integration branch does not carry its release', async () => {
+		const { forge, asked } = forgeWith({});
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: true,
+			releaseGaps: (plan) => [
+				`the version 2.3.0 is not above ${plan.release}'s 2.3.0`,
+			],
+		});
+		expect(result.outcome).toBe('held-back');
+		expect(created(asked)).toBeUndefined();
+		const said = result.lines.join('\n');
+		expect(said).toContain("not above release/2.x's 2.3.0");
+		expect(said).toContain('release:prepare --write');
+	});
+
 	it('is held back by a check that never reported and by a forge that cannot be asked', async () => {
 		const { forge } = forgeWith({
 			checks: '[]',
@@ -228,6 +250,50 @@ describe('openPromotion', () => {
 		expect(result.outcome).toBe('held-back');
 		expect(result.lines.join('\n')).toContain('has not reported');
 		expect(result.lines.join('\n')).toContain('could not be asked');
+	});
+
+	it('takes a code scanning analysis on the head for its check, which reports on pull requests only', async () => {
+		const checks = (head: string) =>
+			JSON.stringify([
+				{
+					name: 'validate',
+					conclusion: 'success',
+					completed_at: 'z',
+					head_sha: head,
+				},
+			]);
+		const config = JSON.parse(configOf({ schedule: 'on-ready' })) as {
+			development: { integration: { requiredChecks: string[] } };
+		};
+		config.development.integration.requiredChecks = ['validate', 'CodeQL'];
+		const scanned = forgeWith({
+			checks: checks('abc'),
+			analyses: '["CodeQL"]',
+		});
+		expect(
+			(
+				await openPromotion({
+					root: project('delivered'),
+					configText: JSON.stringify(config),
+					forge: scanned.forge,
+					apply: false,
+				})
+			).outcome,
+		).toBe('would-open');
+		expect(
+			scanned.asked.some((args) =>
+				args.join(' ').includes('select(.commit_sha == "abc")'),
+			),
+		).toBe(true);
+		const unscanned = forgeWith({ checks: checks('abc') });
+		const held = await openPromotion({
+			root: project('delivered'),
+			configText: JSON.stringify(config),
+			forge: unscanned.forge,
+			apply: false,
+		});
+		expect(held.outcome).toBe('held-back');
+		expect(held.lines.join('\n')).toContain('CodeQL has not reported');
 	});
 
 	it('is not held back by a project that has no code scanning', async () => {

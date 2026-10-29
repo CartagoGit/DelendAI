@@ -46,9 +46,11 @@ jobs:
 
             # Every promotion is a release: a version above main's and its
             # CHANGELOG section, prepared on develop by `release:prepare`.
+            # A dispatched run (a rerun by hand) judges the branch it was
+            # dispatched on as the promotion's head, against main: the same
+            # checks as the pull request's run, not fewer.
             - name: The promotion carries its version and its changelog
-              if: ${{ github.event_name == 'pull_request' }}
-              run: bun run release:check --base=origin/${{ github.base_ref }}
+              run: bun run release:check --base=origin/${{ github.base_ref || 'main' }}
 
             - name: Typecheck
               run: bun run typecheck
@@ -60,7 +62,6 @@ jobs:
             # threshold up, so alerts below it reach the integration branch;
             # none of them reaches the release branch.
             - name: The promotion carries no open code scanning alert
-              if: ${{ github.event_name == 'pull_request' }}
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: bun run forge:promotion-alerts
+              run: bun run forge:promotion-alerts -- --branch=${{ github.head_ref || github.ref_name }}

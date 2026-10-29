@@ -58,6 +58,60 @@ horizons:
             target: f00551
         proposals:
           - f00551
+  - version: 0.3.0
+    bumpHint: minor
+    entries:
+      - id: fast-flow
+        title: A pull request is proved locally and checks only what its change reaches
+        kind: feature
+        state: committed
+        gates:
+          - kind: proposal-done
+            target: v00144
+          - kind: proposal-done
+            target: v00145
+          - kind: proposal-done
+            target: v00146
+        proposals:
+          - v00144
+          - v00145
+          - v00146
+      - id: any-host-follows-the-flow
+        title: Every agent, whatever its host or model, is held to its unit, its slice and its name
+        kind: feature
+        state: committed
+        gates:
+          - kind: proposal-done
+            target: x00990
+          - kind: proposal-done
+            target: x00992
+        proposals:
+          - x00990
+          - x00992
+      - id: plugins-connect
+        title: Every plugin a project loads connects, or says why it cannot
+        kind: feature
+        state: committed
+        gates:
+          - kind: proposal-done
+            target: f00792
+        proposals:
+          - f00792
+      - id: batuta-works
+        title: Batuta delegates real work across hosts and BYOK models within the quota it can see
+        kind: feature
+        state: committed
+        gates:
+          - kind: proposal-done
+            target: x00988
+          - kind: proposal-done
+            target: f00790
+          - kind: proposal-done
+            target: f00793
+        proposals:
+          - x00988
+          - f00790
+          - f00793
 ---
 # Roadmap
 
@@ -72,6 +126,11 @@ The first horizon was seeded on 2026-10-11 from the feature proposals
 then in flight. An entry in `proposed` is a candidate, not a commitment:
 moving it to `committed`, or withdrawing it with a reason, is the
 owner's decision.
+
+The 0.3.0 horizon was committed by the owner on 2026-10-29: the version
+ships when the whole system works as it should — a fast, cheap, reliable
+flow, plugins that connect, Batuta working, and every host or model held
+to the workflow.
 
 No entry carries a date. A date nobody can audit is a hope, not a
 deadline; an estimate goes in only with where it comes from.

@@ -63,6 +63,55 @@
 				"declared": "minor",
 				"coherent": true
 			}
+		},
+		{
+			"version": "0.3.0",
+			"bumpHint": "minor",
+			"counts": {
+				"total": 4,
+				"delivered": 0,
+				"withdrawn": 0,
+				"open": 4
+			},
+			"entries": [
+				{
+					"id": "fast-flow",
+					"title": "A pull request is proved locally and checks only what its change reaches",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "any-host-follows-the-flow",
+					"title": "Every agent, whatever its host or model, is held to its unit, its slice and its name",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "plugins-connect",
+					"title": "Every plugin a project loads connects, or says why it cannot",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "batuta-works",
+					"title": "Batuta delegates real work across hosts and BYOK models within the quota it can see",
+					"kind": "feature",
+					"state": "committed"
+				}
+			],
+			"declared": [
+				"fast-flow",
+				"any-host-follows-the-flow",
+				"plugins-connect",
+				"batuta-works"
+			],
+			"delivered": [],
+			"bump": {
+				"kind": "minor",
+				"authority": "@delendai/changelog::inferBump",
+				"declared": "minor",
+				"coherent": true
+			}
 		}
 	]
 }

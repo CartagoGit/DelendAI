@@ -8,6 +8,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	PROMOTION_COMMAND,
+	PROMOTION_ON_READY_CRON,
 	promotionWorkflowDocument,
 } from './promotion-workflow.lib';
 
@@ -30,12 +31,20 @@ describe('promotionWorkflowDocument', () => {
 		expect(text).not.toContain('develop');
 	});
 
-	it('runs on every move of the integration branch when the cadence is on-ready', () => {
+	it('asks every hour when the cadence is on-ready, since a push comes before its checks', () => {
 		const workflow = promotionWorkflowDocument(twoBranches, 'on-ready');
 		expect(workflow?.on).toEqual({
-			push: { branches: ['trunk'] },
+			schedule: [{ cron: PROMOTION_ON_READY_CRON }],
 			workflow_dispatch: {},
 		});
+	});
+
+	it('fetches the release branch, against whose version the release is read', () => {
+		const text = JSON.stringify(
+			promotionWorkflowDocument(twoBranches, 'on-ready'),
+		);
+		expect(text).toContain('refs/remotes/origin/$RELEASE');
+		expect(text).toContain('"RELEASE":"release/2.x"');
 	});
 
 	it('may open a pull request and holds no permission to push', () => {
