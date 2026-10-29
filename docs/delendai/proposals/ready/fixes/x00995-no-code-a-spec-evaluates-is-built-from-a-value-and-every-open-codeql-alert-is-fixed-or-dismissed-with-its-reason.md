@@ -4,7 +4,7 @@ title: "No code a spec evaluates is built from a value, and every open CodeQL al
 kind: fix
 status: ready
 type: proposal
-track: general
+track: ci
 date: 2026-10-29
 ---
 
@@ -12,25 +12,42 @@ date: 2026-10-29
 
 ## goal
 
-TODO: describe the goal.
+The repository has no open code-scanning alert without an owner: each one is fixed, or dismissed with the reason it does not apply, and an alert that appears on develop is reported where the queue reports a broken promise, not left for someone to find.
 
 ## why
 
-TODO: why this work matters now.
+On 2026-10-29 the owner found two CodeQL alerts open for two and four days:
+
+- #463 `js/bad-code-sanitization` (medium), `plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts:241`: the spec built the source a grandchild process evaluates by splicing a temporary path into it with `JSON.stringify`.
+- #464 `js/http-to-file-access` (medium), `packages/core/src/lib/shared/declared-agents.service.ts:225`: the agent installer writes the archive it downloaded. The bytes are compared with the registry's sha256 first and a mismatch throws before any write; writing a verified download is what the installer is for.
+
+A pull request's CodeQL check fails only on alerts its own diff introduces, so an alert raised by develop's full analysis (which now sees more than a pull request's scoped one, v00144) stays open with every check green.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Turning a reviewed design decision into a code change to silence a query.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — TODO
+### S1 — The two open alerts
 - **Status**: pending
-- **Files**: `TODO`
-- **Gate**: none
+- **Files**: `plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The spec's grandchild writes a relative `late.txt` in the criterion's `cwd` (`runAcceptanceCriteria(..., { cwd: dir })`), so no value is spliced into evaluated code; left unkilled the same command writes the marker there, so the test still proves the process-group kill."
+  - "#464 is dismissed as won't fix with the reason above, on 2026-10-29."
+
+### S2 — An open alert is a broken promise
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`work doctor --forge` (run by the queue every hour and after each merge) lists every open code-scanning alert with its rule, file and age as a broken invariant, so the queue job goes red until it is fixed or dismissed with a reason."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The spec's grandchild writes a relative `late.txt` in the criterion's `cwd` (`runAcceptanceCriteria(..., { cwd: dir })`), so no value is spliced into evaluated code; left unkilled the same command writes the marker there, so the test still proves the process-group kill.
+- #464 is dismissed as won't fix with the reason above, on 2026-10-29.
+- `work doctor --forge` (run by the queue every hour and after each merge) lists every open code-scanning alert with its rule, file and age as a broken invariant, so the queue job goes red until it is fixed or dismissed with a reason.
