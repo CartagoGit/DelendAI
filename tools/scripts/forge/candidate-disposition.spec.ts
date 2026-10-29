@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	authorsOwn,
 	candidateDispositions,
 	toBringForward,
 	type ICandidateState,
@@ -179,5 +180,33 @@ describe('candidateDispositions', () => {
 			[7, 'author'],
 			[8, 'author'],
 		]);
+	});
+});
+
+describe('authorsOwn', () => {
+	it("names the agent's own publications handed back to their author, and no one else's", () => {
+		const verdicts = [
+			{
+				number: 1,
+				headRef: 'delendai/pr/claude-opus-5-5/implement/x1-all-g1/a',
+				disposition: 'author',
+				why: '',
+			},
+			{
+				number: 2,
+				headRef: 'delendai/pr/minimax-m3/implement/x2-all-g1/b',
+				disposition: 'author',
+				why: '',
+			},
+			{
+				number: 3,
+				headRef: 'delendai/pr/claude-opus-5-5/implement/x3-all-g1/c',
+				disposition: 'queued',
+				why: '',
+			},
+		] as const;
+		expect(authorsOwn(verdicts, 'delendai/pr/', 'claude-opus-5-5')).toEqual(
+			['delendai/pr/claude-opus-5-5/implement/x1-all-g1/a'],
+		);
 	});
 });

@@ -44,6 +44,7 @@ import {
 import {
 	candidateDispositions,
 	toBringForward,
+	authorsOwn,
 } from '../forge/candidate-disposition';
 import {
 	currentQueueFacts,
@@ -653,7 +654,16 @@ const bringForwardOthers = (
 			why: verdict.why,
 		})),
 	).catch(() => undefined);
-	for (const candidate of toBringForward(verdicts)) {
+	// `--author=<agent>`: the agent's own publications its author must
+	// push are brought forward by that author, now (v00142).
+	const author = process.argv
+		.find((value) => value.startsWith('--author='))
+		?.slice('--author='.length);
+	const own =
+		author === undefined
+			? []
+			: authorsOwn(verdicts, facts.publicationPrefix, author);
+	for (const candidate of [...toBringForward(verdicts), ...own]) {
 		if (!apply || alreadyRefreshed.has(candidate)) continue;
 		const outcome = refreshCandidate({ root, policy, remote, candidate });
 		console.log(

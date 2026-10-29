@@ -29,6 +29,11 @@ on:
     # was opened and then abandoned never sees a push to the integration
     # branch, so without a clock it is exactly the pull request nobody
     # ever hears about again.
+    # GitHub runs a scheduled workflow from the DEFAULT branch's copy. While
+    # that was `main`, 859 commits behind, the hourly run was main's old
+    # report-only queue: it armed nothing and brought nothing forward. The
+    # default branch is the integration branch (set 2026-10-28, v00142);
+    # moving it back to `main` silently stops the clock.
     schedule:
         - cron: '17 * * * *'
     # Also available by hand, for the case where a run was missed.
