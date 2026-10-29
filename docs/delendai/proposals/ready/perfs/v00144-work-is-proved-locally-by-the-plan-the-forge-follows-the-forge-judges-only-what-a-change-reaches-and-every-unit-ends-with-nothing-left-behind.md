@@ -52,12 +52,20 @@ The same day the repository held, besides live work: two worktree directories gi
   - "pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts)."
   - "No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's."
 
-### S4 — Every unit ends clean
+### S4 — What a start finds left over and holding nothing is removed
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-gc.service.ts`, `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`
+- **Files**: `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`work gc` (also run when a unit is published, retired or claimed, and at start-up) removes worktree directories git does not know, `.orig` and other merge leftovers under the worktrees folder, local branches of ended units, stranded refs whose paths all reached develop, a unit or a publication, and retired refs older than 30 days whose tips develop contains; it lists what it removed and why, and never removes a ref holding work found nowhere else."
+  - "Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts)."
+  - "Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept)."
+
+### S5 — Every unit ends clean
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-gc.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`work gc` (also run when a unit is published, retired or claimed) removes local branches of ended units and worktree directories git does not know, and lists what it removed and why; it never removes a ref holding work found nowhere else."
   - "`work publish` refuses to open a pull request whose tree equals the integration branch's, naming the merged pull request that already holds it."
 
 ## acceptance
@@ -67,5 +75,7 @@ The same day the repository held, besides live work: two worktree directories gi
 - On a pull request the secret scan reads the change's diff (`--range base...HEAD`), `lint:generated-determinism` runs only when a generator changed and `lint:cross-ide` only when the UI extension, the client or core did (together 214 s of lint-security's 175 s-plus, measured locally); a push to develop runs them over the whole tree.
 - pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts).
 - No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's.
-- `work gc` (also run when a unit is published, retired or claimed, and at start-up) removes worktree directories git does not know, `.orig` and other merge leftovers under the worktrees folder, local branches of ended units, stranded refs whose paths all reached develop, a unit or a publication, and retired refs older than 30 days whose tips develop contains; it lists what it removed and why, and never removes a ref holding work found nowhere else.
+- Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts).
+- Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept).
+- `work gc` (also run when a unit is published, retired or claimed) removes local branches of ended units and worktree directories git does not know, and lists what it removed and why; it never removes a ref holding work found nowhere else.
 - `work publish` refuses to open a pull request whose tree equals the integration branch's, naming the merged pull request that already holds it.
