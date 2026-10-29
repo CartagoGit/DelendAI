@@ -185,7 +185,7 @@ export default defineConfig({
 						[
 							'json',
 							{ outputFile: process.env['VITEST_TIMINGS_OUT'] },
-						] as const,
+						] as ['json', { outputFile: string }],
 					]),
 		],
 		// Coverage is a root concern (aggregated across every project). It only
