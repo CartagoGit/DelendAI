@@ -160,6 +160,16 @@ export const keepStrandedEditsAtStart = async (
 	write: (line: string) => void,
 ): Promise<IStrandedEdits> => {
 	const stranded = await keepStrandedEdits({ root, policy });
+	const landed = dropLandedStrandedEdits({
+		root,
+		policy,
+		integration: policy.branches.integration,
+	});
+	if (landed.length > 0) {
+		write(
+			`[delendai] dropped ${String(landed.length)} stranded ref(s) that keep nothing found nowhere else: ${landed.join(', ')}\n`,
+		);
+	}
 	if (stranded.outcome === 'kept') {
 		write(
 			`[delendai] ${String(stranded.paths.length)} path(s) left uncommitted in the shared checkout are kept at ${stranded.ref} (for ${stranded.agent}). To resume: ${resumeStrandedEdits(stranded.ref)}\n`,
@@ -194,4 +204,75 @@ export const listStrandedEdits = (input: {
 			ref,
 			agent: ref.slice(prefix.length + 1).split('/')[0] ?? '',
 		}));
+};
+
+/**
+ * Drop the stranded refs that keep nothing found nowhere else: every file
+ * such a ref saved is, byte for byte, on the integration branch, on a
+ * work or publication branch, or in a larger stranded ref kept. One that holds a
+ * single file found nowhere else is kept. On 2026-10-29 one checkout held
+ * 15 stranded refs: five kept nothing (repeated snapshots of one tree, and
+ * edits a unit had since published) and ten held edits no branch had.
+ */
+export const dropLandedStrandedEdits = (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly integration: string;
+}): readonly string[] => {
+	const blob = (ref: string, path: string): string | undefined =>
+		readGit(input.root, ['rev-parse', '-q', '--verify', `${ref}:${path}`]);
+	const branches = (
+		readGit(input.root, [
+			'for-each-ref',
+			'--format=%(refname)',
+			`refs/remotes/origin/${input.policy.branches.namespacePrefix}`,
+		]) ?? ''
+	)
+		.split('\n')
+		.filter((ref) => ref.length > 0);
+	const stranded = (
+		readGit(input.root, [
+			'for-each-ref',
+			'--format=%(refname)',
+			`${namespacedRef(input.policy.branches.namespacePrefix, 'stranded')}/`,
+		]) ?? ''
+	)
+		.split('\n')
+		.filter((ref) => ref.length > 0);
+	const pathsOf = (ref: string): readonly string[] =>
+		(readGit(input.root, ['diff', '--name-only', `${ref}^`, ref]) ?? '')
+			.split('\n')
+			.filter((path) => path.length > 0);
+	// The largest snapshots first: a ref is covered by one already kept, so
+	// two identical snapshots never drop each other, and the earlier, smaller
+	// one of a pair goes.
+	const ordered = stranded
+		.map((ref) => ({ ref, paths: pathsOf(ref) }))
+		.filter((entry) => entry.paths.length > 0)
+		.sort((a, b) => b.paths.length - a.paths.length);
+	const kept: string[] = [];
+	const dropped: string[] = [];
+	for (const { ref, paths } of ordered) {
+		const elsewhere = [input.integration, ...branches, ...kept];
+		const keepsSomething = paths.some((path) => {
+			const saved = blob(ref, path);
+			// A file the ref deleted keeps nothing to restore.
+			if (saved === undefined) return false;
+			return !elsewhere.some((other) => blob(other, path) === saved);
+		});
+		if (keepsSomething) {
+			kept.push(ref);
+			continue;
+		}
+		try {
+			execFileSync('git', ['update-ref', '-d', ref], {
+				cwd: input.root,
+				stdio: 'ignore',
+			});
+			dropped.push(ref);
+		} catch {
+			// Kept: it is dropped on a later start.
+		}
+	}
+	return dropped;
 };

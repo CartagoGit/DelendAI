@@ -45,6 +45,10 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 	};
 });
 
+// A worker that ran another spec first holds this module bound to the real
+// fs; the mock only binds to a module loaded after this reset.
+vi.resetModules();
+
 const { LockContentionError, withFileMutex } = await import(
 	'../../../../src/lib/shared/with-file-mutex'
 );

@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
+	dropLandedStrandedEdits,
 	keepStrandedEdits,
 	keepStrandedEditsAtStart,
 	listStrandedEdits,
@@ -126,5 +127,45 @@ describe('keepStrandedEdits', () => {
 		expect((await keepStrandedEdits({ root, policy })).outcome).toBe(
 			'not-shared-checkout',
 		);
+	});
+});
+
+describe('dropLandedStrandedEdits', () => {
+	it('drops a stranded ref whose every file is on a branch or in a newer one, and keeps one with a file found nowhere else', async () => {
+		const root = repo();
+		// Kept twice: the same edit, snapshotted, then a later state of it.
+		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
+		const first = await keepStrandedEdits({ root, policy });
+		writeFileSync(join(root, 'new.ts'), 'export const n = 1;\n');
+		const second = await keepStrandedEdits({ root, policy });
+		if (first.outcome !== 'kept' || second.outcome !== 'kept')
+			throw new Error('not kept');
+		// The first snapshot's a.ts is in the newer one; the newer one holds
+		// new.ts, which no branch has.
+		const dropped = dropLandedStrandedEdits({
+			root,
+			policy,
+			integration: 'develop',
+		});
+		expect(dropped).toEqual([first.ref]);
+		expect(
+			listStrandedEdits({ root, policy }).map((each) => each.ref),
+		).toEqual([second.ref]);
+		// Once a publication holds new.ts and a.ts as kept, nothing is left to keep.
+		git(root, 'switch', '-q', '-c', 'pub', 'develop');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
+		writeFileSync(join(root, 'new.ts'), 'export const n = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'published');
+		git(
+			root,
+			'update-ref',
+			'refs/remotes/origin/delendai/pr/agent-a/x',
+			'HEAD',
+		);
+		git(root, 'switch', '-q', 'develop');
+		expect(
+			dropLandedStrandedEdits({ root, policy, integration: 'develop' }),
+		).toEqual([second.ref]);
 	});
 });
