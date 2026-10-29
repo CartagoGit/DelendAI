@@ -30,6 +30,7 @@ import type {
 	IProveUnitRequest,
 	IUnitProofReport,
 } from '../contracts/interfaces/unit-proof.interface';
+import { commitSubjectFor } from '../shared/commit-call-writes';
 import { runGitCommand } from '../shared/git-command.helper';
 import { runCertificationCommand } from './local-certification.service';
 import {
@@ -89,6 +90,35 @@ const exists = async (path: string): Promise<boolean> =>
 		() => false,
 	);
 
+/** How far back a proof is looked for across the transitions above it. */
+const TRANSITION_HOPS = 8;
+
+/** The subject every proposal transition's commit starts with. */
+const TRANSITION_SUBJECT = commitSubjectFor(
+	'delendai_proposals_proposal_transition',
+	{},
+);
+
+/**
+ * Whether `sha` is a proposal transition and nothing more: the commit the
+ * transition tool makes, changing only proposal documents. Moving a
+ * proposal to review changes the tree, and without this the hand-over
+ * re-ran a proof the same code had just passed.
+ */
+const isTransitionOnly = (root: string, sha: string): boolean => {
+	const subject = git(root, ['log', '-1', '--format=%s', sha]);
+	if (!subject.ok || !subject.out.startsWith(TRANSITION_SUBJECT))
+		return false;
+	const changed = git(root, ['diff', '--name-only', `${sha}^`, sha]);
+	return (
+		changed.ok &&
+		changed.out
+			.split('\n')
+			.filter(Boolean)
+			.every((path) => /(^|\/)proposals\/.+\.md$/u.test(path))
+	);
+};
+
 const tailOf = (output: string): string =>
 	output.trimEnd().split('\n').slice(-OUTPUT_TAIL_LINES).join('\n');
 
@@ -116,13 +146,19 @@ export const proveUnit = async (
 			setupFailure: `could not read the unit's tree: ${tree.ok ? gitDir.out : tree.out}`,
 		};
 	}
-	const record = join(
-		gitDir.out,
-		'delendai-proofs',
-		proofKey(tree.out, steps),
-	);
-	if (await exists(record)) {
-		return { declared: true, passed: true, steps, remembered: true };
+	const proofs = join(gitDir.out, 'delendai-proofs');
+	const record = join(proofs, proofKey(tree.out, steps));
+	// The tip's own tree, else the tree before the transitions on top of it.
+	for (let sha = tipSha, hop = 0; hop <= TRANSITION_HOPS; hop += 1) {
+		const proved = git(root, ['rev-parse', `${sha}^{tree}`]);
+		if (
+			proved.ok &&
+			(await exists(join(proofs, proofKey(proved.out, steps))))
+		) {
+			return { declared: true, passed: true, steps, remembered: true };
+		}
+		if (!isTransitionOnly(root, sha)) break;
+		sha = git(root, ['rev-parse', `${sha}^`]).out;
 	}
 
 	// The unit's own worktree, when it stands on the tip with nothing
