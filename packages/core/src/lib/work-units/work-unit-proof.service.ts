@@ -31,6 +31,7 @@ import type {
 	IUnitProofReport,
 } from '../contracts/interfaces/unit-proof.interface';
 import { commitSubjectFor } from '../shared/commit-call-writes';
+import { readWorkspaceDocsDir } from './development-policy.service';
 import { runGitCommand } from '../shared/git-command.helper';
 import { runCertificationCommand } from './local-certification.service';
 import {
@@ -90,32 +91,36 @@ const exists = async (path: string): Promise<boolean> =>
 		() => false,
 	);
 
-/** How far back a proof is looked for across the transitions above it. */
-const TRANSITION_HOPS = 8;
+/** How far back a proof is looked for across tool document commits above it. */
+const TOOL_COMMIT_HOPS = 8;
 
-/** The subject every proposal transition's commit starts with. */
-const TRANSITION_SUBJECT = commitSubjectFor(
-	'delendai_proposals_proposal_transition',
-	{},
-);
+/** The subject every commit a product tool makes for its writes starts with. */
+const TOOL_COMMIT_SUBJECT = commitSubjectFor('', {}).trimEnd();
 
 /**
- * Whether `sha` is a proposal transition and nothing more: the commit the
- * transition tool makes, changing only proposal documents. Moving a
- * proposal to review changes the tree, and without this the hand-over
- * re-ran a proof the same code had just passed.
+ * Whether `sha` only records documents a product tool wrote: a commit the
+ * tool-call writer made, changing nothing but Markdown under the docs
+ * directory. Moving a proposal to review is one such commit; without this
+ * the hand-over re-ran a proof the same code had just passed, inside the
+ * tool call that moved it.
  */
-const isTransitionOnly = (root: string, sha: string): boolean => {
+const isToolDocumentCommit = (
+	root: string,
+	sha: string,
+	docsDir: string,
+): boolean => {
 	const subject = git(root, ['log', '-1', '--format=%s', sha]);
-	if (!subject.ok || !subject.out.startsWith(TRANSITION_SUBJECT))
+	if (!subject.ok || !subject.out.startsWith(TOOL_COMMIT_SUBJECT)) {
 		return false;
+	}
 	const changed = git(root, ['diff', '--name-only', `${sha}^`, sha]);
+	const prefix = `${docsDir.replace(/\/+$/u, '')}/`;
 	return (
 		changed.ok &&
 		changed.out
 			.split('\n')
 			.filter(Boolean)
-			.every((path) => /(^|\/)proposals\/.+\.md$/u.test(path))
+			.every((path) => path.startsWith(prefix) && path.endsWith('.md'))
 	);
 };
 
@@ -147,9 +152,10 @@ export const proveUnit = async (
 		};
 	}
 	const proofs = join(gitDir.out, 'delendai-proofs');
+	const docsDir = await readWorkspaceDocsDir(root);
 	const record = join(proofs, proofKey(tree.out, steps));
 	// The tip's own tree, else the tree before the transitions on top of it.
-	for (let sha = tipSha, hop = 0; hop <= TRANSITION_HOPS; hop += 1) {
+	for (let sha = tipSha, hop = 0; hop <= TOOL_COMMIT_HOPS; hop += 1) {
 		const proved = git(root, ['rev-parse', `${sha}^{tree}`]);
 		if (
 			proved.ok &&
@@ -157,7 +163,7 @@ export const proveUnit = async (
 		) {
 			return { declared: true, passed: true, steps, remembered: true };
 		}
-		if (!isTransitionOnly(root, sha)) break;
+		if (!isToolDocumentCommit(root, sha, docsDir)) break;
 		sha = git(root, ['rev-parse', `${sha}^`]).out;
 	}
 
