@@ -54,6 +54,7 @@ export const SOURCE_PREFIXES = [
 export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'lint-biome',
+		docs: 'skip', // Biome formats and lints code and JSON, not Markdown.
 		touches: 'always',
 		because:
 			'formatting and lint rules apply to every file in the repo, including the ones a docs-only change touches.',
@@ -155,11 +156,13 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'manifests-check',
+		docs: 'skip', // a manifest is built from plugin code.
 		touches: 'always',
 		because: 'plugin manifests are derived from every plugin at once.',
 	},
 	{
 		job: 'metrics-gate',
+		docs: 'skip', // no Markdown reaches the build it measures.
 		touches: 'always',
 		because:
 			'it compares a snapshot of the whole build against a baseline; a subset snapshot is not comparable to it.',

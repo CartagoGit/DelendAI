@@ -13,8 +13,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	explainJobs,
 	JOB_SCOPES,
+	explainJobs,
+	isProse,
 	jobMustRun,
 	planJobs,
 } from './job-scope.script';
@@ -295,5 +296,23 @@ describe('planJobs — a change to a job’s own scripts runs that job', () => {
 	])('%s selects %j', (file, jobs) => {
 		const plan = planJobs({ changed: [file] });
 		for (const job of jobs) expect(plan[job]).toBe(true);
+	});
+});
+
+describe('a change made only of prose', () => {
+	it('skips the jobs that judge code, and only when every changed file is prose', () => {
+		const prose = ['docs/delendai/proposals/review/x1.md', 'README.md'];
+		expect(prose.every(isProse)).toBe(true);
+		expect(isProse('plugins/a/README.md')).toBe(false);
+		expect(jobMustRun({ job: 'lint-biome', changed: prose })).toBe(false);
+		expect(jobMustRun({ job: 'lint-governance', changed: prose })).toBe(
+			true,
+		);
+		expect(
+			jobMustRun({
+				job: 'lint-biome',
+				changed: [...prose, 'package.json'],
+			}),
+		).toBe(true);
 	});
 });
