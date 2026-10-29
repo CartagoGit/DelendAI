@@ -92,3 +92,32 @@ describe('a publication that cannot reach the remote', () => {
 		).toContain('delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe');
 	});
 });
+
+describe('a unit whose work already landed', () => {
+	it('is refused, saying it holds nothing the integration branch lacks', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		const checkpointed = await runWorkUnit(
+			['checkpoint', ...UNIT, '--paths=a.ts', '--message=feat: a'],
+			contextFor(root),
+		);
+		expect(checkpointed.code).toBe(0);
+		// Its pull request merged: develop now holds the unit's commit.
+		rmSync(join(root, 'a.ts'));
+		git(
+			root,
+			'merge',
+			'-q',
+			'--no-edit',
+			'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe',
+		);
+
+		const published = await runWorkUnit(
+			['publish', ...UNIT, '--no-pull-request'],
+			contextFor(root),
+		);
+
+		expect(published.code).not.toBe(0);
+		expect(published.error).toContain('holds nothing develop lacks');
+	});
+});

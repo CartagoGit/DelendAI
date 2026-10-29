@@ -60,13 +60,19 @@ The same day the repository held, besides live work: two worktree directories gi
   - "Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts)."
   - "Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept)."
 
-### S5 — Every unit ends clean
+### S5 — Publishing refuses a unit that holds nothing new
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work publish` refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integration branch lacks and how to end it (work-unit-publish-failure.spec.ts); on 2026-10-28 such a republish opened #1563, an empty pull request."
+
+### S6 — Every unit ends clean
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-gc.service.ts`
 - **Gate**: type
 - acceptance:
   - "`work gc` (also run when a unit is published, retired or claimed) removes local branches of ended units and worktree directories git does not know, and lists what it removed and why; it never removes a ref holding work found nowhere else."
-  - "`work publish` refuses to open a pull request whose tree equals the integration branch's, naming the merged pull request that already holds it."
 
 ## acceptance
 
@@ -77,5 +83,5 @@ The same day the repository held, besides live work: two worktree directories gi
 - No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's.
 - Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts).
 - Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept).
+- `work publish` refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integration branch lacks and how to end it (work-unit-publish-failure.spec.ts); on 2026-10-28 such a republish opened #1563, an empty pull request.
 - `work gc` (also run when a unit is published, retired or claimed) removes local branches of ended units and worktree directories git does not know, and lists what it removed and why; it never removes a ref holding work found nowhere else.
-- `work publish` refuses to open a pull request whose tree equals the integration branch's, naming the merged pull request that already holds it.
