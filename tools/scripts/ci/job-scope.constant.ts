@@ -208,6 +208,12 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'pack-smoke',
+		// What can change what a tarball holds or whether it installs: a
+		// manifest, the lockfile, the build configuration and scripts, and
+		// the entry files that are the export surface. A change inside an
+		// existing module cannot, and typecheck compiles it.
+		matches:
+			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$)|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
 		touches: [
 			// The scripts it runs: a change to how dist is built or packed
 			// is a change to what the tarball holds.

@@ -226,6 +226,14 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
+                  # A pull request is judged where it changed (v00144): the secret
+                  # scan reads its diff, and the generator-determinism and IDE
+                  # suites run only when what they judge changed. A push to
+                  # develop runs all of them over the whole tree.
+                  PR_BASE="${{ github.event.pull_request.base.sha || '' }}"
+                  CHANGED=""
+                  if [ -n "$PR_BASE" ]; then CHANGED="$(git diff --name-only "$PR_BASE"...HEAD)"; fi
+                  touches() { [ -z "$PR_BASE" ] || printf '%s\n' "$CHANGED" | grep -qE "$1"; }
                   set -euo pipefail
                   bun run lint:privacy
                   bun run lint:no-cleartext-secrets
@@ -236,7 +244,11 @@ jobs:
                   # cleared and its prose false-positives fixed before
                   # wiring it, because a gate introduced red is a gate
                   # someone disables.
-                  bun run lint:no-secrets
+                  if [ -n "$PR_BASE" ]; then
+                    bun tools/scripts/lint/no-secrets.script.ts --range "$PR_BASE...HEAD"
+                  else
+                    bun run lint:no-secrets
+                  fi
                   # The rule that refuses a rule nothing runs, which
                   # nothing ran. It appeared in this file only inside a
                   # COMMENT, so it reported its own unreachability to
@@ -251,7 +263,11 @@ jobs:
                   bun run lint:no-global-git-config-in-tests
                   bun run lint:shell-is-bash
                   bun run lint:web-absolute-api-urls
-                  bun run lint:cross-ide
+                  if touches '^(packages/(ui-extension|client|core)|extensions)/|^(package\.json|bun\.lock|tsconfig)'; then
+                    bun run lint:cross-ide
+                  else
+                    echo "lint:cross-ide: not run — the change touches neither the UI extension, the client nor core."
+                  fi
                   bun run lint:host-hints-fragments
                   bun run lint:bootstrap-canonical
                   bun run lint:brand
@@ -282,7 +298,11 @@ jobs:
                   bun run lint:check-adr-coverage
                   bun run lint:proposals-locks-file-size
                   bun run lint:no-proposal-id-comments-in-source
-                  bun run lint:generated-determinism
+                  if touches '^tools/scripts/(gen|generate|catalog|report|lib)/|^package\.json$'; then
+                    bun run lint:generated-determinism
+                  else
+                    echo "lint:generated-determinism: not run — no generator changed (generated-artifacts-check still checks their output)."
+                  fi
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
                   # i00004: a .d.ts next to a .ts source is a build accident,
