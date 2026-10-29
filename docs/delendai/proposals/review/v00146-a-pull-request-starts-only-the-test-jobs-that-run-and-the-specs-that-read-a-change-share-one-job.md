@@ -65,7 +65,7 @@ After v00143 a zone the change does not reach still started its job, which took 
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/forge/certify-integration.script.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run."
+  - "A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, under `!cancelled()` so the jobs a pull request scopes out do not skip it, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run."
 - shipped-in: `15f8c5aaa2c0`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
@@ -85,5 +85,5 @@ After v00143 a zone the change does not reach still started its job, which took 
 - `compactMatrix` keeps the jobs that run, merges every `readers` job into one named `readers` with the union of their specs, and returns a single `none` job when nothing runs (test-zones.script.spec.ts); the planner prints each zone it does not start.
 - `plan-tests` declares no `needs`, so the test shards start beside `typecheck` and `lint-biome`, and `delendai-validate` still requires both.
 - On a pull request the shards and the merge set `VITEST_COVERAGE_FILES` to the files changed since the base, and `vitest.config.ts` narrows `coverage.include` to those of them its globs already select (a file outside them stays unmeasured, and none touched measures nothing), so the changed-file coverage verdict is the one the full selection gives.
-- A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run.
+- A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, under `!cancelled()` so the jobs a pull request scopes out do not skip it, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run.
 - A changed root `*.md`, `LICENSE`, `.mailmap` or `.github/` file outside workflows and actions reaches only the specs that read it, while configuration (`delendai.config.json`, `package.json`, the lockfile, `tsconfig`, the vitest configs) still runs every zone (zone-reads.spec.ts); in a zone its code reaches too, the specs that read the root file run in the shared readers job (test-zones.script.spec.ts), so the shard step no longer runs a zone unfiltered because a workflow or `.yml` changed.

@@ -179,6 +179,8 @@ describe('a publication that goes green wakes the queue', () => {
 		expect(start).toBeGreaterThan(0);
 		expect(whole).toContain('needs: [delendai-validate]');
 		expect(whole).toContain("needs.delendai-validate.result == 'success'");
+		// A skipped upstream job would skip it without this.
+		expect(whole).toContain('!cancelled()');
 		expect(whole).toContain("startsWith(github.head_ref, 'delendai/pr/')");
 		expect(whole).toContain('head.repo.full_name == github.repository');
 		expect(whole).toContain('gh workflow run keep-the-queue-moving.yml');
