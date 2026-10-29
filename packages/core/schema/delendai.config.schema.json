@@ -3,13 +3,16 @@
 	"type": "object",
 	"properties": {
 		"$schema": {
+			"description": "Editor hint: the URL of the published JSON Schema for this file. Point your editor at it so it can autocomplete the legal values and flag a typo as you type.",
 			"type": "string"
 		},
 		"namespacePrefix": {
+			"description": "The prefix that renames every tool this server registers — a tool becomes `<prefix>_<plugin>_<tool>`. Defaults to `delendai`; change it when two servers would otherwise claim the same tool names in one host, or when a project wants its own namespace.",
 			"type": "string",
 			"pattern": "^[a-z][a-z0-9_]*$"
 		},
 		"hosts": {
+			"description": "The editor and agent hosts this project uses, for example `copilot`, `claude` or `cursor`. Delendai writes agent files and instructions for exactly these hosts. Leave it out and the hosts found in the project are used.",
 			"type": "array",
 			"items": {
 				"type": "string",
@@ -17,24 +20,35 @@
 			}
 		},
 		"cacheDir": {
+			"description": "Where the server keeps its caches — worktrees, indexes, generated artefacts. Relative to the workspace root. Move it when the cache grows past what fits on the default disk, or when the default directory is not writable.",
 			"type": "string"
 		},
 		"docsDir": {
+			"description": "Where the server writes the documents a person reads and edits — the workflow files, the generated guides. Relative to the workspace root. Change it when the project keeps its documentation somewhere other than `docs/delendai`.",
 			"type": "string"
 		},
 		"surfaceMode": {
+			"description": "How much of the tool catalogue the MCP server lists to the model. Defaults to `managed`. Choose `native` when the host wants every tool up front, `compact` when context is scarce.",
 			"type": "string",
 			"enum": [
 				"native",
 				"managed",
 				"adaptive",
 				"compact"
-			]
+			],
+			"enumDescriptions": {
+				"native": "Every tool is listed up front, with its full schema. Maximum discoverability, maximum context cost. Choose it when the host can afford the tokens or the tool count is small.",
+				"managed": "Only a small bootstrap surface is listed; the rest of the catalogue stays server-side and is reached through the router. The default balance between discoverability and context.",
+				"adaptive": "The listed surface grows and shrinks with the session: tools appear when the work needs them and are dropped when it does not. Costs the server some bookkeeping; buys back context.",
+				"compact": "The smallest listed surface. The model reaches every tool through the router by naming a domain and an action. The most context-efficient and the least discoverable."
+			}
 		},
 		"startupReport": {
+			"description": "The operator-facing report printed when the server starts: what loaded and what it cost. Use it to keep a noisy startup quiet, or to make it verbose while debugging a slow boot.",
 			"type": "object",
 			"properties": {
 				"level": {
+					"description": "How much of the startup report to print. Defaults to `medium` — the plugin table, the token accounting and the warnings. Raise it to `full` while chasing a slow or expensive boot, lower it to `off` to print nothing.",
 					"type": "string",
 					"enum": [
 						"off",
@@ -43,33 +57,55 @@
 						"high",
 						"full",
 						"extended"
-					]
+					],
+					"enumDescriptions": {
+						"off": "Print nothing. The quietest option; the report is suppressed entirely.",
+						"compact": "One line per plugin, with its load state and cost. Enough to see what came up, not enough to read.",
+						"medium": "The default. The plugin table, the token accounting and the warnings, without the per-tool breakdown.",
+						"high": "Adds the per-tool breakdown and the token-cost table.",
+						"full": "Everything: per-tool schemas, the full cost table and the raw numbers behind each figure.",
+						"extended": "A legacy alias of `high`, kept so older configurations keep working. Prefer naming `high` explicitly."
+					}
 				},
 				"color": {
+					"description": "Whether the startup report is coloured. `auto` colours it only when the output is a terminal; set `never` when a CI log parses the output.",
 					"type": "string",
 					"enum": [
 						"auto",
 						"always",
 						"never"
-					]
+					],
+					"enumDescriptions": {
+						"auto": "Colour when the output is a terminal, plain text when it is piped or redirected. The usual choice.",
+						"always": "Always emit colour codes, even when redirected. Use it when a downstream tool expects them.",
+						"never": "Never emit colour codes. Use it when the output is parsed by something that does not understand them."
+					}
 				}
 			},
 			"additionalProperties": false
 		},
 		"managedSurface": {
+			"description": "How the managed surface loads plugins and how long it keeps them warm. Use it to trade startup speed against the latency of the first call, or to cap the memory a long session holds.",
 			"type": "object",
 			"properties": {
 				"loading": {
+					"description": "When a managed plugin is loaded. `lazy` loads it on first use, so startup is fast and the first call pays a small delay; `eager` loads everything at startup, which costs startup time but removes the delay. Change it when the first call must be as fast as the rest.",
 					"type": "string",
 					"enum": [
 						"lazy",
 						"eager"
-					]
+					],
+					"enumDescriptions": {
+						"lazy": "Load a plugin the first time a tool of its own is called. Keeps startup fast and the footprint small; the cost is a delay on the first call.",
+						"eager": "Load every configured plugin at startup. Slower startup and a bigger footprint, but no first-call delay and no surprise latency later."
+					}
 				},
 				"progressiveDisclosure": {
+					"description": "Let `native` mode hide the tools a plugin marks as contextual or administrative from `tools/list`, while keeping them callable through the router. Off by default, because a host that chose `native` may never call the router; turn it on to shrink the listed surface.",
 					"type": "boolean"
 				},
 				"idleTtlMs": {
+					"description": "How long (milliseconds) a plugin may sit unused before it leaves the warm set. `null` disables the bound, so a warm plugin stays warm for the whole session. Lower it to release memory sooner; raise it when plugins are evicted between calls.",
 					"anyOf": [
 						{
 							"type": "integer",
@@ -82,6 +118,7 @@
 					]
 				},
 				"maxWarmPlugins": {
+					"description": "How many plugins may be warm at once; `null` means no limit. Lower it to cap the memory a long session holds, raise it when a busy session keeps evicting plugins it is about to need again.",
 					"anyOf": [
 						{
 							"type": "integer",
@@ -94,6 +131,7 @@
 					]
 				},
 				"minWarmMs": {
+					"description": "How long (milliseconds) a freshly warmed plugin is protected from eviction by idle time or by the warm-set limit; `null` removes the floor. Use it when a plugin is expensive to load and the session must not thrash it.",
 					"anyOf": [
 						{
 							"type": "integer",
@@ -109,34 +147,46 @@
 			"additionalProperties": false
 		},
 		"evidence": {
+			"description": "How long the runtime keeps the evidence it records — tool results, sweep reports — and when it sweeps. Use it to control how much the evidence store grows.",
 			"type": "object",
 			"properties": {
 				"retentionDays": {
+					"description": "How many days of evidence to keep before it becomes eligible for removal. Defaults to 30. Lower it when the evidence store grows too large, raise it when a later investigation needs the older records.",
 					"type": "integer",
 					"minimum": 1,
 					"maximum": 9007199254740991
 				},
 				"cleanup": {
+					"description": "When expired evidence is swept. `on-boot` sweeps while the server starts, `dry-run` reports what would go without deleting anything, `off` never sweeps and the evidence accumulates until you remove it yourself.",
 					"type": "string",
 					"enum": [
 						"on-boot",
 						"dry-run",
 						"off"
-					]
+					],
+					"enumDescriptions": {
+						"on-boot": "Sweep expired evidence while the server starts. The default: the cache does not grow without bound.",
+						"dry-run": "Report what a sweep would remove, and remove nothing. Use it to size the sweep before letting it run.",
+						"off": "Never sweep. Evidence accumulates until you delete it by hand."
+					}
 				}
 			},
 			"additionalProperties": false
 		},
 		"state": {
+			"description": "How the state engine stores and checks its data.",
 			"type": "object",
 			"properties": {
 				"parity": {
+					"description": "How the two state drivers are compared with each other.",
 					"type": "object",
 					"properties": {
 						"shadow": {
+							"description": "Runs the SQLite driver beside the in-memory one and samples whether the two agree.",
 							"type": "object",
 							"properties": {
 								"enabled": {
+									"description": "Run the SQLite driver beside the in-memory one and sample whether they agree, so a divergence shows up before it is trusted. Off by default — nothing loads the second driver unless you turn it on. Turn it on while changing the state engine.",
 									"type": "boolean"
 								}
 							},
@@ -149,9 +199,11 @@
 			"additionalProperties": false
 		},
 		"keepLegacy": {
+			"description": "Keep the previous version of a scaffolded file instead of overwriting it: regeneration moves the old bytes under `legacy/` first. Off by default, so a fresh template wins. Turn it on when a person has edited the generated files and must not lose them.",
 			"type": "boolean"
 		},
 		"agentWorktree": {
+			"description": "Whether an agent may run its work in a separate git worktree, so parallel agents do not collide in one checkout. Off by default. Turn it on for a project where several agents work at the same time; when a `development` block is present it is an input to that policy instead.",
 			"type": "boolean"
 		},
 		"development": {
@@ -159,7 +211,8 @@
 			"properties": {
 				"profile": {
 					"type": "string",
-					"minLength": 1
+					"minLength": 1,
+					"description": "The preset that expands into the whole policy below: `shared-direct`, `shared-checkout-pr`, `shared-checkout-merge` or `worktree-pr`. Omit it to write the axes by hand, or name one and override only the axes that differ."
 				},
 				"guardHooks": {
 					"type": "string",
@@ -167,7 +220,13 @@
 						"install",
 						"report",
 						"off"
-					]
+					],
+					"enumDescriptions": {
+						"install": "Install or update the hooks on start. The default: the policy is enforced, not merely described.",
+						"report": "Report whether the hooks are installed and current, and change nothing.",
+						"off": "Leave the repository alone. The policy is then advice the agent follows, not a rule the hook refuses."
+					},
+					"description": "What the server does about the git hooks that enforce this policy: install or update them on start (the default), only report whether they are there, or leave the repository alone."
 				},
 				"guard": {
 					"type": "object",
@@ -177,16 +236,23 @@
 							"enum": [
 								"agent",
 								"person"
-							]
+							],
+							"enumDescriptions": {
+								"agent": "Treat every unidentified writer as an agent, and hold it to the workflow. The default for a shared checkout, where the writers are agents.",
+								"person": "Leave an unidentified writer free. Use it in a repository where humans and agents share the branch."
+							},
+							"description": "Who the git guard assumes an actor to be when nothing identifies it."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How the git guard judges a writer it cannot identify. Omit it to keep the default."
 				},
 				"identity": {
 					"type": "object",
 					"properties": {
 						"providerBridge": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether a model the provider bridge observed counts when work is attributed. Set it to `false` to make declared model ids the only way in; omit it to accept both."
 						},
 						"aliases": {
 							"type": "object",
@@ -196,36 +262,44 @@
 							},
 							"additionalProperties": {
 								"type": "string",
-								"minLength": 1
-							}
+								"minLength": 1,
+								"description": "The model id the spelling names, such as `minimax-m3.1-flash-preview`."
+							},
+							"description": "Spellings this project knows name one model, as a map from spelling to model id — `\"minimax-3.1\": \"minimax-m3.1-flash-preview\"`. Use it when a machine never saw the model in an editor, so the seen-model catalogue cannot resolve it."
 						},
 						"unrecognizedModel": {
 							"anyOf": [
 								{
 									"type": "string",
-									"minLength": 1
+									"minLength": 1,
+									"description": "The policy for an identity nothing named a model. `refuse` is the only implemented value: the work is attributed to nobody."
 								},
 								{
 									"type": "object",
 									"properties": {
 										"use": {
 											"type": "string",
-											"minLength": 1
+											"minLength": 1,
+											"description": "The agent id the work is attributed to, normalised like any other agent id."
 										}
 									},
 									"required": [
 										"use"
 									],
-									"additionalProperties": false
+									"additionalProperties": false,
+									"description": "Name the work after an id instead of refusing it, so a project that does not care which model worked still gets readable refs and authors."
 								}
-							]
+							],
+							"description": "What an identity nothing named a model becomes: either refuse to attribute the work at all, or name it with the `{ \"use\": \"...\" }` form."
 						},
 						"unverifiedClaims": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "What a model id the agent declared about itself may do: `accept` — Believe a model id the agent declared about itself when nothing observed it. Convenient, and it can be wrong. `refuse` — Refuse to attribute work to a model that declared itself and was not observed. The default: an attribution is evidence, not a claim."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How work is attributed to a model when nothing declared one: which sources count, what an unnamed identity becomes, and what a self-declared model id may do."
 				},
 				"workRefs": {
 					"type": "object",
@@ -235,29 +309,40 @@
 							"enum": [
 								"visible",
 								"hidden"
-							]
+							],
+							"enumDescriptions": {
+								"visible": "The work refs appear in `git branch` and the ordinary ref list. Use it when people should see the work in progress.",
+								"hidden": "The work refs are kept out of the ordinary ref list. Use it when the refs are an implementation detail."
+							},
+							"description": "Whether the refs that carry in-progress work show up in the ordinary ref list."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "Whether the refs that carry in-progress work are ordinary branches or an implementation detail."
 				},
 				"branches": {
 					"type": "object",
 					"properties": {
 						"namespacePrefix": {
-							"type": "string"
+							"type": "string",
+							"description": "The namespace for the refs delendai owns, with no trailing slash: empty gives `wip/` and `pr/`, `delendai` gives `delendai/wip/` and `delendai/pr/`. Change it when two projects share a remote and their refs would collide."
 						},
 						"integration": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "The branch agents integrate into, and the one your pull requests merge into. Name the branch your forge treats as the integration target — never the forge default branch by accident, and never a branch the project merely got used to."
 						},
 						"publicationRefPrefix": {
-							"type": "string"
+							"type": "string",
+							"description": "The namespace for the refs that exist only to carry a pull request, such as `delendai/pr/`. Naming them apart from development branches is what makes it checkable that an agent did not take a branch of its own."
 						},
 						"foreignRefPrefixes": {
 							"type": "array",
 							"items": {
-								"type": "string"
-							}
+								"type": "string",
+								"description": "A prefix delendai does not own, such as the namespace the forge’s own automation uses."
+							},
+							"description": "Ref prefixes delendai does not own and must never reap — the forge’s own automation, chiefly. Set it when a cleanup would otherwise mistake a foreign ref for abandoned work."
 						},
 						"release": {
 							"type": "string",
@@ -265,77 +350,95 @@
 							"description": "The branch releases land on. Omit it, or name the integration branch, for a project with one branch."
 						},
 						"workRefTemplate": {
-							"type": "string"
+							"type": "string",
+							"description": "The template that names the ref of one unit of work, built from the placeholders `${agent}`, `${kind}`, `${proposal}`, `${slice}`, `${generation}` and `${topic}`. It must contain `${generation}`, or successive checkpoints of one slice collide on the same ref."
 						},
 						"workRefPrefix": {
-							"type": "string"
+							"type": "string",
+							"description": "The prefix a reaper may consider managed when it cleans up abandoned work. Leave it empty to disable that cleanup entirely."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "The branch and ref names this policy uses: where work integrates, where releases land, and what the delendai-owned refs are called."
 				},
 				"workspace": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "How work reaches the filesystem: the strategy that decides what a work unit owns and where it lives. `shared-checkout` gives every agent the same tree; `agent-worktree` gives each one a tree of its own."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How the agents get a working tree to edit."
 				},
 				"persistence": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "How unfinished work is written down: the strategy that decides whether the work lands as a direct commit, in a `wip/*` ref, or on a branch of its own."
 						},
 						"autoCommitOnTask": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether finishing a unit of work commits it without being asked. It defaults on in every profile, because work that exists only as unsaved edits in a shared tree can be lost by any other agent’s operation. Turn it off only when a person commits by hand."
 						},
 						"autoPushAfterCommit": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether that commit is pushed as soon as it is made. Local durability is not durability: a checkpoint that lives only in this clone cannot be resumed by another agent, cannot be reviewed, and disappears with the machine."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "Where an agent’s in-progress work is durably written."
 				},
 				"checkpoint": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "When a durability checkpoint is written: on slice boundaries, on a fixed interval, or on both — whichever comes first."
 						},
 						"intervalMinutes": {
 							"type": "integer",
 							"minimum": 0,
-							"maximum": 9007199254740991
+							"maximum": 9007199254740991,
+							"description": "The minutes between interval checkpoints. It applies only when the checkpoint strategy includes `interval`, and 0 means no interval at all."
 						},
 						"durableWip": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether a checkpoint may be written even when the work is red. A durability checkpoint exists so the work is not lost; it is never merged."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "When the work in progress is written down, so that a crash does not lose it."
 				},
 				"integration": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "How work reaches the integration branch: the strategy that decides whether a candidate is pushed directly, opened as a pull request, or merged from a work ref after local certification."
 						},
 						"requiredChecks": {
 							"type": "array",
 							"items": {
 								"type": "string",
-								"minLength": 1
-							}
+								"minLength": 1,
+								"description": "The name of a check context the forge runs, such as `build`."
+							},
+							"description": "The check contexts that must pass before a candidate may land on the integration branch. Leave it empty to let the forge decide."
 						},
 						"requireLatestIntegration": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether a candidate must be re-validated against the CURRENT integration head before it merges, not merely against the head it was branched from. Turn it on to stop two independently-green candidates from combining into a red branch."
 						},
 						"mergeGreenProgressContinuously": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether a coherent, green part of a slice is integrated as soon as it is ready, instead of waiting for the whole slice."
 						},
 						"publication": {
 							"type": "object",
@@ -346,7 +449,13 @@
 										"slice",
 										"proposal",
 										"adaptive"
-									]
+									],
+									"enumDescriptions": {
+										"slice": "One publication per slice. Every completed slice is published on its own — the most frequent, and the most review overhead.",
+										"proposal": "One publication per proposal, once all of its slices are done. The least frequent, and the largest review.",
+										"adaptive": "One publication per proposal when it is small, and slice by slice when it is not, judged by `publication.adaptive.maxSlices` and `maxChangedLines`. The default."
+									},
+									"description": "How much work one publication carries: a slice, a whole proposal, or whichever fits under the adaptive thresholds."
 								},
 								"adaptive": {
 									"type": "object",
@@ -354,116 +463,146 @@
 										"maxSlices": {
 											"type": "integer",
 											"minimum": 0,
-											"maximum": 9007199254740991
+											"maximum": 9007199254740991,
+											"description": "The most slices a proposal may have and still be published as one pull request."
 										},
 										"maxChangedLines": {
 											"type": "integer",
 											"minimum": 0,
-											"maximum": 9007199254740991
+											"maximum": 9007199254740991,
+											"description": "The most changed lines, added plus removed, across a proposal’s slices and still be published as one pull request."
 										}
 									},
-									"additionalProperties": false
+									"additionalProperties": false,
+									"description": "The thresholds that decide when `adaptive` granularity publishes a proposal whole and when it publishes it slice by slice."
 								}
 							},
-							"additionalProperties": false
+							"additionalProperties": false,
+							"description": "How finished work is grouped into pull requests."
 						},
 						"requiredApprovals": {
 							"type": "integer",
 							"minimum": 0,
-							"maximum": 9007199254740991
+							"maximum": 9007199254740991,
+							"description": "The approving human reviews a candidate needs before it may merge into the integration branch. 0 means autonomous integration: certified, green work lands without waiting for a person."
 						},
 						"releaseRequiredApprovals": {
 							"type": "integer",
 							"minimum": 0,
-							"maximum": 9007199254740991
+							"maximum": 9007199254740991,
+							"description": "The same for the release branch, held separately because promoting to release is where a project most often wants a human in the loop. It may not be lower than `requiredApprovals`."
 						},
 						"releaseRequiredChecks": {
 							"type": "array",
 							"items": {
 								"type": "string",
-								"minLength": 1
-							}
+								"minLength": 1,
+								"description": "The name of a check context the release branch runs, such as a version gate."
+							},
+							"description": "The checks the RELEASE branch requires, when they differ from the integration branch’s — a version gate, a changelog check. Leave it empty to use the same list as `requiredChecks`."
 						},
 						"mergeMethod": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "The merge shape the forge performs: `squash`, `merge` or `rebase`."
 						},
 						"deleteMergedWorkRef": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether the work ref is deleted once its work has landed. Turn it off when the ref is also the record of the work and should be kept."
 						},
 						"linearHistory": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether the integration branch must keep a linear history, with no merge commits in it."
 						},
 						"allowForcePush": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether an agent may rewrite history on the integration branch. Keep it off unless the project genuinely rewrites published work."
 						},
 						"allowDeleteIntegrationBranch": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether the integration branch itself may be deleted. Almost always off: the integration branch is the one branch the project must not lose."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How finished work reaches the integration branch, and what has to be true before it lands."
 				},
 				"coordination": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "How concurrent agents are kept apart: the strategy that decides whether ownership is advisory, locked on disk, or leased transactionally in the operational state."
 						},
 						"leaseTtlMinutes": {
 							"type": "integer",
 							"minimum": 0,
-							"maximum": 9007199254740991
+							"maximum": 9007199254740991,
+							"description": "The minutes before a lease nobody renewed is treated as dead. 0 means a lease never expires."
 						},
 						"roster": {
 							"type": "array",
 							"items": {
 								"type": "string",
-								"minLength": 1
-							}
+								"minLength": 1,
+								"description": "The identity of one agent or person allowed to work here."
+							},
+							"description": "Who may work here, as whoever launches the agents declares them. Leave it out to let anyone work."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How concurrent agents avoid clobbering each other."
 				},
 				"recovery": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "What happens to abandoned work: the strategy that decides whether it is forgotten or picked up by a new owner."
 						},
 						"neverDiscardUnmergedWork": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether unmerged work is never deleted on age alone — only on durable evidence that it is already represented in the integration branch, or on an explicit deprecation."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "What happens to work whose owner disappeared."
 				},
 				"governance": {
 					"type": "object",
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "How the runtime treats the forge’s own settings: the strategy that decides whether they are ignored, only observed and reported as drift, or reconciled against this policy."
 						},
 						"failClosedOnUnverifiable": {
-							"type": "boolean"
+							"type": "boolean",
+							"description": "Whether a forge property that could not be evaluated is reported as a failure instead of quietly as a pass. Keep it on wherever the forge’s settings are enforced."
 						}
 					},
-					"additionalProperties": false
+					"additionalProperties": false,
+					"description": "How much authority the runtime has over the forge’s own settings."
 				}
 			},
-			"additionalProperties": false
+			"additionalProperties": false,
+			"description": "How this workspace develops and integrates work: the policy every other setting derives from. Omit it and the historical behaviour is kept; name a `profile` for a common shape, or write the axes below by hand."
 		},
 		"core": {
+			"description": "Core-owned runtime and agent policies.",
 			"type": "object",
 			"properties": {
 				"agentPolicy": {
+					"description": "How this project’s agents are expected to work. The block is injected into the agent’s instructions, so it changes behaviour rather than tooling.",
 					"type": "object",
 					"properties": {
 						"autonomous": {
+							"description": "Whether agents decide and carry on (`true`) or stop and ask the person first (`false`). Leave it out to keep the host’s own default.",
 							"type": "boolean"
 						},
 						"principles": {
+							"description": "Rules the agents are told to follow, one sentence each — the project’s own working agreements, for example: never edit generated files, always run the lint before proposing. Use it to state what the project insists on.",
 							"type": "array",
 							"items": {
 								"type": "string",
@@ -477,6 +616,7 @@
 			"additionalProperties": false
 		},
 		"featureFlags": {
+			"description": "Named feature flags, each `true` or `false`. Every flag is off unless it is set here, so this block is how a project opts into unfinished behaviour. Use it while a feature is being trialled, and remove the entry once the behaviour is canonical.",
 			"type": "object",
 			"propertyNames": {
 				"type": "string"
@@ -486,13 +626,16 @@
 			}
 		},
 		"convention": {
+			"description": "The layout the project uses, as its own declaration. It saves downstream tooling from re-discovering where the sources and the plugins live.",
 			"type": "object",
 			"properties": {
 				"pluginPathsRoot": {
-					"type": "string"
+					"type": "string",
+					"description": "The directory that holds the project’s plugin sources — `packages/`, `libs/`, `apps/` and so on. Set it when the default guess is wrong, so a scaffolder writes new plugins where the project keeps them."
 				},
 				"sourceRoot": {
-					"type": "string"
+					"type": "string",
+					"description": "The directory that holds the project’s own source code, for example `src`. Set it when the default guess is wrong, so tooling that looks for the sources finds them."
 				}
 			},
 			"required": [
@@ -502,9 +645,11 @@
 			"additionalProperties": false
 		},
 		"filesystem": {
+			"description": "What the native file tools may touch.",
 			"type": "object",
 			"properties": {
 				"authorizedRoots": {
+					"description": "Extra roots the native `fs_read` / `fs_write` tools may reach, in addition to the workspace root; a relative entry is resolved against the workspace root. Empty by default, which keeps the tools confined to the project — add an entry only for a directory the agent genuinely needs.",
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -514,33 +659,46 @@
 			"additionalProperties": false
 		},
 		"commitAuthor": {
+			"description": "Who is credited as the author of the commits this project produces.",
 			"type": "object",
 			"properties": {
 				"mode": {
+					"description": "Which author identity the commits carry. Defaults to `git`, which uses the repository’s own `user.name` / `user.email`; the other modes credit the agent, a fixed bot, or a named person.",
 					"type": "string",
 					"enum": [
 						"git",
 						"agent",
 						"bot",
 						"named"
-					]
+					],
+					"enumDescriptions": {
+						"git": "Use the identity git already has (user.name / user.email). The default, and the right choice unless the project says otherwise.",
+						"agent": "Credit the agent that produced the work, as `agent <name>`. Use it when the commit should name the assistant.",
+						"bot": "Credit a fixed bot identity. Use it in CI, where no human is responsible for the commit.",
+						"named": "Credit the identity named by `commitAuthor.humanName` / `humanEmail`. Use it when a person stands behind the agent’s work."
+					}
 				},
 				"clientName": {
+					"description": "The host that is driving the agent, for example `vscode-copilot` or `claude-code`. Read by the `agent` and `bot` modes, and used as the fallback name in `named`.",
 					"type": "string"
 				},
 				"modelName": {
+					"description": "The model that is doing the work, for example `claude-opus-4`. Read by the `named` mode to record which model wrote the change.",
 					"type": "string"
 				},
 				"humanName": {
+					"description": "The display name of the person behind the work. Only read in the `named` mode, where the commit names the person and annotates the model.",
 					"type": "string"
 				},
 				"humanEmail": {
+					"description": "The email address of the person behind the work. Only read in the `named` mode.",
 					"type": "string"
 				}
 			},
 			"additionalProperties": false
 		},
 		"validationMatrix": {
+			"description": "The quality gates of this project, by scope. The server reads them so an agent knows how to validate its work here instead of guessing the commands.",
 			"type": "object",
 			"properties": {
 				"scopes": {
@@ -554,10 +712,12 @@
 							"type": "object",
 							"properties": {
 								"command": {
-									"type": "string"
+									"type": "string",
+									"description": "The command to run for this scope, exactly as a person would type it — for example `bun run test`."
 								},
 								"expect": {
-									"type": "string"
+									"type": "string",
+									"description": "What a successful run of that command looks like, so the agent can tell a pass from a failure."
 								}
 							},
 							"required": [
@@ -566,7 +726,8 @@
 							],
 							"additionalProperties": false
 						}
-					}
+					},
+					"description": "The gates, keyed by scope name (for example `full` or `tools`), each with the command to run and the outcome to expect."
 				}
 			},
 			"required": [
@@ -575,6 +736,7 @@
 			"additionalProperties": false
 		},
 		"plugins": {
+			"description": "Per-plugin configuration, keyed by plugin id. Anything a plugin reads from its options belongs here.",
 			"type": "object",
 			"propertyNames": {
 				"type": "string"
@@ -583,20 +745,29 @@
 				"type": "object",
 				"properties": {
 					"enabled": {
+						"description": "Force this plugin on or off. `false` suppresses it even when a preset or the command line selected it; `true` keeps it active. Leave it out to let the preset decide.",
 						"type": "boolean"
 					},
 					"origin": {
+						"description": "Where this plugin came from: shipped with the host, installed for one person, or written by somebody else. The activation UI records it here so a disabled entry still says what it was.",
 						"type": "string",
 						"enum": [
 							"bundled",
 							"user-local",
 							"external"
-						]
+						],
+						"enumDescriptions": {
+							"bundled": "Shipped with the host. The default for a first-party plugin.",
+							"user-local": "Installed for one person, outside the project. Not shared with the team.",
+							"external": "A third-party plugin. Its code runs with the same authority as a first-party one — review it before you trust it."
+						}
 					},
 					"prefix": {
+						"description": "The namespace segment used in this plugin’s tool names. Change it when a tool name is already taken, or when the project wants shorter names.",
 						"type": "string"
 					},
 					"options": {
+						"description": "The plugin’s own settings, as plain JSON. The plugin reads them by name; the core passes them through without interpreting them.",
 						"type": "object",
 						"propertyNames": {
 							"type": "string"
@@ -604,6 +775,7 @@
 						"additionalProperties": {}
 					},
 					"path": {
+						"description": "Where a local plugin’s module lives. A relative path is resolved against the workspace root; an absolute or `file:` path is used as written. Leave it out for a plugin that is installed normally.",
 						"type": "string"
 					}
 				},
@@ -611,16 +783,19 @@
 			}
 		},
 		"pluginRegistry": {
+			"description": "Extra plugin-registry sources, merged with the index the server ships.",
 			"type": "object",
 			"properties": {
 				"communitySources": {
+					"description": "Community plugin lists this project wants the registry to search. Each source is a list of entries the project maintains itself.",
 					"type": "array",
 					"items": {
 						"type": "object",
 						"properties": {
 							"origin": {
 								"type": "string",
-								"const": "community"
+								"const": "community",
+								"description": "Where every entry in this source came from. A community source can only carry community entries; the first-party index is bundled with the server."
 							},
 							"entries": {
 								"type": "array",
@@ -628,28 +803,38 @@
 									"type": "object",
 									"properties": {
 										"id": {
-											"type": "string"
+											"type": "string",
+											"description": "The plugin's stable kebab-case id — the same key it would have under `plugins` in this file."
 										},
 										"package": {
-											"type": "string"
+											"type": "string",
+											"description": "The npm package the plugin is installed from, for example `@delendai/audit`."
 										},
 										"summary": {
-											"type": "string"
+											"type": "string",
+											"description": "One line saying what the plugin does. Shown in the registry result list."
 										},
 										"tags": {
 											"type": "array",
 											"items": {
 												"type": "string"
-											}
+											},
+											"description": "Filter tags for the plugin, for example `security` or `perf`. A registry search that names tags returns only the entries carrying every tag asked for."
 										},
 										"origin": {
 											"type": "string",
 											"enum": [
 												"first-party",
 												"community"
-											]
+											],
+											"enumDescriptions": {
+												"first-party": "Shipped by the project. Trusted by default and covered by its guarantees.",
+												"community": "Published by somebody else. Review it before you install it: it runs with your authority."
+											},
+											"description": "Who publishes the plugin. `first-party` is trusted by default; `community` is third-party code that runs with the project’s authority, so review it before installing it."
 										},
 										"permissions": {
+											"description": "The resource groups the plugin’s tools are allowed to touch. Declaring them is what lets the registry warn before an entry is adopted.",
 											"type": "array",
 											"items": {
 												"type": "string",
@@ -667,10 +852,26 @@
 													"browser",
 													"container",
 													"database"
-												]
+												],
+												"enumDescriptions": {
+													"filesystem-read": "Reading files outside the workspace.",
+													"filesystem-write": "Writing or deleting files.",
+													"process": "Running commands and processes.",
+													"network": "Reaching the network.",
+													"git-read": "Reading the repository’s history and state.",
+													"git-write": "Committing, branching, pushing.",
+													"forge-read": "Reading pull requests, reviews and the forge’s state.",
+													"forge-write": "Opening pull requests and reviews, and pushing to the forge.",
+													"env-read": "Reading environment variables — which is how secrets are usually found.",
+													"secrets": "Handling credentials and other sensitive values.",
+													"browser": "Driving a browser.",
+													"container": "Running containers.",
+													"database": "Reading or writing a database."
+												}
 											}
 										},
 										"defaultPreset": {
+											"description": "The preset this plugin belongs to — the group of plugins the server installs together. `vertex` is a legacy brand alias that resolves to `dogfood`.",
 											"type": "string",
 											"enum": [
 												"minimal",
@@ -683,7 +884,19 @@
 												"backend-api",
 												"cli-tool",
 												"vertex"
-											]
+											],
+											"enumDescriptions": {
+												"minimal": "The smallest preset: the plugins a project needs to read and edit code, and nothing else.",
+												"lean": "A small preset: `minimal` plus the plugins that keep a repository healthy.",
+												"standard": "The default preset: the plugins most projects want on day one.",
+												"swarm": "The preset for a multi-agent project: `standard` plus the plugins that coordinate agents.",
+												"full": "Every plugin the project ships.",
+												"dogfood": "The preset this project uses on itself: everything, tuned for working on delendai.",
+												"web-app": "A stack pack for a web application. Independent of the presets above: it resolves to its own plugin set.",
+												"backend-api": "A stack pack for a backend service. Independent of the presets above.",
+												"cli-tool": "A stack pack for a command line tool. Independent of the presets above.",
+												"vertex": "A legacy brand alias that resolves to `dogfood`. Kept so older configurations keep working."
+											}
 										}
 									},
 									"required": [
@@ -694,7 +907,8 @@
 										"origin"
 									],
 									"additionalProperties": false
-								}
+								},
+								"description": "The plugins this source publishes."
 							}
 						},
 						"required": [
@@ -708,6 +922,7 @@
 			"additionalProperties": false
 		},
 		"providers": {
+			"description": "The providers the multi-model orchestrator may reach, with how each one is invoked and what it is good at. Omit it to use only the built-in roster.",
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -726,7 +941,16 @@
 							"mcp-server",
 							"acp",
 							"host-sampling"
-						]
+						],
+						"enumDescriptions": {
+							"api": "A hosted HTTP API. The credential is an API key the project holds.",
+							"subscription": "A subscription login the provider’s own client holds. The credential is a session, not a key.",
+							"cli": "A command line client the runner starts. The credential is whatever that client already has.",
+							"mcp-server": "An MCP server the runner calls as a tool.",
+							"acp": "An agent reached over the Agent Client Protocol.",
+							"host-sampling": "The model the host editor runs, through MCP sampling. The key stays with the host."
+						},
+						"description": "How the runner reaches this provider: a hosted API, a subscription, a command line client, an MCP server, an ACP agent, or the host's own model."
 					},
 					"invoke": {
 						"oneOf": [
@@ -735,17 +959,24 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "api"
+										"const": "api",
+										"description": "The provider is reached over a hosted HTTP API. The credential is an API key the project holds."
 									},
 									"url": {
-										"type": "string"
+										"type": "string",
+										"description": "The API base URL of this provider (e.g. \"https://api.openai.com/v1\"). Take it from the provider's catalogue entry; the request is built on top of it."
 									},
 									"method": {
+										"description": "The HTTP method the request is made with. Leave it out for the usual POST that carries the prompt.",
 										"type": "string",
 										"enum": [
 											"GET",
 											"POST"
-										]
+										],
+										"enumDescriptions": {
+											"GET": "A read. Used by the handful of endpoints that answer with a plain fetch.",
+											"POST": "The default. Every request that carries a body — a chat completion, a generation — is a POST."
+										}
 									},
 									"family": {
 										"description": "The API family the model catalogue names for this provider; url is then its base URL.",
@@ -754,7 +985,12 @@
 											"openai",
 											"anthropic",
 											"google"
-										]
+										],
+										"enumDescriptions": {
+											"openai": "The OpenAI request/response shape. The `url` is the provider’s base URL.",
+											"anthropic": "The Anthropic messages shape. The `url` is the provider’s base URL.",
+											"google": "The Google Generative Language shape. The `url` is the provider’s base URL."
+										}
 									},
 									"envVar": {
 										"type": "string",
@@ -773,11 +1009,13 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "subscription"
+										"const": "subscription",
+										"description": "The provider is a subscription login that the vendor's own client already holds. The credential is that session, not a key you paste in."
 									},
 									"tool": {
 										"type": "string",
-										"minLength": 1
+										"minLength": 1,
+										"description": "The client that holds the login (e.g. \"claude-code\", \"codex\"). The runner drives that client, so the session is whatever it already has."
 									}
 								},
 								"required": [
@@ -791,22 +1029,28 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "cli"
+										"const": "cli",
+										"description": "The provider is a command line client the runner starts as a child process and then talks to."
 									},
 									"command": {
-										"type": "string"
+										"type": "string",
+										"description": "The executable to run (e.g. \"claude\"). It has to be on the PATH of the machine that does the work."
 									},
 									"args": {
-										"type": "array",
-										"items": {
-											"type": "string"
-										}
-									},
-									"env": {
+										"description": "The arguments the client is started with, before the prompt is appended.",
 										"type": "array",
 										"items": {
 											"type": "string",
-											"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+											"description": "One argument handed to the command, written exactly as it should reach the client."
+										}
+									},
+									"env": {
+										"description": "The environment variables this client needs. Naming them lets the runner start the client with only those, instead of handing it the whole server environment.",
+										"type": "array",
+										"items": {
+											"type": "string",
+											"pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+											"description": "NAME of one environment variable this client needs beyond PATH, HOME and locale (e.g. \"ANTHROPIC_API_KEY\"). The value is never written here — the variable is named, not carried."
 										}
 									}
 								},
@@ -821,20 +1065,24 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "mcp-server"
+										"const": "mcp-server",
+										"description": "The provider is an MCP server the runner calls as a tool."
 									},
 									"server": {
-										"type": "string"
+										"type": "string",
+										"description": "The MCP server to call — the name it is registered under, or the command that starts it."
 									},
 									"tool": {
-										"type": "string"
+										"type": "string",
+										"description": "The tool on that server that carries the model (e.g. \"run_prompt\")."
 									},
 									"args": {
 										"type": "object",
 										"propertyNames": {
 											"type": "string"
 										},
-										"additionalProperties": {}
+										"additionalProperties": {},
+										"description": "The arguments that tool is called with. Their shape belongs to the tool, so take them from the server's own schema."
 									}
 								},
 								"required": [
@@ -850,7 +1098,8 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "acp"
+										"const": "acp",
+										"description": "The provider is an agent the runner drives over the Agent Client Protocol."
 									},
 									"agent": {
 										"description": "An agent id the ACP registry or a declaration names.",
@@ -858,13 +1107,16 @@
 										"minLength": 1
 									},
 									"command": {
+										"description": "The command that starts the agent, for one the registry does not already know.",
 										"type": "string",
 										"minLength": 1
 									},
 									"args": {
+										"description": "The arguments the agent is started with, before anything else is asked of it.",
 										"type": "array",
 										"items": {
-											"type": "string"
+											"type": "string",
+											"description": "One argument handed to the command, written exactly as it should reach the agent."
 										}
 									}
 								},
@@ -878,7 +1130,8 @@
 								"properties": {
 									"kind": {
 										"type": "string",
-										"const": "host-sampling"
+										"const": "host-sampling",
+										"description": "The provider is a model the host editor runs itself, reached through MCP sampling. The key stays with the host and never reaches delendai."
 									},
 									"model": {
 										"type": "string",
@@ -892,16 +1145,19 @@
 								],
 								"additionalProperties": false
 							}
-						]
+						],
+						"description": "How the runner reaches this provider. The `kind` picks the transport and decides which fields are legal: a hosted API is called with a URL, a CLI is started as a command, a subscription client is driven as it already is."
 					},
 					"modelId": {
 						"type": "string",
-						"minLength": 1
+						"minLength": 1,
+						"description": "The model this provider runs, as the provider's catalogue names it (e.g. \"claude-sonnet-4-5\"). The exact model, not the vendor."
 					},
 					"contextWindow": {
 						"type": "integer",
 						"minimum": 0,
-						"maximum": 9007199254740991
+						"maximum": 9007199254740991,
+						"description": "How many tokens the model holds at once. Take it from the vendor's published figure; the router uses it to decide what fits into a single call."
 					},
 					"costTier": {
 						"anyOf": [
@@ -925,7 +1181,8 @@
 								"type": "number",
 								"const": 5
 							}
-						]
+						],
+						"description": "A rough price ranking of the model, 1 (cheapest) to 5 (most expensive). Set it from the vendor's own pricing; the router leans on it whenever cost is the deciding factor."
 					},
 					"strengths": {
 						"type": "array",
@@ -944,8 +1201,24 @@
 								"multilingual",
 								"agentic",
 								"summarization"
-							]
-						}
+							],
+							"enumDescriptions": {
+								"code-edit": "Applying edits to a codebase accurately.",
+								"long-context": "Holds a large context without losing the thread.",
+								"very-long-context": "Holds a very large context; the right pick for whole-repository work.",
+								"architecture": "Reasons about system structure and trade-offs.",
+								"security-audit": "Spots security-relevant defects.",
+								"reasoning": "Reasons carefully about a hard problem.",
+								"vision": "Understands images.",
+								"fast-iteration": "Answers quickly, for tight edit loops.",
+								"json-strict": "Emits JSON that parses without repair.",
+								"multilingual": "Works across languages.",
+								"agentic": "Drives a long multi-step task on its own.",
+								"summarization": "Condenses long material faithfully."
+							},
+							"description": "One capability tag from the fixed vocabulary: a task the model is good at, or one it is known to struggle with."
+						},
+						"description": "What this provider is good at. The router scores a slice against these tags, so list the ones it genuinely excels at and no more."
 					},
 					"weaknesses": {
 						"type": "array",
@@ -964,10 +1237,27 @@
 								"multilingual",
 								"agentic",
 								"summarization"
-							]
-						}
+							],
+							"enumDescriptions": {
+								"code-edit": "Applying edits to a codebase accurately.",
+								"long-context": "Holds a large context without losing the thread.",
+								"very-long-context": "Holds a very large context; the right pick for whole-repository work.",
+								"architecture": "Reasons about system structure and trade-offs.",
+								"security-audit": "Spots security-relevant defects.",
+								"reasoning": "Reasons carefully about a hard problem.",
+								"vision": "Understands images.",
+								"fast-iteration": "Answers quickly, for tight edit loops.",
+								"json-strict": "Emits JSON that parses without repair.",
+								"multilingual": "Works across languages.",
+								"agentic": "Drives a long multi-step task on its own.",
+								"summarization": "Condenses long material faithfully."
+							},
+							"description": "One capability tag from the fixed vocabulary: a task the model is good at, or one it is known to struggle with."
+						},
+						"description": "Where this provider falls short. The router steers work away from a provider tagged with the weakness a slice needs."
 					},
 					"accountId": {
+						"description": "The account this provider runs on — which login, quota pool and budget it spends. Leave it out for a provider that predates accounts.",
 						"type": "string",
 						"pattern": "^[a-z][a-z0-9-]+$"
 					}
@@ -982,11 +1272,13 @@
 					"strengths",
 					"weaknesses"
 				],
-				"additionalProperties": false
+				"additionalProperties": false,
+				"description": "One provider in the roster: a model, how to reach it, and what it is good at."
 			},
 			"uniqueItems": true
 		},
 		"clients": {
+			"description": "Clients a project declares beside the built-in catalogue, merged over it by command. Use it for a vendor CLI the catalogue does not know yet.",
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -997,55 +1289,68 @@
 						"description": "The command it runs as."
 					},
 					"id": {
+						"description": "The id discovery reports this client under (e.g. \"claude-cli\"). Use it to refer to the client in configuration; leave it out for a client nobody refers to.",
 						"type": "string",
 						"minLength": 1
 					},
 					"label": {
+						"description": "The name shown to people. Purely cosmetic — nothing is derived from it, so change it whenever it reads better.",
 						"type": "string",
 						"minLength": 1
 					},
 					"vendor": {
 						"type": "string",
-						"minLength": 1
+						"minLength": 1,
+						"description": "The vendor that ships this client (e.g. \"anthropic\"). It decides which account and which billing mode a login found through it carries."
 					},
 					"costTier": {
+						"description": "A rough price ranking of the client default model, 1 (cheapest) to 5 (most expensive). It is the first pass whenever cost is the deciding factor.",
 						"type": "integer",
 						"minimum": 1,
 						"maximum": 5
 					},
 					"loginStatusArgs": {
+						"description": "The arguments that make the client print whether it is logged in (e.g. [\"auth\", \"status\"]). The runner calls the client with them to find out whether a session exists at all.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "One command-line argument, passed to the client exactly as it is written."
 						}
 					},
 					"profileVariable": {
+						"description": "NAME of the environment variable the client reads its profile directory from (e.g. \"CLAUDE_CONFIG_DIR\"). Never the directory itself — it differs from machine to machine.",
 						"type": "string",
 						"minLength": 1
 					},
 					"loginDiscardingFlags": {
+						"description": "The flags that make the client ignore a subscription login (e.g. [\"--bare\"]). Used to start from a clean slate; never alongside a real login.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "One command-line argument, passed to the client exactly as it is written."
 						}
 					},
 					"modelListArgs": {
+						"description": "The arguments that make the client list the models it can reach, one \"provider/model\" per line (e.g. [\"models\"]). Used to fill the model catalogue from the client itself.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "One command-line argument, passed to the client exactly as it is written."
 						}
 					},
 					"loginKinds": {
+						"description": "The kinds of login this client supports. A client can hold several — a subscription session and a key-based one, say — and each is recognised by its own pattern.",
 						"type": "array",
 						"items": {
 							"type": "object",
 							"properties": {
 								"pattern": {
 									"type": "string",
-									"minLength": 1
+									"minLength": 1,
+									"description": "A regular expression source, matched case-insensitively against what the client reports about the session. The first kind that matches wins."
 								},
 								"credentialMode": {
 									"type": "string",
@@ -1055,7 +1360,15 @@
 										"byok-api-key",
 										"host-held",
 										"local-none"
-									]
+									],
+									"enumDescriptions": {
+										"official-subscription-login": "The person logged in to the provider’s own client. The credential is that session.",
+										"provider-plan-token": "A token from a plan bought from the provider.",
+										"byok-api-key": "An API key the person brought. The key lives in an environment variable; this file only names the variable.",
+										"host-held": "The person’s key, held by the editor (Copilot BYOK). Delendai never sees it and never sends it anywhere.",
+										"local-none": "No credential at all: the provider runs locally, on this machine."
+									},
+									"description": "Who holds the credential behind a login of this kind."
 								},
 								"billingMode": {
 									"type": "string",
@@ -1064,7 +1377,14 @@
 										"prepaid-token-plan",
 										"pay-as-you-go",
 										"local"
-									]
+									],
+									"enumDescriptions": {
+										"subscription-included": "Covered by a subscription the person already pays for.",
+										"prepaid-token-plan": "Drawn from a prepaid token plan.",
+										"pay-as-you-go": "Billed per call, against the provider’s own pricing.",
+										"local": "Free to run: the compute is this machine’s."
+									},
+									"description": "How a login of this kind is paid for."
 								}
 							},
 							"required": [
@@ -1072,17 +1392,21 @@
 								"credentialMode",
 								"billingMode"
 							],
-							"additionalProperties": false
+							"additionalProperties": false,
+							"description": "One kind of login this client can hold."
 						}
 					},
 					"toolScope": {
+						"description": "How a delegated hop is told which tools it may use. Narrow it when the client does more than the work at hand needs.",
 						"type": "object",
 						"properties": {
 							"restrict": {
 								"type": "string",
-								"minLength": 1
+								"minLength": 1,
+								"description": "The flag that limits the tools that exist in the client context (e.g. \"--tools\"). It is what the hop pays for on every turn."
 							},
 							"approve": {
+								"description": "The flag that pre-approves those tools for a run nobody answers prompts in (e.g. \"--allowedTools\"). Leave it out while a person is watching.",
 								"type": "string",
 								"minLength": 1
 							}
@@ -1093,20 +1417,25 @@
 						"additionalProperties": false
 					},
 					"scopedHopArgs": {
+						"description": "The flags that leave out what a hop scoped to its tools never uses (e.g. [\"--disable-slash-commands\"]). They trim the context every turn pays for.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "One command-line argument, passed to the client exactly as it is written."
 						}
 					},
 					"noMcpArgs": {
+						"description": "The flags that load no MCP server (e.g. [\"--strict-mcp-config\"]). Used for a scoped hop whose tools name none.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"minLength": 1
+							"minLength": 1,
+							"description": "One command-line argument, passed to the client exactly as it is written."
 						}
 					},
 					"mcpToolPrefix": {
+						"description": "How this client names a tool an MCP server provides (e.g. \"mcp__\"). The prefix tells the runner which of the allowed tools come from an MCP server.",
 						"type": "string",
 						"minLength": 1
 					}
@@ -1115,10 +1444,12 @@
 					"command",
 					"vendor"
 				],
-				"additionalProperties": false
+				"additionalProperties": false,
+				"description": "One client the project or the person declares: the command it runs as, how to ask it about its login, and what it is allowed to do."
 			}
 		},
 		"catalogues": {
+			"description": "Public catalogues of agents and models, read before the built-in defaults. Use it to follow a registry the project does not ship.",
 			"type": "object",
 			"properties": {
 				"agents": {
@@ -1141,6 +1472,7 @@
 			"additionalProperties": false
 		},
 		"agents": {
+			"description": "Agents the catalogues miss, or reached another way than they say. Use it to declare an agent this project uses that no registry lists.",
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -1151,6 +1483,7 @@
 						"description": "Kebab-case id; a registry id overrides that entry."
 					},
 					"name": {
+						"description": "The name to show for this agent in rosters and reports. Use it when the id is an internal handle and a person should read something friendlier; leave it out to fall back to the id.",
 						"type": "string",
 						"minLength": 1
 					},
@@ -1164,6 +1497,14 @@
 							"file",
 							"mcp"
 						],
+						"enumDescriptions": {
+							"acp": "An agent that speaks the Agent Client Protocol, described the way the ACP registry describes it.",
+							"cli": "A command line agent. The runner starts it and probes it for its state.",
+							"exec": "An executable the runner invokes directly.",
+							"http": "An agent that answers over HTTP.",
+							"file": "A file the runner reads.",
+							"mcp": "An agent served by an MCP server."
+						},
 						"description": "How it is reached."
 					},
 					"command": {
@@ -1172,9 +1513,11 @@
 						"minLength": 1
 					},
 					"args": {
+						"description": "The arguments passed to the command, in the order the command expects them: the same words you would type after the command name. Use it for flags that must always be there, such as a model or a profile; leave it out when the command needs nothing extra.",
 						"type": "array",
 						"items": {
-							"type": "string"
+							"type": "string",
+							"description": "One argument, exactly as it is typed after the command."
 						}
 					},
 					"path": {
@@ -1197,16 +1540,20 @@
 						"type": "object",
 						"properties": {
 							"npx": {
+								"description": "How to start an ACP agent published as an npm package: the package name and the arguments to run it with. Use it when the agent catalogue entry describes an npm release rather than a command that is already installed.",
 								"type": "object",
 								"properties": {
 									"package": {
 										"type": "string",
-										"minLength": 1
+										"minLength": 1,
+										"description": "The package that carries the agent, named the way its ecosystem names it: an npm package for npx, a Python package for uvx. The runner installs it on demand the first time the agent is needed."
 									},
 									"args": {
+										"description": "The arguments handed to the package executable, in order. Use it for the flags the package needs to start in the right mode; leave it out when its default start is what you want.",
 										"type": "array",
 										"items": {
-											"type": "string"
+											"type": "string",
+											"description": "One argument, exactly as it is typed after the package."
 										}
 									}
 								},
@@ -1216,16 +1563,20 @@
 								"additionalProperties": false
 							},
 							"uvx": {
+								"description": "How to start an ACP agent published as a Python package: the package name and the arguments to run it with. Use it when the agent catalogue entry describes a Python release rather than a command that is already installed.",
 								"type": "object",
 								"properties": {
 									"package": {
 										"type": "string",
-										"minLength": 1
+										"minLength": 1,
+										"description": "The package that carries the agent, named the way its ecosystem names it: an npm package for npx, a Python package for uvx. The runner installs it on demand the first time the agent is needed."
 									},
 									"args": {
+										"description": "The arguments handed to the package executable, in order. Use it for the flags the package needs to start in the right mode; leave it out when its default start is what you want.",
 										"type": "array",
 										"items": {
-											"type": "string"
+											"type": "string",
+											"description": "One argument, exactly as it is typed after the package."
 										}
 									}
 								},
@@ -1235,6 +1586,7 @@
 								"additionalProperties": false
 							},
 							"binary": {
+								"description": "How to start an ACP agent published as a downloadable build: a map from platform to the archive and the command inside it. Use it when the agent ships binaries rather than a package the runner can install.",
 								"type": "object",
 								"propertyNames": {
 									"type": "string"
@@ -1244,19 +1596,24 @@
 									"properties": {
 										"archive": {
 											"type": "string",
-											"format": "uri"
+											"format": "uri",
+											"description": "The absolute URL of the archive to download. The runner fetches it, unpacks it and keeps the result in its cache."
 										},
 										"cmd": {
 											"type": "string",
-											"minLength": 1
+											"minLength": 1,
+											"description": "The executable to run inside the unpacked archive, with its path when it does not sit at the root, for example `bin/agent`. The runner runs this file."
 										},
 										"args": {
+											"description": "The arguments passed to that executable, in order. Use it for the flags the agent needs on every start; leave it out when the executable needs nothing extra.",
 											"type": "array",
 											"items": {
-												"type": "string"
+												"type": "string",
+												"description": "One argument, exactly as it is typed after the command."
 											}
 										},
 										"sha256": {
+											"description": "The expected SHA-256 checksum of the archive, as 64 hexadecimal characters. The runner refuses a download that does not match it; set it whenever a published checksum exists.",
 											"type": "string",
 											"pattern": "^[0-9a-f]{64}$"
 										}
@@ -1265,17 +1622,20 @@
 										"archive",
 										"cmd"
 									],
-									"additionalProperties": false
+									"additionalProperties": false,
+									"description": "One downloadable build of the agent: the archive to fetch, the command to run inside it, and optionally the arguments and the checksum to check it against."
 								}
 							}
 						},
 						"additionalProperties": false
 					},
 					"keyVariables": {
+						"description": "The environment variables that hold the credentials of this agent, named by variable and never by value. Use it when the agent needs a key present in its environment; the secrets stay outside this file.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"pattern": "^[A-Z][A-Z0-9_]*$"
+							"pattern": "^[A-Z][A-Z0-9_]*$",
+							"description": "The name of one environment variable, in capitals, for example `ANTHROPIC_API_KEY`. The value itself is never stored in this file."
 						}
 					},
 					"probes": {
@@ -1283,18 +1643,22 @@
 						"type": "object",
 						"properties": {
 							"login": {
+								"description": "The command that tells whether the agent is logged in. The runner runs it and reads the exit code, where zero means logged in. Use it when the agent keeps a session rather than a key, and leave it out when there is nothing to check.",
 								"type": "string",
 								"minLength": 1
 							},
 							"models": {
+								"description": "The command that lists the models the agent offers. The runner runs it and reads the model names from its output. Use it so the models of the agent reach the pickers and the reports without being written down by hand.",
 								"type": "string",
 								"minLength": 1
 							},
 							"prompt": {
+								"description": "The command that sends a test prompt to the agent and returns its answer. The runner uses it to check that the agent really answers, not merely that it starts. Use it when a clean start is not proof enough.",
 								"type": "string",
 								"minLength": 1
 							},
 							"quota": {
+								"description": "The command that reports what is left of the allowance of the agent for the current period. The runner uses it to warn before the agent is cut off; leave it out when the provider publishes no quota.",
 								"type": "string",
 								"minLength": 1
 							}
@@ -1306,10 +1670,12 @@
 					"id",
 					"kind"
 				],
-				"additionalProperties": false
+				"additionalProperties": false,
+				"description": "An agent the catalogues do not know about, or one to reach in a way its catalogue entry does not describe. Give it an id, say how it is reached, and, for a command line agent, the commands that answer its probes."
 			}
 		},
 		"modelProviders": {
+			"description": "Model providers in the shape models.dev publishes them, keyed by the same id as the catalogue entry each one replaces.",
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -1321,7 +1687,8 @@
 					},
 					"name": {
 						"type": "string",
-						"minLength": 1
+						"minLength": 1,
+						"description": "The provider name to show in a roster or a report."
 					},
 					"npm": {
 						"description": "The SDK package that names its API family (@ai-sdk/openai-compatible…).",
@@ -1361,6 +1728,7 @@
 						"description": "Its model ids: a list, or models.dev's map keyed by id."
 					},
 					"doc": {
+						"description": "Where to read about the provider.",
 						"type": "string",
 						"format": "uri"
 					}
@@ -1375,6 +1743,7 @@
 			}
 		},
 		"accounts": {
+			"description": "The accounts the roster entries run on. Each one names where a credential lives, never the credential itself.",
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -1386,9 +1755,11 @@
 					},
 					"vendor": {
 						"type": "string",
-						"pattern": "^[a-z][a-z0-9-]+$"
+						"pattern": "^[a-z][a-z0-9-]+$",
+						"description": "The vendor this account belongs to (e.g. \"anthropic\", \"openai\"). Two accounts of one vendor are two separate logins, with their own quota and their own budget."
 					},
 					"displayName": {
+						"description": "A label for people, shown instead of the id. Purely cosmetic — nothing is derived from it, so change it whenever it reads better.",
 						"type": "string",
 						"minLength": 1
 					},
@@ -1400,7 +1771,15 @@
 							"byok-api-key",
 							"host-held",
 							"local-none"
-						]
+						],
+						"enumDescriptions": {
+							"official-subscription-login": "The person logged in to the provider’s own client. The credential is that session.",
+							"provider-plan-token": "A token from a plan bought from the provider.",
+							"byok-api-key": "An API key the person brought. The key lives in an environment variable; this file only names the variable.",
+							"host-held": "The person’s key, held by the editor (Copilot BYOK). Delendai never sees it and never sends it anywhere.",
+							"local-none": "No credential at all: the provider runs locally, on this machine."
+						},
+						"description": "Who holds the credential this account uses: the vendor's own client, a plan token, a key the person brought, the editor, or nobody. It decides where the runner looks for the credential."
 					},
 					"billingMode": {
 						"type": "string",
@@ -1409,7 +1788,14 @@
 							"prepaid-token-plan",
 							"pay-as-you-go",
 							"local"
-						]
+						],
+						"enumDescriptions": {
+							"subscription-included": "Covered by a subscription the person already pays for.",
+							"prepaid-token-plan": "Drawn from a prepaid token plan.",
+							"pay-as-you-go": "Billed per call, against the provider’s own pricing.",
+							"local": "Free to run: the compute is this machine’s."
+						},
+						"description": "How the use of this account is paid for. It decides which budget pool its calls are counted against."
 					},
 					"credentialEnv": {
 						"type": "string",
@@ -1423,14 +1809,17 @@
 					},
 					"quotaGroups": {
 						"default": [],
+						"description": "The quota pools this account draws from. The vendor counts its limits per pool, so a second account of the same vendor needs a pool of its own.",
 						"type": "array",
 						"items": {
 							"type": "string",
-							"pattern": "^[a-z][a-z0-9-]+$"
+							"pattern": "^[a-z][a-z0-9-]+$",
+							"description": "The name of one quota pool this account draws from (e.g. \"team\"). A pool belongs to a single account — two accounts never share one."
 						}
 					},
 					"permittedAutomation": {
 						"default": false,
+						"description": "Whether work may run on this account while nobody is watching. Off unless said otherwise; turn it on for an account whose credential and limits allow unattended use.",
 						"type": "boolean"
 					},
 					"budgets": {
@@ -1445,19 +1834,27 @@
 										"hourly",
 										"weekly",
 										"monthly"
-									]
+									],
+									"enumDescriptions": {
+										"hourly": "Requests allowed per hour.",
+										"weekly": "Requests allowed per week.",
+										"monthly": "Requests allowed per month."
+									},
+									"description": "The period the ceiling is counted over. Pick the window the person thinks in — an hour for a burst, a month for a standing spend."
 								},
 								"requests": {
 									"type": "integer",
 									"exclusiveMinimum": 0,
-									"maximum": 9007199254740991
+									"maximum": 9007199254740991,
+									"description": "How many requests this account may make in one window of that length."
 								}
 							},
 							"required": [
 								"window",
 								"requests"
 							],
-							"additionalProperties": false
+							"additionalProperties": false,
+							"description": "One ceiling: how many requests, over which window."
 						}
 					}
 				},
@@ -1469,35 +1866,48 @@
 					"quotaGroups",
 					"permittedAutomation"
 				],
-				"additionalProperties": false
+				"additionalProperties": false,
+				"description": "One account a provider runs on: where its credential lives, how its use is paid for, and what it may spend. The account never holds a secret itself — it names where the secret is."
 			}
 		},
 		"cache": {
+			"description": "How the cache under `cacheDir` is swept at start-up.",
 			"type": "object",
 			"properties": {
 				"runOnBoot": {
+					"description": "What the boot-time sweep does. `apply` removes what the cache owners’ rules say is expendable, `dry-run` reports without deleting anything, `off` skips the sweep entirely.",
 					"type": "string",
 					"enum": [
 						"dry-run",
 						"apply",
 						"off"
-					]
+					],
+					"enumDescriptions": {
+						"dry-run": "Report what the sweep would remove, and remove nothing.",
+						"apply": "Remove what the sweep finds, using the owners’ own rules. The default.",
+						"off": "Do not sweep the cache at boot."
+					}
 				},
 				"evictionIntervalMs": {
+					"description": "The shortest time between two boot sweeps, in milliseconds. `0` (or absent) sweeps on every boot; set it to a day or more when the cache is large enough that a restart should not pay for another walk.",
 					"type": "integer",
 					"minimum": 0,
 					"maximum": 9007199254740991
 				},
 				"maxAgeDays": {
+					"description": "The upper cap, in days, applied to every age-based eviction rule. Defaults to 30. Lower it to keep the cache shorter-lived — it can shorten the built-in lifetimes but never lengthen them.",
 					"type": "number"
 				},
 				"worktrees": {
+					"description": "Accepted for compatibility and ignored: work units are removed by the work-reap command, and the sweep never touches the worktree directory.",
 					"type": "object",
 					"properties": {
 						"enabled": {
+							"description": "Ignored. Kept so an older configuration still validates: work units are removed by the work-reap command, and the sweep never touches the worktree directory.",
 							"type": "boolean"
 						},
 						"keepLastN": {
+							"description": "Ignored. Kept so an older configuration still validates.",
 							"type": "number"
 						}
 					},
@@ -1507,45 +1917,58 @@
 			"additionalProperties": false
 		},
 		"loopDetector": {
+			"description": "How the server notices an agent that is stuck in a loop instead of making progress. Read by the workflow plugin; a project that does not use it never sees this.",
 			"type": "object",
 			"properties": {
 				"enabled": {
+					"description": "Whether the loop detector runs at all. Off means a stuck agent is never flagged.",
 					"type": "boolean"
 				},
 				"repeatThreshold": {
+					"description": "How many times the same tool may be called in a row before the agent is treated as stuck. Defaults to 8 — high enough that a person’s repeated orientation calls are not flagged.",
 					"type": "number"
 				},
 				"nearRepeatThreshold": {
+					"description": "How many calls to nearly the same tool (the same tool with different arguments) count as a loop. Defaults to 5, below the exact-repeat threshold so near-repeats are caught first.",
 					"type": "number"
 				},
 				"similarityThreshold": {
+					"description": "How similar two calls must be, from 0 to 1, to count as near-repeats. Defaults to 0.9; lower it to catch calls that differ more.",
 					"type": "number"
 				},
 				"idleThreshold": {
+					"description": "How many consecutive calls that do nothing are treated as a stall. Defaults to 3.",
 					"type": "number"
 				},
 				"noProgressThreshold": {
+					"description": "How many consecutive rounds without a change to the work count as no progress. Defaults to 3; lower it to catch a stalled agent sooner.",
 					"type": "number"
 				},
 				"ringSize": {
+					"description": "How many recent calls the detector keeps in memory to compare against. Defaults to 50. Raise it when the agent’s cycle is longer than the window.",
 					"type": "number"
 				},
 				"gitCheckTools": {
+					"description": "The tools whose repeated use counts as a loop. Defaults to the file-editing tools, which is where a stuck agent spins; extend it when the agent stalls on another tool.",
 					"type": "array",
 					"items": {
 						"type": "string"
 					}
 				},
 				"handoffDir": {
+					"description": "Where the detector writes the handoff note it leaves for a stuck agent. Relative to the workspace root; it defaults to a directory under `cacheDir`.",
 					"type": "string"
 				},
 				"handoffTtlDays": {
+					"description": "How many days a handoff note is kept before it is swept. Defaults to 7.",
 					"type": "number"
 				},
 				"notifyOnDetect": {
+					"description": "Whether the detector tells the person when it detects a loop. Turn it off in an unattended run, where the notification would only be noise.",
 					"type": "boolean"
 				},
 				"interactiveAgentPatterns": {
+					"description": "Agents the detector must ignore, by name or wildcard. Defaults to the patterns a host reports its one user-facing session under (`*-default`, `default-*`, `host`, `interactive`), because a person legitimately repeats the same call. Set it to `[]` to watch every agent.",
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -1555,9 +1978,11 @@
 			"additionalProperties": false
 		},
 		"bootstrap": {
+			"description": "What the bootstrap blueprint is told about this project, so it can recommend the right tools and plugins.",
 			"type": "object",
 			"properties": {
 				"patternOverrides": {
+					"description": "Extra project patterns, keyed by pattern name. A pattern the project does not declare keeps the value from the built-in catalogue.",
 					"type": "object",
 					"propertyNames": {
 						"type": "string"
@@ -1566,10 +1991,12 @@
 						"type": "object",
 						"properties": {
 							"type": {
-								"type": "string"
+								"type": "string",
+								"description": "The project type this pattern describes — for example `data-pipeline` for a repository of pipelines."
 							},
 							"describe": {
-								"type": "string"
+								"type": "string",
+								"description": "One line describing the project type, shown where the pattern is offered."
 							},
 							"recommendedTools": {
 								"type": "array",
@@ -1577,10 +2004,12 @@
 									"type": "object",
 									"properties": {
 										"name": {
-											"type": "string"
+											"type": "string",
+											"description": "The name of a recommended tool, as the server registers it."
 										},
 										"description": {
-											"type": "string"
+											"type": "string",
+											"description": "Why this tool is recommended for this project type."
 										}
 									},
 									"required": [
@@ -1588,19 +2017,22 @@
 										"description"
 									],
 									"additionalProperties": false
-								}
+								},
+								"description": "The tools the blueprint recommends for this project type."
 							},
 							"recommendedPlugins": {
 								"type": "array",
 								"items": {
 									"type": "string"
-								}
+								},
+								"description": "The plugins the blueprint recommends for this project type, by plugin id."
 							},
 							"knowledgeHints": {
 								"type": "array",
 								"items": {
 									"type": "string"
-								}
+								},
+								"description": "Things the agent should know about this project type — one piece of guidance per entry."
 							}
 						},
 						"required": [

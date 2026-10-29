@@ -309,6 +309,10 @@ export {
 	parseJsonc,
 } from './lib/config/jsonc-document';
 export type { IJsoncEdit } from './lib/config/jsonc-document';
+// The prose `init` writes above each block of `delendai.config.json`,
+// derived from the schema itself so the file and the schema cannot
+// disagree about what a key does.
+export { renderConfigBlockComments } from './lib/plugins/config-block-docs';
 export { renderPluginConfigComment } from './lib/plugins/plugin-config-docs';
 export {
 	parseAuthorityDeclarations,

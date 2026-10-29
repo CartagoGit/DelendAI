@@ -37,6 +37,7 @@ import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-laun
 import { buildCanonicalLaunch } from '../server-args.service';
 import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
+import { buildConfigBlockEdits } from './init-config-comments';
 import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
@@ -49,6 +50,10 @@ import {
 } from './init-hosts.helper';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
 import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
+import {
+	JSONC_ASSOCIATION,
+	VSCODE_SETTINGS_RELPATH,
+} from '../../contracts/constants/init.constant';
 
 // Single source of truth for preset membership lives in
 // `@delendai/core`'s preset catalog. We delegate to
@@ -180,38 +185,41 @@ export const renderDelendaiConfig = (
 			leadingComment: buildPluginComment(plugin, enabled, answers.preset),
 		});
 	}
-	const config: Record<string, unknown> = {
-		$schema:
-			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
-		cacheDir: '.cache/delendai',
-		docsDir: 'docs/delendai',
-		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
-		plugins: {},
-		...(development === undefined ? {} : { development }),
-	};
+	const config: Record<string, unknown> = {};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
 	// `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2) and any
 	// downstream tool that wants to scaffold code under the
 	// project's natural root can read it. The block is advisory
 	// only — the loader ignores it.
-	if (
+	const convention =
 		answers.detected !== undefined &&
 		answers.detected.pluginPathsRoot !== 'plugins'
-	) {
-		config.convention = {
-			pluginPathsRoot: answers.detected.pluginPathsRoot,
-			sourceRoot: answers.detected.sourceRoot,
-		};
-	}
+			? {
+					pluginPathsRoot: answers.detected.pluginPathsRoot,
+					sourceRoot: answers.detected.sourceRoot,
+				}
+			: undefined;
+	// The top-level blocks are CREATED by edits rather than written
+	// into an object that gets stringified: the JSONC editor writes a
+	// leading comment only for a member that did not exist yet, so a
+	// block that was already in the object would keep its value and
+	// silently lose its explanation.
+	const blockEdits = buildConfigBlockEdits({
+		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
+		...(development === undefined ? {} : { development }),
+		...(convention === undefined ? {} : { convention }),
+	});
 	// The plugin block is written through the JSONC editor rather than
 	// stringified: that is what puts each comment above its entry, and
 	// it is the same path a later `config sync` takes, so a re-run does
-	// not duplicate what init wrote.
-	const content = applyJsoncEdits(
-		`${JSON.stringify(config, null, '\t')}\n`,
-		pluginEdits,
-	);
+	// not duplicate what init wrote. The block edits come first, so the
+	// plugins land inside a `plugins` block that already explains
+	// itself.
+	const content = applyJsoncEdits(`${JSON.stringify(config, null, '\t')}\n`, [
+		...blockEdits,
+		...pluginEdits,
+	]);
 	return {
 		relPath: 'delendai.config.json',
 		content,
@@ -332,6 +340,18 @@ export const renderVscodeMcpJson = (
 		content: `${JSON.stringify(content, null, '\t')}\n`,
 	};
 };
+
+/**
+ * Renders `.vscode/settings.json` with the JSONC association.
+ *
+ * The rendered content is the WHOLE file only when there is none; the
+ * writer merges it into an existing one, so a person who has settings
+ * of their own keeps every key and every comment.
+ */
+export const renderVscodeSettings = (): IRenderedFile => ({
+	relPath: VSCODE_SETTINGS_RELPATH,
+	content: `${JSON.stringify(JSONC_ASSOCIATION, null, '\t')}\n`,
+});
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
@@ -472,6 +492,7 @@ export const renderInitBundle = async (
 	const files: IRenderedFile[] = [
 		renderDelendaiConfig(answers, resolvedPlugins, options.development),
 		renderVscodeMcpJson(launch, answers.serverName),
+		renderVscodeSettings(),
 		renderGenericMcpJson(
 			buildCanonicalLaunch({
 				workspace: '.',

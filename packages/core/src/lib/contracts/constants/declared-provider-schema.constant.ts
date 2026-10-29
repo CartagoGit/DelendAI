@@ -17,7 +17,10 @@ export const DECLARED_PROVIDER_SCHEMA = z
 			.string()
 			.regex(KEBAB_ID)
 			.describe('The provider id, as models.dev names it.'),
-		name: z.string().min(1),
+		name: z
+			.string()
+			.min(1)
+			.describe('The provider name to show in a roster or a report.'),
 		npm: z
 			.string()
 			.min(1)
@@ -37,6 +40,10 @@ export const DECLARED_PROVIDER_SCHEMA = z
 			.describe(
 				"Its model ids: a list, or models.dev's map keyed by id.",
 			),
-		doc: z.string().url().optional(),
+		doc: z
+			.string()
+			.url()
+			.optional()
+			.describe('Where to read about the provider.'),
 	})
 	.strict();

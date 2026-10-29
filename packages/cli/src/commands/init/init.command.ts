@@ -77,6 +77,7 @@ import {
 	writeGenericMcpJson,
 	writeDelendaiConfig,
 	writeVscodeMcpJson,
+	writeVscodeSettings,
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
 
@@ -733,6 +734,15 @@ export const runInitWithAnswers = async (
 			} else {
 				written.push({ path: result.path, kind: result.kind });
 			}
+			continue;
+		}
+		if (file.relPath === '.vscode/settings.json') {
+			// The editor has to treat the config as JSONC, or every
+			// comment `init` writes is flagged as a syntax error. The
+			// settings file is the operator's, so the writer merges:
+			// their other keys and their comments stay.
+			const result = await writeVscodeSettings(answers.workspaceRoot);
+			written.push({ path: result.path, kind: result.kind });
 			continue;
 		}
 		if (file.relPath === '.mcp.json') {

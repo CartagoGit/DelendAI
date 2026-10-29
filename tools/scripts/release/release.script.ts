@@ -48,6 +48,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { parseJsonc } from '@delendai/core/cli';
+
 import {
 	CORE_PEER,
 	PUBLISH_ORDER,
@@ -312,7 +314,14 @@ function bumpConfigCoreVersion(
 	logger: IReleaseLogger,
 ): void {
 	const configPath = join(ROOT, 'delendai.config.json');
-	const raw = JSON.parse(readFileSync(configPath, 'utf8')) as {
+	const { value, errors } = parseJsonc(readFileSync(configPath, 'utf8'));
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const raw = value as {
 		coreVersion?: string;
 	};
 	const next = resolveBumpCoreVersion(raw, newVersion);

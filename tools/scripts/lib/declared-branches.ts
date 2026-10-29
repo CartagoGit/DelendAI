@@ -11,6 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from './repo-root';
@@ -18,9 +19,16 @@ import { repoRoot } from './repo-root';
 type IDeclaredPolicy = ReturnType<typeof resolveDevelopmentPolicy>;
 
 const declaredPolicy = (root: string): IDeclaredPolicy => {
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	return resolveDevelopmentPolicy({
 		...(config.development === undefined
 			? {}
