@@ -2,10 +2,14 @@
 id: x00995
 title: "No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: e493e6d1-5176-4776-b9dd-188dea898ee6
+last-correlation-id: e493e6d1-5176-4776-b9dd-188dea898ee6
+last-transition-from: ready
+last-transition-at: 2026-10-29T11:41:52.313Z
 ---
 
 # x00995 — No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason
