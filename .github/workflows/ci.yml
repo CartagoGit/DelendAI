@@ -514,20 +514,16 @@ jobs:
     plan-tests:
         name: plan-tests
         runs-on: ubuntu-latest
-        # The eleven test zones, the eight verify jobs and every artifact
-        # they upload are worth nothing when the tree does not compile or
-        # is not formatted. Before this, ONE badly formatted file launched
-        # 38 jobs, ran the whole matrix, uploaded ~16 MB of blob reports
-        # and then failed on the cheapest check in the file — which is
-        # also how this repository exhausted its Actions artifact storage
-        # in a single night, after which every upload returned 403 and
-        # every shard failed for a reason that had nothing to do with the
-        # code.
-        #
-        # `typecheck` and `lint-biome` are the two jobs that take minutes
-        # rather than tens of minutes and that nothing else can be true
-        # without. Everything expensive now waits for them.
-        needs: [typecheck, lint-biome]
+        # No `needs`. It once waited for `typecheck` and `lint-biome`,
+        # after one badly formatted file launched the whole matrix and its
+        # ~16 MB of blobs exhausted the Actions artifact storage in a night.
+        # The blobs are now deleted by the job that merges them, and a
+        # pull request runs only the zones its change reaches, so the wait
+        # bought nothing but ~30s on every run's critical path: the shards
+        # started at +68s. A type or format error still fails the run —
+        # `delendai-validate` requires both jobs — it just no longer delays
+        # the evidence that is independent of it (vitest strips types, it
+        # does not check them).
         timeout-minutes: 5
         outputs:
             zones: ${{ steps.plan.outputs.zones }}
@@ -656,6 +652,12 @@ jobs:
               run: |
                   set -euo pipefail
                   CHANGED=""
+                  # A pull request is judged on the coverage of the files it
+                  # touched, so only those are instrumented (vitest.config.ts).
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    export VITEST_COVERAGE_FILES="$(git diff --name-only \
+                      "${{ github.event.pull_request.base.sha }}...HEAD")"
+                  fi
                   # The planner says what this job runs (v00143): `readers`,
                   # the specs that read a file the change touched outside the
                   # workspaces, and only those; `all`, the zone unfiltered,
@@ -829,6 +831,8 @@ jobs:
               run: |
                   set -euo pipefail
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    export VITEST_COVERAGE_FILES="$(git diff --name-only \
+                      "${DELENDAI_COVERAGE_BASE}...HEAD")"
                     bun run test:merged:changed
                   else
                     bun run test:merged

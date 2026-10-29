@@ -20,7 +20,7 @@ A pull request starts a test job only for work it will do: zones the change does
 
 ## why
 
-After v00143 a zone the change does not reach still started its job, which took a runner, checked out and reported `skipped`; a change read by specs in three zones started three jobs of a few specs each. Every job costs about 40 s of setup and a runner from a concurrency the account caps, so on a pull request of 38 jobs the later ones waited for a runner before they began. The matrix kept unreached zones on purpose, so that one missing from the list could not be mistaken for one forgotten; the planner's log now names each zone it does not start, and why.
+After v00143 a zone the change does not reach still started its job, which took a runner, checked out and reported `skipped`; a change read by specs in three zones started three jobs of a few specs each. Every job costs about 40 s of setup and a runner from a concurrency the account caps, so on a pull request of 38 jobs the later ones waited for a runner before they began. The jobs that did run started late and ran long: `plan-tests` waited for `typecheck` and `lint-biome` (~30 s each, in parallel), so the shards began at +68 s, and every shard instrumented the whole repository for coverage although a pull request is judged only on the files it touched — measured on one zone, 54 s with every file instrumented and 23 s with the touched one. The matrix kept unreached zones on purpose, so that one missing from the list could not be mistaken for one forgotten; the planner's log now names each zone it does not start, and why.
 
 ## non-goals
 
@@ -40,6 +40,22 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S2 — The tests plan without waiting for the type and format checks
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "`plan-tests` declares no `needs`, so the test shards start beside `typecheck` and `lint-biome`, and `delendai-validate` still requires both."
+
+### S3 — A pull request instruments only the files it touched
+- **Status**: pending
+- **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "On a pull request the shards and the merge set `VITEST_COVERAGE_FILES` to the files changed since the base, and `vitest.config.ts` narrows `coverage.include` to those of them its globs already select (a file outside them stays unmeasured, and none touched measures nothing), so the changed-file coverage verdict is the one the full selection gives."
+
 ## acceptance
 
 - `compactMatrix` keeps the jobs that run, merges every `readers` job into one named `readers` with the union of their specs, and returns a single `none` job when nothing runs (test-zones.script.spec.ts); the planner prints each zone it does not start.
+- `plan-tests` declares no `needs`, so the test shards start beside `typecheck` and `lint-biome`, and `delendai-validate` still requires both.
+- On a pull request the shards and the merge set `VITEST_COVERAGE_FILES` to the files changed since the base, and `vitest.config.ts` narrows `coverage.include` to those of them its globs already select (a file outside them stays unmeasured, and none touched measures nothing), so the changed-file coverage verdict is the one the full selection gives.
