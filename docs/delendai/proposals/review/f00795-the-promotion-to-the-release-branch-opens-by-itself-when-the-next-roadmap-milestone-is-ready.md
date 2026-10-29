@@ -2,14 +2,14 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 9d4e0968-a605-4200-8890-10e420144426
-last-correlation-id: 9d4e0968-a605-4200-8890-10e420144426
-last-transition-from: review
-last-transition-at: 2026-10-29T14:22:28.385Z
+last-transition-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
+last-correlation-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T14:23:23.450Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
@@ -75,11 +75,14 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-implementer: claude-opus-5-5
 
 ### S5 — The promotion is asked for when its last evidence lands
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/open-promotion.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When code scanning of the integration branch succeeds, `codeql.yml` dispatches `open-promotion` (`ask-for-the-promotion`; open-promotion.script.spec.ts), so a ready promotion opens within minutes of its last evidence landing, with the hourly run as the fallback."
+- shipped-in: `cada9abdf843`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
