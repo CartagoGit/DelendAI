@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IArgvExec } from '@delendai/core/contracts';
+import type {
+	IExternalToolRun,
+	IRunExternalToolInput,
+} from '@delendai/core/contracts';
+import type { IForgeExec } from '@delendai/forge/public';
 
-import {
-	listOpenPrs,
-	parsePrList,
-	parsePrView,
-	viewPr,
-} from '../../../src/lib/services/forge';
+import { listOpenPrs, viewPr } from '../../../src/lib/services/forge';
 
 // Shapes captured from real `gh --json` runs against this repo.
 const PR_LIST = JSON.stringify([
@@ -52,54 +51,45 @@ const PR_VIEW = JSON.stringify({
 	],
 });
 
-const execWith = (stdout: string, stderr = '', code = 0): IArgvExec =>
-	(async () => ({ code, stdout, stderr, timedOut: false })) as IArgvExec;
-
-describe('parsePrList', () => {
-	it('maps gh pr list json to structured PRs', () => {
-		const prs = parsePrList(PR_LIST);
-		expect(prs).toHaveLength(2);
-		expect(prs[0]).toMatchObject({
-			number: 11,
-			branch: 'dependabot/npm_and_yarn/x',
-			draft: false,
-		});
-		expect(prs[1]?.draft).toBe(true);
-	});
-
-	it('returns [] on malformed input (never throws)', () => {
-		expect(parsePrList('')).toEqual([]);
-		expect(parsePrList('not json')).toEqual([]);
-	});
+const run = (
+	stdout: string,
+	stderr = '',
+	code = 0,
+	unavailable = false,
+): IExternalToolRun => ({
+	ok: code === 0,
+	code,
+	stdout,
+	stderr,
+	timedOut: false,
+	unavailable,
 });
 
-describe('parsePrView', () => {
-	it('extracts detail + the CI check rollup', () => {
-		const pr = parsePrView(PR_VIEW);
-		expect(pr?.number).toBe(11);
-		expect(pr?.state).toBe('OPEN');
-		expect(pr?.checks).toHaveLength(2);
-		expect(pr?.checks[0]).toMatchObject({
-			name: 'lint (biome)',
-			conclusion: 'FAILURE',
-			url: 'https://ci/1',
-		});
-	});
-
-	it('returns undefined on malformed input', () => {
-		expect(parsePrView('not json')).toBeUndefined();
-	});
-});
+/** Answers the forge plugin's origin lookup, then the gh call itself. */
+const execWith =
+	(stdout: string, stderr = '', code = 0, unavailable = false): IForgeExec =>
+	async (input: IRunExternalToolInput) =>
+		input.tool.bin === 'git'
+			? run('git@github.com:o/r.git\n')
+			: run(stdout, stderr, code, unavailable);
 
 describe('listOpenPrs', () => {
-	it('returns parsed PRs when gh succeeds', async () => {
+	it('maps the forge plugin PR list onto the git tool shape', async () => {
 		const result = await listOpenPrs('/repo', execWith(PR_LIST));
 		expect(result.available).toBe(true);
 		expect(result.prs).toHaveLength(2);
+		expect(result.prs[0]).toEqual({
+			number: 11,
+			title: 'deps: bump the development group',
+			branch: 'dependabot/npm_and_yarn/x',
+			url: 'https://github.com/o/r/pull/11',
+			draft: false,
+		});
+		expect(result.prs[1]?.draft).toBe(true);
 	});
 
-	it('reports unavailable + install hint when gh is missing (127)', async () => {
-		const result = await listOpenPrs('/repo', execWith('', '', 127));
+	it('reports unavailable when gh is missing', async () => {
+		const result = await listOpenPrs('/repo', execWith('', '', 127, true));
 		expect(result.available).toBe(false);
 		expect(result.note).toContain('gh');
 		expect(result.prs).toEqual([]);
@@ -120,7 +110,13 @@ describe('viewPr', () => {
 	it('returns detail with checks when gh succeeds', async () => {
 		const result = await viewPr('/repo', '11', execWith(PR_VIEW));
 		expect(result.available).toBe(true);
+		expect(result.pr?.state).toBe('OPEN');
 		expect(result.pr?.checks).toHaveLength(2);
+		expect(result.pr?.checks[0]).toMatchObject({
+			name: 'lint (biome)',
+			conclusion: 'FAILURE',
+			url: 'https://ci/1',
+		});
 	});
 
 	it('notes when no PR matched (gh non-zero, no json)', async () => {
@@ -135,7 +131,11 @@ describe('viewPr', () => {
 	});
 
 	it('reports unavailable when gh is missing', async () => {
-		const result = await viewPr('/repo', undefined, execWith('', '', 127));
+		const result = await viewPr(
+			'/repo',
+			undefined,
+			execWith('', '', 127, true),
+		);
 		expect(result.available).toBe(false);
 	});
 });

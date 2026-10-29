@@ -159,6 +159,26 @@ describe('prompts-pack prompt registrations', () => {
 		}
 	});
 
+	it('carries no NUL byte in rendered prompts or in the prompt sources', async () => {
+		const nul = String.fromCharCode(0);
+		for (const prompt of prompts()) {
+			const rendered = prompt.template(sampleArgs[prompt.name] ?? {});
+			expect(rendered.includes(nul)).toBe(false);
+			expect(prompt.description.includes(nul)).toBe(false);
+		}
+		const sources = (await readdir(here)).filter((name) =>
+			name.endsWith('.ts'),
+		);
+		expect(sources.length).toBeGreaterThan(0);
+		const reader = new SafeWorkspaceReader(workspaceRoot);
+		const sourceDir = here.slice(workspaceRoot.length + 1);
+		for (const name of sources) {
+			const text = (await reader.readText(`${sourceDir}/${name}`))
+				.content;
+			expect(text.includes(nul), name).toBe(false);
+		}
+	});
+
 	it('never mentions provider names in metadata or rendered text', () => {
 		for (const prompt of prompts()) {
 			const rendered = prompt.template(sampleArgs[prompt.name] ?? {});

@@ -45,6 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/state-sqlite"
 	},
 	"dependencies": {
+		"@delendai/sqlite": "workspace:*",
 		"@delendai/state": "workspace:*"
 	},
 	"devDependencies": {

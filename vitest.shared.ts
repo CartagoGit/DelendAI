@@ -38,7 +38,6 @@ export const BUN_OWNED_SPECS: readonly string[] = [
 	'packages/proposals-sqlite/',
 	'packages/sqlite/',
 	'packages/state-sqlite/',
-	'packages/roadmap-sqlite/',
 	'packages/state-telemetry/src/lib/eta/duration-history.spec.ts',
 	'packages/state-telemetry/src/lib/events/work-event-store.spec.ts',
 	'packages/core/tests/src/lib/evidence/evidence-repo.spec.ts',

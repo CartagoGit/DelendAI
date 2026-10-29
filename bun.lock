@@ -216,18 +216,6 @@
         "vitest": "5.0.3",
       },
     },
-    "packages/roadmap-sqlite": {
-      "name": "@delendai/roadmap-sqlite",
-      "version": "0.1.0",
-      "dependencies": {
-        "@delendai/roadmap": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-        "typescript": "7.0.2",
-        "vitest": "5.0.3",
-      },
-    },
     "packages/sqlite": {
       "name": "@delendai/sqlite",
       "version": "0.2.4",
@@ -254,6 +242,7 @@
       "name": "@delendai/state-sqlite",
       "version": "0.1.0",
       "dependencies": {
+        "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
       },
       "devDependencies": {
@@ -770,11 +759,13 @@
       "name": "@delendai/git",
       "version": "0.2.4",
       "dependencies": {
+        "@delendai/forge": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
+        "@delendai/forge": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "5.0.3",
@@ -1778,8 +1769,6 @@
     "@delendai/remote-provider-core": ["@delendai/remote-provider-core@workspace:plugins/remote-provider-core"],
 
     "@delendai/roadmap": ["@delendai/roadmap@workspace:plugins/roadmap"],
-
-    "@delendai/roadmap-sqlite": ["@delendai/roadmap-sqlite@workspace:packages/roadmap-sqlite"],
 
     "@delendai/rules": ["@delendai/rules@workspace:plugins/rules"],
 
@@ -3413,8 +3402,6 @@
 
     "@delendai/roadmap/fast-check": ["fast-check@3.23.2", "", { "dependencies": { "pure-rand": "^6.1.0" } }, "sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A=="],
 
-    "@delendai/roadmap-sqlite/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
-
     "@delendai/rules/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
 
     "@delendai/search/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
@@ -3696,8 +3683,6 @@
     "@delendai/quality/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
     "@delendai/remote-provider-core/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
-
-    "@delendai/roadmap-sqlite/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
     "@delendai/roadmap/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
