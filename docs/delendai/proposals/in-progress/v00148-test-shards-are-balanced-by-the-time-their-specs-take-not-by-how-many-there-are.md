@@ -2,10 +2,14 @@
 id: v00148
 title: "Test shards are balanced by the time their specs take, not by how many there are"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: 376fcb43-fd93-4dae-ad36-e9af0d567934
+last-correlation-id: 376fcb43-fd93-4dae-ad36-e9af0d567934
+last-transition-from: ready
+last-transition-at: 2026-10-29T21:06:44.152Z
 ---
 
 # v00148 — Test shards are balanced by the time their specs take, not by how many there are
