@@ -1,4 +1,6 @@
-import { Database } from 'bun:sqlite';
+import { loadDatabaseClass } from '@delendai/sqlite';
+
+import type { Database } from 'bun:sqlite';
 
 import {
 	canonicalStateHash,
@@ -135,7 +137,11 @@ export class SqliteStateRegistry
 	private publishesSinceCheckpoint = 0;
 
 	constructor(private readonly options: ISqliteStateRegistryOptions) {
-		this.db = new Database(options.path, { create: true, strict: true });
+		const DatabaseClass = loadDatabaseClass('SqliteStateRegistry');
+		this.db = new DatabaseClass(options.path, {
+			create: true,
+			strict: true,
+		});
 		this.delegate = new InMemoryStateRegistry({ clock: options.clock });
 		const schemaVersion = this.readUserVersion();
 		if (schemaVersion > STATE_SQLITE_SCHEMA_VERSION) {

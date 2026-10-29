@@ -3,6 +3,7 @@ import z from 'zod';
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { resolveAndInvoke } from '../dispatch/capability-resolver';
+import { RESOLVER_DEFAULT_NEXT_ACTION } from '../contracts/constants/resolver-terminal-reasons.constant';
 import {
 	injectToolResultMeta,
 	toolError,
@@ -80,9 +81,9 @@ const compactRouterHandler =
 					: resolved.detail;
 			const nextAction =
 				resolved.reason === 'policy_denied'
-					? 'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.'
+					? RESOLVER_DEFAULT_NEXT_ACTION.policy_denied
 					: (resolved.nextAction ??
-						'Call tool_search to inspect the current surface.');
+						RESOLVER_DEFAULT_NEXT_ACTION[resolved.reason]);
 			return toolError(reason, nextAction);
 		}
 		const result = resolved.result;

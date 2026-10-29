@@ -20,6 +20,10 @@ import {
 	type IResolverError,
 } from '../../../../src/lib/dispatch/capability-resolver';
 import {
+	RESOLVER_DEFAULT_NEXT_ACTION,
+	RESOLVER_TERMINAL_REASONS,
+} from '../../../../src/lib/contracts/constants/resolver-terminal-reasons.constant';
+import {
 	buildFakeRuntime,
 	type FakeRuntimeAccess,
 } from './_fixtures/fake-runtime';
@@ -190,6 +194,37 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		if (result.status !== 'terminal') return;
 		expect(result.reason).toBe('execution_failed');
 		expect(result.detail).toContain('synthetic handler failure');
+	});
+
+	it('returns host_read_only while the runtime is not initialised', async () => {
+		const result = await resolveAndInvoke(
+			{ get: () => undefined, bind: () => undefined },
+			{ domain: 'alpha', action: 'list' },
+			access.extra,
+		);
+		expect(result.status).toBe('terminal');
+		if (result.status !== 'terminal') return;
+		expect(result.reason).toBe('host_read_only');
+		expect(result.nextAction).toBe(
+			RESOLVER_DEFAULT_NEXT_ACTION.host_read_only,
+		);
+	});
+
+	it('gives every terminal reason a next action and the seven reasons are the whole set', () => {
+		expect([...RESOLVER_TERMINAL_REASONS].sort()).toEqual([
+			'activation_failed',
+			'ambiguous_capability',
+			'argument_validation_failed',
+			'catalog_missing',
+			'execution_failed',
+			'host_read_only',
+			'policy_denied',
+		]);
+		for (const reason of RESOLVER_TERMINAL_REASONS) {
+			expect(RESOLVER_DEFAULT_NEXT_ACTION[reason].length).toBeGreaterThan(
+				10,
+			);
+		}
 	});
 
 	it('does not fall back to filesystem or process on any terminal outcome', async () => {
