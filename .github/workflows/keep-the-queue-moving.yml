@@ -194,18 +194,3 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun run forge:promotion-alerts -- --branch=develop
-
-            # The promotion opens itself on the cadence the project declares
-            # (`roadmap.promotion.schedule: on-ready`): when develop's
-            # required checks are green, no alert is open, the next
-            # horizon's blocking gates pass and develop carries its release.
-            # Otherwise it prints each condition that holds it back and
-            # opens nothing. It never merges, bumps or tags; the release
-            # branch's gate judges the pull request, which starts its own
-            # `pull_request` runs although the workflow token opened it
-            # (the forward syncs, #1457, are opened the same way).
-            - name: Open the promotion when the next milestone is ready
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun run forge:open-promotion -- --apply

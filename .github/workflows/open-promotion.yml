@@ -1,0 +1,38 @@
+# GENERATED — do not edit.
+#
+# Projection of the canonical development policy in
+# `delendai.config.json`. Change the policy, then run:
+#   bun tools/scripts/governance/forge-settings.script.ts --write
+name: open-promotion
+on:
+    schedule:
+        - cron: 37 * * * *
+    workflow_dispatch: {}
+concurrency:
+    group: open-promotion
+    cancel-in-progress: false
+permissions:
+    contents: read
+    actions: read
+    checks: read
+    security-events: read
+    pull-requests: write
+jobs:
+    open-promotion:
+        name: open the promotion of develop into main when it is ready
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+            - name: Stand on the integration branch
+              run: git fetch --depth=1 origin "$RELEASE:refs/remotes/origin/$RELEASE" && git fetch --depth=1 origin "$INTEGRATION" && git checkout -q --detach FETCH_HEAD && bun install --frozen-lockfile
+              env:
+                  INTEGRATION: develop
+                  RELEASE: main
+            - name: Open the promotion if it is ready, or say what holds it back
+              run: bun tools/scripts/forge/open-promotion.script.ts --apply
+              env:
+                  GH_TOKEN: ${{ github.token }}
