@@ -25,7 +25,7 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 ## non-goals
 
 - Replacing the forge's checks. The local proof is a pre-flight; the forge stays the authority, and nothing the agent records lets a pull request skip a check (owner, 2026-10-28: never skip CI on an agent's word).
-- A new setting. The gate is `validationMatrix.scopes`, which the `merge` route already reads, with the project's `validate` script as the fallback.
+- A new setting. The proof is the project's `prove` script, the same convention as its `validate` script. A project without one is proved by the gate it already declares (`validationMatrix.scopes`, else `validate`). `validationMatrix` itself stays the certification gate that `delendai validate` and the slice close run, so declaring the fast proof there would have weakened them.
 
 ## slices
 
@@ -36,40 +36,40 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - **Files**: `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "`near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source and the specs that import a changed file by path (near-specs.spec.ts), and `bun run prove -- --fast` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts)."
+  - "`near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source and the specs that import a changed file by path (near-specs.spec.ts), and `bun run prove` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts)."
 
 ### S2 — This repository declares its proof
 - **Status**: pending
-- **Files**: `delendai.config.json`
+- **Files**: `package.json`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
-  - "`validationMatrix.scopes` in delendai.config.json declares `bun run prove -- --fast` as the proof, so the gate `validation-gate-steps.service.ts` reads names it and nothing in a home directory is part of the flow."
+  - "This repository's `prove` script is the fast proof (`prove-plan.script.ts --fast`) and `prove:plan` is the full plan, so the proof publishing runs is declared in the repository and nothing in a home directory is part of the flow."
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/validation-gate-steps.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "On the pull-request route with `requiresLocalCertification`, `work publish` (and the publication `proposal_transition to=review` makes) runs the declared gate in the unit's worktree on the merge of the unit with the integration branch, refuses to push when a step fails and names the step and its fix; a project that declares no gate is refused with the declaration to add (work-unit-publish-proof.spec.ts)."
+  - "On the pull-request route with `requiresLocalCertification`, `work publish` runs the proof before pushing; so does the publication that `proposal_transition to=review` makes. The proof is read from the integration head: its `prove` script, else its declared gate. It runs in the unit's worktree on its committed tip, refused when the tree has uncommitted edits, or in a temporary worktree when the unit has none. Publishing refuses to push when a step fails and names the step, its output and the fix. A project that declares no proof publishes, with the declaration to add. The workflow sentence every agent receives says so (work-unit-publish-proof.spec.ts, work-unit-proof.service.spec.ts, work-unit-land.service.spec.ts)."
 
 ### S4 — A proved tree is not proved twice
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-proof-record.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof-record.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A green proof is recorded under the cache directory by the tree it proved and the gate's definition; publishing the same tree with the same gate skips the run and says so, and any change to either runs it again. The record is local and never sent to the forge (work-unit-proof-record.service.spec.ts)."
+  - "A green proof is recorded under the git directory, keyed by the tree it proved and the proof's commands. Proving or publishing the same tree with the same proof skips the run and says so (`remembered`); any change to either runs it again. `work prove` runs the proof alone, so a hand-over through a tool call finds it already proved. The record is local and never sent to the forge (work-unit-proof.service.spec.ts, work-unit-publish-proof.spec.ts)."
 
-### S5 — Preparing a unit does only what changed
+### S5 — A proof installs only what it lacks
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Before the proof, publishing installs dependencies only when the lockfile differs from the one last installed in the worktree, and regenerates derived files only when a source they derive from changed, so a unit whose merge brings neither pays for neither (work-unit-publish-proof.spec.ts)."
+  - "A unit proved in its own worktree reuses the dependencies installed there. A unit with no worktree is proved in a temporary one, installed first by the lockfile's package manager and removed afterwards. A project with no package manifest installs nothing. A failed install is a refusal that shows its output, never a pass. Stale derived files stay the pre-push drift check's to refuse (work-unit-proof.service.spec.ts)."
 
 ## acceptance
 
-- `near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source and the specs that import a changed file by path (near-specs.spec.ts), and `bun run prove -- --fast` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts).
-- `validationMatrix.scopes` in delendai.config.json declares `bun run prove -- --fast` as the proof, so the gate `validation-gate-steps.service.ts` reads names it and nothing in a home directory is part of the flow.
-- On the pull-request route with `requiresLocalCertification`, `work publish` (and the publication `proposal_transition to=review` makes) runs the declared gate in the unit's worktree on the merge of the unit with the integration branch, refuses to push when a step fails and names the step and its fix; a project that declares no gate is refused with the declaration to add (work-unit-publish-proof.spec.ts).
-- A green proof is recorded under the cache directory by the tree it proved and the gate's definition; publishing the same tree with the same gate skips the run and says so, and any change to either runs it again. The record is local and never sent to the forge (work-unit-proof-record.service.spec.ts).
-- Before the proof, publishing installs dependencies only when the lockfile differs from the one last installed in the worktree, and regenerates derived files only when a source they derive from changed, so a unit whose merge brings neither pays for neither (work-unit-publish-proof.spec.ts).
+- `near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source and the specs that import a changed file by path (near-specs.spec.ts), and `bun run prove` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts).
+- This repository's `prove` script is the fast proof (`prove-plan.script.ts --fast`) and `prove:plan` is the full plan, so the proof publishing runs is declared in the repository and nothing in a home directory is part of the flow.
+- On the pull-request route with `requiresLocalCertification`, `work publish` runs the proof before pushing; so does the publication that `proposal_transition to=review` makes. The proof is read from the integration head: its `prove` script, else its declared gate. It runs in the unit's worktree on its committed tip, refused when the tree has uncommitted edits, or in a temporary worktree when the unit has none. Publishing refuses to push when a step fails and names the step, its output and the fix. A project that declares no proof publishes, with the declaration to add. The workflow sentence every agent receives says so (work-unit-publish-proof.spec.ts, work-unit-proof.service.spec.ts, work-unit-land.service.spec.ts).
+- A green proof is recorded under the git directory, keyed by the tree it proved and the proof's commands. Proving or publishing the same tree with the same proof skips the run and says so (`remembered`); any change to either runs it again. `work prove` runs the proof alone, so a hand-over through a tool call finds it already proved. The record is local and never sent to the forge (work-unit-proof.service.spec.ts, work-unit-publish-proof.spec.ts).
+- A unit proved in its own worktree reuses the dependencies installed there. A unit with no worktree is proved in a temporary one, installed first by the lockfile's package manager and removed afterwards. A project with no package manifest installs nothing. A failed install is a refusal that shows its output, never a pass. Stale derived files stay the pre-push drift check's to refuse (work-unit-proof.service.spec.ts).

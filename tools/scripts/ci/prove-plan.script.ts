@@ -3,8 +3,8 @@
  * prove-plan.script.ts — prove a change before it is pushed, by the plan
  * CI will follow for it.
  *
- *   bun run prove [--base=<ref>]          (default base: origin/develop)
- *   bun run prove -- --fast [--base=<ref>]
+ *   bun run prove [-- --base=<ref>]       the fast proof (default base: origin/develop)
+ *   bun run prove:plan [-- --base=<ref>]  the plan CI will follow, in full
  *
  * The local proof used to be a second, bigger CI: every zone, every lint
  * preset, about 45 minutes a unit, and then the forge ran its own plan
@@ -14,11 +14,11 @@
  * repository-wide gates every pull request runs. It prints the plan, the
  * time of each step and the verdict.
  *
- * `--fast` is the proof a unit runs before it is published: the same
- * gates, then the specs nearest the change (`near-specs.ts`) with the
- * coverage of the touched files, and the bun suite when state or
- * proposals code changed. About 90 s where the plan takes minutes; the
- * forge still runs the plan, and is the authority.
+ * `--fast` (`bun run prove`) is the proof `work publish` runs before a
+ * unit becomes a pull request: the same gates, then the specs nearest the
+ * change (`near-specs.ts`) with the coverage of the touched files, and the
+ * bun suite when state or proposals code changed. About 90 s where the
+ * plan takes minutes; the forge still runs the plan, and is the authority.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 

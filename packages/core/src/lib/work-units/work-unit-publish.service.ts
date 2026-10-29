@@ -45,6 +45,8 @@ import {
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 import { readSupersedingUnit } from './unit-fence.service';
+import { worktreeOfRef } from './unit-removal.service';
+import { describeFailedProof, proveUnit } from './work-unit-proof.service';
 
 /** The generation a work ref names (`…-g<n>/…`), if it names one. */
 const generationOfWorkRef = (ref: string): number | undefined => {
@@ -263,6 +265,30 @@ export const published = async (
 			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
 		);
 	}
+	// The proof every agent is told to run, run here: a pull request is
+	// only opened for work that passed it. A review records verdicts and
+	// proves nothing; a project that declares no proof is told how to.
+	const proof =
+		tipOfUnit !== undefined &&
+		policy.integration.requiresPullRequest &&
+		policy.integration.requiresLocalCertification &&
+		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
+			? await proveUnit({
+					root,
+					worktree: worktreeOfRef(
+						root,
+						workRef.replace(/^refs\/heads\//u, ''),
+					),
+					tipSha: tipOfUnit,
+					integrationSha: base,
+				})
+			: undefined;
+	if (proof !== undefined && !proof.passed) {
+		return refused(
+			describeFailedProof(proof),
+			'Fix what failed, commit it in the unit, and publish again. `delendai work prove` runs the same proof without publishing.',
+		);
+	}
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -359,6 +385,20 @@ export const published = async (
 			...(carried.length === 0 ? {} : { carried }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
+			...(proof === undefined
+				? {}
+				: {
+						proof: proof.declared
+							? {
+									declared: true,
+									remembered: proof.remembered === true,
+								}
+							: {
+									declared: false,
+									nextAction:
+										'Declare how a unit is proved before it is published: a `prove` script in package.json, or `validationMatrix.scopes` in delendai.config.json.',
+								},
+					}),
 		},
 	};
 };

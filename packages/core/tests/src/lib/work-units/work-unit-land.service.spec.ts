@@ -307,12 +307,26 @@ describe('work publish under shared-checkout-merge', () => {
 	});
 });
 
-describe('work publish under a pull-request profile is unchanged', () => {
-	it('pushes the publication ref, runs no gate and never touches the integration branch', async () => {
-		// The gate would fail; a pull-request profile never runs it here.
+describe('work publish under a pull-request profile proves the unit, then only pushes', () => {
+	it('publishes nothing while the declared gate fails on the unit', async () => {
 		const { root, remote } = projectWith({ ...PULL_REQUEST, ...GATE });
 		const before = remoteDevelop(remote);
 		await checkpoint(root, { 'state.txt': 'still red\n' });
+
+		const result = await publish(root, ['--no-pull-request']);
+
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('its proof failed');
+		expect(remoteDevelop(remote)).toBe(before);
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
+		).toBe('');
+	}, 60_000);
+
+	it('pushes the publication ref once it passes, and never touches the integration branch', async () => {
+		const { root, remote } = projectWith({ ...PULL_REQUEST, ...GATE });
+		const before = remoteDevelop(remote);
+		await checkpoint(root, { 'state.txt': 'green\n' });
 
 		const result = await publish(root, ['--no-pull-request']);
 
@@ -320,6 +334,7 @@ describe('work publish under a pull-request profile is unchanged', () => {
 		expect(result.data).toMatchObject({
 			published: true,
 			workRefRemoved: true,
+			proof: { declared: true },
 		});
 		expect(result.data).not.toHaveProperty('landed');
 		expect(remoteDevelop(remote)).toBe(before);
@@ -328,7 +343,7 @@ describe('work publish under a pull-request profile is unchanged', () => {
 		).toContain(
 			'refs/heads/delendai/pr/claude-opus-5/implement/x00553-S1-g1/probe',
 		);
-	});
+	}, 60_000);
 });
 
 describe('work publish in a project whose only branch is main', () => {
