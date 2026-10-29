@@ -93,7 +93,7 @@ describe('publishing a pull request runs the declared proof', () => {
 		expect(published.error).toContain('npm run prove failed');
 		expect(published.error).toContain('work prove');
 		expect(git(root, 'branch', '--list', 'delendai/pr/*')).toBe('');
-	}, 60_000);
+	});
 
 	it('proves with `work prove`, then publishes without proving again', async () => {
 		const root = repo('exit 0');
@@ -113,7 +113,7 @@ describe('publishing a pull request runs the declared proof', () => {
 		expect(published.data).toMatchObject({
 			proof: { declared: true, remembered: true },
 		});
-	}, 60_000);
+	});
 
 	it('tells a project that declares no proof how to declare one', async () => {
 		const root = repo(undefined);
@@ -127,7 +127,7 @@ describe('publishing a pull request runs the declared proof', () => {
 			contextFor(root),
 		);
 		expect(JSON.stringify(published.data)).toContain('`prove` script');
-	}, 60_000);
+	});
 
 	it('says what it needs to prove', async () => {
 		const root = repo('exit 0');
@@ -145,5 +145,5 @@ describe('publishing a pull request runs the declared proof', () => {
 		const proved = await runWorkUnit(['prove', ...UNIT], contextFor(root));
 		expect(proved.code).not.toBe(0);
 		expect(proved.error).toContain('was not proved');
-	}, 60_000);
+	});
 });

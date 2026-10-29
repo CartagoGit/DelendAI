@@ -321,7 +321,7 @@ describe('work publish under a pull-request profile proves the unit, then only p
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
 		).toBe('');
-	}, 60_000);
+	});
 
 	it('pushes the publication ref once it passes, and never touches the integration branch', async () => {
 		const { root, remote } = projectWith({ ...PULL_REQUEST, ...GATE });
@@ -343,7 +343,7 @@ describe('work publish under a pull-request profile proves the unit, then only p
 		).toContain(
 			'refs/heads/delendai/pr/claude-opus-5/implement/x00553-S1-g1/probe',
 		);
-	}, 60_000);
+	});
 });
 
 describe('work publish in a project whose only branch is main', () => {
