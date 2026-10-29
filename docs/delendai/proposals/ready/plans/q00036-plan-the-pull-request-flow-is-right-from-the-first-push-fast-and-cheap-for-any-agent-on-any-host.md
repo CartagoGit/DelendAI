@@ -81,7 +81,7 @@ The parts, in order; each one depends only on those before it where it says so.
    - A proved tree is not proved twice.
    - Preparing a unit installs and regenerates only when needed.
    - First because it removes the private scripts and the most expensive failure: a red push.
-2. **v00147 — The static checks run in one job.** About twelve setups become one: roughly 5 runner-minutes and most setup wall time saved per pull request.
+2. **v00147 — The local proof runs the static checks a pull request runs, read from ci.yml.** Rescoped after measuring: merging the forge's jobs would save neither money (public repository) nor time (no queue), and the queue reads their names. The cost was the other gap, lints only the forge ran (#1582).
 3. **v00148 — Test shards are balanced by measured time.** The full run's slowest shard drops from 244 s toward the mean, about 140 s.
 4. **v00149 — A derived file is not an overlap.** Measure which shared files send candidates back, stop bringing a candidate forward for a derived file alone, and split or stop committing the worst offenders.
 5. **v00150 — A configuration change runs only what it configures.** `package.json` by changed fields, the lockfile by moved packages, and the read recorder sees spawned processes.
@@ -93,7 +93,6 @@ Targets, against the baseline above:
 
 | Measure | Target |
 |---|---|
-| Small pull request | at most 8 jobs and 7 runner-minutes |
 | Full run | wall 250 s or less, runner time 35 minutes or less |
 | Created → merged for a green small change | 10 minutes or less, unchanged under a burst of pull requests, since the queue arms every green candidate in one pass |
 | Rebuilds | no candidate brought forward for a derived file alone |
@@ -115,12 +114,12 @@ Targets, against the baseline above:
 - acceptance:
   - "f00796 is done and a hand-over by an agent with none of the orchestrator's scripts proves, publishes, and is refused when red."
 
-### S2 — One job for the static checks (v00147)
+### S2 — The proof runs the forge's static checks (v00147)
 - **Status**: pending
-- **Files**: `docs/delendai/proposals/ready/perfs/v00147-a-pull-request-s-static-checks-run-in-one-job-each-still-named-in-its-verdict.md`
+- **Files**: `docs/delendai/proposals/ready/perfs/v00147-the-local-proof-runs-the-static-checks-a-pull-request-runs-read-from-the-workflow.md`
 - **Gate**: type
 - acceptance:
-  - "v00147 is done and a small pull request's run shows at most 8 jobs."
+  - "v00147 is done and a pull request whose author ran the proof is never red on a static check."
 
 ### S3 — Shards balanced by time (v00148)
 - **Status**: pending
@@ -153,7 +152,7 @@ Targets, against the baseline above:
 ## acceptance
 
 - f00796 is done and a hand-over by an agent with none of the orchestrator's scripts proves, publishes, and is refused when red.
-- v00147 is done and a small pull request's run shows at most 8 jobs.
+- v00147 is done and a pull request whose author ran the proof is never red on a static check.
 - v00148 is done and a full run's slowest test shard is within 20% of the mean shard.
 - v00149 is done and its overlap report over the following week names no derived file.
 - v00150 is done and a scripts-only `package.json` change runs only the specs that read it.
