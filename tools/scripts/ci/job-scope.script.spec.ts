@@ -316,3 +316,18 @@ describe('a change made only of prose', () => {
 		).toBe(true);
 	});
 });
+
+describe('pack smoke', () => {
+	it('runs when a tarball can change, and not for an edit inside a module', () => {
+		const runs = (file: string) =>
+			jobMustRun({ job: 'pack-smoke', changed: [file] });
+		expect(
+			runs('packages/core/src/lib/cache/cache-layout-bootstrap.ts'),
+		).toBe(false);
+		expect(runs('plugins/proposals/package.json')).toBe(true);
+		expect(runs('packages/core/src/cli.ts')).toBe(true);
+		expect(runs('packages/core/src/public/index.ts')).toBe(true);
+		expect(runs('bun.lock')).toBe(true);
+		expect(runs('tools/scripts/compile/build.script.ts')).toBe(true);
+	});
+});

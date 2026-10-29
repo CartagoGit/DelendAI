@@ -1,6 +1,6 @@
 ---
 id: v00144
-title: "Work is proved locally and the pull request checks the proof, and every unit ends with nothing left behind"
+title: "Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind"
 kind: perf
 status: ready
 type: proposal
@@ -8,11 +8,11 @@ track: ci
 date: 2026-10-29
 ---
 
-# v00144 — Work is proved locally and the pull request checks the proof, and every unit ends with nothing left behind
+# v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
 
 ## goal
 
-Checks keep the project from drifting without becoming the work: a change is proved once, where it was made, by the plan CI would follow; the pull request confirms that proof and runs only what a proof cannot stand in for; a documentation change is judged by the documentation rules alone. When a unit ends, nothing of it is left: no worktree, no directory, no branch, no ref that holds nothing the integration branch or a publication lacks.
+Checks keep the project from drifting without becoming the work: a change is proved where it was made by the plan CI will follow, so the forge's run is green the first time; the forge runs only what the change reaches, and lets nothing land on an agent's word; a documentation change is judged by the documentation rules alone. When a unit ends, nothing of it is left: no worktree, no directory, no branch, no ref that holds nothing the integration branch or a publication lacks.
 
 ## why
 
@@ -43,13 +43,14 @@ The same day the repository held, besides live work: two worktree directories gi
 - acceptance:
   - "When every changed path is Markdown under docs/ or at the root, the jobs that judge code (biome, presets, manifests, metrics, the test matrix, typecheck, builds) report skipped; the documentation, proposal, secret and generated-artifact checks run."
 
-### S3 — The pull request checks the local proof
+### S3 — The forge judges only what the change reaches, and never on the author's word
 - **Status**: pending
-- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `.github/workflows/ci.yml`
+- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`bun run prove` records its verdict as a git note on the proved commit (tree, base, plan digest, steps and their results) and `work publish` pushes it; the pull request's `proof` job accepts it when the tree, the base and the plan match the pull request's, and the test matrix and typecheck then report skipped; without a valid proof they run as today."
-  - "The integration branch's full run after each merge, and a re-run of one proved pull request in five chosen at random, keep a wrong or forged proof from going unnoticed; a proof found wrong is reported against its author."
+  - "On a pull request the secret scan reads the change's diff (`--range base...HEAD`), `lint:generated-determinism` runs only when a generator changed and `lint:cross-ide` only when the UI extension, the client or core did (together 214 s of lint-security's 175 s-plus, measured locally); a push to develop runs them over the whole tree."
+  - "pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts)."
+  - "No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's."
 
 ### S4 — Every unit ends clean
 - **Status**: pending
@@ -63,7 +64,8 @@ The same day the repository held, besides live work: two worktree directories gi
 
 - On a pull request CodeQL analyses with `security-extended` only the workspaces the change touches (a minimal path for a change touching none), so the required check still reports; a push to develop analyses everything with `security-and-quality`.
 - When every changed path is Markdown under docs/ or at the root, the jobs that judge code (biome, presets, manifests, metrics, the test matrix, typecheck, builds) report skipped; the documentation, proposal, secret and generated-artifact checks run.
-- `bun run prove` records its verdict as a git note on the proved commit (tree, base, plan digest, steps and their results) and `work publish` pushes it; the pull request's `proof` job accepts it when the tree, the base and the plan match the pull request's, and the test matrix and typecheck then report skipped; without a valid proof they run as today.
-- The integration branch's full run after each merge, and a re-run of one proved pull request in five chosen at random, keep a wrong or forged proof from going unnoticed; a proof found wrong is reported against its author.
+- On a pull request the secret scan reads the change's diff (`--range base...HEAD`), `lint:generated-determinism` runs only when a generator changed and `lint:cross-ide` only when the UI extension, the client or core did (together 214 s of lint-security's 175 s-plus, measured locally); a push to develop runs them over the whole tree.
+- pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts).
+- No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's.
 - `work gc` (also run when a unit is published, retired or claimed, and at start-up) removes worktree directories git does not know, `.orig` and other merge leftovers under the worktrees folder, local branches of ended units, stranded refs whose paths all reached develop, a unit or a publication, and retired refs older than 30 days whose tips develop contains; it lists what it removed and why, and never removes a ref holding work found nowhere else.
 - `work publish` refuses to open a pull request whose tree equals the integration branch's, naming the merged pull request that already holds it.

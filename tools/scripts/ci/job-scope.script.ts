@@ -57,6 +57,8 @@ export const jobMustRun = (input: {
 	// it is evidence that the diff could not be read.
 	if (input.changed.length === 0) return true;
 	if (scope.docs === 'skip' && input.changed.every(isProse)) return false;
+	if (scope.matches !== undefined)
+		return input.changed.some((file) => scope.matches?.test(file) === true);
 	if (scope.touches === 'always') return true;
 	return input.changed.some((file) =>
 		(scope.touches as readonly string[]).some((prefix) =>
