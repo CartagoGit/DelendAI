@@ -2,14 +2,14 @@
 id: v00147
 title: "The local proof runs the static checks a pull request runs, read from the workflow"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: de17cfba-f8dd-46aa-b9a4-ef2796448d4e
-last-correlation-id: de17cfba-f8dd-46aa-b9a4-ef2796448d4e
-last-transition-from: ready
-last-transition-at: 2026-10-29T20:34:12.394Z
+last-transition-id: 1607d07c-8cd6-4ce8-8451-af706ea2f573
+last-correlation-id: 1607d07c-8cd6-4ce8-8451-af706ea2f573
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T20:35:12.015Z
 ---
 
 # v00147 — The local proof runs the static checks a pull request runs, read from the workflow
@@ -48,18 +48,24 @@ Measured: the nine jobs take about 290 s one after another, and 92 s together wi
 - global_gate: type
 
 ### S1 — The static checks are read from the workflow
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/ci-static-steps.ts`, `tools/scripts/ci/ci-static-steps.spec.ts`, `tools/scripts/lint/config-jsonc-only.script.ts`
 - **Gate**: type
 - acceptance:
   - "`staticChecksOf` returns each static job of `ci.yml` (`STATIC_CHECK_JOBS`) as one bash script, with the expressions a pull request's run resolves (its base commit, its base branch, the token) replaced by their local meaning. It refuses a step with any other expression and a workflow missing one of the jobs, and the real `ci.yml` resolves completely (ci-static-steps.spec.ts). `config-jsonc-only` refuses a tree without `packages/` or `plugins/` (`no-silent-gates` passes locally)."
+- shipped-in: `95214d2f2e5c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The proof runs them, together, before the tests
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`bun run prove` (and `prove:plan`) runs the typecheck and the static checks concurrently, up to the machine's cores, each with stdin closed. It then runs the checks in `RUN_ALONE` (`quality-gate`) one at a time, prints each check's verdict and time and the tail of a failed one's output, and fails when any fails. Measured on this repository: 153 s for the whole fast proof."
+- shipped-in: `68a3ef38c83b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
