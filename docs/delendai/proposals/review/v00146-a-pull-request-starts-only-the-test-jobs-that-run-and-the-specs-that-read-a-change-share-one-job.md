@@ -2,14 +2,14 @@
 id: v00146
 title: "A pull request starts only the test jobs that run, and the specs that read a change share one job"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 7db77676-ad3c-48c3-be0b-4f3b5e7cd014
-last-correlation-id: 7db77676-ad3c-48c3-be0b-4f3b5e7cd014
-last-transition-from: review
-last-transition-at: 2026-10-29T13:23:31.164Z
+last-transition-id: fa52aa23-f66f-4c72-ac26-43a316e9ae06
+last-correlation-id: fa52aa23-f66f-4c72-ac26-43a316e9ae06
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T13:24:27.725Z
 ---
 
 # v00146 — A pull request starts only the test jobs that run, and the specs that read a change share one job
@@ -41,18 +41,24 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-implementer: claude-opus-5-5
 
 ### S2 — The tests plan without waiting for the type and format checks
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "`plan-tests` declares no `needs`, so the test shards start beside `typecheck` and `lint-biome`, and `delendai-validate` still requires both."
+- shipped-in: `77f910e98f4e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — A pull request instruments only the files it touched
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "On a pull request the shards and the merge set `VITEST_COVERAGE_FILES` to the files changed since the base, and `vitest.config.ts` narrows `coverage.include` to those of them its globs already select (a file outside them stays unmeasured, and none touched measures nothing), so the changed-file coverage verdict is the one the full selection gives."
+- shipped-in: `77f910e98f4e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
