@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: fafecb66-9f1e-4f9a-90cb-38f1d5b2d60f
-last-correlation-id: fafecb66-9f1e-4f9a-90cb-38f1d5b2d60f
+last-transition-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
+last-correlation-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
 last-transition-from: in-progress
-last-transition-at: 2026-10-29T13:43:33.286Z
+last-transition-at: 2026-10-29T14:23:23.450Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
@@ -74,9 +74,20 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S5 — The promotion is asked for when its last evidence lands
+- **Status**: review
+- **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/open-promotion.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When code scanning of the integration branch succeeds, `codeql.yml` dispatches `open-promotion` (`ask-for-the-promotion`; open-promotion.script.spec.ts), so a ready promotion opens within minutes of its last evidence landing, with the hourly run as the fallback."
+- shipped-in: `cada9abdf843`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - `plugins.roadmap.options.promotion.schedule` is `on-ready`, and the `open-promotion` workflow projected from it asks every hour (a push comes before the checks its head needs, and a token merge starts none; promotion-workflow.lib.spec.ts), fetching the release branch, and runs `open-promotion --apply`, which opens the develop → main pull request only when develop's required checks are green (a code scanning tool's check counting as reported when that tool has an analysis on the head, open-promotion.script.spec.ts), no code scanning alert is open and the next horizon's blocking gates pass, and says which condition holds it otherwise.
 - `release-pr-gate`'s dispatched run checks what its pull-request run checks: the version and changelog of the branch it runs on against main, and the alerts open on that branch.
 - `open-promotion` holds the promotion back while develop carries no version above main's or no CHANGELOG section for it (the gaps `release:check` reports, from one `releaseGaps`), naming each gap and `bun run release:prepare --write` as the fix, so it never opens a promotion the release gate refuses (open-promotion.script.spec.ts).
 - The roadmap holds the 0.3.0 horizon the owner committed on 2026-10-29 (a fast flow, every host held to the workflow, plugins that connect, Batuta working), each entry gated on its proposals being done.
+- When code scanning of the integration branch succeeds, `codeql.yml` dispatches `open-promotion` (`ask-for-the-promotion`; open-promotion.script.spec.ts), so a ready promotion opens within minutes of its last evidence landing, with the hourly run as the fallback.
