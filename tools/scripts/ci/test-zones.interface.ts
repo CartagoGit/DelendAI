@@ -103,6 +103,11 @@ export interface IRootChange {
 	 * runs every zone.
 	 */
 	readonly runnerChanged?: boolean | undefined;
+	/**
+	 * For the root package manifest: whether only scripts no test run or
+	 * install uses changed. Absent means unknown, and runs every zone.
+	 */
+	readonly scriptsOnly?: boolean | undefined;
 }
 
 /** What a change reaches, and how. */
