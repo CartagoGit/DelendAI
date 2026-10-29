@@ -235,15 +235,20 @@ describe('runAcceptanceCriteria — M8 exec semantics', async () => {
 		// delay. If the timeout only killed the leader, the child would
 		// survive and create the marker. Process-group kill must prevent it.
 		const marker = join(dir, 'late.txt');
-		const res = await runAcceptanceCriteria([
-			{
-				command: nodeEvalCommand(
-					`require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(`setTimeout(() => require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'LATE'), 1000)`)}], { stdio: 'ignore' }); setInterval(() => {}, 1000);`,
-				),
-				expect: 'exit0',
-				timeoutMs: 300,
-			},
-		]);
+		// The criterion runs in `dir` and writes a relative name: no path is
+		// spliced into the code a child evaluates.
+		const res = await runAcceptanceCriteria(
+			[
+				{
+					command: nodeEvalCommand(
+						"require('node:child_process').spawn(process.execPath, ['-e', \"setTimeout(() => require('node:fs').writeFileSync('late.txt', 'LATE'), 1000)\"], { stdio: 'ignore' }); setInterval(() => {}, 1000);",
+					),
+					expect: 'exit0',
+					timeoutMs: 300,
+				},
+			],
+			{ cwd: dir },
+		);
 		expect(res.results[0]?.reason ?? '').toMatch(/timeout/i);
 		// Wait past when the descendant WOULD have written the marker.
 		await new Promise((r) => setTimeout(r, 1500));
