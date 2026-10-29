@@ -1,6 +1,6 @@
 ---
 id: v00145
-title: "Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it"
+title: "Every test project runs warm: the module cache reaches it and its config loads natively"
 kind: perf
 status: review
 type: proposal
@@ -12,11 +12,11 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-29T03:08:09.961Z
 ---
 
-# v00145 — Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it
+# v00145 — Every test project runs warm: the module cache reaches it and its config loads natively
 
 ## goal
 
-A test run spends its time running tests: modules are transformed once and kept, each project's config loads without being bundled first, and a project runs without per-file isolation unless one of its specs depends on it.
+A test run spends its time running tests: modules are transformed once and kept, and each project's config loads without being bundled first.
 
 ## why
 
@@ -29,7 +29,7 @@ The owner asked on 2026-10-29 whether TypeScript 7 or another runner would be fa
 ## non-goals
 
 - Changing test runner.
-- Dropping isolation for a project with a spec that needs it.
+- Dropping per-file isolation. Measured on 2026-10-29: 66 of 70 projects passed without it run alone (orchestrator-runner 21.24 s to 13.00 s), but a CI shard runs many projects in one process, and there state leaked between projects: the plugins 4/4 shard failed `issues` on the forge and `quality-policy` locally, a different project each run. Isolation stays until projects get worker pools of their own.
 
 ## slices
 
@@ -45,17 +45,6 @@ The owner asked on 2026-10-29 whether TypeScript 7 or another runner would be fa
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
-### S2 — Isolation only where a spec needs it
-- **Status**: review
-- **Files**: `vitest.shared.ts`, `plugins/proposals/vitest.config.ts`, `packages/core/vitest.config.ts`, `packages/cli/vitest.config.ts`, `plugins/roadmap/vitest.config.ts`
-- **Gate**: type
-- acceptance:
-  - "Each project is run without isolation in shuffled order; the projects whose specs pass that way run with `isolate: false`, the others keep isolation in their own config, which names the specs that need it; the full suite's time before and after is recorded (2026-10-29: 66 of 70 projects pass without isolation, 691 s isolated against 608 s; core, cli, proposals and roadmap keep it for 8 specs, which are the larger prize: proposals 685 s against 348 s, core 145 s against 93 s)."
-- shipped-in: `b4deb1f33d1e`
-- review-state: in_review
-- review-implementer: claude-opus-5-5
-
 ## acceptance
 
 - Every project config spreads `sharedTestOptions` (`fsModuleCache: true`) and imports `vitest.shared.ts` with its extension, with no `__dirname`, so Vite loads it natively; orchestrator-runner's warm run took 18.4 s against 22.3 s cold.
-- Each project is run without isolation in shuffled order; the projects whose specs pass that way run with `isolate: false`, the others keep isolation in their own config, which names the specs that need it; the full suite's time before and after is recorded (2026-10-29: 66 of 70 projects pass without isolation, 691 s isolated against 608 s; core, cli, proposals and roadmap keep it for 8 specs, which are the larger prize: proposals 685 s against 348 s, core 145 s against 93 s).

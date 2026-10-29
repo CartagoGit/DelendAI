@@ -91,12 +91,6 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
-	// Each spec file shares its worker's modules with the next. Measured on
-	// 2026-10-29, project by project in shuffled order: 66 of 70 projects
-	// pass that way. The four that do not keep isolation in their own
-	// config, naming the specs that need it, until those specs reset what
-	// they leave behind.
-	isolate: false,
 } as const;
 
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>

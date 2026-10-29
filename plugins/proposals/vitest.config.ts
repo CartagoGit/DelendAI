@@ -16,9 +16,6 @@ export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		...sharedTestOptions,
-		// Isolated until these specs stop depending on a fresh module
-		// registry (they fail when run after another file): db-doctor/storage-mode.spec.ts, db-doctor.tool.spec.ts, index-reader-rebuild.spec.ts.
-		isolate: true,
 		// The proposal state tools and peer-review bypass audit share
 		// process-local buffers. Running their files concurrently lets one
 		// spec reset another spec's audit state mid-assertion.
