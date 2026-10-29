@@ -2,14 +2,14 @@
 id: v00145
 title: "Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: e800b348-4c33-4804-9cb5-e91966d21232
-last-correlation-id: e800b348-4c33-4804-9cb5-e91966d21232
-last-transition-from: ready
-last-transition-at: 2026-10-29T03:07:16.440Z
+last-transition-id: 66684ce6-5718-4132-a0fd-825f3df40c9c
+last-correlation-id: 66684ce6-5718-4132-a0fd-825f3df40c9c
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T03:08:09.961Z
 ---
 
 # v00145 — Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it
@@ -36,18 +36,24 @@ The owner asked on 2026-10-29 whether TypeScript 7 or another runner would be fa
 - global_gate: type
 
 ### S1 — The module cache and native config loading reach every project
-- **Status**: pending
+- **Status**: review
 - **Files**: `apps/shared/vitest.config.ts`, `apps/web/vitest.config.ts`, `docs/delendai/examples/custom-plugin/vitest.config.ts`, `extensions/vscode/vitest.config.ts`, `packages/cli/vitest.config.ts`, `packages/client/vitest.config.ts`, `packages/context-compiler/vitest.config.ts`, `packages/core/vitest.config.ts`, `packages/proposals-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/sqlite/vitest.config.ts`, `packages/state-sqlite/vitest.config.ts`, `packages/state-telemetry/vitest.config.ts`, `packages/state/vitest.config.ts`, `packages/test-kit/vitest.config.ts`, `packages/ui-extension/vitest.config.ts`, `plugins/adaptive-optimizer/vitest.config.ts`, `plugins/agent-orchestrator/vitest.config.ts`, `plugins/api/vitest.config.ts`, `plugins/audit-orchestrator/vitest.config.ts`, `plugins/audit/vitest.config.ts`, `plugins/auto-agent-selector/vitest.config.ts`, `plugins/auto-plugin-selector/vitest.config.ts`, `plugins/browser/vitest.config.ts`, `plugins/cache/vitest.config.ts`, `plugins/changelog/vitest.config.ts`, `plugins/commit-policy/vitest.config.ts`, `plugins/completion/vitest.config.ts`, `plugins/container/vitest.config.ts`, `plugins/context-for-change/vitest.config.ts`, `plugins/conventions/vitest.config.ts`, `plugins/database/vitest.config.ts`, `plugins/deps/vitest.config.ts`, `plugins/diagram/vitest.config.ts`, `plugins/docs/vitest.config.ts`, `plugins/env/vitest.config.ts`, `plugins/error-reporting/vitest.config.ts`, `plugins/execution-env/vitest.config.ts`, `plugins/external-mcps/vitest.config.ts`, `plugins/forge/vitest.config.ts`, `plugins/framework-knowledge/vitest.config.ts`, `plugins/git/vitest.config.ts`, `plugins/github/vitest.config.ts`, `plugins/gitlab/vitest.config.ts`, `plugins/i18n/vitest.config.ts`, `plugins/impact-analysis/vitest.config.ts`, `plugins/issues-triage/vitest.config.ts`, `plugins/issues/vitest.config.ts`, `plugins/link-check/vitest.config.ts`, `plugins/logs/vitest.config.ts`, `plugins/memory/vitest.config.ts`, `plugins/notification/vitest.config.ts`, `plugins/observability/vitest.config.ts`, `plugins/orchestrator-runner/vitest.config.ts`, `plugins/perf/vitest.config.ts`, `plugins/project-health/vitest.config.ts`, `plugins/project-kpis/vitest.config.ts`, `plugins/prompt-eval/vitest.config.ts`, `plugins/prompts-pack/vitest.config.ts`, `plugins/proposals/vitest.config.ts`, `plugins/quality-policy/vitest.config.ts`, `plugins/quality/vitest.config.ts`, `plugins/refactor/vitest.config.ts`, `plugins/remote-provider-core/vitest.config.ts`, `plugins/roadmap/vitest.config.ts`, `plugins/rules/vitest.config.ts`, `plugins/search/vitest.config.ts`, `plugins/security/vitest.config.ts`, `plugins/self-learning/vitest.config.ts`, `plugins/skills-pack/vitest.config.ts`, `plugins/status-marker/vitest.config.ts`, `plugins/style-convention/vitest.config.ts`, `plugins/tech-debt/vitest.config.ts`, `plugins/test-convention/vitest.config.ts`, `plugins/test-policy/vitest.config.ts`, `plugins/usage-tracking/vitest.config.ts`, `plugins/web-fetch/vitest.config.ts`, `tests/e2e/vitest.config.ts`, `tools/vitest.config.ts`, `vitest.config.ts`, `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "Every project config spreads `sharedTestOptions` (`fsModuleCache: true`) and imports `vitest.shared.ts` with its extension, with no `__dirname`, so Vite loads it natively; orchestrator-runner's warm run took 18.4 s against 22.3 s cold."
+- shipped-in: `b4deb1f33d1e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Isolation only where a spec needs it
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `plugins/proposals/vitest.config.ts`, `packages/core/vitest.config.ts`, `packages/cli/vitest.config.ts`, `plugins/roadmap/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "Each project is run without isolation in shuffled order; the projects whose specs pass that way run with `isolate: false`, the others keep isolation in their own config, which names the specs that need it; the full suite's time before and after is recorded (2026-10-29: 66 of 70 projects pass without isolation, 691 s isolated against 608 s; core, cli, proposals and roadmap keep it for 8 specs, which are the larger prize: proposals 685 s against 348 s, core 145 s against 93 s)."
+- shipped-in: `b4deb1f33d1e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
