@@ -22,7 +22,7 @@ const workflow = (lintSecurityRun: string): string =>
 			'        runs-on: ubuntu-latest',
 			'        steps:',
 			'            - uses: actions/checkout@v7',
-			`            - run: ${job === 'lint-security' ? lintSecurityRun : `bun run ${job}`}`,
+			`            - run: ${job === 'lint-security' ? lintSecurityRun : `echo ${job}`}`,
 		]),
 		'',
 	].join('\n');
@@ -44,7 +44,7 @@ describe('staticChecksOf', () => {
 		).toBe(
 			'bun run lint:publication-scope -- --base=origin/develop --since=abc123',
 		);
-		expect(checks[0]?.script).toBe('bun run lint-biome');
+		expect(checks[0]?.script).toBe('echo lint-biome');
 	});
 
 	it('refuses a step whose expression has no local meaning', () => {
