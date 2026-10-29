@@ -1,0 +1,520 @@
+// effect-boundary-authorized: delegation error log is a durable append-only adapter
+import { mkdir, open } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { randomUUID } from 'node:crypto';
+
+import z from 'zod';
+
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { toolJson } from '@delendai/core/public';
+import { withFileMutex } from '@delendai/core/runtime';
+
+import { runAgentLockEngine } from '../locks/agent-lock-engine';
+import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
+import { createGitRunner } from '../shared/git-runner';
+import type { IGitRunner } from '../shared/git-runner';
+import {
+	planDisjointnessIssues,
+	validateClaim,
+} from '../swarm/proposal-slice-plan';
+import type {
+	IProposalSliceContract,
+	IProposalSlicePlan,
+	ISliceGate,
+} from '../swarm/proposal-slice-plan';
+import { runAgentNames } from './agent-names.tool';
+import type { IAgentNamesToolOptions } from './agent-names.tool';
+import { gcZombies } from '../agents/zombie-reconcile';
+
+const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
+const asGate = (value: string | undefined): ISliceGate =>
+	GATES.includes((value ?? '') as ISliceGate)
+		? ((value ?? 'none') as ISliceGate)
+		: 'none';
+
+const SLICE_INPUT = z.object({
+	sliceId: z.string(),
+	files: z.array(z.string()),
+	title: z.string().optional(),
+	gate: z.string().optional(),
+	dependsOn: z.array(z.string()).optional(),
+	acceptanceCriteria: z.array(z.string()).optional(),
+});
+
+/**
+ * `plan` — turn a proposed set of slices into a validated parallel plan:
+ * checks file disjointness and which slices are claimable now. Pure over
+ * the (tested) slice-plan engine; the orchestration primitive for
+ * splitting work across agents without them stepping on each other.
+ */
+export const buildPlanRegistration = (
+	namespacePrefix: string,
+): IToolRegistration => ({
+	id: 'plan',
+	summary:
+		'Validate a set of work slices: file disjointness + which are claimable now (parallel plan).',
+	tags: ['orchestration'],
+	register: async (server) => {
+		server.registerTool(
+			`${namespacePrefix}_plan`,
+			{
+				outputSchema: z.object({
+					plan: z.unknown(),
+					disjointnessIssues: z.array(z.unknown()),
+					claimableSliceIds: z.array(z.string()),
+				}),
+				description:
+					'Turn proposed slices into a validated parallel plan: reports file-overlap (disjointness) issues and which slices are claimable now. Read-only. Use before delegating work to multiple agents.',
+				inputSchema: z.object({
+					proposalId: z.string().optional(),
+					globalGate: z.string().optional(),
+					slices: z.array(SLICE_INPUT),
+				}),
+			},
+			async (args: {
+				proposalId?: string | undefined;
+				globalGate?: string | undefined;
+				slices: Array<z.infer<typeof SLICE_INPUT>>;
+			}) => {
+				const slices: IProposalSliceContract[] = args.slices.map(
+					(slice) => ({
+						proposalId: args.proposalId ?? 'adhoc',
+						sliceId: slice.sliceId,
+						title: slice.title ?? slice.sliceId,
+						owner: null,
+						files: slice.files,
+						dependsOn: slice.dependsOn ?? [],
+						gate: asGate(slice.gate),
+						status: 'pending',
+						acceptanceCriteria: slice.acceptanceCriteria ?? [],
+					}),
+				);
+				const plan: IProposalSlicePlan = {
+					proposalId: args.proposalId ?? 'adhoc',
+					slices,
+					globalGate: asGate(args.globalGate),
+				};
+				return toolJson({
+					plan,
+					disjointnessIssues: planDisjointnessIssues(plan),
+					claimableSliceIds: slices
+						.filter(
+							(slice) => validateClaim(plan, slice.sliceId).ok,
+						)
+						.map((slice) => slice.sliceId),
+				});
+			},
+		);
+	},
+});
+
+export interface IDelegateToolOptions {
+	readonly namespacePrefix: string;
+	readonly agentNames: IAgentNamesToolOptions;
+	readonly lockPathAbs: string;
+	/** Durable JSONL path for delegation failures and cancellations. */
+	readonly errorLogPathAbs?: string;
+	/** Reconcile abandoned registry assignments before consuming a pool slot. */
+	readonly autoReconcile?: boolean;
+	/**
+	 * x00051: when present and `enabled`, `delegate` creates a per-agent
+	 * `git worktree` + branch (`agent/<assigned-name>`) before claiming
+	 * the file lock — so a subagent spawned through delegation never
+	 * inherits the orchestrator's branch. Back-compat: omitted or
+	 * `enabled: false` ⇒ behaviour unchanged (no worktree step).
+	 *
+	 * The host gate (`agentWorktreeEnabled`) lives in `ctx`; the
+	 * registrations in `plugins/proposals/src/index.ts` only forward
+	 * this option when the gate is on, so the tool itself does not
+	 * double-check the gate.
+	 */
+	readonly worktree?: {
+		readonly enabled: boolean;
+		readonly workspaceRoot: string;
+		/** Override the git runner (tests); defaults to the real `git` binary. */
+		readonly run?: IGitRunner;
+		/**
+		 * Relative dir holding all agent worktrees. MUST match the
+		 * canonical `layout.worktreesDir` used by `agent_worktree`
+		 * (default `.cache/delendai/.worktrees`). When omitted the
+		 * engine falls back to `<workspaceRoot>/.worktrees`, which is
+		 * NOT canonical and breaks `swarm_hygiene` + `branch_status`
+		 * `outOfCache` checks — `delegate` and `agent_worktree` MUST
+		 * agree on the same path or two surfaces of the swarm will
+		 * silently disagree on where worktrees live.
+		 */
+		readonly worktreesDirRel?: string;
+	};
+}
+
+const DELEGATE_OUTPUT_SCHEMA = z.object({
+	ok: z.boolean(),
+	stage: z.enum(['assign', 'worktree', 'lock']).optional(),
+	detail: z.record(z.string(), z.unknown()).optional(),
+	agent: z.string().optional(),
+	reason: z.string().optional(),
+	errorId: z.string().optional(),
+	cancelled: z.boolean().optional(),
+	alternatives: z.array(z.string()).optional(),
+	errorLogged: z.boolean().optional(),
+	taskId: z.string().optional(),
+	slot: z.string().optional(),
+	files: z.array(z.string()).optional(),
+	locked: z.boolean().optional(),
+	subscriptionId: z.string().optional(),
+	worktree: z
+		.object({
+			path: z.string(),
+			branch: z.string(),
+			created: z.boolean(),
+		})
+		.optional(),
+	cwd: z.string().optional(),
+	instruction: z.string().optional(),
+});
+
+const errorMessageOf = (error: unknown): string => {
+	if (error instanceof Error && error.message.trim() !== '')
+		return error.message;
+	if (typeof error === 'string' && error.trim() !== '') return error;
+	return 'delegate failed without a descriptive error';
+};
+
+const isCancellation = (error: unknown): boolean => {
+	if (error instanceof Error && error.name === 'AbortError') return true;
+	const message = errorMessageOf(error).toLowerCase();
+	return message.includes('cancel') || message.includes('abort');
+};
+
+const appendDelegateErrorLog = async (
+	path: string,
+	entry: Record<string, unknown>,
+): Promise<void> => {
+	await mkdir(dirname(path), { recursive: true });
+	await withFileMutex(path, async () => {
+		const handle = await open(path, 'a');
+		try {
+			await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
+			await handle.sync();
+		} finally {
+			await handle.close();
+		}
+	});
+};
+
+const delegationFailure = async (input: {
+	readonly options: IDelegateToolOptions;
+	readonly taskId: string;
+	readonly stage: 'assign' | 'worktree' | 'lock';
+	readonly reason: string;
+	readonly cancelled: boolean;
+	readonly agent?: string;
+	readonly detail?: Record<string, unknown>;
+}): Promise<Record<string, unknown>> => {
+	if (input.agent !== undefined && input.stage !== 'assign') {
+		try {
+			await runAgentNames(
+				{ action: 'release', task_id: input.taskId },
+				input.options.agentNames,
+			);
+		} catch {
+			// Preserve the original delegation failure; reconciliation can
+			// recover the assignment if compensation itself is unavailable.
+		}
+	}
+	const errorId = randomUUID();
+	const alternatives = [
+		'retry delegate after inspecting agent_names and active locks',
+		'choose a different claimable slice or disjoint file scope',
+		'call continue_proposal with mode:"plan" before retrying',
+	];
+	const logPath =
+		input.options.errorLogPathAbs ??
+		`${dirname(input.options.lockPathAbs)}/delegate-errors.jsonl`;
+	let errorLogged = false;
+	try {
+		await appendDelegateErrorLog(logPath, {
+			kind: 'delegate-error',
+			errorId,
+			ts: new Date().toISOString(),
+			taskId: input.taskId,
+			stage: input.stage,
+			reason: input.reason,
+			cancelled: input.cancelled,
+			...(input.agent ? { agent: input.agent } : {}),
+			...(input.detail ? { detail: input.detail } : {}),
+		});
+		errorLogged = true;
+	} catch {
+		// The response still exposes the original failure and its alternatives.
+	}
+	return {
+		ok: false,
+		stage: input.stage,
+		reason: input.reason,
+		errorId,
+		cancelled: input.cancelled,
+		alternatives,
+		errorLogged,
+		...(input.agent ? { agent: input.agent } : {}),
+		...(input.detail ? { detail: input.detail } : {}),
+	};
+};
+
+/**
+ * `delegate` — hand a slice to a subagent organically: assign it a
+ * symbolic name (agent registry) and claim its files (agent lock) in one
+ * call, returning a compact handoff packet. Composes the tested
+ * registry + lock engines.
+ */
+export const buildDelegateRegistration = (
+	options: IDelegateToolOptions,
+): IToolRegistration => ({
+	id: 'delegate',
+	effects: ['write'],
+	writeRoot: 'host-state',
+	summary:
+		'Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.',
+	tags: ['orchestration', 'coordination'],
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_delegate`,
+			{
+				outputSchema: DELEGATE_OUTPUT_SCHEMA,
+				description:
+					'Delegate a slice to a subagent: assigns it a symbolic name (agent registry) and claims its files (agent lock) atomically, returning the handoff packet {agent, taskId, files, locked, instruction}. If the files are already locked it reports the conflict instead of claiming.',
+				inputSchema: z.object({
+					taskId: z.string(),
+					slot: z.string(),
+					files: z.array(z.string()),
+					topic: z.string().optional(),
+					agentName: z.string().optional(),
+					parentTaskId: z.string().optional(),
+					holder: z.enum(['process', 'agent']).optional(),
+					// f00082 S3: the delegated subagent inherits the
+					// delegating orchestrator's host/model. Persisted in
+					// the registry and used for the worktree branch name.
+					host: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: host/IDE the subagent runs under; inherited from the orchestrator.',
+						),
+					model: z
+						.string()
+						.optional()
+						.describe(
+							'f00082: LLM model the subagent runs; inherited from the orchestrator.',
+						),
+				}),
+			},
+			async (args: {
+				taskId: string;
+				slot: string;
+				files: string[];
+				topic?: string | undefined;
+				agentName?: string | undefined;
+				parentTaskId?: string | undefined;
+				holder?: 'process' | 'agent' | undefined;
+				host?: string | undefined;
+				model?: string | undefined;
+			}) => {
+				let stage: 'assign' | 'worktree' | 'lock' = 'assign';
+				let assignedAgent: string | undefined;
+				try {
+					if (options.autoReconcile !== false) {
+						await gcZombies(
+							options.agentNames.registryPathAbs,
+							options.lockPathAbs,
+							options.agentNames.queuePathAbs,
+							{ dryRun: false },
+						);
+					}
+					const assignResult = await runAgentNames(
+						{
+							action: 'assign',
+							task_id: args.taskId,
+							agent_slot: args.slot,
+							...(args.agentName
+								? { agent: args.agentName }
+								: {}),
+							...(args.topic ? { topic: args.topic } : {}),
+							...(args.parentTaskId
+								? { parent_task_id: args.parentTaskId }
+								: {}),
+							...(args.host ? { host: args.host } : {}),
+							...(args.model ? { model: args.model } : {}),
+						},
+						options.agentNames,
+					);
+					const assigned = JSON.parse(
+						assignResult.content[0]?.text ?? '{}',
+					) as {
+						agent_name?: string;
+						blocked?: boolean;
+						error?: string;
+						subscription_id?: string;
+					};
+					assignedAgent = assigned.agent_name;
+					if (assigned.agent_name === undefined) {
+						return toolJson(
+							await delegationFailure({
+								options,
+								taskId: args.taskId,
+								stage: 'assign',
+								reason:
+									assigned.error ??
+									'agent assignment was not completed',
+								cancelled: false,
+								detail: assigned,
+							}),
+						);
+					}
+					// x00051 S1: when the host has enabled the worktree gate,
+					// create the per-agent worktree + branch BEFORE claiming
+					// the file lock. Failure here is a hard prerequisite —
+					// the lock must not be claimed against a branch that
+					// does not exist yet.
+					let worktreeInfo:
+						| { path: string; branch: string; created: boolean }
+						| undefined;
+					if (options.worktree?.enabled === true) {
+						stage = 'worktree';
+						const run =
+							options.worktree.run ??
+							createGitRunner(options.worktree.workspaceRoot);
+						// f00082 S3/S4: only build the composite branch name
+						// when the caller supplies at least one of the new
+						// identity fields (host/model). Without them, keep the
+						// historical `agent/<agent_name>` layout (backwards
+						// compat) — passing task_id alone must NOT change the
+						// branch for legacy delegate callers.
+						const hasComposite =
+							args.host !== undefined || args.model !== undefined;
+						const wt = await runAgentWorktreeEngine(
+							{
+								action: 'create',
+								agent: assigned.agent_name,
+								...(hasComposite
+									? {
+											...(args.host
+												? {
+														host: args.host as import('@delendai/core/public').AgentHost,
+													}
+												: {}),
+											...(args.model
+												? { model: args.model }
+												: {}),
+											task_id: args.taskId,
+										}
+									: {}),
+							},
+							{
+								run,
+								workspaceRoot: options.worktree.workspaceRoot,
+								...(options.worktree.worktreesDirRel !==
+								undefined
+									? {
+											worktreesDirRel:
+												options.worktree
+													.worktreesDirRel,
+										}
+									: {}),
+							},
+						);
+						if (!wt.ok) {
+							return toolJson(
+								await delegationFailure({
+									options,
+									taskId: args.taskId,
+									stage: 'worktree',
+									agent: assigned.agent_name,
+									reason:
+										wt.reason ??
+										'agent_worktree create failed; lock not claimed',
+									cancelled: isCancellation(wt.reason),
+									detail: wt,
+								}),
+							);
+						}
+						if (wt.action === 'create') {
+							worktreeInfo = {
+								path: wt.path,
+								branch: wt.branch,
+								created: wt.created,
+							};
+						}
+					}
+					stage = 'lock';
+					const lockResult = await runAgentLockEngine(
+						{
+							action: 'claim',
+							task_id: args.taskId,
+							agent: assigned.agent_name,
+							files: args.files,
+							...(args.holder === undefined
+								? {}
+								: { holder: args.holder }),
+						},
+						{
+							lockPath: options.lockPathAbs,
+							toolName: `${options.namespacePrefix}_agent_lock`,
+						},
+					);
+					const lock = JSON.parse(
+						lockResult.content[0]?.text ?? '{}',
+					) as {
+						blocked?: boolean;
+						error?: string;
+					};
+					if (lockResult.isError === true || lock.blocked === true) {
+						return toolJson(
+							await delegationFailure({
+								options,
+								taskId: args.taskId,
+								stage: 'lock',
+								agent: assigned.agent_name,
+								reason:
+									lock.error ??
+									(lock.blocked === true
+										? 'files already locked by a live task'
+										: 'agent lock claim was not completed'),
+								cancelled: false,
+								detail: lock,
+							}),
+						);
+					}
+					const whereClause = worktreeInfo
+						? `STOP before editing: launch or continue this agent with cwd \`${worktreeInfo.path}\` on branch \`${worktreeInfo.branch}\`; the parent checkout on develop is not a valid workspace for this task. `
+						: 'Work in the configured checkout (normally develop). ';
+					const workspaceGuard = worktreeInfo
+						? 'Do not edit the parent checkout; '
+						: '';
+					return toolJson({
+						ok: true,
+						agent: assigned.agent_name,
+						taskId: args.taskId,
+						slot: args.slot,
+						files: args.files,
+						locked: true,
+						subscriptionId: assigned.subscription_id,
+						...(worktreeInfo ? { worktree: worktreeInfo } : {}),
+						...(worktreeInfo ? { cwd: worktreeInfo.path } : {}),
+						instruction: `You are "${assigned.agent_name}". ${whereClause}${workspaceGuard}Edit ONLY ${args.files.join(', ')}; release the lock (agent_lock release, task_id "${args.taskId}") when done.`,
+					});
+				} catch (error: unknown) {
+					return toolJson(
+						await delegationFailure({
+							options,
+							taskId: args.taskId,
+							stage,
+							...(assignedAgent ? { agent: assignedAgent } : {}),
+							reason: errorMessageOf(error),
+							cancelled: isCancellation(error),
+						}),
+					);
+				}
+			},
+		);
+	},
+});

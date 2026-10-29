@@ -1,0 +1,115 @@
+# codeql.yml — f00050 S8.
+#
+# CodeQL static analysis on push and pull_request targeting `main` and
+# `develop`, and on demand.
+# Uses the `security-and-quality` query pack so we get both
+#   - security vulns (SQLi, command injection, path traversal, SSRF…)
+#   - quality / maintainability rules (duplicated code, dead code…)
+# on the same run. The `bun` autogen step is excluded so the scanner
+# only sees first-party TypeScript.
+name: CodeQL
+
+on:
+  # The integration branch too: an alert is reported when it is introduced,
+  # and develop reaches main with none open (x00879 S5). Before, only main
+  # was analysed, so 48 alerts reached the owner long after their code
+  # landed on develop.
+  push:
+    branches: [main, develop]
+  # Into develop only: the push run already analyses a develop → main
+  # candidate's commit, and a second run would report it twice.
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: typescript
+            build-mode: none
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # A pull request's analysis is scoped to what it changed (v00144),
+          # which needs the base to diff against.
+          fetch-depth: '0'
+
+      # A pull request is analysed where it changed, with security-extended:
+      # the whole repository with security-and-quality took 312 s and set the
+      # wall time of every pull request. A push to develop still analyses
+      # everything, so what a scoped analysis cannot see is found there.
+      - name: Scope the analysis to the change
+        id: scope
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          CHANGED="$(git diff --name-only "$BASE"...HEAD)"
+          PATHS="$(printf '%s\n' "$CHANGED" | awk -F/ '
+            /^(packages|plugins|apps|extensions)\// { print $1 "/" $2; next }
+            /^(tools|tests|scripts)\// { print $1; next }
+            /^[^\/]+\.(ts|tsx|js|mjs|cjs)$/ { print $0 }' | sort -u)"
+          # A change that touches no code still reports the required check,
+          # on the smallest tree that holds code.
+          [ -n "$PATHS" ] || PATHS="tools/scripts/ci"
+          {
+            echo 'config<<CODEQL_CONFIG'
+            echo 'paths:'
+            printf '%s\n' "$PATHS" | sed 's/^/  - /'
+            echo 'CODEQL_CONFIG'
+          } >> "$GITHUB_OUTPUT"
+          echo "codeql: analysing $(printf '%s\n' "$PATHS" | tr '\n' ' ')"
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4.37.9
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: ${{ github.event_name == 'pull_request' && 'security-extended' || 'security-and-quality' }}
+          config: ${{ steps.scope.outputs.config }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4.37.9
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # The integration branch's analysis is the last evidence a promotion
+  # waits for: `release-the-queue` dispatches it once develop is certified
+  # green, and `open-promotion` counts the required `CodeQL` check from
+  # this analysis. Asking here, when it lands, opens a ready promotion
+  # within minutes instead of at the next hourly run; the hourly run stays
+  # as the fallback. Asking is read-only unless the promotion is ready,
+  # and a project without the workflow is told so in a warning.
+  ask-for-the-promotion:
+    name: ask-for-the-promotion
+    needs: [analyze]
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && needs.analyze.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch open-promotion on the integration branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run open-promotion.yml \
+            --ref develop --repo "${GITHUB_REPOSITORY}" \
+            || echo "::warning::could not dispatch open-promotion; its hourly schedule will ask"
