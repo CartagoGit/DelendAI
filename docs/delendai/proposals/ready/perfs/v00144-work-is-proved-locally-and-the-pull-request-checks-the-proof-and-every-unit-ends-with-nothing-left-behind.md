@@ -53,7 +53,7 @@ The same day the repository held, besides live work: two worktree directories gi
 
 ### S4 — Every unit ends clean
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-gc.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-gc.service.ts`, `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work gc` (also run when a unit is published, retired or claimed, and at start-up) removes worktree directories git does not know, `.orig` and other merge leftovers under the worktrees folder, local branches of ended units, stranded refs whose paths all reached develop, a unit or a publication, and retired refs older than 30 days whose tips develop contains; it lists what it removed and why, and never removes a ref holding work found nowhere else."
