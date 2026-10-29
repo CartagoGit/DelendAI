@@ -2,14 +2,14 @@
 id: v00146
 title: "A pull request starts only the test jobs that run, and the specs that read a change share one job"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 73127e0c-d849-4e63-9071-33b6ea0c2ce7
-last-correlation-id: 73127e0c-d849-4e63-9071-33b6ea0c2ce7
-last-transition-from: review
-last-transition-at: 2026-10-29T14:34:19.883Z
+last-transition-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
+last-correlation-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T14:35:16.995Z
 ---
 
 # v00146 — A pull request starts only the test jobs that run, and the specs that read a change share one job
