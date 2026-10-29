@@ -8,6 +8,7 @@ import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.in
 import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
+import { proved } from './work-unit-prove.service';
 import { claimed } from './work-unit-claim.service';
 import { retiredDropped } from './work-retired-drop.service';
 import { retired, retiredListed } from './work-unit-retire.service';
@@ -79,7 +80,7 @@ const recordEntered = async (
 
 /**
  * A unit-of-work operation (`status`, `swarm`, `doctor`, `claim`, `enter`,
- * `checkpoint`, `publish`, `retire`) from its flags: the one engine behind the CLI's
+ * `checkpoint`, `prove`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
  */
 export const runWorkUnit = async (
@@ -108,6 +109,7 @@ export const runWorkUnit = async (
 		await pruneEndedLeases(ctx);
 		return result;
 	}
+	if (sub === 'prove') return proved(args, ctx);
 	if (sub === 'swarm') return swarm(ctx, args);
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
@@ -119,6 +121,6 @@ export const runWorkUnit = async (
 	}
 	return {
 		code: EXIT_CODE.VALIDATION,
-		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, publish, retire or reap.`,
+		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, prove, publish, retire or reap.`,
 	};
 };
