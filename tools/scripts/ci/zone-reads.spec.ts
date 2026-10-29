@@ -172,6 +172,27 @@ describe('a workflow edit', () => {
 		expect(runsEverything(edited('.github/workflows/ci.yml'))).toBe(true);
 	});
 
+	it('lets prose reach only the zones that read it, and not configuration', () => {
+		for (const path of [
+			'README.md',
+			'CHANGELOG.md',
+			'LICENSE',
+			'.mailmap',
+			'.github/agents/delendai.agent.md',
+			'.github/SECURITY.md',
+		])
+			expect(runsEverything(edited(path))).toBe(false);
+		for (const path of [
+			'delendai.config.json',
+			'package.json',
+			'bun.lock',
+			'tsconfig.json',
+			'vitest.config.ts',
+			'.gitattributes',
+		])
+			expect(runsEverything(edited(path))).toBe(true);
+	});
+
 	it('still runs everything for a composite action, which every job uses', () => {
 		expect(
 			runsEverything({
