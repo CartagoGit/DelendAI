@@ -574,9 +574,35 @@ const headIsIntegrationMerge = (
 };
 
 /**
+ * The paths the repository declares derived: `merge=delendai-generated`
+ * in `.gitattributes`, the same declaration the merge driver reads. Asked
+ * of git, so its patterns (a bare `AGENT.md`, a double-star glob) resolve as
+ * git resolves them.
+ */
+export const derivedPaths = (
+	root: string,
+	paths: readonly string[],
+): ReadonlySet<string> => {
+	if (paths.length === 0) return new Set();
+	const said = git(root, ['check-attr', 'merge', '--', ...paths]) ?? '';
+	return new Set(
+		said
+			.split('\n')
+			.filter((line) => line.endsWith(': merge: delendai-generated'))
+			.map((line) =>
+				line.slice(0, -': merge: delendai-generated'.length),
+			),
+	);
+};
+
+/**
  * The authored files a candidate and the integration branch both changed
- * since their merge base. Generated projections are left out: they are
- * regenerated on every refresh, so both sides touching them says nothing.
+ * since their merge base. Derived files are left out — the projections
+ * `gen:all` rebuilds and everything `.gitattributes` declares generated:
+ * they are regenerated on every refresh, so both sides touching them says
+ * nothing. Measured over 40 pull requests, the derived files were most of
+ * what overlapped (`TOKEN-BUDGETS.md` 7 times, `preset-metadata` 5, an
+ * `AGENT.md` 2).
  */
 export const overlappingFiles = (
 	root: string,
@@ -592,9 +618,11 @@ export const overlappingFiles = (
 			.split('\n')
 			.filter((path) => path.length > 0);
 	const mine = new Set(changed(`${remote}/${branch}`));
-	return changed(head).filter(
+	const both = changed(head).filter(
 		(path) => mine.has(path) && !REGENERATED_PROJECTIONS.has(path),
 	);
+	const derived = derivedPaths(root, both);
+	return both.filter((path) => !derived.has(path));
 };
 
 /**
