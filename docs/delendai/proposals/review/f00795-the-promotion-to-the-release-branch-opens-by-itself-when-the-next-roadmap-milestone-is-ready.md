@@ -2,14 +2,14 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: b7d27626-1a9e-4607-a804-21e8c99ffeca
-last-correlation-id: b7d27626-1a9e-4607-a804-21e8c99ffeca
-last-transition-from: ready
-last-transition-at: 2026-10-29T13:42:39.761Z
+last-transition-id: fafecb66-9f1e-4f9a-90cb-38f1d5b2d60f
+last-correlation-id: fafecb66-9f1e-4f9a-90cb-38f1d5b2d60f
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T13:43:33.286Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
@@ -35,32 +35,44 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - global_gate: type
 
 ### S1 — The queue opens the promotion when it is ready
-- **Status**: pending
+- **Status**: review
 - **Files**: `delendai.config.json`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `.github/workflows/open-promotion.yml`, `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "`plugins.roadmap.options.promotion.schedule` is `on-ready`, and the `open-promotion` workflow projected from it asks every hour (a push comes before the checks its head needs, and a token merge starts none; promotion-workflow.lib.spec.ts), fetching the release branch, and runs `open-promotion --apply`, which opens the develop → main pull request only when develop's required checks are green (a code scanning tool's check counting as reported when that tool has an analysis on the head, open-promotion.script.spec.ts), no code scanning alert is open and the next horizon's blocking gates pass, and says which condition holds it otherwise."
+- shipped-in: `a9b8f5f5371b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The release gate's dispatched run judges what its pull-request run does
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/release-pr-gate.yml`
 - **Gate**: type
 - acceptance:
   - "`release-pr-gate`'s dispatched run checks what its pull-request run checks: the version and changelog of the branch it runs on against main, and the alerts open on that branch."
+- shipped-in: `f09248dce4a4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A promotion that is not a release yet is held back and says how to prepare it
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/release/release-pr-check.script.ts`
 - **Gate**: type
 - acceptance:
   - "`open-promotion` holds the promotion back while develop carries no version above main's or no CHANGELOG section for it (the gaps `release:check` reports, from one `releaseGaps`), naming each gap and `bun run release:prepare --write` as the fix, so it never opens a promotion the release gate refuses (open-promotion.script.spec.ts)."
+- shipped-in: `f09248dce4a4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The roadmap names the next milestone
-- **Status**: pending
+- **Status**: review
 - **Files**: `docs/delendai/ROADMAP.md`
 - **Gate**: type
 - acceptance:
   - "The roadmap holds the 0.3.0 horizon the owner committed on 2026-10-29 (a fast flow, every host held to the workflow, plugins that connect, Batuta working), each entry gated on its proposals being done."
+- shipped-in: `f09248dce4a4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
