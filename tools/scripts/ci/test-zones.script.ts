@@ -343,6 +343,71 @@ export const zoneReach = (
 	return { zones, readOnly, readers };
 };
 
+/**
+ * The jobs to start: the ones that run, with every `readers` job merged
+ * into one (a few specs each, and every job costs a runner and its setup).
+ * A matrix cannot be empty, so a change that runs nothing gets one job
+ * that says so.
+ */
+export const compactMatrix = <
+	T extends {
+		readonly name: string;
+		readonly paths: string;
+		readonly shard: string;
+		readonly run: boolean;
+		readonly filter: string;
+		readonly readers: string;
+	},
+>(
+	entries: readonly T[],
+): readonly {
+	readonly name: string;
+	readonly paths: string;
+	readonly shard: string;
+	readonly run: boolean;
+	readonly filter: string;
+	readonly readers: string;
+}[] => {
+	const running = entries.filter(
+		(entry) => entry.run && entry.filter !== 'readers',
+	);
+	const readers = [
+		...new Set(
+			entries
+				.filter((entry) => entry.run && entry.filter === 'readers')
+				.flatMap((entry) =>
+					entry.readers.split(/\s+/u).filter(Boolean),
+				),
+		),
+	].sort();
+	const merged =
+		readers.length === 0
+			? []
+			: [
+					{
+						name: 'readers',
+						paths: '',
+						shard: '1/1',
+						run: true,
+						filter: 'readers',
+						readers: readers.join(' '),
+					},
+				];
+	const all = [...running, ...merged];
+	return all.length > 0
+		? all
+		: [
+				{
+					name: 'none',
+					paths: '',
+					shard: '1/1',
+					run: false,
+					filter: 'none',
+					readers: '',
+				},
+			];
+};
+
 /** The zones a change reaches; `undefined` means every zone. */
 export const reachableZones = (
 	...args: Parameters<typeof zoneReach>
@@ -475,24 +540,22 @@ const main = (): number => {
 		if (reach === undefined) {
 			console.error(`test-zones: every zone runs — ${everyZoneBecause}`);
 		}
-		console.log(
-			JSON.stringify(
-				jobs.map((job) => ({
-					name: job.name,
-					paths: job.paths.join(' '),
-					shard: `${job.shard}/${job.shards}`,
-					// The zone STAYS in the matrix even when the change
-					// cannot reach it, and reports `skipped` instead of
-					// vanishing: a zone missing from the checks list
-					// because it was unaffected is indistinguishable
-					// from one that was forgotten. `undefined` reach
-					// means run everything.
-					run: planFor(job).filter !== 'none',
-					filter: planFor(job).filter,
-					readers: planFor(job).readers.join(' '),
-				})),
-			),
-		);
+		const entries = jobs.map((job) => ({
+			name: job.name,
+			paths: job.paths.join(' '),
+			shard: `${job.shard}/${job.shards}`,
+			run: planFor(job).filter !== 'none',
+			filter: planFor(job).filter,
+			readers: planFor(job).readers.join(' '),
+		}));
+		// What does not run is stated here, on the log, and does not start
+		// a job: each one took a runner and its setup to report `skipped`.
+		for (const entry of entries.filter((each) => !each.run)) {
+			console.error(
+				`test-zones: ${entry.name} — not started, the change reaches none of its specs`,
+			);
+		}
+		console.log(JSON.stringify(compactMatrix(entries)));
 		return 0;
 	}
 

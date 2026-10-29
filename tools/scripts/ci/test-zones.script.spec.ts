@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	compactMatrix,
 	planZones,
 	reachForBase,
 	reachableZones,
@@ -575,5 +576,49 @@ describe('the workflow plans zones from a pull request base only', () => {
 			"--base=${{ github.event.pull_request.base.sha || '' }}",
 		);
 		expect(base).not.toContain('github.event.before');
+	});
+});
+
+describe('compactMatrix', () => {
+	const job = (name: string, filter: string, readers = '') => ({
+		name,
+		paths: `${name}/`,
+		shard: '1/1',
+		run: filter !== 'none',
+		filter,
+		readers,
+	});
+
+	it('starts only the jobs that run, with every readers job merged into one', () => {
+		const matrix = compactMatrix([
+			job('core 1/3', 'changed'),
+			job('core 2/3', 'none'),
+			job(
+				'plugins 1/4',
+				'readers',
+				'plugins/a.spec.ts plugins/b.spec.ts',
+			),
+			job('tools 1/4', 'readers', 'tools/c.spec.ts plugins/a.spec.ts'),
+		]);
+		expect(matrix.map((entry) => entry.name)).toEqual([
+			'core 1/3',
+			'readers',
+		]);
+		expect(matrix[1]?.readers).toBe(
+			'plugins/a.spec.ts plugins/b.spec.ts tools/c.spec.ts',
+		);
+	});
+
+	it('keeps one job that says nothing runs, since a matrix cannot be empty', () => {
+		expect(compactMatrix([job('core 1/3', 'none')])).toEqual([
+			{
+				name: 'none',
+				paths: '',
+				shard: '1/1',
+				run: false,
+				filter: 'none',
+				readers: '',
+			},
+		]);
 	});
 });
