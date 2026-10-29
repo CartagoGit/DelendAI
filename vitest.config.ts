@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, matchesGlob, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import { sharedSetupFiles } from './vitest.shared.ts';
@@ -57,6 +57,40 @@ const pureBarrelCoverageExcludes = COVERAGE_INDEX_ROOTS.flatMap((root) =>
 		.filter(isPureBarrelIndex)
 		.map(normalizeWorkspacePath),
 );
+
+// What coverage measures. A pull request's gate judges only the files
+// the change touched (`changed-file-coverage`), so instrumenting the
+// rest of the repository bought a number nobody reads: measured, a
+// zone ran 52s with every file instrumented and 24s with the touched
+// one alone. `VITEST_COVERAGE_FILES` (newline-separated, set by CI on
+// pull requests) narrows the selection to the touched files these
+// globs already select — never widens it — so every verdict on a
+// touched file is the one the full selection gives.
+const COVERAGE_INCLUDE = [
+	'packages/*/src/**/*.ts',
+	'plugins/*/src/**/*.ts',
+	'apps/shared/src/**/*.ts',
+	'apps/web/src/lib/**/*.ts',
+	'apps/web/src/data/**/*.ts',
+	'apps/web/src/components/ui/**/*.ts',
+	'apps/web/src/i18n/tools/index.ts',
+	'apps/web/scripts/**/*.ts',
+	'extensions/vscode/src/**/*.ts',
+	'tools/scripts/lib/**/*.ts',
+] as const;
+
+const coverageInclude = (touched: string | undefined): string[] => {
+	if (touched === undefined) return [...COVERAGE_INCLUDE];
+	const selected = touched
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((file) =>
+			COVERAGE_INCLUDE.some((glob) => matchesGlob(file, glob)),
+		);
+	// An empty `include` means "everything" to vitest; a change that
+	// touched no measured file measures nothing instead.
+	return selected.length > 0 ? selected : ['.cache/no-touched-source'];
+};
 
 export default defineConfig({
 	resolve: {
@@ -183,18 +217,7 @@ export default defineConfig({
 			// in selectively: pure TS logic, data builders, controller
 			// helpers and generation scripts — not `.astro` pages nor the
 			// generated/i18n leaf catalogues with little behavioural value.
-			include: [
-				'packages/*/src/**/*.ts',
-				'plugins/*/src/**/*.ts',
-				'apps/shared/src/**/*.ts',
-				'apps/web/src/lib/**/*.ts',
-				'apps/web/src/data/**/*.ts',
-				'apps/web/src/components/ui/**/*.ts',
-				'apps/web/src/i18n/tools/index.ts',
-				'apps/web/scripts/**/*.ts',
-				'extensions/vscode/src/**/*.ts',
-				'tools/scripts/lib/**/*.ts',
-			],
+			include: coverageInclude(process.env['VITEST_COVERAGE_FILES']),
 			exclude: [
 				'**/*.spec.ts',
 				'**/*.test.ts',
