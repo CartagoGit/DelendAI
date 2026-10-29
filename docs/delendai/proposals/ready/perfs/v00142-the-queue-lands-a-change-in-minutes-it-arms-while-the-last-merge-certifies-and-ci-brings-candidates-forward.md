@@ -43,17 +43,17 @@ Measured on 2026-10-28: a pull request's CI takes about 5 minutes (run 406317493
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
-  - "The scheduled run dispatches `keep-the-queue-moving` on the integration branch (or the default branch is the integration branch), so the hourly run arms and reports with the current rules; the run's log names the ref it ran."
+  - "The default branch is the integration branch (repository setting, 2026-10-28), so the hourly run is develop's queue, and the workflow says why next to its schedule."
 
 ### S3 — An author's own commands bring its red candidates forward
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Files**: `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
-  - "Any `work` command an agent runs lists its own publications that are red because their base moved, and `work refresh` brings each forward (merge the integration branch, regenerate, push) from a throwaway worktree, so no owner machine has to be on."
+  - "`bun run forge:refresh -- --apply --author=<agent>` brings forward the agent's own publications the queue hands back to their author (merge the integration branch, regenerate, push, from a throwaway worktree; a conflict is reported and left), so no owner machine has to be on (candidate-disposition.spec.ts)."
 
 ## acceptance
 
 - `integrationAllowsArming` accepts a `pending` integration commit whose first parent is certified, and nothing else that is not certified (queue-arming.spec.ts); a red one still arms only its repair.
-- The scheduled run dispatches `keep-the-queue-moving` on the integration branch (or the default branch is the integration branch), so the hourly run arms and reports with the current rules; the run's log names the ref it ran.
-- Any `work` command an agent runs lists its own publications that are red because their base moved, and `work refresh` brings each forward (merge the integration branch, regenerate, push) from a throwaway worktree, so no owner machine has to be on.
+- The default branch is the integration branch (repository setting, 2026-10-28), so the hourly run is develop's queue, and the workflow says why next to its schedule.
+- `bun run forge:refresh -- --apply --author=<agent>` brings forward the agent's own publications the queue hands back to their author (merge the integration branch, regenerate, push, from a throwaway worktree; a conflict is reported and left), so no owner machine has to be on (candidate-disposition.spec.ts).
