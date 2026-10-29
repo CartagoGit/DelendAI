@@ -1,7 +1,11 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 import { defineConfig } from 'vitest/config';
 
@@ -12,6 +16,7 @@ export default defineConfig({
 	root: workspaceRoot,
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		...sharedTestOptions,
 		testTimeout: 30000,
 		hookTimeout: 30000,
 		name: 'auto-plugin-selector',

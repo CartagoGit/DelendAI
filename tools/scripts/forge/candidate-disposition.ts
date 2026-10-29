@@ -127,6 +127,25 @@ export const candidateDispositions = (
  * The candidates the hydrator brings forward this pass besides the head:
  * red ones owed a fresh verdict, and queued ones something moved under.
  */
+/**
+ * The candidates an agent brings forward itself: its own publications the
+ * queue hands back to their author ("red again after being brought
+ * forward; its author pushes next"). Nothing else asked the author, so
+ * they waited for an owner machine that might be off.
+ */
+export const authorsOwn = (
+	verdicts: readonly ICandidateVerdict[],
+	publicationPrefix: string,
+	agent: string,
+): readonly string[] =>
+	verdicts
+		.filter(
+			(verdict) =>
+				verdict.disposition === 'author' &&
+				verdict.headRef.startsWith(`${publicationPrefix}${agent}/`),
+		)
+		.map((verdict) => verdict.headRef);
+
 export const toBringForward = (
 	verdicts: readonly ICandidateVerdict[],
 ): readonly string[] =>
