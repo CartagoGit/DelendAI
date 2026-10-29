@@ -2,10 +2,14 @@
 id: x00995
 title: "No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: 93c554d4-7447-48ca-a4f8-757286f77432
+last-correlation-id: 93c554d4-7447-48ca-a4f8-757286f77432
+last-transition-from: in-progress
+last-transition-at: 2026-10-29T11:42:49.678Z
 ---
 
 # x00995 — No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason
@@ -32,22 +36,28 @@ A pull request's CodeQL check fails only on alerts its own diff introduces, so a
 - global_gate: type
 
 ### S1 — The two open alerts
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The spec's grandchild writes a relative `late.txt` in the criterion's `cwd` (`runAcceptanceCriteria(..., { cwd: dir })`), so no value is spliced into evaluated code; left unkilled the same command writes the marker there, so the test still proves the process-group kill."
   - "#464 is dismissed as won't fix with the reason above, on 2026-10-29."
+- shipped-in: `5d36ebea3d6f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An open alert is a broken promise
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`
+- **Status**: review
+- **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
-  - "`work doctor --forge` (run by the queue every hour and after each merge) lists every open code-scanning alert with its rule, file and age as a broken invariant, so the queue job goes red until it is fixed or dismissed with a reason."
+  - "The queue job (every hour and after each merge) runs `forge:promotion-alerts --branch=develop`, which lists every open code scanning alert with its rule and place and fails, so the job is red until each is fixed or dismissed with a reason; the release gate counted them only at a promotion."
+- shipped-in: `49d70916f74c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
 - The spec's grandchild writes a relative `late.txt` in the criterion's `cwd` (`runAcceptanceCriteria(..., { cwd: dir })`), so no value is spliced into evaluated code; left unkilled the same command writes the marker there, so the test still proves the process-group kill.
 - #464 is dismissed as won't fix with the reason above, on 2026-10-29.
-- `work doctor --forge` (run by the queue every hour and after each merge) lists every open code-scanning alert with its rule, file and age as a broken invariant, so the queue job goes red until it is fixed or dismissed with a reason.
+- The queue job (every hour and after each merge) runs `forge:promotion-alerts --branch=develop`, which lists every open code scanning alert with its rule and place and fails, so the job is red until each is fixed or dismissed with a reason; the release gate counted them only at a promotion.
