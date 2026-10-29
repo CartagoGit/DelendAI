@@ -83,6 +83,16 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
 	);
 };
 
+/**
+ * Test options every project shares. A project's config defines its own
+ * `test` block and inherits nothing from the root one, so `fsModuleCache`
+ * set only at the root reached no project: each run transformed every
+ * module again (73% of a run's tracked time, measured on orchestrator-runner).
+ */
+export const sharedTestOptions = {
+	fsModuleCache: true,
+} as const;
+
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
 

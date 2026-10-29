@@ -5,8 +5,9 @@ import { defineConfig } from 'vitest/config';
 import {
 	bunOwnedExcludes,
 	sharedSetupFiles,
+	sharedTestOptions,
 	workspaceAliases,
-} from '../../vitest.shared';
+} from '../../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -14,6 +15,7 @@ const workspaceRoot = resolve(here, '../..');
 export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		...sharedTestOptions,
 		// The proposal state tools and peer-review bypass audit share
 		// process-local buffers. Running their files concurrently lets one
 		// spec reset another spec's audit state mid-assertion.
