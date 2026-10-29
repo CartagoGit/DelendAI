@@ -4,7 +4,7 @@ title: "A file a proposal shipped still names what it shipped after a later chan
 kind: fix
 status: ready
 type: proposal
-track: general
+track: ci
 date: 2026-10-29
 ---
 
@@ -12,25 +12,27 @@ date: 2026-10-29
 
 ## goal
 
-TODO: describe the goal.
+`lint:proposals` accepts a `Files` entry of a finished slice that no longer exists on disk when one of the proposal's `shipped-in` commits holds it, so deleting code a proposal once shipped does not turn its record red.
 
 ## why
 
-TODO: why this work matters now.
+On 2026-10-29 #1538 (c00534, which removes the unused `roadmap-sqlite` package) failed `lint-governance` on every run: `proposal-files-exist` read x00987, in review, which lists `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts` because x00987 edited that file, and the file no longer existed on the merge. `Files` names what shipped; what shipped existed in the shipping commit. The lint's baseline held 421 such dangling references; 54 of them were files their own `shipped-in` commits contain.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Accepting a path no shipped commit ever held.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — TODO
+### S1 — Files are judged at the commit that shipped them
 - **Status**: pending
-- **Files**: `TODO`
-- **Gate**: none
+- **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`, `tools/scripts/lint/proposal-files-exist.script.spec.ts`, `tools/scripts/lint/proposal-files-exist.baseline.json`
+- **Gate**: type
+- acceptance:
+  - "A missing `Files` path passes when `git cat-file -e <sha>:<path>` succeeds for one of the proposal's `shipped-in` commits (frontmatter or slice lines); a path no shipped commit held still fails (proposal-files-exist.script.spec.ts); the baseline shrinks from 421 to 367."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- A missing `Files` path passes when `git cat-file -e <sha>:<path>` succeeds for one of the proposal's `shipped-in` commits (frontmatter or slice lines); a path no shipped commit held still fails (proposal-files-exist.script.spec.ts); the baseline shrinks from 421 to 367.
