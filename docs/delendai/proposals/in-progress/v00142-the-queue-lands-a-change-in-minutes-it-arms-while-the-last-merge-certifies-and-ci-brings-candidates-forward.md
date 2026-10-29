@@ -2,10 +2,14 @@
 id: v00142
 title: "The queue lands a change in minutes: it arms while the last merge certifies, and CI brings candidates forward"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-28
+last-transition-id: ca946e51-2d2f-4c5c-8caf-0c3c45720276
+last-correlation-id: ca946e51-2d2f-4c5c-8caf-0c3c45720276
+last-transition-from: ready
+last-transition-at: 2026-10-29T04:13:27.880Z
 ---
 
 # v00142 — The queue lands a change in minutes: it arms while the last merge certifies, and CI brings candidates forward
