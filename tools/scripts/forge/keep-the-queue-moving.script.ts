@@ -479,6 +479,12 @@ const integrationCertification = (
 	return { sha, state: certificationOf(runs, sha) };
 };
 
+/** The commit the integration branch was at before `sha` landed. */
+const firstParentOf = (sha: string): string =>
+	api<{ readonly parents: readonly { readonly sha: string }[] }>(
+		`repos/${REPOSITORY_SLUG}/commits/${sha}`,
+	).parents[0]?.sha ?? sha;
+
 /** Every full run of the certifying workflow at one commit, judged. */
 const fullRunAt = (sha: string): IIntegrationCertification =>
 	certificationOf(
@@ -679,10 +685,15 @@ const main = (): void => {
 	}
 	// Armed on positive evidence only: a certified integration branch, and
 	// every required check green on the candidate's own current head.
-	const certified = integrationAllowsArming(certification.state);
+	const certified = integrationAllowsArming(
+		certification.state,
+		certification.state === 'pending'
+			? fullRunAt(firstParentOf(certification.sha))
+			: undefined,
+	);
 	if (!red && !certified) {
 		console.log(
-			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified; nothing is armed until its full run is green.`,
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, and the commit before it is not certified; nothing is armed until a full run is green.`,
 		);
 	}
 	const landing = new Set(

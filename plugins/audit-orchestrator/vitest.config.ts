@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -29,6 +33,7 @@ export default defineConfig({
 		],
 	},
 	test: {
+		...sharedTestOptions,
 		testTimeout: 30000,
 		hookTimeout: 30000,
 		name: 'audit-orchestrator',

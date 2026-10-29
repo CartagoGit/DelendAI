@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 import {
 	parseZoneReadMap,
+	readersOf,
 	runsEverything,
 	testRunnerChanged,
 	zonesReadingRootFiles,
@@ -178,5 +179,51 @@ describe('a workflow edit', () => {
 				runnerChanged: false,
 			}),
 		).toBe(true);
+	});
+});
+
+describe('readersOf', () => {
+	const map: IZoneReadMap = {
+		zones: {
+			plugins: {
+				read: ['docs/a.md'],
+				listed: ['docs/delendai/proposals/review'],
+				specs: {
+					'plugins/x/a.spec.ts': { read: ['docs/a.md'], listed: [] },
+					'plugins/y/b.spec.ts': {
+						read: [],
+						listed: ['docs/delendai/proposals/review'],
+					},
+					'plugins/z/c.spec.ts': {
+						read: ['docs/other.md'],
+						listed: [],
+					},
+				},
+			},
+			core: { read: ['docs/a.md'], listed: [] },
+		},
+	};
+
+	it('names the specs that read a changed file or list the folder of a moved one', () => {
+		const readers = readersOf(
+			[
+				{ path: 'docs/a.md', listing: false },
+				{ path: 'docs/delendai/proposals/review/x1.md', listing: true },
+			],
+			map,
+		);
+		expect(readers.get('plugins')).toEqual([
+			'plugins/x/a.spec.ts',
+			'plugins/y/b.spec.ts',
+		]);
+	});
+
+	it('says nothing of a zone whose map has no per-spec reads, and nothing for an edit in a listed folder', () => {
+		const readers = readersOf(
+			[{ path: 'docs/delendai/proposals/review/x1.md', listing: false }],
+			map,
+		);
+		expect(readers.get('plugins')).toEqual([]);
+		expect(readers.has('core')).toBe(false);
 	});
 });

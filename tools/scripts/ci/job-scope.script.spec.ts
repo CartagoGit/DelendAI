@@ -13,8 +13,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	explainJobs,
 	JOB_SCOPES,
+	explainJobs,
+	isProse,
 	jobMustRun,
 	planJobs,
 } from './job-scope.script';
@@ -295,5 +296,38 @@ describe('planJobs — a change to a job’s own scripts runs that job', () => {
 	])('%s selects %j', (file, jobs) => {
 		const plan = planJobs({ changed: [file] });
 		for (const job of jobs) expect(plan[job]).toBe(true);
+	});
+});
+
+describe('a change made only of prose', () => {
+	it('skips the jobs that judge code, and only when every changed file is prose', () => {
+		const prose = ['docs/delendai/proposals/review/x1.md', 'README.md'];
+		expect(prose.every(isProse)).toBe(true);
+		expect(isProse('plugins/a/README.md')).toBe(false);
+		expect(jobMustRun({ job: 'lint-biome', changed: prose })).toBe(false);
+		expect(jobMustRun({ job: 'lint-governance', changed: prose })).toBe(
+			true,
+		);
+		expect(
+			jobMustRun({
+				job: 'lint-biome',
+				changed: [...prose, 'package.json'],
+			}),
+		).toBe(true);
+	});
+});
+
+describe('pack smoke', () => {
+	it('runs when a tarball can change, and not for an edit inside a module', () => {
+		const runs = (file: string) =>
+			jobMustRun({ job: 'pack-smoke', changed: [file] });
+		expect(
+			runs('packages/core/src/lib/cache/cache-layout-bootstrap.ts'),
+		).toBe(false);
+		expect(runs('plugins/proposals/package.json')).toBe(true);
+		expect(runs('packages/core/src/cli.ts')).toBe(true);
+		expect(runs('packages/core/src/public/index.ts')).toBe(true);
+		expect(runs('bun.lock')).toBe(true);
+		expect(runs('tools/scripts/compile/build.script.ts')).toBe(true);
 	});
 });

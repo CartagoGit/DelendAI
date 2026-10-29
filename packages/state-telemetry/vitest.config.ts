@@ -1,6 +1,10 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
-import { bunOwnedExcludes, workspaceAliases } from '../../vitest.shared';
+import {
+	bunOwnedExcludes,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 const workspaceRoot = resolve(import.meta.dirname, '../..');
 
@@ -8,6 +12,7 @@ export default defineConfig({
 	// The producer reads `STATE_ABI_VERSION` from `@delendai/state` at run time.
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		...sharedTestOptions,
 		// Measured in isolation on 2026-09-14: the slowest
 		// test of this suite costs 11 ms (`ETA accuracy over a synthetic fixture (f00511 S3) keeps the median ...`).
 		// A full run starts ~1,466 spec files at once, so a ceiling under

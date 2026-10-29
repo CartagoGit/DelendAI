@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
-import { sharedSetupFiles } from './vitest.shared';
+import { sharedSetupFiles } from './vitest.shared.ts';
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 

@@ -1,7 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
+import { sharedTestOptions } from '../../vitest.shared.ts';
+
 export default defineConfig({
 	test: {
+		...sharedTestOptions,
 		// Bun-only, for the same reason as packages/proposals-sqlite: the
 		// driver opens a `bun:sqlite` database, and `bun:sqlite` is a Bun
 		// builtin with no node resolution, so these specs can never pass

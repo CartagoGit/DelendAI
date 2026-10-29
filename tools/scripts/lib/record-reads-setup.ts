@@ -16,6 +16,8 @@ import fs from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 
+import { expect } from 'vitest';
+
 const OUT_DIR = process.env.DELENDAI_RECORD_READS;
 const ROOT = resolve(import.meta.dirname, '..', '..', '..');
 const WORKSPACE_PREFIXES = [
@@ -45,9 +47,17 @@ const note = (target: unknown): void => {
 	if (WORKSPACE_PREFIXES.some((p) => rel.startsWith(p))) return;
 	if (IGNORED_PREFIXES.some((p) => rel.startsWith(p))) return;
 	const path = rel.split('\\').join('/');
-	if (seen.has(path)) return;
-	seen.add(path);
-	sink?.(path);
+	// Each read is kept with the spec that made it, so a change to the file
+	// runs that spec rather than its whole zone.
+	const testPath = expect.getState().testPath;
+	const spec =
+		testPath === undefined
+			? ''
+			: relative(ROOT, testPath).split('\\').join('/');
+	const key = `${spec}\t${path}`;
+	if (seen.has(key)) return;
+	seen.add(key);
+	sink?.(key);
 };
 
 if (OUT_DIR !== undefined && OUT_DIR.length > 0) {
