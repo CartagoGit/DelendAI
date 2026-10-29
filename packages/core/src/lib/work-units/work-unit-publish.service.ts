@@ -46,7 +46,12 @@ import {
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 import { readSupersedingUnit } from './unit-fence.service';
 import { worktreeOfRef } from './unit-removal.service';
-import { describeFailedProof, proveUnit } from './work-unit-proof.service';
+import {
+	describeFailedProof,
+	proofSummary,
+	provesBeforePublishing,
+	proveUnit,
+} from './work-unit-proof.service';
 
 /** The generation a work ref names (`…-g<n>/…`), if it names one. */
 const generationOfWorkRef = (ref: string): number | undefined => {
@@ -270,8 +275,7 @@ export const published = async (
 	// proves nothing; a project that declares no proof is told how to.
 	const proof =
 		tipOfUnit !== undefined &&
-		policy.integration.requiresPullRequest &&
-		policy.integration.requiresLocalCertification &&
+		provesBeforePublishing(policy) &&
 		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
 			? await proveUnit({
 					root,
@@ -385,20 +389,7 @@ export const published = async (
 			...(carried.length === 0 ? {} : { carried }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
-			...(proof === undefined
-				? {}
-				: {
-						proof: proof.declared
-							? {
-									declared: true,
-									remembered: proof.remembered === true,
-								}
-							: {
-									declared: false,
-									nextAction:
-										'Declare how a unit is proved before it is published: a `prove` script in package.json, or `validationMatrix.scopes` in delendai.config.json.',
-								},
-					}),
+			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
 		},
 	};
 };

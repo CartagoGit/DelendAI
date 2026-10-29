@@ -22,8 +22,7 @@
  * (`work prove`) and hand over through a tool call that returns at once.
  */
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IDeclarationReader } from '../contracts/interfaces/local-certification.interface';
@@ -84,6 +83,12 @@ export const proofKey = (
 
 const git = (cwd: string, args: readonly string[]) => runGitCommand(cwd, args);
 
+const exists = async (path: string): Promise<boolean> =>
+	access(path).then(
+		() => true,
+		() => false,
+	);
+
 const tailOf = (output: string): string =>
 	output.trimEnd().split('\n').slice(-OUTPUT_TAIL_LINES).join('\n');
 
@@ -116,7 +121,7 @@ export const proveUnit = async (
 		'delendai-proofs',
 		proofKey(tree.out, steps),
 	);
-	if (existsSync(record)) {
+	if (await exists(record)) {
 		return { declared: true, passed: true, steps, remembered: true };
 	}
 
@@ -164,13 +169,18 @@ export const proveUnit = async (
 		}
 	}
 	const dir = own ?? temporary ?? root;
+	const inTip = (path: string): boolean =>
+		git(root, ['cat-file', '-e', `${tipSha}:${path}`]).ok;
 	const run = request.run ?? runCertificationCommand;
 	try {
 		// A fresh checkout has no dependencies; a project with no package
 		// manifest has none to install (its proof is `make test`, say).
-		if (temporary !== undefined && existsSync(join(dir, 'package.json'))) {
+		if (
+			temporary !== undefined &&
+			(await exists(join(dir, 'package.json')))
+		) {
 			const install = run(
-				`${packageManagerFrom((path) => (existsSync(join(dir, path)) ? '' : undefined))} install`,
+				`${packageManagerFrom((path) => (inTip(path) ? '' : undefined))} install`,
 				dir,
 			);
 			if (install.code !== 0) {
@@ -225,3 +235,23 @@ export const describeFailedProof = (report: IUnitProofReport): string =>
 						: [],
 				),
 			].join('\n');
+
+/** Whether the policy proves a unit before publishing it as a pull request. */
+export const provesBeforePublishing = (policy: {
+	readonly integration: {
+		readonly requiresPullRequest: boolean;
+		readonly requiresLocalCertification: boolean;
+	};
+}): boolean =>
+	policy.integration.requiresPullRequest &&
+	policy.integration.requiresLocalCertification;
+
+/** What a publication says about the proof it ran. */
+export const proofSummary = (report: IUnitProofReport) =>
+	report.declared
+		? { declared: true, remembered: report.remembered === true }
+		: {
+				declared: false,
+				nextAction:
+					'Declare how a unit is proved before it is published: a `prove` script in package.json, or `validationMatrix.scopes` in delendai.config.json.',
+			};
