@@ -28,19 +28,19 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 
 ### S1 — The time each spec takes is recorded
 - **Status**: pending
-- **Files**: `tools/scripts/ci/spec-timings.script.ts`, `tools/scripts/ci/spec-timings.script.spec.ts`, `tools/scripts/ci/spec-timings.generated.json`, `biome.json`
+- **Files**: `tools/scripts/ci/spec-timings.ts`, `tools/scripts/ci/spec-timings.spec.ts`, `tools/scripts/ci/spec-timings.script.ts`, `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "`spec-timings.script.ts --from=<merged blob reports>` writes each spec file's duration to `spec-timings.generated.json`, sorted and stable under biome format; a spec missing from it counts as the zone's median (spec-timings.script.spec.ts)."
+  - "On a full run of the integration branch, the merge of the shards also writes vitest's JSON report (`VITEST_TIMINGS_OUT`). `spec-timings.script.ts` turns it into each spec file's duration, which is uploaded as the `spec-timings` artifact. Both steps are `continue-on-error`: an optimisation never fails the run it measures. Nothing is committed, since a timings file every change rewrote would send open pull requests back (spec-timings.spec.ts)."
 
 ### S2 — The planner splits a zone by time
 - **Status**: pending
-- **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "A zone run unfiltered is split into its shards by greedy longest-first assignment over the recorded timings, each matrix job carrying its spec list instead of `--shard`, so every spec runs exactly once and no shard's expected time exceeds the mean by more than the longest single spec (test-zones.script.spec.ts)."
+  - "`plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before (test-zones.script.spec.ts, spec-timings.spec.ts)."
 
 ## acceptance
 
-- `spec-timings.script.ts --from=<merged blob reports>` writes each spec file's duration to `spec-timings.generated.json`, sorted and stable under biome format; a spec missing from it counts as the zone's median (spec-timings.script.spec.ts).
-- A zone run unfiltered is split into its shards by greedy longest-first assignment over the recorded timings, each matrix job carrying its spec list instead of `--shard`, so every spec runs exactly once and no shard's expected time exceeds the mean by more than the longest single spec (test-zones.script.spec.ts).
+- On a full run of the integration branch, the merge of the shards also writes vitest's JSON report (`VITEST_TIMINGS_OUT`). `spec-timings.script.ts` turns it into each spec file's duration, which is uploaded as the `spec-timings` artifact. Both steps are `continue-on-error`: an optimisation never fails the run it measures. Nothing is committed, since a timings file every change rewrote would send open pull requests back (spec-timings.spec.ts).
+- `plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before (test-zones.script.spec.ts, spec-timings.spec.ts).

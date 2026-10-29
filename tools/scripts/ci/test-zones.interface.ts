@@ -56,6 +56,11 @@ export interface IZoneJob {
 	readonly shards: number;
 	/** Spec files the zone holds — what the split was decided from. */
 	readonly specs: number;
+	/**
+	 * The spec files this job runs, when the zone was split by measured
+	 * time; absent, the job runs its share by `--shard`.
+	 */
+	readonly files?: readonly string[];
 }
 
 /** What each zone touched outside the workspaces, during a full run. */

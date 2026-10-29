@@ -174,7 +174,20 @@ export default defineConfig({
 		// judges the files the change actually touched, so a filter that
 		// wrongly selected nothing is still caught there.
 		passWithNoTests: process.env['VITEST_CHANGED_RUN'] === 'true',
-		reporters: ['verbose', './tools/scripts/test/journal-reporter.ts'],
+		reporters: [
+			'verbose',
+			'./tools/scripts/test/journal-reporter.ts',
+			// A full run's merge records how long each spec took, which the
+			// planner splits zones by (spec-timings.script.ts).
+			...(process.env['VITEST_TIMINGS_OUT'] === undefined
+				? []
+				: [
+						[
+							'json',
+							{ outputFile: process.env['VITEST_TIMINGS_OUT'] },
+						] as const,
+					]),
+		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast.
