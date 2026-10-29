@@ -2,10 +2,14 @@
 id: v00145
 title: "Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: e800b348-4c33-4804-9cb5-e91966d21232
+last-correlation-id: e800b348-4c33-4804-9cb5-e91966d21232
+last-transition-from: ready
+last-transition-at: 2026-10-29T03:07:16.440Z
 ---
 
 # v00145 — Every test project runs warm: the module cache reaches it, its config loads natively, and isolation stays only where a spec needs it
