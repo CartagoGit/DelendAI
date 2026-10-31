@@ -2,10 +2,14 @@
 id: v00150
 title: "A configuration change runs only what it configures"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: 93f804aa-d12a-4e63-b346-3265ed4acfcb
+last-correlation-id: 93f804aa-d12a-4e63-b346-3265ed4acfcb
+last-transition-from: ready
+last-transition-at: 2026-10-31T19:32:40.491Z
 ---
 
 # v00150 — A configuration change runs only what it configures
