@@ -12,13 +12,13 @@ _(none)_
 ## Depends on
 
 - @agentclientprotocol/sdk
+- @delendai/agent-orchestrator
 - @delendai/auto-agent-selector
 - @delendai/client
+- @delendai/completion
+- @delendai/container
+- @delendai/conventions
 - @delendai/core
-- @delendai/env
-- @delendai/proposals
-- @delendai/sqlite
-- @delendai/state
 
 ## Writes
 
