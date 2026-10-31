@@ -151,7 +151,7 @@ type ILandingSentences = Readonly<
 const CERTIFICATION_STEPS: ILandingSentences = {
 	'pull-request': (policy) =>
 		policy.integration.requiresLocalCertification
-			? 'Prove the candidate in isolation BEFORE you publish it: `delendai work prove` runs the proof the integration branch declares (its `prove` script, else its validation gate), and `delendai work publish` runs it too and publishes nothing that fails it.'
+			? 'Prove the candidate in isolation BEFORE you publish it: `delendai work deliver --proposal=<id> --agent=<you>` proves the unit with what the integration branch declares (its `prove` script, else its validation gate), hands it to review and publishes it, and publishes nothing that fails.'
 			: 'Certification happens on the forge, not on your machine.',
 	merge: ({ branches }) =>
 		`Nothing lands uncertified: \`delendai work publish\` runs the validation gate ${branches.integration} declares (\`validationMatrix.scopes\` in delendai.config.json, else a \`validate\` script) on the merge it would push, in a worktree of its own, and a project that declares no gate lands nothing.`,
