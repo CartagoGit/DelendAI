@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	compactMatrix,
 	planZones,
+	shardFilesOf,
 	reachForBase,
 	reachableZones,
 	zoneOf,
@@ -99,6 +100,27 @@ describe('planZones by measured time', () => {
 		);
 		// The 800 ms spec alone balances the seven of 100 ms.
 		expect(jobs[0]?.files).toEqual(['tools/s0.spec.ts']);
+	});
+
+	it('writes the lists apart from the matrix, which only says a job has one', () => {
+		const jobs = planZones({
+			specs,
+			workspaceDirs: [],
+			target: 4,
+			rules,
+			timings: Object.fromEntries(specs.map((spec) => [spec, 100])),
+		});
+		expect(JSON.parse(shardFilesOf(jobs))).toEqual({
+			'tools 1/2': jobs[0]?.files?.join(' '),
+			'tools 2/2': jobs[1]?.files?.join(' '),
+		});
+		expect(
+			JSON.parse(
+				shardFilesOf(
+					planZones({ specs, workspaceDirs: [], target: 4, rules }),
+				),
+			),
+		).toEqual({});
 	});
 
 	it('splits by count, with no lists, when there are no timings', () => {
