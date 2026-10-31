@@ -24,6 +24,8 @@ The owner asked on 2026-10-31 why the skills are ignored by git, and whether ano
 - With the plugin packages in the project's `node_modules`, the server installed 18 skills in each host folder. Without them it installed none, because `init` configures 26 plugins while `@delendai/cli` depends on two of them, and `init` adds no dependency.
 - `@delendai/cli` and `@delendai/core` answer 404 on npm: nothing is published yet, so the `bunx` entry `init` writes cannot start in a foreign project today. Publishing stays the owner's deliberate step of `release.yml`.
 
+The CLI now depends on the 27 plugins of `swarm`, `init`'s default preset, and a spec keeps the two lists in step (2026-10-31). That reaches projects with no package manifest too, where `bunx` is the only route, without installing the whole catalogue. A plugin outside the preset still needs installing by hand. S3 stays open until packed tarballs prove it.
+
 ## non-goals
 
 - Tracking the host copies: they are generated, and each is rebuilt at every start.
@@ -49,7 +51,7 @@ The owner asked on 2026-10-31 why the skills are ignored by git, and whether ano
 
 ### S3 — An installed CLI reaches every configured plugin
 - **Status**: pending
-- **Files**: `packages/cli/package.json`
+- **Files**: `packages/cli/package.json`, `bun.lock`, `packages/cli/src/lib/init/init-plugins-are-installed.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A project that installs the published CLI resolves every plugin `init` writes in its configuration. Proved on packed tarballs in a throwaway project, not from the monorepo's sources, whose resolution hides the gap: the server activates each plugin, and each host folder holds its skills."
