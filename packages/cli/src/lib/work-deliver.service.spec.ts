@@ -8,7 +8,8 @@ import {
 	EXIT_CODE,
 	type IExitCode,
 } from '../contracts/constants/exit-code.constant';
-import { deliverUnit, type IWorkDeliverPorts } from './work-deliver.service';
+import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
+import { deliverUnit } from './work-deliver.service';
 
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },

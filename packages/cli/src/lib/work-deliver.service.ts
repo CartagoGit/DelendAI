@@ -11,17 +11,8 @@
  */
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
+import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import { isRecord } from './helpers/cli-command.helper';
-
-/** What delivering needs from the unit engine and the proposals tool. */
-export interface IWorkDeliverPorts {
-	readonly prove: () => Promise<ICliCommandResult>;
-	readonly publish: () => Promise<ICliCommandResult>;
-	readonly transition: (
-		to: 'in-progress' | 'review',
-		checkout: string | undefined,
-	) => Promise<unknown>;
-}
 
 const refusalOf = (answer: unknown): string | undefined =>
 	isRecord(answer) && answer.ok === false
