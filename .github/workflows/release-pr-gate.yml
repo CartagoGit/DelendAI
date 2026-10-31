@@ -1,0 +1,67 @@
+# release-pr-gate.yml — f00395 S4 / S5.
+#
+# Required status check on `main` (see `.github/branch-protection.yml`).
+# Runs the release-pr-gate locally so a single failure blocks the merge.
+# Mirrors the local pre-push gate in `lefthook.yml` for defense in depth:
+# local catches before push, CI confirms at PR time.
+#
+# Triggers:
+#   pull_request to main.
+#   workflow_dispatch (manual reruns).
+
+name: release-pr-gate
+
+on:
+    pull_request:
+        branches: [main]
+        types: [opened, synchronize, reopened, ready_for_review]
+    workflow_dispatch:
+
+concurrency:
+    group: release-pr-gate-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    # Reading the alerts open on the promotion's head branch.
+    security-events: read
+
+jobs:
+    release-pr-gate:
+        name: release-pr-gate
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            # Every promotion is a release: a version above main's and its
+            # CHANGELOG section, prepared on develop by `release:prepare`.
+            # A dispatched run (a rerun by hand) judges the branch it was
+            # dispatched on as the promotion's head, against main: the same
+            # checks as the pull request's run, not fewer.
+            - name: The promotion carries its version and its changelog
+              run: bun run release:check --base=origin/${{ github.base_ref || 'main' }}
+
+            - name: Typecheck
+              run: bun run typecheck
+
+            - name: Lint (Biome)
+              run: bun run lint
+
+            # The pull request's own CodeQL check fails only from a severity
+            # threshold up, so alerts below it reach the integration branch;
+            # none of them reaches the release branch.
+            - name: The promotion carries no open code scanning alert
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run forge:promotion-alerts -- --branch=${{ github.head_ref || github.ref_name }}
