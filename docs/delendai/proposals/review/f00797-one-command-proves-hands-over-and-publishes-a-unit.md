@@ -2,14 +2,14 @@
 id: f00797
 title: "One command proves, hands over and publishes a unit"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 5242df50-2856-4ce7-bee9-a4267892cdc9
-last-correlation-id: 5242df50-2856-4ce7-bee9-a4267892cdc9
-last-transition-from: ready
-last-transition-at: 2026-10-31T23:35:03.052Z
+last-transition-id: bd9946ef-f4a7-4f13-aa0a-a3f99d71ed84
+last-correlation-id: bd9946ef-f4a7-4f13-aa0a-a3f99d71ed84
+last-transition-from: in-progress
+last-transition-at: 2026-10-31T23:36:48.144Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit
@@ -32,11 +32,14 @@ Delivering took four commands in an order each agent had to remember: `work prov
 - global_gate: type
 
 ### S1 — `work deliver`
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`
 - **Gate**: type
 - acceptance:
   - "`work deliver --proposal=<id> --agent=<you>` proves the unit, moves the proposal to in-progress and review from the unit's worktree, stops with the reason of the first refusal, touches nothing when the proof fails, and only publishes a proposal already in review (work-deliver.service.spec.ts). The workflow every agent receives names it."
+- shipped-in: `6062f28705db`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
