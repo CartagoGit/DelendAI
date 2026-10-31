@@ -66,15 +66,15 @@ Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail
 
 | Task context sample | Bytes | Est. Tokens |
 | --- | --- | --- |
-| cold start | 672 | 168 |
-| after search.search | 728 | 182 |
-| after docs.docs_list | 776 | 194 |
-| after logs.tail | 826 | 207 |
+| cold start | 388 | 97 |
+| after search.search | 413 | 104 |
+| after docs.docs_list | 434 | 109 |
+| after logs.tail | 456 | 114 |
 
 | Percentile | Bytes | Est. Tokens |
 | --- | --- | --- |
-| p50 | 728 | 182 |
-| p95 | 826 | 207 |
+| p50 | 413 | 104 |
+| p95 | 456 | 114 |
 
 ## Real preset dashboard
 
