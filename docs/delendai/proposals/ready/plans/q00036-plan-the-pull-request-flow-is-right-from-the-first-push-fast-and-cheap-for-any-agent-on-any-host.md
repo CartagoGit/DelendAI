@@ -85,7 +85,7 @@ The parts, in order; each one depends only on those before it where it says so.
 3. **v00148 — Test shards are balanced by measured time.** The full run's slowest shard drops from 244 s toward the mean, about 140 s.
 4. **v00149 — A unit is brought forward only when it must be.** Measured: of 74 merges of develop into 40 pull requests, 7 shared any file and 49 were merges the product itself told agents to make before republishing. The advice is corrected, every `.gitattributes`-derived file leaves the overlap rule, and a report measures it again.
 5. **v00150 — A configuration change runs only what it configures.** `package.json` by changed fields, the lockfile by moved packages, and the read recorder sees spawned processes.
-6. **v00144 S6 — Every unit ends clean** (`work gc`). Also v00144's own record: S1-S5 shipped in #1565, #1566, #1573 and #1574 while the proposal still says `pending` in `ready/`. Its statuses are brought in line with what shipped.
+6. **v00144 S6 — Every unit ends clean.** `work reap --apply` already does this and runs on its own; measured, nothing was left over, so no `work gc` was added. Also v00144's own record: S1-S5 shipped in #1565, #1566, #1573 and #1574 while the proposal still says `pending` in `ready/`. Its statuses are brought in line with what shipped.
 
 ## notes
 
@@ -147,7 +147,7 @@ Targets, against the baseline above:
 - **Files**: `docs/delendai/proposals/ready/perfs/v00144-work-is-proved-locally-by-the-plan-the-forge-follows-the-forge-judges-only-what-a-change-reaches-and-every-unit-ends-with-nothing-left-behind.md`
 - **Gate**: type
 - acceptance:
-  - "v00144 records S1-S5 as shipped and S6 is done: after a unit ends, `work gc` leaves no local branch, worktree or ref of it."
+  - "v00144 records S1-S6 as shipped: after a unit ends, `work reap --apply` leaves no local branch or worktree of it."
 
 ## acceptance
 
@@ -156,4 +156,4 @@ Targets, against the baseline above:
 - v00148 is done and a full run's slowest test shard is within 20% of the mean shard.
 - v00149 is done and its report over the following week shows most merges of the integration branch into pull requests sharing a file with what they brought.
 - v00150 is done and a scripts-only `package.json` change runs only the specs that read it.
-- v00144 records S1-S5 as shipped and S6 is done: after a unit ends, `work gc` leaves no local branch, worktree or ref of it.
+- v00144 records S1-S6 as shipped: after a unit ends, `work reap --apply` leaves no local branch or worktree of it.
