@@ -9,6 +9,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { fakePartial } from '@delendai/test-kit';
+
+import type { IInitAnswers } from '../../contracts/interfaces/init.interface';
 import { resolvePluginSet } from './init-render.service';
 
 describe('the default preset reaches an installed CLI', () => {
@@ -19,11 +22,16 @@ describe('the default preset reaches an installed CLI', () => {
 				'utf8',
 			),
 		) as { dependencies: Record<string, string> };
-		const plugins = resolvePluginSet({
-			preset: 'swarm',
-			extraPlugins: [],
-			excludedPlugins: [],
-		} as unknown as Parameters<typeof resolvePluginSet>[0]);
+		const plugins = resolvePluginSet(
+			fakePartial<
+				IInitAnswers,
+				'preset' | 'extraPlugins' | 'excludedPlugins'
+			>({
+				preset: 'swarm',
+				extraPlugins: [],
+				excludedPlugins: [],
+			}),
+		);
 		expect(plugins.length).toBeGreaterThan(0);
 		expect(
 			plugins.filter(
