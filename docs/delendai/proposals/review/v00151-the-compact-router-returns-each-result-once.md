@@ -2,14 +2,14 @@
 id: v00151
 title: "The compact router returns each result once"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-10-31
-last-transition-id: e99ee56f-6ba2-4e79-b9b5-6657c271ec7a
-last-correlation-id: e99ee56f-6ba2-4e79-b9b5-6657c271ec7a
-last-transition-from: ready
-last-transition-at: 2026-10-31T21:40:37.468Z
+last-transition-id: 12430c3f-861a-4ad1-a5a2-690b12ffd737
+last-correlation-id: 12430c3f-861a-4ad1-a5a2-690b12ffd737
+last-transition-from: in-progress
+last-transition-at: 2026-10-31T21:41:24.287Z
 ---
 
 # v00151 — The compact router returns each result once
@@ -32,11 +32,14 @@ Most tools answer with the same JSON as text and as structured content, and the 
 - global_gate: type
 
 ### S1 — The router drops the repeated text
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/tests/src/lib/e2e/compact-router-resolver.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A routed result whose text restates its structured content, once parsed, carries only `structuredContent`. Text that says something else, and every failed call, keeps its `text`, which clients read the reason from (compact-router-resolver.spec.ts)."
+- shipped-in: `6aa11ad8443c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
