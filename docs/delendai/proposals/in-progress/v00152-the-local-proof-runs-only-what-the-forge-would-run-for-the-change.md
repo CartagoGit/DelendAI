@@ -2,10 +2,14 @@
 id: v00152
 title: "The local proof runs only what the forge would run for the change"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-31
+last-transition-id: 77d65c8c-e9b4-47b0-ab52-daa9c716ca39
+last-correlation-id: 77d65c8c-e9b4-47b0-ab52-daa9c716ca39
+last-transition-from: ready
+last-transition-at: 2026-10-31T23:43:10.547Z
 ---
 
 # v00152 — The local proof runs only what the forge would run for the change
