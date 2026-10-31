@@ -20,7 +20,7 @@ An agent working through the compact router pays for each tool's answer once, wi
 
 ## why
 
-Most tools answer with the same JSON as text and as structured content, and the router forwarded both. Measured on the 574 routed results of one working session (2026-10-31): 444 KB of 1,029 KB, 43%, was the copy. Each call any agent makes through the router paid for it in tokens.
+Most tools answer with the same JSON as text and as structured content, and the router forwarded both. Measured on the 574 routed results of one working session (2026-10-31): 444 KB of 1,029 KB, 43%, was the copy. Each call any agent makes through the router paid for it in tokens. The published task cost fell with the fix: a cold start from 168 to 97 estimated tokens, and p95 from 207 to 114.
 
 ## non-goals
 
@@ -33,7 +33,7 @@ Most tools answer with the same JSON as text and as structured content, and the 
 
 ### S1 — The router drops the repeated text
 - **Status**: review
-- **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/tests/src/lib/e2e/compact-router-resolver.spec.ts`
+- **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/tests/src/lib/e2e/compact-router-resolver.spec.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A routed result whose text restates its structured content, once parsed, carries only `structuredContent`. Text that says something else, and every failed call, keeps its `text`, which clients read the reason from (compact-router-resolver.spec.ts)."

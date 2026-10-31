@@ -86,12 +86,12 @@ describe('token-budget dashboard publication', () => {
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
 
 		expect(addendum).toContain('## Catalog and task context cost addendum');
-		expect(addendum).toContain('| cold start | 672 | 168 |');
-		expect(addendum).toContain('| after search.search | 728 | 182 |');
-		expect(addendum).toContain('| after docs.docs_list | 776 | 194 |');
-		expect(addendum).toContain('| after logs.tail | 826 | 207 |');
-		expect(addendum).toContain('| p50 | 728 | 182 |');
-		expect(addendum).toContain('| p95 | 826 | 207 |');
+		expect(addendum).toContain('| cold start | 388 | 97 |');
+		expect(addendum).toContain('| after search.search | 413 | 104 |');
+		expect(addendum).toContain('| after docs.docs_list | 434 | 109 |');
+		expect(addendum).toContain('| after logs.tail | 456 | 114 |');
+		expect(addendum).toContain('| p50 | 413 | 104 |');
+		expect(addendum).toContain('| p95 | 456 | 114 |');
 	});
 
 	it('publishes the task_context_cost addendum from the dashboard generator output', {
