@@ -27,6 +27,8 @@ const WORKSPACE_PREFIXES = [
 	'extensions/',
 	'tools/',
 ];
+/** Files inside a workspace that no import reaches. */
+const WORKSPACE_DATA = /\.(json|md|yml|yaml)$/u;
 const IGNORED_PREFIXES = [
 	'node_modules/',
 	'.cache/',
@@ -44,7 +46,13 @@ const note = (target: unknown): void => {
 	);
 	const rel = relative(ROOT, abs);
 	if (rel === '' || rel.startsWith('..')) return;
-	if (WORKSPACE_PREFIXES.some((p) => rel.startsWith(p))) return;
+	// Code inside a workspace is followed through its imports; its data is
+	// not, and a spec that read a manifest was reached by nothing.
+	if (
+		WORKSPACE_PREFIXES.some((p) => rel.startsWith(p)) &&
+		!WORKSPACE_DATA.test(rel)
+	)
+		return;
 	if (IGNORED_PREFIXES.some((p) => rel.startsWith(p))) return;
 	const path = rel.split('\\').join('/');
 	// Each read is kept with the spec that made it, so a change to the file

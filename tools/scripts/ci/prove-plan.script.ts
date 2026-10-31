@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
 import { RUN_ALONE, staticChecksOf } from './ci-static-steps';
+import { jobMustRun } from './job-scope.script';
 
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
@@ -124,15 +125,23 @@ const runTogether = async (
  * the typecheck and the static checks together, then those that must run
  * alone.
  */
-const runChecks = async (base: string): Promise<boolean> => {
+const runChecks = async (
+	base: string,
+	changed: readonly string[],
+): Promise<boolean> => {
+	// What the forge would run for this change: a check it skips proves
+	// nothing here either.
 	const checks = staticChecksOf(
 		readFileSync('.github/workflows/ci.yml', 'utf8'),
 		base,
 		'develop',
-	);
+	).filter((check) => jobMustRun({ job: check.job, changed }));
 	const first = await runTogether(
 		[
-			...PROVE_GATES.map(
+			...(jobMustRun({ job: 'typecheck', changed })
+				? PROVE_GATES
+				: []
+			).map(
 				(command) =>
 					[command.slice(1).join(' '), command.join(' ')] as const,
 			),
@@ -213,7 +222,7 @@ const main = async (): Promise<number> => {
 	if (process.argv.includes('--fast')) {
 		const root = process.cwd();
 		const changed = changedSince(root, base);
-		let ok = await runChecks(base);
+		let ok = await runChecks(base, changed);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
@@ -240,7 +249,7 @@ const main = async (): Promise<number> => {
 			{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
 		),
 	) as readonly IProveJob[];
-	let ok = await runChecks(base);
+	let ok = await runChecks(base, changedSince(process.cwd(), base));
 	for (const job of jobs) {
 		const args = vitestArgsOf(job, base);
 		if (args === undefined) continue;

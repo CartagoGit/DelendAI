@@ -15,6 +15,11 @@
 # disabled every check in this file. `tools/scripts/sync-git-hooks.script.ts`
 # (run by `prepare` before `lefthook install`) removes those legacy raw hooks.
 
+# Quiet when it passes: every commit printed its whole hook table into every
+# agent's context (3% of a session's tool output). A failure still prints.
+output:
+    - failure
+
 min_version: 1.7.0
 
 # Only `prepare`, in the main checkout, installs the hooks every worktree of
