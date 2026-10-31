@@ -127,7 +127,7 @@ describe('configuration_center tool', () => {
 			limit: 2,
 		});
 		expect(artifacts.artifacts).toHaveLength(2);
-		expect(artifacts.page).toMatchObject({ total: 11, nextCursor: 2 });
+		expect(artifacts.page).toMatchObject({ total: 13, nextCursor: 2 });
 		expect(
 			artifacts.artifacts.every(
 				(entry: any) =>
