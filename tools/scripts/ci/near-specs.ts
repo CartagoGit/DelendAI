@@ -10,6 +10,12 @@
  * zone planner computes, sharded, and is the authority.
  */
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { ZONE_READ_MAP_PATH } from './test-zones.constant';
+import type { IZoneReadMap } from './test-zones.interface';
+import { parseZoneReadMap, readersOf } from './zone-reads';
 
 /** The sources whose nearest specs are worth running. */
 const SOURCE = /^(packages|plugins|tools|extensions|apps)\/.*\.ts$/u;
@@ -84,6 +90,17 @@ export const changedSince = (root: string, base: string): readonly string[] =>
 		git(root, ['diff', '--name-only', '--diff-filter=d', `${base}...HEAD`]),
 	);
 
+const readMapAt = (root: string): IZoneReadMap | undefined => {
+	try {
+		return parseZoneReadMap(
+			readFileSync(join(root, ZONE_READ_MAP_PATH), 'utf8'),
+		);
+	} catch {
+		// No map: only the nearest specs run; the forge still runs the readers.
+		return undefined;
+	}
+};
+
 /** The files of `pattern` that import a module stem by path. */
 const importersIn = (
 	root: string,
@@ -107,14 +124,37 @@ const importersIn = (
 	}
 };
 
+/**
+ * The specs the read map records reading a changed file. A spec that reads
+ * a file from disk imports nothing the nearest specs can find: the published
+ * token figures failed on the forge, after a proof that never ran their spec.
+ */
+export const readerSpecs = (
+	changed: readonly string[],
+	map: IZoneReadMap | undefined,
+): readonly string[] =>
+	[
+		...readersOf(
+			changed.map((path) => ({ path, listing: false })),
+			map,
+		).values(),
+	]
+		.flat()
+		.sort();
+
 /** The nearest specs of the branch's change since `base`, read from git. */
 export const nearSpecsSince = (root: string, base: string): readonly string[] =>
-	nearSpecs(
-		changedSince(root, base),
-		lines(git(root, ['ls-files', '*.spec.ts'])),
-		(stem) => importersIn(root, stem, '*.spec.ts'),
-		(stem) =>
-			importersIn(root, stem, '*.ts').filter(
-				(file) => !file.endsWith('.spec.ts'),
+	[
+		...new Set([
+			...nearSpecs(
+				changedSince(root, base),
+				lines(git(root, ['ls-files', '*.spec.ts'])),
+				(stem) => importersIn(root, stem, '*.spec.ts'),
+				(stem) =>
+					importersIn(root, stem, '*.ts').filter(
+						(file) => !file.endsWith('.spec.ts'),
+					),
 			),
-	);
+			...readerSpecs(changedSince(root, base), readMapAt(root)),
+		]),
+	].sort();

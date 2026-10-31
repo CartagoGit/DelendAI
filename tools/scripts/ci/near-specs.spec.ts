@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { isNearSource, nearSpecs } from './near-specs';
+import { isNearSource, nearSpecs, readerSpecs } from './near-specs';
 
 const SPECS = [
 	'packages/core/tests/src/lib/a/widget.service.spec.ts',
@@ -72,5 +72,32 @@ describe('nearSpecs', () => {
 		expect(isNearSource('plugins/x/src/a.ts')).toBe(true);
 		expect(isNearSource('docs/a.md')).toBe(false);
 		expect(isNearSource('apps/web/src/i18n/tools/index.ts')).toBe(false);
+	});
+});
+
+describe('readerSpecs', () => {
+	it('takes the specs on record reading a changed file, in every zone', () => {
+		const map = {
+			zones: {
+				tools: {
+					read: ['docs/BUDGETS.md'],
+					listed: [],
+					specs: {
+						'tools/report.spec.ts': {
+							read: ['docs/BUDGETS.md'],
+							listed: [],
+						},
+						'tools/other.spec.ts': {
+							read: ['docs/x.md'],
+							listed: [],
+						},
+					},
+				},
+			},
+		};
+		expect(readerSpecs(['docs/BUDGETS.md'], map)).toEqual([
+			'tools/report.spec.ts',
+		]);
+		expect(readerSpecs(['docs/BUDGETS.md'], undefined)).toEqual([]);
 	});
 });
