@@ -35,7 +35,7 @@ The owner asked on 2026-10-31 why the skills are ignored by git, and whether ano
 
 ### S1 — Every skill folder is published
 - **Status**: pending
-- **Files**: `plugins/commit-policy/package.json`, `tools/scripts/lint/skills-are-published.spec.ts`
+- **Files**: `plugins/commit-policy/package.json`, `tools/scripts/lint/skills-are-published.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every package that holds a `skills/` folder lists it in its `files`, so its skills are published. `plugins/commit-policy` did not (`skills-are-published.spec.ts`)."
