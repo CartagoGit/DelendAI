@@ -2,14 +2,14 @@
 id: v00144
 title: "Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 1dce85fa-7b21-4d0d-9cb2-81355e0f44d0
-last-correlation-id: 1dce85fa-7b21-4d0d-9cb2-81355e0f44d0
-last-transition-from: ready
-last-transition-at: 2026-10-31T19:40:00.989Z
+last-transition-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
+last-correlation-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
+last-transition-from: in-progress
+last-transition-at: 2026-10-31T19:44:11.359Z
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -34,23 +34,27 @@ The same day the repository held, besides live work: two worktree directories gi
 - global_gate: type
 
 ### S1 — A pull request runs a scoped CodeQL
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/codeql.yml`
 - **Gate**: type
 - acceptance:
   - "On a pull request CodeQL analyses with `security-extended` only the workspaces the change touches (a minimal path for a change touching none), so the required check still reports; a push to develop analyses everything with `security-and-quality`."
 - shipped-in: `099561bea4df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A documentation change is judged by the documentation rules
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When every changed path is Markdown under docs/ or at the root, the jobs that judge code (biome, presets, manifests, metrics, the test matrix, typecheck, builds) report skipped; the documentation, proposal, secret and generated-artifact checks run."
 - shipped-in: `099561bea4df`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The forge judges only what the change reaches, and never on the author's word
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -58,31 +62,39 @@ The same day the repository held, besides live work: two worktree directories gi
   - "pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts)."
   - "No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's."
 - shipped-in: `bf6fa917402e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — What a start finds left over and holding nothing is removed
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts)."
   - "Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept)."
 - shipped-in: `373e3f316977`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Publishing refuses a unit that holds nothing new
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work publish` refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integration branch lacks and how to end it (work-unit-publish-failure.spec.ts); on 2026-10-28 such a republish opened #1563, an empty pull request."
 - shipped-in: `6202e06e7aaf`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Every unit ends clean
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`
 - **Gate**: type
 - acceptance:
   - "`work reap --apply` removes the worktree and local branch of every delivered unit and every directory beside the units that is no unit, keeping on the forge what such a directory held that no commit has, and it reports only without `--apply`. Measured on 2026-10-31 after a week of units: three local branches and no orphan directory. No second command was added."
 - shipped-in: `27e997af5202`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
