@@ -85,7 +85,7 @@ describe('configuration_center tool', () => {
 				// Native compatibility assembly also registers the core
 				// artifacts; the demo plugin contributes the three fixture
 				// artifacts on top of that canonical set.
-				artifacts: 11,
+				artifacts: 13,
 				unavailableArtifactKinds: ['agent'],
 			},
 		});
