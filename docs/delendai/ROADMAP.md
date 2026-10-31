@@ -100,6 +100,15 @@ horizons:
         proposals:
           - f00792
           - x00997
+      - id: audit-settled
+        title: Every finding of the joint audit is fixed, merged into another, or rejected with its reason
+        kind: feature
+        state: committed
+        gates:
+          - kind: proposal-done
+            target: q00035
+        proposals:
+          - q00035
       - id: batuta-works
         title: Batuta delegates real work across hosts and BYOK models within the quota it can see
         kind: feature
@@ -132,8 +141,8 @@ owner's decision.
 
 The 0.3.0 horizon was committed by the owner on 2026-10-29: the version
 ships when the whole system works as it should — a fast, cheap, reliable
-flow, plugins that connect, Batuta working, and every host or model held
-to the workflow.
+flow, plugins that connect, Batuta working, every host or model held to
+the workflow, and every finding of the joint audit settled.
 
 No entry carries a date. A date nobody can audit is a hope, not a
 deadline; an estimate goes in only with where it comes from.

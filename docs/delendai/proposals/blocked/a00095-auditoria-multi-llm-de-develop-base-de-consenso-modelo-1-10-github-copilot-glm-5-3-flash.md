@@ -2,7 +2,7 @@
 id: a00095
 title: "Auditoría multi-LLM de `develop` — base de consenso (modelo 1/10: GitHub Copilot · GLM 5.3 Flash)"
 kind: audit
-status: paused
+status: blocked
 type: proposal
 track: architecture
 date: 2026-10-17
@@ -215,10 +215,10 @@ consensus:
     Un hallazgo con ≥80% de acuerdo (8/10) pasa a "## Consenso"; el resto
     queda en disputa para valoración individual.
 paused-reason: "Paused 2026-10-31: Collection stands as it is: the owner holds the audit valid with what it has, and phase C needs their authorization. S2-S11 wait there; parked so a proposal nobody holds stops failing the queue's doctor."
-last-transition-id: 7f8e8187-f473-4c23-8981-a11eb23bf4b8
-last-correlation-id: 7f8e8187-f473-4c23-8981-a11eb23bf4b8
-last-transition-from: in-progress
-last-transition-at: 2026-10-31T20:36:48.249Z
+last-transition-id: 3a056487-d4a2-4688-8331-6d3fc2032c44
+last-correlation-id: 3a056487-d4a2-4688-8331-6d3fc2032c44
+last-transition-from: ready
+last-transition-at: 2026-10-31T21:29:52.531Z
 ---
 
 # a00095 — Auditoría multi-LLM de `develop`: hallazgos base + protocolo de consenso entre 10 modelos
