@@ -1,0 +1,60 @@
+---
+id: x00959
+title: "Orchestrators and reviewers are held to their own rules by the product"
+kind: fix
+status: ready
+type: proposal
+track: a00095-consistency
+date: 2026-10-23
+---
+
+# x00959 — Orchestrators and reviewers are held to their own rules by the product
+
+## goal
+
+A create unit makes one proposal, a delivery is checked against its slice's Files and acceptance at publish, a commit with a red spec of the touched files is refused, the gates a unit must pass are one product command, reviewers keep one unit per session and cannot claim more than they work, and two instances of one model are told apart.
+
+## why
+
+Joint audit a00095 and the reviewer observations recorded during it. C4: identities keep being wrong; only one cause is closed. C5: proposal ids are burned and one create unit made four proposals. C9: the orchestrator rewrites the gate list by hand in each assignment. C10: a subagent costs 34k tokens before its first action. C11: a subagent's delivery departed from the proposal's Files and acceptance. C13: a commit with a red spec is possible, and a smoke that wrote into the tree was cleaned with rm. Reviewers (minimax-m3.1-flash-preview, 2026-10-22/23): one unit per claim, six live at once, units silent with approvals never published, and two instances under one identity.
+
+## non-goals
+
+- Review evidence (x00944 S2).
+
+## slices
+
+- global_gate: type
+
+### S1 — Units
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: type
+- acceptance:
+  - "A create unit refuses a second create_proposal (C5)."
+  - "Publish compares the delivered paths with the slice's Files and lists departures; acceptance lines without evidence block the hand-over (C11)."
+
+### S2 — Gates as one command and hooks
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/work.command.ts`, `lefthook.yml`
+- **Gate**: type
+- acceptance:
+  - "`delendai work gate` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10)."
+  - "pre-commit runs the specs of the staged source files and refuses a red one (C13)."
+
+### S3 — Reviewers
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- **Gate**: type
+- acceptance:
+  - "A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts."
+  - "Two live instances of one model id are distinguished by an instance suffix the product assigns, and the identity check reports it (C4)."
+
+## acceptance
+
+- A create unit refuses a second create_proposal (C5).
+- Publish compares the delivered paths with the slice's Files and lists departures; acceptance lines without evidence block the hand-over (C11).
+- `delendai work gate` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10).
+- pre-commit runs the specs of the staged source files and refuses a red one (C13).
+- A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts.
+- Two live instances of one model id are distinguished by an instance suffix the product assigns, and the identity check reports it (C4).
