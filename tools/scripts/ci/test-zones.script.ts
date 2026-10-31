@@ -45,9 +45,11 @@ import type {
 	IZoneRule,
 } from './test-zones.interface';
 import {
+	onlyScriptsChanged,
 	parseZoneReadMap,
 	readersOf,
 	isWorkflowFile,
+	ROOT_MANIFEST,
 	runsEverything,
 	testRunnerChanged,
 	zonesReadingRootFiles,
@@ -264,28 +266,39 @@ export const zoneReach = (
 		.filter((change) => roots.has(change.path))
 		.map(
 			(change): IRootChange =>
-				!isWorkflowFile(change.path)
-					? change
-					: {
+				change.path === ROOT_MANIFEST
+					? {
 							...change,
-							// Only the test workflow runs the zones; another workflow's
-							// edit reaches the zones that read it, like any root file.
-							runnerChanged:
-								change.path !== TEST_WORKFLOW
-									? false
-									: deps.contentAt === undefined
-										? undefined
-										: testRunnerChanged(
-												deps.contentAt(
-													'base',
-													change.path,
+							scriptsOnly:
+								deps.contentAt === undefined
+									? undefined
+									: onlyScriptsChanged(
+											deps.contentAt('base', change.path),
+											deps.contentAt('head', change.path),
+										),
+						}
+					: !isWorkflowFile(change.path)
+						? change
+						: {
+								...change,
+								// Only the test workflow runs the zones; another workflow's
+								// edit reaches the zones that read it, like any root file.
+								runnerChanged:
+									change.path !== TEST_WORKFLOW
+										? false
+										: deps.contentAt === undefined
+											? undefined
+											: testRunnerChanged(
+													deps.contentAt(
+														'base',
+														change.path,
+													),
+													deps.contentAt(
+														'head',
+														change.path,
+													),
 												),
-												deps.contentAt(
-													'head',
-													change.path,
-												),
-											),
-						},
+							},
 		);
 	const rootReached =
 		roots.size === 0
