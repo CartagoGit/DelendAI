@@ -402,7 +402,7 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
   If the shell still gets stuck on that "alternate buffer" symptom,
   do not retry the same `mode: "sync"` call — follow the shell-fallback
   ladder in
-  [`docs/delendai/skills/shell-fallback/SKILL.md`](skills/shell-fallback/SKILL.md)
+  [`packages/core/skills/shell-fallback/SKILL.md`](../../packages/core/skills/shell-fallback/SKILL.md)
   (`withShellFallback` from `@delendai/core/public`: re-issue as
   `mode: "async"` and poll, then fall back to file tools).
 

@@ -31,6 +31,7 @@ export const nearSpecs = (
 	changed: readonly string[],
 	specs: readonly string[],
 	importersOf: (stem: string) => readonly string[],
+	sourceImportersOf?: (stem: string) => readonly string[],
 ): readonly string[] => {
 	const out = new Set<string>();
 	const byName = new Map<string, string[]>();
@@ -44,8 +45,24 @@ export const nearSpecs = (
 			continue;
 		}
 		const stem = stemOf(file);
-		for (const spec of byName.get(`${stem}.spec.ts`) ?? []) out.add(spec);
-		for (const spec of importersOf(stem)) out.add(spec);
+		const direct = [
+			...(byName.get(`${stem}.spec.ts`) ?? []),
+			...importersOf(stem),
+		];
+		// A file no spec reaches directly (generated data, say) is reached
+		// through the sources that import it; without them its coverage
+		// reads 0% for a file nothing near was asked to run.
+		const near =
+			direct.length > 0
+				? direct
+				: (sourceImportersOf?.(stem) ?? []).flatMap((source) => {
+						const name = stemOf(source);
+						return [
+							...(byName.get(`${name}.spec.ts`) ?? []),
+							...importersOf(name),
+						];
+					});
+		for (const spec of near) out.add(spec);
 	}
 	return [...out].sort();
 };
@@ -67,26 +84,37 @@ export const changedSince = (root: string, base: string): readonly string[] =>
 		git(root, ['diff', '--name-only', '--diff-filter=d', `${base}...HEAD`]),
 	);
 
+/** The files of `pattern` that import a module stem by path. */
+const importersIn = (
+	root: string,
+	stem: string,
+	pattern: string,
+): readonly string[] => {
+	try {
+		return lines(
+			git(root, [
+				'grep',
+				'-l',
+				'-E',
+				`from ['"][^'"]*/${stem.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(\\.ts)?['"]`,
+				'--',
+				pattern,
+			]),
+		);
+	} catch {
+		// `git grep` exits 1 when nothing matches.
+		return [];
+	}
+};
+
 /** The nearest specs of the branch's change since `base`, read from git. */
 export const nearSpecsSince = (root: string, base: string): readonly string[] =>
 	nearSpecs(
 		changedSince(root, base),
 		lines(git(root, ['ls-files', '*.spec.ts'])),
-		(stem) => {
-			try {
-				return lines(
-					git(root, [
-						'grep',
-						'-l',
-						'-E',
-						`from ['"][^'"]*/${stem.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(\\.ts)?['"]`,
-						'--',
-						'*.spec.ts',
-					]),
-				);
-			} catch {
-				// `git grep` exits 1 when nothing matches.
-				return [];
-			}
-		},
+		(stem) => importersIn(root, stem, '*.spec.ts'),
+		(stem) =>
+			importersIn(root, stem, '*.ts').filter(
+				(file) => !file.endsWith('.spec.ts'),
+			),
 	);

@@ -120,6 +120,16 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 		bundled: false,
 	},
 	{
+		id: 'delendai-shell-fallback',
+		appliesTo: '@delendai/core',
+		bundled: true,
+	},
+	{
+		id: 'delendai-shell-status',
+		appliesTo: '@delendai/*',
+		bundled: true,
+	},
+	{
 		id: 'delendai-state-repair-playbook',
 		appliesTo: '@delendai/proposals',
 		bundled: false,

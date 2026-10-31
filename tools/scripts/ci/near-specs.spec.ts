@@ -54,6 +54,20 @@ describe('nearSpecs', () => {
 		expect(asked).toEqual([]);
 	});
 
+	it('reaches a file no spec names through the sources that import it', () => {
+		expect(
+			nearSpecs(
+				['packages/cli/src/lib/list.generated.ts'],
+				['packages/cli/tests/list-reader.spec.ts'],
+				() => [],
+				(stem) =>
+					stem === 'list.generated'
+						? ['packages/cli/src/lib/list-reader.ts']
+						: [],
+			),
+		).toEqual(['packages/cli/tests/list-reader.spec.ts']);
+	});
+
 	it('knows which paths are sources', () => {
 		expect(isNearSource('plugins/x/src/a.ts')).toBe(true);
 		expect(isNearSource('docs/a.md')).toBe(false);

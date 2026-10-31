@@ -1370,6 +1370,34 @@
 			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md"
 		},
 		{
+			"id": "delendai-shell-fallback",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a delendai tool cannot do the job: the ladder that falls back to the shell safely.",
+			"appliesTo": [
+				"@delendai/core"
+			],
+			"tags": [
+				"shell",
+				"terminal"
+			],
+			"bodyPath": "packages/core/skills/shell-fallback/SKILL.md"
+		},
+		{
+			"id": "delendai-shell-status",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use before relying on a shell dialect, a pager or an optional binary: read what the terminal can do with shell_status.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"shell",
+				"terminal"
+			],
+			"bodyPath": "packages/core/skills/shell-status/SKILL.md"
+		},
+		{
 			"id": "delendai-state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
