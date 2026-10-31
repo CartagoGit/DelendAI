@@ -23,7 +23,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
@@ -499,6 +499,31 @@ const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
 	}
 };
 
+/**
+ * The most the matrix may weigh. Its jobs read it in an environment
+ * variable, and Linux refuses one over 128 KiB: the spec lists went in the
+ * matrix once, `delendai-validate` could not start, and develop was red
+ * with no failing check. The lists travel in an artifact (`--files-out`).
+ */
+const MAX_MATRIX_BYTES = 64 * 1024;
+
+/** Each time-split job's spec list, by job name, as `--files-out` writes it. */
+export const shardFilesOf = (
+	jobs: readonly {
+		readonly name: string;
+		readonly files?: readonly string[];
+	}[],
+): string =>
+	`${JSON.stringify(
+		Object.fromEntries(
+			jobs.flatMap((job) =>
+				job.files === undefined
+					? []
+					: [[job.name, job.files.join(' ')]],
+			),
+		),
+	)}\n`;
+
 const withTimings = (
 	timings: Readonly<Record<string, number>> | undefined,
 ): { readonly timings?: Readonly<Record<string, number>> } =>
@@ -620,7 +645,7 @@ const main = (): number => {
 				name: job.name,
 				paths: job.paths.join(' '),
 				shard: `${job.shard}/${job.shards}`,
-				files: job.files?.join(' ') ?? '',
+				listed: job.files !== undefined,
 				run: planFor(job).filter !== 'none',
 				filter: planFor(job).filter,
 				readers: planFor(job).readers.join(' '),
@@ -629,7 +654,7 @@ const main = (): number => {
 				name: `${zone} readers`,
 				paths: '',
 				shard: '1/1',
-				files: '',
+				listed: false,
 				run: true,
 				filter: 'readers',
 				readers: specs.join(' '),
@@ -642,7 +667,18 @@ const main = (): number => {
 				`test-zones: ${entry.name} — not started, the change reaches none of its specs`,
 			);
 		}
-		console.log(JSON.stringify(compactMatrix(entries)));
+		const matrix = JSON.stringify(compactMatrix(entries));
+		if (Buffer.byteLength(matrix) > MAX_MATRIX_BYTES) {
+			console.error(
+				`test-zones: the matrix is ${String(Buffer.byteLength(matrix))} bytes, over the ${String(MAX_MATRIX_BYTES)} a job can take in one variable.`,
+			);
+			return 1;
+		}
+		const filesOut = arg('files-out');
+		if (filesOut !== undefined) {
+			writeFileSync(filesOut, shardFilesOf(jobs));
+		}
+		console.log(matrix);
 		return 0;
 	}
 
