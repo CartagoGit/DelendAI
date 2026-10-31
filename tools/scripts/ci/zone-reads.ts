@@ -52,9 +52,54 @@ export const isWorkflowFile = (path: string): boolean =>
  */
 export const runsEverything = (change: IRootChange): boolean =>
 	!isProse(change.path) &&
+	!(change.path === ROOT_MANIFEST && change.scriptsOnly === true) &&
 	(!change.path.includes('/') ||
 		(change.path.startsWith('.github/') &&
 			!(isWorkflowFile(change.path) && change.runnerChanged === false)));
+
+/** The root package manifest, whose scripts-only edits reach their readers. */
+export const ROOT_MANIFEST = 'package.json';
+
+/**
+ * Scripts that change how every spec runs or how the tree is installed: a
+ * test runner (`test`, `test:shard`, ...) or an install hook.
+ */
+const RUNNER_SCRIPT = /^(test|pre|post|prepare)/u;
+
+const withoutScripts = (manifest: Record<string, unknown>): string => {
+	const { scripts: _scripts, ...rest } = manifest;
+	return JSON.stringify(rest);
+};
+
+/**
+ * Whether the root manifest changed only in scripts that no test run or
+ * install uses. Dependencies change which code every import loads, so any
+ * other change — or a side that is missing or does not parse — is not.
+ */
+export const onlyScriptsChanged = (
+	before: string | undefined,
+	after: string | undefined,
+): boolean => {
+	if (before === undefined || after === undefined) return false;
+	let old: Record<string, unknown>;
+	let next: Record<string, unknown>;
+	try {
+		old = JSON.parse(before) as Record<string, unknown>;
+		next = JSON.parse(after) as Record<string, unknown>;
+	} catch {
+		return false;
+	}
+	if (withoutScripts(old) !== withoutScripts(next)) return false;
+	const scripts = (manifest: Record<string, unknown>) =>
+		(manifest.scripts ?? {}) as Record<string, unknown>;
+	const names = new Set([
+		...Object.keys(scripts(old)),
+		...Object.keys(scripts(next)),
+	]);
+	return [...names]
+		.filter((name) => scripts(old)[name] !== scripts(next)[name])
+		.every((name) => !RUNNER_SCRIPT.test(name));
+};
 
 /** A root or `.github/` file that only a spec reading it can be affected by. */
 export const isProse = (path: string): boolean =>
