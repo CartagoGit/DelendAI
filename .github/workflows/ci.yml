@@ -581,8 +581,22 @@ jobs:
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix ${TIMINGS} \
+                      --files-out=.cache/spec-timings/zone-files.json \
                       --base=${{ github.event.pull_request.base.sha || '' }}
                   } >> "$GITHUB_OUTPUT"
+
+            # Each shard's spec list, too large for the matrix: its jobs read
+            # the matrix in an environment variable, which Linux caps at
+            # 128 KiB, and `delendai-validate` could not even start.
+            - name: Upload each shard's spec list
+              uses: actions/upload-artifact@v7
+              with:
+                  name: zone-files
+                  path: .cache/spec-timings/zone-files.json
+                  retention-days: 1
+                  if-no-files-found: ignore
+                  include-hidden-files: true
+                  overwrite: true
 
     tests-zone:
         # `tests: proposals` failing says where to look. `test-shard 4/8`
@@ -671,6 +685,13 @@ jobs:
             # release is never cut on filtered evidence, and a change
             # that combines badly with another is exactly what a filter
             # cannot see.
+            - name: Fetch this zone's spec lists
+              if: matrix.zone.run && matrix.zone.listed
+              uses: actions/download-artifact@v8
+              with:
+                  name: zone-files
+                  path: .cache/zone-files
+
             - name: Run the ${{ matrix.zone.name }} zone
               if: matrix.zone.run
               env:
@@ -679,10 +700,15 @@ jobs:
                   ZONE_SHARD: ${{ matrix.zone.shard }}
                   ZONE_FILTER: ${{ matrix.zone.filter }}
                   ZONE_READERS: ${{ matrix.zone.readers }}
-                  ZONE_FILES: ${{ matrix.zone.files }}
               run: |
                   set -euo pipefail
                   CHANGED=""
+                  ZONE_FILES=""
+                  # A job the planner split by time was promised its list: an
+                  # empty one would fall back to `--shard` and run other specs.
+                  if [ "${{ matrix.zone.listed }}" = "true" ]; then
+                    ZONE_FILES="$(jq -er --arg job "$ZONE" '.[$job]' .cache/zone-files/zone-files.json)"
+                  fi
                   # A pull request is judged on the coverage of the files it
                   # touched, so only those are instrumented (vitest.config.ts).
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
