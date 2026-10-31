@@ -2,14 +2,14 @@
 id: v00150
 title: "A configuration change runs only what it configures"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 93f804aa-d12a-4e63-b346-3265ed4acfcb
-last-correlation-id: 93f804aa-d12a-4e63-b346-3265ed4acfcb
-last-transition-from: ready
-last-transition-at: 2026-10-31T19:32:40.491Z
+last-transition-id: d7efaf92-ba11-47b0-a216-50c5d55171d3
+last-correlation-id: d7efaf92-ba11-47b0-a216-50c5d55171d3
+last-transition-from: in-progress
+last-transition-at: 2026-10-31T19:33:43.031Z
 ---
 
 # v00150 — A configuration change runs only what it configures
@@ -37,11 +37,14 @@ A mixed pull request is not narrowed further: when other code changed too, `vite
 - global_gate: type
 
 ### S1 — A package.json change reaches what its changed fields reach
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`
 - **Gate**: type
 - acceptance:
   - "A root `package.json` change whose only changed fields are scripts no test run or install uses reaches only the specs that read the file. A change to a test script, an install hook or any other field, or a side that does not parse, still runs every zone (zone-reads.spec.ts)."
+- shipped-in: `8866a9564388`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
