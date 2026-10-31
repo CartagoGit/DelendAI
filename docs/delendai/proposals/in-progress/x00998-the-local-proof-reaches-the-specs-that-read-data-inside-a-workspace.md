@@ -2,10 +2,14 @@
 id: x00998
 title: "The local proof reaches the specs that read data inside a workspace"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-31
+last-transition-id: 5fe38192-ad70-41a6-b9d4-90fd29bbb8e4
+last-correlation-id: 5fe38192-ad70-41a6-b9d4-90fd29bbb8e4
+last-transition-from: ready
+last-transition-at: 2026-10-31T23:35:55.498Z
 ---
 
 # x00998 — The local proof reaches the specs that read data inside a workspace
