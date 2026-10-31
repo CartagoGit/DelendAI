@@ -2,14 +2,14 @@
 id: x00998
 title: "The local proof reaches the specs that read data inside a workspace"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 5fe38192-ad70-41a6-b9d4-90fd29bbb8e4
-last-correlation-id: 5fe38192-ad70-41a6-b9d4-90fd29bbb8e4
-last-transition-from: ready
-last-transition-at: 2026-10-31T23:35:55.498Z
+last-transition-id: 0750fc2c-4673-4aad-8c99-f03000a696fa
+last-correlation-id: 0750fc2c-4673-4aad-8c99-f03000a696fa
+last-transition-from: in-progress
+last-transition-at: 2026-10-31T23:37:44.100Z
 ---
 
 # x00998 — The local proof reaches the specs that read data inside a workspace
@@ -32,11 +32,14 @@ A change to a data file inside a workspace runs the specs that read it in the lo
 - global_gate: type
 
 ### S1 — The read map holds a workspace's data files
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.generated.json`
 - **Gate**: type
 - acceptance:
   - "The recorder keeps `.json`, `.md`, `.yml` and `.yaml` paths inside a workspace, the committed map is recorded with it, and it names the spec that reads `packages/core/skills/manifest.json`, so `bun run prove` runs that spec for a change to it."
+- shipped-in: `757071d8f029`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
