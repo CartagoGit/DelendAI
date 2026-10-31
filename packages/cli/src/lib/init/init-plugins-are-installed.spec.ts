@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
-import type { IInitAnswers } from '../../contracts/interfaces/init.interface';
+import type { IInitAnswers } from './init-answers.types';
 import { resolvePluginSet } from './init-render.service';
 
 describe('the default preset reaches an installed CLI', () => {
