@@ -2,10 +2,14 @@
 id: v00144
 title: "Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
+last-transition-id: 1dce85fa-7b21-4d0d-9cb2-81355e0f44d0
+last-correlation-id: 1dce85fa-7b21-4d0d-9cb2-81355e0f44d0
+last-transition-from: ready
+last-transition-at: 2026-10-31T19:40:00.989Z
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
