@@ -2,10 +2,14 @@
 id: v00151
 title: "The compact router returns each result once"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-10-31
+last-transition-id: e99ee56f-6ba2-4e79-b9b5-6657c271ec7a
+last-correlation-id: e99ee56f-6ba2-4e79-b9b5-6657c271ec7a
+last-transition-from: ready
+last-transition-at: 2026-10-31T21:40:37.468Z
 ---
 
 # v00151 — The compact router returns each result once
