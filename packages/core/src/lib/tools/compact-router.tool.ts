@@ -10,6 +10,25 @@ import {
 	toolJson,
 } from '../shared/tool-response';
 
+/**
+ * Whether a tool's text only restates its structured content. Most tools
+ * answer with the same JSON twice, and the router forwarding both spent
+ * 43% of its bytes on the copy (444 KB of 1,029 KB over 574 calls). A failed
+ * call keeps its text: clients read the reason from it.
+ */
+export const textRepeatsStructured = (
+	text: string,
+	structured: unknown,
+	failed: boolean,
+): boolean => {
+	if (failed || structured === undefined) return false;
+	try {
+		return JSON.stringify(JSON.parse(text)) === JSON.stringify(structured);
+	} catch {
+		return false;
+	}
+};
+
 const ROUTER_RESULT = z.looseObject({
 	routed: z.literal(true).optional(),
 	domain: z.string().optional(),
@@ -99,17 +118,21 @@ const compactRouterHandler =
 							| undefined
 					)?.find((entry) => entry.type === 'text')?.text
 				: undefined;
+		const failed =
+			result && typeof result === 'object'
+				? (result as { isError?: boolean }).isError === true
+				: false;
 		const routedResult = toolJson({
 			routed: true,
 			domain: args.domain,
 			action: args.action,
 			tool: resolved.qualifiedName,
 			active: resolved.access === 'visible',
-			isError:
-				result && typeof result === 'object'
-					? (result as { isError?: boolean }).isError === true
-					: false,
-			...(text !== undefined ? { text } : {}),
+			isError: failed,
+			...(text !== undefined &&
+			!textRepeatsStructured(text, structured, failed)
+				? { text }
+				: {}),
 			...(structured !== undefined
 				? { structuredContent: structured }
 				: {}),
