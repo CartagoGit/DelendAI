@@ -45,7 +45,7 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 - **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "`plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before (test-zones.script.spec.ts, spec-timings.spec.ts)."
+  - "`plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before. The lists travel in the `zone-files` artifact, not the matrix, which the planner refuses over 64 KiB. `proposals` runs on three jobs and `packages` on two, by their measured cost (test-zones.script.spec.ts, spec-timings.spec.ts)."
 - shipped-in: `4f03720080cc`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
@@ -53,4 +53,4 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 ## acceptance
 
 - On a full run of the integration branch, the merge of the shards also writes vitest's JSON report (`VITEST_TIMINGS_OUT`). `spec-timings.script.ts` turns it into each spec file's duration, which is uploaded as the `spec-timings` artifact. Both steps are `continue-on-error`: an optimisation never fails the run it measures. Nothing is committed, since a timings file every change rewrote would send open pull requests back (spec-timings.spec.ts).
-- `plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before (test-zones.script.spec.ts, spec-timings.spec.ts).
+- `plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before. The lists travel in the `zone-files` artifact, not the matrix, which the planner refuses over 64 KiB. `proposals` runs on three jobs and `packages` on two, by their measured cost (test-zones.script.spec.ts, spec-timings.spec.ts).
