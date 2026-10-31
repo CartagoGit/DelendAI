@@ -2,14 +2,14 @@
 id: r00645
 title: "Core and tooling take the workspace root from their caller, never process.cwd()"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: d87b0edf-2e4d-415e-830f-72826bcdc48d
-last-correlation-id: d87b0edf-2e4d-415e-830f-72826bcdc48d
-last-transition-from: review
-last-transition-at: 2026-10-28T07:56:34.137Z
+last-transition-id: 38cedded-0963-4b16-8776-a91d6656c5de
+last-correlation-id: 38cedded-0963-4b16-8776-a91d6656c5de
+last-transition-from: ready
+last-transition-at: 2026-10-31T22:43:34.733Z
 shipped-in:
   - "90b4a58faf62"
 ---
