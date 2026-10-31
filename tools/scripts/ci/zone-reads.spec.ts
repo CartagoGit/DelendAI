@@ -8,6 +8,7 @@ import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 import {
 	parseZoneReadMap,
 	readersOf,
+	onlyScriptsChanged,
 	runsEverything,
 	testRunnerChanged,
 	zonesReadingRootFiles,
@@ -199,6 +200,52 @@ describe('a workflow edit', () => {
 				...edited('.github/actions/setup-bun-repo/action.yml'),
 				runnerChanged: false,
 			}),
+		).toBe(true);
+	});
+});
+
+describe('a change to the root manifest', () => {
+	const manifest = (scripts: object, devDependencies: object = {}): string =>
+		JSON.stringify({ name: 'root', scripts, devDependencies });
+
+	it('reaches only its readers when only other scripts changed', () => {
+		const scriptsOnly = onlyScriptsChanged(
+			manifest({ 'lint:a': 'one', test: 'vitest' }),
+			manifest({ 'lint:a': 'two', 'lint:b': 'new', test: 'vitest' }),
+		);
+		expect(scriptsOnly).toBe(true);
+		expect(runsEverything({ ...edited('package.json'), scriptsOnly })).toBe(
+			false,
+		);
+	});
+
+	it('runs everything for a test script, an install hook or a dependency', () => {
+		for (const [before, after] of [
+			[manifest({ 'test:shard': 'a' }), manifest({ 'test:shard': 'b' })],
+			[manifest({ prepare: 'a' }), manifest({ prepare: 'b' })],
+			[manifest({ postinstall: 'a' }), manifest({})],
+			[
+				manifest({}, { vitest: '5.0.0' }),
+				manifest({}, { vitest: '5.0.3' }),
+			],
+		] as const) {
+			const scriptsOnly = onlyScriptsChanged(before, after);
+			expect(scriptsOnly).toBe(false);
+			expect(
+				runsEverything({ ...edited('package.json'), scriptsOnly }),
+			).toBe(true);
+		}
+	});
+
+	it('runs everything when a side is missing, unreadable, or never compared', () => {
+		expect(onlyScriptsChanged(undefined, manifest({}))).toBe(false);
+		expect(onlyScriptsChanged('{nope', manifest({}))).toBe(false);
+		expect(runsEverything(edited('package.json'))).toBe(true);
+	});
+
+	it('does not excuse another root file that claims the same', () => {
+		expect(
+			runsEverything({ ...edited('tsconfig.json'), scriptsOnly: true }),
 		).toBe(true);
 	});
 });

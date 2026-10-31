@@ -84,7 +84,7 @@ The parts, in order; each one depends only on those before it where it says so.
 2. **v00147 — The local proof runs the static checks a pull request runs, read from ci.yml.** Rescoped after measuring: merging the forge's jobs would save neither money (public repository) nor time (no queue), and the queue reads their names. The cost was the other gap, lints only the forge ran (#1582).
 3. **v00148 — Test shards are balanced by measured time.** The full run's slowest shard drops from 244 s toward the mean, about 140 s.
 4. **v00149 — A unit is brought forward only when it must be.** Measured: of 74 merges of develop into 40 pull requests, 7 shared any file and 49 were merges the product itself told agents to make before republishing. The advice is corrected, every `.gitattributes`-derived file leaves the overlap rule, and a report measures it again.
-5. **v00150 — A configuration change runs only what it configures.** `package.json` by changed fields, the lockfile by moved packages, and the read recorder sees spawned processes.
+5. **v00150 — A configuration change runs only what it configures.** A scripts-only `package.json` change reaches its readers. The lockfile and spawned-process reads were measured and left out: one pull request in 40 touched each, at a real risk of skipping a spec.
 6. **v00144 S6 — Every unit ends clean.** `work reap --apply` already does this and runs on its own; measured, nothing was left over, so no `work gc` was added. Also v00144's own record: S1-S5 shipped in #1565, #1566, #1573 and #1574 while the proposal still says `pending` in `ready/`. Its statuses are brought in line with what shipped.
 
 ## notes
@@ -102,6 +102,13 @@ Targets, against the baseline above:
 
 - A merge queue of the forge's own: GitHub offers it only to organization repositories, and this one belongs to a user. Batching comes from the queue arming every green candidate at once.
 - Uploading locally produced code scanning results (SARIF) in place of the forge's analysis: that is a check on the author's word (principle 3). The pull request's scoped CodeQL already takes about a minute.
+
+Measured on 2026-10-31, on develop's full run at `39995a022`, with the shards split by time:
+
+- Wall 440 s and 65 runner-minutes, against targets of 250 s and 35: not met.
+- Within a zone the shards balance, but the slowest (`proposals 2/2`, 273 s) stands 78% over the mean of 153 s: not met.
+- The split by recorded test time cannot close this. About 42% of a shard is module loading, which a spec's duration does not hold, and the zones' shard counts still come from spec counts.
+- The merge job adds 105 s of coverage on a full run. A pull request's coverage covers only the files it touched.
 
 ## slices
 
