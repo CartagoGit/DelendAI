@@ -1,3 +1,9 @@
+---
+name: delendai-shell-status
+appliesTo: ['@delendai/*']
+description: What the terminal can do, read once before relying on a shell dialect, a pager or an optional binary.
+---
+
 # shell_status
 
 Call `shell_status` the first time a session is about to use the terminal,

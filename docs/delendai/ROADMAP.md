@@ -95,8 +95,11 @@ horizons:
         gates:
           - kind: proposal-done
             target: f00792
+          - kind: proposal-done
+            target: x00997
         proposals:
           - f00792
+          - x00997
       - id: batuta-works
         title: Batuta delegates real work across hosts and BYOK models within the quota it can see
         kind: feature
