@@ -84,7 +84,7 @@ The parts, in order; each one depends only on those before it where it says so.
 2. **v00147 — The local proof runs the static checks a pull request runs, read from ci.yml.** Rescoped after measuring: merging the forge's jobs would save neither money (public repository) nor time (no queue), and the queue reads their names. The cost was the other gap, lints only the forge ran (#1582).
 3. **v00148 — Test shards are balanced by measured time.** The full run's slowest shard drops from 244 s toward the mean, about 140 s.
 4. **v00149 — A unit is brought forward only when it must be.** Measured: of 74 merges of develop into 40 pull requests, 7 shared any file and 49 were merges the product itself told agents to make before republishing. The advice is corrected, every `.gitattributes`-derived file leaves the overlap rule, and a report measures it again.
-5. **v00150 — A configuration change runs only what it configures.** `package.json` by changed fields, the lockfile by moved packages, and the read recorder sees spawned processes.
+5. **v00150 — A configuration change runs only what it configures.** A scripts-only `package.json` change reaches its readers. The lockfile and spawned-process reads were measured and left out: one pull request in 40 touched each, at a real risk of skipping a spec.
 6. **v00144 S6 — Every unit ends clean** (`work gc`). Also v00144's own record: S1-S5 shipped in #1565, #1566, #1573 and #1574 while the proposal still says `pending` in `ready/`. Its statuses are brought in line with what shipped.
 
 ## notes
