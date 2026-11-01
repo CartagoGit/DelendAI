@@ -299,10 +299,11 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 ## 6. Invariants you must not break
 
-- **The right path, always.** Analyse what you touch and, unasked, redo or
-  refactor what is not the most efficient, robust and correct way. Working
-  is not enough: spend the fewest tokens that keep the work effective, and
-  give each fact one source of truth that everything else reads.
+- **The right path, inside your task.** Analyse what your proposal touches
+  and do that work the efficient, correct way: fewest tokens that keep it
+  effective, one source of truth for each fact. Refactor only inside its
+  scope. Anything else you find becomes a proposal, not a change. Never
+  alter another agent's work, weaken a gate, or drop behaviour.
 - **Every agent is held to the workflow, whatever its model.** Set
   `DELENDAI_AGENT_ID` to your exact model id before any delendai or git call.
   Unidentified writers are judged per `development.guard.unknownActor`
