@@ -2,14 +2,14 @@
 id: x00965
 title: "Memory, issues, search and roadmap keep one record per thing and never merge two"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 107abcf0-0913-4437-bcef-5ac3e2ccc04e
-last-correlation-id: 107abcf0-0913-4437-bcef-5ac3e2ccc04e
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T12:45:23.010Z
+last-transition-id: 1fcf7100-70b2-457d-9c97-c503d2a5181c
+last-correlation-id: 1fcf7100-70b2-457d-9c97-c503d2a5181c
+last-transition-from: review
+last-transition-at: 2026-11-01T13:04:20.213Z
 ---
 
 # x00965 — Memory, issues, search and roadmap keep one record per thing and never merge two
