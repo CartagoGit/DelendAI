@@ -20,7 +20,7 @@
  *   bun scripts/derive-version.ts --github-output # also writes release=/version= to $GITHUB_OUTPUT
  */
 import { appendFileSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -111,11 +111,7 @@ export interface IVersionDecision {
 }
 
 const git = (args: string[], cwd: string): string => {
-	try {
-		return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
-	} catch {
-		return '';
-	}
+	return readGit(cwd, args) ?? '';
 };
 
 // git separates each commit body with a NUL byte (`%x00`); split on it.

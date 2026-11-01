@@ -23,6 +23,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { gitVerbatim, readGit } from '@delendai/core/runtime';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -462,14 +463,7 @@ const ownPathsOf = (
 
 /** Where `head` left `base`, or the base itself when git cannot say. */
 const mergeBaseOf = (base: string, rootDir: string): string => {
-	try {
-		return execFileSync('git', ['merge-base', base, 'HEAD'], {
-			encoding: 'utf8',
-			cwd: rootDir,
-		}).trim();
-	} catch {
-		return base;
-	}
+	return readGit(rootDir, ['merge-base', base, 'HEAD']) ?? base;
 };
 
 /** A file's content at a revision, or `undefined` when it is not there. */
@@ -478,15 +472,7 @@ const contentAt = (
 	path: string,
 	rootDir: string,
 ): string | undefined => {
-	try {
-		return execFileSync('git', ['show', `${revision}:${path}`], {
-			encoding: 'utf8',
-			cwd: rootDir,
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-	} catch {
-		return undefined;
-	}
+	return gitVerbatim(rootDir, ['show', `${revision}:${path}`]);
 };
 
 const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {

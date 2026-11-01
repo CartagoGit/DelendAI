@@ -14,7 +14,7 @@
  * changed HEAD or a source file touched after the run is reported at the
  * top, in the imperative: re-run, then read again.
  */
-import { execFileSync } from 'node:child_process';
+import { gitVerbatim } from '@delendai/core/runtime';
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -43,19 +43,10 @@ const gitLines = (
 	args: readonly string[],
 	cwd: string,
 ): string[] | undefined => {
-	try {
-		return execFileSync('git', [...args], {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-			maxBuffer: 64 * 1024 * 1024,
-			timeout: 20_000,
-		})
-			.split('\n')
-			.filter((line) => line !== '');
-	} catch {
-		return undefined;
-	}
+	const out = gitVerbatim(cwd, args);
+	return out === undefined
+		? undefined
+		: out.split('\n').filter((line) => line !== '');
 };
 
 /**
