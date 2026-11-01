@@ -1,4 +1,3 @@
-import { escapeHtml } from '@delendai/ui-extension/public';
 import { dictsByLang } from '@delendai/shared/i18n';
 
 import {
@@ -19,6 +18,13 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const escapeHtml = (s: string): string =>
+	s
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');
 
 const fetchJson = async <T>(path: string): Promise<T | null> => {
 	try {
