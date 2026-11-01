@@ -233,6 +233,9 @@ export interface DelendaiProposalsBranchGcOutput {
 		skippedCount: number;
 		dryRunRemovedCount: number;
 	};
+	wouldChange?: Record<string, unknown>[];
+	wouldRun?: Record<string, unknown>[];
+	risk?: "low" | "medium" | "high";
 }
 
 export interface DelendaiProposalsBranchStatusOutput {

@@ -203,6 +203,8 @@ describe('branch_gc', () => {
 			expect(plan.ok).toBe(true);
 			expect(plan.baseBranch).toBe('trunk');
 			expect(plan.dryRun).toBe(true);
+			expect(plan.risk).toBe('medium');
+			expect(plan.wouldChange).toHaveLength(2);
 			expect(names(plan.removed).sort()).toEqual(
 				[AGENT_WORKTREE, WORK].sort(),
 			);

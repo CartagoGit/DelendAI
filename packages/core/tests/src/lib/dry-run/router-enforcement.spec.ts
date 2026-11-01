@@ -31,6 +31,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 import { planDryRun } from '@delendai/core/public';
@@ -52,6 +53,9 @@ const makeHandle = () => ({
 
 const buildRuntimeWithHandler = (
 	handler: (args: unknown, extra: unknown) => Promise<unknown>,
+	inputSchema: unknown = z
+		.object({ dryRun: z.boolean().optional() })
+		.passthrough(),
 ) => {
 	const runtime = createToolSurfaceRuntime({
 		mode: 'native',
@@ -77,6 +81,7 @@ const buildRuntimeWithHandler = (
 	runtime.bindRegisteredTool({
 		registrationId: 'writer_run',
 		name: 'delendai_writer_run',
+		inputSchema: inputSchema ?? undefined,
 		handler,
 		handle: makeHandle(),
 	});
@@ -87,6 +92,44 @@ const buildRuntimeWithHandler = (
 describe('f00189 — dry-run enforcement wired into invokeTool (router-level)', () => {
 	beforeEach(() => {
 		clearDryRunViolationsForTests();
+	});
+
+	it.each([
+		['declares no input schema', undefined],
+		['has a schema without dryRun', z.object({ path: z.string() })],
+	])(
+		'stops a dryRun call before the handler when the tool %s',
+		async (_, schema) => {
+			let reallyRan = false;
+			const runtime = buildRuntimeWithHandler(async () => {
+				reallyRan = true;
+				return { ok: true };
+			}, schema ?? null);
+
+			const result = (await runtime.invokeTool(
+				'delendai_writer_run',
+				{ path: 'a.txt', dryRun: true },
+				{},
+			)) as { isError?: boolean; content: { text: string }[] };
+
+			expect(reallyRan).toBe(false);
+			expect(result.isError).toBe(true);
+			expect(result.content[0]?.text).toContain('nothing was run');
+		},
+	);
+
+	it('refuses a plan without its lists instead of throwing', async () => {
+		const runtime = buildRuntimeWithHandler(async () => ({
+			structuredContent: { dryRun: true, commands: ['x'] },
+		}));
+
+		const result = (await runtime.invokeTool(
+			'delendai_writer_run',
+			{ dryRun: true },
+			{},
+		)) as { isError?: boolean };
+
+		expect(result.isError).toBe(true);
 	});
 
 	it('refuses a handler that ignored args.dryRun and performed the real effect anyway', async () => {

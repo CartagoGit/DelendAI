@@ -56,6 +56,7 @@ export const buildContainerDockerToolRegistrations = (options: {
 		id,
 		tags: ['container', 'docker'],
 		effects: ['spawn'],
+		dryRunSupported: true,
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_${id}`,

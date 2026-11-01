@@ -1288,13 +1288,13 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				},
 				toolSummaries: {
 					agent_lock:
-						'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
+						'Claim files before editing, heartbeat, release (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 					agents_lock_diagnose:
 						'Diagnose stuck agents by correlating stale lock heartbeats, orphaned lock tmp files and the last matching log entry.',
 					agent_worktree:
 						"Not used under this project's development profile: agents share the checkout. Refuses create and says how to work instead.",
 					branch_status:
-						'Snapshot every work-ref, publication and agent branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.',
+						'Snapshot every work-ref, publication and agent branch and worktree: ahead/behind vs base, dirty counts, out-of-cache flag.',
 					branch_gc:
 						'Remove worktrees whose branch is merged into base, clean, and idle (dry-run default; unmerged branches are sacred).',
 					swarm_hygiene:
@@ -1320,7 +1320,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					proposal_transition:
 						'Move a proposal to a new status; validated, folder+frontmatter kept in sync.',
 					proposals_close_plan:
-						'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',
+						'Close a `type: plan` proposal; refuses with blockers until every child, sub-plan and own slice is done and peer-reviewed.',
 					create_proposal:
 						'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 					close_slice:
@@ -1334,15 +1334,15 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					proposal_board:
 						'Orchestrator view: actionable proposals × slices (status/owner) + claimable now.',
 					proposal_adopt:
-						'Analyze an existing proposals folder — and with apply:true, bootstrap the canonical store (folders + README + index).',
+						'Analyze an existing proposals folder; with apply:true, bootstrap the canonical store.',
 					inherit_host_instructions:
 						'Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.',
 					incident_proposals:
 						'Convert clustered redacted incidents into deduplicated local proposal drafts, and optionally write them.',
 					auto_fix_queue:
-						'Queue reproducible low/medium incident drafts for auto-fix, and optionally write proposal documents through the existing authoring path.',
+						'Queue reproducible low/medium incident drafts for auto-fix; optionally write them as proposals.',
 					state_health:
-						'Read-only swarm health: active locks, stale locks, livelocks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
+						'Read-only swarm health: locks, stale locks, livelocks, queue backpressure and orphan assignments.',
 					state_repair:
 						'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
 					compact_status:

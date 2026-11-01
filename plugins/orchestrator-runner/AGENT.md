@@ -60,7 +60,6 @@
 - `delendai_orchestrator-runner_discover_providers` — 11,712 B total, 11,390 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_orchestrator-runner_format_handoff` — 6,188 B total, 230 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_orchestrator-runner_list_models` — 3,440 B total, 3,149 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_orchestrator-runner_invoke` — 2,823 B total, 82 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 
