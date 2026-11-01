@@ -5,6 +5,7 @@
 import { execFileSync } from 'node:child_process';
 
 import { footprintBetween, mergeBaseOf } from './candidate-footprint';
+import { testedAgainst } from './candidate-tested-base';
 import { acceptIndependent } from './independent-candidates';
 import type {
 	ICandidateAcceptance,
@@ -40,7 +41,19 @@ export const queueAcceptance = (input: {
 	readonly integration: string;
 	readonly integrationSha: string;
 	readonly candidates: readonly IQueuedCandidate[];
+	/** The integration commit a candidate's run saw; see candidate-tested-base. */
+	readonly testedFrom?: (headSha: string, base: string) => string | undefined;
 }): readonly ICandidateAcceptance[] => {
+	const testedFrom =
+		input.testedFrom ??
+		((headSha: string, base: string) =>
+			testedAgainst({
+				root: input.root,
+				remote: input.remote,
+				integration: input.integration,
+				headSha,
+				base,
+			}));
 	fetched(input.root, input.remote, input.integration);
 	const changes: IQueueCandidateChange[] = [];
 	const unreadable: ICandidateAcceptance[] = [];
@@ -57,7 +70,10 @@ export const queueAcceptance = (input: {
 			});
 			continue;
 		}
-		const level = base === input.integrationSha;
+		// What the candidate's own checks have not seen starts at the commit
+		// they ran on, not at the one it left.
+		const seen = testedFrom(candidate.headSha, base) ?? base;
+		const level = seen === input.integrationSha;
 		changes.push({
 			number: candidate.number,
 			headRef: candidate.headRef,
@@ -65,7 +81,7 @@ export const queueAcceptance = (input: {
 			own: footprintBetween(input.root, base, candidate.headSha),
 			integration: level
 				? { zones: new Set(), files: new Set() }
-				: footprintBetween(input.root, base, input.integrationSha),
+				: footprintBetween(input.root, seen, input.integrationSha),
 		});
 	}
 	return [...acceptIndependent(changes), ...unreadable];

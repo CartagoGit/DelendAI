@@ -54,6 +54,9 @@ export const PROVE_GATES: readonly (readonly string[])[] = [
 	['bun', 'run', 'typecheck'],
 ];
 
+/** What failed, said last: a caller keeps only the tail of the output. */
+const failed: string[] = [];
+
 /** How many lines of a failed check's output the proof prints. */
 const FAILED_TAIL_LINES = 30;
 
@@ -97,6 +100,7 @@ const runTogether = async (
 			});
 			const passed = code === 0;
 			ok = passed && ok;
+			if (!passed) failed.push(label);
 			console.log(
 				`prove: ${passed ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
 			);
@@ -168,6 +172,7 @@ const step = (label: string, command: readonly string[]): boolean => {
 		env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
 	});
 	const ok = result.status === 0;
+	if (!ok) failed.push(label);
 	console.log(
 		`prove: ${ok ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
 	);
@@ -234,7 +239,7 @@ const main = async (): Promise<number> => {
 			ok = step(label, command) && ok;
 		}
 		console.log(
-			`prove: ${ok ? 'PROVED' : 'NOT PROVED'} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
+			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 		);
 		return ok ? 0 : 1;
 	}

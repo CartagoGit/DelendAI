@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: d6f9059f-8b16-475e-b8a1-1e6206705c70
-last-correlation-id: d6f9059f-8b16-475e-b8a1-1e6206705c70
+last-transition-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
+last-correlation-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
 last-transition-from: in-progress
-last-transition-at: 2026-10-29T21:23:32.895Z
+last-transition-at: 2026-11-01T00:22:13.808Z
 ---
 
 # v00149 — A unit is brought forward only when it must be, so one landing does not send the others back
@@ -27,6 +27,8 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - **7 of the 74 shared any file at all.** In those, the files were mostly derived (`TOKEN-BUDGETS.md` 7 times, `preset-metadata` 5), and the queue already leaves out the ones `gen:all` rebuilds. The per-workspace `AGENT.md` and `tool-outputs.ts`, which `.gitattributes` declares generated, were still counted.
 - **49 were made in the unit's own worktree before it was republished, bringing about 30 commits each.** The product told agents to do so: a unit whose base moved was told to "merge the integration branch into it (`git merge <remote>/<integration>`) before it publishes". Under this profile a pull request is judged on its merge with the integration branch and need not be refreshed against it, so those merges bought nothing.
 - **The other 23** were the refreshes of red or overlapping candidates, with about 99 commits each.
+
+#1597 went green on the merge ref of develop's tip and then waited about 15 minutes, because the queue counted what develop had gained since the branch left, which included that very tip. The refresh runs only on the owner's machine (a bot's refresh left generated files stale, and that stays decided), so the wait lasts as long as that machine takes, or for ever while it is off.
 
 ## non-goals
 
@@ -67,8 +69,19 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S4 — A candidate is not sent back for what its checks already saw
+- **Status**: review
+- **Files**: `tools/scripts/forge/candidate-tested-base.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts)."
+- shipped-in: `39f3d8323b50`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - `candidate-overlap-report.script.ts --since=<date>` says how many merges of the integration branch the merged pull requests took, how many shared a file with what they brought, and which files, each marked derived when `.gitattributes` declares it generated (candidate-overlap-report.script.spec.ts).
 - `overlappingFiles` leaves out every path `.gitattributes` marks `merge=delendai-generated` (`derivedPaths`, read through `git check-attr`, so `AGENT.md` and the `**/src/generated` outputs count as derived), besides the projections `gen:all` rebuilds (refresh-candidate-derived.spec.ts).
 - A unit with work whose base moved is told so and that it need not be brought forward. It is told to merge the integration branch into it only when publishing or its pull request reports a conflict (work-swarm-relations.spec.ts).
+- A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts).
