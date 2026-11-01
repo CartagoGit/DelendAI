@@ -5,9 +5,9 @@
  * Delivering took four commands in an order an agent had to remember: the
  * proof, two transitions, and a publish when the proposal was already in
  * review. Every step was a call to pay for and a place to go wrong, and the
- * order is the product's to know. The transition to review publishes the
- * unit; a proposal already there, which is how a pull request gets a fix,
- * only needs publishing again.
+ * order is the product's to know. The proposal is moved to in-progress
+ * first, from review too, which is how a pull request gets a fix; the
+ * transition to review then publishes the unit.
  */
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
@@ -27,25 +27,19 @@ const alreadyPast = (reason: string, to: string): boolean =>
 export const deliverUnit = async (
 	ports: IWorkDeliverPorts,
 ): Promise<ICliCommandResult> => {
-	const proved = await ports.prove();
-	if (proved.code !== 0) return proved;
-	const checkout =
-		isRecord(proved.data) && typeof proved.data.worktree === 'string'
-			? proved.data.worktree
-			: undefined;
-	const started = refusalOf(await ports.transition('in-progress', checkout));
+	// Opened first: a proposal in review that gained a slice is refused by
+	// the proof's own lints until it stands in progress again.
+	const started = refusalOf(await ports.transition('in-progress'));
 	if (started !== undefined && !alreadyPast(started, 'in-progress')) {
 		return { code: EXIT_CODE.VALIDATION, error: started };
 	}
-	const handed = refusalOf(await ports.transition('review', checkout));
-	if (handed === undefined) {
-		return {
-			code: EXIT_CODE.OK,
-			data: { delivered: 'review', proved: proved.data },
-		};
-	}
-	// Already in review: a fix to its pull request is published, no more.
-	return alreadyPast(handed, 'review')
-		? ports.publish()
+	const proved = await ports.prove();
+	if (proved.code !== 0) return proved;
+	const handed = refusalOf(await ports.transition('review'));
+	return handed === undefined
+		? {
+				code: EXIT_CODE.OK,
+				data: { delivered: 'review', proved: proved.data },
+			}
 		: { code: EXIT_CODE.VALIDATION, error: handed };
 };
