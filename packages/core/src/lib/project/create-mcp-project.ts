@@ -595,9 +595,23 @@ export async function createMcpProject(
 	}
 	let disposed = false;
 	let workCheckouts: IWorkCheckoutPublisher | undefined;
+	let connected: Promise<void> | undefined;
+	const connect = async (): Promise<void> => {
+		connected ??= (async () => {
+			const transport = new StdioServerTransport();
+			// The MCP SDK attaches one `drain` listener per pending stdio
+			// write. Startup can legitimately publish more than ten frames
+			// before stdout drains, so the default EventTarget warning is
+			// noisy here even though the listeners are released by `send`.
+			setMaxListeners(0, process.stdout);
+			await server.connect(transport);
+		})();
+		return connected;
+	};
 	return {
 		server,
 		registrationOrder: ordered.map((registration) => registration.id),
+		connect,
 		async start(): Promise<void> {
 			// Agents' committed work reaches its work ref on the remote at
 			// the cadence the policy declares, for as long as this server
@@ -615,13 +629,7 @@ export async function createMcpProject(
 			// The public catalogues of agents and models, asked whether they
 			// changed; beside the start, like the unit sync.
 			void refreshPublicCatalogues({ workspace: config.workspace.root });
-			const transport = new StdioServerTransport();
-			// The MCP SDK attaches one `drain` listener per pending stdio
-			// write. Startup can legitimately publish more than ten frames
-			// before stdout drains, so the default EventTarget warning is
-			// noisy here even though the listeners are released by `send`.
-			setMaxListeners(0, process.stdout);
-			await server.connect(transport);
+			await connect();
 		},
 		async dispose(): Promise<void> {
 			if (disposed) return;

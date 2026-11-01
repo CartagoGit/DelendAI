@@ -39,7 +39,11 @@ import {
 	runStartupGate,
 	startupGateWarnings,
 } from '@delendai/core/cli';
-import { startCheckoutHydration, startServerLogIn } from '@delendai/core/cli';
+import {
+	holdToolCalls,
+	startCheckoutHydration,
+	startServerLogIn,
+} from '@delendai/core/cli';
 import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	openStartupStatePorts,
@@ -322,6 +326,41 @@ const run = async (): Promise<void> => {
 					...surfaceRuntime.measureSchemaBytes('native'),
 					...surfaceRuntime.measureSchemaBytes(surfaceMode),
 				};
+	// Answer the client first, and hold its tool calls until the start below
+	// has settled. Reconciling walks git and the forge, which takes as long as
+	// the repository's history and the network do, and a client gives up on
+	// `initialize` after a fixed window: losing it loses every tool.
+	// Install signal handlers BEFORE `await assembled.connect()`. The
+	// `connect()` call can take several seconds on a cold start (loading
+	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
+	// arrives during that window must be handled gracefully — not
+	// terminate the process with the signal still set. The handler
+	// closure captures `assembled`, which is assigned synchronously
+	// before `connect()` resolves, so the reference is always live by
+	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
+	let hydration: ReturnType<typeof startCheckoutHydration> | undefined;
+	let candidateRefresh: ReturnType<typeof setInterval> | undefined;
+	const onSignal = (code: number): void => {
+		hydration?.stop();
+		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void maintenance?.stop();
+		void gracefulShutdown(assembled.server, { exitCode: code });
+	};
+	process.on('SIGTERM', () => onSignal(143));
+	process.on('SIGINT', () => onSignal(130));
+	process.on('SIGHUP', () => onSignal(129));
+	process.on('beforeExit', () => {
+		// beforeExit fires when the event loop drains naturally;
+		// gracefulShutdown's idempotent guard makes the no-op safe
+		// when we got here via SIGTERM first.
+		void assembled.server.close().catch(() => undefined);
+	});
+
+	const releaseToolCalls = holdToolCalls();
+	await assembled.connect();
+
 	// NO reconciliation -> NO READY. The gate consults the resolved
 	// development policy first (a `shared-direct` project reconciles
 	// nothing and boots exactly as before), and its verdict is folded
@@ -445,7 +484,7 @@ const run = async (): Promise<void> => {
 			? config.runtimeBehindCheckout
 			: () => maintenance.gate().standDown();
 	const hydrationInterval = hydrationIntervalMs(process.env);
-	const hydration =
+	hydration =
 		policy === undefined || hydrationInterval === 0
 			? undefined
 			: startCheckoutHydration({
@@ -471,18 +510,10 @@ const run = async (): Promise<void> => {
 					},
 				});
 
-	// Install signal handlers BEFORE `await assembled.start()`. The
-	// `start()` call can take several seconds on a cold start (loading
-	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
-	// arrives during that window must be handled gracefully — not
-	// terminate the process with the signal still set. The handler
-	// closure captures `assembled`, which is assigned synchronously
-	// before `start()` resolves, so the reference is always live by
-	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	// Bring candidates forward on a clock too, not only when the
 	// integration branch moves here (see CANDIDATE_REFRESH_INTERVAL_ENV).
 	const refreshEvery = candidateRefreshIntervalMs(process.env);
-	const candidateRefresh =
+	candidateRefresh =
 		policy === undefined ||
 		refreshEvery === 0 ||
 		!shipsCandidateMaintenance(config.workspace.root)
@@ -495,24 +526,7 @@ const run = async (): Promise<void> => {
 				}, refreshEvery);
 	candidateRefresh?.unref();
 
-	const onSignal = (code: number): void => {
-		hydration?.stop();
-		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
-		// Another server takes the workspace over at once, not after the
-		// lease runs out.
-		void maintenance?.stop();
-		void gracefulShutdown(assembled.server, { exitCode: code });
-	};
-	process.on('SIGTERM', () => onSignal(143));
-	process.on('SIGINT', () => onSignal(130));
-	process.on('SIGHUP', () => onSignal(129));
-	process.on('beforeExit', () => {
-		// beforeExit fires when the event loop drains naturally;
-		// gracefulShutdown's idempotent guard makes the no-op safe
-		// when we got here via SIGTERM first.
-		void assembled.server.close().catch(() => undefined);
-	});
-
+	releaseToolCalls();
 	await assembled.start();
 
 	// Deterministic e2e handshake — emitted AFTER `start()` resolves so the

@@ -8,6 +8,7 @@ import type { IToolMetaForError } from '../error-collection/with-error-collectio
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { withErrorCollection } from '../error-collection/with-error-collection';
 import { asToolCall } from './tool-call-scope.helper';
+import { toolCallsReleased } from './tool-call-hold.helper';
 import {
 	estimateErrorCost,
 	estimateResultCost,
@@ -109,6 +110,7 @@ export const instrumentToolHandlers = (
 		// Observers see the agent's calls; a call another tool makes is inside it.
 		return async (...args: unknown[]): Promise<unknown> =>
 			asToolCall(async (nested) => {
+				await toolCallsReleased();
 				const cancellationContext = (
 					signal: AbortSignal | undefined,
 				) => {
