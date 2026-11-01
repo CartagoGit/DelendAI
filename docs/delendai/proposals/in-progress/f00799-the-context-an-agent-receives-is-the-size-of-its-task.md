@@ -2,10 +2,14 @@
 id: f00799
 title: "the context an agent receives is the size of its task"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-11-01
+last-transition-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
+last-correlation-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
+last-transition-from: ready
+last-transition-at: 2026-11-01T18:36:31.061Z
 ---
 
 # f00799 — the context an agent receives is the size of its task
