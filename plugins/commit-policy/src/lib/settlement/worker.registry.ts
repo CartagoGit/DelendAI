@@ -18,6 +18,11 @@ import { dirname, join } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
+import {
+	SLICE_HOLD_PREFIX,
+	SLICE_HOLD_TTL_MS,
+} from '../contracts/constants/settlement.constant';
+
 import type {
 	ISettlementState,
 	IWorkerRegistry,
@@ -137,6 +142,40 @@ export const createWorkerRegistry = (
 			await withFileMutex(fileAbs, async () => {
 				const state = await readState();
 				await writeState({ ...state, phase });
+			});
+		},
+		async admit(holder) {
+			return withFileMutex(fileAbs, async () => {
+				const state = await readState();
+				if (state.phase === 'settling') return state.phase;
+				const registeringAt = {
+					...state.registeringAt,
+					[holder]: Date.now(),
+				};
+				await writeState({
+					...state,
+					registeringAt,
+					activeWorkers: Object.keys(registeringAt).length,
+				});
+				return state.phase;
+			});
+		},
+		async enterSettling() {
+			return withFileMutex(fileAbs, async () => {
+				const state = await readState();
+				const horizon = Date.now() - SLICE_HOLD_TTL_MS;
+				const live = Object.entries(state.registeringAt).filter(
+					([holder, at]) =>
+						!holder.startsWith(SLICE_HOLD_PREFIX) || at > horizon,
+				);
+				if (live.length > 0) return live.length;
+				await writeState({
+					...state,
+					registeringAt: {},
+					activeWorkers: 0,
+					phase: 'settling',
+				});
+				return 0;
 			});
 		},
 		async markGreen(headSha) {

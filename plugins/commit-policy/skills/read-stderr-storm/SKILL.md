@@ -88,17 +88,14 @@ referenced file with `read_file` and grep for the failure mode.
 
 ## Step 4 — File a fix proposal
 
-If no proposal was filed automatically (the host boot hook only
-files when `count >= threshold`), file one by hand:
+Nothing files it for you:
 
-1. Read `plugins/commit-policy/src/lib/services/repair-proposer.ts`
-   to understand the `kind: fix` body shape.
-2. Call `create_proposal` so the registry allocates a real
+1. Call `create_proposal` so the registry allocates a real
    `xNNNNN` id; pass `kind: fix`, `status: ready`, the storm
    title under `## Goal`, the source file from `suggestedFix`
    under the S1 slice's `**Files**`, and one acceptance bullet
    per investigation step.
-3. The file lands under
+2. The file lands under
    `docs/delendai/proposals/ready/fixes/xNNNNN-<kebab-slug>.md`
    and `sync_proposals` normalises the registry on the next
    call.

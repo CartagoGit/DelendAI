@@ -50,7 +50,7 @@ const buildSpyRunner = (
 		if (args[0] === 'push') return Promise.resolve(ok('pushed\n'));
 		if (args[0] === 'status')
 			return Promise.resolve(
-				ok(' M packages/core/src/lib/capabilities/schema.ts\n'),
+				ok(' M packages/core/src/lib/capabilities/schema.ts\0'),
 			);
 		if (args[0] === 'config')
 			return Promise.resolve(ok('cartago@example.com\n'));

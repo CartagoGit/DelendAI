@@ -99,7 +99,7 @@ const buildRunner = (
 		}
 		if (args[0] === 'status')
 			return Promise.resolve(
-				ok(`${dirty.map((path) => ` M ${path}`).join('\n')}\n`),
+				ok(dirty.map((path) => ` M ${path}\0`).join('')),
 			);
 		if (args[0] === 'push')
 			return Promise.resolve(

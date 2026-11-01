@@ -43,35 +43,35 @@ const interpolate = (template: string, agent: IAuditAgent): string =>
 const BLOCK_BEGIN = '<!-- agent-metadata:begin -->';
 const BLOCK_END = '<!-- agent-metadata:end -->';
 
+const TRAILER_LINE = /^[A-Za-z][\w-]*:\s/u;
+
+/** Index of the first line of the message's last paragraph. */
+const lastParagraphStart = (lines: readonly string[]): number => {
+	let start = lines.length;
+	while (start > 0 && (lines[start - 1] ?? '').trim() !== '') start -= 1;
+	return start;
+};
+
 /**
- * Strip a trailing `Co-authored-by:` block from an existing commit
- * message — used when `_commit` runs twice for the same slice (the
- * second invocation reuses the same body but should not stack
- * trailers). Fenced-block trailers (`body-metadata`) are always
- * stripped and rewritten; we never have a duplicate.
+ * Drop earlier copies of the exact trailer about to be added from the last
+ * paragraph (never the subject), so a slice that closes twice does not
+ * stack the same `Co-authored-by:` line. Every other line — body, other
+ * co-authors, `Signed-off-by:` — stays.
  */
-const stripTrailers = (body: string, kind: AuditTrailerKind): string => {
-	const lines = body.split('\n');
+const stripTrailers = (
+	body: string,
+	kind: AuditTrailerKind,
+	trailerLine = '',
+): string => {
 	if (kind === 'co-authored-by') {
-		// git trailer convention: trailers come after a blank line at
-		// the end of the message. We strip ALL trailing `Key: value`
-		// lines that look like co-authored-by / agent-metadata so we
-		// never accumulate duplicates when a slice re-closes.
-		let end = lines.length;
-		while (end > 0) {
-			const last = lines[end - 1];
-			if (last === undefined) break;
-			if (
-				/^[A-Za-z][\w-]*:\s/.test(last) ||
-				last.trim() === '' ||
-				last.startsWith('# ')
-			) {
-				end -= 1;
-				continue;
-			}
-			break;
-		}
-		return lines.slice(0, end).join('\n').trimEnd();
+		const lines = body.trimEnd().split('\n');
+		const start = Math.max(lastParagraphStart(lines), 1);
+		const wanted = trailerLine.toLowerCase();
+		const kept = lines.filter(
+			(line, index) =>
+				index < start || line.trimEnd().toLowerCase() !== wanted,
+		);
+		return kept.join('\n').trimEnd();
 	}
 	if (kind === 'body-metadata') {
 		// Strip ALL previous agent-metadata blocks (begin→end).
@@ -117,13 +117,19 @@ export const appendAuditTrailer = (
 ): string => {
 	if (kind === 'none') return originalMessage;
 	if (agent === null) return originalMessage;
-	const clean = stripTrailers(originalMessage, kind);
 	if (kind === 'co-authored-by') {
-		const formatted = interpolate(format, agent);
-		// trailer convention requires a blank line between body and
-		// the trailer block.
-		return `${clean}\n\nCo-authored-by: ${formatted}\n`;
+		const trailer = `Co-authored-by: ${interpolate(format, agent)}`;
+		const clean = stripTrailers(originalMessage, kind, trailer);
+		const lines = clean.split('\n');
+		const start = lastParagraphStart(lines);
+		// Join an existing trailer block; otherwise the convention wants a
+		// blank line between body and the trailer block.
+		const inTrailerBlock =
+			start > 0 &&
+			lines.slice(start).every((line) => TRAILER_LINE.test(line));
+		return `${clean}${inTrailerBlock ? '\n' : '\n\n'}${trailer}\n`;
 	}
+	const clean = stripTrailers(originalMessage, kind);
 	// body-metadata: fenced block, parseable by external tooling.
 	const formatted = interpolate(format, agent);
 	const stamp = interpolate('${date}', agent);
