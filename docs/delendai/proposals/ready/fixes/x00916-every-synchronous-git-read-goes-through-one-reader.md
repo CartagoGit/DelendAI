@@ -94,6 +94,19 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
   - `tools/scripts/git/maintain-ref-namespace.script.ts`
+  - `tools/scripts/ci/changed-file-coverage.script.ts`
+  - `tools/scripts/ci/test-zones.script.ts`
+  - `tools/scripts/forge/candidate-footprint.ts`
+  - `tools/scripts/forge/queue-acceptance.ts`
+  - `tools/scripts/gen-all.script.ts`
+  - `tools/scripts/git/clone-hygiene.script.ts`
+  - `tools/scripts/host/workspace-forge-slug.helper.ts`
+  - `tools/scripts/lib/git-file-origin.ts`
+  - `tools/scripts/lint/proposal-hygiene.script.ts`
+  - `tools/scripts/lint/proposal-ready-to-close.script.ts`
+  - `tools/scripts/release/derive-version.script.ts`
+  - `tools/scripts/telemetry/drain-telemetry.script.ts`
+  - `tools/scripts/test/read-test-journal.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every `tools/scripts` wrapper of the plain-read shape (try `execFileSync('git', …)`, trimmed or not, `''` or `undefined` on failure) delegates to the reader from `@delendai/core/runtime`, and the three that strip a hook's variables on purpose use `runGitCommand` with `hookFree`. The hook scripts stay as they are: run in the hook's own worktree, they mean to answer about it (`refuse-integration-commit` reads the commit being made), and the reader would answer about `repoRoot()` instead when that is another checkout. The other shapes stay too, named: throwing wrappers (`lint/candidate-delivers`, `lint/verdicts-through-the-tool`, `lint/closed-with-independent-approval`, `reclaim/reclaim-local`, `forge/sync-with-integration`, `git/rewrite-llm-attribution`), `spawnSync` with a status check (`forge/release-checkout`, `lint/no-llm-attribution`), untrimmed large-buffer reads (`reclaim/reclaim-worktrees`, `lint/publication-scope` before this slice), and inline calls without a wrapper."
