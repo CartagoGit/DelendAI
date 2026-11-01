@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	checkProposal,
+	unitProposalOf,
 	findDuplicates,
 	fingerprintProposal,
 } from './proposal-hygiene.script';
@@ -187,6 +188,16 @@ describe('delivered but still in progress', () => {
 				detail: expect.stringContaining('proposal_transition'),
 			}),
 		]);
+	});
+
+	it('leaves the proposal of the unit standing here, reopened for a fix', () => {
+		const text = `---\nid: x00001\n---\n${withSlices('review', 'done')}`;
+		expect(checkProposal(IN_PROGRESS, text, 'x00001')).toEqual([]);
+		expect(checkProposal(IN_PROGRESS, text, 'x00002')).not.toEqual([]);
+		expect(
+			unitProposalOf('delendai/wip/a/implement/x00001-all-g2/the-fix'),
+		).toBe('x00001');
+		expect(unitProposalOf('develop')).toBeUndefined();
 	});
 
 	it('leaves one with a slice still to deliver', () => {

@@ -33,7 +33,7 @@ Delivering took four commands in an order each agent had to remember: `work prov
 
 ### S1 — `work deliver`
 - **Status**: review
-- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/lint/proposal-hygiene.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work deliver --proposal=<id> --agent=<you>` moves the proposal to in-progress, from review too, proves the unit and hands it to review from the unit's worktree. It finds the unit's worktree itself, so it works from any directory, stops with the tool's own reason for the first refusal, hands nothing over when the proof fails, and names the publication it made (work-deliver.service.spec.ts, work.command.spec.ts). The workflow every agent receives names it."
