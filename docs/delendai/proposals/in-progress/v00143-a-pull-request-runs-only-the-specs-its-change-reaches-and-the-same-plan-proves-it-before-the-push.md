@@ -2,10 +2,14 @@
 id: v00143
 title: "A pull request runs only the specs its change reaches, and the same plan proves it before the push"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-28
+last-transition-id: 6d012089-6aef-491a-b276-1125fb5baff3
+last-correlation-id: 6d012089-6aef-491a-b276-1125fb5baff3
+last-transition-from: ready
+last-transition-at: 2026-11-01T13:23:23.902Z
 ---
 
 # v00143 — A pull request runs only the specs its change reaches, and the same plan proves it before the push
