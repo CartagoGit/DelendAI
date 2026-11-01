@@ -85,10 +85,10 @@ describe('fastSteps', () => {
 			fastSteps(['packages/state-sqlite/src/a.ts'], [], 'b').map(
 				([label]) => label,
 			),
-		).toEqual(['test:sqlite', 'generated files are current']);
+		).toEqual(['test:sqlite']);
 		expect(
 			fastSteps(['README.md'], [], 'b').map(([label]) => label),
-		).toEqual(['generated files are current']);
+		).toEqual([]);
 	});
 });
 
