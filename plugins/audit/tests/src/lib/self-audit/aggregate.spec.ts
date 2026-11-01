@@ -318,3 +318,52 @@ describe('aggregateSelfAudit — metadata', () => {
 		expect(options.workspaceRootAbs).toBe('/tmp/repo');
 	});
 });
+
+describe('aggregateSelfAudit — capabilities filter', () => {
+	const two = () =>
+		new Map<string, ReturnType<typeof scannerEntry>>([
+			[
+				'secrets',
+				scannerEntry(
+					'secrets',
+					'security',
+					result('secrets', {
+						findings: [finding('SEC-1', 'high')],
+					}),
+				),
+			],
+			[
+				'perf',
+				scannerEntry(
+					'perf',
+					'perf',
+					result('perf', { findings: [finding('PERF-1', 'low')] }),
+				),
+			],
+		]);
+
+	it('runs only the requested capability and skips the rest with a reason', async () => {
+		const report = await aggregateSelfAudit({
+			workspaceRootAbs: '/ws',
+			scanners: two(),
+			capabilities: ['security'],
+		});
+		expect(report.aggregated.findings.map((f) => f.ruleId)).toEqual([
+			'SEC-1',
+		]);
+		expect(report.skipped).toEqual([
+			{ id: 'perf', note: 'capability perf not requested' },
+		]);
+		expect(report.capabilities).toEqual({ security: 1 });
+		expect(report.scannerCount).toBe(2);
+	});
+
+	it('runs everything when the filter is empty', async () => {
+		const report = await aggregateSelfAudit({
+			workspaceRootAbs: '/ws',
+			scanners: two(),
+			capabilities: [],
+		});
+		expect(report.aggregated.findings).toHaveLength(2);
+	});
+});

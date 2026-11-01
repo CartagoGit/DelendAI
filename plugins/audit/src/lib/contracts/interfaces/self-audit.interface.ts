@@ -18,6 +18,12 @@ export type ISelfAuditScannerRunner = (
 	workspaceRootAbs: string,
 ) => Promise<IScanResult>;
 
+/** One registered scanner: its identity plus the runner. */
+export interface ISelfAuditScannerEntry {
+	readonly ref: ISelfAuditScannerRef;
+	readonly run: ISelfAuditScannerRunner;
+}
+
 export interface ISelfAuditReport {
 	/** ISO timestamp the report was assembled. */
 	readonly ranAt: string;
@@ -39,11 +45,10 @@ export interface ISelfAuditOptions {
 	 * Injected map of scanner-id to runner. Defaults to an empty map
 	 * (the audit is a no-op aggregation in that case).
 	 */
-	readonly scanners?: ReadonlyMap<
-		string,
-		{
-			readonly ref: ISelfAuditScannerRef;
-			readonly run: ISelfAuditScannerRunner;
-		}
-	>;
+	readonly scanners?: ReadonlyMap<string, ISelfAuditScannerEntry>;
+	/**
+	 * Capability tags to run. When set, only scanners whose capability is
+	 * listed run; the others are reported as skipped with that reason.
+	 */
+	readonly capabilities?: readonly string[];
 }

@@ -12,6 +12,8 @@
  *   file path AND have similar enough titles (substring containment,
  *   case-insensitive). This is intentionally cheap; if a future
  *   proposal wants fuzzy matching it can replace `isSameFinding` only.
+ * - Severity does not take part in the match: one finding reported with
+ *   two severities is one entry carrying both votes.
  * - When merged, the resulting finding's severity is the **worst**
  *   across sources (FATAL > MUY_MAL > MEJORABLE > OK > MUY_BIEN > PERFECTO).
  * - The `seenBy` array is sorted alphabetically; `titles` is the deduped
@@ -22,6 +24,7 @@ import type {
 	AuditSeverity,
 	IAuditDocument,
 	IConsolidation,
+	ISeverityVote,
 } from '../contracts/interfaces/audit.interface';
 
 import {
@@ -43,6 +46,8 @@ export interface IConsolidateOptions {
 	 * `DEFAULT_CONSOLIDATION_STRATEGIES`.
 	 */
 	readonly strategies?: IConsolidationStrategies;
+	/** Inputs that never became documents (unreadable, unparsable). */
+	readonly rejected?: readonly { path: string; reason: string }[];
 }
 
 /**
@@ -56,12 +61,14 @@ export const consolidateAudits = (
 	options: IConsolidateOptions = {},
 ): IConsolidation => {
 	const strategies = options.strategies ?? DEFAULT_CONSOLIDATION_STRATEGIES;
-	const _worstSeverity = strategies.severity.worst;
+	const worstOf = strategies.severity.worst;
 	const isSameFinding = strategies.dedup;
 	const findingKey = strategies.key.key;
 	const topN = options.topActions ?? DEFAULT_TOP_ACTIONS;
 
-	const skipped: { path: string; reason: string }[] = [];
+	const skipped: { path: string; reason: string }[] = [
+		...(options.rejected ?? []),
+	];
 	const parsed: IAuditDocument[] = [];
 	for (const d of documents) {
 		if (d.findings.length === 0 && d.scores.length === 0) {
@@ -81,20 +88,21 @@ export const consolidateAudits = (
 		worstSeverity: AuditSeverity;
 		files: string[];
 		seenBy: string[];
+		votes: ISeverityVote[];
 	};
 	const merged: MergedFinding[] = [];
 	const seenKeys = new Set<string>();
 	for (const d of parsed) {
 		for (const f of d.findings) {
-			const hit = merged.find(
-				(m) =>
-					m.worstSeverity === f.severity &&
-					isSameFinding(
-						{ title: m.titles[0] ?? '', files: m.files },
-						f,
-					),
+			const hit = merged.find((m) =>
+				isSameFinding({ title: m.titles[0] ?? '', files: m.files }, f),
 			);
 			if (hit) {
+				hit.worstSeverity = worstOf(hit.worstSeverity, f.severity);
+				hit.votes.push({
+					model: d.source.model,
+					severity: f.severity,
+				});
 				hit.titles = dedup([...hit.titles, f.title]);
 				hit.files = dedup([...hit.files, ...f.files]);
 				if (!hit.seenBy.includes(d.source.model)) {
@@ -110,6 +118,7 @@ export const consolidateAudits = (
 				worstSeverity: f.severity,
 				files: [...f.files],
 				seenBy: [d.source.model],
+				votes: [{ model: d.source.model, severity: f.severity }],
 			});
 		}
 	}

@@ -37,7 +37,10 @@ import {
 } from '../capability/capability-registry.service';
 import type { ICapabilityName } from '../contracts/interfaces/capability.interface';
 import type { ICapabilityGateway } from '../contracts/interfaces/project-contract.interface';
-import { normalizeResponse } from '../normalize/normalize-response.service';
+import {
+	childToolError,
+	normalizeResponse,
+} from '../normalize/normalize-response.service';
 import { matchExisting } from '../reuse/match-existing.service';
 import type { ExternalServerRegistry } from '../subprocess/server-registry';
 import {
@@ -110,6 +113,7 @@ export const CallOutputSchema = z.object({
 			handle: z.string(),
 			rawBytes: z.number(),
 			factBytes: z.number(),
+			isError: z.literal(true).optional(),
 		})
 		.optional(),
 	/** With a design capability: existing components the design may already be. */
@@ -221,15 +225,34 @@ export const buildCallToolRegistration = (
 							hint: outcome.message,
 						});
 					}
+					const childError = childToolError(outcome.result);
 					if (
 						capability === undefined ||
 						options.gateway === undefined
-					)
-						return toolJson({ ok: true, result: outcome.result });
+					) {
+						return toolJson(
+							childError === undefined
+								? { ok: true, result: outcome.result }
+								: {
+										ok: false,
+										code: 'call-failed' as const,
+										hint: childError,
+										result: outcome.result,
+									},
+						);
+					}
 					const normalized = await normalizeResponse(
 						outcome.result,
 						options.gateway.keep,
 					);
+					if (childError !== undefined) {
+						return toolJson({
+							ok: false,
+							code: 'call-failed' as const,
+							hint: childError,
+							normalized,
+						});
+					}
 					const contract = capability.shapesCode
 						? await options.gateway.contract()
 						: undefined;

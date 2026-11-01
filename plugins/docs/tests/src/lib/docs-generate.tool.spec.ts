@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	chmodSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -59,6 +65,46 @@ describe('docs_generate tool', () => {
 			expect.objectContaining({ path: 'README.generated.md' }),
 			expect.objectContaining({ path: 'src/example.ts' }),
 		]);
+	});
+
+	const run = async (): Promise<Record<string, unknown>> => {
+		const registration = buildDocsGenerateToolRegistration({
+			namespacePrefix: 'docs',
+			workspaceRootAbs: root,
+		});
+		let handler: Handler | undefined;
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler as Handler;
+				},
+			}),
+		);
+		return bodyOf(await handler!({ scope: 'module' }));
+	};
+
+	it('lists no unreadable paths when every directory reads', async () => {
+		expect((await run()).unreadable).toEqual([]);
+	});
+
+	it('reports a missing source directory instead of an empty success', async () => {
+		rmSync(join(root, 'src'), { recursive: true, force: true });
+		expect((await run()).unreadable).toEqual([
+			{ path: '.', reason: 'directory-does-not-exist' },
+		]);
+	});
+
+	it('reports a directory that cannot be read', async () => {
+		write(root, 'src/locked/inner.ts', 'export const a = 1;');
+		chmodSync(join(root, 'src/locked'), 0o000);
+		try {
+			const body = await run();
+			expect(body.unreadable).toEqual([
+				{ path: 'locked', reason: 'read-failed' },
+			]);
+		} finally {
+			chmodSync(join(root, 'src/locked'), 0o755);
+		}
 	});
 
 	it('returns toolError on invalid input', async () => {

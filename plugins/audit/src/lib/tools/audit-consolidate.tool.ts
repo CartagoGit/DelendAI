@@ -26,7 +26,7 @@ import {
 	resolveProposalsDir,
 } from '../services/audit-path-policy.service';
 import { mayReadOthers } from '../services/audit-seats.service';
-import { parseAuditFiles } from '../services/parse-audit.service';
+import { parseAuditFilesDetailed } from '../services/parse-audit.service';
 
 const DetailSchema = z.enum(DETAIL_LEVELS);
 
@@ -61,6 +61,20 @@ const ConsolidationOutputSchema = z.object({
 			] as const),
 			files: z.array(z.string()),
 			seenBy: z.array(z.string()),
+			votes: z.array(
+				z.object({
+					model: z.string(),
+					severity: z.enum([
+						'FATAL',
+						'BAD',
+						'MINOR',
+						'OK',
+						'GOOD',
+						'PERFECT',
+						'EXEMPLARY',
+					] as const),
+				}),
+			),
 		}),
 	),
 	topActions: z.array(z.string()),
@@ -243,16 +257,23 @@ export const buildConsolidateRegistration = (
 						);
 					}
 					const docs: { path: string; body: string }[] = [];
+					const unreadable: { path: string; reason: string }[] = [];
 					for (const name of mdRel) {
 						try {
 							const body = (await reader.readText(name)).content;
 							docs.push({ path: name, body });
-						} catch {
-							// Skip unreadable files but keep going so a single
-							// broken audit doesn't fail the whole consolidation.
+						} catch (err) {
+							// One broken audit does not fail the consolidation,
+							// but it is reported in `skipped`.
+							unreadable.push({
+								path: name,
+								reason: `unreadable: ${err instanceof Error ? err.message : String(err)}`,
+							});
 						}
 					}
-					const result = consolidateAudits(parseAuditFiles(docs), {
+					const batch = parseAuditFilesDetailed(docs);
+					const result = consolidateAudits(batch.documents, {
+						rejected: [...unreadable, ...batch.rejected],
 						...(args.topActions !== undefined
 							? { topActions: args.topActions }
 							: options.defaultTopActions !== undefined

@@ -43,20 +43,24 @@ export interface DelendaiAuditAuditConsolidateOutput {
 		path: string;
 		reason: string;
 	}[];
-	consensus: {
+	consensus: Array<{
 		dimension: string;
-		scores: {
+		scores: Array<{
 			model: string;
-			score: number;
-		}[];
-		average: number;
-	}[];
+			score: number | null;
+		}>;
+		average: number | null;
+	}>;
 	findings: Array<{
 		id: string;
 		titles: string[];
 		worstSeverity: "FATAL" | "BAD" | "MINOR" | "OK" | "GOOD" | "PERFECT" | "EXEMPLARY";
 		files: string[];
 		seenBy: string[];
+		votes: Array<{
+			model: string;
+			severity: "FATAL" | "BAD" | "MINOR" | "OK" | "GOOD" | "PERFECT" | "EXEMPLARY";
+		}>;
 	}>;
 	topActions: string[];
 	markdown: string;

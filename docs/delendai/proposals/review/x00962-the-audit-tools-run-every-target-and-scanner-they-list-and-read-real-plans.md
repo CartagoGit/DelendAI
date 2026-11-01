@@ -2,10 +2,14 @@
 id: x00962
 title: "The audit tools run every target and scanner they list, and read real plans"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 233daa2b-e0b9-4417-98e4-0c12c57125a1
+last-correlation-id: 233daa2b-e0b9-4417-98e4-0c12c57125a1
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T07:28:59.652Z
 ---
 
 # x00962 — The audit tools run every target and scanner they list, and read real plans
@@ -27,31 +31,40 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 - global_gate: type
 
 ### S1 — self_audit and audit_run
-- **Status**: pending
-- **Files**: `plugins/audit/src/index.ts`, `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`
+- **Status**: review
+- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/public/index.ts`, `plugins/audit/src/lib/self-audit/default-scanners.service.ts`, `plugins/audit/src/lib/services/llm-fan-out.service.ts`
 - **Gate**: type
 - acceptance:
   - "self_audit through the public registration runs its scanners (AUD-01) and capabilities filters the backlog (AUD-02, D115)."
   - "audit_run runs every target or lists the skipped ones with the reason (AUD-03)."
+- shipped-in: `bb8f825757cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Consolidation
-- **Status**: pending
-- **Files**: `plugins/audit/src/lib/services/audit-consolidate.service.ts`, `plugins/audit/src/lib/services/audit-consolidation-strategies.ts`, `plugins/audit/src/lib/services/parse-audit.service.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/contracts/interfaces/audit.interface.ts`, `plugins/audit/src/generated/tool-outputs.ts`
+- **Status**: review
+- **Files**: `plugins/audit/src/lib/contracts/interfaces/audit.interface.ts`, `plugins/audit/src/lib/contracts/interfaces/self-audit.interface.ts`, `plugins/audit/src/lib/services/audit-consolidate.service.ts`, `plugins/audit/src/lib/services/parse-audit.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `tools/scripts/types/emit-tool-types.script.ts`
 - **Gate**: type
 - acceptance:
   - "One finding with two severities consolidates into one entry with both votes (AUD-04)."
   - "Unreadable or unparsable inputs are listed in the result (D92)."
   - "Generated types keep score and average nullable (D111)."
+- shipped-in: `e8666f5d4de3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Plan reader and silent empties elsewhere
-- **Status**: pending
-- **Files**: `plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `packages/core/src/lib/shared/safe-list-dir.ts`, `plugins/search/src/lib/services/search-engine.backends.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`
+- **Status**: review
+- **Files**: `plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/search/src/lib/services/search-engine.backends.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/src/lib/services/search-safe-reader.ts`
 - **Gate**: type
 - acceptance:
   - "The plan reader parses contains.proposals from a real repo plan by YAML, not by indentation (D42)."
   - "docs_generate reports unreadable directories (D70)."
   - "Rejected explicit roots produce a diagnostic (D104)."
   - "A child tool error survives normalisation as an error (EXT-03)."
+- shipped-in: `e8666f5d4de3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

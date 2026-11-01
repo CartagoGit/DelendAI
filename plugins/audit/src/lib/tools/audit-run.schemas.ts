@@ -136,8 +136,8 @@ export const RunInputSchema = z.object({
 	/**
 	 * One or more LLM targets. Each is `(provider, model, apiKey)`.
 	 * At least one is required; the tool caps concurrency at 4 and
-	 * surfaces the remainder's results sequentially when more are
-	 * passed (see {@link callLlmFanOut}).
+	 * queues the remainder for the next free slot when more are
+	 * passed (see {@link callLlmFanOut} in llm-fan-out.service).
 	 */
 	targets: z.array(TargetSchema).min(1).max(8),
 	/**
