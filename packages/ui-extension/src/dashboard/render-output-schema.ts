@@ -11,6 +11,7 @@
  *    shared preview can render schemas without an inline `<style>`
  *    block.
  */
+import { escapeHtml } from './format';
 import type { IRenderableSchema } from '../contracts/interfaces/renderable-schema.interface';
 import type { IToolDetailCopy } from '../contracts/interfaces/tool-detail.interface';
 
@@ -64,9 +65,4 @@ export const renderOutputSchema = (
 ): string =>
 	`<div class="tool-detail__schema">${renderSchemaNode(schema, copy)}</div>`;
 
-export const escapeHtml = (value: string): string =>
-	value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;');
+export { escapeHtml };

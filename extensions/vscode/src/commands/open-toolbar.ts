@@ -11,6 +11,7 @@
  * command palette; the toolbar is pure UI over those commands,
  * no new domain logic.
  */
+import { TOOLBAR_MESSAGE_SCHEMA } from '../contracts/constants/webview-message-schemas.constant';
 import { OverviewService } from '@delendai/client';
 import { dictsByLang, defaultLang, type Lang } from '@delendai/shared/i18n';
 import {
@@ -126,13 +127,9 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 		// listener the runtime's fallback host swallowed every
 		// click as a silent no-op.
 		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
-			if (typeof msg !== 'object' || msg === null) return;
-			const m = msg as {
-				command?: unknown;
-				action?: unknown;
-				commandId?: unknown;
-				lang?: unknown;
-			};
+			const parsed = TOOLBAR_MESSAGE_SCHEMA.safeParse(msg);
+			if (!parsed.success) return;
+			const m = parsed.data;
 			if (m.command === 'delendaiAction') {
 				const commandId = resolveToolbarCommandId(
 					m.commandId,
@@ -161,13 +158,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 				}
 				return;
 			}
-			if (
-				(m.command === 'setLanguage' ||
-					m.command === 'persistLanguage') &&
-				typeof m.lang === 'string'
-			) {
-				await deps.globalState?.update?.(HOST_LANG_KEY, m.lang);
-			}
+			await deps.globalState?.update?.(HOST_LANG_KEY, m.lang);
 		});
 		return panel;
 	});

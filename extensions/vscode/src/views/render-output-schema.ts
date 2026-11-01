@@ -1,3 +1,4 @@
+import { escapeHtml } from '@delendai/ui-extension/public';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 
 export interface IRenderableSchema {
@@ -69,9 +70,4 @@ const inferType = (schema: IRenderableSchema): string => {
 	return 'unknown';
 };
 
-export const escapeHtml = (value: string): string =>
-	value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;');
+export { escapeHtml };
