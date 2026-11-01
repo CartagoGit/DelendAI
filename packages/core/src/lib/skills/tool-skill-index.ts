@@ -21,11 +21,19 @@ export const buildToolSkillIndex = (
 	return index;
 };
 
-/** The skill a tool's catalogue entry points to: the first that names it. */
+/**
+ * The skill a tool's catalogue entry points to: the one its own plugin
+ * leads, since a cross-cutting playbook also names tools it only passes
+ * through, otherwise the first that names it.
+ */
 export const skillForTool = (
 	index: ReadonlyMap<string, readonly string[]>,
 	toolName: string,
-): string | undefined => index.get(toolName)?.[0];
+	ownedByPlugin: ReadonlySet<string> = new Set(),
+): string | undefined => {
+	const skills = index.get(toolName);
+	return skills?.find((id) => ownedByPlugin.has(id)) ?? skills?.[0];
+};
 
 /**
  * Point each descriptor at the skill that names its tool, leaving the
@@ -33,12 +41,24 @@ export const skillForTool = (
  */
 export const withSkillReferences = (
 	descriptors: readonly IToolSurfaceDescriptor[],
-	entries: readonly Pick<ISkillCatalogEntry, 'id' | 'tools'>[],
+	entries: readonly Pick<ISkillCatalogEntry, 'id' | 'tools' | 'appliesTo'>[],
 ): readonly IToolSurfaceDescriptor[] => {
 	const index = buildToolSkillIndex(entries);
 	if (index.size === 0) return descriptors;
 	return descriptors.map((descriptor) => {
-		const skill = skillForTool(index, descriptor.name);
+		const skill = skillForTool(
+			index,
+			descriptor.name,
+			new Set(
+				entries
+					.filter(
+						(entry) =>
+							entry.appliesTo[0] ===
+							`@delendai/${descriptor.pluginId ?? ''}`,
+					)
+					.map((entry) => entry.id),
+			),
+		);
 		return skill === undefined ? descriptor : { ...descriptor, skill };
 	});
 };
