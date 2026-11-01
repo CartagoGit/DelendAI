@@ -96,7 +96,7 @@ export const createWorkCommand = (): ICliCommand => ({
 						to,
 						reason,
 						...(agent === undefined ? {} : { agent }),
-						...(ctx.cwd === undefined ? {} : { checkout: ctx.cwd }),
+						checkout: ctx.cwd,
 					}),
 			});
 		}

@@ -172,6 +172,7 @@ const step = (label: string, command: readonly string[]): boolean => {
 		env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
 	});
 	const ok = result.status === 0;
+	if (!ok) failed.push(label);
 	console.log(
 		`prove: ${ok ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
 	);
@@ -238,7 +239,7 @@ const main = async (): Promise<number> => {
 			ok = step(label, command) && ok;
 		}
 		console.log(
-			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ') || 'a test step'};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
+			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 		);
 		return ok ? 0 : 1;
 	}
