@@ -28,6 +28,8 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - **49 were made in the unit's own worktree before it was republished, bringing about 30 commits each.** The product told agents to do so: a unit whose base moved was told to "merge the integration branch into it (`git merge <remote>/<integration>`) before it publishes". Under this profile a pull request is judged on its merge with the integration branch and need not be refreshed against it, so those merges bought nothing.
 - **The other 23** were the refreshes of red or overlapping candidates, with about 99 commits each.
 
+#1597 went green on the merge ref of develop's tip and then waited about 15 minutes, because the queue counted what develop had gained since the branch left, which included that very tip. The refresh runs only on the owner's machine (a bot's refresh left generated files stale, and that stays decided), so the wait lasts as long as that machine takes, or for ever while it is off.
+
 ## non-goals
 
 - Bringing candidates forward less carefully. A real overlap on a hand-written file, a conflict, or a red verdict against a moved branch is still acted on.
@@ -67,8 +69,16 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S4 — A candidate is not sent back for what its checks already saw
+- **Status**: pending
+- **Files**: `tools/scripts/forge/candidate-tested-base.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts)."
+
 ## acceptance
 
 - `candidate-overlap-report.script.ts --since=<date>` says how many merges of the integration branch the merged pull requests took, how many shared a file with what they brought, and which files, each marked derived when `.gitattributes` declares it generated (candidate-overlap-report.script.spec.ts).
 - `overlappingFiles` leaves out every path `.gitattributes` marks `merge=delendai-generated` (`derivedPaths`, read through `git check-attr`, so `AGENT.md` and the `**/src/generated` outputs count as derived), besides the projections `gen:all` rebuilds (refresh-candidate-derived.spec.ts).
 - A unit with work whose base moved is told so and that it need not be brought forward. It is told to merge the integration branch into it only when publishing or its pull request reports a conflict (work-swarm-relations.spec.ts).
+- A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts).

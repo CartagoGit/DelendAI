@@ -9,7 +9,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { branchesLandingAsTheyAre } from './queue-acceptance';
+import { testedInstant } from './candidate-tested-base';
+import { branchesLandingAsTheyAre, queueAcceptance } from './queue-acceptance';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -86,5 +87,53 @@ describe('branchesLandingAsTheyAre', () => {
 		expect(owner.git('rev-parse', 'origin/develop')).toBe(
 			other.git('rev-parse', 'HEAD'),
 		);
+	});
+});
+
+describe('a candidate whose checks already saw the integration branch', () => {
+	const moved = () => {
+		const { owner, other } = project();
+		writeFileSync(join(other.root, 'shared.ts'), 'export const a = 3;\n');
+		other.git('commit', '-qam', 'feat: the integration branch moves');
+		other.git('push', '-q', 'origin', 'develop');
+		owner.git('fetch', '-q', 'origin');
+		const tip = owner.git('rev-parse', 'origin/develop');
+		const head = owner.git('rev-parse', `origin/${CANDIDATE}`);
+		const judge = (
+			testedFrom: (sha: string, base: string) => string | undefined,
+		) =>
+			queueAcceptance({
+				root: owner.root,
+				remote: 'origin',
+				integration: 'develop',
+				integrationSha: tip,
+				candidates: [{ number: 7, headRef: CANDIDATE, headSha: head }],
+				testedFrom,
+			})[0]?.accepted;
+		return { judge, tip };
+	};
+
+	it('lands when its run saw the tip it would otherwise come forward to', () => {
+		const { judge, tip } = moved();
+		expect(judge(() => tip)).toBe(true);
+	});
+
+	it('counts from where it left when nobody can say what its run saw', () => {
+		const { judge } = moved();
+		expect(judge(() => undefined)).toBe(false);
+	});
+
+	it('still comes forward for what landed after its run', () => {
+		const { judge } = moved();
+		expect(judge((_sha, base) => base)).toBe(false);
+	});
+});
+
+describe('testedInstant', () => {
+	it('reads the branch before the run, for the merge ref built ahead of it', () => {
+		expect(testedInstant('2026-11-01T00:10:00Z')).toBe(
+			'2026-11-01T00:08:00.000Z',
+		);
+		expect(testedInstant('not a date')).toBeUndefined();
 	});
 });
