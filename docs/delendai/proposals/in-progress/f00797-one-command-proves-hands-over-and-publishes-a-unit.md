@@ -2,14 +2,14 @@
 id: f00797
 title: "One command proves, hands over and publishes a unit"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
-last-correlation-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T05:13:48.974Z
+last-transition-id: 9275624a-52b7-4d1e-a0f0-7c2186d09e6f
+last-correlation-id: 9275624a-52b7-4d1e-a0f0-7c2186d09e6f
+last-transition-from: review
+last-transition-at: 2026-11-01T13:16:47.033Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit
