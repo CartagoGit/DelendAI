@@ -11,13 +11,6 @@ import type { IFinding } from '@delendai/core/contracts';
 import { detectValueType } from './type-matcher';
 import type { IJsonSchema, IOpenApiOperation } from '../spec/openapi';
 
-type IJsonSchemaLike = IJsonSchema & {
-	readonly nullable?: boolean;
-	readonly additionalProperties?: boolean | IJsonSchema;
-	readonly oneOf?: readonly IJsonSchema[];
-	readonly anyOf?: readonly IJsonSchema[];
-};
-
 export interface IValidateResponseOptions {
 	readonly schema?: IJsonSchema;
 }
@@ -52,16 +45,12 @@ const joinPath = (path: string, segment: string | number): string => {
 	return path === '$' ? `$.${segment}` : `${path}.${segment}`;
 };
 
-const schemaExtras = (schema: IJsonSchema): IJsonSchemaLike =>
-	schema as IJsonSchemaLike;
-
 const inferType = (schema: IJsonSchema): IJsonSchema['type'] | undefined => {
 	if (schema.type !== undefined) return schema.type;
-	const extra = schemaExtras(schema);
 	if (
 		schema.properties !== undefined ||
 		schema.required !== undefined ||
-		extra.additionalProperties !== undefined
+		schema.additionalProperties !== undefined
 	) {
 		return 'object';
 	}
@@ -92,15 +81,13 @@ const matchesType = (
 	expected: NonNullable<IJsonSchema['type']>,
 ) => TYPE_CHECKERS[expected]?.(value) ?? false;
 
-const isNullable = (schema: IJsonSchema): boolean =>
-	schemaExtras(schema).nullable === true;
+const isNullable = (schema: IJsonSchema): boolean => schema.nullable === true;
 
 const hasUnsupportedFeature = (
 	schema: IJsonSchema,
 ): 'oneOf' | 'anyOf' | undefined => {
-	const extra = schemaExtras(schema);
-	if (Array.isArray(extra.oneOf) && extra.oneOf.length > 0) return 'oneOf';
-	if (Array.isArray(extra.anyOf) && extra.anyOf.length > 0) return 'anyOf';
+	if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) return 'oneOf';
+	if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) return 'anyOf';
 	return undefined;
 };
 
@@ -132,6 +119,44 @@ const formatFinding = (
 	message: `${path}: ${message}`,
 	...(fix === undefined ? {} : { fix }),
 });
+
+/** The first bound `value` breaks, as a sentence, or undefined. */
+const brokenBound = (
+	value: unknown,
+	schema: IJsonSchema,
+): string | undefined => {
+	if (typeof value === 'number') {
+		if (schema.minimum !== undefined && value < schema.minimum)
+			return `${value} is below the minimum ${schema.minimum}.`;
+		if (schema.maximum !== undefined && value > schema.maximum)
+			return `${value} is above the maximum ${schema.maximum}.`;
+		if (
+			schema.exclusiveMinimum !== undefined &&
+			value <= schema.exclusiveMinimum
+		)
+			return `${value} is not above ${schema.exclusiveMinimum}.`;
+		if (
+			schema.exclusiveMaximum !== undefined &&
+			value >= schema.exclusiveMaximum
+		)
+			return `${value} is not below ${schema.exclusiveMaximum}.`;
+		return undefined;
+	}
+	const length =
+		typeof value === 'string' || Array.isArray(value)
+			? value.length
+			: undefined;
+	if (length === undefined) return undefined;
+	const [least, most] =
+		typeof value === 'string'
+			? [schema.minLength, schema.maxLength]
+			: [schema.minItems, schema.maxItems];
+	if (least !== undefined && length < least)
+		return `length ${length} is below the minimum ${least}.`;
+	if (most !== undefined && length > most)
+		return `length ${length} is above the maximum ${most}.`;
+	return undefined;
+};
 
 export const resolveResponseSchema = (
 	operation: IOpenApiOperation,
@@ -203,6 +228,19 @@ const validateValue = (
 		];
 	}
 
+	const broken = brokenBound(value, schema);
+	if (broken !== undefined) {
+		return [
+			formatFinding(
+				path,
+				'out-of-bounds',
+				'medium',
+				broken,
+				'Bring the value inside the bounds the schema declares.',
+			),
+		];
+	}
+
 	if (Array.isArray(value)) {
 		if (schema.items === undefined) return [];
 		return value.flatMap((item, index) =>
@@ -231,7 +269,7 @@ const validateValue = (
 		);
 	}
 
-	const additionalProperties = schemaExtras(schema).additionalProperties;
+	const additionalProperties = schema.additionalProperties;
 	for (const [key, childValue] of Object.entries(value)) {
 		const childSchema = properties[key];
 		const childPath = joinPath(path, key);

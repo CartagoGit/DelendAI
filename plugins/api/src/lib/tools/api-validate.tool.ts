@@ -15,21 +15,17 @@ import {
 	toolJson,
 	worstSeverity,
 } from '@delendai/core/public';
-import type { IFetchLike, webFetch } from '@delendai/web-fetch/public';
 
-import { fetchAndParseSpec, parseOpenApi } from '../spec/openapi';
+import type { IResolveSpecOptions } from '../contracts/interfaces/resolve-spec.interface';
 import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';
+import { resolveSpec } from '../spec/resolve-spec.service';
 import {
 	resolveResponseSchema,
 	validateResponse,
 } from '../validate/response-validator';
 
-export interface IApiValidateToolOptions {
+export interface IApiValidateToolOptions extends IResolveSpecOptions {
 	readonly namespacePrefix: string;
-	readonly spec?: IOpenApiSpec;
-	readonly defaultAllowList?: readonly string[];
-	readonly fetchImpl?: typeof webFetch;
-	readonly specFetch?: IFetchLike;
 }
 
 const INPUT = z
@@ -81,71 +77,8 @@ const OUTPUT = z.union([
 	}),
 ]);
 
-const isParsedSpec = (value: unknown): value is IOpenApiSpec => {
-	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-		return false;
-	}
-	return 'operations' in value;
-};
-
 const installHint = (reason: string, nextAction: string) =>
 	toolError(reason, nextAction);
-
-const resolveSpec = async (
-	args: z.infer<typeof INPUT>,
-	options: IApiValidateToolOptions,
-): Promise<
-	{ spec: IOpenApiSpec } | { error: ReturnType<typeof toolError> }
-> => {
-	if (args.spec !== undefined) {
-		return {
-			spec: isParsedSpec(args.spec)
-				? args.spec
-				: parseOpenApi(args.spec as object),
-		};
-	}
-	if (args.specUrl !== undefined) {
-		const allowList = args.allowList ?? options.defaultAllowList;
-		if (allowList === undefined || allowList.length === 0) {
-			return {
-				error: installHint(
-					'specUrl requires an allowList.',
-					'Pass `allowList: ["api.example.com"]` or pre-load `spec` inline.',
-				),
-			};
-		}
-		const loaded = await fetchAndParseSpec({
-			url: args.specUrl,
-			allowList,
-			...(options.specFetch === undefined
-				? {}
-				: { fetch: options.specFetch }),
-			...(options.fetchImpl === undefined
-				? {}
-				: { engine: options.fetchImpl }),
-			...(args.timeoutMs === undefined
-				? {}
-				: { timeoutMs: args.timeoutMs }),
-			...(args.maxBytes === undefined ? {} : { maxBytes: args.maxBytes }),
-		});
-		if (!loaded.ok) {
-			return {
-				error: installHint(
-					`specUrl fetch rejected: ${loaded.reason}`,
-					'Check the `allowList` / `specUrl`, or pass `spec` inline.',
-				),
-			};
-		}
-		return { spec: loaded.spec };
-	}
-	if (options.spec !== undefined) return { spec: options.spec };
-	return {
-		error: installHint(
-			'api_validate needs a spec or specUrl.',
-			'Pass `spec` (inline object) or `specUrl` (URL + allowList).',
-		),
-	};
-};
 
 const findOperation = (
 	spec: IOpenApiSpec,
