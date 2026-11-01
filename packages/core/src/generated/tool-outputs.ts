@@ -1214,8 +1214,16 @@ export interface DelendaiResolveCapabilityOutput {
 }
 
 export interface DelendaiScaffoldOutput {
-	wouldChange?: Record<string, unknown>[];
-	wouldRun?: Record<string, unknown>[];
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
 	risk?: "low" | "medium" | "high";
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;

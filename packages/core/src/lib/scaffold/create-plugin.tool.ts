@@ -3,6 +3,11 @@ import { readFile, stat, writeFile } from 'node:fs/promises';
 
 import z from 'zod';
 
+import { DRY_RUN_PLAN_FIELDS } from '../contracts/constants/dry-run-plan-fields.constant';
+import {
+	PLUGIN_WIRING_REPORT_SCHEMA,
+	PLUGIN_WIRING_WRITE_SCHEMA,
+} from '../contracts/constants/plugin-wiring-schemas.constant';
 import type { IPluginWiringFs } from '../contracts/interfaces/plugin-wiring.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
@@ -25,50 +30,6 @@ import { wirePluginIntoMonorepo } from './wire-plugin';
 
 const kebabCase = (value: string): string => toKebabCase(value);
 
-const PLUGIN_WIRING_POINT_ID_SCHEMA = z.enum([
-	'tsconfig-base',
-	'vitest-shared',
-	'plugin-defaults',
-	'publish-order',
-	'preset-catalog',
-	'catalog-regen',
-]);
-
-const PLUGIN_WIRING_EDIT_SCHEMA = z.object({
-	path: z.string(),
-	previous: z.string(),
-	next: z.string(),
-	noop: z.boolean(),
-});
-
-const PLUGIN_WIRING_WRITE_SCHEMA = z.object({
-	pointId: PLUGIN_WIRING_POINT_ID_SCHEMA,
-	edits: z.array(PLUGIN_WIRING_EDIT_SCHEMA),
-	wired: z.boolean(),
-});
-
-const PLUGIN_WIRING_POINT_SCHEMA = z.object({
-	id: PLUGIN_WIRING_POINT_ID_SCHEMA,
-	path: z.string(),
-	wired: z.boolean(),
-	summary: z.string(),
-	remediation: z.string().optional(),
-});
-
-const PLUGIN_WIRING_REPORT_SCHEMA = z.object({
-	pluginId: z.string(),
-	points: z.array(PLUGIN_WIRING_POINT_SCHEMA),
-	loadDiagnostics: z.array(
-		z.object({
-			pluginId: z.string(),
-			reason: z.string(),
-			fixHint: z.string(),
-		}),
-	),
-	fullyWired: z.boolean(),
-	missing: z.array(PLUGIN_WIRING_POINT_ID_SCHEMA),
-});
-
 export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 	name: z
 		.string()
@@ -82,32 +43,8 @@ export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 	dryRun: z.boolean().optional(),
 });
 
-const PLAN_FIELDS = {
-	wouldChange: z
-		.array(
-			z.object({
-				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
-				path: z.string(),
-				summary: z.string(),
-			}),
-		)
-		.readonly()
-		.optional(),
-	wouldRun: z
-		.array(
-			z.object({
-				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
-				target: z.string(),
-				summary: z.string(),
-			}),
-		)
-		.readonly()
-		.optional(),
-	risk: z.enum(['low', 'medium', 'high']).optional(),
-};
-
 export const CREATE_PLUGIN_OUTPUT_SCHEMA = z.object({
-	...PLAN_FIELDS,
+	...DRY_RUN_PLAN_FIELDS,
 	ok: z.boolean(),
 	scaffolded: z.object({
 		files: z.array(z.string()),

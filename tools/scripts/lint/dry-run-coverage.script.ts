@@ -71,7 +71,7 @@ const renderBaseline = (counts: Readonly<Record<string, number>>): string => {
 };
 
 const main = async (): Promise<number> => {
-	const root = repoRoot(import.meta.url);
+	const root = repoRoot();
 	const current = await scanUnpreviewable(root);
 	const path = join(root, BASELINE_REL);
 	if (process.argv.includes('--update')) {
