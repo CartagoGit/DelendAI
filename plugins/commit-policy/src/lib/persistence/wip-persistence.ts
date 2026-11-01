@@ -379,7 +379,7 @@ const handOff = async (input: {
 		return {
 			attempted: false,
 			status: '',
-			reason: 'no integration engine is wired into commit-policy; the candidate is checkpointed and waiting',
+			reason: 'a candidate reaches integration through `delendai work publish`, which opens its pull request; it stays checkpointed until then',
 		};
 	}
 	const answer = await input.integration.submit({

@@ -2,10 +2,14 @@
 id: x00963
 title: "commit-policy stages, trails and settles exactly what it says"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
+last-correlation-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T05:06:44.345Z
 ---
 
 # x00963 — commit-policy stages, trails and settles exactly what it says
@@ -28,32 +32,41 @@ gpt-6.1-sol's contribution and a00095. CP-02: gitDirtyFilePaths keeps porcelain 
 - global_gate: type
 
 ### S1 — Staging and triggers
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/services/git-extra.ts`, `plugins/commit-policy/src/lib/triggers/interval-timer.ts`, `plugins/commit-policy/src/lib/triggers/threshold-tracker.ts`
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/lib/services/git-extra.ts`
 - **Gate**: type
 - acceptance:
   - "Paths are read with -z; a file with spaces is staged; an untracked folder counts its files (CP-02, CP-07)."
+- shipped-in: `b7df7dab5334`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Production wiring
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/src/lib/services/git-write-lock.ts`, `plugins/commit-policy/src/lib/services/repair-proposer.ts`, `plugins/commit-policy/src/lib/tools/storms-tool.ts`, `packages/core/src/lib/integration-engine/index.ts`, `plugins/commit-policy/src/lib/contracts/options.ts`, `plugins/commit-policy/README.md`, `plugins/commit-policy/README.es.md`
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/tools/storms-tool.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/skills/read-stderr-storm/SKILL.md`
 - **Gate**: type
 - acceptance:
-  - "register passes workspaceRoot (CP-03), the integration port (CP-10) and a repair store (CP-11) in production; status is registered and the docs show the real defaults (CP-06)."
+  - "register passes workspaceRoot (CP-03); status is registered and the docs show the real defaults (CP-06). A candidate reports `work publish` as its way to integration (CP-10), and the storm surface promises no filing, its unreachable filer removed (CP-11)."
+- shipped-in: `69dbbcd9e7eb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Trailers, status and settlement
-- **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/src/lib/tools/status-tool.ts`, `plugins/commit-policy/src/lib/persistence/derive-branch-policy.ts`, `plugins/commit-policy/src/lib/settlement/worker.registry.ts`, `plugins/commit-policy/src/lib/tools/settlement-tool.ts`
+- **Status**: review
+- **Files**: `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/src/lib/tools/status-tool.ts`, `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/settlement/worker.registry.ts`, `plugins/commit-policy/src/lib/settlement/settlement-gate.helper.ts`, `plugins/commit-policy/src/lib/tools/settlement-tool.ts`
 - **Gate**: type
 - acceptance:
   - "Adding a trailer keeps the subject, body and existing trailers (CP-05)."
   - "status derives permission with the engine's function (D50)."
-  - "A conductor drives setPhase and markGreen; the quiet boundary is taken under one lock and the gate guards the slice transition (G48, G49, CP-12)."
+  - "The settlement tool conducts the cycle (enter, complete); entering is atomic with slice admission under one lock, and a slice holds the boundary until its event ends (G48, G49, CP-12)."
+- shipped-in: `b7df7dab5334`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
 - Paths are read with -z; a file with spaces is staged; an untracked folder counts its files (CP-02, CP-07).
-- register passes workspaceRoot (CP-03), the integration port (CP-10) and a repair store (CP-11) in production; status is registered and the docs show the real defaults (CP-06).
+- register passes workspaceRoot (CP-03); status is registered and the docs show the real defaults (CP-06). A candidate reports `work publish` as its way to integration (CP-10), and the storm surface promises no filing, its unreachable filer removed (CP-11).
 - Adding a trailer keeps the subject, body and existing trailers (CP-05).
 - status derives permission with the engine's function (D50).
-- A conductor drives setPhase and markGreen; the quiet boundary is taken under one lock and the gate guards the slice transition (G48, G49, CP-12).
+- The settlement tool conducts the cycle (enter, complete); entering is atomic with slice admission under one lock, and a slice holds the boundary until its event ends (G48, G49, CP-12).

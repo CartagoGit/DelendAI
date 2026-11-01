@@ -25,6 +25,7 @@ export const STATIC_CHECK_JOBS = [
 	'quality-gate',
 	'manifests-check',
 	'generated-artifacts-check',
+	'tokens-budget-real',
 ] as const;
 
 /**
