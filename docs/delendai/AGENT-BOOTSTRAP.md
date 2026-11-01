@@ -299,6 +299,10 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 ## 6. Invariants you must not break
 
+- **The right path, always.** Analyse what you touch and, unasked, redo or
+  refactor what is not the most efficient, robust and correct way. Working
+  is not enough: spend the fewest tokens that keep the work effective, and
+  give each fact one source of truth that everything else reads.
 - **Every agent is held to the workflow, whatever its model.** Set
   `DELENDAI_AGENT_ID` to your exact model id before any delendai or git call.
   Unidentified writers are judged per `development.guard.unknownActor`
@@ -559,19 +563,15 @@ or have their own config file. Use the same single-pointer pattern:
 ## Build / dist layout
 
 Compiled artifacts land in `/build/{group}/{name}/{version}/`; `bun run
-build` is the only producer. The builder also mirrors each package's
-output into its own `dist/` (content-aware: unchanged files keep their
-mtime, deleted ones are removed) because manifests keep `"main":
-"./dist/index.js"` (npm forbids `exports` outside the package). `/build/`
-and `/dist/` are gitignored; nothing else writes `dist/`, and a
-publish stages a temporary one (`stageBuildForPublish` in
-`tools/scripts/publish/workspace-deps.ts`).
+build` is the only producer. It mirrors each package's output into its
+`dist/` because manifests keep `"main": "./dist/index.js"`. `/build/` and
+`/dist/` are gitignored; a publish stages a temporary `dist/`
+(`stageBuildForPublish`).
 
 **Scripts never resolve against `build/`.** `bun run`, `vitest` and
 `tsc --noEmit` inject the `@delendai/source` condition (`bunfig.toml`,
 `tsconfig.base.json`, `vitest.shared.ts`), so `@delendai/*` resolves to
-`src/`. A call that resolves into `build/` is missing the condition —
-fix the call, not the build.
+`src/`. A call that resolves into `build/` is missing the condition.
 
 `lint:no-build-imports-from-src` fails if anything under `build/**/*.js`
 imports `../src/`.

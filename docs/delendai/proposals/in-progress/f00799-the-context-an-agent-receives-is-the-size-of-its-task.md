@@ -81,3 +81,6 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - Each host reads only its own always-read rules, under a gated budget, with no rule lost.
 - A long self-contained skill leaves only its result where the host allows it.
 - Tokens per finished unit are reported, including rework.
+
+## notes
+- 2026-11-01: the owner made the right path a standing rule for every agent, so it opens the invariants of AGENT-BOOTSTRAP.md, ahead of the split of S3.
