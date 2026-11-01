@@ -55,7 +55,7 @@ interface ITarget {
 const render = (document: unknown): string =>
 	`${HEADER}${stringify(document, { indent: 4, lineWidth: 0 })}`.replaceAll(
 		`@${CHECKOUT_ACTION_SHA}`,
-		`@${CHECKOUT_ACTION_SHA} # ${CHECKOUT_ACTION_TAG}`,
+		() => `@${CHECKOUT_ACTION_SHA} # ${CHECKOUT_ACTION_TAG}`,
 	);
 
 const buildTargets = (root: string): readonly ITarget[] => {
