@@ -2,14 +2,14 @@
 id: x00967
 title: "A git, forge or dependency read that fails says so instead of reporting clean"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: d45c1744-1343-4831-9d14-1c1cda70395d
-last-correlation-id: d45c1744-1343-4831-9d14-1c1cda70395d
-last-transition-from: ready
-last-transition-at: 2026-11-01T03:50:07.012Z
+last-transition-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
+last-correlation-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T04:00:12.751Z
 ---
 
 # x00967 — A git, forge or dependency read that fails says so instead of reporting clean
@@ -31,27 +31,36 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 - global_gate: type
 
 ### S1 — deps
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/deps/src/lib/services/audit.ts`, `plugins/deps/src/lib/services/licenses.ts`, `plugins/deps/src/lib/tools/tools.ts`, `plugins/deps/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "A failed or unparsable audit is an error with the cause (D68, G61-DEPS-01)."
   - "An unreadable manifest or node_modules is an error, not zero licences (D69)."
+- shipped-in: `48a4f5c96a9d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — git and forge reads
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/lib/services/forge.ts`
 - **Gate**: type
 - acceptance:
   - "A git status that fails returns an error, never clean (D87)."
   - "A gh failure returns available:false with the reason (D110)."
+- shipped-in: `0b0c4aaa1b75`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Branch protection survives a failed refresh
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`
 - **Gate**: type
 - acceptance:
   - "A refresh failure keeps the last known protections and reports the failure (CP-01)."
+- shipped-in: `0b0c4aaa1b75`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
