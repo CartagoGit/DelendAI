@@ -4,9 +4,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { callLlmFanOut } from '../../../../src/lib/services/llm-fan-out.service';
-import {
-	type IHttpTransport,
-	type IModelTarget,
+import type {
+	IHttpTransport,
+	IModelTarget,
 } from '../../../../src/lib/services/llm-client.service';
 
 const targets = (count: number): IModelTarget[] =>
@@ -31,7 +31,7 @@ const countingTransport = (): IHttpTransport & {
 			peak = Math.max(peak, running);
 			const model = (JSON.parse(init.body) as { model: string }).model;
 			models.push(model);
-			await new Promise((resolve) => setTimeout(resolve, 5));
+			await new Promise((resolve) => setImmediate(resolve));
 			running -= 1;
 			return {
 				status: 200,
