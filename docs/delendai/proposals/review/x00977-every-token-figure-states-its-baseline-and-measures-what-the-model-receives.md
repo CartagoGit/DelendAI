@@ -80,3 +80,6 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 - No fixed saving is shown; every figure names its baseline and whether it is measured or estimated (TOK-01, TOK-02, G96, G133).
 - Latency uses the elapsed each call carries (USAGE-02); savingsPercent keeps one denominator (USAGE-03); a figure with no baseline is named bytesDelivered, not bytesAvoided (G61-MEM03).
 - A gate measures each plugin's real tools/list bytes against its manifest budget and fails on divergence (CP-08, SURF-01, G4).
+
+## notes
+- 2026-11-01: the ceiling on every tool result moves from 64 KiB to 256 KiB (`TOOL_RESULT_CEILING_BYTES`), apart from the paginated default. Measured over 7,960 calls: 969 of the 1,069 results above 64 KiB were `review_queue`, and it already answers compactly by default (48 KB on 2026-10-28); what stays above is the evidence a reviewer asks for, up to 364 KB. A failure there costs a second read of the same bytes, so the seam is a net for runaway output and precise context stays each tool's job.

@@ -4,6 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import {
+	DEFAULT_MAX_RESPONSE_BYTES,
+	TOOL_RESULT_CEILING_BYTES,
+} from '../contracts/constants/response-byte-budget.constant';
 import { toolError, toolJson } from '../shared/tool-response';
 import { boundToolResult } from './bound-tool-result.service';
 import { configureToolOutputArtifacts } from './elide-tool-result.service';
@@ -28,6 +32,15 @@ describe('boundToolResult', () => {
 	it('leaves a result inside the budget alone', async () => {
 		const result = toolJson({ ok: true });
 		expect(await boundToolResult(result, BUDGET)).toBe(result);
+	});
+
+	it("lets a reviewer's full evidence through at the default ceiling", async () => {
+		const evidence = 'e'.repeat(TOOL_RESULT_CEILING_BYTES - 1_024);
+		const result = toolJson({ evidence });
+		expect(await boundToolResult(result)).toBe(result);
+		expect(TOOL_RESULT_CEILING_BYTES).toBeGreaterThan(
+			DEFAULT_MAX_RESPONSE_BYTES,
+		);
 	});
 
 	it('leaves a failure alone, whatever its size', async () => {

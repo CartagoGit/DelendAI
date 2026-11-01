@@ -166,7 +166,7 @@ export interface IHostObservability {
 		| undefined;
 	/**
 	 * The most bytes a tool result may carry to the agent; the default is
-	 * `DEFAULT_MAX_RESPONSE_BYTES`. A larger one comes back as a stated
+	 * `TOOL_RESULT_CEILING_BYTES`. A larger one comes back as a stated
 	 * failure with its head and the path of the kept output.
 	 */
 	readonly maxToolResultBytes?: number | undefined;
