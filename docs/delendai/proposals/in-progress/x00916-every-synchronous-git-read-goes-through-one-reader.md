@@ -2,14 +2,14 @@
 id: x00916
 title: "Every synchronous git read goes through one reader"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-18
-last-transition-id: 5afc1fb7-231b-4f05-8184-770d11464442
-last-correlation-id: 5afc1fb7-231b-4f05-8184-770d11464442
-last-transition-from: review
-last-transition-at: 2026-10-23T09:12:49.942Z
+last-transition-id: 24ddb49a-d0ac-49f3-bd10-ce1abf5309c0
+last-correlation-id: 24ddb49a-d0ac-49f3-bd10-ce1abf5309c0
+last-transition-from: ready
+last-transition-at: 2026-11-01T13:04:42.050Z
 shipped-in:
   - "336f3fede"
 ---
