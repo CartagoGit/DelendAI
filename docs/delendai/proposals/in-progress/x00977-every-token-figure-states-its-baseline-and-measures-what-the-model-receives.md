@@ -2,10 +2,14 @@
 id: x00977
 title: "Every token figure states its baseline and measures what the model receives"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 20de8dbb-6945-4ceb-ac63-536ceae17cc5
+last-correlation-id: 20de8dbb-6945-4ceb-ac63-536ceae17cc5
+last-transition-from: ready
+last-transition-at: 2026-11-01T12:30:56.312Z
 ---
 
 # x00977 — Every token figure states its baseline and measures what the model receives
