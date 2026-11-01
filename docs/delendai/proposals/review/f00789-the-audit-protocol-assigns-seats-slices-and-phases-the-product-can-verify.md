@@ -2,14 +2,14 @@
 id: f00789
 title: "The audit protocol assigns seats, slices and phases the product can verify"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: e679bda4-1c47-47db-9c1e-7ee831a52953
-last-correlation-id: e679bda4-1c47-47db-9c1e-7ee831a52953
-last-transition-from: ready
-last-transition-at: 2026-11-01T06:38:42.974Z
+last-transition-id: 173b7199-5439-432f-852f-3ca82e3302ba
+last-correlation-id: 173b7199-5439-432f-852f-3ca82e3302ba
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T06:40:49.101Z
 ---
 
 # f00789 — The audit protocol assigns seats, slices and phases the product can verify
@@ -31,21 +31,27 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 - global_gate: type
 
 ### S1 — Seats and phases
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/services/audit-seats.service.ts`, `plugins/audit/src/lib/contracts/constants/audit-protocol.constant.ts`, `plugins/audit/src/lib/contracts/interfaces/audit-protocol.interface.ts`, `plugins/audit/tests/src/lib/services/audit-protocol.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A seat is claimed with an exclusive create and two reviewers cannot hold one (C2)."
   - "A reviewer's Phase A file is committed before it can read the others' (G75)."
+- shipped-in: `5c9c99b52b42`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Contract, inventory and closure
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/index.ts`, `apps/web/src/i18n/tools/delendai_audit_close.ts`, `apps/web/src/i18n/tools/index.ts`, `plugins/audit/tests/src/lib/tools/audit-close.tool.spec.ts`, `plugins/audit/src/lib/services/audit-path-policy.service.ts`, `plugins/audit/skills/audit-runner/SKILL.md`
 - **Gate**: type
 - acceptance:
   - "Each finding is checked for the required fields and listed when incomplete (G76, G74)."
   - "The inventory and the proposal inventory are generated (G77, G150)."
   - "Closing records the consensus and its threshold per finding (G78)."
+- shipped-in: `5c9c99b52b42`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
