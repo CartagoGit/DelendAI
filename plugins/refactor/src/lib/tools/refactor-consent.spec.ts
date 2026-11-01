@@ -6,28 +6,12 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import type { IToolRegistration } from '@delendai/core/contracts';
+import { fakePartial } from '@delendai/test-kit';
 
 import { buildRefactorRenameToolRegistrations } from './refactor-rename.tool';
-
-const makeMockServer = () => {
-	const tools: Record<
-		string,
-		{ handler: (args: unknown) => Promise<unknown> }
-	> = {};
-	return {
-		server: {
-			registerTool: (
-				name: string,
-				_schema: unknown,
-				handler: (args: unknown) => Promise<unknown>,
-			) => {
-				tools[name] = { handler };
-			},
-		},
-		tools,
-	};
-};
 
 interface IPlan {
 	readonly files: readonly {
@@ -43,7 +27,9 @@ describe('refactor_apply consent', () => {
 		mkdirSync(join(dir, 'root'));
 		writeFileSync(join(dir, 'root', 'a.ts'), 'const foo = 42;\n');
 		const written: string[] = [];
-		const mock = makeMockServer();
+		const registerTool = vi.fn();
+		const handlerOf = (name: string) =>
+			registerTool.mock.calls.find((call) => call[0] === name)?.[2];
 		for (const registration of buildRefactorRenameToolRegistrations({
 			namespacePrefix: 't',
 			workspaceRootAbs: dir,
@@ -51,17 +37,27 @@ describe('refactor_apply consent', () => {
 				written.push(path);
 			},
 		})) {
-			await registration.register(mock.server as never);
+			await registration.register(
+				fakePartial<
+					Parameters<IToolRegistration['register']>[0],
+					'registerTool'
+				>({
+					registerTool,
+				}),
+			);
 		}
-		const planned = (await mock.tools.t_refactor_rename?.handler({
+		const planned = await handlerOf('t_refactor_rename')?.({
 			root: 'root',
 			from: 'foo',
 			to: 'bar',
 			scopePaths: ['root/a.ts'],
-		})) as { structuredContent: IPlan };
-		const result = await mock.tools.t_refactor_apply?.handler({
+		});
+		const plan: IPlan = JSON.parse(
+			JSON.stringify(planned),
+		).structuredContent;
+		const result = await handlerOf('t_refactor_apply')?.({
 			root: 'root',
-			...edit(planned.structuredContent),
+			...edit(plan),
 		});
 		return { result: JSON.stringify(result), written };
 	};
