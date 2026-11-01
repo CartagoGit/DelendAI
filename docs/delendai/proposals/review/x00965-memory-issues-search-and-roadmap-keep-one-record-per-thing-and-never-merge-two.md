@@ -2,14 +2,14 @@
 id: x00965
 title: "Memory, issues, search and roadmap keep one record per thing and never merge two"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 37432e65-880e-4ee9-a055-ba9a07d7c1b6
-last-correlation-id: 37432e65-880e-4ee9-a055-ba9a07d7c1b6
-last-transition-from: ready
-last-transition-at: 2026-11-01T12:26:07.252Z
+last-transition-id: 3206fb2a-9dc8-4e05-860e-c23ad8774b72
+last-correlation-id: 3206fb2a-9dc8-4e05-860e-c23ad8774b72
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T12:31:07.344Z
 ---
 
 # x00965 — Memory, issues, search and roadmap keep one record per thing and never merge two
@@ -37,6 +37,9 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - acceptance:
   - "Notes whose titles share a slug get distinct ids, and an id on disk is never rewritten, so no migration is needed (G118, G61-MEM01)."
   - "An updated checkpoint is fresh (G61-MEM02); imports refuse invalid timestamps and tags (D88)."
+- shipped-in: `992b77931962`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — issues and search
 - **Status**: done
@@ -45,6 +48,9 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - acceptance:
   - "One scaffold per issue number (D56); multi-line comments round-trip (ISSUES-01)."
   - "The index keys on path plus hash and the cache on embedder id and dimension (SEARCH-01, SEARCH-02)."
+- shipped-in: `992b77931962`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — roadmap and self-learning
 - **Status**: done
@@ -54,6 +60,9 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
   - "Archived done is delivered (ROAD-01); closing an entry touches only it (ROAD-02); a failed chronology write rolls the authority file back (D91)."
   - "The observation store writes under withFileMutex (D47)."
   - "The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46)."
+- shipped-in: `992b77931962`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
