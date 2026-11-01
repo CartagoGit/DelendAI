@@ -41,8 +41,8 @@ const named = (path: string, listed: readonly string[]): boolean =>
 	);
 
 /**
- * The changed paths no slice names. Proposal documents, generated files and
- * specs are the unit's bookkeeping, not departures. Empty when the
+ * The changed paths no slice names. Documents, generated files and specs
+ * are the unit's bookkeeping, not departures. Empty when the
  * proposal lists no files at all: there is nothing to depart from.
  */
 export const departuresOf = (
@@ -53,7 +53,7 @@ export const departuresOf = (
 	if (listed.length === 0) return [];
 	return changed.filter(
 		(path) =>
-			!path.includes('/proposals/') &&
+			!path.endsWith('.md') &&
 			!GENERATED.test(path) &&
 			!SPEC.test(path) &&
 			!named(path, listed),

@@ -21,7 +21,7 @@
  * plan takes minutes; the forge still runs the plan, and is the authority.
  */
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
 import { RUN_ALONE, staticChecksOf } from './ci-static-steps';
@@ -61,7 +61,7 @@ const failed: string[] = [];
 const causes: string[] = [];
 
 const CAUSE_LINE =
-	/✖|\bFAIL\b|\(fail\)|error TS\d+|\bHARD BREACH\b|\bviolations? across\b/u;
+	/✖|\bFAIL\b|\(fail\)|error TS\d+|\bHARD BREACH\b|\b[1-9]\d* violations? across\b/u;
 
 /** How many lines of one failed step are kept as its cause. */
 const MAX_CAUSE_LINES = 4;
@@ -79,7 +79,7 @@ export const causeLinesOf = (output: string): readonly string[] =>
 	].slice(0, MAX_CAUSE_LINES);
 
 const printCauses = (): void => {
-	for (const cause of causes) console.log(`prove: why ${cause}`);
+	for (const cause of causes) console.error(`prove: why ${cause}`);
 };
 
 /** How many lines of a failed check's output the proof prints. */
@@ -258,6 +258,8 @@ const main = async (): Promise<number> => {
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();
+	// The last proof's output: a check of it fails a proof run twice.
+	rmSync('build', { recursive: true, force: true });
 	if (process.argv.includes('--fast')) {
 		const root = process.cwd();
 		const changed = changedSince(root, base);
@@ -273,7 +275,7 @@ const main = async (): Promise<number> => {
 			ok = step(label, command) && ok;
 		}
 		printCauses();
-		console.log(
+		console.error(
 			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 		);
 		return ok ? 0 : 1;

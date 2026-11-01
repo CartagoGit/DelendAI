@@ -862,8 +862,5 @@ export type { IUnitAdoption } from '../lib/contracts/interfaces/unit-adoption.in
 
 // A unit entered for a proposal that did not exist yet takes the id the
 // proposals plugin has just allocated, so the unit is named after it.
-export {
-	adoptProposalId,
-	proposalOfCreateUnit,
-} from '../lib/work-units/unit-adoption.service';
+export { adoptProposalId } from '../lib/work-units/unit-adoption.service';
 export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.interface';
