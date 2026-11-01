@@ -2,14 +2,14 @@
 id: x01000
 title: "every client of a server reaches the tools the surface hides"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: extension
 date: 2026-11-01
-last-transition-id: 0615778e-d820-4173-85e4-f09fbd1dfc48
-last-correlation-id: 0615778e-d820-4173-85e4-f09fbd1dfc48
-last-transition-from: ready
-last-transition-at: 2026-11-01T20:08:59.013Z
+last-transition-id: a6948e0a-5ca3-48be-a950-14209106b50b
+last-correlation-id: a6948e0a-5ca3-48be-a950-14209106b50b
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T20:57:52.552Z
 ---
 
 # x01000 — every client of a server reaches the tools the surface hides
@@ -34,7 +34,7 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
 - global_gate: type
 
 ### S1 — The shared client reaches hidden tools
-- **Status**: pending
+- **Status**: review
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `extensions/vscode/src/providers/kpi-dashboard-provider.ts`, `extensions/vscode/src/test/kpi-dashboard-provider.spec.ts`, `extensions/vscode/src/test/tool-names.spec.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry.spec.ts`, `plugins/proposals/tests/src/lib/state-tools.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,6 +42,9 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
   - "The CLI holds no routing of its own."
   - "`state_health` shows the newest 20 quarantine rows and the total; a README is not quarantined and one finding is one entry."
   - "A spec holds every tool name the extension calls against the generated catalog."
+- shipped-in: `9507ac8d5240`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
