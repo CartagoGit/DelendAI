@@ -2,10 +2,14 @@
 id: x00960
 title: "The api plugin validates and sends exactly the request its spec describes"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: e4886262-6bb8-4e36-b040-5fd44a7f59f3
+last-correlation-id: e4886262-6bb8-4e36-b040-5fd44a7f59f3
+last-transition-from: ready
+last-transition-at: 2026-11-01T11:57:44.720Z
 ---
 
 # x00960 — The api plugin validates and sends exactly the request its spec describes
