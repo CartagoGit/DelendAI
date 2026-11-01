@@ -2,10 +2,14 @@
 id: x00988
 title: "Batuta can delegate on a fresh machine: consent, roster and costs are told apart"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-28
+last-transition-id: d0dd6eae-c502-4733-86c6-36c3d327650f
+last-correlation-id: d0dd6eae-c502-4733-86c6-36c3d327650f
+last-transition-from: ready
+last-transition-at: 2026-11-01T06:42:15.752Z
 ---
 
 # x00988 — Batuta can delegate on a fresh machine: consent, roster and costs are told apart
