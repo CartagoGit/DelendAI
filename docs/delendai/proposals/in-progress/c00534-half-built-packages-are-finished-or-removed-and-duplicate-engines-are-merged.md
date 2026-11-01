@@ -2,10 +2,14 @@
 id: c00534
 title: "Half-built packages are finished or removed, and duplicate engines are merged"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: f72a9626-4d09-487a-8494-db64d86fd410
+last-correlation-id: f72a9626-4d09-487a-8494-db64d86fd410
+last-transition-from: ready
+last-transition-at: 2026-11-01T01:39:27.388Z
 ---
 
 # c00534 — Half-built packages are finished or removed, and duplicate engines are merged
