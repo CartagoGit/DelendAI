@@ -9,7 +9,7 @@
  * describes its full answer, so a cut-down one cannot conform to it; a stated
  * failure carrying the head and the path of the kept output can.
  */
-import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
+import { TOOL_RESULT_CEILING_BYTES } from '../contracts/constants/response-byte-budget.constant';
 import { toolError, truncateIfTooLarge } from '../shared/tool-response';
 import {
 	elideKeepingOutput,
@@ -39,7 +39,7 @@ export const boundToolResult = async (
 	result: unknown,
 	config: { readonly maxToolResultBytes?: number | undefined } = {},
 ): Promise<unknown> => {
-	const maxBytes = config.maxToolResultBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
+	const maxBytes = config.maxToolResultBytes ?? TOOL_RESULT_CEILING_BYTES;
 	if (typeof result !== 'object' || result === null) return result;
 	const shaped = result as IToolResultShape;
 	if (shaped.isError === true) return result;
