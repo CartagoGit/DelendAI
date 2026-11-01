@@ -548,7 +548,7 @@ export const buildStateHealthRegistration = (
 			{
 				outputSchema: STATE_DIAGNOSIS_SCHEMA,
 				description:
-					'Diagnose swarm state without changing anything: active write lanes, stale locks, livelocks, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Returns { locks, stale, queue, registry, healthy }. Run state_repair to heal.',
+					'Diagnose swarm state without changing anything: active write lanes, stale locks, livelocks, queue backpressure (waiterOrphans + threshold) and orphaned agent assignments. Run state_repair to heal.',
 			},
 			async () => toolJson(await diagnose(options)),
 		);
