@@ -22,6 +22,7 @@ export const WORK_COMMAND = {
 		'worktrees',
 		'ref',
 		'message',
+		'locate',
 		'paths',
 		'keep-work-ref',
 		'reason',
