@@ -40,7 +40,7 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 
 ### S2 — Gates as one command and hooks
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-prove.service.ts`
+- **Files**: `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work prove` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10)."
