@@ -448,15 +448,15 @@ const main = (): void => {
 		});
 	const refs = observed.map((branch) => {
 		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
-			return { name: branch.name };
+			return { name: branch.name, sha: branch.sha };
 		}
 		const publishedIn = publishedInFor(branch, containers, contains);
 		// A work ref ends on the forge when what it holds is published,
 		// whether or not its proposal goes on: the unit is kept where it
 		// is worked on and pushes the ref again with its next commit.
 		return publishedIn === undefined
-			? { name: branch.name }
-			: { name: branch.name, publishedIn };
+			? { name: branch.name, sha: branch.sha }
+			: { name: branch.name, sha: branch.sha, publishedIn };
 	});
 	const pullRequests = (
 		gh(
@@ -466,7 +466,7 @@ const main = (): void => {
 			readonly state: string;
 			readonly merged_at: string | null;
 			readonly closed_at?: string | null;
-			readonly head: { readonly ref: string };
+			readonly head: { readonly ref: string; readonly sha: string };
 		}[]
 	).map((request) => {
 		const closedAt =
@@ -476,6 +476,7 @@ const main = (): void => {
 		return {
 			number: request.number,
 			headRefName: request.head.ref,
+			headSha: request.head.sha,
 			state: pullRequestState(request),
 			...(Number.isNaN(closedAt) ? {} : { closedAt }),
 		};
