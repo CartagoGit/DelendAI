@@ -47,6 +47,8 @@ Run the proposed servers block through the Zod schema without writing or
 booting. It rejects floating tags like `latest` (`missing-version-pin`),
 non-kebab ids, and env entries that smuggle a cleartext value instead of a NAME.
 Fix any issue by code, then apply the patch on **user confirm**.
+At boot, an `npx`/`bunx` entry runs its package as `pkg@<version>` exactly:
+the entry's `version` replaces whatever tag or range the `args` spec carried.
 
 ### 4. `ack` — the human gate
 

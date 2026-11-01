@@ -8,6 +8,8 @@ export interface IPublishTarballsInput {
 	readonly tarballPaths: readonly string[];
 	readonly tool: 'npm' | 'bun';
 	readonly registry: string | undefined;
+	/** Pass `--provenance` to `npm publish` (ignored for bun). */
+	readonly provenance?: boolean;
 }
 
 export interface IPublishTarballResult {
@@ -81,7 +83,12 @@ const publishWithNpm = async (
 ): Promise<IPublishTarballResult> => {
 	const publish = await runSpawn(
 		'npm',
-		['publish', tarballPath, ...registryArgs(input.registry)],
+		[
+			'publish',
+			tarballPath,
+			...registryArgs(input.registry),
+			...(input.provenance === true ? ['--provenance'] : []),
+		],
 		input.pkgDir,
 	);
 	return {
