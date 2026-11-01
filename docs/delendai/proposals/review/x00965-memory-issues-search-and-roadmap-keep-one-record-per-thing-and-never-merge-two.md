@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: de85b7a2-30bf-476a-965f-2675d36a4ffa
-last-correlation-id: de85b7a2-30bf-476a-965f-2675d36a4ffa
+last-transition-id: 0e531c2c-971f-4b85-ad0c-43ea5d362699
+last-correlation-id: 0e531c2c-971f-4b85-ad0c-43ea5d362699
 last-transition-from: in-progress
-last-transition-at: 2026-11-01T13:13:42.377Z
+last-transition-at: 2026-11-01T17:30:40.773Z
 ---
 
 # x00965 — Memory, issues, search and roadmap keep one record per thing and never merge two
@@ -73,3 +73,5 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - Archived done is delivered (ROAD-01); closing an entry touches only it (ROAD-02); a failed chronology write rolls the authority file back (D91).
 - The observation store writes under withFileMutex (D47).
 - The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46).
+
+- 2026-11-01: the fallback id of a note hashes with SHA-256: CodeQL flagged SHA-1 over the title (alert 467), which kept the queue job failing and blocks a promotion. Ids on disk are never rewritten, so existing notes keep theirs.
