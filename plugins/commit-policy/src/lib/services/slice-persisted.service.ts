@@ -67,7 +67,7 @@ const pathsOfStatus = (output: string): readonly string[] => {
  * A server that starts on a repository with history asks this once per
  * finished slice. One `git status` each was three thousand processes in
  * a row here, minutes of a core at every start, to learn what a single
- * call says. A pattern only git can expand is still asked of git.
+ * call says. On a dirty tree a pattern only git can expand is asked of git.
  */
 export const createCommittedFilesProbe = (
 	run: IGitRunner,
@@ -99,10 +99,12 @@ export const createCommittedFilesProbe = (
 	};
 	return async (files) => {
 		if (files.length === 0) return false;
-		if (files.some((file) => PATTERN.test(file)))
-			return sliceFilesAreCommitted(run, files);
 		const dirty = await dirtyPaths();
 		if (dirty === null) return false;
+		// A clean tree answers for every path, however it is spelled.
+		if (dirty.length === 0) return true;
+		if (files.some((file) => PATTERN.test(file)))
+			return sliceFilesAreCommitted(run, files);
 		const named = files.map(withoutTrailingSlash);
 		return !dirty.some((path) =>
 			named.some((file) => path === file || path.startsWith(`${file}/`)),

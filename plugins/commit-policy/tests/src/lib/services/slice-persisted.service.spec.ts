@@ -113,6 +113,19 @@ describe('createCommittedFilesProbe', () => {
 		expect(await probe(['*.md'])).toBe(true);
 	});
 
+	it('answers a pattern from a clean reading without asking again', async () => {
+		const r = await repo();
+		let asked = 0;
+		const counted = async (args: readonly string[]) => {
+			asked += 1;
+			return r.runner(args);
+		};
+		const probe = createCommittedFilesProbe(counted);
+		expect(await probe(['*.ts'])).toBe(true);
+		expect(await probe(['docs/[draft].md'])).toBe(true);
+		expect(asked).toBe(1);
+	});
+
 	it('is false when git cannot answer', async () => {
 		const probe = createCommittedFilesProbe(() =>
 			Promise.resolve({

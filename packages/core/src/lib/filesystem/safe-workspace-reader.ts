@@ -1,5 +1,6 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { isAbsolute, relative, resolve, sep } from 'node:path';
+import type { Dirent } from 'node:fs';
+import { lstat, readdir, readFile, stat } from 'node:fs/promises';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { realResolvePath } from '../shared/contain-realpath';
 import { resolveWorkspaceContained } from '../shared/contain-path';
@@ -321,6 +322,44 @@ export class SafeWorkspaceReader implements ISafeWorkspaceReader {
 		};
 	}
 
+	/**
+	 * One directory entry, or `undefined` when containment hides it. The
+	 * directory's own real path is validated, so an entry that is no symlink
+	 * shares it: resolving every path of a large tree segment by segment was
+	 * a third of the server's start.
+	 */
+	async #listedItem(
+		directory: ContainedPathResult,
+		entry: Dirent,
+	): Promise<SafeStatResult | undefined> {
+		const relativeInput =
+			directory.relativePath === '.'
+				? entry.name
+				: `${directory.relativePath}/${entry.name}`;
+		try {
+			if (!entry.isSymbolicLink()) {
+				this.#assertNotReserved(relativeInput, relativeInput);
+				const absolutePath = join(directory.absolutePath, entry.name);
+				const stats = await lstat(absolutePath);
+				if (!stats.isSymbolicLink()) {
+					return {
+						path: {
+							absolutePath,
+							relativePath: normalizeRelativePath(relativeInput),
+							originalPath: relativeInput,
+							wasAbsolute: false,
+						},
+						stats,
+					};
+				}
+			}
+			return await this.stat(relativeInput);
+		} catch (error) {
+			if (error instanceof WorkspaceContainmentError) return undefined;
+			throw error;
+		}
+	}
+
 	async #listEntries(
 		containedDirectory: ContainedPathResult,
 		recursive: boolean,
@@ -330,21 +369,14 @@ export class SafeWorkspaceReader implements ISafeWorkspaceReader {
 		const dirEntries = await readdir(containedDirectory.absolutePath, {
 			withFileTypes: true,
 		});
+		const items = await Promise.all(
+			dirEntries.map(async (entry) =>
+				this.#listedItem(containedDirectory, entry),
+			),
+		);
 		const entries: SafeListEntry[] = [];
-		for (const entry of dirEntries) {
-			const relativeInput =
-				containedDirectory.relativePath === '.'
-					? entry.name
-					: `${containedDirectory.relativePath}/${entry.name}`;
-			let item: SafeStatResult;
-			try {
-				item = await this.stat(relativeInput);
-			} catch (error) {
-				if (error instanceof WorkspaceContainmentError) {
-					continue;
-				}
-				throw error;
-			}
+		for (const item of items) {
+			if (item === undefined) continue;
 			entries.push(item);
 			if (
 				recursive &&

@@ -15,6 +15,12 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 export interface IDelendaiProject {
 	readonly server: McpServer;
 	readonly registrationOrder: readonly string[];
+	/**
+	 * Answer the client from here on, before the slow part of a start: a
+	 * client gives up on `initialize` after a fixed window. `start` connects
+	 * too, so only a host with work to do first calls this.
+	 */
+	connect(): Promise<void>;
 	start(): Promise<void>;
 	/**
 	 * Idempotent teardown (r00039 / AUD-E02): waits (bounded) for any
