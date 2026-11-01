@@ -469,7 +469,7 @@ export const buildClosePlanRegistration = (
 	writeRoot: 'caller-checkout',
 	dryRunSupported: true,
 	summary:
-		'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',
+		'Close a `type: plan` proposal; refuses with blockers until every child, sub-plan and own slice is done and peer-reviewed.',
 	tags: ['work', 'plan'],
 	register: async (server) => {
 		server.registerTool(
