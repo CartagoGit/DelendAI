@@ -61,7 +61,7 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 
 ### S3 — Agent installs are contained, transactional and verified
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
+- **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`, `scripts/install.spec.ts`, `tools/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "An agent id that resolves outside the install directory is refused (AGENT-INSTALL01)."
