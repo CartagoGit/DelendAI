@@ -1342,9 +1342,9 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					auto_fix_queue:
 						'Queue reproducible low/medium incident drafts for auto-fix; optionally write them as proposals.',
 					state_health:
-						'Read-only swarm health: locks, stale locks, livelocks, queue backpressure and orphan assignments.',
+						'Read-only swarm health: locks, livelocks, backpressure, orphans.',
 					state_repair:
-						'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
+						'Heal stale locks, due queue entries and orphans. Dry-run by default.',
 					compact_status:
 						'One-call low-token snapshot of the swarm: active locks, queue backpressure and proposal board counts.',
 					proposals_db_doctor:

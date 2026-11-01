@@ -44,6 +44,15 @@ describe('vitestArgsOf', () => {
 });
 
 describe('fastSteps', () => {
+	it('checks the site translations only when a tool can have changed', () => {
+		const labels = (path: string) =>
+			fastSteps([path], [], 'base').map(([label]) => label);
+		expect(labels('plugins/a/src/lib/tools/b.tool.ts')).toContain(
+			'site tool translations',
+		);
+		expect(labels('docs/a.md')).not.toContain('site tool translations');
+	});
+
 	it('runs the nearest specs with the touched files covered, then judges that coverage', () => {
 		const steps = fastSteps(
 			['plugins/x/src/a.ts'],

@@ -25,6 +25,9 @@ import {
 } from '../shared/tool-schema-shortcuts';
 import { readAutoTransitionRepairs } from '../services/auto-transition';
 
+/** A health report names the newest; 884 full rows once made it 700 KB. */
+const QUARANTINE_ROWS_SHOWN = 20;
+
 const countDueQueueEntries = (
 	entries: readonly { status: string; expiresAt?: string }[],
 	now = Date.now(),
@@ -143,7 +146,9 @@ interface IStateDiagnosis {
 		readonly orphans: number;
 		readonly threshold: string;
 	};
+	/** The newest entries; the rest come from the quarantine list tool. */
 	readonly quarantine: readonly IQuarantineEntry[];
+	readonly quarantineTotal: number;
 	readonly healthy: boolean;
 }
 
@@ -204,6 +209,7 @@ const STATE_DIAGNOSIS_SCHEMA = z
 			})
 			.passthrough(),
 		quarantine: z.array(z.unknown()),
+		quarantineTotal: z.number(),
 		healthy: z.boolean(),
 	})
 	.passthrough();
@@ -412,7 +418,8 @@ const diagnose = async (
 			orphans: zombies.orphans.length,
 			threshold: zombies.threshold,
 		},
-		quarantine,
+		quarantine: quarantine.slice(-QUARANTINE_ROWS_SHOWN),
+		quarantineTotal: quarantine.length,
 		stale,
 		heartbeatStalls: {
 			count: heartbeatStalls.length,
@@ -532,8 +539,7 @@ export const buildStateHealthRegistration = (
 	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_health',
-	summary:
-		'Read-only swarm health: locks, stale locks, livelocks, queue backpressure and orphan assignments.',
+	summary: 'Read-only swarm health: locks, livelocks, backpressure, orphans.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
@@ -561,7 +567,7 @@ export const buildStateRepairRegistration = (
 	effects: ['write'],
 	writeRoot: 'host-state',
 	summary:
-		'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
+		'Heal stale locks, due queue entries and orphans. Dry-run by default.',
 	tags: ['coordination'],
 	register: async (server) => {
 		server.registerTool(

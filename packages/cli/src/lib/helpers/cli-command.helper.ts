@@ -36,14 +36,6 @@ import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import { isRecord, scalarArg } from '@delendai/core/cli';
 
 export { isRecord, scalarArg };
-import {
-	type IResolvedCapability,
-	isUnexposedHere,
-	requalify,
-	resolverFor,
-	serverPrefix,
-	unwrapResolved,
-} from './tool-request.service';
 import type {
 	ICliCommandContext,
 	ICliCommandResult,
@@ -59,34 +51,9 @@ export const data = (
 export const hasFlag = (args: readonly string[], name: string): boolean =>
 	args.includes(`--${name}`);
 
-/**
- * Delegate to a registered MCP tool through the CLI transport.
- *
- * A tool the managed surface keeps hidden is not exposed to `tools/call`,
- * and every CLI command whose tool is hidden used to fail with
- * `returned an error` and no cause. The direct call stays first — a
- * visible tool costs one round trip — and a `not found` means "this one
- * lives behind the resolver", which is what the resolver is for.
- */
+/** Delegate to a registered MCP tool; the client reaches a hidden one. */
 export const request = async <TOut>(
 	ctx: ICliCommandContext,
 	tool: string,
 	args: object = {},
-): Promise<TOut> => {
-	try {
-		return await ctx.request<TOut>(tool, args);
-	} catch (error) {
-		if (!isUnexposedHere(error)) throw error;
-		// The namespace comes from the server's own surface, not from the
-		// name this caller happened to write: a project that renamed its
-		// namespace has a server whose tools no call site can spell.
-		const prefix = await serverPrefix(ctx);
-		if (prefix === undefined) throw error;
-		const qualifiedName = requalify(tool, prefix);
-		const resolved = await ctx.request<IResolvedCapability>(
-			resolverFor(prefix),
-			{ qualifiedName, args },
-		);
-		return unwrapResolved<TOut>(qualifiedName, resolved);
-	}
-};
+): Promise<TOut> => ctx.request<TOut>(tool, args);
