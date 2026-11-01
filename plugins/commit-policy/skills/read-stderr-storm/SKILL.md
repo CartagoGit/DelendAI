@@ -6,9 +6,9 @@ description: >
   `ready/fixes/`, and applies the fix slice. Use whenever the
   operator says "check the logs", "why is this code repeating", or
   after a slice returns ERR.
+tools: ['delendai_commit_policy_status']
 invokes:
   - commit_policy_storms
-  - commit_policy_status
   - delendai_overview
   - proposals_list
   - proposals_get
