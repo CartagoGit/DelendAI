@@ -81,6 +81,17 @@ describe('f00128 S2 db-query tool', () => {
 		expect(body.plan).toEqual(['SCAN select * from users where id = ?']);
 	});
 
+	it('a dryRun preview carries wouldRun and risk', async () => {
+		const handler = await captureHandler(baseOptions, 'db_query');
+		const body = await call(handler, {
+			sql: 'select * from users',
+			dryRun: true,
+		});
+		expect(body.ok).toBe(true);
+		expect(body.risk).toBe('low');
+		expect(body.wouldRun).toHaveLength(1);
+	});
+
 	it('refuses write queries by default', async () => {
 		const handler = await captureHandler(baseOptions, 'db_query');
 		const body = await call(handler, {

@@ -11,6 +11,7 @@ import {
 	type IBatchAtomicWriter,
 } from '../shared/batch-atomic-writer';
 import { toKebabCase } from '../shared/string-normalize';
+import { planDryRun } from '../dry-run/enforce';
 import { toolJson } from '../shared/tool-response';
 import {
 	createOverlayFs,
@@ -81,7 +82,32 @@ export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 	dryRun: z.boolean().optional(),
 });
 
+const PLAN_FIELDS = {
+	wouldChange: z
+		.array(
+			z.object({
+				kind: z.enum(['write', 'delete', 'rename', 'create', 'patch']),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.readonly()
+		.optional(),
+	wouldRun: z
+		.array(
+			z.object({
+				shape: z.enum(['shell', 'network', 'process', 'git', 'mcp']),
+				target: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.readonly()
+		.optional(),
+	risk: z.enum(['low', 'medium', 'high']).optional(),
+};
+
 export const CREATE_PLUGIN_OUTPUT_SCHEMA = z.object({
+	...PLAN_FIELDS,
 	ok: z.boolean(),
 	scaffolded: z.object({
 		files: z.array(z.string()),
@@ -324,6 +350,14 @@ export const runCreatePlugin = async (
 			wired: normalizeWired(wired),
 			doctor: normalizeDoctor(doctor),
 			pluginId,
+			...planDryRun({
+				wouldChange: scaffoldPaths.map((path) => ({
+					kind: 'create' as const,
+					path,
+					summary: `scaffold ${path} for plugin ${pluginId}`,
+				})),
+				risk: 'medium',
+			}),
 		};
 	}
 
@@ -369,6 +403,7 @@ export const buildCreatePluginToolRegistration = (
 	tags: ['bootstrap'],
 	effects: ['write', 'spawn'],
 	writeRoot: 'caller-checkout',
+	dryRunSupported: true,
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_create_plugin`,

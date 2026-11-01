@@ -37,7 +37,10 @@ import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.
 import { DEFAULT_WORKING_SET_POLICY } from '../contracts/constants/working-set-policy.constant';
 import { measureToolWireBytes } from '../surface/bootstrap';
 import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
-import { enforceDryRunReturnContract } from '../dry-run/enforce';
+import {
+	enforceDryRunReturnContract,
+	refuseUnsupportedDryRun,
+} from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 import { recordDryRunViolation } from '../dry-run/dry-run-violation-log.service';
 
@@ -855,6 +858,14 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 					content: [{ type: 'text', text: parsed.message }],
 					isError: true,
 				};
+			}
+			const unsupported = refuseUnsupportedDryRun({
+				args: { dryRun: readDryRunFlag(args) },
+				parsed: parsed.value,
+				hasInputSchema: record.inputSchema !== undefined,
+			});
+			if (unsupported !== null) {
+				return buildDryRunContractViolationResult(name, unsupported);
 			}
 			const handler = record.handler as (
 				...input: unknown[]

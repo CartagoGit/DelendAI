@@ -1,6 +1,7 @@
 import {
 	compactOutputSchema,
 	createWorkspaceFileReader,
+	planDryRun,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
@@ -136,6 +137,7 @@ const buildRunQualityToolRegistration = (
 ): IToolRegistration => ({
 	id: 'run_quality',
 	effects: ['spawn'],
+	dryRunSupported: true,
 	summary:
 		'Run a quality scope or scan the most recent validate output for findings.',
 	tags: ['quality'],
@@ -204,8 +206,15 @@ const buildRunQualityToolRegistration = (
 					return toolJson({
 						scope,
 						ok: true,
-						dryRun: true,
 						commands: commands.map((command) => command.command),
+						...planDryRun({
+							wouldRun: commands.map((command) => ({
+								shape: 'shell' as const,
+								target: command.command,
+								summary: `quality scope ${scope}`,
+							})),
+							risk: 'low',
+						}),
 					});
 				}
 				return toolJson(

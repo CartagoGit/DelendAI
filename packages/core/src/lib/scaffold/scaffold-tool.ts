@@ -11,6 +11,7 @@ import { basename, dirname, extname } from 'node:path';
 
 import z from 'zod';
 
+import { planDryRun } from '../dry-run/enforce';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import {
@@ -127,6 +128,9 @@ export interface IScaffoldReport {
 // r00002 S2 — mirrors `IScaffoldReport` above field-for-field.
 // r00001 S0 — exported so the golden snapshot test can pin the schema shape.
 export const SCAFFOLD_REPORT_SCHEMA = z.object({
+	wouldChange: z.array(z.looseObject({})).readonly().optional(),
+	wouldRun: z.array(z.looseObject({})).readonly().optional(),
+	risk: z.enum(['low', 'medium', 'high']).optional(),
 	kind: SCAFFOLD_INPUT_SCHEMA.shape.kind,
 	dryRun: z.boolean(),
 	files: z.array(SCAFFOLDED_FILE_SCHEMA),
@@ -402,6 +406,16 @@ export const buildScaffoldReport = async (
 		moved,
 		kept,
 		errors,
+		...(dryRun
+			? planDryRun({
+					wouldChange: files.map((file) => ({
+						kind: 'create' as const,
+						path: file.path,
+						summary: `scaffold ${file.path}`,
+					})),
+					risk: 'low',
+				})
+			: {}),
 	};
 };
 
@@ -421,6 +435,7 @@ export const buildScaffoldToolRegistration = (
 		id: 'scaffold',
 		effects: ['write'],
 		writeRoot: 'caller-checkout',
+		dryRunSupported: true,
 		summary:
 			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
 		tags: ['bootstrap'],

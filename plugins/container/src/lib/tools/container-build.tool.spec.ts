@@ -84,6 +84,9 @@ describe('f00133 S3 container-build tool', () => {
 		const body = parseBody(await build({ tag: 'app:1', dryRun: true }));
 		expect(body.ok).toBe('dry-run');
 		expect(body.command).toContain('docker build');
+		expect(body.dryRun).toBe(true);
+		expect(body.risk).toBe('medium');
+		expect(body.wouldRun).toHaveLength(1);
 		expect((exec as unknown as { calls: unknown[] }).calls.length).toBe(0);
 	});
 
@@ -154,6 +157,8 @@ describe('f00133 S3 container-build tool', () => {
 		);
 		expect(body.ok).toBe('dry-run');
 		expect(body.command).toBe('kubectl apply -n prod -f -');
+		expect(body.risk).toBe('medium');
+		expect(body.wouldRun).toHaveLength(1);
 	});
 
 	it('k8s_apply runs kubectl with confirm: true', async () => {

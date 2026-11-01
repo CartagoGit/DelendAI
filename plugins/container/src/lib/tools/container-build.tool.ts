@@ -14,6 +14,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 import {
+	planDryRun,
 	probeTool,
 	realProbeDeps,
 	resolveExistingWorkspaceContained,
@@ -82,6 +83,19 @@ const REFUSAL = z.object({
 const DRY_RUN = z.object({
 	ok: z.literal('dry-run'),
 	command: z.string(),
+	dryRun: z.literal(true),
+	wouldChange: z.array(z.looseObject({})),
+	wouldRun: z.array(z.looseObject({})),
+	risk: z.enum(['low', 'medium', 'high']),
+});
+
+const previewOf = (command: string, summary: string) => ({
+	ok: 'dry-run' as const,
+	command,
+	...planDryRun({
+		wouldRun: [{ shape: 'process', target: command, summary }],
+		risk: 'medium',
+	}),
 });
 
 const INSTALL_MISSING = z.object({
@@ -134,6 +148,7 @@ export const buildContainerBuildToolRegistrations = (
 			id: 'container_build',
 			tags: ['container', 'build', 'mutating'],
 			effects: ['spawn'],
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_container_build`,
@@ -178,10 +193,9 @@ export const buildContainerBuildToolRegistrations = (
 						const command = `docker ${argv.join(' ')}`;
 						if (args.dryRun === true) {
 							return toolJson(
-								DRY_RUN.parse({
-									ok: 'dry-run' as const,
-									command,
-								}),
+								DRY_RUN.parse(
+									previewOf(command, 'builds the image'),
+								),
 							);
 						}
 						if (args.confirm !== true) {
@@ -223,6 +237,7 @@ export const buildContainerBuildToolRegistrations = (
 			id: 'k8s_apply',
 			tags: ['container', 'kubernetes', 'mutating'],
 			effects: ['spawn'],
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_k8s_apply`,
@@ -239,10 +254,9 @@ export const buildContainerBuildToolRegistrations = (
 								: 'kubectl apply -f -';
 						if (args.dryRun === true) {
 							return toolJson(
-								DRY_RUN.parse({
-									ok: 'dry-run' as const,
-									command,
-								}),
+								DRY_RUN.parse(
+									previewOf(command, 'applies the manifest'),
+								),
 							);
 						}
 						if (args.confirm !== true) {

@@ -278,6 +278,10 @@ export type DelendaiContainerContainerBuildOutput = {
 } | {
 	ok: "dry-run";
 	command: string;
+	dryRun: true;
+	wouldChange: Record<string, unknown>[];
+	wouldRun: Record<string, unknown>[];
+	risk: "low" | "medium" | "high";
 } | {
 	ok: false;
 	isError: true;
@@ -392,6 +396,10 @@ export type DelendaiContainerK8sApplyOutput = {
 } | {
 	ok: "dry-run";
 	command: string;
+	dryRun: true;
+	wouldChange: Record<string, unknown>[];
+	wouldRun: Record<string, unknown>[];
+	risk: "low" | "medium" | "high";
 } | {
 	ok: false;
 	isError: true;
@@ -402,6 +410,17 @@ export type DelendaiContainerK8sApplyOutput = {
 };
 
 export interface DelendaiCreatePluginOutput {
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
 	ok: boolean;
 	scaffolded: {
 		files: string[];
@@ -1195,6 +1214,9 @@ export interface DelendaiResolveCapabilityOutput {
 }
 
 export interface DelendaiScaffoldOutput {
+	wouldChange?: Record<string, unknown>[];
+	wouldRun?: Record<string, unknown>[];
+	risk?: "low" | "medium" | "high";
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
 	files: {

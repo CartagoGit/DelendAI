@@ -36,15 +36,26 @@ Joint audit a00095. G121: consent a person can verify exists only for spending (
 
 ### S2 — dry-run before the effect
 - **Status**: pending
-- **Files**: `packages/core/src/lib/dry-run/enforce.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`
+- **Files**: `packages/core/src/lib/dry-run/enforce.ts`, `packages/core/src/lib/dry-run/protocol.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `tools/scripts/lint/dry-run-coverage.script.ts`, `tools/scripts/lint/dry-run-coverage.script.spec.ts`, `tools/scripts/lint/dry-run-coverage.baseline.json`, `docs/delendai/security/dry-run-contract.md`, `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `plugins/container/src/lib/run/docker-command.service.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`, `plugins/database/src/lib/tools/db-query.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/quality/src/index.ts`
 - **Gate**: type
 - acceptance:
-  - "A registration with effects and dryRun support is short-circuited before its handler runs when dryRun is true; the count of effectful registrations without it is printed and ratcheted (G122)."
-  - "Each decorative parameter G101 lists is enforced or removed, recorded per tool in the closing evidence."
+  - "A dryRun call to a tool whose input schema does not accept the flag is refused before its handler runs, a plan without its lists is refused instead of throwing, and tools that honour dryRun return the contract plan; `lint:dry-run-coverage` prints and ratchets the count of effectful registrations without support (G122)."
+  - "Each decorative parameter G101 lists is enforced, removed or owned by a named proposal, recorded per tool in the notes."
 
 ## acceptance
 
 - A core service issues a token bound to the action digest and verifies it on apply. `refactor_rename` returns one for its exact plan, and `refactor_apply` refuses a token it did not issue or a diff edited since (D62, G121). The token proves the diff is the plan the server made, not that a person approved it: a person's approval remains the spend gate's elicitation.
 - Spend confirmation uses the same service.
-- A registration with effects and dryRun support is short-circuited before its handler runs when dryRun is true; the count of effectful registrations without it is printed and ratcheted (G122).
-- Each decorative parameter G101 lists is enforced or removed, recorded per tool in the closing evidence.
+- A dryRun call to a tool whose input schema does not accept the flag is refused before its handler runs, a plan without its lists is refused instead of throwing, and tools that honour dryRun return the contract plan; `lint:dry-run-coverage` prints and ratchets the count of effectful registrations without support (G122).
+- Each decorative parameter G101 lists is enforced, removed or owned by a named proposal, recorded per tool in the notes.
+
+## notes
+
+G101, per tool, read in the code at hand-over:
+
+- `refactor_apply` `consentToken`: enforced here (S1).
+- `api` `allowList`, `maxBytes`, `timeoutMs`: already enforced; `fetchAndParseSpec` passes them to the fetch engine.
+- `adaptive-optimizer` `budget`: already enforced by `withinBudget`.
+- `plugins_recommend` `taskHint`: already enforced; `taskMatches` scores it.
+- `external-mcps` spawn: already gated by `allowedCommands`.
+- `self_audit` `capabilities`: still decorative; x00962 owns it (AUD-02, D115), so it is not fixed twice.

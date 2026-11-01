@@ -278,6 +278,8 @@ describe('runCreatePlugin (f00120 S4)', () => {
 			},
 		);
 		expect(report.ok).toBe(true);
+		expect(report.risk).toBe('medium');
+		expect(report.wouldChange?.length).toBeGreaterThan(0);
 		expect(fs.writes).toEqual([]);
 		expect(fs.files.has('plugins/dry-run-demo/package.json')).toBe(false);
 	});
