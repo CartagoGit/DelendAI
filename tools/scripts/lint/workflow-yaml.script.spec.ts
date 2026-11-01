@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+	checkActionPins,
 	checkWorkflowSource,
 	formatReport,
 	lintWorkflowYaml,
@@ -24,7 +25,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             - name: Build
               run: bun run build
 `;
@@ -353,6 +354,28 @@ ${job}`;
 					),
 				),
 			).filter((finding) => finding.message.includes('timeout-minutes')),
+		).toEqual([]);
+	});
+});
+
+describe('checkActionPins', () => {
+	it('flags a tag reference with its line', () => {
+		const found = checkActionPins(
+			source('steps:\n  - uses: actions/checkout@v7\n'),
+		);
+		expect(found).toHaveLength(1);
+		expect(found[0]?.line).toBe(2);
+		expect(found[0]?.message).toContain('40-hex');
+	});
+
+	it('accepts a SHA with a trailing tag comment and local references', () => {
+		const sha = 'a'.repeat(40);
+		expect(
+			checkActionPins(
+				source(
+					`  - uses: actions/cache@${sha} # v4\n  - uses: ./.github/actions/setup-bun-repo\n# uses: foo/bar@v1\n`,
+				),
+			),
 		).toEqual([]);
 	});
 });

@@ -37,7 +37,7 @@
  */
 import { spawn } from 'node:child_process';
 
-import type { IServerEntry } from '../options-schema';
+import { pinnedLaunchArgs, type IServerEntry } from '../options-schema';
 import { buildSafeEnv } from './env-filter';
 import { openMcpSession } from './mcp-handshake.helper';
 import type { EXTERNAL_CALL_FAILURE_CODES } from '../contracts/constants/call-failure-codes.constant';
@@ -633,18 +633,22 @@ export class ExternalServerRegistry {
 			state.session = { failed: state.lastError };
 			throw new MissingEnvError(id, safeEnv.missing);
 		}
-		const transport = createChildTransport(entry.command, entry.args, {
-			spawner: this.spawner,
-			cwd: this.options.workspaceRoot,
-			env: safeEnv.env,
-			setTimer: this.setTimer,
-			sigkillGraceMs: this.sigkillGraceMs,
-			onClosed: (reason) => {
-				state.running = false;
-				state.transport = null;
-				if (reason !== null) state.lastError = reason;
+		const transport = createChildTransport(
+			entry.command,
+			pinnedLaunchArgs(entry),
+			{
+				spawner: this.spawner,
+				cwd: this.options.workspaceRoot,
+				env: safeEnv.env,
+				setTimer: this.setTimer,
+				sigkillGraceMs: this.sigkillGraceMs,
+				onClosed: (reason) => {
+					state.running = false;
+					state.transport = null;
+					if (reason !== null) state.lastError = reason;
+				},
 			},
-		});
+		);
 		transport.onMessage((msg) => {
 			if (msg.id === undefined) return;
 			const waiter = state.waiters.get(msg.id);

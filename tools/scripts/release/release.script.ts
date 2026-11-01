@@ -426,6 +426,7 @@ async function publishAll(
 			tarballPaths,
 			tool,
 			registry: readRegistryOverride(),
+			provenance,
 		};
 		assertTarballsProvided(publishInput);
 		const results = await publishTarballs(publishInput);

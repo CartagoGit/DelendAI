@@ -24,7 +24,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
             - name: Stand on the integration branch

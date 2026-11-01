@@ -16,6 +16,10 @@
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 /** The cadence that means "whenever the integration branch moves". */
+/** The commit `actions/checkout@v7` points at; the tag is restored as a comment on render. */
+export const CHECKOUT_ACTION_SHA = '3d3c42e5aac5ba805825da76410c181273ba90b1';
+export const CHECKOUT_ACTION_TAG = 'v7';
+
 export const PROMOTION_ON_READY = 'on-ready';
 /** Where the workflow is written, relative to the repository. */
 export const PROMOTION_WORKFLOW_PATH = '.github/workflows/open-promotion.yml';
@@ -79,7 +83,7 @@ export const promotionWorkflowDocument = (
 				steps: [
 					{
 						name: 'Checkout (required to resolve the local composite action)',
-						uses: 'actions/checkout@v7',
+						uses: `actions/checkout@${CHECKOUT_ACTION_SHA}`,
 					},
 					{
 						name: 'Setup repo (checkout + bun + install)',
