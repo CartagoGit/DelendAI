@@ -2,10 +2,14 @@
 id: x00962
 title: "The audit tools run every target and scanner they list, and read real plans"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: bd5d1018-c9e2-46b5-8de6-7fbff5f1d7be
+last-correlation-id: bd5d1018-c9e2-46b5-8de6-7fbff5f1d7be
+last-transition-from: ready
+last-transition-at: 2026-11-01T07:06:33.519Z
 ---
 
 # x00962 — The audit tools run every target and scanner they list, and read real plans
