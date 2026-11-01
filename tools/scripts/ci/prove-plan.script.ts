@@ -57,6 +57,31 @@ export const PROVE_GATES: readonly (readonly string[])[] = [
 /** What failed, said last: a caller keeps only the tail of the output. */
 const failed: string[] = [];
 
+/** The lines that say why, printed last with it. */
+const causes: string[] = [];
+
+const CAUSE_LINE =
+	/✖|\bFAIL\b|\(fail\)|error TS\d+|\bHARD BREACH\b|\bviolations? across\b/u;
+
+/** How many lines of one failed step are kept as its cause. */
+const MAX_CAUSE_LINES = 4;
+
+/** The lines of a failed step's output that name the cause. Pure. */
+export const causeLinesOf = (output: string): readonly string[] =>
+	[
+		...new Set(
+			output
+				.split('\n')
+				// biome-ignore lint/suspicious/noControlCharactersInRegex: colour codes
+				.map((line) => line.replace(/\u001b\[[0-9;]*m/gu, '').trim())
+				.filter((line) => CAUSE_LINE.test(line)),
+		),
+	].slice(0, MAX_CAUSE_LINES);
+
+const printCauses = (): void => {
+	for (const cause of causes) console.log(`prove: why ${cause}`);
+};
+
 /** How many lines of a failed check's output the proof prints. */
 const FAILED_TAIL_LINES = 30;
 
@@ -100,7 +125,10 @@ const runTogether = async (
 			});
 			const passed = code === 0;
 			ok = passed && ok;
-			if (!passed) failed.push(label);
+			if (!passed) {
+				failed.push(label);
+				causes.push(...causeLinesOf(output));
+			}
 			console.log(
 				`prove: ${passed ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
 			);
@@ -168,11 +196,17 @@ const step = (label: string, command: readonly string[]): boolean => {
 	const started = Date.now();
 	const [bin = 'bun', ...rest] = command;
 	const result = spawnSync(bin, rest, {
-		stdio: ['ignore', 'ignore', 'inherit'],
+		stdio: ['ignore', 'ignore', 'pipe'],
+		encoding: 'utf8',
+		maxBuffer: Number.POSITIVE_INFINITY,
 		env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
 	});
+	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;
-	if (!ok) failed.push(label);
+	if (!ok) {
+		failed.push(label);
+		causes.push(...causeLinesOf(result.stderr ?? ''));
+	}
 	console.log(
 		`prove: ${ok ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
 	);
@@ -238,6 +272,7 @@ const main = async (): Promise<number> => {
 		)) {
 			ok = step(label, command) && ok;
 		}
+		printCauses();
 		console.log(
 			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 		);
@@ -267,6 +302,7 @@ const main = async (): Promise<number> => {
 				'--passWithNoTests',
 			]) && ok;
 	}
+	printCauses();
 	console.log(
 		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 	);

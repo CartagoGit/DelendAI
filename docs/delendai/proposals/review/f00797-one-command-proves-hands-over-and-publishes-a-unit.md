@@ -44,3 +44,7 @@ Delivering took four commands in an order each agent had to remember: `work prov
 ## acceptance
 
 - `work deliver --proposal=<id> --agent=<you>` moves the proposal to in-progress, from review too, proves the unit and hands it to review from the unit's worktree. It finds the unit's worktree itself, so it works from any directory, stops with the tool's own reason for the first refusal, hands nothing over when the proof fails, and names the publication it made (work-deliver.service.spec.ts, work.command.spec.ts). The workflow every agent receives names it.
+
+## notes
+
+Reopened 2026-11-01: a failed delivery kept only the tail of the output, which named no cause, so `prove` now prints the failure lines last; and it runs the `tokens-budget-real` gate, whose breach reached a pull request unseen.
