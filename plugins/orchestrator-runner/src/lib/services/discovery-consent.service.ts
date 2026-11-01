@@ -65,7 +65,7 @@ export const discoveryConsent = async (input: {
 		};
 	return {
 		state: 'unavailable',
-		next: `This host cannot ask the user (no MCP elicitation), so nothing was probed. ${MANUAL_NEXT}`,
+		next: `This host cannot ask the user (no MCP elicitation), so nothing was probed. The person can answer with \`${DISCOVERY_CONSENT_COMMAND}\`. ${MANUAL_NEXT}`,
 	};
 };
 
