@@ -28,6 +28,7 @@ import {
 	outsideReviewScope,
 } from '../development-policy/git-guard-review-scope';
 import { journalWorkEvent } from './work-event-journal.service';
+import { unitDepartures } from './unit-departures.service';
 import { endCarriedUnits } from './carried-units.service';
 
 import {
@@ -381,12 +382,15 @@ export const published = async (
 			detail: { unitKind: kindFor(args, slice), via: 'publish' },
 		});
 	}
+	// Advice only: what the unit changed that no slice of its proposal names.
+	const departures = unitDepartures({ root, proposal, workRef, base });
 	return {
 		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
 		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
 			...(carried.length === 0 ? {} : { carried }),
+			...(departures.length === 0 ? {} : { departures }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
 			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
