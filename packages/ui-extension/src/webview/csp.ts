@@ -18,19 +18,16 @@
  * reviewed exception — inline STYLE cannot execute, unlike inline
  * script.
  */
+import { SCRIPT_NONCE } from '../contracts/constants/script-nonce.constant';
+
+export { SCRIPT_NONCE };
+
 export interface IWebviewCspPolicy {
 	readonly scriptSrc: readonly string[];
 	readonly styleSrc: readonly string[];
 	readonly connectSrc: readonly string[];
 	readonly frameSrc: readonly string[];
 }
-
-/**
- * Stands in a policy's `scriptSrc` for the nonce `injectCspMeta` draws for
- * each document. An injected `<script>` has no nonce and does not run, as
- * it would under `'unsafe-inline'`.
- */
-export const SCRIPT_NONCE = "'nonce'";
 
 /** The default-deny baseline. Frozen so callers cannot mutate it. */
 export const DEFAULT_DENY: IWebviewCspPolicy = Object.freeze({
