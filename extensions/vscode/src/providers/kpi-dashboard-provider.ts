@@ -753,7 +753,10 @@ export const buildKpiDashboardModel = async (
 	deps: Pick<IKpiDashboardProviderDeps, 'client' | 'namespacePrefix'>,
 	query: IKpiDashboardQuery,
 ): Promise<IKpiDashboardResolvedState> => {
-	const tool = formatToolName(deps.namespacePrefix, 'project_kpis');
+	const tool = formatToolName(
+		deps.namespacePrefix,
+		'project-kpis_project_kpis',
+	);
 	// S3: detect whether the KPI plugin is even loaded. The dashboard
 	// contract is owned by `project-kpis`, which is opt-in via
 	// `delendai.config.json`. In a workspace that did not enable it,

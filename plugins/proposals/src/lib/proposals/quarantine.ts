@@ -146,18 +146,27 @@ const parseQuarantineLine = (line: string): IQuarantineEntry | null => {
 	}
 };
 
+const findingKey = (
+	entry: Pick<IQuarantineEntry, 'absPath' | 'blobSha' | 'reason'>,
+): string => `${entry.absPath}\0${entry.blobSha}\0${entry.reason}`;
+
 export const listQuarantine = async (
 	root: string,
 ): Promise<readonly IQuarantineEntry[]> => {
 	const pathAbs = quarantinePath(root);
 	const text = await readQuarantineText(pathAbs);
-	const entries: IQuarantineEntry[] = [];
+	// One entry per finding: a log written before appends deduplicated holds
+	// the same file once per sync, and the newest sighting stands for them.
+	const entries = new Map<string, IQuarantineEntry>();
 	for (const line of text.split('\n')) {
 		if (line.trim() === '') continue;
 		const parsed = parseQuarantineLine(line);
-		if (parsed !== null) entries.push(parsed);
+		if (parsed === null) continue;
+		const key = findingKey(parsed);
+		entries.delete(key);
+		entries.set(key, parsed);
 	}
-	return entries;
+	return [...entries.values()];
 };
 
 export const appendQuarantine = async (
@@ -168,6 +177,10 @@ export const appendQuarantine = async (
 	await mkdir(dirname(pathAbs), { recursive: true });
 	return withFileMutex(pathAbs, async () => {
 		const existing = await listQuarantine(root);
+		const known = existing.find(
+			(current) => findingKey(current) === findingKey(entry),
+		);
+		if (known !== undefined) return known;
 		const nextId =
 			existing.reduce(
 				(maxId, current) => Math.max(maxId, current.id),

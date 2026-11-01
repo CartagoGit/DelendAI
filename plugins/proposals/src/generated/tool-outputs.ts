@@ -1162,6 +1162,7 @@ export interface DelendaiProposalsStateHealthOutput {
 		[key: string]: unknown;
 	};
 	quarantine: unknown[];
+	quarantineTotal: number;
 	healthy: boolean;
 	[key: string]: unknown;
 }

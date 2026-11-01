@@ -25,6 +25,9 @@ import {
 } from '../shared/tool-schema-shortcuts';
 import { readAutoTransitionRepairs } from '../services/auto-transition';
 
+/** A health report names the newest; 884 full rows once made it 700 KB. */
+const QUARANTINE_ROWS_SHOWN = 20;
+
 const countDueQueueEntries = (
 	entries: readonly { status: string; expiresAt?: string }[],
 	now = Date.now(),
@@ -143,7 +146,9 @@ interface IStateDiagnosis {
 		readonly orphans: number;
 		readonly threshold: string;
 	};
+	/** The newest entries; the rest come from the quarantine list tool. */
 	readonly quarantine: readonly IQuarantineEntry[];
+	readonly quarantineTotal: number;
 	readonly healthy: boolean;
 }
 
@@ -204,6 +209,7 @@ const STATE_DIAGNOSIS_SCHEMA = z
 			})
 			.passthrough(),
 		quarantine: z.array(z.unknown()),
+		quarantineTotal: z.number(),
 		healthy: z.boolean(),
 	})
 	.passthrough();
@@ -412,7 +418,8 @@ const diagnose = async (
 			orphans: zombies.orphans.length,
 			threshold: zombies.threshold,
 		},
-		quarantine,
+		quarantine: quarantine.slice(-QUARANTINE_ROWS_SHOWN),
+		quarantineTotal: quarantine.length,
 		stale,
 		heartbeatStalls: {
 			count: heartbeatStalls.length,

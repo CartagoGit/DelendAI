@@ -78,7 +78,7 @@ const baseOutput = (
 	},
 	recommendations: [
 		{
-			tool: 'delendai_project_kpis',
+			tool: 'delendai_project-kpis_project_kpis',
 			priority: 'next',
 			reason: `inspect ${view}`,
 		},
