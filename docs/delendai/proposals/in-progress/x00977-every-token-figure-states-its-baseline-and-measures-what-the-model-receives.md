@@ -32,7 +32,7 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 
 ### S1 — The router sends one copy and responses have a budget
 - **Status**: review
-- **Files**: `packages/core/src/lib/context-budget/bound-tool-result.service.ts`, `packages/core/src/lib/context-budget/bound-tool-result.service.spec.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `docs/delendai/TOKEN-BUDGETS.md`
+- **Files**: `packages/core/src/lib/context-budget/bound-tool-result.service.ts`, `packages/core/tests/src/lib/context-budget/bound-tool-result.service.spec.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
   - "A routed result carries its payload once (G94): the router drops text that restates the structured content."
