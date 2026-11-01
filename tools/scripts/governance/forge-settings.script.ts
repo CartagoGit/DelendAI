@@ -32,6 +32,8 @@ import {
 	settingsDocument,
 } from './forge-settings.lib';
 import {
+	CHECKOUT_ACTION_SHA,
+	CHECKOUT_ACTION_TAG,
 	PROMOTION_WORKFLOW_PATH,
 	promotionWorkflowDocument,
 } from './promotion-workflow.lib';
@@ -51,7 +53,10 @@ interface ITarget {
 }
 
 const render = (document: unknown): string =>
-	`${HEADER}${stringify(document, { indent: 4, lineWidth: 0 })}`;
+	`${HEADER}${stringify(document, { indent: 4, lineWidth: 0 })}`.replaceAll(
+		`@${CHECKOUT_ACTION_SHA}`,
+		`@${CHECKOUT_ACTION_SHA} # ${CHECKOUT_ACTION_TAG}`,
+	);
 
 const buildTargets = (root: string): readonly ITarget[] => {
 	const configPath = join(root, 'delendai.config.json');
