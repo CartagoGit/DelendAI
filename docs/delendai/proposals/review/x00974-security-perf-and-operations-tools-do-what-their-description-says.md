@@ -2,14 +2,14 @@
 id: x00974
 title: "Security, perf and operations tools do what their description says"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 6742dada-e5ed-4c55-9bda-363ceabc5944
-last-correlation-id: 6742dada-e5ed-4c55-9bda-363ceabc5944
-last-transition-from: ready
-last-transition-at: 2026-11-01T06:26:40.006Z
+last-transition-id: 5657716c-67f2-480f-ac76-08174db059af
+last-correlation-id: 5657716c-67f2-480f-ac76-08174db059af
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T06:28:36.348Z
 ---
 
 # x00974 — Security, perf and operations tools do what their description says
@@ -31,38 +31,50 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - global_gate: type
 
 ### S1 — security
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/security/src/index.ts`, `plugins/security/src/lib/audit/sast-scan.helper.ts`, `plugins/security/src/lib/contracts/interfaces/secrets.interface.ts`, `plugins/security/src/lib/tools/security-audit.tool.ts`, `plugins/security/src/lib/tools/security-deps.tool.ts`, `plugins/security/tests/src/lib/sast-scan.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "security_audit runs SAST or the description stops claiming it (D63, D97)."
   - "security_deps declares the base audit's network use (D98)."
+- shipped-in: `6ce6a10a5e29`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — perf
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/perf/src/lib/contracts/interfaces/perf.interface.ts`, `plugins/perf/src/lib/profile/real-perf-profile-deps.ts`, `plugins/perf/src/lib/profile/run-profile-capture.ts`, `plugins/perf/src/lib/tools/perf-bench.tool.ts`, `plugins/perf/src/lib/tools/perf-profile.tool.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts`, `plugins/perf/tests/src/lib/profile/run-profile-capture.spec.ts`
 - **Gate**: type
 - acceptance:
   - "flamegraph produces a flamegraph artefact (D64)."
   - "perf_bench says it summarizes timings the caller measured and runs nothing itself (D80, D66)."
+- shipped-in: `6ce6a10a5e29`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — logs, cache and database
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/cache/eviction-registry.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/tests/src/lib/cache/eviction-registry.spec.ts`, `plugins/cache/README.md`, `plugins/database/src/lib/contracts/interfaces/sqlite-binding.interface.ts`, `plugins/database/src/lib/contracts/interfaces/table-ref.interface.ts`, `plugins/database/src/lib/erd/render-erd-schemas.spec.ts`, `plugins/database/src/lib/erd/render-erd.ts`, `plugins/database/src/lib/introspect/fake-driver.ts`, `plugins/database/src/lib/introspect/introspect-engine.ts`, `plugins/database/src/lib/introspect/sqlite-driver-schemas.spec.ts`, `plugins/database/src/lib/introspect/sqlite-driver.ts`, `plugins/logs/src/generated/tool-outputs.ts`, `plugins/logs/src/lib/contracts/interfaces/log-store.interface.ts`, `plugins/logs/src/lib/services/log-search-incidents.ts`, `plugins/logs/src/lib/services/log-store.ts`, `plugins/logs/src/lib/services/log-tail-page.helper.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/src/lib/services/tail-and-incident-window.spec.ts`
 - **Gate**: type
 - acceptance:
   - "logs_incidents reports a time window and current errors (D103, D99); logs_tail says how many files it read (D89)."
   - "cache.maxAgeDays caps every olderThanDays rule (D57)."
   - "Tables carry their schema; two homonymous tables stay distinct (D58)."
+- shipped-in: `6ce6a10a5e29`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — github, triage and browser
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/generated/tool-outputs.ts`, `plugins/browser/plugin.manifest.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.spec.ts`, `plugins/browser/src/lib/tools/browser-inspect.tool.ts`, `plugins/github/src/lib/contracts/constants/github-paging.constant.ts`, `plugins/github/src/lib/contracts/interfaces/paged-request.interface.ts`, `plugins/github/src/lib/tools/catalog.ts`, `plugins/github/src/lib/tools/workflow-run-jobs.helper.ts`, `plugins/github/tests/src/lib/workflow-run-jobs.helper.spec.ts`, `plugins/issues-triage/src/lib/contracts/interfaces/github.interface.ts`, `plugins/issues-triage/src/lib/github.service.ts`, `plugins/issues-triage/src/lib/tools/triage.tools.ts`, `plugins/issues-triage/tests/triage-tools.spec.ts`
 - **Gate**: type
 - acceptance:
   - "workflow_run pages all jobs (D86)."
   - "triage_list returns title, labels and state (D93)."
   - "browser is experimental until its driver is detected, and says so (G85); browser_query uses the planner bounds (D43)."
+- shipped-in: `6ce6a10a5e29`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
