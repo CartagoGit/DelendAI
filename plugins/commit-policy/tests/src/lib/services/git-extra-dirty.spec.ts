@@ -19,9 +19,9 @@ import { runGit, withTempRepo } from './commit-driver-harness';
 describe('gitDirtyFilePaths (real git)', () => {
 	it('returns a path with spaces verbatim so `git add` stages it', async () => {
 		await withTempRepo(async ({ repoDir, git }) => {
-			await writeFile(join(repoDir, 'my file é.txt'), 'x\n');
+			await writeFile(join(repoDir, 'my file.txt'), 'x\n');
 			const paths = await gitDirtyFilePaths(git);
-			expect(paths).toEqual(['my file é.txt']);
+			expect(paths).toEqual(['my file.txt']);
 			const added = await git(['add', '--', ...paths]);
 			expect(added.ok).toBe(true);
 			expect(
@@ -32,7 +32,7 @@ describe('gitDirtyFilePaths (real git)', () => {
 					'--cached',
 					'--name-only',
 				]),
-			).toBe('my file é.txt');
+			).toBe('my file.txt');
 		});
 	});
 

@@ -8,6 +8,7 @@ description: >
   after a slice returns ERR.
 invokes:
   - commit_policy_storms
+  - commit_policy_status
   - delendai_overview
   - proposals_list
   - proposals_get
