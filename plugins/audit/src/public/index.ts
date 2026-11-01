@@ -22,12 +22,12 @@ export {
 	consolidateAudits,
 	renderConsolidationMarkdown,
 } from '../lib/services/audit-consolidate.service';
+export { callLlmFanOut } from '../lib/services/llm-fan-out.service';
 export type { IConsolidateOptions } from '../lib/services/audit-consolidate.service';
 export {
 	auditDateStamp,
 	auditFilename,
 	callLlm,
-	callLlmFanOut,
 	isoDate,
 	resolveTarget,
 } from '../lib/services/llm-client.service';

@@ -141,6 +141,21 @@ export interface IAuditDocument {
 	readonly note: string;
 }
 
+/** Result of parsing a batch: the documents plus the inputs that did not parse. */
+export interface IParsedAuditBatch {
+	readonly documents: readonly IAuditDocument[];
+	readonly rejected: readonly {
+		readonly path: string;
+		readonly reason: string;
+	}[];
+}
+
+/** One model's severity for a consolidated finding. */
+export interface ISeverityVote {
+	readonly model: string;
+	readonly severity: AuditSeverity;
+}
+
 /** Aggregated view of an audit. Returned by `consolidate`. */
 export interface IConsolidation {
 	/** Number of audit documents successfully parsed. */
@@ -171,6 +186,8 @@ export interface IConsolidation {
 		readonly files: readonly string[];
 		/** Models that flagged this finding. */
 		readonly seenBy: readonly string[];
+		/** Each model's own severity for the finding (they may differ). */
+		readonly votes: readonly ISeverityVote[];
 	}[];
 	/** Top-N actionable items the consolidator recommends. */
 	readonly topActions: readonly string[];

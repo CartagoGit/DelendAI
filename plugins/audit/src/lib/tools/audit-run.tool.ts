@@ -35,10 +35,10 @@ import {
 	type AuditMode,
 } from '../services/audit-brief.service';
 import { runPipelinePrelude } from '../services/run-pipeline-prelude.service';
+import { callLlmFanOut } from '../services/llm-fan-out.service';
 import {
 	auditDateStamp,
 	auditFilename,
-	callLlmFanOut,
 	isoDate,
 	type ILlmCallOutcome,
 	type IModelTarget,
@@ -48,7 +48,7 @@ import {
 	consolidateAudits,
 	renderConsolidationMarkdown,
 } from '../services/audit-consolidate.service';
-import { parseAuditFiles } from '../services/parse-audit.service';
+import { parseAuditFilesDetailed } from '../services/parse-audit.service';
 import {
 	resolveAutoScaffold,
 	type IAutoScaffoldOptions,
@@ -222,8 +222,10 @@ export const buildRunRegistration = (
 					}
 
 					// --- 6. Consolidate ----------------------------------
-					const parsed = parseAuditFiles(docs);
-					const consolidation = consolidateAudits(parsed);
+					const parsed = parseAuditFilesDetailed(docs);
+					const consolidation = consolidateAudits(parsed.documents, {
+						rejected: parsed.rejected,
+					});
 					const markdown = renderConsolidationMarkdown(
 						consolidation,
 						{

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeResponse } from '../../../../src/lib/normalize/normalize-response.service';
+import {
+	childToolError,
+	normalizeResponse,
+} from '../../../../src/lib/normalize/normalize-response.service';
 
 describe('normalizeResponse', () => {
 	it('keeps the raw answer behind a handle and returns its facts', async () => {
@@ -34,5 +37,42 @@ describe('normalizeResponse', () => {
 		);
 		expect(String(answer.facts.title).length).toBeLessThan(410);
 		expect(answer.facts.ok).toBe(true);
+	});
+});
+
+describe('childToolError and isError', () => {
+	it('reads the explanatory text of an in-band tool error', () => {
+		expect(
+			childToolError({
+				isError: true,
+				content: [{ type: 'text', text: 'node not found' }],
+			}),
+		).toBe('node not found');
+	});
+
+	it('names an error that carries no text', () => {
+		expect(childToolError({ isError: true })).toContain(
+			'reported an error',
+		);
+	});
+
+	it('is undefined for a successful or non-object result', () => {
+		expect(childToolError({ content: [] })).toBeUndefined();
+		expect(childToolError({ isError: false })).toBeUndefined();
+		expect(childToolError('text')).toBeUndefined();
+		expect(childToolError(null)).toBeUndefined();
+	});
+
+	it('keeps the error flag on the normalized answer', async () => {
+		const failed = await normalizeResponse(
+			{ isError: true, content: [{ type: 'text', text: 'boom' }] },
+			async () => undefined,
+		);
+		const fine = await normalizeResponse(
+			{ content: [{ type: 'text', text: 'ok' }] },
+			async () => undefined,
+		);
+		expect(failed.isError).toBe(true);
+		expect(fine.isError).toBeUndefined();
 	});
 });

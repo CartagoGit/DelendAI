@@ -40,7 +40,7 @@ import {
 	listSeats,
 	readPhaseA,
 } from '../services/audit-seats.service';
-import { parseAuditFiles } from '../services/parse-audit.service';
+import { parseAuditFilesDetailed } from '../services/parse-audit.service';
 
 const InputSchema = z.object({
 	action: z.enum(['claim-seat', 'commit-phase-a', 'close']),
@@ -194,15 +194,17 @@ export const buildCloseRegistration = (
 						// An unreadable report is left out, as audit_consolidate does.
 					}
 				}
-				const parsed = parseAuditFiles(docs);
-				const consolidation = consolidateAudits(parsed);
+				const parsed = parseAuditFilesDetailed(docs);
+				const consolidation = consolidateAudits(parsed.documents, {
+					rejected: parsed.rejected,
+				});
 				const threshold = args.threshold ?? DEFAULT_CONSENSUS_THRESHOLD;
 				const consensus = computeConsensus(
 					consolidation,
 					consolidation.auditsFound,
 					threshold,
 				);
-				const incomplete = checkEvidenceContract(parsed);
+				const incomplete = checkEvidenceContract(parsed.documents);
 				const pendingPhaseA: string[] = [];
 				for (const seat of await listSeats(absDir)) {
 					if (
@@ -216,7 +218,7 @@ export const buildCloseRegistration = (
 					options.proposalsRoot,
 				);
 				const inventoryMarkdown = renderInventoryMarkdown(
-					buildInventory(parsed),
+					buildInventory(parsed.documents),
 					proposals.ok
 						? await buildProposalInventory(proposals.abs)
 						: [],

@@ -15,6 +15,7 @@
 
 ## Depends on
 
+- yaml
 - zod
 - @delendai/core
 - @delendai/agent-orchestrator

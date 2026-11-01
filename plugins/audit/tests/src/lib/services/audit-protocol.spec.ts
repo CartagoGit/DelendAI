@@ -110,6 +110,7 @@ describe('audit contract, inventory and consensus', () => {
 						worstSeverity: 'BAD',
 						files: [],
 						seenBy: ['a', 'b', 'c'],
+						votes: [],
 					},
 				],
 			},

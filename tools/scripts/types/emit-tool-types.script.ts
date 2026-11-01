@@ -153,7 +153,16 @@ export const jsonSchemaToTs = (
 		);
 	}
 
-	const type = Array.isArray(node.type) ? node.type[0] : node.type;
+	// `type: ['number', 'null']` is how a nullable scalar arrives: every
+	// member is part of the union, not only the first.
+	if (Array.isArray(node.type)) {
+		return dedupeUnion(
+			node.type.map((member) =>
+				jsonSchemaToTs({ ...node, type: member }, indent),
+			),
+		);
+	}
+	const type = node.type;
 	switch (type) {
 		case 'string':
 			return 'string';
