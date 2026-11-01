@@ -1,10 +1,6 @@
 /**
  * f00123 S2 — Tests for `refactor_rename` and `refactor_apply` tools.
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
 import { describe, expect, it, vi } from 'vitest';
 
 import type { IConsentSigner } from '@delendai/core/runtime';
@@ -29,14 +25,6 @@ const makeMockServer = () => {
 		tools,
 	};
 };
-
-interface IPlan {
-	readonly files: readonly {
-		readonly path: string;
-		readonly hunks: unknown;
-	}[];
-	readonly consentToken: string;
-}
 
 /** The cases that write take the token as read; the real one has its own. */
 const anyToken: IConsentSigner = { issue: () => 'token', verify: () => true };
@@ -395,58 +383,5 @@ describe('refactor-rename tool', () => {
 			expect(parsed.consentToken).toBe('my-token-123');
 			expect(parsed.gateCommand).toBe('bun run validate');
 		});
-	});
-});
-
-describe('refactor_apply consent', () => {
-	const applyWith = async (edit: (plan: IPlan) => IPlan) => {
-		const dir = mkdtempSync(join(tmpdir(), 'refactor-consent-'));
-		mkdirSync(join(dir, 'root'));
-		writeFileSync(join(dir, 'root', 'a.ts'), 'const foo = 42;\n');
-		const written: string[] = [];
-		const mock = makeMockServer();
-		for (const registration of buildRefactorRenameToolRegistrations({
-			namespacePrefix: 't',
-			workspaceRootAbs: dir,
-			writeFileAtomic: async (path) => {
-				written.push(path);
-			},
-		})) {
-			await registration.register(mock.server as never);
-		}
-		const planned = (await mock.tools['t_refactor_rename']?.handler({
-			root: 'root',
-			from: 'foo',
-			to: 'bar',
-			scopePaths: ['root/a.ts'],
-		})) as { structuredContent: IPlan };
-		const result = await mock.tools['t_refactor_apply']?.handler({
-			root: 'root',
-			...edit(planned.structuredContent),
-		});
-		return { result: JSON.stringify(result), written };
-	};
-
-	it('writes the plan the server issued the token for', async () => {
-		const { written } = await applyWith((plan) => plan);
-		expect(written).toHaveLength(1);
-	});
-
-	it('writes nothing with an invented token', async () => {
-		const { result, written } = await applyWith((plan) => ({
-			...plan,
-			consentToken: 'user-confirmed',
-		}));
-		expect(result).toContain('consent-refused');
-		expect(written).toEqual([]);
-	});
-
-	it('writes nothing for a diff edited after the plan', async () => {
-		const { result, written } = await applyWith((plan) => ({
-			...plan,
-			files: plan.files.map((file) => ({ ...file, hunks: [] })),
-		}));
-		expect(result).toContain('consent-refused');
-		expect(written).toEqual([]);
 	});
 });

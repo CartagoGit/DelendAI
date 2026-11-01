@@ -28,7 +28,7 @@ Joint audit a00095. G121: consent a person can verify exists only for spending (
 
 ### S1 — A server-issued consent token
 - **Status**: pending
-- **Files**: `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`, `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `packages/core/src/lib/consent/consent-token.service.ts`, `packages/core/src/lib/contracts/interfaces/consent-signer.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/consent/consent-token.service.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/token.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts`
+- **Files**: `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`, `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `packages/core/src/lib/consent/consent-token.service.ts`, `packages/core/src/lib/contracts/interfaces/consent-signer.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/consent/consent-token.service.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/token.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-consent.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A core service issues a token bound to the action digest and verifies it on apply. `refactor_rename` returns one for its exact plan, and `refactor_apply` refuses a token it did not issue or a diff edited since (D62, G121). The token proves the diff is the plan the server made, not that a person approved it: a person's approval remains the spend gate's elicitation."
