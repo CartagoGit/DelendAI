@@ -2,10 +2,14 @@
 id: c00535
 title: "Actions are pinned by SHA, packages by exact version, and provenance reaches npm"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: e3856cb1-5732-4551-be9a-6d6788d1542b
+last-correlation-id: e3856cb1-5732-4551-be9a-6d6788d1542b
+last-transition-from: ready
+last-transition-at: 2026-11-01T01:47:54.735Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
