@@ -5,9 +5,15 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { recordDiscoveryConsent } from '@delendai/core/runtime';
+import { fakePartial } from '@delendai/test-kit';
+
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IConsentAsk } from '../../../../src/lib/contracts/interfaces/discovery-consent.interface';
-import { discoveryConsent } from '../../../../src/lib/services/discovery-consent.service';
+import {
+	askThroughElicitation,
+	discoveryConsent,
+} from '../../../../src/lib/services/discovery-consent.service';
 
 const consentPath = (): string =>
 	join(mkdtempSync(join(tmpdir(), 'discovery-consent-')), 'consent.json');
@@ -129,5 +135,49 @@ describe('discoveryConsent', () => {
 		});
 		expect([manual.state, off.state]).toEqual(['manual', 'off']);
 		expect(user.asked).toEqual([]);
+	});
+});
+
+describe('askThroughElicitation', () => {
+	const serverWith = (
+		elicitation: object | undefined,
+		elicitInput: () => Promise<{ action: string }>,
+	): McpServer =>
+		fakePartial<McpServer>({
+			server: fakePartial<McpServer['server']>({
+				getClientCapabilities: () =>
+					elicitation === undefined ? {} : { elicitation },
+				elicitInput:
+					fakePartial<McpServer['server']['elicitInput']>(
+						elicitInput,
+					),
+			}),
+		});
+
+	it('is unavailable without the client capability', async () => {
+		const ask = askThroughElicitation(
+			serverWith(undefined, async () => ({ action: 'accept' })),
+		);
+		expect(await ask('may I?')).toBe('unavailable');
+	});
+
+	it.each([
+		['accept', 'accept'],
+		['decline', 'decline'],
+		['cancel', 'decline'],
+	])('reads %s as %s', async (action, answer) => {
+		const ask = askThroughElicitation(
+			serverWith({}, async () => ({ action })),
+		);
+		expect(await ask('may I?')).toBe(answer);
+	});
+
+	it('is unavailable when the host fails to ask', async () => {
+		const ask = askThroughElicitation(
+			serverWith({}, async () => {
+				throw new Error('no client');
+			}),
+		);
+		expect(await ask('may I?')).toBe('unavailable');
 	});
 });
