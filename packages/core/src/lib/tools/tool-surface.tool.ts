@@ -120,14 +120,22 @@ export const buildToolSearchToolRegistration = (input: {
 					entries: z.array(SEARCH_ENTRY),
 					found: z.boolean(),
 					suggestion: z.string().optional(),
+					skillHint: z.string().optional(),
 				}),
 			},
-			async (args) =>
-				toolJson(
-					requireToolSurfaceRuntime(input.runtimeAccess).rankTools(
-						args,
-					),
-				),
+			async (args) => {
+				const ranked = requireToolSurfaceRuntime(
+					input.runtimeAccess,
+				).rankTools(args);
+				return toolJson(
+					ranked.entries.some((entry) => entry.skill !== undefined)
+						? {
+								...ranked,
+								skillHint: `An entry's \`skill\` is its playbook. Read it before first use: ${input.namespacePrefix}_resolve_capability { qualifiedName: "${input.namespacePrefix}_skill", args: { id } }.`,
+							}
+						: ranked,
+				);
+			},
 		);
 	},
 });

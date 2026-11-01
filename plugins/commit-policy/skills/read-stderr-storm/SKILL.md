@@ -1,11 +1,6 @@
 ---
 name: delendai-read-stderr-storm
-description: >
-  How an agent consumes its own stderr through the StormDetector +
-  commit_policy_storms tool, files a `kind: fix` proposal under
-  `ready/fixes/`, and applies the fix slice. Use whenever the
-  operator says "check the logs", "why is this code repeating", or
-  after a slice returns ERR.
+description: Use when asked to check the logs, when code repeats, or after a slice returns ERR: read the storm and file a fix proposal.
 tools: ['delendai_commit-policy_commit_policy_status']
 invokes:
   - commit_policy_storms

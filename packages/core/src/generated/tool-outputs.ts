@@ -1439,6 +1439,7 @@ export interface DelendaiToolSearchOutput {
 	}[];
 	found: boolean;
 	suggestion?: string;
+	skillHint?: string;
 }
 
 export interface DelendaiUsageTrackingSessionHygieneOutput {

@@ -1,7 +1,8 @@
 ---
 name: delendai-status-marker-and-closure
 appliesTo: ['@delendai/status-marker']
-description: The 8 canonical close-marker states an agent response must end with, which ones require a reason, and the exact tools (status_marker_close / status_marker_validate) that generate and audit the line so you never hand-format it. Use at the end of every response when the status-marker plugin is loaded.
+description: Use at the end of a response when status-marker is loaded: the eight close states and the tools that write and check the line.
+tools: ['delendai_status-marker_close', 'delendai_status-marker_validate']
 ---
 
 # delendai status marker + closure
