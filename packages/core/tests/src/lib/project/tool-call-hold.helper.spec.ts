@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { holdToolCalls, toolCallsReleased } from './tool-call-hold.helper';
+import {
+	holdToolCalls,
+	toolCallsReleased,
+} from '@delendai/core/lib/project/tool-call-hold.helper';
 
 describe('holdToolCalls', () => {
 	it('lets a call through when nothing holds it', async () => {
