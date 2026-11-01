@@ -1,7 +1,8 @@
 ---
 name: delendai-rules-solid-architecture
 appliesTo: ['@delendai/rules']
-description: How the `@delendai/rules` plugin applies SOLID — the contracts (ISP), the registries (DIP), the adapters (OCP), the data (S), the validators (OCP), the renderers (DIP), and the priority resolver (S). Use when adding a new language preset, refactoring a tool, or auditing a slice.
+description: Use when adding a language preset, refactoring a tool or auditing a slice against the rules plugin's SOLID structure.
+tools: ['delendai_rules_check_rules']
 ---
 
 # SOLID architecture of `@delendai/rules`
