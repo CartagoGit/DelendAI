@@ -53,6 +53,7 @@ describe('fastSteps', () => {
 		expect(steps.map(([label]) => label)).toEqual([
 			'tests: the specs nearest the change',
 			'changed-file coverage',
+			'generated files are current',
 		]);
 		expect(steps[0]?.[1]).toContain('plugins/x/a.spec.ts');
 		expect(steps[0]?.[1]).toContain('--coverage');
@@ -64,12 +65,26 @@ describe('fastSteps', () => {
 			fastSteps(['packages/state-sqlite/src/a.ts'], [], 'b').map(
 				([label]) => label,
 			),
-		).toEqual(['test:sqlite']);
-		expect(fastSteps(['README.md'], [], 'b')).toEqual([]);
+		).toEqual(['test:sqlite', 'generated files are current']);
+		expect(
+			fastSteps(['README.md'], [], 'b').map(([label]) => label),
+		).toEqual(['generated files are current']);
 	});
 });
 
 describe('causeLinesOf', () => {
+	it('names a coverage floor, a stale generated file and a manifest budget', () => {
+		expect(
+			causeLinesOf(
+				'a.ts: lines 70% under floor 83%\n  drift: plugins/x/AGENT.md\nmanifest budget: x: over\nok',
+			),
+		).toEqual([
+			'a.ts: lines 70% under floor 83%',
+			'drift: plugins/x/AGENT.md',
+			'manifest budget: x: over',
+		]);
+	});
+
 	it('keeps the lines that name a failure, without colour or repeats', () => {
 		const output = [
 			'all fine',
