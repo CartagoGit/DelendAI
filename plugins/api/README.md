@@ -103,29 +103,30 @@ Success output shape:
 {
 	ok: true,
 	operationId: 'createUser',
-	count: 3,
-	responses: [
+	method: 'POST',
+	path: '/users',
+	selectedStatus: '201',
+	selectedBody: { id: 42, email: 'root-id-7@example.com' },
+	samples: [
 		{
-			status: 201,
+			status: '201',
 			contentType: 'application/json',
-			body: {
-				id: 42,
-				email: 'user@example.com',
-				createdAt: '1970-01-01T00:00:00.000Z'
-			}
+			body: { id: 42, email: 'root-id-7@example.com' }
 		}
-	]
+		// ... one entry per counted sample
+	],
+	allResponses: [/* one example per declared response */],
+	count: 3
 }
 ```
 
 Semantics:
 
-- The same spec + options always produce the same body, so unit tests can assert exact output. `randomize: true` mixes the operationId + path + status into the seed between calls instead — useful when the host wants fresh-looking payloads.
-- Type-driven defaults: `string` → `""` (or `example` / `enum[0]`), `integer` / `number` → `0`, `boolean` → `false`, `array` → `[]`, `object` → `{}`. Nested objects and arrays are walked recursively.
-- `required` is honored: missing required fields are stubbed with the type-driven default rather than omitted.
-- `enum` always picks the first listed value unless the schema provides an `example`.
-- `format` is honored where recognized (`email`, `uri`, `date-time`, `uuid`) — otherwise the generator falls back to the primitive default.
-- Pass `count` to receive a list of `count` unique mocks (capped at 32 to keep the response bounded).
+- The same arguments always produce the same output, so unit tests can assert it. Each sample in `samples` gets its own seed; `selectedBody` is the first one. `randomize: false` returns the minimal body instead: required fields only, each at its lowest bound.
+- Generation order: the schema's `example`, then its `enum`, then the first `oneOf` / `anyOf` branch, then its type. Nested objects and arrays are walked recursively, and local `$ref`s are expanded by the parser.
+- `required` is honored, and numeric, length and item bounds are kept.
+- `format` is honored where recognized (`email`, `uri`, `url`, `date`, `date-time`, `uuid`).
+- Pass `count` (at most 20) to receive that many samples.
 
 If no spec is available, the `operationId` is unknown, or the requested `statusCode` has no declared response, the tool returns the standard `toolError` envelope with an actionable `nextAction` hint.
 
