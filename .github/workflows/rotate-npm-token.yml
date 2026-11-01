@@ -24,11 +24,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Detectar último recordatorio
         id: last
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -68,7 +68,7 @@ jobs:
 
       - name: Abrir issue recordatorio
         if: steps.decide.outputs.should_open == 'true'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           LAST_URL: ${{ steps.last.outputs.last_url }}
         with:

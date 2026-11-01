@@ -46,7 +46,7 @@ jobs:
             # The composite action then re-checks out at whatever fetch-depth it
             # needs, so this bare one costs a shallow clone and nothing else.
             - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
@@ -61,7 +61,7 @@ jobs:
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
@@ -83,7 +83,7 @@ jobs:
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
@@ -102,7 +102,7 @@ jobs:
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
