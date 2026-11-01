@@ -94,3 +94,9 @@ export {
 	readDiscoveryConsent,
 	recordDiscoveryConsent,
 } from '../lib/shared/discovery-consent-record.service';
+
+export {
+	consentDigest,
+	createConsentSigner,
+} from '../lib/consent/consent-token.service';
+export type { IConsentSigner } from '../lib/contracts/interfaces/consent-signer.interface';
