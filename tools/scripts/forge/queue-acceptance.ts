@@ -3,6 +3,7 @@
  * from git in the checkout the queue runs in (f00755).
  */
 import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 import { footprintBetween, mergeBaseOf } from './candidate-footprint';
 import { testedAgainst } from './candidate-tested-base';
@@ -88,14 +89,7 @@ export const queueAcceptance = (input: {
 };
 
 const revParse = (root: string, ref: string): string | undefined => {
-	try {
-		return execFileSync('git', ['rev-parse', '--verify', '--quiet', ref], {
-			cwd: root,
-			encoding: 'utf8',
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	return readGit(root, ['rev-parse', '--verify', '--quiet', ref]);
 };
 
 /**
