@@ -29,6 +29,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { gitVerbatim } from '@delendai/core/runtime';
 import { existsSync, readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
@@ -307,16 +308,9 @@ const changedSince = (base: string): readonly string[] =>
 		.filter((line) => line.length > 0);
 
 const contentAt = (ref: string, file: string): string | undefined => {
-	try {
-		return execFileSync('git', ['show', `${ref}:${file}`], {
-			cwd: repoRoot(),
-			encoding: 'utf8',
-			maxBuffer: 16 * 1024 * 1024,
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-	} catch {
-		return undefined;
-	}
+	return gitVerbatim(repoRoot(), ['show', `${ref}:${file}`], {
+		maxBuffer: 16 * 1024 * 1024,
+	});
 };
 
 /** The changed files whose only change is an import, against `base`. */

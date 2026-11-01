@@ -38,7 +38,8 @@
  *   2  unknown `--only` selector.
  */
 
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { gitVerbatim } from '@delendai/core/runtime';
 
 export interface IStep {
 	readonly name: string;
@@ -333,26 +334,19 @@ const runStep = async (
 /**
  * Files with uncommitted modifications right now, by repo-relative path.
  *
- * Uses `execFileSync` rather than the injected `runCommand` because this
+ * Uses the git reader rather than the injected `runCommand` because this
  * needs the OUTPUT, and the io seam only reports an exit code. A failure
  * here returns an empty set, which makes the drift check strictly
  * stricter, never looser.
  */
 export const dirtyPaths = (): ReadonlySet<string> => {
-	try {
-		const stdout = execFileSync('git', ['diff', '--name-only'], {
-			encoding: 'utf8',
-			maxBuffer: 64 * 1024 * 1024,
-		});
-		return new Set(
-			stdout
-				.split('\n')
-				.map((line) => line.trim())
-				.filter((line) => line.length > 0),
-		);
-	} catch {
-		return new Set();
-	}
+	const stdout = gitVerbatim(process.cwd(), ['diff', '--name-only']);
+	return new Set(
+		(stdout ?? '')
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0),
+	);
 };
 
 /**

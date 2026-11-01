@@ -30,7 +30,7 @@
  *
  * Exit codes: 0 clean (or only baselined), 1 new violations, 2 bad usage.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -193,16 +193,8 @@ export const checkProposal = (
 export const unitProposalOf = (branch: string): string | undefined =>
 	/\/([a-z]\d{5})-[^/]+-g\d+\//u.exec(branch)?.[1];
 
-const currentBranch = (): string => {
-	try {
-		return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return '';
-	}
-};
+const currentBranch = (): string =>
+	readGit(process.cwd(), ['rev-parse', '--abbrev-ref', 'HEAD']) ?? '';
 
 /** Cross-file rule: two open proposals that describe the same work. */
 export const findDuplicates = (

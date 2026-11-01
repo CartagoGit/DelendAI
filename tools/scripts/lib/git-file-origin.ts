@@ -13,7 +13,7 @@
  * used, so that script keeps it off and its numbering does not move.
  */
 
-import { execFileSync } from 'node:child_process';
+import { gitVerbatim, readGit } from '@delendai/core/runtime';
 
 export interface IGitFileOrigin {
 	/** The commit that added the file. */
@@ -33,23 +33,15 @@ export const gitFileOrigin = (
 	path: string,
 	options: { readonly follow?: boolean } = {},
 ): IGitFileOrigin | undefined => {
-	let stdout: string;
-	try {
-		stdout = execFileSync(
-			'git',
-			[
-				'log',
-				'--diff-filter=A',
-				...(options.follow === true ? ['--follow'] : []),
-				'--format=%H %aI',
-				'--',
-				path,
-			],
-			{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-		);
-	} catch {
-		return undefined;
-	}
+	const stdout = readGit(cwd, [
+		'log',
+		'--diff-filter=A',
+		...(options.follow === true ? ['--follow'] : []),
+		'--format=%H %aI',
+		'--',
+		path,
+	]);
+	if (stdout === undefined) return undefined;
 	// Newest first: the origin is the last line.
 	const last = stdout.trim().split(/\r?\n/u).filter(Boolean).at(-1);
 	return last === undefined ? undefined : parseOriginLine(last);
@@ -83,31 +75,21 @@ export const parseOriginLine = (line: string): IGitFileOrigin | undefined => {
 export const gitFileOrigins = (
 	cwd: string,
 ): ReadonlyMap<string, IGitFileOrigin> => {
-	let stdout: string;
-	try {
-		stdout = execFileSync(
-			'git',
-			[
-				'-c',
-				'core.quotePath=false',
-				'log',
-				'--reverse',
-				'--diff-filter=AR',
-				'-M',
-				'--name-status',
-				'--format=@%H %aI',
-			],
-			{
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'ignore'],
-				maxBuffer: 1024 * 1024 * 1024,
-			},
-		);
-	} catch {
-		return new Map();
-	}
-	return originsFromLog(stdout);
+	const stdout = gitVerbatim(
+		cwd,
+		[
+			'-c',
+			'core.quotePath=false',
+			'log',
+			'--reverse',
+			'--diff-filter=AR',
+			'-M',
+			'--name-status',
+			'--format=@%H %aI',
+		],
+		{ maxBuffer: 1024 * 1024 * 1024 },
+	);
+	return stdout === undefined ? new Map() : originsFromLog(stdout);
 };
 
 /** The origins a `--reverse --name-status` log names, split out for its spec. */
