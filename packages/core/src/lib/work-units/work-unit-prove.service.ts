@@ -50,9 +50,13 @@ export const proved = async (
 			'Enter the unit first (`work enter`), and fetch the integration branch.',
 		);
 	}
+	const worktree = worktreeOfRef(
+		root,
+		workRef.replace(/^refs\/heads\//u, ''),
+	);
 	const proof = await proveUnit({
 		root,
-		worktree: worktreeOfRef(root, workRef.replace(/^refs\/heads\//u, '')),
+		worktree,
 		tipSha: tip,
 		integrationSha: base,
 	});
@@ -69,6 +73,7 @@ export const proved = async (
 		code: EXIT_CODE.OK,
 		data: {
 			workRef,
+			...(worktree === undefined ? {} : { worktree }),
 			proved: proof.declared,
 			remembered: proof.remembered === true,
 			...(proof.declared
