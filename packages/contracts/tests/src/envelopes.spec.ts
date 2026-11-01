@@ -3,7 +3,7 @@
  * envelope types in `@delendai/contracts`.
  *
  * Pins the IToolOkEnvelope / IToolErrorEnvelope / IToolEnvelope
- * discriminated union and the ICheckpointAdvisory companion.
+ * discriminated union.
  * Migration from local envelope shapes lives in follow-up
  * proposals; this spec only validates the canonical surface.
  */
@@ -11,7 +11,6 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-	ICheckpointAdvisory,
 	IToolEnvelope,
 	IToolErrorEnvelope,
 	IToolOkEnvelope,
@@ -45,22 +44,5 @@ describe('envelopes (r00033 S1)', () => {
 		};
 		expect(ok.ok).toBe(true);
 		expect(err.ok).toBe(false);
-	});
-
-	it('ICheckpointAdvisory preserves severity enum', () => {
-		const info: ICheckpointAdvisory = {
-			id: 'a1',
-			severity: 'info',
-			message: 'note',
-		};
-		const blocker: ICheckpointAdvisory = {
-			id: 'a2',
-			severity: 'blocker',
-			message: 'stop',
-			nextAction: 'fix',
-		};
-		expect(info.severity).toBe('info');
-		expect(blocker.severity).toBe('blocker');
-		expect(blocker.nextAction).toBe('fix');
 	});
 });
