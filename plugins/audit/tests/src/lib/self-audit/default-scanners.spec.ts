@@ -23,7 +23,7 @@ vi.mock('@delendai/deps/public', () => ({
 }));
 
 import { aggregateSelfAudit } from '../../../../src/lib/self-audit/aggregate';
-import { buildDefaultScanners } from '../../../../src/lib/self-audit/default-scanners';
+import { buildDefaultScanners } from '../../../../src/lib/self-audit/default-scanners.service';
 
 describe('buildDefaultScanners', () => {
 	it('registers the secret and dependency scanners with their capabilities', () => {

@@ -15,7 +15,7 @@ const scan = (tool: string, ruleId: string): IScanResult => ({
 	ranAt: '2026-01-01T00:00:00.000Z',
 });
 
-vi.mock('../../../../src/lib/self-audit/default-scanners', () => ({
+vi.mock('../../../../src/lib/self-audit/default-scanners.service', () => ({
 	buildDefaultScanners: () =>
 		new Map([
 			[

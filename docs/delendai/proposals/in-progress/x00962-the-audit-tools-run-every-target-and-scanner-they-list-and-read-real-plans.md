@@ -32,7 +32,7 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 
 ### S1 — self_audit and audit_run
 - **Status**: pending
-- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/public/index.ts`, `plugins/audit/src/lib/self-audit/default-scanners.ts`, `plugins/audit/src/lib/services/llm-fan-out.service.ts`
+- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/public/index.ts`, `plugins/audit/src/lib/self-audit/default-scanners.service.ts`, `plugins/audit/src/lib/services/llm-fan-out.service.ts`
 - **Gate**: type
 - acceptance:
   - "self_audit through the public registration runs its scanners (AUD-01) and capabilities filters the backlog (AUD-02, D115)."

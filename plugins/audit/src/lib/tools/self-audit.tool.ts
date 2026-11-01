@@ -9,7 +9,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import z from 'zod';
 
 import { aggregateSelfAudit } from '../self-audit/aggregate';
-import { buildDefaultScanners } from '../self-audit/default-scanners';
+import { buildDefaultScanners } from '../self-audit/default-scanners.service';
 import { rankFindings } from '../self-audit/rank';
 import type { ISelfAuditScannerEntry } from '../contracts/interfaces/self-audit.interface';
 
