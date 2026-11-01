@@ -1155,6 +1155,7 @@ export interface DelendaiRefactorRefactorRenameOutput {
 		}>;
 	}>;
 	totalEdits: number;
+	consentToken: string;
 	ambiguous?: {
 		path: string;
 		line: number;
