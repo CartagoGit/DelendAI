@@ -2,14 +2,14 @@
 id: x00959
 title: "Orchestrators and reviewers are held to their own rules by the product"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 841f52af-d902-4929-b74f-f3bb905b18ab
-last-correlation-id: 841f52af-d902-4929-b74f-f3bb905b18ab
-last-transition-from: ready
-last-transition-at: 2026-11-01T05:21:21.203Z
+last-transition-id: d058b005-2a97-4e76-baa0-048d61750b10
+last-correlation-id: d058b005-2a97-4e76-baa0-048d61750b10
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T06:21:52.476Z
 ---
 
 # x00959 — Orchestrators and reviewers are held to their own rules by the product
@@ -31,28 +31,37 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 - global_gate: type
 
 ### S1 — Units
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/unit-departures.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A create unit refuses a second create_proposal (C5)."
   - "Publish compares the delivered paths with the slices' Files and lists departures in its report, without blocking (C11)."
+- shipped-in: `5df4bc2d99f7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Gates as one command and hooks
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work prove` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10)."
   - "A publication with a red spec is refused by the proof before it leaves the unit; a commit in a unit is a checkpoint and stays fast (C13)."
+- shipped-in: `5df4bc2d99f7`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Reviewers
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-earlier-pack.service.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts."
   - "Identity stays the declared model id: a name suffix is not read as an instance, because `gpt-5-mini` is not `gpt-5` (C4)."
+- shipped-in: `3ee75073fb0c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
