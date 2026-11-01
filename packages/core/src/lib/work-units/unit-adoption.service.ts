@@ -171,3 +171,26 @@ export const adoptProposalId = async (input: {
 		forge: dropForgeBranch(cwd, policy, branch),
 	};
 };
+
+/**
+ * The proposal a create unit already made, when `cwd` is a create unit
+ * whose name carries an id. A create unit delivers one proposal: a second
+ * would be published under the first one's name. `undefined` for any other
+ * checkout and for a create unit still waiting for its id.
+ */
+export const proposalOfCreateUnit = (
+	cwd: string,
+	policy: IResolvedDevelopmentPolicy,
+): { readonly branch: string; readonly proposal: string } | undefined => {
+	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
+	if (head === undefined) return undefined;
+	const branch = shortName(head);
+	if (!branch.startsWith(shortName(policy.branches.workRefPrefix))) {
+		return undefined;
+	}
+	const { subject } = identityOf(branch, policy);
+	const parts = parseWorkSubject(policy.branches.workRefTemplate, subject);
+	if (parts === undefined || parts.kind !== 'create') return undefined;
+	if (parts.proposal === UNALLOCATED_PROPOSAL) return undefined;
+	return { branch, proposal: parts.proposal };
+};

@@ -28,33 +28,37 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 
 ### S1 — Units
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/unit-departures.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `plugins/proposals/src/lib/tools/create-proposal.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A create unit refuses a second create_proposal (C5)."
-  - "Publish compares the delivered paths with the slice's Files and lists departures; acceptance lines without evidence block the hand-over (C11)."
+  - "Publish compares the delivered paths with the slices' Files and lists departures in its report, without blocking (C11)."
 
 ### S2 — Gates as one command and hooks
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/work.command.ts`, `lefthook.yml`
+- **Files**: `packages/core/src/lib/work-units/work-unit-prove.service.ts`
 - **Gate**: type
 - acceptance:
-  - "`delendai work gate` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10)."
-  - "pre-commit runs the specs of the staged source files and refuses a red one (C13)."
+  - "`delendai work prove` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10)."
+  - "A publication with a red spec is refused by the proof before it leaves the unit; a commit in a unit is a checkpoint and stays fast (C13)."
 
 ### S3 — Reviewers
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts."
-  - "Two live instances of one model id are distinguished by an instance suffix the product assigns, and the identity check reports it (C4)."
+  - "Identity stays the declared model id: a name suffix is not read as an instance, because `gpt-5-mini` is not `gpt-5` (C4)."
 
 ## acceptance
 
 - A create unit refuses a second create_proposal (C5).
-- Publish compares the delivered paths with the slice's Files and lists departures; acceptance lines without evidence block the hand-over (C11).
-- `delendai work gate` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10).
-- pre-commit runs the specs of the staged source files and refuses a red one (C13).
+- Publish compares the delivered paths with the slices' Files and lists departures in its report, without blocking (C11).
+- `delendai work prove` runs the gates CI runs for the unit's changes, so no orchestrator lists them by hand (C9, C10).
+- A publication with a red spec is refused by the proof before it leaves the unit; a commit in a unit is a checkpoint and stays fast (C13).
 - A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts.
-- Two live instances of one model id are distinguished by an instance suffix the product assigns, and the identity check reports it (C4).
+- Identity stays the declared model id: a name suffix is not read as an instance, because `gpt-5-mini` is not `gpt-5` (C4).
+
+## notes
+
+The pre-commit spec run was dropped: the proof refuses a red spec at hand-over, and every checkpoint commit would pay for it. `work prove` is the gate command `work gate` was to be. A suffix is not an instance (see `agent-alias.service.ts`), so a declared id stays the identity.

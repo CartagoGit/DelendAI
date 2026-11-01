@@ -3,7 +3,12 @@ import { relative } from 'node:path';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../../contracts/constants/create-proposal.constant';
 import { adoptCreatedProposalUnit } from '../../services/created-proposal-unit.service';
-import { callerCheckout, toolError, toolOk } from '@delendai/core/public';
+import {
+	callerCheckout,
+	proposalOfCreateUnit,
+	toolError,
+	toolOk,
+} from '@delendai/core/public';
 import { createGitRunner } from '../../shared/git-runner';
 import type { IValidateEvidenceDeps } from '../proposal-transition.tool';
 import type { IAuthoringToolOptions } from '../authoring-options';
@@ -76,6 +81,23 @@ export const buildCreateProposalRegistration = (
 					return toolError(
 						forCheckout.refusal,
 						'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+					);
+				}
+				// A create unit delivers one proposal; a second would be
+				// published under the first one's name.
+				const made =
+					options.developmentPolicy === undefined
+						? undefined
+						: proposalOfCreateUnit(
+								forCheckout.source === 'request'
+									? forCheckout.root
+									: options.workspaceRoot,
+								options.developmentPolicy,
+							);
+				if (made !== undefined) {
+					return toolError(
+						`This create unit (${made.branch}) already made ${made.proposal}; a create unit delivers one proposal.`,
+						`Publish the unit, then enter another with \`delendai work enter --kind=create --proposal=new\`; or edit ${made.proposal} in place.`,
 					);
 				}
 				const scoped =
