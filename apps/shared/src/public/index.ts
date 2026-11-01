@@ -32,3 +32,5 @@ export {
 	renderBrandIcon,
 	renderFlagIcon,
 } from '../components/ui/brand-icons';
+
+export { escapeAttr, escapeHtml } from '../lib/escape';

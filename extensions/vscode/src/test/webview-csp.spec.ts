@@ -5,7 +5,7 @@
  * meta tag at the command boundary:
  *   - JSON webviews (via `renderJsonHtml`) get the default-deny policy
  *     (`script-src 'none'`).
- *   - the toolbar webview carries its `script-src 'unsafe-inline'`
+ *   - the toolbar webview carries its script nonce
  *     override so its inline `<script>` keeps working while frames and
  *     connections stay denied.
  */
@@ -27,7 +27,7 @@ describe('JSON webview CSP (f00079 S1)', () => {
 });
 
 describe('toolbar webview CSP (f00079 S1)', () => {
-	it('carries the unsafe-inline script override but denies frames', async () => {
+	it('carries the script nonce but denies frames', async () => {
 		const commands = new Map<
 			string,
 			(...args: readonly unknown[]) => unknown
@@ -82,7 +82,8 @@ describe('toolbar webview CSP (f00079 S1)', () => {
 		await commands.get('delendai.openToolbar')?.();
 
 		expect(html).toContain('http-equiv="Content-Security-Policy"');
-		expect(html).toContain("script-src 'unsafe-inline'");
+		expect(html).toMatch(/script-src 'nonce-[0-9a-f]+'/u);
+		expect(html).not.toContain("script-src 'unsafe-inline'");
 		expect(html).toContain("frame-src 'none'");
 	});
 });

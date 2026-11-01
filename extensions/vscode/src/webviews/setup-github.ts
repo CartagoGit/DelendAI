@@ -18,6 +18,7 @@
  * (a catalog id) rather than a hand-typed `--plugins=…` mirror of a preset's
  * full membership — which the `lint:setup` drift gate forbids.
  */
+import { escapeHtml } from '@delendai/ui-extension/public';
 import type { Lang } from '../i18n';
 import type { ISetupGithubStrings } from '../i18n/strings';
 
@@ -59,13 +60,6 @@ export const SETUP_GITHUB_COMMANDS: readonly string[] = [
 /** Canonical source-of-truth guide every surface links back to. */
 export const SETUP_GITHUB_DOCS_URL =
 	'https://github.com/cv2mario/delendai/blob/main/docs/delendai/CROSS-PROJECT-SETUP.md';
-
-const escapeHtml = (value: string): string =>
-	value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;');
 
 /**
  * Render the full setup-github webview HTML for one language.

@@ -127,5 +127,11 @@ export const appendAuditTrailer = (
 	// body-metadata: fenced block, parseable by external tooling.
 	const formatted = interpolate(format, agent);
 	const stamp = interpolate('${date}', agent);
-	return `${clean}\n\n<!-- agent-metadata:begin -->\n\`\`\`json\n{ "host": "${agent.host}", "model": "${agent.model}", "format": "${formatted}", "stamp": "${stamp}" }\n\`\`\`\n<!-- agent-metadata:end -->\n`;
+	const metadata = JSON.stringify({
+		host: agent.host,
+		model: agent.model,
+		format: formatted,
+		stamp,
+	});
+	return `${clean}\n\n<!-- agent-metadata:begin -->\n\`\`\`json\n${metadata}\n\`\`\`\n<!-- agent-metadata:end -->\n`;
 };
