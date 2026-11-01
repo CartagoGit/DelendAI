@@ -38,6 +38,9 @@ const BUN_TOOL: IExternalTool = {
 	],
 };
 
+/** Enough of a failed run's output to name its cause. */
+const MAX_CAUSE_CHARS = 500;
+
 const GHSA_RE = /GHSA-[0-9a-z-]+/i;
 
 /** Map a bun/npm advisory severity onto the shared 5-band scale. */
@@ -136,7 +139,7 @@ export const readDepsAudit = async (
 	if (auditReportOf(raw) === undefined) {
 		const cause = run.stderr.trim() || run.stdout.trim();
 		return {
-			failure: `bun audit gave no report${cause === '' ? '' : `: ${cause.slice(0, 500)}`}`,
+			failure: `bun audit gave no report${cause === '' ? '' : `: ${cause.slice(0, MAX_CAUSE_CHARS)}`}`,
 		};
 	}
 	return toScanResult('bun-audit', parseBunAudit(raw));
