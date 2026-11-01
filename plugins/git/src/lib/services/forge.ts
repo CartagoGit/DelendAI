@@ -35,11 +35,7 @@ export const listOpenPrs = async (
 ): Promise<IForgeList> => {
 	const result = await listPullRequests(cwd, exec);
 	if (!result.ok) {
-		return {
-			available: !isCliAbsent(result),
-			note: noteOf(result),
-			prs: [],
-		};
+		return { available: false, note: noteOf(result), prs: [] };
 	}
 	return {
 		available: true,

@@ -309,9 +309,9 @@ export const createBranchProtectionAdapter = (
 		'Remote branch protection has not been refreshed yet; local push.protectedBranches remains in effect.',
 	);
 
+	// A failed refresh keeps the protections last read: `failure` reports
+	// it, and only a successful read replaces them.
 	const refresh = async (): Promise<BranchProtectionRefreshResult> => {
-		remoteBranches = new Set();
-		applyEffectiveBranches();
 		const target = await resolveRemoteTarget(options, exec);
 		if (!target.ok) {
 			lastResult = failure(target.state, target.reason, {

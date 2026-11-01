@@ -28,7 +28,7 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 
 ### S1 — deps
 - **Status**: pending
-- **Files**: `plugins/deps/src/lib/services/audit.ts`, `plugins/deps/src/lib/services/licenses.ts`, `plugins/deps/src/lib/tools/tools.ts`, `packages/core/src/lib/external-tool/render-findings.ts`
+- **Files**: `plugins/deps/src/lib/services/audit.ts`, `plugins/deps/src/lib/services/licenses.ts`, `plugins/deps/src/lib/tools/tools.ts`, `plugins/deps/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "A failed or unparsable audit is an error with the cause (D68, G61-DEPS-01)."
@@ -36,7 +36,7 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 
 ### S2 — git and forge reads
 - **Status**: pending
-- **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/lib/tools/tools.ts`, `plugins/git/src/lib/services/forge.ts`, `plugins/git/src/lib/tools/forge-tools.ts`
+- **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/lib/services/forge.ts`
 - **Gate**: type
 - acceptance:
   - "A git status that fails returns an error, never clean (D87)."
@@ -44,7 +44,7 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 
 ### S3 — Branch protection survives a failed refresh
 - **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`, `plugins/commit-policy/src/lib/services/push-driver.ts`
+- **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`
 - **Gate**: type
 - acceptance:
   - "A refresh failure keeps the last known protections and reports the failure (CP-01)."
