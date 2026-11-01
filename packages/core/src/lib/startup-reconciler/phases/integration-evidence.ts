@@ -41,6 +41,28 @@ export type { IIntegrationPhaseResult } from './integration-evidence.interface';
 /** The journal's word for a checkpoint kept, and later dropped, as retired work. */
 const RETIRED_DECISION = 'retired';
 
+/**
+ * Whether a checkpoint is held by any of `tips`. A start examines every
+ * checkpoint against every ref, so the commits are listed once, on the first
+ * question, and a process per pair is only the fallback.
+ */
+const heldByAny = (
+	git: IStartupGitSeam,
+	tips: readonly string[],
+): ((sha: string) => Promise<boolean>) => {
+	let listing: Promise<ReadonlySet<string> | undefined> | undefined;
+	return async (sha) => {
+		if (tips.length === 0) return false;
+		listing ??= git.reachableFrom?.(tips) ?? Promise.resolve(undefined);
+		const reachable = await listing;
+		if (reachable !== undefined) return reachable.has(sha);
+		for (const tip of tips) {
+			if (tip === sha || (await git.isAncestor(sha, tip))) return true;
+		}
+		return false;
+	};
+};
+
 export const runIntegrationEvidencePhase = async (input: {
 	readonly ports: IStartupStatePorts;
 	readonly git: IStartupGitSeam;
@@ -92,6 +114,10 @@ export const runIntegrationEvidencePhase = async (input: {
 		return { findings, counters: { generationsIntegrated } };
 	}
 
+	const inIntegration = heldByAny(input.git, [input.integrationSha]);
+	const heldByRef = heldByAny(input.git, input.keptBy ?? []);
+	const heldAsRetired = heldByAny(input.git, input.retiredTips ?? []);
+
 	for (const unit of input.ports.workUnits.listForRepository(
 		input.repositoryId,
 	)) {
@@ -127,10 +153,7 @@ export const runIntegrationEvidencePhase = async (input: {
 			// an ancestor and loses nothing: every path it changed already
 			// holds the same content there.
 			const contained =
-				(await input.git.isAncestor(
-					generation.wipHeadSha,
-					input.integrationSha,
-				)) ||
+				(await inIntegration(generation.wipHeadSha)) ||
 				(await (input.git.contentContained?.(
 					generation.wipHeadSha,
 					input.integrationSha,
@@ -171,33 +194,12 @@ export const runIntegrationEvidencePhase = async (input: {
 			}
 
 			if (!present) {
-				let kept = false;
-				for (const tip of input.keptBy ?? []) {
-					if (
-						await input.git.isAncestor(generation.wipHeadSha, tip)
-					) {
-						kept = true;
-						break;
-					}
-				}
+				const kept = await heldByRef(generation.wipHeadSha);
 				// Retiring keeps the unit's LAST tip, which may carry merges
 				// on top of the checkpoint recorded here: the checkpoint is
 				// kept when it is the tip or any ancestor of it.
-				let keptRetired = false;
-				if (!kept) {
-					for (const tip of input.retiredTips ?? []) {
-						if (
-							tip === generation.wipHeadSha ||
-							(await input.git.isAncestor(
-								generation.wipHeadSha,
-								tip,
-							))
-						) {
-							keptRetired = true;
-							break;
-						}
-					}
-				}
+				const keptRetired =
+					!kept && (await heldAsRetired(generation.wipHeadSha));
 				if (keptRetired && !seenRetired.has(generation.wipHeadSha)) {
 					// Once per checkpoint: the record that outlives the ref.
 					input.ports.journal.append({
