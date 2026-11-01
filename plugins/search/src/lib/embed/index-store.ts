@@ -11,6 +11,10 @@ export interface IEmbedIndexEntry {
 	readonly path: string;
 	readonly mtimeMs: number;
 	readonly vector: readonly number[];
+	/** Embedder that produced the vector; absent on entries from older indexes. */
+	readonly embedderId?: string;
+	/** Vector length at embed time. */
+	readonly dimension?: number;
 }
 
 export type IEmbedIndex = Readonly<Record<string, IEmbedIndexEntry>>;
@@ -87,6 +91,8 @@ const parseIndex = (raw: string): IEmbedIndex => {
 			readonly path?: unknown;
 			readonly mtimeMs?: unknown;
 			readonly vector?: unknown;
+			readonly embedderId?: unknown;
+			readonly dimension?: unknown;
 		};
 		if (
 			typeof candidate.path !== 'string' ||
@@ -103,6 +109,12 @@ const parseIndex = (raw: string): IEmbedIndex => {
 					path: candidate.path,
 					mtimeMs: candidate.mtimeMs,
 					vector: candidate.vector,
+					...(typeof candidate.embedderId === 'string'
+						? { embedderId: candidate.embedderId }
+						: {}),
+					...(typeof candidate.dimension === 'number'
+						? { dimension: candidate.dimension }
+						: {}),
 				},
 			],
 		] as const;

@@ -14,6 +14,7 @@
  * the durable-memory contract. Moving redaction to a separate module
  * would risk a future caller forgetting to apply it.
  */
+import { createHash } from 'node:crypto';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
@@ -48,14 +49,36 @@ export class NoteQuotaExceededError extends Error {
 	}
 }
 
+const normalizeTitle = (title: string): string =>
+	title.trim().replace(/\s+/g, ' ').toLowerCase();
+
+const titleHash = (title: string): string =>
+	createHash('sha1').update(title.trim()).digest('hex').slice(0, 8);
+
 /**
- * Derive a note's stable id from its title (so saves upsert by title).
- * Titles are therefore part of the durable memory contract: the store
- * is for stable reusable facts, not ephemeral log entries that should
- * accumulate.
+ * Derive a note's id from its title: the kebab slug, or a hash-based
+ * fallback when the slug is empty. Ids already on disk are never
+ * rewritten, so an id stays stable for the life of its note.
  */
 export const deriveNoteId = (title: string): string =>
-	kebab(title) || `note-${Date.now().toString(36)}`;
+	kebab(title) || `note-${titleHash(title)}`;
+
+/**
+ * Resolve the id for a save. The slug is shared by titles such as
+ * `release/v1` and `release-v1`; when the slug is already held by a note
+ * with a different title, the exact-title hash is appended so two notes
+ * never collapse into one record.
+ */
+export const resolveNoteId = (
+	notes: readonly INote[],
+	title: string,
+): string => {
+	const base = deriveNoteId(title);
+	const holder = notes.find((note) => note.id === base);
+	if (holder === undefined) return base;
+	if (normalizeTitle(holder.title) === normalizeTitle(title)) return base;
+	return `${base}-${titleHash(title)}`;
+};
 
 /**
  * Upsert a note by id (derived from its title). Returns the stored note.
@@ -82,8 +105,8 @@ export const saveNote = (
 			bodyR.redactions +
 			tagsR.reduce((sum, t) => sum + t.redactions, 0);
 
-		const id = deriveNoteId(titleR.text);
 		const notes = await readStore(absPath);
+		const id = resolveNoteId(notes, titleR.text);
 		const existing = notes.find((note) => note.id === id);
 		const limit = getMaxNotes(maxNotes);
 		if (existing === undefined && notes.length >= limit) {

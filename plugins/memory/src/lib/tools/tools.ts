@@ -275,7 +275,7 @@ export const buildMemoryToolRegistrations = (
 									all.map((note) => ({
 										title: note.title,
 										body: note.body,
-										createdAt: note.createdAt,
+										createdAt: note.updatedAt,
 									})),
 								);
 							recordSessionDigestReuse(sessionDigest);

@@ -4,6 +4,8 @@ export const DEFAULT_EMBED_DIMENSIONS = 64;
 
 export interface IEmbedder {
 	readonly id: string;
+	/** Vector length, when the embedder knows it before embedding. */
+	readonly dimensions?: number;
 	isAvailable(): Promise<boolean>;
 	embed(text: string): Promise<readonly number[]>;
 }
@@ -30,6 +32,7 @@ export const buildDeterministicHashEmbedder = (options?: {
 	const dimensions = options?.dimensions ?? DEFAULT_EMBED_DIMENSIONS;
 	return {
 		id: 'deterministic-hash',
+		dimensions,
 		isAvailable: async () => true,
 		embed: async (text: string) => {
 			const tokens = tokenize(text);

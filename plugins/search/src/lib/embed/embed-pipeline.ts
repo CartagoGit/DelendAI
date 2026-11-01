@@ -40,6 +40,8 @@ export interface IEmbedPipelineOptions extends IEmbedIndexStoreOptions {
 	readonly searchOptions?: ISearchOptions;
 	readonly embedder?: IEmbedder;
 	readonly indexStore?: IEmbedIndexStore;
+	/** Vector length the embedder produces now, when the caller already knows it. */
+	readonly expectedDimension?: number;
 }
 
 export interface IEmbedPipelineResult {
@@ -174,6 +176,10 @@ const removeDuplicatePaths = (
 		Object.entries(index).filter(([, entry]) => entry.path !== relPath),
 	) as IEmbedIndex;
 
+/** Index key: one entry per path and content, so equal files at two paths both stay. */
+export const embedIndexKey = (relPath: string, hash: string): string =>
+	`${relPath}#${hash}`;
+
 export const runEmbedPipeline = async (
 	options: IEmbedPipelineOptions,
 ): Promise<IEmbedPipelineResult> => {
@@ -218,16 +224,29 @@ export const runEmbedPipeline = async (
 	let nextIndex: IEmbedIndex = {};
 	let embeddedCount = 0;
 	let reusedCount = 0;
+	// A cached vector is only comparable to a fresh one of the same length.
+	// The caller knows the length when it has already embedded a query.
+	let expectedDimension = options.expectedDimension ?? embedder.dimensions;
 
 	for (const file of discovered) {
-		const cached = currentIndex[file.hash];
-		if (cached !== undefined && cached.path === file.relPath) {
+		const key = embedIndexKey(file.relPath, file.hash);
+		const cached = currentIndex[key];
+		if (
+			cached !== undefined &&
+			cached.path === file.relPath &&
+			cached.embedderId === embedder.id &&
+			cached.dimension === cached.vector.length &&
+			(expectedDimension === undefined ||
+				cached.dimension === expectedDimension)
+		) {
 			nextIndex = {
 				...removeDuplicatePaths(nextIndex, file.relPath),
-				[file.hash]: {
+				[key]: {
 					path: file.relPath,
 					mtimeMs: file.mtimeMs,
 					vector: cached.vector,
+					embedderId: embedder.id,
+					dimension: cached.vector.length,
 				},
 			};
 			reusedCount += 1;
@@ -235,14 +254,17 @@ export const runEmbedPipeline = async (
 		}
 
 		const vector = await embedder.embed(file.content);
+		expectedDimension ??= vector.length;
 		const entry: IEmbedIndexEntry = {
 			path: file.relPath,
 			mtimeMs: file.mtimeMs,
 			vector,
+			embedderId: embedder.id,
+			dimension: vector.length,
 		};
 		nextIndex = {
 			...removeDuplicatePaths(nextIndex, file.relPath),
-			[file.hash]: entry,
+			[key]: entry,
 		};
 		embeddedCount += 1;
 	}

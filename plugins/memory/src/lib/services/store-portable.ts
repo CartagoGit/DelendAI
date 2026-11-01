@@ -150,14 +150,43 @@ const candidateIdOf = (candidate: Record<string, unknown>): unknown =>
 
 /** Redact secrets from a candidate note's text fields before it ever
  *  touches disk. */
+const requireTimestamp = (
+	candidate: Record<string, unknown>,
+	field: 'createdAt' | 'updatedAt' | 'expiresAt',
+): string | undefined => {
+	const value = candidate[field];
+	if (value === undefined) return undefined;
+	if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) {
+		throw new Error(
+			`note "${String(candidate.id)}" has an invalid ${field} timestamp`,
+		);
+	}
+	return value;
+};
+
+const requireTags = (candidate: Record<string, unknown>): string[] => {
+	const tags = candidate.tags;
+	if (tags === undefined) return [];
+	if (
+		!Array.isArray(tags) ||
+		!tags.every((tag) => typeof tag === 'string' && tag.trim() !== '')
+	) {
+		throw new Error(
+			`note "${String(candidate.id)}" has invalid tags (expected non-empty strings)`,
+		);
+	}
+	return tags as string[];
+};
+
 const redactCandidate = (
 	candidate: Record<string, unknown>,
 ): { note: INote; redactions: number } => {
 	const titleR = redactSecrets(String(candidate.title ?? ''));
 	const bodyR = redactSecrets(String(candidate.body ?? ''));
-	const tags = Array.isArray(candidate.tags)
-		? (candidate.tags as unknown[]).map((tag) => String(tag))
-		: [];
+	const tags = requireTags(candidate);
+	const createdAt = requireTimestamp(candidate, 'createdAt');
+	const updatedAt = requireTimestamp(candidate, 'updatedAt');
+	const expiresAt = requireTimestamp(candidate, 'expiresAt');
 	const tagsR = tags.map((tag) => redactSecrets(tag));
 	const redactions =
 		titleR.redactions +
@@ -168,17 +197,9 @@ const redactCandidate = (
 		title: titleR.text,
 		body: bodyR.text,
 		tags: tagsR.map((t) => t.text),
-		createdAt:
-			typeof candidate.createdAt === 'string'
-				? candidate.createdAt
-				: new Date().toISOString(),
-		updatedAt:
-			typeof candidate.updatedAt === 'string'
-				? candidate.updatedAt
-				: new Date().toISOString(),
-		...(typeof candidate.expiresAt === 'string'
-			? { expiresAt: candidate.expiresAt }
-			: {}),
+		createdAt: createdAt ?? new Date().toISOString(),
+		updatedAt: updatedAt ?? new Date().toISOString(),
+		...(expiresAt !== undefined ? { expiresAt } : {}),
 	};
 	return { note, redactions };
 };
