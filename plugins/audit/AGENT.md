@@ -14,10 +14,10 @@
 - parseAuditFiles
 - consolidateAudits
 - renderConsolidationMarkdown
+- callLlmFanOut
 - auditDateStamp
 - auditFilename
 - callLlm
-- callLlmFanOut
 - isoDate
 - resolveTarget
 - proposalFilenameFor
