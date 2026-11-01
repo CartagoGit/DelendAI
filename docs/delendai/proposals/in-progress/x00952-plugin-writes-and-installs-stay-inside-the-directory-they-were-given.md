@@ -2,14 +2,14 @@
 id: x00952
 title: "Plugin writes and installs stay inside the directory they were given"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 8138e1ee-45f5-4ced-9979-36ac03a8a03c
-last-correlation-id: 8138e1ee-45f5-4ced-9979-36ac03a8a03c
-last-transition-from: review
-last-transition-at: 2026-10-28T08:22:47.558Z
+last-transition-id: f9ec0c65-a8c0-4a96-abf3-5167f2f6d287
+last-correlation-id: f9ec0c65-a8c0-4a96-abf3-5167f2f6d287
+last-transition-from: ready
+last-transition-at: 2026-11-01T00:31:34.677Z
 shipped-in:
   - "ce33cce00"
 ---
