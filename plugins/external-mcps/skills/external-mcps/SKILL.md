@@ -2,7 +2,6 @@
 name: delendai-external-mcps
 appliesTo: ['@delendai/external-mcps']
 description: Use when a workspace needs a capability native tools lack: discover, propose a pinned config, validate, get a human ack, then call a third-party MCP lazily.
-tools: ['delendai_external-mcps_catalog', 'delendai_external-mcps_discover', 'delendai_external-mcps_suggest', 'delendai_external-mcps_validate_config', 'delendai_external-mcps_ack', 'delendai_external-mcps_call']
 ---
 
 # delendai external-mcps

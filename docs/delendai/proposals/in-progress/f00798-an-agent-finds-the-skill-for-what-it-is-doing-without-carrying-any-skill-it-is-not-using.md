@@ -34,15 +34,15 @@ Measured 2026-11-01: across six recorded sessions no delendai skill was invoked,
 
 ### S1 — A tool search names the right skill and how to load it
 - **Status**: pending
-- **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/src/generated/tool-outputs.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `packages/core/src/lib/skills/tool-skill-index.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/tests/src/lib/skills/skill-metadata-budget.spec.ts`, `packages/core/tests/src/lib/skills/tool-skill-index.spec.ts`, `plugins/audit/skills/audit-runner/SKILL.md`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`, `plugins/commit-policy/skills/read-stderr-storm/SKILL.md`, `plugins/external-mcps/skills/external-mcps/SKILL.md`, `plugins/proposals/skills/concurrency-patterns/SKILL.md`, `plugins/proposals/skills/legacy-proposal-migration/SKILL.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/skills/state-repair-playbook/SKILL.md`, `plugins/quality/skills/quality-and-rules-gates/SKILL.md`, `plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md`, `plugins/rules/skills/rules-solid-architecture/SKILL.md`, `plugins/status-marker/skills/status-marker-and-closure/SKILL.md`, `tools/scripts/lint/skill-coverage.baseline.json`
+- **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `packages/core/src/generated/tool-outputs.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `packages/core/src/lib/skills/tool-skill-index.ts`, `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/tests/src/lib/skills/skill-metadata-budget.spec.ts`, `packages/core/tests/src/lib/skills/tool-skill-index.spec.ts`, `packages/core/tests/src/lib/tools/tool-surface.tool.spec.ts`, `plugins/audit/skills/audit-runner/SKILL.md`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`, `plugins/commit-policy/skills/read-stderr-storm/SKILL.md`, `plugins/external-mcps/skills/external-mcps/SKILL.md`, `plugins/proposals/skills/concurrency-patterns/SKILL.md`, `plugins/proposals/skills/legacy-proposal-migration/SKILL.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/skills/state-repair-playbook/SKILL.md`, `plugins/quality/skills/quality-and-rules-gates/SKILL.md`, `plugins/rules/skills/delendai-rules-dogma-priority/SKILL.md`, `plugins/rules/skills/rules-solid-architecture/SKILL.md`, `plugins/status-marker/skills/status-marker-and-closure/SKILL.md`, `tools/scripts/lint/skill-coverage.baseline.json`
 - **Gate**: type
 - acceptance:
   - "A tool's catalogue entry points at the skill its own plugin leads before a cross-cutting one."
   - "A tool search that names a skill says how to load it, and one that names none carries no hint."
-  - "Every plugin skill but the compatibility pointer names its tools, in a description of at most 200 bytes; a spec holds both."
+  - "Every plugin skill but the compatibility pointer and those of a plugin outside the preset names its tools, in a description of at most 200 bytes; a spec holds both."
 
 ## acceptance
 
 - A tool's catalogue entry points at the skill its own plugin leads before a cross-cutting one.
 - A tool search that names a skill says how to load it, and one that names none carries no hint.
-- Every plugin skill but the compatibility pointer names its tools, in a description of at most 200 bytes; a spec holds both.
+- Every plugin skill but the compatibility pointer and those of a plugin outside the preset names its tools, in a description of at most 200 bytes; a spec holds both.

@@ -2,7 +2,7 @@ import z from 'zod';
 
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type {
-	IToolSurfaceRuntimeAccess,
+	IToolSurfaceRuntime,
 	IPluginSkillSync,
 } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
@@ -31,8 +31,13 @@ const PLUGIN_CHANGE = z.object({
 	note: z.string().optional(),
 });
 
-const requireToolSurfaceRuntime = (
-	runtimeAccess: IToolSurfaceRuntimeAccess,
+/** What one tool needs of the runtime, so it can be driven without all of it. */
+interface IRuntimeOf<K extends keyof IToolSurfaceRuntime> {
+	get(): Pick<IToolSurfaceRuntime, K> | undefined;
+}
+
+const requireToolSurfaceRuntime = <K extends keyof IToolSurfaceRuntime>(
+	runtimeAccess: IRuntimeOf<K>,
 ) => {
 	const runtime = runtimeAccess.get();
 	if (runtime === undefined) {
@@ -43,7 +48,7 @@ const requireToolSurfaceRuntime = (
 
 export const buildProjectContextToolRegistration = (input: {
 	namespacePrefix: string;
-	runtimeAccess: IToolSurfaceRuntimeAccess;
+	runtimeAccess: IRuntimeOf<'getProjectContext'>;
 	workspaceRoot: string;
 	corePaths: ICorePaths;
 	configIssues: readonly string[];
@@ -95,7 +100,7 @@ export const buildProjectContextToolRegistration = (input: {
 
 export const buildToolSearchToolRegistration = (input: {
 	namespacePrefix: string;
-	runtimeAccess: IToolSurfaceRuntimeAccess;
+	runtimeAccess: IRuntimeOf<'rankTools'>;
 }): IToolRegistration => ({
 	id: 'tool_search',
 	summary:
@@ -143,7 +148,9 @@ export const buildToolSearchToolRegistration = (input: {
 const buildPluginSurfaceMutationToolRegistration = (input: {
 	toolId: 'plugin_activate' | 'plugin_deactivate';
 	namespacePrefix: string;
-	runtimeAccess: IToolSurfaceRuntimeAccess;
+	runtimeAccess: IRuntimeOf<
+		'activatePlugin' | 'activatePluginAsync' | 'deactivatePlugin'
+	>;
 	/** Installs or removes the plugin's skills for the project's hosts. */
 	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration => ({
@@ -202,7 +209,9 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 
 export const buildPluginActivateToolRegistration = (input: {
 	namespacePrefix: string;
-	runtimeAccess: IToolSurfaceRuntimeAccess;
+	runtimeAccess: IRuntimeOf<
+		'activatePlugin' | 'activatePluginAsync' | 'deactivatePlugin'
+	>;
 	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration =>
 	buildPluginSurfaceMutationToolRegistration({
@@ -212,7 +221,9 @@ export const buildPluginActivateToolRegistration = (input: {
 
 export const buildPluginDeactivateToolRegistration = (input: {
 	namespacePrefix: string;
-	runtimeAccess: IToolSurfaceRuntimeAccess;
+	runtimeAccess: IRuntimeOf<
+		'activatePlugin' | 'activatePluginAsync' | 'deactivatePlugin'
+	>;
 	syncSkills?: IPluginSkillSync | undefined;
 }): IToolRegistration =>
 	buildPluginSurfaceMutationToolRegistration({

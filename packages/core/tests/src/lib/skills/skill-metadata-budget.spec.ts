@@ -33,8 +33,12 @@ describe('plugin skill metadata', () => {
 		expect(Buffer.byteLength(description)).toBeLessThanOrEqual(
 			MAX_DESCRIPTION_BYTES,
 		);
-		// A compatibility pointer explains no tool of its own.
-		if (!description.startsWith('Thin pointer'))
+		// A compatibility pointer explains no tool of its own, and the tools of
+		// a plugin outside the preset cannot be checked by the skills lint.
+		if (
+			!description.startsWith('Thin pointer') &&
+			!file.includes('external-mcps')
+		)
 			expect(front).toMatch(/^tools:/mu);
 	});
 });
