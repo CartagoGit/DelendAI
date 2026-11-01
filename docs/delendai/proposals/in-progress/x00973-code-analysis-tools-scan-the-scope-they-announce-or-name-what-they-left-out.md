@@ -2,10 +2,14 @@
 id: x00973
 title: "Code-analysis tools scan the scope they announce, or name what they left out"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 00fae256-c803-4cc2-aaf9-1301d240f621
+last-correlation-id: 00fae256-c803-4cc2-aaf9-1301d240f621
+last-transition-from: ready
+last-transition-at: 2026-11-01T06:23:27.907Z
 ---
 
 # x00973 — Code-analysis tools scan the scope they announce, or name what they left out
