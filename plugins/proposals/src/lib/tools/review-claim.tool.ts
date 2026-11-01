@@ -19,6 +19,7 @@ import {
 } from '../contracts/constants/review-claim-schema.constant';
 import {
 	claimForReview,
+	earlierPackStep,
 	publishPackStep,
 	releaseClaim,
 	unjudgedStep,
@@ -53,6 +54,11 @@ const ANSWERS: {
 		toolError(
 			`Your review unit holds ${outcome.holding} and has recorded nothing about it; ${proposalId} is not taken until it has.`,
 			unjudgedStep(outcome.holding, prefix),
+		),
+	'earlier-pack': (outcome, proposalId) =>
+		toolError(
+			`Your review unit ${outcome.unit} holds verdicts not yet published; ${proposalId} is not claimed from another unit of yours.`,
+			earlierPackStep(outcome.unit),
 		),
 	failed: (outcome, proposalId) =>
 		toolError(
