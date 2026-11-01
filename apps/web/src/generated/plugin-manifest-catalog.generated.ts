@@ -22,8 +22,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 8130,
+			"hard": 8900,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -53,8 +53,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 11550,
+			"hard": 12650,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -80,8 +80,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"network"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3800,
+			"hard": 4160,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -111,8 +111,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 12150,
+			"hard": 13310,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -140,8 +140,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1750,
+			"hard": 1910,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -172,8 +172,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 7230,
+			"hard": 7920,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -200,8 +200,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3920,
+			"hard": 4290,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -229,8 +229,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"browser"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6250,
+			"hard": 6840,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -257,8 +257,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2160,
+			"hard": 2370,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -291,8 +291,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 4800,
-			"hard": 5200,
+			"warning": 12200,
+			"hard": 13360,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -320,8 +320,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2560,
+			"hard": 2800,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -355,8 +355,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"container"
 		],
 		"tokenBudget": {
-			"warning": 6800,
-			"hard": 7500,
+			"warning": 9100,
+			"hard": 9970,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -382,8 +382,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1090,
+			"hard": 1190,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -408,8 +408,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5430,
+			"hard": 5940,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -438,8 +438,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"database"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 4130,
+			"hard": 4520,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -470,8 +470,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"network"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5530,
+			"hard": 6060,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -502,8 +502,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3450,
+			"hard": 3770,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -536,8 +536,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3100,
+			"hard": 3400,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -569,8 +569,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3660,
+			"hard": 4010,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -603,8 +603,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"forge-write"
 		],
 		"tokenBudget": {
-			"warning": 3800,
-			"hard": 4200,
+			"warning": 1480,
+			"hard": 1620,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -659,8 +659,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 9870,
+			"hard": 10810,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -693,8 +693,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"forge-write"
 		],
 		"tokenBudget": {
-			"warning": 7400,
-			"hard": 8200,
+			"warning": 4950,
+			"hard": 5420,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -753,8 +753,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"git-write"
 		],
 		"tokenBudget": {
-			"warning": 6200,
-			"hard": 6800,
+			"warning": 4850,
+			"hard": 5310,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -839,8 +839,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2710,
+			"hard": 2970,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -866,8 +866,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2000,
+			"hard": 2190,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -900,8 +900,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 5300,
-			"hard": 5900,
+			"warning": 870,
+			"hard": 950,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -926,8 +926,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1810,
+			"hard": 1990,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -955,8 +955,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 7670,
+			"hard": 8400,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -989,8 +989,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 4900,
-			"hard": 5400,
+			"warning": 8620,
+			"hard": 9440,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1018,8 +1018,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1970,
+			"hard": 2160,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1045,8 +1045,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6030,
+			"hard": 6600,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1075,8 +1075,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 37870,
+			"hard": 41480,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1104,8 +1104,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3860,
+			"hard": 4220,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1130,8 +1130,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1450,
+			"hard": 1580,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1160,8 +1160,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 4300,
+			"hard": 4710,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1187,8 +1187,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2640,
+			"hard": 2900,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1250,8 +1250,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 13500,
-			"hard": 15000,
+			"warning": 83980,
+			"hard": 91970,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1282,8 +1282,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 9000,
-			"hard": 9800,
+			"warning": 3810,
+			"hard": 4180,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1311,8 +1311,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"process"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1160,
+			"hard": 1270,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1340,8 +1340,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6590,
+			"hard": 7220,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1400,8 +1400,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5920,
+			"hard": 6480,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1439,8 +1439,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3400,
+			"hard": 3720,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1468,8 +1468,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5990,
+			"hard": 6560,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1549,8 +1549,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2150,
+			"hard": 2350,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1598,8 +1598,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1870,
+			"hard": 2050,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1628,8 +1628,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3400,
+			"hard": 3720,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1661,8 +1661,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1960,
+			"hard": 2150,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1690,8 +1690,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"env-read"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1970,
+			"hard": 2160,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1717,8 +1717,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"network"
 		],
 		"tokenBudget": {
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 980,
+			"hard": 1070,
 			"releaseRelativePercent": 20
 		}
 	}

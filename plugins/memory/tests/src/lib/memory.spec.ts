@@ -152,7 +152,7 @@ describe('memory store', async () => {
 		expect(metrics.recallCalls).toBe(2);
 		expect(metrics.notesReturned).toBe(2);
 		expect(metrics.digestReused).toBe(1);
-		expect(metrics.bytesAvoided).toBeGreaterThan(0);
+		expect(metrics.bytesDelivered).toBeGreaterThan(0);
 	});
 
 	// f00090 S2: the compaction-check tool is the live surface of the pure

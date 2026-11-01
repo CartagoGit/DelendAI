@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'database',
@@ -10,7 +10,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['env-read', 'database'],
 	presets: ['standard', 'swarm', 'full', 'backend-api'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 3_927,
+		caps: { hard: 4_520, warning: 4_130 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', 'better-sqlite3', 'zod'],
 	capabilities: ['database', 'schema'],
 });

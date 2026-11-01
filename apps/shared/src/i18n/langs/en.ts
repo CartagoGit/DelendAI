@@ -547,9 +547,11 @@ const extension = {
 	'dashboard.metrics.topTools': 'Top 8 tools',
 	'dashboard.metrics.collectedAt': 'Collected at',
 	'dashboard.tokens.used': 'Tokens used',
-	'dashboard.tokens.usedHint': '≈ 1 token / 4 bytes',
+	'dashboard.tokens.usedHint': 'Estimated: 1 token ≈ 4 bytes',
 	'dashboard.tokens.saved': 'Tokens saved',
-	'dashboard.tokens.savedHint': 'vs compact:false baseline',
+	'dashboard.tokens.savedHint':
+		'Measured only: against the baseline a tool reports, not against working without DelendAI',
+	'dashboard.tokens.savingsHint': 'Saved / (used + saved)',
 	'dashboard.tokens.savings': 'Savings',
 	'dashboard.tokens.topTools': 'Top tools by tokens',
 	'dashboard.plugins.tokenShareByPlugin': 'Token share by plugin',

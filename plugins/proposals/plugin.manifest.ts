@@ -45,11 +45,11 @@ export default definePluginManifest({
 		agent_lock_release_orphan: ['filesystem-read', 'filesystem-write'],
 	},
 	tokenBudget: {
-		staticBytes: 12_400,
+		staticBytes: 79_973,
 		adaptiveActivationBytes: 2_100,
 		typicalOutput: 3_200,
-		caps: { hard: 15_000, warning: 13_500 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 91_970, warning: 83_980 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: [

@@ -33,20 +33,20 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 
 | Surface | Measurement Surface | Bytes | Est. Tokens | Warning | Hard | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| overview full | managed | 2,105 | 527 | 11,000 | 11,100 | within hard |
-| overview compact | managed | 875 | 219 | 1,450 | 1,500 | within hard |
-| overview full (native) | native | 14,471 | 3618 | 27,000 | 28,000 | within hard |
-| overview compact (native) | native | 2,419 | 605 | 4,400 | 4,500 | within hard |
+| overview full | managed | 2,492 | 623 | 11,000 | 11,100 | within hard |
+| overview compact | managed | 938 | 235 | 1,450 | 1,500 | within hard |
+| overview full (native) | native | 14,859 | 3715 | 27,000 | 28,000 | within hard |
+| overview compact (native) | native | 2,483 | 621 | 4,400 | 4,500 | within hard |
 | auto_work idle | native | 159 | 40 | 2,400 | 2,600 | within hard |
 | auto_work work plan | native | 2,263 | 566 | 2,400 | 2,600 | within hard |
-| agent_catalog compact | native | 830 | 208 | 800 | 900 | over warning (800B) |
-| agent_catalog full | native | 10,993 | 2749 | 9,800 | 10,500 | over hard (10,500B) |
+| agent_catalog compact | native | 863 | 216 | 800 | 900 | over warning (800B) |
+| agent_catalog full | native | 11,027 | 2757 | 9,800 | 10,500 | over hard (10,500B) |
 | analyze_project {} | native | 830 | 208 | 1,600 | 1,800 | within hard |
 | plan_mcp_project {} | native | 856 | 214 | 1,800 | 2,000 | within hard |
 | search_search | native | 872 | 218 | 2,700 | 3,000 | within hard |
 | docs_docs_list | native | 207 | 52 | 2,200 | 2,500 | within hard |
 | proposals_round_context | native | 151 | 38 | 2,700 | 3,000 | within hard |
-| logs_tail | native | 92 | 23 | 5,500 | 6,000 | within hard |
+| logs_tail | native | 120 | 30 | 5,500 | 6,000 | within hard |
 
 ## Catalog and task context cost addendum
 
@@ -82,24 +82,24 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 
 | Preset | Title | Measurement Surface | Runtime Surface | Source | Plugins | Tools | Tools/List Bytes | Est. Tokens | Schema Bytes | Description Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes | Overview Compact | Round Context | Tools Status | Marginal Status | Load Errors |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| minimal | minimal | native | managed | tokens-gate | 2 | 42 | 57,513 | 14379 | 47,092 | 3,970 | 14,312 | 32,780 | 4,611 | 1,364 | n/a | within hard | within hard | none |
-| minimal | minimal | adaptive | managed | dynamic-client | 2 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 789 | n/a | within hard | n/a | none |
-| lean | lean | native | managed | tokens-gate | 4 | 55 | 68,677 | 17170 | 55,464 | 4,758 | 17,140 | 38,324 | 8,202 | 1,597 | n/a | within hard | within hard | none |
-| lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 820 | n/a | within hard | n/a | none |
-| standard | standard | native | managed | tokens-gate | 19 | 113 | 132,594 | 33149 | 104,798 | 10,068 | 31,135 | 73,663 | 10,998 | 3,306 | n/a | over warning (132,000B) | over warning (9,500B) | none |
-| standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,034 | n/a | within hard | n/a | none |
-| swarm | swarm | native | managed | tokens-gate | 27 | 154 | 165,346 | 41337 | 127,865 | 13,405 | 39,519 | 88,346 | 10,998 | 4,504 | n/a | within hard | within hard | none |
-| swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,229 | n/a | within hard | n/a | none |
-| full | full | native | managed | tokens-gate | 39 | 185 | 197,175 | 49294 | 152,395 | 15,780 | 46,670 | 105,725 | 10,998 | 5,614 | n/a | within hard | within hard | none |
-| full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,408 | n/a | within hard | n/a | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 324,199 | 81050 | 263,279 | 22,771 | 74,940 | 188,339 | 79,973 | 6,897 | 151 | over warning (320,000B) | over warning (70,000B) | none |
-| dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,439 | n/a | within hard | n/a | none |
-| web-app | web-app | native | managed | tokens-gate | 18 | 103 | 115,578 | 28895 | 90,590 | 8,896 | 27,677 | 62,913 | 8,663 | 3,164 | n/a | n/a | n/a | none |
-| web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 982 | n/a | n/a | n/a | none |
-| backend-api | backend-api | native | managed | tokens-gate | 16 | 102 | 113,956 | 28489 | 89,191 | 8,853 | 27,708 | 61,483 | 8,663 | 3,028 | n/a | n/a | n/a | none |
-| backend-api | backend-api | adaptive | managed | dynamic-client | 16 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 958 | n/a | n/a | n/a | none |
-| cli-tool | cli-tool | native | managed | tokens-gate | 7 | 62 | 77,693 | 19424 | 62,685 | 5,465 | 18,916 | 43,769 | 8,202 | 1,828 | n/a | n/a | n/a | none |
-| cli-tool | cli-tool | adaptive | managed | dynamic-client | 7 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 847 | n/a | n/a | n/a | none |
+| minimal | minimal | native | managed | tokens-gate | 2 | 42 | 57,513 | 14379 | 47,092 | 3,970 | 14,312 | 32,780 | 4,611 | 1,428 | n/a | within hard | within hard | none |
+| minimal | minimal | adaptive | managed | dynamic-client | 2 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 852 | n/a | within hard | n/a | none |
+| lean | lean | native | managed | tokens-gate | 4 | 55 | 68,677 | 17170 | 55,464 | 4,758 | 17,140 | 38,324 | 8,202 | 1,993 | n/a | within hard | within hard | none |
+| lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,215 | n/a | within hard | n/a | none |
+| standard | standard | native | managed | tokens-gate | 19 | 113 | 132,594 | 33149 | 104,798 | 10,068 | 31,135 | 73,663 | 10,998 | 3,705 | n/a | over warning (132,000B) | over warning (9,500B) | none |
+| standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,430 | n/a | within hard | n/a | none |
+| swarm | swarm | native | managed | tokens-gate | 27 | 154 | 165,346 | 41337 | 127,865 | 13,405 | 39,519 | 88,346 | 10,998 | 4,903 | n/a | within hard | within hard | none |
+| swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,625 | n/a | within hard | n/a | none |
+| full | full | native | managed | tokens-gate | 39 | 185 | 197,175 | 49294 | 152,395 | 15,780 | 46,670 | 105,725 | 10,998 | 6,013 | n/a | within hard | within hard | none |
+| full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,804 | n/a | within hard | n/a | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 324,199 | 81050 | 263,279 | 22,771 | 74,940 | 188,339 | 79,973 | 7,296 | 151 | over warning (320,000B) | over warning (70,000B) | none |
+| dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,835 | n/a | within hard | n/a | none |
+| web-app | web-app | native | managed | tokens-gate | 18 | 103 | 115,578 | 28895 | 90,590 | 8,896 | 27,677 | 62,913 | 8,663 | 3,563 | n/a | n/a | n/a | none |
+| web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,378 | n/a | n/a | n/a | none |
+| backend-api | backend-api | native | managed | tokens-gate | 16 | 102 | 113,956 | 28489 | 89,191 | 8,853 | 27,708 | 61,483 | 8,663 | 3,427 | n/a | n/a | n/a | none |
+| backend-api | backend-api | adaptive | managed | dynamic-client | 16 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,354 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | native | managed | tokens-gate | 7 | 62 | 77,693 | 19424 | 62,685 | 5,465 | 18,916 | 43,769 | 8,202 | 2,224 | n/a | n/a | n/a | none |
+| cli-tool | cli-tool | adaptive | managed | dynamic-client | 7 | 7 | 6,306 | 1577 | 4,320 | 902 | 997 | 3,323 | 0 | 1,242 | n/a | n/a | n/a | none |
 
 ## Plugin marginal dashboard — component breakdown by owner
 

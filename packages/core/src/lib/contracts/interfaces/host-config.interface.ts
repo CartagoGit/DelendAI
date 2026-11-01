@@ -165,6 +165,12 @@ export interface IHostObservability {
 		| ((toolName: string, args: unknown) => Promise<void> | void)
 		| undefined;
 	/**
+	 * The most bytes a tool result may carry to the agent; the default is
+	 * `DEFAULT_MAX_RESPONSE_BYTES`. A larger one comes back as a stated
+	 * failure with its head and the path of the kept output.
+	 */
+	readonly maxToolResultBytes?: number | undefined;
+	/**
 	 * f00111 S1: fired when the client aborts an in-flight tool call (the
 	 * SDK request `AbortSignal` fires while the handler is still running).
 	 * `elapsedMs` is the time since the handler started. At most once per

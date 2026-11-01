@@ -24,6 +24,8 @@ const readLog = (path: string): IInvocationRecord[] =>
 		.filter((l) => l.trim() !== '')
 		.map((l) => JSON.parse(l) as IInvocationRecord);
 
+const ELAPSED_MS = 42;
+
 describe('usage-tracking plugin (register + hooks)', () => {
 	let dir = '';
 	beforeEach(() => {
@@ -61,18 +63,17 @@ describe('usage-tracking plugin (register + hooks)', () => {
 			'session_hygiene',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('usage-tracking-usage');
-		expect(typeof reg.onToolStart).toBe('function');
 		expect(typeof reg.onToolCall).toBe('function');
 	});
 
 	it('records a paired start+call as a durable, attributed record', async () => {
 		const reg = await plugin.register(makeCtx());
-		reg.onToolStart?.('delendai_proposals_auto_work', {});
 		reg.onToolCall?.(
 			'delendai_proposals_auto_work',
 			{ sessionId: 's_call' },
 			{ ok: true },
 			undefined,
+			ELAPSED_MS,
 		);
 		// Drain explicitly: wall-clock sleeps race async append under suite load.
 		await drainLiveBuffers();
@@ -87,7 +88,7 @@ describe('usage-tracking plugin (register + hooks)', () => {
 		expect(row.agent.extension).toBe('claude-code');
 		expect(row.sessionId).toBe('s_call');
 		expect(row.outcome).toBe('success');
-		expect(typeof row.durationMs).toBe('number');
+		expect(row.durationMs).toBe(ELAPSED_MS);
 		expect(row.responseBytes).toBe(0);
 	});
 
@@ -107,7 +108,6 @@ describe('usage-tracking plugin (register + hooks)', () => {
 
 	it('records an error outcome when the hook carries an error', async () => {
 		const reg = await plugin.register(makeCtx());
-		reg.onToolStart?.('delendai_docs_docs_read', {});
 		reg.onToolCall?.(
 			'delendai_docs_docs_read',
 			{},

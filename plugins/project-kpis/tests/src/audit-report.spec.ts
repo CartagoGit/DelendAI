@@ -83,6 +83,7 @@ const buildRecord = (options: {
 	readonly requestType?: string;
 	readonly costUsd?: number;
 	readonly tokensSaved?: number;
+	readonly accounting?: 'measured' | 'estimated';
 	readonly durationMs?: number;
 	readonly incongruence?: boolean;
 	readonly errorClassification?: string;
@@ -99,6 +100,18 @@ const buildRecord = (options: {
 	...(options.tokensSaved !== undefined
 		? { tokensSaved: options.tokensSaved }
 		: {}),
+	...(options.accounting === undefined
+		? {}
+		: {
+				tokenAccounting: {
+					baselineTokens: null,
+					usedTokens: 128,
+					tokensSaved: options.tokensSaved ?? null,
+					savingsPercent: null,
+					status: options.accounting,
+					basis: 'test',
+				},
+			}),
 	durationMs: options.durationMs ?? 120,
 	outcome: options.outcome ?? 'success',
 	fallbackFrom: null,
@@ -419,8 +432,16 @@ describe('buildEfficiencyAnalysis', () => {
 			trend: buildTrend(),
 			summary: null,
 			records: [
-				buildRecord({ plugin: 'git', tokensSaved: 256 }),
-				buildRecord({ plugin: 'search', tokensSaved: 128 }),
+				buildRecord({
+					plugin: 'git',
+					tokensSaved: 256,
+					accounting: 'measured',
+				}),
+				buildRecord({
+					plugin: 'search',
+					tokensSaved: 128,
+					accounting: 'measured',
+				}),
 			],
 			window: WINDOW,
 			now: new Date(NOW),
@@ -435,6 +456,27 @@ describe('buildEfficiencyAnalysis', () => {
 		expect(saving?.confidence).toBe('measured');
 		expect(analysis.causality).toBe('measured');
 		expect(analysis.observations.tokensSaved).toBe(384);
+	});
+
+	it('never labels a saving with no baseline as measured', () => {
+		const analysis = buildEfficiencyAnalysis({
+			snapshot: buildSnapshot({ generatedAt: NOW }),
+			trend: buildTrend(),
+			summary: null,
+			records: [buildRecord({ plugin: 'git', tokensSaved: 256 })],
+			window: WINDOW,
+			now: new Date(NOW),
+		});
+
+		expect(
+			analysis.savings.find((item) => item.id === 'token-savings'),
+		).toBeUndefined();
+		const reported = analysis.savings.find(
+			(item) => item.id === 'reported-token-savings',
+		);
+		expect(reported?.value).toBe(256);
+		expect(reported?.causality).toBe('inferred');
+		expect(analysis.causality).not.toBe('measured');
 	});
 
 	it('reports inferred financial savings from a configured manual baseline', () => {

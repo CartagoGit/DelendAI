@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'refactor',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write'],
 	presets: ['standard', 'swarm', 'full', 'web-app', 'backend-api'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 6_270,
+		caps: { hard: 7_220, warning: 6_590 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', 'typescript'],
 	capabilities: ['refactor'],
 });

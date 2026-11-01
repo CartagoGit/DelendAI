@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'project-health',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
 	presets: ['dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_373,
+		caps: { hard: 1_580, warning: 1_450 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@delendai/core',
 		'@delendai/quality',

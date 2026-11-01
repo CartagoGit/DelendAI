@@ -185,11 +185,11 @@ describe('rollup', () => {
 			buckets.reduce((sum, bucket) => sum + bucket.tokensSaved, 0),
 		).toBe(totals.tokensSaved);
 		expect(totals.tokensSaved).toBe(40);
-		expect(totals.savingsPercent).toBe(27);
+		expect(totals.savingsPercent).toBe(21);
 		expect(buckets[0]).toMatchObject({
 			key: 'openai/gpt-5',
 			tokensSaved: 25,
-			savingsPercent: 25,
+			savingsPercent: 20,
 		});
 	});
 

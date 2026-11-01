@@ -45,6 +45,7 @@ export const renderPanelTokens = (
 		<div class="delendai-card delendai-card--third">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.tokens.savings'))}</h3>
 			<p class="delendai-kpi__value">${formatNumber(model.savingsPercent)}%</p>
+			<p class="delendai-kpi__hint">${escapeHtml(text('dashboard.tokens.savingsHint'))}</p>
 		</div>
 		<div class="delendai-card">
 			<h3 class="delendai-card__title">${escapeHtml(text('dashboard.tokens.topTools'))}</h3>

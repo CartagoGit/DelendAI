@@ -25,7 +25,6 @@ import {
 	resolveInvocationSessionId,
 } from './lib/services/invocation-recorder.service';
 import { regenerateUsageSummary } from './lib/services/usage-rollup.service';
-import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
 	resolvePricing,
@@ -234,7 +233,6 @@ export default definePlugin({
 				logs: ctx.logs,
 			},
 		);
-		const clock = new StartClock();
 		const corePrefix = deriveCorePrefix(ctx.namespacePrefix);
 		// Boot-scoped identity: the host declared its client once at
 		// assembly; every row inherits it unless a call carries its own
@@ -389,14 +387,14 @@ export default definePlugin({
 
 		return {
 			tools: instrumentedTools,
-			// Hot-path hooks. `onToolStart` stamps a start time; `onToolCall`
-			// builds the metadata record and enqueues it (non-blocking).
-			onToolStart: (toolName) => {
-				clock.begin(toolName, Date.now());
-			},
-			onToolCall: (toolName, args, result, error) => {
+			// Hot-path hook: builds the metadata record and enqueues it
+			// (non-blocking). Each call carries its own elapsed time, which
+			// pairing starts and ends by tool name got wrong when two calls
+			// of one tool finished out of order.
+			onToolCall: (toolName, args, result, error, elapsedMs) => {
 				const endedAt = Date.now();
-				const startedAt = clock.take(toolName);
+				const startedAt =
+					elapsedMs === undefined ? undefined : endedAt - elapsedMs;
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
 				const sessionId = resolveInvocationSessionId(
 					args,
