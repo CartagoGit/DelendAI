@@ -254,6 +254,19 @@ export const fastSteps = (
 	...(changed.some((path) => BUN_SUITE.test(path))
 		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
 		: []),
+];
+
+/**
+ * What fails in seconds runs first and ends the proof: a budget overshot by 27
+ * bytes was reported after eleven minutes of checks that could not change it.
+ */
+export const earlySteps = (
+	changed: readonly string[],
+): readonly (readonly [string, readonly string[]])[] => [
+	[
+		'tool budgets',
+		['bun', 'tools/scripts/test/run-actual-preset-budget.script.ts'],
+	],
 	// drift.yml, not ci.yml, holds this one: #1621 went red on a stale
 	// AGENT.md after a proof that never looked.
 	['generated files are current', ['bun', 'run', 'gen:all:check']],
@@ -281,6 +294,17 @@ const main = async (): Promise<number> => {
 	if (process.argv.includes('--fast')) {
 		const root = process.cwd();
 		const changed = changedSince(root, base);
+		let early = true;
+		for (const [label, command] of earlySteps(changed)) {
+			early = step(label, command) && early;
+		}
+		if (!early) {
+			printCauses();
+			console.error(
+				`prove: NOT PROVED, failed: ${failed.join(', ')}; (early) in ${String(Math.round((Date.now() - started) / 1000))}s`,
+			);
+			return 1;
+		}
 		let ok = await runChecks(base, changed);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).

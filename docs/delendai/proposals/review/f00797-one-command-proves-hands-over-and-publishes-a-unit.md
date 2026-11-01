@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 881432ad-babc-4209-84f2-e5a4c2109f62
-last-correlation-id: 881432ad-babc-4209-84f2-e5a4c2109f62
+last-transition-id: fffc9acb-7c93-4472-b57f-bd53201a2fbe
+last-correlation-id: fffc9acb-7c93-4472-b57f-bd53201a2fbe
 last-transition-from: in-progress
-last-transition-at: 2026-11-01T13:20:50.592Z
+last-transition-at: 2026-11-01T22:44:19.863Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit
@@ -48,3 +48,5 @@ Delivering took four commands in an order each agent had to remember: `work prov
 ## notes
 
 Reopened 2026-11-01: a failed delivery kept only the tail of the output, which named no cause, so `prove` now prints the failure lines last; and it runs the `tokens-budget-real` gate, whose breach reached a pull request unseen.
+
+- 2026-11-01: the proof runs the budgets, the drift check and the site translations first and stops there when one fails: they answer in under a minute, and a 27-byte overshoot cost eleven minutes before.
