@@ -116,7 +116,13 @@ describe('main()', () => {
 		const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
 			throw new Error(`exit:${code}`);
 		});
-		const code = await main();
+		// `main` reads the process's own arguments: without this each case
+		// ran on vitest's, and asserted nothing about the ones it named.
+		const argv = process.argv;
+		process.argv = ['bun', 'install.script.ts', ...args];
+		const code = await main().finally(() => {
+			process.argv = argv;
+		});
 		stdoutSpy.mockRestore();
 		stderrSpy.mockRestore();
 		exitSpy.mockRestore();

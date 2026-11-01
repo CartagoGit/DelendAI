@@ -26,7 +26,9 @@ export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
 		...sharedTestOptions,
-		include: ['**/*.spec.ts'],
+		// `scripts/` holds the installer and belongs to no workspace: outside the
+		// root, its spec was collected by no project and gated nothing.
+		include: ['**/*.spec.ts', '../scripts/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		setupFiles: sharedSetupFiles(workspaceRoot),
 		// Several specs here scan the whole repository or boot a real MCP
