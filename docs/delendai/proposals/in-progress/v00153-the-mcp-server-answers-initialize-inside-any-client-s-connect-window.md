@@ -2,10 +2,14 @@
 id: v00153
 title: "the MCP server answers initialize inside any client's connect window"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: startup
 date: 2026-11-01
+last-transition-id: 9e66fa50-b4c1-4823-86ec-87f1c7e22542
+last-correlation-id: 9e66fa50-b4c1-4823-86ec-87f1c7e22542
+last-transition-from: ready
+last-transition-at: 2026-11-01T16:52:12.951Z
 ---
 
 # v00153 — the MCP server answers initialize inside any client's connect window
