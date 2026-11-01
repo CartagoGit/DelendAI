@@ -2,14 +2,14 @@
 id: f00791
 title: "Consent and dry-run are checked by the server, not asserted by the caller"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: f217541d-199d-4e73-bc42-ff454e265698
-last-correlation-id: f217541d-199d-4e73-bc42-ff454e265698
-last-transition-from: ready
-last-transition-at: 2026-11-01T03:14:40.439Z
+last-transition-id: 3206cd30-1434-4115-89e4-dfb323e630d7
+last-correlation-id: 3206cd30-1434-4115-89e4-dfb323e630d7
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T03:43:42.469Z
 ---
 
 # f00791 — Consent and dry-run are checked by the server, not asserted by the caller
@@ -31,20 +31,26 @@ Joint audit a00095. G121: consent a person can verify exists only for spending (
 - global_gate: type
 
 ### S1 — A server-issued consent token
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`, `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `packages/core/src/lib/consent/consent-token.service.ts`, `packages/core/src/lib/contracts/interfaces/consent-signer.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/consent/consent-token.service.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/token.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-consent.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A core service issues a token bound to the action digest and verifies it on apply. `refactor_rename` returns one for its exact plan, and `refactor_apply` refuses a token it did not issue or a diff edited since (D62, G121). The token proves the diff is the plan the server made, not that a person approved it: a person's approval remains the spend gate's elicitation."
   - "Spend confirmation uses the same service."
+- shipped-in: `bb57c75d7494`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — dry-run before the effect
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/dry-run/enforce.ts`, `packages/core/src/lib/dry-run/protocol.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/constants/dry-run-plan-fields.constant.ts`, `packages/core/src/lib/contracts/constants/plugin-wiring-schemas.constant.ts`, `tools/scripts/lint/dry-run-coverage.script.ts`, `tools/scripts/lint/dry-run-coverage.script.spec.ts`, `tools/scripts/lint/dry-run-coverage.baseline.json`, `docs/delendai/security/dry-run-contract.md`, `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `plugins/container/src/lib/run/docker-command.service.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`, `plugins/database/src/lib/tools/db-query.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/quality/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "A dryRun call to a tool whose input schema does not accept the flag is refused before its handler runs, a plan without its lists is refused instead of throwing, and tools that honour dryRun return the contract plan; `lint:dry-run-coverage` prints and ratchets the count of effectful registrations without support (G122)."
   - "Each decorative parameter G101 lists is enforced, removed or owned by a named proposal, recorded per tool in the notes."
+- shipped-in: `db27f9e2426d`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
