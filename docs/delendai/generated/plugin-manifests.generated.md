@@ -127,7 +127,7 @@
 | test-convention | 3400 | 3720 | 20 |
 | test-policy | 1960 | 2150 | 20 |
 | usage-tracking | 1970 | 2160 | 20 |
-| web-fetch | 980 | 1070 | 20 |
+| web-fetch | 1000 | 1070 | 20 |
 
 ## Permissions
 

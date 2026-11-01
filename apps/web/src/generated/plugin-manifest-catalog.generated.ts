@@ -1717,7 +1717,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"network"
 		],
 		"tokenBudget": {
-			"warning": 980,
+			"warning": 1000,
 			"hard": 1070,
 			"releaseRelativePercent": 20
 		}

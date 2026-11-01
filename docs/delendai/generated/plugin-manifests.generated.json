@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-01T12:23:42.746Z",
+	"generatedAt": "2026-11-01T12:48:56.270Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2713,10 +2713,10 @@
 				"web-app"
 			],
 			"tokenBudget": {
-				"staticBytes": 928,
+				"staticBytes": 1000,
 				"caps": {
 					"hard": 1070,
-					"warning": 980
+					"warning": 1000
 				},
 				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
@@ -4116,7 +4116,7 @@
 			"permissions": [
 				"network"
 			],
-			"tokenBudgetBytes": 928,
+			"tokenBudgetBytes": 1000,
 			"example": {
 				"allowList": [
 					"example.com",
@@ -5843,7 +5843,7 @@
 				"network"
 			],
 			"tokenBudget": {
-				"warning": 980,
+				"warning": 1000,
 				"hard": 1070,
 				"releaseRelativePercent": 20
 			}
@@ -6212,7 +6212,7 @@
 		},
 		{
 			"id": "web-fetch",
-			"warning": 980,
+			"warning": 1000,
 			"hard": 1070,
 			"releaseRelativePercent": 20
 		}

@@ -48,7 +48,7 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 
 ### S3 — usage-tracking and memory arithmetic
 - **Status**: pending
-- **Files**: `plugins/usage-tracking/src/lib/rollup.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/memory/src/lib/services/store-recall.ts`
+- **Files**: `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/usage-tracking/src/lib/rollup.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/memory/src/lib/services/store-recall.ts`
 - **Gate**: type
 - acceptance:
   - "Latency uses the elapsed each call carries (USAGE-02); savingsPercent keeps one denominator (USAGE-03); a figure with no baseline is named bytesDelivered, not bytesAvoided (G61-MEM03)."

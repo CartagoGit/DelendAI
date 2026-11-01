@@ -686,7 +686,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			summary: 'Web fetch (allow-listed URLs only).',
 			tags: ['web', 'fetch'],
 			permissions: ['network'],
-			tokenBudgetBytes: 928,
+			tokenBudgetBytes: 1000,
 			example: {
 				"allowList": [
 					"example.com",
