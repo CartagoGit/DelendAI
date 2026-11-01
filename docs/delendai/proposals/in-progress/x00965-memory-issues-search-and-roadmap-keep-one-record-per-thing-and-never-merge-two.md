@@ -31,7 +31,7 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - global_gate: type
 
 ### S1 — memory
-- **Status**: done
+- **Status**: review
 - **Files**: `plugins/memory/src/lib/services/store-records.ts`, `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/lib/services/store-portable.ts`, `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/src/lib/tools/tools.ts`, `plugins/memory/tests/src/lib/one-record-per-note.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,7 +42,7 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — issues and search
-- **Status**: done
+- **Status**: review
 - **Files**: `plugins/issues/src/lib/tools/ingest-issue.tool.ts`, `plugins/issues/src/lib/frontmatter.ts`, `plugins/issues/tests/src/lib/one-scaffold-per-issue.spec.ts`, `plugins/search/src/lib/embed/embed-pipeline.ts`, `plugins/search/src/lib/embed/embedder.ts`, `plugins/search/src/lib/embed/index-store.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`, `plugins/search/tests/src/lib/embed/index-identity.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -53,7 +53,7 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — roadmap and self-learning
-- **Status**: done
+- **Status**: review
 - **Files**: `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/one-record-per-entry.spec.ts`, `plugins/self-learning/src/lib/store/observation-store.service.ts`, `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: type
 - acceptance:
