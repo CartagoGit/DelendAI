@@ -53,7 +53,7 @@ const normalizeTitle = (title: string): string =>
 	title.trim().replace(/\s+/g, ' ').toLowerCase();
 
 const titleHash = (title: string): string =>
-	createHash('sha1').update(title.trim()).digest('hex').slice(0, 8);
+	createHash('sha256').update(title.trim()).digest('hex').slice(0, 8);
 
 /**
  * Derive a note's id from its title: the kebab slug, or a hash-based

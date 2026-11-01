@@ -73,3 +73,5 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - Archived done is delivered (ROAD-01); closing an entry touches only it (ROAD-02); a failed chronology write rolls the authority file back (D91).
 - The observation store writes under withFileMutex (D47).
 - The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46).
+
+- 2026-11-01: the fallback id of a note hashes with SHA-256: CodeQL flagged SHA-1 over the title (alert 467), which kept the queue job failing and blocks a promotion. Ids on disk are never rewritten, so existing notes keep theirs.
