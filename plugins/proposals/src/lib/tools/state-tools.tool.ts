@@ -539,8 +539,7 @@ export const buildStateHealthRegistration = (
 	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_health',
-	summary:
-		'Read-only swarm health: locks, stale locks, livelocks, queue backpressure and orphan assignments.',
+	summary: 'Read-only swarm health: locks, livelocks, backpressure, orphans.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
@@ -568,7 +567,7 @@ export const buildStateRepairRegistration = (
 	effects: ['write'],
 	writeRoot: 'host-state',
 	summary:
-		'Heal stale swarm state: GC stale locks, expire due queue entries, force-release orphan assignments. dry-run by default.',
+		'Heal stale locks, due queue entries and orphans. Dry-run by default.',
 	tags: ['coordination'],
 	register: async (server) => {
 		server.registerTool(
