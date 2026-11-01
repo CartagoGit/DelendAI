@@ -2,10 +2,14 @@
 id: c00534
 title: "Half-built packages are finished or removed, and duplicate engines are merged"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 7318557f-147c-4e1f-a855-7656ba6c135e
+last-correlation-id: 7318557f-147c-4e1f-a855-7656ba6c135e
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T01:41:52.171Z
 ---
 
 # c00534 — Half-built packages are finished or removed, and duplicate engines are merged
@@ -27,43 +31,52 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - global_gate: type
 
 ### S1 — Orphan packages and loaders
-- **Status**: pending
+- **Status**: review
 - **Files**: `bun.lock`, `tsconfig.base.json`, `vitest.shared.ts`, `packages/state-sqlite/package.json`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/test-kit/package.json`, `packages/ui-extension/package.json`, `plugins/changelog/package.json`, `plugins/roadmap/README.md`, `packages/contracts/README.md`, `packages/proposals-sqlite/README.md`, `packages/sqlite/README.md`, `packages/state-sqlite/README.md`, `packages/state-telemetry/README.md`, `packages/test-kit/README.md`, `packages/ui-extension/README.md`, `plugins/execution-env/README.md`, `plugins/external-mcps/README.md`, `plugins/framework-knowledge/README.md`, `plugins/refactor/README.md`, `plugins/self-learning/README.md`
 - **Gate**: type
 - acceptance:
-  - "roadmap-sqlite and state-sqlite are either loaded by a plugin with a spec proving it, or deleted with their references (G59, G73, G6)."
-  - "One SQLite loader is imported by every user (G24)."
+  - "roadmap-sqlite and state-sqlite are either loaded with a spec proving it (state-sqlite, by core's state-registry choice) or deleted with their references (roadmap-sqlite) (G59, G73, G6)."
+  - "One SQLite loader is imported by every production user; a test fixture may open `node:sqlite` itself (G24)."
   - "Every package has build and README (G39, G6)."
+- shipped-in: `1eba86877d7f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Shim, prompts and bootstrap
-- **Status**: pending
+- **Status**: review
 - **Files**: `bin/delendai-shim/main.go`, `plugins/prompts-pack/src/prompts/prompts.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
   - "findCLIEntryFrom is defined so the shim tests compile (G7); go is not installed on this host, so go test itself runs in CI only."
   - "No NUL byte in prompts; a spec asserts it (G60, D38)."
   - "The bootstrap describes the dist mirrors the builder makes (ORCH-06)."
+- shipped-in: `524f03fe0f84`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Duplicate engines
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/rules/src/lib/frameworks/manifest.ts`, `plugins/remote-provider-core/src/index.ts`, `plugins/remote-provider-core/src/lib/wire.helper.ts`, `plugins/remote-provider-core/src/lib/contracts/constants/wire.constant.ts`, `plugins/remote-provider-core/src/lib/http-client.ts`, `plugins/remote-provider-core/tests/wire.spec.ts`, `plugins/github/src/lib/client.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/git/package.json`, `plugins/git/src/lib/contracts/interfaces/forge.interface.ts`, `plugins/git/src/lib/services/forge.ts`, `plugins/git/tests/src/lib/forge.spec.ts`, `packages/core/src/lib/dispatch/capability-resolver.error.ts`, `packages/core/src/lib/contracts/constants/resolver-terminal-reasons.constant.ts`, `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/src/lib/tools/resolve-capability.tool.ts`, `packages/core/tests/src/lib/dispatch/capability-resolver.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The legacy rules builder is removed or carries a dated deprecation (G13)."
-  - "github and gitlab share a forge engine for their common shapes (G10)."
+  - "github and gitlab share `remote-provider-core`'s wire helpers for their common shapes (G10)."
   - "forge is the one PR reader; git's pr_list and pr_view delegate to it (G106)."
   - "Every resolver terminal reason has a handled branch and a spec (D9)."
+- shipped-in: `9d8977782060`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
-- roadmap-sqlite and state-sqlite are either loaded by a plugin with a spec proving it, or deleted with their references (G59, G73, G6).
-- One SQLite loader is imported by every user (G24).
+- roadmap-sqlite and state-sqlite are either loaded with a spec proving it (state-sqlite, by core's state-registry choice) or deleted with their references (roadmap-sqlite) (G59, G73, G6).
+- One SQLite loader is imported by every production user; a test fixture may open `node:sqlite` itself (G24).
 - Every package has build and README (G39, G6).
 - findCLIEntryFrom is defined so the shim tests compile (G7); go test itself runs in CI only.
 - No NUL byte in prompts; a spec asserts it (G60, D38).
 - The bootstrap describes the dist mirrors the builder makes (ORCH-06).
 - The legacy rules builder is removed or carries a dated deprecation (G13).
-- github and gitlab share a forge engine for their common shapes (G10).
+- github and gitlab share `remote-provider-core`'s wire helpers for their common shapes (G10).
 - forge is the one PR reader; git's pr_list and pr_view delegate to it (G106).
 - Every resolver terminal reason has a handled branch and a spec (D9).
 
