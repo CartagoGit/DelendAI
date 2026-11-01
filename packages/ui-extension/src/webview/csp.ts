@@ -148,7 +148,7 @@ export const injectCspMeta = (
 	});
 	const meta = `<meta http-equiv="Content-Security-Policy" content="${escapeDoubleQuoted(header)}" />`;
 	const body = nonced
-		? html.replace(/<script\b/giu, `<script nonce="${nonce}"`)
+		? html.replace(/<script\b/giu, () => `<script nonce="${nonce}"`)
 		: html;
 	const headOpenTagEnd = findHeadOpenTagEnd(body);
 	if (headOpenTagEnd >= 0) {

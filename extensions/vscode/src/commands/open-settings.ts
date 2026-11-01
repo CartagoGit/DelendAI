@@ -9,7 +9,6 @@ import {
 import {
 	ExtensionSettingsSchema,
 	type SettingsHostResponse,
-	type SettingsWebviewRequest,
 } from '@delendai/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderSettings, withCsp } from '@delendai/ui-extension/public';
