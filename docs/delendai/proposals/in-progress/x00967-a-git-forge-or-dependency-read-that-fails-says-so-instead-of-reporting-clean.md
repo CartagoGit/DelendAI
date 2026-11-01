@@ -2,10 +2,14 @@
 id: x00967
 title: "A git, forge or dependency read that fails says so instead of reporting clean"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: d45c1744-1343-4831-9d14-1c1cda70395d
+last-correlation-id: d45c1744-1343-4831-9d14-1c1cda70395d
+last-transition-from: ready
+last-transition-at: 2026-11-01T03:50:07.012Z
 ---
 
 # x00967 — A git, forge or dependency read that fails says so instead of reporting clean
