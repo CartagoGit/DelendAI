@@ -2,10 +2,14 @@
 id: x00963
 title: "commit-policy stages, trails and settles exactly what it says"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: bea174b6-630e-4980-bdc7-233d32bd871f
+last-correlation-id: bea174b6-630e-4980-bdc7-233d32bd871f
+last-transition-from: ready
+last-transition-at: 2026-11-01T04:44:59.818Z
 ---
 
 # x00963 — commit-policy stages, trails and settles exactly what it says
