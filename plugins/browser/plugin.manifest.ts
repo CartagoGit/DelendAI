@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'browser',
@@ -12,7 +12,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-write', 'process', 'network', 'browser'],
 	presets: ['full'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 5_945,
+		caps: { hard: 6_840, warning: 6_250 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', 'playwright'],
 	capabilities: ['browser', 'automation'],
 });

@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'impact-analysis',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
 	presets: ['dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_904,
+		caps: { hard: 2_190, warning: 2_000 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@delendai/core',
 		'@delendai/git',

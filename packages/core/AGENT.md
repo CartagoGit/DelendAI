@@ -42,10 +42,10 @@ _(none)_
 
 ## Tests
 
+- packages/core/src/lib/context-budget/bound-tool-result.service.spec.ts
 - packages/core/tests/config-schema.spec.ts
 - packages/core/tests/derive-version.spec.ts
 - packages/core/tests/lint-proposals.spec.ts
-- packages/core/tests/release-finalize/index.spec.ts
 
 ## Do not
 

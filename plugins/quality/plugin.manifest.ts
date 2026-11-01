@@ -16,11 +16,11 @@ export default definePluginManifest({
 	// policy blobs are the bulk of the registration cost. Measured
 	// 2026-08-25.
 	tokenBudget: {
-		staticBytes: 8_200,
+		staticBytes: 3_627,
 		adaptiveActivationBytes: 1_400,
 		typicalOutput: 2_200,
-		caps: { hard: 9_800, warning: 9_000 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 4_180, warning: 3_810 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

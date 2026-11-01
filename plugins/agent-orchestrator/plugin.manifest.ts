@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 /**
  * Manifest for the `agent-orchestrator` plugin — the *workflow policy*
@@ -30,7 +30,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['process'],
 	presets: ['standard', 'swarm', 'full', 'dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 10_998,
+		caps: { hard: 12_650, warning: 11_550 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['orchestrator', 'policy'],
 });

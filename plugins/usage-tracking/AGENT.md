@@ -12,7 +12,6 @@
 - builtinClientMapping
 - detectAgent
 - RecordBuffer
-- StartClock
 - analyzeSessionHygiene
 - DEFAULT_SESSION_HYGIENE_POLICY
 - SessionHygieneMonitor
@@ -21,6 +20,7 @@
 - SessionTooLongAdvisorySource
 - sessionTooLongDedupeKey
 - readHostLifecycleEvents
+- summarizeHostLifecycle
 
 ## Depends on
 

@@ -68,22 +68,17 @@ const tokensFromBytes = (bytes: number): number =>
 	Math.ceil(bytes * TOKENS_PER_BYTE);
 
 /**
- * Compact responses are ~18% smaller on average in our reference dataset;
- * this is the conservative number reported in
- * `docs/delendai/TOKEN-BUDGETS.md`. Future revisions can compute this
- * from a compact-vs-full diff if the server exposes it.
+ * Server metrics record what was sent, not what a call would have cost
+ * otherwise, so they support no saving. Only the usage report, whose records
+ * name a baseline, can state one.
  */
-const estimateTokensSaved = (totalBytes: number): number =>
-	Math.round(tokensFromBytes(totalBytes) * 0.18);
+const NO_MEASURED_SAVING = 0;
 
-/**
- * Savings as a percentage of the tokens actually used. Single source of
- * truth so the overview totals and the tokens model never disagree on the
- * same "Savings" figure (they diverged once — one used `saved/used`, the
- * other `saved/(saved+used)`).
- */
+/** Saved tokens as a share of what the work would have used without them. */
 const savingsPercentOf = (tokensSaved: number, tokensUsed: number): number =>
-	tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed);
+	tokensUsed + tokensSaved === 0
+		? 0
+		: Math.round((100 * tokensSaved) / (tokensUsed + tokensSaved));
 
 /** Resolve a tool name to its owning plugin. */
 type PluginOf = (toolName: string) => string;
@@ -219,7 +214,7 @@ const buildOverviewModel = (
 		overview.namespacePrefix,
 	);
 	const tokens = tokensFromBytes(snap.totals.totalBytes);
-	const tokensSaved = estimateTokensSaved(snap.totals.totalBytes);
+	const tokensSaved = NO_MEASURED_SAVING;
 	const totals: IDashboardTotals = {
 		tools: flatTools.length,
 		plugins: overview.plugins.length,
@@ -276,7 +271,7 @@ const buildTokensModel = (
 		.map(([tool, m]) => buildRow(tool, m, pluginOf))
 		.sort((a, b) => b.tokens - a.tokens);
 	const tokensUsed = tokensFromBytes(snap.totals.totalBytes);
-	const tokensSaved = estimateTokensSaved(snap.totals.totalBytes);
+	const tokensSaved = NO_MEASURED_SAVING;
 	return {
 		tokensUsed,
 		tokensSaved,

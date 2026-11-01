@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'search',
@@ -25,14 +25,11 @@ export default definePluginManifest({
 	// (semantic + lexical + regex + symbol + references) is below
 	// the legacy `search.hard` ceiling. Measured 2026-08-25.
 	tokenBudget: {
-		staticBytes: 2_700,
+		staticBytes: 3_233,
 		adaptiveActivationBytes: 480,
 		typicalOutput: 800,
-		caps: {
-			hard: TOKEN_BUDGETS.toolPayloads.search.hard,
-			warning: TOKEN_BUDGETS.toolPayloads.search.warning,
-		},
-		measuredAt: '2026-08-25',
+		caps: { hard: 3_720, warning: 3_400 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

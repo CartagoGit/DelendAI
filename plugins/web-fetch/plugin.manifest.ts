@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'web-fetch',
@@ -10,7 +10,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['network'],
 	presets: ['full', 'web-app'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_000,
+		caps: { hard: 1_070, warning: 1_000 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['web', 'fetch'],
 });

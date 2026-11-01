@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'audit-orchestrator',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'process'],
 	presets: ['full'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_660,
+		caps: { hard: 1_910, warning: 1_750 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@delendai/agent-orchestrator', 'zod'],
 	capabilities: ['audit-orchestration', 'subagent-dispatch'],
 });

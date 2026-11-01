@@ -43,8 +43,8 @@ describe('plugin profile data', () => {
 			translated.permissionFilesystemRead,
 		);
 		expect(search?.presets).toContain('minimal');
-		expect(search?.tokenBudget.warning).toBe(2700);
-		expect(search?.tokenBudget.hard).toBe(3000);
+		expect(search?.tokenBudget.warning).toBe(3400);
+		expect(search?.tokenBudget.hard).toBe(3720);
 
 		const contextForChange = buildPluginProfile(
 			'context-for-change',

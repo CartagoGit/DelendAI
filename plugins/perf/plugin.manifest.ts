@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'perf',
@@ -10,7 +10,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'process'],
 	presets: ['dogfood', 'cli-tool'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 3_668,
+		caps: { hard: 4_220, warning: 3_860 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['perf', 'benchmark'],
 });

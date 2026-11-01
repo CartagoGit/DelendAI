@@ -126,8 +126,11 @@ const AXIS_KEY_RESOLVERS: Readonly<
 const axisKey = (record: IInvocationRecord, axis: GroupByAxis): string =>
 	AXIS_KEY_RESOLVERS[axis](record);
 
+/** One denominator with a record's `saved / baseline`: used + saved. */
 const savingsPercentOf = (tokensSaved: number, tokensUsed: number): number =>
-	tokensUsed === 0 ? 0 : Math.round((100 * tokensSaved) / tokensUsed);
+	tokensUsed + tokensSaved === 0
+		? 0
+		: Math.round((100 * tokensSaved) / (tokensUsed + tokensSaved));
 
 /** Fold records into buckets keyed by `axis`, sorted by `sortBy` desc. */
 export const bucketBy = (

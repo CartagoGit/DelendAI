@@ -26,7 +26,6 @@ import type {
 } from '../contracts/interfaces/config-diff.interface';
 import type {
 	IPluginCandidate,
-	IPluginFit,
 	IProjectSignals,
 	IRecommendPluginsOptions,
 	IRecommendPluginsWeights,
@@ -45,6 +44,9 @@ export interface IPluginsRecommendToolOptions {
 		| ReadonlyMap<string, IUsageAggregation>
 		| undefined;
 }
+
+/** A ranked list of the whole catalog costs 100 KB and is read at the top. */
+const DEFAULT_RECOMMEND_LIMIT = 10;
 
 const PROJECT_SIGNALS = z.object({
 	pack: z.enum([
@@ -163,7 +165,7 @@ export const buildPluginsRecommendRegistration = (
 				costQualityTradeoff?: number | undefined;
 			}) => {
 				const recommendOptions: IRecommendPluginsOptions = {
-					...(args.limit !== undefined ? { limit: args.limit } : {}),
+					limit: args.limit ?? DEFAULT_RECOMMEND_LIMIT,
 					...(args.minScore !== undefined
 						? { minScore: args.minScore }
 						: {}),
@@ -212,7 +214,15 @@ export const buildPluginsRecommendRegistration = (
 						)
 					: null;
 				return toolJson({
-					recommendations: fits as readonly IPluginFit[],
+					// The declared shape only: a candidate carries its whole manifest.
+					recommendations: fits.map(({ plugin, ...fit }) => ({
+						...fit,
+						plugin: {
+							id: plugin.id,
+							tags: plugin.tags,
+							summary: plugin.summary,
+						},
+					})),
 					diff: {
 						steps: diff.steps as readonly IConfigDiffStep[],
 						adds: diff.adds as readonly IConfigDiffStep[],

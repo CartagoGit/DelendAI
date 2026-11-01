@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-10-28T10:47:34.169Z",
+	"generatedAt": "2026-11-01T12:48:56.270Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -21,9 +21,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 7739,
+				"caps": {
+					"hard": 8900,
+					"warning": 8130
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -62,9 +66,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 10998,
+				"caps": {
+					"hard": 12650,
+					"warning": 11550
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -95,9 +103,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3613,
+				"caps": {
+					"hard": 4160,
+					"warning": 3800
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -130,9 +142,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 11568,
+				"caps": {
+					"hard": 13310,
+					"warning": 12150
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -166,9 +182,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1660,
+				"caps": {
+					"hard": 1910,
+					"warning": 1750
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -204,9 +224,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 6881,
+				"caps": {
+					"hard": 7920,
+					"warning": 7230
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -237,9 +261,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3726,
+				"caps": {
+					"hard": 4290,
+					"warning": 3920
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/auto-agent-selector",
@@ -274,9 +302,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5945,
+				"caps": {
+					"hard": 6840,
+					"warning": 6250
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -307,9 +339,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2057,
+				"caps": {
+					"hard": 2370,
+					"warning": 2160
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -399,14 +435,14 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 4200,
+				"staticBytes": 11615,
 				"adaptiveActivationBytes": 800,
 				"typicalOutput": 600,
 				"caps": {
-					"hard": 5200,
-					"warning": 4800
+					"hard": 13360,
+					"warning": 12200
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -439,9 +475,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2431,
+				"caps": {
+					"hard": 2800,
+					"warning": 2560
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -523,14 +563,14 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"staticBytes": 6200,
+				"staticBytes": 8663,
 				"adaptiveActivationBytes": 1100,
 				"typicalOutput": 1600,
 				"caps": {
-					"hard": 7500,
-					"warning": 6800
+					"hard": 9970,
+					"warning": 9100
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -564,9 +604,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1034,
+				"caps": {
+					"hard": 1190,
+					"warning": 1090
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -603,9 +647,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5164,
+				"caps": {
+					"hard": 5940,
+					"warning": 5430
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -638,9 +686,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3927,
+				"caps": {
+					"hard": 4520,
+					"warning": 4130
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -676,9 +728,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5261,
+				"caps": {
+					"hard": 6060,
+					"warning": 5530
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -714,9 +770,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3277,
+				"caps": {
+					"hard": 3770,
+					"warning": 3450
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -756,9 +816,13 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2949,
+				"caps": {
+					"hard": 3400,
+					"warning": 3100
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -795,9 +859,13 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3480,
+				"caps": {
+					"hard": 4010,
+					"warning": 3660
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -842,14 +910,14 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 3500,
+				"staticBytes": 1403,
 				"adaptiveActivationBytes": 600,
 				"typicalOutput": 900,
 				"caps": {
-					"hard": 4200,
-					"warning": 3800
+					"hard": 1620,
+					"warning": 1480
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -917,9 +985,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 9394,
+				"caps": {
+					"hard": 10810,
+					"warning": 9870
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -998,14 +1070,14 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 6800,
+				"staticBytes": 4710,
 				"adaptiveActivationBytes": 1200,
 				"typicalOutput": 1700,
 				"caps": {
-					"hard": 8200,
-					"warning": 7400
+					"hard": 5420,
+					"warning": 4950
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1108,14 +1180,14 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"staticBytes": 5800,
+				"staticBytes": 4611,
 				"adaptiveActivationBytes": 950,
 				"typicalOutput": 1400,
 				"caps": {
-					"hard": 6800,
-					"warning": 6200
+					"hard": 5310,
+					"warning": 4850
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1218,9 +1290,13 @@
 				"web-app"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2577,
+				"caps": {
+					"hard": 2970,
+					"warning": 2710
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1251,9 +1327,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1904,
+				"caps": {
+					"hard": 2190,
+					"warning": 2000
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1320,14 +1400,14 @@
 				"full"
 			],
 			"tokenBudget": {
-				"staticBytes": 4900,
+				"staticBytes": 822,
 				"adaptiveActivationBytes": 880,
 				"typicalOutput": 1300,
 				"caps": {
-					"hard": 5900,
-					"warning": 5300
+					"hard": 950,
+					"warning": 870
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1408,9 +1488,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1722,
+				"caps": {
+					"hard": 1990,
+					"warning": 1810
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1443,9 +1527,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 7303,
+				"caps": {
+					"hard": 8400,
+					"warning": 7670
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1483,14 +1571,14 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"staticBytes": 4500,
+				"staticBytes": 8202,
 				"adaptiveActivationBytes": 720,
 				"typicalOutput": 1100,
 				"caps": {
-					"hard": 5400,
-					"warning": 4900
+					"hard": 9440,
+					"warning": 8620
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1524,9 +1612,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1872,
+				"caps": {
+					"hard": 2160,
+					"warning": 1970
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1558,9 +1650,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5734,
+				"caps": {
+					"hard": 6600,
+					"warning": 6030
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1592,9 +1688,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 36062,
+				"caps": {
+					"hard": 41480,
+					"warning": 37870
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1627,9 +1727,13 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3668,
+				"caps": {
+					"hard": 4220,
+					"warning": 3860
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1660,9 +1764,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1373,
+				"caps": {
+					"hard": 1580,
+					"warning": 1450
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1698,9 +1806,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 4093,
+				"caps": {
+					"hard": 4710,
+					"warning": 4300
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -1733,9 +1845,13 @@
 				"full"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2514,
+				"caps": {
+					"hard": 2900,
+					"warning": 2640
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/auto-agent-selector",
@@ -1877,14 +1993,14 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 12400,
+				"staticBytes": 79973,
 				"adaptiveActivationBytes": 2100,
 				"typicalOutput": 3200,
 				"caps": {
-					"hard": 15000,
-					"warning": 13500
+					"hard": 91970,
+					"warning": 83980
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1943,14 +2059,14 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"staticBytes": 8200,
+				"staticBytes": 3627,
 				"adaptiveActivationBytes": 1400,
 				"typicalOutput": 2200,
 				"caps": {
-					"hard": 9800,
-					"warning": 9000
+					"hard": 4180,
+					"warning": 3810
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -1985,9 +2101,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1101,
+				"caps": {
+					"hard": 1270,
+					"warning": 1160
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2025,9 +2145,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 6270,
+				"caps": {
+					"hard": 7220,
+					"warning": 6590
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2158,9 +2282,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5634,
+				"caps": {
+					"hard": 6480,
+					"warning": 5920
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2201,14 +2329,14 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"staticBytes": 2700,
+				"staticBytes": 3233,
 				"adaptiveActivationBytes": 480,
 				"typicalOutput": 800,
 				"caps": {
-					"hard": 3000,
-					"warning": 2700
+					"hard": 3720,
+					"warning": 3400
 				},
-				"measuredAt": "2026-08-25",
+				"measuredAt": "2026-11-01",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -2244,9 +2372,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 5697,
+				"caps": {
+					"hard": 6560,
+					"warning": 5990
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2342,9 +2474,13 @@
 				"web-app"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 2043,
+				"caps": {
+					"hard": 2350,
+					"warning": 2150
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2419,9 +2555,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1778,
+				"caps": {
+					"hard": 2050,
+					"warning": 1870
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2454,9 +2594,13 @@
 				"backend-api"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 3232,
+				"caps": {
+					"hard": 3720,
+					"warning": 3400
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2493,9 +2637,13 @@
 				"cli-tool"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1861,
+				"caps": {
+					"hard": 2150,
+					"warning": 1960
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2528,9 +2676,13 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1870,
+				"caps": {
+					"hard": 2160,
+					"warning": 1970
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2561,9 +2713,13 @@
 				"web-app"
 			],
 			"tokenBudget": {
-				"hard": 3000,
-				"warning": 2700,
-				"releaseRelativePercent": 20
+				"staticBytes": 1000,
+				"caps": {
+					"hard": 1070,
+					"warning": 1000
+				},
+				"measuredAt": "2026-11-01",
+				"source": "token-budget-real"
 			},
 			"dependencies": [
 				"@delendai/core",
@@ -2591,7 +2747,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 7739
 		},
 		{
 			"origin": "first-party",
@@ -2607,7 +2763,7 @@
 			"permissions": [
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 10998
 		},
 		{
 			"origin": "first-party",
@@ -2622,7 +2778,7 @@
 				"process",
 				"network"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3613
 		},
 		{
 			"origin": "first-party",
@@ -2640,7 +2796,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 11568
 		},
 		{
 			"origin": "first-party",
@@ -2657,7 +2813,7 @@
 				"filesystem-read",
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1660
 		},
 		{
 			"origin": "first-party",
@@ -2674,7 +2830,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 6881,
 			"example": {
 				"costQualityTradeoff": 7
 			}
@@ -2692,7 +2848,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3726
 		},
 		{
 			"origin": "first-party",
@@ -2709,7 +2865,7 @@
 				"network",
 				"browser"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5945
 		},
 		{
 			"origin": "first-party",
@@ -2725,7 +2881,7 @@
 				"filesystem-write",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2057
 		},
 		{
 			"origin": "first-party",
@@ -2763,7 +2919,7 @@
 				"git-write",
 				"env-read"
 			],
-			"tokenBudgetBytes": 4200,
+			"tokenBudgetBytes": 11615,
 			"toolPermissions": {
 				"commit_policy_status": [
 					"git-read"
@@ -2799,7 +2955,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2431
 		},
 		{
 			"origin": "first-party",
@@ -2816,7 +2972,7 @@
 				"process",
 				"container"
 			],
-			"tokenBudgetBytes": 6200,
+			"tokenBudgetBytes": 8663,
 			"toolPermissions": {
 				"container_inspect": [
 					"container"
@@ -2876,7 +3032,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1034
 		},
 		{
 			"origin": "first-party",
@@ -2889,7 +3045,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5164
 		},
 		{
 			"origin": "first-party",
@@ -2904,7 +3060,7 @@
 				"env-read",
 				"database"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3927
 		},
 		{
 			"origin": "first-party",
@@ -2919,7 +3075,7 @@
 				"filesystem-read",
 				"network"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5261
 		},
 		{
 			"origin": "first-party",
@@ -2934,7 +3090,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3277
 		},
 		{
 			"origin": "first-party",
@@ -2949,7 +3105,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2949
 		},
 		{
 			"origin": "first-party",
@@ -2964,7 +3120,7 @@
 				"filesystem-read",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3480
 		},
 		{
 			"origin": "first-party",
@@ -2982,7 +3138,7 @@
 				"network",
 				"forge-write"
 			],
-			"tokenBudgetBytes": 3500,
+			"tokenBudgetBytes": 1403,
 			"startupActivation": true,
 			"toolPermissions": {
 				"report_status": [
@@ -3026,7 +3182,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 9394,
 			"example": {
 				"servers": {
 					"example-server": {
@@ -3064,7 +3220,7 @@
 				"forge-read",
 				"forge-write"
 			],
-			"tokenBudgetBytes": 6800,
+			"tokenBudgetBytes": 4710,
 			"toolPermissions": {
 				"pr_list": [
 					"forge-read",
@@ -3140,7 +3296,7 @@
 				"git-read",
 				"git-write"
 			],
-			"tokenBudgetBytes": 5800,
+			"tokenBudgetBytes": 4611,
 			"toolPermissions": {
 				"status": [
 					"git-read"
@@ -3218,7 +3374,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2577
 		},
 		{
 			"origin": "first-party",
@@ -3233,7 +3389,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1904
 		},
 		{
 			"origin": "first-party",
@@ -3254,7 +3410,7 @@
 				"forge-write",
 				"env-read"
 			],
-			"tokenBudgetBytes": 4900,
+			"tokenBudgetBytes": 822,
 			"adoption": {
 				"from": "repo",
 				"option": "repo",
@@ -3323,7 +3479,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1722
 		},
 		{
 			"origin": "first-party",
@@ -3338,7 +3494,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 7303
 		},
 		{
 			"origin": "first-party",
@@ -3353,7 +3509,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 4500
+			"tokenBudgetBytes": 8202
 		},
 		{
 			"origin": "first-party",
@@ -3368,7 +3524,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1872
 		},
 		{
 			"origin": "first-party",
@@ -3384,7 +3540,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5734
 		},
 		{
 			"origin": "first-party",
@@ -3402,7 +3558,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 36062
 		},
 		{
 			"origin": "first-party",
@@ -3418,7 +3574,7 @@
 				"filesystem-write",
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3668
 		},
 		{
 			"origin": "first-party",
@@ -3433,7 +3589,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1373
 		},
 		{
 			"origin": "first-party",
@@ -3450,7 +3606,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 4093
 		},
 		{
 			"origin": "first-party",
@@ -3465,7 +3621,7 @@
 				"filesystem-read",
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 2514
 		},
 		{
 			"origin": "first-party",
@@ -3498,7 +3654,7 @@
 				"git-write",
 				"env-read"
 			],
-			"tokenBudgetBytes": 12400,
+			"tokenBudgetBytes": 79973,
 			"example": {
 				"validationCommand": "bun run validate",
 				"namePool": [
@@ -3659,7 +3815,7 @@
 				"filesystem-read",
 				"process"
 			],
-			"tokenBudgetBytes": 8200
+			"tokenBudgetBytes": 3627
 		},
 		{
 			"origin": "first-party",
@@ -3677,7 +3833,7 @@
 				"filesystem-write",
 				"process"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1101
 		},
 		{
 			"origin": "first-party",
@@ -3691,7 +3847,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 6270
 		},
 		{
 			"origin": "first-party",
@@ -3764,7 +3920,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5634
 		},
 		{
 			"origin": "first-party",
@@ -3781,7 +3937,7 @@
 				"process",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3233
 		},
 		{
 			"origin": "first-party",
@@ -3798,7 +3954,7 @@
 				"process",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 5697
 		},
 		{
 			"origin": "first-party",
@@ -3840,7 +3996,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 2043,
 			"example": {
 				"markers": {
 					"add": [
@@ -3895,7 +4051,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1778
 		},
 		{
 			"origin": "first-party",
@@ -3909,7 +4065,7 @@
 			"permissions": [
 				"filesystem-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 3232
 		},
 		{
 			"origin": "first-party",
@@ -3924,7 +4080,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 1861,
 			"example": {
 				"mode": "tdd",
 				"extraGuidance": "Protocol behaviour additionally needs an e2e against the in-memory MCP server.",
@@ -3946,7 +4102,7 @@
 				"network",
 				"env-read"
 			],
-			"tokenBudgetBytes": 2700
+			"tokenBudgetBytes": 1870
 		},
 		{
 			"origin": "first-party",
@@ -3960,7 +4116,7 @@
 			"permissions": [
 				"network"
 			],
-			"tokenBudgetBytes": 2700,
+			"tokenBudgetBytes": 1000,
 			"example": {
 				"allowList": [
 					"example.com",
@@ -3992,8 +4148,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 8130,
+				"hard": 8900,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4023,8 +4179,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 11550,
+				"hard": 12650,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4050,8 +4206,8 @@
 				"network"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3800,
+				"hard": 4160,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4081,8 +4237,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 12150,
+				"hard": 13310,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4110,8 +4266,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1750,
+				"hard": 1910,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4142,8 +4298,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 7230,
+				"hard": 7920,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4170,8 +4326,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3920,
+				"hard": 4290,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4199,8 +4355,8 @@
 				"browser"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 6250,
+				"hard": 6840,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4227,8 +4383,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2160,
+				"hard": 2370,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4261,8 +4417,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 4800,
-				"hard": 5200,
+				"warning": 12200,
+				"hard": 13360,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4290,8 +4446,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2560,
+				"hard": 2800,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4325,8 +4481,8 @@
 				"container"
 			],
 			"tokenBudget": {
-				"warning": 6800,
-				"hard": 7500,
+				"warning": 9100,
+				"hard": 9970,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4352,8 +4508,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1090,
+				"hard": 1190,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4378,8 +4534,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 5430,
+				"hard": 5940,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4408,8 +4564,8 @@
 				"database"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 4130,
+				"hard": 4520,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4440,8 +4596,8 @@
 				"network"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 5530,
+				"hard": 6060,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4472,8 +4628,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3450,
+				"hard": 3770,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4506,8 +4662,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3100,
+				"hard": 3400,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4539,8 +4695,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3660,
+				"hard": 4010,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4573,8 +4729,8 @@
 				"forge-write"
 			],
 			"tokenBudget": {
-				"warning": 3800,
-				"hard": 4200,
+				"warning": 1480,
+				"hard": 1620,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4629,8 +4785,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 9870,
+				"hard": 10810,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4663,8 +4819,8 @@
 				"forge-write"
 			],
 			"tokenBudget": {
-				"warning": 7400,
-				"hard": 8200,
+				"warning": 4950,
+				"hard": 5420,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4723,8 +4879,8 @@
 				"git-write"
 			],
 			"tokenBudget": {
-				"warning": 6200,
-				"hard": 6800,
+				"warning": 4850,
+				"hard": 5310,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4809,8 +4965,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2710,
+				"hard": 2970,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4836,8 +4992,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2000,
+				"hard": 2190,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4870,8 +5026,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 5300,
-				"hard": 5900,
+				"warning": 870,
+				"hard": 950,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4896,8 +5052,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1810,
+				"hard": 1990,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4925,8 +5081,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 7670,
+				"hard": 8400,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4959,8 +5115,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 4900,
-				"hard": 5400,
+				"warning": 8620,
+				"hard": 9440,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -4988,8 +5144,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1970,
+				"hard": 2160,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5015,8 +5171,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 6030,
+				"hard": 6600,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5045,8 +5201,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 37870,
+				"hard": 41480,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5074,8 +5230,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3860,
+				"hard": 4220,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5100,8 +5256,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1450,
+				"hard": 1580,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5130,8 +5286,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 4300,
+				"hard": 4710,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5157,8 +5313,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2640,
+				"hard": 2900,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5220,8 +5376,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 13500,
-				"hard": 15000,
+				"warning": 83980,
+				"hard": 91970,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5252,8 +5408,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 9000,
-				"hard": 9800,
+				"warning": 3810,
+				"hard": 4180,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5281,8 +5437,8 @@
 				"process"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1160,
+				"hard": 1270,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5310,8 +5466,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 6590,
+				"hard": 7220,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5370,8 +5526,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 5920,
+				"hard": 6480,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5409,8 +5565,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3400,
+				"hard": 3720,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5438,8 +5594,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 5990,
+				"hard": 6560,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5519,8 +5675,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 2150,
+				"hard": 2350,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5568,8 +5724,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1870,
+				"hard": 2050,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5598,8 +5754,8 @@
 				"filesystem-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 3400,
+				"hard": 3720,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5631,8 +5787,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1960,
+				"hard": 2150,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5660,8 +5816,8 @@
 				"env-read"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1970,
+				"hard": 2160,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5687,8 +5843,8 @@
 				"network"
 			],
 			"tokenBudget": {
-				"warning": 2700,
-				"hard": 3000,
+				"warning": 1000,
+				"hard": 1070,
 				"releaseRelativePercent": 20
 			}
 		}
@@ -5696,56 +5852,56 @@
 	"tokenBudgets": [
 		{
 			"id": "adaptive-optimizer",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 8130,
+			"hard": 8900,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "agent-orchestrator",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 11550,
+			"hard": 12650,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "api",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3800,
+			"hard": 4160,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "audit",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 12150,
+			"hard": 13310,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "audit-orchestrator",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1750,
+			"hard": 1910,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "auto-agent-selector",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 7230,
+			"hard": 7920,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "auto-plugin-selector",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3920,
+			"hard": 4290,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "browser",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6250,
+			"hard": 6840,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "cache",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2160,
+			"hard": 2370,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5756,68 +5912,68 @@
 		},
 		{
 			"id": "commit-policy",
-			"warning": 4800,
-			"hard": 5200,
+			"warning": 12200,
+			"hard": 13360,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "completion",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2560,
+			"hard": 2800,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "container",
-			"warning": 6800,
-			"hard": 7500,
+			"warning": 9100,
+			"hard": 9970,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "context-for-change",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1090,
+			"hard": 1190,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "conventions",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5430,
+			"hard": 5940,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "database",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 4130,
+			"hard": 4520,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "deps",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5530,
+			"hard": 6060,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "diagram",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3450,
+			"hard": 3770,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "docs",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3100,
+			"hard": 3400,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "env",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3660,
+			"hard": 4010,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "error-reporting",
-			"warning": 3800,
-			"hard": 4200,
+			"warning": 1480,
+			"hard": 1620,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5828,14 +5984,14 @@
 		},
 		{
 			"id": "external-mcps",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 9870,
+			"hard": 10810,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "forge",
-			"warning": 7400,
-			"hard": 8200,
+			"warning": 4950,
+			"hard": 5420,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5846,8 +6002,8 @@
 		},
 		{
 			"id": "git",
-			"warning": 6200,
-			"hard": 6800,
+			"warning": 4850,
+			"hard": 5310,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5864,20 +6020,20 @@
 		},
 		{
 			"id": "i18n",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2710,
+			"hard": 2970,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "impact-analysis",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2000,
+			"hard": 2190,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "issues",
-			"warning": 5300,
-			"hard": 5900,
+			"warning": 870,
+			"hard": 950,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5888,62 +6044,62 @@
 		},
 		{
 			"id": "link-check",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1810,
+			"hard": 1990,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "logs",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 7670,
+			"hard": 8400,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "memory",
-			"warning": 4900,
-			"hard": 5400,
+			"warning": 8620,
+			"hard": 9440,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "notification",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1970,
+			"hard": 2160,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "observability",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6030,
+			"hard": 6600,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "orchestrator-runner",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 37870,
+			"hard": 41480,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "perf",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3860,
+			"hard": 4220,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "project-health",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1450,
+			"hard": 1580,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "project-kpis",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 4300,
+			"hard": 4710,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "prompt-eval",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2640,
+			"hard": 2900,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5954,26 +6110,26 @@
 		},
 		{
 			"id": "proposals",
-			"warning": 13500,
-			"hard": 15000,
+			"warning": 83980,
+			"hard": 91970,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "quality",
-			"warning": 9000,
-			"hard": 9800,
+			"warning": 3810,
+			"hard": 4180,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "quality-policy",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1160,
+			"hard": 1270,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "refactor",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 6590,
+			"hard": 7220,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -5990,20 +6146,20 @@
 		},
 		{
 			"id": "rules",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5920,
+			"hard": 6480,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "search",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3400,
+			"hard": 3720,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "security",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 5990,
+			"hard": 6560,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -6020,8 +6176,8 @@
 		},
 		{
 			"id": "status-marker",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 2150,
+			"hard": 2350,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -6032,32 +6188,32 @@
 		},
 		{
 			"id": "tech-debt",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1870,
+			"hard": 2050,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "test-convention",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 3400,
+			"hard": 3720,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "test-policy",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1960,
+			"hard": 2150,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "usage-tracking",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1970,
+			"hard": 2160,
 			"releaseRelativePercent": 20
 		},
 		{
 			"id": "web-fetch",
-			"warning": 2700,
-			"hard": 3000,
+			"warning": 1000,
+			"hard": 1070,
 			"releaseRelativePercent": 20
 		}
 	],

@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'quality-policy',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'filesystem-write', 'process'],
 	presets: ['dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_101,
+		caps: { hard: 1_270, warning: 1_160 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@delendai/core',
 		'@delendai/quality',

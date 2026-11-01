@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'prompt-eval',
@@ -10,7 +10,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process'],
 	presets: ['full'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 2_514,
+		caps: { hard: 2_900, warning: 2_640 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@delendai/auto-agent-selector',
 		'@delendai/core',

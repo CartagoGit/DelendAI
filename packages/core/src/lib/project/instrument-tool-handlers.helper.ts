@@ -1,3 +1,4 @@
+import { boundToolResult } from '../context-budget/bound-tool-result.service';
 import { withSettledOutputArtifacts } from '../context-budget/elide-tool-result.service';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -293,8 +294,10 @@ export const instrumentToolHandlers = (
 							injectCheckpointAdvisory(result, advisory);
 						}
 					}
-					// Hooks and metrics below keep the handler's own result; only
-					// the wire copy drops structured content its schema rejects.
+					// Bounded where it leaves: a nested result joins a bigger answer.
+					if (!nested) result = await boundToolResult(result, config);
+					// Hooks and metrics below keep this result; only the wire
+					// copy drops structured content its schema rejects.
 					return conformErrorStructuredContent(result, parser);
 				} catch (err) {
 					isError = true;

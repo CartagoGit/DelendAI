@@ -1,4 +1,4 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'auto-agent-selector',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 	presets: ['standard', 'swarm', 'full', 'dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 6_881,
+		caps: { hard: 7_920, warning: 7_230 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['routing', 'agents'],
 });
