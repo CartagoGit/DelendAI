@@ -215,6 +215,9 @@ const step = (label: string, command: readonly string[]): boolean => {
 	return ok;
 };
 
+/** A file that can change what a tool tells the site. */
+const TOOL_SOURCE = /^(plugins|packages)\/.*\.tool\.ts$/u;
+
 /** Where a change needs the bun-only suite, which vitest never runs. */
 const BUN_SUITE =
 	/^(plugins\/proposals|packages\/proposals-sqlite|packages\/state-sqlite)\//u;
@@ -254,6 +257,16 @@ export const fastSteps = (
 	// drift.yml, not ci.yml, holds this one: #1621 went red on a stale
 	// AGENT.md after a proof that never looked.
 	['generated files are current', ['bun', 'run', 'gen:all:check']],
+	// The site's build, not its specs' zone, reads every tool's description:
+	// #1633 went red on a translation older than the English it renders.
+	...(changed.some((path) => TOOL_SOURCE.test(path))
+		? ([
+				[
+					'site tool translations',
+					['bun', 'apps/web/scripts/gen-capabilities.ts', '--strict'],
+				],
+			] as const)
+		: []),
 ];
 
 const main = async (): Promise<number> => {
