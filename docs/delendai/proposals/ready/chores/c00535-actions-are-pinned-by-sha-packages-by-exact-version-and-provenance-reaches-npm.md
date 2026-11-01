@@ -46,7 +46,7 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - **Files**: `plugins/changelog/package.json`, `plugins/database/package.json`
 - **Gate**: type
 - acceptance:
-  - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45)."
+  - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45). Already true at c00535: both declare ^4.6.6, and the lint governs zod; no manifest change was needed."
 
 ## acceptance
 
