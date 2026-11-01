@@ -2,10 +2,14 @@
 id: x00974
 title: "Security, perf and operations tools do what their description says"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 6742dada-e5ed-4c55-9bda-363ceabc5944
+last-correlation-id: 6742dada-e5ed-4c55-9bda-363ceabc5944
+last-transition-from: ready
+last-transition-at: 2026-11-01T06:26:40.006Z
 ---
 
 # x00974 — Security, perf and operations tools do what their description says
