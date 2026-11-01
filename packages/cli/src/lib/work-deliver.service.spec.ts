@@ -17,13 +17,18 @@ const ports = (
 ) => {
 	const calls: string[] = [];
 	const value: IWorkDeliverPorts = {
+		locate: async () => ({
+			code: EXIT_CODE.OK,
+			data: { worktree: '/unit', publication: 'pr/unit' },
+		}),
 		prove: async () => {
 			calls.push('prove');
 			return proveCode === EXIT_CODE.OK
 				? { code: proveCode, data: { proved: true } }
 				: { code: proveCode, error: 'its proof failed' };
 		},
-		transition: async (to) => {
+		transition: async (to, checkout) => {
+			expect(checkout).toBe('/unit');
 			calls.push(to);
 			return answers[to] ?? { ok: true };
 		},
@@ -66,5 +71,19 @@ describe('deliverUnit', () => {
 		const early = ports({ 'in-progress': { ok: false, reason } });
 		expect((await deliverUnit(early.value)).error).toBe(reason);
 		expect(early.calls).toEqual(['in-progress']);
+	});
+
+	it("says the tool's reason wherever it put it, and where the work went", async () => {
+		const nested = ports({
+			'in-progress': { ok: false, error: { reason: 'no such proposal' } },
+		});
+		expect((await deliverUnit(nested.value)).error).toBe(
+			'no such proposal',
+		);
+		const bare = ports({ 'in-progress': { ok: false } });
+		expect((await deliverUnit(bare.value)).error).toContain('{"ok":false}');
+		expect((await deliverUnit(ports({}).value)).data).toMatchObject({
+			publication: 'pr/unit',
+		});
 	});
 });

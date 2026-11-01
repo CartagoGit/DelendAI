@@ -2,6 +2,11 @@
  * work.command.spec.ts — what the CLI adds to the unit-of-work engine's
  * answer when an agent enters a unit.
  */
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createNoopContext } from '../lib/noop-context.factory';
@@ -16,8 +21,13 @@ const globals = (json: boolean) => ({
 	plugins: [],
 });
 
+const roots: string[] = [];
+
 afterEach(() => {
 	vi.restoreAllMocks();
+	for (const root of roots.splice(0)) {
+		rmSync(root, { recursive: true, force: true });
+	}
 });
 
 describe('withSlicesView', () => {
@@ -66,19 +76,51 @@ describe('work deliver', () => {
 		expect(result.error).toContain('work deliver --proposal=<id>');
 	});
 
-	it('moves the proposal from the unit it stands in, as the agent named', async () => {
+	const unitRepo = async () => {
+		const root = mkdtempSync(join(tmpdir(), 'work-deliver-'));
+		roots.push(root);
+		const git = (...args: string[]) =>
+			execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+		git('init', '-q', '-b', 'develop');
+		git('config', 'user.email', 'work@example.com');
+		git('config', 'user.name', 'Work');
+		git('config', 'commit.gpgsign', 'false');
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					branches: { namespacePrefix: 'delendai' },
+				},
+			}),
+		);
+		git('add', '-A');
+		git('commit', '-q', '-m', 'base');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		return root;
+	};
+
+	it('moves the proposal as the agent named, from wherever it stands', async () => {
+		const root = await unitRepo();
 		const asked: unknown[] = [];
 		const ctx = {
-			...createNoopContext('/work/unit', globals(true)),
+			...createNoopContext(root, { ...globals(true), workspace: root }),
 			request: async <TOut>(_tool: string, args: object) => {
 				asked.push(args);
 				return { ok: false, reason: 'held back' } as TOut;
 			},
 		};
-		const result = await command.run(
-			['deliver', '--proposal=x00001', '--agent=claude-opus-5'],
+		const unit = [
+			'--proposal=x00001',
+			'--slice=S1',
+			'--agent=claude-opus-5',
+			'--topic=probe',
+		];
+		await command.run(
+			['checkpoint', ...unit, '--paths=a.ts', '--message=feat: a'],
 			ctx,
 		);
+		const result = await command.run(['deliver', ...unit], ctx);
 		expect(result.error).toBe('held back');
 		expect(asked).toEqual([
 			{
@@ -86,7 +128,7 @@ describe('work deliver', () => {
 				to: 'in-progress',
 				reason: 'Proved and delivered.',
 				agent: 'claude-opus-5',
-				checkout: '/work/unit',
+				checkout: root,
 			},
 		]);
 	});
@@ -100,7 +142,7 @@ describe('work deliver', () => {
 			['deliver', '--proposal=x00001', '--reason=done'],
 			ctx,
 		);
-		// No repository here: the proof is what refuses.
+		// No repository here: the unit cannot be found, and nothing moves.
 		expect(result.code).not.toBe(0);
 		expect(result.error).not.toContain('work deliver --proposal=<id>');
 	});
