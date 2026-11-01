@@ -6,13 +6,8 @@
  */
 
 import type { ICapabilitySet } from './capabilities';
-import type { ICheckpointAdvisory, IToolEnvelope } from './envelopes';
-import type {
-	IsoTimestamp,
-	NonEmptyString,
-	OperationResult,
-	PluginId,
-} from './primitives';
+import type { IToolEnvelope } from './envelopes';
+import type { IsoTimestamp, NonEmptyString, PluginId } from './primitives';
 import type { ISafetyBlock } from './safety';
 
 /**
@@ -74,8 +69,3 @@ export interface IPluginRegistrationBundle {
 export type IPluginInvocationResult =
 	| IToolEnvelope<unknown>
 	| { readonly blocked: true; readonly safety: ISafetyBlock };
-
-/** Helper alias for callers that prefer a discriminated union with no advisory. */
-export type InvocationOutcome<T> = OperationResult<T> & {
-	readonly advisories?: readonly ICheckpointAdvisory[];
-};

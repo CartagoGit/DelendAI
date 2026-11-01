@@ -42,10 +42,3 @@ export type IToolErrorEnvelope = {
 export type IToolEnvelope<T = unknown> =
 	| IToolOkEnvelope<T>
 	| IToolErrorEnvelope;
-
-export interface ICheckpointAdvisory {
-	readonly id: string;
-	readonly severity: 'info' | 'warning' | 'blocker';
-	readonly message: string;
-	readonly nextAction?: string;
-}
