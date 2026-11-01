@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
-last-correlation-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
+last-transition-id: 881432ad-babc-4209-84f2-e5a4c2109f62
+last-correlation-id: 881432ad-babc-4209-84f2-e5a4c2109f62
 last-transition-from: in-progress
-last-transition-at: 2026-11-01T05:13:48.974Z
+last-transition-at: 2026-11-01T13:20:50.592Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit

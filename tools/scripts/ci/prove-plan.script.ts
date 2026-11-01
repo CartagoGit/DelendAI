@@ -61,7 +61,7 @@ const failed: string[] = [];
 const causes: string[] = [];
 
 const CAUSE_LINE =
-	/✖|\bFAIL\b|\(fail\)|error TS\d+|\bHARD BREACH\b|\b[1-9]\d* violations? across\b/u;
+	/✖|\bFAIL\b|\(fail\)|error TS\d+|\bHARD BREACH\b|\b[1-9]\d* violations? across\b|\bunder floor\b|\bunmatched files\b|^\s*drift: |^\s*manifest budget: /u;
 
 /** How many lines of one failed step are kept as its cause. */
 const MAX_CAUSE_LINES = 4;
@@ -196,7 +196,7 @@ const step = (label: string, command: readonly string[]): boolean => {
 	const started = Date.now();
 	const [bin = 'bun', ...rest] = command;
 	const result = spawnSync(bin, rest, {
-		stdio: ['ignore', 'ignore', 'pipe'],
+		stdio: ['ignore', 'pipe', 'pipe'],
 		encoding: 'utf8',
 		maxBuffer: Number.POSITIVE_INFINITY,
 		env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
@@ -205,7 +205,9 @@ const step = (label: string, command: readonly string[]): boolean => {
 	const ok = result.status === 0;
 	if (!ok) {
 		failed.push(label);
-		causes.push(...causeLinesOf(result.stderr ?? ''));
+		causes.push(
+			...causeLinesOf(`${result.stdout ?? ''}\n${result.stderr ?? ''}`),
+		);
 	}
 	console.log(
 		`prove: ${ok ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
@@ -249,6 +251,9 @@ export const fastSteps = (
 	...(changed.some((path) => BUN_SUITE.test(path))
 		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
 		: []),
+	// drift.yml, not ci.yml, holds this one: #1621 went red on a stale
+	// AGENT.md after a proof that never looked.
+	['generated files are current', ['bun', 'run', 'gen:all:check']],
 ];
 
 const main = async (): Promise<number> => {
