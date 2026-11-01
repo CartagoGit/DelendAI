@@ -46,15 +46,21 @@ export const classifyLicense = (
 
 /**
  * Scan every declared dependency's license → findings for the ones worth
- * review. Pure over the injected reader seam; never throws.
+ * review. Pure over the injected reader seam. Throws when nothing could be
+ * read: an unreadable manifest, or no dependency readable at all, is not a
+ * project with no licence to review.
  */
 export const scanLicenses = async (
 	deps: ILicenseScanDeps,
 ): Promise<IFinding[]> => {
 	const names = await deps.listDependencyNames();
 	const findings: IFinding[] = [];
+	let unreadable = 0;
 	for (const name of names) {
-		const license = await deps.readLicense(name);
+		const license = await deps.readLicense(name).catch(() => {
+			unreadable += 1;
+			return undefined;
+		});
 		const cls = classifyLicense(license);
 		if (cls !== undefined) {
 			findings.push({
@@ -65,6 +71,11 @@ export const scanLicenses = async (
 				fix: 'Review the license against your distribution terms; replace or vendor if incompatible.',
 			});
 		}
+	}
+	if (names.length > 0 && unreadable === names.length) {
+		throw new Error(
+			'no installed dependency could be read; install them before scanning licences',
+		);
 	}
 	return findings;
 };
@@ -95,36 +106,28 @@ export const realLicenseDeps = (
 ): ILicenseScanDeps => ({
 	listDependencyNames: async () => {
 		const reader = new SafeWorkspaceReader(workspaceRootAbs);
-		try {
-			const raw = (await reader.readText(manifestRel)).content;
-			const pkg = JSON.parse(raw) as Record<string, unknown>;
-			const sections = [
-				'dependencies',
-				'devDependencies',
-				'peerDependencies',
-				'optionalDependencies',
-			];
-			const names = new Set<string>();
-			for (const section of sections) {
-				const block = pkg[section];
-				if (block !== null && typeof block === 'object') {
-					for (const name of Object.keys(block)) names.add(name);
-				}
+		const raw = (await reader.readText(manifestRel)).content;
+		const pkg = JSON.parse(raw) as Record<string, unknown>;
+		const sections = [
+			'dependencies',
+			'devDependencies',
+			'peerDependencies',
+			'optionalDependencies',
+		];
+		const names = new Set<string>();
+		for (const section of sections) {
+			const block = pkg[section];
+			if (block !== null && typeof block === 'object') {
+				for (const name of Object.keys(block)) names.add(name);
 			}
-			return [...names];
-		} catch {
-			return [];
 		}
+		return [...names];
 	},
 	readLicense: async (pkgName) => {
 		const packageReader = new SafeWorkspaceReader(
 			`${workspaceRootAbs}/node_modules/${pkgName}`,
 		);
-		try {
-			const raw = (await packageReader.readText('package.json')).content;
-			return readLicenseField(JSON.parse(raw) as Record<string, unknown>);
-		} catch {
-			return undefined;
-		}
+		const raw = (await packageReader.readText('package.json')).content;
+		return readLicenseField(JSON.parse(raw) as Record<string, unknown>);
 	},
 });

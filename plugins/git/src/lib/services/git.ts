@@ -110,8 +110,20 @@ export const parseStatus = (raw: string): IGitStatus => {
 	return { branch, clean: entries.length === 0, entries };
 };
 
+/** The output of a read whose empty answer means clean: a failure throws. */
+const readOrThrow = async (
+	run: IGitRunner,
+	args: readonly string[],
+): Promise<string> => {
+	const result = await run(args);
+	if (!result.ok) throw new Error(result.reason ?? 'git command failed');
+	return result.output;
+};
+
 export const gitStatus = async (run: IGitRunner): Promise<IGitStatus> =>
-	parseStatus((await run(['status', '--porcelain=v1', '--branch'])).output);
+	parseStatus(
+		await readOrThrow(run, ['status', '--porcelain=v1', '--branch']),
+	);
 
 export const gitChanged = async (run: IGitRunner): Promise<readonly string[]> =>
 	(await gitStatus(run)).entries.map((entry) => entry.path);
@@ -123,7 +135,7 @@ export const gitDiffStat = async (
 	const args = ['diff', '--stat'];
 	if (options.staged === true) args.push('--cached');
 	if (options.path !== undefined) args.push('--', options.path);
-	return (await run(args)).output.trim();
+	return (await readOrThrow(run, args)).trim();
 };
 
 export interface IGitCommit {

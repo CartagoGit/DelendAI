@@ -18,9 +18,9 @@
 - parsePyprojectToml
 - buildDepsToolRegistrations
 - parseBunAudit
+- readDepsAudit
 - runDepsAudit
 - classifyLicense
-- realLicenseDeps
 
 ## Depends on
 

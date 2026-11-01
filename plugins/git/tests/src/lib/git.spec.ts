@@ -4,6 +4,7 @@ import {
 	checkRepo,
 	gitBlame,
 	gitChanged,
+	gitDiffStat,
 	gitLog,
 	gitShow,
 	gitStatus,
@@ -52,6 +53,17 @@ describe('git parsers', async () => {
 		expect((await gitStatus(run)).branch).toBe('dev');
 		expect(await gitChanged(run)).toEqual(['f.ts']);
 		expect((await gitLog(run, 5))[0]?.subject).toBe('s1');
+	});
+
+	it('never reads a failed status or diff as a clean tree', async () => {
+		const failing: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: 'index locked',
+		});
+		await expect(gitStatus(failing)).rejects.toThrow('index locked');
+		await expect(gitChanged(failing)).rejects.toThrow('index locked');
+		await expect(gitDiffStat(failing)).rejects.toThrow('index locked');
 	});
 
 	it('distinguishes git-unavailable from not-a-repo (structured result)', async () => {

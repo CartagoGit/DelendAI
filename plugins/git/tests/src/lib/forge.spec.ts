@@ -100,7 +100,7 @@ describe('listOpenPrs', () => {
 			'/repo',
 			execWith('', 'gh: not authenticated', 1),
 		);
-		expect(result.available).toBe(true);
+		expect(result.available).toBe(false);
 		expect(result.note).toContain('not authenticated');
 		expect(result.prs).toEqual([]);
 	});
