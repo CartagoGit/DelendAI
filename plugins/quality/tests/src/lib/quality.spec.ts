@@ -128,6 +128,8 @@ describe('run_quality dryRun (a00085 #4)', async () => {
 			ok: true,
 			dryRun: true,
 			commands: ['eslint .'],
+			risk: 'low',
+			wouldRun: [{ target: 'eslint .' }],
 		});
 		expect(result?.structuredContent).not.toHaveProperty('results');
 	});

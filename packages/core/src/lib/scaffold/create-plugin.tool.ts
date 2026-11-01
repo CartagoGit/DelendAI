@@ -3,6 +3,11 @@ import { readFile, stat, writeFile } from 'node:fs/promises';
 
 import z from 'zod';
 
+import { DRY_RUN_PLAN_FIELDS } from '../contracts/constants/dry-run-plan-fields.constant';
+import {
+	PLUGIN_WIRING_REPORT_SCHEMA,
+	PLUGIN_WIRING_WRITE_SCHEMA,
+} from '../contracts/constants/plugin-wiring-schemas.constant';
 import type { IPluginWiringFs } from '../contracts/interfaces/plugin-wiring.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
@@ -11,6 +16,7 @@ import {
 	type IBatchAtomicWriter,
 } from '../shared/batch-atomic-writer';
 import { toKebabCase } from '../shared/string-normalize';
+import { planDryRun } from '../dry-run/enforce';
 import { toolJson } from '../shared/tool-response';
 import {
 	createOverlayFs,
@@ -23,50 +29,6 @@ import { scaffoldPluginFiles } from './scaffold-host';
 import { wirePluginIntoMonorepo } from './wire-plugin';
 
 const kebabCase = (value: string): string => toKebabCase(value);
-
-const PLUGIN_WIRING_POINT_ID_SCHEMA = z.enum([
-	'tsconfig-base',
-	'vitest-shared',
-	'plugin-defaults',
-	'publish-order',
-	'preset-catalog',
-	'catalog-regen',
-]);
-
-const PLUGIN_WIRING_EDIT_SCHEMA = z.object({
-	path: z.string(),
-	previous: z.string(),
-	next: z.string(),
-	noop: z.boolean(),
-});
-
-const PLUGIN_WIRING_WRITE_SCHEMA = z.object({
-	pointId: PLUGIN_WIRING_POINT_ID_SCHEMA,
-	edits: z.array(PLUGIN_WIRING_EDIT_SCHEMA),
-	wired: z.boolean(),
-});
-
-const PLUGIN_WIRING_POINT_SCHEMA = z.object({
-	id: PLUGIN_WIRING_POINT_ID_SCHEMA,
-	path: z.string(),
-	wired: z.boolean(),
-	summary: z.string(),
-	remediation: z.string().optional(),
-});
-
-const PLUGIN_WIRING_REPORT_SCHEMA = z.object({
-	pluginId: z.string(),
-	points: z.array(PLUGIN_WIRING_POINT_SCHEMA),
-	loadDiagnostics: z.array(
-		z.object({
-			pluginId: z.string(),
-			reason: z.string(),
-			fixHint: z.string(),
-		}),
-	),
-	fullyWired: z.boolean(),
-	missing: z.array(PLUGIN_WIRING_POINT_ID_SCHEMA),
-});
 
 export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 	name: z
@@ -82,6 +44,7 @@ export const CREATE_PLUGIN_INPUT_SCHEMA = z.object({
 });
 
 export const CREATE_PLUGIN_OUTPUT_SCHEMA = z.object({
+	...DRY_RUN_PLAN_FIELDS,
 	ok: z.boolean(),
 	scaffolded: z.object({
 		files: z.array(z.string()),
@@ -324,6 +287,14 @@ export const runCreatePlugin = async (
 			wired: normalizeWired(wired),
 			doctor: normalizeDoctor(doctor),
 			pluginId,
+			...planDryRun({
+				wouldChange: scaffoldPaths.map((path) => ({
+					kind: 'create' as const,
+					path,
+					summary: `scaffold ${path} for plugin ${pluginId}`,
+				})),
+				risk: 'medium',
+			}),
 		};
 	}
 
@@ -369,6 +340,7 @@ export const buildCreatePluginToolRegistration = (
 	tags: ['bootstrap'],
 	effects: ['write', 'spawn'],
 	writeRoot: 'caller-checkout',
+	dryRunSupported: true,
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_create_plugin`,

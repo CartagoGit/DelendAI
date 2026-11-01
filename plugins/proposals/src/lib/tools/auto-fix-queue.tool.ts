@@ -146,7 +146,7 @@ export function buildAutoFixQueueRegistration(
 		effects: ['write'],
 		writeRoot: 'caller-checkout',
 		summary:
-			'Queue reproducible low/medium incident drafts for auto-fix, and optionally write proposal documents through the existing authoring path.',
+			'Queue reproducible low/medium incident drafts for auto-fix; optionally write them as proposals.',
 		tags: ['proposals', 'logs', 'dogfooding'],
 		register: async (server) => {
 			server.registerTool(

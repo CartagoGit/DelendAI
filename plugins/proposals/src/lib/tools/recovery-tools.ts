@@ -846,6 +846,7 @@ export const buildRecoveryToolRegistrations = (
 			id: 'proposal_reconcile_folder',
 			effects: ['write'],
 			writeRoot: 'caller-checkout',
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,

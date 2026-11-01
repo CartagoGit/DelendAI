@@ -533,7 +533,7 @@ export const buildStateHealthRegistration = (
 ): IToolRegistration => ({
 	id: 'state_health',
 	summary:
-		'Read-only swarm health: active locks, stale locks, livelocks, queue backpressure (waiterOrphans/threshold) and orphan assignments.',
+		'Read-only swarm health: locks, stale locks, livelocks, queue backpressure and orphan assignments.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
