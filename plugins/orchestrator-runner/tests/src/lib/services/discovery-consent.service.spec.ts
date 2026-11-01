@@ -145,8 +145,9 @@ describe('askThroughElicitation', () => {
 	): McpServer =>
 		fakePartial<McpServer>({
 			server: fakePartial<McpServer['server']>({
-				getClientCapabilities: () =>
-					elicitation === undefined ? {} : { elicitation },
+				getClientCapabilities: fakePartial<
+					McpServer['server']['getClientCapabilities']
+				>(() => (elicitation === undefined ? {} : { elicitation })),
 				elicitInput:
 					fakePartial<McpServer['server']['elicitInput']>(
 						elicitInput,
