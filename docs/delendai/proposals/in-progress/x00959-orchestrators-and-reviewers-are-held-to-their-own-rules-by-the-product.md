@@ -2,10 +2,14 @@
 id: x00959
 title: "Orchestrators and reviewers are held to their own rules by the product"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 841f52af-d902-4929-b74f-f3bb905b18ab
+last-correlation-id: 841f52af-d902-4929-b74f-f3bb905b18ab
+last-transition-from: ready
+last-transition-at: 2026-11-01T05:21:21.203Z
 ---
 
 # x00959 — Orchestrators and reviewers are held to their own rules by the product
