@@ -1,12 +1,16 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { toolError, toolJson } from '../shared/tool-response';
-import { boundToolResult } from './bound-tool-result.service';
-import { configureToolOutputArtifacts } from './elide-tool-result.service';
+import {
+	DEFAULT_MAX_RESPONSE_BYTES,
+	TOOL_RESULT_CEILING_BYTES,
+} from '@delendai/core/lib/contracts/constants/response-byte-budget.constant';
+import { toolError, toolJson } from '@delendai/core/lib/shared/tool-response';
+import { boundToolResult } from '@delendai/core/lib/context-budget/bound-tool-result.service';
+import { configureToolOutputArtifacts } from '@delendai/core/lib/context-budget/elide-tool-result.service';
 
 const BUDGET = { maxToolResultBytes: 1_000 };
 const big = { rows: Array.from({ length: 500 }, (_, id) => ({ id })) };
@@ -28,6 +32,15 @@ describe('boundToolResult', () => {
 	it('leaves a result inside the budget alone', async () => {
 		const result = toolJson({ ok: true });
 		expect(await boundToolResult(result, BUDGET)).toBe(result);
+	});
+
+	it("lets a reviewer's full evidence through at the default ceiling", async () => {
+		const evidence = 'e'.repeat(TOOL_RESULT_CEILING_BYTES - 1_024);
+		const result = toolJson({ evidence });
+		expect(await boundToolResult(result)).toBe(result);
+		expect(TOOL_RESULT_CEILING_BYTES).toBeGreaterThan(
+			DEFAULT_MAX_RESPONSE_BYTES,
+		);
 	});
 
 	it('leaves a failure alone, whatever its size', async () => {
@@ -80,5 +93,48 @@ describe('boundToolResult', () => {
 		const result = { content: [] };
 		expect(await boundToolResult(result, BUDGET)).toEqual(result);
 		expect(await boundToolResult(null, BUDGET)).toBeNull();
+	});
+
+	it('leaves anything that is no result object alone', async () => {
+		expect(await boundToolResult('text')).toBe('text');
+		expect(await boundToolResult(null)).toBe(null);
+	});
+
+	it('drops the path of an output it could not keep', async () => {
+		const blocked = join(mkdtempSync(join(tmpdir(), 'bound-')), 'file');
+		writeFileSync(blocked, '');
+		configureToolOutputArtifacts(join(blocked, 'under-a-file'));
+		const bounded = (await boundToolResult(toolJson(big), BUDGET)) as {
+			readonly isError?: boolean;
+			readonly structuredContent: { readonly artifact?: string };
+		};
+		expect(bounded.isError).toBe(true);
+		expect(bounded.structuredContent.artifact).toBeUndefined();
+	});
+
+	it('counts the text of a result with several parts', async () => {
+		const result = {
+			content: [
+				{ type: 'text', text: 'a'.repeat(600) },
+				{ type: 'image', data: 'x' },
+				{ type: 'text', text: 'b'.repeat(600) },
+			],
+		};
+		const bounded = (await boundToolResult(result, BUDGET)) as {
+			readonly isError?: boolean;
+			readonly _meta?: unknown;
+		};
+		expect(bounded.isError).toBe(true);
+		expect(bounded._meta).toBeUndefined();
+	});
+
+	it('states the head alone when no directory keeps the output', async () => {
+		configureToolOutputArtifacts(undefined);
+		const bounded = (await boundToolResult(toolJson(big), BUDGET)) as {
+			readonly content: readonly { readonly text: string }[];
+		};
+		const text = bounded.content[0]?.text ?? '';
+		expect(text).toContain('Narrow the call');
+		expect(text).not.toContain('artifact');
 	});
 });
