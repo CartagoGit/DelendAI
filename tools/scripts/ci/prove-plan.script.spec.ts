@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { fastSteps, vitestArgsOf } from './prove-plan.script';
+import { causeLinesOf, fastSteps, vitestArgsOf } from './prove-plan.script';
 
 const job = {
 	name: 'plugins 1/4',
@@ -66,5 +66,25 @@ describe('fastSteps', () => {
 			),
 		).toEqual(['test:sqlite']);
 		expect(fastSteps(['README.md'], [], 'b')).toEqual([]);
+	});
+});
+
+describe('causeLinesOf', () => {
+	it('keeps the lines that name a failure, without colour or repeats', () => {
+		const output = [
+			'all fine',
+			'\u001b[31m FAIL \u001b[0m a.spec.ts > breaks',
+			' FAIL  a.spec.ts > breaks',
+			'x.ts(1,2): error TS2554: Expected 0 arguments',
+			'(fail) one > two',
+			'proposals: 80,135 B => HARD BREACH',
+			'✖ dropped by the limit',
+		].join('\n');
+		expect(causeLinesOf(output)).toEqual([
+			'FAIL  a.spec.ts > breaks',
+			'x.ts(1,2): error TS2554: Expected 0 arguments',
+			'(fail) one > two',
+			'proposals: 80,135 B => HARD BREACH',
+		]);
 	});
 });

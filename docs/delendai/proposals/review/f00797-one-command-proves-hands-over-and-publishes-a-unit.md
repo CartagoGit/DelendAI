@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 380fa2d9-dc69-4731-a87d-2ab781dbfe1f
-last-correlation-id: 380fa2d9-dc69-4731-a87d-2ab781dbfe1f
+last-transition-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
+last-correlation-id: 40f7407a-ac40-4e7b-9529-01f54a2d2f8f
 last-transition-from: in-progress
-last-transition-at: 2026-11-01T02:38:03.056Z
+last-transition-at: 2026-11-01T05:13:48.974Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit
@@ -44,3 +44,7 @@ Delivering took four commands in an order each agent had to remember: `work prov
 ## acceptance
 
 - `work deliver --proposal=<id> --agent=<you>` moves the proposal to in-progress, from review too, proves the unit and hands it to review from the unit's worktree. It finds the unit's worktree itself, so it works from any directory, stops with the tool's own reason for the first refusal, hands nothing over when the proof fails, and names the publication it made (work-deliver.service.spec.ts, work.command.spec.ts). The workflow every agent receives names it.
+
+## notes
+
+Reopened 2026-11-01: a failed delivery kept only the tail of the output, which named no cause, so `prove` now prints the failure lines last; and it runs the `tokens-budget-real` gate, whose breach reached a pull request unseen.
