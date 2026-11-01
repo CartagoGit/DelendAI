@@ -27,36 +27,36 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - global_gate: type
 
 ### S1 — memory
-- **Status**: pending
-- **Files**: `plugins/memory/src/lib/services/store-records.ts`, `plugins/memory/src/lib/services/store-recall.ts`, `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/lib/services/store-portable.ts`
+- **Status**: done
+- **Files**: `plugins/memory/src/lib/services/store-records.ts`, `plugins/memory/src/lib/services/checkpoint-freshness.ts`, `plugins/memory/src/lib/services/store-portable.ts`, `plugins/memory/src/lib/tools/checkpoint-packet.tool.ts`, `plugins/memory/src/lib/tools/tools.ts`, `plugins/memory/tests/src/lib/one-record-per-note.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Ids are unique per note and stable across title changes, with a migration for existing stores (G118, G61-MEM01)."
+  - "Notes whose titles share a slug get distinct ids, and an id on disk is never rewritten, so no migration is needed (G118, G61-MEM01)."
   - "An updated checkpoint is fresh (G61-MEM02); imports refuse invalid timestamps and tags (D88)."
 
 ### S2 — issues and search
-- **Status**: pending
-- **Files**: `plugins/issues/src/lib/tools/ingest-issue.tool.ts`, `plugins/issues/src/lib/frontmatter.ts`, `plugins/issues/src/lib/tools/resolve-issue.tool.ts`, `plugins/search/src/lib/embed/embed-pipeline.ts`, `plugins/search/src/lib/embed/index-store.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`
+- **Status**: done
+- **Files**: `plugins/issues/src/lib/tools/ingest-issue.tool.ts`, `plugins/issues/src/lib/frontmatter.ts`, `plugins/issues/tests/src/lib/one-scaffold-per-issue.spec.ts`, `plugins/search/src/lib/embed/embed-pipeline.ts`, `plugins/search/src/lib/embed/embedder.ts`, `plugins/search/src/lib/embed/index-store.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`, `plugins/search/tests/src/lib/embed/index-identity.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One scaffold per issue number (D56); multi-line comments round-trip (ISSUES-01)."
   - "The index keys on path plus hash and the cache on embedder id and dimension (SEARCH-01, SEARCH-02)."
 
 ### S3 — roadmap and self-learning
-- **Status**: pending
-- **Files**: `plugins/roadmap/src/lib/gates/gate-evaluator.service.ts`, `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/contracts/schemas/roadmap.schema.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/self-learning/src/lib/store/observation-store.service.ts`, `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`
+- **Status**: done
+- **Files**: `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/one-record-per-entry.spec.ts`, `plugins/self-learning/src/lib/store/observation-store.service.ts`, `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Archived done is delivered (ROAD-01); closing an entry touches only it (ROAD-02); a failed chronology write rolls the authority file back (D91)."
   - "The observation store writes under withFileMutex (D47)."
-  - "The roadmap-sqlite migration aborts on a row it cannot carry, as its contract says, or the package is removed with the orphans proposal (D46)."
+  - "The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46)."
 
 ## acceptance
 
-- Ids are unique per note and stable across title changes, with a migration for existing stores (G118, G61-MEM01).
+- Notes whose titles share a slug get distinct ids, and an id on disk is never rewritten, so no migration is needed (G118, G61-MEM01).
 - An updated checkpoint is fresh (G61-MEM02); imports refuse invalid timestamps and tags (D88).
 - One scaffold per issue number (D56); multi-line comments round-trip (ISSUES-01).
 - The index keys on path plus hash and the cache on embedder id and dimension (SEARCH-01, SEARCH-02).
 - Archived done is delivered (ROAD-01); closing an entry touches only it (ROAD-02); a failed chronology write rolls the authority file back (D91).
 - The observation store writes under withFileMutex (D47).
-- The roadmap-sqlite migration aborts on a row it cannot carry, as its contract says, or the package is removed with the orphans proposal (D46).
+- The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46).

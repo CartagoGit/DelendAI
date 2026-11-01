@@ -4,6 +4,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import type {
+	IRoadmap,
 	IRoadmapEntry,
 	IRoadmapEntryState,
 } from '../contracts/interfaces/roadmap.interface';
@@ -62,6 +63,31 @@ const closed = (
 	state: to,
 	...(supersededBy === undefined ? {} : { supersededBy }),
 	...(reason === undefined ? {} : { note: reason }),
+});
+
+/**
+ * Applies `change` to the one entry that was asked for: the first entry
+ * with that id in the horizon the tool looked it up in. A duplicate id
+ * elsewhere is left as it is.
+ */
+const closeOne = (
+	roadmap: IRoadmap,
+	version: string,
+	entryId: string,
+	change: (entry: IRoadmapEntry) => IRoadmapEntry,
+): IRoadmap => ({
+	...roadmap,
+	horizons: roadmap.horizons.map((horizon) => {
+		if (horizon.version !== version) return horizon;
+		const at = horizon.entries.findIndex((each) => each.id === entryId);
+		if (at < 0) return horizon;
+		return {
+			...horizon,
+			entries: horizon.entries.map((each, index) =>
+				index === at ? change(each) : each,
+			),
+		};
+	}),
 });
 
 export const buildRoadmapPlanCloseTool = (
@@ -136,17 +162,12 @@ export const buildRoadmapPlanCloseTool = (
 					options,
 					(roadmap) => ({
 						ok: true,
-						value: {
-							...roadmap,
-							horizons: roadmap.horizons.map((horizon) => ({
-								...horizon,
-								entries: horizon.entries.map((each) =>
-									each.id === entryId
-										? closed(each, to, reason, supersededBy)
-										: each,
-								),
-							})),
-						},
+						value: closeOne(
+							roadmap,
+							detail.version,
+							entryId,
+							(each) => closed(each, to, reason, supersededBy),
+						),
 					}),
 					reason ?? gates.reason,
 					parsed.data.actor,

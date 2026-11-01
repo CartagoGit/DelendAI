@@ -86,7 +86,7 @@ export const refreshCheckpointFreshnessAdvisory = async (
 		notes.map((note) => ({
 			title: note.title,
 			body: note.body,
-			createdAt: note.createdAt,
+			createdAt: note.updatedAt,
 		})),
 	);
 	const freshness = assessCheckpointFreshness(
