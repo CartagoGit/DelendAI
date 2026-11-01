@@ -252,3 +252,228 @@ describe('fetchAndParseSpec', () => {
 		expect(loaded.ok && loaded.spec.title).toBe('t');
 	});
 });
+
+describe('the parser keeps what validation needs', () => {
+	const specWith = (schema: unknown, components: unknown = {}) =>
+		parseOpenApi({
+			openapi: '3.0.0',
+			info: { title: 't', version: '1' },
+			components,
+			paths: {
+				'/x': {
+					get: {
+						operationId: 'x',
+						responses: {
+							'200': {
+								description: 'ok',
+								content: { 'application/json': { schema } },
+							},
+						},
+					},
+				},
+			},
+		});
+	const schemaOf = (spec: ReturnType<typeof parseOpenApi>) =>
+		spec.operations.x?.responses[0]?.schema;
+
+	it('keeps nullable from both OpenAPI spellings', () => {
+		expect(schemaOf(specWith({ type: 'string', nullable: true }))).toEqual({
+			type: 'string',
+			nullable: true,
+		});
+		expect(schemaOf(specWith({ type: ['integer', 'null'] }))).toEqual({
+			type: 'integer',
+			nullable: true,
+		});
+	});
+
+	it('reads the boolean exclusive bounds of OpenAPI 3.0', () => {
+		expect(
+			schemaOf(
+				specWith({
+					type: 'number',
+					minimum: 1,
+					exclusiveMinimum: true,
+					maximum: 9,
+				}),
+			),
+		).toEqual({ type: 'number', exclusiveMinimum: 1, maximum: 9 });
+	});
+
+	it('keeps closed objects, unions and string bounds', () => {
+		expect(
+			schemaOf(
+				specWith({
+					additionalProperties: false,
+					oneOf: [{ type: 'string', minLength: 2, maxLength: 3 }],
+				}),
+			),
+		).toEqual({
+			additionalProperties: false,
+			oneOf: [{ type: 'string', minLength: 2, maxLength: 3 }],
+		});
+	});
+
+	it('expands local references', () => {
+		const spec = specWith(
+			{ $ref: '#/components/schemas/User' },
+			{ schemas: { User: { type: 'object', required: ['id'] } } },
+		);
+		expect(schemaOf(spec)).toEqual({ type: 'object', required: ['id'] });
+		expect(spec.parseNote).toBe('parsed');
+	});
+
+	it('names the references it could not follow', () => {
+		const spec = specWith(
+			{ $ref: '#/components/schemas/Loop' },
+			{
+				schemas: {
+					Loop: {
+						properties: {
+							next: { $ref: '#/components/schemas/Loop' },
+							far: { $ref: 'other.yaml#/Thing' },
+						},
+					},
+				},
+			},
+		);
+		expect(schemaOf(spec)?.properties?.next).toEqual({});
+		expect(spec.parseNote).toContain('2 $ref');
+	});
+
+	it('stops expanding a spec built to multiply', () => {
+		const schemas: Record<string, unknown> = { L0: { type: 'string' } };
+		for (let level = 1; level < 30; level += 1) {
+			const ref = { $ref: `#/components/schemas/L${level - 1}` };
+			schemas[`L${level}`] = { properties: { a: ref, b: ref } };
+		}
+		const spec = specWith(
+			{ $ref: '#/components/schemas/L29' },
+			{ schemas },
+		);
+		expect(spec.parseNote).toContain('$ref');
+	});
+});
+
+describe('buildRequest sends what the spec describes', () => {
+	const operation = (
+		over: Partial<IOpenApiOperation>,
+	): IOpenApiOperation => ({
+		operationId: 'op',
+		method: 'POST',
+		path: '/x',
+		parameters: [],
+		responses: [],
+		tags: [],
+		...over,
+	});
+	const cookie = (name: string, required: boolean) => ({
+		name,
+		in: 'cookie' as const,
+		required,
+		schema: {},
+	});
+	const jsonBody = (required: boolean) => ({
+		required,
+		contentType: 'application/json',
+		schema: {},
+	});
+
+	it('sends cookie parameters in one header', () => {
+		const request = buildRequest({
+			operation: operation({
+				parameters: [
+					cookie('session', true),
+					cookie('theme', false),
+					cookie('lang', false),
+				],
+			}),
+			params: { session: 'a b', lang: 'es' },
+		});
+		expect(request.headers.cookie).toBe('session=a%20b; lang=es');
+	});
+
+	it('refuses a missing required cookie', () => {
+		expect(() =>
+			buildRequest({
+				operation: operation({ parameters: [cookie('session', true)] }),
+			}),
+		).toThrow(/required cookie parameter: session/);
+	});
+
+	it('leaves the cookie header out when no cookie is sent', () => {
+		const request = buildRequest({
+			operation: operation({ parameters: [cookie('theme', false)] }),
+		});
+		expect(request.headers).toEqual({});
+	});
+
+	it('refuses a missing required body', () => {
+		expect(() =>
+			buildRequest({
+				operation: operation({ requestBody: jsonBody(true) }),
+			}),
+		).toThrow(/missing required request body/);
+	});
+
+	it('declares no content type for an optional body left out', () => {
+		const request = buildRequest({
+			operation: operation({ requestBody: jsonBody(false) }),
+		});
+		expect(request.headers).toEqual({});
+		expect(request.body).toBeUndefined();
+	});
+
+	it('refuses a body the operation has no place for', () => {
+		expect(() =>
+			buildRequest({ operation: operation({}), body: { a: 1 } }),
+		).toThrow(/declares no request body/);
+	});
+
+	it('refuses a body it cannot encode', () => {
+		expect(() =>
+			buildRequest({
+				operation: operation({
+					requestBody: {
+						required: true,
+						contentType: 'multipart/form-data',
+						schema: {},
+					},
+				}),
+				body: { a: 1 },
+			}),
+		).toThrow(/JSON only/);
+	});
+
+	it('sends a vendor JSON body', () => {
+		const request = buildRequest({
+			operation: operation({
+				requestBody: {
+					required: true,
+					contentType: 'application/vnd.api+json',
+					schema: {},
+				},
+			}),
+			body: { a: 1 },
+		});
+		expect(request.body).toBe('{"a":1}');
+	});
+
+	it('records a required non-JSON body from the spec', () => {
+		const spec = parseOpenApi({
+			paths: {
+				'/x': {
+					post: {
+						operationId: 'x',
+						requestBody: {
+							required: true,
+							content: { 'text/plain': {} },
+						},
+						responses: {},
+					},
+				},
+			},
+		});
+		expect(spec.operations.x?.requestBody?.contentType).toBe('text/plain');
+	});
+});

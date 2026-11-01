@@ -28,14 +28,14 @@ Joint audit a00095 and gpt-6.1-sol. D71: api_mock advertises specUrl but the plu
 
 ### S1 — api_mock
 - **Status**: pending
-- **Files**: `plugins/api/src/index.ts`, `plugins/api/src/lib/tools/api-mock.tool.ts`, `plugins/api/src/lib/tools/api-mock.tool.spec.ts`, `packages/ui-extension/src/dashboard/render-tool-detail.ts`, `extensions/vscode/src/commands/open-tool-detail.ts`
+- **Files**: `plugins/api/src/index.ts`, `plugins/api/README.md`, `plugins/api/src/lib/tools/api-mock.tool.ts`, `plugins/api/src/lib/tools/api-mock.tool.spec.ts`, `plugins/api/src/lib/tools/api-call.tool.ts`, `plugins/api/src/lib/spec/resolve-spec.service.ts`, `plugins/api/src/lib/contracts/interfaces/resolve-spec.interface.ts`, `plugins/api/src/lib/mock/mock-engine.ts`, `plugins/api/src/lib/mock/mock-engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "specUrl works through the injected fetcher (D71); knowledge and output agree (D81); all counted samples are returned (API-02)."
 
 ### S2 — Requests and validation follow the spec
 - **Status**: pending
-- **Files**: `plugins/api/src/lib/spec/build-request.ts`, `plugins/api/src/lib/validate/response-validator.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`
+- **Files**: `plugins/api/src/lib/spec/build-request.ts`, `plugins/api/src/lib/validate/response-validator.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/dereference.ts`, `plugins/api/src/lib/contracts/interfaces/dereference.interface.ts`, `plugins/api/src/lib/validate/response-validator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Cookie parameters reach the request (API-03); a missing required body is refused (API-04); nullable, enum, min/max survive into validation (API-01)."

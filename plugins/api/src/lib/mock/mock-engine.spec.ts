@@ -21,6 +21,7 @@ import {
 	mockHappyPath,
 	mockResponseForStatus,
 } from './mock-engine';
+import { validateResponse } from '../validate/response-validator';
 
 const deterministicInt = (seed: number) => {
 	let counter = seed;
@@ -283,5 +284,49 @@ describe('f00130 S3 mock-engine', () => {
 			);
 			expect(out?.status).toBe('default');
 		});
+	});
+});
+
+describe('a generated mock satisfies its own schema', () => {
+	const schemas: readonly IJsonSchema[] = [
+		{ type: 'number', exclusiveMinimum: 0, exclusiveMaximum: 1 },
+		{ type: 'number', minimum: 5, maximum: 5.5 },
+		{ type: 'integer', exclusiveMinimum: 3, maximum: 9 },
+		{ type: 'string', minLength: 40 },
+		{ type: 'string', maxLength: 3 },
+		{ type: 'array', items: { type: 'string' }, maxItems: 0 },
+		{ oneOf: [{ type: 'integer', minimum: 7 }] },
+		{ type: 'object', required: ['undeclared'] },
+	];
+	const seed = (start: number) => {
+		let value = start;
+		return () => {
+			value = (value * 31 + 17) % 65_521;
+			return value;
+		};
+	};
+
+	it.each(schemas)('%j', (schema) => {
+		const operation: IOpenApiOperation = {
+			operationId: 'x',
+			method: 'GET',
+			path: '/x',
+			parameters: [],
+			responses: [{ status: '200', description: 'ok', schema }],
+			tags: [],
+		};
+		for (const randomize of [true, false]) {
+			for (let start = 1; start < 50; start += 1) {
+				const body = generateMockFromSchema(
+					schema,
+					{ randomize },
+					{ nextSeed: seed(start) },
+				);
+				const findings = validateResponse(operation, body, {
+					schema: schema.oneOf?.[0] ?? schema,
+				});
+				expect(findings).toEqual([]);
+			}
+		}
 	});
 });

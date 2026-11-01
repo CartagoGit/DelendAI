@@ -13,25 +13,13 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError, toolJson } from '@delendai/core/public';
 import { webFetch, type IWebFetchResult } from '@delendai/web-fetch/public';
 
+import type { IResolveSpecOptions } from '../contracts/interfaces/resolve-spec.interface';
 import { buildRequest, type IBuiltRequest } from '../spec/build-request';
-import { parseOpenApi, fetchAndParseSpec } from '../spec/openapi';
-import type { IOpenApiSpec, IOpenApiOperation } from '../spec/openapi';
+import type { IOpenApiOperation } from '../spec/openapi';
+import { resolveSpec } from '../spec/resolve-spec.service';
 
-export interface IApiCallToolOptions {
+export interface IApiCallToolOptions extends IResolveSpecOptions {
 	readonly namespacePrefix: string;
-	/**
-	 * Optional pre-loaded spec. When supplied, the tool uses this
-	 * directly (saving a fetch) — typical for tests + for hosts
-	 * that pre-load the spec at register time.
-	 */
-	readonly spec?: IOpenApiSpec;
-	/** Default `allowList` when the tool has to fetch a spec URL itself. */
-	readonly defaultAllowList?: readonly string[];
-	/**
-	 * Allow callers to override the fetch implementation (tests
-	 * inject a stub). Defaults to the shared `webFetch`.
-	 */
-	readonly fetchImpl?: typeof webFetch;
 }
 
 const INPUT = z
@@ -125,50 +113,14 @@ export const buildApiCallToolRegistration = (
 			`${options.namespacePrefix}_api_call`,
 			{
 				description:
-					'Send a single OpenAPI operation via the allow-listed web-fetch engine. The spec can be supplied inline (`spec`) or fetched from a URL (`specUrl` + `allowList`). Returns the rendered request + the response body + status. Auth comes from the request headers (build via `api_call` `params.header` for header tokens); secrets are never logged. Without a spec or specUrl the tool returns an actionable hint, never a crash.',
+					'Send a single OpenAPI operation via the allow-listed web-fetch engine. The spec can be supplied inline (`spec`) or fetched from a URL (`specUrl` + `allowList`). Returns the rendered request + the response body + status. `params` are keyed by name and go where the spec places them, cookies included; a required parameter or body left out is refused. Secrets are never logged. Without a spec or specUrl the tool returns an actionable hint, never a crash.',
 				inputSchema: INPUT,
 				outputSchema: OUTPUT,
 			},
 			async (args: z.infer<typeof INPUT>) => {
-				let spec: IOpenApiSpec | undefined = options.spec;
-				if (args.spec !== undefined) {
-					spec = parseOpenApi(args.spec as object);
-				} else if (args.specUrl !== undefined) {
-					const allowList =
-						args.allowList ?? options.defaultAllowList;
-					if (allowList === undefined || allowList.length === 0) {
-						return installHint(
-							'specUrl requires an allowList.',
-							'Pass `allowList: ["api.example.com"]` to the tool, or pre-load the spec via the plugin options.',
-						);
-					}
-					const result = await fetchAndParseSpec({
-						url: args.specUrl,
-						allowList,
-						...(args.maxBytes !== undefined
-							? { maxBytes: args.maxBytes }
-							: {}),
-						...(args.timeoutMs !== undefined
-							? { timeoutMs: args.timeoutMs }
-							: {}),
-						...(options.fetchImpl !== undefined
-							? { engine: options.fetchImpl }
-							: {}),
-					});
-					if (!result.ok) {
-						return installHint(
-							`specUrl fetch rejected: ${result.reason}`,
-							'Check the `allowList` / `specUrl`, or pass `spec` inline.',
-						);
-					}
-					spec = result.spec;
-				}
-				if (spec === undefined) {
-					return installHint(
-						'api_call needs a spec or specUrl.',
-						'Pass `spec` (inline object) or `specUrl` (URL + allowList).',
-					);
-				}
+				const loaded = await resolveSpec(args, options);
+				if ('error' in loaded) return loaded.error;
+				const spec = loaded.spec;
 				const operation: IOpenApiOperation | undefined =
 					spec.operations[args.operationId];
 				if (operation === undefined) {

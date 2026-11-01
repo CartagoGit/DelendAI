@@ -8,10 +8,12 @@
  * - unknown operationId → typed `operation-not-found` envelope.
  * - invalid-arguments (no operationId or method+path) → typed envelope.
  * - specUrl without allowList → typed `allowList` envelope.
- * - specUrl without injected fetch seam → typed `install-required` envelope.
- * - count > 1 returns N distinct samples.
+ * - specUrl loads through the fetch seam, with no host wiring beyond it.
+ * - count > 1 returns N samples.
  */
 import { describe, expect, it } from 'vitest';
+
+import type { IFetchLike } from '@delendai/web-fetch/public';
 
 import { buildApiMockToolRegistration } from './api-mock.tool';
 
@@ -187,7 +189,6 @@ describe('api_mock tool (f00130 S3)', () => {
 	it('returns an allowList envelope when specUrl is supplied without allowList', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
-			specFetch: async () => ({ body: 'unused' }),
 		});
 		const body = await parseBody(
 			handler({
@@ -202,8 +203,16 @@ describe('api_mock tool (f00130 S3)', () => {
 		);
 	});
 
-	it('returns an install-required envelope when specUrl is supplied and no fetch seam is injected', async () => {
-		const handler = mount({ namespacePrefix: 'api' });
+	it('loads specUrl through the web-fetch engine', async () => {
+		const requested: string[] = [];
+		const specFetch: IFetchLike = async (url) => {
+			requested.push(String(url));
+			return new Response(JSON.stringify(fixtureSpec), {
+				status: 200,
+				headers: { 'content-type': 'application/json' },
+			});
+		};
+		const handler = mount({ namespacePrefix: 'api', specFetch });
 		const body = await parseBody(
 			handler({
 				operationId: 'getUser',
@@ -211,12 +220,27 @@ describe('api_mock tool (f00130 S3)', () => {
 				allowList: ['api.example.com'],
 			}),
 		);
+		expect(body.selectedStatus).toBe('200');
+		expect(requested).toEqual(['https://api.example.com/openapi.json']);
+	});
+
+	it('refuses a specUrl host outside the allowList', async () => {
+		const handler = mount({ namespacePrefix: 'api' });
+		const body = await parseBody(
+			handler({
+				operationId: 'getUser',
+				specUrl: 'https://api.example.com/openapi.json',
+				allowList: ['other.example.com'],
+			}),
+		);
 		expect(body.error).toEqual(
-			expect.objectContaining({ reason: 'install-required' }),
+			expect.objectContaining({
+				reason: expect.stringMatching(/specUrl fetch rejected/),
+			}),
 		);
 	});
 
-	it('returns N distinct samples when count > 1', async () => {
+	it('returns every sample it counts when count > 1', async () => {
 		const handler = mount({
 			namespacePrefix: 'api',
 		});
@@ -228,6 +252,9 @@ describe('api_mock tool (f00130 S3)', () => {
 			}),
 		);
 		expect(body.count).toBe(3);
+		const samples = body.samples as Array<{ body: unknown }>;
+		expect(samples).toHaveLength(3);
+		expect(samples[0]?.body).toEqual(body.selectedBody);
 		const allResponses = body.allResponses as Array<{ status: string }>;
 		expect(allResponses).toHaveLength(2);
 	});
