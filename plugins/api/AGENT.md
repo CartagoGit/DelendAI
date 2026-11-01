@@ -40,9 +40,9 @@
 ## Tests
 
 - plugins/api/src/lib/mock/mock-engine.spec.ts
+- plugins/api/src/lib/spec/build-request.spec.ts
 - plugins/api/src/lib/spec/openapi.spec.ts
 - plugins/api/src/lib/tools/api-call.tool.spec.ts
-- plugins/api/src/lib/tools/api-mock.tool.spec.ts
 
 ## Do not
 

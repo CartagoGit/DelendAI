@@ -42,7 +42,7 @@
 - plugins/search/tests/src/lib/embed/build-api-embedder.spec.ts
 - plugins/search/tests/src/lib/embed/embed-pipeline.spec.ts
 - plugins/search/tests/src/lib/embed/embedder.spec.ts
-- plugins/search/tests/src/lib/embed/index-store.spec.ts
+- plugins/search/tests/src/lib/embed/index-identity.spec.ts
 
 ## Do not
 

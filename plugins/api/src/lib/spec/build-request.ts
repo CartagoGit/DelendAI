@@ -15,7 +15,7 @@ import type {
 
 export interface IBuildRequestInput {
 	readonly operation: IOpenApiOperation;
-	/** Param values, keyed by `param.name`. `path`/`query`/`header` come from here. */
+	/** Param values, keyed by `param.name`, wherever the spec places them. */
 	readonly params?: Readonly<Record<string, string | number | boolean>>;
 	/** JSON body for operations with a JSON request body. */
 	readonly body?: unknown;
@@ -92,6 +92,53 @@ const buildHeaders = (
 	return headers;
 };
 
+/** Cookie parameters share one `cookie` header. */
+const buildCookie = (
+	cookieParams: readonly IOperationParam[],
+	values: Readonly<Record<string, string | number | boolean>>,
+): Record<string, string> => {
+	const pairs: string[] = [];
+	for (const p of cookieParams) {
+		const v = values[p.name];
+		if (v === undefined) {
+			if (p.required)
+				throw new Error(`missing required cookie parameter: ${p.name}`);
+			continue;
+		}
+		pairs.push(`${p.name}=${encodeURIComponent(String(v))}`);
+	}
+	return pairs.length === 0 ? {} : { cookie: pairs.join('; ') };
+};
+
+const JSON_CONTENT_TYPE = /^application\/(?:[\w.-]+\+)?json\b/u;
+
+/** The body a request carries, or a refusal when the spec disagrees. */
+const buildBody = (
+	operation: IOpenApiOperation,
+	body: unknown,
+): string | undefined => {
+	const declared = operation.requestBody;
+	if (body === undefined) {
+		if (declared?.required === true) {
+			throw new Error(
+				`missing required request body (${declared.contentType})`,
+			);
+		}
+		return undefined;
+	}
+	if (declared === undefined) {
+		throw new Error(
+			`${operation.operationId} declares no request body; remove \`body\``,
+		);
+	}
+	if (!JSON_CONTENT_TYPE.test(declared.contentType)) {
+		throw new Error(
+			`request body must be ${declared.contentType}; api_call sends JSON only`,
+		);
+	}
+	return JSON.stringify(body);
+};
+
 /**
  * Coerce `value` to the JSON type that `schema` expects, when
  * the schema declares a primitive. Best-effort — strict
@@ -116,15 +163,16 @@ export const coerceValue = (
 };
 
 /**
- * Build the request. Throws on a missing required `path` param —
- * every other missing value silently drops (matches OpenAPI
- * client behaviour; contract enforcement is S2).
+ * Build the request. Throws when the input cannot be the request the
+ * spec describes: a missing required parameter or body, or a body the
+ * operation has no place for. A missing optional value is left out.
  */
 export const buildRequest = (input: IBuildRequestInput): IBuiltRequest => {
 	const { operation, params = {}, body, baseUrl } = input;
 	const pathParams = operation.parameters.filter((p) => p.in === 'path');
 	const queryParams = operation.parameters.filter((p) => p.in === 'query');
 	const headerParams = operation.parameters.filter((p) => p.in === 'header');
+	const cookieParams = operation.parameters.filter((p) => p.in === 'cookie');
 
 	// Substitute path params.
 	let path = operation.path;
@@ -150,11 +198,17 @@ export const buildRequest = (input: IBuildRequestInput): IBuiltRequest => {
 	const base = stripTrailingSlash(server);
 	const url = `${base}${path.startsWith('/') ? path : `/${path}`}${buildQuery(queryParams, params)}`;
 
-	const headers = buildHeaders(
-		headerParams,
-		params,
-		operation.requestBody?.contentType,
-	);
+	const requestBody = buildBody(operation, body);
+	const headers = {
+		...buildHeaders(
+			headerParams,
+			params,
+			requestBody === undefined
+				? undefined
+				: operation.requestBody?.contentType,
+		),
+		...buildCookie(cookieParams, params),
+	};
 
 	const out: {
 		method: IBuiltRequest['method'];
@@ -166,11 +220,14 @@ export const buildRequest = (input: IBuildRequestInput): IBuiltRequest => {
 		url,
 		headers,
 	};
-	if (body !== undefined && operation.requestBody !== undefined) {
-		out.body = JSON.stringify(body);
-	}
+	if (requestBody !== undefined) out.body = requestBody;
 	return out;
 };
 
 /** Internal helper for the test suite. */
-export const _internal = { substitutePath, buildQuery, buildHeaders };
+export const _internal = {
+	substitutePath,
+	buildQuery,
+	buildHeaders,
+	buildCookie,
+};

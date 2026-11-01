@@ -252,3 +252,105 @@ describe('fetchAndParseSpec', () => {
 		expect(loaded.ok && loaded.spec.title).toBe('t');
 	});
 });
+
+describe('the parser keeps what validation needs', () => {
+	const specWith = (schema: unknown, components: unknown = {}) =>
+		parseOpenApi({
+			openapi: '3.0.0',
+			info: { title: 't', version: '1' },
+			components,
+			paths: {
+				'/x': {
+					get: {
+						operationId: 'x',
+						responses: {
+							'200': {
+								description: 'ok',
+								content: { 'application/json': { schema } },
+							},
+						},
+					},
+				},
+			},
+		});
+	const schemaOf = (spec: ReturnType<typeof parseOpenApi>) =>
+		spec.operations.x?.responses[0]?.schema;
+
+	it('keeps nullable from both OpenAPI spellings', () => {
+		expect(schemaOf(specWith({ type: 'string', nullable: true }))).toEqual({
+			type: 'string',
+			nullable: true,
+		});
+		expect(schemaOf(specWith({ type: ['integer', 'null'] }))).toEqual({
+			type: 'integer',
+			nullable: true,
+		});
+	});
+
+	it('reads the boolean exclusive bounds of OpenAPI 3.0', () => {
+		expect(
+			schemaOf(
+				specWith({
+					type: 'number',
+					minimum: 1,
+					exclusiveMinimum: true,
+					maximum: 9,
+				}),
+			),
+		).toEqual({ type: 'number', exclusiveMinimum: 1, maximum: 9 });
+	});
+
+	it('keeps closed objects, unions and string bounds', () => {
+		expect(
+			schemaOf(
+				specWith({
+					additionalProperties: false,
+					oneOf: [{ type: 'string', minLength: 2, maxLength: 3 }],
+				}),
+			),
+		).toEqual({
+			additionalProperties: false,
+			oneOf: [{ type: 'string', minLength: 2, maxLength: 3 }],
+		});
+	});
+
+	it('expands local references', () => {
+		const spec = specWith(
+			{ $ref: '#/components/schemas/User' },
+			{ schemas: { User: { type: 'object', required: ['id'] } } },
+		);
+		expect(schemaOf(spec)).toEqual({ type: 'object', required: ['id'] });
+		expect(spec.parseNote).toBe('parsed');
+	});
+
+	it('names the references it could not follow', () => {
+		const spec = specWith(
+			{ $ref: '#/components/schemas/Loop' },
+			{
+				schemas: {
+					Loop: {
+						properties: {
+							next: { $ref: '#/components/schemas/Loop' },
+							far: { $ref: 'other.yaml#/Thing' },
+						},
+					},
+				},
+			},
+		);
+		expect(schemaOf(spec)?.properties?.next).toEqual({});
+		expect(spec.parseNote).toContain('2 $ref');
+	});
+
+	it('stops expanding a spec built to multiply', () => {
+		const schemas: Record<string, unknown> = { L0: { type: 'string' } };
+		for (let level = 1; level < 30; level += 1) {
+			const ref = { $ref: `#/components/schemas/L${level - 1}` };
+			schemas[`L${level}`] = { properties: { a: ref, b: ref } };
+		}
+		const spec = specWith(
+			{ $ref: '#/components/schemas/L29' },
+			{ schemas },
+		);
+		expect(spec.parseNote).toContain('$ref');
+	});
+});
