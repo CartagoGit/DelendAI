@@ -112,6 +112,7 @@ describe('discoveryConsent', () => {
 		});
 		expect(consent.state).toBe('unavailable');
 		expect(consent.next).toContain('no MCP elicitation');
+		expect(consent.next).toContain('delendai accounts consent');
 	});
 
 	it('never asks under manual or off', async () => {
