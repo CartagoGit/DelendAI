@@ -45,9 +45,9 @@ const buildMiniGit = (
 		const [cmd, flag, flag2] = args;
 		if (cmd === 'status' && flag === '--porcelain=v1') {
 			const lines = [...state.entries()]
-				.map(([path, file]) => `${file.x}${file.y} ${path}`)
+				.map(([path, file]) => `${file.x}${file.y} ${path}\0`)
 				.sort();
-			return ok(lines.length > 0 ? `${lines.join('\n')}\n` : '');
+			return ok(lines.join(''));
 		}
 		if (cmd === 'diff' && flag === '--cached' && flag2 === '--name-only') {
 			const names = [...state.entries()]
@@ -79,7 +79,7 @@ describe('threshold tracker', () => {
 		const run = buildRunner((args) => {
 			if (args[0] !== 'status')
 				return Promise.resolve(fail('not stubbed'));
-			return Promise.resolve(ok(' M a.ts\n?? b.ts\nA  staged-only.ts\n'));
+			return Promise.resolve(ok(' M a.ts\0?? b.ts\0A  staged-only.ts\0'));
 		});
 		const tracker = createThresholdTracker(run, { files: 3 });
 		expect(await tracker.check()).toBeNull();
@@ -90,7 +90,7 @@ describe('threshold tracker', () => {
 			if (args[0] !== 'status')
 				return Promise.resolve(fail('not stubbed'));
 			return Promise.resolve(
-				ok(' M alpha.ts\nMM beta.ts\n?? gamma.ts\nA  staged-only.ts\n'),
+				ok(' M alpha.ts\0MM beta.ts\0?? gamma.ts\0A  staged-only.ts\0'),
 			);
 		});
 		const tracker = createThresholdTracker(run, { files: 3 });
@@ -104,8 +104,8 @@ describe('threshold tracker', () => {
 
 	it('refires with all four dirty files when the dirty set grows', async () => {
 		const responses: readonly [IGitRunResult, IGitRunResult] = [
-			ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
-			ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\nMM delta.ts\n'),
+			ok(' M alpha.ts\0 M beta.ts\0?? gamma.ts\0'),
+			ok(' M alpha.ts\0 M beta.ts\0?? gamma.ts\0MM delta.ts\0'),
 		];
 		let index = 0;
 		const run = buildRunner((args) => {
@@ -130,8 +130,8 @@ describe('threshold tracker', () => {
 
 	it('fires again when the dirty set changes but the count stays at three', async () => {
 		const responses: readonly [IGitRunResult, IGitRunResult] = [
-			ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
-			ok(' M alpha.ts\n M beta.ts\n?? delta.ts\n'),
+			ok(' M alpha.ts\0 M beta.ts\0?? gamma.ts\0'),
+			ok(' M alpha.ts\0 M beta.ts\0?? delta.ts\0'),
 		];
 		let index = 0;
 		const run = buildRunner((args) => {
@@ -159,7 +159,7 @@ describe('threshold tracker', () => {
 			if (args[0] !== 'status')
 				return Promise.resolve(fail('not stubbed'));
 			return Promise.resolve(
-				ok(' M alpha.ts\n M beta.ts\n?? gamma.ts\n'),
+				ok(' M alpha.ts\0 M beta.ts\0?? gamma.ts\0'),
 			);
 		});
 		const tracker = createThresholdTracker(run, { files: 3 });
@@ -177,7 +177,7 @@ describe('threshold tracker', () => {
 				return Promise.resolve(fail('not stubbed'));
 			return Promise.resolve(
 				ok(
-					'A  staged-a.ts\n M alpha.ts\n?? beta.ts\n D gamma.ts\nM  staged-b.ts\n',
+					'A  staged-a.ts\0 M alpha.ts\0?? beta.ts\0 D gamma.ts\0M  staged-b.ts\0',
 				),
 			);
 		});
@@ -196,7 +196,7 @@ describe('threshold tracker', () => {
 			if (args[0] !== 'status')
 				return Promise.resolve(fail('not stubbed'));
 			return Promise.resolve(
-				ok('RM docs/old.md -> docs/new.md\n M src/index.ts\n'),
+				ok('RM docs/new.md\0docs/old.md\0 M src/index.ts\0'),
 			);
 		});
 		const tracker = createThresholdTracker(run, { files: 2 });

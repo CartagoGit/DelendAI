@@ -64,9 +64,9 @@ export interface IStorm {
 	/**
 	 * When this storm was first seen EVER, across the detector's whole
 	 * life — not when the current window opened. It is deliberately
-	 * stable: `repair-proposer` derives a repair id from it, and an id
-	 * that slid forward as the window moved would file a fresh repair
-	 * for the same ongoing storm every few minutes.
+	 * stable: an id derived from it names one storm, and one that slid
+	 * forward as the window moved would name a fresh storm every few
+	 * minutes.
 	 *
 	 * Because it is lifetime-scoped, it does NOT bound `count`. Use
 	 * `windowStartedAt` for that.

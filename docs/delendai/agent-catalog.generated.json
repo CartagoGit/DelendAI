@@ -102,6 +102,10 @@
 			"plugin": "commit-policy"
 		},
 		{
+			"name": "delendai_commit-policy_commit_policy_status",
+			"plugin": "commit-policy"
+		},
+		{
 			"name": "delendai_commit-policy_commit_policy_storms",
 			"plugin": "commit-policy"
 		},

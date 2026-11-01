@@ -324,6 +324,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'commit_policy_refresh_branch_protection',
 				'commit_policy_commit',
 				'commit_policy_push',
+				'commit_policy_status',
 				'commit_policy_run',
 				'commit_policy_storms',
 				'commit_policy_settlement',
@@ -350,10 +351,12 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Commit through the policy engine: resolves identity, appends audit trail, refuses protected branches + disabled commit.',
 					commit_policy_push:
 						'Push through the policy engine: respects protectedBranches, force policy (with-lease|allow|never), and push.enabled master switch.',
+					commit_policy_status:
+						'Show the effective commit-policy configuration, including which branches are protected and whether direct commit/push is allowed on the current branch.',
 					commit_policy_run:
 						'Manually fire any configured trigger (manual always available; slice/threshold/interval require cadence.triggers). Pass `dryRun: true` to preview the change without executing any git operation.',
 					commit_policy_storms:
-						'Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. x00419 lets agents consume their own stderr and file `kind: fix` proposals without a human intermediary.',
+						"Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. Filing the repair is the agent's step (skill read-stderr-storm).",
 					commit_policy_settlement:
 						'Read or steer the settlement phase commit-policy gates on: status, enter (only with no active workers), or complete with the validate result.',
 					commit_policy_work_ref:

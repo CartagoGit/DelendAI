@@ -93,7 +93,13 @@ export const createSettlementTool = (deps: ISettlementToolDeps) => {
 					reason: `cannot enter SETTLING while ${status.activeWorkers} worker(s) are still active`,
 				};
 			}
-			await registry.setPhase('settling');
+			const holders = await registry.enterSettling();
+			if (holders > 0) {
+				return {
+					ack: 'REFUSED',
+					reason: `cannot enter SETTLING while ${holders} worker(s) are still active`,
+				};
+			}
 			return { ack: 'OK', phase: 'settling' };
 		},
 		async complete(
