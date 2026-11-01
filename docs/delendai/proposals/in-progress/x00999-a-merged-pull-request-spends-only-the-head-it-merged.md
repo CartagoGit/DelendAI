@@ -2,10 +2,14 @@
 id: x00999
 title: "A merged pull request spends only the head it merged"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-01
+last-transition-id: fcf3ed27-cf07-4424-b79f-7e8b22b7086a
+last-correlation-id: fcf3ed27-cf07-4424-b79f-7e8b22b7086a
+last-transition-from: ready
+last-transition-at: 2026-11-01T07:30:04.010Z
 ---
 
 # x00999 — A merged pull request spends only the head it merged
