@@ -16,21 +16,64 @@ Every unit starts with what its task needs, two lines or hundreds of files, chos
 
 ## why
 
-TODO: why this work matters now.
+A host keeps what it received, and delendai cannot take anything back out of a model's context. What delendai does decide is what goes in, and today it decides badly at both ends:
+
+- `work enter` is the one call every task passes through, and its briefing says only what other agents are doing: not the slice's goal, files, acceptance or nearest specs. Each agent rebuilds that with searches; a measured session spent 91% of 46 MB in Bash, over half of it reading code.
+- `context_for_change` cuts at a fixed 3,000 bytes whatever the task, and `proposals_compile_context` shows no call in 7,960. `context-compiler`, `impact-analysis` and durable memory exist and are not on the path of the work.
+- `AGENT-BOOTSTRAP.md` is 31,860 bytes read every session, and 6,769 of them are appendices for hosts other than the one reading them.
+- Skill bodies are lazy, yet one that ran stays in context for the rest of the session.
+
+A shorter answer that sends the agent back for more spends more. The measure of this proposal is tokens per finished task and rework, not bytes per response.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Removing anything a host already holds: no MCP server can.
+- A fixed byte budget for a task: the slice decides.
+- Cutting context a task needs to reach a figure: a task that fails or is reworked counts against it.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — S1
+### S1 — A unit starts with its task
 - **Status**: pending
-- **Files**: `plugins/proposals/src/index.ts`
-- **Gate**: none
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `plugins/proposals/src/index.ts`
+- **Gate**: type
+- acceptance:
+  - "Through a port core declares and the proposals plugin fills, `work enter` returns the slice's goal, acceptance, files with their sizes and nearest specs, by reference and not by body; a project with no proposals plugin enters as before."
+
+### S2 — Context scales with the change
+- **Status**: pending
+- **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/context-for-change-format.service.ts`
+- **Gate**: type
+- acceptance:
+  - "`context_for_change` takes its reach from what it was given: a symbol returns that symbol's lines, a slice of many files returns all of them; anything left out is named with how to get it, and no fixed cap decides silently."
+
+### S3 — The always-read rules are the rules this host needs
+- **Status**: pending
+- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Gate**: type
+- acceptance:
+  - "A host reads only its own appendix, and rules that apply to one activity load with that activity; the always-read part has a measured budget a gate holds, and no rule is lost."
+
+### S4 — A self-contained playbook runs apart
+- **Status**: pending
+- **Files**: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`
+- **Gate**: type
+- acceptance:
+  - "On a host that can run a skill in its own context, a long self-contained skill does so and only its result reaches the main thread; a host that cannot reads it as before."
+
+### S5 — The saving is measured per finished task
+- **Status**: pending
+- **Files**: `plugins/usage-tracking/src/index.ts`
+- **Gate**: type
+- acceptance:
+  - "Usage reports tokens per finished unit, with reads, retries and failed proofs, so a change that shrinks a response and adds rework shows as a loss."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- An agent entering a slice has its task without a search, by reference.
+- Reach follows the change, from one symbol to hundreds of files, and nothing is cut silently.
+- Each host reads only its own always-read rules, under a gated budget, with no rule lost.
+- A long self-contained skill leaves only its result where the host allows it.
+- Tokens per finished unit are reported, including rework.
