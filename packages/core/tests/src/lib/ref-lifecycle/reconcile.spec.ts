@@ -43,6 +43,24 @@ const roleOf = (
 ) => reconcileRefs(refs(name), pullRequests, branches).verdicts[0]?.role;
 
 describe('reconcileRefs', () => {
+	it('keeps a ref that moved past its merged pull request', () => {
+		const name = `${PR}agent/work`;
+		const merged = {
+			number: 1,
+			headRefName: name,
+			state: 'merged' as const,
+			headSha: 'old',
+		};
+		const moved = reconcileRefs(
+			[{ name, sha: 'new', updatedAt: Date.now() / 1000 }],
+			[merged],
+			branches,
+		);
+		expect(moved.reapable).toEqual([]);
+		const spent = reconcileRefs([{ name, sha: 'old' }], [merged], branches);
+		expect(spent.reapable.map((verdict) => verdict.name)).toEqual([name]);
+	});
+
 	it('never treats the integration or release branch as an agent’s', () => {
 		expect(roleOf(branches.integration)).toBe('protected');
 		expect(roleOf(branches.release)).toBe('protected');

@@ -105,6 +105,20 @@ const shortenRef = (value: string): string =>
 const inNamespace = (name: string, prefix: string): boolean =>
 	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));
 
+/**
+ * Whether the ref moved past the pull request that merged. A unit reopened
+ * on the same name pushes new work before its next pull request exists,
+ * and the listing can predate that one: this ref has delivered nothing yet.
+ */
+const carriesNewWork = (
+	ref: IObservedRef,
+	request: IObservedPullRequest,
+): boolean =>
+	request.state === 'merged' &&
+	ref.sha !== undefined &&
+	request.headSha !== undefined &&
+	ref.sha !== request.headSha;
+
 const roleOf = (
 	ref: IObservedRef,
 	branches: IPolicyBranches,
@@ -149,7 +163,7 @@ const roleOf = (
 		};
 	}
 	if (inNamespace(name, branches.publicationRefPrefix)) {
-		if (request === undefined) {
+		if (request === undefined || carriesNewWork(ref, request)) {
 			if (
 				ref.updatedAt !== undefined &&
 				ref.updatedAt > graceStartsAfter
