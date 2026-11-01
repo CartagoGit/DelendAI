@@ -152,6 +152,41 @@ describe('readPublicCatalogue', () => {
 		).toBe(LATER.toISOString());
 	});
 
+	it('takes the first source that answers: a later one is its fallback, on a 304 as on a 200', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
+		const first = recording({
+			'https://a.test': {
+				status: 200,
+				body: { items: ['a'] },
+				etag: '"1"',
+			},
+		});
+		await read(dir, first.fetch, ['https://a.test']);
+		const appended = recording({ 'https://a.test': { status: 304 } });
+		const read304 = await read(
+			dir,
+			appended.fetch,
+			['https://a.test', 'https://b.test'],
+			LATER,
+		);
+		expect(read304?.origin).toBe('unchanged');
+		expect(appended.asked.map((call) => call.url)).toEqual([
+			'https://a.test',
+		]);
+
+		// A new first source is asked, and its answer replaces the copy.
+		const moved = recording({
+			'https://b.test': { status: 200, body: { items: ['b'] } },
+		});
+		const fresh = await read(
+			dir,
+			moved.fetch,
+			['https://b.test', 'https://a.test'],
+			new Date(LATER.getTime() + 1),
+		);
+		expect(fresh?.data).toEqual({ items: ['b'] });
+	});
+
 	it('keeps the copy when every source fails, and falls back to the snapshot without one', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
 		const ok = recording({
