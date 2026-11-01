@@ -2,14 +2,14 @@
 id: v00149
 title: "A unit is brought forward only when it must be, so one landing does not send the others back"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: a68b30d7-fe80-405a-8df8-8b4e98fca79b
-last-correlation-id: a68b30d7-fe80-405a-8df8-8b4e98fca79b
-last-transition-from: review
-last-transition-at: 2026-11-01T00:13:59.037Z
+last-transition-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
+last-correlation-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T00:22:13.808Z
 ---
 
 # v00149 — A unit is brought forward only when it must be, so one landing does not send the others back
@@ -70,11 +70,14 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-implementer: claude-opus-5-5
 
 ### S4 — A candidate is not sent back for what its checks already saw
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/candidate-tested-base.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts)."
+- shipped-in: `39f3d8323b50`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
