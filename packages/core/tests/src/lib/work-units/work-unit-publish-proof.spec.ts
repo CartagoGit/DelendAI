@@ -129,6 +129,20 @@ describe('publishing a pull request runs the declared proof', () => {
 		expect(JSON.stringify(published.data)).toContain('`prove` script');
 	});
 
+	it('says where the unit stands without proving it', async () => {
+		const root = repo('exit 3');
+		await checkpoint(root);
+		const located = await runWorkUnit(
+			['prove', ...UNIT, '--locate'],
+			contextFor(root),
+		);
+		expect(located.code).toBe(0);
+		expect(located.data).toMatchObject({
+			publication: expect.stringContaining('/pr/'),
+		});
+		expect(located.data).not.toHaveProperty('proved');
+	});
+
 	it('says what it needs to prove', async () => {
 		const root = repo('exit 0');
 		const missing = await runWorkUnit(['prove'], contextFor(root));

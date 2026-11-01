@@ -30,6 +30,7 @@
  *
  * Exit codes: 0 clean (or only baselined), 1 new violations, 2 bad usage.
  */
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -128,6 +129,7 @@ export const fingerprintProposal = (text: string): string | undefined => {
 export const checkProposal = (
 	file: string,
 	text: string,
+	inHand?: string,
 ): readonly IProposalHygieneFinding[] => {
 	const findings: IProposalHygieneFinding[] = [];
 
@@ -172,6 +174,8 @@ export const checkProposal = (
 	const statuses = sliceStatuses(text);
 	if (
 		file.split(/[\\/]/u).includes('in-progress') &&
+		// Its own unit, reopened for a fix: in progress is where it should be.
+		frontmatterId(text) !== inHand &&
 		statuses.length > 0 &&
 		statuses.every((status) => DELIVERED_STATUSES.has(status))
 	) {
@@ -183,6 +187,21 @@ export const checkProposal = (
 	}
 
 	return findings;
+};
+
+/** The proposal a unit branch works on, if the branch is a unit's. */
+export const unitProposalOf = (branch: string): string | undefined =>
+	/\/([a-z]\d{5})-[^/]+-g\d+\//u.exec(branch)?.[1];
+
+const currentBranch = (): string => {
+	try {
+		return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		return '';
+	}
 };
 
 /** Cross-file rule: two open proposals that describe the same work. */
@@ -268,8 +287,9 @@ const main = (): number => {
 	}
 
 	const findings: IProposalHygieneFinding[] = [];
+	const inHand = unitProposalOf(currentBranch());
 	for (const [file, text] of proposals)
-		findings.push(...checkProposal(file, text));
+		findings.push(...checkProposal(file, text, inHand));
 	findings.push(...findDuplicates(proposals));
 
 	const baseline: string[] = (() => {
