@@ -89,14 +89,16 @@ export const createWorkCommand = (): ICliCommand => ({
 				? unit
 				: [...unit, '--slice=all'];
 			return deliverUnit({
+				locate: () =>
+					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
 				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
-				transition: (to) =>
+				transition: (to, checkout) =>
 					request(ctx, 'delendai_proposals_proposal_transition', {
 						id,
 						to,
 						reason,
 						...(agent === undefined ? {} : { agent }),
-						checkout: ctx.cwd,
+						checkout: checkout ?? ctx.cwd,
 					}),
 			});
 		}

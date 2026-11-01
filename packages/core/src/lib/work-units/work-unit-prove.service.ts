@@ -12,6 +12,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
+import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeOfRef } from './unit-removal.service';
 import { existingWorkRef } from './work-unit-generation.service';
 import { describeFailedProof, proveUnit } from './work-unit-proof.service';
@@ -54,6 +55,19 @@ export const proved = async (
 		root,
 		workRef.replace(/^refs\/heads\//u, ''),
 	);
+	const publication = publicationRefFromWorkRef(policy, workRef);
+	// Where the unit stands, proved or not: `work deliver` asks this first,
+	// so it works from any directory.
+	if (args.includes('--locate')) {
+		return {
+			code: EXIT_CODE.OK,
+			data: {
+				workRef,
+				...(worktree === undefined ? {} : { worktree }),
+				...(publication === undefined ? {} : { publication }),
+			},
+		};
+	}
 	const proof = await proveUnit({
 		root,
 		worktree,
