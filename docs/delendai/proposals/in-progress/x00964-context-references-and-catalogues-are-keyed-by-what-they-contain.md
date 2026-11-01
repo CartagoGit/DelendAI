@@ -2,14 +2,14 @@
 id: x00964
 title: "Context references and catalogues are keyed by what they contain"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: eba54e8a-0318-489c-a23c-5808e8adf33f
-last-correlation-id: eba54e8a-0318-489c-a23c-5808e8adf33f
-last-transition-from: review
-last-transition-at: 2026-10-28T09:03:35.562Z
+last-transition-id: fc13ab50-2325-4f0a-be34-fdad4fc5fad2
+last-correlation-id: fc13ab50-2325-4f0a-be34-fdad4fc5fad2
+last-transition-from: ready
+last-transition-at: 2026-11-01T00:43:25.185Z
 shipped-in:
   - "ceb5903cb"
 ---
