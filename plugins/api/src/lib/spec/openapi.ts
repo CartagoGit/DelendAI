@@ -12,7 +12,7 @@
  */
 import { webFetch } from '@delendai/web-fetch/public';
 
-import { dereference } from './dereference';
+import { dereference } from './dereference.service';
 import type {
 	ILoadedSpec,
 	ILoadSpecOptions,

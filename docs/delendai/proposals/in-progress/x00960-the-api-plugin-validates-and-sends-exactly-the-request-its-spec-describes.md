@@ -39,7 +39,7 @@ Joint audit a00095 and gpt-6.1-sol. D71: api_mock advertises specUrl but the plu
 
 ### S2 — Requests and validation follow the spec
 - **Status**: pending
-- **Files**: `plugins/api/src/lib/spec/build-request.ts`, `plugins/api/src/lib/validate/response-validator.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/dereference.ts`, `plugins/api/src/lib/contracts/interfaces/dereference.interface.ts`, `plugins/api/src/lib/validate/response-validator.spec.ts`
+- **Files**: `plugins/api/src/lib/spec/build-request.ts`, `plugins/api/src/lib/validate/response-validator.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/build-request.spec.ts`, `plugins/api/src/lib/validate/response-validator.constraints.spec.ts`, `plugins/api/src/lib/spec/dereference.service.ts`, `plugins/api/src/lib/contracts/interfaces/dereference.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Cookie parameters reach the request (API-03); a missing required body is refused (API-04); nullable, enum, min/max survive into validation (API-01)."
