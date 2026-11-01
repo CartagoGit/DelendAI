@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { causeLinesOf, fastSteps, vitestArgsOf } from './prove-plan.script';
+import {
+	causeLinesOf,
+	earlySteps,
+	fastSteps,
+	vitestArgsOf,
+} from './prove-plan.script';
 
 const job = {
 	name: 'plugins 1/4',
@@ -43,16 +48,23 @@ describe('vitestArgsOf', () => {
 	});
 });
 
-describe('fastSteps', () => {
+describe('earlySteps', () => {
 	it('checks the site translations only when a tool can have changed', () => {
 		const labels = (path: string) =>
-			fastSteps([path], [], 'base').map(([label]) => label);
-		expect(labels('plugins/a/src/lib/tools/b.tool.ts')).toContain(
+			earlySteps([path]).map(([label]) => label);
+		expect(labels('plugins/a/src/lib/tools/b.tool.ts')).toEqual([
+			'tool budgets',
+			'generated files are current',
 			'site tool translations',
-		);
-		expect(labels('docs/a.md')).not.toContain('site tool translations');
+		]);
+		expect(labels('docs/a.md')).toEqual([
+			'tool budgets',
+			'generated files are current',
+		]);
 	});
+});
 
+describe('fastSteps', () => {
 	it('runs the nearest specs with the touched files covered, then judges that coverage', () => {
 		const steps = fastSteps(
 			['plugins/x/src/a.ts'],
@@ -62,7 +74,6 @@ describe('fastSteps', () => {
 		expect(steps.map(([label]) => label)).toEqual([
 			'tests: the specs nearest the change',
 			'changed-file coverage',
-			'generated files are current',
 		]);
 		expect(steps[0]?.[1]).toContain('plugins/x/a.spec.ts');
 		expect(steps[0]?.[1]).toContain('--coverage');

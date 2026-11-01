@@ -48,3 +48,5 @@ Delivering took four commands in an order each agent had to remember: `work prov
 ## notes
 
 Reopened 2026-11-01: a failed delivery kept only the tail of the output, which named no cause, so `prove` now prints the failure lines last; and it runs the `tokens-budget-real` gate, whose breach reached a pull request unseen.
+
+- 2026-11-01: the proof runs the budgets, the drift check and the site translations first and stops there when one fails: they answer in under a minute, and a 27-byte overshoot cost eleven minutes before.
