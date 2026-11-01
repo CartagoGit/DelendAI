@@ -28,7 +28,7 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 
 ### S1 — self_audit and audit_run
 - **Status**: pending
-- **Files**: `plugins/audit/src/index.ts`, `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`
+- **Files**: `plugins/audit/src/lib/self-audit/aggregate.ts`, `plugins/audit/src/lib/services/llm-client.service.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/self-audit.tool.ts`, `plugins/audit/src/public/index.ts`, `plugins/audit/src/lib/self-audit/default-scanners.ts`, `plugins/audit/src/lib/services/llm-fan-out.service.ts`
 - **Gate**: type
 - acceptance:
   - "self_audit through the public registration runs its scanners (AUD-01) and capabilities filters the backlog (AUD-02, D115)."
@@ -36,7 +36,7 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 
 ### S2 — Consolidation
 - **Status**: pending
-- **Files**: `plugins/audit/src/lib/services/audit-consolidate.service.ts`, `plugins/audit/src/lib/services/audit-consolidation-strategies.ts`, `plugins/audit/src/lib/services/parse-audit.service.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/contracts/interfaces/audit.interface.ts`, `plugins/audit/src/generated/tool-outputs.ts`
+- **Files**: `plugins/audit/src/lib/contracts/interfaces/audit.interface.ts`, `plugins/audit/src/lib/contracts/interfaces/self-audit.interface.ts`, `plugins/audit/src/lib/services/audit-consolidate.service.ts`, `plugins/audit/src/lib/services/parse-audit.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `tools/scripts/types/emit-tool-types.script.ts`
 - **Gate**: type
 - acceptance:
   - "One finding with two severities consolidates into one entry with both votes (AUD-04)."
@@ -45,7 +45,7 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 
 ### S3 — Plan reader and silent empties elsewhere
 - **Status**: pending
-- **Files**: `plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `packages/core/src/lib/shared/safe-list-dir.ts`, `plugins/search/src/lib/services/search-engine.backends.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`
+- **Files**: `plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/search/src/lib/services/search-engine.backends.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/src/lib/services/search-safe-reader.ts`
 - **Gate**: type
 - acceptance:
   - "The plan reader parses contains.proposals from a real repo plan by YAML, not by indentation (D42)."

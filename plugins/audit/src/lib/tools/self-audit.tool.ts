@@ -1,19 +1,17 @@
 /**
- * self-audit.tool.ts — f00139 S2: `<prefix>_self_audit` registration.
- * S2 wires the S1 aggregator plus the pure ranker; scanner injection
- * stays on the default empty map until S3 plugs real scanners in.
+ * self-audit.tool.ts — `<prefix>_self_audit` registration.
+ * Wires the aggregator plus the pure ranker. Without injected scanners
+ * it runs the default secret and dependency scanners.
  */
 import { toolError, toolJson } from '@delendai/core/public';
-import type { IFinding, IToolRegistration } from '@delendai/core/contracts';
+import type { IToolRegistration } from '@delendai/core/contracts';
 
 import z from 'zod';
 
-import { aggregateSelfAudit, defaultScannerMap } from '../self-audit/aggregate';
+import { aggregateSelfAudit } from '../self-audit/aggregate';
+import { buildDefaultScanners } from '../self-audit/default-scanners';
 import { rankFindings } from '../self-audit/rank';
-import type {
-	ISelfAuditScannerRef,
-	ISelfAuditScannerRunner,
-} from '../contracts/interfaces/self-audit.interface';
+import type { ISelfAuditScannerEntry } from '../contracts/interfaces/self-audit.interface';
 
 const SelfAuditInputSchema = z.object({
 	limit: z.number().int().min(1).max(100).optional(),
@@ -63,34 +61,9 @@ const SelfAuditOutputSchema = z.object({
 export interface ISelfAuditToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
-	readonly scanners?: ReadonlyMap<
-		string,
-		{
-			readonly ref: ISelfAuditScannerRef;
-			readonly run: ISelfAuditScannerRunner;
-		}
-	>;
+	readonly scanners?: ReadonlyMap<string, ISelfAuditScannerEntry>;
 	readonly topN?: number;
 }
-
-const filterFindingsByCapabilities = (
-	findings: readonly IFinding[],
-	reportCapabilities: Readonly<Record<string, number>>,
-	requested: readonly string[] | undefined,
-): readonly IFinding[] => {
-	if (requested === undefined || requested.length === 0) {
-		return findings;
-	}
-	const matchedCapabilities = requested.filter(
-		(capability) => reportCapabilities[capability] !== undefined,
-	);
-	if (matchedCapabilities.length === 0) {
-		return findings;
-	}
-	// S1 aggregated findings do not yet carry capability provenance, so
-	// S2 can only validate the requested capability keys for now.
-	return findings;
-};
 
 export const buildSelfAuditRegistration = (
 	options: ISelfAuditToolOptions,
@@ -115,13 +88,12 @@ export const buildSelfAuditRegistration = (
 			}) => {
 				const report = await aggregateSelfAudit({
 					workspaceRootAbs: options.workspaceRootAbs,
-					scanners: options.scanners ?? defaultScannerMap(),
+					scanners: options.scanners ?? buildDefaultScanners(),
+					...(args.capabilities !== undefined
+						? { capabilities: args.capabilities }
+						: {}),
 				});
-				const findings = filterFindingsByCapabilities(
-					report.aggregated.findings,
-					report.capabilities,
-					args.capabilities,
-				);
+				const findings = report.aggregated.findings;
 				const limit = args.limit ?? args.topN ?? options.topN ?? 20;
 
 				try {

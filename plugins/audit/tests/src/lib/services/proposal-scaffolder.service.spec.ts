@@ -17,6 +17,7 @@ const consolidationWith = (files: readonly string[]): IConsolidation => ({
 			worstSeverity: 'FATAL',
 			files,
 			seenBy: ['gpt-4o'],
+			votes: [],
 		},
 	],
 	topActions: [],

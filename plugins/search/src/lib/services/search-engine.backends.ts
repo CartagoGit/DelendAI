@@ -43,7 +43,7 @@ import type {
 	ISearchHit,
 	ISearchResult,
 } from './search-engine.types';
-import { resolveSearchRoots } from './search-safe-reader';
+import { describeZeroScan, resolveSearchRoots } from './search-safe-reader';
 
 export type {
 	ISearchBackend,
@@ -151,6 +151,7 @@ export const createRgBackend = async (
 					truncated: false,
 					scanned: 0,
 					usedRg: true,
+					diagnostic: describeZeroScan(requestedRoots, resolvedRoots),
 				};
 			}
 
@@ -261,6 +262,16 @@ export const createRgBackend = async (
 				truncated,
 				scanned: scannedFiles.size,
 				usedRg: true,
+				...(scannedFiles.size === 0 &&
+				(resolvedRoots.rejected.length > 0 ||
+					resolvedRoots.missing.length > 0)
+					? {
+							diagnostic: describeZeroScan(
+								requestedRoots,
+								resolvedRoots,
+							),
+						}
+					: {}),
 			};
 		},
 	};

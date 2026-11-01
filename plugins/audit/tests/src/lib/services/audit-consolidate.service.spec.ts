@@ -113,3 +113,46 @@ describe('renderConsolidationMarkdown', async () => {
 		expect(md).toContain('Opus');
 	});
 });
+
+describe('consolidateAudits — one finding, two severities', async () => {
+	const fatalDoc = parseAuditBody(
+		'14-06-2026- Antigravity (Sonnet).md',
+		AUDIT_SONNET,
+	);
+	const badDoc = parseAuditBody(
+		'14-06-2026- Claude Code (Opus).md',
+		AUDIT_SONNET.replace('FATAL', 'MUY MAL').replace('Sonnet', 'Opus'),
+	);
+
+	it('merges into one entry holding both votes and the worst severity', async () => {
+		const c = consolidateAudits([fatalDoc, badDoc]);
+		expect(c.findings).toHaveLength(1);
+		const [only] = c.findings;
+		expect(only?.worstSeverity).toBe('FATAL');
+		expect(only?.seenBy).toHaveLength(2);
+		expect(only?.votes.map((v) => v.severity).sort()).toEqual([
+			'BAD',
+			'FATAL',
+		]);
+		expect(c.topActions[0]).toContain('FATAL');
+	});
+
+	it('keeps the worst severity whichever document comes first', async () => {
+		const c = consolidateAudits([badDoc, fatalDoc]);
+		expect(c.findings).toHaveLength(1);
+		expect(c.findings[0]?.worstSeverity).toBe('FATAL');
+	});
+});
+
+describe('consolidateAudits — rejected inputs', async () => {
+	it('lists inputs that never became documents in skipped', async () => {
+		const c = consolidateAudits(docs(), {
+			rejected: [{ path: 'a.md', reason: 'unreadable: EACCES' }],
+		});
+		expect(c.skipped).toContainEqual({
+			path: 'a.md',
+			reason: 'unreadable: EACCES',
+		});
+		expect(c.auditsFound).toBe(3);
+	});
+});

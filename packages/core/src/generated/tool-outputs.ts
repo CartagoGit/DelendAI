@@ -260,7 +260,7 @@ export interface DelendaiConfigurationCenterOutput {
 		id: string;
 		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
 		owner: {
-			id: string;
+			id: string | null;
 			origin: "bundled" | "user-local" | "external" | "unknown";
 		};
 	}>;
@@ -504,7 +504,7 @@ export interface DelendaiDriftCheckOutput {
 		summary: string;
 	}>;
 	isFirstSnapshot: boolean;
-	lastSnapshotAt: string;
+	lastSnapshotAt: string | null;
 	summary: string;
 }
 
@@ -566,8 +566,8 @@ export interface DelendaiEnvEnvExplainsOutput {
 export interface DelendaiFsReadOutput {
 	path: string;
 	found: boolean;
-	content: string;
-	totalLines: number;
+	content: string | null;
+	totalLines: number | null;
 	range: never[] | null;
 }
 
@@ -770,7 +770,7 @@ export interface DelendaiObservabilityObsErrorsOutput {
 		context: string;
 		url: string;
 	}>;
-	nextCursor: string;
+	nextCursor: string | null;
 	redactions: number;
 }
 
@@ -803,14 +803,14 @@ export interface DelendaiObservabilityObsRuntimeMetricsOutput {
 
 export interface DelendaiObservabilityObsTraceOutput {
 	sampleSize: number;
-	groups: {
+	groups: Array<{
 		service: string;
 		traceId: string;
 		hourBucket: string;
 		count: number;
 		errorRate: number;
-		topError: string;
-	}[];
+		topError: string | null;
+	}>;
 	summary: {
 		critical: number;
 		high: number;
@@ -1089,17 +1089,17 @@ export interface DelendaiProjectPluginsRepairOutput {
 
 export interface DelendaiPromptEvalEvalReportOutput {
 	tool: "eval_report";
-	rows: {
+	rows: Array<{
 		providerId: string;
 		costTier: number;
 		attempts: number;
 		passes: number;
-		winRate: number;
+		winRate: number | null;
 		totalCostUsd: number;
 		compositeScore: number;
-	}[];
-	winner: string;
-	worst: string;
+	}>;
+	winner: string | null;
+	worst: string | null;
 	totalCostUsd: number;
 	totalPasses: number;
 	markdown: string;
@@ -1107,7 +1107,7 @@ export interface DelendaiPromptEvalEvalReportOutput {
 
 export interface DelendaiPromptEvalEvalRunOutput {
 	tool: "eval_run";
-	taskType: string;
+	taskType: string | null;
 	attempts: {
 		providerId: string;
 		costTier: number;
@@ -1117,7 +1117,7 @@ export interface DelendaiPromptEvalEvalRunOutput {
 	}[];
 	passed: number;
 	totalCostUsd: number;
-	winner: string;
+	winner: string | null;
 }
 
 export interface DelendaiRefactorRefactorApplyOutput {
@@ -1350,8 +1350,8 @@ export interface DelendaiShellStatusOutput {
 		purpose: string;
 		availability: "present" | "missing" | "unknown";
 		probeStatus: "present" | "missing" | "error";
-		path: string;
-		version: string;
+		path: string | null;
+		version: string | null;
 		alternativesAvailable: string[];
 		suggestInstall: {
 			manager: string;

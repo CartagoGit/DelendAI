@@ -47,6 +47,8 @@
 		"@delendai/core": "^0.2.4"
 	},
 	"dependencies": {
+		"@delendai/deps": "workspace:*",
+		"@delendai/security": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.6.6"
 	},

@@ -24,6 +24,8 @@
 
 ## Depends on
 
+- @delendai/deps
+- @delendai/security
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
@@ -41,8 +43,8 @@
 
 - plugins/audit/tests/src/lib/plugin-options.spec.ts
 - plugins/audit/tests/src/lib/self-audit/aggregate.spec.ts
+- plugins/audit/tests/src/lib/self-audit/default-scanners.spec.ts
 - plugins/audit/tests/src/lib/self-audit/file-proposals.spec.ts
-- plugins/audit/tests/src/lib/self-audit/rank.spec.ts
 
 ## Do not
 
@@ -55,7 +57,7 @@
 ## Token hotspots
 
 - `delendai_audit_audit_run` — 3,611 B total, 2,193 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_audit_audit_consolidate` — 2,920 B total, 2,147 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_audit_audit_consolidate` — 3,175 B total, 2,402 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

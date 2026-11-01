@@ -38,7 +38,7 @@ import {
 	type ISearchHit,
 	type ISearchResult,
 } from './search-engine.types';
-import { resolveSearchRoots } from './search-safe-reader';
+import { describeZeroScan, resolveSearchRoots } from './search-safe-reader';
 
 export { InvalidSearchPatternError } from './search-engine.types';
 
@@ -206,10 +206,8 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 				},
 			});
 
-		const rejectedRoots: string[] = [];
 		const missingRoots: string[] = [];
 		const resolvedRoots = await resolveSearchRoots(reader, roots);
-		rejectedRoots.push(...resolvedRoots.rejected);
 		missingRoots.push(...resolvedRoots.missing);
 		for (const root of resolvedRoots.roots) {
 			if (truncated) break;
@@ -220,30 +218,14 @@ export const createInHouseBackend = async (): Promise<ISearchBackend> => ({
 		}
 
 		// a00063: a silent `scanned: 0` sent a real agent into a
-		// zero-result retry spiral (124 identical empty searches,
-		// absolute roots at other repos, blind file probing). When the
-		// walk touched NOTHING, say why — the usual cause is a config
-		// whose `roots` describe a different project's layout.
-		let diagnostic: string | undefined;
-		if (scanned === 0) {
-			const parts: string[] = [];
-			if (missingRoots.length > 0) {
-				parts.push(
-					`configured roots do not exist in this workspace: ${missingRoots.join(', ')}`,
-				);
-			}
-			if (rejectedRoots.length > 0) {
-				parts.push(
-					`roots must stay inside the workspace (rejected: ${rejectedRoots.join(', ')})`,
-				);
-			}
-			if (parts.length === 0) {
-				parts.push(
-					`0 files matched the filters under roots [${roots.join(', ')}] — check plugins.search.options (extensions/include/exclude) in delendai.config.json`,
-				);
-			}
-			diagnostic = `scanned 0 files: ${parts.join('; ')}. Fix plugins.search.options.roots in delendai.config.json (omit roots to scan the whole workspace).`;
-		}
+		// zero-result retry spiral. When the walk touched NOTHING, say why.
+		const diagnostic =
+			scanned === 0
+				? describeZeroScan(roots, {
+						rejected: resolvedRoots.rejected,
+						missing: missingRoots,
+					})
+				: undefined;
 
 		return {
 			query,

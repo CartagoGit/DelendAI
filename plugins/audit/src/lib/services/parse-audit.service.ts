@@ -15,6 +15,7 @@
 import type {
 	AuditSeverity,
 	IAuditDocument,
+	IParsedAuditBatch,
 	IAuditFinding,
 	IAuditScore,
 	IAuditSource,
@@ -341,29 +342,29 @@ export const parseAuditBody = (path: string, body: string): IAuditDocument => {
 	};
 };
 
-const tryParseAuditBody = (
-	path: string,
-	body: string,
-): IAuditDocument | undefined => {
-	try {
-		return parseAuditBody(path, body);
-	} catch {
-		// Intentional: one malformed audit must not abort the whole batch.
-		return undefined;
+/** Parse every file, keeping the paths that did not parse and why. */
+export const parseAuditFilesDetailed = (
+	files: ReadonlyArray<{ path: string; body: string }>,
+): IParsedAuditBatch => {
+	const documents: IAuditDocument[] = [];
+	const rejected: { path: string; reason: string }[] = [];
+	const seen = new Set<string>();
+	for (const f of files) {
+		if (seen.has(f.path)) continue;
+		seen.add(f.path);
+		try {
+			documents.push(parseAuditBody(f.path, f.body));
+		} catch (err) {
+			rejected.push({
+				path: f.path,
+				reason: `unparsable: ${err instanceof Error ? err.message : String(err)}`,
+			});
+		}
 	}
+	return { documents, rejected };
 };
 
 /** Convenience: parse all `*.md` files in a directory. Pure: takes the list. */
 export const parseAuditFiles = (
 	files: ReadonlyArray<{ path: string; body: string }>,
-): readonly IAuditDocument[] => {
-	const docs: IAuditDocument[] = [];
-	const seen = new Set<string>();
-	for (const f of files) {
-		if (seen.has(f.path)) continue;
-		seen.add(f.path);
-		const parsed = tryParseAuditBody(f.path, f.body);
-		if (parsed !== undefined) docs.push(parsed);
-	}
-	return docs;
-};
+): readonly IAuditDocument[] => parseAuditFilesDetailed(files).documents;
