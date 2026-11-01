@@ -2,14 +2,14 @@
 id: x00939
 title: "A tool's declared outputSchema is checked against every result its handler returns"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: cb8a1084-64d7-4753-b299-3c1d9724be71
-last-correlation-id: cb8a1084-64d7-4753-b299-3c1d9724be71
-last-transition-from: review
-last-transition-at: 2026-10-24T21:46:44.276Z
+last-transition-id: 32102f7a-9259-4ccb-96cf-4c698c202757
+last-correlation-id: 32102f7a-9259-4ccb-96cf-4c698c202757
+last-transition-from: ready
+last-transition-at: 2026-11-01T00:37:47.417Z
 shipped-in:
   - "40c0b226b46ab1eaf5c31ac4197efc95cb4140f6"
 ---
