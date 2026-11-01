@@ -2,14 +2,14 @@
 id: f00791
 title: "Consent and dry-run are checked by the server, not asserted by the caller"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 09070382-250c-49bb-979c-eed11a673fe3
-last-correlation-id: 09070382-250c-49bb-979c-eed11a673fe3
-last-transition-from: review
-last-transition-at: 2026-11-01T04:01:44.997Z
+last-transition-id: 422237f7-6c24-441c-93e2-7845c875ff17
+last-correlation-id: 422237f7-6c24-441c-93e2-7845c875ff17
+last-transition-from: in-progress
+last-transition-at: 2026-11-01T04:33:30.397Z
 ---
 
 # f00791 — Consent and dry-run are checked by the server, not asserted by the caller
