@@ -207,6 +207,43 @@ export const listStrandedEdits = (input: {
 };
 
 /**
+ * The blob of each of `paths` on each of `refs`, read by one process however
+ * many pairs there are, or `undefined` when git could not answer.
+ */
+const blobsOf = (
+	root: string,
+	refs: readonly string[],
+	paths: readonly string[],
+): ReadonlyMap<string, string> | undefined => {
+	const unique = [...new Set(paths)];
+	const names = [...new Set(refs)].flatMap((ref) =>
+		unique.map((path) => `${ref}:${path}`),
+	);
+	if (names.length === 0) return new Map();
+	try {
+		const answers = execFileSync(
+			'git',
+			['cat-file', '--batch-check=%(objectname)'],
+			{
+				cwd: root,
+				encoding: 'utf8',
+				input: `${names.join('\n')}\n`,
+				maxBuffer: Number.POSITIVE_INFINITY,
+				stdio: ['pipe', 'pipe', 'ignore'],
+			},
+		).split('\n');
+		return new Map(
+			names.flatMap((name, index) => {
+				const sha = answers[index] ?? '';
+				return /^[0-9a-f]+$/u.test(sha) ? [[name, sha] as const] : [];
+			}),
+		);
+	} catch {
+		return undefined;
+	}
+};
+
+/**
  * Drop the stranded refs that keep nothing found nowhere else: every file
  * such a ref saved is, byte for byte, on the integration branch, on a
  * work or publication branch, or in a larger stranded ref kept. One that holds a
@@ -219,8 +256,6 @@ export const dropLandedStrandedEdits = (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly integration: string;
 }): readonly string[] => {
-	const blob = (ref: string, path: string): string | undefined =>
-		readGit(input.root, ['rev-parse', '-q', '--verify', `${ref}:${path}`]);
 	const branches = (
 		readGit(input.root, [
 			'for-each-ref',
@@ -250,6 +285,15 @@ export const dropLandedStrandedEdits = (input: {
 		.map((ref) => ({ ref, paths: pathsOf(ref) }))
 		.filter((entry) => entry.paths.length > 0)
 		.sort((a, b) => b.paths.length - a.paths.length);
+	const blobs = blobsOf(
+		input.root,
+		[input.integration, ...branches, ...stranded],
+		ordered.flatMap((entry) => entry.paths),
+	);
+	// Nothing is known about what these refs keep, so none of them goes.
+	if (blobs === undefined) return [];
+	const blob = (ref: string, path: string): string | undefined =>
+		blobs.get(`${ref}:${path}`);
 	const kept: string[] = [];
 	const dropped: string[] = [];
 	for (const { ref, paths } of ordered) {

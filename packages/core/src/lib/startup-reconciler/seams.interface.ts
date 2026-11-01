@@ -151,6 +151,13 @@ export interface IStartupGitSeam {
 	 * alone.
 	 */
 	contentContained?(sha: string, integration: string): Promise<boolean>;
+	/**
+	 * Every commit reachable from `tips`, read by one process, or `undefined`
+	 * when git could not list them and each question has to be asked alone.
+	 */
+	reachableFrom?(
+		tips: readonly string[],
+	): Promise<ReadonlySet<string> | undefined>;
 	/** The branch HEAD points at, or undefined when detached. */
 	currentBranch(): Promise<string | undefined>;
 	/**

@@ -410,6 +410,7 @@ export {
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
 export { startServerLogIn } from './lib/shared/server-log';
+export { holdToolCalls } from './lib/project/tool-call-hold.helper';
 // The marker on every agent delendai writes: what tells its own file from
 // one a person edited.
 export {
