@@ -2,14 +2,14 @@
 id: f00786
 title: "A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-10-22
-last-transition-id: 12f532fa-a67e-406d-9166-cb87846f84ff
-last-correlation-id: 12f532fa-a67e-406d-9166-cb87846f84ff
-last-transition-from: review
-last-transition-at: 2026-10-23T15:59:14.484Z
+last-transition-id: fbcb5d38-3bfa-4ac1-90b6-dbb2db3562de
+last-correlation-id: fbcb5d38-3bfa-4ac1-90b6-dbb2db3562de
+last-transition-from: ready
+last-transition-at: 2026-11-01T07:39:49.268Z
 shipped-in:
   - "34c56b60e3229de38164cc30bf1cc079c5da29ee"
 ---
