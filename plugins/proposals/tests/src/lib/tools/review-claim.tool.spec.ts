@@ -4,6 +4,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
+	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	realpathSync,
@@ -311,5 +312,42 @@ describe('review_claim', () => {
 				reason: 'its gate needs a database this machine lacks',
 			}),
 		]);
+	});
+});
+
+describe('review_claim with an earlier pack', () => {
+	it('refuses a claim from a second unit while the first holds unpublished verdicts', async () => {
+		const first = unit('glm-5', 1);
+		repo.git('-C', first, 'config', 'user.email', 't@t');
+		repo.git('-C', first, 'config', 'user.name', 't');
+		mkdirSync(join(first, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(first, 'docs/delendai/proposals/review/x00001-work.md'),
+			'verdict\n',
+		);
+		repo.git('-C', first, 'add', '-A');
+		repo.git('-C', first, 'commit', '-q', '-m', 'verdict');
+		const second = unit('glm-5', 2);
+		const claim = await claimTool();
+
+		const refused = await claim({
+			proposalId: 'x00002',
+			agent: 'glm-5',
+			checkout: second,
+		});
+		const fromFirst = await claim({
+			proposalId: 'x00002',
+			agent: 'glm-5',
+			checkout: first,
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(JSON.stringify(refused)).toContain(
+			'glm-5/review/batch-all-g1/backlog',
+		);
+		expect(claimsIn(second)).toEqual([]);
+		expect(fromFirst.isError).not.toBe(true);
 	});
 });
