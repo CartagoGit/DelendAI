@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 424
+Total exports: 423
 
 | Maturity | Count |
 | --- | --- |
-| stable | 421 |
+| stable | 420 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -321,7 +321,6 @@ Total exports: 424
 | `ProjectPackKind` | type | stable | `../lib/contracts/interfaces/project-signals.interface` |
 | `projectValue` | const | stable | `../lib/contracts/output/projection` |
 | `PROPOSAL_STATUS_VALUES` | const | stable | `../lib/catalog/agent-discovery-types` |
-| `proposalOfCreateUnit` | const | stable | `../lib/work-units/unit-adoption.service` |
 | `ProposalStatus` | type | stable | `../lib/catalog/agent-discovery-types` |
 | `ProviderKind` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
 | `ProviderState` | type | stable | `../lib/contracts/interfaces/provider-capabilities.interface` |
