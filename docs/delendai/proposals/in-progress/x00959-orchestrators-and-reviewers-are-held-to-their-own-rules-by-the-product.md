@@ -32,7 +32,7 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 
 ### S1 — Units
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/unit-departures.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `plugins/proposals/src/lib/tools/create-proposal.tool.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/unit-departures.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A create unit refuses a second create_proposal (C5)."
@@ -48,7 +48,7 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 
 ### S3 — Reviewers
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-earlier-pack.service.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts."
