@@ -149,17 +149,9 @@ const SYNC_IO_ALLOWLIST: readonly string[] = [
 	'plugins/proposals/src/lib/tools/summary-backfill.tool.ts::if (!existsSync(sqlitePath)) {',
 	"plugins/proposals/src/lib/tools/summary-backfill.tool.ts::import { existsSync } from 'node:fs';",
 
-	// repair-proposer scans `ready/fixes/` for an existing proposal covering
-	// the storm it is about to file. It runs inside the same synchronous boot
-	// step as the storm-log reads below, and its import line grew
-	// `readdirSync`/`readFileSync` for that scan without the allowlist
-	// following — the old entry named only `mkdirSync, writeFileSync` and had
-	// silently stopped matching.
-	"plugins/commit-policy/src/lib/services/repair-proposer.ts::import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';",
-	"plugins/commit-policy/src/lib/services/repair-proposer.ts::return readFileSync(pathAbs, 'utf8');",
 	// commit-policy's storm log is read during `register()`, which the
-	// plugin contract declares synchronous, and the host boot step that
-	// files repair proposals runs AFTER registration and reads the detector
+	// plugin contract declares synchronous, and the host boot step
+	// runs AFTER registration and reads the detector
 	// this seeding fills. Making the read async would let boot observe an
 	// empty detector and re-file storms that were already recorded, so the
 	// ordering guarantee is the constraint, not convenience.

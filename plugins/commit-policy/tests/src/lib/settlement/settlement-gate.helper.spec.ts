@@ -45,6 +45,21 @@ describe('createSettlementGate', () => {
 		expect(await gate.settlementRead()).toBe('stable');
 	});
 
+	it('holds a slice against settlement until it is released', async () => {
+		const store = registry();
+		const gate = createSettlementGate({ registry: store });
+		const slice = { proposalId: 'f1', sliceId: 'S1' };
+
+		expect(await gate.settlementRead(slice)).toBe('active');
+		expect(await store.enterSettling()).toBe(1);
+		expect((await store.read()).phase).toBe('active');
+
+		await gate.settlementRelease(slice);
+		expect(await store.enterSettling()).toBe(0);
+		expect(await gate.settlementRead(slice)).toBe('settling');
+		expect((await store.read()).activeWorkers).toBe(0);
+	});
+
 	it('exempts repair proposals by default', () => {
 		const gate = createSettlementGate({ registry: registry() });
 		expect(

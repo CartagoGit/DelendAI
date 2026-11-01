@@ -168,6 +168,48 @@ const refuseDirectIntegrationPush = (
 	};
 };
 
+/**
+ * The one decision "may this branch take a direct push": release branch,
+ * integration branch under a routed policy, then the protected list.
+ * `runPushDriver` pushes only when it returns `undefined`, and
+ * `commit_policy_status` reports its answer, so the two cannot disagree.
+ */
+export const directPushRefusal = (
+	branch: string,
+	policy: ICommitPolicyPush,
+	development: IResolvedDevelopmentPolicy | undefined,
+): IPushDriverResult | undefined => {
+	const effectiveProtectedBranches = resolveProtectedBranches(
+		policy.protectedBranches ?? deriveDefaultProtectedBranches(development),
+	);
+
+	// The release refusal must stay AHEAD of the `protectedBranches`
+	// override check (enforced by lint:commit-push-strictness): no config
+	// override may enable a direct push to the release/publish branch.
+	const releaseRefusal = refuseDirectReleasePush(branch, development);
+	if (releaseRefusal !== undefined) return releaseRefusal;
+
+	const integrationRefusal = refuseDirectIntegrationPush(branch, development);
+	if (integrationRefusal !== undefined) return integrationRefusal;
+
+	if (
+		isBranchProtected(branch, {
+			protected: effectiveProtectedBranches,
+			protectedPrefixes: policy.protectedPrefixes,
+		})
+	) {
+		return {
+			ok: false,
+			refusal: branchProtectedRefusal(branch, {
+				protected: effectiveProtectedBranches,
+				protectedPrefixes: policy.protectedPrefixes,
+			}),
+			code: 'BRANCH_PROTECTED',
+		};
+	}
+	return undefined;
+};
+
 export const runPushDriver = async (
 	input: IPushDriverInput,
 	policy: ICommitPolicyPush,
@@ -222,31 +264,8 @@ export const runPushDriver = async (
 	const effectiveProtectedBranches = resolveProtectedBranches(
 		policy.protectedBranches ?? deriveDefaultProtectedBranches(development),
 	);
-
-	// The release refusal must stay AHEAD of the `protectedBranches`
-	// override check (enforced by lint:commit-push-strictness): no config
-	// override may enable a direct push to the release/publish branch.
-	const releaseRefusal = refuseDirectReleasePush(branch, development);
-	if (releaseRefusal !== undefined) return releaseRefusal;
-
-	const integrationRefusal = refuseDirectIntegrationPush(branch, development);
-	if (integrationRefusal !== undefined) return integrationRefusal;
-
-	if (
-		isBranchProtected(branch, {
-			protected: effectiveProtectedBranches,
-			protectedPrefixes: policy.protectedPrefixes,
-		})
-	) {
-		return {
-			ok: false,
-			refusal: branchProtectedRefusal(branch, {
-				protected: effectiveProtectedBranches,
-				protectedPrefixes: policy.protectedPrefixes,
-			}),
-			code: 'BRANCH_PROTECTED',
-		};
-	}
+	const branchRefusal = directPushRefusal(branch, policy, development);
+	if (branchRefusal !== undefined) return branchRefusal;
 
 	const forceMode = input.force ?? policy.force;
 	const authorization = resolveForceAuthorization(
