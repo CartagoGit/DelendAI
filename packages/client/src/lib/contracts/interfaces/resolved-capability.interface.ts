@@ -12,5 +12,7 @@ export interface IResolvedCapability {
 	readonly result?: {
 		readonly content?: readonly { readonly text?: string }[];
 		readonly structuredContent?: unknown;
+		/** The tool refused: its content says why. */
+		readonly isError?: boolean;
 	};
 }

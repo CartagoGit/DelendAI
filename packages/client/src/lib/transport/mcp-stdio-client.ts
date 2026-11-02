@@ -382,6 +382,15 @@ export class McpStdioClient {
 							args,
 						}),
 					);
+					// A tool that refused through the resolver fails the call as
+					// it would directly; parsed as an answer, its refusal read
+					// as success and the CLI exited 0 on a rejected input.
+					if (resolved.status === 'ok' && resolved.result?.isError) {
+						this.payloadOf(qualifiedName, {
+							content: [...(resolved.result.content ?? [])],
+							isError: true,
+						});
+					}
 					const answer = unwrapResolved<TOut>(
 						qualifiedName,
 						resolved,

@@ -145,7 +145,19 @@ const shippedInState = (
 const nextActionFor = (
 	state: IReadyToCloseFinding['shippedInState'],
 	proposalId: string,
+	stranded: boolean,
 ): string => {
+	// Only the hand-over marks a slice finished: it moves each one to
+	// review with its shipped-in. Slices marked done by hand in ready/ or
+	// in-progress/ were the whole defect, and advice to add shipped-in or
+	// move to done (an edge those folders lack) only sent agents round it.
+	if (stranded) {
+		return (
+			`Set the slices of ${proposalId} back to \`pending\` and run ` +
+			`\`delendai work deliver --proposal=${proposalId}\` from its unit: it proves the unit, ` +
+			`moves each slice to review with its shipped-in, and publishes it.`
+		);
+	}
 	switch (state) {
 		case 'missing':
 		case 'empty':
@@ -225,7 +237,11 @@ export const scanReadyToClose = (
 				totalSlices: total,
 				doneSlices: done,
 				shippedInState: state,
-				nextAction: nextActionFor(state, proposalId),
+				nextAction: nextActionFor(
+					state,
+					proposalId,
+					DRIFT_FOLDERS.has(dir),
+				),
 				...(options.git !== undefined &&
 				!DRIFT_FOLDERS.has(dir) &&
 				state === 'ok'
