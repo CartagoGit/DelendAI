@@ -62,14 +62,16 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 - review-implementer: claude-opus-5-5
 
 ### S3 — The push is proved by the same plan
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.interface.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`bun run prove` plans the change against the integration branch exactly as CI does and runs the selected specs, the lints CI runs for the touched kinds of file, and the typecheck; it prints the plan, the time of each step and the verdict."
 - shipped-in: `84a042d1b596`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 84a042d1b596, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 84a042d1 the proof plans the change against the integration branch as the forge does, runs the selected specs the way the forge runs them, runs the typechec… — Approved on the delivered state of 84a042d1b596. The proof plans against the integration branch, runs the selected specs and the typecheck, and prints each step's time and the verdict. The type gate exited 0 and the slice spec passes 7 of 7. Two deviations, recorded and not blocking, and the same pack delivers the first: the proof runs a fixed list of four lints instead of the lints the forge runs for the kinds of file touched, a second hand-written list that drifts from the workflow; the slice S1 of v00147, approved in this same pack, replaces it by reading the static checks out of the workflow itself. And the plan is not printed, only the per-step label and the verdict.
 
 ### S4 — Documentation-only changes skip the code analyses
 - **Status**: review
