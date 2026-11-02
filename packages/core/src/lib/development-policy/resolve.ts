@@ -21,6 +21,7 @@ import {
 	type IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
 import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
+import { declaredBranchRules } from './branch-rules';
 import { deriveCapabilities } from './derive';
 import { guardOverride } from './resolve-guard';
 import { identityOverride } from './resolve-identity';
@@ -104,6 +105,9 @@ const applyOverrides = (
 				...(input.branches?.foreignRefPrefixes ??
 					base.branches.foreignRefPrefixes),
 			],
+			rules:
+				declaredBranchRules(input.branches?.rules) ??
+				base.branches.rules,
 		},
 		workspace: {
 			...base.workspace,

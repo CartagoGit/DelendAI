@@ -22,6 +22,7 @@ import type {
 	IRecoveryStrategy,
 	IWorkspaceStrategy,
 } from '../contracts/interfaces/development-policy.interface';
+import { withDefaultBranchRules } from './branch-rules';
 
 const workspaceFlags = (strategy: IWorkspaceStrategy) => ({
 	shared: strategy === 'shared-checkout',
@@ -122,8 +123,24 @@ export const deriveCapabilities = (
 		),
 	};
 
+	const integration = {
+		...policy.integration,
+		...integrationFlags(
+			policy.integration.strategy,
+			policy.integration.requiresLocalCertification,
+		),
+	};
+
 	return {
 		...policy,
+		branches: {
+			...policy.branches,
+			rules: withDefaultBranchRules(
+				policy.branches,
+				policy.branches.rules,
+				integration.requiresPullRequest,
+			),
+		},
 		workspace: {
 			...policy.workspace,
 			...workspaceFlags(policy.workspace.strategy),
@@ -140,13 +157,7 @@ export const deriveCapabilities = (
 			// somewhere that is not the integration branch.
 			durableWip: policy.checkpoint.durableWip && persistence.usesWipRefs,
 		},
-		integration: {
-			...policy.integration,
-			...integrationFlags(
-				policy.integration.strategy,
-				policy.integration.requiresLocalCertification,
-			),
-		},
+		integration,
 		coordination: {
 			...policy.coordination,
 			...coordinationFlags(policy.coordination.strategy),

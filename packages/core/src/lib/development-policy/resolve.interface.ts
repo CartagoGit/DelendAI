@@ -36,6 +36,7 @@ export interface IDevelopmentConfigInput {
 				readonly workRefPrefix?: string | undefined;
 				readonly publicationRefPrefix?: string | undefined;
 				readonly foreignRefPrefixes?: readonly string[] | undefined;
+				readonly rules?: Readonly<Record<string, unknown>> | undefined;
 		  }
 		| undefined;
 	readonly workspace?: { readonly strategy?: string | undefined } | undefined;

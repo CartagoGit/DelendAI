@@ -35,7 +35,7 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 
 ### S1 — A branch declares how it takes in work
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/validate-combinations.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/contracts/interfaces/branch-rule.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/derive.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/src/lib/development-policy/validate-branch-rules.ts`, `packages/core/src/lib/development-policy/validate-combinations.ts`, `packages/core/tests/src/lib/development-policy/branch-rules.spec.ts`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`development.branches.rules` maps a branch name (or a glob) to how it takes in work, `pull-request`, `merge` or `direct`, and, for the integration and release branches, defaults to what the profile does today; an invalid combination (a release looser than its integration branch, a direct branch inside delendai's namespaces) is refused at load with the key that is wrong."
