@@ -293,6 +293,11 @@ describe('planJobs — a change to a job’s own scripts runs that job', () => {
 			['build-clean', 'pack-smoke'],
 		],
 		['tools/scripts/smoke/pack.script.ts', ['pack-smoke']],
+		[
+			'tools/scripts/verify/external-install-smoke.script.ts',
+			['pack-smoke'],
+		],
+		['packages/cli/src/lib/init/init-plan.service.ts', ['pack-smoke']],
 	])('%s selects %j', (file, jobs) => {
 		const plan = planJobs({ changed: [file] });
 		for (const job of jobs) expect(plan[job]).toBe(true);

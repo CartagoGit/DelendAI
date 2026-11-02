@@ -219,12 +219,14 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		// the entry files that are the export surface. A change inside an
 		// existing module cannot, and typecheck compiles it.
 		matches:
-			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$)|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
+			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$|verify\/external-install-smoke\.script\.ts$|publish\/workspace-deps\.ts$)|^packages\/cli\/src\/(lib|commands)\/init\/|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
 		touches: [
 			// The scripts it runs: a change to how dist is built or packed
 			// is a change to what the tarball holds.
 			'tools/scripts/compile/',
 			'tools/scripts/smoke/pack.script.ts',
+			'tools/scripts/verify/external-install-smoke.script.ts',
+			'tools/scripts/publish/workspace-deps.ts',
 			'packages/',
 			'plugins/',
 			'apps/shared/',
@@ -233,7 +235,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'bun.lock',
 		],
 		because:
-			'it builds dist and installs the tarball; nothing outside the publishable source and its build configuration can change what is in it.',
+			'it builds dist, installs the tarballs and drives an external project through install, init and the MCP handshake; nothing outside the publishable source, its build configuration and init can change that.',
 	},
 	{
 		job: 'build-clean',
