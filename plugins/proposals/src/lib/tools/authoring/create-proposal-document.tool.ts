@@ -122,6 +122,9 @@ export const createProposalDocument = async (
 				options.extraFolders ?? [],
 				undefined,
 				options.folderPolicy,
+				undefined,
+				// Creating a proposal writes it and its index entry only.
+				true,
 			);
 			return {
 				ok: true,
@@ -251,12 +254,17 @@ export const createProposalDocument = async (
 	}
 	const { text: safeBody, redactions } = redactSecrets(body);
 	await writeFileAtomic(absPath, safeBody);
+	// Index only: a sync that also reconciled folders moved every other
+	// proposal of a consumer into this repository's layout (in one
+	// project, 16 archived proposals, which its own lint then refused).
 	const sync = await syncProposalRegistry(
 		options.workspaceRoot,
 		options.layout,
 		options.extraFolders ?? [],
 		undefined,
 		options.folderPolicy,
+		undefined,
+		true,
 	);
 	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
 	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
