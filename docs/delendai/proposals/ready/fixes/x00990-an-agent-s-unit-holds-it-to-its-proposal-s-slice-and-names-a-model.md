@@ -2,14 +2,14 @@
 id: x00990
 title: "An agent's unit holds it to its proposal's slice, and names a model"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
-last-correlation-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T14:50:25.187Z
+last-transition-id: 89c05960-e832-40a0-8867-ec108f9fb9b7
+last-correlation-id: 89c05960-e832-40a0-8867-ec108f9fb9b7
+last-transition-from: review
+last-transition-at: 2026-11-02T22:38:14.193Z
 shipped-in:
   - "158fe5045a3b7772b0f5b23a19696b691fa2dd12"
 ---
@@ -117,14 +117,24 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an implement unit on a proposal under this agent's review is refused, naming the reviewer and the rule that a reviewer does not implement what it r… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent that holds or held a review round on a proposal is refused an implement unit on it. The type gate exited 0 and the slice spec passes 8 of 8. Two residuals, recorded and not blocking: the refusal names the reviewer and not the round, which the criterion asks for; and the slice delivered almost nothing of its own, the proposal's notes record that the refusal was already in place, and this delivery only moved the call next to the closed-proposal check, so the spec that pins it is older than the slice.
 
 ### S8 — Claiming a unit hands over its worktree and its hold
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-claim.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After `work claim`, `work enter` with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice."
 - shipped-in: `410f5c107eca`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S8, the claim that hands a slice to another agent.
+
+WHAT IS WRONG. The criterion has two halves and the first one fails. After work claim, the claimant is still refused entry to the worktree it now owns, because the claim does not re-stamp the worktree: the unit stays bound to the previous agent's session, and the entry is refused as held by another session. The delivery moved the forge reservation to the claimant and released what the old name had reserved, which is the second half of the criterion, and it left the worktree stamp alone.
+
+WHERE. packages/core/src/lib/work-units/worktree-agent.service.ts, whose stampWorktreeAgent writes the agent and the session of the worktree and is not called by the claim path; packages/core/src/lib/work-units/work-unit-shared.service.ts, whose heldByAnother refuses the entry when the stamp names another session; and packages/core/src/lib/work-units/work-unit-claim.service.ts, which releases the reservation without moving the stamp.
+
+HOW TO REPRODUCE. In a temporary repository, enter an implement unit as one agent, then run work claim --agent=<the other agent>, then work enter --agent=<the other agent> --generation=2. The claim answers with the ref renamed to the new agent and the worktree followed, and the old ref gone. The enter then answers with exit code 4 and the refusal that the worktree is held by another session, the unit being someone else's work even under the same agent id. Running the same enter from inside that worktree gives the same refusal. Only passing the previous agent's session makes it succeed and return the same worktree.
+
+WHAT MUST HOLD. After work claim, work enter with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice. The claim must re-stamp the worktree with the claimant, or the entry must follow the reservation instead of the stamp. A test that runs work claim and then work enter with the claimed generation would pin it; the slice's new spec pins only the release of the reservation.
 
 ## acceptance
 
