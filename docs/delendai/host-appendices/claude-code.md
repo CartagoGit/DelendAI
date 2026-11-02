@@ -14,6 +14,10 @@ for the rest of the session, so how you call these tools matters:
   touches multiple files, or needs repeated MCP reads to complete. It
   knows the working loop, the invariants, and the multi-agent
   coordination primitives.
+- **Measure it.** `delendai usage host-sessions --since=<date>` shows each
+  thread's calls and the context each call carried. A call re-reads the
+  whole thread: measured on 2026-11-02, a 550k-token main thread paid
+  about nine times what a subagent at 65k paid for the same task.
 - **Prefer compact tools when orienting directly.** Use
   `delendai_overview` with `compact: true`, `proposals_auto_work`,
   and `proposals_compact_status` over verbose equivalents
