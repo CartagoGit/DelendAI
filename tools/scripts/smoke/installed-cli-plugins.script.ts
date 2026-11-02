@@ -24,7 +24,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { parse } from 'jsonc-parser';
 
-import { AGENT_HOSTS } from '../../../packages/core/src/lib/contracts/constants/agent-hosts.constant';
+import { AGENT_HOSTS } from '@delendai/core/cli';
 import {
 	packPublishablePackages,
 	serveLocalRegistry,
