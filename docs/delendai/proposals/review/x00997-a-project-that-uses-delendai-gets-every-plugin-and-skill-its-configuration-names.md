@@ -2,14 +2,14 @@
 id: x00997
 title: "A project that uses delendai gets every plugin and skill its configuration names"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: distribution
 date: 2026-10-31
-last-transition-id: 840b7506-649e-48f8-a6c3-758a952ebc11
-last-correlation-id: 840b7506-649e-48f8-a6c3-758a952ebc11
-last-transition-from: ready
-last-transition-at: 2026-11-02T22:57:31.141Z
+last-transition-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
+last-correlation-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T23:13:33.349Z
 ---
 
 # x00997 — A project that uses delendai gets every plugin and skill its configuration names
@@ -40,25 +40,34 @@ The CLI now depends on the 27 plugins of `swarm`, `init`'s default preset, and a
 - global_gate: type
 
 ### S1 — Every skill folder is published
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/commit-policy/package.json`, `tools/scripts/lint/skills-are-published.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every package that holds a `skills/` folder lists it in its `files`, so its skills are published. `plugins/commit-policy` did not (`skills-are-published.spec.ts`)."
+- shipped-in: `27f670a5c382`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — No skill is left in the documentation
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/skills/shell-status/SKILL.md`, `packages/core/skills/shell-fallback/SKILL.md`, `packages/core/skills/manifest.json`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
   - "`shell-status` and `shell-fallback` live in `packages/core/skills` and in the manifest, not in `docs/delendai/skills`, which is not published. `docs/` holds only the pointer to where skills live."
+- shipped-in: `27f670a5c382`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — An installed CLI reaches every configured plugin
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/package.json`, `bun.lock`, `packages/cli/src/lib/init/init-plugins-are-installed.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A project that installs the published CLI resolves every plugin `init` writes in its configuration. Proved on packed tarballs in a throwaway project, not from the monorepo's sources, whose resolution hides the gap: the server activates each plugin, and each host folder holds its skills."
+- shipped-in: `86045bb669d1`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
