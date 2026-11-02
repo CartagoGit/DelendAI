@@ -30,9 +30,8 @@ const LAUNCH_SETTINGS: Readonly<Record<string, unknown>> = {
 	args: ['server.js'],
 };
 
-/** The default tool prefix, and the router the extension falls back through. */
+/** The default tool prefix. */
 const PREFIX = 'delendai_';
-const ROUTER_TOOL = `${PREFIX}vertex`;
 
 type TCallTool = (input: {
 	name: string;
@@ -212,56 +211,31 @@ afterEach(() => {
 });
 
 describe('resilient client routing', () => {
-	it('walks the router ladder until a candidate answers and renders its payload', async () => {
-		const routed: { domain: string; action: string }[] = [];
+	it('passes a call through to the client under its own name', async () => {
+		const called: string[] = [];
 		const harness = createHarness();
 		const client = clientOf(async (input) => {
-			const args = (input.arguments ?? {}) as {
-				domain?: string;
-				action?: string;
-			};
-			if (input.name !== ROUTER_TOOL) {
-				return { structuredContent: { tools: [] } };
-			}
-			routed.push({
-				domain: args.domain ?? '',
-				action: args.action ?? '',
-			});
-			if (args.domain === 'adopt') {
-				return { structuredContent: { structuredContent: plan } };
-			}
-			return {
-				structuredContent: { isError: true, text: 'unknown domain' },
-			};
+			called.push(input.name);
+			return { structuredContent: plan };
 		});
 		await activate(harness.context, {
 			vscode: harness.vscode,
 			createClient: async () => client,
 		});
 		await harness.handlers.get(ADOPT_COMMAND)?.();
-		expect(routed[0]).toEqual({
-			domain: 'core',
-			action: 'adopt_project',
-		});
-		expect(routed.at(-1)).toEqual({ domain: 'adopt', action: 'project' });
+		expect(called).toContain(`${PREFIX}adopt_project`);
+		expect(called.some((name) => name.endsWith('vertex'))).toBe(false);
 		expect(harness.errors).toEqual([]);
 		expect(harness.panels.at(-1)?.webview.html).toContain(
 			'delendai.config.json',
 		);
 	});
 
-	it('reports the last router error when no candidate answers', async () => {
+	it('reports the failure of a tool', async () => {
 		const harness = createHarness();
-		const client = clientOf(async (input) =>
-			input.name === ROUTER_TOOL
-				? {
-						structuredContent: {
-							isError: true,
-							text: 'no such action',
-						},
-					}
-				: { structuredContent: { tools: [] } },
-		);
+		const client = clientOf(async () => {
+			throw new Error('no such action');
+		});
 		await activate(harness.context, {
 			vscode: harness.vscode,
 			createClient: async () => client,
@@ -358,11 +332,13 @@ describe('connection timeout', () => {
 		});
 		await vi.advanceTimersByTimeAsync(0);
 		await activation;
-		await vi.advanceTimersByTimeAsync(10_000);
+		await vi.advanceTimersByTimeAsync(30_000);
 		vi.useRealTimers();
 		await harness.handlers.get(ADOPT_COMMAND)?.();
 		expect(
-			harness.errors.some((e) => e.includes('MCP server is connecting')),
+			harness.errors.some((e) =>
+				e.includes('MCP server did not connect'),
+			),
 		).toBe(true);
 		resolveLate(
 			clientOf(
@@ -408,11 +384,7 @@ describe('untrusted workspace', () => {
 		) => {
 			approved.set(key, value);
 		}) as typeof harness.context.globalState.update;
-		const client = clientOf(async (input) =>
-			input.name === ROUTER_TOOL
-				? { structuredContent: { structuredContent: plan } }
-				: { structuredContent: { tools: [] } },
-		);
+		const client = clientOf(async () => ({ structuredContent: plan }));
 		harness.vscode.window.showQuickPick = (async (
 			items: readonly { id: string; label: string }[],
 		) => items.find((item) => item.id === 'approve')) as NonNullable<

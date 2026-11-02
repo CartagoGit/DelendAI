@@ -71,6 +71,7 @@ import {
 } from './commands/proposals-commands';
 import { registerProviderActionCommands } from './commands/provider-actions';
 import { REFRESH_COMMAND, registerRefreshCommand } from './commands/refresh';
+import { keepConnected } from './host/keep-connected.helper';
 import {
 	RESTART_SERVER_COMMAND,
 	registerRestartServerCommand,
@@ -120,7 +121,7 @@ const runSafely = (task: Promise<unknown>): void => {
 	void task.catch(() => undefined);
 };
 
-const CONNECT_TIMEOUT_MS = 10_000;
+const CONNECT_TIMEOUT_MS = 30_000;
 
 const connectWithTimeout = async (
 	connect: () => Promise<McpStdioClient>,
@@ -306,7 +307,6 @@ interface IResilientClient {
 const createResilientClient = (
 	initial: McpStdioClient,
 	connect: () => Promise<McpStdioClient>,
-	namespacePrefix?: string,
 ): IResilientClient => {
 	let current = initial;
 	let reconnecting: Promise<void> | undefined;
@@ -315,107 +315,6 @@ const createResilientClient = (
 	const proxy = McpStdioClient.fromTransport({
 		async callTool(input) {
 			await ready;
-			const directTools = new Set([
-				'overview',
-				'tool_search',
-				'plugin_activate',
-				'plugin_deactivate',
-				'status',
-				'vertex',
-			]);
-			const prefix = namespacePrefix?.trim()
-				? namespacePrefix.trim().replace(/_?$/, '_')
-				: 'delendai_';
-			const suffix = input.name.startsWith(prefix)
-				? input.name.slice(prefix.length)
-				: undefined;
-			if (suffix !== undefined && !directTools.has(suffix)) {
-				const router = `${prefix}vertex`;
-				// Build a candidate ladder so calls like
-				//   delendai_project_kpis      (single underscore)
-				//   delendai_project_kpis_now  (two underscores)
-				// all reach the right domain/action. The router stores
-				// tools under `<prefix>_<plugin>_<stem>` where `<plugin>`
-				// uses a hyphen (e.g. project-kpis). So:
-				//   • `core` covers tools registered without a plugin.
-				//   • `<hyphen-plug>` covers the canonical kebab plugin id.
-				//   • For two-or-more underscores, also try splitting the
-				//     rightmost `_` (e.g. `kpis_history`).
-				const candidates: Array<{
-					readonly domain: string;
-					readonly action: string;
-				}> = [{ domain: 'core', action: suffix }];
-				const firstSeparator = suffix.indexOf('_');
-				if (firstSeparator !== -1) {
-					const left = suffix.slice(0, firstSeparator);
-					const right = suffix.slice(firstSeparator + 1);
-					candidates.push(
-						{ domain: left, action: right },
-						{ domain: left.replaceAll('-', '_'), action: right },
-						{ domain: `${left}-plugin`, action: right },
-						// The kebab-plugin id with the FULL action — matches
-						// tools like `project-kpis.project_kpis` whose plugin
-						// name has a hyphen and the underscore lives inside
-						// the tool stem.
-						{ domain: left.replaceAll('_', '-'), action: suffix },
-					);
-					const lastSeparator = suffix.lastIndexOf('_');
-					if (lastSeparator !== firstSeparator) {
-						candidates.push({
-							domain: suffix.slice(0, lastSeparator),
-							action: suffix.slice(lastSeparator + 1),
-						});
-					}
-				}
-				const seen = new Set<string>();
-				const ladder = candidates.filter((c) => {
-					const key = `${c.domain}::${c.action}`;
-					if (seen.has(key)) return false;
-					seen.add(key);
-					return true;
-				});
-				for (const candidate of ladder) {
-					try {
-						const routed = await current.request<
-							{
-								readonly domain: string;
-								readonly action: string;
-								readonly args: Readonly<
-									Record<string, unknown>
-								>;
-							},
-							{
-								readonly routed?: boolean;
-								readonly isError?: boolean;
-								readonly text?: string;
-								readonly structuredContent?: unknown;
-							}
-						>(router, {
-							domain: candidate.domain,
-							action: candidate.action,
-							args: (input.arguments ?? {}) as Readonly<
-								Record<string, unknown>
-							>,
-						});
-						if (routed.isError === true) {
-							throw new Error(
-								routed.text ??
-									`MCP tool "${input.name}" returned an error`,
-							);
-						}
-						if (routed.structuredContent !== undefined) {
-							return {
-								structuredContent: routed.structuredContent,
-							};
-						}
-						return { structuredContent: routed };
-					} catch (error) {
-						if (candidate === ladder[ladder.length - 1]) {
-							throw error;
-						}
-					}
-				}
-			}
 			return {
 				structuredContent: await current.request(
 					input.name,
@@ -589,21 +488,26 @@ export const activate = async (
 				: new Error('MCP server is connecting'),
 		);
 	}
-	const resilient = createResilientClient(
-		initialClient,
-		connectClient,
-		resolveNamespacePrefix(vscode),
-	);
+	const refreshViews: { current?: () => void } = {};
+	const resilient = createResilientClient(initialClient, connectClient);
 	adoptConnectedClient = resilient.replace;
 	const client = resilient.client;
 	const reconnect = resilient.reconnect;
 	if (isTrusted && configuredLaunch !== undefined) {
-		void reconnect()
-			.then(
-				() => undefined,
-				() => undefined,
-			)
-			.catch(() => undefined);
+		void keepConnected({
+			attempt: reconnect,
+			stopped: () => clientClosed,
+			onConnected: () => refreshViews.current?.(),
+			// The reason, not "connecting": a view must say what went wrong.
+			onFailed: (failure) =>
+				resilient.replace(
+					disconnectedClient(
+						new Error(
+							`MCP server did not connect: ${failure.message}. Retrying.`,
+						),
+					),
+				),
+		});
 	}
 	void Promise.resolve(
 		context.globalState.update(CLIENT_STATE_KEY, client),
@@ -809,6 +713,13 @@ export const activate = async (
 		toolTree.refresh();
 	}
 
+	const refreshAllViews = (): void => {
+		toolTree.refresh();
+		memoryTree.refresh();
+		proposalsTree.refresh();
+		dashboardRefresh.current?.refresh();
+	};
+	refreshViews.current = refreshAllViews;
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	// detailSink is wired below — see `dashboardProvider` construction —
 	// because the dashboard provider depends on `host`, which is only
