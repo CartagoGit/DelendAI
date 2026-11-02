@@ -46,6 +46,8 @@ import { mkdir, readdir, rm } from 'node:fs/promises';
 
 export const DEFAULT_OUTPUT_DIR = 'docs/delendai/host-hints';
 export const BOOTSTRAP_PATH = 'docs/delendai/AGENT-BOOTSTRAP.md';
+/** The bootstrap as a link from the fragments' own folder resolves it. */
+const BOOTSTRAP_HREF = '../AGENT-BOOTSTRAP.md';
 
 // S5 raised the budget from 1 200 to 1 300 to match the agent-catalog budget
 // (docs/delendai/AGENT-BOOTSTRAP.md is the canonical reference and the
@@ -78,7 +80,7 @@ const SHARED_FOOTER = [
 	'<!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->',
 	'',
 	'> This fragment is intentionally minimal. The universal agent rules live',
-	`> in [\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). Host files reference that`,
+	`> in [\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_HREF}). Host files reference that`,
 	'> file and add only the rules the server cannot enforce (e.g. the',
 	'> status-marker close contract on Copilot, the keep-main-thread-cheap',
 	'> rule on Claude Code). Tools, skills, and proposal ids are NEVER',
@@ -92,7 +94,7 @@ const renderFragment = (): string =>
 		'## Discovery',
 		'',
 		'Follow the universal bootstrap at',
-		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_PATH}). The canonical first move is`,
+		`[\`${BOOTSTRAP_PATH}\`](${BOOTSTRAP_HREF}). The canonical first move is`,
 		'`delendai_overview { compact: true }` followed by',
 		'`delendai_agent_catalog` whenever routing to a tool, skill, or',
 		'actionable proposal.',

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { execFileSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -22,13 +23,33 @@ const OUTPUT_REL =
 	'docs/delendai/generated/observability-provenance.generated.md';
 const OUTPUT_DIR_REL = 'docs/delendai/generated';
 const REPO_URL = REPOSITORY_URL;
-const PROPOSAL_PATH =
-	'docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md';
 
 const REPO_ROOT_ABS = resolve(
 	dirname(fileURLToPath(import.meta.url)),
 	'../../..',
 );
+/**
+ * Where a proposal is now, found by its id: a proposal moves folder as it
+ * moves state, and the path written here once went stale when f00392
+ * reached done/, leaving the generated page a broken link.
+ */
+const proposalPathOf = (id: string): string => {
+	const found = execFileSync(
+		'git',
+		['ls-files', '--', 'docs/delendai/proposals'],
+		{
+			cwd: REPO_ROOT_ABS,
+			encoding: 'utf8',
+		},
+	)
+		.split('\n')
+		.find((file) => (file.split('/').pop() ?? '').startsWith(`${id}-`));
+	if (found === undefined) {
+		throw new Error(`provenance-truth: proposal ${id} is not in the tree.`);
+	}
+	return found;
+};
+const PROPOSAL_PATH = proposalPathOf('f00392');
 const OBSERVABILITY_ROOT_REL = 'plugins/observability';
 const OBSERVABILITY_ROOT_ABS = resolve(REPO_ROOT_ABS, OBSERVABILITY_ROOT_REL);
 

@@ -7,13 +7,13 @@ plugin surface in the `logs` JSONL streams without writing a single
 line of logging code.
 
 If you only want to add a `delendai_logs_log` call to your own
-code, jump to **[`ctx.logs.log(...)`](#ctxlogslogg---the-write-side-helper)**.
+code, jump to **[`ctx.logs.log(...)`](#ctxlogslog--the-write-side-helper)**.
 If you want every `toolError(...)` in your tools to become a
 structured incident automatically, jump to
-**[`withIncidentLogging`](#withincidentlogging---the-opt-in-adapter)**.
+**[`withIncidentLogging`](#withincidentlogging--the-opt-in-adapter)**.
 If you are operating a host and want the `logs` plugin to be loaded
 unconditionally, jump to
-**[`--strict-logs`](#--strict-logs---auto-load-the-logs-plugin)**.
+**[`--strict-logs`](#--strict-logs--auto-load-the-logs-plugin)**.
 
 ---
 

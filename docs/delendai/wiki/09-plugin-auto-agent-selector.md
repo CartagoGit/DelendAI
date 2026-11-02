@@ -7,7 +7,7 @@ within the user's cost ceiling.
 
 > Wiki page for proposal **f00119**. This page documents the design; the
 > slice-by-slice progress lives in
-> [`docs/delendai/proposals/in-progress/f00119-auto-agent-selector-plugin.md`](../proposals/in-progress/f00119-auto-agent-selector-plugin.md).
+> [`docs/delendai/proposals/in-progress/f00119-auto-agent-selector-plugin.md`](../proposals/done/feats/f00119-auto-agent-selector-zero-config-multi-agent-routing-that-picks-the-right-llm-per-task.md).
 
 ---
 
@@ -116,7 +116,7 @@ respect the project's command policy and the user's consent flow.
 
 - Routing brain: [`07-plugin-orchestrator-runner.md`](07-plugin-orchestrator-runner.md)
 - Outcomes source: [`08-usage-tracking-plugin.md`](08-usage-tracking-plugin.md)
-- Acceptance gate: [`docs/delendai/VALIDATION-MATRIX.md`](../VALIDATION-MATRIX.md)
+- Acceptance gate: the validation matrix the server serves (`delendai validate-matrix`)
   (the validation matrix is the gate `auto_run` checks against between rungs)
 - Competitive scan: [`external/litellm.md`](external/litellm.md),
   [`external/openrouter.md`](external/openrouter.md) — both route hosted APIs

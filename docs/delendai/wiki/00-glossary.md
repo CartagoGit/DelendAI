@@ -117,7 +117,7 @@ Codex CLI.
 An interface in `plugins/proposals/src/lib/swarm/host-capabilities.ts`
 that captures what UI affordances a host provides (rename chat, panel
 location, etc.). **Does not cover LLM capabilities** — that's what
-[`IProviderCapabilities`](#provider-capabilities) would cover.
+[`IProviderCapabilities`](#provider-capabilities-proposed) would cover.
 
 ---
 
@@ -148,7 +148,7 @@ JSON, OpenRouter API, Artificial Analysis feeds).
 The canonical configuration file for `@delendai/core`. Lives at the
 repo root. Today: cache, docs, plugins, validation matrix. **Future:**
 a top-level `providers` block (added in [`04`](04-recommended-approach.md)
-and ratified by [`f00067`](../../proposals/ready/f00067-multi-model-orchestrator.md)).
+and ratified by [`f00067`](../proposals/legacy/closed/feats/f00067-multi-model-orchestrator.md)).
 
 ### Cache root (`${corePaths.cacheDir}`)
 The single cache directory for the whole `delendai` instance.

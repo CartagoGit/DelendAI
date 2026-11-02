@@ -5,19 +5,22 @@ import { checkLinks } from '@delendai/link-check/public';
 import { knownPaths, rootDocs } from './doc-links.script';
 
 describe('doc-links', () => {
-	it('owns the root documents and not the proposals', () => {
+	it('owns every document but the proposals, at any depth of docs/', () => {
 		expect(
 			rootDocs([
 				'README.md',
 				'docs/PRIVACY.md',
 				'docs/delendai/ARCHITECTURE.md',
 				'docs/delendai/proposals/ready/x1.md',
+				'docs/delendai/wiki/external/README.md',
 				'src/a.ts',
+				'packages/core/README.md',
 			]),
 		).toEqual([
 			'README.md',
 			'docs/PRIVACY.md',
 			'docs/delendai/ARCHITECTURE.md',
+			'docs/delendai/wiki/external/README.md',
 		]);
 	});
 

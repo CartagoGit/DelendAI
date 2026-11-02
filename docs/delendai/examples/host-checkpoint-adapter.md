@@ -34,4 +34,4 @@ host context count, subscription meter, credentials or an inferred lifecycle.
   packet-absent behavior.
 
 Claude Code's ready-to-merge settings fragment is in
-[`config/external/claude-code/`](../../../config/external/claude-code/).
+[`config/external/claude-code/`](../../../config/external/claude/).

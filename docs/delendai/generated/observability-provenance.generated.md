@@ -73,13 +73,13 @@ Generated from the observability manifest and the provenance graph contract expo
 
 ## Example graph
 
-Reference slice: [f00392 / S2](../proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices)
+Reference slice: [f00392 / S2](../proposals/done/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices)
 
 | node | label | link |
 | --- | --- | --- |
 | agent:finch | agent:finch | none |
-| proposal:f00392 | proposal:f00392 | [docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md](../proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md) |
-| slice:S2 | slice:S2 | [docs/delendai/proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices](../proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices) |
+| proposal:f00392 | proposal:f00392 | [docs/delendai/proposals/done/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md](../proposals/done/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md) |
+| slice:S2 | slice:S2 | [docs/delendai/proposals/done/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices](../proposals/done/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices) |
 | tool:obs_correlate | tool:obs_correlate | [plugins/observability/src/lib/tools/obs-correlate.tool.ts](../../../plugins/observability/src/lib/tools/obs-correlate.tool.ts) |
 | tool:obs_errors | tool:obs_errors | [plugins/observability/src/lib/tools/obs-errors.tool.ts](../../../plugins/observability/src/lib/tools/obs-errors.tool.ts) |
 | tool:obs_health | tool:obs_health | [plugins/observability/src/lib/tools/obs-health.tool.ts](../../../plugins/observability/src/lib/tools/obs-health.tool.ts) |
