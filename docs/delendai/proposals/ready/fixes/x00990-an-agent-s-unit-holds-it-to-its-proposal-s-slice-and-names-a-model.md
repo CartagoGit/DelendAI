@@ -68,7 +68,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 ### S5 — Stranded work is kept under the agent that wrote it
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`
+- **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Work left uncommitted in the shared checkout is kept under the identity of the session that wrote it (or `unknown` with the evidence), never the identity of whichever session found it."
@@ -112,3 +112,4 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - S4, 2026-11-02. Entering a unit adds `shared` to its briefing: each other live or published unit that changes a file this one changes, its agent and the files. A commit on a work ref prints, from the commit hook, each other unit that also changes a staged file; it tells and never refuses, and reading the swarm costs about 0.4 s.
 - S8, 2026-11-02. The worktree already followed a claim (`renameUnitRef` moves a worktree standing on the old name) and the lease already moved to the claimant. What held the slice was its reservation on the forge, which names the unit by its old name and stayed taken through its grace window. The claim now gives those reservations back (`releaseClaimedSlices`, reported as `releasedReservations`), so the claimant's entry reserves the slice for itself.
 - S3, 2026-11-02. A date alone is no sign: real model ids carry one (`claude-3-5-sonnet-20241022`), so it is not refused. The product's name with a version is: `delendai-` is followed by words only when this product signs its own work, so `delendai-m3-docs-20261028` is refused at entry as the product's name posing as a model's maker. Every other name at work that no model seen on this machine and no roster entry confirms is listed by `work status` under `unverifiedAgents`; whether it may enter stays with the identity policy (`development.identity`).
+- S5, 2026-11-02. Git cannot tell who wrote an uncommitted file, and the session that keeps it is only the one that found it (keeping never used it). The edits were named after any agent whose unit covered one of the paths: minimax's unit held one `package.json` hunk of 24 paths another agent wrote. An agent is now named only when its units cover every path; otherwise they are kept as `unattributed`, and the commit lists each unit that changes some of them, as evidence.

@@ -42,19 +42,37 @@ const changedPaths = (root: string): readonly string[] =>
 		});
 
 /** The one agent whose live units cover every path, if there is one. */
+/**
+ * Who the edits are kept for, and what says so. Git cannot tell who wrote
+ * an uncommitted file, so an agent is named only when its units cover
+ * every path; a unit covering one of them is evidence, not authorship:
+ * 24 paths an agent wrote with no unit were kept under the name of another
+ * whose unit held one hunk of them.
+ */
 const ownerOf = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	paths: readonly string[],
-): string => {
-	const owners = new Set<string>();
-	for (const unit of readSwarm({ root, policy }).units) {
-		if (paths.some((path) => unit.paths.includes(path))) {
-			owners.add(unit.agent);
-		}
-	}
+): { readonly agent: string; readonly evidence: readonly string[] } => {
+	const covering = readSwarm({ root, policy }).units.filter((unit) =>
+		paths.some((path) => unit.paths.includes(path)),
+	);
+	const evidence = covering.map(
+		(unit) =>
+			`${unit.ref} changes ${paths.filter((path) => unit.paths.includes(path)).join(', ')}`,
+	);
+	const owners = new Set(covering.map((unit) => unit.agent));
 	const [only] = [...owners];
-	return owners.size === 1 && only !== undefined ? only : UNATTRIBUTED_AGENT;
+	const coversAll = paths.every((path) =>
+		covering.some((unit) => unit.paths.includes(path)),
+	);
+	return {
+		agent:
+			owners.size === 1 && only !== undefined && coversAll
+				? only
+				: UNATTRIBUTED_AGENT,
+		evidence,
+	};
 };
 
 /**
@@ -107,7 +125,7 @@ export const keepStrandedEdits = async (input: {
 		if (tree === git(['rev-parse', `${tip}^{tree}`])) {
 			return { outcome: 'clean' };
 		}
-		const agent = ownerOf(root, policy, paths);
+		const { agent, evidence } = ownerOf(root, policy, paths);
 		const ref = namespacedRef(
 			policy.branches.namespacePrefix,
 			'stranded',
@@ -135,7 +153,12 @@ export const keepStrandedEdits = async (input: {
 			'-p',
 			tip,
 			'-m',
-			`stranded in the shared checkout: ${String(paths.length)} path(s) left uncommitted on ${policy.branches.integration}`,
+			[
+				`stranded in the shared checkout: ${String(paths.length)} path(s) left uncommitted on ${policy.branches.integration}`,
+				...(evidence.length === 0
+					? []
+					: ['', 'Units that change some of them:', ...evidence]),
+			].join('\n'),
 		]);
 		git(['update-ref', ref, commit, '']);
 		return { outcome: 'kept', ref, agent, paths };
