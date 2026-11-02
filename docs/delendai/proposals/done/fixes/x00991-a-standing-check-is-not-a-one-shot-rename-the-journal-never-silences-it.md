@@ -2,14 +2,14 @@
 id: x00991
 title: "A standing check is not a one-shot rename: the journal never silences it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-28
-last-transition-id: b1ba65b1-115c-4c0c-be1d-6103976c4dd9
-last-correlation-id: b1ba65b1-115c-4c0c-be1d-6103976c4dd9
-last-transition-from: in-progress
-last-transition-at: 2026-10-28T19:09:04.067Z
+last-transition-id: 6a75c7d6-e9a9-4f7a-a2b7-9edb81a1959e
+last-correlation-id: 6a75c7d6-e9a9-4f7a-a2b7-9edb81a1959e
+last-transition-from: review
+last-transition-at: 2026-11-02T18:14:06.150Z
 shipped-in:
   - "38804da0a0b09dd024c7cb9d8c709386ec108636"
 ---
@@ -60,7 +60,7 @@ The engine has no way to express the difference today, because `IMigration` says
 - review-log: approved by minimax-m3.1-flash — verified at 38804da0a0b0, validate exit 0 and tests 29/29 claimed, no recorded run cited; acceptance 5/5: (1) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the IMigration contract declares an optional convergent flag, and legacy-migration.service.ts skips a migration who… (2) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the same guard keeps the one-shot skip, and the spec asserts that a one-shot rename already in the journal is not a… (3) At 38804da0a0b09dd024c7cb9d8c709386ec108636 a standing check whose detection finds nothing continues before the plan and the apply, so no step is reported and … (4) At 38804da0a0b09dd024c7cb9d8c709386ec108636 a standing check with work to do reaches the apply, and a failure pushes the failed outcome and returns, so the run… (5) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the dry run is one shared statement for both kinds, pushing status planned with the migration id and its steps, and… — Approved on the delivered state of 38804da0a0b09dd024c7cb9d8c709386ec108636. The migration contract now carries a convergent flag and the engine reads it at every journal-skip site, so a standing check is asked again even when the journal records it while a one-shot rename keeps the skip it had, the transaction engine applies the same rule, and the standing check is not journalled, which is what makes it standing. The dry run reports it as planned through the same statement that reports a one-shot rename, and a failing standing check still stops the run. The lint gate exited 0 and the slice spec passes 29 of 29. Four coverage gaps, recorded and not blocking: the standing check's quietness is asserted without a byte snapshot, the dry run test asserts the status and the id but not the steps, the transaction engine's equivalent change shipped with no test at all, and that file is outside both slices' declared file list.
 
 ### S2 — The policy-alignment migrator is a standing check
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -69,8 +69,10 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A `push.branch` naming any other branch is left alone, exactly as before."
   - "A workspace whose config agrees with its profile is left byte-identical, on every boot."
 - shipped-in: `5fe3e9334`
-- review-state: in_review
+- review-state: done
 - review-implementer: minimax-m3.1-flash-preview
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 38804da0a0b0, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 4/4: (1) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the policy-alignment migrator declares itself convergent, the engine reads that flag when it decides to skip a jour… (2) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the push branch key is added to the contradicted keys when the configured branch names the integration branch under… (3) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the contradiction rule returns nothing for a branch that is not the integration branch, so no branch key is touched… (4) At 38804da0a0b09dd024c7cb9d8c709386ec108636 a config that agrees with its profile contradicts nothing, so the engine continues before the plan and the apply, r… — Approved on the delivered state of 38804da0a0b09dd024c7cb9d8c709386ec108636. The policy-alignment migrator is declared a standing check and the flag is read by the engine, so a workspace whose journal already records it is still asked; a push branch that contradicts the profile is removed with a JSONC-aware edit that keeps the comments, the key order and the rest of the push settings, a branch naming any other branch is left alone, and a workspace whose config agrees with its profile is left byte-identical on every boot because the standing check is never journalled. The lint gate exited 0 and the slice spec passes 5 of 5. One coverage gap, recorded and not blocking: the new assertion checks the flag rather than running the migrator end to end against a journal that already records it, and the removal rule itself was left untouched on purpose, since changing it is another proposal's slice.
 
 ## acceptance
 
