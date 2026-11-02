@@ -50,6 +50,13 @@ agent B: agent_lock { action: 'claim', files: ['plugins/x/src/a.ts'] }
   → B waits for the lock-released notification, then retries once
 ```
 
+> **Where the work lives (work units).** When the project works in units,
+> each agent's isolation is a *work unit*: `delendai work enter` gives one
+> unit per proposal slice (its own ref and worktree), and `work publish` or
+> `work retire` ends it. That unit, not a per-agent worktree, is the
+> isolation; `agent_lock` still guards the files a slice owns. The
+> `agent_worktree` tool below applies only where the host enabled that gate.
+
 ## `agent_worktree` — branch isolation, used together with `agent_lock`
 
 > **Host gate (f00052):** `agent_worktree` is a host-scoped *capability*,

@@ -10,6 +10,13 @@ tools: ['delendai_proposals_agent_lock', 'delendai_proposals_agent_worktree', 'd
 Use this when more than one agent is active in the repo, or when a slice
 may overlap another agent's file set.
 
+> **Where the work lives (work units).** When the project works in units,
+> each agent's isolation is a *work unit*: `delendai work enter` gives one
+> unit per proposal slice (its own ref and worktree), and `work publish` or
+> `work retire` ends it. That unit, not a per-agent worktree, is the
+> isolation; `agent_lock` still guards the files a slice owns. The
+> `agent_worktree` tool below applies only where the host enabled that gate.
+
 ## `agent_lock` vs `agent_worktree` vs `branch_status` vs `branch_gc`
 
 These four tools solve different problems and are usually used together,
@@ -143,7 +150,7 @@ the normal state, not a failure.
 
 The full five-point rule lives in
 [`docs/delendai/AGENT-BOOTSTRAP.md` § 4.b "Coexistence with parallel
-work"](../../../docs/delendai/AGENT-BOOTSTRAP.md) — that is the
+work"](../../../../docs/delendai/AGENT-BOOTSTRAP.md) — that is the
 single source of truth, always loaded by every host. This skill restates
 the swarm-specific micro-pattern:
 
