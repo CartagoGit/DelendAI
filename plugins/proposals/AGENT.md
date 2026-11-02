@@ -8,6 +8,7 @@
 ## Public API
 
 - default
+- taskBriefingOf
 - registerProposalsStableTools
 - PROPOSALS_STABLE_TOOL_SURFACE
 - PROPOSAL_ADAPTIVE_FACADE_INTENTS
@@ -20,7 +21,6 @@
 - PROPOSAL_KINDS
 - PROPOSAL_PREFIX_BY_KIND
 - PROPOSAL_KIND_BY_PREFIX
-- KIND_TO_DONE_SUBFOLDER
 
 ## Depends on
 
