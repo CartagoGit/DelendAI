@@ -40,7 +40,7 @@ The views ask once while the client is still connecting and nothing asks again w
 
 ### S2 — The proposals board reads the real payload
 - **Status**: pending
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/test/extension-runtime-paths.spec.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/services/agent-catalog-service.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/transport/tool-reach.spec.ts`
+- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/test/extension-runtime-paths.spec.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/services/agent-catalog-service.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/services/agent-catalog-sections.spec.ts`, `packages/client/tests/transport/tool-reach.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The extension finds the server under any casing of its `.mcp.json` entry, and the Tools, Proposals and Memory views fill from a real server."
