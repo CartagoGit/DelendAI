@@ -16,11 +16,12 @@ delendai --version, the help header and the server startup report print the publ
 
 ## why
 
-TODO: why this work matters now.
+delendai --version, the help header and the server startup report printed 0.1.0 while the released packages are 0.3.0: CLI_VERSION and the server default were string literals, and nothing tied them to a package.json. core already exposes DELENDAI_VERSION from its own manifest, which the defaults ignored.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Bumping the private root package.json version.
+- A new release step: release:prepare already bumps each package.json, and the versions now follow it.
 
 ## slices
 
