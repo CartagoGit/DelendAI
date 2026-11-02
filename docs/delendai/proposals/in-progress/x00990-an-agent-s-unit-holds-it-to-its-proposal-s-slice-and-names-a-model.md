@@ -2,10 +2,14 @@
 id: x00990
 title: "An agent's unit holds it to its proposal's slice, and names a model"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
+last-transition-id: dd193e35-4f46-4ab8-837b-d2e2005849ba
+last-correlation-id: dd193e35-4f46-4ab8-837b-d2e2005849ba
+last-transition-from: ready
+last-transition-at: 2026-11-02T14:15:22.997Z
 ---
 
 # x00990 — An agent's unit holds it to its proposal's slice, and names a model
