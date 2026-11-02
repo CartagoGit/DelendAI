@@ -971,7 +971,11 @@ const readWorkspaceMcpLaunch = async (
 			readonly mcpServers?: Record<string, unknown>;
 			readonly servers?: Record<string, unknown>;
 		};
-		const entry = (raw.mcpServers ?? raw.servers)?.delendai;
+		// Any casing: init writes `DelendAI`, and missing it here fell back to
+		// a command that is no server.
+		const entry = Object.entries(raw.mcpServers ?? raw.servers ?? {}).find(
+			([name]) => name.toLowerCase() === 'delendai',
+		)?.[1];
 		if (entry === null || typeof entry !== 'object') return undefined;
 		const value = entry as {
 			readonly command?: unknown;

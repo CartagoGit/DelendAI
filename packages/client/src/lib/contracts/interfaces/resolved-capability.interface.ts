@@ -11,5 +11,6 @@ export interface IResolvedCapability {
 	/** The tool's own result, as the protocol carries it. */
 	readonly result?: {
 		readonly content?: readonly { readonly text?: string }[];
+		readonly structuredContent?: unknown;
 	};
 }

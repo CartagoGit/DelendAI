@@ -106,6 +106,15 @@ describe('tool reach helpers', () => {
 			result: { content: [{ text: value }] },
 		});
 		expect(unwrapResolved('t', text('{"a":1}'))).toEqual({ a: 1 });
+		expect(
+			unwrapResolved('t', {
+				status: 'ok',
+				result: {
+					content: [{ text: '3 tools' }],
+					structuredContent: { tools: [] },
+				},
+			}),
+		).toEqual({ tools: [] });
 		expect(unwrapResolved('t', text('prose'))).toBe('prose');
 		expect(() => unwrapResolved('t', { status: 'ok' })).toThrow(
 			'no payload',
