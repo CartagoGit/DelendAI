@@ -1,0 +1,22 @@
+/**
+ * Constants for `./run-startup-gate`.
+ *
+ * Split out of the implementation module so the repo's "types and
+ * constants live in contracts" convention holds: `run-startup-gate.ts` keeps
+ * the behaviour, this file keeps the constants. Re-exported from
+ * `run-startup-gate.ts`, so no import site changes.
+ */
+
+import type { IStartupPhase } from '../startup-reconciler/index';
+
+/**
+ * Phases whose collaborator is optional. Naming them here is what lets
+ * the report say "NOT EXECUTED" instead of leaving a reader to infer a
+ * pass from the absence of findings.
+ */
+// The journal is not optional: the git seam reads the project's journal
+// ref, so the phase runs on every boot.
+export const OPTIONAL_STARTUP_PHASES = [
+	'forge',
+	'governance',
+] as const satisfies readonly IStartupPhase[];

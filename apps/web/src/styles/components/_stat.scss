@@ -1,0 +1,44 @@
+// _stat.scss — KPI card (big number + label).
+//
+// BEM root: .stat.  `<b>` and `<span>` inside are nested with `&` to keep
+// the BEM scope.
+
+.stat-row {
+	display: flex;
+	gap: 0.9rem;
+	flex-wrap: wrap;
+	margin-bottom: 1.8rem;
+}
+.stat {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.95rem 1.25rem;
+	min-width: 8rem;
+	transition: border-color 0.18s ease, transform 0.18s ease;
+	flex: 1 1 8rem;
+	max-width: 14rem;
+
+	&:hover {
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+		transform: translateY(-2px);
+	}
+
+	& b {
+		font-size: clamp(1.6rem, 4vw, 2.2rem);
+		font-weight: 800;
+		display: block;
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		background: linear-gradient(90deg, var(--accent), var(--accent-2));
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+	& span {
+		color: var(--muted);
+		font-size: 0.85rem;
+		margin-top: 0.2rem;
+		display: block;
+	}
+}

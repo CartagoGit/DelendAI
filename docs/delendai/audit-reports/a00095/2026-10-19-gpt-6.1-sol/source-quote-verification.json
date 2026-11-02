@@ -1,0 +1,342 @@
+{
+	"verified": 56,
+	"failures": 0,
+	"quotes": [
+		{
+			"finding": "CTX-01",
+			"path": "packages/context-compiler/src/lib/tool-result-deltas.ts",
+			"start": 39,
+			"end": 62
+		},
+		{
+			"finding": "CTX-01",
+			"path": "packages/context-compiler/src/lib/context-manifest.ts",
+			"start": 85,
+			"end": 118
+		},
+		{
+			"finding": "CTX-02",
+			"path": "packages/context-compiler/src/lib/context-manifest.ts",
+			"start": 150,
+			"end": 166
+		},
+		{
+			"finding": "CTX-02",
+			"path": "packages/context-compiler/src/lib/ref-expander.ts",
+			"start": 13,
+			"end": 23
+		},
+		{
+			"finding": "CTX-02",
+			"path": "packages/context-compiler/README.md",
+			"start": 1,
+			"end": 7
+		},
+		{
+			"finding": "CATALOG-01",
+			"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+			"start": 49,
+			"end": 58
+		},
+		{
+			"finding": "CATALOG-01",
+			"path": "packages/core/src/lib/shared/public-catalogue-sources.service.ts",
+			"start": 122,
+			"end": 140
+		},
+		{
+			"finding": "AGENT-INSTALL01",
+			"path": "packages/core/src/lib/shared/agent-registry.service.ts",
+			"start": 87,
+			"end": 104
+		},
+		{
+			"finding": "AGENT-INSTALL01",
+			"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+			"start": 30,
+			"end": 34
+		},
+		{
+			"finding": "AGENT-INSTALL01",
+			"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+			"start": 159,
+			"end": 174
+		},
+		{
+			"finding": "AGENT-INSTALL02",
+			"path": "packages/core/src/lib/shared/declared-agents.service.ts",
+			"start": 159,
+			"end": 179
+		},
+		{
+			"finding": "MAINT-05",
+			"path": "tools/scripts/forge/keep-the-queue-moving.script.ts",
+			"start": 555,
+			"end": 577
+		},
+		{
+			"finding": "MAINT-05",
+			"path": "tools/scripts/forge/keep-the-queue-moving.script.ts",
+			"start": 596,
+			"end": 621
+		},
+		{
+			"finding": "MAINT-06",
+			"path": "packages/core/src/lib/startup-reconciler/journal-publish.service.ts",
+			"start": 313,
+			"end": 326
+		},
+		{
+			"finding": "MAINT-06",
+			"path": "packages/core/src/lib/startup-reconciler/journal-ref.service.ts",
+			"start": 133,
+			"end": 141
+		},
+		{
+			"finding": "MAINT-07",
+			"path": "packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts",
+			"start": 190,
+			"end": 218
+		},
+		{
+			"finding": "MAINT-08",
+			"path": "packages/core/src/lib/startup-reconciler/phases/reconcile-forge.ts",
+			"start": 124,
+			"end": 149
+		},
+		{
+			"finding": "MAINT-09",
+			"path": "packages/core/src/lib/integration-engine/github-forge.ts",
+			"start": 335,
+			"end": 359
+		},
+		{
+			"finding": "UI-ROUTE01",
+			"path": "extensions/vscode/src/extension.ts",
+			"start": 317,
+			"end": 334
+		},
+		{
+			"finding": "UI-ROUTE01",
+			"path": "packages/core/src/lib/tools/compact-router.tool.ts",
+			"start": 153,
+			"end": 170
+		},
+		{
+			"finding": "UI-PREF01",
+			"path": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+			"start": 112,
+			"end": 131
+		},
+		{
+			"finding": "UI-PREF01",
+			"path": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+			"start": 135,
+			"end": 153
+		},
+		{
+			"finding": "UI-PREF01",
+			"path": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+			"start": 181,
+			"end": 194
+		},
+		{
+			"finding": "UI-LOG01",
+			"path": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+			"start": 272,
+			"end": 278
+		},
+		{
+			"finding": "UI-LOG01",
+			"path": "packages/ui-extension/src/dashboard/render-dashboard.ts",
+			"start": 413,
+			"end": 421
+		},
+		{
+			"finding": "UI-LOG02",
+			"path": "extensions/vscode/src/providers/dashboard-webview-view-provider.ts",
+			"start": 287,
+			"end": 296
+		},
+		{
+			"finding": "UI-LOG02",
+			"path": "extensions/vscode/src/providers/dashboard-webview-view-provider.ts",
+			"start": 434,
+			"end": 439
+		},
+		{
+			"finding": "UI-LOG02",
+			"path": "extensions/vscode/src/providers/dashboard-webview-view-provider.ts",
+			"start": 479,
+			"end": 495
+		},
+		{
+			"finding": "UI-I18N01",
+			"path": "apps/shared/src/i18n/index.ts",
+			"start": 43,
+			"end": 64
+		},
+		{
+			"finding": "UI-I18N01",
+			"path": "extensions/vscode/scripts/check-i18n.ts",
+			"start": 45,
+			"end": 64
+		},
+		{
+			"finding": "WEB-TABS01",
+			"path": "apps/web/src/components/ui/_tabs-controller.ts",
+			"start": 119,
+			"end": 134
+		},
+		{
+			"finding": "WEB-TABS02",
+			"path": "apps/web/src/components/ui/Tabs.astro",
+			"start": 46,
+			"end": 57
+		},
+		{
+			"finding": "WEB-TABS02",
+			"path": "apps/web/src/components/ui/CodeBlock.astro",
+			"start": 47,
+			"end": 58
+		},
+		{
+			"finding": "WEB-TABS02",
+			"path": "apps/web/src/components/ui/CopyButton.astro",
+			"start": 30,
+			"end": 33
+		},
+		{
+			"finding": "WEB-SKILL01",
+			"path": "apps/web/src/components/SkillsSection.astro",
+			"start": 22,
+			"end": 36
+		},
+		{
+			"finding": "WEB-SKILL01",
+			"path": "apps/web/src/components/SkillsSection.astro",
+			"start": 47,
+			"end": 50
+		},
+		{
+			"finding": "WEB-SKILL01",
+			"path": "apps/web/src/components/CapabilityGrid.astro",
+			"start": 158,
+			"end": 166
+		},
+		{
+			"finding": "WEB-SKILL01",
+			"path": "apps/web/src/components/CapabilityGrid.astro",
+			"start": 182,
+			"end": 188
+		},
+		{
+			"finding": "WEB-SKILL01",
+			"path": "apps/web/scripts/gen-skills.ts",
+			"start": 130,
+			"end": 141
+		},
+		{
+			"finding": "WEB-TUTORIAL01",
+			"path": "apps/web/scripts/check-tutorials-i18n.ts",
+			"start": 90,
+			"end": 114
+		},
+		{
+			"finding": "WEB-ASSET01",
+			"path": "apps/web/scripts/fetch-brand-logos.ts",
+			"start": 244,
+			"end": 255
+		},
+		{
+			"finding": "WEB-ASSET01",
+			"path": "apps/web/scripts/fetch-brand-logos.ts",
+			"start": 281,
+			"end": 297
+		},
+		{
+			"finding": "WEB-ASSET02",
+			"path": "apps/web/scripts/fetch-brand-logos.ts",
+			"start": 57,
+			"end": 77
+		},
+		{
+			"finding": "WEB-ASSET02",
+			"path": "apps/web/scripts/fetch-brand-logos.ts",
+			"start": 97,
+			"end": 114
+		},
+		{
+			"finding": "WEB-ROUTE01",
+			"path": "apps/web/src/components/HomeAtAGlanceSection.astro",
+			"start": 21,
+			"end": 23
+		},
+		{
+			"finding": "WEB-ROUTE01",
+			"path": "apps/web/src/components/HomeAtAGlanceSection.astro",
+			"start": 53,
+			"end": 57
+		},
+		{
+			"finding": "WEB-ROUTE01",
+			"path": "apps/web/src/pages/presets.astro",
+			"start": 10,
+			"end": 15
+		},
+		{
+			"finding": "WEB-A11Y01",
+			"path": "apps/web/src/components/Config.astro",
+			"start": 79,
+			"end": 84
+		},
+		{
+			"finding": "WEB-A11Y01",
+			"path": "apps/web/src/components/Config.astro",
+			"start": 169,
+			"end": 179
+		},
+		{
+			"finding": "WEB-A11Y01",
+			"path": "apps/web/src/components/Config.astro",
+			"start": 191,
+			"end": 201
+		},
+		{
+			"finding": "WEB-CSS01",
+			"path": "apps/web/src/components/SiteNav.astro",
+			"start": 104,
+			"end": 115
+		},
+		{
+			"finding": "WEB-CSS01",
+			"path": "apps/web/src/styles/components/_nav.scss",
+			"start": 143,
+			"end": 156
+		},
+		{
+			"finding": "WEB-CSS01",
+			"path": "apps/web/src/styles/components/_nav-media.scss",
+			"start": 18,
+			"end": 29
+		},
+		{
+			"finding": "WEB-GATE01",
+			"path": "apps/web/package.json",
+			"start": 19,
+			"end": 26
+		},
+		{
+			"finding": "WEB-GATE01",
+			"path": "apps/web/scripts/check-i18n.ts",
+			"start": 31,
+			"end": 36
+		},
+		{
+			"finding": "WEB-GATE01",
+			"path": "apps/web/scripts/check-i18n.ts",
+			"start": 215,
+			"end": 234
+		}
+	]
+}

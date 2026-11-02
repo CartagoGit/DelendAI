@@ -1,0 +1,48 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [".astro/types.d.ts", "**/*"],
+	"exclude": ["dist", "public/api", "public/pagefind"],
+	"compilerOptions": {
+		"paths": {
+			"#MANIFESTS/*": ["./src/data/manifests/*"],
+			"#DATA/*": ["./src/data/*"],
+			"#COMPONENTS/*": ["./src/components/*"],
+			"#LAYOUTS/*": ["./src/layouts/*"],
+			"#I18N/*": ["./src/i18n/*"],
+			"#LIB/*": ["./src/lib/*"],
+			"#SCRIPTS/*": ["./scripts/*"],
+			"#UI/*": ["./src/components/ui/*"],
+			"@delendai/shared": ["../../apps/shared/src/public/index.ts"],
+			"@delendai/shared/*": ["../../apps/shared/src/*"],
+			"@delendai/cli": ["../../packages/cli/src/index.ts"],
+			"@delendai/cli/*": ["../../packages/cli/src/*"],
+			"@delendai/core": ["../../packages/core/src/index.ts"],
+			"@delendai/core/public": [
+				"../../packages/core/src/public/index.ts"
+			],
+			"@delendai/core/*": ["../../packages/core/src/*"],
+			"@delendai/proposals": ["../../plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
+				"../../plugins/proposals/src/public/index.ts"
+			],
+			"@delendai/rules": ["../../plugins/rules/src/index.ts"],
+			"@delendai/memory": ["../../plugins/memory/src/index.ts"],
+			"@delendai/git": ["../../plugins/git/src/index.ts"],
+			"@delendai/quality": ["../../plugins/quality/src/index.ts"],
+			"@delendai/search": ["../../plugins/search/src/index.ts"],
+			"@delendai/notification": [
+				"../../plugins/notification/src/index.ts"
+			],
+			"@delendai/status-marker": [
+				"../../plugins/status-marker/src/index.ts"
+			],
+			"@delendai/test-convention": [
+				"../../plugins/test-convention/src/index.ts"
+			],
+			"@delendai/audit": ["../../plugins/audit/src/index.ts"],
+			"@delendai/docs": ["../../plugins/docs/src/index.ts"],
+			"@delendai/deps": ["../../plugins/deps/src/index.ts"],
+			"@delendai/logs": ["../../plugins/logs/src/index.ts"]
+		}
+	}
+}

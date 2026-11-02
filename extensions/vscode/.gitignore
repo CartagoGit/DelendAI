@@ -1,0 +1,4 @@
+# Legacy local output. The active bundle and VSIX now live under the
+# repo-wide `build/extensions/vscode/` tree.
+*.vsix
+dist/

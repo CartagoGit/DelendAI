@@ -1,0 +1,116 @@
+/**
+ * `tools/scripts/dev/api/real-data.ts` — server-side fetch of a real
+ * `IDashboardAllModels` from the MCP server, for the dev preview.
+ *
+ * The browser bundle (`extensions/vscode/src/dev/entry.ts`) cannot
+ * itself import the MCP stdio client (it would re-introduce the
+ * cross-spawn → child_process chain we proved fragile in the earlier
+ * slices). The dev server runs in Bun (Node-like), so it CAN spawn the
+ * MCP stdio client safely. This module is the server-side half: it
+ * connects to the server, calls the dashboard aggregator, and returns
+ * the snapshot as JSON.
+ *
+ * The browser hits `GET /api/dashboard` and renders whatever this
+ * returns through `renderDashboard(model, …)`. If the MCP server is not
+ * reachable, we throw a structured `IApiError` that the browser shows
+ * inside the setup wizard (rather than a 500).
+ */
+import type { IDashboardAllModels } from '@delendai/client';
+import { DashboardService } from '@delendai/client/public';
+
+import { invalidateClient, leaseClient } from './client-pool';
+
+/** Server-side error envelope surfaced to the browser. */
+export interface IApiError {
+	readonly ok: false;
+	readonly kind: 'probe-failed' | 'spawn-failed' | 'tool-failed' | 'timeout';
+	readonly message: string;
+	readonly durationMs: number;
+}
+
+/** What the page is told when the dashboard cannot be read. */
+const DASHBOARD_FAILURE =
+	'The delendai server did not answer the dashboard; the dev server terminal has the error.';
+
+const wrap = async <T>(
+	factory: () => Promise<T>,
+	kind: IApiError['kind'],
+	timeoutMs = 8000,
+): Promise<T> => {
+	const start = Date.now();
+	const timer = setTimeout(() => undefined, timeoutMs); // noop safety
+	try {
+		return await Promise.race([
+			factory(),
+			new Promise<never>((_, reject) =>
+				setTimeout(
+					() =>
+						reject(
+							new Error(
+								`delendai dashboard call timed out after ${timeoutMs}ms`,
+							),
+						),
+					timeoutMs,
+				),
+			),
+		]);
+	} catch (err) {
+		// The detail goes to the dev server's terminal; the page gets a
+		// fixed sentence, never the error's own text (stack-trace-exposure).
+		console.error(`[dev] dashboard ${kind}:`, err);
+		throw {
+			ok: false,
+			kind,
+			message: DASHBOARD_FAILURE,
+			durationMs: Date.now() - start,
+		} satisfies IApiError;
+	} finally {
+		clearTimeout(timer);
+	}
+};
+
+// x00100 S1: lease the SHARED per-cwd client instead of spawning a
+// fresh host per request (a full plugin boot per section switch was the
+// dev preview's dominant latency). On failure invalidate the pooled
+// client — its process may have died — and retry once on a fresh one.
+const connectAndFetch = async (cwd: string): Promise<IDashboardAllModels> =>
+	wrap(async () => {
+		const fetchOnce = async (): Promise<IDashboardAllModels> => {
+			const client = await leaseClient(cwd);
+			const service = new DashboardService({ client });
+			return await service.getAllModels();
+		};
+		try {
+			return await fetchOnce();
+		} catch {
+			await invalidateClient(cwd);
+			return await fetchOnce();
+		}
+	}, 'tool-failed');
+
+export const fetchRealDashboard = async (
+	cwd: string,
+): Promise<IDashboardAllModels | IApiError> => {
+	try {
+		return await connectAndFetch(cwd);
+	} catch (err) {
+		// Rebuilt field by field: the caught value itself never reaches the
+		// page, only what the dashboard's own error says.
+		if (err && typeof err === 'object' && 'ok' in err) {
+			const failure = err as IApiError;
+			return {
+				ok: false,
+				kind: failure.kind,
+				message: failure.message,
+				durationMs: failure.durationMs,
+			};
+		}
+		console.error('[dev] dashboard spawn-failed:', err);
+		return {
+			ok: false,
+			kind: 'spawn-failed',
+			message: DASHBOARD_FAILURE,
+			durationMs: 0,
+		};
+	}
+};

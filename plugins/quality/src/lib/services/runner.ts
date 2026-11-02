@@ -1,0 +1,188 @@
+import { spawn, type ChildProcess } from 'node:child_process';
+
+import type { IValidationCommand } from '@delendai/core/public';
+import { killProcessGroup } from '@delendai/core/public';
+
+import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
+
+// In-flight spawned children, so `quality_cancel` can abort a long-running scope
+// instead of waiting for the timeout. Each child is spawned `detached` so
+// killing `-pid` reaps the whole process group (shell + the real command),
+// leaving no orphans — same canonical teardown as the acceptance runner.
+const activeChildren = new Set<ChildProcess>();
+
+const killGroup = (child: ChildProcess): void => killProcessGroup(child.pid);
+
+/** PIDs of quality commands currently running in this process. */
+export const activeRunPids = (): number[] =>
+	[...activeChildren]
+		.map((c) => c.pid)
+		.filter((pid): pid is number => pid !== undefined);
+
+/**
+ * Abort running quality commands. With `pid`, only that one; otherwise all of
+ * them. Returns the PIDs that were signalled (SIGKILL on the process group).
+ */
+export const cancelActiveRuns = (pid?: number): number[] => {
+	const killed: number[] = [];
+	for (const child of activeChildren) {
+		if (pid !== undefined && child.pid !== pid) continue;
+		if (child.pid !== undefined) {
+			killGroup(child);
+			killed.push(child.pid);
+		}
+	}
+	return killed;
+};
+
+export interface ICommandResult {
+	readonly command: string;
+	readonly ok: boolean;
+	readonly code: number;
+	readonly timedOut: boolean;
+	/** Last lines of combined output (kept short for low tokens). */
+	readonly tail: string;
+}
+
+export type QualityRunMode = 'fail-fast' | 'collect';
+
+export interface IScopeResult {
+	readonly scope: string;
+	readonly ok: boolean;
+	readonly results: readonly ICommandResult[];
+	readonly firstFailure: ICommandResult | null;
+	readonly duration: number;
+}
+
+export interface IRunOutcome {
+	readonly code: number;
+	readonly output: string;
+	readonly timedOut: boolean;
+}
+
+/**
+ * Runs a shell command in `cwd`, never throws, never blocks the event
+ * loop (async spawn). Output is captured with a cap so a verbose
+ * command can't exhaust memory; a timeout kills the process and is
+ * reported distinctly (code 124). Injectable for tests.
+ */
+export type ICommandRunner = (
+	command: string,
+	cwd: string,
+) => Promise<IRunOutcome>;
+
+export const createCommandRunner =
+	(timeoutMs = 600_000, maxOutputBytes = 64 * 1024): ICommandRunner =>
+	(command, cwd) =>
+		new Promise<IRunOutcome>((resolve) => {
+			let output = '';
+			let timedOut = false;
+			// x00097 S5 (audit a00052 #16): explicit bash instead of
+			// `shell: true` — the implicit shell is /bin/sh (dash/ash on
+			// many hosts), so the same command parsed differently per OS.
+			// Bash is the repo's one shell dialect (AGENT-BOOTSTRAP §6);
+			// Windows keeps `shell: true` (no bash contract there).
+			const child =
+				process.platform === 'win32'
+					? spawn(command, {
+							cwd,
+							shell: true,
+							stdio: ['ignore', 'pipe', 'pipe'],
+						})
+					: spawn(
+							'/bin/bash',
+							['--noprofile', '--norc', '-c', command],
+							{
+								cwd,
+								detached: true, // own process group → `quality_cancel`/timeout reap the whole tree
+								stdio: ['ignore', 'pipe', 'pipe'],
+							},
+						);
+			activeChildren.add(child);
+			const done = (outcome: IRunOutcome): void => {
+				activeChildren.delete(child);
+				resolve(outcome);
+			};
+			const capture = (chunk: Buffer): void => {
+				if (output.length < maxOutputBytes) output += chunk.toString();
+			};
+			child.stdout?.on('data', capture);
+			child.stderr?.on('data', capture);
+			const timer = setTimeout(() => {
+				timedOut = true;
+				killGroup(child);
+			}, timeoutMs);
+			child.on('close', (code) => {
+				clearTimeout(timer);
+				done({ code: timedOut ? 124 : (code ?? 1), output, timedOut });
+			});
+			child.on('error', (error) => {
+				clearTimeout(timer);
+				done({ code: 127, output: String(error), timedOut: false });
+			});
+		});
+
+const tailOf = (text: string, lines = 20): string =>
+	text
+		.split('\n')
+		.filter((l) => l.length > 0)
+		.slice(-lines)
+		.join('\n');
+
+/**
+ * Alias of the core public type `IValidationCommand`. The plugin used
+ * to redefine this locally with `expect?` optional, but the core
+ * schema requires `expect` and the runner doesn't branch on it
+ * (it just measures the real exit code). Keeping a single source of
+ * truth here means `plugins/quality` and the core's host-config
+ * agree on the shape of a validation command.
+ */
+export type IScopeCommand = IValidationCommand;
+
+/**
+ * Run every command of a scope in order; ok only if all succeed. A command
+ * blocked by `policy` is NOT spawned — it is recorded as a failed result
+ * (code 126) so the agent sees why.
+ */
+export const runScope = async (
+	scope: string,
+	commands: readonly IScopeCommand[],
+	cwd: string,
+	run: ICommandRunner,
+	policy?: ICommandPolicy,
+	mode: QualityRunMode = 'fail-fast',
+): Promise<IScopeResult> => {
+	const startedAt = Date.now();
+	const results: ICommandResult[] = [];
+	for (const entry of commands) {
+		const verdict = evaluateCommandPolicy(entry.command, policy);
+		let result: ICommandResult;
+		if (!verdict.allowed) {
+			result = {
+				command: entry.command,
+				ok: false,
+				code: 126,
+				timedOut: false,
+				tail: `blocked by command policy: ${verdict.reason}`,
+			};
+		} else {
+			const outcome = await run(entry.command, cwd);
+			result = {
+				command: entry.command,
+				ok: outcome.code === 0,
+				code: outcome.code,
+				timedOut: outcome.timedOut,
+				tail: tailOf(outcome.output),
+			};
+		}
+		results.push(result);
+		if (!result.ok && mode === 'fail-fast') break;
+	}
+	return {
+		scope,
+		ok: results.every((r) => r.ok),
+		results,
+		firstFailure: results.find((r) => !r.ok) ?? null,
+		duration: Date.now() - startedAt,
+	};
+};

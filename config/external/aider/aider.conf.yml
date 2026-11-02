@@ -1,0 +1,36 @@
+# Aider (https://aider.chat) configuration.
+# Loaded automatically by `aider` when run from this repo root.
+# Goal: zero-confirmation autopilot mode.
+
+# ─── Model ────────────────────────────────────────────────────────────────
+# Default model — override per-session with --model. Empty defers to Aider's
+# default (currently deepseek/deepseek-chat).
+model:
+
+# ─── Auto-approve / no-confirmation ───────────────────────────────────────
+# Aider's "yes" / "auto" flags. With `--yes` it accepts every suggested
+# edit and runs every shell command without prompting.
+yes: true
+auto-commits: true
+auto-lint: true
+auto-test: false           # tests are expensive; let `bun run validate` gate
+dark-mode: false
+
+# ─── Repo context ─────────────────────────────────────────────────────────
+# Tell Aider which files to treat as always-in-context.
+read:
+  - AGENTS.md
+  - .github/copilot-instructions.md
+  - CLAUDE.md
+
+# ─── Editor / commit conventions ──────────────────────────────────────────
+edit-format: diff
+commit-language: en
+
+# ─── Conventions ──────────────────────────────────────────────────────────
+# Aider will keep this in its system prompt for every conversation.
+# Mirrors `.cursor/rules/auto-approve.mdc` so every agent sees the same
+# autopilot contract.
+# (literal-string note: Aider reads the system prompt from `aider --message`
+# or the .aider.chat.history.md file; the system-prompt-equivalent is the
+# AGENTS.md file we list above.)

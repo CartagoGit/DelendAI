@@ -1,0 +1,540 @@
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	rm,
+	symlink,
+	writeFile,
+} from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	readConfigurationDocument,
+	saveConfigurationDocument,
+} from '../../src/public';
+
+// Credential-SHAPED values, assembled at run time: written out whole, the
+// commit hook replaces them with a placeholder (it cannot tell a fixture
+// from a leak), and the redaction specs then test nothing.
+const GITHUB_PAT_SHAPED = ['github', 'pat', 'abcdefghijklmnopqrstuv'].join('_');
+const OPENAI_KEY_SHAPED = ['sk', 'abcdefghijklmnopqrstuvwxyz'].join('-');
+const GITHUB_TOKEN_SHAPED = [
+	'ghp',
+	'0123456789abcdefghijklmnopqrstuvwxyzAB',
+].join('_');
+
+const roots: string[] = [];
+const workspace = async (): Promise<string> => {
+	const root = await mkdtemp(join(tmpdir(), 'delendai-config-center-'));
+	roots.push(root);
+	return root;
+};
+
+afterEach(async () => {
+	await Promise.all(
+		roots.splice(0).map((root) => rm(root, { recursive: true })),
+	);
+});
+
+describe('configuration center document service', () => {
+	it('reads an absent document as an empty, digest-addressable snapshot', async () => {
+		const root = await workspace();
+		const first = await readConfigurationDocument({ workspaceRoot: root });
+		const second = await readConfigurationDocument({ workspaceRoot: root });
+
+		expect(first.exists).toBe(false);
+		expect(first.value).toEqual({});
+		expect(first.digest).toBe(second.digest);
+	});
+
+	it('redacts secret material without exposing it in the display snapshot', async () => {
+		const root = await workspace();
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				custom: { token: GITHUB_PAT_SHAPED },
+			}),
+		);
+
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		expect(snapshot.redactions).toBe(1);
+		expect(snapshot.value).toEqual({ custom: { token: '[REDACTED]' } });
+	});
+
+	it('merges path edits while preserving unknown and plugin-owned fields', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		await writeFile(
+			file,
+			JSON.stringify({
+				futureRoot: { retained: true },
+				plugins: {
+					local: {
+						path: './plugins/local.ts',
+						prefix: 'local-prefix',
+						options: { custom: 1 },
+					},
+				},
+			}),
+		);
+		const before = await readConfigurationDocument({ workspaceRoot: root });
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: before.digest,
+			edits: [
+				{ action: 'set', path: ['keepLegacy'], value: true },
+				{
+					action: 'set',
+					path: ['plugins', 'local', 'enabled'],
+					value: false,
+				},
+			],
+		});
+
+		expect(result.ok && result.changed).toBe(true);
+		expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({
+			futureRoot: { retained: true },
+			plugins: {
+				local: {
+					path: './plugins/local.ts',
+					prefix: 'local-prefix',
+					options: { custom: 1 },
+					enabled: false,
+				},
+			},
+			keepLegacy: true,
+		});
+	});
+
+	it('round-trips disabled external MCP definitions and custom arguments losslessly', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		const externalServer = {
+			enabled: false,
+			version: '1.2.3',
+			command: 'npx',
+			args: [
+				'-y',
+				'@example/mcp@1.2.3',
+				'--workspace',
+				'${workspaceFolder}',
+			],
+			namespacePrefix: 'ext.example',
+			detect: '@example/client',
+			env: ['EXAMPLE_TOKEN'],
+		};
+		await writeFile(
+			file,
+			JSON.stringify({
+				futureRoot: { retained: true },
+				plugins: {
+					'external-mcps': {
+						options: { servers: { example: externalServer } },
+					},
+					search: {
+						options: { roots: ['packages'], futureOption: 7 },
+					},
+				},
+			}),
+		);
+		const before = await readConfigurationDocument({ workspaceRoot: root });
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: before.digest,
+			edits: [
+				{
+					action: 'set',
+					path: ['plugins', 'search', 'options', 'maxResults'],
+					value: 25,
+				},
+			],
+		});
+
+		expect(result).toMatchObject({ ok: true, changed: true });
+		const persisted = JSON.parse(await readFile(file, 'utf8'));
+		expect(persisted.futureRoot).toEqual({ retained: true });
+		expect(
+			persisted.plugins['external-mcps'].options.servers.example,
+		).toEqual(externalServer);
+		expect(persisted.plugins.search.options).toEqual({
+			roots: ['packages'],
+			futureOption: 7,
+			maxResults: 25,
+		});
+	});
+
+	it('returns a conflict and the fresh document after an external edit', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		await writeFile(file, '{"keepLegacy":false}\n');
+		const stale = await readConfigurationDocument({ workspaceRoot: root });
+		await writeFile(file, '{"keepLegacy":true}\n');
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: stale.digest,
+			edits: [{ action: 'set', path: ['agentWorktree'], value: true }],
+		});
+
+		expect(result.ok).toBe(false);
+		if (result.ok || result.reason !== 'conflict')
+			throw new Error('expected conflict');
+		expect(result.document.value).toEqual({ keepLegacy: true });
+		expect(await readFile(file, 'utf8')).toBe('{"keepLegacy":true}\n');
+	});
+
+	it('serializes competing saves so one wins and one observes a conflict', async () => {
+		const root = await workspace();
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const results = await Promise.all([
+			saveConfigurationDocument({
+				workspaceRoot: root,
+				expectedDigest: snapshot.digest,
+				edits: [{ action: 'set', path: ['keepLegacy'], value: true }],
+			}),
+			saveConfigurationDocument({
+				workspaceRoot: root,
+				expectedDigest: snapshot.digest,
+				edits: [
+					{ action: 'set', path: ['agentWorktree'], value: true },
+				],
+			}),
+		]);
+
+		expect(results.filter((result) => result.ok)).toHaveLength(1);
+		expect(
+			results.filter(
+				(result) => !result.ok && result.reason === 'conflict',
+			),
+		).toHaveLength(1);
+	});
+
+	it('rejects schema-invalid edits and preserves the original bytes', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		const original = '{"keepLegacy":false}\n';
+		await writeFile(file, original);
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: snapshot.digest,
+			edits: [{ action: 'set', path: ['keepLegacy'], value: 'yes' }],
+		});
+
+		expect(result.ok).toBe(false);
+		if (result.ok) throw new Error('expected validation failure');
+		expect(result.reason).toBe('validation');
+		expect(await readFile(file, 'utf8')).toBe(original);
+	});
+
+	it('rejects secret-valued edits and leaves hidden values untouched', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		const original = JSON.stringify({ custom: { retained: true } });
+		await writeFile(file, original);
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: snapshot.digest,
+			edits: [
+				{
+					action: 'set',
+					path: ['plugins', 'remote', 'options', 'apiKey'],
+					value: OPENAI_KEY_SHAPED,
+				},
+			],
+		});
+
+		expect(result.ok).toBe(false);
+		if (result.ok) throw new Error('expected secret rejection');
+		expect(result.reason).toBe('secret');
+		expect(await readFile(file, 'utf8')).toBe(original);
+	});
+
+	it('allows deleting a secret field without ever returning its value', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		await writeFile(
+			file,
+			JSON.stringify({
+				custom: { token: GITHUB_PAT_SHAPED },
+			}),
+		);
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: snapshot.digest,
+			edits: [{ action: 'delete', path: ['custom', 'token'] }],
+		});
+
+		expect(result.ok).toBe(true);
+		expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({
+			custom: {},
+		});
+	});
+
+	it('treats deletion of a missing nested field as an idempotent no-op', async () => {
+		const root = await workspace();
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: snapshot.digest,
+			edits: [
+				{ action: 'delete', path: ['plugins', 'missing', 'enabled'] },
+			],
+		});
+
+		expect(result).toMatchObject({ ok: true, changed: false });
+		expect(
+			(await readConfigurationDocument({ workspaceRoot: root })).exists,
+		).toBe(false);
+	});
+
+	it('returns validation issues for non-JSON edit values instead of throwing', async () => {
+		const root = await workspace();
+		const snapshot = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: snapshot.digest,
+			edits: [{ action: 'set', path: ['custom'], value: undefined }],
+		});
+
+		expect(result.ok).toBe(false);
+		if (result.ok) throw new Error('expected validation failure');
+		expect(result.reason).toBe('validation');
+	});
+
+	it('fails closed on corrupt JSON and rejects escaping config names', async () => {
+		const root = await workspace();
+		const file = join(root, 'delendai.config.json');
+		const original = '{"plugins":';
+		await writeFile(file, original);
+
+		await expect(
+			readConfigurationDocument({ workspaceRoot: root }),
+		).rejects.toThrow('Invalid JSON');
+		expect(await readFile(file, 'utf8')).toBe(original);
+		await expect(
+			readConfigurationDocument({
+				workspaceRoot: root,
+				configFileName: '../outside.json',
+			}),
+		).rejects.toThrow('plain file name');
+	});
+
+	it('refuses to read a configuration symlink outside the workspace', async () => {
+		const root = await workspace();
+		const outside = join(await workspace(), 'outside.json');
+		await writeFile(outside, '{"keepLegacy":true}\n');
+		await symlink(outside, join(root, 'delendai.config.json'));
+
+		await expect(
+			readConfigurationDocument({ workspaceRoot: root }),
+		).rejects.toThrow('must not be a symbolic link');
+	});
+});
+
+describe('an edit whose path reaches the prototype', () => {
+	const protoPaths: readonly (readonly string[])[] = [
+		['__proto__', 'polluted'],
+		['plugins', '__proto__', 'polluted'],
+		['constructor', 'prototype', 'polluted'],
+		['plugins', 'prototype'],
+	];
+
+	for (const path of protoPaths) {
+		it(`refuses ${path.join('.')} instead of writing through it`, async () => {
+			const root = await workspace();
+			await writeFile(
+				join(root, 'delendai.config.json'),
+				JSON.stringify({ plugins: {} }),
+				'utf8',
+			);
+			const before = await readConfigurationDocument({
+				workspaceRoot: root,
+			});
+
+			const result = await saveConfigurationDocument({
+				workspaceRoot: root,
+				expectedDigest: before.digest,
+				edits: [{ action: 'set', path: [...path], value: 'yes' }],
+			});
+
+			// The write must not happen AND the caller must be told, so it
+			// does not go on believing it edited something.
+			expect(result.ok).toBe(false);
+			expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+		});
+	}
+
+	it('still applies an ordinary edit in the same shape', async () => {
+		const root = await workspace();
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({ plugins: {} }),
+			'utf8',
+		);
+		const before = await readConfigurationDocument({ workspaceRoot: root });
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: before.digest,
+			edits: [
+				{
+					action: 'set',
+					path: ['plugins', 'logs', 'enabled'],
+					value: true,
+				},
+			],
+		});
+
+		expect(result.ok).toBe(true);
+	});
+});
+
+describe('edits the document can refuse or apply', () => {
+	const documentWith = async (
+		value: unknown,
+	): Promise<{ readonly root: string; readonly digest: string }> => {
+		const root = await workspace();
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify(value),
+			'utf8',
+		);
+		const { digest } = await readConfigurationDocument({
+			workspaceRoot: root,
+		});
+		return { root, digest };
+	};
+
+	const save = async (
+		value: unknown,
+		edits: Parameters<typeof saveConfigurationDocument>[0]['edits'],
+	) => {
+		const { root, digest } = await documentWith(value);
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: digest,
+			edits,
+		});
+		const after = await readConfigurationDocument({ workspaceRoot: root });
+		return { result, after: after.value };
+	};
+
+	it('sets, appends and deletes array items, and walks through them', async () => {
+		const set = await save({ list: ['a', 'b'] }, [
+			{ action: 'set', path: ['list', 0], value: 'A' },
+			{ action: 'set', path: ['list', 2], value: 'c' },
+			{ action: 'delete', path: ['list', 1] },
+			{ action: 'delete', path: ['list', 9] },
+		]);
+		expect(set.result.ok).toBe(false);
+		const applied = await save({ list: ['a', 'b'] }, [
+			{ action: 'set', path: ['list', 0], value: 'A' },
+			{ action: 'set', path: ['list', 2], value: 'c' },
+			{ action: 'delete', path: ['list', 1] },
+			{ action: 'set', path: ['rows', 0, 'name'], value: 'first' },
+			{ action: 'set', path: ['rows', 0, 'tags', 0], value: 't' },
+			{ action: 'delete', path: ['rows', 1, 'name'] },
+		]);
+		expect(applied.result).toMatchObject({ ok: true });
+		expect(applied.after).toEqual({
+			list: ['A', 'c'],
+			rows: [{ name: 'first', tags: ['t'] }],
+		});
+	});
+
+	it('refuses paths that do not fit the document', async () => {
+		for (const [value, path] of [
+			[{ list: [] }, ['list', 'x']],
+			[{ list: [] }, ['list', 'x', 'y']],
+			[{ map: {} }, ['map', 0]],
+			[{ map: {} }, ['map', 0, 'y']],
+			[{ scalar: 1 }, ['scalar', 'y']],
+			[{ list: [1] }, ['list', 0, 'y']],
+			[{ list: [] }, ['list', 5, 'y']],
+		] as const) {
+			const { result } = await save(value, [
+				{ action: 'set', path: [...path], value: true },
+			]);
+			expect(`${path.join('.')}: ${String(result.ok)}`).toBe(
+				`${path.join('.')}: false`,
+			);
+		}
+	});
+
+	it('refuses an empty path, a value that is not JSON, and secret-like material', async () => {
+		const cycle: Record<string, unknown> = {};
+		cycle.self = cycle;
+		const refused: Parameters<
+			typeof saveConfigurationDocument
+		>[0]['edits'] = [
+			{ action: 'set', path: [], value: 1 },
+			{ action: 'set', path: ['n'], value: Number.NaN },
+			{ action: 'set', path: ['n'], value: () => 1 },
+			{ action: 'set', path: ['n'], value: cycle },
+			{ action: 'set', path: ['n'], value: new Date(0) },
+			{
+				action: 'set',
+				path: ['n'],
+				value: JSON.parse('{"__proto__":1}'),
+			},
+			{
+				action: 'set',
+				path: ['n'],
+				value: GITHUB_TOKEN_SHAPED,
+			},
+		];
+		for (const edit of refused) {
+			const { result } = await save({}, [edit]);
+			expect(result.ok).toBe(false);
+		}
+		const nested = await save({}, [
+			{ action: 'set', path: ['n'], value: { a: [1, { b: null }] } },
+		]);
+		expect(nested.result.ok).toBe(true);
+	});
+
+	it('refuses a workspace root that is not absolute, and a document it cannot read', async () => {
+		await expect(
+			readConfigurationDocument({ workspaceRoot: 'relative/root' }),
+		).rejects.toThrow('must be absolute');
+		const root = await workspace();
+		await mkdir(join(root, 'delendai.config.json'));
+		await expect(
+			readConfigurationDocument({ workspaceRoot: root }),
+		).rejects.toThrow('Unable to read config file');
+		const listRoot = await workspace();
+		await writeFile(join(listRoot, 'delendai.config.json'), '[1]', 'utf8');
+		await expect(
+			readConfigurationDocument({ workspaceRoot: listRoot }),
+		).rejects.toThrow('must contain a JSON object');
+	});
+});

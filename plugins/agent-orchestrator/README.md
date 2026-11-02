@@ -1,0 +1,133 @@
+# `@delendai/agent-orchestrator`
+
+Workflow-policy plugin for `@delendai/core`. Decides **how** the
+main agent works — task-by-task, sequential subagents, parallel swarm,
+or auto-classified — with token budgets and mid-task subagent
+rotation.
+
+## Status
+
+| Slice | Status | Contents |
+| --- | --- | --- |
+| **S1** | done | policy engine + classifier + budget + rotation + `plan` tool |
+| **S2** | done | host-native linear dispatch + rotation wiring |
+| S3 | pending | swarm parallel dispatch + join |
+| S4 | pending | auto telemetry + classifier regress |
+| S5 | pending | dogfooding on `develop` |
+| S6 | pending | i18n keys |
+
+Track the proposal in `docs/delendai/proposals/in-progress/plans/q00007-plan-agent-orchestrator-plugin.md`.
+
+## Install
+
+Add to `delendai.config.json` plugin list:
+
+```jsonc
+{
+  "plugins": {
+    "agent-orchestrator": {
+      "policy": {
+        "defaultMode": "auto",                 // or "single" | "linear" | "swarm"
+        "defaults": {
+          "budget": {
+            "maxTokensOrchestrator": 200_000,   // 0 = unlimited
+            "maxTokensPerSubagent":   50_000,   // 0 = unlimited
+            "timeoutMs": 0
+          },
+          "rotation": {
+            "maxIterationsPerSubagent": 3,
+            "allow": [
+              "token-budget-exhausted",
+              "schema-violation",
+              "repeated-output",
+              "error-storm"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Or via the CLI preset:
+
+```bash
+delendai --plugins=agent-orchestrator
+delendai --plugins=agent-orchestrator,auto-agent-selector
+```
+
+## Modes
+
+| Mode | When it fits | Cost shape |
+| --- | --- | --- |
+| `single` | trivial/small tasks, ≤ ~280 chars | cheapest |
+| `linear`  | medium tasks, refactor-style | scout → implementer → verify |
+| `swarm`   | large tasks, root-level, audit-shaped | parallel slice A/B → join → verify |
+| `auto`    | default; classifier routes per task | scales with verdict |
+
+When the configured `defaultMode` declines a task (e.g. `single` is
+configured but the task is tagged `refactor`), the engine falls back
+to `auto` silently — you get a plan, not an error.
+
+## Recommended use
+
+Use the **orchestrator** agent as the default entry point for every task. It
+can complete small tasks itself and should delegate only a non-trivial,
+claimed slice. Use `implementation_runner` for an assigned implementation
+slice, `technical_investigator` for read-only investigation,
+`proposal_guardian` for proposal and workflow maintenance, and
+`delivery_verifier` for independent validation without edits.
+
+The host injects its native subagent capability into the MCP context at boot.
+Projects do not put a function in `delendai.config.json`. When the host does
+not expose native subagents, planning and direct orchestrator work remain
+available, while dispatch returns a structured capability-unavailable error.
+`portFactory` and `allowFakeDispatchPort` are compatibility/test seams only;
+the fake port must never be enabled for production work.
+
+## Tool
+
+| Tool | Description |
+| --- | --- |
+| `<namespace>_plan` | Plan a task against the configured policy. Returns mode, rationale, ordered steps, budgets, rotation policy. **Read-only.** |
+| `<namespace>_dispatch` | Execute a plan through the host-native subagent runtime when the host provides one. |
+
+## Public surface
+
+```ts
+import {
+  createOrchestratorEngine,
+  ModeRegistry,
+  SingleModeAdapter,
+  LinearModeAdapter,
+  SwarmModeAdapter,
+  AutoModeAdapter,
+  TaskClassifier,
+  BudgetTracker,
+  LoopDetector,
+  DEFAULT_BUDGET_POLICY,
+  DEFAULT_ROTATION_POLICY,
+  OrchestratorPolicySchema,
+  type IOrchestratorPolicy,
+  type IModeAdapter,
+} from "@delendai/agent-orchestrator/public";
+```
+
+## Tests
+
+```bash
+cd plugins/agent-orchestrator
+bun run typecheck
+bun run test          # 9 files, 56 tests
+bun run build         # dist/ + dist/public/
+```
+
+## Conventions
+
+- Solid: OCP-friendly `ModeRegistry`; modes are plug-and-play.
+- Clean: each file owns one concern; pure functions where possible.
+- Reusable: reuses `definePlugin` / `toolJson` / `toolError` /
+  `TOKEN_BUDGETS` from `@delendai/core/public`.
+- Dogfooded: this repo adopts the plugin in S5 with
+  `defaultMode: "auto"`.

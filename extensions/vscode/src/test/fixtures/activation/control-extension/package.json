@@ -1,0 +1,13 @@
+{
+	"name": "delendai-benchmark-control",
+	"displayName": "DelendAI Benchmark Control",
+	"publisher": "cartago",
+	"version": "0.0.0",
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"main": "./index.cjs",
+	"activationEvents": [
+		"onStartupFinished"
+	]
+}

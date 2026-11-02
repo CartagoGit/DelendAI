@@ -1,0 +1,326 @@
+/**
+ * account-sources.service.ts — every place on the machine that suggests an
+ * account, read without a list of vendors.
+ *
+ * The offer knew only coding clients whose status answer matched a
+ * hand-written pattern: on the owner's machine it found Claude Code and
+ * Codex while OpenCode reached five MiniMax providers, a MiniMax key was
+ * in the environment, mmx held the MiniMax plan and Copilot served qwen,
+ * glm and MiniMax. Each source here reports what it saw and, when it can
+ * tell, who it is with and how it is paid; what it cannot tell is left
+ * for the person to answer, never dropped.
+ */
+import {
+	CREDENTIAL_VARIABLE_PATTERN,
+	LOCAL_MODEL_ENDPOINTS,
+	LOCAL_PROBE_TIMEOUT_MS,
+	PLAN_TOOLS,
+} from '../contracts/constants/account-sources.constant';
+import type {
+	IAccountFinding,
+	ILocalFetch,
+	IModelCatalogue,
+	IPlanTool,
+} from '../contracts/interfaces/account-finding.interface';
+import type { IOfferStep } from '../contracts/interfaces/account-offer.interface';
+import type {
+	IClientCommandRunner,
+	IClientDiscovery,
+} from '../contracts/interfaces/known-client.interface';
+import type { IHostByokProvider } from '../contracts/interfaces/host-byok.interface';
+import { clientLogin, listClientModels } from './client-discovery.service';
+import { providerOfModel, providerOfVariable } from './model-catalogue.service';
+import { toKebabCase } from './string-normalize';
+
+const PLAN_TOOL_TIMEOUT_MS = 20_000;
+
+/** The letters a model id opens with: its maker as the id names it. */
+export const brandOf = (model: string): string =>
+	/^[a-z]+/u.exec(model.toLowerCase())?.[0] ?? toKebabCase(model);
+
+/** A logged-in coding client whose answer says how it bills. */
+export const findingsFromClients = (
+	discoveries: readonly IClientDiscovery[],
+): readonly IAccountFinding[] =>
+	discoveries.flatMap((discovery) => {
+		if (discovery.verdict !== 'usable') return [];
+		// A client that reaches several vendors is not an account: the
+		// providers it lists are, each a finding of its own.
+		if (discovery.client.modelListArgs !== undefined) return [];
+		const { client, login } = discovery;
+		return [
+			{
+				key: `client-login:${client.command}`,
+				source: 'client-login' as const,
+				accountId: toKebabCase(`${client.vendor}-${client.command}`),
+				displayName: `${client.label}, as logged in on this machine`,
+				subject: client.label,
+				vendorHint: client.vendor,
+				...(login === undefined
+					? {}
+					: { classification: { vendor: client.vendor, ...login } }),
+				models: [],
+				evidence:
+					discovery.evidence?.line ??
+					`${client.command} is logged in`,
+			},
+		];
+	});
+
+/** Every provider a multi-provider client reaches (OpenCode lists them). */
+export const findingsFromClientProviders = async (
+	discoveries: readonly IClientDiscovery[],
+	run: IClientCommandRunner,
+	cwd: string,
+): Promise<readonly IAccountFinding[]> => {
+	const listing = discoveries.filter(
+		(discovery) =>
+			discovery.verdict !== 'not-installed' &&
+			discovery.client.modelListArgs !== undefined,
+	);
+	const lists = await Promise.all(
+		listing.map((discovery) =>
+			listClientModels(discovery.client, run, cwd),
+		),
+	);
+	const found: IAccountFinding[] = [];
+	for (const [index, discovery] of listing.entries()) {
+		for (const { provider, models } of lists[index]?.providers ?? []) {
+			found.push({
+				key: `client-provider:${discovery.client.command}/${provider}`,
+				source: 'client-provider',
+				accountId: toKebabCase(
+					`${provider}-via-${discovery.client.command}`,
+				),
+				displayName: `${provider}, reached through ${discovery.client.label}`,
+				subject: provider,
+				via: discovery.client.label,
+				vendorHint: brandOf(provider),
+				models,
+				evidence: `${discovery.client.command} lists ${String(models.length)} model(s) under ${provider}`,
+			});
+		}
+	}
+	return found;
+};
+
+/** Variables named like a credential; their values are never read. */
+export const findingsFromCredentialVariables = (
+	env: Readonly<Record<string, string | undefined>>,
+	catalogue?: IModelCatalogue | undefined,
+): readonly IAccountFinding[] =>
+	Object.keys(env)
+		.sort()
+		.flatMap((name) => {
+			if ((env[name] ?? '').trim().length === 0) return [];
+			// The catalogue names a variable whatever its shape
+			// (`GITHUB_TOKEN` is GitHub Copilot's); the pattern still
+			// catches a vendor the catalogue does not list yet.
+			const listed = providerOfVariable(catalogue, name);
+			const match = CREDENTIAL_VARIABLE_PATTERN.exec(name);
+			if (listed === undefined && match === null) return [];
+			const vendor = toKebabCase(listed?.id ?? match?.[1] ?? name);
+			return [
+				{
+					key: `credential-variable:${name}`,
+					source: 'credential-variable' as const,
+					accountId: toKebabCase(`${vendor}-key`),
+					displayName:
+						listed === undefined
+							? `the key in ${name}`
+							: `${listed.name}: the key in ${name}`,
+					subject: listed?.name ?? vendor,
+					vendorHint: vendor,
+					credentialEnv: name,
+					models: [],
+					evidence: `${name} is set (its value is not read)`,
+				},
+			];
+		});
+
+/** The makers of the models this person's chats were served by. */
+export const findingsFromSeenModels = (
+	models: readonly string[],
+	catalogue?: IModelCatalogue | undefined,
+): readonly IAccountFinding[] => {
+	const byBrand = new Map<string, string[]>();
+	const names = new Map<string, string>();
+	for (const model of models) {
+		const seller = providerOfModel(catalogue, model);
+		const brand =
+			seller === undefined ? brandOf(model) : toKebabCase(seller.id);
+		if (seller !== undefined) names.set(brand, seller.name);
+		byBrand.set(brand, [...(byBrand.get(brand) ?? []), model]);
+	}
+	return [...byBrand].map(([brand, served]) => ({
+		key: `seen-models:${brand}`,
+		source: 'seen-models' as const,
+		accountId: toKebabCase(`${brand}-seen`),
+		displayName: `${names.get(brand) ?? brand} models your chats were served by`,
+		subject: names.get(brand) ?? brand,
+		vendorHint: brand,
+		models: served,
+		evidence: `seen serving chats here: ${served.join(', ')}`,
+	}));
+};
+
+/**
+ * The providers an editor serves on the person's keys (Copilot BYOK), one
+ * per provider and profile. How each is paid is the person's to say; who
+ * holds the key is not: the editor does.
+ */
+export const findingsFromHostByok = (
+	roster: readonly IHostByokProvider[],
+): readonly IAccountFinding[] =>
+	roster.map((provider) => {
+		const where = provider.profileName ?? provider.profile;
+		return {
+			key: `host-byok:${provider.profile}:${provider.vendor}:${provider.name}`,
+			source: 'host-byok' as const,
+			accountId: toKebabCase(`${provider.name}-byok`),
+			displayName: `${provider.name} (your editor's own key, ${where} profile)`,
+			subject: provider.name,
+			via: 'editor BYOK',
+			vendorHint: provider.vendor,
+			hostHeld: true,
+			models: provider.models.map((model) => model.id),
+			evidence: `configured in the ${where} profile of ${provider.host}; the editor keeps its key`,
+		};
+	});
+
+/** Vendor plan tools logged in to a plan (mmx), from their own answer. */
+export const findingsFromPlanTools = async (
+	run: IClientCommandRunner,
+	cwd: string,
+	tools: readonly IPlanTool[] = PLAN_TOOLS,
+): Promise<readonly IAccountFinding[]> => {
+	const found = await Promise.all(
+		tools.map(async (tool): Promise<IAccountFinding | undefined> => {
+			const answer = await run(
+				[tool.command, ...tool.loginStatusArgs].join(' '),
+				{ cwd, timeoutMs: PLAN_TOOL_TIMEOUT_MS },
+			).catch(() => undefined);
+			if (answer === undefined || answer.code !== 0) return undefined;
+			const login = clientLogin(tool, answer);
+			return {
+				key: `plan-tool:${tool.command}`,
+				source: 'plan-tool',
+				accountId: toKebabCase(`${tool.vendor}-plan`),
+				displayName: tool.label,
+				subject: tool.label,
+				vendorHint: tool.vendor,
+				...(login === undefined
+					? {}
+					: { classification: { vendor: tool.vendor, ...login } }),
+				models: [],
+				evidence: `${tool.command} ${tool.loginStatusArgs.join(' ')} answered`,
+			};
+		}),
+	);
+	return found.filter((each): each is IAccountFinding => each !== undefined);
+};
+
+/** Local OpenAI-compatible servers, and the models each lists. */
+export const findingsFromLocalEndpoints = async (
+	fetchModels: ILocalFetch,
+): Promise<readonly IAccountFinding[]> => {
+	const urlOf = (port: number): string =>
+		`http://127.0.0.1:${String(port)}/v1/models`;
+	const answers = await Promise.all(
+		LOCAL_MODEL_ENDPOINTS.map((endpoint) =>
+			fetchModels(urlOf(endpoint.port), LOCAL_PROBE_TIMEOUT_MS).catch(
+				() => undefined,
+			),
+		),
+	);
+	const found: IAccountFinding[] = [];
+	for (const [index, endpoint] of LOCAL_MODEL_ENDPOINTS.entries()) {
+		const url = urlOf(endpoint.port);
+		const answer = answers[index];
+		const data = (answer?.json as { data?: unknown } | undefined)?.data;
+		if (answer?.ok !== true || !Array.isArray(data)) continue;
+		const models = data.flatMap((entry) =>
+			typeof (entry as { id?: unknown }).id === 'string'
+				? [String((entry as { id: string }).id)]
+				: [],
+		);
+		found.push({
+			key: `local-endpoint:${String(endpoint.port)}`,
+			source: 'local-endpoint',
+			accountId: toKebabCase(`${endpoint.name}-local`),
+			displayName: `${endpoint.name} on this machine (port ${String(endpoint.port)})`,
+			subject: endpoint.name,
+			port: endpoint.port,
+			vendorHint: endpoint.name,
+			classification: {
+				vendor: endpoint.name,
+				credentialMode: 'local-none',
+				billingMode: 'local',
+			},
+			models,
+			evidence: `${url} lists ${String(models.length)} model(s)`,
+		});
+	}
+	return found;
+};
+
+/** A real fetch of a local endpoint, bounded by `timeoutMs`. */
+export const fetchLocalModels: ILocalFetch = async (url, timeoutMs) => {
+	try {
+		const response = await fetch(url, {
+			signal: AbortSignal.timeout(timeoutMs),
+		});
+		return {
+			ok: response.ok,
+			json: response.ok
+				? ((await response.json()) as unknown)
+				: undefined,
+		};
+	} catch {
+		return undefined;
+	}
+};
+
+/** Every source, in the order an offer is made: what says most first. */
+export const gatherFindings = async (input: {
+	readonly discoveries: readonly IClientDiscovery[];
+	readonly run: IClientCommandRunner;
+	readonly cwd: string;
+	readonly env: Readonly<Record<string, string | undefined>>;
+	readonly seen: readonly string[];
+	readonly planTools?: readonly IPlanTool[] | undefined;
+	readonly fetchLocal?: ILocalFetch | undefined;
+	/** Told each step as it starts, so a person sees it is working. */
+	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
+	/** The editors' BYOK providers; absent, none is offered. */
+	readonly hostByok?: readonly IHostByokProvider[] | undefined;
+	/** Reads the public model catalogue; absent, keys and models are named by their shape alone. */
+	readonly loadCatalogue?:
+		| (() => Promise<IModelCatalogue | undefined>)
+		| undefined;
+}): Promise<readonly IAccountFinding[]> => {
+	const said = input.onProgress ?? (() => undefined);
+	said(
+		input.loadCatalogue === undefined ? 'sources' : 'sources-and-catalogue',
+	);
+	// The slow ones together: each is a command or a port with its own
+	// deadline, and read one after another they kept a person waiting.
+	const [plans, locals, providers, catalogue] = await Promise.all([
+		findingsFromPlanTools(input.run, input.cwd, input.planTools),
+		input.fetchLocal === undefined
+			? Promise.resolve([])
+			: findingsFromLocalEndpoints(input.fetchLocal),
+		findingsFromClientProviders(input.discoveries, input.run, input.cwd),
+		input.loadCatalogue?.() ?? Promise.resolve(undefined),
+	]);
+	said('names');
+	return [
+		...findingsFromClients(input.discoveries),
+		...plans,
+		...locals,
+		...providers,
+		...findingsFromCredentialVariables(input.env, catalogue),
+		...findingsFromSeenModels(input.seen, catalogue),
+		...findingsFromHostByok(input.hostByok ?? []),
+	];
+};

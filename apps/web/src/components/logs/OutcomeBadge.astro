@@ -1,0 +1,42 @@
+---
+import type { ILogsTranslations } from '#I18N/shared';
+
+interface Props {
+	outcome: keyof ILogsTranslations['outcomes'];
+	labels: ILogsTranslations;
+}
+
+const { outcome, labels } = Astro.props;
+const tone =
+	outcome === 'ok'
+		? 'ok'
+		: outcome === 'idle' || outcome === 'unknown'
+			? 'warn'
+			: 'bad';
+---
+
+<span class={`outcome-badge outcome-badge--${tone}`}>{labels.outcomes[outcome]}</span>
+
+<style>
+	.outcome-badge {
+		display: inline-flex;
+		align-items: center;
+		border-radius: 999px;
+		padding: 0.15rem 0.5rem;
+		font-size: 0.78rem;
+		font-weight: 650;
+		border: 1px solid currentColor;
+	}
+
+	.outcome-badge--ok {
+		color: #2f9e44;
+	}
+
+	.outcome-badge--warn {
+		color: #f59f00;
+	}
+
+	.outcome-badge--bad {
+		color: #e03131;
+	}
+</style>

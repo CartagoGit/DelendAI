@@ -1,0 +1,126 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { InitAnswers } from './init-answers.schema';
+import type { IInitAnswers } from './init-answers.types';
+import { renderInitBundle, resolvePluginSet } from './init-render.service';
+
+import { parseJsonc } from '@delendai/core/cli';
+
+/**
+ * f00502: the generated config is JSONC — one comment above every
+ * plugin entry — so the spec reads it the way the loader does.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
+
+import {
+	writeDelendaiConfig,
+	writeWorkspaceText,
+} from './init-writers.factory';
+
+const parseAnswers = (
+	workspaceRoot: string,
+	partial: Partial<IInitAnswers> = {},
+): IInitAnswers => InitAnswers.parse({ workspaceRoot, ...partial });
+
+describe('init integration (f00084 S10)', () => {
+	let workspace: string;
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'delendai-init-integration-'));
+		// a00063: seed stable top-level source dirs so the derived
+		// search/conventions roots are a fixed point across renders —
+		// init itself creates docs/ on write, and rendering from an
+		// empty dir vs. a post-init dir would otherwise legitimately
+		// differ (roots are derived from the REAL workspace layout now).
+		await mkdir(join(workspace, 'src'), { recursive: true });
+		await mkdir(join(workspace, 'docs'), { recursive: true });
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('renders, writes, re-renders idempotently, and persists plugin defaults end-to-end', async () => {
+		const answers = parseAnswers(workspace, {
+			preset: 'full',
+			extraPlugins: ['audit'],
+		});
+		const resolvedPlugins = resolvePluginSet(answers);
+		const first = await renderInitBundle(answers);
+
+		for (const file of first.files) {
+			if (file.relPath === 'delendai.config.json') {
+				const parsed = parseGeneratedConfig<Record<string, unknown>>(
+					file.content,
+				);
+				const result = await writeDelendaiConfig(
+					workspace,
+					parsed,
+					false,
+				);
+				expect(result.kind).toBe('written');
+				continue;
+			}
+
+			const result = await writeWorkspaceText(
+				workspace,
+				file.relPath,
+				file.content,
+				answers.hostInstructions,
+			);
+			expect(result.kind).toBe('written');
+		}
+
+		const configOnDisk = await readFile(
+			join(workspace, 'delendai.config.json'),
+			'utf8',
+		);
+		const parsedConfig = parseGeneratedConfig<{
+			plugins: Record<string, { options: Record<string, unknown> }>;
+		}>(configOnDisk);
+
+		for (const pluginId of resolvedPlugins) {
+			expect(parsedConfig.plugins[pluginId]).toBeDefined();
+			expect(parsedConfig.plugins[pluginId]?.options).toBeDefined();
+			expect(typeof parsedConfig.plugins[pluginId]?.options).toBe(
+				'object',
+			);
+		}
+
+		if ('audit' in parsedConfig.plugins) {
+			const audit = parsedConfig.plugins.audit?.options;
+			// A neutral number is a default worth writing; a path built
+			// from OUR docs layout is not, and this used to require it
+			// (x00613). The plugin derives `auditDir` from the host's
+			// resolved docsDir when the option is absent.
+			expect(audit.topActions).toBeDefined();
+			expect(audit.auditDir).toBeUndefined();
+		}
+
+		if ('memory' in parsedConfig.plugins) {
+			const memory = parsedConfig.plugins.memory?.options;
+			expect(memory.bm25K1).toBeDefined();
+			expect(memory.bm25B).toBeDefined();
+		}
+
+		if ('web-fetch' in parsedConfig.plugins) {
+			const webFetch = parsedConfig.plugins['web-fetch']?.options;
+			expect(webFetch.allowList).toBeDefined();
+			expect(Array.isArray(webFetch.allowList)).toBe(true);
+		}
+
+		const second = await renderInitBundle(answers);
+		const firstByPath = new Map(
+			first.files.map((file) => [file.relPath, file.content]),
+		);
+		const secondByPath = new Map(
+			second.files.map((file) => [file.relPath, file.content]),
+		);
+
+		expect(secondByPath).toEqual(firstByPath);
+	});
+});

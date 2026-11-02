@@ -1,0 +1,48 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+	DEFAULT_PATH_LAYOUT,
+	buildSwarmPaths,
+} from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
+
+describe('buildSwarmPaths', async () => {
+	it('roots every cache artefact under the given cacheDir', async () => {
+		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
+		expect(layout.lockFile).toBe('.cache/x/swarm/agents.lock.json');
+		expect(layout.taskQueueFile).toBe(
+			'.cache/x/swarm/agent-queue/queue.json',
+		);
+		expect(layout.scratchDir).toBe('.cache/x/swarm');
+	});
+
+	it('roots human-edited proposals under the given docsDir', async () => {
+		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
+		expect(layout.proposalsDir).toBe('docs/x/proposals');
+		// x00052: proposalIndexFile moved under cacheDir — it is a
+		// regenerable cache artefact, not human-edited state.
+		expect(layout.proposalIndexFile).toBe(
+			'.cache/x/swarm/proposals/index.json',
+		);
+	});
+});
+
+describe('DEFAULT_PATH_LAYOUT', async () => {
+	it('defaults to the delendai layout (.cache/delendai + docs/delendai/proposals)', async () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/delendai');
+		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
+			'.cache/delendai/agents.lock.json',
+		);
+		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe(
+			'docs/delendai/proposals',
+		);
+	});
+
+	it('keeps every artefact inside the scratch or proposals dirs', async () => {
+		const { proposalsDir, scratchDir, ...artefacts } = DEFAULT_PATH_LAYOUT;
+		for (const value of Object.values(artefacts)) {
+			const inScratch = value.startsWith(`${scratchDir}/`);
+			const inProposals = value.startsWith(`${proposalsDir}/`);
+			expect(inScratch || inProposals).toBe(true);
+		}
+	});
+});

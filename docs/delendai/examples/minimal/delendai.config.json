@@ -1,0 +1,5 @@
+{
+	"$schema": "../../../../packages/core/schema/delendai.config.schema.json",
+	"keepLegacy": false,
+	"plugins": {}
+}

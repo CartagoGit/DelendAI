@@ -1,0 +1,75 @@
+---
+id: x00531
+title: "El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests"
+kind: fix
+status: done
+type: proposal
+track: architecture
+date: 2026-09-08
+last-transition-id: d5dd89d4-f3a0-4912-b714-fc1c3e3d7e65
+last-correlation-id: d5dd89d4-f3a0-4912-b714-fc1c3e3d7e65
+last-transition-from: review
+shipped-in:
+  - "4408dc2b876c200663dfbe41993b3d4ce410147c"
+---
+
+# x00531 — El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests
+
+## Goal
+
+Que el orden de compilacion del monorepo salga de un sort topologico sobre las dependencias declaradas, y que exista un build:clean que demuestre que un arbol vacio compila.
+
+## why
+
+Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank como: packages/core igual a 0, cualquier otro packages/* igual a 1, plugins/* igual a 2, con desempate alfabetico. Ese orden contradice las dependencias reales: packages/core importa @delendai/contracts y @delendai/state, ambos rango 1, o sea que core se compila ANTES que aquello de lo que depende; packages/context-compiler depende de @delendai/state y le gana alfabeticamente; packages/cli depende de los plugins auto-agent-selector y env, que son rango 2. Hoy no siempre explota porque los dist/ previos enmascaran el problema en builds incrementales, y packages/state-telemetry ni siquiera tiene dist todavia. Un checkout limpio es el caso que no esta cubierto.
+
+## non-goals
+
+- No cambiar el compilador ni el formato de salida.
+- No reordenar PUBLISH_ORDER en esta propuesta mas alla de hacerlo consistente con el grafo.
+
+## Slices
+
+- global_gate: type
+
+### S1 — grafo topologico derivado de los package.json, con deteccion de ciclos
+- **Status**: done
+- **Files**: `tools/scripts/compile/build-graph.ts`, `tools/scripts/compile/build-graph.spec.ts`, `tools/scripts/compile/build.script.ts`
+- **Gate**: type
+- acceptance:
+  - "El orden de compilacion se deriva leyendo dependencies, peerDependencies y optionalDependencies de cada workspace y aplicando un sort topologico determinista (desempate alfabetico dentro del mismo nivel)."
+  - "buildRank desaparece; no queda ningun nombre de paquete hardcodeado en la logica de orden."
+  - "Un ciclo de dependencias falla de forma explicita nombrando el ciclo, en vez de producir un orden arbitrario."
+  - "El orden resultante situa contracts y state antes que core, y los plugins de los que depende cli antes que cli."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — build-graph.ts derives the build order from manifest dependencies (deps, peerDependencies, optionalDependencies) and runs a deterministic topological sort with alphabetical tiebreak. buildRank() is fully removed from build.script.ts. The cycle detector names the cycle through BuildGraphCycleError. Verified end-to-end: computed order over real repo manifests places contracts/state before core, state before context-compiler/state-telemetry, and the plugins of cli depend on before cli (6/6 ordering checks). Spec covers synthetic + real manifests + cycle policy: 15/15 tests pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4408dc2b876c200663dfbe41993b3d4ce410147c: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+
+### S2 — build:clean y gate de CI sobre arbol vacio
+- **Status**: done
+- **DependsOn**: [S1]
+- **Files**: `package.json`, `tools/scripts/compile/build-clean.script.ts`, `.github/workflows/ci.yml`
+- **Gate**: e2e
+- acceptance:
+  - "bun run build:clean elimina todo dist/ de packages y plugins antes de compilar."
+  - "Existe un job de CI que ejecuta build:clean sobre un checkout limpio y falla si cualquier paquete no compila."
+  - "packages/state-telemetry entra en el grafo y produce dist."
+  - "El job es obligatorio en la lista de required checks agregada de ci.yml."
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — build:clean script removes every dist/ under packages/* and plugins/*, then calls the build. CI job 'Build from an empty output tree' executes it from a clean checkout. packages/state-telemetry joins the graph and produces dist (index.js + index.d.ts + dist/lib/). delendai-validate job has '- build-clean' in its `needs:` list, so the gate is a required check. E2E: 68 packages built clean in this worktree; specs: 19/19 pass.
+- review-attribution: unrecorded — nothing in Git names who delivered 4408dc2b876c200663dfbe41993b3d4ce410147c: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by minimax-m3
+
+## acceptance
+
+- El orden de compilacion se deriva leyendo dependencies, peerDependencies y optionalDependencies de cada workspace y aplicando un sort topologico determinista (desempate alfabetico dentro del mismo nivel).
+- buildRank desaparece; no queda ningun nombre de paquete hardcodeado en la logica de orden.
+- Un ciclo de dependencias falla de forma explicita nombrando el ciclo, en vez de producir un orden arbitrario.
+- El orden resultante situa contracts y state antes que core, y los plugins de los que depende cli antes que cli.
+- bun run build:clean elimina todo dist/ de packages y plugins antes de compilar.
+- Existe un job de CI que ejecuta build:clean sobre un checkout limpio y falla si cualquier paquete no compila.
+- packages/state-telemetry entra en el grafo y produce dist.
+- El job es obligatorio en la lista de required checks agregada de ci.yml.

@@ -1,0 +1,134 @@
+import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import { defaultMcpServerName } from '../scaffold/scaffold-host';
+import { stripPackageScope, toKebabCase } from '../shared/string-normalize';
+import type { IProjectAnalysis } from './analyze-project';
+import { resolveAdoptionStrategy } from './adoption-strategy';
+import { runnerFor } from './package-runners';
+import { resolvePatternCatalog } from './pattern-catalog-overrides';
+import type { IPatternOverrides } from './pattern-catalog-overrides';
+import type { IRecommendedTool } from './pattern-catalog';
+
+export interface IServerPlanOptions {
+	readonly serverName?: string;
+	readonly namespacePrefix?: string;
+	readonly cacheDir?: string;
+	readonly docsDir?: string;
+	readonly targetDir?: string;
+	readonly adoption?: unknown;
+	/**
+	 * Optional host-defined pattern overrides (see
+	 * `pattern-catalog-overrides.ts`). When omitted, the hardcoded
+	 * `PROJECT_PATTERN_CATALOG` is used.
+	 */
+	readonly patternOverrides?: IPatternOverrides;
+}
+
+export interface IServerPlan {
+	readonly projectType: IProjectAnalysis['projectType'];
+	readonly serverName: string;
+	readonly namespacePrefix: string;
+	readonly targetDir: string;
+	/** delendai plugins to load via `--plugins`. */
+	readonly plugins: readonly string[];
+	/** Project-specific tools to scaffold. */
+	readonly tools: readonly IRecommendedTool[];
+	/** Suggested quality-gate commands, by role. */
+	readonly validationCommands: Readonly<Record<string, string>>;
+	readonly cacheDir: string;
+	readonly docsDir: string;
+	/** A ready-to-paste mcp.json server entry. */
+	readonly mcpJson: Readonly<Record<string, unknown>>;
+	/** Human + agent guidance for executing the plan. */
+	readonly notes: readonly string[];
+}
+
+const kebabHead = (name: string | undefined): string => {
+	if (name?.startsWith('@delendai/')) return 'delendai';
+	if (!name) return 'app';
+	const cleaned = toKebabCase(stripPackageScope(name));
+	const head = cleaned.split('-')[0];
+	return head && head.length > 0 ? head : 'app';
+};
+
+const defaultTargetDir = (analysis: IProjectAnalysis): string => {
+	if (analysis.name === '@delendai/core-monorepo') return 'packages/core';
+	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
+};
+
+const buildValidationCommands = (
+	analysis: IProjectAnalysis,
+): Record<string, string> => {
+	const prefix = runnerFor(analysis.packageManager);
+	const out: Record<string, string> = {};
+	for (const [role, script] of Object.entries(analysis.scripts)) {
+		out[role] = `${prefix} ${role}`.trim();
+		void script;
+	}
+	return out;
+};
+
+/**
+ * Turn an analysis into a concrete, editable server plan. Pure: the
+ * agent reviews the plan, tweaks names/plugins if needed, then asks
+ * `create_project` to materialise it. The plan is the "what an optimal
+ * MCP server needs here" recommendation, derived from the pattern
+ * catalog — no human had to spell it out.
+ */
+export const recommendServerPlan = (
+	analysis: IProjectAnalysis,
+	options: IServerPlanOptions = {},
+): IServerPlan => {
+	const catalog = resolvePatternCatalog(options.patternOverrides);
+	const pattern = catalog[analysis.projectType];
+	const namespacePrefix = options.namespacePrefix ?? kebabHead(analysis.name);
+	const serverName =
+		options.serverName ?? defaultMcpServerName(namespacePrefix);
+	const targetDir = options.targetDir ?? defaultTargetDir(analysis);
+	const cacheDir = options.cacheDir ?? DEFAULT_CORE_PATHS.cacheDir;
+	const docsDir = options.docsDir ?? DEFAULT_CORE_PATHS.docsDir;
+	const plugins = pattern.recommendedPlugins;
+	const adoptionStrategy = resolveAdoptionStrategy(options.adoption ?? {}, {
+		hasExistingMcpProject: analysis.hasMcpProject,
+	});
+
+	const args = ['@delendai/core'];
+	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
+	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir)
+		args.push(`--cacheDir=${cacheDir}`);
+	if (docsDir !== DEFAULT_CORE_PATHS.docsDir)
+		args.push(`--docsDir=${docsDir}`);
+	if (options.namespacePrefix) args.push(`--prefix=${namespacePrefix}`);
+
+	const notes: string[] = [
+		...pattern.knowledgeHints,
+		analysis.hasMcpProject
+			? 'This project already has an MCP server: prefer adding the recommended tools to it over scaffolding a new one.'
+			: 'No MCP server found: scaffold a fresh one with `create_project`, then register it in mcp.json.',
+	];
+
+	return {
+		projectType: analysis.projectType,
+		serverName,
+		namespacePrefix,
+		targetDir,
+		plugins,
+		tools: pattern.recommendedTools,
+		validationCommands: buildValidationCommands(analysis),
+		cacheDir,
+		docsDir,
+		mcpJson: {
+			...(adoptionStrategy.operations.some(
+				(operation) =>
+					operation.capability === 'mcp-config' &&
+					operation.action === 'replace',
+			)
+				? {
+						servers: {
+							[serverName]: { command: 'bunx', args },
+						},
+					}
+				: {}),
+		},
+		notes,
+	};
+};

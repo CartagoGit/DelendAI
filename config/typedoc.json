@@ -1,0 +1,15 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["../packages/core/src/public/index.ts"],
+	"tsconfig": "../tsconfig.json",
+	"out": "../build/docs-api",
+	"name": "@delendai/core — public API",
+	"readme": "none",
+	"hideGenerator": true,
+	"excludeInternal": true,
+	"validation": { "notExported": false, "invalidLink": true },
+	"navigationLinks": {
+		"Site": "https://cartagogit.github.io/delendai/",
+		"GitHub": "https://github.com/CartagoGit/delendai"
+	}
+}

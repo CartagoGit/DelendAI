@@ -1,0 +1,78 @@
+---
+id: x00524
+title: "Eliminar artefacto de plugin externo y documentar la adaptación host-neutral"
+kind: fix
+status: done
+type: proposal
+track: architecture
+date: 2026-09-07
+last-transition-id: 4458ff0c-e378-4a7c-87c2-51e3f7acd008
+last-correlation-id: 4458ff0c-e378-4a7c-87c2-51e3f7acd008
+last-transition-from: in-progress
+---
+
+# x00524 — Eliminar artefacto de plugin externo y documentar la adaptación host-neutral
+
+## Goal
+
+Eliminar el directorio fantasma generado bajo plugins/ y dejar una propuesta canónica que describa qué ideas externas se adaptan a delendai como capacidades propias, sin copiar código, nombres, formatos ni crear una integración externa.
+
+## why
+
+Un directorio de plugin externo contiene únicamente un AGENT.md generado por el escáner de plugins, pero no representa un plugin funcional ni tiene package.json. Su mera presencia hace que los generadores, manifiestos y verificaciones lo traten como plugin de primera parte y provoca errores como ENOENT durante release-plan. La intención correcta es incorporar ideas útiles dentro de las abstracciones existentes de delendai y documentar esa decisión en una propuesta.
+
+## non-goals
+
+- No crear un plugin con el nombre del proyecto externo ni conservar su identificador.
+- No copiar código, nombres, formatos de configuración ni estructura de otro proyecto.
+- No añadir una dependencia, puente de compatibilidad ni instalador externo.
+- No introducir una segunda memoria, workflow, router de modelos o sistema paralelo de agentes.
+
+## Slices
+
+- global_gate: type
+
+### S1 — Retirar el plugin fantasma generado
+- **Status**: done
+- **Files**: eliminación verificada del artefacto externo (sin ruta persistente)
+- **Gate**: none
+- acceptance:
+  - "El directorio del plugin externo deja de existir."
+  - "El generador de AGENT.md ya no lo descubre como plugin."
+  - "No queda ninguna referencia activa al identificador externo en fuentes, configuración, manifiestos ni cachés del workspace."
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Aprobación independiente. El artefacto externo no existe, su eliminación está verificada y no quedan referencias activas en fuentes/configuración/manifiestos. Validación estructural exitosa.
+### S2 — Consolidar la documentación de adaptación host-neutral
+- **Status**: done
+- **Files**: esta propuesta, en su ruta canónica de cierre
+- **Gate**: type
+- acceptance:
+  - "La propuesta enumera explícitamente las ideas adaptadas: capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, y guards de deriva."
+  - "La propuesta deja claro que la implementación vive en contratos, registro y superficies existentes de delendai."
+  - "La propuesta declara como no objetivos copiar código, identificadores, formatos o workflows externos."
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Aprobación independiente. La propuesta documenta capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, guards de deriva, ubicación de implementación y no objetivos. Diff check limpio.
+## Architecture
+
+Las ideas que se conservan se expresan como capacidades propias de delendai:
+
+- **Capacidades host-neutrales**: contratos y superficies que no dependen de un IDE, proveedor o runtime concreto.
+- **Perfiles declarativos**: configuración validada que describe intención y límites sin acoplar el comportamiento a un host externo.
+- **Adapter packs deterministas**: adaptadores pequeños, versionados y reproducibles que traducen capacidades del host a contratos del sistema.
+- **Separación detección/autorización**: detectar una capacidad no concede permiso para ejecutarla; la autorización permanece en las políticas y guards existentes.
+- **Guards de deriva**: comprobaciones que detectan divergencias entre contratos, registro, manifiestos generados y runtime antes de publicar o ejecutar.
+
+La implementación vive en los contratos, el registro y las superficies existentes de delendai. Esta propuesta documenta una decisión de arquitectura y no introduce una integración paralela.
+
+## acceptance
+
+- El artefacto externo deja de existir.
+- El generador de AGENT.md ya no lo descubre como plugin.
+- No queda ninguna referencia activa al identificador externo en fuentes, configuración, manifiestos ni cachés del workspace.
+- La propuesta enumera explícitamente las ideas adaptadas: capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, y guards de deriva.
+- La propuesta deja claro que la implementación vive en contratos, registro y superficies existentes de delendai.
+- La propuesta declara como no objetivos copiar código, identificadores, formatos o workflows externos.

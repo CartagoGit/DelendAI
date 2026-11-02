@@ -1,0 +1,41 @@
+---
+/**
+ * `apps/web/src/components/ui/Callout.astro` — thin Astro wrapper around
+ * the host-agnostic `renderCallout` (f00048 S1 migrated to shared).
+ *
+ * The real implementation lives in
+ * `@delendai/shared/components/ui/callout` so the extension webview
+ * and any future product surface share the exact same HTML string +
+ * the same BEM styles. This `.astro` keeps the previous call site
+ * (`<Callout variant="tip" title="Pro tip">...</Callout>`) working
+ * unchanged by serialising the `<slot>` into HTML and passing it into
+ * the shared renderer.
+ *
+ * Migration path for the rest of the site
+ * -----------------------------------------
+ * Astro pages can now reach for the shared renderer directly:
+ *
+ *   import { renderCallout } from '@delendai/shared/components/ui/callout';
+ *   <Fragment set:html={renderCallout({ variant: 'tip' }, bodyHtml)} />
+ *
+ * …once `bodyHtml` is rendered into a string first. This wrapper is a
+ * transition path: pages keep their JSX-style children while the
+ * shared component becomes the implementation.
+ */
+import { renderCallout } from '@delendai/shared/components/ui/callout';
+import type { Lang } from '@delendai/shared/i18n';
+
+interface Props {
+	readonly variant?: 'note' | 'tip' | 'warn' | 'danger';
+	readonly title?: string;
+	readonly lang_label?: Lang;
+}
+
+const { variant = 'note', title, lang_label } = Astro.props as Props;
+// `Astro.slots.render('default')` returns the inner HTML of this slot
+// as a string. Available since Astro 4.0; documented in
+// https://docs.astro.build/en/reference/api-reference/#slotsrender
+const inner = await Astro.slots.render('default');
+---
+
+<Fragment set:html={renderCallout({ variant, title, lang_label }, inner)} />

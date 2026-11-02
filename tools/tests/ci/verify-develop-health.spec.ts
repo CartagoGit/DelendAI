@@ -1,0 +1,834 @@
+/**
+ * verify-develop-health.spec.ts — covers v00125, x00276-x00279.
+ *
+ * Tests the report-shape logic with a mocked fetch. The real
+ * GitHub API is exercised by the nightly CI job.
+ *
+ * This script and `verify-branch-protection.script.ts` read the same
+ * endpoint through the same shared client
+ * (`tools/scripts/ci/lib/github-protection.lib.ts`) and must reach the
+ * same verdict for the same fixture — the "parity" tests below assert
+ * that directly.
+ */
+
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+import { describe, expect, it } from 'vitest';
+
+import {
+	BRANCH_PROTECTION,
+	type IBranchProtectionConfig,
+} from '../../../.github/branch-protection.ts';
+import {
+	deriveFreshness,
+	displayableCiStatus,
+} from '../../scripts/ci/verify-develop-health.script.ts';
+import {
+	collectDevelopStatusDiscrepancies,
+	requiredChecksFor,
+	inspectBranch,
+	isHealthy,
+	main as healthMain,
+} from '../../scripts/ci/verify-develop-health.script';
+import { main as protectionMain } from '../../scripts/ci/verify-branch-protection.script';
+
+const DEFAULTS: IBranchProtectionConfig['defaults'] = {
+	enforce_admins: true,
+	required_linear_history: true,
+	allow_force_pushes: false,
+	allow_deletions: false,
+};
+
+// The literal API response for `main` copied from the audit evidence.
+const LIVE_MAIN_FIXTURE = {
+	required_status_checks: {
+		strict: true,
+		contexts: ['ci-complete', 'release-pr-gate'],
+	},
+	enforce_admins: { enabled: true },
+	required_linear_history: { enabled: true },
+	allow_force_pushes: { enabled: false },
+	allow_deletions: { enabled: false },
+};
+
+const GREEN_CHECK_RUNS_FIXTURE = {
+	check_runs: [
+		{
+			name: 'ci-complete',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/1',
+		},
+		{
+			name: 'release-pr-gate',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/2',
+		},
+	],
+};
+
+const RED_CHECK_RUNS_FIXTURE = {
+	check_runs: [
+		{
+			name: 'ci-complete',
+			status: 'completed',
+			conclusion: 'failure',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/1',
+		},
+		{
+			name: 'release-pr-gate',
+			status: 'completed',
+			conclusion: 'success',
+			head_sha: 'abc123',
+			html_url: 'https://example.test/checks/2',
+		},
+	],
+};
+
+const MAIN_POLICY: IBranchProtectionConfig['branches'][number] = {
+	name: 'main',
+	protected: true,
+	required_checks: ['ci-complete', 'release-pr-gate'],
+};
+
+describe('inspectBranch + isHealthy', () => {
+	it('the literal live response for main is healthy — the AUD-A06 regression test', () => {
+		const health = inspectBranch(
+			MAIN_POLICY,
+			LIVE_MAIN_FIXTURE,
+			true,
+			DEFAULTS,
+		);
+		expect(health.allow_deletions).toBe(true);
+		expect(isHealthy([health])).toBe(true);
+	});
+
+	it('an unverified branch is never healthy by vacuity', () => {
+		const health = inspectBranch(MAIN_POLICY, null, false, DEFAULTS);
+		expect(isHealthy([health])).toBe(false);
+	});
+
+	it('allow_deletions re-enabled makes the branch unhealthy', () => {
+		const health = inspectBranch(
+			MAIN_POLICY,
+			{ ...LIVE_MAIN_FIXTURE, allow_deletions: { enabled: true } },
+			true,
+			DEFAULTS,
+		);
+		expect(health.allow_deletions).toBe(false);
+		expect(isHealthy([health])).toBe(false);
+	});
+
+	describe('defaults are consumed, not hardcoded (AUD-A07)', () => {
+		it('allow_force_pushes: true in defaults flips healthy for a branch with force-push enabled', () => {
+			const live = {
+				...LIVE_MAIN_FIXTURE,
+				allow_force_pushes: { enabled: true },
+			};
+			expect(
+				isHealthy([inspectBranch(MAIN_POLICY, live, true, DEFAULTS)]),
+			).toBe(false);
+			expect(
+				isHealthy([
+					inspectBranch(MAIN_POLICY, live, true, {
+						...DEFAULTS,
+						allow_force_pushes: true,
+					}),
+				]),
+			).toBe(true);
+		});
+
+		it('enforce_admins: false in defaults flips healthy for a branch without enforce_admins', () => {
+			const live = {
+				...LIVE_MAIN_FIXTURE,
+				enforce_admins: { enabled: false },
+			};
+			expect(
+				isHealthy([inspectBranch(MAIN_POLICY, live, true, DEFAULTS)]),
+			).toBe(false);
+			expect(
+				isHealthy([
+					inspectBranch(MAIN_POLICY, live, true, {
+						...DEFAULTS,
+						enforce_admins: false,
+					}),
+				]),
+			).toBe(true);
+		});
+
+		it('required_linear_history: false in defaults flips healthy', () => {
+			const live = {
+				...LIVE_MAIN_FIXTURE,
+				required_linear_history: { enabled: false },
+			};
+			expect(
+				isHealthy([inspectBranch(MAIN_POLICY, live, true, DEFAULTS)]),
+			).toBe(false);
+			expect(
+				isHealthy([
+					inspectBranch(MAIN_POLICY, live, true, {
+						...DEFAULTS,
+						required_linear_history: false,
+					}),
+				]),
+			).toBe(true);
+		});
+
+		it('allow_deletions: true in defaults flips healthy', () => {
+			const live = {
+				...LIVE_MAIN_FIXTURE,
+				allow_deletions: { enabled: true },
+			};
+			expect(
+				isHealthy([inspectBranch(MAIN_POLICY, live, true, DEFAULTS)]),
+			).toBe(false);
+			expect(
+				isHealthy([
+					inspectBranch(MAIN_POLICY, live, true, {
+						...DEFAULTS,
+						allow_deletions: true,
+					}),
+				]),
+			).toBe(true);
+		});
+	});
+});
+
+// ── main(): the verdict model end-to-end, with a stubbed fetch ──────────
+
+const originalFetch = globalThis.fetch;
+const stubFetch = (impl: (url: string) => Promise<Response>): void => {
+	globalThis.fetch = impl as typeof fetch;
+};
+const restoreFetch = (): void => {
+	globalThis.fetch = originalFetch;
+};
+const jsonResponse = (body: unknown, status = 200): Response =>
+	new Response(JSON.stringify(body), {
+		status,
+		headers: { 'content-type': 'application/json' },
+	});
+
+/**
+ * A live GitHub state DERIVED from the declared policy, so "healthy"
+ * means "matches what the repository declares" rather than "matches a
+ * shape somebody typed here once".
+ *
+ * The fixtures used to be literals describing an unprotected `develop`
+ * and a `main` requiring `ci-complete`. When the policy changed, three
+ * `main()` tests failed for the fixtures' sake and not for the code's —
+ * which is the same drift these very scripts exist to catch, reproduced
+ * inside their own tests.
+ */
+const liveProtectionFor = (branch: string): unknown => {
+	const policy = BRANCH_PROTECTION.branches.find((b) => b.name === branch);
+	if (policy === undefined || !policy.protected) return undefined;
+	return {
+		required_status_checks: {
+			strict: true,
+			contexts: [...policy.required_checks],
+		},
+		enforce_admins: { enabled: BRANCH_PROTECTION.defaults.enforce_admins },
+		required_linear_history: {
+			enabled: BRANCH_PROTECTION.defaults.required_linear_history,
+		},
+		allow_force_pushes: {
+			enabled: BRANCH_PROTECTION.defaults.allow_force_pushes,
+		},
+		allow_deletions: {
+			enabled: BRANCH_PROTECTION.defaults.allow_deletions,
+		},
+	};
+};
+
+/** Every declared check reported green on the head commit. */
+const greenCheckRunsFor = (branch: string): unknown => ({
+	check_runs: (
+		BRANCH_PROTECTION.branches.find((b) => b.name === branch)
+			?.required_checks ?? []
+	).map((name, index) => ({
+		name,
+		status: 'completed',
+		conclusion: 'success',
+		head_sha: 'abc123',
+		html_url: `https://example.test/checks/${index + 1}`,
+	})),
+});
+
+const stubHealthyFetch = (): void => {
+	stubFetch(async (url) => {
+		const u = url.toString();
+		const checkRuns = /\/commits\/([^/]+)\/check-runs/u.exec(u);
+		if (checkRuns?.[1] !== undefined) {
+			return jsonResponse(greenCheckRunsFor(checkRuns[1]));
+		}
+		const protection = /\/branches\/([^/]+)\/protection/u.exec(u);
+		if (protection?.[1] !== undefined) {
+			const live = liveProtectionFor(protection[1]);
+			if (live !== undefined) return jsonResponse(live);
+		}
+		return jsonResponse({ message: 'Not Found' }, 404);
+	});
+};
+
+describe('main() — three-state verdict', () => {
+	it('refuses without --repo', async () => {
+		const code = await healthMain([]);
+		expect(code).toBe(2);
+	});
+
+	it('dry-run is offline and returns an unverified structured report', async () => {
+		const originalFetch = globalThis.fetch;
+		globalThis.fetch = (() => {
+			throw new Error('dry-run must not contact GitHub');
+		}) as unknown as typeof fetch;
+		try {
+			const code = await healthMain(['--repo', 'foo/bar', '--dry-run']);
+			expect(code).toBe(0);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
+	it('returns healthy=true when every branch matches', async () => {
+		stubHealthyFetch();
+		try {
+			const code = await healthMain(['--repo', 'foo/bar']);
+			expect(code).toBe(0);
+		} finally {
+			restoreFetch();
+		}
+	});
+
+	it('writes the dashboard JSON shape when --output is provided', async () => {
+		stubHealthyFetch();
+		const tempDir = await mkdtemp(join(tmpdir(), 'verify-develop-health-'));
+		const outputPath = join(tempDir, 'develop-health.json');
+		try {
+			const code = await healthMain([
+				'--repo',
+				'foo/bar',
+				'--output',
+				outputPath,
+			]);
+			expect(code).toBe(0);
+			const written = JSON.parse(await readFile(outputPath, 'utf8')) as {
+				lastVerifiedAt: string | null;
+				ciStatus: string;
+				protectedBranches: {
+					main: boolean | null;
+					develop: boolean | null;
+				};
+				requiredChecks: string[];
+				discrepancies: string[];
+			};
+			expect(written.lastVerifiedAt).not.toBeNull();
+			expect(written.ciStatus).toBe('green');
+			// `develop` is protected now: the migration made it the
+			// integration branch that only accepts certified work.
+			expect(written.protectedBranches).toEqual({
+				main: true,
+				develop: true,
+			});
+			// Derived from the policy rather than restated, so this can
+			// never be the reason a policy change looks like a failure.
+			expect(written.requiredChecks).toEqual(
+				[
+					...new Set(
+						BRANCH_PROTECTION.branches.flatMap(
+							(branch) => branch.required_checks,
+						),
+					),
+				].sort(),
+			);
+			expect(written.discrepancies).toEqual([]);
+		} finally {
+			restoreFetch();
+			await rm(tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('returns exit 1 when a required check is missing', async () => {
+		stubFetch(async (url) => {
+			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse({ check_runs: [] });
+			}
+			if (u.includes('/branches/main/protection'))
+				return jsonResponse({
+					...LIVE_MAIN_FIXTURE,
+					required_status_checks: {
+						strict: true,
+						contexts: ['lint-biome'],
+					},
+				});
+			return jsonResponse({ message: 'not found' }, 404);
+		});
+		try {
+			const code = await healthMain(['--repo', 'foo/bar']);
+			expect(code).toBe(1);
+		} finally {
+			restoreFetch();
+		}
+	});
+
+	// develop declares no required checks on purpose, so a red check-run
+	// on it is a transient state of the shared journal branch, not a
+	// policy breach. The job reports the colour and still passes; failing
+	// here made it impossible to be green while the swarm was working.
+	it('still reports the CI colour, which is not by itself the verdict', async () => {
+		// This spec used to assert that a RED `develop` passed, because
+		// the policy declared no required checks there — `develop` was a
+		// shared journal and `main` was the only boundary.
+		//
+		// The migration to `shared-checkout-pr` changed that on purpose:
+		// `develop` now declares `delendai-validate`, so a red head IS a
+		// discrepancy. What has NOT changed is the distinction the test
+		// was really about — the colour is reported as an observation,
+		// and the verdict comes from the declared policy rather than
+		// from the colour alone.
+		const tempDir = await mkdtemp(join(tmpdir(), 'verify-develop-health-'));
+		const outputPath = join(tempDir, 'develop-health.json');
+		stubFetch(async (url) => {
+			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse(RED_CHECK_RUNS_FIXTURE);
+			}
+			const protection = /\/branches\/([^/]+)\/protection/u.exec(u);
+			if (protection?.[1] !== undefined) {
+				const live = liveProtectionFor(protection[1]);
+				if (live !== undefined) return jsonResponse(live);
+			}
+			return jsonResponse({ message: 'not found' }, 404);
+		});
+		try {
+			await healthMain(['--repo', 'foo/bar', '--output', outputPath]);
+			const written = JSON.parse(await readFile(outputPath, 'utf8')) as {
+				ciStatus: string;
+				discrepancies: string[];
+			};
+			expect(written.ciStatus).toBe('red');
+		} finally {
+			restoreFetch();
+			await rm(tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('returns exit 1 when the protected branch has no rule (404 on a branch declared protected: true)', async () => {
+		stubFetch(async (url) => {
+			if (url.toString().includes('/commits/develop/check-runs')) {
+				return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+			}
+			return jsonResponse({ message: 'Not Found' }, 404);
+		});
+		try {
+			const code = await healthMain(['--repo', 'foo/bar']);
+			expect(code).toBe(1);
+		} finally {
+			restoreFetch();
+		}
+	});
+
+	it("404 on a branch declared protected: false passes (develop's own healthy state)", async () => {
+		// Every branch 404s — main included, which would be drift; isolate to
+		// just confirm the unprotected branch alone never fails on 404.
+		stubFetch(async () => jsonResponse({ message: 'Not Found' }, 404));
+		const health = inspectBranch(
+			{ name: 'develop', protected: false, required_checks: [] },
+			null,
+			true,
+			DEFAULTS,
+		);
+		expect(isHealthy([health])).toBe(true);
+	});
+
+	it('all branches 403 without an explicit token ⇒ exit 0, unverified, never silent', async () => {
+		stubFetch(async () => jsonResponse({ message: 'no admin scope' }, 403));
+		delete process.env.BRANCH_PROTECTION_TOKEN;
+		const originalToken = process.env.GITHUB_TOKEN;
+		process.env.GITHUB_TOKEN = 'ambient-token';
+		try {
+			const code = await healthMain(['--repo', 'foo/bar']);
+			expect(code).toBe(0);
+		} finally {
+			restoreFetch();
+			process.env.GITHUB_TOKEN = originalToken;
+		}
+	});
+
+	it('all branches 403 WITH an explicit token ⇒ exit != 0', async () => {
+		stubFetch(async () => jsonResponse({ message: 'bad token' }, 403));
+		try {
+			const code = await healthMain([
+				'--repo',
+				'foo/bar',
+				'--token',
+				'a-deliberately-configured-pat',
+			]);
+			expect(code).not.toBe(0);
+		} finally {
+			restoreFetch();
+		}
+	});
+
+	it('one readable branch with drift + one unreadable ⇒ drift is still reported', async () => {
+		stubFetch(async (url) => {
+			const u = url.toString();
+			if (u.includes('/commits/develop/check-runs')) {
+				return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+			}
+			if (u.includes('/branches/main/protection')) {
+				return jsonResponse({
+					...LIVE_MAIN_FIXTURE,
+					allow_force_pushes: { enabled: true },
+				});
+			}
+			return jsonResponse({ message: 'no admin scope' }, 403);
+		});
+		delete process.env.BRANCH_PROTECTION_TOKEN;
+		const originalToken = process.env.GITHUB_TOKEN;
+		process.env.GITHUB_TOKEN = 'ambient-token';
+		try {
+			const code = await healthMain(['--repo', 'foo/bar']);
+			expect(code).toBe(1);
+		} finally {
+			restoreFetch();
+			process.env.GITHUB_TOKEN = originalToken;
+		}
+	});
+});
+
+describe('parity — verify-branch-protection and verify-develop-health agree', () => {
+	const fixtures: ReadonlyArray<{
+		readonly name: string;
+		readonly status: number;
+		readonly body: unknown;
+		readonly checkRunsStatus?: number;
+		readonly checkRunsBody?: unknown;
+		readonly tokenExplicit: boolean;
+	}> = [
+		{
+			name: 'live, matches policy',
+			status: 200,
+			body: LIVE_MAIN_FIXTURE,
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
+			tokenExplicit: false,
+		},
+		{
+			name: 'live, drift (force pushes allowed)',
+			status: 200,
+			body: {
+				...LIVE_MAIN_FIXTURE,
+				allow_force_pushes: { enabled: true },
+			},
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
+			tokenExplicit: false,
+		},
+		{
+			name: '404 unprotected',
+			status: 404,
+			body: { message: 'Not Found' },
+			checkRunsBody: GREEN_CHECK_RUNS_FIXTURE,
+			tokenExplicit: false,
+		},
+		{
+			name: '403 no explicit token',
+			status: 403,
+			body: { message: 'no scope' },
+			checkRunsStatus: 403,
+			checkRunsBody: { message: 'no scope' },
+			tokenExplicit: false,
+		},
+		{
+			name: '403 with explicit token',
+			status: 403,
+			body: { message: 'bad token' },
+			checkRunsStatus: 403,
+			checkRunsBody: { message: 'bad token' },
+			tokenExplicit: true,
+		},
+	];
+
+	for (const fx of fixtures) {
+		it(`reaches the same pass/fail exit-code shape for: ${fx.name}`, async () => {
+			stubFetch(async (url) => {
+				if (url.toString().includes('/commits/develop/check-runs')) {
+					return jsonResponse(
+						fx.checkRunsBody ?? GREEN_CHECK_RUNS_FIXTURE,
+						fx.checkRunsStatus ?? 200,
+					);
+				}
+				return jsonResponse(fx.body, fx.status);
+			});
+			delete process.env.BRANCH_PROTECTION_TOKEN;
+			const originalToken = process.env.GITHUB_TOKEN;
+			process.env.GITHUB_TOKEN = 'ambient-token';
+			const args = fx.tokenExplicit
+				? ['--repo', 'foo/bar', '--token', 'explicit-pat']
+				: ['--repo', 'foo/bar'];
+			try {
+				const protectionCode = await protectionMain(args);
+				const healthCode = await healthMain(args);
+				// Both scripts must agree on whether the run is a hard failure
+				// (exit 1) or not (exit 0 — pass or unverified).
+				expect(healthCode === 1).toBe(protectionCode === 1);
+			} finally {
+				restoreFetch();
+				process.env.GITHUB_TOKEN = originalToken;
+			}
+		});
+	}
+});
+
+describe('required checks are per branch, not a union', () => {
+	// The union of every protected branch's required checks was being
+	// asserted against develop's latest commit, so this job demanded
+	// `ci-complete` and `release-pr-gate` there. Those belong to main.
+	// `.github/branch-protection.ts` declares develop `protected: false`
+	// with `required_checks: []` on purpose — it is the shared snapshot
+	// journal a swarm pushes to, and main is the review boundary. The
+	// job was failing develop for not satisfying a policy that
+	// explicitly exempts it.
+	const branches: IBranchProtectionConfig['branches'] = [
+		{ name: 'develop', protected: false, required_checks: [] },
+		{
+			name: 'main',
+			protected: true,
+			required_checks: ['ci-complete', 'release-pr-gate'],
+		},
+	];
+
+	it('asks nothing of develop, because the policy asks nothing of it', () => {
+		expect(requiredChecksFor(branches, 'develop')).toEqual([]);
+	});
+
+	it('still asks main for both of its checks', () => {
+		expect(requiredChecksFor(branches, 'main')).toEqual([
+			'ci-complete',
+			'release-pr-gate',
+		]);
+	});
+
+	it('does not leak one branch’s requirements into another', () => {
+		expect(requiredChecksFor(branches, 'develop')).not.toContain(
+			'ci-complete',
+		);
+	});
+});
+
+describe('what develop-health asserts, and what it refuses to', () => {
+	// The job asserts the declared POLICY. It does not assert develop's
+	// current colour: SHARED-DEVELOP-MODEL and q00015 say a temporarily
+	// red develop is a valid transient state of a shared journal branch,
+	// so failing on it contradicts the model the repo is built around —
+	// and the job runs inside tier3, so it would be judging a picture in
+	// which it is itself still pending.
+	it('reports nothing when develop declares no required checks', () => {
+		expect(
+			collectDevelopStatusDiscrepancies({
+				ref: 'develop' as const,
+				verified: true,
+				headSha: 'abc',
+				ciStatus: 'red',
+				totalCheckRuns: 12,
+				checksInFlight: false,
+				requiredCheckRuns: [],
+			}),
+		).toEqual([]);
+	});
+
+	it('reports nothing when nothing could be read', () => {
+		// Nothing was verified, so nothing is known. Inventing a
+		// violation out of an absence is how a check starts lying.
+		expect(
+			collectDevelopStatusDiscrepancies({
+				ref: 'develop' as const,
+				verified: false,
+				headSha: null,
+				ciStatus: 'unknown',
+				totalCheckRuns: 0,
+				checksInFlight: false,
+				requiredCheckRuns: [],
+			}),
+		).toEqual([]);
+	});
+
+	it('still reports a required check that is missing, where one is declared', () => {
+		const found = collectDevelopStatusDiscrepancies({
+			ref: 'develop' as const,
+			verified: true,
+			headSha: 'abc',
+			ciStatus: 'red',
+			totalCheckRuns: 3,
+			checksInFlight: false,
+			requiredCheckRuns: [
+				{
+					name: 'ci-complete',
+					status: null,
+					conclusion: null,
+					htmlUrl: null,
+				},
+			],
+		});
+		expect(found).toHaveLength(1);
+		expect(found[0]).toContain('ci-complete');
+	});
+});
+
+describe('snapshot freshness (audit follow-up)', () => {
+	// A dashboard that presents an unverified colour as fact is worse
+	// than one that presents nothing: the reader cannot tell the
+	// difference between a red someone observed and a red nobody
+	// confirmed. `develop-health.json` shipped with lastVerifiedAt null
+	// and ciStatus red and no way to tell which it was.
+
+	it('is unknown when nothing was verified, whatever sha it names', () => {
+		expect(
+			deriveFreshness({
+				verified: false,
+				sourceSha: 'abc1234',
+				currentSha: 'abc1234',
+			}),
+		).toBe('unknown');
+	});
+
+	it('is fresh when a verified snapshot still describes HEAD', () => {
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: 'abc1234',
+			}),
+		).toBe('fresh');
+	});
+
+	it('is stale, not unknown, when the branch moved past a verified snapshot', () => {
+		// It described something true once. That is a different thing
+		// from never having described anything, and the reader needs to
+		// be able to tell them apart.
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: 'def5678',
+			}),
+		).toBe('stale');
+	});
+
+	it('is unknown when there is no sha to compare against', () => {
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: null,
+				currentSha: 'def5678',
+			}),
+		).toBe('unknown');
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: null,
+			}),
+		).toBe('unknown');
+	});
+
+	it('refuses to report a colour nobody observed', () => {
+		// The exact shape that shipped: ciStatus red with nothing
+		// verified behind it.
+		expect(displayableCiStatus('red', false)).toBe('unknown');
+		expect(displayableCiStatus('green', false)).toBe('unknown');
+	});
+
+	it('reports the colour a run actually observed', () => {
+		expect(displayableCiStatus('red', true)).toBe('red');
+		expect(displayableCiStatus('green', true)).toBe('green');
+	});
+
+	it('does not suppress an observed colour just because currency is unknown', () => {
+		// Two different questions. "Nobody read this" must blank the
+		// colour; "I cannot tell whether the branch moved" must not,
+		// because the colour was genuinely seen and freshness is the
+		// field that carries that caveat.
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: null,
+				currentSha: null,
+			}),
+		).toBe('unknown');
+		expect(displayableCiStatus('green', true)).toBe('green');
+	});
+});
+
+describe('a verdict nobody has reached yet is not drift', () => {
+	const status = (over: Record<string, unknown>) => ({
+		ref: 'develop' as const,
+		verified: true,
+		headSha: 'a'.repeat(40),
+		ciStatus: 'red' as const,
+		totalCheckRuns: 3,
+		checksInFlight: false,
+		requiredCheckRuns: [
+			{
+				name: 'delendai-validate',
+				status: null,
+				conclusion: null,
+				htmlUrl: null,
+			},
+		],
+		...over,
+	});
+
+	it('stays quiet while the commit still has work running', () => {
+		// tier3 runs this verifier on every push to develop, and the
+		// required check it looks for is produced by `ci`, triggered by
+		// that same push and taking about fifteen minutes. Asking for a
+		// result that cannot exist yet reported drift on EVERY push and
+		// left develop permanently red, which teaches everyone to ignore
+		// the one signal that says the branch is broken.
+		expect(
+			collectDevelopStatusDiscrepancies(
+				status({ checksInFlight: true }) as never,
+			),
+		).toEqual([]);
+	});
+
+	it('still reports a required check that never ran at all', () => {
+		// Absent with NOTHING running is the condition this verifier
+		// exists for: a required check that was removed, renamed or never
+		// wired, which no amount of waiting will produce.
+		expect(
+			collectDevelopStatusDiscrepancies(
+				status({ checksInFlight: false }) as never,
+			),
+		).toEqual([
+			'develop: missing check-run "delendai-validate" on the latest commit',
+		]);
+	});
+
+	it('still reports a check that finished badly, in flight or not', () => {
+		const failed = status({
+			checksInFlight: true,
+			requiredCheckRuns: [
+				{
+					name: 'delendai-validate',
+					status: 'completed',
+					conclusion: 'failure',
+					htmlUrl: null,
+				},
+			],
+		});
+
+		// A completed FAILURE is decided. Other work still running beside
+		// it changes nothing about that verdict.
+		expect(
+			collectDevelopStatusDiscrepancies(failed as never).length,
+		).toBeGreaterThan(0);
+	});
+});

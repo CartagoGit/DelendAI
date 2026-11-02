@@ -1,0 +1,115 @@
+---
+/**
+ * PluginDisclosure.astro — one plugin rendered as a keyboard-accessible
+ * native <details> disclosure (f00053 S2).
+ *
+ * Collapsed, the <summary> reproduces the former `.plugin-card` look
+ * (icon + name + version + purpose + tool-count badge). Expanded, the
+ * body lists exactly the tools the plugin contributes, by name with
+ * their one-line description, plus a link to the full plugin page.
+ *
+ * Single Responsibility: this component renders ONE plugin. All copy +
+ * capabilities come from the canonical `plugin-catalog` (S1) — never
+ * from a raw i18n key here, so the disclosure can never leak `plugin.<slug>`.
+ */
+import { capabilityToolsFor, resolvePluginPurpose } from '#DATA/plugin-catalog';
+import { brandLogo } from '#LIB/brand-logos';
+
+interface Props {
+	/** Plugin slug / route id (e.g. `proposals`). */
+	slug: string;
+	/** Full package name shown as the title (e.g. `@delendai/proposals`). */
+	name: string;
+	/** Package version. */
+	version: string;
+	/** Href of the plugin's detail page. */
+	href: string;
+	/** Optional "requires <plugin>" note (e.g. issues → proposals). */
+	requires?: { label: string; href: string; name: string };
+	/** Localized origin badge; catalog packages are first-party/bundled. */
+	originLabel: string;
+	labels: {
+		readonly tools: string;
+		readonly install: string;
+	};
+}
+const { slug, name, version, href, requires, originLabel, labels } =
+	Astro.props;
+
+const purpose = resolvePluginPurpose(slug);
+const tools = capabilityToolsFor(slug);
+const count = tools.length;
+// f00069 S5 — funnel every brand-mark lookup through `brandLogo()`. The
+// fallback to a missing file is the same shared first-letter badge that
+// `Tabs.astro` uses (`.plugin-card__icon--fallback` already styles it as
+// a coloured circular badge sized to the 36×36 icon container).
+const iconSrc = brandLogo(slug, 'plugin');
+const onIconError =
+	"this.replaceWith(Object.assign(document.createElement('span'),{className:'plugin-card__icon plugin-card__icon--fallback',textContent:(this.dataset.slug||'').charAt(0)}))";
+---
+
+<details class="plugin-disc card">
+	<summary class="plugin-disc__summary">
+		<div class="plugin-card__head">
+			{iconSrc && (
+				<img
+					class="plugin-card__icon"
+					src={iconSrc}
+					alt=""
+					data-slug={slug}
+					width="36"
+					height="36"
+					loading="lazy"
+					onerror={onIconError}
+				/>
+			)}
+			{!iconSrc && (
+				<span
+					class="plugin-card__icon plugin-card__icon--fallback"
+					aria-hidden="true">{slug.charAt(0)}</span>
+			)}
+			<div class="plugin-card__title">
+				<code>{name}</code>
+				<span class="plugin-card__version">v{version}</span>
+			</div>
+		</div>
+		<p class="plugin-card__desc">{purpose}</p>
+		<div class="plugin-card__foot">
+			<div class="plugin-card__badges">
+				<span class="plugin-card__badge plugin-card__badge--origin">{originLabel}</span>
+				<span class="plugin-card__badge">
+					{count} {labels.tools}
+				</span>
+			</div>
+			<span class="plugin-disc__chevron" aria-hidden="true">▾</span>
+		</div>
+	</summary>
+	<div class="plugin-disc__body">
+		{
+			count > 0 ? (
+				<ul class="plugin-disc__tools">
+					{tools.map((tool) => (
+						<li class="plugin-disc__tool">
+							<code class="plugin-disc__tool-name">{tool.name}</code>
+							{tool.description && (
+								<span class="plugin-disc__tool-desc">{tool.description}</span>
+							)}
+						</li>
+					))}
+				</ul>
+			) : (
+				<p class="plugin-disc__empty">
+					{labels.install}: <code>--plugins={slug}</code>
+				</p>
+			)
+		}
+		{
+			requires && (
+				<p class="plugin-disc__requires">
+					{requires.label} <a href={requires.href}>{requires.name}</a>.
+				</p>
+			)
+		}
+		<a class="plugin-disc__link" href={href}><code>{slug}</code> →</a>
+	</div>
+</details>

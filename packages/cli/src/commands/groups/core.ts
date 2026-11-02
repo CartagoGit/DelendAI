@@ -1,0 +1,323 @@
+/**
+ * f00046 S5 — fs + knowledge + project commands. One subcommand per the
+ * corresponding `delendai_*` core meta-tool. The fs tools are
+ * workspace-contained (the core rejects `../`/absolute paths) and
+ * `fs write` is atomic-by-default (mutex+rename) inside the plugin.
+ *
+ * Tools mapped:
+ *   - `delendai_fs_read`         ({ path, range? })
+ *   - `delendai_fs_write`        ({ path, content, createDirs? })
+ *   - `delendai_knowledge`       ({ id? })
+ *   - `delendai_analyze_project` ({ serverName?, namespacePrefix?, ... })
+ *   - `delendai_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
+ *   - `delendai_create_project`  ({ kind, ... })
+ */
+import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
+import { WORK_COMMAND } from '../../contracts/constants/work-command.constant';
+import { createWorkspacePathProvider } from '@delendai/core/public';
+import { runCreatePlugin } from '@delendai/core/cli';
+
+import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
+import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import {
+	data,
+	hasFlag,
+	numberArg,
+	positionalArg,
+	request,
+	scalarArg,
+	usage,
+} from './group-helpers';
+
+const fsReadCommand: ICliCommand = {
+	name: 'fs read',
+	summary: 'Read a workspace file (optionally a line range).',
+	async run(args, ctx) {
+		const path = positionalArg(args);
+		if (path === undefined)
+			return usage('fs read <path> [--start=N --end=N]');
+		const start = numberArg(args, 'start');
+		const end = numberArg(args, 'end');
+		const range =
+			start !== undefined && end !== undefined
+				? { range: [start, end] as [number, number] }
+				: {};
+		return data(await request(ctx, 'delendai_fs_read', { path, ...range }));
+	},
+};
+
+const fsWriteCommand: ICliCommand = {
+	name: 'fs write',
+	summary:
+		'Write a workspace file (atomic by default, never outside the root).',
+	async run(args, ctx) {
+		const path = positionalArg(args);
+		const content = scalarArg(args, 'content');
+		if (path === undefined || content === undefined) {
+			return usage('fs write <path> --content=<string> [--create-dirs]');
+		}
+		// r00003 S3 (F-003, LSP): the MCP `fs_write` tool's surface no
+		// longer accepts `atomic` — atomicity is non-negotiable for the
+		// LLM-facing path. The CLI flag was the only escape hatch; if a
+		// user really needs non-atomic writes (bulk migration, repair of
+		// a partially-corrupt file), they should call the in-process
+		// `fsWrite` helper from a script, not through the LLM-facing tool.
+		if (hasFlag(args, 'no-atomic')) {
+			return data({
+				ok: false,
+				error: '--no-atomic is no longer supported via the CLI: the `delendai_fs_write` tool is always atomic. For non-atomic writes, use the in-process `fsWrite` helper from a Bun script.',
+			});
+		}
+		return data(
+			await request(ctx, 'delendai_fs_write', {
+				path,
+				content,
+				...(hasFlag(args, 'create-dirs') ? { createDirs: true } : {}),
+			}),
+		);
+	},
+};
+
+const knowledgeCommand: ICliCommand = {
+	name: 'knowledge',
+	summary: 'List knowledge entries, or print one by id.',
+	async run(args, ctx) {
+		const id = positionalArg(args);
+		return data(
+			await request(ctx, 'delendai_knowledge', {
+				...(id !== undefined ? { id } : {}),
+			}),
+		);
+	},
+};
+
+const projectAnalyzeCommand: ICliCommand = {
+	name: 'project analyze',
+	summary:
+		'Inspect the project and recommend an MCP server plan (read-only).',
+	async run(args, ctx) {
+		const serverName = scalarArg(args, 'server-name');
+		const namespacePrefix = scalarArg(args, 'prefix');
+		return data(
+			await request(ctx, 'delendai_analyze_project', {
+				...(serverName !== undefined ? { serverName } : {}),
+				...(namespacePrefix !== undefined ? { namespacePrefix } : {}),
+			}),
+		);
+	},
+};
+
+const projectPlanCommand: ICliCommand = {
+	name: 'project plan',
+	summary:
+		'Return an exhaustive blueprint for a project-specific MCP server.',
+	async run(args, ctx) {
+		const serverName = scalarArg(args, 'server-name');
+		const namespacePrefix = scalarArg(args, 'prefix');
+		const noTests = hasFlag(args, 'no-tests');
+		return data(
+			await request(ctx, 'delendai_plan_mcp_project', {
+				...(serverName !== undefined ? { serverName } : {}),
+				...(namespacePrefix !== undefined ? { namespacePrefix } : {}),
+				...(noTests ? { tests: false } : {}),
+			}),
+		);
+	},
+};
+
+const projectCreateCommand: ICliCommand = {
+	name: 'project create',
+	summary: 'Generate the files for a project MCP server, plugin, or client.',
+	async run(args, ctx) {
+		const kind = scalarArg(args, 'kind');
+		if (kind === undefined) {
+			return usage(
+				'project create --kind=host|plugin|client [--name=...]',
+			);
+		}
+		const projectName =
+			scalarArg(args, 'name') ?? scalarArg(args, 'project');
+		const pluginName = scalarArg(args, 'plugin');
+		const clientName = scalarArg(args, 'client');
+		const namespacePrefix = scalarArg(args, 'prefix');
+		const description = scalarArg(args, 'description');
+		return data(
+			await request(ctx, 'delendai_create_project', {
+				kind,
+				...(projectName !== undefined ? { projectName } : {}),
+				...(pluginName !== undefined ? { pluginName } : {}),
+				...(clientName !== undefined ? { clientName } : {}),
+				...(namespacePrefix !== undefined ? { namespacePrefix } : {}),
+				...(description !== undefined ? { description } : {}),
+			}),
+		);
+	},
+};
+
+const adoptCommand: ICliCommand = {
+	name: 'adopt',
+	summary: 'Assess or scaffold delendai adoption for the current project.',
+	async run(args, ctx) {
+		return data(
+			await request(ctx, 'delendai_adopt_project', {
+				...(hasFlag(args, 'analyze') ? { analyze: true } : {}),
+				...(hasFlag(args, 'write') ? { write: true } : {}),
+				...(hasFlag(args, 'overwrite') ? { overwrite: true } : {}),
+				...(scalarArg(args, 'project-name') !== undefined
+					? { projectName: scalarArg(args, 'project-name') }
+					: {}),
+				...(scalarArg(args, 'prefix') !== undefined
+					? { namespacePrefix: scalarArg(args, 'prefix') }
+					: {}),
+				...(scalarArg(args, 'server-name') !== undefined
+					? { mcpServerName: scalarArg(args, 'server-name') }
+					: {}),
+				...(scalarArg(args, 'default-model') !== undefined
+					? { defaultModel: scalarArg(args, 'default-model') }
+					: {}),
+				...(scalarArg(args, 'repo') !== undefined
+					? { repo: scalarArg(args, 'repo') }
+					: {}),
+			}),
+		);
+	},
+};
+
+interface IPluginNewCommandDeps {
+	readonly createWorkspacePathProvider: typeof createWorkspacePathProvider;
+	readonly runCreatePlugin: typeof runCreatePlugin;
+}
+
+export const buildPluginNewCommand = (
+	deps: IPluginNewCommandDeps = {
+		createWorkspacePathProvider,
+		runCreatePlugin,
+	},
+): ICliCommand => ({
+	name: 'plugin new',
+	summary:
+		'Scaffold and wire a new first-party plugin, then run the wiring doctor.',
+	async run(args, ctx) {
+		const name = positionalArg(args);
+		if (name === undefined) {
+			return usage('plugin new <name> [--description=...] [--dry-run]');
+		}
+		const description = scalarArg(args, 'description');
+		if (description === undefined) {
+			return usage('plugin new <name> [--description=...] [--dry-run]');
+		}
+		try {
+			const report = await deps.runCreatePlugin(
+				{
+					name,
+					description,
+					...(hasFlag(args, 'dry-run') ? { dryRun: true } : {}),
+				},
+				{
+					workspace: deps.createWorkspacePathProvider(
+						ctx.globals.workspace,
+					),
+				},
+			);
+			if (ctx.globals.json) {
+				return data(
+					report,
+					report.doctor.fullyWired
+						? EXIT_CODE.OK
+						: EXIT_CODE.VALIDATION,
+				);
+			}
+			const lines = [
+				`plugin: ${report.pluginId}`,
+				`scaffolded: ${report.scaffolded.files.join(', ')}`,
+				`wired: ${report.wired.map((entry) => entry.pointId).join(', ')}`,
+				`doctor: ${report.doctor.fullyWired ? 'fully wired' : `missing ${report.doctor.missing.join(', ')}`}`,
+			];
+			return {
+				code: report.doctor.fullyWired
+					? EXIT_CODE.OK
+					: EXIT_CODE.VALIDATION,
+				text: `${lines.join('\n')}\n`,
+				data: report,
+			};
+		} catch (error) {
+			return {
+				code: EXIT_CODE.VALIDATION,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+	},
+});
+
+/**
+ * x00549: git hooks call this for every commit, branch creation and push.
+ * Lazy, so no other command pays for loading it.
+ */
+const lazyGuardCommand: ICliCommand = {
+	name: 'guard',
+	summary:
+		'Refuse the git operations the project development policy forbids (called from git hooks).',
+	usage: 'guard <install|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
+	async run(args, ctx) {
+		const { guardCommand: guard } = await import('../guard.command');
+		return guard.run(args, ctx);
+	},
+};
+
+/**
+ * x00552: records the human decision that closes a startup repair task.
+ * Lazy for the same reason as the guard: nobody else pays for it.
+ */
+const lazyRepairCommand: ICliCommand = {
+	name: 'repair',
+	summary:
+		'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	usage: 'repair <list|resolve|forget> [task-id] [--evidence=<digest>] [--decision=<kind>] [--reason=<text>] [--by=<who>] [--workspace=<path>]',
+	async run(args, ctx) {
+		const { repairCommand: repair } = await import('../repair.command');
+		return repair.run(args, ctx);
+	},
+};
+
+/**
+ * x00553: persists work to its own ref without moving the shared
+ * checkout — the path the policy demands, reachable with no MCP host.
+ */
+const lazyWorkCommand: ICliCommand = {
+	name: 'work',
+	...WORK_COMMAND,
+	async run(args, ctx) {
+		const { workCommand: work } = await import('../work.command');
+		return work.run(args, ctx);
+	},
+};
+
+/**
+ * x00727: a review is four commands, over the same unit and tools as
+ * `work` and `proposals review`.
+ */
+const lazyReviewCommand: ICliCommand = {
+	name: 'review',
+	...REVIEW_COMMAND,
+	async run(args, ctx) {
+		const { reviewRoundCommand: review } = await import(
+			'../review.command'
+		);
+		return review.run(args, ctx);
+	},
+};
+
+export const coreExtraCommands: readonly ICliCommand[] = [
+	fsReadCommand,
+	fsWriteCommand,
+	knowledgeCommand,
+	adoptCommand,
+	projectAnalyzeCommand,
+	projectPlanCommand,
+	projectCreateCommand,
+	buildPluginNewCommand(),
+	lazyGuardCommand,
+	lazyRepairCommand,
+	lazyWorkCommand,
+	lazyReviewCommand,
+];
