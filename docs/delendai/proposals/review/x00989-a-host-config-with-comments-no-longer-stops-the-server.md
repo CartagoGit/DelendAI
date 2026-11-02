@@ -2,14 +2,14 @@
 id: x00989
 title: "A host config with comments no longer stops the server"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-10-28
-last-transition-id: 47caab71-09a7-4ec1-8127-6b4a8385dcc6
-last-correlation-id: 47caab71-09a7-4ec1-8127-6b4a8385dcc6
-last-transition-from: review
-last-transition-at: 2026-11-02T09:18:35.626Z
+last-transition-id: 398e612e-5f78-4129-895c-fb0e9ac49fa2
+last-correlation-id: 398e612e-5f78-4129-895c-fb0e9ac49fa2
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T09:50:31.023Z
 ---
 
 # x00989 — A host config with comments no longer stops the server
@@ -40,7 +40,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -54,7 +54,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -67,7 +67,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
