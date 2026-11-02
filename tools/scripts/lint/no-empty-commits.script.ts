@@ -26,6 +26,8 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
+import { PARKED_TRAILER } from '@delendai/core/lib/contracts/constants/unit-parked.constant';
+
 const exec = promisify(execFile);
 
 export interface IEmptyCommit {
@@ -93,9 +95,18 @@ export const findEmptyCommits = async (
 			git(['rev-parse', `${commit.sha}^{tree}`]).catch(() => 'a'),
 			git(['rev-parse', `${parent}^{tree}`]).catch(() => 'b'),
 		]);
-		if (tree.trim() === parentTree.trim()) {
-			empties.push({ sha: commit.sha, subject: commit.subject });
-		}
+		if (tree.trim() !== parentTree.trim()) continue;
+		// A unit parked by its owner says so with an empty commit carrying
+		// the trailer: it claims no work, and it is how the forge learns
+		// the unit waits on someone rather than lies abandoned.
+		const parked = await git([
+			'log',
+			'-1',
+			`--format=%(trailers:key=${PARKED_TRAILER},valueonly)`,
+			commit.sha,
+		]).catch(() => '');
+		if (parked.trim().length > 0) continue;
+		empties.push({ sha: commit.sha, subject: commit.subject });
 	}
 	return empties;
 };
