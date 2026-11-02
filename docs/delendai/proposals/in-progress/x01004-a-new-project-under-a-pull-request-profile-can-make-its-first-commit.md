@@ -2,10 +2,14 @@
 id: x01004
 title: "A new project under a pull-request profile can make its first commit"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
+last-transition-id: 85c618cc-6f5e-4507-b512-daceb34d7906
+last-correlation-id: 85c618cc-6f5e-4507-b512-daceb34d7906
+last-transition-from: ready
+last-transition-at: 2026-11-02T19:08:09.204Z
 ---
 
 # x01004 — A new project under a pull-request profile can make its first commit
