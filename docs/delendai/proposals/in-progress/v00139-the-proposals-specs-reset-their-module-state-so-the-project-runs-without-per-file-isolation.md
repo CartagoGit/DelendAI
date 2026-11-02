@@ -2,14 +2,14 @@
 id: v00139
 title: "The proposals specs reset their module state, so the project runs without per-file isolation"
 kind: perf
-status: review
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-27
-last-transition-id: afa30025-8ddc-4238-baf0-85ae7e64d678
-last-correlation-id: afa30025-8ddc-4238-baf0-85ae7e64d678
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T03:16:10.703Z
+last-transition-id: 15795b82-dfb5-43a6-bca1-33ad526f65f6
+last-correlation-id: 15795b82-dfb5-43a6-bca1-33ad526f65f6
+last-transition-from: review
+last-transition-at: 2026-11-02T04:49:55.719Z
 ---
 
 # v00139 — The proposals specs reset their module state, so the project runs without per-file isolation
