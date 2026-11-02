@@ -1,18 +1,17 @@
 /**
- * near-specs.ts — the specs nearest a change: each changed spec, the spec
- * named after each changed source, and the specs that import a changed
- * file by its path.
+ * near-specs.ts — the specs a change can affect, for the local proof.
  *
- * The local proof's test step. `vitest --changed` walks the whole import
- * graph, and a change to core reaches nearly every spec through its
- * barrels: 656 s on average for a core change, against 31 s for these.
- * It is fast feedback, not the verdict — the forge runs the reach the
- * zone planner computes, sharded, and is the authority.
+ * `vitest --changed` walks the whole import graph, and a change to core
+ * reached nearly every spec through its barrels: 656 s on average. The
+ * proof now asks the same analysis as the forge's test plan, followed by
+ * symbol (`affected-specs.service`), plus the specs that read a changed
+ * file: one answer, so what passes here is what the forge runs.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { affectedSpecsSince } from './affected-specs.service';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
 import type { IZoneReadMap } from './test-zones.interface';
 import { parseZoneReadMap, readersOf } from './zone-reads';
@@ -101,29 +100,6 @@ const readMapAt = (root: string): IZoneReadMap | undefined => {
 	}
 };
 
-/** The files of `pattern` that import a module stem by path. */
-const importersIn = (
-	root: string,
-	stem: string,
-	pattern: string,
-): readonly string[] => {
-	try {
-		return lines(
-			git(root, [
-				'grep',
-				'-l',
-				'-E',
-				`from ['"][^'"]*/${stem.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(\\.ts)?['"]`,
-				'--',
-				pattern,
-			]),
-		);
-	} catch {
-		// `git grep` exits 1 when nothing matches.
-		return [];
-	}
-};
-
 /**
  * The specs the read map records reading a changed file. A spec that reads
  * a file from disk imports nothing the nearest specs can find: the published
@@ -146,15 +122,8 @@ export const readerSpecs = (
 export const nearSpecsSince = (root: string, base: string): readonly string[] =>
 	[
 		...new Set([
-			...nearSpecs(
-				changedSince(root, base),
-				lines(git(root, ['ls-files', '*.spec.ts'])),
-				(stem) => importersIn(root, stem, '*.spec.ts'),
-				(stem) =>
-					importersIn(root, stem, '*.ts').filter(
-						(file) => !file.endsWith('.spec.ts'),
-					),
-			),
+			// The same answer the forge's test plan gives: followed by symbol.
+			...affectedSpecsSince(root, base),
 			...readerSpecs(changedSince(root, base), readMapAt(root)),
 		]),
 	].sort();

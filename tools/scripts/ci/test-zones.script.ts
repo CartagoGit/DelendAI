@@ -30,6 +30,7 @@ import { join } from 'node:path';
 import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
+import { affectedSpecsSince } from './affected-specs.service';
 import { pathImportersOf } from './path-importers';
 import { balanceByTime } from './spec-timings';
 import {
@@ -80,6 +81,8 @@ export const planZones = (input: {
 	readonly rules?: readonly IZoneRule[];
 	/** Each spec's measured duration; with it, a split zone is split by time. */
 	readonly timings?: Readonly<Record<string, number>>;
+	/** Name each job's specs even when the zone is one job. */
+	readonly listEvery?: boolean;
 }): readonly IZoneJob[] => {
 	const rules = input.rules ?? ZONE_RULES;
 	const target = input.target ?? TARGET_SPECS_PER_JOB;
@@ -118,8 +121,12 @@ export const planZones = (input: {
 						input.timings ?? {},
 					)
 				: undefined;
+		const zoneSpecs = input.listEvery
+			? input.specs.filter((spec) => zoneOf(spec, rules) === rule.id)
+			: undefined;
 		for (let shard = 1; shard <= shards; shard += 1) {
-			const files = byTime?.[shard - 1];
+			const files =
+				byTime?.[shard - 1] ?? (shards === 1 ? zoneSpecs : undefined);
 			jobs.push({
 				name: shards === 1 ? rule.id : `${rule.id} ${shard}/${shards}`,
 				zone: rule.id,
@@ -533,7 +540,7 @@ const readTimings = (
 
 const main = (): number => {
 	const files = tracked();
-	const jobs = planZones({
+	let jobs = planZones({
 		specs: files.filter((file) => file.endsWith('.spec.ts')),
 		workspaceDirs: workspaceDirs(files),
 		...withTimings(readTimings(arg('timings'))),
@@ -592,6 +599,8 @@ const main = (): number => {
 	): { readonly filter: string; readonly readers: readonly string[] } => {
 		if (full === undefined) return { filter: 'all', readers: [] };
 		if (!full.zones.has(job.zone)) return { filter: 'none', readers: [] };
+		if (job.files !== undefined && job.files.length === 0)
+			return { filter: 'none', readers: [] };
 		if (!full.readOnly.has(job.zone))
 			// A root change it reads, with no record of which specs read
 			// it: `--changed` alone would miss them.
@@ -605,6 +614,31 @@ const main = (): number => {
 			? { filter: 'none', readers: [] }
 			: { filter: 'readers', readers };
 	};
+
+	// The zones that run what the change reaches get the exact specs it
+	// reaches, followed by symbol (affected-specs.service), instead of
+	// `--changed`: by module, one change in core reached 1,362 of 2,407.
+	const byChange = (zone: string): boolean =>
+		planFor({ ...jobs[0]!, zone, shard: 1 }).filter === 'changed';
+	const affected =
+		full === undefined
+			? undefined
+			: new Set(affectedSpecsSince(rootDir, base ?? ''));
+	if (affected !== undefined) {
+		const allSpecs = files.filter((file) => file.endsWith('.spec.ts'));
+		jobs = planZones({
+			specs: allSpecs.filter(
+				(spec) => !byChange(zoneOf(spec)) || affected.has(spec),
+			),
+			workspaceDirs: workspaceDirs(files),
+			...withTimings(readTimings(arg('timings'))),
+			listEvery: true,
+		}).map((job) => {
+			if (byChange(job.zone)) return job;
+			const { files: _listed, ...whole } = job;
+			return whole;
+		});
+	}
 
 	/** The readers of a root change in zones that also run `--changed`. */
 	const codeReachedReaders = (): readonly (readonly [
