@@ -45,7 +45,7 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
 - review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 1/1: (1) At a6c27d556c95 context-for-change.service.ts builds its anchor files from the files and the diff that were given and no longer imports gitChanged, and impact-… — Approved on the delivered state of a6c27d556c95 (PR #1531). The context-for-change service now anchors on the files and the diff it is given and never mixes the working tree in, the gitChanged import is gone and the working tree part of the git section was deleted, and impact-analysis only falls back to the working tree when nothing at all is named. The two slice specs pass 12 of 12 and the type gate exited 0. One note, not a criterion failure: for context_for_change the working tree never stands in at all, the service refuses when nothing is named, which is stricter than the proposal text describes.
 
 ### S2 — Scans report their coverage
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/diagram/src/lib/graph/real-deps.ts`, `plugins/diagram/tests/src/lib/graph/real-deps.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/tests/src/lib/docs-list-pagination.spec.ts`, `plugins/link-check/src/lib/contracts/constants/link-check.constant.ts`, `plugins/link-check/src/lib/contracts/interfaces/link-check.interface.ts`, `plugins/link-check/src/lib/link-check/real-deps.ts`, `plugins/link-check/src/lib/tools/link-check.tool.ts`, `plugins/link-check/tests/src/lib/link-check-coverage.spec.ts`, `plugins/tech-debt/src/lib/contracts/constants/tech-debt.constant.ts`, `plugins/tech-debt/src/lib/contracts/interfaces/tech-debt.interface.ts`, `plugins/tech-debt/src/lib/tech-debt/real-deps.ts`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts`, `plugins/tech-debt/tests/src/lib/debt-scan-coverage.spec.ts`, `packages/core/src/lib/shared/scan-scope.helper.ts`, `packages/core/tests/src/lib/shared/scan-scope.helper.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -53,8 +53,10 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
   - "docs_list paginates the full collection; total is the real total (D109)."
   - "diagram_deps reads the root workspaces list (D119)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 3/3: (1) At a6c27d556c95 link-check.constant.ts sets the document glob to *.{md,mdx} with a cap of 5000 documents, and link-check and tech-debt both publish a coverage … (2) At a6c27d556c95 the docs engine enumerates the whole catalogue up to 10000 entries instead of cutting it at 200, and the tool slices the page while reporting t… (3) At a6c27d556c95 diagram/src/lib/graph/real-deps.ts iterates the workspace packages of the root manifest through workspacePackageDirs instead of a hard-coded li… — Approved on the delivered state of a6c27d556c95 (PR #1531). The link check now covers md and mdx and reports both the findings truncation and the scan cap, the debt scan reports the same coverage shape, the docs list enumerates the whole catalogue and reports the real total, and the diagram dependency graph reads the root workspaces list, which reaches the tools family the audit said was missing. The five slice specs pass 9 of 9 and the type gate exited 0. One wording note, not a criterion failure: the top-level truncated flag is the pre-existing findings-list flag and the scan cap is reported as coverage.capped with its value in coverage.maxDocs and coverage.maxFiles, so the criterion spans two flags rather than one.
 
 ### S3 — Language and convention tools see the repo
 - **Status**: review
