@@ -55,17 +55,18 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 
 ### S4 — A consumer does not run a moving checkout
 - **Status**: pending
-- **Files**: `tools/scripts/host/host-server.script.ts`
+- **Files**: `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `tools/scripts/lint/check-stray-cache-files.script.ts`, `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
 - **Gate**: type
 - acceptance:
-  - "A project outside this repository runs a checkout of `main` kept apart from this one (delendai is not on npm), so develop moving here restarts nothing; it changes over only after a promotion, because `main` trailed develop by 1,418 commits on 2026-11-02 and its state was written by newer code. Its logs stay readable here for debugging."
+  - "A project picks the delendai branch it runs with `--branch=<name>` on its MCP entry, the shared checkout stays where it is, a move on another branch restarts nothing there, and a branch that does not exist falls back to the checkout's code and says so."
 
 ## acceptance
 
 - A vanished ref whose publication merged is a note, not a blocker.
 - An agent refused by blocked mutations receives each blocking finding and its repair command, and never a message it can read as another agent's lock.
 - While mutations are blocked, opening a publication outside the work flow is refused or recorded as a departure the owner sees.
-- A project outside this repository runs a checkout of `main` kept apart from this one (delendai is not on npm), so develop moving here restarts nothing; it changes over only after a promotion, because `main` trailed develop by 1,418 commits on 2026-11-02 and its state was written by newer code. Its logs stay readable here for debugging.
+- A project picks the delendai branch it runs with `--branch=<name>` on its MCP entry, the shared checkout stays where it is, a move on another branch restarts nothing there, and a branch that does not exist falls back to the checkout's code and says so.
 
 ## notes
 - 2026-11-02: the owner chose `main` over a registry: delendai is not published, and a consumer's agents are useful evidence. Their logs and refs are read from here for findings.
+- 2026-11-02: the owner chose a `--branch` flag on the MCP entry over any copy kept by hand. delendai keeps the tree in its cache. Moving a consumer to `main` waits for a promotion, since `main` trails develop by 1,418 commits.
