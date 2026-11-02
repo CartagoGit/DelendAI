@@ -68,8 +68,8 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - A finding in review/ keeps its review-then-done advice.
 - A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it.
 - `proposals create` with a malformed slice exits non-zero.
+- `work deliver` in a unit's worktree with no `--slice` delivers that unit.
 
 ## notes
 
 - S2, reopened 2026-11-02: once a refusal through the resolver failed the call, `work deliver` failed on its own first step, the transition to in-progress of a proposal already there, whose refusal it reads to carry on (x00992's second delivery, exit 5). Its transition port now reads the refusal back from the error (`answerOf`); an error that carries no answer still fails.
-- `work deliver` in a unit's worktree with no `--slice` delivers that unit.
