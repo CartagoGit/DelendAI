@@ -35,6 +35,14 @@ export const describeAgentNameShape = (
 	) {
 		return undefined;
 	}
+	// This product signs its own work with words only (above); with a
+	// version it is posing as a model, as `delendai-m3-docs-20261028` did.
+	if (
+		namespacePrefix !== undefined &&
+		agent.startsWith(`${namespacePrefix}-`)
+	) {
+		return `\`${namespacePrefix}\` is this product's name, not a model's maker. Write the name your host or your maker gave you, maker first (\`glm-5.3-flash\`, \`claude-opus-5-5\`).`;
+	}
 	const why = shapeProblem(agent);
 	return why === undefined
 		? undefined

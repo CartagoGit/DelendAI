@@ -29,6 +29,7 @@ export const withBriefing = async (
 	const briefing = briefingFrom({
 		agent,
 		view: readSwarm({ root, policy }),
+		unit: data.ref.replace(/^refs\/heads\//u, ''),
 	});
 	const task =
 		data.path === null

@@ -1,4 +1,8 @@
 import { describeLoop, workRefLoopsAt } from './work-ref-moves.service';
+import { unitsOutsideTheirSlice } from './outside-slice.service';
+import { unverifiedAgents } from './unverified-agents.service';
+import { seenModels } from '../work-identity/model-identity.helper';
+import { readWorkspaceDocsDir } from './development-policy.service';
 import {
 	anchorFromPolicy,
 	anchorRefusal,
@@ -73,10 +77,12 @@ export const statusOf = async (
 		await observeAnchor(engine.context.run, anchorFromPolicy(policy)),
 	);
 	const branch = checkedOutBranch(root);
+	const swarm = readSwarm({ root, policy });
 	const paths = reportDirtyPaths({
 		git: (args) => gitVerbatim(root, args),
-		refs: readSwarm({ root, policy }).units,
+		refs: swarm.units,
 	});
+	const base = integrationBase(root, policy);
 	const standings = await readUnitStandings({ root, policy });
 	const payload = {
 		profile: policy.profile,
@@ -92,10 +98,26 @@ export const statusOf = async (
 			anchor === undefined,
 		anchorRefusal: anchor ?? null,
 		workRefTemplate: policy.branches.workRefTemplate,
-		base: integrationBase(root, policy) ?? null,
+		base: base ?? null,
 		dirty: paths.dirty,
 		undurable: paths.undurable,
 		units: countStandings(standings),
+		// Names at work that nothing confirms are a model's.
+		unverifiedAgents: unverifiedAgents({
+			agents: [...swarm.units, ...swarm.published].map(
+				(unit) => unit.agent,
+			),
+			seen: seenModels(),
+			roster: policy.coordination.roster ?? [],
+			namespacePrefix: policy.branches.namespacePrefix,
+		}),
+		// Implement units that changed files their slice does not name.
+		outsideSlice: unitsOutsideTheirSlice({
+			root,
+			docsDir: await readWorkspaceDocsDir(root),
+			policy,
+			units: swarm.units,
+		}),
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
 		refLoops: await workRefLoopsAt(root),

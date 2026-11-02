@@ -67,10 +67,9 @@ const repo = (): string => {
 };
 
 describe('keepStrandedEdits', () => {
-	it("keeps the shared checkout's edits for the agent whose unit covers them, and touches nothing", async () => {
+	it("keeps the shared checkout's edits for the agent whose unit covers them all, and touches nothing", async () => {
 		const root = repo();
 		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
-		writeFileSync(join(root, 'new.ts'), 'export const b = 1;\n');
 		const statusBefore = git(root, 'status', '--porcelain');
 
 		const kept = await keepStrandedEdits({ root, policy });
@@ -82,9 +81,6 @@ describe('keepStrandedEdits', () => {
 		);
 		expect(git(root, 'show', `${kept.ref}:a.ts`)).toBe(
 			'export const a = 3;',
-		);
-		expect(git(root, 'show', `${kept.ref}:new.ts`)).toBe(
-			'export const b = 1;',
 		);
 		// The checkout, its index and its branch are as they were.
 		expect(git(root, 'status', '--porcelain')).toBe(statusBefore);
@@ -100,6 +96,21 @@ describe('keepStrandedEdits', () => {
 		expect(listStrandedEdits({ root, policy })).toEqual([
 			{ ref: kept.ref, agent: 'agent-a', keptAt: expect.any(String) },
 		]);
+	});
+
+	it('keeps edits a unit covers only in part as unattributed, naming that unit as evidence', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
+		writeFileSync(join(root, 'new.ts'), 'export const b = 1;\n');
+		const kept = await keepStrandedEdits({ root, policy });
+		expect(kept).toMatchObject({ outcome: 'kept', agent: 'unattributed' });
+		if (kept.outcome !== 'kept') throw new Error('not kept');
+		expect(git(root, 'show', `${kept.ref}:new.ts`)).toBe(
+			'export const b = 1;',
+		);
+		expect(git(root, 'log', '-1', '--format=%B', kept.ref)).toContain(
+			'changes a.ts',
+		);
 	});
 
 	it('keeps edits no unit covers as unattributed, and reports at start-up', async () => {
