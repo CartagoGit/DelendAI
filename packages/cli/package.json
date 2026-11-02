@@ -1,0 +1,89 @@
+{
+	"name": "@delendai/cli",
+	"version": "0.2.4",
+	"type": "module",
+	"description": "Human-facing DelendAI CLI. Single canonical bin `delendai` (S1); bridges for legacy bin names live in the WORKSPACE via `delendai bridge install` (S3).",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"cli",
+		"delendai",
+		"delendai-legacy-bridge"
+	],
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"bin": {
+		"delendai": "./dist/index.js"
+	},
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts"
+	},
+	"dependencies": {
+		"@agentclientprotocol/sdk": "1.5.1",
+		"@delendai/agent-orchestrator": "workspace:*",
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/client": "workspace:*",
+		"@delendai/completion": "workspace:*",
+		"@delendai/container": "workspace:*",
+		"@delendai/conventions": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/database": "workspace:*",
+		"@delendai/deps": "workspace:*",
+		"@delendai/diagram": "workspace:*",
+		"@delendai/docs": "workspace:*",
+		"@delendai/env": "workspace:*",
+		"@delendai/error-reporting": "workspace:*",
+		"@delendai/forge": "workspace:*",
+		"@delendai/git": "workspace:*",
+		"@delendai/i18n": "workspace:*",
+		"@delendai/logs": "workspace:*",
+		"@delendai/memory": "workspace:*",
+		"@delendai/notification": "workspace:*",
+		"@delendai/prompts-pack": "workspace:*",
+		"@delendai/proposals": "workspace:*",
+		"@delendai/quality": "workspace:*",
+		"@delendai/refactor": "workspace:*",
+		"@delendai/rules": "workspace:*",
+		"@delendai/search": "workspace:*",
+		"@delendai/skills-pack": "workspace:*",
+		"@delendai/sqlite": "workspace:*",
+		"@delendai/state": "workspace:*",
+		"@delendai/status-marker": "workspace:*",
+		"@delendai/test-convention": "workspace:*",
+		"@delendai/test-policy": "workspace:*",
+		"zod": "^4.6.6"
+	},
+	"devDependencies": {
+		"@delendai/test-kit": "workspace:*",
+		"@delendai/state-telemetry": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "5.0.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CartagoGit/delendai"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts"
+}
