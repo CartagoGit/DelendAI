@@ -63,6 +63,6 @@ export const closedForImplementing = async (
 		? undefined
 		: refused(
 				`${proposal} is closed for implementing: ${closed}.`,
-				`A change to finished work is a new proposal: \`delendai work enter --proposal=new --slice=all --kind=create\`, then \`delendai proposals create --kind=fix --title=<what> --goal=<why>\` in its worktree.`,
+				`A change to finished work is new work: start it with \`delendai work enter --proposal=new --slice=all --kind=create\`.`,
 			);
 };

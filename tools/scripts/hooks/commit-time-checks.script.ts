@@ -9,9 +9,11 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 
-import { readWorkspacePolicy } from '@delendai/core/lib/work-units/development-policy.service';
-import { shortName } from '@delendai/core/lib/development-policy/git-guard-namespaces';
-import { readSwarm } from '@delendai/core/lib/work-units/work-swarm.service';
+import {
+	compileWorkRefParser,
+	readSwarm,
+	readWorkspacePolicy,
+} from '@delendai/core/cli';
 
 const TYPESCRIPT = /\.tsx?$/u;
 /** What can change what a tool costs or tells the site. */
@@ -100,8 +102,12 @@ const tellSharedFiles = async (staged: readonly string[]): Promise<void> => {
 	const root = git('rev-parse', '--show-toplevel').trim();
 	if (branch.length === 0 || root.length === 0) return;
 	const policy = await readWorkspacePolicy(root);
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (prefix.length === 0 || !branch.startsWith(prefix)) return;
+	const unit = compileWorkRefParser(
+		policy.branches.workRefTemplate,
+		policy.branches.workRefPrefix,
+		{ requireKind: false },
+	)?.parse(`refs/heads/${branch}`);
+	if (unit === undefined) return;
 	for (const line of sharedWith(
 		staged,
 		branch,
