@@ -13,8 +13,9 @@
  * Display order for people stays locale order; it neither hashes nor
  * writes a serialised file.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 /** Source roots whose sorts all feed canonical hashes, digests or projections. */
 export const CANONICAL_ROOTS = [
@@ -28,22 +29,19 @@ export const CANONICAL_ROOTS = [
 /** Every root code is written under. */
 const SOURCE_ROOTS = ['packages', 'plugins', 'tools', 'apps', 'extensions'];
 
-/** Directories that hold no source of ours. */
-const SKIPPED = new Set([
-	'node_modules',
-	'dist',
-	'build',
-	'coverage',
-	'.cache',
-]);
-
-const sources = (dir: string): string[] =>
-	readdirSync(dir).flatMap((entry) => {
-		if (SKIPPED.has(entry)) return [];
-		const path = join(dir, entry);
-		if (statSync(path).isDirectory()) return sources(path);
-		return path.endsWith('.ts') && !path.endsWith('.spec.ts') ? [path] : [];
-	});
+/**
+ * The tracked sources under the roots, from git: a walk of the tree read
+ * the files a proof's specs create and delete beside it, and failed on
+ * one that vanished between listing and reading.
+ */
+const sources = (root: string): readonly string[] =>
+	execFileSync('git', ['ls-files', '-z', '--', ...SOURCE_ROOTS], {
+		cwd: root,
+		encoding: 'utf8',
+		maxBuffer: 64 * 1024 * 1024,
+	})
+		.split('\0')
+		.filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'));
 
 const HASHES = /\bcreateHash\(|\.digest\(/u;
 const SERIALISES = /\bJSON\.stringify\(/u;
@@ -70,14 +68,11 @@ const main = (): number => {
 	const root = process.cwd();
 	let scanned = 0;
 	const found: string[] = [];
-	for (const scanRoot of SOURCE_ROOTS) {
-		for (const file of sources(join(root, scanRoot))) {
-			const rel = relative(root, file);
-			const text = readFileSync(file, 'utf8');
-			if (!isCanonicalProducer(rel, text)) continue;
-			scanned += 1;
-			found.push(...localeOrderLines(rel, text));
-		}
+	for (const rel of sources(root)) {
+		const text = readFileSync(join(root, rel), 'utf8');
+		if (!isCanonicalProducer(rel, text)) continue;
+		scanned += 1;
+		found.push(...localeOrderLines(rel, text));
 	}
 	if (scanned === 0) {
 		console.error('✖ no-locale-order-in-canonical: scanned no file.');
