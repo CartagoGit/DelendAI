@@ -1,0 +1,376 @@
+{
+	"reason": "Preserve signed reviewer originals while providing English repository documentation. No language gate or baseline changed.",
+	"files": [
+		{
+			"page": "CHECKPOINT.md",
+			"original": "evidence/reviewer-originals/CHECKPOINT.source.es.txt.raw.gz",
+			"originalBytes": 9150,
+			"originalSha256": "9674f61c514a75973826b4ecaee7fc16f633b9c2064499c18c3208295d37dc9b",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false,
+			"compression": "gzip",
+			"archivedSha256": "7e4b9ae5957ce251cd46266705bde45d31c7885b40c533c286145fdfbbaee6ac"
+		},
+		{
+			"page": "README.md",
+			"original": "evidence/reviewer-originals/README.source.es.txt",
+			"originalBytes": 7940,
+			"originalSha256": "c1aefa9994b5de3a4e2b7adcb44c573c6b26ae4593d344ae3fc225dc0d81eae9",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "REPLAY.md",
+			"original": "evidence/reviewer-originals/REPLAY.source.es.txt",
+			"originalBytes": 5294,
+			"originalSha256": "07a163653b034d6c4df887377a7cbab56a3464d12feb1eed4d509a7c7fa8a6fb",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "active-proposals.md",
+			"original": "evidence/reviewer-originals/active-proposals.source.es.txt",
+			"originalBytes": 123012,
+			"originalSha256": "fce4791ba3b40188689203b1707ca5d81898bb90935384eb7eb42fee0efce175",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "agent-orchestrator.md",
+			"original": "evidence/reviewer-originals/agent-orchestrator.source.es.txt",
+			"originalBytes": 10507,
+			"originalSha256": "65348ad32f71e1e7a63e03a156966eb565f4778625565d028dddeeba7760a6f8",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "architecture-roadmap.md",
+			"original": "evidence/reviewer-originals/architecture-roadmap.source.es.txt",
+			"originalBytes": 6605,
+			"originalSha256": "e9c70d6b8b624ae91d870805e539da987bf2cff09d3bdd39dc8f6bfdc185fb7b",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "concurrency-batuta.md",
+			"original": "evidence/reviewer-originals/concurrency-batuta.source.es.txt",
+			"originalBytes": 19003,
+			"originalSha256": "6b1db69ec331a84b11aadc012a66e175becb6ed265445c7b2420b1f626c85a23",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "consensus-contribution.md",
+			"original": "evidence/reviewer-originals/consensus-contribution.source.es.txt",
+			"originalBytes": 11240,
+			"originalSha256": "3878caa79106602046b0705b5a4c2d7b2c91b6d6adf30aaf2397cb12d6f4c641",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "contrast.md",
+			"original": "evidence/reviewer-originals/contrast.source.es.txt",
+			"originalBytes": 10242,
+			"originalSha256": "cb731ced5cc49a1ff5a05b3232dd351d2346de52ef25ac6268582b25fce6c429",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "core-cli-migrations.md",
+			"original": "evidence/reviewer-originals/core-cli-migrations.source.es.txt",
+			"originalBytes": 19646,
+			"originalSha256": "3448965a3d07fa0186bf19a7b6248b43736f2bd6528956d1672454b74a09e71c",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "evidence/concurrency/report.md",
+			"original": "evidence/reviewer-originals/evidence/concurrency/report.source.es.txt",
+			"originalBytes": 18090,
+			"originalSha256": "dcaa2e992a69c3477a5047da1bbcba377d3d8ce036703daa130d5c692477b360",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "evidence/orchestrator/report.md",
+			"original": "evidence/reviewer-originals/evidence/orchestrator/report.source.es.txt",
+			"originalBytes": 19505,
+			"originalSha256": "af4ba6bbd276d9ffcc49a5e528522a8bc0cba551a74d508cda1ccdba3e30f16e",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "evidence/root/report.md",
+			"original": "evidence/reviewer-originals/evidence/root/report.source.es.txt",
+			"originalBytes": 11110,
+			"originalSha256": "9dae475d2187fd9e10595942c6f87e14a76c816c922736c98c100abb23fe33b5",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "evidence/ui/report.md",
+			"original": "evidence/reviewer-originals/evidence/ui/report.source.es.txt",
+			"originalBytes": 33131,
+			"originalSha256": "f8c9738bff31cdab35d1b50ae4c079bd8b30a0a807f63ec1eb6b43955d5fef87",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "finding-index.md",
+			"original": "evidence/reviewer-originals/finding-index.source.es.txt",
+			"originalBytes": 9305,
+			"originalSha256": "57d55ebbf21e855b73ec965ee01d2bb0651c1c184e3a2a3c17431855df4c13cc",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "independent-scanners.md",
+			"original": "evidence/reviewer-originals/independent-scanners.source.es.txt",
+			"originalBytes": 11215,
+			"originalSha256": "9295334c442e27f6f7ed37e464b2c84f65dc91af7111147aaacdc22af44e6567",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "joint-review.md",
+			"original": "evidence/reviewer-originals/joint-review.source.es.txt.raw.gz",
+			"originalBytes": 78290,
+			"originalSha256": "f621706dcdc9eb5abfe94b6d57c48d0215c0b3a9cdf61a3bd583a92f4597a79d",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false,
+			"previousOriginal": {
+				"path": "evidence/recovery/joint-review-before-G74-G78.source.es.txt",
+				"bytes": 75025,
+				"sha256": "4378781b3b1a9bf42d5027af1ea00502796713719862049a600edd16bc317ba0",
+				"commit": "e43b46e75ef4e50d865275c4c726cf1be7e3b152"
+			},
+			"provenanceCorrection": "The recovered source already included the G74-G78 continuation at clean commit 5a540a1926aeafb7b401b694937761685c21dadf; its language metadata still described the earlier PR head. Both exact versions are preserved. No source text changed.",
+			"compression": "gzip",
+			"archivedSha256": "6ac51814bbf55cf32763ab74ccecd027eca70bbf525150cd33730d9dc342575c"
+		},
+		{
+			"page": "memory.md",
+			"original": "evidence/reviewer-originals/memory.source.es.txt",
+			"originalBytes": 6903,
+			"originalSha256": "03931df9d3e149f870aa48b985a9b305f446f0142d42a9a54083302d36374b3b",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-cards.md",
+			"original": "evidence/reviewer-originals/plugin-cards.source.es.txt",
+			"originalBytes": 12058,
+			"originalSha256": "f69083bd30e87af00f9946bcce4c31028d704a072804034065b3b7d12a3ef2a0",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-coordination.md",
+			"original": "evidence/reviewer-originals/plugin-coordination.source.es.txt",
+			"originalBytes": 66510,
+			"originalSha256": "03dc417fe9168412debd53e7d5d30139120edb6da5e824c075d4a597248d4420",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/api.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/api.source.es.txt",
+			"originalBytes": 7644,
+			"originalSha256": "0fe806760ad399a9d1b80caa22c152a8b81c2caac7c438f0b638e0b70f49614a",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/browser.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/browser.source.es.txt",
+			"originalBytes": 3312,
+			"originalSha256": "15382c60d1de8d484243daf4489ef7866dca4940f19f34ddecd84f59827fbccf",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/container.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/container.source.es.txt",
+			"originalBytes": 3753,
+			"originalSha256": "9c5f48fd7bb63475ca1b8877b59a78b710e51fb2c07402467ce22efb45997320",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/database.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/database.source.es.txt",
+			"originalBytes": 3200,
+			"originalSha256": "3acd89f206ced1a3fd6ae579cc2479d848d887b298f51aa51b868cd448e92066",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/execution-env.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/execution-env.source.es.txt",
+			"originalBytes": 5074,
+			"originalSha256": "4dca1f7959e028f7ca3475b283e34b469a8a460b7bada41f9ee311e9f0ecde88",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/forge.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/forge.source.es.txt",
+			"originalBytes": 6925,
+			"originalSha256": "ee1b54892a63a550415846f99be31cf38a192338626d59ab8289aae18e431c67",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/github.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/github.source.es.txt",
+			"originalBytes": 5923,
+			"originalSha256": "7926a12b86e72b2b8ac7922e152c61acdf9444ebef1c59e27f51174539819e0f",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/github.partial.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/github.partial.source.es.txt",
+			"originalBytes": 2463,
+			"originalSha256": "59044140c4bf64dc8f78814a0f07fb679302d84a58079f56169e5a6f7076b2bc",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/issues-triage.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/issues-triage.source.es.txt",
+			"originalBytes": 3310,
+			"originalSha256": "33a5cc75debe83c36acb47bf79d63718813af81fc018529f88594ec0131b8564",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/observability.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/observability.source.es.txt",
+			"originalBytes": 5384,
+			"originalSha256": "e5553801eefa72bdc594cc7ff587842899716e142191c2920666ec736da78aad",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/remote-provider-core.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/remote-provider-core.source.es.txt",
+			"originalBytes": 4807,
+			"originalSha256": "4999b78712857b56424537d9e6d2b0a87c577fde461b505930eccf12356cb85f",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/security.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/security.source.es.txt",
+			"originalBytes": 3590,
+			"originalSha256": "6f20747f1bf99866e23c182e7ed977e51fc99b94a4ba7580f838d894db8078a7",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations/fichas/web-fetch.md",
+			"original": "evidence/reviewer-originals/plugin-integrations/fichas/web-fetch.source.es.txt",
+			"originalBytes": 2904,
+			"originalSha256": "561c31dee59f95c40873cc46d98296ed10491189312d06507920c32b8e4753c3",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-integrations.md",
+			"original": "evidence/reviewer-originals/plugin-integrations.source.es.txt",
+			"originalBytes": 24017,
+			"originalSha256": "dda66255decfa345a89865ed279215cf11b3b2a215eedf8de7e9bcb58a1f19a1",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "plugin-utilities.md",
+			"original": "evidence/reviewer-originals/plugin-utilities.source.es.txt",
+			"originalBytes": 68837,
+			"originalSha256": "c93360c67b9d15d3daa372aeb866e9cc2593ffe09793e4ef56eb7ff7272ca19f",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "reader-atomic-diagnosis.md",
+			"original": "evidence/reviewer-originals/reader-atomic-diagnosis.source.es.txt",
+			"originalBytes": 3308,
+			"originalSha256": "2643a070a3e7db4b019b16f8ff0c11b232e22f4ff9cc48e8b8ed647e95a75e1d",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "state-telemetry.md",
+			"original": "evidence/reviewer-originals/state-telemetry.source.es.txt",
+			"originalBytes": 14088,
+			"originalSha256": "1e7fa330942c982ef54d9144a3cc4ff3b2b7d82e4fd79caf7a01013290c27e52",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "token-comparison.md",
+			"original": "evidence/reviewer-originals/token-comparison.source.es.txt",
+			"originalBytes": 2861,
+			"originalSha256": "9bf511bcc2c93d70e4f24ac8627ef445c54d47660f6d1e59f3bdcecae5003403",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "ui-security-tokens.md",
+			"original": "evidence/reviewer-originals/ui-security-tokens.source.es.txt",
+			"originalBytes": 37741,
+			"originalSha256": "b167c07fcaf2a0138f6d86aa2ceb243fc7a87f673a1edb422c4c7abf57b07a92",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		},
+		{
+			"page": "validation.md",
+			"original": "evidence/reviewer-originals/validation.source.es.txt",
+			"originalBytes": 3134,
+			"originalSha256": "3cddb41b1879adfc0ca9b667e94e3cd299db61448db77b5607750c0ffb173b0b",
+			"navigationLanguage": "en",
+			"originalLanguage": "es",
+			"fullTranslation": false
+		}
+	]
+}
