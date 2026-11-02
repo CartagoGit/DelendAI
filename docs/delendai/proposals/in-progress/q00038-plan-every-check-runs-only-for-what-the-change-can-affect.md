@@ -83,6 +83,13 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - acceptance:
   - "pack smoke no longer runs npm pack --dry-run over the raw workspace directories: the tarball smoke packs every publishable package of the release order from its staged copy, a superset checked on 2026-11-02 (59 of 59 non-private packages)."
 
+### S7 — The external install runs where the packaging can change
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "verify:external-install runs in the pack-smoke job, whose scope now also names its script, the publish staging and init's code; verify-runtime no longer rebuilds and repacks for it."
+
 ## acceptance
 
 - A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
@@ -91,8 +98,10 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - The lint jobs run in fewer runners, each lint family together, so a pull request stops paying a checkout and an install per family; no lint is dropped and every failure is still named.
 - The typecheck reuses the integration branch's incremental state, so a change pays for what it touches.
 - Runner minutes and wall time per pull request are reported before and after each slice.
+- The external install runs only where packaging or init can change it.
 
 ## notes
 - 2026-11-02, S2 measured before building: recording what the 47 architecture lints read showed 26 of them call `git` (mostly `ls-files`), which reads the whole tree. Over the last 14 merged pull requests a per-lint selection would still run 31 to 43 of 47, and the lints already run together in 9 s, so the saving would be seconds for a recorder in every bun process. S2 is changed to what does cost: each lint job pays its own checkout and install, about 20 s each.
 - On a pull request, verify:tools verifies only the plugins the change can reach, and every plugin on a full run.
 - Each publishable package is packed once per run.
+- Measured 2026-11-02 on two CLI-only pull requests: before S5/S6 (#1659), 27 jobs, 1,511 runner-seconds and 265 s of wall time, with pack smoke at 180 s and verify-runtime at 149 s; after them (#1666), 25 jobs, 1,157 runner-seconds and 216 s, verify:tools saying that the change reaches no plugin. Of verify-runtime's remaining 136 s, 87 s were `verify:external-install`, which built, packed and installed the published packages again, so S7 moves it to the pack-smoke job.

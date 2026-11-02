@@ -907,7 +907,6 @@ jobs:
                   bun run verify:plugin-wiring
                   bun run verify:security
                   bun run verify:cache
-                  bun run verify:external-install
                   bun run verify:scaffolds
                   bun run verify:dev-bundles
                   bun run verify:host-capability-packs
@@ -1043,6 +1042,13 @@ jobs:
             # directory, which checked less than this real pack and cost a minute.
             - name: Smoke — install from tarball and load plugins
               run: bun tools/scripts/smoke/pack.script.ts
+
+            # The documented external path, from the same tarballs' sources:
+            # install, init, MCP handshake. It ran in verify-runtime on every
+            # code change, rebuilding and repacking what this job already
+            # builds, though only what this job's scope names can change it.
+            - name: Smoke — an external project installs, inits and connects
+              run: bun run verify:external-install
 
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)

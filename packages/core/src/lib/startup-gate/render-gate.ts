@@ -91,7 +91,9 @@ const degradedBlock = (
 ): readonly string[] => [
 	'!! STARTUP RECONCILIATION: DEGRADED !!',
 	`The workspace was reconciled and did NOT reach READY (machine=${report.machineId}, mode=${report.mode}).`,
-	`Mutations blocked: ${String(report.mutationsBlocked)} | recovery required: ${String(report.recoveryRequired)}`,
+	// Read as a lock, "Mutations blocked: true" sent an agent round a block
+	// that does not exist: nothing refuses work for these findings.
+	`Nothing is locked and no work is refused for this: ${String(report.blockers.length)} finding(s) below wait for a decision, each with what to run.${report.recoveryRequired ? ' Recovery is required: until they are answered, what they name may be lost.' : ''}`,
 	`Phases NOT EXECUTED (no collaborator bound; they did NOT pass): ${phaseList(notExecuted)}`,
 	'Blocking findings:',
 	...report.blockers.map(findingLine),
@@ -101,7 +103,7 @@ const degradedBlock = (
 				'Generated repair work (ids are stable across boots):',
 				...report.repairTasks.map(
 					(task) =>
-						`  - ${task.id}: ${task.title}\n      actions: ${task.suggestedActions.join(' | ')}`,
+						`  - ${task.id}: ${task.title}\n      actions: ${task.suggestedActions.join(' | ')}\n      once decided: delendai repair resolve ${task.id} --evidence=${task.evidenceDigest} --decision=<accepted-loss|resolved-elsewhere|not-a-problem> --reason="..."`,
 				),
 			]),
 ];

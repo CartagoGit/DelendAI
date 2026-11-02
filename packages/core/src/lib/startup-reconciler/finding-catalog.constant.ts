@@ -79,6 +79,8 @@ export const AMBIGUOUS_FINDING_CODES = [
 	'leases.overlapping-owners',
 	/** A work ref vanished with no durable evidence of its merge. */
 	'integration-evidence.ref-vanished',
+	/** A work ref vanished whose publication a merge of integration names. */
+	'integration-evidence.publication-merged',
 	/** The database is present but unreadable / corrupt. */
 	'state-database.corrupt',
 	/** A migration exists whose effect on this data is not determined. */
