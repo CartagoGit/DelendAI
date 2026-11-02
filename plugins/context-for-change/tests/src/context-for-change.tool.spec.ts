@@ -156,6 +156,49 @@ describe('context_for_change', () => {
 		expect(output.sections.length).toBeGreaterThan(0);
 	});
 
+	it('keeps every file the caller names, and says where a cut leaves off', async () => {
+		const root = await makeWorkspace();
+		const named = Array.from(
+			{ length: 12 },
+			(_, index) => `src/lib/f${String(index)}.ts`,
+		);
+		for (const file of named) {
+			await writeFile(
+				join(root, file),
+				`export const v = ${String(file.length)};\n`,
+				'utf8',
+			);
+		}
+		const result = await runContextForChange(
+			{ files: named, task: 'a slice of many files' },
+			{
+				namespacePrefix: 'delendai',
+				workspaceRootAbs: root,
+				maxBytes: 64_000,
+				docsRoots: ['docs'],
+			},
+		);
+		const output = ContextForChangeOutputSchema.parse(
+			result.structuredContent,
+		);
+		expect(output.files).toEqual(named);
+
+		const small = ContextForChangeOutputSchema.parse(
+			(
+				await runContextForChange(
+					{ files: ['src/lib/foo.ts'], task: 'trim output' },
+					{
+						namespacePrefix: 'delendai',
+						workspaceRootAbs: root,
+						maxBytes: 220,
+						docsRoots: ['docs'],
+					},
+				)
+			).structuredContent,
+		);
+		expect(small.sections[0]?.summary).toContain('within 220 bytes');
+	});
+
 	it('rejects adversarial workspace-escape and reserved paths with a structured error', async () => {
 		const root = await makeWorkspace();
 		const outside = await mkdtemp(
