@@ -26,6 +26,7 @@
 
 - @agentclientprotocol/sdk
 - @delendai/contracts
+- @delendai/state
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core

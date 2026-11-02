@@ -17,6 +17,7 @@ import type {
 	IValidationWorktreeEntry,
 } from './validation-activity.types';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
+import { compareCodeUnits } from '@delendai/state';
 
 const DEFAULT_SOURCE_STATE: IValidationActivitySourceState = 'missing';
 const DEFAULT_STALE_AFTER_MINUTES = AGENT_CONVENTIONS.heartbeat_ttl_minutes;
@@ -604,7 +605,7 @@ export const resolveValidationActivitySnapshot = (
 	const signals = [...registrySignals, ...lockSignals, ...worktreeSignals];
 	const agents = buildGroups(signals)
 		.map(summarizeGroup)
-		.sort((left, right) => left.key.localeCompare(right.key));
+		.sort((left, right) => compareCodeUnits(left.key, right.key));
 	const currentActorKey = currentActorKeyOf(agents, input.current);
 	const activeAgents = agents.filter((agent) => agent.state === 'active');
 	const activeTasks = dedupeStrings(

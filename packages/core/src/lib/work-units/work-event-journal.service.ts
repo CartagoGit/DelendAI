@@ -13,6 +13,7 @@ import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.in
 import { sharedCheckout } from '../shared/shared-checkout';
 import { scalarArg } from './command-args.helper';
 import { agentFor } from './work-unit-shared.service';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Sorted keys, so the same facts always hash the same. */
 const hashOf = (detail: IWorkEventJournalEntry['detail']): string =>
@@ -20,7 +21,7 @@ const hashOf = (detail: IWorkEventJournalEntry['detail']): string =>
 		.update(
 			JSON.stringify(
 				Object.entries(detail ?? {}).sort(([a], [b]) =>
-					a.localeCompare(b),
+					compareCodeUnits(a, b),
 				),
 			),
 		)

@@ -52,6 +52,7 @@ import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Only plugin source is in scope — `plugins/<name>/src/**` (per AUD-D01). */
 const SCAN_GLOBS: readonly string[] = ['plugins'];
@@ -216,7 +217,7 @@ const main = async (): Promise<number> => {
 	if (args.has('--report')) {
 		const byPlugin = groupByPlugin(current);
 		const pluginLines = Object.entries(byPlugin)
-			.sort(([a], [b]) => a.localeCompare(b))
+			.sort(([a], [b]) => compareCodeUnits(a, b))
 			.map(([p, n]) => `    ${p}: ${n} file(s)`)
 			.join('\n');
 		process.stderr.write(

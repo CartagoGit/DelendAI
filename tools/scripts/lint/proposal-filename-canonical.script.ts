@@ -53,6 +53,7 @@ import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
+import { compareCodeUnits } from '@delendai/state';
 
 const PROPOSALS_REL = 'docs/delendai/proposals';
 const BASELINE_REL =
@@ -149,7 +150,7 @@ export const validate = (root: string): readonly IIssue[] => {
 			});
 		}
 	}
-	issues.sort((a, b) => a.relPath.localeCompare(b.relPath));
+	issues.sort((a, b) => compareCodeUnits(a.relPath, b.relPath));
 	return issues;
 };
 

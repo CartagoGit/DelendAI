@@ -44,6 +44,7 @@ import {
 	byDrift,
 	measureReviewDrift,
 } from '../../../plugins/proposals/src/lib/services/review-drift.service';
+import { compareCodeUnits } from '@delendai/state';
 
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
 const BASELINE_REL = 'tools/scripts/lint/proposal-ready-to-close.baseline.json';
@@ -243,7 +244,7 @@ export const scanReadyToClose = (
 			});
 		}
 	}
-	findings.sort((a, b) => a.proposalId.localeCompare(b.proposalId));
+	findings.sort((a, b) => compareCodeUnits(a.proposalId, b.proposalId));
 	return findings;
 };
 
@@ -390,7 +391,7 @@ const main = (): number => {
 	if (args.has('--update')) {
 		const stranded = findings
 			.filter((f) => f.stranded)
-			.sort((a, b) => a.proposalId.localeCompare(b.proposalId));
+			.sort((a, b) => compareCodeUnits(a.proposalId, b.proposalId));
 		// An object keyed by id, tab-indented, the shape the other
 		// baselines in this directory use: it survives the formatter
 		// whatever its length, and it records WHY each entry is frozen

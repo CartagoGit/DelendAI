@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"@delendai/shared": "workspace:*",
+		"@delendai/state": "workspace:*",
 		"astro": "~7.3.8",
 		"markdown-it": "^15.0.0",
 		"sass": "^1.101.0",

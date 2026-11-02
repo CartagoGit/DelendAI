@@ -8,6 +8,7 @@ import {
 	type IReadPagesOptions,
 } from '#LIB/page-spec/reader';
 import type { PageSpec } from '#LIB/page-spec/types';
+import { compareCodeUnits } from '@delendai/state';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
@@ -100,7 +101,7 @@ export const buildPagesManifest = async (
 		listDirs: options.listDirs,
 	});
 	const sortedPages = [...pages].sort((left, right) =>
-		left.slug.localeCompare(right.slug),
+		compareCodeUnits(left.slug, right.slug),
 	);
 	const existing = parseManifest(options.existingManifestText);
 	const nextPagesJson = stableStringify(sortedPages);
@@ -236,7 +237,7 @@ const sortValue = (value: unknown): unknown => {
 	if (value && typeof value === 'object') {
 		return Object.fromEntries(
 			Object.entries(value)
-				.sort(([left], [right]) => left.localeCompare(right))
+				.sort(([left], [right]) => compareCodeUnits(left, right))
 				.map(([key, entryValue]) => [key, sortValue(entryValue)]),
 		);
 	}

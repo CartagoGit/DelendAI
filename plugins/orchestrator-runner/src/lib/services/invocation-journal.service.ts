@@ -18,6 +18,7 @@ import type {
 	IInvocationJournalEntry,
 } from '../contracts/interfaces/invocation-journal.interface';
 import { readCacheFile } from './read-cache-file.helper';
+import { compareCodeUnits } from '@delendai/state';
 
 const parsedEntries = (raw: string): IInvocationJournalEntry[] =>
 	raw.split('\n').flatMap((line) => {
@@ -107,7 +108,7 @@ export const interruptOrphans = async (
 			...latest.filter((entry) => !endedIds.has(entry.invocationId)),
 			...ended,
 		]
-			.sort((a, b) => a.at.localeCompare(b.at))
+			.sort((a, b) => compareCodeUnits(a.at, b.at))
 			.slice(-KEPT_INVOCATIONS);
 		await writeFileAtomic(
 			path,

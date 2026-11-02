@@ -58,6 +58,7 @@
 	"dependencies": {
 		"@agentclientprotocol/sdk": "1.5.1",
 		"@delendai/contracts": "workspace:*",
+		"@delendai/state": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.32.0",
 		"zod": "^4.6.6"
 	},

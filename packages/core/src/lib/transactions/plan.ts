@@ -46,7 +46,7 @@ const normalizeExpectedState = (
 ): ITransactionExpectedState | undefined => {
 	if (state === undefined) return undefined;
 	const entries = Object.entries(state.values ?? {}).sort(([left], [right]) =>
-		left.localeCompare(right),
+		compareCodeUnits(left, right),
 	);
 	return Object.freeze({
 		...(typeof state.revision === 'string' && state.revision.trim() !== ''
@@ -69,7 +69,7 @@ const normalizeCapabilityGrant = (
 ): ITransactionCapabilityGrant => {
 	if (grant === undefined) return EMPTY_CAPABILITY_GRANT;
 	const permissions = Object.freeze(
-		[...grant.permissions].sort((left, right) => left.localeCompare(right)),
+		[...grant.permissions].sort(compareCodeUnits),
 	) as ITransactionCapabilityGrant['permissions'];
 	return Object.freeze({
 		...(grant.pluginId !== undefined ? { pluginId: grant.pluginId } : {}),
@@ -255,6 +255,7 @@ export type {
 export type { IExecuteResult } from './executor';
 
 import { execute as runExecute } from './executor';
+import { compareCodeUnits } from '@delendai/state';
 
 /**
  * Run a previously-built plan. Pure entry point: a single

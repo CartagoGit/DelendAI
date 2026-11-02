@@ -58,6 +58,7 @@ import type {
 	TSignalDirection,
 	TValidationLevel,
 } from '../policy/execution-decision.contract.js';
+import { compareCodeUnits } from '@delendai/state';
 
 /**
  * The shape of a task, with nothing anyone typed in it.
@@ -158,7 +159,7 @@ const subsystemOf = (file: string): string => {
 export const describeTask = (task: ITaskObservation): ITaskFeatures => ({
 	fileCount: task.files.length,
 	subsystemCount: new Set(task.files.map(subsystemOf)).size,
-	tags: [...task.tags].sort((left, right) => left.localeCompare(right)),
+	tags: [...task.tags].sort(compareCodeUnits),
 	descriptionWords: task.description.match(WORD)?.length ?? 0,
 	digest: createHash('sha256')
 		.update(task.description.trim().toLowerCase())

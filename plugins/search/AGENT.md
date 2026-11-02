@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @delendai/state
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core

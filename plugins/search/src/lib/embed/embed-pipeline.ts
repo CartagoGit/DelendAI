@@ -26,6 +26,7 @@ import {
 	type IEmbedIndexStore,
 	type IEmbedIndexStoreOptions,
 } from './index-store';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface IDiscoveredEmbedFile {
 	readonly absPath: string;
@@ -164,7 +165,7 @@ export const discoverEmbeddableFiles = async (
 	}
 
 	return discovered.sort((left, right) =>
-		left.relPath.localeCompare(right.relPath),
+		compareCodeUnits(left.relPath, right.relPath),
 	);
 };
 

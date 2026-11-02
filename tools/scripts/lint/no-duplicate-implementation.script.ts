@@ -78,6 +78,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { refuseMissingScanRoots } from './lib/scan-roots.lib';
+import { compareCodeUnits } from '@delendai/state';
 
 // Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
 const SELF = fileURLToPath(import.meta.url);
@@ -379,7 +380,7 @@ const walk = (dir: string, out: string[]): void => {
 	let entries: string[];
 	try {
 		entries = [...readdirSync(dir)].sort((left, right) =>
-			left.localeCompare(right),
+			compareCodeUnits(left, right),
 		);
 	} catch {
 		return;
@@ -416,7 +417,7 @@ export const findPackages = (
 			// Sorted for the same reason as `walk`: package order decides
 			// which copy of a cross-package pair is called the owner.
 			entries = [...readdirSync(dir)].sort((left, right) =>
-				left.localeCompare(right),
+				compareCodeUnits(left, right),
 			);
 		} catch {
 			return;
@@ -479,7 +480,7 @@ export const lintRepository = (
 		);
 	}
 	violations.sort((a, b) =>
-		a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
+		a.file === b.file ? a.line - b.line : compareCodeUnits(a.file, b.file),
 	);
 	return { violations, packages: packages.length, files: fileCount };
 };

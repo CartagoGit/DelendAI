@@ -28,6 +28,7 @@ import type {
 	ICreateProposalWriteResult,
 	ICreateProposalWriteError,
 } from '../../contracts/interfaces/authoring-tool.interface';
+import { compareCodeUnits } from '@delendai/state';
 
 const ISO_DATE_LENGTH = 10;
 
@@ -58,7 +59,7 @@ const renderExtraFrontmatter = (
 ): string[] =>
 	Object.entries(frontmatter ?? {})
 		.filter(([, value]) => value !== undefined)
-		.sort(([left], [right]) => left.localeCompare(right))
+		.sort(([left], [right]) => compareCodeUnits(left, right))
 		.map(([key, value]) => `${key}: ${serializeFrontmatterValue(value)}`);
 
 export const createProposalDocument = async (

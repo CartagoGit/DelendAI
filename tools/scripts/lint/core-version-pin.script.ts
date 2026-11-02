@@ -19,6 +19,7 @@ import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import { readJsonOrNull } from '../../../plugins/proposals/src/lib/proposals/index-reader';
 import { repoRoot } from '../lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 export const PACKAGE_NAME = '@delendai/core';
 export const CACHE_REL = '.cache/delendai/registry-versions.json';
@@ -108,14 +109,14 @@ const comparePrereleasePart = (left: string, right: string): number => {
 	}
 	if (leftNumeric) return -1;
 	if (rightNumeric) return 1;
-	return left.localeCompare(right);
+	return compareCodeUnits(left, right);
 };
 
 export const compareSemver = (left: string, right: string): number => {
 	const leftMatch = SEMVER_RE.exec(left);
 	const rightMatch = SEMVER_RE.exec(right);
 	if (leftMatch === null || rightMatch === null) {
-		return left.localeCompare(right);
+		return compareCodeUnits(left, right);
 	}
 	for (const index of [1, 2, 3] as const) {
 		const delta = compareNumeric(

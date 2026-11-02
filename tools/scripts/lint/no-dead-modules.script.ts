@@ -55,6 +55,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { BUN_OWNED_SPECS } from '../../../vitest.shared';
+import { compareCodeUnits } from '@delendai/state';
 
 export const SUMMARY_PATH = '.cache/coverage/coverage-summary.json';
 export const BASELINE_PATH = 'tools/scripts/lint/no-dead-modules.baseline.json';
@@ -167,7 +168,7 @@ export const findDeadModules = (
 	}
 	return [...dead].sort((left, right) =>
 		right.functions === left.functions
-			? left.file.localeCompare(right.file)
+			? compareCodeUnits(left.file, right.file)
 			: right.functions - left.functions,
 	);
 };

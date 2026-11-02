@@ -25,6 +25,7 @@ import { writeFileAtomic } from '@delendai/core/runtime';
 import { extractRequirements } from '@delendai/env/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 export const GENERATED_MANAGED_LAZY_CATALOG_PATH =
 	'packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts';
@@ -140,7 +141,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 			(entry) =>
 				[entry.plugin.name, entry.registrations, entry.plugin] as const,
 		)
-		.sort(([a], [b]) => a.localeCompare(b));
+		.sort(([a], [b]) => compareCodeUnits(a, b));
 	const source = [
 		'/**',
 		' * managed-lazy-catalog.generated.ts — GENERATED, do not edit by hand.',

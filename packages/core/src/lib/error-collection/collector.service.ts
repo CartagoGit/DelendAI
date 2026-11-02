@@ -21,6 +21,7 @@ import type {
 import type { ICapturedError, ICapturedErrorContext } from './types.js';
 import { createDefaultRedactionPolicy } from './redaction-policy.js';
 import { createDefaultSeverityClassifier } from './severity-classifier.js';
+import { compareCodeUnits } from '@delendai/state';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -111,7 +112,7 @@ export function createErrorCollector(
 
 	// Sort once at construction time — order must be deterministic.
 	const sortedSinks = [...options.sinks].sort((a, b) =>
-		a.id.localeCompare(b.id),
+		compareCodeUnits(a.id, b.id),
 	);
 
 	return {

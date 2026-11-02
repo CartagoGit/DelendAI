@@ -24,6 +24,7 @@ import type {
 	SortBy,
 } from '../types';
 import type { ILimitsConfig } from '../circuit-breaker';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface IInvocationTelemetryBucket {
 	readonly key: string;
@@ -160,11 +161,10 @@ const sortBuckets = (
 			: sortBy === 'totalTokens'
 				? 'totalTokens'
 				: 'calls';
-	return [...buckets].sort((left, right) => {
-		const primary = right[key] - left[key];
-		if (primary !== 0) return primary;
-		return left.key.localeCompare(right.key);
-	});
+	return [...buckets].sort(
+		(left, right) =>
+			right[key] - left[key] || compareCodeUnits(left.key, right.key),
+	);
 };
 
 const summarizeLatencies = (

@@ -34,6 +34,7 @@
 
 import { writeFile } from 'node:fs/promises';
 import { readFile } from 'node:fs/promises';
+import { compareCodeUnits } from '@delendai/state';
 
 interface IExport {
 	readonly name: string;
@@ -268,7 +269,7 @@ export const renderMd = (exports: readonly IExport[]): string => {
 	];
 	const body = exports
 		.slice()
-		.sort((a, b) => a.name.localeCompare(b.name))
+		.sort((a, b) => compareCodeUnits(a.name, b.name))
 		.map(
 			(e) =>
 				`| \`${e.name}\` | ${e.kind} | ${e.maturity} | \`${e.source}\` |`,

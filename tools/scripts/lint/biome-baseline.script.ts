@@ -52,6 +52,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Tree scanned — mirrors `biome.json`'s `files.includes` root. */
 const SCAN_DIRS: readonly string[] = [
@@ -192,7 +193,7 @@ const loadBaseline = (root: string): Record<string, number> => {
 
 const writeBaseline = (root: string, counts: Record<string, number>): void => {
 	const sorted: Record<string, number> = {};
-	for (const key of Object.keys(counts).sort((a, b) => a.localeCompare(b))) {
+	for (const key of Object.keys(counts).sort(compareCodeUnits)) {
 		sorted[key] = counts[key] ?? 0;
 	}
 	writeFileSync(

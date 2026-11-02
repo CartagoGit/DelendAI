@@ -58,6 +58,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@delendai/shared": "workspace:*",
+        "@delendai/state": "workspace:*",
         "astro": "~7.3.8",
         "markdown-it": "^15.0.0",
         "sass": "^1.101.0",
@@ -291,6 +292,9 @@
     "packages/test-kit": {
       "name": "@delendai/test-kit",
       "version": "0.1.0",
+      "dependencies": {
+        "@delendai/state": "workspace:*",
+      },
       "devDependencies": {
         "@biomejs/biome": "2.5.12",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -523,6 +527,7 @@
       "name": "@delendai/completion",
       "version": "0.3.0",
       "dependencies": {
+        "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
@@ -1005,6 +1010,7 @@
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
+        "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
@@ -1259,6 +1265,7 @@
       "name": "@delendai/search",
       "version": "0.3.0",
       "dependencies": {
+        "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
@@ -1415,6 +1422,7 @@
       "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
+        "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },

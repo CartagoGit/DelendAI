@@ -20,6 +20,7 @@ import {
 	PLATFORM_READS_BASELINE,
 	PRODUCT_SOURCE,
 } from './platform-reads.constant';
+import { compareCodeUnits } from '@delendai/state';
 
 /** How many platform reads each file holds. */
 export const countPlatformReads = (
@@ -75,7 +76,7 @@ if (import.meta.main) {
 	const counts = countPlatformReads(productFiles(root));
 	if (process.argv.includes('--update')) {
 		const sorted = Object.fromEntries(
-			Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)),
+			Object.entries(counts).sort(([a], [b]) => compareCodeUnits(a, b)),
 		);
 		writeFileSync(
 			join(root, PLATFORM_READS_BASELINE),

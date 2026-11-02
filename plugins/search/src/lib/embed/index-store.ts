@@ -6,6 +6,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/runtime';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface IEmbedIndexEntry {
 	readonly path: string;
@@ -66,7 +67,7 @@ export const resolveEmbedIndexPath = (
 const toSortedIndex = (index: IEmbedIndex): IEmbedIndex =>
 	Object.fromEntries(
 		Object.entries(index).sort(([leftHash], [rightHash]) =>
-			leftHash.localeCompare(rightHash),
+			compareCodeUnits(leftHash, rightHash),
 		),
 	) as IEmbedIndex;
 

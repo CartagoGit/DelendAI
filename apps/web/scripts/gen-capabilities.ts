@@ -47,6 +47,7 @@ import { languages as supportedLanguages } from '../src/i18n/shared';
 
 import { assembleCliConfig, createMcpProject } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
+import { compareCodeUnits } from '@delendai/state';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
@@ -524,7 +525,7 @@ export const collectTools = async (): Promise<ICollected> => {
 						...(i18nBlock ? { i18n: i18nBlock } : {}),
 					};
 				})
-				.sort((a, b) => a.name.localeCompare(b.name)),
+				.sort((a, b) => compareCodeUnits(a.name, b.name)),
 			prompts: (promptsRes.prompts ?? [])
 				.map((p) => ({
 					name: p.name,
@@ -540,7 +541,7 @@ export const collectTools = async (): Promise<ICollected> => {
 							}
 						: {}),
 				}))
-				.sort((a, b) => a.name.localeCompare(b.name)),
+				.sort((a, b) => compareCodeUnits(a.name, b.name)),
 			resources: (resourcesRes.resources ?? [])
 				.map((r) => ({
 					uri: r.uri,
@@ -551,14 +552,14 @@ export const collectTools = async (): Promise<ICollected> => {
 					),
 					...(r.mimeType ? { mimeType: r.mimeType } : {}),
 				}))
-				.sort((a, b) => a.uri.localeCompare(b.uri)),
+				.sort((a, b) => compareCodeUnits(a.uri, b.uri)),
 			knowledge: knowledgeRaw
 				.map((k) => ({
 					id: k.id,
 					title: k.title,
 					namespace: namespaceOf(k.id.replace(/-/g, '_')),
 				}))
-				.sort((a, b) => a.id.localeCompare(b.id)),
+				.sort((a, b) => compareCodeUnits(a.id, b.id)),
 			benchmarks: await collectBenchmarks(),
 		};
 	} finally {
@@ -619,7 +620,7 @@ const collectPackages = (): Array<{
 			}
 		}
 	}
-	return out.sort((a, b) => a.name.localeCompare(b.name));
+	return out.sort((a, b) => compareCodeUnits(a.name, b.name));
 };
 
 /** Walk `plugins/<plugin>/tutorials/<lang>/*.md` and return the flat
