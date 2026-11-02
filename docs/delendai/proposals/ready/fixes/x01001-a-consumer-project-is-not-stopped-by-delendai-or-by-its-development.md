@@ -16,21 +16,53 @@ Findings from a real consumer: a false blocker, a block that does not say why, a
 
 ## why
 
-TODO: why this work matters now.
+Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-01 and 2026-11-02. Its agent reported the delendai CLI as blocked by another agent; no other agent was involved.
+
+- Its boots are DEGRADED with `Mutations blocked: true`: 10 ref-vanished, 25 history-rewritten and 25 governance-drift errors in one day. The vanished ref `batch-infra-g11` belongs to a pull request that merged (#56), so the blocker carries no risk.
+- The refusal did not reach the agent as its cause: it blamed another agent, then went round the block through a `pr/` branch with a self-approval workflow.
+- That server runs this repository's checkout (`../delendai/...`), so it restarted onto new code 23 times on 2026-11-01, each time develop moved here: dogfooding work interrupts an unrelated project.
+- Every worktree it opens leaves 'file not found' errors in editors once a unit ends.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing api-source-tanit itself: its owner decides its repairs and governance.
+- Loosening what blocks mutations when a real loss is possible.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — S1
+### S1 — A merged pull request answers a vanished ref
 - **Status**: pending
-- **Files**: `README.md`
-- **Gate**: none
+- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
+- **Gate**: type
+- acceptance:
+  - "A vanished ref whose publication merged is a note, not a blocker."
+
+### S2 — A block says what blocks and how to clear it
+- **Status**: pending
+- **Files**: `packages/core/src/lib/startup-gate/render-gate.ts`
+- **Gate**: type
+- acceptance:
+  - "An agent refused by blocked mutations receives each blocking finding and its repair command, and never a message it can read as another agent's lock."
+
+### S3 — A blocked workspace cannot be gone round
+- **Status**: pending
+- **Files**: `tools/scripts/git`
+- **Gate**: type
+- acceptance:
+  - "While mutations are blocked, opening a publication outside the work flow is refused or recorded as a departure the owner sees."
+
+### S4 — A consumer does not run a moving checkout
+- **Status**: pending
+- **Files**: `tools/scripts/host/host-server.script.ts`
+- **Gate**: type
+- acceptance:
+  - "A project outside this repository runs a released or pinned delendai, and develop moving here does not restart its server."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- A vanished ref whose publication merged is a note, not a blocker.
+- An agent refused by blocked mutations receives each blocking finding and its repair command, and never a message it can read as another agent's lock.
+- While mutations are blocked, opening a publication outside the work flow is refused or recorded as a departure the owner sees.
+- A project outside this repository runs a released or pinned delendai, and develop moving here does not restart its server.
