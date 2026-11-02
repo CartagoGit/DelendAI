@@ -10,6 +10,8 @@ last-transition-id: 597cc08e-b645-400c-b253-33254bc0b5d8
 last-correlation-id: 597cc08e-b645-400c-b253-33254bc0b5d8
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T13:26:17.659Z
+shipped-in:
+  - "84a042d1b596"
 ---
 
 # v00143 — A pull request runs only the specs its change reaches, and the same plan proves it before the push
@@ -37,14 +39,16 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 - global_gate: type
 
 ### S1 — The read map says which spec read what
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lib/record-reads-setup.ts`, `tools/scripts/ci/zone-reads.script.ts`, `tools/scripts/ci/zone-reads.script.spec.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/zone-reads.generated.json`, `biome.json`
 - **Gate**: type
 - acceptance:
   - "The recorder writes each read with the spec that made it (`expect.getState().testPath`), and the committed map holds, per zone, the specs and the files and directories each read, next to the zone totals it holds today."
 - shipped-in: `84a042d1b596`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 84a042d1b596, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 1/1: (1) At 84a042d1 the recorder writes each read with the spec that made it, and the committed map holds, per zone, the specs and the files and directories each read … — Approved on the delivered state of 84a042d1b596. The read map says which spec read what, and holds the specs and the files and directories each read beside the zone totals it already held. The type gate exited 0 and the slice spec passes 6 of 6. One residual, recorded and not blocking: the recorder only wraps the node filesystem calls, so a spec that reads through another API is not attributed.
 
 ### S2 — A job runs the specs the change reaches, or does not start
 - **Status**: review
