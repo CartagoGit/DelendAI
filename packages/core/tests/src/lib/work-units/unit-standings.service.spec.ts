@@ -72,6 +72,7 @@ describe('unit standings', () => {
 			idle: 1,
 			abandoned: 1,
 			delivered: 0,
+			waiting: 0,
 		});
 	});
 

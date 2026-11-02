@@ -242,7 +242,7 @@ export const summarizeStandings = (
 	entries: readonly IUnitStandingEntry[],
 ): { readonly line: string; readonly nextAction: string | null } => {
 	const counts = countStandings(entries);
-	const line = `units: ${String(counts.live)} live, ${String(counts.idle)} idle, ${String(counts.abandoned)} abandoned, ${String(counts.delivered)} delivered, ${String(counts.waiting)} waiting`;
+	const line = `units: ${String(counts.live)} live, ${String(counts.idle)} idle, ${String(counts.abandoned)} abandoned, ${String(counts.delivered)} delivered${counts.waiting > 0 ? `, ${String(counts.waiting)} waiting` : ''}`;
 	const next = nextCommand(counts);
 	return {
 		line,
