@@ -2,14 +2,14 @@
 id: x00962
 title: "The audit tools run every target and scanner they list, and read real plans"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 233daa2b-e0b9-4417-98e4-0c12c57125a1
-last-correlation-id: 233daa2b-e0b9-4417-98e4-0c12c57125a1
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T07:28:59.652Z
+last-transition-id: 819c6725-518d-4f76-9690-98528b851945
+last-correlation-id: 819c6725-518d-4f76-9690-98528b851945
+last-transition-from: review
+last-transition-at: 2026-11-02T19:50:41.673Z
 shipped-in:
   - "aa0026b7f082c9ae68c7fe468eab7c9fc1192eba"
 ---
@@ -60,7 +60,7 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
 - review-log: approved by minimax-m3.1-flash — verified at aa0026b7f082, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 3/3: (1) At aa0026b7 the consolidator matches a finding by its identity rather than by an equal severity, so one finding with two severities becomes one entry holding b… (2) At aa0026b7 the parser keeps the documents it read and names the inputs it could not parse, the tool collects the paths it could not read with their reason, an… (3) At aa0026b7 the type emitter maps every member of a type array instead of the first one, and the regenerated output keeps the score and the average nullable; t… — Approved on the delivered state of aa0026b7f082c9ae68c7fe468eab7c9fc1192eba. One finding with two severities consolidates into a single entry holding both votes and the worst severity, the inputs that could not be read or parsed are listed in the result with their reason, and the generated types keep the score and the average nullable. The type gate exited 0 and the two slice specs pass 28 of 28. Two residuals, recorded and not blocking: no tool-level spec asserts that the unreadable paths reach the result payload, and the markdown rendering of the consolidation does not carry the skipped list, which is in the result itself.
 
 ### S3 — Plan reader and silent empties elsewhere
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `plugins/external-mcps/src/lib/contracts/interfaces/external-answer.interface.ts`, `plugins/external-mcps/src/lib/normalize/normalize-response.service.ts`, `plugins/external-mcps/src/lib/tools/invoke-proxy.ts`, `plugins/search/src/lib/services/search-engine.backends.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/src/lib/services/search-safe-reader.ts`
 - **Gate**: type
 - acceptance:
@@ -69,8 +69,10 @@ Joint audit a00095 and gpt-6.1-sol. AUD-01: the public self_audit registers no s
   - "Rejected explicit roots produce a diagnostic (D104)."
   - "A child tool error survives normalisation as an error (EXT-03)."
 - shipped-in: `e8666f5d4de3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at aa0026b7f082, validate exit 0 and tests 50/50 claimed, no recorded run cited; acceptance 4/4: (1) At aa0026b7 the plan reader parses the frontmatter with a YAML parser and reads contains.proposals from the flow maps a real repository plan uses, deriving sev… (2) At aa0026b7 the docs generation tool collects the directories it could not list and the files it could not read with their reason, and the unreadable list is i… (3) At aa0026b7 both search backends answer with the same diagnostic when every explicit root is rejected or missing, instead of a silent zero-hit result; the spec… (4) At aa0026b7 the external proxy reads the child tool error and returns a failed answer in both the bare and the capability mode, and the normalised answer is ma… — Approved on the delivered state of aa0026b7f082c9ae68c7fe468eab7c9fc1192eba. The plan reader now parses the frontmatter as YAML and derives the children of a real repository plan that the old line-prefix test read as none, the docs generation reports the directories it could not read, the search backends answer with a diagnostic when every explicit root is rejected, and a child tool error survives normalisation as an error in both proxy modes. The type gate exited 0 and the six slice specs pass 50 of 50. One residual, recorded and not blocking: the plan reader spec still carries the title that says the frontmatter is read by hand, which is stale wording.
 
 ## acceptance
 
