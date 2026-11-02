@@ -2,14 +2,14 @@
 id: x01002
 title: "A stranded proposal is told to hand over, not to close by hand"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 44ea573d-4bb4-4ced-964b-b638cc0c313d
-last-correlation-id: 44ea573d-4bb4-4ced-964b-b638cc0c313d
-last-transition-from: ready
-last-transition-at: 2026-11-02T10:17:29.388Z
+last-transition-id: e501261a-07f8-46b9-9163-eda65905bf5c
+last-correlation-id: e501261a-07f8-46b9-9163-eda65905bf5c
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T10:33:24.144Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -34,20 +34,26 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - global_gate: type
 
 ### S1 — The stranded advice names the hand-over
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A finding in ready/ or in-progress/ names work deliver and setting the slices back to pending, and names no transition to done; a spec checks it."
   - "A finding in review/ keeps its review-then-done advice."
+- shipped-in: `1faa04180151`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — A tool that refuses through the resolver fails the command
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/tests/transport/tool-reach.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it."
   - "`proposals create --title=probe --slices='[{\"id\":\"S1\"}]'` exits non-zero."
+- shipped-in: `1faa04180151`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
