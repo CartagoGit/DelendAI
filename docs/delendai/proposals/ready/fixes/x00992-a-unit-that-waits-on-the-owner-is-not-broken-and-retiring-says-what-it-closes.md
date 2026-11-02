@@ -42,7 +42,7 @@ The owner, on 2026-10-28, saw the project filling with branches that never finis
 
 ### S2 — Retiring says what it closes, and recovery refs expire
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`
+- **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire` on a unit with an open pull request names the pull request it closes in its output."
@@ -54,3 +54,7 @@ The owner, on 2026-10-28, saw the project filling with branches that never finis
 - A wip whose publication holds all its commits is not reported silent.
 - `work retire` on a unit with an open pull request names the pull request it closes in its output.
 - A stranded ref whose paths all reached develop, a unit or a publication is dropped by startup reconciliation, journalled; the others are listed by `work status` with their age.
+
+## notes
+
+- S2, 2026-11-02. Retiring already names what it closes: since 76f7b264a (2026-10-04) `work retire` comments on and closes each open pull request of the unit's publication and returns their numbers as `closed`; PR #1556 carries that comment. What did not expire were stranded refs whose files had landed and then moved on, because a version only counted as found when a branch tip held it byte for byte. It now also counts when the integration branch's history held it (one `git log --raw` over the stranded paths, about 0.5 s and only when stranded refs exist). Each drop is logged at start-up with its commit, so it can be restored. `work status` lists the rest oldest first with `keptAt`. Measured that day on this checkout: 11 stranded refs, none of whose files had all reached develop's history, so none goes and all 11 are listed with their age.
