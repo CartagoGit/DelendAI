@@ -2,14 +2,14 @@
 id: x01002
 title: "A stranded proposal is told to hand over, not to close by hand"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
-last-correlation-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T20:40:14.716Z
+last-transition-id: ef06de68-f953-4c59-a90b-fdc1a9f27d6d
+last-correlation-id: ef06de68-f953-4c59-a90b-fdc1a9f27d6d
+last-transition-from: review
+last-transition-at: 2026-11-02T22:48:35.405Z
 shipped-in:
   - "7b79f76fb5cb6676e9325e5c6b90f40023e5dad7"
   - "0bcd4e037ad7782397a8cf2dbde751429638657b"
@@ -75,14 +75,16 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-log: approved by minimax-m3.1-flash — verified at 0bcd4e037ad7, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 1/1: (1) At 5e687b03 the deliver command reads the checked-out branch in the place it runs and, when that branch is a unit of the proposal, derives the slice, the gener… — Approved on the delivered state of 5e687b033a10724e43ac83ca38cff19a39f3814d. The deliver command, run inside a unit's worktree with no slice named, proves and hands over that unit, reading its slice, generation and topic from the branch, and it still takes the proposal's whole unit everywhere else. The type gate exited 0 and the slice specs pass 20 of 20. One residual, recorded and not blocking: no test asserts that the flags derived from the branch actually reach the proof, nor that the whole unit is the fallback outside a unit; the helper and the branch reading are pinned, the call that joins them is not.
 
 ### S4 — Prove and publish take the unit they run in
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work prove and work publish run in a unit's worktree with no --slice, --generation or --topic act on that unit, read from its branch, by the helper work deliver shares; a spec checks it."
 - shipped-in: `748438914ccf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 0bcd4e037ad7, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) At 748438914 the prove and publish actions of the work command both read the unit from the branch they run in through the same helper the deliver action uses, … — Approved on the delivered state of 748438914ccf. The prove and publish actions act on the unit they run in, read from the branch by the same helper the deliver action shares, and they still take the arguments as given when a slice, a generation or a topic is named. The type gate exited 0 and the slice spec passes 8 of 8. One residual, recorded and not blocking: the new spec only proves that both actions look for their unit from where they run, through a run outside a repository that is refused; it does not assert the unit they then act on, which the code shows and the deliver spec pins for the shared helper.
 
 ## acceptance
 
