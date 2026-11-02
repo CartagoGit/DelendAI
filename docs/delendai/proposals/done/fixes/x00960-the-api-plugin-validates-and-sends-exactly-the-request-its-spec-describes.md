@@ -2,14 +2,14 @@
 id: x00960
 title: "The api plugin validates and sends exactly the request its spec describes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 49444979-84e3-4c84-801a-e5426011696e
-last-correlation-id: 49444979-84e3-4c84-801a-e5426011696e
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T12:12:36.755Z
+last-transition-id: 2190e634-4f18-4b38-b19b-dfbd6c666213
+last-correlation-id: 2190e634-4f18-4b38-b19b-dfbd6c666213
+last-transition-from: review
+last-transition-at: 2026-11-02T20:00:43.483Z
 shipped-in:
   - "792de76b8f198e14d130e1484d52f8a8f768bdd2"
 ---
@@ -45,14 +45,16 @@ Joint audit a00095 and gpt-6.1-sol. D71: api_mock advertises specUrl but the plu
 - review-log: approved by minimax-m3.1-flash — verified at 792de76b8f19, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 1/1: (1) At 792de76b the mock tool loads a spec URL through the injected fetcher and the injected web-fetch engine, with no global fetch anywhere in the path, the knowl… — Approved on the delivered state of 792de76b8f198e14d130e1484d52f8a8f768bdd2. A spec URL is loaded through the injected fetcher, the knowledge entry and the output schema now name the same fields, and every sample the tool counts is returned. The type gate exited 0 and the two slice specs pass. One residual, recorded and not blocking: no spec asserts that the knowledge and the output agree, so that half of the criterion rests on reading the two declarations side by side, which they match field for field.
 
 ### S2 — Requests and validation follow the spec
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/api/src/lib/spec/build-request.ts`, `plugins/api/src/lib/validate/response-validator.ts`, `plugins/api/src/lib/tools/api-validate.tool.ts`, `plugins/api/src/lib/spec/openapi.ts`, `plugins/api/src/lib/spec/openapi.spec.ts`, `plugins/api/src/lib/spec/build-request.spec.ts`, `plugins/api/src/lib/validate/response-validator.constraints.spec.ts`, `plugins/api/src/lib/spec/dereference.service.ts`, `plugins/api/src/lib/contracts/interfaces/dereference.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Cookie parameters reach the request (API-03); a missing required body is refused (API-04); nullable, enum, min/max survive into validation (API-01)."
 - shipped-in: `d70a682314e9`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 792de76b8f19, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) At 792de76b the request builder turns the cookie parameters into one cookie header and refuses a missing required cookie or a missing required body with the re… — Approved on the delivered state of 792de76b8f198e14d130e1484d52f8a8f768bdd2. The cookie parameters reach the request in one header, a missing required body is refused with the reason, and the nullable, the enum and the bounds survive from the spec into the validation. The type gate exited 0 and the three slice specs pass. One residual, recorded and not blocking: the cookie and the refused body are pinned at the builder, not through the tool that sends the request.
 
 ## acceptance
 
