@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-29T14:35:16.995Z
 shipped-in:
   - "822b2d84ec6fd185ee94970f0638e6bf0656ec14"
+  - "67efd58de1f0f9327a41ba73235b5eef9972d2dd"
 ---
 
 # v00146 — A pull request starts only the test jobs that run, and the specs that read a change share one job
@@ -45,14 +46,16 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-log: approved by minimax-m3.1-flash — verified at 822b2d84ec6f, validate exit 0 and tests 33/33 claimed, no recorded run cited; acceptance 1/1: (1) At 822b2d84 the matrix keeps only the jobs that run, merges every readers job into one named readers holding the union of their specs, and returns a single job… — Approved on the delivered state of 822b2d84ec6fd185ee94970f0638e6bf0656ec14. The matrix keeps the jobs that run, folds the readers jobs into one, and says so when nothing runs, and the planner names each zone it does not start. The type gate exited 0 and the slice spec passes 33 of 33. One residual, recorded and not blocking: the printing is not pinned by any spec, it was verified by reading the code and by running the planner, which printed eleven lines for the zones it did not start.
 
 ### S2 — The tests plan without waiting for the type and format checks
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "`plan-tests` declares no `needs`, so the test shards start beside `typecheck` and `lint-biome`, and `delendai-validate` still requires both."
 - shipped-in: `77f910e98f4e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the workflow's plan-tests job declares no needs, so the test shards start beside the type and format checks, while the validation job still requires… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. The test shards start beside the type and format checks instead of waiting for them, and the validation job still requires all three. The type gate exited 0. One check was recorded for this slice and it is a state check, not a test suite: the delivered workflow was parsed with the repository's own workflow reader, which reports that plan-tests needs nothing and that the validation job needs the plan, the typecheck and the format check. One residual, recorded and not blocking: no spec asserts the job graph, so a future change to the workflow would be silent.
 
 ### S3 — A pull request instruments only the files it touched
 - **Status**: review
