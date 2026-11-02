@@ -2,10 +2,14 @@
 id: x00989
 title: "A host config with comments no longer stops the server"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-10-28
+last-transition-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
+last-correlation-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T09:54:24.414Z
 ---
 
 # x00989 — A host config with comments no longer stops the server
@@ -36,7 +40,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -46,9 +50,11 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A commented `.vscode/mcp.json` that names the old identity is rewritten, and the file keeps its comments outside the rewritten member, its key order and its own formatting."
   - "A commented `.vscode/mcp.json` that names nothing old is not written at all — byte-identical before and after."
 - shipped-in: `724cbf9f8`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -57,9 +63,11 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr."
   - "A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it."
 - shipped-in: `e705aa7c4`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -69,6 +77,8 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
   - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
 - shipped-in: `9767d0086`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
