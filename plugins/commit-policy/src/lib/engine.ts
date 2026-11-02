@@ -1187,11 +1187,26 @@ const persistenceSliceId = (event: IEngineEvent): string => {
 	return '';
 };
 
+/**
+ * A slice commit's subject, from what it changed. The fixed text it had,
+ * `commit via slice S1`, said nothing a reader of the history could use.
+ */
+const sliceCommitSubject = (
+	event: IEngineEvent & { readonly kind: 'slice' },
+): string => {
+	const names = event.files.map((file) => file.split('/').pop() ?? file);
+	const shown = names.slice(0, 3).join(', ');
+	const more = names.length > 3 ? ` +${String(names.length - 3)} more` : '';
+	return names.length === 0
+		? `feat(${event.proposalId}): ${event.sliceId} changes no file`
+		: `feat(${event.proposalId}): ${event.sliceId} changes ${shown}${more}`;
+};
+
 const composeMessage = (event: IEngineEvent): string => {
 	switch (event.kind) {
 		case 'slice':
 			return buildScopedMessage(
-				`feat(${event.proposalId}): commit via slice ${event.sliceId}`,
+				sliceCommitSubject(event),
 				event.proposalId,
 				true,
 			);

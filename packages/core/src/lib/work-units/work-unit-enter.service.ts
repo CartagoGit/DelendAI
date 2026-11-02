@@ -19,6 +19,7 @@ import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
 import { createUnitRef } from './unit-start-point.service';
+import { closedForImplementing } from './closed-proposal.service';
 import {
 	reviewedByEntrant,
 	topicForNewUnit,
@@ -192,14 +193,11 @@ export const enteredHeld = async (
 		live: [...swarm.units, ...swarm.published].map((unit) => unit.agent),
 	});
 	if (unnamed !== undefined) return refused(unnamed.what, unnamed.how);
-	const reviewed = await reviewedByEntrant(
-		root,
-		policy,
-		args,
-		agent,
-		proposal,
-	);
-	if (reviewed !== undefined) return reviewed;
+	// Implementing is for open work, by an agent that does not review it.
+	const notToImplement =
+		(await reviewedByEntrant(root, policy, args, agent, proposal)) ??
+		(await closedForImplementing(root, policy, args, proposal));
+	if (notToImplement !== undefined) return notToImplement;
 	if (!args.includes('--alongside')) {
 		const onSlice = holdersOfSlice({
 			view: swarm,

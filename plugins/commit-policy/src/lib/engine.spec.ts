@@ -145,7 +145,7 @@ describe('CommitPolicyEngine trigger surface', () => {
 					files: ['only-this.ts'],
 					eventId: 'slice-1',
 				},
-				commitSnippet: 'feat(f00266): commit via slice S1',
+				commitSnippet: 'feat(f00266): S1 changes only-this.ts',
 			},
 			{
 				label: 'threshold',
