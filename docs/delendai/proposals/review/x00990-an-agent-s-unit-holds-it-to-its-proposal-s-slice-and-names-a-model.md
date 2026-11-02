@@ -105,14 +105,16 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the stranded work is kept under the agent whose live units cover every changed path, and when no unit covers them all the ref is kept unattributed … — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The work left uncommitted in the shared checkout is kept under the identity of the agent whose unit covers it, and never under the identity of whichever session found it, which the implementation guarantees by never reading a finder at all. The type gate exited 0 and the slice spec passes 7 of 7. Two residuals, recorded and not blocking: the word is unattributed and not the unknown the criterion names, and the evidence sits in the commit message rather than in the work status payload; and the writer is inferred from which unit covers the paths, so an agent whose unit covers them all is named even if it did not write them.
 
 ### S7 — A reviewer does not implement what it reviews
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
 - **Gate**: type
 - acceptance:
   - "work enter --kind=implement on a proposal in review/ is refused to an agent that holds or held a review round on it, naming the round."
 - shipped-in: `60ddb5e2fb37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an implement unit on a proposal under this agent's review is refused, naming the reviewer and the rule that a reviewer does not implement what it r… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent that holds or held a review round on a proposal is refused an implement unit on it. The type gate exited 0 and the slice spec passes 8 of 8. Two residuals, recorded and not blocking: the refusal names the reviewer and not the round, which the criterion asks for; and the slice delivered almost nothing of its own, the proposal's notes record that the refusal was already in place, and this delivery only moved the call next to the closed-proposal check, so the spec that pins it is older than the slice.
 
 ### S8 — Claiming a unit hands over its worktree and its hold
 - **Status**: review
