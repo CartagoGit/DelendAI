@@ -2,10 +2,14 @@
 id: d00417
 title: "Docs, skills and the roadmap describe the tree as it is"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: 14928674-f541-4a88-b2f7-f603ae7068d2
+last-correlation-id: 14928674-f541-4a88-b2f7-f603ae7068d2
+last-transition-from: ready
+last-transition-at: 2026-11-02T21:25:35.674Z
 ---
 
 # d00417 — Docs, skills and the roadmap describe the tree as it is
