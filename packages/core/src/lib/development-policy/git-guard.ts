@@ -51,9 +51,17 @@ const judgeCommit = (
 	branch: string | undefined,
 	isMerge: boolean,
 	inMainWorktree: boolean,
+	founding = false,
 ): IGitGuardVerdict => {
 	if (branch === undefined) return allow('a detached HEAD is not a branch.');
 	if (isMerge) return allow('a merge is how an integration branch moves.');
+	// A repository with no commit has nothing to branch a unit from and no
+	// base for a pull request: its first commit is the only way to start.
+	if (founding && branch === policy.branches.integration) {
+		return allow(
+			'the founding commit: the integration branch has no commit for a unit to start from.',
+		);
+	}
 	if (
 		branch === policy.branches.integration &&
 		!policy.persistence.allowsDirectIntegrationCommit
@@ -127,6 +135,7 @@ const judgePush = (
 	deleting: boolean,
 	deletedTipKept: boolean | undefined,
 	unit?: IUnitRefFacts,
+	creating = false,
 ): IGitGuardVerdict => {
 	if (!remoteRef.startsWith('refs/heads/')) {
 		return allow('only branches are judged.');
@@ -143,6 +152,13 @@ const judgePush = (
 	const protectedBranch =
 		branch === policy.branches.integration ||
 		branch === policy.branches.release;
+	// The forge cannot take a pull request into a branch it does not have:
+	// the push that creates it is how a new project's first commit lands.
+	if (protectedBranch && creating) {
+		return allow(
+			`\`${branch}\` is not on the forge yet: a pull request needs it to go into.`,
+		);
+	}
 	if (protectedBranch && policy.integration.requiresPullRequest) {
 		return {
 			refused: true,
@@ -239,6 +255,7 @@ const AGENT_JUDGES: {
 			operation.branch,
 			operation.isMerge,
 			operation.inMainWorktree ?? true,
+			operation.founding === true,
 		),
 	'branch-create': (policy, operation) =>
 		judgeBranchCreate(policy, operation.ref),
@@ -249,6 +266,7 @@ const AGENT_JUDGES: {
 			operation.deleting,
 			operation.deletedTipKept,
 			operation.unit,
+			operation.creating === true,
 		),
 	stash: (policy) => judgeStash(policy),
 	'branch-delete': (policy, operation) =>
