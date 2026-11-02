@@ -58,14 +58,16 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the workflow's plan-tests job declares no needs, so the test shards start beside the type and format checks, while the validation job still requires… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. The test shards start beside the type and format checks instead of waiting for them, and the validation job still requires all three. The type gate exited 0. One check was recorded for this slice and it is a state check, not a test suite: the delivered workflow was parsed with the repository's own workflow reader, which reports that plan-tests needs nothing and that the validation job needs the plan, the typecheck and the format check. One residual, recorded and not blocking: no spec asserts the job graph, so a future change to the workflow would be silent.
 
 ### S3 — A pull request instruments only the files it touched
-- **Status**: review
+- **Status**: done
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "On a pull request the shards and the merge set `VITEST_COVERAGE_FILES` to the files changed since the base, and `vitest.config.ts` narrows `coverage.include` to those of them its globs already select (a file outside them stays unmeasured, and none touched measures nothing), so the changed-file coverage verdict is the one the full selection gives."
 - shipped-in: `77f910e98f4e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the shard step and the merge step set the coverage file list from the files changed since the base on a pull request, and the vitest configuration n… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. A pull request instruments only the files it touched, and the coverage selection is narrowed to the intersection with its own globs, so a file outside them stays unmeasured and a change that touches nothing measures nothing. The type gate exited 0. One check was recorded for this slice and it is a state check, not a test suite: the delivered workflow and the delivered vitest configuration were read. One residual, recorded and not blocking: no spec pins either the narrowing or the empty case, so a future change would be silent.
 
 ### S4 — A publication that goes green wakes the queue
 - **Status**: review
