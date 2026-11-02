@@ -2,14 +2,14 @@
 id: v00152
 title: "The local proof runs only what the forge would run for the change"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: c637157a-b02f-44ae-b8ee-3a9e409025e5
-last-correlation-id: c637157a-b02f-44ae-b8ee-3a9e409025e5
-last-transition-from: in-progress
-last-transition-at: 2026-10-31T23:43:57.670Z
+last-transition-id: 5badd2db-6ec8-4373-b1a1-944dff3681ac
+last-correlation-id: 5badd2db-6ec8-4373-b1a1-944dff3681ac
+last-transition-from: review
+last-transition-at: 2026-11-02T23:08:25.710Z
 shipped-in:
   - "cb159a07f4f4c298ba3f97d06237bec48e38e8d3"
 ---
@@ -48,14 +48,16 @@ The gain of the first part is modest and is stated as such: the longest lints ru
 - review-log: approved by minimax-m3.1-flash — verified at cb159a07f4f4, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 1/1: (1) At cb159a07 the proof reads the static checks out of the workflow and filters them, and the typecheck, through the same table the forge asks, and the table run… — Approved on the delivered state of cb159a07f4f4c298ba3f97d06237bec48e38e8d3. The local proof now asks the same table the forge asks, so a check the forge skips for the change is skipped locally too, and a job the table does not know still runs. The type gate exited 0 and the job-scope spec passes 32 of 32. Two residuals, recorded and not blocking: the wiring in the proof script has no spec of its own, only the table's behaviour is pinned; and the local side computes the changed list from the merge base while the forge uses the pull request's base, so on a stale branch the local proof can run more than the forge, which is the safe direction but not the same set.
 
 ### S2 — Hooks are quiet when they pass
-- **Status**: review
+- **Status**: done
 - **Files**: `lefthook.yml`
 - **Gate**: type
 - acceptance:
   - "`lefthook.yml` prints on failure only."
 - shipped-in: `3f3532db21c5`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at cb159a07f4f4, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At cb159a07 the lefthook configuration prints on failure only, and lefthook validates the file; the check recorded here is a configuration check, not a test su… — Approved on the delivered state of cb159a07f4f4c298ba3f97d06237bec48e38e8d3. The hook runner is quiet on success and loud on failure. The type gate exited 0. One check was recorded for this slice and it is a configuration check, not a test suite: lefthook validates the delivered file and answers that it is good. Two residuals, recorded and not blocking: no spec or lint pins the setting, so a future change would be silent; and the setting also suppresses the runner's skip lines and its summary on success, which is a behaviour change beyond the volume of print.
 
 ## acceptance
 
