@@ -40,7 +40,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | auto_work idle | native | 159 | 40 | 2,400 | 2,600 | within hard |
 | auto_work work plan | native | 2,263 | 566 | 2,400 | 2,600 | within hard |
 | agent_catalog compact | native | 863 | 216 | 800 | 900 | over warning (800B) |
-| agent_catalog full | native | 11,027 | 2757 | 9,800 | 10,500 | over hard (10,500B) |
+| agent_catalog full | native | 11,061 | 2766 | 9,800 | 10,500 | over hard (10,500B) |
 | analyze_project {} | native | 830 | 208 | 1,600 | 1,800 | within hard |
 | plan_mcp_project {} | native | 856 | 214 | 1,800 | 2,000 | within hard |
 | search_search | native | 872 | 218 | 2,700 | 3,000 | within hard |
@@ -55,7 +55,7 @@ Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` ag
 | Catalog payload | Surface | Bytes | Est. Tokens |
 | --- | --- | --- | --- |
 | agent_catalog compact | native | 830 | 208 |
-| agent_catalog full | native | 10,993 | 2,749 |
+| agent_catalog full | native | 11,027 | 2,757 |
 
 | Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
 | --- | --- | --- | --- | --- | --- | --- |
