@@ -81,14 +81,16 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an agent id that no seen model and no roster entry confirms is listed as unverified with the reason, an id carrying the product's own name is refus… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent id no model confirms is listed as unverified with the reason, and the product's own name posing as a model's maker is refused at entry. The type gate exited 0 and the two slice specs pass 7 of 7. Three residuals, recorded and not blocking, and they are the criterion's own wording rather than the behaviour: the unverified agents are a list and not a confidence value, the work identity's own confidence vocabulary is untouched; the list speaks only in the JSON output of work status, not in its text; and the delivery declines the clause about an id carrying a date, on the grounds that a date alone is no sign, which the proposal's notes record.
 
 ### S4 — Units changing the same files hear of each other
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-briefing.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/work-briefing.service.spec.ts`, `tools/scripts/hooks/commit-time-checks.script.ts`, `tools/scripts/hooks/commit-time-checks.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Entering or committing in a unit whose changed files overlap another live unit's lists that unit, its agent and the shared files."
 - shipped-in: `8c4260b8441a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 entering a unit reads the units that change the same files and names that unit, its agent and the shared files, and the commit-time check names the… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. A unit whose changed files overlap another live unit's lists is told that unit, its agent and the shared files, both when it enters and when it commits. The type gate exited 0 and the two slice specs pass 10 of 10. One residual, recorded and not blocking: the commit half is pinned only as a pure function, the part that reads the swarm is not tested.
 
 ### S5 — Stranded work is kept under the agent that wrote it
 - **Status**: review
