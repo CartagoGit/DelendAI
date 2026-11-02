@@ -36,7 +36,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -48,7 +48,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - shipped-in: `724cbf9f8`
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -59,7 +59,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - shipped-in: `e705aa7c4`
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
