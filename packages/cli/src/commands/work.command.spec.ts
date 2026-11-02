@@ -14,6 +14,7 @@ import { taskBriefingFor } from '@delendai/core/cli';
 import {
 	briefOnEntering,
 	createWorkCommand,
+	printPathOnly,
 	withSlicesView,
 } from './work.command';
 
@@ -164,5 +165,27 @@ describe('entering a unit from the CLI', () => {
 		});
 		rmSync(worktree, { recursive: true, force: true });
 		expect(task).toBeUndefined();
+	});
+});
+
+describe('printPathOnly', () => {
+	it('prints the path alone', () => {
+		const written = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		expect(printPathOnly({ code: 0, data: { path: '/w' } })).toEqual({
+			code: 0,
+		});
+		expect(written).toHaveBeenCalledWith('/w\n');
+		written.mockRestore();
+	});
+
+	it('fails an answer with no path, so a script cannot carry on', () => {
+		expect(printPathOnly({ code: 0, data: {} }).code).not.toBe(0);
+	});
+
+	it('keeps a refusal as it came', () => {
+		const refused = { code: 4 as const, error: 'held' };
+		expect(printPathOnly(refused)).toEqual(refused);
 	});
 });
