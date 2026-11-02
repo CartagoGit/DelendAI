@@ -45,7 +45,7 @@ produced it lives in the chat history of the originating session
 
 **What's there:**
 - `IProposalSliceContract` in
-  [`proposal-slice-plan.ts`](../../plugins/proposals/src/lib/swarm/proposal-slice-plan.ts:14-30)
+  [`proposal-slice-plan.ts`](../../../plugins/proposals/src/lib/swarm/proposal-slice-plan.ts)
   carries `files`, `gate`, `dependsOn`, `acceptanceCriteria`. **The
   natural unit of routing** — every slice is a candidate for a
   per-slice model choice.
@@ -78,7 +78,7 @@ produced it lives in the chat history of the originating session
 
 **What's there:**
 - `redactSecrets` in
-  [`packages/core/src/lib/shared/redact.ts`](../../packages/core/src/lib/shared/redact.ts:38-60)
+  [`packages/core/src/lib/shared/redact.ts`](../../../packages/core/src/lib/shared/redact.ts)
   matches `sk-…` (OpenAI), `AKIA…` (AWS), `AIza…` (Google),
   `sk_live_/sk_test_…` (Stripe), `gh[posru]_…` (GitHub), `xox[baprs]-…`
   (Slack), `Bearer <token>`, JWTs, and a generic
@@ -108,7 +108,7 @@ produced it lives in the chat history of the originating session
 
 **What's there:**
 - `IHostCapabilities` in
-  [`plugins/proposals/src/lib/swarm/host-capabilities.ts`](../../plugins/proposals/src/lib/swarm/host-capabilities.ts:21-50)
+  [`plugins/proposals/src/lib/swarm/host-capabilities.ts`](../../../plugins/proposals/src/lib/swarm/host-capabilities.ts)
   captures **IDE UI affordances**: `ideDisplayName`,
   `chatPanelLocation`, `programmaticRenameActionId`, etc.
 - Registered via `ctx.options.hostCapabilities` (DIP, opt-in).
@@ -180,7 +180,7 @@ don't optimize mid-session on cost.
 
 ## 8. The f00006 design memo
 
-[`docs/delendai/proposals/done/feats/f00006-feat-multi-model-audit-plugin.md`](../proposals/done/feats/f00006-feat-multi-model-audit-plugin.md)
+[`docs/delendai/proposals/done/feats/f00006-feat-multi-model-audit-plugin.md`](../proposals/legacy/closed/feats/f00006-feat-multi-model-audit-plugin.md)
 already enumerates the **three viable approaches** for multi-model
 support in the audit plugin specifically:
 

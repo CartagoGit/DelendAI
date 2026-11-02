@@ -28,7 +28,7 @@ Joint audit a00095 and gpt-6.1-sol. D14: 16 broken internal links in root docs, 
 
 ### S1 — Links and the roadmap
 - **Status**: pending
-- **Files**: `docs/delendai/CROSS-IDE.md`, `docs/delendai/ROADMAP.md`
+- **Files**: `docs/delendai/CROSS-IDE.md`, `docs/delendai/ROADMAP.md`, `tools/scripts/lint/doc-links.script.ts`, `tools/scripts/lint/doc-links.script.spec.ts`, `tools/scripts/gen/provenance-truth.script.ts`, `tools/scripts/gen/provenance-truth.spec.ts`, `tools/scripts/catalog/render-host-hints.script.ts`, `docs/delendai/generated/observability-provenance.generated.md`, `docs/delendai/host-hints/agent-instructions.generated.md`, `docs/delendai/wiki/00-glossary.md`, `docs/delendai/wiki/02-our-infrastructure.md`, `docs/delendai/wiki/09-plugin-auto-agent-selector.md`, `docs/delendai/wiki/migration-to-delendai.md`, `docs/delendai/wiki/external/README.md`, `docs/delendai/examples/host-checkpoint-adapter.md`, `docs/delendai/plugins/logs/AUTHORING.md`, `docs/external-mcps/README.md`
 - **Gate**: type
 - acceptance:
   - "link-check over docs/ finds no broken internal link (D14)."
@@ -56,3 +56,7 @@ Joint audit a00095 and gpt-6.1-sol. D14: 16 broken internal links in root docs, 
 - check-skills fails on a tool name or argument a skill uses that no server registers (SKILL-01).
 - Coordination skills describe work units, not per-agent worktrees (SKILL-02); links resolve (SKILL-04).
 - The storm-repair skill is in the manifest (SKILL-03); the rules skill describes the factory list (SKILL-05); the release skill describes release:prepare and the GitHub Release flow (SKILL-06).
+
+## notes
+
+- S1, links, 2026-11-02: `doc-links` checked only the repository root and one level of `docs/` (53 documents). Over every doc but the proposals it found 18 broken links and 4 broken anchors: proposals that moved folder, source links carrying `:line` ranges or the wrong depth, renamed pages, and two generators writing stale targets (provenance hard-coded f00392's old path; host hints linked a root-relative path from `docs/delendai/host-hints/`). Each is fixed, the generators resolve the target, and the gate now holds 237 documents. The roadmap half of S1 is still open.

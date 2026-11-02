@@ -3,7 +3,7 @@
 > **Purpose:** a curated, opinionated map of the external MCP server ecosystem
 > that an `delendai` workspace might want to consume through the
 > `external-mcps` plugin (see
-> [`f00068-external-mcps-plugin-paused.md`](../delendai/proposals/paused/f00068-external-mcps-plugin-paused.md)).
+> [`f00068-external-mcps-plugin-paused.md`](../delendai/proposals/legacy/closed/feats/f00068-external-mcps-plugin-compose-third-party-mcp-servers-under-the-host-with-llm-assisted-config-and-lazy-subprocess-boot.md)).
 >
 > Each file in this directory documents one slice of the ecosystem with
 > **verified** package names, maintainer reputation, last-update signals, and a

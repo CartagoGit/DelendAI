@@ -1,12 +1,14 @@
 #!/usr/bin/env bun
 /**
- * doc-links.script.ts — the root docs link only to what exists.
+ * doc-links.script.ts — the docs link only to what exists.
  *
  * The link-check plugin could find broken links and nothing ran it: the
  * root docs carried twenty-two links to files that had moved or been
- * removed. This runs the plugin's own checker over the tracked root
- * documents (the repository root, `docs/` and `docs/delendai/`, one level
- * each) and fails on any broken internal link or anchor.
+ * removed. This runs the plugin's own checker over every tracked
+ * document at the repository root and under `docs/`, the proposals
+ * excepted (a closed proposal records the tree as it was), and fails on
+ * any broken internal link or anchor. One level of `docs/` left the
+ * wiki, the examples and the generated pages unchecked: 18 broken links.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -14,8 +16,8 @@ import { join } from 'node:path';
 
 import { checkLinks, type ISourceDoc } from '@delendai/link-check/public';
 
-/** The documents this gate owns: proposals and generated pages are not. */
-const ROOT_DOC_RE = /^(?:docs\/(?:delendai\/)?)?[^/]+\.md$/u;
+/** The documents this gate owns: every doc but the proposals. */
+const ROOT_DOC_RE = /^(?:[^/]+\.md|docs\/(?!delendai\/proposals\/).+\.md)$/u;
 
 /** Every tracked path and each of its ancestor folders. */
 export const knownPaths = (files: readonly string[]): ReadonlySet<string> => {
@@ -59,7 +61,7 @@ const main = (): number => {
 	);
 	if (broken.length === 0) {
 		console.log(
-			`✓ doc-links: ${String(docs.length)} root documents, every internal link resolves.`,
+			`✓ doc-links: ${String(docs.length)} documents, every internal link resolves.`,
 		);
 		return 0;
 	}

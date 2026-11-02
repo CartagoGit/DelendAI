@@ -6,7 +6,7 @@
 ## Discovery
 
 Follow the universal bootstrap at
-[`docs/delendai/AGENT-BOOTSTRAP.md`](docs/delendai/AGENT-BOOTSTRAP.md). The canonical first move is
+[`docs/delendai/AGENT-BOOTSTRAP.md`](../AGENT-BOOTSTRAP.md). The canonical first move is
 `delendai_overview { compact: true }` followed by
 `delendai_agent_catalog` whenever routing to a tool, skill, or
 actionable proposal.
@@ -14,7 +14,7 @@ actionable proposal.
 <!-- END GENERATED: f00056 S4 (agnostic bootstrap). -->
 
 > This fragment is intentionally minimal. The universal agent rules live
-> in [`docs/delendai/AGENT-BOOTSTRAP.md`](docs/delendai/AGENT-BOOTSTRAP.md). Host files reference that
+> in [`docs/delendai/AGENT-BOOTSTRAP.md`](../AGENT-BOOTSTRAP.md). Host files reference that
 > file and add only the rules the server cannot enforce (e.g. the
 > status-marker close contract on Copilot, the keep-main-thread-cheap
 > rule on Claude Code). Tools, skills, and proposal ids are NEVER

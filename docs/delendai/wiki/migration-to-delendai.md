@@ -1,6 +1,6 @@
 # Migration to DelendAI — workspace bridge & the `@delendai/*` audit
 
-> **Slice:** b00239 **S3** — [`Puente local para workspaces ya adoptados`](../proposals/ready/breakings/b00239-rebrand-delendai-delendai-cli-unico-alias-est-conflict-safe-y-auto-migracion-idempotente-de-workspaces-legacy.md).
+> **Slice:** b00239 **S3** — [`Puente local para workspaces ya adoptados`](../proposals/done/breakings/b00239-rebrand-delendai-delendai-cli-unico-alias-est-conflict-safe-y-auto-migracion-idempotente-de-workspaces-legacy.md).
 > **Status:** shipped on `develop`. Companion slices (S4–S9) land in
 > follow-up proposals; this page only documents what S3 itself ships.
 
@@ -323,7 +323,7 @@ absolute install path.
 
 ## See also
 
-- [Proposal b00239](../proposals/ready/breakings/b00239-rebrand-delendai-delendai-cli-unico-alias-est-conflict-safe-y-auto-migracion-idempotente-de-workspaces-legacy.md)
+- [Proposal b00239](../proposals/done/breakings/b00239-rebrand-delendai-delendai-cli-unico-alias-est-conflict-safe-y-auto-migracion-idempotente-de-workspaces-legacy.md)
   — every cross-cutting invariant this page documents, in their original
   context.
 - `delendai alias status|install|remove` (S1) — the system-alias side of

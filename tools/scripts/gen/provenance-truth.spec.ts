@@ -68,8 +68,9 @@ describe('provenance-truth.script.ts', () => {
 		expect(markdown).toContain('| agent | public provenance contract |');
 		expect(markdown).toContain('| proposal | contains | slice |');
 		expect(markdown).toContain('| slice | uses | tool |');
-		expect(markdown).toContain(
-			'[f00392 / S2](../proposals/ready/feats/f00392-adaptive-preferred-path-proposals-facade-provenance-generated-truth-and-vs-code-benchmark.md#slices)',
+		// Found by id: the proposal moves folder as it moves state.
+		expect(markdown).toMatch(
+			/\[f00392 \/ S2\]\(\.\.\/proposals\/(?:[a-z-]+\/)+f00392-[^)]+#slices\)/u,
 		);
 		expect(markdown).toContain(
 			'[plugins/observability/src/lib/tools/obs-health.tool.ts](../../../plugins/observability/src/lib/tools/obs-health.tool.ts)',
