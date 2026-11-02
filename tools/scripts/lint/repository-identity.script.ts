@@ -127,7 +127,10 @@ const walk = (dir: string, root: string, out: string[]): void => {
 	for (const entry of entries) {
 		const full = join(dir, entry);
 		if (SKIP_DIRS.has(entry)) continue;
-		if (statSync(full).isDirectory()) {
+		// Another check's scratch file can go between the listing and here.
+		const stats = statSync(full, { throwIfNoEntry: false });
+		if (stats === undefined) continue;
+		if (stats.isDirectory()) {
 			walk(full, root, out);
 			continue;
 		}
