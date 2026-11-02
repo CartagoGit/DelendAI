@@ -32,7 +32,7 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 
 ### S1 — The time each spec takes is recorded
 - **Status**: review
-- **Files**: `vitest.config.ts`, `tools/scripts/ci/spec-timings.ts`, `tools/scripts/ci/spec-timings.spec.ts`, `tools/scripts/ci/spec-timings.script.ts`, `vitest.config.ts`, `.github/workflows/ci.yml`
+- **Files**: `.github/workflows/tier2.yml`, `vitest.config.ts`, `tools/scripts/ci/spec-timings.ts`, `tools/scripts/ci/spec-timings.spec.ts`, `tools/scripts/ci/spec-timings.script.ts`, `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "On a full run of the integration branch, the merge of the shards also writes vitest's JSON report (`VITEST_TIMINGS_OUT`). `spec-timings.script.ts` turns it into each spec file's duration, which is uploaded as the `spec-timings` artifact. Both steps are `continue-on-error`: an optimisation never fails the run it measures. Nothing is committed, since a timings file every change rewrote would send open pull requests back (spec-timings.spec.ts)."
@@ -56,3 +56,5 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 - `plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before. The lists travel in the `zone-files` artifact, not the matrix, which the planner refuses over 64 KiB. `proposals` runs on three jobs and `packages` on two, by their measured cost (test-zones.script.spec.ts, spec-timings.spec.ts).
 
 - 2026-11-02: the coverage list has a limit: at 1,782 paths, the first promotion since it existed, every test shard ran out of memory. Reproduced with one spec, 4 GB in 50 s; past 200 paths the globs are used, and the same input ends in 18 s.
+
+- 2026-11-02: tier2, seen for the first time since the suite grew: `lint-full` had a shallow checkout, so a lint that reads the commits that shipped a file reported 38 false gaps, and `tests` and `quality-gate` were cancelled at their ten-minute limit.
