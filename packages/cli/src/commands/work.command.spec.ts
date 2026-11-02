@@ -156,7 +156,31 @@ describe('work deliver', () => {
 	});
 });
 
+describe('work prove and publish', () => {
+	const command = createWorkCommand();
+	it.each(['prove', 'publish'])(
+		'%s looks for its unit from where it runs',
+		async (action) => {
+			const ctx = createNoopContext('/nowhere', globals(true));
+			const result = await command.run(
+				[action, '--proposal=x00001', '--locate'],
+				ctx,
+			);
+			// No repository here: the unit is not found, and nothing is run.
+			expect(result.code).not.toBe(0);
+		},
+	);
+});
+
 describe('entering a unit from the CLI', () => {
+	it('prints no path when the entry is refused', async () => {
+		const result = await createWorkCommand().run(
+			['enter', '--proposal=x00001', '--print-path'],
+			createNoopContext('/nowhere', globals(true)),
+		);
+		expect(result.code).not.toBe(0);
+	});
+
 	it('asks the planning plugin, which knows no such proposal here', async () => {
 		const worktree = mkdtempSync(join(tmpdir(), 'work-briefing-'));
 		await briefOnEntering();
