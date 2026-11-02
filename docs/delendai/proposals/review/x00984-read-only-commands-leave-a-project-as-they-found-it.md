@@ -2,10 +2,14 @@
 id: x00984
 title: "Read-only commands leave a project as they found it"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
+last-transition-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
+last-correlation-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T09:56:07.495Z
 ---
 
 # x00984 — Read-only commands leave a project as they found it
@@ -30,12 +34,15 @@ The cause is structural: every CLI command reaches its tool through a full delen
 - global_gate: type
 
 ### S1 — A server started for a read-only command writes nothing until something is written
-- **Status**: pending
-- **Files**: `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/commands/registry.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/src/lib/evidence/evidence-store.facade.ts`, `packages/core/src/lib/observability/runtime-events.ts`, `packages/core/src/lib/shared/server-log.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/lib/leave-no-trace.service.ts`, `packages/cli/src/lib/leave-no-trace.service.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/registry-delegation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "In a folder with no .cache/delendai, status, overview and adopt each exit 0 and the folder holds no new file afterwards; a spec runs each against a fresh folder."
   - "In a project that already has .cache/delendai, the same commands report what they reported before."
+- shipped-in: `c149012b5c28`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
@@ -45,3 +52,4 @@ The cause is structural: every CLI command reaches its tool through a full delen
 ## notes
 
 - The writers seen at boot: the cache layout's `.gitignore`, the evidence store (opened eagerly), the bootstrap blueprint (`run-cli.ts`), runtime events and the server log. Two directions to choose between when implementing: the CLI tells the server it serves a read-only command (a flag the server honours by opening its stores lazily and keeping its log on stderr), or the writers become lazy for every boot, creating the cache on the first real write. The second also stops a host server from creating a cache in a project nobody has used delendai in yet; measure its cost on the host server's start-up before choosing it.
+- Chosen on 2026-11-02: neither server-side direction. A command declares `readsOnly(args)`; when the project had no cache before it ran, the CLI removes the outermost directory the run created once the server has closed. Pointing the server at a cache outside the project was tried first and is refused by the server's containment (`cacheDir escapes workspace`), which stays. Core's boot is untouched, so the host server's start-up cost does not move. A project that already has its cache keeps everything written to it. Measured: status, overview and adopt each leave 0 files in a fresh `git init` folder.

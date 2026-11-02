@@ -85,6 +85,12 @@ export interface ICliCommand {
 	 * workspace itself): it runs without starting one, which costs seconds.
 	 */
 	readonly offline?: boolean | undefined;
+	/**
+	 * The command only reads, for these arguments: in a project with no
+	 * delendai cache yet, the cache its server creates is removed when it
+	 * ends, so asking leaves the project as it was found.
+	 */
+	readonly readsOnly?: ((args: readonly string[]) => boolean) | undefined;
 	run(
 		args: readonly string[],
 		ctx: ICliCommandContext,

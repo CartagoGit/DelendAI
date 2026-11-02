@@ -223,6 +223,7 @@ export const registerAllCommands = async (): Promise<
 > => [
 	{
 		name: 'status',
+		readsOnly: () => true,
 		summary: 'Show runtime status collectors.',
 		async run(_args, ctx) {
 			return dataOrText(await request(ctx, 'delendai_status'), ctx);
@@ -230,6 +231,7 @@ export const registerAllCommands = async (): Promise<
 	},
 	{
 		name: 'overview',
+		readsOnly: () => true,
 		summary: 'Show loaded server map.',
 		async run(args, ctx) {
 			return dataOrText(await overview(ctx, !hasFlag(args, 'full')), ctx);
