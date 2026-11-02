@@ -2,14 +2,14 @@
 id: x00967
 title: "A git, forge or dependency read that fails says so instead of reporting clean"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
-last-correlation-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T04:00:12.751Z
+last-transition-id: 181ff8b5-4b60-40bd-be96-95172aee8447
+last-correlation-id: 181ff8b5-4b60-40bd-be96-95172aee8447
+last-transition-from: review
+last-transition-at: 2026-11-02T19:39:18.009Z
 shipped-in:
   - "b86756b4f329f64a3b79338c6a543459b5175d3f"
 ---
@@ -59,14 +59,16 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 - review-log: approved by minimax-m3.1-flash — verified at b86756b4f329, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) At b86756b4 the git read layer funnels every status, change and diff read through a helper that throws the reason when git did not succeed, and the runner neve… (2) At b86756b4 the forge read returns available false with the reason and the remediation when the call fails, and the spec asserts that a gh error surfaces as a … — Approved on the delivered state of b86756b4f329f64a3b79338c6a543459b5175d3f. A git status that fails now returns an error and never a clean tree, and a forge failure returns available false with the reason the client reads. The type gate exited 0 and the two slice specs pass 22 of 22. Residuals, recorded and not blocking and outside the slices' declared files: the single pull request view still reports available true when the tool is present but failing, the log read still reads a failed call as no commits, and the commit-policy plugin's own dirty-file read still degrades a failed status to a clean tree.
 
 ### S3 — Branch protection survives a failed refresh
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/branch-protection-adapter.ts`
 - **Gate**: type
 - acceptance:
   - "A refresh failure keeps the last known protections and reports the failure (CP-01)."
 - shipped-in: `0b0c4aaa1b75`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b86756b4f329, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 1/1: (1) At b86756b4 the branch-protection refresh no longer clears the remembered remote branches when it starts, so a failed refresh keeps the last known protections … — Approved on the delivered state of b86756b4f329f64a3b79338c6a543459b5175d3f. The branch protection cache is no longer wiped at the start of a refresh, so a failed refresh keeps the last known protections and reports the failure with its cause. The type gate exited 0 and the slice spec passes 9 of 9. One residual, recorded and not blocking: the GitLab branch parser still swallows an unparsable answer on a call that succeeded, which is not the failed-refresh case this criterion names.
 
 ## acceptance
 
