@@ -88,7 +88,7 @@ export const briefOnEntering = async (): Promise<void> => {
 };
 
 /** The unit flags of the branch checked out at `cwd`, for `proposal`. */
-const unitHere = async (
+export const unitHere = async (
 	cwd: string,
 	proposal: string,
 ): Promise<readonly string[]> => {
