@@ -44,7 +44,7 @@ Joint audit a00095 and gpt-6.1-sol. D14: 16 broken internal links in root docs, 
 
 ### S3 — Manifest, rules and release skills
 - **Status**: pending
-- **Files**: `packages/core/skills/manifest.json`, `packages/core/src/lib/cli/assemble-skills.ts`, `plugins/commit-policy/skills/read-stderr-storm/SKILL.md`, `plugins/rules/skills/rules-solid-architecture/SKILL.md`, `packages/core/skills/conventional-commits-and-release/SKILL.md`, `packages/core/skills/operator/SKILL.md`
+- **Files**: `plugins/rules/skills/rules-solid-architecture/SKILL.md`, `packages/core/skills/conventional-commits-and-release/SKILL.md`
 - **Gate**: type
 - acceptance:
   - "The storm-repair skill is in the manifest (SKILL-03); the rules skill describes the factory list (SKILL-05); the release skill describes release:prepare and the GitHub Release flow (SKILL-06)."
