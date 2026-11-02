@@ -889,13 +889,21 @@ jobs:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+            # The history reaches the pull request's base: the tools are
+            # verified for the plugins the change can reach.
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
 
             - name: Run runtime and packaging verification
               run: |
                   set -euo pipefail
-                  bun run verify:tools
+                  SINCE=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    SINCE="--affected-since=${{ github.event.pull_request.base.sha }}"
+                  fi
+                  bun run verify:tools -- ${SINCE}
                   bun run verify:plugin-wiring
                   bun run verify:security
                   bun run verify:cache
@@ -1027,25 +1035,14 @@ jobs:
             - name: Smoke — Node serves the compiled CLI over stdio
               run: bun tools/scripts/smoke/cli.script.ts
 
-            # Tarball install e2e: pack core + two plugins, install into a clean project
-            # with npm, and drive the INSTALLED CLI under Node — proves the published
-            # packages resolve each other via plain node resolution (the M3 risk).
+            # Tarball install e2e: pack every publishable package of the release
+            # order from its staged copy, install them into a clean project with
+            # npm, and drive the INSTALLED CLI under Node — proves the published
+            # packages pack and resolve each other via plain node resolution (the
+            # M3 risk). It replaced a `npm pack --dry-run` of each raw workspace
+            # directory, which checked less than this real pack and cost a minute.
             - name: Smoke — install from tarball and load plugins
               run: bun tools/scripts/smoke/pack.script.ts
-
-            # `npm pack --dry-run` resolves each package's `files`/`exports` and
-            # fails if a published tarball would be missing or malformed — a cheap
-            # guard that the closed `exports` surface (R13) still packs cleanly.
-            - name: Pack each publishable package
-              run: |
-                  set -euo pipefail
-                  for dir in packages/core plugins/*; do
-                    if [ -f "$dir/package.json" ]; then
-                      echo "::group::pack $dir"
-                      ( cd "$dir" && npm pack --dry-run )
-                      echo "::endgroup::"
-                    fi
-                  done
 
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)

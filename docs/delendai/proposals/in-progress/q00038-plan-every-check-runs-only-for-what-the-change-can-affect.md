@@ -68,6 +68,21 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
 
+### S5 — Tools are verified for the plugins the change reaches
+- **Status**: pending
+- **Files**: `tools/scripts/verify/affected-plugins.helper.ts`, `tools/scripts/verify/affected-plugins.helper.spec.ts`, `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/ci/affected-specs.service.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "On a pull request, verify:tools verifies the plugins the change reaches by symbol, every plugin when it reaches the harness or a root manifest, and none for a change no plugin loads; a spec covers each case."
+  - "A run without --affected-since, as on the integration branch, still verifies every plugin."
+
+### S6 — Each publishable package is packed once
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "pack smoke no longer runs npm pack --dry-run over the raw workspace directories: the tarball smoke packs every publishable package of the release order from its staged copy, a superset checked on 2026-11-02 (59 of 59 non-private packages)."
+
 ## acceptance
 
 - A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
@@ -79,3 +94,5 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 
 ## notes
 - 2026-11-02, S2 measured before building: recording what the 47 architecture lints read showed 26 of them call `git` (mostly `ls-files`), which reads the whole tree. Over the last 14 merged pull requests a per-lint selection would still run 31 to 43 of 47, and the lints already run together in 9 s, so the saving would be seconds for a recorder in every bun process. S2 is changed to what does cost: each lint job pays its own checkout and install, about 20 s each.
+- On a pull request, verify:tools verifies only the plugins the change can reach, and every plugin on a full run.
+- Each publishable package is packed once per run.

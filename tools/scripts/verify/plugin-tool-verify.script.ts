@@ -47,6 +47,11 @@ import {
 	type IProbeResult,
 	type IToolHandle,
 } from './verify-probes';
+import { repositorySince } from '../ci/affected-specs.service';
+import { affectedPlugins, EVERY_PLUGIN } from './affected-plugins.helper';
+
+/** This harness, as the change analysis names it. */
+const HARNESS = 'tools/scripts/verify/plugin-tool-verify.script.ts';
 
 /**
  * x00105 S1: the plugin list is DERIVED from `plugins/*` on disk — the
@@ -517,10 +522,26 @@ const main = async (): Promise<number> => {
 		);
 		return 1;
 	}
+	// A pull request verifies the plugins its change can reach; a run
+	// without the flag still verifies every one.
+	const since = lastFlagValue(argv, '--affected-since=');
+	const reached =
+		since === undefined
+			? EVERY_PLUGIN
+			: affectedPlugins(repositorySince(workspaceRoot, since), HARNESS);
+	if (reached !== EVERY_PLUGIN && reached.length === 0) {
+		console.log(
+			`✓ verify:tools: the change since ${since} reaches no plugin and not this harness; no tool can have changed.`,
+		);
+		return 0;
+	}
 	const list =
 		options.pluginFilter !== undefined
 			? [options.pluginFilter]
 			: discovered.filter((name) => {
+					if (reached !== EVERY_PLUGIN && !reached.includes(name)) {
+						return false;
+					}
 					const reason = SKIPPED_PLUGINS[name];
 					if (reason !== undefined) {
 						console.error(`[${name}] skipped: ${reason}`);
