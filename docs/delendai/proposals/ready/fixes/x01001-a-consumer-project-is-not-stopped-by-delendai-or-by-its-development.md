@@ -60,6 +60,14 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 - acceptance:
   - "A project picks the delendai branch it runs with `--branch=<name>` on its MCP entry, the shared checkout stays where it is, a move on another branch restarts nothing there, and a branch that does not exist falls back to the checkout's code and says so."
 
+### S5 — Creating a proposal moves no other proposal
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/tools/create-proposal.tool.ts`
+- **Gate**: type
+- acceptance:
+  - "Creating a proposal in a project writes that proposal and its index entry, and moves no other file: in api-source-tanit, creating x00077 moved 16 archived proposals to the folders this repository's rule names, which that project's own lint refuses."
+  - "Where a consumer files done proposals is the consumer's: one rule, read from its configuration."
+
 ## acceptance
 
 - A vanished ref whose publication merged is a note, not a blocker.
@@ -70,3 +78,4 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 ## notes
 - 2026-11-02: the owner chose `main` over a registry: delendai is not published, and a consumer's agents are useful evidence. Their logs and refs are read from here for findings.
 - 2026-11-02: the owner chose a `--branch` flag on the MCP entry over any copy kept by hand. delendai keeps the tree in its cache. Moving a consumer to `main` waits for a promotion, since `main` trails develop by 1,418 commits.
+- 2026-11-02: seen in api-source-tanit while landing x00077 there: `proposals create` moved 16 archived proposals between `done/` subfolders (S5). Its own suite also has a test that fails under load and passes alone, `tests/cli/writing-commands.test.ts > generate --open` (tanit's to fix).
