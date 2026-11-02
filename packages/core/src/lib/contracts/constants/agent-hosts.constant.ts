@@ -42,7 +42,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'claude',
 		label: 'Claude Code',
-		skills: { dir: '.claude/skills' },
+		skills: { dir: '.claude/skills', forkContext: true },
 		agents: { dir: '.claude/agents', suffix: '.md', format: 'claude' },
 		instructions: 'CLAUDE.md',
 		evidence: {
