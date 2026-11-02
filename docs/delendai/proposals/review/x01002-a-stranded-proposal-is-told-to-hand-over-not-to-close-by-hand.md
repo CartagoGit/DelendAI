@@ -2,14 +2,14 @@
 id: x01002
 title: "A stranded proposal is told to hand over, not to close by hand"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 3856e284-e2cf-4bcb-870b-a395dafcd94b
-last-correlation-id: 3856e284-e2cf-4bcb-870b-a395dafcd94b
-last-transition-from: review
-last-transition-at: 2026-11-02T13:54:38.005Z
+last-transition-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
+last-correlation-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T14:37:40.712Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -56,11 +56,14 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-implementer: claude-opus-5-5
 
 ### S3 — Deliver takes the unit it runs in
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work deliver run in a unit's worktree with no --slice proves and hands over that unit, its slice, generation and topic read from its branch; elsewhere it still takes the proposal's all unit."
+- shipped-in: `126209b18798`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
