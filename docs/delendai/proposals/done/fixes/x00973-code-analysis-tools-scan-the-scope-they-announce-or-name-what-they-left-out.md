@@ -2,14 +2,14 @@
 id: x00973
 title: "Code-analysis tools scan the scope they announce, or name what they left out"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
-last-correlation-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T06:25:25.790Z
+last-transition-id: ff5d7f82-4f45-4ddd-a169-71a2b195924c
+last-correlation-id: ff5d7f82-4f45-4ddd-a169-71a2b195924c
+last-transition-from: review
+last-transition-at: 2026-11-02T17:40:17.357Z
 shipped-in:
   - "a6c27d556c95"
 ---
@@ -71,15 +71,17 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
 - review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) At a6c27d556c95 framework-knowledge merges the dependencies of every workspace package with the root's, i18n extracts used keys from call, property, pipe and n… — Approved on the delivered state of a6c27d556c95 (PR #1531). Each finding tool now covers the scope it declares, and the one that had to name what it left out does so: the test-convention scan computes skippedFiles, declares it in the tool output schema, returns it in the payload and publishes it in the generated contract, so the report is delivered and not merely computed. The six slice specs pass 35 of 35 and the type gate exited 0. Residual observations, outside the criteria and not blocking: the languages field of the test-convention contract still takes no part in discovery, tokens declared in markup blocks are still not counted and are not reported as omitted, and in a repository with several frameworks the merged dependency map still yields a single framework id.
 
 ### S4 — rules and quality-policy
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/quality-policy/src/lib/contracts/constants/quality-policy.constant.ts`, `plugins/quality-policy/src/lib/contracts/interfaces/quality-policy.interface.ts`, `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts`, `plugins/quality-policy/src/lib/services/quality-policy.service.ts`, `plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`, `plugins/quality-policy/tests/src/lib/services/quality-policy-types.service.spec.ts`, `plugins/rules/src/lib/contracts/constants/area-group-dirs.constant.ts`, `plugins/rules/src/lib/frameworks/manifest-via-composition.ts`, `plugins/rules/src/lib/frameworks/manifest.ts`, `plugins/rules/tests/src/lib/frameworks/manifest-via-composition.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The composed rules builder covers services/ as the legacy one did (D85)."
   - "quality_policy derives its areas from the workspaces and every tsconfig (D105, D49)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) At a6c27d556c95 plugins/rules holds one AREA_GROUP_DIRS list that includes services, and both the composed builder and the legacy manifest builder read it, so … (2) At a6c27d556c95 quality-policy derives its lint areas from the workspace packages of the root manifest instead of a fixed trio, and the types service reads eve… — Approved on the delivered state of a6c27d556c95 (PR #1531). The composed rules builder and the legacy one now read the same area-group list, which includes services, and the quality policy derives its areas from the workspaces and reads every package tsconfig, naming the divergent ones in tsconfigAreas, which survives the byte-bounded compaction path through the summary. The two slice specs pass 8 of 8 and the type gate exited 0. One residual observation, outside the criteria and not blocking: the tsconfig extends chain is resolved as a filesystem path only, so a package extending a node_modules preset is named but its resolved flags are not stated.
 
 ## acceptance
 
