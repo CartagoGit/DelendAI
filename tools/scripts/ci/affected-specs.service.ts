@@ -219,8 +219,8 @@ export const createResolver =
 		return undefined;
 	};
 
-/** The specs `changed` can affect, from the tracked files and their text. */
-export const affectedSpecs = (
+/** The files `changed` can affect, from the tracked files and their text. */
+export const affectedFiles = (
 	input: IAffectedSpecsInput,
 ): readonly string[] => {
 	const files = input.files.filter((file) => /\.tsx?$/u.test(file));
@@ -309,14 +309,18 @@ export const affectedSpecs = (
 		...reached(reverse(true), quiet),
 		...(loud.length > 0 ? reached(reverse(false), loud) : []),
 	]);
-	return [...hit].filter((file) => SPEC.test(file)).sort();
+	return [...hit].sort();
 };
 
-/** The specs a branch's change since `base` can affect, read from git. */
-export const affectedSpecsSince = (
+/** The specs `changed` can affect, from the tracked files and their text. */
+export const affectedSpecs = (input: IAffectedSpecsInput): readonly string[] =>
+	affectedFiles(input).filter((file) => SPEC.test(file));
+
+/** The repository as git has it, and the branch's change since `base`. */
+export const repositorySince = (
 	root: string,
 	base: string,
-): readonly string[] => {
+): IAffectedSpecsInput => {
 	const git = (args: readonly string[]): readonly string[] =>
 		execFileSync('git', [...args], {
 			cwd: root,
@@ -328,10 +332,16 @@ export const affectedSpecsSince = (
 	const config = JSON.parse(
 		readFileSync(join(root, 'tsconfig.base.json'), 'utf8'),
 	) as { compilerOptions?: { paths?: Record<string, readonly string[]> } };
-	return affectedSpecs({
+	return {
 		files: git(['ls-files']),
 		changed: git(['diff', '--name-only', `${base}...HEAD`]),
 		read: (file) => readFileSync(join(root, file), 'utf8'),
 		paths: config.compilerOptions?.paths ?? {},
-	});
+	};
 };
+
+/** The specs a branch's change since `base` can affect, read from git. */
+export const affectedSpecsSince = (
+	root: string,
+	base: string,
+): readonly string[] => affectedSpecs(repositorySince(root, base));
