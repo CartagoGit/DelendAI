@@ -98,6 +98,10 @@ export const unwrapResolved = <TOut>(
 			}`,
 		);
 	}
+	// The structured answer first: a tool's first text can be its summary.
+	if (resolved.result?.structuredContent !== undefined) {
+		return resolved.result.structuredContent as TOut;
+	}
 	const text = resolved.result?.content?.[0]?.text;
 	if (text === undefined) {
 		throw new Error(

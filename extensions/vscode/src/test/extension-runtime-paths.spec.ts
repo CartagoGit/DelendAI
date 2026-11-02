@@ -480,6 +480,25 @@ describe('stub host dashboard', () => {
 });
 
 describe('resolveServerCommand discovery', () => {
+	it('finds the server entry whatever its casing', async () => {
+		const root = makeRoot();
+		writeFileSync(
+			join(root, '.mcp.json'),
+			JSON.stringify({
+				mcpServers: {
+					DelendAI: { command: 'bun', args: ['server.ts'] },
+				},
+			}),
+		);
+		const harness = createHarness({
+			configured: false,
+			workspaceRoot: root,
+		});
+		expect((await resolveServerCommand(harness.vscode))?.args).toEqual([
+			'server.ts',
+		]);
+	});
+
 	it('reads the launch from the workspace .mcp.json when no setting exists', async () => {
 		const root = makeRoot();
 		writeFileSync(
