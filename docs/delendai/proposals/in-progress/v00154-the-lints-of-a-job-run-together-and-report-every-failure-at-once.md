@@ -22,7 +22,7 @@ A lint job takes the time of its slowest lint, and one pass names everything wro
 
 Every lint job ran its commands one after another with `set -e` or `&&`. On 2026-11-02, `lint:architecture` took about a minute for 46 lints whose slowest is seconds, and a failure hid whatever came after it, so one change cost several 13-minute proofs, one failure at a time.
 
-Run together, `lint:architecture` takes 11 s and `lint:job:presets` 36 s, and every failure shows in one pass. Two lints dominate `lint-security`: `lint:generated-determinism` (107 s) and `lint:no-secrets` (92 s), which on a pull request already run scoped to the change. `lint:stray-cache-files` must stay alone and last: other lints leave probes in the cache.
+Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:governance` 18 s and `lint:job:presets` 38 s, and every failure shows in one pass. Two lints dominate `lint-security`: `lint:generated-determinism` (107 s) and `lint:no-secrets` (92 s), which on a pull request already run scoped to the change. `lint:no-silent-gates` stays outside the chain, because it writes probes that lints scanning the tree trip on, and so does `lint:stray-cache-files`. Lines inside a `touches` condition stay where they are: scoping a pull request's checks is not traded for speed.
 
 ## non-goals
 
@@ -36,7 +36,7 @@ Run together, `lint:architecture` takes 11 s and `lint:job:presets` 36 s, and ev
 
 ### S1 — A job's lints run together
 - **Status**: pending
-- **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `.github/workflows/ci.yml`, `package.json`
+- **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts`, `.github/workflows/ci.yml`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Each lint job's list lives in one `package.json` chain, and the job runs it at once."

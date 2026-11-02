@@ -199,7 +199,9 @@ jobs:
                   touches() { [ -z "$PR_BASE" ] || printf '%s\n' "$CHANGED" | grep -qE "$1"; }
                   set -euo pipefail
                   bun tools/scripts/lint/run-together.script.ts lint:job:security
-                  # Alone and last: the lints above leave probes in the cache.
+                  # Apart from the chain: this one writes probes that the
+                  # lints scanning the tree would trip on.
+                  bun run lint:no-silent-gates
                   bun run lint:stray-cache-files
                   # The gate that refuses a credential-shaped literal in
                   # a commit. It existed, it was RED, and no workflow ran
@@ -211,6 +213,7 @@ jobs:
                   if [ -n "$PR_BASE" ]; then
                     bun tools/scripts/lint/no-secrets.script.ts --range "$PR_BASE...HEAD"
                   else
+                    bun run lint:no-secrets
                   fi
                   # The rule that refuses a rule nothing runs, which
                   # nothing ran. It appeared in this file only inside a
@@ -220,6 +223,7 @@ jobs:
                   # detect, in itself.
                   # r00058 — the hygiene half of the 49 (see lint-architecture).
                   if touches '^(packages/(ui-extension|client|core)|extensions)/|^(package\.json|bun\.lock|tsconfig)'; then
+                    bun run lint:cross-ide
                   else
                     echo "lint:cross-ide: not run — the change touches neither the UI extension, the client nor core."
                   fi
@@ -238,6 +242,7 @@ jobs:
                   # pull request into `main` runs twice on the release
                   # candidate: same commit, same jobs, 35 extra rows.
                   if touches '^tools/scripts/(gen|generate|catalog|report|lib)/|^package\.json$'; then
+                    bun run lint:generated-determinism
                   else
                     echo "lint:generated-determinism: not run — no generator changed (generated-artifacts-check still checks their output)."
                   fi

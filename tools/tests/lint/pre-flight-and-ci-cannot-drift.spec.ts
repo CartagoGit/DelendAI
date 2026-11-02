@@ -54,7 +54,7 @@ describe('the architecture lints', () => {
 		// was in that list and not in the pre-flight, and it failed a
 		// candidate that had passed everything else locally.
 		expect(read('.github/workflows/ci.yml')).toContain(
-			'run: bun run lint:architecture',
+			'run: bun tools/scripts/lint/run-together.script.ts lint:architecture',
 		);
 		expect(PROOF_STEPS.map((step) => step.script)).toContain(
 			'lint:architecture',
