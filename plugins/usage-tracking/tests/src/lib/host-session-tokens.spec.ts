@@ -39,7 +39,7 @@ const prompt = {
 const write = (path: string, rows: readonly unknown[], raw = ''): void =>
 	writeFileSync(
 		path,
-		rows.map((r) => JSON.stringify(r)).join('\n') + '\n' + raw,
+		`${rows.map((r) => JSON.stringify(r)).join('\n')}\n${raw}`,
 	);
 
 describe('host session tokens', () => {
@@ -50,7 +50,7 @@ describe('host session tokens', () => {
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 	it('names the transcript folder of a workspace', () => {
-		expect(claudeProjectDirName('/home/a/_p/x')).toBe('-home-a--p-x');
+		expect(claudeProjectDirName('/srv/a/_p/x')).toBe('-srv-a--p-x');
 		expect(claudeProjectsDir('/a/b', '/h')).toBe(
 			'/h/.claude/projects/-a-b',
 		);
@@ -136,5 +136,38 @@ describe('host session tokens', () => {
 			0,
 		);
 		expect(await meterSessions(join(dir, 'missing'))).toEqual([]);
+	});
+
+	it('tolerates odd rows: no id, no stamp, array prompt, bad bound', async () => {
+		const path = join(dir, 'odd.jsonl');
+		write(path, [
+			{
+				type: 'user',
+				message: { content: [{ text: 'hi  there' }, 'x', null] },
+			},
+			{ type: 'user', message: { content: 5 } },
+			{
+				message: { role: 'assistant', usage: { output_tokens: 4 } },
+				uuid: 'k',
+			},
+			{
+				message: { role: 'assistant', usage: { output_tokens: 4 } },
+				uuid: 'k',
+			},
+			{ message: { role: 'assistant', usage: { output_tokens: 1 } } },
+			{ message: { role: 'user', usage: { output_tokens: 9 } } },
+			{ message: { role: 'assistant' } },
+		]);
+		const use = await meterTranscript(path, { from: 'not a date' });
+		expect(use).toMatchObject({
+			calls: 2,
+			output: 5,
+			first: null,
+			last: null,
+		});
+		expect(use.prompt).toBe('hi there');
+		const empty = join(dir, 'empty.jsonl');
+		writeFileSync(empty, '{"type":"user","message":{"role":"user"}}\n');
+		expect((await meterTranscript(empty)).prompt).toBe('');
 	});
 });

@@ -20,14 +20,14 @@ describe('usage host-sessions', () => {
 		dir = mkdtempSync(join(tmpdir(), 'hs-'));
 		writeFileSync(
 			join(dir, 's1.jsonl'),
-			JSON.stringify({
+			`${JSON.stringify({
 				timestamp: '2026-11-01T10:00:00Z',
 				message: {
 					id: 'm',
 					role: 'assistant',
 					usage: { input_tokens: 1, output_tokens: 2 },
 				},
-			}) + '\n',
+			})}\n`,
 		);
 		const got = await usageHostSessionsCommand.run(
 			[`--projects-dir=${dir}`, '--session=s1'],

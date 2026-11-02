@@ -1,3 +1,4 @@
+// effect-boundary-authorized: streams the host's own transcripts, which can reach GBs, read-only
 import { createReadStream } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
@@ -68,7 +69,12 @@ interface IRow {
 		readonly id?: string;
 		readonly role?: string;
 		readonly content?: unknown;
-		readonly usage?: Record<string, number | undefined>;
+		readonly usage?: {
+			readonly input_tokens?: number;
+			readonly cache_creation_input_tokens?: number;
+			readonly cache_read_input_tokens?: number;
+			readonly output_tokens?: number;
+		};
 	};
 }
 
@@ -116,13 +122,13 @@ export const meterTranscript = async (
 		const key = message.id ?? row.uuid ?? '';
 		if (key && seen.has(key)) continue;
 		if (key) seen.add(key);
-		const input = use['input_tokens'] ?? 0;
-		const cacheWrite = use['cache_creation_input_tokens'] ?? 0;
-		const cacheRead = use['cache_read_input_tokens'] ?? 0;
+		const input = use.input_tokens ?? 0;
+		const cacheWrite = use.cache_creation_input_tokens ?? 0;
+		const cacheRead = use.cache_read_input_tokens ?? 0;
 		total.input += input;
 		total.cacheWrite += cacheWrite;
 		total.cacheRead += cacheRead;
-		total.output += use['output_tokens'] ?? 0;
+		total.output += use.output_tokens ?? 0;
 		context.push(input + cacheWrite + cacheRead);
 		first ??= stamp || null;
 		last = stamp || last;
