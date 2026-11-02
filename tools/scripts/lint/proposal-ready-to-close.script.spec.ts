@@ -123,6 +123,29 @@ describe('proposal-ready-to-close — scanning', () => {
 		expect(findings[0]?.folder).toBe('review');
 	});
 
+	it('tells a stranded proposal to hand over, and one in review to be approved', () => {
+		const root = workspace([
+			{
+				folder: 'in-progress',
+				name: 'x00004-demo.md',
+				body: proposal('x00004', 'in-progress', ['done']),
+			},
+			{
+				folder: 'review',
+				name: 'x00005-demo.md',
+				body: proposal('x00005', 'review', ['done']),
+			},
+		]);
+		const advice = new Map(
+			scanReadyToClose(root).map((f) => [f.proposalId, f.nextAction]),
+		);
+		const stranded = advice.get('x00004') ?? '';
+		expect(stranded).toContain('back to `pending`');
+		expect(stranded).toContain('work deliver --proposal=x00004');
+		expect(stranded).not.toContain('to: "done"');
+		expect(advice.get('x00005')).toContain('to: "done"');
+	});
+
 	it('ignores a proposal that still has unfinished slices', () => {
 		const root = workspace([
 			{

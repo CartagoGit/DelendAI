@@ -67,6 +67,35 @@ describe('a hidden tool', () => {
 		).toHaveLength(1);
 	});
 
+	it('fails as a direct call would when the tool refuses through the resolver', async () => {
+		const transport: IMcpTransport = {
+			callTool: async ({ name }) =>
+				name.endsWith('_resolve_capability')
+					? {
+							structuredContent: {
+								status: 'ok',
+								result: {
+									content: [
+										{
+											type: 'text',
+											text: '[{"code":"invalid_type"}]',
+										},
+									],
+									isError: true,
+								},
+							},
+						}
+					: refused(name),
+			listTools: async () => ({
+				tools: [{ name: 'acme_resolve_capability' }],
+			}),
+		};
+		const client = McpStdioClient.fromTransport(transport);
+		await expect(
+			client.request('delendai_proposals_create_proposal', {}),
+		).rejects.toThrow(/returned an error[\s\S]*invalid_type/u);
+	});
+
 	it('states the refusal when the surface names no resolver', async () => {
 		const { transport } = surface([]);
 		const client = McpStdioClient.fromTransport(transport);
