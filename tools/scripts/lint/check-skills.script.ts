@@ -43,7 +43,8 @@ export interface ICheckSkillsIssue {
 		| 'missing-in-manifest'
 		| 'malformed-entry'
 		| 'missing-applies-to'
-		| 'unknown-applies-to-target';
+		| 'unknown-applies-to-target'
+		| 'unregistered-tool';
 	readonly detail: string;
 }
 
@@ -130,6 +131,30 @@ export const checkSkillsManifest = (
 		}
 	}
 
+	return issues;
+};
+
+const TOOL_NAME_RE = /delendai_[a-z0-9_-]*[a-z0-9]/g;
+
+/**
+ * Fail on every `delendai_*` tool name a skill body spells that no server
+ * registers (SKILL-01). Pure: `registered` comes from the caller.
+ */
+export const checkSkillToolNames = (
+	skills: readonly { readonly path: string; readonly text: string }[],
+	registered: ReadonlySet<string>,
+): readonly ICheckSkillsIssue[] => {
+	const issues: ICheckSkillsIssue[] = [];
+	for (const { path, text } of skills) {
+		for (const name of new Set(text.match(TOOL_NAME_RE) ?? [])) {
+			if (!registered.has(name)) {
+				issues.push({
+					kind: 'unregistered-tool',
+					detail: `${path} names "${name}" but no server registers a tool with that name`,
+				});
+			}
+		}
+	}
 	return issues;
 };
 

@@ -138,7 +138,7 @@ and own slice is `done` + peer-reviewed.
 2. For each contained proposal, claim + close its slices as usual.
 3. For own slices, claim them via `agent_lock` like any other slice.
 4. When every child is done, call
-   `delendai_proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
+   `delendai_proposals_proposals_close_plan { planId: "q00001", reason: "..." }`. The tool
    runs the closure preflight; if any child is still open, it returns a
    list of `blockers[]` you must resolve first.
 5. `delendai_proposals_proposal_transition { id: "q00001", to: "done" }` also

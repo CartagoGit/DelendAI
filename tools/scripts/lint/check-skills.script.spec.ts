@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	checkSkillToolNames,
 	checkSkillsManifest,
 	type ISkillManifest,
 } from './check-skills.script.ts';
@@ -159,5 +160,36 @@ describe('checkSkillsManifest', async () => {
 					i.detail.includes('missing-applies-field'),
 			),
 		).toBe(true);
+	});
+});
+
+describe('checkSkillToolNames', () => {
+	const registered = new Set(['delendai_git_status', 'delendai_a-b_run']);
+	it('accepts registered names, hyphenated ones included', () => {
+		expect(
+			checkSkillToolNames(
+				[
+					{
+						path: 'a/SKILL.md',
+						text: 'use `delendai_git_status` and delendai_a-b_run.',
+					},
+				],
+				registered,
+			),
+		).toEqual([]);
+	});
+	it('flags a name no server registers, once per skill', () => {
+		const issues = checkSkillToolNames(
+			[
+				{
+					path: 'a/SKILL.md',
+					text: 'delendai_gone_tool delendai_gone_tool',
+				},
+			],
+			registered,
+		);
+		expect(issues).toHaveLength(1);
+		expect(issues[0]?.kind).toBe('unregistered-tool');
+		expect(issues[0]?.detail).toContain('delendai_gone_tool');
 	});
 });
