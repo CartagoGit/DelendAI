@@ -44,14 +44,26 @@ The same day the repository held, besides live work: two worktree directories gi
 - review-implementer: claude-opus-5-5
 
 ### S2 — A documentation change is judged by the documentation rules
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When every changed path is Markdown under docs/ or at the root, the jobs that judge code (biome, presets, manifests, metrics, the test matrix, typecheck, builds) report skipped; the documentation, proposal, secret and generated-artifact checks run."
 - shipped-in: `099561bea4df`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S2, the documentation change judged by the documentation rules.
+
+WHAT IS WRONG. The criterion lists the jobs that judge code and says they report skipped: the format check, the presets check, the manifests check, the metrics check, the test matrix, the typecheck and the builds. Six of the seven skip. The presets check still runs, because the job-scope table declares it as always running and gives it no prose rule, unlike the other six.
+
+WHERE. tools/scripts/ci/job-scope.constant.ts, in the entry for the presets job, which is declared to always run while the format check, the manifests check and the metrics check carry the rule that skips them for prose.
+
+HOW TO REPRODUCE. Compute the job-scope plan at the delivered commit for a change whose every path is Markdown under docs/ or at the root: the plan reports the presets check to run, while the format check, the manifests check, the metrics check, the test matrix, the typecheck, the verification, the pack smoke and the site report skipped.
+
+WHAT MUST HOLD. For a change whose every path is Markdown under docs/ or at the root, the presets check reports skipped as the other six code jobs do, and the documentation, proposal, secret and generated-artifact checks keep running. The delivered spec pins only two of the enumerated jobs, the format check and the governance check, so this one row is not caught by the suite: a case that asserts the presets check skips for a prose change would pin it.
+
+Everything else this slice asks for is delivered and approved: the documentation, proposal, secret and generated-artifact checks run, and the other six code jobs skip.
 
 ### S3 — The forge judges only what the change reaches, and never on the author's word
 - **Status**: review
