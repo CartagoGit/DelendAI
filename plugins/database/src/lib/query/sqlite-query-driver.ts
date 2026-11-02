@@ -16,7 +16,13 @@ interface IBetterSqlite {
 }
 
 interface IBetterSqliteCtor {
-	new (path: string): IBetterSqlite;
+	new (
+		path: string,
+		options?: {
+			readonly readonly?: boolean;
+			readonly fileMustExist?: boolean;
+		},
+	): IBetterSqlite;
 }
 
 export interface IQueryDriverOk {
@@ -88,12 +94,23 @@ export const createSqliteQueryDriver = async (
 			].join('\n'),
 		};
 	}
-	const db = new ctor(dsnToPath(dsn));
+	const path = dsnToPath(dsn);
+	const db = new ctor(path);
+	// A read runs on a connection opened read-only, opened once it is
+	// needed: SQLite itself refuses the write a misread statement attempts.
+	let readDb: IBetterSqlite | undefined;
 	return {
 		ok: true,
 		driver: {
 			kind: 'sqlite',
-			async execute(prepared) {
+			async execute(prepared, options) {
+				if (options?.readOnly === true) {
+					readDb ??= new ctor(path, {
+						readonly: true,
+						fileMustExist: true,
+					});
+					return runStatement(readDb, prepared, 'all');
+				}
 				const sqlHead = prepared.sql
 					.trimStart()
 					.slice(0, 6)

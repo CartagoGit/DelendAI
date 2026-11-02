@@ -21,6 +21,7 @@
  * dry-runs proposals against these schemas without booting anything.
  */
 import z from 'zod';
+import { DEFAULT_ALLOWED_COMMANDS } from './contracts/constants/allowed-commands.constant';
 
 /** Server ids are kebab-case: unique roster keys and `ext.<id>` roots. */
 export const KEBAB_CASE_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -170,8 +171,47 @@ export const OptionsSchema = z
 		 * (S5).
 		 */
 		allowDiscoverySearch: z.boolean().default(false),
+		/**
+		 * The commands a server may be started with, by name. Only the
+		 * person's configuration sets it: an activation decided by the LLM
+		 * enables a declared server and can never add a command here.
+		 */
+		allowedCommands: z
+			.array(z.string().min(1))
+			.default([...DEFAULT_ALLOWED_COMMANDS]),
 	})
 	.strict();
 
 export type IExternalMcpsOptions = z.infer<typeof OptionsSchema>;
 export type IServerEntry = z.input<typeof ServerEntrySchema>;
+
+/** Launchers whose first non-flag argument is a registry package spec. */
+const PACKAGE_RUNNERS = new Set(['npx', 'bunx']);
+
+/** `pkg`, `pkg@x`, `@scope/pkg` or `@scope/pkg@x` -> the bare name. */
+const barePackageName = (spec: string): string => {
+	const at = spec.lastIndexOf('@');
+	return at > 0 ? spec.slice(0, at) : spec;
+};
+
+/**
+ * The argv an entry actually runs. The `version` field is the pin the
+ * human approved, so for a package runner it is applied to the package
+ * spec itself: `pkg`, `pkg@latest` and `pkg@^1` all become
+ * `pkg@<version>`. Without this the metadata said "1.4.2" while `npx`
+ * fetched whatever npm served at call time. Other launchers are left
+ * untouched.
+ */
+export const pinnedLaunchArgs = (entry: {
+	readonly command: string;
+	readonly args: readonly string[];
+	readonly version: string;
+}): readonly string[] => {
+	const runner = entry.command.split(/[\\/]/).pop() ?? entry.command;
+	if (!PACKAGE_RUNNERS.has(runner)) return entry.args;
+	const index = entry.args.findIndex((arg) => !arg.startsWith('-'));
+	if (index < 0) return entry.args;
+	const spec = entry.args[index] as string;
+	const pinned = `${barePackageName(spec)}@${entry.version.trim()}`;
+	return entry.args.map((arg, i) => (i === index ? pinned : arg));
+};

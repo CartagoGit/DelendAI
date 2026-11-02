@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -106,7 +106,18 @@ describe('reserveQuota', () => {
 		writeFileSync(ledger, '{not json');
 		const outcome = await reserve(ledger, 'a', observed([requests(10, 0)]));
 		expect(outcome.kind).toBe('refused');
-		expect(existsSync(ledger)).toBe(false);
+		// The unreadable bytes are kept aside, never read as an empty ledger.
+		expect(
+			readdirSync(root).some((name) =>
+				name.startsWith('ledger.json.corrupt-'),
+			),
+		).toBe(true);
+		// The fresh ledger left in its place refuses too: what the old one
+		// held may still be held until it would have expired.
+		const retry = await reserve(ledger, 'b', observed([requests(10, 0)]));
+		expect(retry.kind).toBe('refused');
+		if (retry.kind === 'refused')
+			expect(retry.reason).toMatch(/set aside/u);
 	});
 });
 

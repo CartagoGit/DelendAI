@@ -99,12 +99,17 @@ export const clearJob = (dir: string): Promise<void> =>
 /**
  * Handles of the gate runs other than `exceptHandle` that are still going
  * on this machine: a started job whose runner has not reached its end
- * marker and whose process is alive. A dead runner holds nothing.
+ * marker, whose process is alive, and whose time is not up. A dead
+ * runner holds nothing, and neither does one past its timeout: it was
+ * stopped only when its own tree asked again, and until then it held a
+ * slot no other tree could take. `onExpired` is told of each such run.
  */
 export const liveGateHandles = async (
 	storeRoot: string,
 	exceptHandle: string,
 	isAlive: (pid: number) => boolean,
+	nowMs: number = Date.now(),
+	onExpired: (job: ICloseGateJob) => void = () => undefined,
 ): Promise<readonly string[]> => {
 	const entries = await readdir(storeRoot).catch(() => [] as string[]);
 	const live: string[] = [];
@@ -114,7 +119,12 @@ export const liveGateHandles = async (
 		const dir = jobDirectory(storeRoot, entry);
 		const job = await readJob(dir);
 		if (job === undefined || !isAlive(job.pid)) continue;
-		if (!(await readProgress(dir)).finished) live.push(entry);
+		if ((await readProgress(dir)).finished) continue;
+		if (nowMs - job.startedAtMs > job.timeoutMs) {
+			onExpired(job);
+			continue;
+		}
+		live.push(entry);
 	}
 	return live;
 };

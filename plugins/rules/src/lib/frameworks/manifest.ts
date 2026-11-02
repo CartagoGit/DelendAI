@@ -1,5 +1,6 @@
 import { basename, dirname } from 'node:path';
 
+import { AREA_GROUP_DIRS } from '../contracts/constants/area-group-dirs.constant';
 import { joinRel } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
@@ -40,13 +41,7 @@ const findProjectTsconfig = async (
 	return (await reader.exists(rel)) ? rel : undefined;
 };
 
-const GROUP_DIRS = [
-	'apps',
-	'libs',
-	'packages',
-	'projects',
-	'services',
-] as const;
+const GROUP_DIRS = AREA_GROUP_DIRS;
 
 /**
  * Marker files that make a directory an "area" the rules plugin should
@@ -119,6 +114,12 @@ const areaKey = (areaDir: string): string =>
  * Build the rules manifest (pure). For each area: detect the preset (or
  * honour an override), then list eslint/typecheck configs priority-first
  * — the project's own config, then our materialised default behind it.
+ *
+ * @deprecated Legacy builder, removal date 2026-12-31. The tool surface
+ * builds the same manifest through `buildManifestViaComposition`
+ * (`./manifest-via-composition`); `ensureRulesCache` below must move onto
+ * it before this builder, `discoverAreas` and `IBuildManifestOptions` are
+ * deleted. Do not add callers.
  */
 export const buildRulesManifest = async (
 	options: IBuildManifestOptions,

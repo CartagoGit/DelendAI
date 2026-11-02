@@ -517,8 +517,9 @@ const removeStagingArtifacts = (stagingPath: string): void => {
 export const reconcileProposalsDb = (
 	input: IDbReconcileInput,
 ): IDbReconcileOutput => {
-	const wallStart = Date.now();
-	const startedAt = input.now ?? wallStart;
+	// The monotonic clock: a wall clock stepped back made a duration negative.
+	const monotonicStart = performance.now();
+	const startedAt = input.now ?? Date.now();
 	const paths = resolveProposalsDbPaths(input.workspaceRoot);
 	const atCommit =
 		input.ref === undefined
@@ -605,7 +606,7 @@ export const reconcileProposalsDb = (
 			reason:
 				staged.error ??
 				`shadow reconciliation status is ${staged.status}`,
-			durationMs: Date.now() - wallStart,
+			durationMs: Math.round(performance.now() - monotonicStart),
 		};
 	}
 
@@ -623,7 +624,7 @@ export const reconcileProposalsDb = (
 			integrity: staged.integrity.status,
 			foreignKey: staged.foreignKey.status,
 			reason: null,
-			durationMs: Date.now() - wallStart,
+			durationMs: Math.round(performance.now() - monotonicStart),
 		};
 	}
 
@@ -661,7 +662,7 @@ export const reconcileProposalsDb = (
 		integrity: staged.integrity.status,
 		foreignKey: staged.foreignKey.status,
 		reason: applied.reason,
-		durationMs: Date.now() - wallStart,
+		durationMs: Math.round(performance.now() - monotonicStart),
 	};
 };
 

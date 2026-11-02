@@ -118,6 +118,44 @@ describe('planGc', () => {
 		expect(forced.removed[0]?.reason).toBe('merged-and-clean-with-force');
 	});
 
+	const deliveredBranch = (
+		lastCommitMinutesAgo: number,
+	): IBranchStatusEntry => ({
+		name: 'agent/orion',
+		head: 'abc1234',
+		ahead: 0,
+		behind: 0,
+		mergedIntoBase: true,
+		lastCommitMinutesAgo,
+		worktreePath: '/cache/.worktrees/orion',
+	});
+
+	it('keeps a worktree whose status could not be read, even with force', () => {
+		const snapshot = status(
+			[deliveredBranch(60 * 24 * 5)],
+			[wt({ statusUnreadable: true })],
+		);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			force: true,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped[0]?.reason).toBe('status-unreadable');
+	});
+
+	it('applies the age limit to a delivered worktree too', () => {
+		const snapshot = status([deliveredBranch(5)], [wt({ ageLabel: '5m' })]);
+		const { removed, skipped } = planGc(snapshot, {
+			staleMinutes: 60,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
+		});
+		expect(removed).toHaveLength(0);
+		expect(skipped[0]?.reason).toBe('fresh');
+	});
+
 	it('keeps a merged worktree whose ref no verdict proves delivered', () => {
 		const snapshot = status(
 			[
@@ -596,5 +634,65 @@ describe('f00075 S0 — worktree-only branches are not "not-found"', () => {
 			(s) => s.reason === 'protected-branch',
 		);
 		expect(protectedSkip).toHaveLength(1);
+	});
+});
+
+describe('planGc decision branches (keep, delete, unknown)', () => {
+	const delivered_ = (minutesAgo: number): IBranchStatusEntry => ({
+		name: 'agent/orion',
+		head: 'abc1234',
+		ahead: 0,
+		behind: 0,
+		mergedIntoBase: true,
+		lastCommitMinutesAgo: minutesAgo,
+		worktreePath: '/cache/.worktrees/orion',
+	});
+	const plan = (
+		branch: IBranchStatusEntry,
+		worktree: IWorktreeStatusEntry,
+		force = false,
+	) =>
+		planGc(status([branch], [worktree]), {
+			staleMinutes: 60,
+			force,
+			now: FIXED_NOW,
+			deliveryVerdicts: delivered('agent/orion'),
+		});
+
+	it('keeps a worktree holding untracked files and names them, until forced', () => {
+		const worktree = wt({ untrackedFiles: 3 });
+		const kept = plan(delivered_(60 * 24 * 5), worktree);
+		expect(kept.removed).toHaveLength(0);
+		expect(kept.skipped.map((s) => s.reason)).toEqual(['untracked']);
+		expect(
+			plan(delivered_(60 * 24 * 5), worktree, true).removed[0]?.reason,
+		).toBe('merged-and-clean-with-force');
+	});
+
+	it('reads the age from the worktree label when the commit time is unknown (delete)', () => {
+		const { removed, skipped } = plan(
+			delivered_(-1),
+			wt({ ageLabel: '3h' }),
+		);
+		expect(skipped).toHaveLength(0);
+		expect(removed.map((r) => r.branch)).toEqual(['agent/orion']);
+	});
+
+	it('keeps a fresh worktree whose age is only known from its label', () => {
+		const { removed, skipped } = plan(
+			delivered_(-1),
+			wt({ ageLabel: '10m' }),
+		);
+		expect(removed).toHaveLength(0);
+		expect(skipped.map((s) => s.reason)).toEqual(['fresh']);
+	});
+
+	it('treats an age that cannot be read at all as brand new and keeps the worktree (unknown)', () => {
+		const { removed, skipped } = plan(
+			delivered_(-1),
+			wt({ ageLabel: 'unknown' }),
+		);
+		expect(removed).toHaveLength(0);
+		expect(skipped.map((s) => s.reason)).toEqual(['fresh']);
 	});
 });

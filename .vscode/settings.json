@@ -6,12 +6,12 @@
 		}
 	},
 
-	// Por defecto (para todo lo que abra terminal: Copilot incluido) → Bash
-	"terminal.integrated.defaultProfile.linux": "Bash (login)",
-
-	// Habilitar prompt files de GitHub Copilot
-	"chat.promptFiles": true,
-
+	// `delendai.config.json` es JSONC: admite comentarios y comas
+	// finales. Sin esta asociacion, VS Code lo trata como JSON
+	// estricto y marca cada `//` como error de sintaxis.
+	"files.associations": {
+		"delendai.config.json": "jsonc"
+	},
 	// TypeScript y JavaScript: usar la versión del workspace
 	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,

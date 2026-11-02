@@ -19,8 +19,14 @@ export interface IPreparedQuery {
 
 export interface IQueryDriver {
 	readonly kind: IDriverKind;
+	/**
+	 * `readOnly` is the engine's classification: a driver runs such a
+	 * statement where it cannot write, so a statement the classifier
+	 * misread as a read (`WITH … DELETE`) fails instead of writing.
+	 */
 	execute(
 		prepared: IPreparedQuery,
+		options?: { readonly readOnly?: boolean },
 	): Promise<readonly Record<string, unknown>[]>;
 	explain?(
 		prepared: IPreparedQuery,
@@ -369,7 +375,9 @@ export const executeGuardedQuery = async (
 				...(plan !== undefined ? { plan } : {}),
 			};
 		}
-		const rows = await driver.execute(prepared);
+		const rows = await driver.execute(prepared, {
+			readOnly: classification === 'read',
+		});
 		return {
 			ok: true,
 			classification,

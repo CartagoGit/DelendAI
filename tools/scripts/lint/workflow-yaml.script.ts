@@ -39,7 +39,7 @@
  *   0 — every workflow parses and has the expected shape.
  *   1 — at least one workflow is invalid; see the report.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { isMap, isSeq, LineCounter, parseDocument } from 'yaml';
@@ -51,6 +51,7 @@ import {
 } from './workflow-yaml.constant';
 
 export const WORKFLOWS_DIR = '.github/workflows';
+export const ACTIONS_DIR = '.github/actions';
 
 /** One workflow source, addressed by a repo-relative path. */
 export interface IWorkflowSource {
@@ -92,6 +93,22 @@ export const readWorkflowFiles: IWorkflowSourceReader = (workflowsDir) => {
 			relPath: `${WORKFLOWS_DIR}/${name}`,
 			raw: readFileSync(join(workflowsDir, name), 'utf8'),
 		}));
+};
+
+/** Composite actions under `.github/actions/*`, for the pin check only. */
+const readCompositeActions = (rootDir: string): readonly IWorkflowSource[] => {
+	const dir = join(rootDir, ACTIONS_DIR);
+	if (!existsSync(dir)) return [];
+	return readdirSync(dir, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.flatMap((entry) =>
+			['action.yml', 'action.yaml']
+				.filter((name) => existsSync(join(dir, entry.name, name)))
+				.map((name) => ({
+					relPath: `${ACTIONS_DIR}/${entry.name}/${name}`,
+					raw: readFileSync(join(dir, entry.name, name), 'utf8'),
+				})),
+		);
 };
 
 /**
@@ -154,6 +171,33 @@ const needsOf = (job: {
 		.filter((entry): entry is string => entry !== null);
 };
 
+const ACTION_USES_LINE = /^\s*(?:-\s+)?uses:\s*([^\s#]+)/u;
+const PINNED_ACTION_REF = /^[^@\s]+@[0-9a-f]{40}$/u;
+
+/**
+ * Every external `uses:` must name a 40-hex commit SHA. A tag is
+ * mutable: whoever controls the action repository can move it under a
+ * job that holds publish credentials. Local (`./`) references are
+ * part of this repository and exempt.
+ */
+export const checkActionPins = (
+	file: IWorkflowSource,
+): readonly IWorkflowYamlFinding[] =>
+	file.raw.split('\n').flatMap((text, index) => {
+		const ref = ACTION_USES_LINE.exec(text)?.[1];
+		if (ref === undefined || ref.startsWith('./')) return [];
+		if (PINNED_ACTION_REF.test(ref)) return [];
+		return [
+			{
+				relPath: file.relPath,
+				line: index + 1,
+				column: text.indexOf('uses:') + 1,
+				message: `\`uses: ${ref}\` is not pinned to a 40-hex commit SHA; pin it and keep the tag in a trailing comment`,
+				kind: 'shape' as const,
+			},
+		];
+	});
+
 /**
  * Parse one workflow and report every syntax error plus every
  * minimal-shape violation. Pure: no I/O.
@@ -177,7 +221,7 @@ export const checkWorkflowSource = (
 		});
 	}
 
-	const findings: IWorkflowYamlFinding[] = [];
+	const findings: IWorkflowYamlFinding[] = [...checkActionPins(file)];
 	const root = doc.contents;
 	if (!isMap(root)) {
 		return [
@@ -371,7 +415,14 @@ export const main = (
 	rootDir: string = repoRoot(),
 	read: IWorkflowSourceReader = readWorkflowFiles,
 ): number => {
-	const result = lintWorkflowYaml(read(join(rootDir, WORKFLOWS_DIR)));
+	const base = lintWorkflowYaml(read(join(rootDir, WORKFLOWS_DIR)));
+	const actionFindings =
+		readCompositeActions(rootDir).flatMap(checkActionPins);
+	const result: IWorkflowYamlResult = {
+		checked: base.checked,
+		findings: [...base.findings, ...actionFindings],
+		ok: base.ok && actionFindings.length === 0,
+	};
 	process.stdout.write(`${formatReport(result)}\n`);
 	return result.ok ? 0 : 1;
 };

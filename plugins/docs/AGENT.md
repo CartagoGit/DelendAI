@@ -33,9 +33,9 @@
 ## Tests
 
 - plugins/docs/tests/src/lib/docs-generate.tool.spec.ts
+- plugins/docs/tests/src/lib/docs-list-pagination.spec.ts
 - plugins/docs/tests/src/lib/docs-pagination.spec.ts
 - plugins/docs/tests/src/lib/docs.spec.ts
-- plugins/docs/tests/src/lib/engine-search.spec.ts
 
 ## Do not
 

@@ -56,6 +56,7 @@ export const cacheLayoutOutcomes = (
 		return result.applied.map((step) => ({
 			status: 'migrated',
 			id: step.id,
+			steps: step.steps,
 		}));
 	if (result.status === 'failed')
 		return [{ status: 'failed', id: result.id, reason: result.reason }];

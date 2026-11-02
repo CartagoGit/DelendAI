@@ -138,6 +138,7 @@ describe('resolvePricing (stale-while-revalidate, non-blocking)', () => {
 		};
 		let backgroundRefresh: Promise<void> | undefined;
 		const resolved = await resolvePricing(cachePath, {
+			refresh: true,
 			fetchImpl: async () => refreshed,
 			onBackgroundRefresh: (refresh) => {
 				backgroundRefresh = refresh;
@@ -151,5 +152,21 @@ describe('resolvePricing (stale-while-revalidate, non-blocking)', () => {
 		await backgroundRefresh;
 		const onDisk = JSON.parse(readFileSync(cachePath, 'utf8'));
 		expect(onDisk.source).toBe('network');
+	});
+
+	it('downloads nothing unless the user enabled refreshing', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'pricing-opt-in-'));
+		let fetched = false;
+		await resolvePricing(join(dir, 'pricing.json'), {
+			fetchImpl: async () => {
+				fetched = true;
+				return null;
+			},
+			onBackgroundRefresh: () => {
+				fetched = true;
+			},
+		});
+		expect(fetched).toBe(false);
+		rmSync(dir, { recursive: true, force: true });
 	});
 });

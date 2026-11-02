@@ -47,6 +47,7 @@ const fakeGh = (
 						number: 7,
 						title: 'Crash',
 						labels: [{ name: 'bug' }],
+						state: 'OPEN',
 						updatedAt: '2026-09-24',
 					},
 				]),
@@ -110,11 +111,13 @@ const payload = (result: unknown): Record<string, unknown> => {
 };
 
 describe('triage_list', () => {
-	it('lists the open issues with their label names', async () => {
+	it('lists the open issues with their title, label names and state', async () => {
 		const { found } = await handlers(fakeGh().exec);
 		expect(payload(await found.get('triage_list')?.({}))).toMatchObject({
 			repo: 'o/r',
-			open: [{ number: 7, labels: ['bug'] }],
+			open: [
+				{ number: 7, title: 'Crash', labels: ['bug'], state: 'open' },
+			],
 		});
 	});
 
@@ -129,6 +132,20 @@ describe('triage_list', () => {
 });
 
 describe('triage_run', () => {
+	it('returns the draft when it is not written, and reports a failed comment', async () => {
+		const { found } = await handlers(
+			fakeGh({ 'issue comment': fail('HTTP 403') }).exec,
+		);
+		const result = payload(
+			await found.get('triage_run')?.({ number: 7, writeProposal: true }),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.proposalWritten).toBe(false);
+		expect(String(result.draft)).toContain('pending');
+		expect(JSON.stringify(result.problems)).toContain('HTTP 403');
+		expect(JSON.stringify(result.problems)).toContain('writeProposal');
+	});
+
 	it('analyses, comments as the bot and labels, writing nothing when not asked', async () => {
 		const gh = fakeGh();
 		const { found } = await handlers(gh.exec);
@@ -190,7 +207,7 @@ describe('triage_run', () => {
 		).toContain('not found');
 	});
 
-	it('still reports the analysis when the comment and label fail', async () => {
+	it('still reports the analysis, but not success, when the comment and label fail', async () => {
 		const { found } = await handlers(
 			fakeGh({
 				'issue comment': fail('rate limited'),
@@ -201,7 +218,7 @@ describe('triage_run', () => {
 			payload(
 				await found.get('triage_run')?.({ number: 7, addLabel: true }),
 			),
-		).toMatchObject({ ok: true, commentPosted: false, labelsApplied: [] });
+		).toMatchObject({ ok: false, commentPosted: false, labelsApplied: [] });
 	});
 });
 

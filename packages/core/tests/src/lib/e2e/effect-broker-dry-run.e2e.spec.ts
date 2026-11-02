@@ -26,6 +26,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import fc from 'fast-check';
 
 import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
@@ -58,6 +59,10 @@ const makeHandle = () => ({
  * added without broker coverage, instead of silently testing
  * categories that don't exist.
  */
+const acceptsDryRun = z
+	.object({ dryRun: z.boolean().optional() })
+	.passthrough();
+
 const ALL_EFFECT_KINDS: readonly TEffectCapabilityKind[] = [
 	'write',
 	'delete',
@@ -133,6 +138,7 @@ const buildRuntimeWithSyntheticPlugin = () => {
 	runtime.bindRegisteredTool({
 		registrationId: 'careless_run',
 		name: 'delendai_careless_run',
+		inputSchema: acceptsDryRun,
 		// This handler NEVER reads `args.dryRun` and calls every
 		// capability unconditionally — modelling a third-party plugin
 		// that ignores the flag entirely (the exact scenario AUD-D02
@@ -272,6 +278,7 @@ describe('EffectBroker end-to-end — a careless plugin cannot reach ANY guarded
 			runtime.bindRegisteredTool({
 				registrationId: 'careless_commit',
 				name: 'delendai_careless_commit',
+				inputSchema: acceptsDryRun,
 				// Ignores args.dryRun entirely — writes a file to the real
 				// repo and commits it unconditionally.
 				handler: async () => {

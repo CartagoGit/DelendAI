@@ -75,11 +75,12 @@ describe('token tax and local KPIs', () => {
 			compactTypicalBytes: 2_000,
 			p95ResponseBytes: 4_000,
 			totalBytes: 8_048,
-			estimated: false,
+			estimated: true,
 			observedToolCount: 2,
 			observedResponseSamples: 3,
 			sources: {
-				staticSchemaBytes: 'derived-from-observed-distinct-tools',
+				staticSchemaBytes:
+					'estimated-per-tool-constant-times-observed-tools',
 				compactTypicalBytes: 'observed-response-bytes-p50',
 				p95ResponseBytes: 'observed-response-bytes-p95',
 			},

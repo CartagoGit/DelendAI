@@ -108,3 +108,29 @@ describe('runExplainPath — refusals', () => {
 		expect(parse(result).error.reason).toContain('empty');
 	});
 });
+
+describe('runExplainPath — the profile of the path', () => {
+	it('explains a Python path with the Python rules, not the TypeScript ones', () => {
+		const out = parse(runExplainPath({ path: 'tests/test_app.py' }));
+		expect(out.ok).toBe(true);
+		expect(out.profile).toBe('python');
+		expect(out.role).toBe('test');
+		expect(out.mayNotImport).toEqual([]);
+	});
+
+	it('takes the profile it is given', () => {
+		const out = parse(
+			runExplainPath({ path: 'src/__init__.py', profile: 'python' }),
+		);
+		expect(out.profile).toBe('python');
+		expect(out.role).toBe('package-marker');
+	});
+
+	it('keeps TypeScript for a TypeScript path', () => {
+		const out = parse(
+			runExplainPath({ path: 'plugins/x/src/lib/tools/a.tool.ts' }),
+		);
+		expect(out.profile).toBe('typescript');
+		expect(out.role).toBe('tool');
+	});
+});

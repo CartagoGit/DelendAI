@@ -165,6 +165,7 @@ describe('f00067 S10 — real subprocess round-trip (mcp-server)', () => {
 				transportFactory: () => spawnStubTransport(),
 			}),
 			subscription: failing,
+			'host-sampling': failing,
 			acp: failing,
 		};
 		const manager = new InvocationManager({
@@ -222,6 +223,7 @@ describe('f00067 S10 — real subprocess round-trip (mcp-server)', () => {
 				},
 			}),
 			subscription: failing,
+			'host-sampling': failing,
 			acp: failing,
 		};
 		const manager = new InvocationManager({

@@ -11,13 +11,13 @@
  * provider invokes. Unknown commands fall back to a generic, non-dangerous
  * "install <command>" hint.
  */
-import { knownClientOf } from '@delendai/core/contracts';
+import { catalogueClientOf } from '@delendai/core/contracts';
 
 import type { IInstallHint } from '../types';
 
 /** Install guidance for a CLI command, always non-`undefined`. */
 export const installHintFor = (command: string): IInstallHint => {
-	const known = knownClientOf(command)?.install;
+	const known = catalogueClientOf(command)?.install;
 	if (known !== undefined) return known;
 	return {
 		tool: command,

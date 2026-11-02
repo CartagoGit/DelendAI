@@ -31,6 +31,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 			applications: [
 				'copilot',
 				'github-copilot',
+				'github-copilot-chat',
 				'vscode',
 				'visual-studio-code',
 				'code',
@@ -61,6 +62,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		skills: { dir: '.agents/skills' },
 		agents: { dir: '.codex/agents', suffix: '.md', format: 'codex' },
 		instructions: 'AGENTS.md',
+		legacyInstructions: ['.codex/instructions.md'],
 		evidence: { paths: ['.codex'], env: ['CODEX_HOME'] },
 		identity: {
 			name: 'codex-cli',
@@ -81,6 +83,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		id: 'cursor',
 		label: 'Cursor',
 		instructions: '.cursor/rules/delendai.mdc',
+		legacyInstructions: ['.cursorrules'],
 		evidence: { paths: ['.cursor', '.cursorrules'] },
 		identity: {
 			name: 'cursor',
@@ -107,6 +110,7 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		id: 'continue',
 		label: 'Continue',
 		instructions: '.continue/rules/delendai.md',
+		legacyInstructions: ['.continuerules'],
 		evidence: { paths: ['.continue'] },
 		identity: { name: 'continue', applications: ['continue'] },
 	},
@@ -120,12 +124,14 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 	{
 		id: 'aider',
 		label: 'Aider',
+		legacyInstructions: ['.aider.conf.yml', '.aider.conf.yaml'],
 		evidence: { paths: [] },
 		identity: { name: 'aider', applications: ['aider'] },
 	},
 	{
 		id: 'cline',
 		label: 'Cline',
+		legacyInstructions: ['.clinerules'],
 		evidence: { paths: [] },
 		identity: { applications: ['cline'] },
 	},
@@ -190,3 +196,24 @@ export const AGENT_HOST_SLUGS: Readonly<Record<string, string>> =
 
 /** The variable naming the hosts for one run, comma-separated, over the configuration. */
 export const HOSTS_VARIABLE = 'DELENDAI_HOSTS';
+
+/**
+ * Every file a host reads instructions from, once, with the hosts that
+ * read it: `AGENTS.md` is read by several.
+ */
+export const AGENT_HOST_INSTRUCTION_FILES: readonly {
+	readonly path: string;
+	readonly hosts: readonly string[];
+}[] = [
+	...AGENT_HOSTS.flatMap((host) =>
+		[
+			...(host.instructions === undefined ? [] : [host.instructions]),
+			...(host.legacyInstructions ?? []),
+		].map((path) => ({ path, host: host.id })),
+	)
+		.reduce((byPath, { path, host }) => {
+			byPath.set(path, [...(byPath.get(path) ?? []), host]);
+			return byPath;
+		}, new Map<string, string[]>())
+		.entries(),
+].map(([path, hosts]) => ({ path, hosts }));

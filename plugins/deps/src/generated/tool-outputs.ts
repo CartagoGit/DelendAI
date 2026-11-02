@@ -42,7 +42,7 @@ export interface DelendaiDepsDepsCheckOutput {
 	manifest: string;
 	lockfile: {
 		present: boolean;
-		kind: string;
+		kind: string | null;
 	};
 	findings: {
 		kind: string;
@@ -96,15 +96,15 @@ export interface DelendaiDepsDepsOutdatedOutput {
 	manifest: string;
 	checked: number;
 	outdatedCount: number;
-	entries: {
+	entries: Array<{
 		name: string;
 		range: string;
 		section: string;
-		wanted: string;
-		latest: string;
+		wanted: string | null;
+		latest: string | null;
 		outdated: boolean;
 		error?: string;
-	}[];
+	}>;
 	truncated: boolean;
 }
 
@@ -128,10 +128,10 @@ export interface DelendaiDepsDepsTreeOutput {
 	lockfileFound: boolean;
 	root: {
 		name: string;
-		version: string;
+		version: string | null;
 		children: Array<{
 			name: string;
-			version: string;
+			version: string | null;
 			section?: "dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies";
 			children: unknown[];
 		}>;

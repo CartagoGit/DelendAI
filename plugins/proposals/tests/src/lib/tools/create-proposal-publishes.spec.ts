@@ -327,3 +327,27 @@ describe('create_proposal on a project that lands without a pull request', () =>
 		expect(result.nextAction).toContain('directly');
 	});
 });
+
+describe('create_proposal in a create unit that already made a proposal', () => {
+	it('refuses a second proposal and names the first', async () => {
+		const options = optionsFor(true);
+		git(
+			options.workspaceRoot,
+			'checkout',
+			'-q',
+			'-b',
+			'wip/agent-a/create/x00001-all-g1/first',
+		);
+		const handler = await handlerFor(options);
+
+		const result = (await handler({
+			kind: 'feat',
+			title: 'A second proposal',
+			goal: 'Should not be written.',
+			slices: [],
+		})) as { readonly isError?: boolean };
+
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toContain('x00001');
+	});
+});

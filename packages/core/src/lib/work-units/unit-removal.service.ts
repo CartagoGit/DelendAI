@@ -27,7 +27,15 @@ export const worktreeOfRef = (root: string, ref: string): string | undefined =>
 export const removeUnitCheckout = async (
 	root: string,
 	ref: string,
-	options: { readonly editsKept?: boolean } = {},
+	options: {
+		readonly editsKept?: boolean;
+		/**
+		 * The tip the unit was judged spent at. The branch is deleted only
+		 * while it is still there: one another session committed on since
+		 * is not the unit that was judged.
+		 */
+		readonly tip?: string;
+	} = {},
 ): Promise<IUnitRemoval> => {
 	const worktree = worktreeOfRef(root, ref);
 	if (worktree !== undefined) {
@@ -57,7 +65,12 @@ export const removeUnitCheckout = async (
 		}
 	}
 	const deleted =
-		readGit(root, ['update-ref', '-d', `refs/heads/${ref}`]) !== undefined;
+		readGit(root, [
+			'update-ref',
+			'-d',
+			`refs/heads/${ref}`,
+			...(options.tip === undefined ? [] : [options.tip]),
+		]) !== undefined;
 	const common = gitCommonDirOf(root);
 	if (deleted && common !== undefined) await removeUnitLease(common, ref);
 	return {

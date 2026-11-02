@@ -51,6 +51,7 @@ import { join } from 'node:path';
 import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /** Only plugin source is in scope — `plugins/<name>/src/**` (per AUD-D01). */
 const SCAN_GLOBS: readonly string[] = ['plugins'];
@@ -246,4 +247,14 @@ const main = async (): Promise<number> => {
 	return 0;
 };
 
-if (import.meta.main) process.exit(await main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'effect-boundaries',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
+	process.exit(await main());
+}

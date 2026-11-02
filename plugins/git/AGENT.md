@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @delendai/forge
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core

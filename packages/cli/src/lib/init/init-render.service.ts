@@ -7,6 +7,7 @@
  */
 
 import type {
+	IHostInstructionTarget,
 	IRenderedBundle,
 	IRenderedFile,
 } from '../../contracts/interfaces/init.interface';
@@ -21,10 +22,8 @@ import {
 } from '@delendai/core/public';
 import type { IFileReader } from '@delendai/core/contracts';
 import {
-	AGENT_HOSTS,
 	DEFAULT_DELENDAI_SERVER_NAME,
 	hostToolSetReference,
-	projectAgentHosts,
 	renderAgentForHosts,
 	signAgent,
 	applyJsoncEdits,
@@ -38,13 +37,23 @@ import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-laun
 import { buildCanonicalLaunch } from '../server-args.service';
 import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
+import { buildConfigBlockEdits } from './init-config-comments';
 import {
 	computeHostInstructionsWrite,
 	readHostInstructionsFile,
 } from './init-host-instructions.service';
 import { renderSnapshotHostInstructionsProposal } from './init-host-snapshot.service';
+import {
+	hostInstructionsBody,
+	initHosts,
+	initInstructionTargets,
+} from './init-hosts.helper';
 import { renderAdoptionPlan } from './init-migrate-offer.service';
 import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
+import {
+	JSONC_ASSOCIATION,
+	VSCODE_SETTINGS_RELPATH,
+} from '../../contracts/constants/init.constant';
 
 // Single source of truth for preset membership lives in
 // `@delendai/core`'s preset catalog. We delegate to
@@ -176,38 +185,41 @@ export const renderDelendaiConfig = (
 			leadingComment: buildPluginComment(plugin, enabled, answers.preset),
 		});
 	}
-	const config: Record<string, unknown> = {
-		$schema:
-			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
-		cacheDir: '.cache/delendai',
-		docsDir: 'docs/delendai',
-		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
-		plugins: {},
-		...(development === undefined ? {} : { development }),
-	};
+	const config: Record<string, unknown> = {};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
 	// `tools/scripts/scaffold/create-plugin.script.ts` (f00087 S2) and any
 	// downstream tool that wants to scaffold code under the
 	// project's natural root can read it. The block is advisory
 	// only — the loader ignores it.
-	if (
+	const convention =
 		answers.detected !== undefined &&
 		answers.detected.pluginPathsRoot !== 'plugins'
-	) {
-		config.convention = {
-			pluginPathsRoot: answers.detected.pluginPathsRoot,
-			sourceRoot: answers.detected.sourceRoot,
-		};
-	}
+			? {
+					pluginPathsRoot: answers.detected.pluginPathsRoot,
+					sourceRoot: answers.detected.sourceRoot,
+				}
+			: undefined;
+	// The top-level blocks are CREATED by edits rather than written
+	// into an object that gets stringified: the JSONC editor writes a
+	// leading comment only for a member that did not exist yet, so a
+	// block that was already in the object would keep its value and
+	// silently lose its explanation.
+	const blockEdits = buildConfigBlockEdits({
+		...(answers.hosts === undefined ? {} : { hosts: answers.hosts }),
+		...(development === undefined ? {} : { development }),
+		...(convention === undefined ? {} : { convention }),
+	});
 	// The plugin block is written through the JSONC editor rather than
 	// stringified: that is what puts each comment above its entry, and
 	// it is the same path a later `config sync` takes, so a re-run does
-	// not duplicate what init wrote.
-	const content = applyJsoncEdits(
-		`${JSON.stringify(config, null, '\t')}\n`,
-		pluginEdits,
-	);
+	// not duplicate what init wrote. The block edits come first, so the
+	// plugins land inside a `plugins` block that already explains
+	// itself.
+	const content = applyJsoncEdits(`${JSON.stringify(config, null, '\t')}\n`, [
+		...blockEdits,
+		...pluginEdits,
+	]);
 	return {
 		relPath: 'delendai.config.json',
 		content,
@@ -329,6 +341,18 @@ export const renderVscodeMcpJson = (
 	};
 };
 
+/**
+ * Renders `.vscode/settings.json` with the JSONC association.
+ *
+ * The rendered content is the WHOLE file only when there is none; the
+ * writer merges it into an existing one, so a person who has settings
+ * of their own keeps every key and every comment.
+ */
+export const renderVscodeSettings = (): IRenderedFile => ({
+	relPath: VSCODE_SETTINGS_RELPATH,
+	content: `${JSON.stringify(JSONC_ASSOCIATION, null, '\t')}\n`,
+});
+
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
 	serverName = DEFAULT_DELENDAI_SERVER_NAME,
@@ -362,22 +386,7 @@ export const renderAgentFiles = async (
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
 	const serverName = options.serverName ?? DEFAULT_DELENDAI_SERVER_NAME;
 	const descriptors = await loadAgentDescriptors(workspaceRoot, options);
-	const found = await projectAgentHosts({
-		root: workspaceRoot,
-		declared: options.hosts,
-	});
-	// Declared hosts are the project's word; otherwise the ones found, and
-	// always the ones init itself configures the server for.
-	const hosts =
-		options.everyHost === true
-			? AGENT_HOSTS
-			: found.source === 'declared'
-				? found.hosts
-				: AGENT_HOSTS.filter(
-						(host) =>
-							INIT_CONFIGURED_HOSTS.includes(host.id) ||
-							found.hosts.includes(host),
-					);
+	const hosts = await initHosts(workspaceRoot, options);
 	return descriptors.flatMap((descriptor) =>
 		renderAgentForHosts(hosts, {
 			name: `${namespacePrefix}-${descriptor.role}`,
@@ -393,18 +402,6 @@ export const renderAgentFiles = async (
 	);
 };
 
-/** The hosts init writes the server's configuration for whatever it finds. */
-const INIT_CONFIGURED_HOSTS: readonly string[] = ['copilot', 'claude'];
-
-// f00092: the 3-fragment model collapsed to a single canonical fragment.
-// The host-specific footnote now lives inline in each hand-edited host
-// file (between its `<!-- delendai:begin -->` / `<!-- delendai:end -->`
-// markers), so the same canonical body is written into the 3 host files
-// and the footnote is appended per host by `hostFootnoteFor()`.
-const HOST_INSTRUCTIONS_CANONICAL_BODY =
-	'# delendai host hints (auto-generated)\n\n' +
-	'See `docs/delendai/host-hints/agent-instructions.generated.md` for the live agent catalog.';
-
 /**
  * The file every host block points at. The block names it, so a project
  * that receives the block must receive the file; the server stays the
@@ -417,30 +414,6 @@ const HOST_HINTS_CONTENT =
 	'# delendai agent hints\n\n' +
 	'Start every session with `delendai_overview { compact: true }`, then route work with `delendai_agent_catalog`. Tools, skills and proposals change every week: read them from the server, never from a copy in this file.\n';
 
-const HOST_INSTRUCTIONS_TARGETS: ReadonlyArray<{
-	relPath: string;
-	host: 'copilot' | 'claude' | 'agents';
-}> = [
-	{ relPath: '.github/copilot-instructions.md', host: 'copilot' },
-	{ relPath: 'CLAUDE.md', host: 'claude' },
-	{ relPath: 'AGENTS.md', host: 'agents' },
-];
-
-// f00092: the 1-line footnote that used to live in each per-host fragment.
-// The footnote is host-specific by definition (it says "this appendix is
-// in effect for you") so it belongs in the hand-edited host file, where
-// the rest of the host file already lives.
-const HOST_FOOTNOTE: Readonly<Record<'copilot' | 'claude' | 'agents', string>> =
-	{
-		copilot:
-			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
-		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
-		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
-	};
-
-const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
-	`\n\n${HOST_FOOTNOTE[host]}`;
-
 /**
  * S4 — render host-instructions blocks honouring idempotent append.
  * When the file already has a `<!-- delendai:begin -->` /
@@ -450,16 +423,20 @@ const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
 export const renderHostInstructionsBlocks = async (
 	workspaceRoot: string,
 	mode: 'append' | 'overwrite' | 'skip',
+	targets: readonly IHostInstructionTarget[],
 ): Promise<readonly IRenderedFile[]> => {
 	if (mode === 'skip') return [];
 	const out: IRenderedFile[] = [];
-	for (const target of HOST_INSTRUCTIONS_TARGETS) {
-		const body = `${HOST_INSTRUCTIONS_CANONICAL_BODY}${hostFootnoteFor(target.host)}`;
+	for (const target of targets) {
 		const current = await readHostInstructionsFile(
 			workspaceRoot,
 			target.relPath,
 		);
-		const next = computeHostInstructionsWrite(current, body, mode);
+		const next = computeHostInstructionsWrite(
+			current,
+			hostInstructionsBody(target),
+			mode,
+		);
 		if (next === undefined) continue;
 		out.push({ relPath: target.relPath, content: next });
 	}
@@ -515,6 +492,7 @@ export const renderInitBundle = async (
 	const files: IRenderedFile[] = [
 		renderDelendaiConfig(answers, resolvedPlugins, options.development),
 		renderVscodeMcpJson(launch, answers.serverName),
+		renderVscodeSettings(),
 		renderGenericMcpJson(
 			buildCanonicalLaunch({
 				workspace: '.',
@@ -535,10 +513,15 @@ export const renderInitBundle = async (
 			})),
 		);
 	}
+	const instructionTargets = await initInstructionTargets(
+		answers.workspaceRoot,
+		{ hosts: answers.hosts },
+	);
 	files.push(
 		...(await renderHostInstructionsBlocks(
 			answers.workspaceRoot,
 			answers.hostInstructions,
+			instructionTargets,
 		)),
 	);
 	// f00093: snapshot pre-overwrite host-instructions into a `ready`
@@ -549,6 +532,7 @@ export const renderInitBundle = async (
 	try {
 		const snapshot = await renderSnapshotHostInstructionsProposal(answers, {
 			reader,
+			targets: instructionTargets,
 		});
 		files.push(...snapshot);
 	} catch (err) {

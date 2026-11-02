@@ -10,6 +10,7 @@
  * stays passive there, whatever the caller consents to.
  */
 import {
+	planDryRun,
 	probeTool,
 	realProbeDeps,
 	runExternalTool,
@@ -42,6 +43,23 @@ export const runDocker = async (
 			ok: 'dry-run',
 			command: shown,
 			...(command.risks.length > 0 ? { risks: [...command.risks] } : {}),
+			...planDryRun({
+				wouldRun: [
+					{
+						shape: 'process',
+						target: shown,
+						summary: command.mutating
+							? 'runs docker and changes state'
+							: 'runs docker, read only',
+					},
+				],
+				risk:
+					command.risks.length > 0
+						? 'high'
+						: command.mutating
+							? 'medium'
+							: 'low',
+			}),
 		};
 	if (
 		command.mutating &&

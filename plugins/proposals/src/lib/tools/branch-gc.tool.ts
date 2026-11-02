@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
+import { planDryRun } from '@delendai/core/public';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { runBranchGcEngine } from '../shared/branch-gc-engine';
@@ -46,6 +47,7 @@ const SKIPPED_ENTRY = z.object({
 		'not-found',
 		'no-branch',
 		'undelivered',
+		'status-unreadable',
 	]),
 	detail: z.string(),
 });
@@ -65,6 +67,9 @@ const BRANCH_GC_OUTPUT_SCHEMA = z.object({
 	removed: z.array(REMOVED_ENTRY).optional(),
 	skipped: z.array(SKIPPED_ENTRY).optional(),
 	summary: SUMMARY.optional(),
+	wouldChange: z.array(z.looseObject({})).optional(),
+	wouldRun: z.array(z.looseObject({})).optional(),
+	risk: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 /**
@@ -81,6 +86,7 @@ export const buildBranchGcRegistration = (
 		id: 'branch_gc',
 		effects: ['write'],
 		writeRoot: 'repository',
+		dryRunSupported: true,
 		summary:
 			'Remove worktrees whose branch is merged into base, clean, and idle (dry-run default; unmerged branches are sacred).',
 		tags: ['coordination'],
@@ -127,7 +133,19 @@ export const buildBranchGcRegistration = (
 							: {}),
 					};
 					const result = await runBranchGcEngine(engineOptions);
-					return toolJsonWithErrorFlag(result);
+					if (!('removed' in result) || result.dryRun !== true)
+						return toolJsonWithErrorFlag(result);
+					return toolJsonWithErrorFlag({
+						...result,
+						...planDryRun({
+							wouldChange: result.removed.map((entry) => ({
+								kind: 'delete' as const,
+								path: entry.path,
+								summary: `remove worktree ${entry.path} (branch ${entry.branch})`,
+							})),
+							risk: 'medium',
+						}),
+					});
 				},
 			);
 		},

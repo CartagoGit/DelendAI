@@ -9,7 +9,8 @@
  * worktree and then failed every step after, reading a repository that no
  * longer existed.
  */
-import { basename, dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
 
@@ -24,12 +25,22 @@ export const hookFreeEnvironment = (
 /**
  * The worktree a hook fired in: where git told it its work tree is, the
  * directory holding a main checkout's `.git`, or, for a linked worktree,
- * the directory git starts its hooks in.
+ * the one its `gitdir` file names (`<worktree>/.git`). Read from git, not
+ * from the launch directory: a library has no say over where it was
+ * started. `undefined` when a linked worktree's file cannot be read.
  */
-const hookWorktree = (env: NodeJS.ProcessEnv, gitDir: string): string => {
+const hookWorktree = (
+	env: NodeJS.ProcessEnv,
+	gitDir: string,
+): string | undefined => {
 	if (env.GIT_WORK_TREE !== undefined) return resolve(env.GIT_WORK_TREE);
 	const absolute = resolve(gitDir);
-	return basename(absolute) === '.git' ? dirname(absolute) : process.cwd();
+	if (basename(absolute) === '.git') return dirname(absolute);
+	try {
+		return dirname(readFileSync(join(absolute, 'gitdir'), 'utf8').trim());
+	} catch {
+		return undefined;
+	}
 };
 
 /**

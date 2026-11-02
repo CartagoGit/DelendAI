@@ -77,6 +77,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 // Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
 const SELF = fileURLToPath(import.meta.url);
@@ -512,6 +513,15 @@ if (isMainModule()) {
 	const searchRoots = (argOf('--search-roots') ?? '')
 		.split(',')
 		.filter((entry) => entry.length > 0);
+	if (
+		refuseMissingScanRoots(
+			'no-duplicate-implementation',
+			root,
+			searchRoots.length > 0 ? searchRoots : DEFAULT_ROOTS,
+		)
+	) {
+		process.exit(1);
+	}
 	const minLines = Number.parseInt(
 		argOf('--min-clone-lines') ?? `${DEFAULT_MIN_CLONE_LINES}`,
 		10,

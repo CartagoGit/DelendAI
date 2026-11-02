@@ -64,7 +64,9 @@ export const buildObsErrorsToolRegistration = (
 	options: IObsErrorsToolOptions,
 ): IToolRegistration => ({
 	id: 'obs_errors',
-	tags: ['observability', 'network', 'effects'],
+	tags: ['observability', 'network'],
+	// The credentialed request to the error tracker is an effect, not a tag.
+	effects: ['network'],
 	summary: 'List recent issues from a Sentry/Datadog source via web-fetch.',
 	register: async (server) => {
 		server.registerTool(

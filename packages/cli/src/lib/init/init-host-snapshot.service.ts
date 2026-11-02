@@ -2,13 +2,10 @@
  * init-host-snapshot.service.ts — f00093.
  *
  * When `init` runs with `hostInstructions: 'overwrite'` (the f00103
- * `init:default` default), the three agent host files
- *
- *   - AGENTS.md
- *   - CLAUDE.md
- *   - .github/copilot-instructions.md
- *
- * are about to be replaced with the canonical delendai block
+ * `init:default` default), the instructions file of each host the
+ * project uses (`.github/copilot-instructions.md`, `CLAUDE.md`,
+ * `AGENTS.md`, `.windsurfrules`…, from core's `AGENT_HOSTS`)
+ * is about to be replaced with the canonical delendai block
  * (f00092: reference to the single `agent-instructions.generated.md`
  * fragment + host-specific footnote inline). Today, that overwrite is
  * silent: whatever custom instructions the previous agent was reading
@@ -44,56 +41,17 @@ import { basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { IFileReader } from '@delendai/core/contracts';
 
+import type { IHostInstructionTarget } from '../../contracts/interfaces/init.interface';
 import { allocateNextAdoptionId } from './init-foreign-detect.service';
+import { hostInstructionsBody } from './init-hosts.helper';
 import type { IInitAnswers } from './init-answers.types';
-
-/**
- * The three host files this module snapshots. Order matters — the
- * proposal body emits the payloads in this order so the LLM reads
- * them in the same shape every time.
- */
-export const HOST_FILE_TARGETS: readonly {
-	readonly relPath: string;
-	readonly host: 'copilot' | 'claude' | 'agents';
-}[] = [
-	{ relPath: '.github/copilot-instructions.md', host: 'copilot' },
-	{ relPath: 'CLAUDE.md', host: 'claude' },
-	{ relPath: 'AGENTS.md', host: 'agents' },
-];
 
 const BEGIN_MARKER = '<!-- delendai:begin -->';
 const END_MARKER = '<!-- delendai:end -->';
 
-/**
- * Canonical block the new `init` would write into the host files. We
- * embed it next to every captured payload so the LLM has both sides
- * of the diff in one read (no second read of the host file needed).
- *
- * Mirrors `HOST_INSTRUCTIONS_CANONICAL_BODY` + `hostFootnoteFor()`
- * in `init-render.service.ts`. Kept inline (not imported) to avoid
- * coupling this module to a renderer that may move.
- */
-const CANONICAL_HOST_BLOCK = (
-	host: 'copilot' | 'claude' | 'agents',
-): string => {
-	const FOOTNOTE: Readonly<
-		Record<(typeof HOST_FILE_TARGETS)[number]['host'], string>
-	> = {
-		copilot:
-			'- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
-		claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect.',
-		agents: '- Bootstrap §7 (repo-level rules) is in effect.',
-	};
-	return (
-		`<!-- delendai:begin -->\n` +
-		`\n` +
-		`# delendai host hints\n\n` +
-		`See \`docs/delendai/host-hints/agent-instructions.generated.md\` for the live catalog.\n` +
-		`\n` +
-		`${FOOTNOTE[host]}\n` +
-		`<!-- delendai:end -->`
-	);
-};
+/** The block `init` writes into a target, markers included. */
+const canonicalHostBlock = (target: IHostInstructionTarget): string =>
+	`${BEGIN_MARKER}\n${hostInstructionsBody(target)}\n${END_MARKER}`;
 
 /**
  * One captured host file. The renderer emits one of these per host
@@ -102,7 +60,8 @@ const CANONICAL_HOST_BLOCK = (
  */
 export interface ICapturedHostFile {
 	readonly relPath: string;
-	readonly host: 'copilot' | 'claude' | 'agents';
+	/** The hosts that read it. */
+	readonly hosts: readonly string[];
 	/** True when the file did not exist before the overwrite. */
 	readonly missing: boolean;
 	/** The full pre-overwrite file content (verbatim), or '' when missing. */
@@ -128,14 +87,14 @@ export interface ICapturedHostFile {
  */
 export const isCanonicalHostBlock = (
 	body: string,
-	host: 'copilot' | 'claude' | 'agents',
+	target: IHostInstructionTarget,
 ): boolean => {
 	const beginIdx = body.indexOf(BEGIN_MARKER);
 	const endIdx = body.indexOf(END_MARKER);
 	if (beginIdx < 0 || endIdx < 0 || endIdx <= beginIdx) return false;
 	const innerStart = beginIdx + BEGIN_MARKER.length;
 	const inner = body.slice(innerStart, endIdx).trim();
-	const canonical = CANONICAL_HOST_BLOCK(host)
+	const canonical = canonicalHostBlock(target)
 		.replace(BEGIN_MARKER, '')
 		.replace(END_MARKER, '')
 		.trim();
@@ -144,7 +103,7 @@ export const isCanonicalHostBlock = (
 
 /**
  * Snapshot result. Either we wrote one proposal (1 captured payload
- * per host file inside it) or we wrote nothing (all three hosts were
+ * per host file inside it) or we wrote nothing (every host file was
  * already canonical / non-existent and we declined to pollute the
  * proposals queue with a no-op).
  */
@@ -156,35 +115,36 @@ export interface IHostInstructionsSnapshot {
 }
 
 /**
- * Read each of the three host files via the injected reader and
+ * Read each target host file via the injected reader and
  * return the captured payloads. Pure on the reader — does not write
  * anything.
  */
 export const captureHostFiles = async (
 	reader: IFileReader,
+	targets: readonly IHostInstructionTarget[],
 ): Promise<readonly ICapturedHostFile[]> => {
 	const out: ICapturedHostFile[] = [];
-	for (const target of HOST_FILE_TARGETS) {
+	for (const target of targets) {
 		const exists = await reader.exists(target.relPath);
 		if (!exists) {
 			out.push({
 				relPath: target.relPath,
-				host: target.host,
+				hosts: target.hosts,
 				missing: true,
 				preOverwrite: '',
-				canonicalReplacement: CANONICAL_HOST_BLOCK(target.host),
+				canonicalReplacement: canonicalHostBlock(target),
 				alreadyCanonical: false,
 			});
 			continue;
 		}
 		const raw = (await reader.readFile(target.relPath)) ?? '';
-		const alreadyCanonical = isCanonicalHostBlock(raw, target.host);
+		const alreadyCanonical = isCanonicalHostBlock(raw, target);
 		out.push({
 			relPath: target.relPath,
-			host: target.host,
+			hosts: target.hosts,
 			missing: false,
 			preOverwrite: raw,
-			canonicalReplacement: CANONICAL_HOST_BLOCK(target.host),
+			canonicalReplacement: canonicalHostBlock(target),
 			alreadyCanonical,
 		});
 	}
@@ -197,8 +157,8 @@ export const captureHostFiles = async (
  * the queue, no LLM is summoned to review nothing.
  *
  * Rule: at least one captured file is `missing === false` AND
- * `alreadyCanonical === false`. A workspace where all three host
- * files are either absent or already canonical is a no-op; the
+ * `alreadyCanonical === false`. A workspace whose host
+ * files are all absent or already canonical is a no-op; the
  * snapshot path skips it.
  */
 export const hasNonCanonicalContent = (
@@ -301,7 +261,7 @@ const renderProposalBody = (
 		'## goal\n\n' +
 		'This proposal was scaffolded by `delendai init` (f00093) because the\n' +
 		'last `init` run in this workspace was about to overwrite the\n' +
-		'three host files at ** `' +
+		'host instruction files at ** `' +
 		workspaceRoot +
 		'` ** with the canonical\n' +
 		'delendai block (f00092).\n\n' +
@@ -419,11 +379,13 @@ export const renderSnapshotHostInstructionsProposal = async (
 	answers: IInitAnswers,
 	options: {
 		readonly reader: IFileReader;
+		/** The files `init` writes the block into for this project's hosts. */
+		readonly targets: readonly IHostInstructionTarget[];
 	},
 ): Promise<readonly IHostInstructionsSnapshot[]> => {
 	if (answers.hostInstructions !== 'overwrite') return [];
 
-	const captures = await captureHostFiles(options.reader);
+	const captures = await captureHostFiles(options.reader, options.targets);
 	if (!hasNonCanonicalContent(captures)) return [];
 
 	const workspaceHash = deriveWorkspaceHash(answers.workspaceRoot);

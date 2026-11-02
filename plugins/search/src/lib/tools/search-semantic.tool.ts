@@ -232,6 +232,7 @@ export const runSearchWithMode = async (
 			workspaceRootAbs: options.workspaceRootAbs,
 			searchOptions,
 			embedder,
+			expectedDimension: queryVector.length,
 			pluginCacheDir: resolvePluginCacheDir(options),
 		});
 	} catch {

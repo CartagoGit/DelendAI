@@ -52,6 +52,32 @@ const CI_RESULT_BY_STATE = {
 	neutral: 'neutral',
 } as const;
 
+type ICiState = keyof typeof VALIDATION_BY_CI;
+
+/**
+ * One verdict for a head from all its check runs, whatever order the
+ * forge listed them in: a run that failed or timed out decides; then one
+ * still running; then a success (a run cancelled and run again does not
+ * count against it); then a cancellation; neutral last. Recording each
+ * run in turn let the last one listed decide.
+ */
+export const aggregateCheckState = (
+	states: readonly ICiState[],
+): ICiState | undefined => {
+	for (const decisive of [
+		'failure',
+		'timed_out',
+		'in_progress',
+		'queued',
+		'success',
+		'cancelled',
+		'neutral',
+	] as const) {
+		if (states.includes(decisive)) return decisive;
+	}
+	return undefined;
+};
+
 export const runForgePhase = async (input: {
 	readonly forge: IStartupForgeSeam | undefined;
 	readonly ports: IStartupStatePorts;
@@ -141,7 +167,15 @@ export const runForgePhase = async (input: {
 				pullRequestId: row.id,
 				now: input.now,
 			});
-			if (pull.state === 'merged' && pull.mergeSha !== undefined) {
+			// Integrated only by its own head: a pull request found through the
+			// ref's name may have merged another commit of that branch, and
+			// marking this checkpoint integrated by it claimed work landed
+			// that never did.
+			if (
+				pull.state === 'merged' &&
+				pull.mergeSha !== undefined &&
+				pull.headSha === target.sha
+			) {
 				const outcome = input.ports.generations.markIntegrated({
 					workUnitId: target.workUnitId,
 					generation: target.generation,
@@ -207,13 +241,20 @@ export const runForgePhase = async (input: {
 					now: input.now,
 				});
 				ciRunsReconciled += 1;
-				const target = byHeadSha.get(run.candidateSha);
-				if (target === undefined) continue;
+			}
+			// Every run of a head first, then one verdict per checkpoint.
+			for (const [sha, target] of byHeadSha) {
+				const state = aggregateCheckState(
+					checks.payload
+						.filter((run) => run.candidateSha === sha)
+						.map((run) => run.state),
+				);
+				if (state === undefined) continue;
 				input.ports.generations.recordValidation({
 					workUnitId: target.workUnitId,
 					generation: target.generation,
-					validationState: VALIDATION_BY_CI[run.state],
-					ciResult: CI_RESULT_BY_STATE[run.state],
+					validationState: VALIDATION_BY_CI[state],
+					ciResult: CI_RESULT_BY_STATE[state],
 					now: input.now,
 				});
 			}

@@ -68,6 +68,10 @@ export const ZONE_RULES: readonly IZoneRule[] = [
 		id: 'proposals',
 		match: under('plugins/proposals/'),
 		paths: () => ['plugins/proposals'],
+		// Measured on develop's full run: 273 s and 256 s on two jobs,
+		// against a mean of 153 s. Its specs drive real stores, and 42% of
+		// a job is loading their modules, which counting specs cannot see.
+		costWeight: 2,
 	},
 	{
 		id: 'plugins',
@@ -85,6 +89,8 @@ export const ZONE_RULES: readonly IZoneRule[] = [
 			dirs.filter(
 				(dir) => dir.startsWith('packages/') && dir !== 'packages/core',
 			),
+		// 220 s on its single job, the slowest zone but one.
+		costWeight: 1.4,
 	},
 	{
 		id: 'apps',

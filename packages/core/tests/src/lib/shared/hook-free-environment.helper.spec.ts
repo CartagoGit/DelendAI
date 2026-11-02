@@ -85,10 +85,28 @@ describe('gitEnvironmentFor', () => {
 		expect(gitEnvironmentFor(other, plain)).toBe(plain);
 	});
 
-	it("takes a linked worktree's hook to be the directory it runs in", () => {
-		const env = { ...process.env, GIT_DIR: '/x/.git/worktrees/unit' };
-		expect(gitEnvironmentFor(process.cwd(), env).GIT_DIR).toBe(env.GIT_DIR);
-		expect(gitEnvironmentFor('/elsewhere', env).GIT_DIR).toBeUndefined();
+	it("takes a linked worktree's hook to be the worktree its gitdir file names", () => {
+		const main = repo();
+		writeFileSync(join(main, 'f'), 'x');
+		execFileSync('git', ['add', 'f'], { cwd: main });
+		execFileSync(
+			'git',
+			['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'f'],
+			{ cwd: main },
+		);
+		const linked = join(main, 'linked');
+		execFileSync('git', ['worktree', 'add', '-q', linked], { cwd: main });
+		const env = {
+			...process.env,
+			GIT_DIR: join(main, '.git', 'worktrees', 'linked'),
+		};
+		expect(gitEnvironmentFor(linked, env).GIT_DIR).toBe(env.GIT_DIR);
+		expect(gitEnvironmentFor(main, env).GIT_DIR).toBeUndefined();
+		const unreadable = {
+			...process.env,
+			GIT_DIR: '/x/.git/worktrees/unit',
+		};
+		expect(gitEnvironmentFor(linked, unreadable).GIT_DIR).toBeUndefined();
 	});
 
 	it("lets readGit see another unit's own changes from inside a hook", () => {

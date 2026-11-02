@@ -31,6 +31,7 @@
 ## Tests
 
 - plugins/prompts-pack/src/prompts/prompts.spec.ts
+- plugins/prompts-pack/src/prompts/review-diff.spec.ts
 
 ## Do not
 

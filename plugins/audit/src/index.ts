@@ -8,6 +8,7 @@ import {
 	UNIVERSAL_SCOPES,
 } from './lib/services/audit-brief.service';
 import type { ILayerConfig } from './lib/services/audit-brief.service';
+import { buildCloseRegistration } from './lib/tools/audit-close.tool';
 import { buildConsolidateRegistration } from './lib/tools/audit-consolidate.tool';
 import { buildPlanRegistration } from './lib/tools/audit-plan.tool';
 import { buildRunRegistration } from './lib/tools/audit-run.tool';
@@ -350,7 +351,7 @@ const DEFAULT_OPTIONS = {
 
 export default definePlugin({
 	name: 'audit',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding.',
 	optionsSchema: OptionsSchema,
@@ -428,6 +429,12 @@ export default definePlugin({
 				plan,
 				consolidate,
 				run,
+				buildCloseRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					defaultAuditDir: auditDir,
+					proposalsRoot: joinRel(ctx.docsDir, 'proposals'),
+				}),
 				buildSelfAuditRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRootAbs: ctx.workspace.root,

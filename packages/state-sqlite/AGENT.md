@@ -11,6 +11,7 @@ _(none)_
 
 ## Depends on
 
+- @delendai/sqlite
 - @delendai/state
 
 ## Writes

@@ -38,6 +38,7 @@ import { join, relative } from 'node:path';
 import { walkTsFiles } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_GLOBS: readonly string[] = ['packages/state/src'];
 
@@ -184,7 +185,17 @@ const main = async (): Promise<number> => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(await main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'state-engine-purity',
+			lintRepoRoot(import.meta.url),
+			['packages/state/src'],
+		)
+	)
+		process.exit(1);
+	process.exit(await main());
+}
 
 // Avoid "unused" complaints in callers that only import the symbols.
 void existsSync;

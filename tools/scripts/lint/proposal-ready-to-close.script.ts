@@ -25,7 +25,7 @@
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --strict
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --proposal=<id>
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -339,17 +339,8 @@ export const resolvedStrandings = (
 
 /** Git facts about `ref`'s history, read from the clone at `root`. */
 const gitFactsAt = (root: string, ref: string): IReviewGitFacts => {
-	const git = (args: readonly string[]): string | undefined => {
-		try {
-			return execFileSync('git', [...args], {
-				cwd: root,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'ignore'],
-			}).trim();
-		} catch {
-			return undefined;
-		}
-	};
+	const git = (args: readonly string[]): string | undefined =>
+		readGit(root, args);
 	return {
 		commitTimeMs: (sha) => {
 			if (git(['merge-base', '--is-ancestor', sha, ref]) === undefined) {

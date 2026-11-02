@@ -46,10 +46,11 @@ const subscription = {
 	billingMode: 'subscription-included',
 } as const;
 
-/** No source reads this machine: no environment, models, plan tools or local servers. */
+/** No source reads this machine: no environment, models, plan tools, local servers or editor BYOK. */
 const isolated = {
 	env: {},
 	seen: [],
+	hostByok: [],
 	planTools: [],
 	fetchLocal: async () => undefined,
 };

@@ -1,17 +1,15 @@
 /**
  * host-instruction-files.constant.ts — f00094 S1/S2.
  *
- * The hand-maintained scan-surface table `scanHostInstructions` reads.
- * There is no glob and no fuzzy match: adding support for a new host is
- * a one-line addition to one of these tables, nothing else.
+ * The scan-surface table `scanHostInstructions` reads. There is no glob
+ * and no fuzzy match: the in-repo files come from core's host catalog,
+ * the home ones are listed here.
  *
  * Surface table (f00094 §architecture):
  *
  * | Path                              | Surface   | Default scope        |
  * |-----------------------------------|-----------|----------------------|
- * | AGENTS.md                         | in-repo   | always read          |
- * | CLAUDE.md                         | in-repo   | always read          |
- * | .github/copilot-instructions.md   | in-repo   | always read          |
+ * | each host's instructions files    | in-repo   | always read          |
  * | ~/.cursorrules                    | user-home | only on scope: 'all' |
  * | ~/.aider.conf.yml                 | user-home | only on scope: 'all' |
  * | ~/.claude.json                    | user-home | only on scope: 'all' |
@@ -23,19 +21,21 @@
  * always safe to read, the home paths only when the caller explicitly
  * asks with `scope: 'all'`.
  */
+import { AGENT_HOST_INSTRUCTION_FILES } from '@delendai/core/contracts';
+
 import type { IHostFileTarget } from '../interfaces/host-instructions-inventory.interface';
 
 /**
- * The three checked-in host files, always scanned. Order is stable so
- * the emitted proposal lists them the same way every run. Mirrors
- * `HOST_FILE_TARGETS` in the CLI's f00093 snapshot service (the in-repo
- * counterpart), kept independent to avoid a cross-package import.
+ * Every checked-in file a host reads instructions from, always scanned,
+ * read from core's `AGENT_HOSTS` so a host declared there is scanned with
+ * no edit here. Catalog order, so the emitted proposal lists them the
+ * same way every run.
  */
-export const IN_REPO_HOST_FILES: readonly IHostFileTarget[] = [
-	{ path: 'AGENTS.md', surface: 'in-repo' },
-	{ path: 'CLAUDE.md', surface: 'in-repo' },
-	{ path: '.github/copilot-instructions.md', surface: 'in-repo' },
-];
+export const IN_REPO_HOST_FILES: readonly IHostFileTarget[] =
+	AGENT_HOST_INSTRUCTION_FILES.map(({ path }) => ({
+		path,
+		surface: 'in-repo' as const,
+	}));
 
 /**
  * Host-specific config that lives in the user's home directory. Paths

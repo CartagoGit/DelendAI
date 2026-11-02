@@ -1,3 +1,4 @@
+import { boundToolResult } from '../context-budget/bound-tool-result.service';
 import { withSettledOutputArtifacts } from '../context-budget/elide-tool-result.service';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -7,6 +8,7 @@ import type { IToolMetaForError } from '../error-collection/with-error-collectio
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { withErrorCollection } from '../error-collection/with-error-collection';
 import { asToolCall } from './tool-call-scope.helper';
+import { toolCallsReleased } from './tool-call-hold.helper';
 import {
 	estimateErrorCost,
 	estimateResultCost,
@@ -108,6 +110,7 @@ export const instrumentToolHandlers = (
 		// Observers see the agent's calls; a call another tool makes is inside it.
 		return async (...args: unknown[]): Promise<unknown> =>
 			asToolCall(async (nested) => {
+				await toolCallsReleased();
 				const cancellationContext = (
 					signal: AbortSignal | undefined,
 				) => {
@@ -293,8 +296,10 @@ export const instrumentToolHandlers = (
 							injectCheckpointAdvisory(result, advisory);
 						}
 					}
-					// Hooks and metrics below keep the handler's own result; only
-					// the wire copy drops structured content its schema rejects.
+					// Bounded where it leaves: a nested result joins a bigger answer.
+					if (!nested) result = await boundToolResult(result, config);
+					// Hooks and metrics below keep this result; only the wire
+					// copy drops structured content its schema rejects.
 					return conformErrorStructuredContent(result, parser);
 				} catch (err) {
 					isError = true;

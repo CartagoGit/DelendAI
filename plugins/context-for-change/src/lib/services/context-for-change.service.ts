@@ -8,15 +8,11 @@ import {
 } from '@delendai/core/runtime';
 import { classifyPath } from '@delendai/conventions/public';
 import { readDoc, searchDocs } from '@delendai/docs/public';
-import {
-	checkRepo,
-	createGitRunner,
-	gitChanged,
-	gitDiffStat,
-} from '@delendai/git/public';
+import { checkRepo, createGitRunner, gitDiffStat } from '@delendai/git/public';
 import { recall } from '@delendai/memory/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
+import { projectSearchRoots } from './project-roots.helper';
 
 import {
 	CONTEXT_FOR_CHANGE_DEPENDS_ON,
@@ -111,13 +107,14 @@ const collectReferenceSummary = async (
 	symbols: readonly string[],
 	files: readonly string[],
 ): Promise<string> => {
+	const roots = await projectSearchRoots(workspaceRootAbs);
 	const parts: string[] = [];
 	for (const symbol of symbols.slice(
 		0,
 		MAX_CONTEXT_FOR_CHANGE_REFERENCE_SYMBOLS,
 	)) {
 		const result = await searchWorkspace(workspaceRootAbs, symbol, {
-			roots: ['packages', 'plugins', 'apps', 'tools', 'extensions'],
+			...(roots === undefined ? {} : { roots: [...roots] }),
 			extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
 			maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
 		});
@@ -141,6 +138,7 @@ const collectRelatedTests = async (
 	files: readonly string[],
 	symbol?: string,
 ): Promise<string[]> => {
+	const roots = await projectSearchRoots(workspaceRootAbs);
 	const queries = unique(
 		[symbol, ...files.map((file) => baseNameWithoutExt(file))].filter(
 			(value): value is string => value !== undefined && value.length > 0,
@@ -149,7 +147,7 @@ const collectRelatedTests = async (
 	const relatedTests = new Set<string>();
 	for (const query of queries) {
 		const result = await searchWorkspace(workspaceRootAbs, query, {
-			roots: ['packages', 'plugins', 'apps', 'tools'],
+			...(roots === undefined ? {} : { roots: [...roots] }),
 			extensions: ['ts', 'tsx', 'js'],
 			maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RELATED_TESTS,
 		});
@@ -251,27 +249,19 @@ export const runContextForChangeService = async (
 			args.files?.map((file) => toWorkspacePath(reader, file)) ?? [];
 		const runner = createGitRunner(options.workspaceRootAbs);
 		const repo = await checkRepo(runner);
-		const changedFiles = repo.ok ? await gitChanged(runner) : [];
-		const anchorFiles = unique([
-			...inputFiles,
-			...gitDiffFiles,
-			...changedFiles,
-		])
+		// The context is anchored on what the caller named, never on the
+		// working tree's other edits: those are another change's.
+		const anchorFiles = unique([...inputFiles, ...gitDiffFiles])
 			.filter((file) => isSourceFile(file))
 			.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
 
 		if (anchorFiles.length === 0 && args.symbol !== undefined) {
+			const roots = await projectSearchRoots(options.workspaceRootAbs);
 			const symbolHits = await searchWorkspace(
 				options.workspaceRootAbs,
 				args.symbol,
 				{
-					roots: [
-						'packages',
-						'plugins',
-						'apps',
-						'tools',
-						'extensions',
-					],
+					...(roots === undefined ? {} : { roots: [...roots] }),
 					extensions: [...CONTEXT_FOR_CHANGE_SOURCE_EXTENSIONS],
 					maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
 				},
@@ -285,7 +275,7 @@ export const runContextForChangeService = async (
 		}
 
 		const sections: IContextForChangeSection[] = [];
-		if (args.gitDiff !== undefined || changedFiles.length > 0) {
+		if (args.gitDiff !== undefined) {
 			const diffPath = anchorFiles[0];
 			const diffSummary =
 				repo.ok && diffPath !== undefined
@@ -294,9 +284,6 @@ export const runContextForChangeService = async (
 			const gitParts = [
 				gitDiffFiles.length > 0
 					? `diff files: ${gitDiffFiles.join(', ')}`
-					: undefined,
-				changedFiles.length > 0
-					? `working tree: ${changedFiles.slice(0, 4).join(', ')}${changedFiles.length > 4 ? ` (+${changedFiles.length - 4})` : ''}`
 					: undefined,
 				diffSummary && diffSummary.length > 0 ? diffSummary : undefined,
 				repo.ok ? undefined : repo.reason,

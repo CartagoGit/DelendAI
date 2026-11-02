@@ -4,6 +4,7 @@ import {
 	checkRepo,
 	gitBlame,
 	gitChanged,
+	gitDiffStat,
 	gitLog,
 	gitShow,
 	gitStatus,
@@ -52,6 +53,17 @@ describe('git parsers', async () => {
 		expect((await gitStatus(run)).branch).toBe('dev');
 		expect(await gitChanged(run)).toEqual(['f.ts']);
 		expect((await gitLog(run, 5))[0]?.subject).toBe('s1');
+	});
+
+	it('never reads a failed status or diff as a clean tree', async () => {
+		const failing: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: 'index locked',
+		});
+		await expect(gitStatus(failing)).rejects.toThrow('index locked');
+		await expect(gitChanged(failing)).rejects.toThrow('index locked');
+		await expect(gitDiffStat(failing)).rejects.toThrow('index locked');
 	});
 
 	it('distinguishes git-unavailable from not-a-repo (structured result)', async () => {
@@ -279,5 +291,21 @@ describe('git plugin', async () => {
 			'changelog',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
+	});
+});
+
+describe('a ref is never an option', () => {
+	it('refuses a ref starting with "-" and ends options before a ref', async () => {
+		const calls: (readonly string[])[] = [];
+		const run: IGitRunner = async (args) => {
+			calls.push(args);
+			return { ok: true, output: '' };
+		};
+		expect(await gitShow(run, '--output=/tmp/pwned')).toMatchObject({
+			ok: false,
+		});
+		expect(calls).toEqual([]);
+		await gitShow(run, 'HEAD~1');
+		expect(calls[0]?.slice(-2)).toEqual(['--end-of-options', 'HEAD~1']);
 	});
 });

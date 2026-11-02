@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -236,6 +237,50 @@ describe('context_for_change', () => {
 			expect(JSON.stringify(result)).not.toContain('diffLeakedSymbol');
 			expect(JSON.stringify(result)).not.toContain('root:x:0:0');
 		}
+	});
+
+	it('anchors on the files it is given, never on the working tree around them', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'context-for-change-git-'));
+		createdRoots.push(root);
+		await mkdir(join(root, 'src/lib'), { recursive: true });
+		await writeFile(
+			join(root, 'src/lib/foo.ts'),
+			'export const foo = 1;\n',
+			'utf8',
+		);
+		const git = (...args: string[]): void => {
+			execFileSync(
+				'git',
+				['-c', 'user.name=t', '-c', 'user.email=t@t', ...args],
+				{
+					cwd: root,
+					stdio: 'ignore',
+				},
+			);
+		};
+		git('init', '-q');
+		git('add', '.');
+		git('commit', '-q', '-m', 'init');
+		// Another change in progress in the same tree.
+		await writeFile(
+			join(root, 'src/lib/unrelated.ts'),
+			'export const unrelated = 2;\n',
+			'utf8',
+		);
+		const result = await runContextForChange(
+			{ files: ['src/lib/foo.ts'], task: 'change foo' },
+			{
+				namespacePrefix: 'delendai',
+				workspaceRootAbs: root,
+				maxBytes: 3000,
+				docsRoots: [],
+			},
+		);
+		const output = ContextForChangeOutputSchema.parse(
+			result.structuredContent,
+		);
+		expect(output.files).toEqual(['src/lib/foo.ts']);
+		expect(JSON.stringify(output)).not.toContain('unrelated.ts');
 	});
 
 	it('follows a symlink that still resolves inside the workspace', async () => {

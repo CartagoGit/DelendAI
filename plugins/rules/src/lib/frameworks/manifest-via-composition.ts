@@ -1,5 +1,6 @@
 import type { IFileReader } from '@delendai/core/contracts';
 
+import { AREA_GROUP_DIRS } from '../contracts/constants/area-group-dirs.constant';
 import type { ICompositionRoot } from './registry';
 import type { IAreaRules, IRulesManifest, IRulesMode } from './types';
 
@@ -64,7 +65,7 @@ const findProjectTsconfig = async (
  * areas. Mirrors the legacy `manifest.ts` constant; the new
  * manifest writer does not branch on it.
  */
-const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
+const GROUP_DIRS = AREA_GROUP_DIRS;
 
 /**
  * Discover the project areas.
@@ -84,7 +85,8 @@ const GROUP_DIRS = ['apps', 'libs', 'packages', 'projects'] as const;
  *
  * The workspace-root walk is what makes the polyglot fixture
  * (`py-thing/`, `go-thing/`, `web/`, …) discoverable. The
- * legacy `manifest.ts` only walked `apps/libs/packages/projects`,
+ * legacy `manifest.ts` only walked the group folders (`apps/`,
+ * `libs/`, `packages/`, `projects/`, `services/`),
  * which leaves polyglot monorepos with a flat layout unable
  * to be detected. S1 generalises this: a directory is an
  * area wherever an adapter claims it.

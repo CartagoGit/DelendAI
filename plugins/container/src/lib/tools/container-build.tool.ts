@@ -14,8 +14,10 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 import {
+	planDryRun,
 	probeTool,
 	realProbeDeps,
+	resolveExistingWorkspaceContained,
 	runExternalTool,
 	toolJson,
 } from '@delendai/core/public';
@@ -25,6 +27,8 @@ import { DOCKER_TOOL, KUBECTL_TOOL } from '../inspect/cli-tools';
 
 export interface IContainerBuildToolOptions {
 	readonly namespacePrefix: string;
+	/** The workspace a build's dockerfile and context must stay inside. */
+	readonly workspaceRootAbs: string;
 	readonly probeDeps?: IProbeDeps;
 	readonly runExec?: IArgvExec;
 }
@@ -79,6 +83,19 @@ const REFUSAL = z.object({
 const DRY_RUN = z.object({
 	ok: z.literal('dry-run'),
 	command: z.string(),
+	dryRun: z.literal(true),
+	wouldChange: z.array(z.looseObject({})),
+	wouldRun: z.array(z.looseObject({})),
+	risk: z.enum(['low', 'medium', 'high']),
+});
+
+const previewOf = (command: string, summary: string) => ({
+	ok: 'dry-run' as const,
+	command,
+	...planDryRun({
+		wouldRun: [{ shape: 'process', target: command, summary }],
+		risk: 'medium',
+	}),
 });
 
 const INSTALL_MISSING = z.object({
@@ -131,6 +148,7 @@ export const buildContainerBuildToolRegistrations = (
 			id: 'container_build',
 			tags: ['container', 'build', 'mutating'],
 			effects: ['spawn'],
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_container_build`,
@@ -141,6 +159,30 @@ export const buildContainerBuildToolRegistrations = (
 						outputSchema: BUILD_OUTPUT,
 					},
 					async (args) => {
+						// docker reads the context and the dockerfile itself, so
+						// a path outside the workspace was a build of anything
+						// on the machine.
+						for (const [what, path] of [
+							['dockerfile', args.dockerfile],
+							['context', args.context ?? '.'],
+						] as const) {
+							if (path === undefined) continue;
+							const contained =
+								await resolveExistingWorkspaceContained(
+									options.workspaceRootAbs,
+									path,
+								);
+							if (!contained.ok) {
+								return toolJson(
+									REFUSAL.parse({
+										ok: false,
+										reason: `${what} "${path}" is outside the workspace`,
+										nextAction:
+											'Pass a dockerfile and context inside the workspace.',
+									}),
+								);
+							}
+						}
 						const argv: readonly string[] = [
 							'build',
 							'-t',
@@ -151,10 +193,9 @@ export const buildContainerBuildToolRegistrations = (
 						const command = `docker ${argv.join(' ')}`;
 						if (args.dryRun === true) {
 							return toolJson(
-								DRY_RUN.parse({
-									ok: 'dry-run' as const,
-									command,
-								}),
+								DRY_RUN.parse(
+									previewOf(command, 'builds the image'),
+								),
 							);
 						}
 						if (args.confirm !== true) {
@@ -168,6 +209,7 @@ export const buildContainerBuildToolRegistrations = (
 							{
 								tool: DOCKER_TOOL,
 								args: argv,
+								cwd: options.workspaceRootAbs,
 								timeoutMs: 5 * 60_000,
 							},
 							runExec,
@@ -195,6 +237,7 @@ export const buildContainerBuildToolRegistrations = (
 			id: 'k8s_apply',
 			tags: ['container', 'kubernetes', 'mutating'],
 			effects: ['spawn'],
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_k8s_apply`,
@@ -211,10 +254,9 @@ export const buildContainerBuildToolRegistrations = (
 								: 'kubectl apply -f -';
 						if (args.dryRun === true) {
 							return toolJson(
-								DRY_RUN.parse({
-									ok: 'dry-run' as const,
-									command,
-								}),
+								DRY_RUN.parse(
+									previewOf(command, 'applies the manifest'),
+								),
 							);
 						}
 						if (args.confirm !== true) {

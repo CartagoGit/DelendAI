@@ -348,6 +348,17 @@ export const createGithubIntegrationForge = (
 				parseJsonObject(attempt.run.stdout) as unknown,
 			);
 			const mergeSha = asString(body?.sha);
+			// A 2xx is not a merge: the response says so itself, with the
+			// commit it made. One without both was reported merged and the
+			// work ref deleted on the strength of nothing.
+			if (body?.merged !== true || mergeSha.length === 0) {
+				return {
+					status: 'failed',
+					mergeSha: '',
+					integrationSha: current.sha,
+					reason: `The forge answered the merge without confirming it (merged=${String(body?.merged)}, sha=${mergeSha || 'none'}).`,
+				};
+			}
 			const after = await readIntegrationHead({
 				target: request.target,
 				branch: current.branch,

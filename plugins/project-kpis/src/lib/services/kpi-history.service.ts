@@ -1,7 +1,11 @@
 // effect-boundary-authorized: Owns the persisted KPI history store and pairs direct filesystem reads with atomic writes under a file mutex.
 import { access } from 'node:fs/promises';
 
-import { joinUnderRoot, resolveAgainstRoots } from '@delendai/core/public';
+import {
+	joinUnderRoot,
+	resolveAgainstRoots,
+	quarantineCorruptFile,
+} from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	withFileMutex,
@@ -93,11 +97,19 @@ const parseStore = (
 	};
 };
 
+/**
+ * The store, or an empty one with why when the file is corrupt: the file
+ * is moved aside with its bytes first, so nothing reads it as empty and
+ * nothing writes over it. A corrupt history used to throw out of the tool.
+ */
 const readStore = async (
 	options: IKpiHistoryStorageOptions,
 	pathAbs: string,
 	retentionDays: number,
-): Promise<IKpiHistoryStore> => {
+): Promise<{
+	readonly store: IKpiHistoryStore;
+	readonly degraded?: string;
+}> => {
 	const pathExists =
 		options.pathExists ??
 		(async (path: string): Promise<boolean> => {
@@ -117,10 +129,18 @@ const readStore = async (
 				).readText(path)
 			).content);
 	if (!(await pathExists(pathAbs))) {
-		return defaultStore(retentionDays);
+		return { store: defaultStore(retentionDays) };
 	}
 	const content = await readTextFile(pathAbs);
-	return parseStore(content, retentionDays);
+	try {
+		return { store: parseStore(content, retentionDays) };
+	} catch (error) {
+		const kept = await quarantineCorruptFile(pathAbs);
+		return {
+			store: defaultStore(retentionDays),
+			degraded: `the KPI history could not be read (${error instanceof Error ? error.message : String(error)}); ${kept === null ? 'it could not be moved aside and is left in place' : `it was kept at ${kept}`}`,
+		};
+	}
 };
 
 const compareEntries = (
@@ -275,7 +295,11 @@ export const persistKpiSnapshotHistory = async (
 	const nextEntry = buildEntry(options, now);
 
 	return withMutex(pathAbs, async () => {
-		const current = await readStore(options, pathAbs, retentionDays);
+		const { store: current } = await readStore(
+			options,
+			pathAbs,
+			retentionDays,
+		);
 		const staged = [
 			...current.entries.filter(
 				(entry) =>
@@ -309,7 +333,11 @@ export const readKpiHistoryWindow = async (
 	const retentionDays =
 		options.retentionDays ?? DEFAULT_KPI_HISTORY_RETENTION_DAYS;
 	const pathAbs = resolveHistoryPath(options);
-	const store = await readStore(options, pathAbs, retentionDays);
+	const { store, degraded } = await readStore(
+		options,
+		pathAbs,
+		retentionDays,
+	);
 	const effectiveRetentionDays = options.retentionDays ?? store.retentionDays;
 	const to = options.to ?? asIsoString(now);
 	const toMs = parseTime(to);
@@ -341,5 +369,6 @@ export const readKpiHistoryWindow = async (
 			windowDays,
 		},
 		entries: limited,
+		...(degraded === undefined ? {} : { degraded }),
 	};
 };

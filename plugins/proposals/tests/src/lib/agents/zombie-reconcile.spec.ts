@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -356,6 +356,109 @@ describe('zombie-reconcile', async () => {
 			expect.stringContaining('zombie-gc-event-'),
 			4,
 		);
+	});
+
+	it('keeps a claim whose holder heartbeated it within the window, whatever its registry row says', async () => {
+		const registryData: IAgentRegistry = {
+			version: 1,
+			adopted: [{ name: 'agent_live', task_id: 'task-live' }],
+			assignments: [
+				{
+					task_id: 'task-live',
+					agent_name: 'agent_live',
+					agent_slot: 'implementation_runner',
+					parent_task_id: null,
+					depth: 0,
+					topic: 'long task',
+					adopted: true,
+					assigned_at: '2026-06-05T09:00:00.000Z',
+					last_seen: '2026-06-05T11:00:00.000Z',
+					lease_until: '2026-06-05T11:30:00.000Z',
+					cooldown_until: null,
+					status: 'active',
+				},
+			],
+		};
+		// Taken two hours ago, heartbeated two minutes ago.
+		const lockData = {
+			version: 1,
+			stale_after_minutes: 10,
+			in_flight: [
+				{
+					task_id: 'task-live',
+					agent: 'agent_live',
+					ownership: ['packages/proposals/src/live.ts'],
+					started_at: '2026-06-05T10:00:00.000Z',
+					last_seen: '2026-06-05T11:58:00.000Z',
+					host: 'dead-host',
+					pid: 999999,
+				},
+			],
+		};
+		const registryPath = createTempPath(
+			'reg-live',
+			'subagent-registry.json',
+			JSON.stringify(registryData),
+		);
+		const lockPath = createTempPath(
+			'lock-live',
+			'agents.lock.json',
+			JSON.stringify(lockData),
+		);
+		const queuePath = createTempPath('queue-live', 'queue.json', '{}');
+
+		const report = await gcZombies(registryPath, lockPath, queuePath, {
+			dryRun: false,
+			staleAfterMinutes: 10,
+			now,
+		});
+
+		expect(report.orphans.map((orphan) => orphan.reason)).toEqual([
+			'lease_expired',
+		]);
+		expect(report.releasedLockCount).toBe(0);
+		const kept = JSON.parse(readFileSync(lockPath, 'utf8')) as {
+			in_flight: { task_id: string }[];
+		};
+		expect(kept.in_flight.map((entry) => entry.task_id)).toEqual([
+			'task-live',
+		]);
+	});
+
+	it('judges a lock by its last heartbeat, not by when it was taken', () => {
+		const stale = classifyZombies(
+			{
+				version: 1,
+				adopted: [],
+				assignments: [
+					{
+						task_id: 'task-old',
+						agent_name: 'agent_old',
+						agent_slot: 'implementation_runner',
+						parent_task_id: null,
+						depth: 0,
+						topic: 'old',
+						adopted: true,
+						assigned_at: '2026-06-05T09:00:00.000Z',
+						last_seen: '2026-06-05T11:00:00.000Z',
+						cooldown_until: null,
+						status: 'active',
+					},
+				],
+			},
+			{
+				in_flight: [
+					{
+						task_id: 'task-old',
+						claimed_at: '2026-06-05T09:00:00.000Z',
+						last_seen: '2026-06-05T11:59:00.000Z',
+					},
+				],
+			},
+			now,
+			10,
+		);
+		expect(stale.orphans).toEqual([]);
 	});
 
 	// R-2026-08-31: orphan WITHOUT a lock does not emit phantom events

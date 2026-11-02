@@ -2,7 +2,13 @@
  * model-catalogue.service.spec.ts — the public catalogue, cached a day,
  * and the names it gives: a key variable's provider, a model's maker.
  */
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -205,6 +211,55 @@ describe('readModelCatalogue', () => {
 		).toContain('model-catalogue.json');
 	});
 
+	it('degrades to no catalogue from a malformed copy, null fields included', async () => {
+		const meta = {
+			source: 'https://example.test/models.json',
+			format: MODEL_CATALOGUE_FORMAT,
+			fetchedAt: NOW.toISOString(),
+			checkedAt: NOW.toISOString(),
+			sha256: '',
+		};
+		for (const copy of [
+			{ meta: null, data: catalogue },
+			{ meta, data: null },
+			{ meta, data: { providers: null } },
+			{
+				meta,
+				data: {
+					providers: [{ id: 'x', name: 'X', env: null, models: [] }],
+				},
+			},
+		]) {
+			const at = dirs();
+			mkdirSync(at.cacheDir, { recursive: true });
+			writeFileSync(
+				join(at.cacheDir, 'models.json'),
+				JSON.stringify(copy),
+			);
+			await expect(
+				readModelCatalogue({
+					...at,
+					now: NOW,
+					sources: [],
+					snapshot: async () => undefined,
+				}),
+			).resolves.toBeUndefined();
+		}
+		const at = dirs();
+		mkdirSync(at.cacheDir, { recursive: true });
+		writeFileSync(
+			join(at.cacheDir, 'models.json'),
+			JSON.stringify({ meta, data: catalogue }),
+		);
+		const kept = await readModelCatalogue({
+			...at,
+			now: NOW,
+			sources: [],
+			snapshot: async () => undefined,
+		});
+		expect(kept?.providers.length).toBe(catalogue.providers.length);
+	});
+
 	it('falls back to the shipped snapshot, which is dated and names providers', async () => {
 		const shipped = await shippedModelCatalogue();
 		expect(shipped?.meta.source).toBe('https://models.dev/api.json');
@@ -247,6 +302,29 @@ describe('context windows', () => {
 			'glm-5': 128_000,
 		});
 		expect(catalogue.providers[0]).not.toHaveProperty('contextWindows');
+	});
+
+	it("keeps each model's price where the catalogue states both halves", () => {
+		const priced = compactCatalogue(
+			{
+				zai: {
+					name: 'Z.AI',
+					env: [],
+					models: {
+						'glm-5': { cost: { input: 0.6, output: 2.2 } },
+						'glm-free': { cost: { input: 0, output: 0 } },
+						'glm-half': { cost: { input: 1 } },
+						'glm-x': {},
+					},
+				},
+			},
+			NOW,
+		);
+		expect(priced?.providers[0]?.costs).toEqual({
+			'glm-5': [0.6, 2.2],
+			'glm-free': [0, 0],
+		});
+		expect(catalogue.providers[0]).not.toHaveProperty('costs');
 	});
 
 	it('finds a model by its listed id or its last path part, the largest stated', () => {

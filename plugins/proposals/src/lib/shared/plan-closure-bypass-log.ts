@@ -76,13 +76,15 @@ export const recordPlanClosureBypass = (input: {
 		ts: new Date(nowMs).toISOString(),
 		proposalId: input.proposalId,
 		agent: (input.agent ?? 'unknown').trim() || 'unknown',
-		reason,
+		// Redacted once, here: the stored event, the sink and the fallback
+		// line all carry it, and the fallback used to print it raw.
+		reason: redactSecrets(reason).text,
 		via: 'plan-closure-shortcut',
 	};
 	events.push(event);
 	gc(nowMs);
 	// Prefer the structured sink when the caller wired one.
-	const redactedReason = redactSecrets(event.reason).text;
+	const redactedReason = event.reason;
 	const logPayload = {
 		severity: 'warning' as const,
 		incidentType: 'plan-closure-bypass' as const,

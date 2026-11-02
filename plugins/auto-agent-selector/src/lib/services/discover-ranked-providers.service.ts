@@ -37,6 +37,7 @@ export const discoverRankedProviders = async (options: {
 	const ranked = rankProviders({
 		available: roster.available,
 		costQualityTradeoff: tradeoff,
+		taskType: options.taskType,
 		pinnedId: resolveTaskPin(
 			options.pin,
 			options.taskType,

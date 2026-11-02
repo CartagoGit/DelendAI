@@ -14,6 +14,7 @@ import type {
 	IMcpTransportError,
 	McpTransportErrorKind,
 } from '../contracts/interfaces/mcp-transport-error.interface';
+import type { IResolvedCapability } from '../contracts/interfaces/resolved-capability.interface';
 import type {
 	IMcpLogHint,
 	IMcpStdioClientOptions,
@@ -21,6 +22,14 @@ import type {
 	IMcpToolDescriptor,
 	IMcpTransport,
 } from '../contracts/interfaces/mcp-transport.interface';
+
+import {
+	isUnexposedHere,
+	prefixOfSurface,
+	requalify,
+	resolverFor,
+	unwrapResolved,
+} from './tool-reach.helper';
 
 interface IMcpSdkBindings {
 	readonly ClientCtor: typeof Client;
@@ -253,6 +262,9 @@ export const withServerWords = (headline: string, stderr: string): string => {
 export class McpStdioClient {
 	private operationTail: Promise<void> = Promise.resolve();
 	private closePromise: Promise<void> | undefined;
+	private prefix: string | undefined;
+	/** Tools the surface hides: asking directly again would only fail. */
+	private readonly hiddenTools = new Set<string>();
 
 	private constructor(
 		private readonly transport: IMcpTransport,
@@ -355,39 +367,97 @@ export class McpStdioClient {
 		outputSchema?: ZodType<TOut>,
 	): Promise<TOut> {
 		return this.enqueue(async () => {
-			let result: IMcpToolCallResult;
-			try {
-				result = await this.transport.callTool(
-					{ name: tool, arguments: args },
-					undefined,
-					this.requestTimeoutMs === undefined
-						? undefined
-						: { timeout: this.requestTimeoutMs },
-				);
-			} catch (error) {
-				throw normalizeTransportError(
-					error,
-					`Failed to call MCP tool "${tool}"`,
-				);
+			const direct = this.hiddenTools.has(tool)
+				? undefined
+				: await this.callTransport(tool, args);
+			if (direct === undefined || isUnexposedHere(direct)) {
+				const prefix = await this.surfacePrefix();
+				if (prefix !== undefined) {
+					this.hiddenTools.add(tool);
+					const qualifiedName = requalify(tool, prefix);
+					const resolved = this.payloadOf<IResolvedCapability>(
+						resolverFor(prefix),
+						await this.callTransport(resolverFor(prefix), {
+							qualifiedName,
+							args,
+						}),
+					);
+					const answer = unwrapResolved<TOut>(
+						qualifiedName,
+						resolved,
+					);
+					return outputSchema === undefined
+						? answer
+						: outputSchema.parse(answer);
+				}
 			}
-			if (result.isError) {
-				// The tool's own words, not just that it failed. `returned
-				// an error` sent a caller looking for a cause that was
-				// sitting in `result.content` the whole time — the same
-				// shape as a server that died without saying why.
-				throw new McpToolError(
-					withServerWords(
-						`MCP tool "${tool}" returned an error`,
-						(result.content ?? [])
-							.map((part) => part.text ?? '')
-							.join('\n'),
-					),
-					result,
-					logHintFromResult(result),
-				);
-			}
-			return parsePayloadFromResult(result, outputSchema);
+			return this.payloadOf(
+				tool,
+				direct ?? (await this.callTransport(tool, args)),
+				outputSchema,
+			);
 		});
+	}
+
+	private async callTransport(
+		tool: string,
+		args: object,
+	): Promise<IMcpToolCallResult> {
+		try {
+			return await this.transport.callTool(
+				{ name: tool, arguments: args },
+				undefined,
+				this.requestTimeoutMs === undefined
+					? undefined
+					: { timeout: this.requestTimeoutMs },
+			);
+		} catch (error) {
+			throw normalizeTransportError(
+				error,
+				`Failed to call MCP tool "${tool}"`,
+			);
+		}
+	}
+
+	private payloadOf<TOut>(
+		tool: string,
+		result: IMcpToolCallResult,
+		outputSchema?: ZodType<TOut>,
+	): TOut {
+		if (result.isError) {
+			// The tool's own words, not just that it failed. `returned
+			// an error` sent a caller looking for a cause that was
+			// sitting in `result.content` the whole time — the same
+			// shape as a server that died without saying why.
+			throw new McpToolError(
+				withServerWords(
+					`MCP tool "${tool}" returned an error`,
+					(result.content ?? [])
+						.map((part) => part.text ?? '')
+						.join('\n'),
+				),
+				result,
+				logHintFromResult(result),
+			);
+		}
+		return parsePayloadFromResult(result, outputSchema);
+	}
+
+	/**
+	 * Only a discovered prefix is remembered: one failed `tools/list` must
+	 * not become a permanent answer that every hidden tool is unreachable.
+	 */
+	private async surfacePrefix(): Promise<string | undefined> {
+		if (this.prefix !== undefined) return this.prefix;
+		try {
+			const listed = await this.transport.listTools?.();
+			this.prefix = prefixOfSurface(
+				(listed?.tools ?? []).map((entry) => entry.name),
+			);
+		} catch {
+			return undefined;
+		}
+		return this.prefix;
 	}
 
 	async listTools(): Promise<readonly IMcpToolDescriptor[]> {

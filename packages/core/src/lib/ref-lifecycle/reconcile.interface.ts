@@ -27,6 +27,8 @@ import type { IUnitStanding } from '../work-units/unit-lease.interface';
 /** A branch as the forge reports it. */
 export interface IObservedRef {
 	readonly name: string;
+	/** Its tip, when the forge reports one. */
+	readonly sha?: string | undefined;
 	/** Seconds since the epoch of its tip, when the forge reports one. */
 	readonly updatedAt?: number | undefined;
 	/**
@@ -48,6 +50,8 @@ export interface IObservedPullRequest {
 	readonly number: number;
 	readonly headRefName: string;
 	readonly state: 'open' | 'merged' | 'closed';
+	/** The commit it carried, when the forge reports one. */
+	readonly headSha?: string | undefined;
 	/** Seconds since the epoch it was closed, when the forge reports it. */
 	readonly closedAt?: number | undefined;
 }

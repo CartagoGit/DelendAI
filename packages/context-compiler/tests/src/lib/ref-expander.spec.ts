@@ -93,4 +93,26 @@ describe('createRefExpander', () => {
 			),
 		).resolves.toMatchObject({ refs: [{ nested: 'value' }] });
 	});
+
+	it('refuses content replaced under a ref that names its hash', async () => {
+		const store = new StubArtifactStore();
+		const key: IArtifactKey = { scope, kind: 'artifact', id: 'artifact:x' };
+		const original = await store.put(key, { verdict: 'pass' });
+		await store.put(key, { verdict: 'fail' });
+		const expander = createRefExpander(store);
+		const id = serializeArtifactKey(key);
+
+		await expect(
+			expander.expand({
+				kind: 'artifact',
+				id,
+				contentHash: original.contentHash,
+			}),
+		).rejects.toThrow(/changed/);
+		await expect(
+			expander.expand({ kind: 'artifact', id }),
+		).resolves.toEqual({
+			verdict: 'fail',
+		});
+	});
 });

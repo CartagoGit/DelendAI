@@ -70,12 +70,14 @@ export const carriedFrom = async (
 		commits.map(([sha = '']) => sha),
 	);
 	if (recorded.size === commits.length) {
-		const others = new Set(
-			[...recorded.values()]
-				.map((maker) => maker.agent)
-				.filter((agent) => agent !== submitter),
+		// Carried only when every commit was made by one other agent: with
+		// some of them the submitter's own, the unit is mixed, and naming
+		// the other agent made it the maker of the submitter's commits too.
+		const makers = new Set(
+			[...recorded.values()].map((maker) => maker.agent),
 		);
-		return others.size === 1 ? [...others][0] : undefined;
+		const [only] = [...makers];
+		return makers.size === 1 && only !== submitter ? only : undefined;
 	}
 	if (enteredAt === undefined) return undefined;
 	// Anything made in the unit after it was entered is the submitter's.

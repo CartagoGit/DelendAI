@@ -59,12 +59,22 @@ const moveLease = async (
 	cwd: string,
 	from: string,
 	to: string,
+	/** Who holds the unit now; the lease keeps its owner when absent. */
+	owner?: string,
 ): Promise<boolean> => {
 	const common = gitCommonDirOf(cwd);
 	if (common === undefined) return false;
 	const lease = await readUnitLease(common, from);
 	if (lease === undefined) return false;
-	await updateUnitLease(common, to, () => ({ ...lease, ref: to }));
+	// A claim changes hands: the lease names the claimant, not the agent
+	// the ref used to be named after.
+	await updateUnitLease(common, to, () => ({
+		...lease,
+		ref: to,
+		...(owner === undefined || owner === lease.owner.agent
+			? {}
+			: { owner: { agent: owner, session: null } }),
+	}));
 	await removeUnitLease(common, from);
 	return true;
 };
@@ -80,11 +90,13 @@ export const carryUnitRecords = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly from: string;
 	readonly to: string;
+	/** The agent the unit now belongs to. */
+	readonly owner?: string;
 }): Promise<{
 	readonly lease: boolean;
 	readonly forge: IAdoptedForgeBranch;
 }> => ({
-	lease: await moveLease(input.cwd, input.from, input.to),
+	lease: await moveLease(input.cwd, input.from, input.to, input.owner),
 	forge: dropForgeBranch(input.cwd, input.policy, input.from),
 });
 
@@ -158,4 +170,27 @@ export const adoptProposalId = async (input: {
 		leaseMoved,
 		forge: dropForgeBranch(cwd, policy, branch),
 	};
+};
+
+/**
+ * The proposal a create unit already made, when `cwd` is a create unit
+ * whose name carries an id. A create unit delivers one proposal: a second
+ * would be published under the first one's name. `undefined` for any other
+ * checkout and for a create unit still waiting for its id.
+ */
+export const proposalOfCreateUnit = (
+	cwd: string,
+	policy: IResolvedDevelopmentPolicy,
+): { readonly branch: string; readonly proposal: string } | undefined => {
+	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
+	if (head === undefined) return undefined;
+	const branch = shortName(head);
+	if (!branch.startsWith(shortName(policy.branches.workRefPrefix))) {
+		return undefined;
+	}
+	const { subject } = identityOf(branch, policy);
+	const parts = parseWorkSubject(policy.branches.workRefTemplate, subject);
+	if (parts === undefined || parts.kind !== 'create') return undefined;
+	if (parts.proposal === UNALLOCATED_PROPOSAL) return undefined;
+	return { branch, proposal: parts.proposal };
 };

@@ -261,7 +261,6 @@ const reconcileUnderLock = async (args: {
 	const journal = await runJournalStep({
 		source: journalSource,
 		ports,
-		mode,
 	});
 
 	const evidence = await runIntegrationEvidencePhase({

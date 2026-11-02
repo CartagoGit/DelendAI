@@ -197,7 +197,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S5 — Driver SQLite del timeline
 - **Status**: done
 - **DependsOn**: [S4]
-- **Files**: `packages/roadmap-sqlite/package.json`, `packages/roadmap-sqlite/tsconfig.json`, `packages/roadmap-sqlite/vitest.config.ts`, `packages/roadmap-sqlite/AGENT.md`, `packages/roadmap-sqlite/src/index.ts`, `packages/roadmap-sqlite/src/public/index.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/constants/roadmap-sqlite-migrations.constant.ts`, `packages/roadmap-sqlite/src/lib/contracts/interfaces/roadmap-sqlite.interface.ts`, `packages/roadmap-sqlite/src/lib/migrations.service.ts`, `packages/roadmap-sqlite/src/lib/sqlite-timeline.store.ts`, `packages/roadmap-sqlite/tests/src/lib/sqlite-timeline.store.spec.ts`, `vitest.shared.ts`, `tsconfig.base.json`, `bun.lock`
+- **Files**: the packages/roadmap-sqlite workspace (package, sources, spec and plugin logo) since removed by c00534 because nothing imported them
 - **Gate**: `bun run test:sqlite`
 - acceptance:
   - "El driver implementa la MISMA interfaz del timeline en S4, intercambiable con la variante markdown sin que ningún consumidor cambie."
@@ -213,7 +213,7 @@ Regla operativa: **un proyecto que no declare la sección de roadmap no obtiene 
 ### S6 — El roadmap como IStateProducer del State Engine
 - **Status**: done
 - **DependsOn**: [S3, S4]
-- **Files**: `plugins/roadmap/package.json`, `bun.lock`, `plugins/roadmap/AGENT.md`, `plugins/roadmap/src/public/index.ts`, `plugins/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts`, `plugins/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts`, `plugins/roadmap/src/lib/state/roadmap.projection.service.ts`, `plugins/roadmap/src/lib/state/roadmap.producer.service.ts`, `plugins/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts`, `plugins/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`, `plugins/changelog/package.json`, `apps/web/public/logos/plugin-roadmap.svg`, `apps/web/public/logos/plugin-roadmap-sqlite.svg`
+- **Files**: `plugins/roadmap/package.json`, `bun.lock`, `plugins/roadmap/AGENT.md`, `plugins/roadmap/src/public/index.ts`, `plugins/roadmap/src/lib/contracts/constants/roadmap-producer.constant.ts`, `plugins/roadmap/src/lib/contracts/interfaces/roadmap-producer.interface.ts`, `plugins/roadmap/src/lib/state/roadmap.projection.service.ts`, `plugins/roadmap/src/lib/state/roadmap.producer.service.ts`, `plugins/roadmap/tests/src/lib/state/roadmap.producer.service.spec.ts`, `plugins/roadmap/tests/property/roadmap-incremental-equals-rebuild.spec.ts`, `plugins/changelog/package.json`, `apps/web/public/logos/plugin-roadmap.svg`
 - **Gate**: `bun x vitest run --root plugins/roadmap`
 - acceptance:
   - "El producer declara sus `inputs` explícitamente (fichero de roadmap + índice de proposals) y `rebuild` no muta markdown, git ni código."

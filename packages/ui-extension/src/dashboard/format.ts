@@ -3,6 +3,10 @@
  * Pure functions; no host imports.
  */
 
+import { escapeHtml } from '@delendai/shared';
+
+export { escapeHtml };
+
 export const formatNumber = (n: number, locale = 'en'): string =>
 	new Intl.NumberFormat(locale).format(n);
 
@@ -47,14 +51,6 @@ export const formatPercent = (
  * escaped like any other value.
  */
 export const rawNumber = (n: number): string => escapeHtml(String(n));
-
-export const escapeHtml = (raw: string): string =>
-	raw
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;')
-		.replaceAll("'", '&#39;');
 
 /**
  * Locale-aware absolute date. Pure `(iso, locale) => string` wrapper around

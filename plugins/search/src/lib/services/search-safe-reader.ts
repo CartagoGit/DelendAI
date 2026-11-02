@@ -119,3 +119,30 @@ export const listContainedTypeScriptFiles = async (
 	}
 	return files;
 };
+
+/**
+ * Why a walk touched no files: missing roots, roots outside the workspace,
+ * or filters that matched nothing. One wording for every backend.
+ */
+export const describeZeroScan = (
+	requestedRoots: readonly string[],
+	resolved: Pick<IResolvedSearchRoots, 'rejected' | 'missing'>,
+): string => {
+	const parts: string[] = [];
+	if (resolved.missing.length > 0) {
+		parts.push(
+			`configured roots do not exist in this workspace: ${resolved.missing.join(', ')}`,
+		);
+	}
+	if (resolved.rejected.length > 0) {
+		parts.push(
+			`roots must stay inside the workspace (rejected: ${resolved.rejected.join(', ')})`,
+		);
+	}
+	if (parts.length === 0) {
+		parts.push(
+			`0 files matched the filters under roots [${requestedRoots.join(', ')}] — check plugins.search.options (extensions/include/exclude) in delendai.config.json`,
+		);
+	}
+	return `scanned 0 files: ${parts.join('; ')}. Fix plugins.search.options.roots in delendai.config.json (omit roots to scan the whole workspace).`;
+};

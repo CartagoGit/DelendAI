@@ -43,7 +43,11 @@ describe('drainTelemetryJournals', () => {
 			},
 			history,
 		});
-		expect(result.workEvents).toEqual({ appended: 1, skipped: 0 });
+		expect(result.workEvents).toEqual({
+			appended: 1,
+			skipped: 0,
+			retained: 0,
+		});
 		expect(result.durations.recorded).toBe(1);
 		expect(seen).toHaveLength(1);
 		expect(history.count()).toBe(1);

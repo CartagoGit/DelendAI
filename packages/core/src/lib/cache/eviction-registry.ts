@@ -12,6 +12,7 @@
  * what every plugin actually needs today; size-based caps are
  * explicitly out of scope (see proposal f00068 §"Out of scope").
  */
+import { CORE_EVICTION_DAY_MS } from '../contracts/constants/core-eviction.constant';
 import { readdir, rm, stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
 
@@ -55,12 +56,16 @@ export interface IEvictionRegistryDeps {
 	 *  absolute, contained form so the registry never has to resolve
 	 *  relative paths itself. */
 	readonly cacheDirAbs: string;
+	/** `config.cache.maxAgeDays`: caps every owner's age rule. */
+	readonly maxAgeDays?: number | undefined;
 }
 
 export const createCacheEvictionRegistry = (
 	deps: IEvictionRegistryDeps,
 ): ICacheEvictionRegistry => {
 	const rules = new Map<string, ICacheEvictionRule>();
+	const ageMs = (days: number): number =>
+		Math.min(days, deps.maxAgeDays ?? days) * CORE_EVICTION_DAY_MS;
 
 	const validateRule = (rule: ICacheEvictionRule): void => {
 		if (rule.id.length === 0) {
@@ -81,9 +86,8 @@ export const createCacheEvictionRegistry = (
 				`cache eviction rule '${rule.id}': path must be cache-relative, got absolute: ${rule.path}`,
 			);
 		}
-		// Containment: the rule's path is resolved under cacheDir, so
-		// we verify the result stays inside the workspace. `dir/*` is
-		// normalised to `dir` for the check.
+		// Containment: the path, resolved under cacheDir (`dir/*` as
+		// `dir`), must stay inside the workspace.
 		const checkPath =
 			SINGLE_STAR_RE.exec(rule.path)?.groups?.base ?? rule.path;
 		const tentativeAbs = join(deps.cacheDirAbs, checkPath);
@@ -161,10 +165,8 @@ export const createCacheEvictionRegistry = (
 	};
 
 	// --- strategies --------------------------------------------------------
-	// Each strategy returns the entries it removed (or WOULD remove on
-	// dry-run). `dryRun` is the single switch — same predicate logic,
-	// same report shape. This is what makes "second-run-is-noop"
-	// idempotency trivial to test.
+	// Each strategy returns what it removed (or would, on dry-run): `dryRun`
+	// is the single switch, so a second run is trivially a no-op.
 
 	const runOlderThanDays = async (
 		rule: ICacheEvictionRule,
@@ -179,7 +181,7 @@ export const createCacheEvictionRegistry = (
 			nameMatch?.[1] !== undefined
 				? new Date(nameMatch[1]).getTime()
 				: (await stat(target.abs)).mtimeMs;
-		const threshold = now.getTime() - when.days * 24 * 60 * 60 * 1000;
+		const threshold = now.getTime() - ageMs(when.days);
 		if (timestamp >= threshold) return [];
 		const bytes = await sizeOf(target.abs);
 		if (!dryRun) await removeAbs(target.abs);
@@ -193,7 +195,7 @@ export const createCacheEvictionRegistry = (
 		when: ICacheEvictionOlderThanMtime,
 		dryRun: boolean,
 	): Promise<readonly ICacheEvictionRemoved[]> => {
-		const threshold = now.getTime() - when.days * 24 * 60 * 60 * 1000;
+		const threshold = now.getTime() - ageMs(when.days);
 		const info = await stat(target.abs);
 		if (info.mtimeMs >= threshold) return [];
 		const bytes = await sizeOf(target.abs);

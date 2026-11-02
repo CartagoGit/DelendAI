@@ -84,9 +84,11 @@ describe('runQuarantineRepair', () => {
 	});
 
 	it('re-parses a repaired file, projects it, and resolves the quarantine entry', () => {
+		// Recorded as the reconciler records it: relative to the proposals
+		// directory, which is not the workspace root.
 		const sourcePath = 'ready/fixes/x00999-repaired.md';
 		const id = addQuarantine(root, sourcePath, 'blob-repaired');
-		const absolutePath = join(root, sourcePath);
+		const absolutePath = join(root, 'docs/delendai/proposals', sourcePath);
 		mkdirSync(dirname(absolutePath), { recursive: true });
 		writeFileSync(
 			absolutePath,

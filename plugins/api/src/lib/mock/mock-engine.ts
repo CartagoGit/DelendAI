@@ -75,7 +75,10 @@ const generate = (
 		const pickIndex = ctx.randomize ? ctx.nextInt(schema.enum.length) : 0;
 		return schema.enum[pickIndex];
 	}
-	// 3. Resolve type — fall back to inspecting properties / items.
+	// 3. A union is satisfied by its first branch.
+	const branch = schema.oneOf?.[0] ?? schema.anyOf?.[0];
+	if (branch !== undefined) return generate(branch, ctx, path);
+	// 4. Resolve type — fall back to inspecting properties / items.
 	const type = inferType(schema);
 	if (type === null) return null;
 	switch (type) {
@@ -140,22 +143,40 @@ const generateString = (
 	if (schema.format === 'uri' || schema.format === 'url') {
 		return `https://example.com/${slug(path)}`;
 	}
-	return `string-${slug(path)}`;
+	return `string-${slug(path)}`
+		.padEnd(schema.minLength ?? 0, 'x')
+		.slice(0, schema.maxLength);
 };
 
+/** Distinct fractions a generated `number` can land on within its span. */
+const NUMBER_STEPS = 10_000;
+/** How far inside an exclusive lower bound a generated `number` starts. */
+const NUMBER_STEP = 0.01;
+/** The span assumed above the lower bound when no upper bound is declared. */
+const DEFAULT_SPAN = 100;
+
+const lowerBound = (schema: IJsonSchema, step: number): number =>
+	schema.minimum ??
+	(schema.exclusiveMinimum === undefined
+		? 0
+		: Math.floor(schema.exclusiveMinimum / step) * step + step);
+
+const upperBound = (schema: IJsonSchema, min: number): number =>
+	schema.maximum ?? schema.exclusiveMaximum ?? min + DEFAULT_SPAN;
+
 const generateNumber = (schema: IJsonSchema, ctx: IMockContext): number => {
-	const min = schema.minimum ?? 0;
-	const max = schema.maximum ?? 100;
+	const min = lowerBound(schema, NUMBER_STEP);
+	const max = upperBound(schema, min);
 	if (ctx.randomize) {
-		const span = Math.max(1, max - min);
-		return min + ctx.nextInt(span * 100) / 100;
+		const fraction = ctx.nextInt(NUMBER_STEPS) / NUMBER_STEPS;
+		return min + fraction * Math.max(0, max - min);
 	}
 	return min;
 };
 
 const generateInteger = (schema: IJsonSchema, ctx: IMockContext): number => {
-	const min = schema.minimum ?? 0;
-	const max = schema.maximum ?? 100;
+	const min = lowerBound(schema, 1);
+	const max = upperBound(schema, min);
 	if (ctx.randomize) {
 		const span = Math.max(1, max - min);
 		return min + ctx.nextInt(span);
@@ -169,7 +190,7 @@ const generateArray = (
 	path: string,
 ): unknown[] => {
 	if (schema.items === undefined) return [];
-	const minItems = schema.minItems ?? 1;
+	const minItems = schema.minItems ?? Math.min(1, schema.maxItems ?? 1);
 	const maxItems = schema.maxItems ?? Math.max(minItems, 3);
 	const count = ctx.randomize
 		? minItems + ctx.nextInt(Math.max(1, maxItems - minItems + 1))
@@ -187,7 +208,7 @@ const generateObject = (
 	const out: Record<string, unknown> = {};
 	const properties = schema.properties ?? {};
 	const requiredKeys = new Set(schema.required ?? []);
-	const keys = Object.keys(properties);
+	const keys = [...new Set([...Object.keys(properties), ...requiredKeys])];
 	// Behaviour:
 	//   - Required keys: always included.
 	//   - Optional keys: included when `randomize: true` AND the dice
@@ -200,11 +221,7 @@ const generateObject = (
 	for (const key of keys) {
 		const isRequired = requiredKeys.has(key);
 		if (isRequired) {
-			out[key] = generate(
-				properties[key] as IJsonSchema,
-				ctx,
-				`${path}.${key}`,
-			);
+			out[key] = generate(properties[key] ?? {}, ctx, `${path}.${key}`);
 			continue;
 		}
 		// Optional field: include only when the dice says include.

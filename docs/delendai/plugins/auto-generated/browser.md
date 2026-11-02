@@ -1,9 +1,9 @@
 ---
 id: browser
 package: @delendai/browser
-version: 0.2.4
-maturity: stable
-generated: 2026-10-23T22:26:16.592Z
+version: 0.3.0
+maturity: experimental
+generated: 2026-11-02T05:50:26.888Z
 ---
 
 # Browser
@@ -12,7 +12,7 @@ generated: 2026-10-23T22:26:16.592Z
 
 ## Summary
 
-Headless browser automation tools.
+Headless browser automation tools; they need Playwright installed and answer with an install hint without it.
 
 ## Tags
 

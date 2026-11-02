@@ -93,7 +93,9 @@ describe('validateValue', () => {
 			enum: ['dev', 'prod'],
 		});
 		expect(f?.ruleId).toBe('env/mistyped-value');
-		expect(f?.message).toContain('staging');
+		// The allowed set, never the rejected value: it may be a secret.
+		expect(f?.message).not.toContain('staging');
+		expect(f?.message).toContain('dev | prod');
 	});
 });
 
@@ -127,6 +129,19 @@ describe('checkSchema', () => {
 		expect(missing).toHaveLength(1);
 		expect(msg).toContain('API_URL');
 		expect(missing[0]?.severity).toBe('high');
+	});
+
+	it('treats a required var whose last assignment is empty as missing', () => {
+		const findings = checkSchema(
+			parseEnv('API_KEY=abc\nAPI_URL=https://x.com\nAPI_URL=\n'),
+			REQUIRED_ONLY,
+		);
+		const missing = findings.filter(
+			(f) => f.ruleId === 'env/missing-required',
+		);
+		expect(missing).toHaveLength(1);
+		expect(missing[0]?.message).toContain('empty');
+		expect(missing[0]?.message).not.toContain('x.com');
 	});
 
 	it('emits missing-typed for a typed var that is absent', () => {

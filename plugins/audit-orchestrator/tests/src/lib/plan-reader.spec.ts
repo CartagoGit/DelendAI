@@ -62,7 +62,7 @@ describe('plan frontmatter and headings, read by hand', () => {
 			[
 				'id \t:   q00002',
 				'type: plan',
-				'title:   A title: with colons',
+				'title:   "A title: with colons"',
 			].join('\n'),
 		);
 
@@ -70,21 +70,44 @@ describe('plan frontmatter and headings, read by hand', () => {
 		expect(parsed.title).toBe('A title: with colons');
 	});
 
-	it('ignores frontmatter lines that are not key/value at all', () => {
+	it('reports frontmatter that is not valid YAML instead of guessing', () => {
+		expect(() =>
+			plan(
+				['id: q00003', 'type: plan', 'title: T', 'no-colon-here'].join(
+					'\n',
+				),
+			),
+		).toThrow('not valid YAML');
+	});
+
+	it('leaves status and kind unset when the plan omits them', () => {
+		const parsed = plan(
+			['id: q00003', 'type: plan', 'title: T'].join('\n'),
+		);
+
+		expect(parsed.status).toBeUndefined();
+		expect(parsed.kind).toBeUndefined();
+	});
+
+	it('reads contains.proposals from flow maps at any indentation', () => {
 		const parsed = plan(
 			[
-				'id: q00003',
+				'id: q00007',
 				'type: plan',
 				'title: T',
-				'no-colon-here',
-				': no key',
-				'not a key!: value',
+				'contains:',
+				'  proposals:',
+				'    # a comment between entries',
+				'    - { id: x00010, kind: fix, rationale: "why: because" }',
+				'    - id: x00011',
+				'      title: Named',
 			].join('\n'),
 		);
 
-		expect(parsed.id).toBe('q00003');
-		expect(parsed.status).toBeUndefined();
-		expect(parsed.kind).toBeUndefined();
+		expect(parsed.children).toEqual([
+			{ id: 'x00010' },
+			{ id: 'x00011', title: 'Named' },
+		]);
 	});
 
 	it('takes a child id with and without its trailing comment title', () => {

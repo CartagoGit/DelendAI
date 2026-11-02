@@ -6,6 +6,7 @@
 	"license": "BSD-3-Clause",
 	"description": "Internal, test-only helpers shared across @delendai workspaces (never published). Home of the typed partial-fake helper that replaces `as unknown as T` casts in test files.",
 	"scripts": {
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/test-kit",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"test": "vitest run",
 		"lint": "biome ci src tests"

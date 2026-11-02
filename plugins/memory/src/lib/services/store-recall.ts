@@ -21,7 +21,7 @@ const recallMetrics = {
 	recallCalls: 0,
 	notesReturned: 0,
 	digestReused: 0,
-	bytesAvoided: 0,
+	bytesDelivered: 0,
 };
 
 const DEFAULT_RECALL_LIMIT = 10;
@@ -53,7 +53,7 @@ const digestBytes = (digest: {
 const recordRecallMetrics = (notes: readonly INote[]): void => {
 	recallMetrics.recallCalls += 1;
 	recallMetrics.notesReturned += notes.length;
-	recallMetrics.bytesAvoided += notes.reduce(
+	recallMetrics.bytesDelivered += notes.reduce(
 		(total, note) => total + noteBytes(note),
 		0,
 	);
@@ -68,7 +68,7 @@ export const recordSessionDigestReuse = (
 ): void => {
 	if (digest === null) return;
 	recallMetrics.digestReused += 1;
-	recallMetrics.bytesAvoided += digestBytes(digest);
+	recallMetrics.bytesDelivered += digestBytes(digest);
 };
 
 export const getRecallMetricsSnapshot = () => ({ ...recallMetrics });
@@ -77,7 +77,7 @@ export const resetRecallMetrics = (): void => {
 	recallMetrics.recallCalls = 0;
 	recallMetrics.notesReturned = 0;
 	recallMetrics.digestReused = 0;
-	recallMetrics.bytesAvoided = 0;
+	recallMetrics.bytesDelivered = 0;
 };
 
 export const selectLatestSessionDigestForRecall = (

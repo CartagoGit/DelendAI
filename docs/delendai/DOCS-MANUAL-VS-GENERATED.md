@@ -1,6 +1,6 @@
 # Documentation manual vs generated — d00011
 
-> Track H of [q00006](proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md).
+> Track H of [q00006](proposals/done/plans/q00006-plan-hardening-post-auditoria-externa-chatgpt-5-6-sol-cuarta-pasada-sobre-develop-develop-verde-commit-policy-correcto-privacy-by-construction-boundaries-tokens-governance.md).
 > Owner: every contributor (human or agent) who edits `docs/delendai/**`.
 
 The audit caught drift: counts like "48 plugins" vs "50 plugins"
@@ -34,7 +34,7 @@ The repository has a single, opinionated policy:
 A drift-check job runs in CI: when an agent regenerates a
 block but forgets to commit it, the job fails on the next run.
 This is the same pattern used by the schema validators in
-[d00009](docs/delendai/security/capability-matrix.md) and
+[d00009](security/capability-matrix.md) and
 the token-budget dashboard — proven, low-overhead, and easy to
 extend.
 

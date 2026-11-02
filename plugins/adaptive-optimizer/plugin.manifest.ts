@@ -1,9 +1,9 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'adaptive-optimizer',
 	package: '@delendai/adaptive-optimizer',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',
@@ -11,7 +11,12 @@ export default definePluginManifest({
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
 	presets: ['dogfood'],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 7_739,
+		caps: { hard: 8_900, warning: 8_130 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: [
 		'@delendai/core',
 		'@delendai/prompt-eval',

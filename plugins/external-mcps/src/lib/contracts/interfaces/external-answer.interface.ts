@@ -11,6 +11,8 @@ export interface INormalizedAnswer {
 	readonly handle: string;
 	readonly rawBytes: number;
 	readonly factBytes: number;
+	/** True when the child reported a tool execution error (`isError`). */
+	readonly isError?: true;
 }
 
 /** An existing component an external description may already be. */

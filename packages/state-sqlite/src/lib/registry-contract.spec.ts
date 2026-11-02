@@ -11,6 +11,7 @@ import type { IStateRegistryOptions } from '@delendai/state';
 
 import { phaseTwoContract } from '../../../state/tests/src/contract/phase-0.2-contract.helper';
 import { registryContract } from '../../../state/tests/src/contract/registry-contract.helper';
+import { registryMethodsContract } from '../../../state/tests/src/contract/registry-methods-contract.helper';
 import { defineSqliteStateRegistry } from './sqlite-driver';
 
 /** Each registry on a store of its own, as each in-memory one is. */
@@ -24,4 +25,5 @@ const define = (options: IStateRegistryOptions) =>
 	});
 
 registryContract('sqlite', define);
+registryMethodsContract('sqlite', define);
 phaseTwoContract('sqlite', define);

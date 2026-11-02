@@ -11,6 +11,8 @@ export interface ITriageIssueSummary {
 	readonly number: number;
 	readonly title: string;
 	readonly labels: readonly string[];
+	/** `open` or `closed`, as the forge reports it, lower-cased. */
+	readonly state: string;
 	readonly updatedAt: string;
 }
 

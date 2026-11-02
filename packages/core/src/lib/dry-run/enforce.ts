@@ -15,7 +15,10 @@
  *      is the runtime safety net for "a plugin forgot to honour
  *      dryRun".
  *
- * Both helpers are pure; the router wires them into its call path
+ *   3. `refuseUnsupportedDryRun(input)` — stops, before the handler
+ *      runs, a dryRun call the handler would never see.
+ *
+ * All three helpers are pure; the router wires them into its call path
  * without growing state.
  */
 
@@ -103,6 +106,32 @@ const unwrapToolEnvelope = (result: unknown): unknown => {
 	return candidate.structuredContent !== undefined
 		? candidate.structuredContent
 		: result;
+};
+
+/**
+ * The refusal for a preview the tool cannot give. Validation strips a key
+ * the input schema does not declare, so a handler behind such a schema
+ * never sees `dryRun` and would perform the real effect: the call stops
+ * here, before the handler runs. Null when the flag is unset or survived
+ * validation, in which case the handler owns the plan. Pure.
+ */
+export const refuseUnsupportedDryRun = (input: {
+	readonly args: { readonly dryRun?: unknown };
+	readonly parsed: unknown;
+	readonly hasInputSchema: boolean;
+}): IDryRunContractRefusal | null => {
+	if (input.args.dryRun !== true) return null;
+	const reaches =
+		input.hasInputSchema &&
+		typeof input.parsed === 'object' &&
+		input.parsed !== null &&
+		(input.parsed as { readonly dryRun?: unknown }).dryRun === true;
+	if (reaches) return null;
+	return {
+		kind: 'dry-run-contract-violation',
+		reason: 'this tool does not accept dryRun, so nothing was run',
+		issues: [],
+	};
 };
 
 export const enforceDryRunReturnContract = (input: {

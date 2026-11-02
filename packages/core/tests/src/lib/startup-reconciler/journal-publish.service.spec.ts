@@ -78,7 +78,6 @@ const published = async (clone: string, remote: string) => {
 	const read = await journalRefReader(runnerIn(clone), async () => remote)(
 		'delendai',
 		'develop',
-		undefined,
 	);
 	return read.kind === 'payload' ? read.payload : [];
 };

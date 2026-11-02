@@ -3,7 +3,7 @@
 > Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- Headless browser automation tools.
+- Headless browser automation tools; they need Playwright installed and answer with an install hint without it.
 
 ## Public API
 

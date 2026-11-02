@@ -21,12 +21,16 @@ export {
 	readModelCatalogue,
 } from './lib/shared/model-catalogue.service';
 export {
+	answerAgentCandidate,
 	declareAgent,
 	installAgent,
 	listAgents,
 } from './lib/plugins/agents-flow.service';
 export { introduceAgent, runAcpAgent } from './lib/shared/acp-client.service';
-export { writeAgentUsagePage } from './lib/shared/agent-usage-doc.service';
+export {
+	writeAgentUsagePage,
+	writeProviderUsagePage,
+} from './lib/shared/agent-usage-doc.service';
 // What the snapshot refresh script needs to write the shipped catalogues.
 export {
 	AGENT_REGISTRY_FORMAT,
@@ -43,6 +47,8 @@ export {
 	providerPromptRequest,
 } from './lib/shared/provider-api-client.service';
 export { thisUserConfigRoot } from './lib/platform/user-directories.helper';
+export type { IHostByokProvider } from './lib/contracts/interfaces/host-byok.interface';
+export { hostByokRoster } from './lib/shared/host-model-roster.service';
 export type { IAccountOfferOutcome } from './lib/contracts/interfaces/account-offer.interface';
 export { runCli } from './lib/cli/run-cli';
 export { formatInstallReport, parseInitArgs } from './lib/cli/run-init';
@@ -249,7 +255,10 @@ export { hostToolSetReference } from './lib/scaffold/mcp-server-name.helper';
 export { renderAgentForHosts } from './lib/hosts/agent-renderers.helper';
 export { projectAgentHosts } from './lib/hosts/project-hosts.service';
 export { installPluginSkills } from './lib/scaffold/plugin-skills-report';
-export { AGENT_HOSTS } from './lib/contracts/constants/agent-hosts.constant';
+export {
+	AGENT_HOST_INSTRUCTION_FILES,
+	AGENT_HOSTS,
+} from './lib/contracts/constants/agent-hosts.constant';
 export type {
 	IAgentHost,
 	IHostNeutralAgent,
@@ -300,6 +309,10 @@ export {
 	parseJsonc,
 } from './lib/config/jsonc-document';
 export type { IJsoncEdit } from './lib/config/jsonc-document';
+// The prose `init` writes above each block of `delendai.config.json`,
+// derived from the schema itself so the file and the schema cannot
+// disagree about what a key does.
+export { renderConfigBlockComments } from './lib/plugins/config-block-docs';
 export { renderPluginConfigComment } from './lib/plugins/plugin-config-docs';
 export {
 	parseAuthorityDeclarations,
@@ -341,6 +354,7 @@ export {
 export {
 	runPendingMigrations,
 	ensureWorkspaceMigrated,
+	migrationStepIds,
 } from './lib/workspace-migration/legacy-migration.service';
 export {
 	listCacheLayoutMigrations,
@@ -353,6 +367,7 @@ export type { IStoredMigrationManifest } from './lib/workspace-migration/transac
 export type { ITransactionOutcome } from './lib/workspace-migration/transaction/migration-transaction';
 export {
 	createDefaultPhases,
+	createWorkspaceRoutePhases,
 	runMigrationTransaction,
 	rollbackLatestMigration,
 } from './lib/workspace-migration/transaction/migration-transaction';
@@ -395,6 +410,11 @@ export {
 
 export { CALL_WRITES_NOT_COMMITTED } from './lib/contracts/constants/call-writes.constant';
 export { startServerLogIn } from './lib/shared/server-log';
+export { holdToolCalls } from './lib/project/tool-call-hold.helper';
+export {
+	registerTaskBriefingProvider,
+	taskBriefingFor,
+} from './lib/work-units/task-briefing.service';
 // The marker on every agent delendai writes: what tells its own file from
 // one a person edited.
 export {
@@ -403,3 +423,10 @@ export {
 } from './lib/scaffold/agent-signature.helper';
 // The roster check, for every surface that takes an agent's name.
 export { describeOffRoster } from './lib/work-units/agent-alias.service';
+/** Who holds a slice: other agents' units, and the writer's own ref. */
+export { readSliceOwnership } from './lib/work-units/slice-holders.service';
+export {
+	discoveryConsentPath,
+	readDiscoveryConsent,
+	recordDiscoveryConsent,
+} from './lib/shared/discovery-consent-record.service';

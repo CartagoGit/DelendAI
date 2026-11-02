@@ -63,7 +63,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
-import { gitFileOrigin, type IGitFileOrigin } from '../lib/git-file-origin';
+import { gitFileOrigins, type IGitFileOrigin } from '../lib/git-file-origin';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
@@ -144,17 +144,19 @@ const walkMarkdown = (absDir: string, out: string[]): void => {
 	}
 };
 
-const fileTracked = (root: string, file: string): boolean => {
-	if (!existsSync(join(root, file))) return false;
+/** Every tracked path, from one `git ls-files`: a spawn per file took minutes. */
+const trackedFilesOf = (root: string): ReadonlySet<string> => {
 	try {
-		execFileSync(
-			'git',
-			['-C', root, 'ls-files', '--error-unmatch', '--', file],
-			{ stdio: 'ignore' },
+		return new Set(
+			execFileSync('git', ['-C', root, 'ls-files', '-z'], {
+				encoding: 'utf8',
+				maxBuffer: 256 * 1024 * 1024,
+			})
+				.split('\0')
+				.filter((path) => path.length > 0),
 		);
-		return true;
 	} catch {
-		return false;
+		return new Set();
 	}
 };
 
@@ -202,6 +204,10 @@ export const collectPendingSlices = (
 		const statusMatch = body.match(/^\s*-\s*\*\*Status\*\*:\s*(\w+)/m);
 		const status = statusMatch?.[1] ?? 'unknown';
 		if (status !== 'pending') continue;
+		// A slice a reviewer sent back has files from its first delivery
+		// and is pending because its rework is: it is not shipped.
+		if (/^\s*-\s*review-state:\s*changes_requested\b/mu.test(body))
+			continue;
 		const filesBlockMatch = body.match(FILES_BLOCK_RE);
 		const files = filesBlockMatch
 			? extractPathCandidates(filesBlockMatch[1] ?? '')
@@ -288,6 +294,12 @@ export const scanAlreadyImplemented = (
 ): readonly Finding[] => {
 	const root = repoRoot();
 	const findings: Finding[] = [];
+	const tracked = trackedFilesOf(root);
+	let origins: ReadonlyMap<string, IGitFileOrigin> | undefined;
+	const originOf = (path: string): IGitFileOrigin | undefined => {
+		origins ??= gitFileOrigins(root);
+		return origins.get(path);
+	};
 	for (const dir of SCAN_DIRS) {
 		const abs = join(proposalsDirAbs, dir);
 		if (!existsSync(abs)) continue;
@@ -301,10 +313,16 @@ export const scanAlreadyImplemented = (
 			if (options.proposalId && proposalId !== options.proposalId) {
 				continue;
 			}
-			for (const slice of collectPendingSlices(markdown)) {
+			for (const pending of collectPendingSlices(markdown)) {
+				// A slice that names its own proposal (a plan's closing slice)
+				// says nothing about code by it: that file is always tracked.
+				const slice = {
+					...pending,
+					files: pending.files.filter((file) => file !== rel),
+				};
 				if (slice.files.length === 0) continue;
-				const trackedFlags = slice.files.map((file) =>
-					fileTracked(root, file),
+				const trackedFlags = slice.files.map(
+					(file) => tracked.has(file) && existsSync(join(root, file)),
 				);
 				const allTracked = trackedFlags.every(Boolean);
 				const someTracked = trackedFlags.some(Boolean);
@@ -325,13 +343,10 @@ export const scanAlreadyImplemented = (
 					proposalDateOf(fm),
 					trackedFiles.map((file) => ({
 						file,
-						origin: gitFileOrigin(root, file, {
-							follow: true,
-						}),
+						origin: originOf(file),
 					})),
-					gitFileOrigin(root, relative(root, proposalAbs), {
-						follow: true,
-					})?.iso,
+					originOf(relative(root, proposalAbs).split('\\').join('/'))
+						?.iso,
 				);
 				const classified =
 					allTracked ||

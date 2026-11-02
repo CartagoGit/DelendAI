@@ -29,21 +29,25 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 
 ### S1 — The transform cache persists in CI
 - **Status**: pending
-- **Files**: `vitest.shared.ts`, `vitest.config.ts`, `.github/workflows/ci.yml`
+- **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86)."
 
 ### S2 — proposals evaluates each module once where state allows
 - **Status**: pending
-- **Files**: `plugins/proposals/vitest.config.ts`, `tools/scripts/report/vitest-module-evaluations.script.ts`
+- **Files**: `tools/scripts/report/vitest-module-evaluations.script.ts`, `tools/tests/report/vitest-module-evaluations.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A report script prints module evaluations per project from a vitest run; the proposals count drops measurably from 151,382 (G12)."
-  - "Any spec group run without isolation has a spec proving the module state it touches is reset between files; the G12 discrepancy is answered with that evidence."
+  - "A report script prints module evaluations per project from a vitest run (G12)."
+  - "The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them."
 
 ## acceptance
 
 - vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86).
-- A report script prints module evaluations per project from a vitest run; the proposals count drops measurably from 151,382 (G12).
-- Any spec group run without isolation has a spec proving the module state it touches is reset between files; the G12 discrepancy is answered with that evidence.
+- A report script prints module evaluations per project from a vitest run (G12).
+- The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them.
+
+## notes
+- 2026-10-27, S1: `fsModuleCache` is on in the root vitest config, and each CI test zone restores `node_modules/.vitest-cache` after the install, keyed on `bun.lock` and the vitest configs, per zone, and saves it at the end. Locally, three projects (i18n, diagram, docs) took 46 s cold and 33 s warm on a loaded machine. The first CI run after merge seeds the cache; the closing evidence compares the second.
+- S2: `tools/scripts/report/vitest-module-evaluations.script.ts` prints each project's evaluations from a run's output. Measured: proposals evaluated 1,631 modules 175,702 times (108 per module, 269 s importing) in an 839 s run. With `--no-isolate` the run took 359 s, but failed specs that depend on module state, and different ones in two runs: first 5 tests in 4 files, then `index-reader.spec.ts` (its fallback notice is logged once per process and the bookkeeping leaks between files) and `db-doctor.tool.spec.ts`. Isolation is not neutral for proposals, as G12 recorded; it stays. Relaxing it needs each of those modules to reset its state between files first, which is the follow-up.

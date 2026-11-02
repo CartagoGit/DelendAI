@@ -204,7 +204,7 @@ export const buildBranchStatusRegistration = (
 	return {
 		id: 'branch_status',
 		summary:
-			'Snapshot every work-ref, publication and agent branch and every worktree: ahead/behind vs base, dirty/untracked counts, out-of-cache flag.',
+			'Snapshot every work-ref, publication and agent branch and worktree: ahead/behind vs base, dirty counts, out-of-cache flag.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(

@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_PROPOSAL_INDEX_SOURCE,
@@ -105,6 +105,10 @@ describe('readProposalIndex — signature and default source (f00535 S2)', () =>
 		expect(entries).toEqual(JSON_ENTRIES);
 	});
 });
+
+// The fallback notice is logged once per worker: a file that ran earlier
+// in the same worker must not have spent it.
+beforeEach(resetProposalIndexFallbackNotice);
 
 describe('readProposalIndex — fallback with the database absent (f00535 S2)', () => {
 	it('returns exactly what the JSON path returns when there is no database', async () => {

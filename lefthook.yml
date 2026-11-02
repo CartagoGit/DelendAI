@@ -15,6 +15,11 @@
 # disabled every check in this file. `tools/scripts/sync-git-hooks.script.ts`
 # (run by `prepare` before `lefthook install`) removes those legacy raw hooks.
 
+# Quiet when it passes: every commit printed its whole hook table into every
+# agent's context (3% of a session's tool output). A failure still prints.
+output:
+    - failure
+
 min_version: 1.7.0
 
 # Only `prepare`, in the main checkout, installs the hooks every worktree of
@@ -69,6 +74,13 @@ pre-commit:
             env: *hook-locale
             run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
             stage_fixed: false
+
+        # What fails in seconds fails here: the agent notes are regenerated
+        # and staged, and the lints a proof would run later answer now.
+        commit-time-checks:
+            env: *hook-locale
+            run: bun tools/scripts/hooks/commit-time-checks.script.ts
+            stage_fixed: true
 
         # Staged-file Biome formatter (x00088). The script filters staged
         # files itself and re-stages the formatted bytes; it NEVER blocks

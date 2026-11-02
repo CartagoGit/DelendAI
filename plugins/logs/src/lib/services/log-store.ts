@@ -3,7 +3,10 @@ import { join } from 'node:path';
 
 import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/runtime';
 
-import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
+import type {
+	ILogStoreOptions,
+	ILogTailPage,
+} from '../contracts/interfaces/log-store.interface';
 import {
 	incidentTypeForKind,
 	isLogSeverity,
@@ -41,6 +44,8 @@ export interface ILogStore {
 	appendEvent(event: ILogEvent): Promise<void>;
 	readRange(filter?: ILogRangeFilter): Promise<readonly ILogEvent[]>;
 	tail(options?: ILogTailOptions): Promise<readonly ILogEvent[]>;
+	/** The newest events with how many day-files were read for them. */
+	tailPage?(options?: ILogTailOptions): Promise<ILogTailPage<ILogEvent>>;
 }
 
 export interface ILogRangeFilter {
@@ -257,6 +262,43 @@ export const createLogStore = async (
 		return events.sort((a, b) => compareIso(a.ts, b.ts));
 	};
 
+	const tailPage = async (
+		options: ILogTailOptions = {},
+	): Promise<ILogTailPage<ILogEvent>> => {
+		const limit = Math.max(1, Math.min(options.limit ?? 50, 1000));
+		const keep = (event: ILogEvent): boolean =>
+			(options.outcomeFilter
+				? event.outcome === options.outcomeFilter
+				: true) &&
+			(options.kindFilter ? event.kind === options.kindFilter : true);
+		await mkdir(logsDir, { recursive: true });
+		const days = (await readdir(logsDir))
+			.map((name) => dayFromFile(name))
+			.filter((day): day is string => day !== null)
+			.sort();
+		// Newest day-file first, one earlier file at a time, until the
+		// page is full or every retained file has been read: a page is
+		// never cut short by how many files were opened.
+		let page: ILogEvent[] = [];
+		let filesRead = 0;
+		for (
+			let at = days.length - 1;
+			at >= 0 && page.length < limit;
+			at -= 1
+		) {
+			const day = days[at];
+			if (day === undefined) continue;
+			const events = await readAllFiles({ startDay: day, endDay: day });
+			filesRead += 1;
+			page = [...events.filter(keep), ...page];
+		}
+		return {
+			events: page.slice(-limit),
+			filesRead,
+			filesTotal: days.length,
+		};
+	};
+
 	return {
 		async appendEvent(event) {
 			// x00154 S1 — derive `severity` + `incidentType` from the raw
@@ -298,63 +340,9 @@ export const createLogStore = async (
 			const events = await readAllFiles(dayRange);
 			return events.filter((event) => matches(event, filter));
 		},
+		tailPage,
 		async tail(options = {}) {
-			const limit = Math.max(1, Math.min(options.limit ?? 50, 1000));
-			// x00153 S2: tail() opens the active day-file + at most one previous
-			// when N exceeds the active file's line count, never all retained files.
-			await mkdir(logsDir, { recursive: true });
-			const dayFiles = (await readdir(logsDir))
-				.filter((name) => DATE_RE.test(name))
-				.sort();
-			const activeDay = dayFromFile(dayFiles.at(-1) ?? '');
-			const previousDay = dayFromFile(
-				dayFiles.length >= 2 ? (dayFiles.at(-2) ?? '') : '',
-			);
-			const dayRange: { startDay?: string; endDay?: string } = activeDay
-				? { endDay: activeDay }
-				: {};
-			if (previousDay) dayRange.startDay = previousDay;
-			const events = await readAllFiles(dayRange);
-			const filtered = events.filter(
-				(event) =>
-					(options.outcomeFilter
-						? event.outcome === options.outcomeFilter
-						: true) &&
-					(options.kindFilter
-						? event.kind === options.kindFilter
-						: true),
-			);
-			// If the active day-file holds fewer than `limit` events, we may
-			// need to extend the read back further — but only if there are
-			// earlier files. This avoids the O(all-files) cost when the
-			// active file is full.
-			let page = filtered.slice(-limit);
-			if (
-				page.length < limit &&
-				dayFiles.length > 2 &&
-				previousDay !== undefined
-			) {
-				const earlierDay = dayFromFile(dayFiles.at(-3) ?? '');
-				if (earlierDay) {
-					const extra = await readAllFiles({
-						startDay: earlierDay,
-						endDay: earlierDay,
-					});
-					page = [
-						...extra.filter(
-							(event) =>
-								(options.outcomeFilter
-									? event.outcome === options.outcomeFilter
-									: true) &&
-								(options.kindFilter
-									? event.kind === options.kindFilter
-									: true),
-						),
-						...filtered,
-					].slice(-limit);
-				}
-			}
-			return page;
+			return (await tailPage(options)).events;
 		},
 	};
 };

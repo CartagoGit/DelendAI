@@ -1,7 +1,7 @@
 ---
 name: delendai-external-mcps
 appliesTo: ['@delendai/external-mcps']
-description: The token-lean, human-acked workflow for composing third-party MCP servers under the host — catalog (discover on demand) → suggest (propose a pinned config patch) → validate_config (dry-run) → ack (human gate) → call (lazy ext.<server>.<tool> proxy). Use when a workspace needs a capability the native delendai tools do not cover.
+description: Use when a workspace needs a capability native tools lack: discover, propose a pinned config, validate, get a human ack, then call a third-party MCP lazily.
 ---
 
 # delendai external-mcps
@@ -47,6 +47,8 @@ Run the proposed servers block through the Zod schema without writing or
 booting. It rejects floating tags like `latest` (`missing-version-pin`),
 non-kebab ids, and env entries that smuggle a cleartext value instead of a NAME.
 Fix any issue by code, then apply the patch on **user confirm**.
+At boot, an `npx`/`bunx` entry runs its package as `pkg@<version>` exactly:
+the entry's `version` replaces whatever tag or range the `args` spec carried.
 
 ### 4. `ack` — the human gate
 

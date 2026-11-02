@@ -1,15 +1,19 @@
 // installed-framework.helper.ts — which framework, at which version.
 //
 // Detection and version resolution are core's (`matchFramework`,
-// `resolveFrameworkVersion`); this only reads the two files they need
-// and joins the answers, so both tools resolve identically.
+// `resolveFrameworkVersion`); this only reads the manifests and the
+// lockfile they need, the root's and every workspace package's, and
+// joins the answers, so both tools resolve identically.
 
 import {
 	DEFAULT_FRAMEWORK_RULES,
 	matchFramework,
 	resolveFrameworkVersion,
 } from '@delendai/core/public';
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	SafeWorkspaceReader,
+	workspacePackageDirs,
+} from '@delendai/core/runtime';
 import type { ILockfileRef } from '@delendai/core/public';
 
 import { LOCKFILE_NAMES } from '../contracts/constants/knowledge-cache.constant';
@@ -26,10 +30,11 @@ const readTextIfPresent = async (
 	}
 };
 
-const readDependencies = async (
+const dependenciesOf = async (
 	rootAbs: string,
+	manifestPath: string,
 ): Promise<Readonly<Record<string, string>>> => {
-	const text = await readTextIfPresent(rootAbs, 'package.json');
+	const text = await readTextIfPresent(rootAbs, manifestPath);
 	if (text === undefined) return {};
 	try {
 		const manifest = JSON.parse(text) as {
@@ -40,6 +45,23 @@ const readDependencies = async (
 	} catch {
 		return {};
 	}
+};
+
+/**
+ * The dependencies of the root manifest and of every workspace package:
+ * in a monorepo the framework is a dependency of the package that uses
+ * it, not of the root. The root's own declaration wins a clash.
+ */
+const readDependencies = async (
+	rootAbs: string,
+): Promise<Readonly<Record<string, string>>> => {
+	const merged: Record<string, string> = {};
+	for (const dir of await workspacePackageDirs(rootAbs))
+		for (const [name, range] of Object.entries(
+			await dependenciesOf(rootAbs, `${dir}/package.json`),
+		))
+			merged[name] ??= range;
+	return { ...merged, ...(await dependenciesOf(rootAbs, 'package.json')) };
 };
 
 const readLockfile = async (

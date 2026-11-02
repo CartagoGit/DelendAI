@@ -38,8 +38,9 @@ const POLICY: IOrchestratorPolicy = {
 	},
 };
 
-const captureHandler = async () => {
-	const engine = createOrchestratorEngine(POLICY);
+const captureHandler = async (
+	engine: OrchestratorEngine = createOrchestratorEngine(POLICY),
+) => {
 	const registration = buildPlanToolRegistration({
 		namespacePrefix: 'ns',
 		engine: () => engine,
@@ -59,6 +60,37 @@ const captureHandler = async () => {
 };
 
 const TASK = { id: 't1', description: 'Fix typo.', tags: [] };
+
+describe('agent-orchestrator_plan — inputs reach the engine', () => {
+	it('passes files and facts to the classifier', async () => {
+		const seen: ITask[] = [];
+		class SpyClassifier extends TaskClassifier {
+			override classify(task: ITask, policy: IOrchestratorPolicy) {
+				seen.push(task);
+				return super.classify(task, policy);
+			}
+		}
+		const engine = createOrchestratorEngine(
+			{ ...POLICY, defaultMode: 'auto' },
+			new SpyClassifier(),
+		);
+		const handler = await captureHandler(engine);
+		await handler({
+			task: { ...TASK, files: ['plugins/a/x.ts'], facts: { parts: 3 } },
+		});
+		expect(seen[0]?.files).toEqual(['plugins/a/x.ts']);
+		expect(seen[0]?.facts).toEqual({ parts: 3 });
+	});
+
+	it('an override regenerates the steps of the named mode', async () => {
+		const handler = await captureHandler();
+		const natural = await handler({ task: TASK });
+		const swarm = await handler({ task: TASK, override: 'swarm' });
+		expect(swarm.structuredContent?.steps).not.toEqual(
+			natural.structuredContent?.steps,
+		);
+	});
+});
 
 describe('agent-orchestrator_plan — override handling', () => {
 	it('plans through the configured default mode when no override is given', async () => {

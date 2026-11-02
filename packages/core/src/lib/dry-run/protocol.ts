@@ -124,6 +124,14 @@ export const validateDryRunResult = (
 			},
 		];
 	}
+	const lists = value as {
+		readonly wouldChange?: unknown;
+		readonly wouldRun?: unknown;
+	};
+	const missingLists = (['wouldChange', 'wouldRun'] as const)
+		.filter((key) => !Array.isArray(lists[key]))
+		.map((key) => ({ path: key, message: 'must be an array' }));
+	if (missingLists.length > 0) return missingLists;
 	const issues: IDryRunResultIssue[] = [];
 	const allowedKinds = ['write', 'delete', 'rename', 'create', 'patch'];
 	const allowedShapes = ['shell', 'network', 'process', 'git', 'mcp'];

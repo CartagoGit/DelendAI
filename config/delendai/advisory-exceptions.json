@@ -6,6 +6,12 @@
 			"package": "braces",
 			"reason": "No version of braces is patched (3.0.3 is the latest and is affected). It reaches the tree through micromatch in build and test tooling, where every pattern is the repository's own.",
 			"until": "2026-11-07"
+		},
+		{
+			"advisory": "GHSA-gcqx-w48m-w2h4",
+			"package": "deepmerge",
+			"reason": "No version of deepmerge is patched (4.3.1 is the latest and is affected). It reaches the tree only through webfont, which builds the VS Code extension's icon font from the repository's own SVGs and configuration.",
+			"until": "2026-11-27"
 		}
 	]
 }

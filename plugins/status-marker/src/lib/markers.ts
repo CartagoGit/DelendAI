@@ -102,6 +102,23 @@ export const MARKERS_BY_LOCALE: Readonly<
 	},
 };
 
+/** A close-marker line that does not fit: the reason must be shortened, never cut. */
+export class CloseMarkerTooLongError extends Error {
+	constructor(readonly length: number) {
+		super(
+			`close-marker line is ${length} characters; the most is ${MAX_LINE_LEN}. Shorten the reason.`,
+		);
+		this.name = 'CloseMarkerTooLongError';
+	}
+}
+
+/** The line as it is, or a refusal when it is longer than the convention allows. */
+const fittedLine = (body: string): string => {
+	if (body.length > MAX_LINE_LEN)
+		throw new CloseMarkerTooLongError(body.length);
+	return body;
+};
+
 /**
  * Options accepted by {@link formatCloseMarker}. Kept as an interface so
  * future flags (e.g. `omitTrailingSpace`) are non-breaking additions.
@@ -116,8 +133,9 @@ export interface IFormatCloseMarkerOptions {
  *
  * - When the state requires a reason and `reason` is omitted, the literal
  *   `<reason-missing>` is appended so the convention is grep-able.
- * - When the resulting line exceeds {@link MAX_LINE_LEN}, it is truncated
- *   to 119 chars and a single `…` is appended.
+ * - A line longer than {@link MAX_LINE_LEN} is refused with
+ *   {@link CloseMarkerTooLongError}: cutting it dropped the end of a
+ *   mandatory reason without a word.
  * - `opts.locale` selects the bracket text. `'es'` (default) emits the
  *   protocol state name verbatim — byte-identical to the legacy output.
  *   `'en'` renders a shorter English token (e.g. `[DONE]` instead of
@@ -136,9 +154,7 @@ export const formatCloseMarker = (
 		def.requiresReason || reason
 			? `${base}${CLOSE_SEPARATOR}${reason ?? REASON_MISSING_TOKEN}`
 			: base;
-	return body.length > MAX_LINE_LEN
-		? `${body.slice(0, MAX_LINE_LEN - 1)}…`
-		: body;
+	return fittedLine(body);
 };
 
 /**
@@ -372,7 +388,5 @@ export const formatEffectiveMarker = (
 		def.requiresReason || reason
 			? `${base}${CLOSE_SEPARATOR}${reason ?? REASON_MISSING_TOKEN}`
 			: base;
-	return body.length > MAX_LINE_LEN
-		? `${body.slice(0, MAX_LINE_LEN - 1)}…`
-		: body;
+	return fittedLine(body);
 };

@@ -13,6 +13,7 @@ import { carryUnitRecords } from './unit-adoption.service';
 
 import {
 	agentFor,
+	identityRemedy,
 	readGit,
 	openWork,
 	refused,
@@ -34,6 +35,14 @@ export const claimed = async (
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const agent = agentFor(args, opened.root, opened.policy.identity);
+	// Without a name nothing can be claimed, and the listing would read as
+	// "nothing here belongs to anybody else".
+	if (agent.length === 0) {
+		return refused(
+			'no agent identity: a claimed unit is renamed after its claimant, and there is no name to give it.',
+			`Pass --agent=<your model id>, or set DELENDAI_AGENT_ID.${identityRemedy(opened.policy)}`,
+		);
+	}
 	const ref = scalarArg(args, 'ref');
 	const candidates = claimableWorkRefs({
 		root: opened.root,
@@ -93,6 +102,7 @@ export const claimed = async (
 		policy: opened.policy,
 		from: result.from,
 		to: result.to,
+		owner: result.claimedBy,
 	});
 	process.stdout.write(
 		`${[

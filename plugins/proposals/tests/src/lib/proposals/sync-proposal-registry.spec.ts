@@ -161,7 +161,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 		await writeRaw(
 			root,
 			'ready',
-			'readme.md',
+			'notes.md',
 			'plain markdown without proposal frontmatter\n',
 		);
 
@@ -181,7 +181,7 @@ describe('syncProposalRegistry (entry point)', async () => {
 		expect(quarantine).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					absPath: expect.stringContaining('/readme.md'),
+					absPath: expect.stringContaining('/notes.md'),
 					reason: 'invalid_canonical_filename',
 				}),
 			]),

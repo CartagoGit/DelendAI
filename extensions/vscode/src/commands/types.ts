@@ -1,3 +1,4 @@
+import { escapeHtml } from '@delendai/ui-extension/public';
 import type { IMcpLogHint, McpStdioClient } from '@delendai/client';
 import { DEFAULT_DENY, injectCspMeta } from '@delendai/ui-extension/webview';
 
@@ -221,9 +222,4 @@ export const renderJsonHtml = (title: string, payload: object): string =>
 		DEFAULT_DENY,
 	);
 
-export const escapeHtml = (value: string): string =>
-	value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;');
+export { escapeHtml };

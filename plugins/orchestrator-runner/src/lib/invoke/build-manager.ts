@@ -28,7 +28,10 @@ import type { IProviderAccount } from '@delendai/core/contracts';
 import type { ILifecycleEnvironment } from '../contracts/interfaces/execution-env-lifecycle.interface';
 import type { IInvocationJournal } from '../contracts/interfaces/invocation-journal.interface';
 import type { IQuotaHold } from '../contracts/interfaces/quota-reservation.interface';
-import { accountEnvironment } from '../services/account-environment.service';
+import {
+	accountApiCredential,
+	accountEnvironment,
+} from '../services/account-environment.service';
 import type { ConfirmationSigner, IConfirmationGate } from './token';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';
@@ -52,6 +55,10 @@ import {
 	type IJsonRpcTransport,
 } from '../subprocess/mcp-client';
 import { createStdioTransport } from '../subprocess/stdio-transport';
+import {
+	createHostSamplingInvoker,
+	type IHostSampler,
+} from './host-sampling-invoker.service';
 import { createSubscriptionInvoker } from '../subprocess/subscription';
 import { createAcpInvoker } from './acp-invoker.service';
 
@@ -155,6 +162,10 @@ export interface IBuildManagerOptions {
 	readonly workspaceRoot: string;
 	/** The accounts roster entries run on; their processes get only their own environment. */
 	readonly accounts?: readonly IProviderAccount[];
+	/** The host this server answers, once its client named itself. */
+	readonly currentHost?: (() => string | undefined) | undefined;
+	/** The sampler of the host this server runs in, once a client is connected. */
+	readonly hostSampler?: (() => IHostSampler | undefined) | undefined;
 	readonly health: HealthStore;
 	readonly defaultCostPreference: CostPreference;
 	readonly invokeTimeoutMs: number;
@@ -195,6 +206,7 @@ export const buildDefaultInvocationManager = (
 	);
 	const cliInvoker = createCliInvoker({
 		spawner: nodeCliSpawner,
+		workspaceRoot: options.workspaceRoot,
 		environmentFor: (request, args) => {
 			const accountId = request.decision.targetProvider.accountId;
 			return accountEnvironment({
@@ -207,6 +219,7 @@ export const buildDefaultInvocationManager = (
 						? undefined
 						: accounts.get(accountId),
 				parentEnv: process.env,
+				workspaceRoot: options.workspaceRoot,
 				named:
 					request.invoke.kind === 'cli'
 						? request.invoke.env
@@ -216,6 +229,19 @@ export const buildDefaultInvocationManager = (
 	});
 	const apiInvoker = createApiInvoker({
 		fetchFn: globalHttpFetch,
+		credentialFor: (request) => {
+			const accountId = request.decision.targetProvider.accountId;
+			return accountApiCredential({
+				envVar:
+					request.invoke.kind === 'api' ? request.invoke.envVar : '',
+				accountId,
+				account:
+					accountId === undefined
+						? undefined
+						: accounts.get(accountId),
+				parentEnv: process.env,
+			});
+		},
 		...(options.quotaSink !== undefined
 			? { quotaSink: options.quotaSink }
 			: {}),
@@ -223,7 +249,15 @@ export const buildDefaultInvocationManager = (
 	const mcpInvoker = createMcpInvoker({
 		transportFactory: mcpServerTransportFactory,
 	});
-	const subscriptionInvoker = createSubscriptionInvoker();
+	const subscriptionInvoker = createSubscriptionInvoker({
+		cli: cliInvoker,
+		currentHost: options.currentHost,
+	});
+	// A model the host editor serves on the person's key (BYOK) is asked of
+	// the host itself; outside a host that samples, every call says so.
+	const hostSamplingInvoker = createHostSamplingInvoker({
+		sampler: options.hostSampler ?? (() => undefined),
+	});
 	const acpInvoker = createAcpInvoker({
 		cwd: options.workspaceRoot,
 	});
@@ -237,6 +271,7 @@ export const buildDefaultInvocationManager = (
 			'mcp-server': mcpInvoker,
 			subscription: subscriptionInvoker,
 			acp: acpInvoker,
+			'host-sampling': hostSamplingInvoker,
 		},
 		defaultCostPreference: options.defaultCostPreference,
 		invokeTimeoutMs: options.invokeTimeoutMs,

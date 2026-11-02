@@ -4,12 +4,15 @@
  * The proposals plugin cannot depend on this package (it is published,
  * this one is not), so it journals each finished stretch of work as one
  * JSON line and leaves the history to pick the lines up. This module is
- * that pick-up: it claims the journal by renaming it, records every
+ * that pick-up: it claims the journal (see `journal-claim.helper`; an
+ * abandoned claim is taken up first, never written over), records every
  * line into the duration history, and deletes the claimed file. Lines
  * that arrive while it runs land in a fresh journal for the next drain.
  */
 
-import { readFile, rename, rm } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
+
+import { claimJournal } from '../drain/journal-claim.helper';
 
 import {
 	recordTransitionDuration,
@@ -17,8 +20,6 @@ import {
 } from './duration-history';
 import type { IDrainResult } from './contracts/interfaces/duration-journal.interface';
 import { computeFeatureVector } from './feature-vector';
-
-const CLAIMED_SUFFIX = '.draining';
 
 interface IJournalLine {
 	readonly to: string;
@@ -56,13 +57,9 @@ export const drainTransitionDurationJournal = async (
 	store: Pick<IDurationHistoryStore, 'recordDuration'>,
 	journalPath: string,
 ): Promise<IDrainResult> => {
-	const claimed = `${journalPath}${CLAIMED_SUFFIX}`;
-	try {
-		await rename(journalPath, claimed);
-	} catch {
-		// No journal, or another drain holds it: nothing to do now.
-		return { recorded: 0, skipped: 0 };
-	}
+	const claimed = await claimJournal(journalPath);
+	// No journal, or another drain holds it: nothing to do now.
+	if (claimed === undefined) return { recorded: 0, skipped: 0 };
 	const text = await readFile(claimed, 'utf8');
 	let recorded = 0;
 	let skipped = 0;

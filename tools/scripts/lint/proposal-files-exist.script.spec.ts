@@ -1,10 +1,14 @@
+import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { scanMissingFiles } from './proposal-files-exist.script';
+import {
+	scanMissingFiles,
+	shippedInCommits,
+} from './proposal-files-exist.script';
 
 describe('proposal-files-exist lint', () => {
 	let root = '';
@@ -99,5 +103,44 @@ describe('proposal-files-exist lint', () => {
 			'- **Files**: `packages/core/src/lib/real.ts:12,45-60`\n',
 		);
 		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('accepts a file a later change deleted, when a shipped-in commit held it', () => {
+		const git = (...args: string[]): string =>
+			execFileSync('git', args, {
+				cwd: root,
+				encoding: 'utf8',
+				env: {
+					...process.env,
+					GIT_AUTHOR_NAME: 't',
+					GIT_AUTHOR_EMAIL: 't@t',
+					GIT_COMMITTER_NAME: 't',
+					GIT_COMMITTER_EMAIL: 't@t',
+				},
+			}).trim();
+		git('init', '--quiet');
+		write('packages/gone/src/store.ts', 'export {};');
+		git('add', '.');
+		git('commit', '--quiet', '-m', 'ship it');
+		const shipped = git('rev-parse', '--short', 'HEAD');
+		git('rm', '--quiet', '-r', 'packages/gone');
+		git('commit', '--quiet', '-m', 'retire the package');
+		write(
+			'docs/delendai/proposals/review/x00001-thing.md',
+			`---\nid: x00001\nshipped-in:\n  - "${shipped}"\n---\n\n` +
+				'### S1 — thing\n' +
+				'- **Status**: done\n' +
+				'- **Files**: `packages/gone/src/store.ts`, `packages/never/x.ts`\n',
+		);
+		expect(
+			shippedInCommits(
+				`shipped-in:\n  - "${shipped}"\n- shipped-in: \`abc1234\``,
+			),
+		).toEqual([shipped, 'abc1234']);
+		expect(
+			scanMissingFiles(root)[
+				'docs/delendai/proposals/review/x00001-thing.md'
+			],
+		).toEqual(['packages/never/x.ts']);
 	});
 });

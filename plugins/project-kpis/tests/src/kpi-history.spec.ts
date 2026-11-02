@@ -1,6 +1,14 @@
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -503,5 +511,39 @@ describe('kpi history + trends', async () => {
 
 		expect(result.retentionDays).toBe(DEFAULT_KPI_HISTORY_RETENTION_DAYS);
 		expect(result.entries).toEqual([]);
+	});
+});
+
+describe('a corrupt KPI history', () => {
+	it('is set aside with its bytes and read as an empty, degraded window', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'kpi-corrupt-'));
+		try {
+			const path = join(
+				root,
+				CACHE_DIR,
+				'results/project-kpis/history.json',
+			);
+			mkdirSync(dirname(path), { recursive: true });
+			writeFileSync(
+				path,
+				'{"contract": "project-kpis.history", "entries": [',
+			);
+			const read = await readKpiHistoryWindow({
+				workspaceRootAbs: root,
+				cacheDir: CACHE_DIR,
+			});
+			expect(read.entries).toEqual([]);
+			expect(read.degraded).toContain('could not be read');
+			expect(existsSync(path)).toBe(false);
+			const kept = readdirSync(dirname(path)).filter((name) =>
+				name.startsWith('history.json'),
+			);
+			expect(kept).toHaveLength(1);
+			expect(
+				readFileSync(join(dirname(path), kept[0] ?? ''), 'utf8'),
+			).toContain('"entries": [');
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

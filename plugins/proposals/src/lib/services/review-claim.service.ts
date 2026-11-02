@@ -32,6 +32,7 @@ import {
 	reviewClaims,
 	unitOfRef,
 } from './review-claims.service';
+import { earlierPackWithVerdicts } from './review-earlier-pack.service';
 import { releaseReview, reserveReview } from './review-reservation.service';
 
 /** What a reviewer with a full pack does next. */
@@ -44,6 +45,10 @@ export const unjudgedStep = (
 	namespacePrefix: string,
 ): string =>
 	`Record your verdict on ${holding} (${namespacePrefix}_proposal_review), or give it back with ${namespacePrefix}_review_claim { release: "<why you could not judge it>" }. One proposal is held at a time, so the others stay open to other reviewers.`;
+
+/** What a reviewer whose earlier pack still holds verdicts does next. */
+export const earlierPackStep = (unit: string): string =>
+	`Publish ${unit} (\`delendai review finish\`, or the \`work\` tool publish from that unit), or claim from it.`;
 
 /** The unit this checkout is on, and whether it is a review unit. */
 const currentUnit = async (
@@ -145,7 +150,16 @@ export const claimForReview = async (
 ): Promise<IReviewClaimOutcome> => {
 	const id = proposalId.toLowerCase();
 	if (shape !== undefined) {
-		const { unit } = await currentUnit(run, shape);
+		const current = await currentUnit(run, shape);
+		const { unit } = current;
+		const earlier = await earlierPackWithVerdicts(
+			run,
+			shape,
+			current,
+			integration,
+		);
+		if (earlier !== undefined)
+			return { kind: 'earlier-pack', unit: earlier };
 		const by = [
 			...new Set(
 				((await reviewClaims(run, shape, integration)).get(id) ?? [])
@@ -255,6 +269,12 @@ export const verdictClaimRefusal = async (
 		return {
 			reason: `Your review unit holds ${outcome.holding} and has recorded nothing about it; ${proposalId} is not taken until it has.`,
 			nextAction: unjudgedStep(outcome.holding, namespacePrefix),
+		};
+	}
+	if (outcome.kind === 'earlier-pack') {
+		return {
+			reason: `Your review unit ${outcome.unit} holds verdicts not yet published; ${proposalId} is not taken from another unit of yours until they are.`,
+			nextAction: earlierPackStep(outcome.unit),
 		};
 	}
 	if (outcome.kind === 'failed') {

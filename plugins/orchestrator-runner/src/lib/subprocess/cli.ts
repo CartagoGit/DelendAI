@@ -46,6 +46,8 @@ export type CliSpawner = (
 
 export interface ICliInvokerOptions {
 	readonly spawner: CliSpawner;
+	/** The workspace whose declared clients a command is matched to. */
+	readonly workspaceRoot: string;
 	/** ms between SIGTERM and the escalating SIGKILL. Default 5000. */
 	readonly sigkillGraceMs?: number;
 	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
@@ -61,6 +63,18 @@ const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
 	const handle = setTimeout(fn, ms);
 	handle.unref?.();
 	return { clear: () => clearTimeout(handle) };
+};
+
+/** Whether a line of output is a JSON value (a stream-json event). */
+const isJsonLine = (line: string): boolean => {
+	const trimmed = line.trim();
+	if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return false;
+	try {
+		JSON.parse(trimmed);
+		return true;
+	} catch {
+		return false;
+	}
 };
 
 /**
@@ -161,7 +175,7 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 				request.invoke.args ?? [],
 				request.prompt,
 				request.toolsAllow,
-				knownClientOf(request.invoke.command),
+				knownClientOf(request.invoke.command, options.workspaceRoot),
 			);
 			const environment = options.environmentFor?.(request, args) ?? {
 				kind: 'inherit',
@@ -186,9 +200,16 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 			let text = '';
 			let usage: IInvokeUsage | undefined;
 			let buffer = '';
+			// Lines that are not stream-json: the answer of a CLI that writes
+			// plain text, which read as an empty success.
+			const plain: string[] = [];
 
 			const promise = new Promise<IInvokeResult>((resolve, reject) => {
 				const drainLine = (line: string): void => {
+					if (!isJsonLine(line)) {
+						if (line.trim().length > 0) plain.push(line);
+						return;
+					}
 					const parsed = parseStreamJsonLine(line);
 					if (parsed.text !== undefined) text += parsed.text;
 					if (parsed.usage !== undefined) usage = parsed.usage;
@@ -223,7 +244,7 @@ export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
 						return;
 					}
 					resolve({
-						text,
+						text: text.length > 0 ? text : plain.join('\n').trim(),
 						...(usage !== undefined ? { usage } : {}),
 					});
 				});

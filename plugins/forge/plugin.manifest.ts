@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'forge',
 	package: '@delendai/forge',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
 	tags: ['forge', 'git', 'ci'],
@@ -34,11 +34,11 @@ export default definePluginManifest({
 		issue_create: ['forge-write', 'network'],
 	},
 	tokenBudget: {
-		staticBytes: 6_800,
+		staticBytes: 4_710,
 		adaptiveActivationBytes: 1_200,
 		typicalOutput: 1_700,
-		caps: { hard: 8_200, warning: 7_400 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 5_420, warning: 4_950 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

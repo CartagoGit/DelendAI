@@ -49,6 +49,25 @@ const collect = (
 };
 
 /**
+ * The explanatory text of an MCP tool execution error (`result.isError`),
+ * or `undefined` when the result is not an error. A JSON-RPC error never
+ * reaches here; this is the in-band failure a successful reply can carry.
+ */
+export const childToolError = (raw: unknown): string | undefined => {
+	if (typeof raw !== 'object' || raw === null) return undefined;
+	const result = raw as { isError?: unknown; content?: unknown };
+	if (result.isError !== true) return undefined;
+	const text = Array.isArray(result.content)
+		? result.content
+				.map((part) => (part as { text?: unknown }).text)
+				.filter((part): part is string => typeof part === 'string')
+				.join(' ')
+				.trim()
+		: '';
+	return text.length > 0 ? text : 'the external tool reported an error';
+};
+
+/**
  * The facts of an MCP `tools/call` result: its structured content when
  * it has one, else its text content. `keep` stores the raw answer and
  * is called once per distinct answer.
@@ -87,5 +106,8 @@ export const normalizeResponse = async (
 		handle,
 		rawBytes: Buffer.byteLength(json),
 		factBytes: Buffer.byteLength(JSON.stringify(facts)),
+		...(childToolError(raw) !== undefined
+			? { isError: true as const }
+			: {}),
 	};
 };

@@ -56,6 +56,47 @@ describe('cleanup, green progress and idempotency', () => {
 		expect(h.repo.serverHead('wip/agent-a/p1-s1-g1')).toBe('');
 	});
 
+	it('keeps the delivered tip reachable under the retired namespace', async () => {
+		const candidate = await h.checkpoint({
+			agent: 'agent-a',
+			path: 'src/a.ts',
+			content: 'export const a = 1;\n',
+		});
+		h.forge.setGreen(candidate.wipHeadSha);
+
+		const result = await h.engine.runIntegrationCycle({
+			policy: deletingPolicy(),
+			candidate,
+		});
+
+		const keptAt = result.disposition?.keptAt ?? '';
+		expect(keptAt).toContain('/retired/');
+		expect(h.repo.localRef(keptAt)).toBe(candidate.wipHeadSha);
+	});
+
+	it("reports the forge's refusal to delete its copy, with the forge's message", async () => {
+		const candidate = await h.checkpoint({
+			agent: 'agent-a',
+			path: 'src/a.ts',
+			content: 'export const a = 1;\n',
+		});
+		h.forge.setGreen(candidate.wipHeadSha);
+		Object.assign(h.forge.forge, {
+			deleteBranch: async () => ({
+				ok: false,
+				reason: 'branch is protected',
+			}),
+		});
+
+		const result = await h.engine.runIntegrationCycle({
+			policy: deletingPolicy(),
+			candidate,
+		});
+
+		expect(result.disposition?.action).toBe('forge-refused');
+		expect(result.disposition?.reason).toContain('branch is protected');
+	});
+
 	it('never deletes unmerged work — it reports it RECOVERABLE', async () => {
 		const candidate = await h.checkpoint({
 			agent: 'agent-a',

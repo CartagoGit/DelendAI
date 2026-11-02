@@ -202,6 +202,43 @@ describe('branch protection adapter', () => {
 		});
 	});
 
+	it('keeps the last known protections when a refresh fails', async () => {
+		let failing = false;
+		const adapter = createBranchProtectionAdapter({
+			workspaceRoot: '/workspace',
+			policy: policy(['trunk']),
+			exec: async (input) => {
+				if (input.tool.bin === 'git') {
+					if (input.args[0] === 'rev-parse')
+						return ok('origin/trunk\n');
+					return ok('git@github.com:acme/widget.git\n');
+				}
+				return failing
+					? {
+							ok: false,
+							code: 1,
+							stdout: '',
+							stderr: 'network down',
+							timedOut: false,
+							unavailable: false,
+						}
+					: ok('release\n');
+			},
+		});
+		await adapter.refresh();
+		failing = true;
+
+		const result = await adapter.refresh();
+
+		expect(result).toMatchObject({
+			ok: false,
+			state: 'error',
+			reason: 'network down',
+			remoteBranches: ['release'],
+		});
+		expect(result.effectiveBranches).toContain('release');
+	});
+
 	it('reports refresh errors without dropping the local fallback', async () => {
 		const configured = policy(['trunk']);
 		const adapter = createBranchProtectionAdapter({

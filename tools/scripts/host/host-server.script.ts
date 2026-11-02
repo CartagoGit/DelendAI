@@ -7,11 +7,17 @@
  * branches a long-running server process never needs.
  */
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawn } from 'node:child_process';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
+import {
+	branchFlag,
+	branchHostScript,
+	withoutBranchFlag,
+} from './branch-runtime.helper';
 import {
 	assembleCliConfig,
 	createMcpProject,
@@ -39,7 +45,11 @@ import {
 	runStartupGate,
 	startupGateWarnings,
 } from '@delendai/core/cli';
-import { startCheckoutHydration, startServerLogIn } from '@delendai/core/cli';
+import {
+	holdToolCalls,
+	startCheckoutHydration,
+	startServerLogIn,
+} from '@delendai/core/cli';
 import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	openStartupStatePorts,
@@ -322,6 +332,41 @@ const run = async (): Promise<void> => {
 					...surfaceRuntime.measureSchemaBytes('native'),
 					...surfaceRuntime.measureSchemaBytes(surfaceMode),
 				};
+	// Answer the client first, and hold its tool calls until the start below
+	// has settled. Reconciling walks git and the forge, which takes as long as
+	// the repository's history and the network do, and a client gives up on
+	// `initialize` after a fixed window: losing it loses every tool.
+	// Install signal handlers BEFORE `await assembled.connect()`. The
+	// `connect()` call can take several seconds on a cold start (loading
+	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
+	// arrives during that window must be handled gracefully — not
+	// terminate the process with the signal still set. The handler
+	// closure captures `assembled`, which is assigned synchronously
+	// before `connect()` resolves, so the reference is always live by
+	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
+	let hydration: ReturnType<typeof startCheckoutHydration> | undefined;
+	let candidateRefresh: ReturnType<typeof setInterval> | undefined;
+	const onSignal = (code: number): void => {
+		hydration?.stop();
+		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void maintenance?.stop();
+		void gracefulShutdown(assembled.server, { exitCode: code });
+	};
+	process.on('SIGTERM', () => onSignal(143));
+	process.on('SIGINT', () => onSignal(130));
+	process.on('SIGHUP', () => onSignal(129));
+	process.on('beforeExit', () => {
+		// beforeExit fires when the event loop drains naturally;
+		// gracefulShutdown's idempotent guard makes the no-op safe
+		// when we got here via SIGTERM first.
+		void assembled.server.close().catch(() => undefined);
+	});
+
+	const releaseToolCalls = holdToolCalls();
+	await assembled.connect();
+
 	// NO reconciliation -> NO READY. The gate consults the resolved
 	// development policy first (a `shared-direct` project reconciles
 	// nothing and boots exactly as before), and its verdict is folded
@@ -445,7 +490,7 @@ const run = async (): Promise<void> => {
 			? config.runtimeBehindCheckout
 			: () => maintenance.gate().standDown();
 	const hydrationInterval = hydrationIntervalMs(process.env);
-	const hydration =
+	hydration =
 		policy === undefined || hydrationInterval === 0
 			? undefined
 			: startCheckoutHydration({
@@ -471,18 +516,10 @@ const run = async (): Promise<void> => {
 					},
 				});
 
-	// Install signal handlers BEFORE `await assembled.start()`. The
-	// `start()` call can take several seconds on a cold start (loading
-	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
-	// arrives during that window must be handled gracefully — not
-	// terminate the process with the signal still set. The handler
-	// closure captures `assembled`, which is assigned synchronously
-	// before `start()` resolves, so the reference is always live by
-	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	// Bring candidates forward on a clock too, not only when the
 	// integration branch moves here (see CANDIDATE_REFRESH_INTERVAL_ENV).
 	const refreshEvery = candidateRefreshIntervalMs(process.env);
-	const candidateRefresh =
+	candidateRefresh =
 		policy === undefined ||
 		refreshEvery === 0 ||
 		!shipsCandidateMaintenance(config.workspace.root)
@@ -495,24 +532,7 @@ const run = async (): Promise<void> => {
 				}, refreshEvery);
 	candidateRefresh?.unref();
 
-	const onSignal = (code: number): void => {
-		hydration?.stop();
-		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
-		// Another server takes the workspace over at once, not after the
-		// lease runs out.
-		void maintenance?.stop();
-		void gracefulShutdown(assembled.server, { exitCode: code });
-	};
-	process.on('SIGTERM', () => onSignal(143));
-	process.on('SIGINT', () => onSignal(130));
-	process.on('SIGHUP', () => onSignal(129));
-	process.on('beforeExit', () => {
-		// beforeExit fires when the event loop drains naturally;
-		// gracefulShutdown's idempotent guard makes the no-op safe
-		// when we got here via SIGTERM first.
-		void assembled.server.close().catch(() => undefined);
-	});
-
+	releaseToolCalls();
 	await assembled.start();
 
 	// Deterministic e2e handshake — emitted AFTER `start()` resolves so the
@@ -551,9 +571,7 @@ const handleBootFailure = (err: unknown): void => {
 	process.exit(1);
 };
 
-// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
-// module (to unit-test the argv parsing) without also booting a real server.
-if (import.meta.main) {
+const startHost = (): void => {
 	// The process a host starts supervises a server child, which it moves
 	// onto the checkout's current code when that changes (x00756).
 	if (shouldSupervise(process.env)) {
@@ -567,5 +585,38 @@ if (import.meta.main) {
 		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
 	} else {
 		run().catch(handleBootFailure);
+	}
+};
+
+// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
+// module (to unit-test the argv parsing) without also booting a real server.
+if (import.meta.main) {
+	// A project that names a branch runs that branch's own host, supervisor
+	// included, so this checkout moving restarts nothing there.
+	const branch = branchFlag(process.argv);
+	if (branch !== undefined) {
+		const repository = resolve(
+			dirname(fileURLToPath(import.meta.url)),
+			'../../..',
+		);
+		const script = await branchHostScript(repository, branch);
+		if (script !== undefined) {
+			const child = spawn(
+				process.execPath,
+				[script, ...withoutBranchFlag(process.argv.slice(2))],
+				{ stdio: 'inherit' },
+			);
+			for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
+				process.on(signal, () => child.kill(signal));
+			child.on('exit', (code) => process.exit(code ?? 1));
+		} else {
+			process.stderr.write(
+				`[delendai] no branch "${branch}": running this checkout's code.\n`,
+			);
+			process.argv = [...withoutBranchFlag(process.argv)];
+			startHost();
+		}
+	} else {
+		startHost();
 	}
 }

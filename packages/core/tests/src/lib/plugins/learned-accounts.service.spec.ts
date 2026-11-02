@@ -2,7 +2,13 @@
  * learned-accounts.service.spec.ts — a person's answers are kept,
  * privately, and merged.
  */
-import { mkdtempSync, statSync, writeFileSync } from 'node:fs';
+import {
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -51,5 +57,20 @@ describe('learned accounts', () => {
 			JSON.stringify({ classifications: { k: { vendor: '' } } }),
 		);
 		expect(await readLearnedAccounts(path)).toEqual({});
+	});
+
+	it('moves an unreadable history aside before a save instead of writing over it', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'learned-keep-'));
+		const path = join(dir, 'l.json');
+		writeFileSync(path, '{ nope');
+		await learnAccounts(path, { 'seen-models:qwen': qwen });
+		const aside = readdirSync(dir).filter((name) =>
+			name.startsWith('l.json.corrupt-'),
+		);
+		expect(aside).toHaveLength(1);
+		expect(readFileSync(join(dir, aside[0] ?? ''), 'utf8')).toBe('{ nope');
+		expect(Object.keys(await readLearnedAccounts(path))).toEqual([
+			'seen-models:qwen',
+		]);
 	});
 });

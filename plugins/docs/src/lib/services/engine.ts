@@ -17,7 +17,7 @@ export interface IDocsOptions {
 	readonly roots?: readonly string[];
 	/** Markdown extensions (without dot). Default `['md','mdx']`. */
 	readonly extensions?: readonly string[];
-	/** Max catalogued entries. Default 200 (clamped 1..1000). */
+	/** Max catalogued entries. Default 200 (clamped 1..10,000). */
 	readonly maxResults?: number;
 	/** Directory names to skip. Default: build/vcs/dep dirs. */
 	readonly ignoreDirs?: readonly string[];
@@ -34,6 +34,8 @@ const DEFAULT_IGNORE_DIRS: readonly string[] = [
 	'.cache',
 ];
 const DEFAULT_MAX_RESULTS = 200;
+/** The most a catalogue holds; past it the result says it is truncated. */
+const MAX_CATALOGUE = 10_000;
 const MAX_READ_BYTES = 256 * 1024;
 
 const extOf = (name: string): string => {
@@ -119,7 +121,12 @@ export const listDocs = async (
 		).map((e) => e.toLowerCase().replace(/^\./, '')),
 	);
 	const ignore = new Set(options.ignoreDirs ?? DEFAULT_IGNORE_DIRS);
-	const max = clamp(options.maxResults, DEFAULT_MAX_RESULTS, 1, 1000);
+	const max = clamp(
+		options.maxResults,
+		DEFAULT_MAX_RESULTS,
+		1,
+		MAX_CATALOGUE,
+	);
 
 	const docs: IDocEntry[] = [];
 	let truncated = false;

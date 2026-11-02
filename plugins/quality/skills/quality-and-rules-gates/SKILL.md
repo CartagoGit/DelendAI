@@ -1,7 +1,8 @@
 ---
 name: delendai-quality-and-rules-gates
 appliesTo: ['@delendai/quality', '@delendai/rules']
-description: How the quality plugin resolves which commands to run (scope precedence), the commandPolicy trust boundary, and how the rules plugin's enforcement mode (strict/mixed/none/proposal) shapes the plan apply_rules returns. Use before calling run_quality or apply_rules, or when a command is unexpectedly blocked.
+description: Use before run_quality or apply_rules, or when a command is blocked: scope precedence, commandPolicy, enforcement modes.
+tools: ['delendai_quality_run_quality', 'delendai_quality_quality_run_all', 'delendai_quality_get_quality_scopes', 'delendai_rules_apply_rules']
 ---
 
 # delendai quality + rules gates

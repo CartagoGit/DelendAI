@@ -8,7 +8,8 @@ import {
 	buildForcedRegressionCaller,
 	guardDoneToReviewRegression,
 	guardShippedInPresent,
-	logForcedRegression,
+	gatesSkippedByForce,
+	logForcedTransition,
 } from '@delendai/proposals/lib/services/proposal-state';
 
 describe('proposal-state guards', () => {
@@ -201,10 +202,10 @@ describe('proposal-state guards', () => {
 		});
 	});
 
-	it('appends one JSONL line for a forced regression', async () => {
+	it('appends one JSONL line for a forced move, naming the gates it skipped', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'proposal-state-log-'));
 		tempRoots.push(root);
-		await logForcedRegression({
+		await logForcedTransition({
 			workspaceRoot: root,
 			proposalId: 'f00074',
 			from: 'done',
@@ -212,6 +213,8 @@ describe('proposal-state guards', () => {
 			reason: 're-open after audit regression',
 			ts: '2026-07-26T12:00:00.000Z',
 			caller: { host: 'test-host', pid: 1234, agent: 'agent-s1' },
+			via: 'force',
+			skippedGates: ['state-machine', 'review-entry'],
 		});
 		const raw = await readFile(
 			join(root, '.cache', 'delendai', 'proposals-state.log'),
@@ -220,8 +223,79 @@ describe('proposal-state guards', () => {
 		const entry = JSON.parse(raw.trim()) as {
 			proposalId: string;
 			caller: { agent: string };
+			via: string;
+			skippedGates: readonly string[];
 		};
 		expect(entry.proposalId).toBe('f00074');
 		expect(entry.caller.agent).toBe('agent-s1');
+		expect(entry.via).toBe('force');
+		expect(entry.skippedGates).toEqual(['state-machine', 'review-entry']);
+	});
+});
+
+describe('gatesSkippedByForce', () => {
+	const policy = {
+		via: 'force' as const,
+		requireValidateEvidence: true,
+		requirePeerReview: true,
+		inCi: false,
+	};
+
+	it('lists every gate a forced close from review passes without', () => {
+		expect(
+			gatesSkippedByForce({
+				...policy,
+				from: 'review',
+				to: 'done',
+				inCi: true,
+			}),
+		).toEqual([
+			'slice-completeness',
+			'validate-evidence',
+			'ci-evidence',
+			'peer-review-log',
+		]);
+	});
+
+	it('names the entry check of review, and the state machine for a reopened proposal', () => {
+		expect(
+			gatesSkippedByForce({
+				...policy,
+				from: 'in-progress',
+				to: 'review',
+			}),
+		).toEqual(['review-entry']);
+		expect(
+			gatesSkippedByForce({ ...policy, from: 'done', to: 'review' }),
+		).toEqual(['state-machine']);
+	});
+
+	it('leaves out a gate the project turned off, or one the move never meets', () => {
+		expect(
+			gatesSkippedByForce({
+				...policy,
+				from: 'review',
+				to: 'done',
+				requireValidateEvidence: false,
+				requirePeerReview: false,
+			}),
+		).toEqual(['slice-completeness']);
+		expect(
+			gatesSkippedByForce({ ...policy, from: 'ready', to: 'done' }),
+		).toEqual(['slice-completeness']);
+		expect(
+			gatesSkippedByForce({ ...policy, from: 'ready', to: 'paused' }),
+		).toEqual([]);
+	});
+
+	it('counts the state machine for the recovery tool, which runs no gate of the transition', () => {
+		expect(
+			gatesSkippedByForce({
+				...policy,
+				via: 'force_transition',
+				from: 'in-progress',
+				to: 'review',
+			}),
+		).toEqual(['state-machine', 'review-entry']);
 	});
 });

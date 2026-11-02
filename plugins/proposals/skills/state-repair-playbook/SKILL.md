@@ -1,7 +1,8 @@
 ---
 name: delendai-state-repair-playbook
 appliesTo: ['@delendai/proposals']
-description: How to diagnose and heal inconsistent swarm state (stale locks, queue backpressure, orphaned agent assignments) with state_health and state_repair. Use when a tool reports a state-inconsistency failure, or proactively after a crashed/killed agent session.
+description: Use after a state-inconsistency failure or a crashed agent: diagnose and heal locks, queue and assignments.
+tools: ['delendai_proposals_state_health', 'delendai_proposals_state_repair']
 ---
 
 # state repair playbook

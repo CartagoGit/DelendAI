@@ -56,6 +56,11 @@ export interface IZoneJob {
 	readonly shards: number;
 	/** Spec files the zone holds — what the split was decided from. */
 	readonly specs: number;
+	/**
+	 * The spec files this job runs, when the zone was split by measured
+	 * time; absent, the job runs its share by `--shard`.
+	 */
+	readonly files?: readonly string[];
 }
 
 /** What each zone touched outside the workspaces, during a full run. */
@@ -74,6 +79,19 @@ export interface IZoneReadMap {
 				 * or removed from one of them changes what the zone sees.
 				 */
 				readonly listed: readonly string[];
+				/**
+				 * The same reads, by the spec that made them. A zone reached
+				 * only by a read runs these specs and no others.
+				 */
+				readonly specs?: Readonly<
+					Record<
+						string,
+						{
+							readonly read: readonly string[];
+							readonly listed: readonly string[];
+						}
+					>
+				>;
 			}
 		>
 	>;
@@ -90,6 +108,11 @@ export interface IRootChange {
 	 * runs every zone.
 	 */
 	readonly runnerChanged?: boolean | undefined;
+	/**
+	 * For the root package manifest: whether only scripts no test run or
+	 * install uses changed. Absent means unknown, and runs every zone.
+	 */
+	readonly scriptsOnly?: boolean | undefined;
 }
 
 /** What a change reaches, and how. */
@@ -100,4 +123,12 @@ export interface IZoneReach {
 	 * disk: none of their own code, and nothing they import, changed.
 	 */
 	readonly readOnly: ReadonlySet<string>;
+	/**
+	 * For a zone a changed root file reaches: the specs that read or list
+	 * it. Absent for a zone when the map does not say which spec read
+	 * what, and then the whole zone runs, unfiltered.
+	 */
+	readonly readers?: ReadonlyMap<string, readonly string[]>;
+	/** The zones a changed root file reaches by being read. */
+	readonly rootReached?: ReadonlySet<string>;
 }

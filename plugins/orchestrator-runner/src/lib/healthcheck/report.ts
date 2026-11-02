@@ -17,7 +17,9 @@ import type {
 	IProviderCapabilities,
 	ProviderState,
 } from '@delendai/core/public';
+import type { IClientVerdict } from '@delendai/core/contracts';
 
+import type { IProviderChecks } from '../contracts/interfaces/provider-checks.interface';
 import type { ICliProbeResult, IProviderHealthReport } from '../types';
 import { installHintFor } from './install-hints';
 
@@ -35,14 +37,44 @@ export const commandOf = (provider: IProviderCapabilities): string | null => {
 	}
 };
 
+/** Whether `modelId` is among `listed`, bare or as `<provider>/<id>`. */
+export const listsModel = (
+	listed: readonly string[],
+	modelId: string,
+): boolean =>
+	listed.some(
+		(each) =>
+			each === modelId ||
+			each.endsWith(`/${modelId}`) ||
+			modelId.endsWith(`/${each}`),
+	);
+
+/** The state a client's verdict puts a provider in; `undefined` when it does not decide one. */
+const stateOfVerdict = (
+	verdict: IClientVerdict | undefined,
+): ProviderState | undefined => {
+	switch (verdict) {
+		case 'needs-login':
+		case 'needs-plan':
+			return 'unauthenticated';
+		case 'quota-exhausted':
+			return 'quota-exceeded';
+		default:
+			return undefined;
+	}
+};
+
 /**
  * Build the health report row for one provider. `probe` is required for
  * providers with a CLI command (kind `cli`/`mcp-server`) and ignored
- * otherwise.
+ * otherwise. An installed CLI is `available` only once what it was asked
+ * agrees: its login, when it can be asked, and the model, when it lists
+ * them. Installed alone read as ready to work.
  */
 export const buildProviderHealth = (
 	provider: IProviderCapabilities,
 	probe: ICliProbeResult | null,
+	checks: IProviderChecks = {},
 ): IProviderHealthReport => {
 	const command = commandOf(provider);
 
@@ -60,7 +92,15 @@ export const buildProviderHealth = (
 	}
 
 	const installed = probe?.installed ?? false;
-	const overall: ProviderState = installed ? 'available' : 'not-installed';
+	const refused = installed ? stateOfVerdict(checks.verdict) : undefined;
+	const modelListed =
+		checks.models === undefined
+			? null
+			: listsModel(checks.models, provider.modelId);
+	const overall: ProviderState = !installed
+		? 'not-installed'
+		: (refused ??
+			(modelListed === false ? 'model-unavailable' : 'available'));
 
 	const base: IProviderHealthReport = {
 		id: provider.id,
@@ -69,10 +109,19 @@ export const buildProviderHealth = (
 			path: probe?.path ?? null,
 			version: probe?.version ?? null,
 		},
-		auth: { authenticated: installed ? null : false, tier: null },
+		auth: {
+			authenticated: !installed
+				? false
+				: checks.verdict === 'usable'
+					? true
+					: refused !== undefined
+						? false
+						: null,
+			tier: checks.authTier ?? null,
+		},
 		model: {
 			requested: provider.modelId,
-			available: installed,
+			available: installed ? (modelListed ?? null) : false,
 		},
 		overall,
 	};
@@ -83,13 +132,21 @@ export const buildProviderHealth = (
 	return base;
 };
 
+/** Why a provider is not available, as the router's mirror says it. */
+const REASON_OF_STATE: Partial<Record<ProviderState, string>> = {
+	'not-installed': 'CLI not found on PATH',
+	unauthenticated: 'the client says it is not logged in or has no plan',
+	'quota-exceeded': 'the client says its quota is spent',
+	'model-unavailable': 'the client does not list this model',
+};
+
 /** Project a health row to the `IProviderAvailability` mirror shape. */
 export const availabilityFromHealth = (
 	report: IProviderHealthReport,
 ): IProviderAvailability => ({
 	id: report.id,
 	state: report.overall,
-	...(report.overall === 'not-installed'
-		? { reason: 'CLI not found on PATH' }
-		: {}),
+	...(REASON_OF_STATE[report.overall] === undefined
+		? {}
+		: { reason: REASON_OF_STATE[report.overall] }),
 });

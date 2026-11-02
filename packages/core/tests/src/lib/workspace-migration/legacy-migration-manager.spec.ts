@@ -320,3 +320,63 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 		expect(v1Occurrences).toBe(1);
 	});
 });
+
+describe('one migrate run converges (G128)', () => {
+	it('leaves nothing for a second run: zero steps, no byte changed', async () => {
+		await writeFile(
+			join(workspaceRoot, 'mcp-vertex.config.json'),
+			`${JSON.stringify(
+				{
+					name: 'mcp-vertex',
+					plugins: { 'mcp-vertex-proposals': {} },
+					cacheDir: '.cache/mcp-vertex',
+				},
+				null,
+				'\t',
+			)}\n`,
+		);
+		await writeFile(
+			join(workspaceRoot, 'package.json'),
+			`${JSON.stringify(
+				{
+					name: 'consumer',
+					devDependencies: { '@mcp-vertex/core': '1.0.0' },
+					scripts: { mcp: 'mcp-vertex serve' },
+				},
+				null,
+				'\t',
+			)}\n`,
+		);
+		await mkdir(join(workspaceRoot, '.vscode'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.vscode/mcp.json'),
+			`${JSON.stringify({ servers: { 'mcp-vertex': { command: 'mcp-vertex' } } }, null, '\t')}\n`,
+		);
+		await mkdir(join(workspaceRoot, '.claude/agents'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.claude/agents/mcp-vertex-orchestrator.md'),
+			'---\nname: mcp-vertex-orchestrator\n---\nRoutes mcp-vertex tools.\n',
+		);
+		const journal = createFileSystemJournal();
+		const run = () =>
+			ensureWorkspaceMigrated({
+				migrations: DEFAULT_MIGRATIONS,
+				journal,
+				workspaceRoot,
+			});
+
+		const first = await run();
+		expect(
+			first.outcomes.filter((outcome) => outcome.status === 'migrated')
+				.length,
+		).toBeGreaterThan(3);
+		const settled = await hashWorkspace(workspaceRoot);
+		const again = await run();
+
+		expect(
+			again.outcomes.filter((outcome) => outcome.status !== 'not-needed'),
+		).toEqual([]);
+		expect(again.transitions?.outcomes ?? []).toEqual([]);
+		expect(await hashWorkspace(workspaceRoot)).toBe(settled);
+	});
+});

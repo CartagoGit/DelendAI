@@ -8,7 +8,7 @@
  *
  * Usage: bun tools/scripts/telemetry/drain-telemetry.script.ts [--workspace=<dir>]
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 import { dirname, join, resolve } from 'node:path';
 
 import {
@@ -23,16 +23,12 @@ const workspaceArg = process.argv
 
 /** Journals live in the shared checkout, whichever worktree this runs in. */
 const sharedRoot = (from: string): string => {
-	try {
-		const common = execFileSync(
-			'git',
-			['rev-parse', '--path-format=absolute', '--git-common-dir'],
-			{ cwd: from, encoding: 'utf8' },
-		).trim();
-		return dirname(common);
-	} catch {
-		return from;
-	}
+	const common = readGit(from, [
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
+	return common === undefined ? from : dirname(common);
 };
 
 const main = async (): Promise<void> => {

@@ -8,12 +8,14 @@ export * from './lib/limits';
 export * from './lib/mutations';
 export * from './lib/diagnostics';
 export * from './lib/url-policy';
+export * from './lib/wire.helper';
+export * from './lib/contracts/constants/wire.constant';
 
 const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'remote-provider-core',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Shared remote-provider foundation for other plugins. No tools; provides validated config and an injectable HTTP client.',
 	optionsSchema: OptionsSchema,

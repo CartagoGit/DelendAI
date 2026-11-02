@@ -11,6 +11,7 @@ import {
 	bucketBy,
 	buildSummary,
 	computeTotals,
+	readInvocationLog,
 	readInvocations,
 	regenerateSummary,
 	withinWindow,
@@ -51,6 +52,23 @@ describe('rollup', () => {
 		);
 		const records = await readInvocations(path);
 		expect(records).toHaveLength(1);
+	});
+
+	it('counts the lines that were not a record', async () => {
+		const path = join(dir, 'invocations.jsonl');
+		writeFileSync(
+			path,
+			[
+				JSON.stringify(rec({ ts: '2026-06-25T00:00:00.000Z' })),
+				'not json',
+				'',
+				'{"partial":',
+			].join('\n'),
+			'utf8',
+		);
+		const log = await readInvocationLog(path);
+		expect(log.records).toHaveLength(1);
+		expect(log.skippedRows).toBe(2);
 	});
 
 	it('returns [] for a missing log', async () => {
@@ -167,11 +185,11 @@ describe('rollup', () => {
 			buckets.reduce((sum, bucket) => sum + bucket.tokensSaved, 0),
 		).toBe(totals.tokensSaved);
 		expect(totals.tokensSaved).toBe(40);
-		expect(totals.savingsPercent).toBe(27);
+		expect(totals.savingsPercent).toBe(21);
 		expect(buckets[0]).toMatchObject({
 			key: 'openai/gpt-5',
 			tokensSaved: 25,
-			savingsPercent: 25,
+			savingsPercent: 20,
 		});
 	});
 

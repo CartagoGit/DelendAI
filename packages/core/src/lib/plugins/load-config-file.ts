@@ -1,4 +1,5 @@
 import type { IDeclaredAgent } from '../contracts/interfaces/declared-agent.interface';
+import type { IDeclaredProvider } from '../contracts/interfaces/declared-provider.interface';
 import type { ICatalogueSources } from '../contracts/interfaces/public-catalogue.interface';
 import type { IDeclaredClient } from '../contracts/interfaces/declared-client.interface';
 import type { IProviderAccount } from '../contracts/interfaces/provider-account.interface';
@@ -250,9 +251,10 @@ export interface ILoopDetectorConfig {
  * - `runOnBoot` defaults to `'apply'`: the boot sweep removes what the
  *   owners' rules say nobody needs. `'dry-run'` only logs the report;
  *   `'off'` skips the sweep entirely.
- * - `maxAgeDays` is the upper cap applied to every `olderThanDays`
- *   rule, so a host can shorten (never silently lengthen) the built-in
- *   lifetimes without editing plugin code. Default 30.
+ * - `maxAgeDays`, when set, caps every age rule (`olderThanDays`,
+ *   `olderThanMtimeDays`) whichever owner registered it, so a host can
+ *   shorten (never lengthen) every lifetime without editing plugin code.
+ *   Unset, each rule keeps its own lifetime.
  * - `worktrees` is accepted and ignored. It tuned a sweep that kept the
  *   newest worktrees by mtime and removed live units with it; units are
  *   removed by `work reap`, and eviction never touches `.worktrees/`.
@@ -276,7 +278,7 @@ export interface IDelendaiCachePolicyConfig {
 	 * (86400000 is a day) so a restart does not pay for another walk.
 	 */
 	readonly evictionIntervalMs?: number;
-	/** Upper cap (days) applied to every `olderThanDays` rule. Default 30. */
+	/** When set, the cap (days) on every age rule, whichever owner registered it. */
 	readonly maxAgeDays?: number;
 	/** Accepted and ignored; see {@link IDelendaiCacheWorktreesConfig}. */
 	readonly worktrees?: IDelendaiCacheWorktreesConfig;
@@ -367,6 +369,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly catalogues?: ICatalogueSources;
 	/** Agents the catalogues miss, or reached another way than they say. */
 	readonly agents?: ReadonlyArray<IDeclaredAgent>;
+	/** Model providers in models.dev's shape, over the catalogue's entries. */
+	readonly modelProviders?: ReadonlyArray<IDeclaredProvider>;
 	/**
 	 * f00089 U5: native default filesystem allowlist (authorized roots).
 	 * See {@link IFilesystemConfig}.

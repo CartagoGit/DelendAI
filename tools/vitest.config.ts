@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../vitest.shared.ts';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '..');
@@ -21,7 +25,10 @@ export default defineConfig({
 	root: here,
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
-		include: ['**/*.spec.ts'],
+		...sharedTestOptions,
+		// `scripts/` holds the installer and belongs to no workspace: outside the
+		// root, its spec was collected by no project and gated nothing.
+		include: ['**/*.spec.ts', '../scripts/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],
 		setupFiles: sharedSetupFiles(workspaceRoot),
 		// Several specs here scan the whole repository or boot a real MCP

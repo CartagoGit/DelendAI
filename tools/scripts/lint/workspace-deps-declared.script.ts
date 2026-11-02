@@ -27,6 +27,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 export interface IUndeclaredDependency {
 	readonly workspace: string;
@@ -252,5 +253,13 @@ export const main = async (): Promise<number> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'workspace-deps-declared',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main());
 }

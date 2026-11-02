@@ -58,6 +58,7 @@ const run = async (
 		api: cli,
 		'mcp-server': cli,
 		subscription: cli,
+		'host-sampling': cli,
 		acp: cli,
 	};
 	await new InvocationManager({

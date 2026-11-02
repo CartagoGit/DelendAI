@@ -28,6 +28,7 @@
 
 ## Tests
 
+- plugins/tech-debt/tests/src/lib/debt-scan-coverage.spec.ts
 - plugins/tech-debt/tests/src/lib/scan-markers.spec.ts
 
 ## Do not

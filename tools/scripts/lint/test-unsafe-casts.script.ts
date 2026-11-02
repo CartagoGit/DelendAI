@@ -36,6 +36,7 @@ import {
 	countBaselineGrowth,
 	refuseBaselineGrowth,
 } from './baseline-growth.helper';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /** Product-code roots scanned for the convention (tools/ scripts are exempt). */
 const SCAN_GLOBS: readonly string[] = [
@@ -199,4 +200,14 @@ const main = (): number => {
 	return 0;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'test-unsafe-casts',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

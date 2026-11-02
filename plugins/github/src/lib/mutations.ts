@@ -13,6 +13,10 @@ import {
 } from '@delendai/remote-provider-core';
 
 import type { IGitHubProviderContext } from './config';
+import {
+	GITHUB_OWNER_SCHEMA,
+	GITHUB_REPOSITORY_SCHEMA,
+} from './contracts/constants/github-selectors.constant';
 
 const GITHUB_API_VERSION = '2022-11-28';
 const MAX_AUDIT_VALUE_LENGTH = 200;
@@ -333,7 +337,14 @@ const resolveRepo = <TData, TExisting = TData>(
 	| RemoteMutationResult<TData, TExisting> => {
 	const owner = args.owner ?? context.repository?.owner;
 	const repository = args.repository ?? context.repository?.repository;
-	if (owner !== undefined && repository !== undefined)
+	// The default comes from config or the environment, not the schema:
+	// it is held to the same shapes before it reaches an API path.
+	if (
+		owner !== undefined &&
+		repository !== undefined &&
+		GITHUB_OWNER_SCHEMA.safeParse(owner).success &&
+		GITHUB_REPOSITORY_SCHEMA.safeParse(repository).success
+	)
 		return { owner, repository };
 	return preflightFailure<TData, TExisting>({
 		nowIso: preflight.nowIso,
@@ -342,7 +353,7 @@ const resolveRepo = <TData, TExisting = TData>(
 		error: {
 			code: 'invalid-config',
 			provider: 'github',
-			message: 'github mutation requires owner and repository',
+			message: 'github mutation requires a valid owner and repository',
 			status: null,
 			requestId: null,
 			retryAfterSeconds: null,

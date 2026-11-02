@@ -110,6 +110,8 @@ export interface IAssemblePluginsInput {
 	readonly buildContext: (pluginName: string) => IMcpPluginContext;
 	readonly peerRegistry: ReturnType<typeof createPeerPluginRegistry>;
 	readonly importFn?: (specifier: string) => Promise<{ default: unknown }>;
+	/** Per-step plugin import/register timeout (ms); loader default when unset. */
+	readonly pluginTimeoutMs?: number;
 }
 
 /** Everything the rest of the assembly consumes from the plugin phase. */
@@ -670,11 +672,12 @@ const tryAssembleManagedLazy = async (input: {
 		for (const toolId of plugin.toolIds) {
 			const name = pluginToolName(input.corePrefix, namespace, toolId);
 			const tags = [...(plugin.tags ?? []), 'lazy'];
+			const summary = plugin.toolSummaries?.[toolId] ?? plugin.summary;
 			pluginToolEntries.push({
 				name,
 				plugin: namespace,
 				id: toolId,
-				summary: plugin.summary,
+				summary,
 				tags,
 			});
 			toolSurfaceDescriptors.push({
@@ -683,7 +686,7 @@ const tryAssembleManagedLazy = async (input: {
 				toolId,
 				pluginId: plugin.id,
 				namespace,
-				summary: plugin.summary,
+				summary,
 				tags,
 				...(plugin.toolDisclosure?.[toolId] !== undefined
 					? { disclosure: plugin.toolDisclosure[toolId] }
@@ -936,6 +939,9 @@ export const assemblePlugins = async (
 		workspaceRoot: args.workspace,
 		buildContext,
 		import: pluginImport,
+		...(input.pluginTimeoutMs !== undefined
+			? { timeoutMs: input.pluginTimeoutMs }
+			: {}),
 	});
 	const configurationErrors = loadResult.errors.filter(
 		(error) => error.specifier === 'configuration',

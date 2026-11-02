@@ -114,13 +114,13 @@ export interface DelendaiProposalsAgentWorktreeOutput {
 	removed?: boolean;
 	strandedPurge?: {
 		dryRun: boolean;
-		candidates: {
+		candidates: Array<{
 			branch: string;
 			ahead: number;
 			behind: number;
 			lastCommitIso: string;
-			worktreePath: string;
-		}[];
+			worktreePath: string | null;
+		}>;
 		deleted: string[];
 		skipped: {
 			branch: string;
@@ -153,18 +153,18 @@ export interface DelendaiProposalsAgentsLockDiagnoseOutput {
 		mtime: string;
 		ageSeconds: number;
 	}[];
-	logGaps: {
+	logGaps: Array<{
 		task_id: string;
 		lock_last_seen: string;
-		latest_log_ts: string;
-		gap_seconds: number;
-	}[];
-	waits: {
+		latest_log_ts: string | null;
+		gap_seconds: number | null;
+	}>;
+	waits: Array<{
 		waiter: string;
 		waitingOnTaskId: string;
-		holder: string;
-		waitingForSeconds: number;
-	}[];
+		holder: string | null;
+		waitingForSeconds: number | null;
+	}>;
 	deadlocks: string[][];
 }
 
@@ -225,7 +225,7 @@ export interface DelendaiProposalsBranchGcOutput {
 	skipped?: Array<{
 		path: string;
 		branch: string;
-		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered";
+		reason: "dirty" | "untracked" | "unmerged" | "fresh" | "protected-branch" | "not-found" | "no-branch" | "undelivered" | "status-unreadable";
 		detail: string;
 	}>;
 	summary?: {
@@ -233,6 +233,9 @@ export interface DelendaiProposalsBranchGcOutput {
 		skippedCount: number;
 		dryRunRemovedCount: number;
 	};
+	wouldChange?: Record<string, unknown>[];
+	wouldRun?: Record<string, unknown>[];
+	risk?: "low" | "medium" | "high";
 }
 
 export interface DelendaiProposalsBranchStatusOutput {
@@ -313,7 +316,7 @@ export interface DelendaiProposalsCloseSliceOutput {
 		hash?: string;
 		reason?: string;
 	};
-	pendingIntegrationBranch?: string;
+	pendingIntegrationBranch?: string | null;
 	validationOutput?: string;
 	idempotencyKey?: string;
 }
@@ -453,7 +456,7 @@ export interface DelendaiProposalsInheritHostInstructionsOutput {
 	scope: "repo" | "all";
 	files: string[];
 	totalNonCanonical: number;
-	id: string;
+	id: string | null;
 	file?: string;
 	path?: string;
 	indexCount?: number;
@@ -507,21 +510,21 @@ export interface DelendaiProposalsProposalAdoptOutput {
 }
 
 export interface DelendaiProposalsProposalBoardOutput {
-	proposals: {
+	proposals: Array<{
 		id: string;
 		status: string;
 		title?: string;
-		slices?: {
+		slices?: Array<{
 			sliceId: string;
 			status: string;
-			owner: string;
+			owner: string | null;
 			written?: string;
 			acceptance?: number;
-		}[];
+		}>;
 		sliceCount?: number;
 		claimableSliceIds?: string[];
 		unreadable?: string;
-	}[];
+	}>;
 	next?: string;
 }
 
@@ -562,32 +565,32 @@ export interface DelendaiProposalsProposalForceTransitionOutput {
 
 export interface DelendaiProposalsProposalGetOutput {
 	view?: "list" | "detail" | "history" | "slices" | "review";
-	proposals?: {
+	proposals?: Array<{
 		id: string;
 		status: string;
-		kind: string;
+		kind: string | null;
 		track: string;
 		title: string;
 		summary: string;
-		progress: string;
-		next: string;
-	}[];
-	nextCursor?: string;
+		progress: string | null;
+		next: string | null;
+	}>;
+	nextCursor?: string | null;
 	level?: "compact" | "normal" | "full";
 	proposal?: {
 		id: string;
 		status: string;
-		kind: string;
+		kind: string | null;
 		track: string;
 		title: string;
 		summary: string;
-		progress: string;
-		next: string;
-		priority: string;
-		parentPlan: string;
-		auditSection: string;
-		related: string[];
-		slices: {
+		progress: string | null;
+		next: string | null;
+		priority?: string | null;
+		parentPlan?: string | null;
+		auditSection?: string | null;
+		related?: string[];
+		slices?: {
 			id: string;
 			status: string;
 			title?: string;
@@ -595,10 +598,11 @@ export interface DelendaiProposalsProposalGetOutput {
 			files?: string[];
 			acceptance?: string[];
 		}[];
-		acceptance: {
+		acceptance?: {
 			command: string;
 			expect: string;
 		}[];
+		body?: string;
 	};
 	history?: {
 		timestamp: string;
@@ -651,8 +655,8 @@ export interface DelendaiProposalsProposalReviewOutput {
 	sliceId: string;
 	action: string;
 	status: "none" | "in_review" | "changes_requested" | "done";
-	implementer: string;
-	reviewer: string;
+	implementer: string | null;
+	reviewer: string | null;
 	rounds: Array<{
 		verdict: "requested_changes" | "approved" | "resubmitted";
 		agent: string;
@@ -821,8 +825,8 @@ export interface DelendaiProposalsProposalsDbDiffOutput {
 	untilSha: string;
 	entries: Array<{
 		path: string;
-		fromDigest: string;
-		untilDigest: string;
+		fromDigest: string | null;
+		untilDigest: string | null;
 		change: "added" | "removed" | "changed" | "unchanged";
 	}>;
 	ok: true;
@@ -844,17 +848,17 @@ export interface DelendaiProposalsProposalsDbQuarantineListOutput {
 		id: number;
 		sourcePath: string;
 		blobSha: string;
-		entityGuess: string;
+		entityGuess: string | null;
 		errorCode: string;
 		errorMessage: string;
-		rawMetadata: string;
+		rawMetadata: string | null;
 		runId: number;
 		status: "pending" | "resolved" | "ignored";
 		createdAt: number;
 		updatedAt: number;
 		resolvedAt: number | null;
-		resolvedBy: string;
-		resolutionNote: string;
+		resolvedBy: string | null;
+		resolutionNote: string | null;
 	}>;
 	total: number;
 	runCount: number;
@@ -865,17 +869,17 @@ export interface DelendaiProposalsProposalsDbQuarantineRepairOutput {
 		id: number;
 		sourcePath: string;
 		blobSha: string;
-		entityGuess: string;
+		entityGuess: string | null;
 		errorCode: string;
 		errorMessage: string;
-		rawMetadata: string;
+		rawMetadata: string | null;
 		runId: number;
 		status: "pending" | "resolved" | "ignored";
 		createdAt: number;
 		updatedAt: number;
 		resolvedAt: number | null;
-		resolvedBy: string;
-		resolutionNote: string;
+		resolvedBy: string | null;
+		resolutionNote: string | null;
 	}>;
 	total: number;
 	runCount: number;
@@ -889,7 +893,7 @@ export interface DelendaiProposalsProposalsDbRebuildOutput {
 	stagingPath: string;
 	statePath: string;
 	sourceCommit: string;
-	logicalDigest: string;
+	logicalDigest: string | null;
 	filesScanned: number;
 	filesReconciled: number;
 	proposals: number;
@@ -908,7 +912,7 @@ export interface DelendaiProposalsProposalsDbRebuildOutput {
 	excludedCount: number;
 	integrity: "ok" | "failed" | "not-run";
 	foreignKey: "ok" | "failed" | "not-run";
-	reason: string;
+	reason: string | null;
 	startedAt: number;
 	durationMs: number;
 	applied: boolean;
@@ -925,7 +929,7 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	stagingPath: string;
 	statePath: string;
 	sourceCommit: string;
-	logicalDigest: string;
+	logicalDigest: string | null;
 	filesScanned: number;
 	filesReconciled: number;
 	proposals: number;
@@ -944,12 +948,12 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	excludedCount: number;
 	integrity: "ok" | "failed" | "not-run";
 	foreignKey: "ok" | "failed" | "not-run";
-	reason: string;
+	reason: string | null;
 	startedAt: number;
 	durationMs: number;
 	drift: {
 		from: string;
-		to: string;
+		to: string | null;
 		reason: "ref-moved" | "ref-gone";
 	} | null;
 	ok: true;
@@ -959,7 +963,7 @@ export interface DelendaiProposalsProposalsDbResurrectOutput {
 	uid: string;
 	entityType: "proposal" | "plan" | "slice";
 	revision: number;
-	sourcePath: string;
+	sourcePath: string | null;
 	lifecycleEventId: number;
 }
 
@@ -976,7 +980,7 @@ export interface DelendaiProposalsProposalsDbStatusOutput {
 		slices: boolean;
 	};
 	lastSyncAt: number | null;
-	sourceCommit: string;
+	sourceCommit: string | null;
 	quarantineCount: number;
 	databasePath: string;
 	databaseSizeBytes: number;
@@ -990,16 +994,16 @@ export interface DelendaiProposalsProposalsDbTombstonesOutput {
 		kind: string;
 		deleted_at: number;
 		last_seen_at: number | null;
-		last_seen_commit: string;
-		reason: string;
+		last_seen_commit: string | null;
+		reason: string | null;
 		path_history: string[];
 	}>;
 	total: number;
 }
 
 export interface DelendaiProposalsProposalsDbVerifyOutput {
-	digestBefore: string;
-	digestAfter: string;
+	digestBefore: string | null;
+	digestAfter: string | null;
 	match: boolean;
 	durationMs: number;
 	sourceCommit: string;
@@ -1158,6 +1162,7 @@ export interface DelendaiProposalsStateHealthOutput {
 		[key: string]: unknown;
 	};
 	quarantine: unknown[];
+	quarantineTotal: number;
 	healthy: boolean;
 	[key: string]: unknown;
 }

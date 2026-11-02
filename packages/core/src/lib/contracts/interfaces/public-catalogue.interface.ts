@@ -25,6 +25,8 @@ export interface ICatalogueCopyMeta {
 	readonly sha256: string;
 	readonly etag?: string | undefined;
 	readonly lastModified?: string | undefined;
+	/** Digest of the source list the copy was read under; another list rechecks it. */
+	readonly sourcesKey?: string | undefined;
 }
 
 /** A compact catalogue and its provenance, as cached and as shipped. */

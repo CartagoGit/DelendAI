@@ -28,6 +28,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const SCAN_ROOTS = ['plugins', 'packages'] as const;
 const SHAPE_RE = /\b(input|output)Schema:\s*[A-Za-z0-9_.]+\.shape\b/g;
@@ -111,4 +112,14 @@ const main = (): number => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'tool-schema-shape',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

@@ -13,7 +13,7 @@ delendai --plugins=roadmap
 | Layer | Where | Rule |
 | --- | --- | --- |
 | **Authority** | the roadmap file, tracked in git | Edited by hand or by `roadmap_plan_init` / `roadmap_plan_close`, reviewed in a pull request. The only place intent is decided. |
-| **Timeline** | a file beside it (or SQLite, with `@delendai/roadmap-sqlite`) | Append-only: when an entry was added, who changed it, why. Derived — `roadmap_sync` shows what it has not recorded. |
+| **Timeline** | a file beside it | Append-only: when an entry was added, who changed it, why. Derived — `roadmap_sync` shows what it has not recorded. |
 | **Projection** | whatever shows the roadmap (a page, an editor view, JSON) | Regenerated from the authority file. When they differ, regenerate; never edit the projection. |
 
 A `.db` cannot be reviewed in a pull request, and a diff cannot tell when

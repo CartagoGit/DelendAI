@@ -3,12 +3,15 @@
  *
  * Published code cannot depend on this private package, so it journals
  * each work event as one JSON line under the cache directory. This is
- * the pick-up: it claims the journal by renaming it, appends every valid
- * line to the event bus and deletes the claimed file. Lines written while
- * it runs land in a fresh journal for the next drain.
+ * the pick-up: it claims the journal (see `journal-claim.helper`),
+ * appends every valid line to the event bus and deletes the claimed file.
+ * Lines written while it runs land in a fresh journal for the next drain;
+ * a line the bus refused goes back to the journal for the next one.
  */
 
-import { readFile, rename, rm } from 'node:fs/promises';
+import { appendFile, readFile, rm } from 'node:fs/promises';
+
+import { claimJournal } from '../drain/journal-claim.helper';
 
 import type {
 	IWorkEventDrainResult,
@@ -20,9 +23,11 @@ import {
 	type INewWorkEvent,
 } from './work-event';
 
-const CLAIMED_SUFFIX = '.draining';
-
-const NOTHING_DRAINED: IWorkEventDrainResult = { appended: 0, skipped: 0 };
+const NOTHING_DRAINED: IWorkEventDrainResult = {
+	appended: 0,
+	skipped: 0,
+	retained: 0,
+};
 
 const toEvent = (text: string): INewWorkEvent | undefined => {
 	try {
@@ -47,35 +52,18 @@ const toEvent = (text: string): INewWorkEvent | undefined => {
 	}
 };
 
-/**
- * A claimed file a crashed drain left behind is taken up first, so no
- * line is lost between two runs.
- */
-const claim = async (journalPath: string): Promise<string | undefined> => {
-	const claimed = `${journalPath}${CLAIMED_SUFFIX}`;
-	try {
-		await readFile(claimed, 'utf8');
-		return claimed;
-	} catch {
-		// No leftover claim: take the live journal.
-	}
-	try {
-		await rename(journalPath, claimed);
-		return claimed;
-	} catch {
-		return undefined;
-	}
-};
-
 export const drainWorkEventJournal = async (
 	sink: IWorkEventSink,
 	journalPath: string,
 ): Promise<IWorkEventDrainResult> => {
-	const claimed = await claim(journalPath);
+	const claimed = await claimJournal(journalPath);
 	if (claimed === undefined) return NOTHING_DRAINED;
 	const text = await readFile(claimed, 'utf8');
 	let appended = 0;
 	let skipped = 0;
+	// Lines the bus could not take now: a transient failure must not
+	// retire the only copy of an event.
+	const retained: string[] = [];
 	for (const raw of text.split('\n')) {
 		if (raw.trim() === '') continue;
 		const event = toEvent(raw);
@@ -87,9 +75,11 @@ export const drainWorkEventJournal = async (
 			await sink.append(event);
 			appended += 1;
 		} catch {
-			skipped += 1;
+			retained.push(raw);
 		}
 	}
+	if (retained.length > 0)
+		await appendFile(journalPath, `${retained.join('\n')}\n`, 'utf8');
 	await rm(claimed, { force: true });
-	return { appended, skipped };
+	return { appended, skipped, retained: retained.length };
 };

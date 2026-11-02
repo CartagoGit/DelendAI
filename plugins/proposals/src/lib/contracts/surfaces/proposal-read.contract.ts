@@ -146,14 +146,20 @@ const proposalReviewEntrySchema = z
 	})
 	.strict();
 
+/**
+ * One proposal at the level asked for: `compact` is the summary alone,
+ * `normal` adds its links, slices and acceptance, and `full` adds the
+ * whole document as `body`.
+ */
 const proposalDetailSchema = proposalSummarySchema
 	.extend({
-		priority: nullableStringSchema,
-		parentPlan: nullableStringSchema,
-		auditSection: nullableStringSchema,
-		related: z.array(z.string()),
-		slices: z.array(proposalSliceSchema),
-		acceptance: z.array(proposalAcceptanceSchema),
+		priority: nullableStringSchema.optional(),
+		parentPlan: nullableStringSchema.optional(),
+		auditSection: nullableStringSchema.optional(),
+		related: z.array(z.string()).optional(),
+		slices: z.array(proposalSliceSchema).optional(),
+		acceptance: z.array(proposalAcceptanceSchema).optional(),
+		body: z.string().optional(),
 	})
 	.strict();
 

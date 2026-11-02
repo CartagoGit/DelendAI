@@ -1,5 +1,6 @@
 /**
- * detect-agent.spec.ts — the client → {id,kind,extension} table.
+ * detect-agent.spec.ts — the client → {id,kind,extension} mapping, read
+ * from core's host catalog.
  *
  * Acceptance (f00067 S3): the table covers at least GitHub Copilot Chat,
  * Claude Code, Codex CLI, Cursor, Aider, Continue, plus the headless
@@ -8,13 +9,15 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { detectAgent } from '../../../src/lib/detect-agent';
+import { AGENT_HOSTS } from '@delendai/core/contracts';
+
+import { agentKindOf, detectAgent } from '../../../src/lib/detect-agent';
 
 describe('detectAgent', () => {
 	it('maps every client the proposal calls out', () => {
 		const cases: Array<[string, string, string]> = [
 			['GitHub Copilot Chat', 'copilot', 'vscode-copilot'],
-			['Claude Code', 'claude-code', 'claude-code'],
+			['Claude Code', 'claude', 'claude-code'],
 			['Codex CLI', 'codex', 'codex-cli'],
 			['Cursor', 'cursor', 'cursor'],
 			['Aider', 'aider', 'aider'],
@@ -31,8 +34,25 @@ describe('detectAgent', () => {
 	});
 
 	it('is case-insensitive on the client name', () => {
-		expect(detectAgent('CLAUDE CODE').kind).toBe('claude-code');
+		expect(detectAgent('CLAUDE CODE').kind).toBe('claude');
 		expect(detectAgent('cursor').extension).toBe('cursor');
+	});
+
+	it('knows every host core declares, by every name it reports, and no other', () => {
+		for (const host of AGENT_HOSTS) {
+			for (const name of [
+				host.id,
+				...(host.identity?.applications ?? []),
+			])
+				expect(detectAgent(name).kind, name).toBe(host.id);
+		}
+	});
+
+	it('reads a kind recorded before kinds were host ids as its host', () => {
+		expect(agentKindOf('claude-code')).toBe('claude');
+		expect(agentKindOf('codex')).toBe('codex');
+		expect(agentKindOf('cli-doctor')).toBe('cli-doctor');
+		expect(agentKindOf('my-ide')).toBe('my-ide');
 	});
 
 	it('falls back to unknown for an unmapped client', () => {

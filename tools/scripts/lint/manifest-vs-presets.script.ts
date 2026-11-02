@@ -7,6 +7,7 @@ import {
 } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 interface IViolation {
 	readonly plugin: string;
@@ -87,5 +88,13 @@ const main = async (): Promise<number> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'manifest-vs-presets',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main());
 }

@@ -27,6 +27,9 @@ export interface ICacheLayoutBootstrapResult {
 
 const CANONICAL_PLUGIN_DIRS = ['commit-policy', 'verify-tmp'] as const;
 
+/** How old an empty cache folder must be before start-up removes it. */
+const EMPTY_DIR_GRACE_MS = 24 * 60 * 60 * 1000;
+
 const LEGACY_DIRS: Readonly<Record<string, string>> = {
 	'.commit-policy': 'commit-policy',
 	'.verify-tmp': 'verify-tmp',
@@ -125,6 +128,29 @@ const removeEmptyNestedCacheRoot = async (
 		await rm(nestedCacheParent, { recursive: true });
 };
 
+/**
+ * A plugin's cache folder used to be made at start for every plugin,
+ * written or not, and the spec runs of September left empty trees under
+ * `verify/`. Nothing removed them when that stopped: on 2026-10-29 one
+ * checkout held 65 empty folders. A tree with no file in it holds nothing,
+ * so it goes; anything with a file stays.
+ */
+const removeEmptyLegacyDirs = async (
+	cacheDirAbs: string,
+	apply: boolean,
+	now: number = Date.now(),
+): Promise<void> => {
+	if (!apply) return;
+	for (const entry of await readdir(cacheDirAbs, { withFileTypes: true })) {
+		if (!entry.isDirectory()) continue;
+		const target = join(cacheDirAbs, entry.name);
+		// A day's grace: a plugin that has just made its folder to write
+		// into it is not racing this.
+		if (now - (await lstat(target)).mtimeMs < EMPTY_DIR_GRACE_MS) continue;
+		if (await isEmptyTree(target)) await rm(target, { recursive: true });
+	}
+};
+
 /** Establish the shared cache layout and migrate known runtime directories. */
 export const bootstrapCacheLayout = async (
 	options: ICacheLayoutBootstrapOptions,
@@ -192,6 +218,7 @@ export const bootstrapCacheLayout = async (
 	// `<cacheDir>/.cache/delendai`. Remove that exact empty legacy
 	// directory, but never delete files or non-empty cache data implicitly.
 	await removeEmptyNestedCacheRoot(contained.abs, apply);
+	await removeEmptyLegacyDirs(contained.abs, apply);
 
 	if (options.createPluginDirs === true) {
 		const directories = new Set([

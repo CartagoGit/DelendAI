@@ -299,6 +299,11 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
 
 ## 6. Invariants you must not break
 
+- **The right path, inside your task.** Analyse what your proposal touches
+  and do that work the efficient, correct way: fewest tokens that keep it
+  effective, one source of truth for each fact. Refactor only inside its
+  scope. Anything else you find becomes a proposal, not a change. Never
+  alter another agent's work, weaken a gate, or drop behaviour.
 - **Every agent is held to the workflow, whatever its model.** Set
   `DELENDAI_AGENT_ID` to your exact model id before any delendai or git call.
   Unidentified writers are judged per `development.guard.unknownActor`
@@ -402,7 +407,7 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
   If the shell still gets stuck on that "alternate buffer" symptom,
   do not retry the same `mode: "sync"` call — follow the shell-fallback
   ladder in
-  [`docs/delendai/skills/shell-fallback/SKILL.md`](skills/shell-fallback/SKILL.md)
+  [`packages/core/skills/shell-fallback/SKILL.md`](../../packages/core/skills/shell-fallback/SKILL.md)
   (`withShellFallback` from `@delendai/core/public`: re-issue as
   `mode: "async"` and poll, then fall back to file tools).
 
@@ -558,27 +563,19 @@ or have their own config file. Use the same single-pointer pattern:
 
 ## Build / dist layout
 
-Compiled artifacts land under one root tree: `/build/{group}/{name}/{version}/`
-(e.g. `build/packages/core/0.1.1/index.js`). There is no persistent
-`packages/*/dist/` or `plugins/*/dist/`; `/build/` and `/dist/` are
-gitignored and `bun run build` is the only producer.
+Compiled artifacts land in `/build/{group}/{name}/{version}/`; `bun run
+build` is the only producer. It mirrors each package's output into its
+`dist/` because manifests keep `"main": "./dist/index.js"`. `/build/` and
+`/dist/` are gitignored; a publish stages a temporary `dist/`
+(`stageBuildForPublish`).
 
 **Scripts never resolve against `build/`.** `bun run`, `vitest` and
-`tsc --noEmit` all inject the `@delendai/source` condition
-(`bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`), so
-`@delendai/*` resolves to `src/`. If a call resolves into `build/`,
-that invocation is missing the condition — fix the call, don't chase it
-as a build bug.
-
-**Manifests keep `"main": "./dist/index.js"` on purpose**: npm forbids
-`exports` pointing outside the package, so `./dist/` is materialized
-only in a temporary staging dir at pack/publish time
-(`stageBuildForPublish` in `tools/scripts/publish/workspace-deps.ts`).
-No `dist/` is ever written back into the repo.
+`tsc --noEmit` inject the `@delendai/source` condition (`bunfig.toml`,
+`tsconfig.base.json`, `vitest.shared.ts`), so `@delendai/*` resolves to
+`src/`. A call that resolves into `build/` is missing the condition.
 
 `lint:no-build-imports-from-src` fails if anything under `build/**/*.js`
-imports `../src/` — a compiled artifact must never reach back into
-source.
+imports `../src/`.
 
 ## Architecture decisions
 

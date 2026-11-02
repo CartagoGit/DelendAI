@@ -104,6 +104,8 @@ describe('search-engine dispatcher (Solid Strategy)', async () => {
 				truncated: false,
 				scanned: 0,
 			});
+			expect(rgResult.diagnostic).toContain('../outside');
+			expect(rgResult.diagnostic).toBe(inHouseResult.diagnostic);
 		});
 
 		it('rejects explicit symlink roots before invoking rg', async () => {
@@ -128,6 +130,7 @@ describe('search-engine dispatcher (Solid Strategy)', async () => {
 					options: { roots: ['linked-outside'] },
 				});
 				expect(result).toEqual({
+					diagnostic: expect.stringContaining('linked-outside'),
 					query: 'leaked',
 					hits: [],
 					truncated: false,

@@ -45,6 +45,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /**
  * Matches a root-level YAML `id:` key shaped like a proposal id
@@ -149,6 +150,14 @@ const isMainModule = (): boolean => {
 };
 
 if (isMainModule()) {
+	if (
+		refuseMissingScanRoots(
+			'single-frontmatter',
+			lintRepoRoot(import.meta.url),
+			['docs/delendai/proposals'],
+		)
+	)
+		process.exit(1);
 	void (async () => {
 		const root = repoRoot();
 		const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');

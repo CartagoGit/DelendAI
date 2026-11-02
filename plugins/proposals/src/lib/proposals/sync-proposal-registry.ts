@@ -330,6 +330,8 @@ const scanSubtree = async (
 		// though `frontmatter-linter.ts`'s stricter id check would reject
 		// it — the two need to agree on what "looks like a proposal id" is.
 		const absPath = join(absDir, name);
+		// A folder's README documents the folder; it is no broken proposal.
+		if (name.toLowerCase() === 'readme.md') continue;
 		if (!isCanonicalMarkdownFilename(name)) {
 			await recordQuarantine(quarantineContext, {
 				absPath,

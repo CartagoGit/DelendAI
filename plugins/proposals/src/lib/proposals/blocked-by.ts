@@ -94,12 +94,18 @@ export const blockedByFor = async (
 	entry: IProposalIndexEntry,
 	indexPathAbs: string,
 	readers: Partial<IBlockedByReaders> = {},
+	/**
+	 * Where the documents live. The index sits in the cache directory, so
+	 * without this a plan was looked for beside the index, never found,
+	 * and reported no open children.
+	 */
+	proposalsDirAbs?: string,
 ): Promise<readonly string[]> => {
 	const resolvedReaders: IBlockedByReaders = {
 		...defaultBlockedByReaders,
 		...readers,
 	};
-	const docPath = proposalDocPath(indexPathAbs, entry.file);
+	const docPath = proposalDocPath(indexPathAbs, entry.file, proposalsDirAbs);
 	const markdown = await resolvedReaders.readTextOrNull(docPath);
 	if (markdown === null) return [];
 	const block = extractYamlBlock(markdown);

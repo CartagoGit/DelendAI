@@ -15,21 +15,29 @@
 export interface DelendaiLogsCorrelateOutput {
 	detail: "compact" | "normal" | "full";
 	chain: unknown[];
-	firstTs: string;
-	lastTs: string;
+	firstTs: string | null;
+	lastTs: string | null;
 	gaps: unknown;
 }
 
 export interface DelendaiLogsErrorsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	oldestTs: string;
-	newestTs: string;
+	oldestTs: string | null;
+	newestTs: string | null;
+	filesRead?: number;
+	filesTotal?: number;
 }
 
 export interface DelendaiLogsIncidentsOutput {
 	incidents: unknown;
 	totalIncidents: number;
+	window?: {
+		since: string;
+		until: string;
+		newestFailureAgeMs: number;
+	};
+	belowMinCount: number;
 }
 
 export interface DelendaiLogsLogOutput {
@@ -42,7 +50,7 @@ export interface DelendaiLogsLogOutput {
 export interface DelendaiLogsQueryOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	cursor: string;
+	cursor: string | null;
 	hasMore: boolean;
 }
 
@@ -67,8 +75,10 @@ export interface DelendaiLogsSubscribeOutput {
 export interface DelendaiLogsTailOutput {
 	detail: "compact" | "normal" | "full";
 	events: unknown[];
-	oldestTs: string;
-	newestTs: string;
+	oldestTs: string | null;
+	newestTs: string | null;
+	filesRead?: number;
+	filesTotal?: number;
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */

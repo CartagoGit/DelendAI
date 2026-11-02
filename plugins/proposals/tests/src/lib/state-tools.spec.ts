@@ -83,6 +83,42 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.autoTransitionRepairs).toEqual({ count: 0, entries: [] });
 		expect(out.registry.orphans).toBe(0);
 		expect(out.quarantine).toEqual([]);
+		expect(out.quarantineTotal).toBe(0);
+	});
+
+	it('reports one finding however many syncs recorded it', async () => {
+		const finding = {
+			absPath: join(dir, 'docs/delendai/proposals/ready/bad.md'),
+			blobSha: 'blob',
+			sourceCommitSha: 'commit',
+			detectedAt: 1,
+			reason: 'invalid_canonical_filename' as const,
+			detail: 'bad filename',
+			rawMetadata: '',
+		};
+		await appendQuarantine(dir, finding);
+		await appendQuarantine(dir, { ...finding, detectedAt: 2 });
+
+		const handler = await capture(buildStateHealthRegistration(opts));
+		expect(parse(await handler({})).quarantineTotal).toBe(1);
+	});
+
+	it('shows the newest quarantine rows and counts them all', async () => {
+		for (let index = 0; index < 25; index += 1) {
+			await appendQuarantine(dir, {
+				absPath: join(dir, `bad-${String(index)}.md`),
+				blobSha: 'blob',
+				sourceCommitSha: 'commit',
+				detectedAt: index,
+				reason: 'invalid_canonical_filename',
+				detail: 'bad filename',
+				rawMetadata: '',
+			});
+		}
+		const handler = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await handler({}));
+		expect(out.quarantine).toHaveLength(20);
+		expect(out.quarantineTotal).toBe(25);
 	});
 
 	it('includes quarantined proposal files in state_health', async () => {

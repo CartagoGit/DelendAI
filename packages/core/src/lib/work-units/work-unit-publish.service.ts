@@ -1,3 +1,4 @@
+import { carriesNothingBeyond } from './landed-work.service';
 import { deletedDocuments } from './review-pack-deletions.service';
 import {
 	describeCarriedPacks,
@@ -27,6 +28,7 @@ import {
 	outsideReviewScope,
 } from '../development-policy/git-guard-review-scope';
 import { journalWorkEvent } from './work-event-journal.service';
+import { unitDepartures } from './unit-departures.service';
 import { endCarriedUnits } from './carried-units.service';
 
 import {
@@ -44,6 +46,13 @@ import {
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
 import { readSupersedingUnit } from './unit-fence.service';
+import { worktreeOfRef } from './unit-removal.service';
+import {
+	describeFailedProof,
+	proofSummary,
+	provesBeforePublishing,
+	proveUnit,
+} from './work-unit-proof.service';
 
 /** The generation a work ref names (`…-g<n>/…`), if it names one. */
 const generationOfWorkRef = (ref: string): number | undefined => {
@@ -246,6 +255,45 @@ export const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
+	// A unit whose commits the integration branch already holds (merges of
+	// it, or work that landed through another pull request) has nothing to
+	// publish. Republishing such a unit after its pull request merged opened
+	// a second pull request with an empty diff (#1563).
+	const tipOfUnit = readGit(root, ['rev-parse', '-q', '--verify', workRef]);
+	if (
+		tipOfUnit !== undefined &&
+		(readGit(root, ['merge-base', '--is-ancestor', tipOfUnit, base]) !==
+			undefined ||
+			carriesNothingBeyond(root, tipOfUnit, base))
+	) {
+		return refused(
+			`${workRef} holds nothing ${policy.branches.integration} lacks: its work already landed.`,
+			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
+		);
+	}
+	// The proof every agent is told to run, run here: a pull request is
+	// only opened for work that passed it. A review records verdicts and
+	// proves nothing; a project that declares no proof is told how to.
+	const proof =
+		tipOfUnit !== undefined &&
+		provesBeforePublishing(policy) &&
+		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
+			? await proveUnit({
+					root,
+					worktree: worktreeOfRef(
+						root,
+						workRef.replace(/^refs\/heads\//u, ''),
+					),
+					tipSha: tipOfUnit,
+					integrationSha: base,
+				})
+			: undefined;
+	if (proof !== undefined && !proof.passed) {
+		return refused(
+			describeFailedProof(proof),
+			'Fix what failed, commit it in the unit, and publish again. `delendai work prove` runs the same proof without publishing.',
+		);
+	}
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -334,14 +382,18 @@ export const published = async (
 			detail: { unitKind: kindFor(args, slice), via: 'publish' },
 		});
 	}
+	// Advice only: what the unit changed that no slice of its proposal names.
+	const departures = unitDepartures({ root, proposal, workRef, base });
 	return {
 		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
 		...(failure === undefined ? {} : { error: failure }),
 		data: {
 			...outcome,
 			...(carried.length === 0 ? {} : { carried }),
+			...(departures.length === 0 ? {} : { departures }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
+			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
 		},
 	};
 };

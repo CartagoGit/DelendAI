@@ -31,6 +31,9 @@ const FRONTMATTER_FENCE = '---';
 /** Quote a YAML scalar string only when needed (colon, hash, leading/trailing space, or empty). */
 const quoteIfNeeded = (value: string): string => {
 	if (value === '') return "''";
+	// Line breaks cannot live in a plain or single-quoted scalar here; a
+	// double-quoted JSON string keeps the whole value on one line.
+	if (/[\r\n]/.test(value)) return JSON.stringify(value);
 	const needsQuoting =
 		/[:#]/.test(value) ||
 		value !== value.trim() ||
@@ -51,6 +54,12 @@ const unquote = (raw: string): string => {
 		return v.slice(1, -1).replace(/''/g, "'");
 	}
 	if (v.startsWith('"') && v.endsWith('"') && v.length >= 2) {
+		try {
+			const decoded: unknown = JSON.parse(v);
+			if (typeof decoded === 'string') return decoded;
+		} catch {
+			// not a JSON string: fall through to the literal slice
+		}
 		return v.slice(1, -1);
 	}
 	return v;

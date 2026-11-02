@@ -1,3 +1,4 @@
+import { SETTINGS_MESSAGE_SCHEMA } from '../contracts/constants/webview-message-schemas.constant';
 import {
 	DEFAULT_EXTENSION_SETTINGS,
 	HOST_LANGUAGE_CHOICES,
@@ -8,7 +9,6 @@ import {
 import {
 	ExtensionSettingsSchema,
 	type SettingsHostResponse,
-	type SettingsWebviewRequest,
 } from '@delendai/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { renderSettings, withCsp } from '@delendai/ui-extension/public';
@@ -172,10 +172,9 @@ export const registerOpenSettingsCommand = (
 		// store actually reflects the user's choices, and re-render
 		// the form on reset so the visible fields update too.
 		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
-			if (typeof msg !== 'object' || msg === null) return;
-			const m = msg as Partial<SettingsWebviewRequest>;
-			if (typeof m.requestId !== 'string' || m.requestId.length === 0)
-				return;
+			const parsed = SETTINGS_MESSAGE_SCHEMA.safeParse(msg);
+			if (!parsed.success) return;
+			const m = parsed.data;
 			const respond = async (
 				response: SettingsHostResponse,
 			): Promise<void> => {

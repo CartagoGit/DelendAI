@@ -43,6 +43,12 @@ export interface IQualityPolicyEntry {
 	readonly noUncheckedIndexedAccess?: boolean;
 	readonly noImplicitOverride?: boolean;
 	readonly tsconfigChain?: readonly string[];
+	/** Workspace package tsconfigs whose type policy is not the root's. */
+	readonly tsconfigAreas?: readonly {
+		readonly path: string;
+		readonly strict?: boolean;
+		readonly exactOptionalPropertyTypes?: boolean;
+	}[];
 	readonly coverageThreshold?: IQualityPolicyCoverageThreshold;
 	readonly static?: boolean;
 }

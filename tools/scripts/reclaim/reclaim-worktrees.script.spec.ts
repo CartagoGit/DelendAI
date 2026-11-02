@@ -105,7 +105,6 @@ describe('worksomebodyOwns', () => {
 		// desk forever over a timestamp.
 		expect(
 			worksomebodyOwns([
-				' M docs/delendai/AGENT-BOOTSTRAP.md',
 				' M packages/core/src/generated/x.generated.ts',
 				' M docs/delendai/host-hints/y.md',
 			]),
@@ -115,10 +114,16 @@ describe('worksomebodyOwns', () => {
 	it('counts the source file and not the generated one beside it', () => {
 		expect(
 			worksomebodyOwns([
-				' M docs/delendai/AGENT-BOOTSTRAP.md',
+				' M packages/core/src/generated/x.generated.ts',
 				'?? packages/core/src/b.ts',
 			]),
 		).toBe(1);
+	});
+
+	it('counts an edit to the hand-written bootstrap as work', () => {
+		expect(worksomebodyOwns([' M docs/delendai/AGENT-BOOTSTRAP.md'])).toBe(
+			1,
+		);
 	});
 });
 

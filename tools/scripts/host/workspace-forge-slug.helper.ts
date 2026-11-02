@@ -7,7 +7,7 @@
  * workspace: a project that uses delendai had its startup mirror of pull
  * requests and check runs read delendai's own.
  */
-import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 /**
  * `owner/name` of a remote URL, ssh or https, on any host: a forge the
@@ -25,15 +25,12 @@ export const forgeSlugOf = (url: string): string | undefined => {
 /** The slug of `root`'s `origin`, or `undefined` when there is none to read. */
 export const workspaceForgeSlug = (
 	root: string,
-	readUrl: (cwd: string) => string = (cwd) =>
-		execFileSync('git', ['remote', 'get-url', 'origin'], {
-			cwd,
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}),
+	readUrl: (cwd: string) => string | undefined = (cwd) =>
+		readGit(cwd, ['remote', 'get-url', 'origin'], { verbatim: true }),
 ): string | undefined => {
 	try {
-		return forgeSlugOf(readUrl(root));
+		const url = readUrl(root);
+		return url === undefined ? undefined : forgeSlugOf(url);
 	} catch {
 		return undefined;
 	}

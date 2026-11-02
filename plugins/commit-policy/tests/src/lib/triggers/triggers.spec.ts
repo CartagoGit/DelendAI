@@ -35,8 +35,7 @@ const buildRunner = (
 
 const porcelainResponse = (files: readonly string[]): IGitRunResult => {
 	if (files.length === 0) return ok('');
-	const lines = files.map((f) => `?? ${f}`).join('\n');
-	return ok(`${lines}\n`);
+	return ok(files.map((f) => `?? ${f}\0`).join(''));
 };
 
 describe('threshold tracker', () => {
@@ -44,7 +43,7 @@ describe('threshold tracker', () => {
 		const run = buildRunner(
 			new Map([
 				[
-					'status\u0000--porcelain=v1',
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
 					porcelainResponse(['a', 'b', 'c']),
 				],
 			]),
@@ -57,7 +56,12 @@ describe('threshold tracker', () => {
 
 	it('does not fire below the threshold', async () => {
 		const run = buildRunner(
-			new Map([['status\u0000--porcelain=v1', porcelainResponse(['a'])]]),
+			new Map([
+				[
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
+					porcelainResponse(['a']),
+				],
+			]),
 		);
 		const tracker = createThresholdTracker(run, { files: 3 });
 		expect(await tracker.check()).toBeNull();
@@ -67,7 +71,7 @@ describe('threshold tracker', () => {
 		const run = buildRunner(
 			new Map([
 				[
-					'status\u0000--porcelain=v1',
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
 					porcelainResponse(['a', 'b', 'c']),
 				],
 			]),
@@ -97,7 +101,12 @@ describe('threshold tracker', () => {
 describe('interval timer', () => {
 	it('refuses when no time has elapsed since the last fire', async () => {
 		const run = buildRunner(
-			new Map([['status\u0000--porcelain=v1', porcelainResponse(['a'])]]),
+			new Map([
+				[
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
+					porcelainResponse(['a']),
+				],
+			]),
 		);
 		const timer = createIntervalTimer(run, { minutes: 30 });
 		expect((await timer.check(30 * 60_000))?.kind).toBe('interval');
@@ -106,7 +115,12 @@ describe('interval timer', () => {
 
 	it('refuses when the worktree is clean', async () => {
 		const run = buildRunner(
-			new Map([['status\u0000--porcelain=v1', porcelainResponse([])]]),
+			new Map([
+				[
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
+					porcelainResponse([]),
+				],
+			]),
 		);
 		const timer = createIntervalTimer(run, { minutes: 1 });
 		expect(await timer.check(60_000)).toBeNull();
@@ -124,7 +138,7 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 		const run = buildRunner(
 			new Map([
 				[
-					'status\u0000--porcelain=v1',
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
 					porcelainResponse(['a.ts', 'b.ts', 'c.ts']),
 				],
 			]),
@@ -139,8 +153,8 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 		const run = buildRunner(
 			new Map([
 				[
-					'status\u0000--porcelain=v1',
-					ok('R  old-name.ts -> new-name.ts\n'),
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
+					ok('R  new-name.ts\0old-name.ts\0'),
 				],
 			]),
 		);
@@ -152,7 +166,10 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 	it('interval event includes files.paths matching porcelain v1', async () => {
 		const run = buildRunner(
 			new Map([
-				['status\u0000--porcelain=v1', porcelainResponse(['one.ts'])],
+				[
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
+					porcelainResponse(['one.ts']),
+				],
 			]),
 		);
 		const timer = createIntervalTimer(run, { minutes: 1 });
@@ -161,13 +178,13 @@ describe('x00264 — non-slice triggers carry the dirty files they saw', () => {
 		expect(fired?.files?.paths).toEqual(['one.ts']);
 	});
 
-	it('normalizes serialized rename paths in dirty status output', async () => {
+	it('reports a rename by its target and skips the source entry', async () => {
 		const run = buildRunner(
 			new Map([
 				[
-					'status\u0000--porcelain=v1',
+					'status\u0000--porcelain=v1\u0000-z\u0000--untracked-files=all',
 					ok(
-						' M docs/delendai/proposals/ready/f00286-f00286.md -> docs/delendai/proposals/ready/f00286-migrated-work-item-f00286.md\n',
+						'R  docs/delendai/proposals/ready/f00286-migrated-work-item-f00286.md\0docs/delendai/proposals/ready/f00286-f00286.md\0',
 					),
 				],
 			]),

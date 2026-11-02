@@ -8,10 +8,10 @@
 ## Public API
 
 - default
+- agentKindOf
+- builtinClientMapping
 - detectAgent
-- BUILTIN_CLIENT_TABLE
 - RecordBuffer
-- StartClock
 - analyzeSessionHygiene
 - DEFAULT_SESSION_HYGIENE_POLICY
 - SessionHygieneMonitor

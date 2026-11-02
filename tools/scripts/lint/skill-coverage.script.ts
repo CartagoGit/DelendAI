@@ -14,6 +14,7 @@ import { join, resolve } from 'node:path';
 import { extractSkillToolRefs } from '@delendai/core/cli';
 import { parseCliArgs } from '@delendai/core/plugin';
 import { assembleCliConfig } from '@delendai/core/public';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 export interface IRegisteredTool {
 	readonly name: string;
@@ -206,5 +207,13 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'skill-coverage',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main(process.argv.slice(2)));
 }

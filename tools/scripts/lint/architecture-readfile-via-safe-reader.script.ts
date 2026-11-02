@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 const MANIFEST_FILE = 'plugin.manifest.ts';
@@ -306,6 +307,14 @@ const readBaseline = (): ReadonlySet<string> => {
  * architectural pressure survives; the perverse incentive does not.
  */
 export const main = async (): Promise<number> => {
+	if (
+		refuseMissingScanRoots(
+			'architecture-readfile-via-safe-reader',
+			REPO_ROOT,
+			['plugins'],
+		)
+	)
+		return 1;
 	const findings = await scanReadFileViaSafeReader();
 	if (process.argv.includes('--update')) {
 		writeFileSync(

@@ -22,6 +22,10 @@ vi.mock('node:readline', () => ({
 	}),
 }));
 
+// A worker that ran another spec first holds this service bound to the real
+// readline; the mock only binds to a module loaded after this reset.
+vi.resetModules();
+
 const { askConfirm, collectInitAnswers } = await import(
 	'./init-prompts.service'
 );

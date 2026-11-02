@@ -59,8 +59,9 @@ describe('DashboardService', async () => {
 		const { service } = makeService();
 		const model = await service.getTokensModel();
 		expect(model.tokensUsed).toBe(Math.ceil(7800 * 0.25));
-		expect(model.tokensSaved).toBe(Math.round(model.tokensUsed * 0.18));
-		expect(model.savingsPercent).toBe(18);
+		// Server metrics state no baseline, so they support no saving.
+		expect(model.tokensSaved).toBe(0);
+		expect(model.savingsPercent).toBe(0);
 		expect(model.topByTokens[0]?.tool).toBe(
 			'delendai_proposals_proposal_board',
 		);
@@ -70,7 +71,7 @@ describe('DashboardService', async () => {
 		const { service } = makeService();
 		const { overview, tokens } = await service.getAllModels();
 		// One shared `savingsPercentOf` — the two figures must never diverge
-		// (they once used different denominators: saved/used vs saved/(saved+used)).
+		// (they once used different denominators).
 		expect(overview.totals.savingsPercent).toBe(tokens.savingsPercent);
 	});
 

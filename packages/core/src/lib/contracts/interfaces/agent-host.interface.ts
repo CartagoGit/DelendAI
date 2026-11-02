@@ -25,6 +25,11 @@ export interface IAgentHost {
 	readonly skills?: { readonly dir: string };
 	/** The instructions file it reads, relative to the project root. */
 	readonly instructions?: string;
+	/**
+	 * Other files it still reads instructions from, which delendai never
+	 * writes but folds into the project's one canonical document.
+	 */
+	readonly legacyInstructions?: readonly string[];
 	/** Paths in the project, or variables in the environment, that mean it is in use. */
 	readonly evidence: {
 		readonly paths: readonly string[];

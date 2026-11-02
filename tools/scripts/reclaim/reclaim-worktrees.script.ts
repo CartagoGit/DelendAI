@@ -181,10 +181,12 @@ export const parseWorktreeList = (
  * happens to run, and it then sits in a worktree looking exactly like an
  * edit. Counting it as work keeps a spent desk forever over a timestamp.
  */
+// The bootstrap is not here: it is written by hand (a hook only refreshes
+// a few counts in it), and an edit to it in a spent desk is somebody's
+// work. Listed, its uncommitted edits were discarded with the desk.
 const GENERATED_MARKERS: readonly string[] = [
 	'.generated.',
 	'docs/delendai/host-hints/',
-	'docs/delendai/AGENT-BOOTSTRAP.md',
 	'/dist/',
 ];
 

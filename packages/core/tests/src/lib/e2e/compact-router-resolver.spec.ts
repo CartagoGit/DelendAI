@@ -1,3 +1,4 @@
+import { textRepeatsStructured } from '@delendai/core/lib/tools/compact-router.tool';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -104,6 +105,13 @@ describe('e2e: compact router via capability resolver', async () => {
 			active: false,
 			isError: false,
 		});
+		// Each result once: its text only repeated the structured content.
+		const carried = routed.structuredContent as {
+			text?: string;
+			structuredContent?: unknown;
+		};
+		expect(carried.structuredContent).toBeDefined();
+		expect(carried.text).toBeUndefined();
 	});
 
 	it('translates resolver policy_denied outcomes back to the existing router error envelope', async () => {
@@ -138,5 +146,17 @@ describe('e2e: compact router via capability resolver', async () => {
 				reason: 'Tool "delendai_memory_save" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.',
 			},
 		});
+	});
+});
+
+describe('textRepeatsStructured', () => {
+	it('is true only for a successful text that restates the structured content', () => {
+		expect(textRepeatsStructured('{"a":1}', { a: 1 }, false)).toBe(true);
+		expect(textRepeatsStructured('{ "a": 1 }', { a: 1 }, false)).toBe(true);
+		expect(textRepeatsStructured('{"a":2}', { a: 1 }, false)).toBe(false);
+		expect(textRepeatsStructured('saved it', { a: 1 }, false)).toBe(false);
+		expect(textRepeatsStructured('{"a":1}', undefined, false)).toBe(false);
+		// A client reads a failed call's reason from its text.
+		expect(textRepeatsStructured('{"a":1}', { a: 1 }, true)).toBe(false);
 	});
 });

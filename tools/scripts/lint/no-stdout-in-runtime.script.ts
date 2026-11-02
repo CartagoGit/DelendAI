@@ -23,6 +23,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 
@@ -102,6 +103,8 @@ export const findStdoutWrites = async (): Promise<readonly IViolation[]> => {
 };
 
 const main = async (): Promise<number> => {
+	if (refuseMissingScanRoots('no-stdout-in-runtime', ROOT, SCANNED_ROOTS))
+		return 1;
 	const violations = await findStdoutWrites();
 	if (violations.length === 0) {
 		console.log(

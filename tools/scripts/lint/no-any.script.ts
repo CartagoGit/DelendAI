@@ -19,6 +19,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { walkTsFiles } from '@delendai/core/cli';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const AS_ANY_RE = /\bas\s+any\b/g;
 
@@ -70,6 +71,13 @@ const isMainModule = (): boolean => {
 };
 
 if (isMainModule()) {
+	if (
+		refuseMissingScanRoots('no-any', lintRepoRoot(import.meta.url), [
+			'packages',
+			'plugins',
+		])
+	)
+		process.exit(1);
 	const rootDir = process.cwd();
 	const files = await walkTsFiles(rootDir, DEFAULT_ROOTS);
 	const fileContents = new Map<string, string>();

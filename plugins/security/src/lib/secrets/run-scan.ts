@@ -16,15 +16,24 @@ const TEXT_EXT =
 	/\.(ts|tsx|js|jsx|mjs|cjs|json|md|mdx|ya?ml|env|toml|sh|bash|zsh|astro|scss|css|html|txt|xml|ini|cfg|conf)$/i;
 
 /** Test/fixture paths hold sample secrets by design — skipped unless asked. */
-const isTestPath = (path: string): boolean =>
+export const isTestPath = (path: string): boolean =>
 	/(?:^|\/)(?:tests?|__tests__|fixtures?|__fixtures__)(?:\/|$)|\.spec\.|\.test\./.test(
 		path,
 	);
 
 /**
+ * An ignored file that holds secrets by its name: env files, key files,
+ * credential and secret configs. Every other ignored file is build output,
+ * dependencies or a cache, counted as skipped.
+ */
+const SECRET_BEARING =
+	/(?:^|\/)(?:\.env(?:\.[\w.-]+)?|[\w.-]*(?:credentials?|secrets?)[\w.-]*\.(?:json|ya?ml|toml|ini|env)|[\w.-]+\.(?:pem|key|p12|pfx))$/i;
+
+/**
  * Run a secret scan. `scope` selects the file set ('changed' = working tree,
- * 'tracked' = the whole repo). Non-text and (by default) test/fixture files
- * are skipped, and the candidate list is capped to bound the work.
+ * 'tracked' = the whole repo), plus the secret-bearing ignored files that
+ * are present. Non-text and (by default) test/fixture files are skipped,
+ * and the candidate list is capped to bound the work.
  */
 export const runSecretScan = async (
 	deps: ISecretScanDeps,
@@ -42,10 +51,22 @@ export const runSecretScan = async (
 				(options.includeTests || !isTestPath(path)),
 		)
 		.slice(0, options.maxFiles ?? 5000);
+	// git ls-files sees only what git tracks or would track, and a local
+	// leak sits in an ignored `.env.local`: the scan said clean without
+	// reading it.
+	const ignored = (await deps.listIgnored?.()) ?? [];
+	const ignoredScanned = ignored.filter(
+		(path) => !path.includes('node_modules/') && SECRET_BEARING.test(path),
+	);
 	const files: ISecretScanFile[] = [];
-	for (const path of candidates) {
+	for (const path of [...candidates, ...ignoredScanned]) {
 		const content = await deps.readFile(path);
 		if (content !== undefined) files.push({ path, content });
 	}
-	return { scanned: files.length, findings: scanSecrets(files) };
+	return {
+		scanned: files.length,
+		findings: scanSecrets(files),
+		ignoredScanned,
+		ignoredSkipped: ignored.length - ignoredScanned.length,
+	};
 };

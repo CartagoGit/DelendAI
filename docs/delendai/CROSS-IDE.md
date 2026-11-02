@@ -4,7 +4,7 @@ The VS Code extension is the **reference implementation** of an
 `@delendai` IDE host. Every other IDE (JetBrains, Zed, Cursor,
 Antigravity) ships **the same dashboard, panels and commands** by
 implementing one ~200-line adapter against the `IHostAdapter`
-interface declared in [`packages/ui-extension/src/host-adapter.types.ts`](../packages/ui-extension/src/host-adapter.types.ts).
+interface declared in `packages/ui-extension/src/host-adapter.types.ts`.
 
 The `packages/core` and every plugin remain **host-agnostic** — no IDE
 imports leak into the server. Only the IDE host knows about its own
@@ -81,7 +81,7 @@ adapter must remain opt-in, pass no transcript or secret-bearing data, and
 degrade safely when the MCP server is unavailable. The Claude Code fragment is
 the reference integration because it runs at its documented `PostCompact`
 boundary; it lives in
-[`config/external/claude-code/`](../../config/external/claude-code/).
+`config/external/claude-code/`.
 
 ### Cross-IDE: choose the smallest useful plugin surface
 
@@ -260,11 +260,11 @@ implement.
 
 | Service | File | What it does |
 |---|---|---|
-| `LogsService` | [`packages/client/src/lib/services/logs-service.ts`](../packages/client/src/lib/services/logs-service.ts) | `query` / `tail` / `correlate` / `redactTest` against the server's `logs_*` tools. `subscribe(opts)` is an `AsyncIterable` that polls `logs_subscribe` with dedup + abort + max-events. |
+| `LogsService` | `packages/client/src/lib/services/logs-service.ts` | `query` / `tail` / `correlate` / `redactTest` against the server's `logs_*` tools. `subscribe(opts)` is an `AsyncIterable` that polls `logs_subscribe` with dedup + abort + max-events. |
 | `NotificationLogsBridge` | [`packages/client/src/lib/services/notification-logs-bridge.ts`](../../packages/client/src/lib/services/notification-logs-bridge.ts) | Subscribes to `lock-released` / `cap` / `bloqueado` events from `NotificationsService` and pairs each with the tool calls that fired within ±5s (using `MetricsService` as the source of truth). |
-| `SearchService` | [`packages/client/src/lib/services/search-service.ts`](../packages/client/src/lib/services/search-service.ts) | `search(query, opts)` against `search_search`. `searchTools(query, tools)` and `searchKnowledge(query, entries)` are **client-side** fuzzy-substring matchers (exact=100, prefix=60, substring=40, tag=20, description=10) — no round-trip. |
-| `HealthService` | [`packages/client/src/lib/services/health-service.ts`](../packages/client/src/lib/services/health-service.ts) | Aggregates `proposals_state_health`, `proposals_proposal_stale_list` and `proposals_agent_names` into a single `IHealthSnapshot`. Degrades gracefully on missing tools. |
-| `ConnectionHealthService` | [`packages/client/src/lib/services/connection-health-service.ts`](../packages/client/src/lib/services/connection-health-service.ts) | Pings `status-marker_ping` every 5s, emits `up` / `down` / `retrying` events via an EventTarget-style API. Used by the VS Code status bar. |
+| `SearchService` | `packages/client/src/lib/services/search-service.ts` | `search(query, opts)` against `search_search`. `searchTools(query, tools)` and `searchKnowledge(query, entries)` are **client-side** fuzzy-substring matchers (exact=100, prefix=60, substring=40, tag=20, description=10) — no round-trip. |
+| `HealthService` | `packages/client/src/lib/services/health-service.ts` | Aggregates `proposals_state_health`, `proposals_proposal_stale_list` and `proposals_agent_names` into a single `IHealthSnapshot`. Degrades gracefully on missing tools. |
+| `ConnectionHealthService` | `packages/client/src/lib/services/connection-health-service.ts` | Pings `status-marker_ping` every 5s, emits `up` / `down` / `retrying` events via an EventTarget-style API. Used by the VS Code status bar. |
 
 ### New commands
 

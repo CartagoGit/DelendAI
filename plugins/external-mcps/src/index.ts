@@ -15,6 +15,7 @@
  * two tool one-liners. A session that never composes an external server
  * pays nothing; discovery is one compact `catalog` call away.
  */
+import { basename } from 'node:path';
 import { joinRel } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
@@ -43,7 +44,7 @@ import { buildValidateConfigToolRegistration } from './lib/tools/validate-config
 
 export default definePlugin({
 	name: 'external-mcps',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Compose third-party MCP servers under the host: seed-catalog discovery, config dry-run validation, and lazy subprocess boot behind the ext.<server>.<tool> call proxy; human-acked activation lands in S3.',
 	optionsSchema: OptionsSchema,
@@ -106,6 +107,16 @@ export default definePlugin({
 				);
 			for (const role of plugin.manifest.agentRoles ?? [])
 				agentRoles.push({ ...role, role: `${id}-${role.role}` });
+		}
+		// A command outside the allowlist never starts: it was whatever the
+		// entry named.
+		const allowed = new Set(options.allowedCommands);
+		for (const [id, entry] of Object.entries(enabledServers)) {
+			const command = basename(entry.command);
+			if (refusals[id] === undefined && !allowed.has(command)) {
+				refusals[id] =
+					`its command "${command}" is not in plugins.external-mcps.allowedCommands (${[...allowed].join(', ')})`;
+			}
 		}
 		const registry = new ExternalServerRegistry({
 			servers: enabledServers as Readonly<

@@ -5,10 +5,10 @@
  * Every case here is a property the shared-checkout model depends on,
  * and each one is cheap to break by accident later.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -565,5 +565,47 @@ describe('planWorkBranchPublication', () => {
 		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
 			'WORK_BRANCH_AHEAD',
 		);
+	});
+});
+
+describe('proveCommit in a repository of its own', () => {
+	it("removes only the worktree it created, never another invocation's", () => {
+		const root = mkdtempSync(join(tmpdir(), 'preflight-'));
+		try {
+			const git = (...args: string[]) =>
+				spawnSync(
+					'git',
+					['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
+					{
+						cwd: root,
+						encoding: 'utf8',
+					},
+				);
+			git('init', '-q', '-b', 'develop');
+			git('commit', '-q', '--allow-empty', '-m', 'base');
+			const commit = git('rev-parse', 'HEAD').stdout.trim();
+			const trees = join(root, '.cache', 'preflight');
+			// Another invocation's worktree, standing where the old name put it.
+			const other = join(trees, `preflight-${commit.slice(0, 12)}`);
+			git('worktree', 'add', '--detach', '-q', other, commit);
+			const script = resolve(
+				import.meta.dirname,
+				'publish-candidate.script.ts',
+			);
+			// A second pre-flight of the same commit, as two agents run them.
+			const child = spawnSync(
+				'bun',
+				[
+					'-e',
+					`import { proveCommit } from ${JSON.stringify(script)}; try { proveCommit(${JSON.stringify(commit)}, ${JSON.stringify(trees)}, []); } catch {}`,
+				],
+				{ cwd: root, encoding: 'utf8' },
+			);
+			expect(child.status).toBe(0);
+			expect(existsSync(other)).toBe(true);
+			expect(git('worktree', 'list').stdout).toContain(other);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

@@ -51,6 +51,8 @@ const RunSchema = z.object({
 		z.object({
 			taskId: z.string(),
 			ok: z.boolean(),
+			/** Verify steps the task's plan left to run: it ran, and is not checked. */
+			unverified: z.array(z.number()).optional(),
 			outcome: z.unknown(),
 		}),
 	),
@@ -184,9 +186,15 @@ export const buildOrchestrateRunRegistration = (
 						results.push({
 							taskId: task.id,
 							ok: outcome.ok,
+							...(outcome.unverified === undefined
+								? {}
+								: { unverified: [...outcome.unverified] }),
 							outcome,
 						});
-						if (!outcome.ok) break;
+						// A task that ran with its verify stage still to run
+						// did not fail: the next one runs. A failed one stops.
+						if (!outcome.ok && outcome.unverified === undefined)
+							break;
 					}
 					return toolJson({ ...base, dryRun: false, results });
 				} catch (error) {

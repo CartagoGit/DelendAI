@@ -74,13 +74,6 @@
 				"./plugins/roadmap/src/public/index.ts"
 			],
 			"@delendai/roadmap/*": ["./plugins/roadmap/src/*"],
-			"@delendai/roadmap-sqlite": [
-				"./packages/roadmap-sqlite/src/index.ts"
-			],
-			"@delendai/roadmap-sqlite/public": [
-				"./packages/roadmap-sqlite/src/public/index.ts"
-			],
-			"@delendai/roadmap-sqlite/*": ["./packages/roadmap-sqlite/src/*"],
 			"@delendai/sqlite": ["./packages/sqlite/src/index.ts"],
 			"@delendai/sqlite/*": ["./packages/sqlite/src/*"],
 			"@delendai/proposals-sqlite": [

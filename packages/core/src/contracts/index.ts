@@ -200,7 +200,12 @@ export type {
 // The vendor clients delendai knows, once: discovery, install hints and
 // account isolation all read it.
 export { KNOWN_CLIENTS } from '../lib/contracts/constants/known-clients.constant';
-export { AGENT_HOST_SLUGS } from '../lib/contracts/constants/agent-hosts.constant';
+export {
+	AGENT_HOST_INSTRUCTION_FILES,
+	AGENT_HOST_SLUGS,
+	AGENT_HOSTS,
+} from '../lib/contracts/constants/agent-hosts.constant';
+export { agentHostOfName } from '../lib/hosts/agent-host-name.helper';
 // Vendor tools that hold a plan login, and the account sources' data.
 export { PLAN_TOOLS } from '../lib/contracts/constants/account-sources.constant';
 export type {
@@ -223,7 +228,10 @@ export type {
 	IOfferPosition,
 	IOfferStep,
 } from '../lib/contracts/interfaces/account-offer.interface';
-export { knownClientOf } from '../lib/shared/known-client.helper';
+export {
+	catalogueClientOf,
+	knownClientOf,
+} from '../lib/shared/known-client.helper';
 export type {
 	IClientCommandRunner,
 	IClientDiscovery,
@@ -260,3 +268,12 @@ export {
 	MODE_TIER,
 	UNAVAILABLE_SCORE,
 } from '../lib/contracts/constants/model-ranking.constant';
+export {
+	DISCOVERY_CONSENT_COMMAND,
+	DISCOVERY_CONSENT_QUESTION,
+} from '../lib/contracts/constants/discovery-consent.constant';
+export type { IDiscoveryConsentAnswer } from '../lib/contracts/interfaces/discovery-consent-answer.interface';
+export type {
+	ITaskBriefing,
+	ITaskBriefingRequest,
+} from '../lib/contracts/interfaces/work-briefing.interface';

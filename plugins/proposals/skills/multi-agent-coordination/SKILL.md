@@ -1,7 +1,8 @@
 ---
 name: delendai-multi-agent-coordination
 appliesTo: ['@delendai/proposals', '@delendai/notification']
-description: How to coordinate several agents safely in this repo: when to use agent_lock vs agent_worktree, how to wait on lock-released instead of polling, and how to keep repeated MCP reads under control with round_context digests.
+description: Use when coordinating several agents: agent_lock or agent_worktree, waiting on release, keeping repeated reads cheap.
+tools: ['delendai_proposals_agent_lock', 'delendai_proposals_agent_worktree', 'delendai_proposals_agent_lock_release_orphan', 'delendai_proposals_branch_status', 'delendai_proposals_branch_gc']
 ---
 
 # delendai multi-agent coordination

@@ -234,7 +234,7 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 			return Object.values((await readAll(statePath)).records);
 		},
 		async claimDispatch(fingerprint, claimedUntil, now) {
-			let claimed = false;
+			let outcome: 'claimed' | 'held' | 'unreadable' = 'unreadable';
 			await withFileMutex(statePath, async () => {
 				const { records: state, trusted } = await readAll(statePath);
 				if (!trusted) return;
@@ -244,6 +244,7 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 					activeClaim !== undefined &&
 					activeClaim > Date.parse(now)
 				) {
+					outcome = 'held';
 					return;
 				}
 				const next = nextRecord(fingerprint, previous);
@@ -252,9 +253,9 @@ export const createReportStore = (dirAbs: string): IReportStore => {
 					dispatchClaimedUntil: claimedUntil,
 				};
 				await writeState(state);
-				claimed = true;
+				outcome = 'claimed';
 			});
-			return claimed;
+			return outcome;
 		},
 		async recordAttempt(fingerprint, input) {
 			await withFileMutex(statePath, async () => {

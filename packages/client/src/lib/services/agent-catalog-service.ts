@@ -193,8 +193,10 @@ const promptTextOf = async (
 	return result.messages[0]?.content.text ?? '';
 };
 
+type TCatalogSection = 'tools' | 'skills' | 'proposals';
+
 export class AgentCatalogService {
-	private cache: ICatalogCacheEntry | undefined;
+	private readonly cache = new Map<TCatalogSection, ICatalogCacheEntry>();
 	private readonly ttlMs: number;
 	private readonly now: () => number;
 	private readonly namespacePrefix: string | undefined;
@@ -209,22 +211,22 @@ export class AgentCatalogService {
 	}
 
 	async getTools(query?: string): Promise<readonly IToolSummary[]> {
-		const snapshot = await this.getSnapshot();
+		const snapshot = await this.getSection('tools');
 		return filterTools(snapshot.tools, query);
 	}
 
 	async getSkills(query?: string): Promise<readonly ISkillSummary[]> {
-		const snapshot = await this.getSnapshot();
+		const snapshot = await this.getSection('skills');
 		return filterSkills(snapshot.skills, query);
 	}
 
 	async getProposals(query?: string): Promise<readonly IProposalSummary[]> {
-		const snapshot = await this.getSnapshot();
+		const snapshot = await this.getSection('proposals');
 		return filterProposals(snapshot.proposals, query);
 	}
 
 	async search(query: string): Promise<IAgentCatalogSearchResult> {
-		const snapshot = await this.getSnapshot();
+		const snapshot = await this.getWhole();
 		return {
 			tools: filterTools(snapshot.tools, query),
 			skills: filterSkills(snapshot.skills, query),
@@ -233,14 +235,11 @@ export class AgentCatalogService {
 	}
 
 	invalidate(): void {
-		this.cache = undefined;
+		this.cache.clear();
 	}
 
 	async getBootstrapPrompt(): Promise<string> {
-		return promptTextOf(
-			await this.getSnapshot(),
-			this.client.instructions(),
-		);
+		return promptTextOf(await this.getWhole(), this.client.instructions());
 	}
 
 	async getSkillBody(id: string): Promise<string> {
@@ -254,18 +253,36 @@ export class AgentCatalogService {
 		return result.body;
 	}
 
-	private async getSnapshot(): Promise<ICatalogSnapshot> {
+	/** Every section, each asked for on its own: whole, it passes a response's ceiling. */
+	private async getWhole(): Promise<ICatalogSnapshot> {
+		const [tools, skills, proposals] = await Promise.all([
+			this.getSection('tools'),
+			this.getSection('skills'),
+			this.getSection('proposals'),
+		]);
+		return {
+			...tools,
+			skills: skills.skills,
+			proposals: proposals.proposals,
+		};
+	}
+
+	private async getSection(
+		section: TCatalogSection,
+	): Promise<ICatalogSnapshot> {
+		const cached = this.cache.get(section);
 		if (
-			this.cache !== undefined &&
-			this.now() - this.cache.fetchedAt < this.ttlMs
+			cached !== undefined &&
+			this.now() - cached.fetchedAt < this.ttlMs
 		) {
-			return this.cache.snapshot;
+			return cached.snapshot;
 		}
 		const result = await this.client.request<
-			{ mode: 'full' },
+			{ mode: 'full'; section: TCatalogSection },
 			IAgentCatalogOutput
 		>(formatToolName(this.namespacePrefix, 'agent_catalog'), {
 			mode: 'full',
+			section,
 		});
 		// The wire type marks skill detail fields optional because the
 		// compact orientation projection omits them; mode:"full" always
@@ -283,10 +300,7 @@ export class AgentCatalogService {
 				bodyPath: skill.bodyPath ?? '',
 			})),
 		};
-		this.cache = {
-			snapshot,
-			fetchedAt: this.now(),
-		};
+		this.cache.set(section, { snapshot, fetchedAt: this.now() });
 		return snapshot;
 	}
 }

@@ -6,10 +6,19 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/runtime';
+import {
+	isOutsideScanScope,
+	SafeWorkspaceReader,
+} from '@delendai/core/runtime';
 
+import {
+	TECH_DEBT_MAX_FILE_BYTES,
+	TECH_DEBT_MAX_FILES,
+} from '../contracts/constants/tech-debt.constant';
 import type {
+	ISkippedSourceFile,
 	ISourceFile,
+	ISourceFileScan,
 	ITechDebtScanDeps,
 } from '../contracts/interfaces/tech-debt.interface';
 
@@ -17,51 +26,43 @@ import type {
 const INCLUDE = 'ts,tsx,mts,cts,js,jsx,mjs,cjs,vue,svelte,astro,scss,css,md';
 const GLOB = `**/*.{${INCLUDE}}`;
 
-/** Path fragments whose presence excludes a file from the scan. */
-const EXCLUDED = [
-	'/node_modules/',
-	'/dist/',
-	'/build/',
-	'/.cache/',
-	'/.git/',
-	'/coverage/',
-	'/.astro/',
-];
-
-/** Bounds so a huge tree can't blow up memory or the response. */
-const MAX_FILES = 4000;
-const MAX_FILE_BYTES = 512 * 1024;
-
-const isExcluded = (rel: string): boolean =>
-	EXCLUDED.some((fragment) => `/${rel}`.includes(fragment));
+const isExcluded = isOutsideScanScope;
 
 /** Production tech-debt deps rooted at `workspaceRootAbs`. */
 export const realTechDebtDeps = (
 	workspaceRootAbs: string,
 ): ITechDebtScanDeps => ({
-	listSourceFiles: async () => {
+	listSourceFiles: async (): Promise<ISourceFileScan> => {
 		const reader = new SafeWorkspaceReader(workspaceRootAbs);
-		const out: ISourceFile[] = [];
+		const files: ISourceFile[] = [];
+		const skipped: ISkippedSourceFile[] = [];
+		let capped = false;
 		const glob = new Bun.Glob(GLOB);
 		for await (const rel of glob.scan({
 			cwd: workspaceRootAbs,
 			onlyFiles: true,
 			dot: false,
 		})) {
-			if (out.length >= MAX_FILES) break;
 			if (isExcluded(rel)) continue;
+			if (files.length >= TECH_DEBT_MAX_FILES) {
+				capped = true;
+				break;
+			}
 			const abs = join(workspaceRootAbs, rel);
 			try {
 				const info = await stat(abs);
-				if (info.size > MAX_FILE_BYTES) continue;
-				out.push({
+				if (info.size > TECH_DEBT_MAX_FILE_BYTES) {
+					skipped.push({ path: rel, reason: 'too-large' });
+					continue;
+				}
+				files.push({
 					path: rel,
 					content: (await reader.readText(rel)).content,
 				});
 			} catch {
-				// unreadable or vanished — skip it
+				skipped.push({ path: rel, reason: 'unreadable' });
 			}
 		}
-		return out;
+		return { files, skipped, capped };
 	},
 });

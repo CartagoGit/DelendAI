@@ -75,7 +75,7 @@ attribution surface.
 For projects that want a clean history (no `Co-authored-by: Claude
 Opus 5` lines on old commits, no LLM-attributed author on
 `git show <sha>`), see
-[`docs/delendai/wiki/git-history-rewrite.md`](wiki/git-history-rewrite.md)
+[`docs/delendai/wiki/git-history-rewrite.md`](delendai/wiki/git-history-rewrite.md)
 for the runbook. The runbook uses `git filter-repo` (preferred) or
 `git filter-branch` (fallback) to:
 

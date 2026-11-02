@@ -1,7 +1,8 @@
 ---
 name: delendai-status-marker-and-closure
 appliesTo: ['@delendai/status-marker']
-description: The 8 canonical close-marker states an agent response must end with, which ones require a reason, and the exact tools (status_marker_close / status_marker_validate) that generate and audit the line so you never hand-format it. Use at the end of every response when the status-marker plugin is loaded.
+description: Use at the end of a response when status-marker is loaded: the eight close states and the tools that write and check the line.
+tools: ['delendai_status-marker_close', 'delendai_status-marker_validate']
 ---
 
 # delendai status marker + closure
@@ -41,7 +42,8 @@ Source of truth: `MARKERS` in `plugins/status-marker/src/lib/markers.ts`.
 - Separator before the reason: ` — ` (em-dash, space on both sides),
   `CLOSE_SEPARATOR` in `markers.ts`.
 - Full line, including emoji and reason, must be ≤120 chars (`MAX_LINE_LEN`);
-  the formatter truncates and appends `…` if it would overflow.
+  a longer line is refused (`CloseMarkerTooLongError`): shorten the reason,
+  it is never cut.
 - Use the helper, never hand-format: `formatCloseMarker(state, reason?)`
   (importable from `@delendai/status-marker/public`) is what
   `<prefix>_close` calls internally — same output either way.
@@ -127,6 +129,6 @@ the line.
 - **Reason shape is preserved across locales**: the separator ` — ` and
   reason payload are emitted identically; only the bracket text inside
   `[...]` changes.
-- **Length budget is identical**: the `<reason-missing>` placeholder, the
-  120-char truncation rule (`MAX_LINE_LEN`) and the `…` ellipsis all
-  apply the same way to both locales.
+- **Length budget is identical**: the `<reason-missing>` placeholder and
+  the 120-char limit (`MAX_LINE_LEN`, refused beyond it) apply the same
+  way to both locales.

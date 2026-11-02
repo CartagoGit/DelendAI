@@ -69,9 +69,14 @@ export interface IReportStore {
 		input: IReportSuccessInput,
 	): Promise<void>;
 	all(): Promise<readonly IReportRecord[]>;
+	/**
+	 * Claim the dispatch of one report: `claimed`, `held` when another
+	 * dispatch holds it (a duplicate), or `unreadable` when the store could
+	 * not be trusted (a failure, never counted as a duplicate).
+	 */
 	claimDispatch(
 		fingerprint: string,
 		claimedUntil: string,
 		now: string,
-	): Promise<boolean>;
+	): Promise<'claimed' | 'held' | 'unreadable'>;
 }

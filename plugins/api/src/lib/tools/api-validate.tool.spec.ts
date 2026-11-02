@@ -120,9 +120,7 @@ describe('api_validate tool (f00130 S2)', () => {
 			await handler({ operationId: 'getUser', response: { id: 1 } }),
 		);
 		expect(out.ok).toBe(false);
-		expect((out.error as { reason: string }).reason).toMatch(
-			/spec or specUrl/,
-		);
+		expect((out.error as { reason: string }).reason).toBe('missing-spec');
 	});
 
 	it('returns an install hint for an unknown operationId', async () => {

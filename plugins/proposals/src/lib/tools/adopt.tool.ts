@@ -154,7 +154,7 @@ export const buildAdoptRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_adopt',
 	summary:
-		'Analyze an existing proposals folder — and with apply:true, bootstrap the canonical store (folders + README + index).',
+		'Analyze an existing proposals folder; with apply:true, bootstrap the canonical store.',
 	tags: ['proposals', 'orientation'],
 	register: async (server) => {
 		server.registerTool(

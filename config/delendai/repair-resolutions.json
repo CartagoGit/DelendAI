@@ -18,6 +18,14 @@
 			"decidedAt": "2026-10-06T02:04:39.340Z"
 		},
 		{
+			"taskId": "1ad3b3b16b19e7cb3d7cf8c0a9793946",
+			"evidenceDigest": "782e41506ca179b494e89aded62cebac",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax x00949 S1: x00949 is done and all four shipped-in commits are in develop; the ref went with the landed unit.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-31T20:32:47.688Z"
+		},
+		{
 			"taskId": "234a490ff3d4564f19e041ba7005de81",
 			"evidenceDigest": "3944e86f936b68eb165756b759bb1b45",
 			"decision": "accepted-loss",
@@ -128,6 +136,14 @@
 			"reason": "A close pass of the queue's closer that never published (its unit had no dependencies, so the pre-push typecheck refused it). Its only content was the close of five approved proposals, which every pass recomputes from develop; x00875 S27 lets the closer publish and retires a pass that does not.",
 			"decidedBy": "claude-opus-5-5",
 			"decidedAt": "2026-10-06T15:23:01.787Z"
+		},
+		{
+			"taskId": "556c2ec59d8950e498723c226451c125",
+			"evidenceDigest": "fc1568183696237e88fb04b134d5cc1b",
+			"decision": "resolved-elsewhere",
+			"reason": "minimax x00950 S1: x00950 is done and all four shipped-in commits are in develop; the ref went with the landed unit.",
+			"decidedBy": "claude-opus-5-5",
+			"decidedAt": "2026-10-31T20:32:54.132Z"
 		},
 		{
 			"taskId": "593fd173544d841c22d9a37777cc8344",

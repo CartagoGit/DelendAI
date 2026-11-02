@@ -11,9 +11,8 @@
  *   hand to spot the bug. That is not sustainable. The detector
  *   counts repeats per (code, trigger) tuple inside a sliding
  *   window and surfaces the result through the
- *   `commit_policy_storms` tool, AND — via the host's
- *   auto-fix proposal creator (`repair-proposer.ts`) — files
- *   a `kind: fix` proposal automatically under `ready/fixes/`.
+ *   `commit_policy_storms` tool; the agent files the repair
+ *   (skill `read-stderr-storm`).
  *
  * Design notes:
  *   - Pure logic. No I/O inside the hot path. The detector

@@ -28,6 +28,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 
@@ -100,6 +101,13 @@ export const findGlobalGitConfigWrites = async (): Promise<
 };
 
 const main = async (): Promise<number> => {
+	if (
+		refuseMissingScanRoots('no-global-git-config-in-tests', ROOT, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	const violations = await findGlobalGitConfigWrites();
 	if (violations.length === 0) {
 		console.log(

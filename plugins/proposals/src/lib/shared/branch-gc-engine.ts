@@ -54,7 +54,8 @@ export interface IGcSkippedEntry {
 		| 'protected-branch'
 		| 'not-found'
 		| 'no-branch'
-		| 'undelivered';
+		| 'undelivered'
+		| 'status-unreadable';
 	readonly detail: string;
 }
 
@@ -296,6 +297,28 @@ export const planGc = (
 				detail:
 					verdict?.reason ??
 					'no ref-lifecycle verdict proves this branch delivered its work; kept',
+			});
+			continue;
+		}
+		// The age limit holds for delivered work too: a worktree merged a
+		// minute ago may still be the one its agent is standing in.
+		if (ageMin < staleMinutes) {
+			skipped.push({
+				path: wt.path,
+				branch: wt.branch,
+				reason: 'fresh',
+				detail: `age ${wt.ageLabel} < staleMinutes ${staleMinutes}`,
+			});
+			continue;
+		}
+		// A status that could not be read says nothing about the files in
+		// the worktree; read as zero, it made the worktree clean and gone.
+		if (wt.statusUnreadable === true) {
+			skipped.push({
+				path: wt.path,
+				branch: wt.branch,
+				reason: 'status-unreadable',
+				detail: 'git status could not be read in this worktree; its files are unknown, so it is kept even with force:true',
 			});
 			continue;
 		}

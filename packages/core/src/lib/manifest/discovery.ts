@@ -20,7 +20,7 @@ const manifestFromModule = (
 };
 
 export const discoverPluginManifests = async (
-	rootDir = process.cwd(),
+	rootDir: string,
 ): Promise<readonly string[]> => {
 	const pluginsDir = resolve(rootDir, PLUGINS_DIR);
 	let entries: import('node:fs').Dirent[];
@@ -44,7 +44,7 @@ export const discoverPluginManifests = async (
 };
 
 export const loadAllPluginManifests = async (
-	rootDir = process.cwd(),
+	rootDir: string,
 ): Promise<readonly IPluginManifest[]> => {
 	const manifestPaths = await discoverPluginManifests(rootDir);
 	const manifests: IPluginManifest[] = [];

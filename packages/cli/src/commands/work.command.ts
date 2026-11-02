@@ -13,7 +13,12 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
-import { isRecord } from '../lib/helpers/cli-command.helper';
+import {
+	isRecord,
+	request,
+	scalarArg,
+} from '../lib/helpers/cli-command.helper';
+import { deliverUnit } from '../lib/work-deliver.service';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -64,11 +69,48 @@ export const printPathOnly = (result: ICliCommandResult): ICliCommandResult => {
 		: result;
 };
 
+/** The planning plugin is loaded only when a unit is entered. */
+export const briefOnEntering = async (): Promise<void> => {
+	const { DEFAULT_PATH_LAYOUT, registerProposalsTaskBriefing } = await import(
+		'@delendai/proposals/public'
+	);
+	registerProposalsTaskBriefing(DEFAULT_PATH_LAYOUT.proposalsDir);
+};
+
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
 	run: async (args, ctx) => {
+		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
+		if (args[0] === 'deliver') {
+			const unit = args.slice(1);
+			const id = scalarArg(unit, 'proposal');
+			const reason = scalarArg(unit, 'reason') ?? 'Proved and delivered.';
+			if (id === undefined) {
+				return {
+					code: EXIT_CODE.VALIDATION,
+					error: 'work deliver --proposal=<id> --agent=<you> [--slice=all] [--generation=<n>] [--topic=<text>] [--reason=<why>]',
+				};
+			}
+			const agent = scalarArg(unit, 'agent');
+			const withSlice = unit.some((arg) => arg.startsWith('--slice='))
+				? unit
+				: [...unit, '--slice=all'];
+			return deliverUnit({
+				locate: () =>
+					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
+				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
+				transition: (to, checkout) =>
+					request(ctx, 'delendai_proposals_proposal_transition', {
+						id,
+						to,
+						reason,
+						...(agent === undefined ? {} : { agent }),
+						checkout: checkout ?? ctx.cwd,
+					}),
+			});
+		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {
 			return printPathOnly(
 				await runWorkUnit(

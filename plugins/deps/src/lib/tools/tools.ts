@@ -20,7 +20,7 @@ import {
 } from '../services/engine';
 import type { ILatestVersionFetcher } from '../services/engine';
 import { listPolyglotDeps } from '../services/polyglot';
-import { runDepsAudit } from '../services/audit';
+import { readDepsAudit } from '../services/audit';
 import { realLicenseDeps, scanLicenses } from '../services/licenses';
 import type { ILicenseScanDeps } from '../contracts/interfaces/licenses.interface';
 
@@ -336,10 +336,13 @@ export const buildDepsToolRegistrations = (
 									outputSchema: AUDIT_RESULT,
 								},
 								async () => {
-									const result = await runDepsAudit(
+									const result = await readDepsAudit(
 										options.workspaceRootAbs,
 										options.auditExec,
 									);
+									if ('failure' in result) {
+										throw new Error(result.failure);
+									}
 									return toolJson({
 										tool: result.tool,
 										findings: result.findings,

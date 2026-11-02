@@ -162,8 +162,8 @@ interface IActiveEntry {
  * it, so it ran with no spend check, no `executeApi` and no confirmation.
  * A list of what to guard fails open for every kind added after it; a
  * list of what may skip the guard fails closed. `subscription` is here
- * only because its invoker is a passthrough that executes nothing. The
- * day it executes, it leaves this list.
+ * because what it runs is paid by the plan it belongs to: in context, or
+ * through its own host CLI started on that plan, never per call.
  */
 const NON_SPENDING_KINDS: ReadonlySet<ProviderKind> = new Set<ProviderKind>([
 	'subscription',

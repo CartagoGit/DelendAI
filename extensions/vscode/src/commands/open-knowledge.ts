@@ -4,6 +4,7 @@
  * `categoryOf`); clicking an entry updates the preview pane
  * without reloading the webview.
  */
+import { KNOWLEDGE_MESSAGE_SCHEMA } from '../contracts/constants/webview-message-schemas.constant';
 import { KnowledgeService } from '@delendai/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import {
@@ -46,15 +47,9 @@ export const registerOpenKnowledgeCommand = (deps: ICommandDeps) =>
 		// entry body and post it back as a `preview` command that the
 		// client-side script (now XSS-safe via textContent) renders.
 		panel.webview.onDidReceiveMessage?.(async (msg: unknown) => {
-			if (
-				typeof msg !== 'object' ||
-				msg === null ||
-				(msg as { command?: unknown }).command !== 'openEntry'
-			) {
-				return;
-			}
-			const id = (msg as { id?: unknown }).id;
-			if (typeof id !== 'string' || id.length === 0) return;
+			const parsed = KNOWLEDGE_MESSAGE_SCHEMA.safeParse(msg);
+			if (!parsed.success) return;
+			const { id } = parsed.data;
 			try {
 				const entry = await fetchKnowledgeEntry(
 					deps.vscode,

@@ -3,6 +3,15 @@ import { describe, expect, it } from 'vitest';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import { runSwarmHygieneEngine } from '@delendai/proposals/lib/shared/swarm-hygiene-engine';
 import type { IPendingIntegrationEntry } from '@delendai/proposals/lib/contracts/interfaces/pending-integration.interface';
+import {
+	BASE,
+	FIXED_NOW,
+	ROOT,
+	isDestructive,
+	makeRunner,
+	wtPath,
+	type IBranchFixture,
+} from './swarm-hygiene-harness';
 
 /**
  * f00091 S3 — verify the swarm-hygiene engine is non-destructive and that
@@ -14,170 +23,6 @@ import type { IPendingIntegrationEntry } from '@delendai/proposals/lib/contracts
  * consume, and (2) records EVERY git invocation so the test can assert no
  * destructive verb is ever issued.
  */
-
-const ROOT = '/ws';
-const CACHE_WT = `${ROOT}/.cache/delendai/.worktrees`;
-const BASE = 'develop';
-const FIXED_NOW = Date.parse('2026-07-02T12:00:00.000Z');
-
-interface IBranchFixture {
-	readonly ahead: number;
-	readonly behind: number;
-	readonly merged: boolean;
-	readonly minutesAgo: number;
-	readonly head: string;
-	/** Worktree path; omitted → branch has no worktree. */
-	readonly worktreePath?: string;
-	/** Whether `git branch --list agent/*` reports it (agent-prefixed). */
-	readonly inAgentList: boolean;
-}
-
-/**
- * Any git verb that mutates repo state. `close_slice`/`swarm_hygiene` must
- * never issue one — integration is a deliberate human/orchestrator action.
- * (`branch --list …` is read-only; `branch -d/-D` is not — hence the token
- * scan below rather than a bare `branch` match.)
- */
-const DESTRUCTIVE_VERBS = new Set([
-	'merge',
-	'rebase',
-	'reset',
-	'push',
-	'cherry-pick',
-	'checkout',
-	'switch',
-	'commit',
-	'clean',
-	'stash',
-	'apply',
-]);
-
-const isDestructive = (args: readonly string[]): boolean => {
-	// A `worktree remove|prune|add` or a `branch -d|-D|--delete` mutates too.
-	if (
-		args[0] === 'worktree' &&
-		['remove', 'prune', 'add'].includes(args[1] ?? '')
-	)
-		return true;
-	if (
-		args[0] === 'branch' &&
-		['-d', '-D', '--delete', '--force'].some((f) => args.includes(f))
-	)
-		return true;
-	return args.some((a) => DESTRUCTIVE_VERBS.has(a));
-};
-
-/** Extract the branch tip from a `base...branch` / `base..branch` range. */
-const tipOf = (range: string): string => {
-	const sep = range.includes('...') ? '...' : '..';
-	return range.split(sep).pop() ?? '';
-};
-
-const makeRunner = (
-	fixtures: Readonly<Record<string, IBranchFixture>>,
-	calls: string[][],
-): IGitRunner => {
-	const agentBranches = Object.entries(fixtures)
-		.filter(([, f]) => f.inAgentList)
-		.map(([name]) => name);
-	const worktreeEntries = Object.entries(fixtures).filter(
-		([, f]) => f.worktreePath !== undefined,
-	);
-
-	return async (args: readonly string[]) => {
-		calls.push([...args]);
-
-		// `git branch --list agent/*`  (agent-branch enumeration)
-		if (
-			args[0] === 'branch' &&
-			args[1] === '--list' &&
-			args[2] !== '--merged'
-		) {
-			return {
-				ok: true,
-				output: agentBranches.map((n) => `  ${n}`).join('\n'),
-			};
-		}
-
-		// `git branch --list --merged <base> <branch>`  (merged reachability)
-		if (
-			args[0] === 'branch' &&
-			args[1] === '--list' &&
-			args[2] === '--merged'
-		) {
-			const branch = args[4] ?? '';
-			const merged = fixtures[branch]?.merged ?? false;
-			return { ok: true, output: merged ? `  ${branch}` : '' };
-		}
-
-		// `git worktree list --porcelain`
-		if (args[0] === 'worktree' && args[1] === 'list') {
-			const blocks = worktreeEntries.map(([name, f]) =>
-				[
-					`worktree ${f.worktreePath}`,
-					`HEAD ${f.head}`,
-					`branch refs/heads/${name}`,
-				].join('\n'),
-			);
-			return { ok: true, output: blocks.join('\n\n') };
-		}
-
-		// `git -C <path> status --porcelain`  (clean everywhere)
-		if (args.includes('status')) return { ok: true, output: '' };
-
-		// `git -C <path> diff --shortstat base...branch`
-		if (args.includes('diff')) {
-			const range = args[args.length - 1] ?? '';
-			const branch = tipOf(range);
-			const f = fixtures[branch];
-			return {
-				ok: true,
-				output: f
-					? ` 2 files changed, ${f.ahead * 3} insertions(+)`
-					: '',
-			};
-		}
-
-		// `git rev-list --left-right --count base...branch`  → "behind\tahead"
-		if (args[0] === 'rev-list' && args[1] === '--left-right') {
-			const branch = tipOf(args[3] ?? '');
-			const f = fixtures[branch];
-			return { ok: true, output: f ? `${f.behind}\t${f.ahead}` : '0\t0' };
-		}
-
-		// `git rev-list --count base..branch`  → ahead gap
-		if (args[0] === 'rev-list' && args[1] === '--count') {
-			const branch = tipOf(args[2] ?? '');
-			const f = fixtures[branch];
-			return { ok: true, output: String(f ? f.ahead : 0) };
-		}
-
-		// `git log -1 --format=%ct <branch>`  → commit timestamp
-		if (args[0] === 'log') {
-			const branch = args[args.length - 1] ?? '';
-			const f = fixtures[branch];
-			const ts =
-				f && f.minutesAgo >= 0
-					? Math.round(FIXED_NOW / 1000 - f.minutesAgo * 60)
-					: 0;
-			return { ok: true, output: String(ts) };
-		}
-
-		// `git rev-parse --short <ref>`
-		if (args[0] === 'rev-parse') {
-			const ref = args[args.length - 1] ?? '';
-			return {
-				ok: true,
-				output: (fixtures[ref]?.head ?? 'deadbee').slice(0, 7),
-			};
-		}
-
-		return { ok: true, output: '' };
-	};
-};
-
-const wtPath = (branch: string): string =>
-	`${CACHE_WT}/${branch.replace(/\W+/gu, '-')}`;
 
 describe('runSwarmHygieneEngine (f00091 S3 — non-destructive + accurate rescue list)', () => {
 	// A representative swarm snapshot:
@@ -332,5 +177,144 @@ describe('runSwarmHygieneEngine (f00091 S3 — non-destructive + accurate rescue
 		expect(prunedWith?.has('agent/vega')).toBe(true);
 		// …and still nothing destructive touched git.
 		expect(calls.filter(isDestructive)).toEqual([]);
+	});
+});
+
+describe('runSwarmHygieneEngine decision branches (keep, delete, unknown)', () => {
+	const unmerged = (
+		overrides: Partial<IBranchFixture> = {},
+	): IBranchFixture => ({
+		ahead: 4,
+		behind: 0,
+		merged: false,
+		minutesAgo: 600,
+		head: 'eee0005',
+		worktreePath: wtPath('agent/sol'),
+		inAgentList: true,
+		...overrides,
+	});
+
+	/** A runner that answers `git log -1 --format=%H|%ae <branch>` with `headLine`. */
+	const withHeadLine = (
+		fixtures: Readonly<Record<string, IBranchFixture>>,
+		headLine: { readonly ok: boolean; readonly output: string },
+	): IGitRunner => {
+		const base = makeRunner(fixtures, []);
+		return async (args) =>
+			args[0] === 'log' && args.includes('--format=%H|%ae')
+				? headLine
+				: base(args);
+	};
+
+	it('keeps unmerged work as a rescue candidate when its author is a person', async () => {
+		const result = await runSwarmHygieneEngine({
+			run: withHeadLine(
+				{ 'agent/sol': unmerged() },
+				{ ok: true, output: 'abc123|person@example.com' },
+			),
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.rescueCandidates.map((r) => r.branch)).toEqual([
+			'agent/sol',
+		]);
+		expect(result.smokeResiduals).toEqual([]);
+	});
+
+	it('sets aside a branch authored by the smoke identity as a residual, not a rescue', async () => {
+		const result = await runSwarmHygieneEngine({
+			run: withHeadLine(
+				{ 'agent/sol': unmerged() },
+				{ ok: true, output: 'abc123|Smoke@Local' },
+			),
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.rescueCandidates).toEqual([]);
+		expect(result.smokeResiduals.map((s) => [s.branch, s.reason])).toEqual([
+			['agent/sol', 'smoke-author'],
+		]);
+	});
+
+	it('sets aside a single fresh commit as a residual', async () => {
+		const result = await runSwarmHygieneEngine({
+			run: withHeadLine(
+				{ 'agent/sol': unmerged({ ahead: 1, minutesAgo: 10 }) },
+				{ ok: true, output: 'abc123|person@example.com' },
+			),
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.smokeResiduals.map((s) => s.reason)).toEqual([
+			'single-commit-recent',
+		]);
+		expect(result.rescueCandidates).toEqual([]);
+	});
+
+	it('keeps a branch whose tip cannot be read as live work (unknown is never a residual)', async () => {
+		const result = await runSwarmHygieneEngine({
+			run: withHeadLine(
+				{ 'agent/sol': unmerged({ ahead: 1, minutesAgo: 10 }) },
+				{ ok: false, output: '' },
+			),
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.rescueCandidates.map((r) => r.branch)).toEqual([
+			'agent/sol',
+		]);
+		expect(result.smokeResiduals).toEqual([]);
+	});
+
+	it('lists a merged, clean, aged worktree as eligible for removal and never as a rescue', async () => {
+		const result = await runSwarmHygieneEngine({
+			run: makeRunner(
+				{
+					'agent/sol': unmerged({
+						ahead: 0,
+						merged: true,
+						minutesAgo: 600,
+					}),
+				},
+				[],
+			),
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.rescueCandidates).toEqual([]);
+		expect(result.gcEligible.map((g) => g.branch)).toEqual(['agent/sol']);
+	});
+
+	it('reports the failure of the branch snapshot instead of an empty report', async () => {
+		const failing: IGitRunner = async () => ({
+			ok: false,
+			output: '',
+			reason: 'git not on PATH',
+		});
+		const result = await runSwarmHygieneEngine({
+			run: failing,
+			workspaceRoot: ROOT,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.reason).toContain('git not on PATH');
+		expect(result.baseBranch).toBe(BASE);
 	});
 });

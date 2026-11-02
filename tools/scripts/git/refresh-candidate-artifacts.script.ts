@@ -31,6 +31,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -44,6 +45,7 @@ import {
 import {
 	candidateDispositions,
 	toBringForward,
+	authorsOwn,
 } from '../forge/candidate-disposition';
 import {
 	currentQueueFacts,
@@ -426,9 +428,16 @@ export const shouldAskQueueToRun = (input: {
 
 const main = (): void => {
 	const root = repoRoot();
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	if (config.development === undefined) return;
 	const policy = resolveDevelopmentPolicy({
 		development: config.development,
@@ -565,9 +574,35 @@ const headIsIntegrationMerge = (
 };
 
 /**
+ * The paths the repository declares derived: `merge=delendai-generated`
+ * in `.gitattributes`, the same declaration the merge driver reads. Asked
+ * of git, so its patterns (a bare `AGENT.md`, a double-star glob) resolve as
+ * git resolves them.
+ */
+export const derivedPaths = (
+	root: string,
+	paths: readonly string[],
+): ReadonlySet<string> => {
+	if (paths.length === 0) return new Set();
+	const said = git(root, ['check-attr', 'merge', '--', ...paths]) ?? '';
+	return new Set(
+		said
+			.split('\n')
+			.filter((line) => line.endsWith(': merge: delendai-generated'))
+			.map((line) =>
+				line.slice(0, -': merge: delendai-generated'.length),
+			),
+	);
+};
+
+/**
  * The authored files a candidate and the integration branch both changed
- * since their merge base. Generated projections are left out: they are
- * regenerated on every refresh, so both sides touching them says nothing.
+ * since their merge base. Derived files are left out — the projections
+ * `gen:all` rebuilds and everything `.gitattributes` declares generated:
+ * they are regenerated on every refresh, so both sides touching them says
+ * nothing. Measured over 40 pull requests, the derived files were most of
+ * what overlapped (`TOKEN-BUDGETS.md` 7 times, `preset-metadata` 5, an
+ * `AGENT.md` 2).
  */
 export const overlappingFiles = (
 	root: string,
@@ -583,9 +618,11 @@ export const overlappingFiles = (
 			.split('\n')
 			.filter((path) => path.length > 0);
 	const mine = new Set(changed(`${remote}/${branch}`));
-	return changed(head).filter(
+	const both = changed(head).filter(
 		(path) => mine.has(path) && !REGENERATED_PROJECTIONS.has(path),
 	);
+	const derived = derivedPaths(root, both);
+	return both.filter((path) => !derived.has(path));
 };
 
 /**
@@ -653,7 +690,16 @@ const bringForwardOthers = (
 			why: verdict.why,
 		})),
 	).catch(() => undefined);
-	for (const candidate of toBringForward(verdicts)) {
+	// `--author=<agent>`: the agent's own publications its author must
+	// push are brought forward by that author, now (v00142).
+	const author = process.argv
+		.find((value) => value.startsWith('--author='))
+		?.slice('--author='.length);
+	const own =
+		author === undefined
+			? []
+			: authorsOwn(verdicts, facts.publicationPrefix, author);
+	for (const candidate of [...toBringForward(verdicts), ...own]) {
 		if (!apply || alreadyRefreshed.has(candidate)) continue;
 		const outcome = refreshCandidate({ root, policy, remote, candidate });
 		console.log(

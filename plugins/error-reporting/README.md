@@ -10,12 +10,14 @@ built only from DelendAI-owned metadata.
 ## Status
 
 **Implemented.** Ships in the `standard` preset (therefore also `swarm` and
-`full`) and in the `vertex` preset. **Disabled by default** and opt-in.
+`full`) and in the `vertex` preset. **On by default**, announced on every
+start with the exact line that turns it off.
 
 ## Behaviour
 
-- **Intrinsic & disabled by default.** Loaded with the standard preset; set
-  `plugins.error-reporting.options.enabled = true` to enable dispatch.
+- **Intrinsic & on by default.** Loaded with the standard preset. Every start
+  prints whether it is on, what leaves the machine, and the line to set
+  `plugins.error-reporting.options.enabled = false`.
 - **External project data is non-reportable by construction.** The reporter
   accepts only delendai-internal failures backed by typed internal errors
   or `@delendai/*` frame evidence. A host project's own errors are never
@@ -99,7 +101,7 @@ Inspect the current state with the `<prefix>_report_status` tool.
 
 | Option              | Type       | Default                    | Purpose                                                                                         |
 | ------------------- | ---------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `enabled`           | `boolean`  | `false`                    | Master switch. `true` explicitly enables reporting.                                             |
+| `enabled`           | `boolean`  | `true`                     | Master switch. `false` turns reporting off.                                                     |
 | `targetRepo`        | `string`   | `CartagoGit/delendai`    | Deprecated and ignored. The destination is fixed and cannot be changed by the consumer project. |
 | `labels`            | `string[]` | `["auto-reported", "bug"]` | Deprecated and ignored. DelendAI applies only its canonical labels.                           |
 | `dedupeWindowHours` | `number`   | `24`                       | De-duplication window in hours.                                                                 |

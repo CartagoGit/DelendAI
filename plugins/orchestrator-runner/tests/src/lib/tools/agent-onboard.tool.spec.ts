@@ -21,7 +21,11 @@ const opencode = {
 };
 
 const flows = (over: Partial<IOnboardAgentFlows> = {}): IOnboardAgentFlows => ({
-	listAgents: vi.fn(async () => ({ agents: [opencode], detected: [] })),
+	listAgents: vi.fn(async () => ({
+		agents: [opencode],
+		detected: [],
+		candidates: [],
+	})),
 	declareAgent: vi.fn(async () => ({
 		personalLayer: '/p.json',
 		added: true,
@@ -100,6 +104,7 @@ describe('onboardAgent', () => {
 			listAgents: vi.fn(async () => ({
 				agents: [{ ...opencode, id: 'mytool' }],
 				detected: [],
+				candidates: [],
 			})),
 		});
 		const out = await onboardAgent(
@@ -157,6 +162,7 @@ describe('onboardAgent', () => {
 			listAgents: vi.fn(async () => ({
 				agents: [{ ...opencode, launch: undefined }],
 				detected: [],
+				candidates: [],
 			})),
 		});
 		expect(

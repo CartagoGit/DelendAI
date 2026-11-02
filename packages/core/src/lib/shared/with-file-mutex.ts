@@ -122,6 +122,8 @@ interface IWithFileMutexTestHooks {
 	 */
 	beforeHeartbeatWrite?(lease: IObservedLockLease): Promise<void> | void;
 	afterHeartbeat?(lease: IObservedLockLease): Promise<void> | void;
+	/** Fires before each attempt to create the lock file. */
+	beforeCreate?(lockPath: string): Promise<void> | void;
 	afterReclaimRename?(context: {
 		readonly reclaimPath: string;
 		readonly observedLease: IObservedLockLease;
@@ -136,6 +138,8 @@ interface ILockLeasePayload {
 	readonly host?: string | undefined;
 	readonly pid?: number | undefined;
 }
+
+const MAX_DIRECTORY_RECREATIONS = 3;
 
 let withFileMutexTestHooks: IWithFileMutexTestHooks | undefined;
 
@@ -490,6 +494,12 @@ export const withFileMutex = async <T>(
 	await mkdir(dirname(lockPath), { recursive: true });
 
 	const deadline = Date.now() + timeoutMs;
+	// The directory can go between that `mkdir` and the `open` below — a
+	// start-up migration or eviction tidying an empty one. That ENOENT
+	// lost the first event of a day; the directory is made again, a
+	// bounded number of times, so a directory that keeps vanishing still
+	// surfaces.
+	let directoryRecreations = 0;
 	let acquired = false;
 	let contentionObserved = false;
 	let waitStartedAt: number | undefined;
@@ -497,6 +507,7 @@ export const withFileMutex = async <T>(
 		try {
 			const nowMs = Date.now();
 			const initialLease = createLeasePayload(token, nowMs);
+			await withFileMutexTestHooks?.beforeCreate?.(lockPath);
 			const handle = await open(lockPath, 'wx', LOCK_FILE_MODE);
 			try {
 				await handle.writeFile(serializeLeasePayload(initialLease));
@@ -509,7 +520,16 @@ export const withFileMutex = async <T>(
 			}
 			break;
 		} catch (error) {
-			if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+			const code = (error as NodeJS.ErrnoException).code;
+			if (
+				code === 'ENOENT' &&
+				directoryRecreations < MAX_DIRECTORY_RECREATIONS
+			) {
+				directoryRecreations += 1;
+				await mkdir(dirname(lockPath), { recursive: true });
+				continue;
+			}
+			if (code !== 'EEXIST') throw error;
 			if (!contentionObserved) {
 				contentionObserved = true;
 				waitStartedAt = Date.now();

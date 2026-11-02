@@ -102,7 +102,8 @@ describe('dispatch lifecycle telemetry reaches ns_events', () => {
 		);
 		expect(dispatch?.receipt).toMatchObject({
 			taskId: 'task-receipt',
-			outcome: 'succeeded',
+			// The work ran clean; its verify stage is still the orchestrator's.
+			outcome: 'unverified',
 		});
 
 		const events = await readEvents(handlers);

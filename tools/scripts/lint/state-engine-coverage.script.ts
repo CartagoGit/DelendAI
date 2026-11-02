@@ -14,15 +14,32 @@ import {
 } from '../audit/state-engine-coverage.script';
 import { repoRoot } from '../lib/monorepo-paths';
 
-const REGISTRY_METHODS = [
-	'rebuild',
-	'hydrate',
-	'incremental',
-	'snapshot',
-	'fork',
-	'discard',
-	'record',
-] as const;
+/** Where the registry contract is declared: the methods are read from it. */
+const REGISTRY_CONTRACT = join('packages', 'contracts', 'src', 'state.ts');
+
+/**
+ * The methods `IStateRegistry` declares, read from the contract. A list
+ * kept here named methods the registry no longer had (rebuild, snapshot,
+ * fork…), so the methods it does have went unchecked.
+ */
+export const registryMethods = (
+	root: string = repoRoot(),
+): readonly string[] => {
+	const text = readFileSync(join(root, REGISTRY_CONTRACT), 'utf8');
+	const start = text.indexOf('export interface IStateRegistry {');
+	if (start < 0)
+		throw new Error(
+			`state-engine-coverage: no IStateRegistry in ${REGISTRY_CONTRACT}`,
+		);
+	const body = text.slice(start, text.indexOf('\n}', start));
+	return [
+		...new Set(
+			[...body.matchAll(/^\t([a-zA-Z]+)\??\(/gmu)].map(
+				(match) => match[1] ?? '',
+			),
+		),
+	].sort();
+};
 
 const TEST_FILE_RE = /\.(?:spec|test)\.ts$/;
 const TEXT_EXTENSIONS = new Set([
@@ -60,7 +77,7 @@ const walkFiles = (absDir: string): string[] => {
 };
 
 export interface IRegistryMethodCoverage {
-	readonly method: (typeof REGISTRY_METHODS)[number];
+	readonly method: string;
 	readonly tests: readonly string[];
 }
 
@@ -68,10 +85,24 @@ export const scanStateSqliteMethodCoverage = (
 	root: string = repoRoot(),
 ): readonly IRegistryMethodCoverage[] => {
 	const packageRoot = join(root, 'packages', 'state-sqlite');
-	const files = walkFiles(packageRoot).filter((file) =>
-		TEST_FILE_RE.test(file),
+	// The SQLite specs run the shared driver contract
+	// (`registry-contract.spec.ts`), so its assertions are the SQLite
+	// driver's tests as much as the specs written here.
+	const contractRoot = join(
+		root,
+		'packages',
+		'state',
+		'tests',
+		'src',
+		'contract',
 	);
-	return REGISTRY_METHODS.map((method) => {
+	const files = [
+		...walkFiles(packageRoot).filter((file) => TEST_FILE_RE.test(file)),
+		...walkFiles(contractRoot).filter((file) =>
+			file.endsWith('.helper.ts'),
+		),
+	];
+	return registryMethods(root).map((method) => {
 		const references: string[] = [];
 		const callRe = new RegExp(`\\.\\s*${method}\\s*\\(`);
 		for (const absFile of files) {
@@ -108,39 +139,16 @@ export const computeStateEngineCoverageGaps = (root: string = repoRoot()) => {
 	return { audit, gaps };
 };
 
-/**
- * x00510 S1.15: the state-engine-coverage lint discovered five pre-existing
- * coverage gaps (rebuild / snapshot / fork / discard / record) that were
- * already merged into develop before this commit. Rather than block
- * every other agent in the swarm, the lint accepts these as a
- * documented baseline and only fails when the gap set grows.
- */
-const BASELINE_GAPS: ReadonlySet<string> = new Set([
-	'IStateRegistry method with 0 tests: rebuild',
-	'IStateRegistry method with 0 tests: snapshot',
-	'IStateRegistry method with 0 tests: fork',
-	'IStateRegistry method with 0 tests: discard',
-	'IStateRegistry method with 0 tests: record',
-]);
-
 const main = (): number => {
 	const { audit, gaps } = computeStateEngineCoverageGaps(repoRoot());
 	process.stdout.write(formatStateEngineCoverageReport(audit));
 	process.stdout.write('\nCoverage gates\n');
-	const novel = gaps.filter((g) => !BASELINE_GAPS.has(g));
-	if (novel.length === 0) {
-		process.stdout.write(
-			`✓ state-engine-coverage: ${gaps.length} baselined gap(s); no new gaps.\n`,
-		);
+	if (gaps.length === 0) {
+		process.stdout.write('✓ state-engine-coverage: no gaps.\n');
 		return 0;
 	}
-	for (const gap of gaps) {
-		const tag = BASELINE_GAPS.has(gap) ? ' (baselined)' : ' (NEW)';
-		process.stdout.write(`- ${gap}${tag}\n`);
-	}
-	process.stdout.write(
-		`\nstate-engine-coverage: ${novel.length} new gap(s) above the documented baseline.\n`,
-	);
+	for (const gap of gaps) process.stdout.write(`- ${gap}\n`);
+	process.stdout.write(`\nstate-engine-coverage: ${gaps.length} gap(s).\n`);
 	return 1;
 };
 

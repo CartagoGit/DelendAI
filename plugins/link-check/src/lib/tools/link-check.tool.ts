@@ -7,13 +7,14 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import {
-	sortFindings,
-	summarizeFindings,
-	toolJson,
-	worstSeverity,
-} from '@delendai/core/public';
+import { sortFindings, toolJson } from '@delendai/core/public';
+import { findingsReport } from '@delendai/core/runtime';
 
+import {
+	LINK_CHECK_MAX_DOCS,
+	LINK_CHECK_MAX_REPORTED,
+	LINK_CHECK_MAX_SKIPPED_REPORTED,
+} from '../contracts/constants/link-check.constant';
 import type { ILinkCheckToolOptions } from '../contracts/interfaces/link-check.interface';
 import { checkLinks } from '../link-check/check-links';
 import { realLinkScanDeps } from '../link-check/real-deps';
@@ -31,9 +32,6 @@ const FINDING = z.object({
 		})
 		.optional(),
 });
-
-/** Cap findings in the response; `total` still reports the true count. */
-const MAX_REPORTED = 200;
 
 export const buildLinkCheckRegistration = (
 	options: ILinkCheckToolOptions,
@@ -54,6 +52,17 @@ export const buildLinkCheckRegistration = (
 					total: z.number(),
 					findings: z.array(FINDING),
 					truncated: z.boolean(),
+					coverage: z.object({
+						capped: z.boolean(),
+						maxDocs: z.number(),
+						skippedTotal: z.number(),
+						skipped: z.array(
+							z.object({
+								path: z.string(),
+								reason: z.enum(['too-large', 'unreadable']),
+							}),
+						),
+					}),
 					summary: z.object({
 						critical: z.number(),
 						high: z.number(),
@@ -67,18 +76,25 @@ export const buildLinkCheckRegistration = (
 			async () => {
 				const deps =
 					options.deps ?? realLinkScanDeps(options.workspaceRootAbs);
-				const [docs, knownPaths] = await Promise.all([
+				const [scan, knownPaths] = await Promise.all([
 					deps.listDocs(),
 					deps.listKnownPaths(),
 				]);
-				const findings = sortFindings(checkLinks(docs, knownPaths));
+				const findings = sortFindings(
+					checkLinks(scan.docs, knownPaths),
+				);
 				return toolJson({
-					docsScanned: docs.length,
-					total: findings.length,
-					findings: findings.slice(0, MAX_REPORTED),
-					truncated: findings.length > MAX_REPORTED,
-					summary: summarizeFindings(findings),
-					worst: worstSeverity(findings) ?? 'none',
+					docsScanned: scan.docs.length,
+					...findingsReport(findings, LINK_CHECK_MAX_REPORTED),
+					coverage: {
+						capped: scan.capped,
+						maxDocs: LINK_CHECK_MAX_DOCS,
+						skippedTotal: scan.skipped.length,
+						skipped: scan.skipped.slice(
+							0,
+							LINK_CHECK_MAX_SKIPPED_REPORTED,
+						),
+					},
 				});
 			},
 		);

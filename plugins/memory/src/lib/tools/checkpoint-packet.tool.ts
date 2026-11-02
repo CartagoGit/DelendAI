@@ -96,7 +96,7 @@ export const buildCheckpointPacketToolRegistration = (
 						notes.map((note) => ({
 							title: note.title,
 							body: note.body,
-							createdAt: note.createdAt,
+							createdAt: note.updatedAt,
 						})),
 					);
 					if (args.hostEvent !== undefined) {

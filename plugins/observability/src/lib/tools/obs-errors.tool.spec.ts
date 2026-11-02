@@ -139,40 +139,18 @@ describe('obs-errors (f00129 S1)', () => {
 		).toBeTruthy();
 	});
 
-	// x00157 S4: the "direct" re-fetch in `fetchViaWebFetch` (needed
-	// because the web-fetch engine's own fetch seam has no header
-	// support) had no timeout — a hung observability API would hang
-	// this tool indefinitely even though the engine call just above it
-	// IS bounded. Omitting `source.fetch` exercises that production
-	// path (both the engine call and the direct call route through the
-	// mocked global `fetch`).
+	// The credentialed request goes through the engine, so its timeout
+	// bounds a hung observability API. Omitting `source.fetch` exercises
+	// that production path through the mocked global `fetch`.
 	it(
 		'rejects a hung observability API within the fetch timeout instead of hanging forever',
 		async () => {
 			const originalFetch = global.fetch;
-			let callCount = 0;
 			global.fetch = vi.fn(
 				(_url: string | URL | Request, init?: RequestInit) => {
-					callCount += 1;
-					if (callCount === 1) {
-						// The engine's own allow-list-checking call — succeeds fast.
-						return Promise.resolve({
-							ok: true,
-							status: 200,
-							headers: { get: () => 'application/json' },
-							body: new ReadableStream<Uint8Array>({
-								start(controller) {
-									controller.enqueue(
-										new TextEncoder().encode('{"data":[]}'),
-									);
-									controller.close();
-								},
-							}),
-						}) as unknown as ReturnType<typeof fetch>;
-					}
-					// The direct re-fetch — a hung observability API. Never
-					// resolves on its own; only rejects when the injected
-					// AbortSignal actually fires.
+					// The one credentialed request — a hung observability
+					// API. Never resolves on its own; only rejects when the
+					// engine's AbortSignal fires.
 					return new Promise((_resolve, reject) => {
 						init?.signal?.addEventListener('abort', () => {
 							reject(
@@ -194,7 +172,8 @@ describe('obs-errors (f00129 S1)', () => {
 				) => Promise<{ isError?: boolean }>;
 				const result = await handler({ limit: 10 });
 				expect(result.isError).toBe(true);
-				expect(callCount).toBe(2);
+				// One credentialed request: there is no second, unbounded one.
+				expect(global.fetch).toHaveBeenCalledTimes(1);
 			} finally {
 				global.fetch = originalFetch;
 			}

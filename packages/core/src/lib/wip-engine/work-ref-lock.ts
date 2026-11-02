@@ -65,4 +65,7 @@ export const holdWorkRef = (
 		clock: { now: options.now ?? Date.now },
 		pid: options.pid,
 		ttlMs: options.ttlMs ?? WORK_REF_LOCK_TTL_MS,
+		// A push lock is held for one push: one older than its TTL was
+		// left behind, even by a process that is still running.
+		ttlExpiresLiveHolders: true,
 	}).acquire();

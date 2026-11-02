@@ -12,13 +12,13 @@ _(none)_
 ## Depends on
 
 - @agentclientprotocol/sdk
+- @delendai/agent-orchestrator
 - @delendai/auto-agent-selector
 - @delendai/client
+- @delendai/completion
+- @delendai/container
+- @delendai/conventions
 - @delendai/core
-- @delendai/env
-- @delendai/proposals
-- @delendai/sqlite
-- @delendai/state
 
 ## Writes
 
@@ -32,8 +32,8 @@ _(none)_
 
 - packages/cli/src/commands/accounts.command.spec.ts
 - packages/cli/src/commands/agents.command.spec.ts
-- packages/cli/src/commands/cache.command.spec.ts
-- packages/cli/src/commands/config-jsonc.spec.ts
+- packages/cli/src/commands/alias.command.spec.ts
+- packages/cli/src/commands/bridge.command.spec.ts
 
 ## Do not
 

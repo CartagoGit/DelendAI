@@ -37,7 +37,7 @@
  */
 import { spawn } from 'node:child_process';
 
-import type { IServerEntry } from '../options-schema';
+import { pinnedLaunchArgs, type IServerEntry } from '../options-schema';
 import { buildSafeEnv } from './env-filter';
 import { openMcpSession } from './mcp-handshake.helper';
 import type { EXTERNAL_CALL_FAILURE_CODES } from '../contracts/constants/call-failure-codes.constant';
@@ -326,7 +326,10 @@ export interface IServerRegistryOptions {
 export interface IServerStatusRow {
 	readonly id: string;
 	readonly declared: true;
+	/** The child process is alive; says nothing of its MCP session. */
 	readonly running: boolean;
+	/** The MCP session over that process: a live child can still be opening it, or have failed it. */
+	readonly session: 'not-started' | 'opening' | 'open' | 'failed' | 'closed';
 	readonly pid?: number;
 	readonly bootedAt?: string;
 	readonly lastError?: string;
@@ -391,6 +394,19 @@ interface IServerRuntime {
 }
 
 /**
+ * A server's session as a status row tells it. `running: true` alone read
+ * as "usable" while the session was still opening or had failed.
+ */
+const sessionOf = (
+	state: IServerRuntime | undefined,
+): IServerStatusRow['session'] => {
+	if (state === undefined) return 'not-started';
+	if (typeof state.session === 'object') return 'failed';
+	if (!state.running) return 'closed';
+	return state.session;
+};
+
+/**
  * The per-boot subprocess registry: one cached child per declared server
  * id, spawned lazily on first call (or at init for `eager: true`).
  */
@@ -440,6 +456,7 @@ export class ExternalServerRegistry {
 				id,
 				declared: true,
 				running: state?.running ?? false,
+				session: sessionOf(state),
 				...(state?.pid !== undefined ? { pid: state.pid } : {}),
 				...(state?.bootedAt !== undefined
 					? { bootedAt: state.bootedAt }
@@ -607,24 +624,31 @@ export class ExternalServerRegistry {
 		const safeEnv = buildSafeEnv({
 			entry: normalizedEnv === undefined ? {} : { env: normalizedEnv },
 			hostEnv: this.hostEnv,
-			requiredKeys: Object.keys(normalizedEnv ?? {}),
+			// The entry's own `$NAME` references say what must be present;
+			// the keys it sets are not host variables, and requiring them
+			// reported a set value as missing.
 		});
 		if (!safeEnv.ok) {
 			state.lastError = formatMissingEnvMessage(id, safeEnv.missing);
+			state.session = { failed: state.lastError };
 			throw new MissingEnvError(id, safeEnv.missing);
 		}
-		const transport = createChildTransport(entry.command, entry.args, {
-			spawner: this.spawner,
-			cwd: this.options.workspaceRoot,
-			env: safeEnv.env,
-			setTimer: this.setTimer,
-			sigkillGraceMs: this.sigkillGraceMs,
-			onClosed: (reason) => {
-				state.running = false;
-				state.transport = null;
-				if (reason !== null) state.lastError = reason;
+		const transport = createChildTransport(
+			entry.command,
+			pinnedLaunchArgs(entry),
+			{
+				spawner: this.spawner,
+				cwd: this.options.workspaceRoot,
+				env: safeEnv.env,
+				setTimer: this.setTimer,
+				sigkillGraceMs: this.sigkillGraceMs,
+				onClosed: (reason) => {
+					state.running = false;
+					state.transport = null;
+					if (reason !== null) state.lastError = reason;
+				},
 			},
-		});
+		);
 		transport.onMessage((msg) => {
 			if (msg.id === undefined) return;
 			const waiter = state.waiters.get(msg.id);

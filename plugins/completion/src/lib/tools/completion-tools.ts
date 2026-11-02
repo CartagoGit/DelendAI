@@ -36,13 +36,12 @@ const pushNotification = (
 	server: McpServer,
 	namespacePrefix: string,
 	record: ICompletionRecord,
-): void => {
+): Promise<boolean> =>
 	safeSendLoggingMessage(server, {
 		level: 'info',
 		logger: `${namespacePrefix}_completion`,
 		data: { event: 'agent-complete', ...record },
 	});
-};
 
 const errorMessage = (error: unknown): string =>
 	error instanceof Error ? error.message : String(error);
@@ -84,6 +83,8 @@ export const buildReportCompleteRegistration = (
 					outputSchema: z.object({
 						ok: z.boolean(),
 						record: recordSchema,
+						/** Whether the host took the notification; the record is kept either way. */
+						notified: z.boolean(),
 					}),
 				},
 				async (args: {
@@ -106,12 +107,15 @@ export const buildReportCompleteRegistration = (
 							ts: new Date().toISOString(),
 						};
 						const stored = await store.upsert(record);
-						pushNotification(
+						// The record is the durable part; the notification is
+						// what tells the human, so whether it went out is said,
+						// not assumed.
+						const notified = await pushNotification(
 							server,
 							options.namespacePrefix,
 							stored,
 						);
-						return toolOk({ record: stored });
+						return toolOk({ record: stored, notified });
 					} catch (error) {
 						return toolError(
 							errorMessage(error),

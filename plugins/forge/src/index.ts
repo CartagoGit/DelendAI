@@ -6,16 +6,19 @@ import { buildForgeReleaseToolRegistrations } from './lib/tools/forge-release.to
 import { buildForgeSearchToolRegistrations } from './lib/tools/forge-search.tool';
 import { buildForgeWriteToolRegistrations } from './lib/tools/forge-write.tool';
 import { REPOSITORY_SLUG } from '@delendai/core/public';
+import { configureForgeHosts } from './lib/services/forge';
 
 const OptionsSchema = z
 	.object({
 		defaultTimeoutMs: z.number().int().positive().max(120000).optional(),
+		/** Self-hosted forges by host: `{ "ghe.corp.com": "github" }`. */
+		hosts: z.record(z.string(), z.enum(['github', 'gitlab'])).optional(),
 	})
 	.strict();
 
 export default definePlugin({
 	name: 'forge',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		"GitHub/GitLab forge surface: PRs, issues, CI, releases and remote code search via the host's authenticated gh/glab CLI.",
 	optionsSchema: OptionsSchema,
@@ -26,6 +29,7 @@ export default definePlugin({
 				`forge plugin rejected its options: ${parsed.error.message}`,
 			);
 		}
+		configureForgeHosts(parsed.data.hosts ?? {});
 		const readTools = buildForgeReadToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRootAbs: ctx.workspace.root,

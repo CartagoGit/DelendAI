@@ -32,6 +32,7 @@ const STRATEGY_BY_KIND: Readonly<Record<ProviderKind, RoutingStrategy>> = {
 	'mcp-server': 'mcp-tool',
 	acp: 'cli',
 	subscription: 'passthrough',
+	'host-sampling': 'host-sampling',
 };
 
 export const strategyForKind = (
@@ -76,6 +77,14 @@ const buildDecisionFor = (
  * hand off. `targetProvider`/`invoke` are absent-shaped placeholders the
  * caller renders as "run bootstrap".
  */
+/** The provider id the nothing-to-route decision carries; no roster entry has it. */
+const NO_PROVIDER_ID = 'none';
+
+/** Whether `decision` is the one made when there was nothing to route to. */
+export const isNothingToRoute = (decision: IRoutingDecision): boolean =>
+	decision.strategy === 'handoff' &&
+	decision.targetProvider.id === NO_PROVIDER_ID;
+
 const buildHandoffDecision = (
 	input: IAdviseInput,
 	scoringTrace: readonly IRoutingScoreEntry[],
@@ -83,7 +92,7 @@ const buildHandoffDecision = (
 ): IRoutingDecision => ({
 	strategy: 'handoff',
 	targetProvider: {
-		id: 'none',
+		id: NO_PROVIDER_ID,
 		kind: 'cli',
 		invoke: { kind: 'cli', command: '' },
 		modelId: 'none',

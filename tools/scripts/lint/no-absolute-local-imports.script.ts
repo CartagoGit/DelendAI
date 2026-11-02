@@ -24,6 +24,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 export interface IAbsoluteImportFinding {
 	readonly file: string;
@@ -158,5 +159,13 @@ const main = async (): Promise<number> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'no-absolute-local-imports',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main());
 }

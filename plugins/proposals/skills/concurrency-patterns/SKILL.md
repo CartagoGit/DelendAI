@@ -1,7 +1,8 @@
 ---
 name: delendai-concurrency-patterns
 appliesTo: ['@delendai/proposals', '@delendai/notification']
-description: The repo's two concurrency primitives — withFileMutex (cross-process critical sections) and agent_lock/agent_worktree (multi-agent file-ownership coordination) — and when to use each. Use when several agents (or processes) might touch the same files at the same time.
+description: Use when agents or processes may touch the same files: withFileMutex against agent_lock and agent_worktree.
+tools: ['delendai_proposals_agents_lock_diagnose']
 ---
 
 # concurrency patterns

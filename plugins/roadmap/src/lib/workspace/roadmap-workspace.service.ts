@@ -28,6 +28,10 @@ import { createNodeRoadmapFilePort } from '../store/node-roadmap-file-port.servi
 /** The directory, under the docs, that holds one folder per proposal status. */
 const PROPOSALS_DIR = 'proposals';
 
+/** The archive folder and the subfolder of it that holds delivered proposals. */
+const ARCHIVE_DIR = 'legacy';
+const ARCHIVE_DONE_DIR = 'closed';
+
 /** `ROADMAP.md` → `ROADMAP.timeline.md`, beside it. */
 export const timelineBeside = (file: string): string => {
 	const extension = extname(file);
@@ -51,7 +55,11 @@ const proposalStatusIn = async (
 		const name = entry.split(/[\\/]/u).at(-1) ?? '';
 		return name.startsWith(`${id}-`) && name.endsWith('.md');
 	});
-	return found?.split(/[\\/]/u)[0];
+	if (found === undefined) return undefined;
+	const [top, second] = found.split(/[\\/]/u);
+	// `legacy/closed/` archives proposals reaped out of `done/`: they were
+	// delivered, so a gate waiting on one is satisfied.
+	return top === ARCHIVE_DIR && second === ARCHIVE_DONE_DIR ? 'done' : top;
 };
 
 export const openRoadmapWorkspace = async (

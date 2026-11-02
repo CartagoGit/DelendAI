@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'memory',
 	package: '@delendai/memory',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Persistent memory store (BM25 + recall, save, search).',
 	tags: ['memory', 'persistence'],
@@ -23,11 +23,11 @@ export default definePluginManifest({
 	// forget, summarise). The store watcher + BM25 index add a
 	// fixed 1.2 KB registration cost. Measured 2026-08-25.
 	tokenBudget: {
-		staticBytes: 4_500,
+		staticBytes: 8_202,
 		adaptiveActivationBytes: 720,
 		typicalOutput: 1_100,
-		caps: { hard: 5_400, warning: 4_900 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 9_440, warning: 8_620 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

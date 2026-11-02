@@ -85,16 +85,24 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+	judgeEmptyRootRuns,
+	runOverEmptyRoot,
+} from './lib/empty-root-probe.lib';
+
 // Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
 const SELF = fileURLToPath(import.meta.url);
 const REPO_ROOT = resolve(dirname(SELF), '../../..');
+const EMPTY_ROOT_ALLOWLIST =
+	'tools/scripts/lint/no-silent-gates.empty-root-allowlist.json';
 
 /* ───────────────────────── types ───────────────────────── */
 
 export type ISilentGateRule =
 	| 'discarded-diagnosis'
 	| 'silent-exit'
-	| 'silent-failure-branch';
+	| 'silent-failure-branch'
+	| 'passes-over-nothing';
 
 export interface ISilentGateViolation {
 	readonly rule: ISilentGateRule;
@@ -226,14 +234,15 @@ export const resolveChain = (
  * A write to the operator's screen. Covers the two spellings used in this
  * repo — `console.*` and `<stream>.write(...)` — including the injected
  * `stdout` / `stderr` / `writer` parameters that the testable gates take
- * instead of touching `process` directly.
+ * instead of touching `process` directly — and `refuseMissingScanRoots`,
+ * which says why on stderr before it answers true.
  */
 const OUTPUT_CALL_RE =
-	/\bconsole\.(?:log|info|warn|error|debug|table|trace)\s*\(|\b(?:process\.)?(?:stdout|stderr|writer|logStream)\.write\s*\(/u;
+	/\bconsole\.(?:log|info|warn|error|debug|table|trace)\s*\(|\b(?:process\.)?(?:stdout|stderr|writer|logStream)\.write\s*\(|\brefuseMissingScanRoots\s*\(/u;
 
 /** The subset of the above that reaches stderr, which no caller redirects. */
 const STDERR_CALL_RE =
-	/\bconsole\.(?:warn|error)\s*\(|\b(?:process\.)?stderr\.write\s*\(/u;
+	/\bconsole\.(?:warn|error)\s*\(|\b(?:process\.)?stderr\.write\s*\(|\brefuseMissingScanRoots\s*\(/u;
 
 const NON_ZERO_LITERAL_EXIT_RE =
 	/\bprocess\.exit\(\s*([1-9]\d*)\s*\)|\bprocess\.exitCode\s*=\s*([1-9]\d*)/u;
@@ -548,8 +557,9 @@ if (isMainModule()) {
 		argOf('--package-json') ?? join(REPO_ROOT, 'package.json');
 	const root = argOf('--root') ?? REPO_ROOT;
 	const entry = argOf('--entry') ?? 'validate:run';
-	const result = lintSilentGates({
-		packageJsonText: readFileSync(manifestPath, 'utf8'),
+	const packageJsonText = readFileSync(manifestPath, 'utf8');
+	const static_ = lintSilentGates({
+		packageJsonText,
 		entry,
 		readScript: (relPath) => {
 			try {
@@ -559,6 +569,36 @@ if (isMainModule()) {
 			}
 		},
 	});
+	// Rule 4: how a GREEN was earned. Every lint the gate chains reach is
+	// run over a tree with nothing to scan.
+	const scripts =
+		(JSON.parse(packageJsonText) as { scripts?: Record<string, string> })
+			.scripts ?? {};
+	const lints = [
+		...new Set(
+			[entry, 'lint:architecture'].flatMap(
+				(name) => resolveChain(scripts, name).files,
+			),
+		),
+	].filter((file) => file.startsWith('tools/scripts/lint/'));
+	const emptyRoot = judgeEmptyRootRuns(
+		runOverEmptyRoot(root, lints),
+		JSON.parse(
+			readFileSync(join(root, EMPTY_ROOT_ALLOWLIST), 'utf8'),
+		) as Record<string, string>,
+	).map(
+		(finding): ISilentGateViolation => ({
+			rule: 'passes-over-nothing',
+			file: finding.file,
+			line: 1,
+			detail: finding.detail,
+			fix: finding.fix,
+		}),
+	);
+	const result: ISilentGateResult = {
+		...static_,
+		violations: [...static_.violations, ...emptyRoot],
+	};
 	if (process.argv.includes('--verbose')) {
 		for (const redirect of result.safeRedirects)
 			console.log(`  redirect (safe) ${redirect}`);

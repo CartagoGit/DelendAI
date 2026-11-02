@@ -9,6 +9,7 @@
  */
 
 import { LockContentionError } from '@delendai/core/public';
+import { FileLockTableUnreadableError } from './file-lock-document';
 import { withFileMutex } from '@delendai/core/runtime';
 
 // r00042 S3: the vocabulary moved to contracts/interfaces; re-exported
@@ -157,6 +158,23 @@ export async function runAgentLockEngine(
 			deps,
 		);
 	} catch (error) {
+		if (error instanceof FileLockTableUnreadableError) {
+			return lockResult(
+				{
+					tool: toolName,
+					action: args.action,
+					path: lockFileLabel,
+					error: error.message,
+					blockerType: 'lock-table-unreadable',
+					nextAction:
+						error.quarantinedAt === undefined
+							? 'Nothing was changed. Read the table, repair or remove it, then retry.'
+							: `Nothing was changed. The unreadable table was moved to ${error.quarantinedAt}; retry, and recover any claim it held from there.`,
+					summary: `lock-table-unreadable: ${error.tablePath}`,
+				},
+				{ isError: true },
+			);
+		}
 		if (error instanceof LockContentionError) {
 			return lockResult(
 				{

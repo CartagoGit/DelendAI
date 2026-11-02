@@ -48,6 +48,7 @@ import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths.ts';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const IGNORE_DIRS = new Set([
 	'node_modules',
@@ -64,6 +65,9 @@ const IGNORE_DIRS = new Set([
 const IGNORE_FILES = new Set([
 	'apps/web/src/data/capabilities.json',
 	'apps/web/src/data/skills.json',
+	// Written whole by refresh-public-catalogues and never edited by hand;
+	// Biome keeps a model's short price map on one line.
+	'packages/core/data/model-catalogue.snapshot.json',
 ]);
 
 const _isJsonLike = (name: string): boolean =>
@@ -279,6 +283,14 @@ const main = async (): Promise<void> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'json-entry-collision',
+			lintRepoRoot(import.meta.url),
+			['apps/web/src/data'],
+		)
+	)
+		process.exit(1);
 	main().catch((err: unknown) => {
 		console.error('[json-entry-collision] fatal:', err);
 		process.exit(2);

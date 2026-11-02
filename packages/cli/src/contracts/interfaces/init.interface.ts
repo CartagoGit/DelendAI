@@ -420,3 +420,40 @@ export interface IConsolidationPlan {
 	readonly canonicalRel: string;
 	readonly writes: readonly IConsolidationWrite[];
 }
+
+/** One file `init` writes its host-instructions block into, and the hosts that read it. */
+export interface IHostInstructionTarget {
+	readonly relPath: string;
+	/** Host ids that read this file; `AGENTS.md` is read by several. */
+	readonly hosts: readonly string[];
+	/** The block's last line: which part of the bootstrap is in effect for them. */
+	readonly appendix: string;
+}
+
+// ----------------------------------------------------------------
+// JSONC config comments (f00794 S3/S4)
+// ----------------------------------------------------------------
+
+/** What `init` writes at the top level, beyond the blocks themselves. */
+export interface IConfigBlockInput {
+	/** The hosts the project uses, when the operator named any. */
+	readonly hosts?: readonly string[];
+	/** The development policy, when the project declared one. */
+	readonly development?: Record<string, unknown>;
+	/** The project's own layout, when it differs from the default. */
+	readonly convention?: Record<string, unknown>;
+}
+
+/**
+ * Outcome of ensuring the association.
+ *
+ * `written` — the settings file did not exist, or the association was
+ * added to it.
+ * `merged` — the file already said it, and was left alone.
+ * `exists` — the settings file is not a settings object; the operator
+ * has to hand-edit it. Touching it would destroy whatever is in there.
+ */
+export interface IVscodeSettingsResult {
+	readonly kind: 'written' | 'merged' | 'exists';
+	readonly path: string;
+}

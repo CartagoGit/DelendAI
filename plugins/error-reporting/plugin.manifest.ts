@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'error-reporting',
 	package: '@delendai/error-reporting',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.',
@@ -17,20 +17,20 @@ export default definePluginManifest({
 	],
 	presets: ['standard', 'swarm', 'full', 'dogfood'],
 	startupActivation: true,
-	// f00180 S2 / MAN-004 — per-tool permission map. Even though
-	// error-reporting only ships ONE tool today (`report_status`),
-	// declaring the map explicitly documents what the plugin will
-	// need for future tools (e.g. a triage queue, a redaction
-	// preview) and lets a host run a per-tool grant review now.
+	// Per-tool permissions: each tool asks for what it does. Both tools
+	// read local state only; the reporter that opens issues is not a tool.
+	// report_status used to ask for network and forge-write, and
+	// diagnose_log, unlisted, inherited the plugin's whole set.
 	toolPermissions: {
-		report_status: ['network', 'forge-write'],
+		report_status: ['filesystem-read'],
+		diagnose_log: ['filesystem-read'],
 	},
 	tokenBudget: {
-		staticBytes: 3_500,
+		staticBytes: 1_403,
 		adaptiveActivationBytes: 600,
 		typicalOutput: 900,
-		caps: { hard: 4_200, warning: 3_800 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 1_620, warning: 1_480 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

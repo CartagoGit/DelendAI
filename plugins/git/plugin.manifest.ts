@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'git',
 	package: '@delendai/git',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
 	tags: ['git', 'changelog'],
@@ -36,11 +36,11 @@ export default definePluginManifest({
 		push: ['git-write'],
 	},
 	tokenBudget: {
-		staticBytes: 5_800,
+		staticBytes: 4_611,
 		adaptiveActivationBytes: 950,
 		typicalOutput: 1_400,
-		caps: { hard: 6_800, warning: 6_200 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 5_310, warning: 4_850 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

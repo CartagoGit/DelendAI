@@ -78,7 +78,7 @@ export const listOpenIssues = async (
 		'--state',
 		'open',
 		'--json',
-		'number,title,labels,updatedAt',
+		'number,title,labels,state,updatedAt',
 	]);
 	if (!run.ok) {
 		return {
@@ -99,6 +99,7 @@ export const listOpenIssues = async (
 			number: asNumber(record.number),
 			title: asString(record.title),
 			labels: labelNames(record.labels),
+			state: asString(record.state).toLowerCase(),
 			updatedAt: asString(record.updatedAt),
 		};
 	});

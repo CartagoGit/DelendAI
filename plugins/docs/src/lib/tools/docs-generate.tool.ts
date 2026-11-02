@@ -31,21 +31,36 @@ const outputSchema = z.object({
 			markdown: z.string(),
 		}),
 	),
+	unreadable: z.array(z.object({ path: z.string(), reason: z.string() })),
 });
+
+interface IUnreadable {
+	readonly path: string;
+	readonly reason: string;
+}
 
 const walkTsFiles = async (
 	rootAbs: string,
+	unreadable: IUnreadable[],
 	relative = '',
 ): Promise<string[]> => {
 	const dirAbs = join(rootAbs, relative);
-	const entries = (await safeListDir(dirAbs)).entries;
+	const listing = await safeListDir(dirAbs);
+	if (listing.reason !== undefined && listing.reason !== 'directory-empty') {
+		unreadable.push({ path: relative || '.', reason: listing.reason });
+	}
+	const entries = listing.entries;
 	const files: string[] = [];
 	for (const entry of entries) {
 		if (entry.isDirectory()) {
 			if (['node_modules', '.git', 'dist', 'build'].includes(entry.name))
 				continue;
 			files.push(
-				...(await walkTsFiles(rootAbs, join(relative, entry.name))),
+				...(await walkTsFiles(
+					rootAbs,
+					unreadable,
+					join(relative, entry.name),
+				)),
 			);
 			continue;
 		}
@@ -97,22 +112,39 @@ export const buildDocsGenerateToolRegistration = (
 				const reader = new SafeWorkspaceReader(
 					options.workspaceRootAbs,
 				);
-				const moduleFiles = await walkTsFiles(srcAbs);
-				const generated: IGeneratedDocFile[] = await Promise.all(
-					moduleFiles.map(async (relativePath) => {
-						const workspacePath = `${srcRel}/${relativePath}`
-							.split('\\')
-							.join('/');
-						const source = (await reader.readText(workspacePath))
-							.content;
-						return {
-							path: workspacePath,
-							markdown: generateModuleMarkdown(
-								workspacePath,
-								source,
-							),
-						};
-					}),
+				const unreadable: IUnreadable[] = [];
+				const moduleFiles = await walkTsFiles(srcAbs, unreadable);
+				const read = await Promise.all(
+					moduleFiles.map(
+						async (
+							relativePath,
+						): Promise<IGeneratedDocFile | null> => {
+							const workspacePath = `${srcRel}/${relativePath}`
+								.split('\\')
+								.join('/');
+							try {
+								const source = (
+									await reader.readText(workspacePath)
+								).content;
+								return {
+									path: workspacePath,
+									markdown: generateModuleMarkdown(
+										workspacePath,
+										source,
+									),
+								};
+							} catch (error: unknown) {
+								unreadable.push({
+									path: workspacePath,
+									reason: `read-failed: ${error instanceof Error ? error.message : String(error)}`,
+								});
+								return null;
+							}
+						},
+					),
+				);
+				const generated: IGeneratedDocFile[] = read.filter(
+					(file): file is IGeneratedDocFile => file !== null,
 				);
 				const files =
 					scope === 'module'
@@ -133,7 +165,7 @@ export const buildDocsGenerateToolRegistration = (
 									},
 									...generated,
 								];
-				return toolJson({ ok: true as const, files });
+				return toolJson({ ok: true as const, files, unreadable });
 			},
 		);
 	},

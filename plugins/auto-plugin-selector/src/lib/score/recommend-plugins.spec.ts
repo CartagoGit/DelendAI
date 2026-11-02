@@ -27,6 +27,29 @@ const cand = (
 });
 
 describe('recommendPlugins', () => {
+	it('taskHint changes the scores', () => {
+		const candidates = [
+			cand({ id: 'alpha', tags: ['typescript'], summary: 'lint things' }),
+			cand({
+				id: 'beta',
+				tags: ['typescript'],
+				summary: 'deploy releases',
+			}),
+		];
+		const base: IProjectSignals = {
+			pack: 'typescript',
+			languages: ['typescript'],
+		};
+		const plain = recommendPlugins(base, candidates);
+		expect(plain[0]?.plugin.id).toBe('alpha');
+		const hinted = recommendPlugins(
+			{ ...base, taskHint: 'prepare the deploy of releases' },
+			candidates,
+		);
+		expect(hinted[0]?.plugin.id).toBe('beta');
+		expect(hinted[0]?.reasons).toContain('task:deploy');
+	});
+
 	it('returns empty for an empty candidate list', () => {
 		const signals: IProjectSignals = {
 			pack: 'typescript',

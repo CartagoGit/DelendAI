@@ -18,6 +18,13 @@
  *   reaches only the zones that read it. Every workflow edit used to run
  *   all eleven shards: #912 changed one trigger of `ci.yml` and a lint
  *   script, and paid eleven minutes for the proposals zone alone;
+ * - except prose: a root `*.md`, the licence or the mailmap, and what
+ *   `.github/` holds besides workflows and actions (agent briefs, the
+ *   security policy, the projected forge settings), configure no tool. A
+ *   spec reaches them only by reading them, which the map records, so
+ *   they reach the zones that read them. Configuration a child process
+ *   reads (`delendai.config.json`) is not prose: the recorder sees the
+ *   test workers only, so it still runs everything;
  * - a changed file reaches a zone that read it;
  * - a file added or removed reaches a zone that listed its directory, so a
  *   new file in a folder a zone scans still reaches that zone;
@@ -44,9 +51,63 @@ export const isWorkflowFile = (path: string): boolean =>
  * run: nothing can say which zones it reaches.
  */
 export const runsEverything = (change: IRootChange): boolean =>
-	!change.path.includes('/') ||
-	(change.path.startsWith('.github/') &&
-		!(isWorkflowFile(change.path) && change.runnerChanged === false));
+	!isProse(change.path) &&
+	!(change.path === ROOT_MANIFEST && change.scriptsOnly === true) &&
+	(!change.path.includes('/') ||
+		(change.path.startsWith('.github/') &&
+			!(isWorkflowFile(change.path) && change.runnerChanged === false)));
+
+/** The root package manifest, whose scripts-only edits reach their readers. */
+export const ROOT_MANIFEST = 'package.json';
+
+/**
+ * Scripts that change how every spec runs or how the tree is installed: a
+ * test runner (`test`, `test:shard`, ...) or an install hook.
+ */
+const RUNNER_SCRIPT = /^(test|pre|post|prepare)/u;
+
+const withoutScripts = (manifest: Record<string, unknown>): string => {
+	const { scripts: _scripts, ...rest } = manifest;
+	return JSON.stringify(rest);
+};
+
+/**
+ * Whether the root manifest changed only in scripts that no test run or
+ * install uses. Dependencies change which code every import loads, so any
+ * other change — or a side that is missing or does not parse — is not.
+ */
+export const onlyScriptsChanged = (
+	before: string | undefined,
+	after: string | undefined,
+): boolean => {
+	if (before === undefined || after === undefined) return false;
+	let old: Record<string, unknown>;
+	let next: Record<string, unknown>;
+	try {
+		old = JSON.parse(before) as Record<string, unknown>;
+		next = JSON.parse(after) as Record<string, unknown>;
+	} catch {
+		return false;
+	}
+	if (withoutScripts(old) !== withoutScripts(next)) return false;
+	const scripts = (manifest: Record<string, unknown>) =>
+		(manifest.scripts ?? {}) as Record<string, unknown>;
+	const names = new Set([
+		...Object.keys(scripts(old)),
+		...Object.keys(scripts(next)),
+	]);
+	return [...names]
+		.filter((name) => scripts(old)[name] !== scripts(next)[name])
+		.every((name) => !RUNNER_SCRIPT.test(name));
+};
+
+/** A root or `.github/` file that only a spec reading it can be affected by. */
+export const isProse = (path: string): boolean =>
+	path.includes('/')
+		? path.startsWith('.github/') &&
+			!path.startsWith('.github/workflows/') &&
+			!path.startsWith('.github/actions/')
+		: /\.md$/u.test(path) || path === 'LICENSE' || path === '.mailmap';
 
 const asRecord = (value: YamlValue | undefined): Record<string, YamlValue> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -107,6 +168,34 @@ export const zonesReadingRootFiles = (
 		}
 	}
 	return zones;
+};
+
+/**
+ * The specs of each zone that read a changed path, or list the directory
+ * of one that was added or removed. A zone the map holds no per-spec reads
+ * for is left out: nobody can say which of its specs read the file.
+ */
+export const readersOf = (
+	changes: readonly IRootChange[],
+	map: IZoneReadMap | undefined,
+): ReadonlyMap<string, readonly string[]> => {
+	const readers = new Map<string, readonly string[]>();
+	for (const [zone, touched] of Object.entries(map?.zones ?? {})) {
+		if (touched.specs === undefined) continue;
+		const specs = Object.entries(touched.specs)
+			.filter(([, reads]) =>
+				changes.some(
+					(change) =>
+						reads.read.includes(change.path) ||
+						(change.listing &&
+							reads.listed.includes(dirname(change.path))),
+				),
+			)
+			.map(([spec]) => spec)
+			.sort();
+		readers.set(zone, specs);
+	}
+	return readers;
 };
 
 /** Parse a committed map; anything unexpected is "no map". */

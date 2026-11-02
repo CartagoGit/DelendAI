@@ -134,6 +134,7 @@ export type DelendaiBrowserBrowserOpenOutput = {
 export type DelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
+	truncated: boolean;
 	status: "ok";
 } | {
 	url: string;
@@ -195,6 +196,7 @@ export interface DelendaiCompletionReportCompleteOutput {
 		reviewEvidence: string;
 		ts: string;
 	};
+	notified: boolean;
 }
 
 export interface DelendaiCompletionStatusOutput {
@@ -258,7 +260,7 @@ export interface DelendaiConfigurationCenterOutput {
 		id: string;
 		kind: "agent" | "skill" | "prompt" | "resource" | "knowledge";
 		owner: {
-			id: string;
+			id: string | null;
 			origin: "bundled" | "user-local" | "external" | "unknown";
 		};
 	}>;
@@ -276,6 +278,10 @@ export type DelendaiContainerContainerBuildOutput = {
 } | {
 	ok: "dry-run";
 	command: string;
+	dryRun: true;
+	wouldChange: Record<string, unknown>[];
+	wouldRun: Record<string, unknown>[];
+	risk: "low" | "medium" | "high";
 } | {
 	ok: false;
 	isError: true;
@@ -390,6 +396,10 @@ export type DelendaiContainerK8sApplyOutput = {
 } | {
 	ok: "dry-run";
 	command: string;
+	dryRun: true;
+	wouldChange: Record<string, unknown>[];
+	wouldRun: Record<string, unknown>[];
+	risk: "low" | "medium" | "high";
 } | {
 	ok: false;
 	isError: true;
@@ -400,6 +410,17 @@ export type DelendaiContainerK8sApplyOutput = {
 };
 
 export interface DelendaiCreatePluginOutput {
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
 	ok: boolean;
 	scaffolded: {
 		files: string[];
@@ -483,7 +504,7 @@ export interface DelendaiDriftCheckOutput {
 		summary: string;
 	}>;
 	isFirstSnapshot: boolean;
-	lastSnapshotAt: string;
+	lastSnapshotAt: string | null;
 	summary: string;
 }
 
@@ -545,8 +566,8 @@ export interface DelendaiEnvEnvExplainsOutput {
 export interface DelendaiFsReadOutput {
 	path: string;
 	found: boolean;
-	content: string;
-	totalLines: number;
+	content: string | null;
+	totalLines: number | null;
 	range: never[] | null;
 }
 
@@ -651,6 +672,15 @@ export interface DelendaiLinkCheckLinkCheckOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxDocs: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;
@@ -740,7 +770,7 @@ export interface DelendaiObservabilityObsErrorsOutput {
 		context: string;
 		url: string;
 	}>;
-	nextCursor: string;
+	nextCursor: string | null;
 	redactions: number;
 }
 
@@ -773,14 +803,14 @@ export interface DelendaiObservabilityObsRuntimeMetricsOutput {
 
 export interface DelendaiObservabilityObsTraceOutput {
 	sampleSize: number;
-	groups: {
+	groups: Array<{
 		service: string;
 		traceId: string;
 		hourBucket: string;
 		count: number;
 		errorRate: number;
-		topError: string;
-	}[];
+		topError: string | null;
+	}>;
 	summary: {
 		critical: number;
 		high: number;
@@ -861,6 +891,7 @@ export type DelendaiPerfPerfProfileOutput = {
 		info: number;
 	};
 	worst: string;
+	flamegraph?: string;
 } | {
 	ok: "skipped";
 	hint: string;
@@ -1058,17 +1089,17 @@ export interface DelendaiProjectPluginsRepairOutput {
 
 export interface DelendaiPromptEvalEvalReportOutput {
 	tool: "eval_report";
-	rows: {
+	rows: Array<{
 		providerId: string;
 		costTier: number;
 		attempts: number;
 		passes: number;
-		winRate: number;
+		winRate: number | null;
 		totalCostUsd: number;
 		compositeScore: number;
-	}[];
-	winner: string;
-	worst: string;
+	}>;
+	winner: string | null;
+	worst: string | null;
 	totalCostUsd: number;
 	totalPasses: number;
 	markdown: string;
@@ -1076,7 +1107,7 @@ export interface DelendaiPromptEvalEvalReportOutput {
 
 export interface DelendaiPromptEvalEvalRunOutput {
 	tool: "eval_run";
-	taskType: string;
+	taskType: string | null;
 	attempts: {
 		providerId: string;
 		costTier: number;
@@ -1086,7 +1117,7 @@ export interface DelendaiPromptEvalEvalRunOutput {
 	}[];
 	passed: number;
 	totalCostUsd: number;
-	winner: string;
+	winner: string | null;
 }
 
 export interface DelendaiRefactorRefactorApplyOutput {
@@ -1143,6 +1174,7 @@ export interface DelendaiRefactorRefactorRenameOutput {
 		}>;
 	}>;
 	totalEdits: number;
+	consentToken: string;
 	ambiguous?: {
 		path: string;
 		line: number;
@@ -1182,6 +1214,17 @@ export interface DelendaiResolveCapabilityOutput {
 }
 
 export interface DelendaiScaffoldOutput {
+	wouldChange?: Array<{
+		kind: "write" | "delete" | "rename" | "create" | "patch";
+		path: string;
+		summary: string;
+	}>;
+	wouldRun?: Array<{
+		shape: "shell" | "network" | "process" | "git" | "mcp";
+		target: string;
+		summary: string;
+	}>;
+	risk?: "low" | "medium" | "high";
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
 	files: {
@@ -1277,6 +1320,8 @@ export interface DelendaiSecuritySecuritySastOutput {
 export interface DelendaiSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
+	ignoredScanned: string[];
+	ignoredSkipped: number;
 	findings: Array<{
 		ruleId: string;
 		severity: "critical" | "high" | "medium" | "low" | "info";
@@ -1305,8 +1350,8 @@ export interface DelendaiShellStatusOutput {
 		purpose: string;
 		availability: "present" | "missing" | "unknown";
 		probeStatus: "present" | "missing" | "error";
-		path: string;
-		version: string;
+		path: string | null;
+		version: string | null;
 		alternativesAvailable: string[];
 		suggestInstall: {
 			manager: string;
@@ -1359,6 +1404,15 @@ export interface DelendaiTechDebtDebtScanOutput {
 		};
 	}>;
 	truncated: boolean;
+	coverage: {
+		capped: boolean;
+		maxFiles: number;
+		skippedTotal: number;
+		skipped: Array<{
+			path: string;
+			reason: "too-large" | "unreadable";
+		}>;
+	};
 	summary: {
 		critical: number;
 		high: number;
@@ -1385,6 +1439,7 @@ export interface DelendaiToolSearchOutput {
 	}[];
 	found: boolean;
 	suggestion?: string;
+	skillHint?: string;
 }
 
 export interface DelendaiUsageTrackingSessionHygieneOutput {

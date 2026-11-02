@@ -3,6 +3,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
+import type { IConsentSigner } from '@delendai/core/runtime';
+
 import { buildRefactorRenameToolRegistrations } from './refactor-rename.tool';
 
 const makeMockServer = () => {
@@ -24,6 +26,9 @@ const makeMockServer = () => {
 	};
 };
 
+/** The cases that write take the token as read; the real one has its own. */
+const anyToken: IConsentSigner = { issue: () => 'token', verify: () => true };
+
 describe('refactor-rename tool', () => {
 	describe('refactor_rename', () => {
 		it('returns a diff via injected planner', async () => {
@@ -39,6 +44,7 @@ describe('refactor-rename tool', () => {
 
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: reader,
 			});
@@ -73,7 +79,7 @@ describe('refactor-rename tool', () => {
 			const parsed = JSON.parse(jsonContent ?? '{}');
 			expect(parsed.totalEdits).toBe(1);
 			expect(parsed.files).toHaveLength(1);
-			expect(parsed.files[0].path).toBe('/workspace/root/test.ts');
+			expect(parsed.files[0].path).toBe('test.ts');
 		});
 
 		it('returns an error for unknown symbol', async () => {
@@ -89,6 +95,7 @@ describe('refactor-rename tool', () => {
 
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: reader,
 			});
@@ -120,6 +127,7 @@ describe('refactor-rename tool', () => {
 		it('rejects an absolute root', async () => {
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: vi.fn(),
 			});
@@ -140,6 +148,7 @@ describe('refactor-rename tool', () => {
 		it('rejects a scopePaths entry that escapes the workspace', async () => {
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: vi.fn(),
 			});
@@ -176,6 +185,7 @@ describe('refactor-rename tool', () => {
 
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: reader,
 				writeFileAtomic: writer,
@@ -237,6 +247,7 @@ describe('refactor-rename tool', () => {
 			const writer = vi.fn();
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: vi.fn(),
 				writeFileAtomic: writer,
@@ -262,6 +273,7 @@ describe('refactor-rename tool', () => {
 			const writer = vi.fn();
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: vi.fn(),
 				writeFileAtomic: writer,
@@ -295,6 +307,7 @@ describe('refactor-rename tool', () => {
 			const writer = vi.fn();
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: vi.fn(),
 				writeFileAtomic: writer,
@@ -335,6 +348,7 @@ describe('refactor-rename tool', () => {
 
 			const registrations = buildRefactorRenameToolRegistrations({
 				namespacePrefix: 'test',
+				consent: anyToken,
 				workspaceRootAbs: '/workspace',
 				readFile: reader,
 				writeFileAtomic: writer,

@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { IArgvExec } from '@delendai/core/contracts';
 
-import { parseBunAudit, runDepsAudit } from '../../../src/lib/services/audit';
+import {
+	parseBunAudit,
+	readDepsAudit,
+	runDepsAudit,
+} from '../../../src/lib/services/audit';
 
 // Shape captured from a real `bun audit --json` run against this repo
 // (severities adjusted to exercise the full mapping).
@@ -98,5 +102,35 @@ describe('runDepsAudit', () => {
 		const result = await runDepsAudit('/repo', execWith('{}'));
 		expect(result.findings).toEqual([]);
 		expect(result.skipped).toBeUndefined();
+	});
+});
+
+describe('a failed audit', () => {
+	it('names the cause instead of reporting no findings', async () => {
+		const result = await readDepsAudit(
+			'/repo',
+			execWith('', 'registry unreachable'),
+		);
+		expect(result).toEqual({
+			failure: 'bun audit gave no report: registry unreachable',
+		});
+	});
+
+	it('names a timeout', async () => {
+		const exec = (async () => ({
+			code: 1,
+			stdout: '',
+			stderr: '',
+			timedOut: true,
+		})) as IArgvExec;
+		expect(await readDepsAudit('/repo', exec)).toEqual({
+			failure: 'bun audit timed out',
+		});
+	});
+
+	it('reaches a scan as skipped, with the cause', async () => {
+		const result = await runDepsAudit('/repo', execWith('not json', ''));
+		expect(result.skipped).toBe(true);
+		expect(result.note).toContain('not json');
 	});
 });

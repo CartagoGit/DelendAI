@@ -60,6 +60,19 @@ describe('publish-tarballs', () => {
 		).not.toThrow();
 	});
 
+	it('publishTarballs with npm passes --provenance only when requested', async () => {
+		spawnMock.mockImplementation(() => createChild(0));
+		await publishTarballs(baseInput({ provenance: true }));
+		expect(spawnMock.mock.calls[0]?.[1]).toEqual([
+			'publish',
+			'/tmp/pkg-1.0.0.tgz',
+			'--provenance',
+		]);
+		spawnMock.mockClear();
+		await publishTarballs(baseInput());
+		expect(spawnMock.mock.calls[0]?.[1]).not.toContain('--provenance');
+	});
+
 	it('publishTarballs with npm spawns npm publish for the tarball path', async () => {
 		spawnMock.mockImplementation(() => createChild(0));
 

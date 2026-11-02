@@ -202,7 +202,7 @@ Bypass de emergencia: `LEFTHOOK_BYPASS=1 git push …`. CI re-confirma.
 ## Related
 
 - [ADR 0019 — Branch model: `develop` is the lab, `main` is publication](adr/0019-branch-model-develop-lab-main-release.md)
-- [c00145 — `develop` is not protected by default in `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md)
-- [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md)
-- [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md)
-- [v00125 — Verificar estado real de `develop`](../proposals/ready/verifications/v00125-verificar-estado-real-develop-verde-protegida.md)
+- [c00145 — `develop` is not protected by default in `commit-policy`](proposals/done/chores/c00145-track-a-default-commit-policy-protectedbranches-por-defecto-main-y-master-develop-solo-si-el-owner-lo-activa-explicitamente.md)
+- [x00257 — Eliminar `force-with-lease` para ramas protegidas](proposals/done/fixes/x00257-eliminar-force-with-lease-para-ramas-protegidas-defense-in-depth.md)
+- [x00299 — Permitir persistencia configurada hacia `develop`](proposals/done/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md)
+- [v00125 — Verificar estado real de `develop`](proposals/done/perfs/v00125-verificar-estado-real-de-develop-verde-protegida-antes-de-cerrar-este-track.md)

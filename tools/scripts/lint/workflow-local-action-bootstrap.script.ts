@@ -33,6 +33,7 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 export interface IWorkflowBootstrapFinding {
 	readonly workflow: string;
@@ -136,5 +137,13 @@ export const main = async (): Promise<number> => {
 };
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'workflow-local-action-bootstrap',
+			lintRepoRoot(import.meta.url),
+			['.github/workflows'],
+		)
+	)
+		process.exit(1);
 	process.exit(await main());
 }

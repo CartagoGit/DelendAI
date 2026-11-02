@@ -21,6 +21,16 @@ export interface IJobScope {
 	 * regression nobody looked for.
 	 */
 	readonly touches: readonly string[] | 'always';
+	/**
+	 * Paths that can change the verdict, when a prefix cannot say it (every
+	 * `package.json`, every entry file). Replaces `touches` when set.
+	 */
+	readonly matches?: RegExp | undefined;
+	/**
+	 * `skip`: a change made only of Markdown (under docs/ or at the root)
+	 * cannot change this job's verdict, whatever `touches` says.
+	 */
+	readonly docs?: 'skip' | undefined;
 	/** Why this bound is correct — read by whoever widens or narrows it. */
 	readonly because: string;
 }

@@ -56,7 +56,14 @@ const provider = (
 	weaknesses: [],
 });
 
-const capture = async (): Promise<{
+const capture = async (
+	providers: readonly ReturnType<typeof provider>[] = [
+		provider('fast', 1, ['fast-iteration'] as const),
+		provider('steady', 2, ['fast-iteration'] as const),
+		provider('deep', 4, ['reasoning'] as const),
+	],
+	kept: unknown[] = [],
+): Promise<{
 	readonly outputSchema: unknown;
 	readonly handler: ToolHandler;
 }> => {
@@ -71,17 +78,15 @@ const capture = async (): Promise<{
 	});
 	const registration = buildAdviseRoutingRegistration({
 		namespacePrefix: 'mcp',
-		providers: [
-			provider('fast', 1, ['fast-iteration'] as const),
-			provider('steady', 2, ['fast-iteration'] as const),
-			provider('deep', 4, ['reasoning'] as const),
-		],
+		providers,
 		health: fakePartial<HealthStore>({
 			get: (id: string) => ({ id, state: 'available' }),
 		}),
 		sessions: fakePartial<SessionStore>({
 			get: () => undefined,
-			set: () => {},
+			set: (_id: string, decision: unknown) => {
+				kept.push(decision);
+			},
 		}),
 		defaultCostPreference: 'balanced',
 		loopDetector: {
@@ -179,5 +184,20 @@ describe('advise_routing tool', () => {
 			command: 'run-fast',
 		});
 		expect(decision).toHaveProperty('scoringTrace');
+	});
+
+	it('says there is nothing to route to, keeps nothing for the session, and offers no runnable decision', async () => {
+		const kept: unknown[] = [];
+		const { handler } = await capture([], kept);
+		const result = await handler({
+			taskDescription: 'anything',
+			sessionId: 's',
+		});
+		expect(result.structuredContent).toMatchObject({ routable: false });
+		expect(result.structuredContent?.decision).toBeUndefined();
+		expect(String(result.structuredContent?.nextAction)).toContain(
+			'bootstrap_providers',
+		);
+		expect(kept).toEqual([]);
 	});
 });

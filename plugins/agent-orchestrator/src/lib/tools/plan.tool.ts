@@ -16,6 +16,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolJson } from '@delendai/core/public';
 
 import type { OrchestratorEngine } from '../policy/policy.js';
+import type { ITask } from '../policy/types.js';
 import {
 	BudgetPolicySchema,
 	OrchestrationModeSchema,
@@ -70,27 +71,38 @@ export function buildPlanToolRegistration(deps: {
 					outputSchema: OUTPUT_SCHEMA,
 				},
 				async (args: IPlanArgs) => {
-					// `hint` is optional on the schema; rebuild an ITask with an
-					// exact shape (`exactOptionalPropertyTypes` is strict).
-					const plan = engine().plan({
+					// Rebuild an ITask with an exact shape
+					// (`exactOptionalPropertyTypes` is strict); files and facts
+					// reach the classifier like every other field.
+					const task: ITask = {
 						id: args.task.id,
 						description: args.task.description,
 						tags: args.task.tags,
+						...(args.task.files !== undefined
+							? { files: args.task.files }
+							: {}),
 						...(args.task.hint !== undefined
 							? { hint: args.task.hint }
 							: {}),
-					});
-					// The `override` switch is honoured by *re-planning* through
-					// the named mode. We do not mutate the engine.
+						...(args.task.facts !== undefined
+							? { facts: args.task.facts }
+							: {}),
+					};
+					const plan = engine().plan(task);
+					// The `override` switch re-plans through the named mode, so
+					// the steps are that mode's own. The engine is not mutated.
 					if (args.override && args.override !== plan.mode) {
 						const modes = engine().listModes();
 						if (
 							(modes as readonly string[]).includes(args.override)
 						) {
+							const overridden = engine().plan(
+								task,
+								args.override,
+							);
 							return toolJson({
-								...plan,
-								mode: args.override,
-								rationale: `caller override → ${args.override}; ${plan.rationale}`,
+								...overridden,
+								rationale: `caller override → ${args.override}; ${overridden.rationale}`,
 							});
 						}
 					}

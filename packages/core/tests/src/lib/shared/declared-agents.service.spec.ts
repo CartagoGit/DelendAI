@@ -3,7 +3,14 @@
  * registry and the machine; a binary installed only when its sha256 matches.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -172,13 +179,12 @@ describe('installAgentBinary', () => {
 			command: join(done.dir, './goose'),
 			args: ['acp'],
 		});
-		expect(unpacked[0]).toEqual([
-			'tar',
-			'-xf',
-			join(done.dir, 'archive.tar.gz'),
-			'-C',
-			done.dir,
-		]);
+		// Unpacked into a staging folder beside the install, then swapped in.
+		const [tar, flag, archive, into, staging] = unpacked[0] ?? [];
+		expect([tar, flag, into]).toEqual(['tar', '-xf', '-C']);
+		expect(staging?.startsWith(`${done.dir}.staging-`)).toBe(true);
+		expect(archive).toBe(join(staging ?? '', 'archive.tar.gz'));
+		expect(existsSync(done.dir)).toBe(true);
 		expect(existsSync(join(done.dir, 'archive.tar.gz'))).toBe(false);
 	});
 
@@ -217,6 +223,44 @@ describe('installAgentBinary', () => {
 				run,
 			}),
 		).rejects.toThrow('no sha256');
+	});
+});
+
+describe('a contained, transactional install', () => {
+	const goose = REGISTRY.agents[1]!;
+
+	it('refuses an id or version that is not one path segment', () => {
+		for (const agent of [
+			{ id: '../../bin', version: '1' },
+			{ id: 'goose', version: '../1' },
+			{ id: '..', version: '1' },
+		]) {
+			expect(() => agentInstallDir(agent, '/agents')).toThrow(
+				'not one path segment',
+			);
+		}
+	});
+
+	it('keeps the previous install when the new one fails to unpack', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'agents-'));
+		const dir = agentInstallDir(goose, root);
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(join(dir, 'goose'), 'previous');
+		await expect(
+			installAgentBinary(goose, {
+				platform: 'linux-x86_64',
+				root,
+				download: async () => BYTES,
+				run: async () => ({
+					code: 2,
+					stdout: '',
+					stderr: 'corrupt archive',
+					timedOut: false,
+				}),
+			}),
+		).rejects.toThrow('could not unpack');
+		expect(readFileSync(join(dir, 'goose'), 'utf8')).toBe('previous');
+		expect(readdirSync(join(root, goose.id))).toEqual([goose.version]);
 	});
 });
 

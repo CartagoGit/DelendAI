@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'commit-policy',
 	package: '@delendai/commit-policy',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
@@ -32,11 +32,11 @@ export default definePluginManifest({
 		commit_policy_refresh_branch_protection: ['network', 'process'],
 	},
 	tokenBudget: {
-		staticBytes: 4_200,
+		staticBytes: 11_615,
 		adaptiveActivationBytes: 800,
 		typicalOutput: 600,
-		caps: { hard: 5_200, warning: 4_800 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 13_360, warning: 12_200 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

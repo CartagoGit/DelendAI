@@ -15,7 +15,8 @@ export type IAccountSource =
 	| 'credential-variable'
 	| 'seen-models'
 	| 'plan-tool'
-	| 'local-endpoint';
+	| 'local-endpoint'
+	| 'host-byok';
 
 /** Who the account is with and how it is paid: what an offer needs. */
 export interface IAccountClassification {
@@ -47,6 +48,8 @@ export interface IAccountFinding {
 	readonly classification?: IAccountClassification | undefined;
 	/** The variable holding the credential, for a credential-variable finding. */
 	readonly credentialEnv?: string | undefined;
+	/** The credential is kept by an editor that runs the model when asked (BYOK). */
+	readonly hostHeld?: boolean | undefined;
 	readonly models: readonly string[];
 	/** What was seen, in a line a person can check. */
 	readonly evidence: string;
@@ -87,6 +90,13 @@ export interface ICatalogueProvider {
 	readonly models: readonly string[];
 	/** Each model's context window in tokens, where the catalogue states one. */
 	readonly contextWindows?: Readonly<Record<string, number>> | undefined;
+	/**
+	 * Each model's price in US dollars per million tokens, `[input, output]`,
+	 * where the catalogue states both (a pair keeps the shipped snapshot small).
+	 */
+	readonly costs?:
+		| Readonly<Record<string, readonly [number, number]>>
+		| undefined;
 	/** Its API base URL, when it has one to call directly. */
 	readonly api?: string | undefined;
 	/** The SDK family its API speaks (`@ai-sdk/openai-compatible`, `@ai-sdk/anthropic`...). */

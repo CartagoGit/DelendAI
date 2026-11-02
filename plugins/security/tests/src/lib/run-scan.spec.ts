@@ -54,4 +54,25 @@ describe('runSecretScan', () => {
 		});
 		expect(out.scanned).toBeLessThanOrEqual(1);
 	});
+
+	it('scans an ignored .env.local and counts the ignored files it skipped', async () => {
+		const ignored: Record<string, string> = {
+			'.env.local': `KEY=${AWS}`,
+			'dist/bundle.js': `const k = '${AWS}';`,
+			'node_modules/x/.env': `KEY=${AWS}`,
+		};
+		const out = await runSecretScan(
+			{
+				listFiles: async () => ['src/clean.ts'],
+				listIgnored: async () => Object.keys(ignored),
+				readFile: async (path) => ignored[path] ?? FILES[path],
+			},
+			{ scope: 'tracked', includeTests: false },
+		);
+		expect(out.ignoredScanned).toEqual(['.env.local']);
+		expect(out.ignoredSkipped).toBe(2);
+		expect(out.findings.map((f) => f.location?.file)).toEqual([
+			'.env.local',
+		]);
+	});
 });

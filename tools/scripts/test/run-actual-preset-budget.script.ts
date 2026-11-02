@@ -12,6 +12,10 @@ import {
 	type IToolOwnerMetrics,
 } from '../report/token-budget-report-lib';
 
+import {
+	manifestBudgetDivergence,
+	readManifestBudget,
+} from './manifest-budget.helper';
 import { marginalVerdict } from './preset-marginal-ceiling';
 
 type IMeasuredSurface = {
@@ -127,6 +131,7 @@ const main = async (): Promise<number> => {
 	);
 	const workspace = createTokenBudgetFixtureWorkspace();
 	let breached = false;
+	const largestByOwner = new Map<string, number>();
 	try {
 		for (const presetId of presets) {
 			const presetBudget = measuredPresets[presetId];
@@ -155,6 +160,16 @@ const main = async (): Promise<number> => {
 				});
 				if (metrics.toolsListBytes > presetBudget.toolsList.hard) {
 					breached = true;
+				}
+				// A preset can load part of a plugin: its largest listing counts.
+				for (const row of metrics.ownerRows) {
+					largestByOwner.set(
+						row.owner,
+						Math.max(
+							largestByOwner.get(row.owner) ?? 0,
+							row.toolsListBytes,
+						),
+					);
 				}
 				const { marginalPluginHard, marginalPluginWarning } =
 					presetBudget.toolsList;
@@ -235,6 +250,21 @@ const main = async (): Promise<number> => {
 		}
 	} finally {
 		destroyTokenBudgetFixtureWorkspace(workspace);
+	}
+	// Only the full native listing shows each plugin whole.
+	if (
+		surfaceMode === 'native' &&
+		presets.length === TOKEN_BUDGETS.governedPresetIds.length
+	) {
+		for (const [owner, bytes] of largestByOwner) {
+			const budget = await readManifestBudget(process.cwd(), owner);
+			if (budget === undefined) continue;
+			const divergence = manifestBudgetDivergence(owner, bytes, budget);
+			if (divergence !== undefined) {
+				console.log(`manifest budget: ${divergence}`);
+				breached = true;
+			}
+		}
 	}
 	if (breached) {
 		return 1;

@@ -30,6 +30,9 @@ import type { IMcpToolSurfaceMode } from '@delendai/core/cli';
  * the surface deliberately. Rough estimate only: ~4 bytes/token. See N23 and
  * docs/delendai/TOKEN-BUDGETS.md.
  */
+/** Generous on purpose: measuring needs every plugin loaded, not a fast boot. */
+const MEASURING_PLUGIN_TIMEOUT_MS = 120_000;
+
 const budgetWarning = (label: string, value: number, warning: number): void => {
 	if (value > warning) {
 		console.warn(
@@ -201,7 +204,17 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 			import: async (specifier: string) =>
 				(await nodeDynamicImport(specifier)) as { default: unknown },
 			readFile: async () => undefined,
+			pluginTimeoutMs: MEASURING_PLUGIN_TIMEOUT_MS,
 		});
+		// A budget is a property of a COMPLETE boot: a plugin dropped by a
+		// load timeout leaves fewer, fatter-looking rows and reads as a
+		// breach. Refuse to measure a degraded boot, and say which plugins.
+		expect(
+			assembledConfig.loadResult.errors.map(
+				(error) => `${error.specifier}: ${error.message}`,
+			),
+			'plugins that did not load: a budget needs a complete boot',
+		).toEqual([]);
 		const assembled = await createMcpProject(assembledConfig.config);
 		const [clientTransport, serverTransport] =
 			InMemoryTransport.createLinkedPair();
@@ -295,7 +308,8 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	});
 
 	afterEach(async () => {
-		await close();
+		// A refused (degraded) boot leaves no client to close.
+		await close?.();
 		rmSync(workspace, { recursive: true, force: true });
 	});
 

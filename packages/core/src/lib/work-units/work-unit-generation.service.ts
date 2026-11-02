@@ -8,6 +8,7 @@ import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeSession } from './worktree-agent.service';
 
 import {
+	integrationRemote,
 	readGit,
 	kindFor,
 	refused,
@@ -77,7 +78,11 @@ export const endedGenerations = (
 	const unit = /^(.*-g)\d+\//u.exec(workRef.slice(workPrefix.length))?.[1];
 	if (unit === undefined) return new Set();
 	const integration = policy.branches.integration;
-	const remote = `refs/remotes/origin/${integration}`;
+	// The remote the integration branch lives on, not `origin` by name: a
+	// project integrating through `upstream` reused generations it had
+	// already spent there.
+	const integrationRemoteName = integrationRemote(root, policy);
+	const remote = `refs/remotes/${integrationRemoteName}/${integration}`;
 	const tip =
 		readGit(root, ['rev-parse', '-q', '--verify', remote]) === undefined
 			? integration
@@ -95,7 +100,7 @@ export const endedGenerations = (
 		readGit(root, [
 			'ls-remote',
 			'--',
-			'origin',
+			integrationRemoteName,
 			`refs/${policy.branches.namespacePrefix}/retired/*`,
 		]) ?? '';
 	const ended = new Set<number>();

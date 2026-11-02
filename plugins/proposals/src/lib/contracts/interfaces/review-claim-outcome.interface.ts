@@ -10,6 +10,8 @@ export type IReviewClaimOutcome =
 	| { readonly kind: 'pack-full'; readonly size: number }
 	/** This unit holds a proposal it has written nothing about yet. */
 	| { readonly kind: 'unjudged'; readonly holding: string }
+	/** Another unit of this agent holds verdicts not yet published. */
+	| { readonly kind: 'earlier-pack'; readonly unit: string }
 	/** The claim could not be committed. */
 	| { readonly kind: 'failed'; readonly reason: string };
 

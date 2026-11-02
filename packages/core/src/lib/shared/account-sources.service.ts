@@ -27,6 +27,7 @@ import type {
 	IClientCommandRunner,
 	IClientDiscovery,
 } from '../contracts/interfaces/known-client.interface';
+import type { IHostByokProvider } from '../contracts/interfaces/host-byok.interface';
 import { clientLogin, listClientModels } from './client-discovery.service';
 import { providerOfModel, providerOfVariable } from './model-catalogue.service';
 import { toKebabCase } from './string-normalize';
@@ -163,6 +164,30 @@ export const findingsFromSeenModels = (
 	}));
 };
 
+/**
+ * The providers an editor serves on the person's keys (Copilot BYOK), one
+ * per provider and profile. How each is paid is the person's to say; who
+ * holds the key is not: the editor does.
+ */
+export const findingsFromHostByok = (
+	roster: readonly IHostByokProvider[],
+): readonly IAccountFinding[] =>
+	roster.map((provider) => {
+		const where = provider.profileName ?? provider.profile;
+		return {
+			key: `host-byok:${provider.profile}:${provider.vendor}:${provider.name}`,
+			source: 'host-byok' as const,
+			accountId: toKebabCase(`${provider.name}-byok`),
+			displayName: `${provider.name} (your editor's own key, ${where} profile)`,
+			subject: provider.name,
+			via: 'editor BYOK',
+			vendorHint: provider.vendor,
+			hostHeld: true,
+			models: provider.models.map((model) => model.id),
+			evidence: `configured in the ${where} profile of ${provider.host}; the editor keeps its key`,
+		};
+	});
+
 /** Vendor plan tools logged in to a plan (mmx), from their own answer. */
 export const findingsFromPlanTools = async (
 	run: IClientCommandRunner,
@@ -267,6 +292,8 @@ export const gatherFindings = async (input: {
 	readonly fetchLocal?: ILocalFetch | undefined;
 	/** Told each step as it starts, so a person sees it is working. */
 	readonly onProgress?: ((step: IOfferStep) => void) | undefined;
+	/** The editors' BYOK providers; absent, none is offered. */
+	readonly hostByok?: readonly IHostByokProvider[] | undefined;
 	/** Reads the public model catalogue; absent, keys and models are named by their shape alone. */
 	readonly loadCatalogue?:
 		| (() => Promise<IModelCatalogue | undefined>)
@@ -294,5 +321,6 @@ export const gatherFindings = async (input: {
 		...providers,
 		...findingsFromCredentialVariables(input.env, catalogue),
 		...findingsFromSeenModels(input.seen, catalogue),
+		...findingsFromHostByok(input.hostByok ?? []),
 	];
 };

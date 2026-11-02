@@ -11,7 +11,10 @@
  */
 
 import { execFile } from 'node:child_process';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
+
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type {
 	ISettlementRunnerOptions,
@@ -25,6 +28,30 @@ export type {
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * The package script a validate command names, when it names one the
+ * project declares: `bun run <script>`. Anything else — free text a
+ * shell would run — names none.
+ */
+const declaredScript = async (
+	cwd: string,
+	command: string,
+): Promise<string | undefined> => {
+	const match = /^bun run ([\w:.-]+)$/u.exec(command.trim());
+	if (match?.[1] === undefined) return undefined;
+	try {
+		const manifest = JSON.parse(
+			(await new SafeWorkspaceReader(cwd).readText('package.json'))
+				.content,
+		) as { scripts?: Record<string, unknown> };
+		return typeof manifest.scripts?.[match[1]] === 'string'
+			? match[1]
+			: undefined;
+	} catch {
+		return undefined;
+	}
+};
+
 const defaultBackoff = (attempt: number): number =>
 	Math.min(60_000, 1000 * 2 ** Math.max(0, attempt - 1));
 
@@ -34,14 +61,21 @@ export const runSettlement = async (
 	const maxAttempts = options.maxAttempts ?? 3;
 	const backoffMs = options.backoffMs ?? defaultBackoff;
 	const cmd = options.validateCommand ?? 'bun run validate';
+	// The project's scripts are the command policy: the command ran as
+	// `bash -c <free text>`, so a caller could run anything.
+	const script = await declaredScript(options.cwd, cmd);
+	if (script === undefined) {
+		return {
+			green: false,
+			attempts: 0,
+			failingFiles: [],
+			lastError: `"${cmd}" is not \`bun run <script>\` for a script in ${join(options.cwd, 'package.json')}: not run`,
+		};
+	}
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
 		try {
-			// `bash`, never `sh` — AGENT-BOOTSTRAP §6. `sh` is dash on
-			// Debian/Ubuntu/WSL, ash on Alpine and an old bash on macOS,
-			// so a validate command using any bash-only syntax silently
-			// behaves differently depending on the machine it settles on.
-			await execFileAsync('bash', ['-c', cmd], {
+			await execFileAsync('bun', ['run', script], {
 				cwd: options.cwd,
 				timeout: 600_000,
 				maxBuffer: 16 * 1024 * 1024,

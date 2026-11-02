@@ -54,7 +54,11 @@ export const checkEnv = (
 	const { entries, malformedLines } = parseEnv(content);
 	const findings: IFinding[] = [];
 	const seen = new Map<string, number>();
+	// Whether each key's last assignment — the one that wins at runtime —
+	// is empty: a required variable set to nothing is not set.
+	const lastEmpty = new Map<string, boolean>();
 	for (const entry of entries) {
+		lastEmpty.set(entry.key, entry.empty);
 		const prior = seen.get(entry.key);
 		if (prior !== undefined) {
 			findings.push({
@@ -85,11 +89,13 @@ export const checkEnv = (
 		});
 	}
 	for (const name of required) {
-		if (!seen.has(name)) {
+		if (!seen.has(name) || lastEmpty.get(name) === true) {
 			findings.push({
 				ruleId: 'missing-required',
 				severity: 'high',
-				message: `required variable ${name} is not set`,
+				message: seen.has(name)
+					? `required variable ${name} is set to an empty value`
+					: `required variable ${name} is not set`,
 				location: { file: '.env' },
 				fix: `Add ${name}=<value> to .env (or the environment).`,
 			});

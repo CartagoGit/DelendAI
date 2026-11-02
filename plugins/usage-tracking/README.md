@@ -114,11 +114,13 @@ off advisory logging while retaining the read-only report.
 
 ## Pricing
 
-`${cacheDir}/usage-tracking/pricing.json` is refreshed from LiteLLM's
-`model_prices_and_context_window.json` with a **24h TTL** using a
-stale-while-revalidate pattern and a hard **1s timeout** — the fetch never
-blocks tool execution, and when LiteLLM is unreachable the bundled
-`resources/pricing.snapshot.json` is authoritative.
+Prices come from `${cacheDir}/usage-tracking/pricing.json` or, without
+one, the bundled `resources/pricing.snapshot.json`. **Nothing is
+downloaded unless you set `refreshPrices: true`**; then the cache is
+refreshed from LiteLLM's `model_prices_and_context_window.json` with a
+**24h TTL**, stale-while-revalidate and a hard **1s timeout** — the fetch
+never blocks tool execution, and when LiteLLM is unreachable the snapshot
+stays authoritative.
 
 **Subscription providers** (Claude Code Max, Copilot, …) report **no**
 per-call price: a fixed subscription cost is not a marginal per-call cost,

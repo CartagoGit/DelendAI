@@ -3,11 +3,31 @@ import z from 'zod';
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { resolveAndInvoke } from '../dispatch/capability-resolver';
+import { RESOLVER_DEFAULT_NEXT_ACTION } from '../contracts/constants/resolver-terminal-reasons.constant';
 import {
 	injectToolResultMeta,
 	toolError,
 	toolJson,
 } from '../shared/tool-response';
+
+/**
+ * Whether a tool's text only restates its structured content. Most tools
+ * answer with the same JSON twice, and the router forwarding both spent
+ * 43% of its bytes on the copy (444 KB of 1,029 KB over 574 calls). A failed
+ * call keeps its text: clients read the reason from it.
+ */
+export const textRepeatsStructured = (
+	text: string,
+	structured: unknown,
+	failed: boolean,
+): boolean => {
+	if (failed || structured === undefined) return false;
+	try {
+		return JSON.stringify(JSON.parse(text)) === JSON.stringify(structured);
+	} catch {
+		return false;
+	}
+};
 
 const ROUTER_RESULT = z.looseObject({
 	routed: z.literal(true).optional(),
@@ -80,9 +100,9 @@ const compactRouterHandler =
 					: resolved.detail;
 			const nextAction =
 				resolved.reason === 'policy_denied'
-					? 'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.'
+					? RESOLVER_DEFAULT_NEXT_ACTION.policy_denied
 					: (resolved.nextAction ??
-						'Call tool_search to inspect the current surface.');
+						RESOLVER_DEFAULT_NEXT_ACTION[resolved.reason]);
 			return toolError(reason, nextAction);
 		}
 		const result = resolved.result;
@@ -98,17 +118,21 @@ const compactRouterHandler =
 							| undefined
 					)?.find((entry) => entry.type === 'text')?.text
 				: undefined;
+		const failed =
+			result && typeof result === 'object'
+				? (result as { isError?: boolean }).isError === true
+				: false;
 		const routedResult = toolJson({
 			routed: true,
 			domain: args.domain,
 			action: args.action,
 			tool: resolved.qualifiedName,
 			active: resolved.access === 'visible',
-			isError:
-				result && typeof result === 'object'
-					? (result as { isError?: boolean }).isError === true
-					: false,
-			...(text !== undefined ? { text } : {}),
+			isError: failed,
+			...(text !== undefined &&
+			!textRepeatsStructured(text, structured, failed)
+				? { text }
+				: {}),
 			...(structured !== undefined
 				? { structuredContent: structured }
 				: {}),

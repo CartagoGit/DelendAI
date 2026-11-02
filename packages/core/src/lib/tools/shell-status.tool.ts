@@ -66,6 +66,8 @@ export interface IShellStatusSnapshot {
 
 export interface IShellStatusToolOptions {
 	readonly namespacePrefix: string;
+	/** Where install suggestions read the project's package manager from. */
+	readonly workspaceRoot: string;
 	readonly ttlMs?: number;
 	readonly probe?: TerminalProbeService;
 	readonly availability?: IToolAvailabilityService;
@@ -180,7 +182,7 @@ const buildSuggestedActions = (tools: readonly IToolReport[]): string[] =>
 		});
 
 export const createShellStatusSnapshot = async (
-	options: Omit<IShellStatusToolOptions, 'namespacePrefix'> = {},
+	options: Omit<IShellStatusToolOptions, 'namespacePrefix'>,
 	input: z.input<typeof shellStatusInputSchema> = {},
 ): Promise<IShellStatusSnapshot> => {
 	const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
@@ -192,7 +194,7 @@ export const createShellStatusSnapshot = async (
 			runner: defaultShellRunner(),
 			suggestInstall: async (entry, alternativesAvailable) =>
 				new InstallSuggestionsService({
-					workspaceRoot: process.cwd(),
+					workspaceRoot: options.workspaceRoot,
 					run: buildSuggestionRunner(),
 				}).suggest({
 					entry: {

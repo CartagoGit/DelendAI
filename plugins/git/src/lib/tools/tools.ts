@@ -16,6 +16,11 @@ import {
 import type { IGitRunner } from '../services/git';
 import { gitChangelog } from '../services/changelog';
 
+/** A ref or range git must never read as an option (`--output=<file>`). */
+const NOT_AN_OPTION = z
+	.string()
+	.regex(/^[^-]/u, 'must not start with "-": git would read it as an option');
+
 const NOT_A_REPO = (reason = 'not a git repository') =>
 	toolError(
 		reason,
@@ -230,7 +235,7 @@ export const buildGitToolRegistrations = (
 						description:
 							"Returns a commit's metadata and `--stat` summary (file/line change counts, not the full patch): {hash, author, date, subject, stat}. `ref` defaults to HEAD; optional `path` scopes the stat to one file. Read-only.",
 						inputSchema: z.object({
-							ref: z.string().optional(),
+							ref: NOT_AN_OPTION.optional(),
 							path: z.string().optional(),
 						}),
 						outputSchema: z.object({
@@ -307,7 +312,7 @@ export const buildGitToolRegistrations = (
 						description:
 							'Build a changelog from Conventional Commits and infer the semver bump (breaking → major, feat → minor, else patch). Pass `range` (e.g. "v1.0.0..HEAD") or `limit` (last N commits, default 100). Non-conventional and merge commits are ignored. Read-only, offline.',
 						inputSchema: z.object({
-							range: z.string().optional(),
+							range: NOT_AN_OPTION.optional(),
 							limit: z.number().optional(),
 						}),
 						outputSchema: z.object({

@@ -78,8 +78,6 @@
 	"plugins/proposals/src/lib/shared/peer-review-log.ts": 1,
 	"plugins/proposals/src/lib/swarm/round-context-sources.ts": 1,
 	"plugins/proposals/src/lib/tools/adopt.tool.ts": 1,
-	"plugins/proposals/src/lib/tools/auto-work.tool.ts": 1,
-	"plugins/proposals/src/lib/tools/proposal-transition.tool.ts": 1,
 	"plugins/proposals/src/lib/tools/recovery-tools.ts": 1,
 	"plugins/quality-policy/src/lib/services/settlement-runner.ts": 1,
 	"plugins/quality-policy/src/lib/services/validation-evidence.service.ts": 1,

@@ -22,6 +22,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 import {
@@ -29,6 +30,10 @@ import {
 	guardEffectCapability,
 } from '@delendai/core/lib/dry-run/effect-guard.helper';
 import { getActiveDryRunFlag } from '@delendai/core/lib/dry-run/dry-run-scope.helper';
+
+const acceptsDryRun = z
+	.object({ dryRun: z.boolean().optional() })
+	.passthrough();
 
 const makeHandle = () => ({
 	enabled: true,
@@ -87,6 +92,7 @@ const buildRuntimeWithInjectedCapability = () => {
 	runtime.bindRegisteredTool({
 		registrationId: 'writer_run',
 		name: 'delendai_writer_run',
+		inputSchema: acceptsDryRun,
 		// This handler NEVER reads `args.dryRun` — it always calls the
 		// capability unconditionally, exactly like an unmigrated plugin
 		// handler that "forgot" the dry-run contract.
@@ -176,6 +182,7 @@ describe('capability-injection layer — ambient dry-run scope wired into invoke
 		runtime.bindRegisteredTool({
 			registrationId: 'writer_run',
 			name: 'delendai_writer_run',
+			inputSchema: acceptsDryRun,
 			handler: async () => {
 				try {
 					guardEffectCapability({

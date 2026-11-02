@@ -170,6 +170,8 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\t */',
 		'\treadonly startupCheck?: boolean | undefined;',
 		'\treadonly toolDisclosure?: Readonly<Record<string, IToolDisclosureLevel>> | undefined;',
+		"\t/** Each tool's own one-line summary: a search must tell the tools of an inactive plugin apart. */",
+		'\treadonly toolSummaries?: Readonly<Record<string, string>> | undefined;',
 		'\t/**',
 		'\t * The environment variables the plugin declares in its options schema',
 		'\t * (`env:VAR` markers), read at generation time so `init` can warn about',
@@ -193,7 +195,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		'\tknowledgeIds: readonly string[],',
 		'\tskillIds: readonly string[],',
 		'\tdependencies: readonly string[],',
-		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'startupCheck' | 'toolDisclosure' | 'environmentRequirements'> = {},",
+		"\tmetadata: Pick<IManagedLazyPluginCatalogEntry, 'summary' | 'tags' | 'startupActivation' | 'startupCheck' | 'toolDisclosure' | 'toolSummaries' | 'environmentRequirements'> = {},",
 		'): IManagedLazyPluginCatalogEntry => ({',
 		'\tid,',
 		'\tpackageSpecifier,',
@@ -216,6 +218,12 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 						? []
 						: [`${quote(tool.id)}: ${quote(tool.disclosure)}`],
 			);
+			const summaryEntries = (registrations.tools ?? []).flatMap(
+				(tool) =>
+					tool.summary === undefined
+						? []
+						: [`${quote(tool.id)}: ${quote(tool.summary)}`],
+			);
 			const startupActivation =
 				metadata?.startupActivation === true ||
 				observesOtherPlugins(registrations);
@@ -231,6 +239,9 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 				...(disclosureEntries.length === 0
 					? []
 					: [`toolDisclosure: { ${disclosureEntries.join(', ')} }`]),
+				...(summaryEntries.length === 0
+					? []
+					: [`toolSummaries: { ${summaryEntries.join(', ')} }`]),
 				...renderEnvironmentRequirements(id, plugin.optionsSchema),
 			];
 			const metadataLiteral = `{ ${metadataFields.join(', ')} }`;

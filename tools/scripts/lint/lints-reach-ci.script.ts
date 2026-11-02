@@ -76,11 +76,13 @@ export type {
 const BASELINE_REL = 'tools/scripts/lint/lints-reach-ci.baseline.json';
 const WORKFLOWS_REL = '.github/workflows';
 
-/** Every `bun run <script>` a text invokes. */
+/** Every `bun run <script>`, or chain run together, a text invokes. */
 const invocations = (text: string): readonly string[] =>
-	[...text.matchAll(/bun run ([a-z0-9:@._-]+)/gu)].map(
-		(match) => match[1] ?? '',
-	);
+	[
+		...text.matchAll(
+			/(?:bun run|run-together\.script\.ts) ([a-z0-9:@._-]+)/gu,
+		),
+	].map((match) => match[1] ?? '');
 
 /**
  * Every `package.json` script CI can reach: the transitive closure over

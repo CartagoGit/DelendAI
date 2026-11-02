@@ -24,6 +24,7 @@ import {
 	renderAgentMdBlock,
 	type IAgentScope,
 } from '../gen/agent-md.script';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -130,6 +131,13 @@ export const formatReport = (drifts: readonly IAgentMdDrift[]): string => {
 };
 
 export const main = async (argv: readonly string[]): Promise<number> => {
+	if (
+		refuseMissingScanRoots('check-agent-md', REPO_ROOT, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	void argv;
 	if (argv.includes('--force-write')) {
 		const touched = await generateAll();

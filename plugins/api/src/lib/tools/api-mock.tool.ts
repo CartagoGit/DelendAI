@@ -10,13 +10,13 @@
  *   - `operationId` (required) or `method` + `path`.
  *   - `statusCode?` to pick a specific response (defaults to the
  *     "happy path" — the first 2xx, or `default`).
- *   - `spec?` (inline parsed) or `specUrl?` (allow-listed fetch).
+ *   - `spec?` (inline) or `specUrl?` (allow-listed fetch).
  *   - `count?` to generate a list of `count` unique mocks (default 1).
  *
- * Output is a compact JSON envelope: `{ ok, operationId, response }`
- * where `response` carries the chosen status, content type, and the
- * generated body. Errors are surfaced through the canonical
- * `toolError` shape.
+ * Output: the chosen `selectedStatus` and `selectedBody`, one entry in
+ * `samples` per counted mock, and one example per declared response in
+ * `allResponses`. Errors are surfaced through the canonical `toolError`
+ * shape.
  */
 import z from 'zod';
 
@@ -29,18 +29,12 @@ import {
 	mockResponseForStatus,
 	type IMockedResponse,
 } from '../mock/mock-engine';
-import { parseOpenApi } from '../spec/openapi';
+import type { IResolveSpecOptions } from '../contracts/interfaces/resolve-spec.interface';
 import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';
+import { resolveSpec } from '../spec/resolve-spec.service';
 
-export interface IApiMockToolOptions {
+export interface IApiMockToolOptions extends IResolveSpecOptions {
 	readonly namespacePrefix: string;
-	readonly defaultAllowList?: readonly string[];
-	readonly specFetch?: (args: {
-		url: string;
-		allowList: readonly string[];
-		timeoutMs?: number;
-		maxBytes?: number;
-	}) => Promise<{ body: string }>;
 }
 
 const INPUT = z
@@ -74,16 +68,10 @@ const OUTPUT = z.object({
 	path: z.string(),
 	selectedStatus: z.string(),
 	selectedBody: z.unknown(),
+	samples: z.array(MOCKED_RESPONSE),
 	allResponses: z.array(MOCKED_RESPONSE),
 	count: z.number().int().nonnegative(),
 });
-
-const isParsedSpec = (value: unknown): value is IOpenApiSpec => {
-	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-		return false;
-	}
-	return 'operations' in value;
-};
 
 const findOperation = (
 	spec: IOpenApiSpec,
@@ -119,7 +107,7 @@ export const buildApiMockToolRegistration = (
 			`${options.namespacePrefix}_api_mock`,
 			{
 				description:
-					'Read-only. Picks the requested response (or the happy path) and returns a deterministic example body for the matching OpenAPI operation. Pass `count` to generate a list of distinct samples.',
+					'Read-only. Picks the requested response (or the happy path) and returns a deterministic example body for the matching OpenAPI operation. Pass `count` to receive that many samples in `samples`.',
 				inputSchema: INPUT,
 				outputSchema: OUTPUT,
 			},
@@ -144,43 +132,9 @@ export const buildApiMockToolRegistration = (
 					);
 				}
 
-				let spec: IOpenApiSpec | undefined;
-				if (input.spec !== undefined) {
-					spec = isParsedSpec(input.spec)
-						? input.spec
-						: parseOpenApi(input.spec as object);
-				} else if (input.specUrl !== undefined) {
-					const allowList =
-						input.allowList ?? options.defaultAllowList;
-					if (allowList === undefined || allowList.length === 0) {
-						return toolError(
-							'specUrl requires an allowList.',
-							'Pass `allowList: ["api.example.com"]` or supply `spec` inline.',
-						);
-					}
-					if (options.specFetch === undefined) {
-						return toolError(
-							'install-required',
-							'api_mock needs an injected fetch seam to load `specUrl` in this host.',
-						);
-					}
-					const loaded = await options.specFetch({
-						url: input.specUrl,
-						allowList,
-						...(input.timeoutMs === undefined
-							? {}
-							: { timeoutMs: input.timeoutMs }),
-						...(input.maxBytes === undefined
-							? {}
-							: { maxBytes: input.maxBytes }),
-					});
-					spec = parseOpenApi(loaded.body);
-				} else {
-					return toolError(
-						'missing-spec',
-						'Pass `spec` (inline parsed) or `specUrl` (allow-listed).',
-					);
-				}
+				const loaded = await resolveSpec(input, options);
+				if ('error' in loaded) return loaded.error;
+				const spec = loaded.spec;
 
 				const operation = findOperation(spec, input);
 				if (operation === undefined) {
@@ -232,6 +186,7 @@ export const buildApiMockToolRegistration = (
 						path: operation.path,
 						selectedStatus: selected.status,
 						selectedBody: selected.body,
+						samples,
 						allResponses: allResponsesRaw,
 						count: samples.length,
 					}),

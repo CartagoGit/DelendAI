@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 import { LOCAL_ALIASES } from './scripts/lib/local-aliases.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +30,7 @@ export default defineConfig({
 		],
 	},
 	test: {
+		...sharedTestOptions,
 		// Measured in isolation on 2026-09-14: the slowest
 		// test of this suite costs 138 ms (`resolveI18nDescriptions includes a 12-language block for every regi...`).
 		// A full run starts ~1,466 spec files at once, so a ceiling under

@@ -88,6 +88,13 @@ export const reapDeliveredUnits = async (input: {
 	const reaped: IReapedUnit[] = [];
 	for (const unit of standings) {
 		if (!hasLocalBranch(root, unit.ref)) continue;
+		// The tip the unit is judged at: removed only while still there.
+		const judgedTip = readGit(root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${unit.ref}`,
+		]);
 		const spent =
 			unit.standing === 'delivered' ||
 			(unit.standing === 'abandoned' &&
@@ -124,8 +131,12 @@ export const reapDeliveredUnits = async (input: {
 			// Not kept (no forge to keep them on): the unit stays.
 			const gone =
 				keptAt !== undefined &&
-				(await removeUnitCheckout(root, unit.ref, { editsKept: true }))
-					.deletedBranch;
+				(
+					await removeUnitCheckout(root, unit.ref, {
+						editsKept: true,
+						...(judgedTip === undefined ? {} : { tip: judgedTip }),
+					})
+				).deletedBranch;
 			reaped.push(
 				gone
 					? { ...base, outcome: 'retired', keptAt }
@@ -137,15 +148,13 @@ export const reapDeliveredUnits = async (input: {
 			reaped.push({ ...base, outcome: 'would-remove' });
 			continue;
 		}
-		const tip = readGit(root, [
-			'rev-parse',
-			'-q',
-			'--verify',
-			`refs/heads/${unit.ref}`,
-		]);
-		const removal = await removeUnitCheckout(root, unit.ref);
-		if (removal.deletedBranch && tip !== undefined)
-			dropForgeCopy(root, remote, unit.ref, tip);
+		const removal = await removeUnitCheckout(
+			root,
+			unit.ref,
+			judgedTip === undefined ? {} : { tip: judgedTip },
+		);
+		if (removal.deletedBranch && judgedTip !== undefined)
+			dropForgeCopy(root, remote, unit.ref, judgedTip);
 		reaped.push({
 			...base,
 			outcome: removal.deletedBranch ? 'removed' : 'kept',

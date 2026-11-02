@@ -93,18 +93,42 @@ const relationshipLine = (
 	return `  ${fromId} ||--o{ ${toId} : "${fk.name}"`;
 };
 
+/** A table's identity: its schema and name, so homonyms in two schemas stay apart. */
+const tableKey = (schema: string | null | undefined, name: string): string =>
+	`${schema ?? ''}\u0000${name}`;
+
+/**
+ * Each table's entity name: its own name, or `<schema>_<name>` when
+ * another schema holds a table of the same name.
+ */
+const entityNames = (schema: IDatabaseSchema): ReadonlyMap<string, string> => {
+	const homonyms = new Set(
+		schema.tables
+			.map((table) => table.name)
+			.filter((name, index, all) => all.indexOf(name) !== index),
+	);
+	return new Map(
+		schema.tables.map((table) => [
+			tableKey(table.schema, table.name),
+			safeEntityName(
+				homonyms.has(table.name) && table.schema !== null
+					? `${table.schema}_${table.name}`
+					: table.name,
+			),
+		]),
+	);
+};
+
 /** Render the full `erDiagram` block. */
 export const renderErd = (schema: IDatabaseSchema): string => {
 	const lines: string[] = ['erDiagram'];
-	const tableToEntity = new Map<string, string>();
-	for (const table of schema.tables) {
-		const entity = safeEntityName(table.name);
-		tableToEntity.set(table.name, entity);
-	}
+	const entities = entityNames(schema);
+	const entityOf = (table: ITableInfo): string =>
+		entities.get(tableKey(table.schema, table.name)) ??
+		safeEntityName(table.name);
 	// Entity blocks: declaration + attribute list.
 	for (const table of schema.tables) {
-		const entity = tableToEntity.get(table.name) as string;
-		lines.push(`${entity} {`);
+		lines.push(`${entityOf(table)} {`);
 		// Primary keys first (Mermaid's PK marker is conventional;
 		// rendering them at the top makes the diagram readable).
 		const sortedColumns = [...table.columns].sort((a, b) => {
@@ -116,13 +140,18 @@ export const renderErd = (schema: IDatabaseSchema): string => {
 		}
 		lines.push('}');
 	}
-	// Relationship blocks: one line per foreign key.
+	// Relationship blocks: one line per foreign key, to the table in the
+	// schema the key names (its own when it names none).
 	for (const table of schema.tables) {
-		const fromEntity = tableToEntity.get(table.name) as string;
 		for (const fk of table.foreignKeys) {
-			const toEntity = tableToEntity.get(fk.toTable);
+			const toEntity = entities.get(
+				tableKey(
+					fk.toSchema === undefined ? table.schema : fk.toSchema,
+					fk.toTable,
+				),
+			);
 			if (toEntity === undefined) continue; // skip dangling refs
-			lines.push(relationshipLine(fk, fromEntity, toEntity));
+			lines.push(relationshipLine(fk, entityOf(table), toEntity));
 		}
 	}
 	return lines.join('\n');
@@ -139,7 +168,9 @@ export const listEntityBlocks = (
 	schema: IDatabaseSchema,
 ): readonly IEntityBlock[] =>
 	schema.tables.map((table) => ({
-		entity: safeEntityName(table.name),
+		entity:
+			entityNames(schema).get(tableKey(table.schema, table.name)) ??
+			safeEntityName(table.name),
 		table,
 		columns: table.columns,
 	}));
@@ -151,8 +182,12 @@ export const listEntityBlocks = (
  */
 export const renderErdIntegrity = (schema: IDatabaseSchema): boolean => {
 	const rendered = renderErd(schema);
+	const entities = entityNames(schema);
 	for (const table of schema.tables) {
-		if (!rendered.includes(safeEntityName(table.name))) return false;
+		const entity =
+			entities.get(tableKey(table.schema, table.name)) ??
+			safeEntityName(table.name);
+		if (!rendered.includes(entity)) return false;
 	}
 	for (const table of schema.tables) {
 		for (const fk of table.foreignKeys) {

@@ -25,7 +25,6 @@ import {
 	resolveInvocationSessionId,
 } from './lib/services/invocation-recorder.service';
 import { regenerateUsageSummary } from './lib/services/usage-rollup.service';
-import { StartClock } from './lib/start-clock';
 import {
 	computeCostUsd,
 	resolvePricing,
@@ -71,6 +70,12 @@ const OptionsSchema = z
 		 * 300_000 (5 min).
 		 */
 		summaryIntervalMs: z.number().int().min(1000).optional(),
+		/**
+		 * Refresh the model price table from LiteLLM's published list when
+		 * the cached one is a day old. Default false: prices come from the
+		 * cache or the bundled snapshot, and nothing is downloaded.
+		 */
+		refreshPrices: z.boolean().optional(),
 		/**
 		 * S7 circuit breaker — session spend cap (USD). `undefined` (default)
 		 * = unlimited. When set (with `maxMonthlySpendUsd`), the breaker
@@ -122,7 +127,7 @@ const EMPTY_PRICING: IPricingTable = {
  */
 export default definePlugin({
 	name: 'usage-tracking',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Records every tool call (agent/plugin/model/extension) to an append-only log and reports aggregate usage + cost.',
 	// Accrued spend/usage history, not derivable cache — deleting it
@@ -228,7 +233,6 @@ export default definePlugin({
 				logs: ctx.logs,
 			},
 		);
-		const clock = new StartClock();
 		const corePrefix = deriveCorePrefix(ctx.namespacePrefix);
 		// Boot-scoped identity: the host declared its client once at
 		// assembly; every row inherits it unless a call carries its own
@@ -253,7 +257,9 @@ export default definePlugin({
 		// it lands. A pricing miss never blocks or fails a tool call (I6).
 		let pricingTable: IPricingTable = EMPTY_PRICING;
 		trackBackgroundWork(
-			resolvePricing(pricingPath).then((table) => {
+			resolvePricing(pricingPath, {
+				refresh: options.refreshPrices === true,
+			}).then((table) => {
 				pricingTable = table;
 			}),
 		);
@@ -381,14 +387,14 @@ export default definePlugin({
 
 		return {
 			tools: instrumentedTools,
-			// Hot-path hooks. `onToolStart` stamps a start time; `onToolCall`
-			// builds the metadata record and enqueues it (non-blocking).
-			onToolStart: (toolName) => {
-				clock.begin(toolName, Date.now());
-			},
-			onToolCall: (toolName, args, result, error) => {
+			// Hot-path hook: builds the metadata record and enqueues it
+			// (non-blocking). Each call carries its own elapsed time, which
+			// pairing starts and ends by tool name got wrong when two calls
+			// of one tool finished out of order.
+			onToolCall: (toolName, args, result, error, elapsedMs) => {
 				const endedAt = Date.now();
-				const startedAt = clock.take(toolName);
+				const startedAt =
+					elapsedMs === undefined ? undefined : endedAt - elapsedMs;
 				const peerPrefixes = ctx.peerPlugins?.list() ?? [];
 				const sessionId = resolveInvocationSessionId(
 					args,

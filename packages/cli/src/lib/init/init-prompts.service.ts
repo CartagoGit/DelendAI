@@ -210,6 +210,8 @@ export const askChoice = async <T extends string>(
 	question: string,
 	choices: ReadonlyArray<{ label: string; value: T }>,
 	defaultValue: T,
+	/** Words that end the whole flow here, and what they answer. */
+	stop?: { readonly words: readonly string[]; readonly value: T },
 ): Promise<T> => {
 	for (let i = 0; i < choices.length; i += 1) {
 		const c = choices[i];
@@ -221,6 +223,8 @@ export const askChoice = async <T extends string>(
 		`${question} (1-${choices.length})`,
 		String(choices.findIndex((c) => c.value === defaultValue) + 1),
 	);
+	if (stop?.words.includes(answer.trim().toLowerCase()) === true)
+		return stop.value;
 	const idx = Number.parseInt(answer, 10);
 	if (Number.isFinite(idx) && idx >= 1 && idx <= choices.length) {
 		const chosen = choices[idx - 1];

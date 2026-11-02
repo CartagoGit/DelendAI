@@ -27,6 +27,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -40,6 +41,7 @@ import {
 	type IIntegrationCertification,
 } from './certify-integration.script';
 import { queueAcceptance } from './queue-acceptance';
+import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
 import {
 	queueHead,
 	queueOrder,
@@ -94,9 +96,13 @@ const readDevelopmentConfig = (): {
 	readonly development?: Record<string, unknown>;
 } => {
 	try {
-		const parsed = JSON.parse(
+		const { value, errors } = parseJsonc(
 			readFileSync('delendai.config.json', 'utf8'),
-		) as Record<string, unknown>;
+		);
+		// A config that does not parse declares no policy: the defaults
+		// stand, exactly as they did when the read threw.
+		if (errors.length > 0) return {};
+		const parsed = value as Record<string, unknown>;
 		const development = parsed.development;
 		return development === null || typeof development !== 'object'
 			? {}
@@ -171,6 +177,7 @@ const mergeState = (number: number): string => {
 
 export interface ICheckRun {
 	readonly name: string;
+	readonly status?: string | null;
 	readonly conclusion: string | null;
 }
 
@@ -477,6 +484,12 @@ const integrationCertification = (
 	return { sha, state: certificationOf(runs, sha) };
 };
 
+/** The commit the integration branch was at before `sha` landed. */
+const firstParentOf = (sha: string): string =>
+	api<{ readonly parents: readonly { readonly sha: string }[] }>(
+		`repos/${REPOSITORY_SLUG}/commits/${sha}`,
+	).parents[0]?.sha ?? sha;
+
 /** Every full run of the certifying workflow at one commit, judged. */
 const fullRunAt = (sha: string): IIntegrationCertification =>
 	certificationOf(
@@ -675,8 +688,35 @@ const main = (): void => {
 			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
 		);
 	}
+	// Armed on positive evidence only: a certified integration branch, and
+	// every required check green on the candidate's own current head.
+	const certified = integrationAllowsArming(
+		certification.state,
+		certification.state === 'pending'
+			? fullRunAt(firstParentOf(certification.sha))
+			: undefined,
+	);
+	if (!red && !certified) {
+		console.log(
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, and the commit before it is not certified; nothing is armed until a full run is green.`,
+		);
+	}
 	const landing = new Set(
-		acceptance.filter((verdict) => verdict.accepted).map((v) => v.number),
+		acceptance
+			.filter((verdict) => {
+				if (!verdict.accepted || !certified) return false;
+				const checks = requiredChecksVerdict(
+					checksOf(shaOf(verdict.number)),
+					policy.integration.requiredChecks,
+				);
+				if (!checks.passed) {
+					console.log(
+						`keep-the-queue-moving: #${String(verdict.number)} is not armed: required checks ${[...checks.pending.map((name) => `${name} pending`), ...checks.missing.map((name) => `${name} missing`), ...checks.failed.map((name) => `${name} failed`)].join(', ')} on its current head.`,
+					);
+				}
+				return checks.passed;
+			})
+			.map((verdict) => verdict.number),
 	);
 	if (repairing !== undefined) landing.add(repairing);
 	for (const pull of opened) {

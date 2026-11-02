@@ -15,7 +15,7 @@ import {
 } from '@delendai/core/public';
 
 import type { II18nCheckToolOptions } from '../contracts/interfaces/i18n.interface';
-import { extractUsedKeys } from '../keys/extract-used-keys';
+import { extractKeyUsage } from '../keys/extract-used-keys';
 import { checkLocales } from '../i18n/check-i18n';
 import { realI18nDeps } from '../i18n/real-deps';
 
@@ -81,14 +81,27 @@ export const buildI18nCheckRegistration = (
 						contained.rel,
 					);
 				}
-				const locales = await deps.listLocales();
+				let locales: Awaited<ReturnType<typeof deps.listLocales>>;
+				try {
+					locales = await deps.listLocales();
+				} catch (error) {
+					return toolError(
+						'A locale catalogue cannot be read',
+						error instanceof Error ? error.message : String(error),
+					);
+				}
 				const sourceFiles = (await deps.listSourceFiles?.()) ?? [];
-				const usedKeys =
+				const usage =
 					sourceFiles.length > 0
-						? extractUsedKeys(sourceFiles)
+						? extractKeyUsage(sourceFiles)
 						: undefined;
 				const findings = checkLocales(locales, {
-					...(usedKeys !== undefined ? { usedKeys } : {}),
+					...(usage !== undefined
+						? {
+								usedKeys: usage.keys,
+								usedKeyPrefixes: usage.prefixes,
+							}
+						: {}),
 				});
 				return toolJson({
 					localesDir,

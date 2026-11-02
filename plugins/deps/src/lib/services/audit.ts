@@ -38,6 +38,9 @@ const BUN_TOOL: IExternalTool = {
 	],
 };
 
+/** Enough of a failed run's output to name its cause. */
+const MAX_CAUSE_CHARS = 500;
+
 const GHSA_RE = /GHSA-[0-9a-z-]+/i;
 
 /** Map a bun/npm advisory severity onto the shared 5-band scale. */
@@ -57,6 +60,21 @@ const mapSeverity = (raw: string | undefined): FindingSeverity => {
 	}
 };
 
+/** The JSON report inside the output, undefined when there is none. Pure. */
+const auditReportOf = (raw: string): Record<string, unknown> | undefined => {
+	const start = raw.indexOf('{');
+	const end = raw.lastIndexOf('}');
+	if (start < 0 || end < start) return undefined;
+	try {
+		const data: unknown = JSON.parse(raw.slice(start, end + 1));
+		return data !== null && typeof data === 'object'
+			? (data as Record<string, unknown>)
+			: undefined;
+	} catch {
+		return undefined;
+	}
+};
+
 /**
  * Parse `bun audit --json` output — a `Record<packageName, advisory[]>` —
  * into normalized findings. Pure and defensive: tolerates a leading banner
@@ -64,16 +82,8 @@ const mapSeverity = (raw: string | undefined): FindingSeverity => {
  * throws (malformed input → `[]`).
  */
 export const parseBunAudit = (raw: string): IFinding[] => {
-	const start = raw.indexOf('{');
-	const end = raw.lastIndexOf('}');
-	if (start < 0 || end < start) return [];
-	let data: Record<string, unknown>;
-	try {
-		data = JSON.parse(raw.slice(start, end + 1)) as Record<string, unknown>;
-	} catch {
-		return [];
-	}
-	if (data === null || typeof data !== 'object') return [];
+	const data = auditReportOf(raw);
+	if (data === undefined) return [];
 	const findings: IFinding[] = [];
 	for (const [pkg, value] of Object.entries(data)) {
 		if (!Array.isArray(value)) continue;
@@ -106,13 +116,14 @@ export const parseBunAudit = (raw: string): IFinding[] => {
  * Run `bun audit --json` in `cwd` and normalize the result. `exec` is
  * injected (defaults to the real runner inside `runExternalTool`) so this is
  * unit-testable without spawning. `bun audit` exits non-zero when it finds
- * vulnerabilities — that is a normal result here, not a failure; only a
- * missing `bun` binary yields a skipped scan.
+ * vulnerabilities — that is a normal result here, not a failure. A run
+ * with no report (a timeout, a registry failure) is one: `failure` names
+ * the cause, because no findings would read as no vulnerabilities.
  */
-export const runDepsAudit = async (
+export const readDepsAudit = async (
 	cwd: string,
 	exec?: IArgvExec,
-): Promise<IScanResult> => {
+): Promise<IScanResult | { readonly failure: string }> => {
 	const run = await runExternalTool(
 		{ tool: BUN_TOOL, args: ['audit', '--json'], cwd, timeoutMs: 60_000 },
 		exec,
@@ -123,6 +134,24 @@ export const runDepsAudit = async (
 			note: 'bun not found on PATH — install bun to run a CVE audit',
 		});
 	}
+	if (run.timedOut) return { failure: 'bun audit timed out' };
 	const raw = run.stdout.includes('{') ? run.stdout : run.stderr;
+	if (auditReportOf(raw) === undefined) {
+		const cause = run.stderr.trim() || run.stdout.trim();
+		return {
+			failure: `bun audit gave no report${cause === '' ? '' : `: ${cause.slice(0, MAX_CAUSE_CHARS)}`}`,
+		};
+	}
 	return toScanResult('bun-audit', parseBunAudit(raw));
+};
+
+/** The audit as a scan: a failed one is skipped, with its cause, never clean. */
+export const runDepsAudit = async (
+	cwd: string,
+	exec?: IArgvExec,
+): Promise<IScanResult> => {
+	const result = await readDepsAudit(cwd, exec);
+	return 'failure' in result
+		? toScanResult('bun-audit', [], { skipped: true, note: result.failure })
+		: result;
 };

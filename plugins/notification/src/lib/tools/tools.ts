@@ -235,6 +235,7 @@ export const buildAwaitLockRegistration = (
 						timedOut: z.boolean(),
 						alreadyFree: z.boolean(),
 						waitedMs: z.number(),
+						readError: z.string().optional(),
 						verdict: z.string().optional(),
 						holder: z
 							.object({
@@ -281,6 +282,9 @@ export const buildAwaitLockRegistration = (
 							timedOut: r.timedOut,
 							alreadyFree: r.alreadyFree,
 							waitedMs: r.waitedMs,
+							...(r.readError === undefined
+								? {}
+								: { readError: r.readError }),
 						};
 						if (!r.timedOut) return toolJson(base);
 						// A bare `timedOut: true` leaves the agent exactly

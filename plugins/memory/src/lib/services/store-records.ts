@@ -14,6 +14,7 @@
  * the durable-memory contract. Moving redaction to a separate module
  * would risk a future caller forgetting to apply it.
  */
+import { createHash } from 'node:crypto';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
@@ -21,6 +22,7 @@ import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { redactSecrets } from './redact';
 import { readStore, withStoreLock, writeStore } from './store-io';
 import { DEFAULT_MAX_NOTES, type INote, type ISaveResult } from './store-types';
+import { CorruptFileError } from '@delendai/core/public';
 
 const kebab = (value: string): string =>
 	value
@@ -47,14 +49,36 @@ export class NoteQuotaExceededError extends Error {
 	}
 }
 
+const normalizeTitle = (title: string): string =>
+	title.trim().replace(/\s+/g, ' ').toLowerCase();
+
+const titleHash = (title: string): string =>
+	createHash('sha256').update(title.trim()).digest('hex').slice(0, 8);
+
 /**
- * Derive a note's stable id from its title (so saves upsert by title).
- * Titles are therefore part of the durable memory contract: the store
- * is for stable reusable facts, not ephemeral log entries that should
- * accumulate.
+ * Derive a note's id from its title: the kebab slug, or a hash-based
+ * fallback when the slug is empty. Ids already on disk are never
+ * rewritten, so an id stays stable for the life of its note.
  */
 export const deriveNoteId = (title: string): string =>
-	kebab(title) || `note-${Date.now().toString(36)}`;
+	kebab(title) || `note-${titleHash(title)}`;
+
+/**
+ * Resolve the id for a save. The slug is shared by titles such as
+ * `release/v1` and `release-v1`; when the slug is already held by a note
+ * with a different title, the exact-title hash is appended so two notes
+ * never collapse into one record.
+ */
+export const resolveNoteId = (
+	notes: readonly INote[],
+	title: string,
+): string => {
+	const base = deriveNoteId(title);
+	const holder = notes.find((note) => note.id === base);
+	if (holder === undefined) return base;
+	if (normalizeTitle(holder.title) === normalizeTitle(title)) return base;
+	return `${base}-${titleHash(title)}`;
+};
 
 /**
  * Upsert a note by id (derived from its title). Returns the stored note.
@@ -81,8 +105,8 @@ export const saveNote = (
 			bodyR.redactions +
 			tagsR.reduce((sum, t) => sum + t.redactions, 0);
 
-		const id = deriveNoteId(titleR.text);
 		const notes = await readStore(absPath);
+		const id = resolveNoteId(notes, titleR.text);
 		const existing = notes.find((note) => note.id === id);
 		const limit = getMaxNotes(maxNotes);
 		if (existing === undefined && notes.length >= limit) {
@@ -129,8 +153,9 @@ export const removeNote = (absPath: string, id: string): Promise<boolean> =>
 /**
  * Read the durable store WITHOUT the lazy-TTL filter `readStore`
  * applies, so we can see (and count) the expired notes that are still
- * physically on disk. Missing/empty/corrupt → empty list (a corrupt
- * file is the read path's concern, not the sweeper's).
+ * physically on disk. Missing/empty → empty list. Corrupt → the sweep
+ * fails with the reason and the file stays as it is: read as empty, the
+ * sweep did nothing and said it had nothing to do, every time.
  */
 const readNotesRaw = async (absPath: string): Promise<INote[]> => {
 	const reader = new SafeWorkspaceReader(dirname(absPath));
@@ -142,12 +167,20 @@ const readNotesRaw = async (absPath: string): Promise<INote[]> => {
 		throw err;
 	}
 	if (!raw.trim()) return [];
+	let parsed: { notes?: unknown };
 	try {
-		const parsed = JSON.parse(raw) as { notes?: INote[] };
-		return Array.isArray(parsed.notes) ? parsed.notes : [];
-	} catch {
-		return [];
+		parsed = JSON.parse(raw) as { notes?: unknown };
+	} catch (err) {
+		throw new CorruptFileError(
+			absPath,
+			null,
+			`invalid JSON: ${String(err)}`,
+		);
 	}
+	if (!Array.isArray(parsed.notes)) {
+		throw new CorruptFileError(absPath, null, 'expected { notes: [...] }');
+	}
+	return parsed.notes as INote[];
 };
 
 /**

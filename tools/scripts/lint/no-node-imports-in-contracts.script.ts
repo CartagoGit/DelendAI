@@ -22,6 +22,7 @@
 
 import { readdir, readFile, stat as fsStat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const ROOT = `${import.meta.dirname ?? import.meta.dir}/../../../packages/contracts/src`;
 
@@ -149,6 +150,8 @@ const lintOne = async (
 };
 
 export const main = async (): Promise<number> => {
+	if (refuseMissingScanRoots('no-node-imports-in-contracts', ROOT, ['.']))
+		return 1;
 	const files = await walk(ROOT);
 	const allFindings: {
 		file: string;

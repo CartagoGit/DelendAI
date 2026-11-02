@@ -33,6 +33,7 @@
 
 ## Tests
 
+- plugins/project-health/tests/src/lib/services/project-health-signals.service.spec.ts
 - plugins/project-health/tests/src/lib/services/project-health.service.spec.ts
 - plugins/project-health/tests/src/project-health.tool.spec.ts
 

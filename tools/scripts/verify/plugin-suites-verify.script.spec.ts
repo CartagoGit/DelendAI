@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
+	verifyPluginSuites,
 	buildPluginTestCommand,
 	buildVitestArgs,
 	discoverPluginTestSuites,
@@ -56,5 +57,16 @@ describe('plugin suite matrix', () => {
 				],
 			}),
 		).toEqual(['run', '--cwd', 'plugins/proposals', 'test']);
+	});
+
+	it('checks that each plugin owns a suite without running them again', async () => {
+		const written = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		expect(await verifyPluginSuites(process.cwd())).toBe(0);
+		expect(String(written.mock.calls[0]?.[0])).toContain(
+			'each own a test suite',
+		);
+		written.mockRestore();
 	});
 });

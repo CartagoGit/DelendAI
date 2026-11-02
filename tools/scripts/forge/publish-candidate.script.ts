@@ -63,6 +63,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { scopeViolations } from '../lint/publication-scope.script';
@@ -110,9 +111,16 @@ const args = (name: string): readonly string[] =>
 
 /** The policy's own names, never a raw read of the config file. */
 export const policyBranches = () => {
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	return resolveDevelopmentPolicy({
 		...(config.development === undefined
 			? {}
@@ -238,11 +246,19 @@ export const proveCommit = (
 		spawnSync('bun', ['run', script], { cwd, stdio: 'inherit' }).status ??
 		1,
 ): readonly string[] => {
-	const dir = join(worktreeRoot, `preflight-${commit.slice(0, 12)}`);
+	// One directory per invocation: two pre-flights of one commit shared a
+	// name, the second's `add` failed on the first's directory, and its
+	// clean-up then removed the first one's worktree from under it.
+	const dir = join(
+		worktreeRoot,
+		`preflight-${commit.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
+	);
 	const failed: string[] = [];
+	let created = false;
 	try {
 		mkdirSync(worktreeRoot, { recursive: true });
 		git(['worktree', 'add', '--detach', '-q', dir, commit]);
+		created = true;
 		// The candidate's OWN dependency tree. Symlinking the shared
 		// `node_modules` would resolve every `@delendai/*` import back to
 		// the shared checkout's sources, which is exactly the isolation
@@ -264,12 +280,15 @@ export const proveCommit = (
 		}
 		return failed;
 	} finally {
-		try {
-			git(['worktree', 'remove', '--force', dir]);
-		} catch {
-			// Already gone, or never created. `prune` settles either.
+		// Only what this invocation created is removed.
+		if (created) {
+			try {
+				git(['worktree', 'remove', '--force', dir]);
+			} catch {
+				// Already gone. `prune` settles it.
+			}
+			git(['worktree', 'prune']);
 		}
-		git(['worktree', 'prune']);
 	}
 };
 

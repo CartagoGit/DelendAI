@@ -286,13 +286,23 @@ export const createLegacyWorkspaceFixture = async (
 	};
 };
 
-export const hashWorkspaceTree = async (root: string): Promise<string> => {
+export const hashWorkspaceTree = async (
+	root: string,
+	/** Workspace-relative folders left out, as a migration backup leaves them. */
+	exclude: readonly string[] = [],
+): Promise<string> => {
 	const files: { readonly path: string; readonly contents: string }[] = [];
 	const walk = async (dir: string): Promise<void> => {
 		const { readdir } = await import('node:fs/promises');
 		for (const entry of await readdir(dir, { withFileTypes: true })) {
 			const absolute = join(dir, entry.name);
 			const rel = relative(root, absolute).split('\\').join('/');
+			if (
+				exclude.some(
+					(scope) => rel === scope || rel.startsWith(`${scope}/`),
+				)
+			)
+				continue;
 			if (entry.isDirectory()) {
 				if (entry.name === '.git' || entry.name === 'node_modules')
 					continue;

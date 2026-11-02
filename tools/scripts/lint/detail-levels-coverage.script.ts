@@ -27,6 +27,7 @@
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const PLUGINS_ROOT = 'plugins';
 const TOOL_FILE = /\/src\/lib\/tools\/.+\.ts$/;
@@ -422,6 +423,12 @@ export const formatReport = (report: IDetailCoverageReport): string => {
 };
 
 export const main = async (): Promise<number> => {
+	if (
+		refuseMissingScanRoots('detail-levels-coverage', process.cwd(), [
+			PLUGINS_ROOT,
+		])
+	)
+		return 1;
 	const report = await detectDetailCoverage();
 	process.stdout.write(formatReport(report));
 	return 0;

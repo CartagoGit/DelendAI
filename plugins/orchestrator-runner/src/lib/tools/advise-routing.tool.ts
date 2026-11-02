@@ -28,7 +28,7 @@ import type { IProviderCapabilities } from '@delendai/core/public';
 import { CAPABILITY_TAG_SCHEMA } from '@delendai/core/contracts';
 import z from 'zod';
 
-import { buildRoutingDecision } from '../router/advise';
+import { buildRoutingDecision, isNothingToRoute } from '../router/advise';
 import type { SessionStore } from '../router/session';
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference, ILoopDetectionSeam } from '../types';
@@ -196,6 +196,17 @@ export const buildAdviseRoutingRegistration = (
 						},
 						prompt: args.taskDescription,
 						sessionId,
+					});
+				// Nothing to route to is not a decision to act on: it read as a
+				// cli invoke with an empty command. It is said plainly, and
+				// nothing is kept for the session to stick to.
+				if (isNothingToRoute(decision))
+					return toolJson({
+						routable: false,
+						reason: decision.rationale,
+						nextAction:
+							'Build a roster first (bootstrap_providers or discover_providers), or run a healthcheck when every provider reads unavailable.',
+						level,
 					});
 				if (sticky === undefined) {
 					options.sessions.set(sessionId, decision);

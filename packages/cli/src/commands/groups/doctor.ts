@@ -17,6 +17,8 @@
  */
 import type { IOverview } from '@delendai/client/public';
 
+import { parseJsonc } from '@delendai/core/cli';
+
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -269,7 +271,7 @@ export const runDoctorBody = async (
 			'utf8',
 		);
 		sections.push(
-			analyzeConfigRoots(JSON.parse(configRaw), (rel) =>
+			analyzeConfigRoots(parseJsonc(configRaw).value, (rel) =>
 				existsSync(join(ctx.globals.workspace, rel)),
 			),
 		);

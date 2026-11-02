@@ -23,6 +23,7 @@ import { proposalsAutoWorkI18n } from '#I18N/tools/delendai_proposals_auto_work'
 import { memorySaveI18n } from '#I18N/tools/delendai_memory_save';
 import { agentOrchestratorPlanI18n } from '#I18N/tools/delendai_agent-orchestrator_plan';
 import { auditPlanI18n } from '#I18N/tools/delendai_audit_plan';
+import { auditCloseI18n } from '#I18N/tools/delendai_audit_close';
 import { auditConsolidateI18n } from '#I18N/tools/delendai_audit_consolidate';
 import { depsDepsListI18n } from '#I18N/tools/delendai_deps_deps_list';
 import { depsDepsCheckI18n } from '#I18N/tools/delendai_deps_deps_check';
@@ -170,6 +171,7 @@ registerToolI18n('delendai_agent-orchestrator_plan', agentOrchestratorPlanI18n);
 // sources stay agnostic of the host's core prefix; the qualification
 // happens once, at boot, in `packages/core/src/lib/cli/assemble.ts`.
 registerToolI18n('delendai_audit_audit_plan', auditPlanI18n);
+registerToolI18n('delendai_audit_audit_close', auditCloseI18n);
 registerToolI18n('delendai_audit_audit_consolidate', auditConsolidateI18n);
 registerToolI18n('delendai_deps_deps_list', depsDepsListI18n);
 registerToolI18n('delendai_deps_deps_check', depsDepsCheckI18n);

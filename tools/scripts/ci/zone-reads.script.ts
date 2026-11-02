@@ -38,20 +38,58 @@ export const buildZoneReadMap = (
 	raw: Readonly<Record<string, readonly string[]>>,
 	kindOf: (path: string) => 'file' | 'dir' | undefined,
 ): IZoneReadMap => {
-	const zones: Record<string, { read: string[]; listed: string[] }> = {};
-	for (const [zone, paths] of Object.entries(raw).sort(([a], [b]) =>
+	const zones: Record<
+		string,
+		{
+			read: string[];
+			listed: string[];
+			specs?: Record<string, { read: string[]; listed: string[] }>;
+		}
+	> = {};
+	for (const [zone, lines] of Object.entries(raw).sort(([a], [b]) =>
 		a.localeCompare(b),
 	)) {
 		const read = new Set<string>();
 		const listed = new Set<string>();
-		for (const path of paths) {
+		const bySpec = new Map<
+			string,
+			{ read: Set<string>; listed: Set<string> }
+		>();
+		for (const line of lines) {
+			// `spec<TAB>path`, or a bare path from a recording made before
+			// reads were kept by spec.
+			const tab = line.indexOf('\t');
+			const spec = tab < 0 ? '' : line.slice(0, tab);
+			const path = tab < 0 ? line : line.slice(tab + 1);
 			const kind = kindOf(path);
-			if (kind === 'file') read.add(path);
-			else if (kind === 'dir') listed.add(path);
+			if (kind === undefined) continue;
+			(kind === 'file' ? read : listed).add(path);
+			if (spec.length === 0) continue;
+			const entry = bySpec.get(spec) ?? {
+				read: new Set(),
+				listed: new Set(),
+			};
+			(kind === 'file' ? entry.read : entry.listed).add(path);
+			bySpec.set(spec, entry);
 		}
 		zones[zone] = {
 			read: [...read].sort(),
 			listed: [...listed].sort(),
+			...(bySpec.size === 0
+				? {}
+				: {
+						specs: Object.fromEntries(
+							[...bySpec.entries()]
+								.sort(([a], [b]) => a.localeCompare(b))
+								.map(([spec, entry]) => [
+									spec,
+									{
+										read: [...entry.read].sort(),
+										listed: [...entry.listed].sort(),
+									},
+								]),
+						),
+					}),
 		};
 	}
 	return { zones };
@@ -77,7 +115,16 @@ export const recordedPathsOf = (map: IZoneReadMap): Record<string, string[]> =>
 	Object.fromEntries(
 		Object.entries(map.zones).map(([zone, touched]) => [
 			zone,
-			[...touched.read, ...touched.listed],
+			[
+				...touched.read,
+				...touched.listed,
+				...Object.entries(touched.specs ?? {}).flatMap(
+					([spec, reads]) =>
+						[...reads.read, ...reads.listed].map(
+							(path) => `${spec}\t${path}`,
+						),
+				),
+			],
 		]),
 	);
 

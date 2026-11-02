@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	sharedSetupFiles,
+	sharedTestOptions,
+	workspaceAliases,
+} from '../../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -25,6 +29,7 @@ export default defineConfig({
 		alias: workspaceAliases(workspaceRoot),
 	},
 	test: {
+		...sharedTestOptions,
 		// Measured in isolation on 2026-09-14: the slowest
 		// test of this suite costs 33 ms (`renderSiteFooter emits the 3-column inner + base row`).
 		// A full run starts ~1,466 spec files at once, so a ceiling under

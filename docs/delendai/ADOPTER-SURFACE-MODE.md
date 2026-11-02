@@ -302,4 +302,4 @@ surface. **You do not need to depend on `tools/list_changed` for this
 to work.**
 
 Sample outputs for all five levels are in
-[`evidence/q00009-startup-report-{off,compact,medium,high,full}.txt`](evidence/).
+`evidence/q00009-startup-report-{off,compact,medium,high,full}.txt`.

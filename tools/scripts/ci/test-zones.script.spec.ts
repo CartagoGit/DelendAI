@@ -16,7 +16,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	compactMatrix,
 	planZones,
+	shardFilesOf,
 	reachForBase,
 	reachableZones,
 	zoneOf,
@@ -69,6 +71,61 @@ describe('zoneOf', () => {
 	// still run somewhere.
 	it('gives a spec that matches no rule a home anyway', () => {
 		expect(zoneOf('somewhere/nobody/expected.spec.ts')).toBe('tools');
+	});
+});
+
+describe('planZones by measured time', () => {
+	const rules = [
+		{ id: 'tools', match: () => true, paths: () => ['tools'] },
+	] as const;
+	const specs = Array.from(
+		{ length: 8 },
+		(_, index) => `tools/s${String(index)}.spec.ts`,
+	);
+
+	it('gives each shard of a split zone its own spec list, every spec once', () => {
+		const timings = Object.fromEntries(
+			specs.map((spec, index) => [spec, index === 0 ? 800 : 100]),
+		);
+		const jobs = planZones({
+			specs,
+			workspaceDirs: [],
+			target: 4,
+			rules,
+			timings,
+		});
+		expect(jobs.map((job) => job.name)).toEqual(['tools 1/2', 'tools 2/2']);
+		expect(jobs.flatMap((job) => job.files ?? []).sort()).toEqual(
+			[...specs].sort(),
+		);
+		// The 800 ms spec alone balances the seven of 100 ms.
+		expect(jobs[0]?.files).toEqual(['tools/s0.spec.ts']);
+	});
+
+	it('writes the lists apart from the matrix, which only says a job has one', () => {
+		const jobs = planZones({
+			specs,
+			workspaceDirs: [],
+			target: 4,
+			rules,
+			timings: Object.fromEntries(specs.map((spec) => [spec, 100])),
+		});
+		expect(JSON.parse(shardFilesOf(jobs))).toEqual({
+			'tools 1/2': jobs[0]?.files?.join(' '),
+			'tools 2/2': jobs[1]?.files?.join(' '),
+		});
+		expect(
+			JSON.parse(
+				shardFilesOf(
+					planZones({ specs, workspaceDirs: [], target: 4, rules }),
+				),
+			),
+		).toEqual({});
+	});
+
+	it('splits by count, with no lists, when there are no timings', () => {
+		const jobs = planZones({ specs, workspaceDirs: [], target: 4, rules });
+		expect(jobs.every((job) => job.files === undefined)).toBe(true);
 	});
 });
 
@@ -535,6 +592,42 @@ describe('reachableZones', () => {
 		expect([...(reach?.zones ?? [])].sort()).toEqual(['core', 'tools']);
 		expect([...(reach?.readOnly ?? [])]).toEqual(['core']);
 	});
+
+	it('names the readers in a zone its code reaches too, which --changed would miss', () => {
+		const reach = zoneReach(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						rootFiles: ['docs/delendai/guide.md'],
+						directByWorkspace: new Map([['tools', ['tools/a.ts']]]),
+					}) as never,
+				diff: () => [
+					{ path: 'docs/delendai/guide.md', listing: false },
+					{ path: 'tools/a.ts', listing: false },
+				],
+				readMap: () => ({
+					zones: {
+						tools: {
+							read: ['docs/delendai/guide.md'],
+							listed: [],
+							specs: {
+								'tools/b.spec.ts': {
+									read: ['docs/delendai/guide.md'],
+									listed: [],
+								},
+							},
+						},
+					},
+				}),
+			},
+		);
+
+		expect([...(reach?.readOnly ?? [])]).toEqual([]);
+		expect(reach?.readers?.get('tools')).toEqual(['tools/b.spec.ts']);
+		expect([...(reach?.rootReached ?? [])]).toEqual(['tools']);
+	});
 });
 
 describe('reachForBase', () => {
@@ -575,5 +668,49 @@ describe('the workflow plans zones from a pull request base only', () => {
 			"--base=${{ github.event.pull_request.base.sha || '' }}",
 		);
 		expect(base).not.toContain('github.event.before');
+	});
+});
+
+describe('compactMatrix', () => {
+	const job = (name: string, filter: string, readers = '') => ({
+		name,
+		paths: `${name}/`,
+		shard: '1/1',
+		run: filter !== 'none',
+		filter,
+		readers,
+	});
+
+	it('starts only the jobs that run, with every readers job merged into one', () => {
+		const matrix = compactMatrix([
+			job('core 1/3', 'changed'),
+			job('core 2/3', 'none'),
+			job(
+				'plugins 1/4',
+				'readers',
+				'plugins/a.spec.ts plugins/b.spec.ts',
+			),
+			job('tools 1/4', 'readers', 'tools/c.spec.ts plugins/a.spec.ts'),
+		]);
+		expect(matrix.map((entry) => entry.name)).toEqual([
+			'core 1/3',
+			'readers',
+		]);
+		expect(matrix[1]?.readers).toBe(
+			'plugins/a.spec.ts plugins/b.spec.ts tools/c.spec.ts',
+		);
+	});
+
+	it('keeps one job that says nothing runs, since a matrix cannot be empty', () => {
+		expect(compactMatrix([job('core 1/3', 'none')])).toEqual([
+			{
+				name: 'none',
+				paths: '',
+				shard: '1/1',
+				run: false,
+				filter: 'none',
+				readers: '',
+			},
+		]);
 	});
 });

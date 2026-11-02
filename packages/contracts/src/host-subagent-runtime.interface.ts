@@ -14,6 +14,11 @@ export interface IHostSubagentRequest {
 	readonly slotId: string;
 	readonly metadata?: Readonly<Record<string, unknown>> | undefined;
 	/**
+	 * Aborted when the orchestrator gives up on this subagent (a timeout,
+	 * before it starts another): a host that can stop it, does.
+	 */
+	readonly signal?: AbortSignal | undefined;
+	/**
 	 * What the task is and may use. A request without it is a delegation
 	 * by instruction only: still served, and counted as such.
 	 */

@@ -353,6 +353,39 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	}
 
 	/**
+	 * Take a scope's coordination as another process left it, before an
+	 * operation on it: counters move forward, the swarm claims and the
+	 * holders of the generations held here become the stored ones. A
+	 * driver shared by several processes calls it inside the transaction
+	 * that then stores the outcome, so none acts on a stale copy and
+	 * writes it back over another's.
+	 */
+	syncCoordination(
+		scope: StateScope,
+		coordination: IScopeCoordination,
+	): void {
+		const state = this.ensureScopeState(scope);
+		this.resumeCounters(state, coordination);
+		state.swarmClaims = new Map(
+			coordination.swarmClaims.map((claim) => [claim.slot, { ...claim }]),
+		);
+		for (const [generationId, record] of state.generations) {
+			record.holders = new Map(
+				coordination.holders
+					.filter((holder) => holder.generationId === generationId)
+					.map((holder) => [
+						holder.id,
+						{
+							id: holder.id,
+							kind: holder.kind,
+							acquiredAt: holder.acquiredAt,
+						},
+					]),
+			);
+		}
+	}
+
+	/**
 	 * The scope's coordination state, for a driver to store: nothing
 	 * when the scope was never touched.
 	 */

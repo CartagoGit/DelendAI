@@ -10,6 +10,8 @@ export interface IWebToolOptions {
 	readonly namespacePrefix: string;
 	/** Hostnames (exact or `*.suffix` wildcard) `web_fetch` may reach. Empty = fetch nothing. */
 	readonly allowList: readonly string[];
+	/** Let an allow-listed name resolve to a private address (an intranet host). */
+	readonly allowPrivateAddresses?: boolean;
 	/** Injectable for tests; defaults to the real network fetch. */
 	readonly fetchImpl?: IFetchLike;
 }
@@ -32,8 +34,10 @@ const OUTPUT_SCHEMA = z.object({
 	reason: z
 		.enum([
 			'blocked-host',
+			'blocked-address',
 			'invalid-url',
 			'redirect-blocked',
+			'redirect-invalid',
 			'too-many-redirects',
 			'timeout',
 			'fetch-error',
@@ -97,6 +101,9 @@ export const buildWebToolRegistrations = (
 							{
 								url: args.url,
 								allowList: options.allowList,
+								...(options.allowPrivateAddresses === true
+									? { allowPrivateAddresses: true }
+									: {}),
 								...(args.maxBytes !== undefined
 									? { maxBytes: args.maxBytes }
 									: {}),

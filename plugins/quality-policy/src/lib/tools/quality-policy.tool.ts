@@ -53,6 +53,15 @@ const QualityPolicyEntrySchema = z.object({
 	noUncheckedIndexedAccess: z.boolean().optional(),
 	noImplicitOverride: z.boolean().optional(),
 	tsconfigChain: z.array(z.string()).optional(),
+	tsconfigAreas: z
+		.array(
+			z.object({
+				path: z.string(),
+				strict: z.boolean().optional(),
+				exactOptionalPropertyTypes: z.boolean().optional(),
+			}),
+		)
+		.optional(),
 	coverageThreshold: CoverageThresholdSchema.optional(),
 	static: z.boolean().optional(),
 });

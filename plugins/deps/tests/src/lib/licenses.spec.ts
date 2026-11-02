@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ILicenseScanDeps } from '../../../src/lib/contracts/interfaces/licenses.interface';
 import {
 	classifyLicense,
+	realLicenseDeps,
 	scanLicenses,
 } from '../../../src/lib/services/licenses';
 
@@ -62,5 +63,37 @@ describe('scanLicenses', () => {
 		expect(findings.some((f) => f.ruleId === 'license:pkg-mit')).toBe(
 			false,
 		);
+	});
+});
+
+describe('an unreadable scan', () => {
+	it('fails when the manifest cannot be read', async () => {
+		await expect(
+			scanLicenses(realLicenseDeps('/nowhere-to-read', 'package.json')),
+		).rejects.toThrow();
+	});
+
+	it('fails when no dependency can be read', async () => {
+		await expect(
+			scanLicenses({
+				listDependencyNames: async () => ['a', 'b'],
+				readLicense: async () => {
+					throw new Error('ENOENT');
+				},
+			}),
+		).rejects.toThrow('no installed dependency');
+	});
+
+	it('reports one unreadable dependency as a missing licence', async () => {
+		const findings = await scanLicenses({
+			listDependencyNames: async () => ['a', 'b'],
+			readLicense: async (name) => {
+				if (name === 'a') throw new Error('ENOENT');
+				return 'MIT';
+			},
+		});
+		expect(findings.map((finding) => finding.ruleId)).toEqual([
+			'license:a',
+		]);
 	});
 });

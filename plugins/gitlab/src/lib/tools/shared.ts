@@ -3,7 +3,7 @@ import { isAbsolute, join, resolve as resolvePath, sep } from 'node:path';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { toolError, toolJson } from '@delendai/core/public';
+import { realpathContained, toolError, toolJson } from '@delendai/core/public';
 import { writeFileAtomic } from '@delendai/core/runtime';
 
 import type { GitLabRequestError } from '../client';
@@ -1664,13 +1664,16 @@ export const buildGitLabJobsToolRegistrations = (
 							if (args.id === undefined)
 								throw new Error('id is required for log');
 							const startedAt = Date.now();
+							const maxBytes = args.maxBytes ?? 64 * 1024;
+							// One byte past the cap tells a cut log from one
+							// that fits, without downloading the rest.
 							const result = await options.client.request<string>(
 								{
 									path: `/projects/${project}/jobs/${String(args.id)}/trace`,
 									parseAs: 'text',
+									maxBytes: maxBytes + 1,
 								},
 							);
-							const maxBytes = args.maxBytes ?? 64 * 1024;
 							const maxLines = args.maxLines ?? 800;
 							const raw = result.data;
 							const bytes = Buffer.byteLength(raw, 'utf8');
@@ -1819,6 +1822,7 @@ export const buildGitLabArtifactsToolRegistrations = (
 							await options.client.request<ArrayBuffer>({
 								path: `/projects/${project}/jobs/${String(args.jobId)}/artifacts`,
 								parseAs: 'binary',
+								maxBytes: maxBytes + 1,
 							});
 						const binary = result.data;
 						const bytes = binary.byteLength;
@@ -1834,6 +1838,19 @@ export const buildGitLabArtifactsToolRegistrations = (
 							String(args.jobId),
 							fileName,
 						);
+						// The path check above is lexical; this one runs before any
+						// folder is made: a symlink already in the cache (a
+						// folder named after the project or job) led the write
+						// outside it.
+						if (
+							!(await realpathContained(target, [
+								options.pluginTempDir,
+							]))
+						) {
+							throw new Error(
+								'artifact destination must stay within the plugin temp dir',
+							);
+						}
 						await mkdir(resolvePath(target, '..'), {
 							recursive: true,
 						});

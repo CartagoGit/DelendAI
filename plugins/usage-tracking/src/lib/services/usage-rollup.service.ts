@@ -10,12 +10,13 @@ import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.
 import { buildDelegationRollup } from './delegation-rollup.service';
 import {
 	buildSummary,
-	readInvocations,
+	readInvocationLog,
 	type IBuildSummaryOptions,
 	withinWindow,
 } from '../rollup';
 import { percentile } from '../statistics.helper';
 import { readSummaryFile } from '../summary-file.service';
+import { agentKindOf } from '../detect-agent';
 import type {
 	IDegradation,
 	IInvocationRecord,
@@ -93,6 +94,7 @@ type InvocationTelemetrySummary = IUsageSummary & {
 	readonly invocationTelemetry: IInvocationTelemetryRollup;
 	/** Delegations with and without a manifest, per kind of task. */
 	readonly delegation: IDelegationRollup;
+	readonly skippedRows: number;
 };
 
 const MAX_ISSUES = 50;
@@ -101,7 +103,6 @@ const ISO_DATE_LENGTH = 10;
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
 	const prefix = `${basename(absPath)}.`;
-	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	await Promise.all(
 		entries
@@ -138,7 +139,7 @@ const bucketKeyResolvers = {
 		`${record.plugin}/${record.tool}`,
 	model: (record: IInvocationRecordTelemetry) =>
 		record.dimensions?.model ?? 'unattributed',
-	agent: (record: IInvocationRecordTelemetry) => record.agent.kind,
+	agent: ({ agent }: IInvocationRecordTelemetry) => agentKindOf(agent.kind),
 	requestType: (record: IInvocationRecordTelemetry) =>
 		record.requestType ?? 'unknown',
 	outcome: (record: IInvocationRecordTelemetry) => record.outcome,
@@ -372,7 +373,7 @@ export const regenerateUsageSummary = async (
 	limits?: ILimitsConfig | undefined,
 	options: Omit<IBuildSummaryOptions, 'limits'> = {},
 ): Promise<InvocationTelemetrySummary> => {
-	const records = await readInvocations(invocationsPath);
+	const { records, skippedRows } = await readInvocationLog(invocationsPath);
 	return withFileMutex(summaryPath, async () => {
 		const prior = await readSummaryFile(summaryPath);
 		const summary = buildSummary(records, windowDays, now, {
@@ -390,6 +391,7 @@ export const regenerateUsageSummary = async (
 				now,
 			),
 			delegation: buildDelegationRollup(records, windowDays, now),
+			skippedRows,
 		} satisfies InvocationTelemetrySummary;
 		await writeSummaryUnlocked(summaryPath, enriched);
 		return enriched;

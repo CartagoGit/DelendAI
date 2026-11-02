@@ -1,13 +1,27 @@
 import type {
-	IRemotePaginationMeta,
 	IRemoteProviderError,
 	IRemoteProviderSuccess,
-	IRemoteRateLimitMeta,
 	IRemoteResponseMeta,
 	RemoteProviderErrorCode,
 	RemoteProviderId,
 } from '@delendai/contracts/remote-provider';
 import type z from 'zod';
+import {
+	DEFAULT_TIMEOUT_MS,
+	DEFAULT_MAX_RETRIES,
+	DEFAULT_RETRY_DELAY_MS,
+	retryableStatuses,
+	compatibilityHint,
+	transientHint,
+} from './contracts/constants/wire.constant';
+import {
+	header,
+	parseNumber,
+	parsePaginationMeta,
+	parseRateLimitMeta,
+	extractRequestId,
+	isAbortLike,
+} from './wire.helper';
 
 export interface IRemoteFetchResponse {
 	readonly ok: boolean;
@@ -72,16 +86,6 @@ export interface IRemoteHttpRequestOptions<TResponse> {
 	readonly truncated?: IRemoteResponseMeta['truncated'];
 }
 
-const DEFAULT_TIMEOUT_MS = 15_000;
-const DEFAULT_MAX_RETRIES = 2;
-const DEFAULT_RETRY_DELAY_MS = 250;
-
-const retryableStatuses = new Set([408, 425, 500, 502, 503, 504]);
-const compatibilityHint =
-	/(unsupported|deprecated api|unsupported api|preview|incompatible|unknown version)/i;
-const transientHint =
-	/(econnreset|econnrefused|eai_again|enotfound|network|socket|fetch failed|temporar)/i;
-
 const isSafeRetryMethod = (method: string): boolean => {
 	const normalized = method.toUpperCase();
 	return (
@@ -91,122 +95,30 @@ const isSafeRetryMethod = (method: string): boolean => {
 	);
 };
 
-const parseNumber = (raw: string | null): number | null => {
-	if (raw === null) return null;
-	const value = Number(raw);
-	return Number.isFinite(value) ? value : null;
-};
-
-const unixSecondsToIso = (raw: string | null): string | null => {
-	const seconds = parseNumber(raw);
-	if (seconds === null) return null;
-	return new Date(seconds * 1000).toISOString();
-};
-
-const header = (
-	headers: { get(name: string): string | null },
-	name: string,
-): string | null => headers.get(name) ?? headers.get(name.toLowerCase());
-
-const parseLinkRelation = (
-	linkHeader: string | null,
-	rel: 'next' | 'prev',
-): string | null => {
-	if (linkHeader === null) return null;
-	for (const part of linkHeader.split(',')) {
-		if (!part.includes(`rel="${rel}"`)) continue;
-		const match = part.match(/<([^>]+)>/);
-		if (match?.[1] === undefined) return null;
-		try {
-			const url = new URL(match[1]);
-			return url.searchParams.get('page') ?? match[1];
-		} catch {
-			return match[1];
-		}
-	}
-	return null;
-};
-
-const parsePaginationMeta = (headers: {
-	get(name: string): string | null;
-}): IRemotePaginationMeta | null => {
-	const linkHeader = header(headers, 'link');
-	const nextPage =
-		header(headers, 'x-next-page') ?? parseLinkRelation(linkHeader, 'next');
-	const previousPage =
-		header(headers, 'x-prev-page') ?? parseLinkRelation(linkHeader, 'prev');
-	const page = parseNumber(header(headers, 'x-page'));
-	const perPage = parseNumber(header(headers, 'x-per-page'));
-	const total = parseNumber(header(headers, 'x-total'));
-	const totalPages = parseNumber(header(headers, 'x-total-pages'));
-	if (
-		nextPage === null &&
-		previousPage === null &&
-		page === null &&
-		perPage === null &&
-		total === null &&
-		totalPages === null
-	) {
-		return null;
-	}
-	return {
-		page,
-		perPage,
-		nextPage,
-		previousPage,
-		total,
-		totalPages,
-		hasMore: nextPage !== null,
-	};
-};
-
-const parseRateLimitMeta = (headers: {
-	get(name: string): string | null;
-}): IRemoteRateLimitMeta | null => {
-	const limit = parseNumber(header(headers, 'x-ratelimit-limit'));
-	const remaining = parseNumber(header(headers, 'x-ratelimit-remaining'));
-	const resetAt = unixSecondsToIso(header(headers, 'x-ratelimit-reset'));
-	const retryAfterSeconds = parseNumber(header(headers, 'retry-after'));
-	const scopeRaw = header(headers, 'x-ratelimit-resource');
-	const scope =
-		scopeRaw === 'api' ||
-		scopeRaw === 'core' ||
-		scopeRaw === 'search' ||
-		scopeRaw === 'graphql'
-			? scopeRaw
-			: 'unknown';
-	if (
-		limit === null &&
-		remaining === null &&
-		resetAt === null &&
-		retryAfterSeconds === null &&
-		scope === 'unknown'
-	) {
-		return null;
-	}
-	return {
-		limit,
-		remaining,
-		resetAt,
-		retryAfterSeconds,
-		scope,
-		source: 'headers',
-	};
-};
-
-const extractRequestId = (headers: {
-	get(name: string): string | null;
-}): string | null =>
-	header(headers, 'x-request-id') ??
-	header(headers, 'x-github-request-id') ??
-	header(headers, 'x-amzn-requestid');
-
 const buildUrl = (
+	provider: RemoteProviderId,
 	baseUrl: string,
 	path: string,
 	query: IRemoteHttpRequestOptions<unknown>['query'],
 ): string => {
-	const url = new URL(path, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+	const base = new URL(baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+	// `/issues` is under the base, not at the origin's root: resolved as
+	// given it dropped a base path such as `/api/v4/`. A `//host` stays
+	// as it is, and is refused below.
+	const relative = /^\/(?!\/)/u.test(path) ? path.slice(1) : path;
+	const url = new URL(relative, base);
+	if (url.origin !== base.origin || !url.pathname.startsWith(base.pathname)) {
+		throw new RemoteProviderRequestError({
+			code: 'invalid-config',
+			provider,
+			message: `${provider} request path leaves ${base.origin}${base.pathname}; the token is never sent outside its base`,
+			status: null,
+			requestId: null,
+			retryAfterSeconds: null,
+			temporary: false,
+			retryable: false,
+		});
+	}
 	if (query === undefined) return url.toString();
 	for (const [key, value] of Object.entries(query)) {
 		if (value === undefined || value === null) continue;
@@ -234,21 +146,6 @@ const createMeta = (
 const createError = (input: IRemoteProviderError): IRemoteProviderError => ({
 	...input,
 });
-
-const isAbortLike = (error: unknown): boolean => {
-	if (!(error instanceof Error) && typeof error !== 'object') return false;
-	const name =
-		typeof error === 'object' && error !== null
-			? (error as { name?: unknown }).name
-			: undefined;
-	const message =
-		error instanceof Error
-			? error.message
-			: typeof error === 'object' && error !== null && 'message' in error
-				? String((error as { message: unknown }).message)
-				: '';
-	return name === 'AbortError' || /timeout|aborted/i.test(message);
-};
 
 const createThrownError = (
 	provider: RemoteProviderId,
@@ -507,7 +404,12 @@ export const createRemoteHttpClient = (
 			request: IRemoteHttpRequestOptions<TResponse>,
 		): Promise<IRemoteProviderSuccess<TResponse>> {
 			const method = request.method?.toUpperCase() ?? 'GET';
-			const url = buildUrl(options.baseUrl, request.path, request.query);
+			const url = buildUrl(
+				options.provider,
+				options.baseUrl,
+				request.path,
+				request.query,
+			);
 			const headers: Record<string, string> = {
 				accept: 'application/json',
 				authorization: `Bearer ${options.token}`,

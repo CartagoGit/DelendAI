@@ -20,7 +20,7 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	bucketBy,
 	computeTotals,
-	readInvocations,
+	readInvocationLog,
 	withinWindow,
 } from '../rollup';
 import { RESULT_SIZE_RANK_LIMIT } from '../contracts/constants/result-size-rank-limit.constant';
@@ -251,7 +251,9 @@ export const buildReportToolRegistration = (
 					),
 				);
 
-				const all = await readInvocations(options.invocationsPath);
+				const { records: all, skippedRows } = await readInvocationLog(
+					options.invocationsPath,
+				);
 				const windowed = withinWindow(all, windowDays).filter((r) =>
 					matchesFilter(r, args.filter),
 				);
@@ -303,6 +305,9 @@ export const buildReportToolRegistration = (
 				return toolJson({
 					detail,
 					...payload,
+					// Lines of the log that were not a record: the totals
+					// above leave them out, and said nothing of it.
+					skippedRows,
 				});
 			},
 		);

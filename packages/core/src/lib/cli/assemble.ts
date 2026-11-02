@@ -1,3 +1,4 @@
+import { detectHostByok } from '../shared/host-model-roster.service';
 import { useConfiguredClients } from '../shared/known-client.helper';
 import { existsSync } from 'node:fs';
 import { agentPolicyInstructions } from '../prompts/agent-policy-instructions.helper';
@@ -264,6 +265,12 @@ export interface IAssembleCliDeps {
 	 * own, so they never read the accounts of whoever runs them.
 	 */
 	personalConfigRoot?: string;
+	/**
+	 * Per-step plugin import/register timeout in ms (default: the loader's
+	 * 15 s). Measuring fixtures raise it so a loaded machine cannot drop a
+	 * plugin and hand them a partial boot.
+	 */
+	pluginTimeoutMs?: number;
 }
 
 /**
@@ -321,10 +328,16 @@ export const assembleCliConfig = async (
 	);
 	// The clients this process matches commands to: the catalogue, the
 	// project's, then the person's.
-	useConfiguredClients([
+	useConfiguredClients(args.workspace, [
 		...(sharedConfig.clients ?? []),
 		...(personal.layer.clients ?? []),
 	]);
+	// The models this machine's editors serve on the person's keys:
+	// detected at every start, from whatever editors this machine has, so a
+	// clone elsewhere configures itself; deferred, it never slows the boot.
+	setImmediate(() => {
+		void detectHostByok();
+	});
 	const baseConfigDiagnostic = diagnoseConfigFile(rawConfig);
 	// S1: layer the semantic plugin-path warnings on top of the
 	// schema-only diagnostic. Schema validation can't catch the
@@ -509,6 +522,7 @@ export const assembleCliConfig = async (
 	const cacheEvictionRegistry = createCacheEvictionRegistry({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
+		maxAgeDays: fileConfig.cache?.maxAgeDays,
 	});
 	for (const rule of coreEvictionRules())
 		cacheEvictionRegistry.register(rule);
@@ -764,6 +778,9 @@ export const assembleCliConfig = async (
 		buildContext,
 		peerRegistry,
 		...(deps.import !== undefined ? { importFn: deps.import } : {}),
+		...(deps.pluginTimeoutMs !== undefined
+			? { pluginTimeoutMs: deps.pluginTimeoutMs }
+			: {}),
 	});
 	const cacheReconcile = (apply: boolean) =>
 		bootstrapCacheLayout({

@@ -18,6 +18,10 @@
  * reviewed exception — inline STYLE cannot execute, unlike inline
  * script.
  */
+import { SCRIPT_NONCE } from '../contracts/constants/script-nonce.constant';
+
+export { SCRIPT_NONCE };
+
 export interface IWebviewCspPolicy {
 	readonly scriptSrc: readonly string[];
 	readonly styleSrc: readonly string[];
@@ -37,8 +41,8 @@ export const DEFAULT_DENY: IWebviewCspPolicy = Object.freeze({
 /**
  * Per-webview opt-ins, keyed by the webview's logical name. A webview
  * that renders inline `<script>` blocks (toolbar / settings / dashboard
- * / knowledge) must opt into `script-src 'unsafe-inline'` here — making
- * the exception explicit and reviewable. JSON-only webviews
+ * / knowledge) opts into a per-document nonce here — making the exception
+ * explicit and reviewable. JSON-only webviews
  * (proposals / overview / metrics / validation) take the default-deny.
  */
 export const WEBVIEW_CSP_OVERRIDES: ReadonlyMap<
@@ -50,20 +54,19 @@ export const WEBVIEW_CSP_OVERRIDES: ReadonlyMap<
 	['overview', {}],
 	['metrics', {}],
 	['validation', {}],
-	// Script-bearing surfaces render inline `<script>` from the shared
-	// UI renderers; they require `'unsafe-inline'` until a nonce-based
-	// pipeline lands (deferred follow-up).
-	['toolbar', { scriptSrc: ["'unsafe-inline'"], connectSrc: ["'self'"] }],
-	['settings', { scriptSrc: ["'unsafe-inline'"] }],
-	['dashboard', { scriptSrc: ["'unsafe-inline'"], connectSrc: ["'self'"] }],
-	['knowledge', { scriptSrc: ["'unsafe-inline'"] }],
-	['configuration-center', { scriptSrc: ["'unsafe-inline'"] }],
+	// Script-bearing surfaces render inline `<script>` from the shared UI
+	// renderers: each document's scripts carry a nonce of their own.
+	['toolbar', { scriptSrc: [SCRIPT_NONCE], connectSrc: ["'self'"] }],
+	['settings', { scriptSrc: [SCRIPT_NONCE] }],
+	['dashboard', { scriptSrc: [SCRIPT_NONCE], connectSrc: ["'self'"] }],
+	['knowledge', { scriptSrc: [SCRIPT_NONCE] }],
+	['configuration-center', { scriptSrc: [SCRIPT_NONCE] }],
 ]);
 
 /**
  * Merge the default-deny baseline with a per-webview override. The
  * override REPLACES a directive when present (it does not append), so a
- * webview that needs `script-src 'unsafe-inline'` carries exactly that
+ * webview that needs a script nonce carries exactly that
  * — no accidental widening from concatenation.
  */
 export const resolveCspPolicy = (
@@ -92,6 +95,14 @@ export const cspHeaderValue = (policy: IWebviewCspPolicy): string =>
 		`connect-src ${policy.connectSrc.join(' ')}`,
 		`frame-src ${policy.frameSrc.join(' ')}`,
 	].join('; ');
+
+/** A double-quoted attribute's value: a CSP's own single quotes stay readable. */
+const escapeDoubleQuoted = (value: string): string =>
+	value
+		.replaceAll('&', '&amp;')
+		.replaceAll('"', '&quot;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
 
 const findAsciiCaseInsensitive = (
 	text: string,
@@ -124,14 +135,23 @@ export const injectCspMeta = (
 	if (hasCspMeta(html)) {
 		return html;
 	}
-	const meta = `<meta http-equiv="Content-Security-Policy" content="${cspHeaderValue(
-		policy,
-	)}" />`;
-	const headOpenTagEnd = findHeadOpenTagEnd(html);
+	const nonce = crypto.randomUUID().replaceAll('-', '');
+	const nonced = policy.scriptSrc.includes(SCRIPT_NONCE);
+	const header = cspHeaderValue({
+		...policy,
+		scriptSrc: policy.scriptSrc.map((source) =>
+			source === SCRIPT_NONCE ? `'nonce-${nonce}'` : source,
+		),
+	});
+	const meta = `<meta http-equiv="Content-Security-Policy" content="${escapeDoubleQuoted(header)}" />`;
+	const body = nonced
+		? html.replace(/<script\b/giu, () => `<script nonce="${nonce}"`)
+		: html;
+	const headOpenTagEnd = findHeadOpenTagEnd(body);
 	if (headOpenTagEnd >= 0) {
-		return `${html.slice(0, headOpenTagEnd + 1)}\n\t${meta}${html.slice(headOpenTagEnd + 1)}`;
+		return `${body.slice(0, headOpenTagEnd + 1)}\n\t${meta}${body.slice(headOpenTagEnd + 1)}`;
 	}
-	return `${meta}\n${html}`;
+	return `${meta}\n${body}`;
 };
 
 /** Convenience: resolve + inject in one call for a named webview. */

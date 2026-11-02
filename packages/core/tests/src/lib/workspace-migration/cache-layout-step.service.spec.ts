@@ -47,7 +47,9 @@ describe('cacheLayoutOutcomes', () => {
 				toEpoch: 1,
 				applied: [step],
 			}),
-		).toEqual([{ status: 'migrated', id: 'cacheLayout:0-1' }]);
+		).toEqual([
+			{ status: 'migrated', id: 'cacheLayout:0-1', steps: step.steps },
+		]);
 		expect(
 			cacheLayoutOutcomes({
 				status: 'planned',

@@ -56,6 +56,8 @@ export interface IOptimizeRunToolArgs {
 
 export interface IOptimizeRunOutput {
 	readonly ranked: readonly IOptimizationRankedCandidate[];
+	/** Token cost of the kept candidates; never above `budget`. */
+	readonly spent: number;
 	readonly budget: number;
 	readonly consent: boolean;
 	readonly bytes: number;

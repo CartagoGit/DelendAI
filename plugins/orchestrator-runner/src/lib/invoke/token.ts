@@ -14,7 +14,10 @@
  * different invocation, provider, or cost tier fails verification because
  * all three are part of the signed payload (a00085 #5).
  */
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import {
+	createConsentSigner,
+	type IConsentSigner,
+} from '@delendai/core/runtime';
 
 export interface IConfirmationSpend {
 	readonly invocationId: string;
@@ -27,31 +30,22 @@ const spendPayload = (spend: IConfirmationSpend): string =>
 
 /** Mints + verifies tokens bound to an invocation hop (id + provider + tier). */
 export class ConfirmationSigner {
-	private readonly secret: Buffer;
+	private readonly signer: IConsentSigner;
 
 	constructor(secret?: Buffer) {
 		// A fresh per-process secret by default: tokens never survive a
 		// restart and are never derivable by anything outside this process.
-		this.secret = secret ?? randomBytes(32);
+		this.signer = createConsentSigner(secret, 'otk_');
 	}
 
 	/** Mint a token that authorises exactly this spend hop. */
 	mint(spend: IConfirmationSpend): string {
-		const mac = createHmac('sha256', this.secret)
-			.update(spendPayload(spend))
-			.digest('hex');
-		return `otk_${mac}`;
+		return this.signer.issue(spendPayload(spend));
 	}
 
 	/** Constant-time check that `token` authorises this spend hop. */
 	verify(token: string, spend: IConfirmationSpend): boolean {
-		const expected = this.mint(spend);
-		if (token.length !== expected.length) return false;
-		try {
-			return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
-		} catch {
-			return false;
-		}
+		return this.signer.verify(token, spendPayload(spend));
 	}
 }
 

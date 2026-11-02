@@ -23,6 +23,17 @@ export interface IWorkerRegistry {
 	read(): Promise<ISettlementState>;
 	setPhase(phase: ISettlementPhase): Promise<void>;
 	markGreen(headSha: string): Promise<void>;
+	/**
+	 * Hold a slice's Git work against settlement, under the registry's
+	 * lock. Answers the phase; a hold is taken unless it is `settling`.
+	 * `dispose` lets go of it.
+	 */
+	admit(holder: string): Promise<ISettlementPhase>;
+	/**
+	 * Enter `settling` under the same lock, unless holders remain, which
+	 * is what makes the quiet boundary atomic. Answers how many remain.
+	 */
+	enterSettling(): Promise<number>;
 }
 
 export interface IWorkerRegistryOptions {

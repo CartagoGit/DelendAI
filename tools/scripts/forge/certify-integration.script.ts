@@ -21,6 +21,7 @@ import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { readTextIfPresent } from '../lib/read-text-if-present';
 import { dirname, join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-paths.constant';
@@ -132,9 +133,16 @@ const recordCertification = (
 
 const main = (): void => {
 	const root = repoRoot();
-	const config = JSON.parse(
+	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
+	);
+	const [first] = errors;
+	if (first !== undefined) {
+		throw new Error(
+			`delendai.config.json is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+		);
+	}
+	const config = value as { readonly development?: Record<string, unknown> };
 	if (config.development === undefined) return;
 	const integration = resolveDevelopmentPolicy({
 		development: config.development,

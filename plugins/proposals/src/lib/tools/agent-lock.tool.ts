@@ -197,7 +197,7 @@ export const buildAgentLockRegistration = (
 		effects: ['write'],
 		writeRoot: 'repository',
 		summary:
-			'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
+			'Claim files before editing, heartbeat, release (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 		tags: ['coordination'],
 		register: async (server) => {
 			attachSessionCleanup(server, options.lockPathAbs);

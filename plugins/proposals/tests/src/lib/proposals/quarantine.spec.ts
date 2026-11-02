@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { appendFile, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -40,6 +40,36 @@ describe('proposal quarantine JSONL store', () => {
 			absPath,
 			reason: 'invalid_canonical_filename',
 		});
+	});
+
+	it('keeps the first good entry appended after a torn last line', async () => {
+		const base = {
+			absPath: join(root, 'docs/delendai/proposals/ready/readme.md'),
+			blobSha: 'blob-1',
+			sourceCommitSha: 'commit-1',
+			detectedAt: 1,
+			reason: 'invalid_canonical_filename' as const,
+			detail: 'torn tail',
+			rawMetadata: '',
+		};
+		await appendQuarantine(root, base);
+		// A crash mid-append: half a line, no newline.
+		await appendFile(
+			join(root, '.cache/delendai/proposals/quarantine.jsonl'),
+			'{"id":2,"absPath":"/x',
+		);
+
+		const next = await appendQuarantine(root, {
+			...base,
+			blobSha: 'blob-3',
+		});
+
+		const entries = await listQuarantine(root);
+		expect(entries.map((each) => each.blobSha)).toEqual([
+			'blob-1',
+			'blob-3',
+		]);
+		expect(next.id).toBe(2);
 	});
 
 	it('serializes concurrent appends through the file mutex', async () => {

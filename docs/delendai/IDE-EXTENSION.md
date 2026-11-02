@@ -98,7 +98,7 @@ A monochrome variant
 ([`extensions/vscode/media/logo-mono.svg`](../../extensions/vscode/media/logo-mono.svg))
 is shipped for low-contrast themes. The palette is defined as CSS
 custom properties in
-[`extensions/vscode/media/dashboard.css`](../extensions/vscode/media/dashboard.css)
+`extensions/vscode/media/dashboard.css`
 and falls back to VS Code theme variables when running inside the
 editor.
 

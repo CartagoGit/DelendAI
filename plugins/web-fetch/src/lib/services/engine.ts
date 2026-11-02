@@ -18,6 +18,12 @@
  *   allow-list. A redirect to a non-allow-listed host is rejected, not
  *   silently followed — that is the documented mitigation for "allow-listed
  *   URL redirects to an internal/non-allow-listed host".
+ * - Every hop's host is resolved and each address it answers is checked
+ *   (`address-policy.ts`): an allow-listed name that resolves to a
+ *   private, loopback or link-local address is refused unless the caller
+ *   opted in. The connection itself re-resolves the name, so a resolver
+ *   that answers differently within that instant is outside this check
+ *   (see the README).
  * - Response size is capped at `maxBytes` (default 50 KiB) **while
  *   streaming** (x00097 S4, audit a00052 #14): the cap counts real octets,
  *   the reader is cancelled the moment it is crossed (memory stays
@@ -27,13 +33,17 @@
  */
 import type {
 	IFetchLike,
+	IResolveHost,
 	ISanitizedBounds,
 	IWebFetchOptions,
 	IWebFetchResult,
 } from '../contracts/interfaces/fetch.interface';
+import { refusedAddress, resolveWithDns } from './address-policy';
+import { readBodyCapped } from './read-body-capped';
 
 export type {
 	IFetchLike,
+	IResolveHost,
 	ISanitizedBounds,
 	IWebFetchFailure,
 	IWebFetchOptions,
@@ -41,6 +51,9 @@ export type {
 	IWebFetchResult,
 	IWebFetchSuccess,
 } from '../contracts/interfaces/fetch.interface';
+
+/** The runtime's fetch as this module found it: a later stand-in is a test's. */
+const NETWORK_FETCH = globalThis.fetch;
 
 const DEFAULT_MAX_BYTES = 50 * 1024;
 const DEFAULT_TIMEOUT_MS = 8000;
@@ -183,63 +196,6 @@ const parseUrl = (raw: string): URL | undefined => {
 };
 
 /**
- * Consume a response body up to `maxBytes` REAL bytes. Streams when the
- * fetcher exposes `body`, cancelling the reader as soon as the cap is
- * crossed; falls back to `text()` for body-less fetchers (test doubles) —
- * still capped in octets via an encode/slice round-trip. The incremental
- * decoder replaces a cap-split multi-byte sequence with U+FFFD instead of
- * emitting garbage.
- */
-const readBodyCapped = async (
-	res: Awaited<ReturnType<IFetchLike>>,
-	maxBytes: number,
-): Promise<{ body: string; truncated: boolean }> => {
-	const stream = res.body;
-	if (stream === undefined || stream === null) {
-		const raw = await res.text();
-		const bytes = new TextEncoder().encode(raw);
-		if (bytes.byteLength <= maxBytes) {
-			return { body: raw, truncated: false };
-		}
-		return {
-			body: new TextDecoder('utf-8').decode(bytes.subarray(0, maxBytes)),
-			truncated: true,
-		};
-	}
-
-	const reader = stream.getReader();
-	const decoder = new TextDecoder('utf-8');
-	let received = 0;
-	let out = '';
-	let truncated = false;
-	try {
-		for (;;) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			if (value === undefined || value.byteLength === 0) continue;
-			const remaining = maxBytes - received;
-			if (value.byteLength <= remaining) {
-				received += value.byteLength;
-				out += decoder.decode(value, { stream: true });
-				continue;
-			}
-			// Cap crossed mid-chunk: keep the fitting prefix, stop the
-			// download — the cancel is the memory/bandwidth bound.
-			out += decoder.decode(value.subarray(0, remaining), {
-				stream: true,
-			});
-			truncated = true;
-			await reader.cancel();
-			break;
-		}
-	} finally {
-		reader.releaseLock();
-	}
-	out += decoder.decode(); // flush a trailing partial sequence (U+FFFD)
-	return { body: out, truncated };
-};
-
-/**
  * Fetch one allow-listed URL, following redirects manually (re-checking the
  * allow-list at every hop) and capping the response body at `maxBytes`.
  * Never throws — every failure mode resolves to `{ ok: false, reason }`.
@@ -247,7 +203,14 @@ const readBodyCapped = async (
 export const webFetch = async (
 	options: IWebFetchOptions,
 	fetchImpl: IFetchLike = fetch as unknown as IFetchLike,
+	resolveHost?: IResolveHost,
 ): Promise<IWebFetchResult> => {
+	// The resolver pairs with the fetcher: the network's fetch is checked
+	// through the system resolver; an injected fetcher answers hosts that
+	// need not exist, so it is checked only through a resolver it brings.
+	const resolve =
+		resolveHost ??
+		(fetchImpl === (NETWORK_FETCH as unknown) ? resolveWithDns : undefined);
 	const { maxBytes, timeoutMs, maxRedirects } = sanitizeBounds(options);
 
 	let currentUrl = parseUrl(options.url);
@@ -269,6 +232,31 @@ export const webFetch = async (
 				reason: hop === 0 ? 'blocked-host' : 'redirect-blocked',
 				detail: formatHostPortDetail(currentUrl.hostname, currentPort),
 			};
+		}
+
+		if (resolve !== undefined) {
+			let addresses: readonly string[];
+			try {
+				addresses = await resolve(currentUrl.hostname);
+			} catch (err) {
+				return {
+					ok: false,
+					reason: 'fetch-error',
+					detail: String(err),
+				};
+			}
+			const refused = refusedAddress(
+				currentUrl.hostname,
+				addresses,
+				options.allowPrivateAddresses === true,
+			);
+			if (refused !== undefined) {
+				return {
+					ok: false,
+					reason: 'blocked-address',
+					detail: `${currentUrl.hostname} resolves to ${refused}`,
+				};
+			}
 		}
 
 		const controller = new AbortController();
@@ -313,7 +301,19 @@ export const webFetch = async (
 					detail: 'redirect with no Location header',
 				};
 			}
-			const next = parseUrl(new URL(location, currentUrl).toString());
+			// A Location that is not a URL at all threw out of a function
+			// that promises never to throw.
+			let resolved: string;
+			try {
+				resolved = new URL(location, currentUrl).toString();
+			} catch {
+				return {
+					ok: false,
+					reason: 'redirect-invalid',
+					detail: location,
+				};
+			}
+			const next = parseUrl(resolved);
 			if (next === undefined) {
 				return { ok: false, reason: 'invalid-url', detail: location };
 			}

@@ -13,6 +13,7 @@ import z from 'zod';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import { toolError, toolJson } from '../shared/tool-response';
+import { parseJsonc } from '../config/jsonc-document';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { withFileMutex } from '../shared/with-file-mutex';
 import type { IFileReader } from './analyze-project';
@@ -82,15 +83,20 @@ export const buildInitConfigToolRegistration = (
 					await deps.reader.readFile(CONFIG_FILENAME);
 				let config = derived.config as Record<string, unknown>;
 				if (existingText !== undefined && args.overwrite !== true) {
-					let existing: unknown;
-					try {
-						existing = JSON.parse(existingText);
-					} catch {
+					// The config file is JSONC by contract: comments and
+					// trailing commas are legal, so the parser that rejects
+					// them is the wrong one for this file. The errors are
+					// kept because a genuinely broken document still has
+					// to be refused — with a position the user can act on.
+					const parsedExisting = parseJsonc(existingText);
+					const firstError = parsedExisting.errors[0];
+					if (firstError !== undefined) {
 						return toolError(
 							`${CONFIG_FILENAME} is not valid JSON`,
-							'Fix the project configuration or pass overwrite:true to intentionally replace it.',
+							`${firstError.line}:${firstError.column} ${firstError.message}. Fix the project configuration or pass overwrite:true to intentionally replace it.`,
 						);
 					}
+					const existing = parsedExisting.value;
 					if (
 						existing === null ||
 						typeof existing !== 'object' ||

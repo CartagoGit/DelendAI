@@ -37,6 +37,7 @@ import { join, relative } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/public';
 import { REPOSITORY_NAME, REPOSITORY_OWNER } from '@delendai/core/cli';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 
@@ -126,7 +127,10 @@ const walk = (dir: string, root: string, out: string[]): void => {
 	for (const entry of entries) {
 		const full = join(dir, entry);
 		if (SKIP_DIRS.has(entry)) continue;
-		if (statSync(full).isDirectory()) {
+		// Another check's scratch file can go between the listing and here.
+		const stats = statSync(full, { throwIfNoEntry: false });
+		if (stats === undefined) continue;
+		if (stats.isDirectory()) {
 			walk(full, root, out);
 			continue;
 		}
@@ -342,4 +346,14 @@ const main = (): number => {
 	return 1;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'repository-identity',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins', 'apps'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

@@ -30,6 +30,8 @@ const KEY_LENGTH = 16;
  * A remote URL as one string per repository: scheme, credentials, the
  * `.git` suffix and case of the host dropped, and `git@host:owner/repo`
  * read as `host/owner/repo`, so an SSH clone and an HTTPS clone agree.
+ * An explicit port stays (`host:8443/owner/repo`): two servers on one
+ * host are two repositories, and dropping it gave them one personal file.
  */
 export const normalizeRemoteUrl = (url: string): string => {
 	const trimmed = url
@@ -41,11 +43,12 @@ export const normalizeRemoteUrl = (url: string): string => {
 		return `${(scp[1] ?? '').toLowerCase()}/${scp[2] ?? ''}`;
 	}
 	const parsed =
-		/^[a-z][a-z0-9+.-]*:\/\/(?:[^@/]+@)?([^/:]+)(?::\d+)?\/(.+)$/iu.exec(
+		/^[a-z][a-z0-9+.-]*:\/\/(?:[^@/]+@)?([^/:]+)(?::(\d+))?\/(.+)$/iu.exec(
 			trimmed,
 		);
 	if (parsed !== null) {
-		return `${(parsed[1] ?? '').toLowerCase()}/${parsed[2] ?? ''}`;
+		const port = parsed[2] === undefined ? '' : `:${parsed[2]}`;
+		return `${(parsed[1] ?? '').toLowerCase()}${port}/${parsed[3] ?? ''}`;
 	}
 	return trimmed;
 };
@@ -77,6 +80,16 @@ export const projectIdentity = async (
 		// A workspace that does not exist yet is named by its path.
 	}
 	return `path:${real}`;
+};
+
+/**
+ * The identity an older delendai gave a remote with a port, which it
+ * dropped: what the port migration reads the old personal file by.
+ * `undefined` when the identity names no port.
+ */
+export const portlessIdentity = (identity: string): string | undefined => {
+	const match = /^remote:([^/:]+):\d+\/(.+)$/u.exec(identity);
+	return match === null ? undefined : `remote:${match[1]}/${match[2]}`;
 };
 
 /** The personal file of the project whose identity is `identity`. */
@@ -149,6 +162,14 @@ export const withPersonalLayer = (
 	const layers = new Map<string, IAccountLayer>();
 	const merged = new Map<string, IProviderAccount>();
 	for (const account of shared.accounts ?? []) {
+		// A login (a profile directory or a credential variable) is one
+		// person's: the start-up migration moves it to their file, and a
+		// committed copy left behind is never used for everyone.
+		if (
+			account.profileDir !== undefined ||
+			account.credentialEnv !== undefined
+		)
+			continue;
 		merged.set(account.accountId, account);
 		layers.set(account.accountId, 'shared');
 	}

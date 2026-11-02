@@ -58,11 +58,12 @@ export const promotionGaps = (input: {
 	return gaps;
 };
 
-const main = (): number => {
-	const root = repoRoot();
-	const base =
-		process.argv.find((arg) => arg.startsWith('--base='))?.slice(7) ??
-		'origin/main';
+/**
+ * What the checkout at `root` lacks to be released over `base`, read from
+ * git and the working tree; a base whose manifest cannot be read is a gap
+ * too, never a pass.
+ */
+export const releaseGaps = (root: string, base: string): readonly string[] => {
 	const version = (text: string): string =>
 		(JSON.parse(text) as { readonly version: string }).version;
 	let baseVersion: string;
@@ -75,17 +76,25 @@ const main = (): number => {
 			}),
 		);
 	} catch {
-		console.error(
-			`✖ release:check: could not read ${CORE_MANIFEST} at ${base}.`,
-		);
-		return 1;
+		return [`could not read ${CORE_MANIFEST} at ${base}`];
 	}
-	const gaps = promotionGaps({
+	return promotionGaps({
 		headVersion: version(readFileSync(join(root, CORE_MANIFEST), 'utf8')),
 		baseVersion,
 		changelog: readFileSync(join(root, 'CHANGELOG.md'), 'utf8'),
 		today: new Date().toISOString().slice(0, 10),
 	});
+};
+
+/** How a checkout that is not a release yet becomes one. */
+export const RELEASE_FIX =
+	'on develop, `bun run release:prepare --write`, and merge it before promoting.';
+
+const main = (): number => {
+	const base =
+		process.argv.find((arg) => arg.startsWith('--base='))?.slice(7) ??
+		'origin/main';
+	const gaps = releaseGaps(repoRoot(), base);
 	if (gaps.length === 0) {
 		console.log(
 			'✓ release:check: the promotion carries its version and its changelog.',
@@ -95,9 +104,7 @@ const main = (): number => {
 	console.error(
 		`✖ release:check: this promotion is not a release yet:\n  ${gaps.join('\n  ')}`,
 	);
-	console.error(
-		'  Fix: on develop, `bun run release:prepare --write`, and merge it before promoting.',
-	);
+	console.error(`  Fix: ${RELEASE_FIX}`);
 	return 1;
 };
 

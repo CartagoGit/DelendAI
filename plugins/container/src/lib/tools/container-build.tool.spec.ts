@@ -7,6 +7,7 @@ import { buildContainerBuildToolRegistrations } from './container-build.tool';
 const mountHandlers = async (probeDeps: IProbeDeps, runExec: IArgvExec) => {
 	const registrations = buildContainerBuildToolRegistrations({
 		namespacePrefix: 'container',
+		workspaceRootAbs: process.cwd(),
 		probeDeps,
 		runExec,
 	});
@@ -83,6 +84,9 @@ describe('f00133 S3 container-build tool', () => {
 		const body = parseBody(await build({ tag: 'app:1', dryRun: true }));
 		expect(body.ok).toBe('dry-run');
 		expect(body.command).toContain('docker build');
+		expect(body.dryRun).toBe(true);
+		expect(body.risk).toBe('medium');
+		expect(body.wouldRun).toHaveLength(1);
 		expect((exec as unknown as { calls: unknown[] }).calls.length).toBe(0);
 	});
 
@@ -98,6 +102,21 @@ describe('f00133 S3 container-build tool', () => {
 		expect(body.ok).toBe(true);
 		expect(body.imageId).toBe('sha256:abc123def456');
 		expect(body.command).toBe('docker build -t app:1 .');
+	});
+
+	it('container_build refuses a dockerfile or context outside the workspace', async () => {
+		const { build } = await mountHandlers(
+			probeDepsAvailable('docker'),
+			execWith(''),
+		);
+		for (const args of [
+			{ tag: 'app:1', context: '..', confirm: true },
+			{ tag: 'app:1', dockerfile: '/etc/hostname', dryRun: true },
+		]) {
+			const body = parseBody(await build(args));
+			expect(body.ok).toBe(false);
+			expect(String(body.reason)).toContain('outside the workspace');
+		}
 	});
 
 	it('container_build returns install-missing when docker is absent', async () => {
@@ -138,6 +157,8 @@ describe('f00133 S3 container-build tool', () => {
 		);
 		expect(body.ok).toBe('dry-run');
 		expect(body.command).toBe('kubectl apply -n prod -f -');
+		expect(body.risk).toBe('medium');
+		expect(body.wouldRun).toHaveLength(1);
 	});
 
 	it('k8s_apply runs kubectl with confirm: true', async () => {
@@ -167,6 +188,7 @@ describe('f00133 S3 container-build tool', () => {
 	it('exposes two tool registrations under the namespace prefix', () => {
 		const regs = buildContainerBuildToolRegistrations({
 			namespacePrefix: 'container',
+			workspaceRootAbs: process.cwd(),
 			probeDeps: probeDepsAvailable('docker'),
 			runExec: execWith(''),
 		});

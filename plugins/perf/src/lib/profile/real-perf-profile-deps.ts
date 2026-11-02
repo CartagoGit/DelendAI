@@ -7,7 +7,7 @@
  * cache is GC'd by the shared `pruneExpiredExec` helper.
  */
 import { randomUUID } from 'node:crypto';
-import { mkdir, readdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -38,30 +38,6 @@ const NODE_PROF = {
 		{
 			manager: 'system',
 			command: 'Install Node.js and ensure `node` is available on PATH.',
-		},
-	],
-} satisfies IExternalTool;
-
-const ZERO_X = {
-	id: '0x',
-	bin: '0x',
-	versionArgs: ['--version'],
-	installHints: [
-		{
-			manager: 'npm',
-			command: 'npm install -g 0x',
-		},
-	],
-} satisfies IExternalTool;
-
-const CLINIC_FLAME = {
-	id: 'clinic-flame',
-	bin: 'clinic',
-	versionArgs: ['--version'],
-	installHints: [
-		{
-			manager: 'npm',
-			command: 'npm install -g clinic',
 		},
 	],
 } satisfies IExternalTool;
@@ -103,17 +79,47 @@ const ephemeralProfileDir = async (
 		return dir;
 	});
 
+/**
+ * Where a flame-graph capture keeps its CPU profile: outside the scratch
+ * directory, which is removed after the run.
+ */
+const flamegraphPathFor = (pluginCacheDir: string, stamp: string): string =>
+	join(pluginCacheDir, 'perf', `profile-${stamp}.cpuprofile`);
+
+/** Keep the CPU profile a run wrote, or `undefined` when it wrote none. */
+const keepCpuProfile = async (
+	tempDir: string,
+	destination: string,
+): Promise<string | undefined> => {
+	const written = (await readdir(tempDir)).find((entry) =>
+		entry.endsWith('.cpuprofile'),
+	);
+	if (written === undefined) return undefined;
+	await mkdir(join(destination, '..'), { recursive: true });
+	await copyFile(join(tempDir, written), destination);
+	return destination;
+};
+
 const runNodeProf = async (
 	ctx: IMcpPluginContext,
 	cwd: string,
 	timeoutMs: number,
+	format: PerfProfileFormat,
 ): Promise<IPerfProfileExecution> => {
 	const stamp = randomUUID().slice(0, 8);
 	const tempDir = await ephemeralProfileDir(ctx, stamp);
 	try {
 		const profile = await runExternalTool({
 			tool: NODE_PROF,
-			args: ['--prof', '-e', inlineWorkload(), cwd],
+			args: [
+				'--prof',
+				...(format === 'flamegraph'
+					? ['--cpu-prof', `--cpu-prof-dir=${tempDir}`]
+					: []),
+				'-e',
+				inlineWorkload(),
+				cwd,
+			],
 			cwd: tempDir,
 			timeoutMs,
 			maxOutputBytes: 32 * 1024,
@@ -151,10 +157,18 @@ const runNodeProf = async (
 			maxOutputBytes: 128 * 1024,
 		});
 		const detail = `${processed.stderr}${processed.stdout}`.trim();
+		const flamegraph =
+			format === 'flamegraph'
+				? await keepCpuProfile(
+						tempDir,
+						flamegraphPathFor(ctx.pluginCacheDir, stamp),
+					)
+				: undefined;
 		return {
 			ok: processed.ok,
 			profiler: NODE_PROF.id,
 			report: `${processed.stdout}\n${processed.stderr}`.trim(),
+			...(flamegraph === undefined ? {} : { flamegraph }),
 			code: processed.code,
 			timedOut: processed.timedOut,
 			...(!processed.ok && detail.length > 0 ? { detail } : {}),
@@ -178,18 +192,12 @@ export const realPerfProfileDeps = (
 		() => undefined,
 	);
 	return {
-		probeProfilers: async (format: PerfProfileFormat) => {
-			const ordered =
-				format === 'flamegraph'
-					? [ZERO_X, CLINIC_FLAME, NODE_PROF]
-					: [NODE_PROF, ZERO_X, CLINIC_FLAME];
-			return Promise.all(
-				ordered.map((tool) => probeTool(tool, probeDeps)),
-			);
-		},
+		// Node's own profiler serves both formats; nothing else is run, so
+		// nothing else is probed.
+		probeProfilers: async () => [await probeTool(NODE_PROF, probeDeps)],
 		runProfiler: async (
 			_profilerId: string,
 			input: IPerfProfileCaptureInput,
-		) => runNodeProf(ctx, input.cwd, input.timeoutMs),
+		) => runNodeProf(ctx, input.cwd, input.timeoutMs, input.format),
 	};
 };

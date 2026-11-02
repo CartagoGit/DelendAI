@@ -38,7 +38,6 @@ export const BUN_OWNED_SPECS: readonly string[] = [
 	'packages/proposals-sqlite/',
 	'packages/sqlite/',
 	'packages/state-sqlite/',
-	'packages/roadmap-sqlite/',
 	'packages/state-telemetry/src/lib/eta/duration-history.spec.ts',
 	'packages/state-telemetry/src/lib/events/work-event-store.spec.ts',
 	'packages/core/tests/src/lib/evidence/evidence-repo.spec.ts',
@@ -82,6 +81,16 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
 		},
 	);
 };
+
+/**
+ * Test options every project shares. A project's config defines its own
+ * `test` block and inherits nothing from the root one, so `fsModuleCache`
+ * set only at the root reached no project: each run transformed every
+ * module again (73% of a run's tracked time, measured on orchestrator-runner).
+ */
+export const sharedTestOptions = {
+	fsModuleCache: true,
+} as const;
 
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
@@ -460,6 +469,16 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@delendai/shared',
 			replacement: resolve(shared, 'public/index.ts'),
+		},
+		// The contracts root is read from source, like every other package:
+		// once core took a runtime value from it (the one secret rule set),
+		// a run with no built dist failed to resolve the package entry.
+		{
+			find: /^@delendai\/contracts$/,
+			replacement: resolve(
+				workspaceRoot,
+				'packages/contracts/src/index.ts',
+			),
 		},
 		{
 			find: '@delendai/core/version',

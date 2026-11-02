@@ -17,6 +17,7 @@ import { fakePartial } from '@delendai/test-kit';
 import {
 	adoptProposalId,
 	carryUnitRecords,
+	proposalOfCreateUnit,
 } from '@delendai/core/lib/work-units/unit-adoption.service';
 import {
 	gitCommonDirOf,
@@ -241,6 +242,24 @@ describe('carryUnitRecords', () => {
 		expect(git(remote, 'branch', '--list', OLD)).toBe('');
 	});
 
+	it('names the claimant as the lease owner when the unit changes hands', async () => {
+		const { main, tree } = unitOn(OLD);
+		await enter(tree, OLD);
+		git(main, 'branch', '-m', OLD, TAKEN);
+
+		await carryUnitRecords({
+			cwd: main,
+			policy,
+			from: OLD,
+			to: TAKEN,
+			owner: 'agent-b',
+		});
+
+		const lease = await readUnitLease(gitCommonDirOf(tree) ?? '', TAKEN);
+		expect(lease?.ref).toBe(TAKEN);
+		expect(lease?.owner.agent).toBe('agent-b');
+	});
+
 	it('has nothing to carry for a unit with no lease that the forge never had', async () => {
 		const { main } = unitOn(OLD);
 		expect(
@@ -251,5 +270,27 @@ describe('carryUnitRecords', () => {
 				to: TAKEN,
 			}),
 		).toEqual({ lease: false, forge: 'absent' });
+	});
+});
+
+describe('proposalOfCreateUnit', () => {
+	it('names the proposal a create unit already made', () => {
+		const { tree } = unitOn(NEW);
+		expect(proposalOfCreateUnit(tree, policy)).toEqual({
+			branch: NEW,
+			proposal: 'x00001',
+		});
+	});
+
+	it('finds nothing in a create unit still waiting for its id', () => {
+		const { tree } = unitOn(OLD);
+		expect(proposalOfCreateUnit(tree, policy)).toBeUndefined();
+	});
+
+	it('finds nothing in a unit of another kind', () => {
+		const { tree } = unitOn(
+			'delendai/wip/agent-a/implement/x00001-all-g1/the-topic',
+		);
+		expect(proposalOfCreateUnit(tree, policy)).toBeUndefined();
 	});
 });

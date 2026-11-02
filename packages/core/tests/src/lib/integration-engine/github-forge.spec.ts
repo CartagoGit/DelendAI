@@ -209,6 +209,38 @@ describe('the GitHub integration forge', () => {
 		expect(gh.calls.some((args) => args.includes('PUT'))).toBe(false);
 	});
 
+	it('calls a merge answer without merged: true and a sha a failed merge', async () => {
+		const base = ran(JSON.stringify({ object: { sha: 'e'.repeat(40) } }));
+		const merge = (answer: object) =>
+			createGithubIntegrationForge({
+				// A write ends in `--input -`: route on the path anywhere.
+				exec: async (input: {
+					readonly args?: readonly string[] | undefined;
+				}) =>
+					(input.args ?? []).some((arg) =>
+						arg.includes('pulls/1/merge'),
+					)
+						? ran(JSON.stringify(answer))
+						: base,
+				mutationsEnabled: true,
+			}).mergePullRequest({
+				target: TARGET,
+				number: 1,
+				baseBranch: 'develop',
+				expectedBaseSha: 'e'.repeat(40),
+				expectedHeadSha: 'c'.repeat(40),
+				method: 'merge',
+			});
+
+		expect((await merge({ merged: false, message: 'queued' })).status).toBe(
+			'failed',
+		);
+		expect((await merge({ merged: true })).status).toBe('failed');
+		expect(
+			(await merge({ merged: true, sha: 'd'.repeat(40) })).status,
+		).toBe('merged');
+	});
+
 	it('tells "the base could not be read" apart from "the base moved"', async () => {
 		// Both refuse the merge; only one of them means somebody else
 		// landed work first, and a caller that retries the wrong one is

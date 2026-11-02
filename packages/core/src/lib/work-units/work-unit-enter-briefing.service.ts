@@ -7,6 +7,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { briefingFrom, describeBriefing } from './work-briefing.service';
+import { describeTaskBriefing, taskBriefingFor } from './task-briefing.service';
 import { readSwarm } from './work-swarm.service';
 
 /**
@@ -17,18 +18,27 @@ import { readSwarm } from './work-swarm.service';
  * `--json` must not have to run a second command to learn what a human
  * would have read on the way in.
  */
-export const withBriefing = (
+export const withBriefing = async (
 	ctx: IWorkUnitContext,
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	agent: string,
 	data: IEnteredWorktree,
-): IWorkUnitResult => {
+	unit: { readonly proposal: string; readonly slice: string },
+): Promise<IWorkUnitResult> => {
 	const briefing = briefingFrom({
 		agent,
 		view: readSwarm({ root, policy }),
 	});
-	const payload = { ...data, swarm: briefing };
+	const task =
+		data.path === null
+			? undefined
+			: await taskBriefingFor({ worktree: data.path, ...unit });
+	const payload = {
+		...data,
+		swarm: briefing,
+		...(task === undefined ? {} : { task }),
+	};
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: payload };
 	}
@@ -42,6 +52,7 @@ export const withBriefing = (
 						`session          ${data.session} (pass --session=${data.session} to enter this unit again)`,
 					]),
 			...describeBriefing(briefing),
+			...(task === undefined ? [] : describeTaskBriefing(task)),
 		].join('\n')}\n`,
 	);
 	return { code: EXIT_CODE.OK, data: payload, suppressDefaultPrint: true };

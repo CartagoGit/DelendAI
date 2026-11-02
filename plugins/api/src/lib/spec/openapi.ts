@@ -3,16 +3,25 @@
  *
  * The parser only reads the structural surface the rest of the
  * `api` plugin needs: `info.title` + servers, the resolved path
- * templates, and the parameters/responses for each operation. We do
- * not attempt to fully resolve `$ref` graphs (the slice ships
- * local + server-relative refs only; full graph resolution is S3
- * territory).
+ * templates, and the parameters/responses for each operation. Local
+ * `$ref`s are expanded first; anything else is named in `parseNote`.
  *
  * The output shape `IOpenApiSpec` is what the rest of the plugin
  * (request builder, contract validator, mock generator) consumes.
  * Pure data — no I/O, no spawn.
  */
-import type { IFetchLike } from '@delendai/web-fetch/public';
+import { webFetch } from '@delendai/web-fetch/public';
+
+import { dereference } from './dereference.service';
+import type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
+
+export type {
+	ILoadedSpec,
+	ILoadSpecOptions,
+} from '../contracts/interfaces/load-spec.interface';
 
 /** A primitive type known to JSON Schema (OpenAPI inherits JSON Schema). */
 export type IJsonSchemaPrimitive =
@@ -47,6 +56,15 @@ export interface IJsonSchema {
 	 */
 	readonly minItems?: number;
 	readonly maxItems?: number;
+	/** String bounds (JSON Schema). */
+	readonly minLength?: number;
+	readonly maxLength?: number;
+	/** `null` is a valid value (OpenAPI 3.0 flag, or 3.1 `type: [.., 'null']`). */
+	readonly nullable?: boolean;
+	readonly additionalProperties?: boolean | IJsonSchema;
+	/** Kept so the validator can refuse them instead of passing everything. */
+	readonly oneOf?: readonly IJsonSchema[];
+	readonly anyOf?: readonly IJsonSchema[];
 }
 
 /** Where a parameter lives. */
@@ -135,6 +153,60 @@ const parseServers = (raw: unknown): readonly string[] => {
 	return out;
 };
 
+/** A 3.1 `type: ['string', 'null']` is a nullable string. */
+const parseType = (raw: unknown): Pick<IJsonSchema, 'type' | 'nullable'> => {
+	if (typeof raw === 'string') return { type: raw as IJsonSchemaPrimitive };
+	if (!Array.isArray(raw)) return {};
+	const named = raw.filter((t): t is string => typeof t === 'string');
+	const concrete = named.filter((t) => t !== 'null');
+	return {
+		...(concrete.length === 1
+			? { type: concrete[0] as IJsonSchemaPrimitive }
+			: {}),
+		...(concrete.length === named.length ? {} : { nullable: true }),
+	};
+};
+
+/** OpenAPI 3.0 spells an exclusive bound as a boolean beside the bound. */
+const parseBounds = (
+	raw: Record<string, unknown>,
+): Pick<
+	IJsonSchema,
+	'minimum' | 'maximum' | 'exclusiveMinimum' | 'exclusiveMaximum'
+> => {
+	const bound = (
+		inclusive: unknown,
+		exclusive: unknown,
+		inclusiveKey: 'minimum' | 'maximum',
+		exclusiveKey: 'exclusiveMinimum' | 'exclusiveMaximum',
+	) => ({
+		...(typeof inclusive === 'number' && exclusive !== true
+			? { [inclusiveKey]: inclusive }
+			: {}),
+		...(typeof exclusive === 'number' ? { [exclusiveKey]: exclusive } : {}),
+		...(typeof inclusive === 'number' && exclusive === true
+			? { [exclusiveKey]: inclusive }
+			: {}),
+	});
+	return {
+		...bound(
+			raw.minimum,
+			raw.exclusiveMinimum,
+			'minimum',
+			'exclusiveMinimum',
+		),
+		...bound(
+			raw.maximum,
+			raw.exclusiveMaximum,
+			'maximum',
+			'exclusiveMaximum',
+		),
+	};
+};
+
+const parseSchemas = (raw: unknown): readonly IJsonSchema[] | undefined =>
+	Array.isArray(raw) ? raw.map(parseSchema) : undefined;
+
 const parseSchema = (raw: unknown): IJsonSchema => {
 	if (!isPlainObject(raw)) return {};
 	const out: {
@@ -146,16 +218,15 @@ const parseSchema = (raw: unknown): IJsonSchema => {
 		items?: IJsonSchema;
 		description?: string;
 		example?: unknown;
-		minimum?: number;
-		maximum?: number;
-		exclusiveMinimum?: number;
-		exclusiveMaximum?: number;
 		minItems?: number;
 		maxItems?: number;
-	} = {};
-	if (typeof raw.type === 'string') {
-		out.type = raw.type as IJsonSchemaPrimitive;
-	}
+		minLength?: number;
+		maxLength?: number;
+		nullable?: boolean;
+		additionalProperties?: boolean | IJsonSchema;
+		oneOf?: readonly IJsonSchema[];
+		anyOf?: readonly IJsonSchema[];
+	} = { ...parseType(raw.type) };
 	if (typeof raw.format === 'string') out.format = raw.format;
 	if (Array.isArray(raw.enum))
 		out.enum = raw.enum as readonly (string | number | boolean)[];
@@ -176,15 +247,21 @@ const parseSchema = (raw: unknown): IJsonSchema => {
 	}
 	if (typeof raw.description === 'string') out.description = raw.description;
 	if ('example' in raw) out.example = raw.example;
-	if (typeof raw.minimum === 'number') out.minimum = raw.minimum;
-	if (typeof raw.maximum === 'number') out.maximum = raw.maximum;
-	if (typeof raw.exclusiveMinimum === 'number')
-		out.exclusiveMinimum = raw.exclusiveMinimum;
-	if (typeof raw.exclusiveMaximum === 'number')
-		out.exclusiveMaximum = raw.exclusiveMaximum;
 	if (typeof raw.minItems === 'number') out.minItems = raw.minItems;
 	if (typeof raw.maxItems === 'number') out.maxItems = raw.maxItems;
-	return out as IJsonSchema;
+	if (typeof raw.minLength === 'number') out.minLength = raw.minLength;
+	if (typeof raw.maxLength === 'number') out.maxLength = raw.maxLength;
+	if (raw.nullable === true) out.nullable = true;
+	if (typeof raw.additionalProperties === 'boolean') {
+		out.additionalProperties = raw.additionalProperties;
+	} else if (isPlainObject(raw.additionalProperties)) {
+		out.additionalProperties = parseSchema(raw.additionalProperties);
+	}
+	const oneOf = parseSchemas(raw.oneOf);
+	if (oneOf !== undefined) out.oneOf = oneOf;
+	const anyOf = parseSchemas(raw.anyOf);
+	if (anyOf !== undefined) out.anyOf = anyOf;
+	return { ...out, ...parseBounds(raw) } as IJsonSchema;
 };
 
 const parseParam = (raw: unknown): IOperationParam | undefined => {
@@ -219,11 +296,22 @@ const parseRequestBody = (
 	const content = raw.content;
 	if (!isPlainObject(content)) return undefined;
 	const jsonEntry = content['application/json'];
-	if (!isPlainObject(jsonEntry)) return undefined;
+	if (isPlainObject(jsonEntry)) {
+		return {
+			required: raw.required === true,
+			contentType: 'application/json',
+			schema: parseSchema(jsonEntry.schema),
+		};
+	}
+	// A body the plugin cannot send is still a body the operation requires.
+	const [contentType] = Object.keys(content);
+	if (contentType === undefined) return undefined;
 	return {
 		required: raw.required === true,
-		contentType: 'application/json',
-		schema: parseSchema(jsonEntry.schema),
+		contentType,
+		schema: parseSchema(
+			(content[contentType] as { schema?: unknown })?.schema,
+		),
 	};
 };
 
@@ -259,7 +347,6 @@ const parseResponses = (raw: unknown): readonly IOperationResponse[] => {
  * went wrong.
  */
 export const parseOpenApi = (input: string | object): IOpenApiSpec => {
-	const defaultNote = 'parsed';
 	let raw: unknown;
 	if (typeof input === 'string') {
 		try {
@@ -285,13 +372,17 @@ export const parseOpenApi = (input: string | object): IOpenApiSpec => {
 			parseNote: 'input is not an object',
 		};
 	}
+	const { paths: pathsRaw, unresolved } = dereference(raw);
+	const defaultNote =
+		unresolved === 0
+			? 'parsed'
+			: `parsed; ${String(unresolved)} $ref could not be followed and constrain nothing`;
 	const infoRaw = raw.info;
 	const info = isPlainObject(infoRaw) ? infoRaw : {};
 	const title = typeof info.title === 'string' ? info.title : '';
 	const version = typeof info.version === 'string' ? info.version : '';
 	const servers = parseServers(raw.servers);
 	const operations: Record<string, IOpenApiOperation> = {};
-	const pathsRaw = raw.paths;
 	if (!isPlainObject(pathsRaw)) {
 		return { title, version, servers, operations, parseNote: 'no paths' };
 	}
@@ -348,58 +439,47 @@ export const parseOpenApi = (input: string | object): IOpenApiSpec => {
 	return { title, version, servers, operations, parseNote: defaultNote };
 };
 
-/**
- * Fetch a spec URL through the web-fetch engine. Convenience
- * wrapper so the tool can accept either a parsed spec or a URL.
- * Read-only and allow-list aware — the host (or the tool) supplies
- * the allowList.
- */
-export interface ILoadSpecOptions {
-	readonly url: string;
-	readonly allowList: readonly string[];
-	readonly maxBytes?: number;
-	readonly timeoutMs?: number;
-	readonly fetch?: IFetchLike;
-}
+/** The first HTTP status that is an error, not a spec. */
+const HTTP_ERROR_MIN = 400;
 
+/**
+ * Fetch a spec URL through the web-fetch engine, under its allow-list,
+ * timeout and byte cap. It used to call `fetch` itself and read the body
+ * to the end, so a spec URL reached any host and any size.
+ */
 export const fetchAndParseSpec = async (
 	options: ILoadSpecOptions,
-): Promise<{ spec: IOpenApiSpec; status: number }> => {
-	const _headers: Record<string, string> = { Accept: 'application/json' };
-	const f = options.fetch ?? (fetch as unknown as IFetchLike);
-	const res = await f(options.url, {});
-	if (!res.ok) {
+): Promise<ILoadedSpec> => {
+	const request = {
+		url: options.url,
+		allowList: options.allowList,
+		headers: { Accept: 'application/json' },
+		...(options.maxBytes === undefined
+			? {}
+			: { maxBytes: options.maxBytes }),
+		...(options.timeoutMs === undefined
+			? {}
+			: { timeoutMs: options.timeoutMs }),
+	};
+	const result = await (options.engine ?? webFetch)(
+		request,
+		...(options.fetch === undefined ? [] : [options.fetch]),
+	);
+	if (!result.ok) {
 		return {
-			spec: emptySpec(`fetch failed: status ${res.status}`),
-			status: res.status,
+			ok: false,
+			reason: `${result.reason}${result.detail === undefined ? '' : ` (${result.detail})`}`,
 		};
 	}
-	const body = res.body;
-	if (body === null || body === undefined) {
-		return { spec: emptySpec('empty body'), status: res.status };
+	// Half a spec parses into a different API: a capped body is refused.
+	if (result.truncated) {
+		return {
+			ok: false,
+			reason: 'the spec is larger than maxBytes; raise maxBytes or pass it inline',
+		};
 	}
-	const reader = body?.getReader();
-	if (reader === undefined) {
-		return { spec: emptySpec('body has no reader'), status: res.status };
+	if (result.status >= HTTP_ERROR_MIN) {
+		return { ok: false, reason: `status ${String(result.status)}` };
 	}
-	const decoder = new TextDecoder('utf-8');
-	let text = '';
-	let next = await reader.read();
-	while (!next.done) {
-		const value = next.value;
-		if (value !== undefined) {
-			text += decoder.decode(value, { stream: true });
-		}
-		next = await reader.read();
-	}
-	text += decoder.decode();
-	return { spec: parseOpenApi(text), status: res.status ?? 0 };
+	return { ok: true, spec: parseOpenApi(result.body), status: result.status };
 };
-
-const emptySpec = (note: string): IOpenApiSpec => ({
-	title: '',
-	version: '',
-	servers: [],
-	operations: {},
-	parseNote: note,
-});

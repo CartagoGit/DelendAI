@@ -52,6 +52,25 @@ describe('createCapabilityGateway', () => {
 		expect(gateway.roleOf).toBeUndefined();
 	});
 
+	it('keeps a raw answer redacted: a credential it quotes never reaches the disk', async () => {
+		const dir = root();
+		const gateway = createCapabilityGateway({
+			workspaceRoot: dir,
+			active: () => false,
+			optionsOf: () => ({}),
+			rawDir: join(dir, 'raw'),
+		});
+		// Assembled at run time: the commit hook rewrites a whole one.
+		const key = ['AK', 'IA', 'Q'.repeat(16)].join('');
+		await gateway.keep(
+			'ext-raw:leak',
+			JSON.stringify({ text: `key ${key}` }),
+		);
+		const kept = readFileSync(join(dir, 'raw/ext-raw_leak.json'), 'utf8');
+		expect(kept).not.toContain(key);
+		expect(kept).toContain('[REDACTED]');
+	});
+
 	it('lists nothing without a git runner, and places files when conventions is active', async () => {
 		const gateway = createCapabilityGateway({
 			workspaceRoot: root(),

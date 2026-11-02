@@ -78,7 +78,15 @@ export const buildI18nValidateRegistration = (
 						contained.rel,
 					);
 				}
-				const locales = await deps.listLocales();
+				let locales: Awaited<ReturnType<typeof deps.listLocales>>;
+				try {
+					locales = await deps.listLocales();
+				} catch (error) {
+					return toolError(
+						'A locale catalogue cannot be read',
+						error instanceof Error ? error.message : String(error),
+					);
+				}
 				const findings = validateInterpolation(locales);
 				const sourceLocale =
 					locales

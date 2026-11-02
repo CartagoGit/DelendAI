@@ -22,6 +22,7 @@
 
 import { readdir, readFile, stat as fsStat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const ROOT = `${import.meta.dirname ?? import.meta.dir}/../../../.github/workflows`;
 
@@ -143,6 +144,8 @@ const SETUP_DUPLICATES: ReadonlySet<string> = new Set([
 ]);
 
 export const main = async (): Promise<number> => {
+	if (refuseMissingScanRoots('workflow-command-duplication', ROOT, ['.']))
+		return 1;
 	const files = await walk(ROOT);
 	const occurrences: ICommandOccurrence[] = [];
 	for (const file of files) {

@@ -46,7 +46,7 @@ describe('appendAuditTrailer', () => {
 			expect(out).toContain('Co-authored-by: vscode-copilot/minimax-m3');
 		});
 
-		it('replaces an existing Co-authored-by trailer instead of duplicating it', () => {
+		it('keeps a different Co-authored-by trailer and does not duplicate an equal one', () => {
 			const original = [
 				'feat: x',
 				'',
@@ -58,9 +58,50 @@ describe('appendAuditTrailer', () => {
 				'${host}/${model}',
 				{ host: 'claude-code', model: 'opus-4' },
 			);
-			const matches = out.match(/^Co-authored-by: /gm) ?? [];
-			expect(matches.length).toBe(1);
-			expect(out).toContain('Co-authored-by: claude-code/opus-4');
+			expect(out).toBe(
+				'feat: x\n\nCo-authored-by: vscode-copilot/minimax-m3\nCo-authored-by: claude-code/opus-4\n',
+			);
+			const again = appendAuditTrailer(
+				out,
+				'co-authored-by',
+				'${host}/${model}',
+				{ host: 'claude-code', model: 'OPUS-4' },
+			);
+			expect(again.match(/^Co-authored-by: claude-code/gim)?.length).toBe(
+				1,
+			);
+		});
+
+		it('keeps subject, body and other trailers', () => {
+			const original = [
+				'fix: thing: with colon',
+				'',
+				'Body line.',
+				'Note: kept',
+				'',
+				'Signed-off-by: A <a@b.c>',
+			].join('\n');
+			const out = appendAuditTrailer(
+				original,
+				'co-authored-by',
+				'${host}/${model}',
+				agent,
+			);
+			expect(out).toBe(
+				`${original}\nCo-authored-by: vscode-copilot/minimax-m3\n`,
+			);
+		});
+
+		it('never strips a subject shaped like a trailer', () => {
+			const out = appendAuditTrailer(
+				'Co-authored-by: vscode-copilot/minimax-m3',
+				'co-authored-by',
+				'${host}/${model}',
+				agent,
+			);
+			expect(
+				out.startsWith('Co-authored-by: vscode-copilot/minimax-m3\n\n'),
+			).toBe(true);
 		});
 
 		it('interpolates ${host}, ${model}, and ${date}', () => {
@@ -87,9 +128,22 @@ describe('appendAuditTrailer', () => {
 			);
 			expect(out).toContain('feat: y');
 			expect(out).toContain('<!-- agent-metadata:begin -->');
-			expect(out).toContain('"host": "vscode-copilot"');
-			expect(out).toContain('"model": "minimax-m3"');
+			expect(out).toContain('"host":"vscode-copilot"');
+			expect(out).toContain('"model":"minimax-m3"');
 			expect(out).toContain('<!-- agent-metadata:end -->');
+		});
+
+		it('keeps a value with a quote readable as JSON', () => {
+			const out = appendAuditTrailer(
+				'feat: y',
+				'body-metadata',
+				'${host}/${model}',
+				{ ...agent, model: 'mini"max' },
+			);
+			const json = /```json\n(.*)\n```/u.exec(out)?.[1] ?? '';
+			expect((JSON.parse(json) as { model: string }).model).toBe(
+				'mini"max',
+			);
 		});
 
 		it('rewrites a previous fenced block instead of stacking them', () => {
@@ -110,7 +164,7 @@ describe('appendAuditTrailer', () => {
 			);
 			const begins = out.match(/<!-- agent-metadata:begin -->/g) ?? [];
 			expect(begins.length).toBe(1);
-			expect(out).toContain('"host": "vscode-copilot"');
+			expect(out).toContain('"host":"vscode-copilot"');
 			expect(out).not.toContain('"host": "old"');
 		});
 	});

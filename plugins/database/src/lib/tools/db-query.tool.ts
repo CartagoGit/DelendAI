@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { toolError, toolJson } from '@delendai/core/public';
+import { planDryRun, toolError, toolJson } from '@delendai/core/public';
 
 import type { IDriverKind } from '../introspect/introspect-engine';
 import {
@@ -44,6 +44,9 @@ const queryOutputSchema = z.union([
 		ok: z.literal(true),
 		classification: z.enum(['read', 'write', 'ddl', 'unknown']),
 		dryRun: z.boolean(),
+		wouldChange: z.array(z.looseObject({})).optional(),
+		wouldRun: z.array(z.looseObject({})).optional(),
+		risk: z.enum(['low', 'medium', 'high']).optional(),
 		rows: z.array(z.record(z.string(), z.unknown())).optional(),
 		rowCount: z.number().int().nonnegative().optional(),
 		plan: z.array(z.string()).optional(),
@@ -54,6 +57,9 @@ const queryOutputSchema = z.union([
 		reason: z.string(),
 		classification: z.enum(['write', 'ddl', 'unknown']),
 		dryRun: z.boolean().optional(),
+		wouldChange: z.array(z.looseObject({})).optional(),
+		wouldRun: z.array(z.looseObject({})).optional(),
+		risk: z.enum(['low', 'medium', 'high']).optional(),
 	}),
 ]);
 
@@ -147,6 +153,7 @@ export const buildDatabaseQueryToolRegistrations = (
 				'Run a guarded SQL query. Read-only by default; write/DDL blocked unless explicitly confirmed.',
 			tags: ['database', 'query', 'read-only'],
 			effects: ['network'],
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_db_query`,
@@ -170,7 +177,29 @@ export const buildDatabaseQueryToolRegistrations = (
 								driver,
 								toQueryInput(input),
 							);
-							return toolJson(queryOutputSchema.parse(result));
+							return toolJson(
+								queryOutputSchema.parse(
+									input.dryRun === true
+										? {
+												...result,
+												...planDryRun({
+													wouldRun: [
+														{
+															shape: 'network',
+															target: 'db_query',
+															summary: `runs ${result.classification} SQL; a preview executes nothing`,
+														},
+													],
+													risk:
+														result.classification ===
+														'read'
+															? 'low'
+															: 'high',
+												}),
+											}
+										: result,
+								),
+							);
 						} catch (err) {
 							return toolError(
 								'query-failed',

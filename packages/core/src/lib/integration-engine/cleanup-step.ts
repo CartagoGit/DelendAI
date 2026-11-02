@@ -26,6 +26,7 @@
  */
 
 import type { IIntegrationEngineDeps } from './engine-context.interface';
+import { namespacedRef } from '../work-units/namespaced-ref.helper';
 import { candidateBranchName } from './identity';
 import type {
 	IIntegrationCandidate,
@@ -160,6 +161,17 @@ export const disposeWorkRef = async (
 		};
 	}
 
+	// The delivered tip stays reachable once its name is gone: deleted
+	// with its ref, the agent lost the visible branch of work that landed.
+	const keptAt = namespacedRef(
+		policy.branches.namespacePrefix,
+		'retired',
+		candidate.wipRef.replace(/^refs\/(?:heads\/)?/u, ''),
+	);
+	const kept =
+		deps.git.keepRef === undefined
+			? undefined
+			: await deps.git.keepRef({ ref: keptAt, sha: input.wipHeadSha });
 	const local = await deps.git.deleteRef({
 		ref: candidate.wipRef,
 		expectedSha: input.wipHeadSha,
@@ -172,16 +184,30 @@ export const disposeWorkRef = async (
 			`${candidate.wipRef} is integrated but was not deleted: ${local.reason}`,
 		);
 	}
-	await deps.forge.deleteBranch({
+	const forge = await deps.forge.deleteBranch({
 		target: candidate.repository,
 		branch: candidateBranchName(candidate.wipRef),
 		expectedSha: input.wipHeadSha,
 	});
+	const keptNote = kept?.ok === true ? { keptAt } : {};
+	// A refusal is reported, not swallowed: the forge still shows the
+	// branch, and a cleanup that said "deleted" hid it.
+	if (!forge.ok) {
+		return {
+			ref: candidate.wipRef,
+			classification: 'integrated',
+			action: 'forge-refused',
+			reason: `${candidate.wipRef} was deleted here, but the forge kept its copy: ${forge.reason}`,
+			evidence,
+			...keptNote,
+		};
+	}
 	return {
 		ref: candidate.wipRef,
 		classification: 'integrated',
 		action: 'deleted',
 		reason: `${candidate.wipRef} is represented in '${policy.branches.integration}' at ${evidence.integratedSha}; the merged work ref was deleted.`,
 		evidence,
+		...keptNote,
 	};
 };

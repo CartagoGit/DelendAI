@@ -67,6 +67,13 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return result.ok;
 	};
 
+	const reachableFrom = async (
+		tips: readonly string[],
+	): Promise<ReadonlySet<string> | undefined> => {
+		const listed = await run(['rev-list', ...new Set(tips)]);
+		return listed.ok ? new Set(listed.output.split('\n')) : undefined;
+	};
+
 	const { contentContained } = checkpointContainment(run, isAncestor);
 
 	const fetch = async (request: {
@@ -365,6 +372,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		describeRef,
 		isAncestor,
 		contentContained,
+		reachableFrom,
 		currentBranch,
 		dirtyPaths,
 		dirtyState,

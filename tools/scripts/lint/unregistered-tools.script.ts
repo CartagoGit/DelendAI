@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 /** Pathspecs for the corpus: every TypeScript file git tracks. */
 export const CORPUS_PATHSPECS = ['*.ts', '*.tsx'] as const;
@@ -329,4 +330,14 @@ const isMainModule = (): boolean => {
 	return entry !== undefined && import.meta.url === `file://${entry}`;
 };
 
-if (isMainModule()) process.exit(main());
+if (isMainModule()) {
+	if (
+		refuseMissingScanRoots(
+			'unregistered-tools',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

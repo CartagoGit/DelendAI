@@ -400,6 +400,5 @@
 	"plugins/usage-tracking/src/lib/record.ts",
 	"plugins/usage-tracking/src/lib/rollup.ts",
 	"plugins/usage-tracking/src/lib/session-hygiene.ts",
-	"plugins/usage-tracking/src/lib/start-clock.ts",
 	"plugins/usage-tracking/src/lib/types.ts"
 ]

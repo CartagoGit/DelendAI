@@ -71,6 +71,14 @@ describe('lintProposalMarkdown — happy paths', async () => {
 		expect(result.issues).toEqual([]);
 	});
 
+	it("accepts a plan's ledger after its acceptance", async () => {
+		const result = lintProposalMarkdown({
+			path: 'docs/delendai/proposals/ready/f00114-do-the-thing.md',
+			markdown: `${doc()}\n## Ledger\n\n| Finding | Settlement |\n|---|---|\n| a00095/G1 | settled-by: x00939 |\n`,
+		});
+		expect(result.issues).toEqual([]);
+	});
+
 	it('accepts the narrative slice form (Gate + excl-files heading)', async () => {
 		const result = lintProposalMarkdown({
 			path: 'docs/delendai/proposals/ready/f00114-do-the-thing.md',

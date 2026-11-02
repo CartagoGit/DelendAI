@@ -93,7 +93,7 @@
         "zod": "^4.6.6",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "extensions/vscode": {
@@ -118,19 +118,43 @@
     },
     "packages/cli": {
       "name": "@delendai/cli",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "bin": {
         "delendai": "./dist/index.js",
       },
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
+        "@delendai/agent-orchestrator": "workspace:*",
         "@delendai/auto-agent-selector": "workspace:*",
         "@delendai/client": "workspace:*",
+        "@delendai/completion": "workspace:*",
+        "@delendai/container": "workspace:*",
+        "@delendai/conventions": "workspace:*",
         "@delendai/core": "workspace:*",
+        "@delendai/database": "workspace:*",
+        "@delendai/deps": "workspace:*",
+        "@delendai/diagram": "workspace:*",
+        "@delendai/docs": "workspace:*",
         "@delendai/env": "workspace:*",
+        "@delendai/error-reporting": "workspace:*",
+        "@delendai/forge": "workspace:*",
+        "@delendai/git": "workspace:*",
+        "@delendai/i18n": "workspace:*",
+        "@delendai/logs": "workspace:*",
+        "@delendai/memory": "workspace:*",
+        "@delendai/notification": "workspace:*",
+        "@delendai/prompts-pack": "workspace:*",
         "@delendai/proposals": "workspace:*",
+        "@delendai/quality": "workspace:*",
+        "@delendai/refactor": "workspace:*",
+        "@delendai/rules": "workspace:*",
+        "@delendai/search": "workspace:*",
+        "@delendai/skills-pack": "workspace:*",
         "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
+        "@delendai/status-marker": "workspace:*",
+        "@delendai/test-convention": "workspace:*",
+        "@delendai/test-policy": "workspace:*",
         "zod": "^4.6.6",
       },
       "devDependencies": {
@@ -143,8 +167,9 @@
     },
     "packages/client": {
       "name": "@delendai/client",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
+        "@delendai/contracts": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
@@ -155,7 +180,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
       "optionalPeers": [
         "@delendai/core",
@@ -163,7 +188,7 @@
     },
     "packages/context-compiler": {
       "name": "@delendai/context-compiler",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/state": "workspace:*",
       },
@@ -175,7 +200,7 @@
     },
     "packages/contracts": {
       "name": "@delendai/contracts",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -184,7 +209,7 @@
     },
     "packages/core": {
       "name": "@delendai/core",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
@@ -202,7 +227,7 @@
     },
     "packages/proposals-sqlite": {
       "name": "@delendai/proposals-sqlite",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "@delendai/sqlite": "workspace:*",
@@ -215,21 +240,9 @@
         "vitest": "5.0.3",
       },
     },
-    "packages/roadmap-sqlite": {
-      "name": "@delendai/roadmap-sqlite",
-      "version": "0.1.0",
-      "dependencies": {
-        "@delendai/roadmap": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-        "typescript": "7.0.2",
-        "vitest": "5.0.3",
-      },
-    },
     "packages/sqlite": {
       "name": "@delendai/sqlite",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "7.0.2",
@@ -238,7 +251,7 @@
     },
     "packages/state": {
       "name": "@delendai/state",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
       },
@@ -253,6 +266,7 @@
       "name": "@delendai/state-sqlite",
       "version": "0.1.0",
       "dependencies": {
+        "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
       },
       "devDependencies": {
@@ -304,7 +318,7 @@
     },
     "plugins/adaptive-optimizer": {
       "name": "@delendai/adaptive-optimizer",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@delendai/auto-plugin-selector": "workspace:*",
@@ -328,12 +342,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/agent-orchestrator": {
       "name": "@delendai/agent-orchestrator",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/context-compiler": "workspace:*",
         "@delendai/contracts": "workspace:*",
@@ -349,8 +363,8 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/context-for-change": "^0.2.4",
-        "@delendai/core": "^0.2.4",
+        "@delendai/context-for-change": "^0.3.0",
+        "@delendai/core": "^0.3.0",
       },
       "optionalPeers": [
         "@delendai/context-for-change",
@@ -358,7 +372,7 @@
     },
     "plugins/api": {
       "name": "@delendai/api",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^4.6.6",
       },
@@ -366,14 +380,16 @@
         "@delendai/test-kit": "workspace:*",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
         "@delendai/web-fetch": "workspace:*",
       },
     },
     "plugins/audit": {
       "name": "@delendai/audit",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
+        "@delendai/deps": "workspace:*",
+        "@delendai/security": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
@@ -384,13 +400,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/audit-orchestrator": {
       "name": "@delendai/audit-orchestrator",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
+        "yaml": "2.9.0",
         "zod": "^4.6.6",
       },
       "devDependencies": {
@@ -402,12 +419,12 @@
       },
       "peerDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/auto-agent-selector": {
       "name": "@delendai/auto-agent-selector",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -419,12 +436,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/auto-plugin-selector": {
       "name": "@delendai/auto-plugin-selector",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -437,12 +454,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/browser": {
       "name": "@delendai/browser",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.6.6",
@@ -456,7 +473,7 @@
     },
     "plugins/cache": {
       "name": "@delendai/cache",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -468,7 +485,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/changelog": {
@@ -486,7 +503,7 @@
     },
     "plugins/commit-policy": {
       "name": "@delendai/commit-policy",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -499,12 +516,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/completion": {
       "name": "@delendai/completion",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -517,12 +534,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/container": {
       "name": "@delendai/container",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "yaml": "2.9.0",
@@ -535,7 +552,7 @@
     },
     "plugins/context-for-change": {
       "name": "@delendai/context-for-change",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/docs": "workspace:*",
@@ -561,12 +578,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/conventions": {
       "name": "@delendai/conventions",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -578,12 +595,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/database": {
       "name": "@delendai/database",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^4.6.6",
       },
@@ -595,7 +612,7 @@
         "vitest": "^5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
         "better-sqlite3": "^11.0.0",
       },
       "optionalPeers": [
@@ -604,7 +621,7 @@
     },
     "plugins/deps": {
       "name": "@delendai/deps",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -617,12 +634,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/diagram": {
       "name": "@delendai/diagram",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/database": "workspace:*",
         "@delendai/proposals": "workspace:*",
@@ -636,12 +653,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/docs": {
       "name": "@delendai/docs",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -654,12 +671,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/env": {
       "name": "@delendai/env",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -671,12 +688,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/error-reporting": {
       "name": "@delendai/error-reporting",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/commit-policy": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -690,12 +707,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/execution-env": {
       "name": "@delendai/execution-env",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "yaml": "2.9.0",
         "zod": "^4.6.6",
@@ -707,12 +724,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/external-mcps": {
       "name": "@delendai/external-mcps",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/framework-knowledge": "workspace:*",
@@ -727,12 +744,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/forge": {
       "name": "@delendai/forge",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -744,12 +761,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/framework-knowledge": {
       "name": "@delendai/framework-knowledge",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -762,29 +779,31 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/git": {
       "name": "@delendai/git",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
+        "@delendai/forge": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
+        "@delendai/forge": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/github": {
       "name": "@delendai/github",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
@@ -797,12 +816,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/gitlab": {
       "name": "@delendai/gitlab",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
@@ -815,12 +834,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/i18n": {
       "name": "@delendai/i18n",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -832,12 +851,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/impact-analysis": {
       "name": "@delendai/impact-analysis",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/git": "workspace:*",
         "@delendai/refactor": "workspace:*",
@@ -857,24 +876,24 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/issues": {
       "name": "@delendai/issues",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
       },
       "devDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/issues-triage": {
@@ -892,13 +911,13 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
-        "@delendai/proposals": "^0.2.4",
+        "@delendai/core": "^0.3.0",
+        "@delendai/proposals": "^0.3.0",
       },
     },
     "plugins/link-check": {
       "name": "@delendai/link-check",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -910,12 +929,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/logs": {
       "name": "@delendai/logs",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -928,12 +947,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/memory": {
       "name": "@delendai/memory",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -945,12 +964,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/notification": {
       "name": "@delendai/notification",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -963,12 +982,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/observability": {
       "name": "@delendai/observability",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^4.6.6",
       },
@@ -976,13 +995,13 @@
         "@delendai/test-kit": "workspace:*",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
         "@delendai/web-fetch": "workspace:*",
       },
     },
     "plugins/orchestrator-runner": {
       "name": "@delendai/orchestrator-runner",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@agentclientprotocol/sdk": "1.5.1",
         "@delendai/contracts": "workspace:*",
@@ -996,8 +1015,8 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
-        "@delendai/execution-env": "^0.2.4",
+        "@delendai/core": "^0.3.0",
+        "@delendai/execution-env": "^0.3.0",
       },
       "optionalPeers": [
         "@delendai/execution-env",
@@ -1005,7 +1024,7 @@
     },
     "plugins/perf": {
       "name": "@delendai/perf",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1017,12 +1036,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/project-health": {
       "name": "@delendai/project-health",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/deps": "workspace:*",
         "@delendai/quality": "workspace:*",
@@ -1042,12 +1061,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/project-kpis": {
       "name": "@delendai/project-kpis",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/project-health": "workspace:*",
         "@delendai/usage-tracking": "workspace:*",
@@ -1062,12 +1081,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/prompt-eval": {
       "name": "@delendai/prompt-eval",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1081,14 +1100,14 @@
         "vitest": "^5.0.3",
       },
       "peerDependencies": {
-        "@delendai/auto-agent-selector": "^0.2.4",
-        "@delendai/core": "^0.2.4",
-        "@delendai/orchestrator-runner": "^0.2.4",
+        "@delendai/auto-agent-selector": "^0.3.0",
+        "@delendai/core": "^0.3.0",
+        "@delendai/orchestrator-runner": "^0.3.0",
       },
     },
     "plugins/prompts-pack": {
       "name": "@delendai/prompts-pack",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.6.6",
@@ -1099,7 +1118,7 @@
     },
     "plugins/proposals": {
       "name": "@delendai/proposals",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/error-reporting": "workspace:*",
         "@delendai/logs": "workspace:*",
@@ -1122,12 +1141,12 @@
       },
       "peerDependencies": {
         "@delendai/agent-orchestrator": "workspace:*",
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/quality": {
       "name": "@delendai/quality",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1140,12 +1159,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/quality-policy": {
       "name": "@delendai/quality-policy",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/conventions": "workspace:*",
         "@delendai/quality": "workspace:*",
@@ -1167,12 +1186,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/refactor": {
       "name": "@delendai/refactor",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/core": "workspace:*",
         "zod": "^4.6.6",
@@ -1187,7 +1206,7 @@
     },
     "plugins/remote-provider-core": {
       "name": "@delendai/remote-provider-core",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "zod": "^4.6.6",
@@ -1199,7 +1218,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/roadmap": {
@@ -1221,7 +1240,7 @@
     },
     "plugins/rules": {
       "name": "@delendai/rules",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1233,12 +1252,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/search": {
       "name": "@delendai/search",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1251,13 +1270,14 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/security": {
       "name": "@delendai/security",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
+        "@delendai/contracts": "workspace:*",
         "@delendai/deps": "workspace:*",
         "@delendai/web-fetch": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -1270,12 +1290,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/self-learning": {
       "name": "@delendai/self-learning",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1288,12 +1308,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/skills-pack": {
       "name": "@delendai/skills-pack",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^4.6.6",
       },
@@ -1304,12 +1324,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/status-marker": {
       "name": "@delendai/status-marker",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1321,12 +1341,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/style-convention": {
       "name": "@delendai/style-convention",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^4.6.6",
       },
@@ -1336,12 +1356,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/tech-debt": {
       "name": "@delendai/tech-debt",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1353,12 +1373,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/test-convention": {
       "name": "@delendai/test-convention",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1370,12 +1390,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/test-policy": {
       "name": "@delendai/test-policy",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1387,12 +1407,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/usage-tracking": {
       "name": "@delendai/usage-tracking",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.32.0",
@@ -1406,12 +1426,12 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "plugins/web-fetch": {
       "name": "@delendai/web-fetch",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.32.0",
         "zod": "^4.6.6",
@@ -1423,7 +1443,7 @@
         "vitest": "5.0.3",
       },
       "peerDependencies": {
-        "@delendai/core": "^0.2.4",
+        "@delendai/core": "^0.3.0",
       },
     },
     "tools": {
@@ -1503,15 +1523,18 @@
   ],
   "overrides": {
     "@azure/msal-node": "7.1.0",
-    "body-parser": "2.4.0",
     "@hono/node-server": "2.1.3",
+    "body-parser": "2.4.0",
     "brace-expansion": "5.0.12",
     "fast-uri": "3.1.9",
+    "glob": "14.0.3",
     "hono": "4.13.13",
     "immutable": "5.1.9",
     "ip-address": "10.7.4",
     "js-yaml": "4.3.2",
+    "minimatch": "11.0.3",
     "postcss": "8.5.29",
+    "qs": "6.16.1",
     "sharp": "0.35.5",
     "svgo": "4.1.0",
     "undici": "7.30.1",
@@ -1776,8 +1799,6 @@
 
     "@delendai/roadmap": ["@delendai/roadmap@workspace:plugins/roadmap"],
 
-    "@delendai/roadmap-sqlite": ["@delendai/roadmap-sqlite@workspace:packages/roadmap-sqlite"],
-
     "@delendai/rules": ["@delendai/rules@workspace:plugins/rules"],
 
     "@delendai/search": ["@delendai/search@workspace:plugins/search"],
@@ -1895,6 +1916,8 @@
     "@img/sharp-win32-ia32": ["@img/sharp-win32-ia32@0.35.5", "", { "os": "win32", "cpu": "ia32" }, "sha512-5Zm82LoBc43nhwNybZlG7Y1KO//Zhsn306fQl29ZOuStHLGTo3BWL83q3cznX0poxSAMuYL1On/BHBxkBeKr6A=="],
 
     "@img/sharp-win32-x64": ["@img/sharp-win32-x64@0.35.5", "", { "os": "win32", "cpu": "x64" }, "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg=="],
+
+    "@isaacs/nonrecursive-glob-match": ["@isaacs/nonrecursive-glob-match@1.0.3", "", {}, "sha512-SI7kyKHq4XXDRozw+r9GlRZkia1ZkFrpLW98r2IC2Bpr8YkFGE3fvjzmxCG0x78A++69HmDNrDvSMYBZmHGpKA=="],
 
     "@jridgewell/resolve-uri": ["@jridgewell/resolve-uri@3.1.2", "", {}, "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="],
 
@@ -2512,7 +2535,7 @@
 
     "github-slugger": ["github-slugger@2.0.0", "", {}, "sha512-IaOQ9puYtjrkq7Y0Ygl9KDZnrf/aiUJYUpVf89y8kyaxbRG7Y1SrX/jaumrv81vc61+kiMempujsM3Yw7w5qcw=="],
 
-    "glob": ["glob@13.0.6", "", { "dependencies": { "minimatch": "^10.2.2", "minipass": "^7.1.3", "path-scurry": "^2.0.2" } }, "sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw=="],
+    "glob": ["glob@14.0.3", "", { "dependencies": { "minimatch": "^11.0.2", "minipass": "^7.1.3", "path-scurry": "^3.0.0" } }, "sha512-A1vjIwC3qpdCso45Iw127gnp7sPhqgY8lUQhDrArIs+GbmfaaVPFuoyy7WyLT9EPZCRZ7j7aLdwUhQmHWesEow=="],
 
     "glob-parent": ["glob-parent@5.1.2", "", { "dependencies": { "is-glob": "^4.0.1" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
 
@@ -2786,7 +2809,7 @@
 
     "mimic-response": ["mimic-response@3.1.0", "", {}, "sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ=="],
 
-    "minimatch": ["minimatch@10.2.6", "", { "dependencies": { "brace-expansion": "^5.0.8" } }, "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A=="],
+    "minimatch": ["minimatch@11.0.3", "", { "dependencies": { "@isaacs/nonrecursive-glob-match": "^1.0.3", "brace-expansion": "^5.0.12" } }, "sha512-iny/40PEGkNJQ5/Pv6z3nm6FbRAby32GeZRjCUJk2WnNDbgPSTcdI+DDvLqsgBdD4cD5sMtMheqPPnehCCa8Nw=="],
 
     "minimist": ["minimist@1.2.8", "", {}, "sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA=="],
 
@@ -2886,7 +2909,7 @@
 
     "path-key": ["path-key@3.1.1", "", {}, "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q=="],
 
-    "path-scurry": ["path-scurry@2.0.2", "", { "dependencies": { "lru-cache": "^11.0.0", "minipass": "^7.1.2" } }, "sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg=="],
+    "path-scurry": ["path-scurry@3.0.0", "", { "dependencies": { "lru-cache": "^11.0.0", "minipass": "^7.1.2" } }, "sha512-1pTbQqH1wIwMi/eleQ5leFTTCkzFsPcgXNjwOA8YGGW/W4/kHT3dssE7Z6NH+zuqNLOzOB0uaD61yl7cAcVhgg=="],
 
     "path-to-regexp": ["path-to-regexp@8.4.2", "", {}, "sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA=="],
 
@@ -2940,7 +2963,7 @@
 
     "qified": ["qified@0.10.1", "", { "dependencies": { "hookified": "^2.1.1" } }, "sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA=="],
 
-    "qs": ["qs@6.16.0", "", { "dependencies": { "es-define-property": "^1.0.1", "side-channel": "^1.1.1" } }, "sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA=="],
+    "qs": ["qs@6.16.1", "", { "dependencies": { "es-define-property": "^1.0.1", "side-channel": "^1.1.1" } }, "sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg=="],
 
     "queue-microtask": ["queue-microtask@1.2.3", "", {}, "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A=="],
 
@@ -3208,7 +3231,7 @@
 
     "vfile-message": ["vfile-message@4.0.3", "", { "dependencies": { "@types/unist": "^3.0.0", "unist-util-stringify-position": "^4.0.0" } }, "sha512-QTHzsGd1EhbZs4AsQ20JX1rC3cOlt/IWJruk893DfLRr57lcnOeMaWG4K0JrRta4mIJZKth2Au3mM3u03/JWKw=="],
 
-    "vite": ["vite@8.2.4", "", { "dependencies": { "lightningcss": "^1.33.0", "picomatch": "^4.0.5", "postcss": "^8.5.26", "rolldown": "~1.2.4", "tinyglobby": "^0.2.17" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "@vitejs/devtools": "^0.4.0 || ^0.5.0", "esbuild": "^0.27.0 || ^0.28.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "@vitejs/devtools", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-lfauXnrf2x0p+UoA+wXh0dgFWnUjCyG6Js95KBkgaCwUU9k0DAHI4W6Q0WCx+h+5g+Alce1y4Zi2QjjK0UvGBw=="],
+    "vite": ["vite@8.3.5", "", { "dependencies": { "lightningcss": "^1.33.0", "picomatch": "^4.0.7", "postcss": "^8.5.30", "rolldown": "~1.2.14", "tinyglobby": "^0.2.17" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "@vitejs/devtools": "^0.7.1 || ^0.8.0", "esbuild": "^0.27.0 || ^0.28.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "@vitejs/devtools", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-z1YpjieJ9g0ebTmQpLBv/oq9E3F9EIlOe+7LahW8SrE3LTiG3udBRUXQOlYXP9b+IC2q2phHeVxj9xGlw34OEQ=="],
 
     "vitefu": ["vitefu@1.1.3", "", { "peerDependencies": { "vite": "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-ub4okH7Z5KLjb6hDyjqrGXqWtWvoYdU3IGm/NorpgHncKoLTCfRIbvlhBm7r0YstIaQRYlp4yEbFqDcKSzXSSg=="],
 
@@ -3410,8 +3433,6 @@
 
     "@delendai/roadmap/fast-check": ["fast-check@3.23.2", "", { "dependencies": { "pure-rand": "^6.1.0" } }, "sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A=="],
 
-    "@delendai/roadmap-sqlite/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
-
     "@delendai/rules/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
 
     "@delendai/search/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
@@ -3480,13 +3501,9 @@
 
     "astro/obug": ["obug@3.0.0", "", {}, "sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw=="],
 
-    "astro/vite": ["vite@8.3.5", "", { "dependencies": { "lightningcss": "^1.33.0", "picomatch": "^4.0.7", "postcss": "^8.5.30", "rolldown": "~1.2.14", "tinyglobby": "^0.2.17" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "@vitejs/devtools": "^0.7.1 || ^0.8.0", "esbuild": "^0.27.0 || ^0.28.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "@vitejs/devtools", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-z1YpjieJ9g0ebTmQpLBv/oq9E3F9EIlOe+7LahW8SrE3LTiG3udBRUXQOlYXP9b+IC2q2phHeVxj9xGlw34OEQ=="],
-
     "bl/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
 
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
-
-    "body-parser/qs": ["qs@6.16.1", "", { "dependencies": { "es-define-property": "^1.0.1", "side-channel": "^1.1.1" } }, "sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg=="],
 
     "cheerio-select/css-select": ["css-select@5.2.2", "", { "dependencies": { "boolbase": "^1.0.0", "css-what": "^6.1.0", "domhandler": "^5.0.2", "domutils": "^3.0.1", "nth-check": "^2.0.1" } }, "sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw=="],
 
@@ -3587,8 +3604,6 @@
     "unstorage/lru-cache": ["lru-cache@11.5.2", "", {}, "sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g=="],
 
     "vite/fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
-
-    "vite/rolldown": ["rolldown@1.2.7", "", { "dependencies": { "@oxc-project/types": "=0.148.0", "@rolldown/pluginutils": "^1.0.0" }, "optionalDependencies": { "@rolldown/binding-android-arm-eabi": "1.2.7", "@rolldown/binding-android-arm64": "1.2.7", "@rolldown/binding-darwin-arm64": "1.2.7", "@rolldown/binding-darwin-x64": "1.2.7", "@rolldown/binding-freebsd-x64": "1.2.7", "@rolldown/binding-linux-arm-gnueabihf": "1.2.7", "@rolldown/binding-linux-arm64-gnu": "1.2.7", "@rolldown/binding-linux-arm64-musl": "1.2.7", "@rolldown/binding-linux-ppc64-gnu": "1.2.7", "@rolldown/binding-linux-s390x-gnu": "1.2.7", "@rolldown/binding-linux-x64-gnu": "1.2.7", "@rolldown/binding-linux-x64-musl": "1.2.7", "@rolldown/binding-openharmony-arm64": "1.2.7", "@rolldown/binding-win32-arm64-msvc": "1.2.7", "@rolldown/binding-win32-x64-msvc": "1.2.7" }, "bin": { "rolldown": "./bin/cli.mjs" } }, "sha512-g0EtLvBjTUB7jhyV0S/TCup3v/XSVl45vUIGbOGU4QPiyjTenCe4mKuFvW9fEgYmS2Fo42AUssRmNuMziXdrig=="],
 
     "wawoff2/argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
@@ -3700,8 +3715,6 @@
 
     "@delendai/remote-provider-core/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
-    "@delendai/roadmap-sqlite/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
-
     "@delendai/roadmap/@types/bun/bun-types": ["bun-types@1.4.4", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ=="],
 
     "@delendai/roadmap/fast-check/pure-rand": ["pure-rand@6.1.0", "", {}, "sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA=="],
@@ -3752,8 +3765,6 @@
 
     "@vscode/vsce/markdown-it/uc.micro": ["uc.micro@2.1.0", "", {}, "sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A=="],
 
-    "astro/vite/fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
-
     "bl/readable-stream/string_decoder": ["string_decoder@1.3.0", "", { "dependencies": { "safe-buffer": "~5.2.0" } }, "sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA=="],
 
     "cliui/string-width/emoji-regex": ["emoji-regex@10.6.0", "", {}, "sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A=="],
@@ -3785,38 +3796,6 @@
     "typedoc/markdown-it/linkify-it": ["linkify-it@5.0.2", "", { "dependencies": { "uc.micro": "^2.0.0" } }, "sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q=="],
 
     "typedoc/markdown-it/uc.micro": ["uc.micro@2.1.0", "", {}, "sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A=="],
-
-    "vite/rolldown/@oxc-project/types": ["@oxc-project/types@0.148.0", "", {}, "sha512-Nm4s/jB+4FpFsPhWGEC4h7rzksesmtnMXomo6rCMcg/b8zLQuOziRgkCS1fxDCXOlJB/6Q8oABOZ/OP6RIPj9A=="],
-
-    "vite/rolldown/@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.7", "", { "os": "android", "cpu": "arm" }, "sha512-EypzgnYCwyVY4NDHKzGmNJT5b+XaQEBniHxsMdeIQLB/tcCzZnhqrzHpZFbX9iaxx+5RiB8caATBtfvZP7zVxQ=="],
-
-    "vite/rolldown/@rolldown/binding-android-arm64": ["@rolldown/binding-android-arm64@1.2.7", "", { "os": "android", "cpu": "arm64" }, "sha512-l17HE9EweWaqJZhuUuNBN/FzM62xw+DECVnJyvMsxn8vJFAGLy5QfLDoYAcronkAN8VxKZHezDpulHDPx95vFw=="],
-
-    "vite/rolldown/@rolldown/binding-darwin-arm64": ["@rolldown/binding-darwin-arm64@1.2.7", "", { "os": "darwin", "cpu": "arm64" }, "sha512-8ED8ELFvHXc6OCETIn4gXObPiaR6bckM/ipXtbzlPVDRMBfEGjCKgO90F9YtfdpDatVx/ZQw7aZ1vUMf/+T3Mw=="],
-
-    "vite/rolldown/@rolldown/binding-darwin-x64": ["@rolldown/binding-darwin-x64@1.2.7", "", { "os": "darwin", "cpu": "x64" }, "sha512-/WPripjtiAIZ2tWY7ddijORT0Ujg87wxWW/qcoFVCKAWVDPhtY0xr7Dj0M3GyNGz60jGwTElhro/mkF9dT7dDQ=="],
-
-    "vite/rolldown/@rolldown/binding-freebsd-x64": ["@rolldown/binding-freebsd-x64@1.2.7", "", { "os": "freebsd", "cpu": "x64" }, "sha512-14DI4NcqpvbICxSnGLx3PmtDaWqRP/KGSGb6C+JLLVPeZRl6dKdHba3pGsqT3vpdTqhEYIPG0MMQ8c0xYqoJxA=="],
-
-    "vite/rolldown/@rolldown/binding-linux-arm-gnueabihf": ["@rolldown/binding-linux-arm-gnueabihf@1.2.7", "", { "os": "linux", "cpu": "arm" }, "sha512-bxrWIRvHWQvbJwi+VIie/kDJmQxcNE6xxWwZdqF/ExVAigtHkv54WTLQPb+QsZdnFy18fg7JPfWGL0RH6vwIlQ=="],
-
-    "vite/rolldown/@rolldown/binding-linux-arm64-gnu": ["@rolldown/binding-linux-arm64-gnu@1.2.7", "", { "os": "linux", "cpu": "arm64" }, "sha512-toOY2BChBZyuxU7OYX6Tn389di4IzAqPTycVcci0O7FSfBqzRB3RZn+K5Is6ANf4tmgRd/K1yZTsNTXbkXsnLg=="],
-
-    "vite/rolldown/@rolldown/binding-linux-arm64-musl": ["@rolldown/binding-linux-arm64-musl@1.2.7", "", { "os": "linux", "cpu": "arm64" }, "sha512-lAIXTH/aiLRLxsTgQvfhjo4K1ydWIp00+V0voOr9beb/9ZmkUFrSIb03dXNFRgMNvkE6oGsF10ioQ6UsI+vS5Q=="],
-
-    "vite/rolldown/@rolldown/binding-linux-ppc64-gnu": ["@rolldown/binding-linux-ppc64-gnu@1.2.7", "", { "os": "linux", "cpu": "ppc64" }, "sha512-kdnwS28Pkenp/mZMRwjXXXwxQ7pIsm+bF919LUK93BOyhcLsrVKdP2p9fxpiPNPAbNuch8ypQt0pm2P2LYCAGg=="],
-
-    "vite/rolldown/@rolldown/binding-linux-s390x-gnu": ["@rolldown/binding-linux-s390x-gnu@1.2.7", "", { "os": "linux", "cpu": "s390x" }, "sha512-516OdsyLdr5E65paF3yBF55t8mfm9+gmtCsK3xI7XKXIT7EfRlHhxL8K/NR6Hu8BWSgF5+1w74lTL0+nxcc8Qw=="],
-
-    "vite/rolldown/@rolldown/binding-linux-x64-gnu": ["@rolldown/binding-linux-x64-gnu@1.2.7", "", { "os": "linux", "cpu": "x64" }, "sha512-r8/z8n7GFaYRln3xmP1Cxy0HH/HLM0uBUPkEuSVEfKGDA89M0FsZRZJRSwe/tJjRx+fpH/gjorfhB8tmEbSFLA=="],
-
-    "vite/rolldown/@rolldown/binding-linux-x64-musl": ["@rolldown/binding-linux-x64-musl@1.2.7", "", { "os": "linux", "cpu": "x64" }, "sha512-pAsE8iiDxUg1xBqdhrTfg45AVDVpirjz00sblEYClGNNcMnDb+e8beQgqIAw6LvauX/APvgxUnwrgun/YYGBhw=="],
-
-    "vite/rolldown/@rolldown/binding-openharmony-arm64": ["@rolldown/binding-openharmony-arm64@1.2.7", "", { "os": "none", "cpu": "arm64" }, "sha512-lTcIYmmnQQA8Or/2DatS6oSqcdLHvendjS+zLu+FwgToynWMRSmQdpM65fTANJgIS4mjbMOo5KT2lnT9SAb96w=="],
-
-    "vite/rolldown/@rolldown/binding-win32-arm64-msvc": ["@rolldown/binding-win32-arm64-msvc@1.2.7", "", { "os": "win32", "cpu": "arm64" }, "sha512-e3Gu3WxbNk/UqQhxqU7YIYO+9ZBvWNz3U+h/qRFosscMFzdRPbXYSaSWgSnklv2fz1TgzBTcti2z35c/7irsHw=="],
-
-    "vite/rolldown/@rolldown/binding-win32-x64-msvc": ["@rolldown/binding-win32-x64-msvc@1.2.7", "", { "os": "win32", "cpu": "x64" }, "sha512-W/jg5qoRSqjsEv0+dZi4e687mcHqmVuU0P4fK6qS/xjetW2Gmc1W8j//z5nAeNcC8Ttm0hV46IjcYeuVwYhuiw=="],
 
     "wrap-ansi/string-width/emoji-regex": ["emoji-regex@10.6.0", "", {}, "sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A=="],
 

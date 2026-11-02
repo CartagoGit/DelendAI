@@ -5,8 +5,9 @@ import { defineConfig } from 'vitest/config';
 import {
 	bunOwnedExcludes,
 	sharedSetupFiles,
+	sharedTestOptions,
 	workspaceAliases,
-} from '../../vitest.shared';
+} from '../../vitest.shared.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -14,10 +15,17 @@ const workspaceRoot = resolve(here, '../..');
 export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		...sharedTestOptions,
 		// The proposal state tools and peer-review bypass audit share
 		// process-local buffers. Running their files concurrently lets one
 		// spec reset another spec's audit state mid-assertion.
 		fileParallelism: false,
+		// Every module that keeps state between calls is reset per file by
+		// tests/setup/reset-module-state.setup.ts, so files can share a worker.
+		isolate: false,
+		// A shared worker pool differs from the projects that keep isolation, and
+		// vitest refuses two groups with different workers but the same order.
+		sequence: { groupOrder: 1 },
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).
@@ -40,6 +48,7 @@ export default defineConfig({
 			// (which sets CI=true and GITHUB_ACTIONS=true for every job).
 			// See the file for the full story.
 			resolve(here, 'tests/setup/reset-ci-env.setup.ts'),
+			resolve(here, 'tests/setup/reset-module-state.setup.ts'),
 			// Wire the Bun polyfill ONLY in this project. The proposals
 			// integration spec (`executable-acceptance.spec.ts`) gates itself
 			// on `typeof Bun !== 'undefined'`; vitest's thread pool is plain

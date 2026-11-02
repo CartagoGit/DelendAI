@@ -25,6 +25,7 @@ import {
 	PROJECT_HEALTH_SAMPLE_FILE_EXTENSIONS,
 	PROJECT_HEALTH_SAMPLE_ROOTS,
 	PROJECT_HEALTH_SECURITY_PATH_PENALTY,
+	PROJECT_HEALTH_INFERRED_CEILING,
 	PROJECT_HEALTH_WITH_LOCKFILE_SCORE,
 	PROJECT_HEALTH_WITHOUT_LOCKFILE_SCORE,
 } from '../contracts/constants/project-health.constant';
@@ -168,18 +169,31 @@ const detectLockfile = async (
 	return undefined;
 };
 
+/** A heuristic axis: within 0..100 and never above the inferred ceiling. */
+const inferredScore = (value: number): number =>
+	Math.min(PROJECT_HEALTH_INFERRED_CEILING, clampScore(value));
+
 const buildScore = (
 	security: number,
 	deps: number,
 	quality: number,
 	debt: number,
-): IProjectHealthScore => ({
-	score: clampScore((security + deps + quality + debt) / 4),
-	security,
-	deps,
-	quality,
-	debt,
-});
+	confidence: IProjectHealthScore['confidence'],
+): IProjectHealthScore => {
+	const axes = {
+		security: inferredScore(security),
+		deps: inferredScore(deps),
+		quality: inferredScore(quality),
+		debt: inferredScore(debt),
+	};
+	return {
+		score: clampScore(
+			(axes.security + axes.deps + axes.quality + axes.debt) / 4,
+		),
+		...axes,
+		confidence,
+	};
+};
 
 export const summarizeSignals = async (
 	options: IProjectHealthToolOptions,
@@ -239,6 +253,16 @@ export const summarizeSignals = async (
 		suspiciousPaths,
 		markerCount: findings.length,
 		sampledFiles: markerFiles.length,
-		score: buildScore(security, deps, quality, debt),
+		score: buildScore(
+			security,
+			deps,
+			quality,
+			debt,
+			lockfile !== undefined &&
+				resolvedScopes.length > 0 &&
+				(lintConfig || testConfig)
+				? 'medium'
+				: 'low',
+		),
 	};
 };

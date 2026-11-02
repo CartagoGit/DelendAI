@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -175,5 +179,51 @@ describe('a nested `contains` mapping (read since r00643 as YAML)', async () => 
 		// `contains: { proposals: null, plans: null }`, so a plan never saw
 		// its children; YAML reads the lists the block declares.
 		expect(result).toContain('f00049');
+	});
+});
+
+describe('blockedByFor — the documents live apart from the index', () => {
+	it('reads the plan from the proposals directory, not beside the cache index', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'blocked-by-layout-'));
+		try {
+			const proposalsDir = join(root, 'docs/delendai/proposals');
+			const indexPath = join(
+				root,
+				'.cache/delendai/proposals/index.json',
+			);
+			mkdirSync(join(proposalsDir, 'in-progress'), { recursive: true });
+			mkdirSync(join(root, '.cache/delendai/proposals'), {
+				recursive: true,
+			});
+			writeFileSync(
+				join(proposalsDir, 'in-progress/q00001-plan.md'),
+				'---\nid: q00001\ntype: plan\nstatus: in-progress\ncontains:\n  proposals:\n    - f00001\n---\n# plan\n',
+			);
+			const plan = {
+				id: 'q00001',
+				file: 'in-progress/q00001-plan.md',
+				status: 'in-progress',
+			};
+
+			expect(
+				await blockedByFor(
+					plan,
+					indexPath,
+					{
+						readProposalIndex: async () => [
+							plan,
+							{
+								id: 'f00001',
+								file: 'ready/f00001-child.md',
+								status: 'ready',
+							},
+						],
+					},
+					proposalsDir,
+				),
+			).toEqual(['f00001']);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

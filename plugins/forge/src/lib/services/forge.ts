@@ -454,6 +454,44 @@ const readRemoteHost = (remoteUrl: string): string | undefined => {
 	}
 };
 
+/**
+ * Hosts the project names as forges, beyond the public two: a GitHub
+ * Enterprise or a self-hosted GitLab (`plugins.forge.options.hosts`).
+ * Set when the plugin registers.
+ */
+let configuredHosts: Readonly<Record<string, IForgeProvider>> = {};
+
+export const configureForgeHosts = (
+	hosts: Readonly<Record<string, IForgeProvider>>,
+): void => {
+	configuredHosts = Object.fromEntries(
+		Object.entries(hosts).map(([host, provider]) => [
+			host.toLowerCase(),
+			provider,
+		]),
+	);
+};
+
+/**
+ * The forge a host is: the public two, a host the project configured,
+ * or a host whose name has a `github` or `gitlab` label
+ * (`github.example.com`, `gitlab.corp.internal`). Only github.com and
+ * gitlab.com were known, so every self-hosted forge was unsupported.
+ */
+export const forgeProviderOfHost = (
+	host: string,
+): IForgeProvider | undefined => {
+	const lower = host.toLowerCase();
+	if (lower === 'github.com') return 'github';
+	if (lower === 'gitlab.com') return 'gitlab';
+	const configured = configuredHosts[lower];
+	if (configured !== undefined) return configured;
+	const labels = lower.split('.');
+	if (labels.includes('github')) return 'github';
+	if (labels.includes('gitlab')) return 'gitlab';
+	return undefined;
+};
+
 export const detectForgeProvider = async (
 	cwd: string,
 	exec: IForgeExec = runExternalTool,
@@ -479,26 +517,18 @@ export const detectForgeProvider = async (
 	const remoteHost = readRemoteHost(remoteUrl);
 	if (remoteHost === undefined)
 		return failure('Could not parse the origin remote URL.');
-	if (remoteHost === 'github.com') {
+	const provider = forgeProviderOfHost(remoteHost);
+	if (provider !== undefined) {
 		return {
 			ok: true,
-			provider: 'github',
-			tool: GH_TOOL,
-			remoteUrl,
-			remoteHost,
-		};
-	}
-	if (remoteHost === 'gitlab.com') {
-		return {
-			ok: true,
-			provider: 'gitlab',
-			tool: GLAB_TOOL,
+			provider,
+			tool: provider === 'github' ? GH_TOOL : GLAB_TOOL,
 			remoteUrl,
 			remoteHost,
 		};
 	}
 	return failure(
-		`Unsupported forge provider for origin remote host: ${remoteHost}`,
+		`Unsupported forge provider for origin remote host: ${remoteHost}. Name it in plugins.forge.options.hosts ({ "${remoteHost}": "github" | "gitlab" }).`,
 	);
 };
 

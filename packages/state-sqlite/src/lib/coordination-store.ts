@@ -11,7 +11,7 @@
  */
 import type { Database } from 'bun:sqlite';
 
-import { COORDINATION_TABLES } from './contracts/constants/coordination.constant';
+import { COORDINATION_SCOPE_DELETE_SQL } from './contracts/constants/coordination.constant';
 import type {
 	IScopeCoordination,
 	IStoredHolder,
@@ -106,10 +106,8 @@ export const writeCoordination = (
 	coordination: IScopeCoordination,
 	now: number,
 ): void => {
-	for (const table of COORDINATION_TABLES) {
-		db.query(
-			`DELETE FROM ${table} WHERE scope_kind = ? AND scope_locator_json = ?`,
-		).run(scopeKind, locator);
+	for (const statement of COORDINATION_SCOPE_DELETE_SQL) {
+		db.query(statement).run(scopeKind, locator);
 	}
 	db.query(
 		`INSERT INTO state_fencing_tokens (

@@ -130,7 +130,7 @@ export type IEngineRefusalCode =
 	| 'SLICE_FILES_IGNORED'
 	| 'UNKNOWN_REFUSAL'
 	| 'SETTLEMENT_IN_PROGRESS'
-	// The four below exist only on the policy-routed persistence path
+	// The ones below exist only on the policy-routed persistence path
 	// (`persistence.usesWipRefs`). They are unreachable when the policy
 	// allows direct integration commits, which is why adding them cannot
 	// change any historical outcome.
@@ -138,6 +138,7 @@ export type IEngineRefusalCode =
 	| 'POLICY_ROUTE_UNSUPPORTED'
 	| 'WIP_SCOPE_NARROWED'
 	| 'WIP_NO_AGENT_IDENTITY'
+	| 'WIP_SLICE_HELD'
 	| 'WIP_CHECKPOINT_FAILED';
 
 /**
@@ -181,6 +182,7 @@ export const ENGINE_REFUSAL_CODES = [
 	'POLICY_ROUTE_UNSUPPORTED',
 	'WIP_SCOPE_NARROWED',
 	'WIP_NO_AGENT_IDENTITY',
+	'WIP_SLICE_HELD',
 	'WIP_CHECKPOINT_FAILED',
 ] as const satisfies readonly IEngineRefusalCode[];
 
@@ -339,7 +341,17 @@ export interface IEngineOptions {
 	 * undefined; behaviour matches the pre-q00013 default.
 	 */
 	readonly settlementRead?:
-		| (() => Promise<'active' | 'settling' | 'stable'>)
+		| ((slice?: {
+				readonly proposalId: string;
+				readonly sliceId: string;
+		  }) => Promise<'active' | 'settling' | 'stable'>)
+		| undefined;
+	/** Ends what `settlementRead` admitted, when the slice's event ends. */
+	readonly settlementRelease?:
+		| ((slice: {
+				readonly proposalId: string;
+				readonly sliceId: string;
+		  }) => Promise<void>)
 		| undefined;
 	/**
 	 * Which slices may still commit while the round is
@@ -488,6 +500,19 @@ export const createCommitPolicyEngine = (
 		return result;
 	};
 	const handleEvent = async (event: IEngineEvent): Promise<IEngineResult> => {
+		try {
+			return await runEvent(event);
+		} finally {
+			if (event.kind === 'slice') {
+				await options.settlementRelease?.({
+					proposalId: event.proposalId,
+					sliceId: event.sliceId,
+				});
+			}
+		}
+	};
+
+	const runEvent = async (event: IEngineEvent): Promise<IEngineResult> => {
 		const completedSteps = new Set<IPipelineStep>();
 		const completeStep = (
 			step: IPipelineStep,
@@ -580,7 +605,10 @@ export const createCommitPolicyEngine = (
 		// to retry once the round completes (or DEAD_LETTER if
 		// the round times out — covered by f00418 retry taxonomy).
 		if (event.kind === 'slice' && options.settlementRead !== undefined) {
-			const phase = await options.settlementRead();
+			const phase = await options.settlementRead({
+				proposalId: event.proposalId,
+				sliceId: event.sliceId,
+			});
 			if (
 				phase === 'settling' &&
 				options.settlementExempt?.({

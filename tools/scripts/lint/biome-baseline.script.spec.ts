@@ -11,8 +11,8 @@ import {
 
 describe('biome-baseline — stripAnsi', () => {
 	it('removes ANSI reset/color escape sequences', () => {
-		expect(stripAnsi('[0m{"a":1}[0m')).toBe('{"a":1}');
-		expect(stripAnsi('[33mwarn[0m plain')).toBe('warn plain');
+		expect(stripAnsi('\u001b[0m{"a":1}\u001b[0m')).toBe('{"a":1}');
+		expect(stripAnsi('\u001b[33mwarn\u001b[0m plain')).toBe('warn plain');
 	});
 
 	it('is a no-op on plain text', () => {
@@ -23,11 +23,11 @@ describe('biome-baseline — stripAnsi', () => {
 describe('biome-baseline — parseBiomeJsonOutput', () => {
 	it('parses biome ci --reporter=json output wrapped in ANSI resets', () => {
 		const raw =
-			'[0m{"summary":{"changed":0,"unchanged":2,"errors":1,"warnings":1,"infos":0},' +
+			'\u001b[0m{"summary":{"changed":0,"unchanged":2,"errors":1,"warnings":1,"infos":0},' +
 			'"diagnostics":[' +
 			'{"severity":"error","category":"format","message":"bad"},' +
 			'{"severity":"warning","category":"lint/style/useTemplate","message":"tpl"}' +
-			']}[0m';
+			']}\u001b[0m';
 		const result = parseBiomeJsonOutput(raw);
 		expect(result.summary.errors).toBe(1);
 		expect(result.summary.warnings).toBe(1);

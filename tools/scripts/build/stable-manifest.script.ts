@@ -26,7 +26,9 @@ import {
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 import { readTextIfPresent } from '../lib/read-text-if-present';
 
-const REPO_ROOT = process.cwd();
+// The repository root, from this script's own location: run from any
+// directory, it reads and writes this repository's files.
+const REPO_ROOT = join(import.meta.dirname, '..', '..', '..');
 const SEMVER_RE =
 	/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 

@@ -4,13 +4,14 @@ import type { IMigrationRunResult } from '@delendai/core/cli';
 import {
 	DEFAULT_MIGRATIONS,
 	createFileSystemJournal,
+	ensureWorkspaceMigrated,
+	migrationStepIds,
 } from '@delendai/core/cli';
 import {
 	applyGlobalConfig,
 	createFileSystemHostConfigIO,
 	defaultHostConfigs,
 	planGlobalConfig,
-	runPendingMigrations,
 	scanLegacyIdentity,
 } from '@delendai/core/cli';
 import {
@@ -18,7 +19,7 @@ import {
 	type IStoredMigrationManifest,
 } from '@delendai/core/cli';
 import {
-	createDefaultPhases,
+	createWorkspaceRoutePhases,
 	rollbackLatestMigration,
 	runMigrationTransaction,
 	type ITransactionOutcome,
@@ -81,15 +82,18 @@ const defaultDeps = (): Required<IMigrateCommandDeps> => {
 	const journal = createFileSystemJournal();
 	return {
 		readJournal: journal.read,
+		// The start-up guard's own route, dry: what it would do is what a
+		// dry run lists, what status calls pending, and what run applies.
 		dryRun: async (workspaceRoot) =>
-			runPendingMigrations({
+			ensureWorkspaceMigrated({
 				migrations: DEFAULT_MIGRATIONS,
 				journal,
-				ctx: { workspaceRoot, dryRun: true },
+				workspaceRoot,
+				dryRun: true,
 			}),
 		runTransaction: async (workspaceRoot) =>
 			runMigrationTransaction(
-				createDefaultPhases({
+				createWorkspaceRoutePhases({
 					migrations: DEFAULT_MIGRATIONS,
 					journal,
 				}),
@@ -161,14 +165,17 @@ export const createMigrateCommand = (
 			if (sub === undefined || sub === 'status') {
 				// A leftover the migrators do not own is reported, never
 				// silent: the old name in a live file is something to fix.
-				const [applied, latestManifest, residual] = await Promise.all([
-					resolved.readJournal(workspaceRoot),
-					resolved.readLatestManifest(workspaceRoot),
-					resolved.scanResidual(workspaceRoot),
-				]);
+				const [applied, latestManifest, residual, planned] =
+					await Promise.all([
+						resolved.readJournal(workspaceRoot),
+						resolved.readLatestManifest(workspaceRoot),
+						resolved.scanResidual(workspaceRoot),
+						resolved.dryRun(workspaceRoot),
+					]);
 				return data({
 					workspaceRoot,
 					applied,
+					pending: migrationStepIds(planned, 'planned'),
 					latestManifest,
 					residual,
 				});

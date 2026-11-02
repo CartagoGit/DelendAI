@@ -3,7 +3,7 @@
  * (`pr_list`, `pr_view`; r00012 consumer). Kept under contracts/interfaces
  * per the repo's types-in-contracts convention.
  */
-import type { IArgvExec } from '@delendai/core/contracts';
+import type { IForgeExec } from '@delendai/forge/public';
 
 /** A pull request as summarised by `gh pr list`. */
 export interface IPullRequest {
@@ -51,6 +51,6 @@ export interface IForgeView {
 export interface IGitForgeToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
-	/** Injectable argv exec for tests; production uses the shared runner. */
-	readonly forgeExec?: IArgvExec;
+	/** Injectable exec for tests; production uses the shared runner. */
+	readonly forgeExec?: IForgeExec;
 }

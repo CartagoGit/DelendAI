@@ -94,3 +94,7 @@ makes bypassing `ctx.effects` entirely (importing `node:fs` /
 A caller cannot tell, from `args.dryRun` alone, which row of this table
 a given tool falls into — that is the residual gap `r00034`'s plugin
 migration closes, tool by tool.
+
+## Refused before the handler
+
+Validation strips a key the input schema does not declare, so a handler behind such a schema never sees `dryRun`. A `dryRun: true` call to a tool with no input schema, or one that does not accept the flag, is refused before the handler runs and nothing happens. A tool that accepts the flag owns its plan and runs under the dry-run scope. `lint:dry-run-coverage` prints how many effectful registrations cannot be previewed and fails when that number grows.

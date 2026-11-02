@@ -31,6 +31,7 @@ import {
 	countBaselineGrowth,
 	refuseBaselineGrowth,
 } from './baseline-growth.helper';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const BASELINE_REL =
 	'tools/scripts/lint/plugin-physical-containment.baseline.json';
@@ -159,4 +160,14 @@ const main = (): number => {
 	return 0;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'plugin-physical-containment',
+			lintRepoRoot(import.meta.url),
+			['plugins'],
+		)
+	)
+		process.exit(1);
+	process.exit(main());
+}

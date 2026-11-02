@@ -553,9 +553,11 @@ const extension = {
 	'dashboard.metrics.topTools': '8 herramientas principales',
 	'dashboard.metrics.collectedAt': 'Recopilado a las',
 	'dashboard.tokens.used': 'Tokens usados',
-	'dashboard.tokens.usedHint': '≈ 1 token / 4 bytes',
+	'dashboard.tokens.usedHint': 'Estimado: 1 token ≈ 4 bytes',
 	'dashboard.tokens.saved': 'Tokens ahorrados',
-	'dashboard.tokens.savedHint': 'frente a la referencia compact:false',
+	'dashboard.tokens.savedHint':
+		'Solo medido: frente a la referencia que informa cada herramienta, no frente a trabajar sin DelendAI',
+	'dashboard.tokens.savingsHint': 'Ahorrado / (usado + ahorrado)',
 	'dashboard.tokens.savings': 'Ahorro',
 	'dashboard.tokens.topTools': 'Herramientas principales por tokens',
 	'dashboard.plugins.tokenShareByPlugin': 'Cuota de tokens por plugin',

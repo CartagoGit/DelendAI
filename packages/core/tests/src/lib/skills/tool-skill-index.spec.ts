@@ -49,10 +49,34 @@ describe('withSkillReferences', () => {
 	it('points a descriptor at the first skill naming it and leaves the rest', () => {
 		const result = withSkillReferences(
 			[descriptor('t_one'), descriptor('t_other')],
-			[{ id: 'a-skill', tools: ['t_one'] }],
+			[{ id: 'a-skill', appliesTo: [], tools: ['t_one'] }],
 		);
 
 		expect(result[0]?.skill).toBe('a-skill');
 		expect(result[1]).toEqual(descriptor('t_other'));
+	});
+
+	it("prefers the skill the tool's own plugin leads over an earlier cross-cutting one", () => {
+		const result = withSkillReferences(
+			[
+				{
+					...descriptor('delendai_quality_run_quality'),
+					pluginId: 'quality',
+				},
+			],
+			[
+				{
+					id: 'a-cross-cutting',
+					appliesTo: ['@delendai/skills-pack', '@delendai/quality'],
+					tools: ['delendai_quality_run_quality'],
+				},
+				{
+					id: 'quality-gates',
+					appliesTo: ['@delendai/quality'],
+					tools: ['delendai_quality_run_quality'],
+				},
+			],
+		);
+		expect(result[0]?.skill).toBe('quality-gates');
 	});
 });

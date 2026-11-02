@@ -51,16 +51,14 @@ export const buildTokenTax = (
 		compactTypicalBytes:
 			compactTypicalBytes ?? DEFAULT_COMPACT_TYPICAL_BYTES,
 		p95ResponseBytes: p95ResponseBytes ?? DEFAULT_P95_RESPONSE_BYTES,
-		estimated:
-			toolCount === 0 ||
-			compactTypicalBytes === null ||
-			p95ResponseBytes === null,
+		// Schema bytes come from per-tool constants, whatever was observed.
+		estimated: true,
 		observedToolCount: toolCount,
 		observedResponseSamples: responseBytes.length,
 		sources: {
 			staticSchemaBytes:
 				toolCount > 0
-					? 'derived-from-observed-distinct-tools'
+					? 'estimated-per-tool-constant-times-observed-tools'
 					: 'estimated-default-no-observed-tools',
 			compactTypicalBytes:
 				compactTypicalBytes === null

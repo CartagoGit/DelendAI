@@ -105,6 +105,7 @@ describe('x00207 named Unicode tokens on every invoke hop', () => {
 			api: failingInvoker,
 			'mcp-server': failingInvoker,
 			subscription: failingInvoker,
+			'host-sampling': failingInvoker,
 			acp: failingInvoker,
 		};
 		const manager = new InvocationManager({

@@ -23,6 +23,7 @@ export {
 } from '../lib/shared/model-ranking.service';
 // Which known vendor clients this machine has, and whether each can work.
 export {
+	clientLogin,
 	clientVerdict,
 	discoverClients,
 	listClientModels,
@@ -36,6 +37,11 @@ export { allKnownClients } from '../lib/shared/known-client.helper';
 // the records folder of the cache directory, as delendai keeps its own.
 export { recordPath } from '../lib/shared/delendai-records';
 export { SafeWorkspaceReader } from '../lib/filesystem/safe-workspace-reader';
+export { workspacePackageDirs } from '../lib/shared/workspace-packages.helper';
+export {
+	findingsReport,
+	isOutsideScanScope,
+} from '../lib/shared/scan-scope.helper';
 export { createFileArtifactStore } from '../lib/context-store/file-artifact-store';
 export { renderDelegationPrompt } from '../lib/subagents/delegation-prompt.helper';
 export { agentToolProfile } from '../lib/agents/agent-tool-profiles';
@@ -83,3 +89,15 @@ export {
 	recordCommitMaker,
 	recordUnitCommit,
 } from '../lib/work-units/commit-maker-notes.service';
+export {
+	discoveryConsentPath,
+	readDiscoveryConsent,
+	recordDiscoveryConsent,
+} from '../lib/shared/discovery-consent-record.service';
+
+export {
+	consentDigest,
+	createConsentSigner,
+} from '../lib/consent/consent-token.service';
+export type { IConsentSigner } from '../lib/contracts/interfaces/consent-signer.interface';
+export { proposalOfCreateUnit } from '../lib/work-units/unit-adoption.service';

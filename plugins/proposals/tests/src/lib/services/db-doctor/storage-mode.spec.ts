@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	getProposalIndexReadStats,
@@ -13,6 +13,9 @@ const entry = { id: 'x00001', file: 'ready/x00001-a.md', status: 'ready' };
 const noFs = {
 	read: async () => JSON.stringify({ proposals: [entry] }),
 };
+
+// Counters outlive a file in a shared worker: start from zero too.
+beforeEach(resetProposalIndexReadStats);
 
 afterEach(() => {
 	resetProposalIndexReadStats();

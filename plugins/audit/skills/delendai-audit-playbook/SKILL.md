@@ -1,12 +1,8 @@
 ---
 name: delendai-audit-playbook
 appliesTo: ['@delendai/audit']
-description: >
-  Complete operational playbook for running an exhaustive qualitative audit of
-  the delendai monorepo. Read this skill BEFORE creating any audit proposal.
-  It defines what to read, in which order, what constitutes a valid finding, and
-  how to format the output. Automated commands alone are NEVER sufficient — this
-  skill mandates LLM code reading as the primary analytical method.
+description: Use when running an exhaustive qualitative audit by reading code: what to read, in which order, what counts as a finding. Read before creating an audit proposal.
+tools: ['delendai_audit_audit_plan', 'delendai_audit_audit_run', 'delendai_audit_self_audit']
 ---
 
 # Audit Playbook — delendai exhaustive audit

@@ -10,7 +10,8 @@
  * options) are resolved — so this drives the wiring end to end on a real
  * temporary workspace instead of asserting on a hand-built options bag.
  */
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -196,5 +197,109 @@ describe('register() wires the project’s publish step into create_proposal', (
 
 		expect(created.nextAction).toContain('untracked');
 		expect(created.nextAction).not.toContain('pull request');
+	});
+});
+
+/** The `proposal_transition` handler, as a host reaches it after `register()`. */
+const transitionHandler = async (
+	ctx: IMcpPluginContext,
+): Promise<(args: unknown) => Promise<unknown>> => {
+	const registrations = await plugin.register(ctx);
+	const registration = (registrations.tools ?? []).find(
+		(tool) => tool.id === 'proposal_transition',
+	);
+	expect(registration).toBeDefined();
+	let handler: ((args: unknown) => Promise<unknown>) | undefined;
+	await registration?.register(
+		createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as (args: unknown) => Promise<unknown>;
+			},
+		}),
+	);
+	return handler as (args: unknown) => Promise<unknown>;
+};
+
+/** A proposal in review whose only slice is done and shipped, ready to close. */
+const proposalReadyForReview = (root: string): void => {
+	mkdirSync(join(root, 'src'), { recursive: true });
+	writeFileSync(join(root, 'src/one.ts'), 'export const one = 1;\n');
+	const git = (...args: string[]) =>
+		execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+	git('init', '-q', '--initial-branch', 'develop');
+	git('config', 'user.email', 'wiring@example.com');
+	git('config', 'user.name', 'Wiring');
+	git('config', 'commit.gpgsign', 'false');
+	git('add', 'src/one.ts');
+	git('commit', '-q', '--no-verify', '-m', 'feat: one');
+	const shipped = execFileSync('git', ['rev-parse', 'HEAD'], {
+		cwd: root,
+		encoding: 'utf8',
+	}).trim();
+	mkdirSync(join(root, 'docs/delendai/proposals/review'), {
+		recursive: true,
+	});
+	writeFileSync(
+		join(root, 'docs/delendai/proposals/review/f00999-wiring.md'),
+		[
+			'---',
+			'id: f00999',
+			'title: "Wiring"',
+			'kind: feat',
+			'status: review',
+			'type: proposal',
+			'---',
+			'',
+			'# f00999 — Wiring',
+			'',
+			'## goal',
+			'',
+			'Prove the wiring.',
+			'',
+			'## slices',
+			'',
+			'### S1 — one',
+			'- **Status**: done',
+			'- **Files**: `src/one.ts`',
+			`- shipped-in: \`${shipped.slice(0, 12)}\``,
+			'',
+		].join('\n'),
+	);
+};
+
+describe('register() hands the transition tool the evidence policy', () => {
+	it('lets a project that turned requireValidateEvidence off close without validate evidence', async () => {
+		const root = makeWorkspace();
+		proposalReadyForReview(root);
+		const transition = await transitionHandler(
+			contextFor(root, {
+				requireValidateEvidence: false,
+				requirePeerReview: false,
+			}),
+		);
+
+		const moved = await transition({
+			id: 'f00999',
+			to: 'done',
+			reason: 'the slice is done',
+		});
+
+		expect(JSON.stringify(moved)).not.toContain('validate required');
+	});
+
+	it('asks for validate evidence to close when the project leaves the default on', async () => {
+		const root = makeWorkspace();
+		proposalReadyForReview(root);
+		const transition = await transitionHandler(
+			contextFor(root, { requirePeerReview: false }),
+		);
+
+		const moved = await transition({
+			id: 'f00999',
+			to: 'done',
+			reason: 'the slice is done',
+		});
+
+		expect(JSON.stringify(moved)).toContain('validate required');
 	});
 });

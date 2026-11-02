@@ -71,6 +71,7 @@ import {
 	parseSolidBaseline,
 	partitionSolidFindings,
 } from './lib/solid-compliance.lib';
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Public types
@@ -457,6 +458,14 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 // Run when invoked directly with the CLI: bun tools/scripts/lint/solid-compliance.script.ts
 const entrypoint = process.argv[1] ?? '';
 if (entrypoint.endsWith('solid-compliance.script.ts')) {
+	if (
+		refuseMissingScanRoots(
+			'solid-compliance',
+			lintRepoRoot(import.meta.url),
+			['packages', 'plugins'],
+		)
+	)
+		process.exit(1);
 	const code = await main(process.argv.slice(2));
 	process.exit(code);
 }

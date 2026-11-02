@@ -1,8 +1,8 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { captureToolRegistration } from '../../../../../tools/scripts/lib/test-mcp-server';
 
@@ -90,11 +90,34 @@ describe('browser-inspect (f00125 S1)', () => {
 			})) as { url: string; path: string; status: string };
 			expect(output.status).toBe('ok');
 			expect(output.path).toMatch(
-				new RegExp(`^${cacheDir}/browser/\\d+\\.png$`),
+				new RegExp(`^${cacheDir}/browser/\\d+-[0-9a-f-]+\\.png$`),
 			);
 			const bytes = await readFile(output.path);
 			expect([...bytes]).toEqual([1, 2, 3, 4]);
 		} finally {
+			await rm(cacheDir, { recursive: true, force: true });
+		}
+	});
+
+	it('two screenshots in the same millisecond keep both files', async () => {
+		const cacheDir = await mkdtemp(join(tmpdir(), 'browser-inspect-'));
+		const now = vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+		try {
+			const captured = await captureToolRegistration(
+				registration('browser_screenshot', {
+					pluginCacheDir: cacheDir,
+					driver: fakeDriver(),
+				}),
+			);
+			const shots = (await Promise.all(
+				[1, 2].map(() =>
+					captured.invoke({ url: 'https://example.com/docs' }),
+				),
+			)) as Array<{ path: string }>;
+			expect(new Set(shots.map((shot) => shot.path)).size).toBe(2);
+			expect(await readdir(join(cacheDir, 'browser'))).toHaveLength(2);
+		} finally {
+			now.mockRestore();
 			await rm(cacheDir, { recursive: true, force: true });
 		}
 	});
@@ -113,8 +136,33 @@ describe('browser-inspect (f00125 S1)', () => {
 		expect(output).toEqual({
 			url: 'https://example.com/',
 			matches: ['h1:first', 'h1:second'],
+			truncated: false,
 			status: 'ok',
 		});
+	});
+
+	it('browser_query returns at most maxResults matches and says the page held more', async () => {
+		const asked: number[] = [];
+		const captured = await captureToolRegistration(
+			registration('browser_query', {
+				pluginCacheDir: UNUSED_CACHE_DIR,
+				driver: {
+					...fakeDriver(),
+					query: async ({ url, limit }) => {
+						asked.push(limit ?? 0);
+						return { url, matches: ['a', 'b', 'c'] };
+					},
+				},
+			}),
+		);
+		const output = (await captured.invoke({
+			url: 'https://example.com',
+			selector: 'li',
+			maxResults: 2,
+		})) as { matches: readonly string[]; truncated: boolean };
+		expect(output.matches).toEqual(['a', 'b']);
+		expect(output.truncated).toBe(true);
+		expect(asked).toEqual([3]);
 	});
 
 	it('missing Playwright returns install-missing for all three actions', async () => {

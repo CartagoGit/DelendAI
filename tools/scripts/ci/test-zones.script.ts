@@ -23,13 +23,15 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { gitVerbatim, readGit } from '@delendai/core/runtime';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
 import { pathImportersOf } from './path-importers';
+import { balanceByTime } from './spec-timings';
 import {
 	TARGET_SPECS_PER_JOB,
 	TEST_WORKFLOW,
@@ -44,8 +46,11 @@ import type {
 	IZoneRule,
 } from './test-zones.interface';
 import {
+	onlyScriptsChanged,
 	parseZoneReadMap,
+	readersOf,
 	isWorkflowFile,
+	ROOT_MANIFEST,
 	runsEverything,
 	testRunnerChanged,
 	zonesReadingRootFiles,
@@ -73,6 +78,8 @@ export const planZones = (input: {
 	readonly workspaceDirs: readonly string[];
 	readonly target?: number;
 	readonly rules?: readonly IZoneRule[];
+	/** Each spec's measured duration; with it, a split zone is split by time. */
+	readonly timings?: Readonly<Record<string, number>>;
 }): readonly IZoneJob[] => {
 	const rules = input.rules ?? ZONE_RULES;
 	const target = input.target ?? TARGET_SPECS_PER_JOB;
@@ -99,7 +106,20 @@ export const planZones = (input: {
 		const weighted = specs * (rule.costWeight ?? 1);
 		const shards = Math.max(1, Math.round(weighted / target));
 		const paths = rule.paths(input.workspaceDirs);
+		// By time when there are timings to split by: `--shard` splits by
+		// count, and one full run's shards took between 75 s and 244 s.
+		const byTime =
+			shards > 1 && Object.keys(input.timings ?? {}).length > 0
+				? balanceByTime(
+						input.specs.filter(
+							(spec) => zoneOf(spec, rules) === rule.id,
+						),
+						shards,
+						input.timings ?? {},
+					)
+				: undefined;
 		for (let shard = 1; shard <= shards; shard += 1) {
+			const files = byTime?.[shard - 1];
 			jobs.push({
 				name: shards === 1 ? rule.id : `${rule.id} ${shard}/${shards}`,
 				zone: rule.id,
@@ -107,6 +127,7 @@ export const planZones = (input: {
 				shard,
 				shards,
 				specs,
+				...(files === undefined ? {} : { files }),
 			});
 		}
 	}
@@ -246,28 +267,39 @@ export const zoneReach = (
 		.filter((change) => roots.has(change.path))
 		.map(
 			(change): IRootChange =>
-				!isWorkflowFile(change.path)
-					? change
-					: {
+				change.path === ROOT_MANIFEST
+					? {
 							...change,
-							// Only the test workflow runs the zones; another workflow's
-							// edit reaches the zones that read it, like any root file.
-							runnerChanged:
-								change.path !== TEST_WORKFLOW
-									? false
-									: deps.contentAt === undefined
-										? undefined
-										: testRunnerChanged(
-												deps.contentAt(
-													'base',
-													change.path,
+							scriptsOnly:
+								deps.contentAt === undefined
+									? undefined
+									: onlyScriptsChanged(
+											deps.contentAt('base', change.path),
+											deps.contentAt('head', change.path),
+										),
+						}
+					: !isWorkflowFile(change.path)
+						? change
+						: {
+								...change,
+								// Only the test workflow runs the zones; another workflow's
+								// edit reaches the zones that read it, like any root file.
+								runnerChanged:
+									change.path !== TEST_WORKFLOW
+										? false
+										: deps.contentAt === undefined
+											? undefined
+											: testRunnerChanged(
+													deps.contentAt(
+														'base',
+														change.path,
+													),
+													deps.contentAt(
+														'head',
+														change.path,
+													),
 												),
-												deps.contentAt(
-													'head',
-													change.path,
-												),
-											),
-						},
+							},
 		);
 	const rootReached =
 		roots.size === 0
@@ -332,7 +364,82 @@ export const zoneReach = (
 		[...rootReached].filter((zone) => !zones.has(zone)),
 	);
 	for (const zone of rootReached) zones.add(zone);
-	return { zones, readOnly };
+	const known = readersOf(rootChanges, readMap);
+	// Every zone the root change reaches, the code-reached ones included:
+	// `--changed` follows imports and misses their specs that READ the
+	// file, so those specs run beside it, in the shared readers job.
+	const readers = new Map(
+		[...rootReached].flatMap((zone) => {
+			const specs = known.get(zone);
+			return specs === undefined ? [] : [[zone, specs] as const];
+		}),
+	);
+	return { zones, readOnly, readers, rootReached };
+};
+
+/**
+ * The jobs to start: the ones that run, with every `readers` job merged
+ * into one (a few specs each, and every job costs a runner and its setup).
+ * A matrix cannot be empty, so a change that runs nothing gets one job
+ * that says so.
+ */
+export const compactMatrix = <
+	T extends {
+		readonly name: string;
+		readonly paths: string;
+		readonly shard: string;
+		readonly run: boolean;
+		readonly filter: string;
+		readonly readers: string;
+	},
+>(
+	entries: readonly T[],
+): readonly {
+	readonly name: string;
+	readonly paths: string;
+	readonly shard: string;
+	readonly run: boolean;
+	readonly filter: string;
+	readonly readers: string;
+}[] => {
+	const running = entries.filter(
+		(entry) => entry.run && entry.filter !== 'readers',
+	);
+	const readers = [
+		...new Set(
+			entries
+				.filter((entry) => entry.run && entry.filter === 'readers')
+				.flatMap((entry) =>
+					entry.readers.split(/\s+/u).filter(Boolean),
+				),
+		),
+	].sort();
+	const merged =
+		readers.length === 0
+			? []
+			: [
+					{
+						name: 'readers',
+						paths: '',
+						shard: '1/1',
+						run: true,
+						filter: 'readers',
+						readers: readers.join(' '),
+					},
+				];
+	const all = [...running, ...merged];
+	return all.length > 0
+		? all
+		: [
+				{
+					name: 'none',
+					paths: '',
+					shard: '1/1',
+					run: false,
+					filter: 'none',
+					readers: '',
+				},
+			];
 };
 
 /** The zones a change reaches; `undefined` means every zone. */
@@ -356,14 +463,7 @@ const ownPathsOf = (
 
 /** Where `head` left `base`, or the base itself when git cannot say. */
 const mergeBaseOf = (base: string, rootDir: string): string => {
-	try {
-		return execFileSync('git', ['merge-base', base, 'HEAD'], {
-			encoding: 'utf8',
-			cwd: rootDir,
-		}).trim();
-	} catch {
-		return base;
-	}
+	return readGit(rootDir, ['merge-base', base, 'HEAD']) ?? base;
 };
 
 /** A file's content at a revision, or `undefined` when it is not there. */
@@ -372,15 +472,7 @@ const contentAt = (
 	path: string,
 	rootDir: string,
 ): string | undefined => {
-	try {
-		return execFileSync('git', ['show', `${revision}:${path}`], {
-			encoding: 'utf8',
-			cwd: rootDir,
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-	} catch {
-		return undefined;
-	}
+	return gitVerbatim(rootDir, ['show', `${revision}:${path}`]);
 };
 
 const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
@@ -393,11 +485,58 @@ const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
 	}
 };
 
+/**
+ * The most the matrix may weigh. Its jobs read it in an environment
+ * variable, and Linux refuses one over 128 KiB: the spec lists went in the
+ * matrix once, `delendai-validate` could not start, and develop was red
+ * with no failing check. The lists travel in an artifact (`--files-out`).
+ */
+const MAX_MATRIX_BYTES = 64 * 1024;
+
+/** Each time-split job's spec list, by job name, as `--files-out` writes it. */
+export const shardFilesOf = (
+	jobs: readonly {
+		readonly name: string;
+		readonly files?: readonly string[];
+	}[],
+): string =>
+	`${JSON.stringify(
+		Object.fromEntries(
+			jobs.flatMap((job) =>
+				job.files === undefined
+					? []
+					: [[job.name, job.files.join(' ')]],
+			),
+		),
+	)}\n`;
+
+const withTimings = (
+	timings: Readonly<Record<string, number>> | undefined,
+): { readonly timings?: Readonly<Record<string, number>> } =>
+	timings === undefined ? {} : { timings };
+
+/** The timings at `path`, or none: without them the split is by count. */
+const readTimings = (
+	path: string | undefined,
+): Readonly<Record<string, number>> | undefined => {
+	if (path === undefined) return undefined;
+	try {
+		const parsed = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+		return typeof parsed === 'object' && parsed !== null
+			? (parsed as Record<string, number>)
+			: undefined;
+	} catch {
+		// Absent or unreadable timings split by count, as before them.
+		return undefined;
+	}
+};
+
 const main = (): number => {
 	const files = tracked();
 	const jobs = planZones({
 		specs: files.filter((file) => file.endsWith('.spec.ts')),
 		workspaceDirs: workspaceDirs(files),
+		...withTimings(readTimings(arg('timings'))),
 	});
 
 	const wanted = arg('paths');
@@ -416,49 +555,116 @@ const main = (): number => {
 	const rootDir = repoRoot();
 	let everyZoneBecause =
 		'no base: a push or a dispatch validates the whole tree';
-	const reach = reachForBase(arg('base'), (base) =>
-		reachableZones(
-			{ base, rootDir },
-			{
-				buildGraph,
-				computeAffected,
-				diff: gitDiffChanges,
-				readMap: () => committedReadMap(rootDir),
-				importersOf: (paths) => pathImportersOf(rootDir, paths),
-				contentAt: (side, path) =>
-					contentAt(
-						side === 'base' ? mergeBaseOf(base, rootDir) : 'HEAD',
-						path,
-						rootDir,
-					),
-				explain: (reason) => {
-					everyZoneBecause = reason;
-				},
-			},
-		),
-	);
+	const base = arg('base');
+	const full =
+		base === undefined || base.trim() === ''
+			? undefined
+			: zoneReach(
+					{ base, rootDir },
+					{
+						buildGraph,
+						computeAffected,
+						diff: gitDiffChanges,
+						readMap: () => committedReadMap(rootDir),
+						importersOf: (paths) => pathImportersOf(rootDir, paths),
+						contentAt: (side, path) =>
+							contentAt(
+								side === 'base'
+									? mergeBaseOf(base, rootDir)
+									: 'HEAD',
+								path,
+								rootDir,
+							),
+						explain: (reason) => {
+							everyZoneBecause = reason;
+						},
+					},
+				);
+	const reach = full?.zones;
+	/**
+	 * What a job runs: `changed` (the specs its imports reach), `readers`
+	 * (the listed specs that read a changed file, on its first shard only),
+	 * `all` (the zone unfiltered: reached by a read nobody can attribute),
+	 * or `none`.
+	 */
+	const planFor = (
+		job: (typeof jobs)[number],
+	): { readonly filter: string; readonly readers: readonly string[] } => {
+		if (full === undefined) return { filter: 'all', readers: [] };
+		if (!full.zones.has(job.zone)) return { filter: 'none', readers: [] };
+		if (!full.readOnly.has(job.zone))
+			// A root change it reads, with no record of which specs read
+			// it: `--changed` alone would miss them.
+			return full.rootReached?.has(job.zone) === true &&
+				full.readers?.get(job.zone) === undefined
+				? { filter: 'all', readers: [] }
+				: { filter: 'changed', readers: [] };
+		const readers = full.readers?.get(job.zone);
+		if (readers === undefined) return { filter: 'all', readers: [] };
+		return readers.length === 0 || job.shard !== 1
+			? { filter: 'none', readers: [] }
+			: { filter: 'readers', readers };
+	};
+
+	/** The readers of a root change in zones that also run `--changed`. */
+	const codeReachedReaders = (): readonly (readonly [
+		string,
+		readonly string[],
+	])[] =>
+		[...(full?.readers ?? new Map<string, readonly string[]>())].filter(
+			([zone, specs]) =>
+				specs.length > 0 &&
+				full?.readOnly.has(zone) === false &&
+				jobs.some(
+					(job) =>
+						job.zone === zone && planFor(job).filter === 'changed',
+				),
+		);
 
 	if (process.argv.includes('--matrix')) {
 		// stdout is the matrix the workflow reads; the reason goes to the log.
 		if (reach === undefined) {
 			console.error(`test-zones: every zone runs — ${everyZoneBecause}`);
 		}
-		console.log(
-			JSON.stringify(
-				jobs.map((job) => ({
-					name: job.name,
-					paths: job.paths.join(' '),
-					shard: `${job.shard}/${job.shards}`,
-					// The zone STAYS in the matrix even when the change
-					// cannot reach it, and reports `skipped` instead of
-					// vanishing: a zone missing from the checks list
-					// because it was unaffected is indistinguishable
-					// from one that was forgotten. `undefined` reach
-					// means run everything.
-					run: reach === undefined || reach.has(job.zone),
-				})),
-			),
-		);
+		const entries = [
+			...jobs.map((job) => ({
+				name: job.name,
+				paths: job.paths.join(' '),
+				shard: `${job.shard}/${job.shards}`,
+				listed: job.files !== undefined,
+				run: planFor(job).filter !== 'none',
+				filter: planFor(job).filter,
+				readers: planFor(job).readers.join(' '),
+			})),
+			...codeReachedReaders().map(([zone, specs]) => ({
+				name: `${zone} readers`,
+				paths: '',
+				shard: '1/1',
+				listed: false,
+				run: true,
+				filter: 'readers',
+				readers: specs.join(' '),
+			})),
+		];
+		// What does not run is stated here, on the log, and does not start
+		// a job: each one took a runner and its setup to report `skipped`.
+		for (const entry of entries.filter((each) => !each.run)) {
+			console.error(
+				`test-zones: ${entry.name} — not started, the change reaches none of its specs`,
+			);
+		}
+		const matrix = JSON.stringify(compactMatrix(entries));
+		if (Buffer.byteLength(matrix) > MAX_MATRIX_BYTES) {
+			console.error(
+				`test-zones: the matrix is ${String(Buffer.byteLength(matrix))} bytes, over the ${String(MAX_MATRIX_BYTES)} a job can take in one variable.`,
+			);
+			return 1;
+		}
+		const filesOut = arg('files-out');
+		if (filesOut !== undefined) {
+			writeFileSync(filesOut, shardFilesOf(jobs));
+		}
+		console.log(matrix);
 		return 0;
 	}
 
@@ -468,12 +674,19 @@ const main = (): number => {
 		console.log(`test-zones: every zone runs — ${everyZoneBecause}`);
 	}
 	for (const job of jobs) {
+		const plan = planFor(job);
 		const verdict =
 			reach === undefined
 				? 'runs (every zone, see above)'
-				: reach.has(job.zone)
-					? 'runs (the change reaches it)'
-					: 'skipped (the change reaches none of its specs or reads)';
+				: plan.filter === 'changed'
+					? 'runs the specs its imports reach'
+					: plan.filter === 'readers'
+						? `runs the ${String(plan.readers.length)} spec(s) that read the change: ${plan.readers.join(', ')}`
+						: plan.filter === 'all'
+							? 'runs unfiltered (reached by a read the map cannot attribute to a spec)'
+							: reach.has(job.zone)
+								? 'skipped (no spec of this shard reads the change)'
+								: 'skipped (the change reaches none of its specs or reads)';
 		console.log(
 			`${job.name.padEnd(16)} ${String(job.specs).padStart(5)} spec(s) in the zone, ${job.shards} job(s) — ${verdict}`,
 		);

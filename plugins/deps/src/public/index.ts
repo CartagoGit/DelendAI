@@ -35,7 +35,11 @@ export type {
 } from '../lib/services/polyglot';
 export { buildDepsToolRegistrations } from '../lib/tools';
 export type { IDepsToolOptions } from '../lib/tools';
-export { parseBunAudit, runDepsAudit } from '../lib/services/audit';
+export {
+	parseBunAudit,
+	readDepsAudit,
+	runDepsAudit,
+} from '../lib/services/audit';
 export {
 	classifyLicense,
 	realLicenseDeps,

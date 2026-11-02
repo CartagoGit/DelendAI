@@ -2,7 +2,8 @@
  * f00123 S2 — `refactor_rename`, `refactor_apply` tool registrations.
  *
  * `refactor_rename` plans a rename (dry-run by default) and returns a diff.
- * `refactor_apply` writes the diff via containment + consent token echo.
+ * `refactor_apply` writes the diff via containment, and only with the
+ * consent token `refactor_rename` issued for exactly that diff.
  *
  * x00184 (F17/F18): `root`/`scopePaths`/`file.path` used to be resolved by
  * a local `resolvePath` that passed an absolute path straight through
@@ -21,13 +22,21 @@ import z from 'zod';
 
 import { basename, dirname } from 'node:path';
 
+import { relative } from 'node:path';
+
 import type { IToolRegistration } from '@delendai/core/contracts';
 import {
 	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
-import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/runtime';
+import {
+	consentDigest,
+	createConsentSigner,
+	type IConsentSigner,
+	SafeWorkspaceReader,
+	writeFileAtomic,
+} from '@delendai/core/runtime';
 
 import {
 	planRename,
@@ -40,6 +49,8 @@ export interface IRefactorRenameToolOptions {
 	readonly namespacePrefix: string;
 	readonly workspaceRootAbs: string;
 	readonly readFile?: IFileReader;
+	/** Issues the token a plan is applied with; one per server by default. */
+	readonly consent?: IConsentSigner;
 	/** Injectable atomic writer (only the apply tool uses it). */
 	readonly writeFileAtomic?: (
 		absPath: string,
@@ -70,6 +81,7 @@ const filePlanSchema = z.object({
 const RENAME_OUTPUT_SCHEMA = z.object({
 	files: z.array(filePlanSchema),
 	totalEdits: z.number().int().nonnegative(),
+	consentToken: z.string(),
 	ambiguous: z
 		.array(
 			z.object({
@@ -86,6 +98,22 @@ const RENAME_OUTPUT_SCHEMA = z.object({
 		.optional(),
 });
 
+/**
+ * What a token is bound to: the root and the exact hunks of each file, as
+ * `refactor_apply` parses them, so the plan and the apply digest the same.
+ */
+const planDigest = (
+	root: string,
+	files: readonly { readonly path: string; readonly hunks: unknown }[],
+): string =>
+	consentDigest({
+		root,
+		files: files.map((file) => ({
+			path: file.path,
+			hunks: z.array(hunkSchema).parse(file.hunks),
+		})),
+	});
+
 const APPLY_OUTPUT_SCHEMA = z.object({
 	written: z.array(z.string()),
 	gateCommand: z.string(),
@@ -96,6 +124,7 @@ export const buildRefactorRenameToolRegistrations = (
 	options: IRefactorRenameToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
+	const consent = options.consent ?? createConsentSigner();
 	const read: IFileReader =
 		options.readFile ??
 		(async (p: string) =>
@@ -180,9 +209,19 @@ export const buildRefactorRenameToolRegistrations = (
 							return toolError(result.code, result.detail);
 						}
 
+						// Relative to `root`, as refactor_apply reads them: the
+						// planner's absolute paths were refused there, so no
+						// plan could ever be applied as it came.
+						const files = result.files.map((file) => ({
+							...file,
+							path: relative(containedRoot.abs, file.path),
+						}));
 						return toolJson({
-							files: result.files,
+							files,
 							totalEdits: result.totalEdits,
+							consentToken: consent.issue(
+								planDigest(args.root, files),
+							),
 							...(result.ambiguous !== undefined
 								? { ambiguous: result.ambiguous }
 								: {}),
@@ -200,7 +239,7 @@ export const buildRefactorRenameToolRegistrations = (
 					`${prefix}_refactor_apply`,
 					{
 						description:
-							'Write the files from a `refactor_rename` diff to disk. Requires `consentToken` (echoed back) and checks containment (all paths must be inside `root`). After write, the host should re-run the acceptance gate.',
+							'Write the files from a `refactor_rename` diff to disk. Requires the `consentToken` `refactor_rename` issued for this exact plan (echoed back) and checks containment (all paths must be inside `root`). After write, the host should re-run the acceptance gate.',
 						inputSchema: z.object({
 							root: z.string().min(1),
 							files: z.array(
@@ -244,6 +283,20 @@ export const buildRefactorRenameToolRegistrations = (
 								);
 							}
 							fileAbsByPath.set(file.path, contained.abs);
+						}
+
+						// The token fits only the plan this server made: an edited
+						// diff, or a token from anywhere else, writes nothing.
+						if (
+							!consent.verify(
+								args.consentToken,
+								planDigest(args.root, args.files),
+							)
+						) {
+							return toolError(
+								'consent-refused',
+								'consentToken does not fit these files: pass the token refactor_rename returned with this exact plan.',
+							);
 						}
 
 						// Write each file

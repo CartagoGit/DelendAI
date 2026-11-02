@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, utimes, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -249,5 +250,34 @@ describe('the cache hides itself too (x00600)', () => {
 				{ cwd: workspace, encoding: 'utf8' },
 			),
 		).toContain('.cache/theirs/build.json');
+	});
+
+	it('removes empty legacy folders older than a day, and keeps any folder with a file', async () => {
+		const workspace = createTestWorkspace('delendai-cache-');
+		workspaces.push(workspace);
+		const cache = join(workspace, '.runtime/cache');
+		const old = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+		for (const dir of [
+			'web-fetch',
+			'verify/lock-specs/a/.cache',
+			'fresh',
+			'kept',
+		]) {
+			await mkdir(join(cache, dir), { recursive: true });
+		}
+		await writeFile(join(cache, 'kept', 'data.json'), '{}');
+		for (const dir of ['web-fetch', 'verify', 'kept']) {
+			await utimes(join(cache, dir), old, old);
+		}
+
+		await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: '.runtime/cache',
+		});
+
+		expect(existsSync(join(cache, 'web-fetch'))).toBe(false);
+		expect(existsSync(join(cache, 'verify'))).toBe(false);
+		expect(existsSync(join(cache, 'fresh'))).toBe(true);
+		expect(existsSync(join(cache, 'kept', 'data.json'))).toBe(true);
 	});
 });

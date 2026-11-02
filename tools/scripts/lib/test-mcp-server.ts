@@ -87,7 +87,12 @@ export const captureToolRegistration = async (
 		// x00105: the notification plugin chains `server.server.onclose`
 		// at register time (teardown wiring). Provide the inner-server
 		// seam so those registrations are capturable too.
-		server: { onclose: undefined as (() => void) | undefined },
+		// A client that declares no capability: no sampling, elicitation
+		// or roots, the way the SDK reports one before it says otherwise.
+		server: {
+			onclose: undefined as (() => void) | undefined,
+			getClientCapabilities: () => undefined,
+		},
 		// verify:tools / capture stubs do not implement the full MCP
 		// transport. notification + agent-events fire logging on lock
 		// release; a missing method throws *synchronously* before .catch.

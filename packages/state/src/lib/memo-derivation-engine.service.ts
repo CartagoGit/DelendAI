@@ -49,12 +49,18 @@ export const createMemoDerivationEngine = (input: {
 				kind: 'fingerprint',
 				id: `${name}:${derivation.fingerprint(derivationInput)}`,
 			};
+			// The scope is part of what was derived: one id under two scopes
+			// is two values, not the first one served twice.
+			const memoKey = canonicalStateHash({
+				scope: key.scope,
+				id: key.id,
+			} as unknown as CanonicalJsonValue);
 			const remembered =
-				memory.get(key.id) ??
+				memory.get(memoKey) ??
 				(await input.store?.get<TOut>(key)) ??
 				undefined;
 			if (remembered !== undefined) {
-				memory.set(key.id, remembered);
+				memory.set(memoKey, remembered);
 				return remembered as IArtifactRecord<TOut>;
 			}
 			const value = await derivation.derive(derivationInput);
@@ -73,7 +79,7 @@ export const createMemoDerivationEngine = (input: {
 								input.reconciledCommitSha ?? '',
 						}
 					: await input.store.put(key, value);
-			memory.set(key.id, record);
+			memory.set(memoKey, record);
 			return record;
 		},
 	};

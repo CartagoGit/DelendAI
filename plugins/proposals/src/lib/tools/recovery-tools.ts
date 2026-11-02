@@ -33,7 +33,19 @@ import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
 import { removeStale, type ILockFile } from '../locks/agent-lock-engine';
-import { guardDoneToReviewRegression } from '../services/proposal-state';
+import {
+	deriveFileLockTablePath,
+	removeFileLocksForTask,
+} from '../locks/file-lock-table';
+import {
+	buildForcedRegressionCaller,
+	gatesSkippedByForce,
+	guardDoneToReviewRegression,
+	isCiEnvironment,
+	logForcedTransition,
+} from '../services/proposal-state';
+import type { IForceTransitions } from '../contracts/interfaces/forced-transition.interface';
+import { isKnownStatus } from './transition/dfa.tool';
 /** Lock-file schema version written when no lock exists yet. */
 const DEFAULT_LOCK_VERSION = 1;
 /** Minutes after which an unrefreshed claim is considered abandoned. */
@@ -101,6 +113,8 @@ export interface IRecoveryToolOptions {
 	readonly requirePeerReview?: boolean;
 	/** What makes a reviewer independent (x00718); `model` by default. */
 	readonly reviewIndependence?: IReviewIndependence;
+	/** Who may force a proposal past its gates; any caller by default. */
+	readonly forceTransitions?: IForceTransitions;
 	/** Optional paths to the agent queue (used by recovery tools). */
 	readonly queuePathAbs?: string;
 	readonly closedTasksPathAbs?: string;
@@ -114,9 +128,6 @@ interface ILocatedProposal {
 	readonly frontmatter: Record<string, unknown>;
 	readonly status: string;
 }
-
-const isKnownStatus = (value: string): value is IProposalStatus =>
-	value in PROPOSAL_STATUSES;
 
 const RECOVERY_EVENT_SCHEMA = z.object({
 	kind: z.enum(['agent-alive', 'agent-idle', 'agent-dead']),
@@ -172,6 +183,8 @@ export const FORCE_TRANSITION_INPUT_SCHEMA = z.object({
 	reason: z.string().min(1),
 	overrideLockOwner: z.string().optional(),
 	taskId: z.string().optional(),
+	/** Who forces: named in the record of the move. */
+	agent: z.string().min(1).optional(),
 });
 
 const RECONCILE_FOLDER_OUTPUT_SCHEMA = z.object({
@@ -313,12 +326,20 @@ const readLock = async (lockPathAbs: string): Promise<ILockFile> => {
 	};
 };
 
+/**
+ * Free `taskId`'s claim, and its rows in the file-lock table, in the
+ * claims' one critical section (the table's mutex, as the engine takes
+ * it): under the lock file's own key a release could land between an
+ * engine read and its write and be undone, and a claim released here
+ * kept holding its files in the table.
+ */
 const releaseLock = async (
 	lockPathAbs: string,
 	taskId: string,
 	agent?: string,
-): Promise<boolean> =>
-	withFileMutex(lockPathAbs, async () => {
+): Promise<boolean> => {
+	const tablePath = deriveFileLockTablePath(lockPathAbs);
+	return withFileMutex(tablePath, async () => {
 		const lock = await readLock(lockPathAbs);
 		const before = lock.in_flight.length;
 		lock.in_flight = lock.in_flight.filter(
@@ -332,9 +353,11 @@ const releaseLock = async (
 				lockPathAbs,
 				`${JSON.stringify(lock, null, '\t')}\n`,
 			);
+			await removeFileLocksForTask({ taskId, tablePath });
 		}
 		return changed;
 	});
+};
 
 /**
  * Resolve the folder a closed proposal should land in given its raw
@@ -505,6 +528,7 @@ export const runProposalForceTransition = async (
 		reason: string;
 		overrideLockOwner?: string | undefined;
 		taskId?: string | undefined;
+		agent?: string | undefined;
 	},
 	options: IRecoveryToolOptions,
 ) => {
@@ -532,6 +556,12 @@ export const runProposalForceTransition = async (
 			`Close it with ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }; its refusal names what is missing. Closing without a review is the owner's decision, made by merging by hand.`,
 		);
 	}
+	if (options.forceTransitions === 'people') {
+		return toolError(
+			`This project reserves force to people: no tool call moves ${args.id} past its gates.`,
+			`Move it with ${options.namespacePrefix}_proposal_transition, and fix what its refusal names. Skipping a gate is the owner's decision, made by moving the file and merging by hand.`,
+		);
+	}
 	let lockReleased = false;
 	if (args.overrideLockOwner && args.taskId) {
 		lockReleased = await releaseLock(
@@ -545,6 +575,24 @@ export const runProposalForceTransition = async (
 	}
 	const targetFolder = await resolveDoneFolderFromRaw(found, args.to);
 	const moved = await moveProposal(found, args.to, targetFolder, options);
+	await logForcedTransition({
+		workspaceRoot: options.workspaceRoot,
+		proposalId: args.id,
+		from: found.status,
+		to: args.to,
+		reason: args.reason.trim(),
+		ts: new Date().toISOString(),
+		caller: buildForcedRegressionCaller(args.agent),
+		via: 'force_transition',
+		skippedGates: gatesSkippedByForce({
+			from: found.status,
+			to: args.to,
+			via: 'force_transition',
+			requireValidateEvidence: false,
+			requirePeerReview: options.requirePeerReview !== false,
+			inCi: isCiEnvironment(),
+		}),
+	});
 	return toolOk({
 		id: args.id,
 		from: found.status,
@@ -782,7 +830,7 @@ export const buildRecoveryToolRegistrations = (
 					`${options.namespacePrefix}_proposal_force_transition`,
 					{
 						description:
-							'Force a proposal to a recovery status (never done) with a required reason and optional lock release.',
+							'Force a proposal to a recovery status (never done) with a required reason and optional lock release; the move and the gates it skipped are recorded, and a project that reserves force to people refuses it.',
 						outputSchema: FORCE_TRANSITION_OUTPUT_SCHEMA,
 						inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 					},
@@ -798,6 +846,7 @@ export const buildRecoveryToolRegistrations = (
 			id: 'proposal_reconcile_folder',
 			effects: ['write'],
 			writeRoot: 'caller-checkout',
+			dryRunSupported: true,
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,

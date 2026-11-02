@@ -12,6 +12,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
 import {
 	displayProjection,
 	EMPTY_ROADMAP,
@@ -42,12 +43,9 @@ const read = async (path: string): Promise<string | undefined> => {
 /** The roadmap file a configuration declares, with its options; nothing when it declares none. */
 export const declaredRoadmap = (configText: string | undefined) => {
 	if (configText === undefined) return undefined;
-	let config: unknown;
-	try {
-		config = JSON.parse(configText);
-	} catch {
-		return undefined;
-	}
+	const { value: config, errors } = parseJsonc(configText);
+	// A config that does not parse declares no roadmap.
+	if (errors.length > 0) return undefined;
 	const options = (
 		config as { plugins?: { roadmap?: { options?: unknown } } } | null
 	)?.plugins?.roadmap?.options;

@@ -15,7 +15,7 @@ const OptionsSchema = z.object({});
 
 export default definePlugin({
 	name: 'container',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Container inspection: container_ps + container_images (Docker) + k8s_get (Kubernetes) — read-only by default. Probes docker/kubectl via r00012.',
 	optionsSchema: OptionsSchema,
@@ -48,6 +48,7 @@ export default definePlugin({
 				}),
 				...buildContainerBuildToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
 				}),
 				...buildContainerDockerToolRegistrations({
 					namespacePrefix: ctx.namespacePrefix,

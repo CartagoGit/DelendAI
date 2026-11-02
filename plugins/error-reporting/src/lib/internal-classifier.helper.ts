@@ -23,9 +23,15 @@ const componentIdFromFrame = (packageId: string, frameFile: string): string => {
 	return frameFile.slice(prefix.length);
 };
 
+/**
+ * The code an internal error carries. Only a thrown error can carry one:
+ * a plain object with a `delendaiErrorCode` field is data — a tool
+ * result or a project's output — and claimed first-party origin by
+ * writing it.
+ */
 const internalErrorCodeOf = (error: unknown): DelendaiErrorCode | undefined => {
 	if (error instanceof DelendaiInternalError) return error.code;
-	if (typeof error !== 'object' || error === null) return undefined;
+	if (!(error instanceof Error)) return undefined;
 	const record = error as { delendaiErrorCode?: unknown };
 	return isDelendaiErrorCode(record.delendaiErrorCode)
 		? record.delendaiErrorCode

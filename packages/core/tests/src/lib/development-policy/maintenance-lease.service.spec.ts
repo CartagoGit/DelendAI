@@ -2,7 +2,15 @@
  * maintenance-lease.service.spec.ts — one server maintains a workspace,
  * however many serve it, and whichever model each one serves.
  */
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -12,6 +20,7 @@ import {
 	createHostMaintenance,
 	createMaintenanceGate,
 	createMaintenanceLease,
+	removeIfStill,
 	observeMaintenance,
 } from '@delendai/core/lib/development-policy/maintenance-lease.service';
 
@@ -51,6 +60,16 @@ describe('createMaintenanceLease', () => {
 		expect(await b.hold()).toBe(false);
 		expect((await b.holder())?.holder).toBe(a.self);
 		expect(a.self).not.toBe(b.self);
+	});
+
+	it('ends a race on an absent lease with one holder, the one the file names', async () => {
+		for (let round = 0; round < 25; round += 1) {
+			const clock = { at: 0 };
+			const { a, b } = pair(leasePath(), clock);
+			const [tookA, tookB] = await Promise.all([a.hold(), b.hold()]);
+			expect([tookA, tookB].filter(Boolean)).toHaveLength(1);
+			expect((await a.holder())?.holder).toBe(tookA ? a.self : b.self);
+		}
 	});
 
 	it('stays with a holder that keeps beating', async () => {
@@ -198,5 +217,24 @@ describe('observing who maintains', () => {
 		expect((await maintenance.observe()).maintains).toBe(true);
 		await maintenance.stop();
 		expect(existsSync(path)).toBe(false);
+	});
+});
+
+describe('removeIfStill', () => {
+	it('removes the record it judged, and puts back one replaced since', async () => {
+		const path = leasePath();
+		mkdirSync(dirname(path), { recursive: true });
+		writeFileSync(path, 'judged');
+		expect(await removeIfStill(path, 'judged', `${path}.me`)).toBe(true);
+		expect(() => readFileSync(path, 'utf8')).toThrow();
+
+		writeFileSync(path, 'taken by another server since');
+		expect(await removeIfStill(path, 'judged', `${path}.me`)).toBe(false);
+		expect(readFileSync(path, 'utf8')).toBe(
+			'taken by another server since',
+		);
+
+		rmSync(path);
+		expect(await removeIfStill(path, 'judged', `${path}.me`)).toBe(true);
 	});
 });

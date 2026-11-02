@@ -10,7 +10,7 @@ const OptionsSchema = z.object({
 
 export default definePlugin({
 	name: 'project-health',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Cheap project-health summary plus lazy detail routing across security, deps, quality and tech debt.',
 	optionsSchema: OptionsSchema,

@@ -5,6 +5,8 @@
  *
  * Contract (every scanner is optional, none is fatal):
  *  - `scanners` is optional; missing → empty report.
+ *  - `capabilities`, when set, runs only the scanners of those tags; the
+ *    rest land in `skipped` with the reason.
  *  - Runners that resolve with `{skipped:true}` flow into
  *    `ISelfAuditReport.aggregated.skipped` (note preserved).
  *  - Runners that THROW are converted to a skipped result with the
@@ -20,14 +22,8 @@ import { aggregateScans, type IScanResult } from '@delendai/core/public';
 import type {
 	ISelfAuditOptions,
 	ISelfAuditReport,
-	ISelfAuditScannerRef,
-	ISelfAuditScannerRunner,
+	ISelfAuditScannerEntry,
 } from '../contracts/interfaces/self-audit.interface';
-
-type ISelfAuditScannerEntry = {
-	readonly ref: ISelfAuditScannerRef;
-	readonly run: ISelfAuditScannerRunner;
-};
 
 /** Build a skipped `IScanResult` carrying `note` (only when defined). */
 const toSkippedResult = (
@@ -63,7 +59,7 @@ const runScanner = async (
 	}
 };
 
-/** Default empty scanner map — no scanners, the audit is a no-op. */
+/** Empty scanner map — the aggregation of nothing. */
 export const defaultScannerMap = (): ReadonlyMap<
 	string,
 	ISelfAuditScannerEntry
@@ -75,12 +71,28 @@ export const aggregateSelfAudit = async (
 ): Promise<ISelfAuditReport> => {
 	const ranAt = new Date().toISOString();
 	const scanners = options.scanners ?? defaultScannerMap();
-	const entries = [...scanners.values()];
-	const results = await Promise.all(
+	const registered = [...scanners.values()];
+	const requested = options.capabilities;
+	const selects = (entry: ISelfAuditScannerEntry): boolean =>
+		requested === undefined ||
+		requested.length === 0 ||
+		requested.includes(entry.ref.capability);
+	const entries = registered.filter(selects);
+	const filteredOut = registered
+		.filter((entry) => !selects(entry))
+		.map((entry) =>
+			toSkippedResult(
+				entry.ref.id,
+				`capability ${entry.ref.capability} not requested`,
+				ranAt,
+			),
+		);
+	const ran = await Promise.all(
 		entries.map((entry) =>
 			runScanner(options.workspaceRootAbs, entry, ranAt),
 		),
 	);
+	const results = [...ran, ...filteredOut];
 	const aggregated = aggregateScans(results);
 	const capabilities = entries.reduce<Record<string, number>>(
 		(counts, entry) => {
@@ -93,7 +105,7 @@ export const aggregateSelfAudit = async (
 
 	return {
 		ranAt,
-		scannerCount: entries.length,
+		scannerCount: registered.length,
 		skipped: results
 			.filter((result) => result.skipped === true)
 			.map((result) => ({

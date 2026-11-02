@@ -19,6 +19,7 @@ describe('AGENT_HOSTS is the one host source', () => {
 			[
 				'copilot',
 				'github-copilot',
+				'github-copilot-chat',
 				'vscode',
 				'visual-studio-code',
 				'code',

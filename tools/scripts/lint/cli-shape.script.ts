@@ -32,6 +32,7 @@ import {
 	type IShapeFinding,
 	type IShapeRule,
 } from './cli-shape-rules';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 export interface IShapeRuleFinding extends IShapeFinding {
 	readonly file: string;
@@ -154,6 +155,12 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const args = argv.slice(2);
 	const reportOnly = args.includes('--report');
 	const rootDir = process.cwd();
+	if (
+		refuseMissingScanRoots('cli-shape', rootDir, [
+			'packages/cli/src/commands/groups',
+		])
+	)
+		return 1;
 	const findings = await lintCliShape(rootDir);
 	process.stderr.write(formatReport(findings));
 	if (reportOnly) return 0;

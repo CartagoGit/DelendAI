@@ -458,7 +458,10 @@ export const assembleCoreTools = (
 			() => validationMatrix,
 		),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
-		buildShellStatusToolRegistration({ namespacePrefix: corePrefix }),
+		buildShellStatusToolRegistration({
+			namespacePrefix: corePrefix,
+			workspaceRoot: workspace.root,
+		}),
 		buildWorkUnitToolRegistration({
 			namespacePrefix: corePrefix,
 			workspaceRoot: workspace.root,

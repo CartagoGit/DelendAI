@@ -64,7 +64,7 @@ describe('agent-files.migrator — detect', () => {
 
 describe('agent-files.migrator — apply (frontmatter rewrite)', () => {
 	it('rewrites the `name` field in the frontmatter', async () => {
-		const path = await writeAgentFile(
+		await writeAgentFile(
 			workspaceRoot,
 			'.github/agents',
 			'mcp-vertex-helper.md',
@@ -72,7 +72,11 @@ describe('agent-files.migrator — apply (frontmatter rewrite)', () => {
 		);
 		const migrator = createAgentFilesMigrator();
 		await migrator.apply(ctx(workspaceRoot));
-		const after = await readFile(path, 'utf8');
+		// Renamed with its header.
+		const after = await readFile(
+			join(workspaceRoot, '.github/agents/delendai-helper.md'),
+			'utf8',
+		);
 		expect(after).toContain('name: delendai-helper');
 		expect(after).not.toContain('mcp-vertex');
 	});
@@ -247,5 +251,34 @@ describe('agent-files.migrator — root instruction files', () => {
 			expect(after).not.toMatch(/mcp-vertex/u);
 			expect(after).toContain('delendai doctor');
 		}
+	});
+});
+
+describe('agent-files.migrator — the file name follows its name header', () => {
+	it('renames an agent file whose name carries the old prefix, and plans the rename', async () => {
+		const old = await writeAgentFile(
+			workspaceRoot,
+			'.claude/agents',
+			'mcp-vertex-orchestrator.md',
+			'---\nname: mcp-vertex-orchestrator\n---\nRoutes the tools.\n',
+		);
+		const migrator = createAgentFilesMigrator();
+
+		const planned = await migrator.plan(ctx(workspaceRoot));
+		expect(planned).toContainEqual({
+			kind: 'rename',
+			detail: 'agent file: .claude/agents/mcp-vertex-orchestrator.md → .claude/agents/delendai-orchestrator.md',
+		});
+		await migrator.apply(ctx(workspaceRoot));
+
+		const renamed = join(
+			workspaceRoot,
+			'.claude/agents/delendai-orchestrator.md',
+		);
+		expect(await readFile(renamed, 'utf8')).toContain(
+			'name: delendai-orchestrator',
+		);
+		await expect(readFile(old, 'utf8')).rejects.toThrow();
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
 	});
 });

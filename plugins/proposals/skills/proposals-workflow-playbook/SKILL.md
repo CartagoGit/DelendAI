@@ -2,6 +2,7 @@
 name: delendai-proposals-workflow-playbook
 appliesTo: ['@delendai/proposals']
 description: Canonical compact workflow for agents working through the proposals plugin: orient, select work, claim files, implement, validate, close, and sync without polling or hand-editing generated state.
+tools: ['delendai_proposals_continue_proposal', 'delendai_proposals_create_proposal', 'delendai_proposals_proposal_transition', 'delendai_proposals_close_slice', 'delendai_proposals_proposal_review', 'delendai_proposals_review_queue', 'delendai_proposals_review_claim', 'delendai_proposals_proposal_get']
 ---
 
 # proposals workflow playbook

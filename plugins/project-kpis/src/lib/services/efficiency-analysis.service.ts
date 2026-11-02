@@ -28,6 +28,8 @@ interface IEfficiencyObservation {
 	readonly totalTokens: number;
 	readonly costUsd: number;
 	readonly tokensSaved: number;
+	/** The part of `tokensSaved` measured against a stated baseline. */
+	readonly measuredTokensSaved: number;
 	readonly averageLatencyMs: number | null;
 	readonly tokensPerCall: number | null;
 	readonly costPerCall: number | null;
@@ -160,6 +162,13 @@ const observationsOf = (
 		(acc, record) => acc + (record.tokensSaved ?? 0),
 		0,
 	);
+	const measuredTokensSaved = records.reduce(
+		(acc, record) =>
+			record.tokenAccounting?.status === 'measured'
+				? acc + (record.tokensSaved ?? 0)
+				: acc,
+		0,
+	);
 	const latencies = records
 		.map((record) => record.latencyMs ?? record.durationMs)
 		.filter(
@@ -196,6 +205,7 @@ const observationsOf = (
 		totalTokens,
 		costUsd,
 		tokensSaved,
+		measuredTokensSaved,
 		averageLatencyMs,
 		tokensPerCall,
 		costPerCall,
@@ -208,16 +218,30 @@ const savingsOf = (
 	baseline: IEfficiencyBaseline,
 ): readonly IEfficiencySavingsItem[] => {
 	const savings: IEfficiencySavingsItem[] = [];
-	if (observations.tokensSaved > 0) {
+	if (observations.measuredTokensSaved > 0) {
 		savings.push({
 			id: 'token-savings',
 			kind: 'tokens',
-			basis: 'provider/usage-tracking tokensSaved rollup',
-			value: observations.tokensSaved,
+			basis: 'usage-tracking records with a baseline and provider usage',
+			value: observations.measuredTokensSaved,
 			causality: 'measured',
 			methodology:
-				'Sum of per-invocation tokensSaved reported by usage-tracking; direct local observation.',
+				'Sum of tokensSaved on records that state their baseline: each is the tool against its own alternative, not against working without DelendAI.',
 			confidence: 'measured',
+		});
+	}
+	const reportedTokensSaved =
+		observations.tokensSaved - observations.measuredTokensSaved;
+	if (reportedTokensSaved > 0) {
+		savings.push({
+			id: 'reported-token-savings',
+			kind: 'tokens',
+			basis: 'tokensSaved reported without a comparable baseline',
+			value: reportedTokensSaved,
+			causality: 'inferred',
+			methodology:
+				'Sum of tokensSaved a tool reported with no baseline to check it against.',
+			confidence: 'inferred',
 		});
 	}
 	if (

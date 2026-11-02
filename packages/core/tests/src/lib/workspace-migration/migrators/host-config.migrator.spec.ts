@@ -16,11 +16,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { parseJsonc } from '@delendai/core/lib/config/jsonc-document';
 import {
 	HOST_CONFIG_NAME,
-	HostConfigParseError,
 	createHostConfigMigrator,
 } from '@delendai/core/lib/workspace-migration/migrators/host-config.migrator';
+import { HostConfigParseError } from '@delendai/core/lib/workspace-migration/migrators/host-config-parse.error';
 
 let workspaceRoot: string;
 
@@ -257,5 +258,214 @@ describe('host-config.migrator — the root .mcp.json', () => {
 		const after = await readFile(root, 'utf8');
 		expect(after).not.toMatch(/mcp-vertex/u);
 		expect(after).toContain('delendai');
+	});
+});
+
+describe('host-config.migrator — every host the workspace configures', () => {
+	it('rewrites the Cursor, Continue and Codex configs that name the old server', async () => {
+		await mkdir(join(workspaceRoot, '.cursor'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			pretty({ mcpServers: { 'mcp-vertex': { command: 'mcp-vertex' } } }),
+		);
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.continue/config.json'),
+			pretty({
+				experimental: {
+					modelContextProtocolServers: [
+						{
+							transport: {
+								type: 'stdio',
+								command: 'mcp-vertex',
+								args: ['serve'],
+							},
+						},
+					],
+				},
+			}),
+		);
+		await mkdir(join(workspaceRoot, '.codex'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.codex/config.toml'),
+			[
+				'model = "mcp-vertex-is-not-a-server-here"',
+				'',
+				'[mcp_servers.mcp-vertex]',
+				'command = "mcp-vertex"',
+				'args = ["serve"]',
+				'',
+			].join('\n'),
+		);
+		const migrator = createHostConfigMigrator();
+
+		expect(await migrator.detect(ctx(workspaceRoot))).toBe(true);
+		expect(await migrator.plan(ctx(workspaceRoot))).toHaveLength(3);
+		await migrator.apply(ctx(workspaceRoot));
+
+		const cursor = await readFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			'utf8',
+		);
+		const continueConfig = await readFile(
+			join(workspaceRoot, '.continue/config.json'),
+			'utf8',
+		);
+		const codex = await readFile(
+			join(workspaceRoot, '.codex/config.toml'),
+			'utf8',
+		);
+		expect(cursor).not.toContain('mcp-vertex');
+		expect(cursor).toContain('"delendai"');
+		expect(continueConfig).not.toContain('mcp-vertex');
+		expect(codex).toContain('[mcp_servers.delendai]');
+		expect(codex).toContain('command = "delendai"');
+		// Outside its server tables, the file is the person's.
+		expect(codex).toContain('model = "mcp-vertex-is-not-a-server-here"');
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+	});
+
+	it('reads a commented Continue config, keeps its comments, and never fails on one it cannot read', async () => {
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		const commented = [
+			'{',
+			"\t// the person's own note",
+			'\t"experimental": {',
+			'\t\t"modelContextProtocolServers": [',
+			'\t\t\t{ "transport": { "type": "stdio", "command": "mcp-vertex" } },',
+			'\t\t],',
+			'\t},',
+			'}',
+			'',
+		].join('\n');
+		await writeFile(
+			join(workspaceRoot, '.continue/config.json'),
+			commented,
+		);
+		await mkdir(join(workspaceRoot, '.cursor'), { recursive: true });
+		await writeFile(
+			join(workspaceRoot, '.cursor/mcp.json'),
+			'{ not json at all',
+		);
+		const migrator = createHostConfigMigrator();
+
+		expect(await migrator.plan(ctx(workspaceRoot))).toHaveLength(1);
+		await migrator.apply(ctx(workspaceRoot));
+
+		const after = await readFile(
+			join(workspaceRoot, '.continue/config.json'),
+			'utf8',
+		);
+		expect(after).toContain("// the person's own note");
+		expect(after).toContain('"command": "delendai"');
+		expect(
+			await readFile(join(workspaceRoot, '.cursor/mcp.json'), 'utf8'),
+		).toBe('{ not json at all');
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+	});
+
+	it('leaves a commented config that names nothing old exactly as it was', async () => {
+		await mkdir(join(workspaceRoot, '.continue'), { recursive: true });
+		const own = '{\n\t// nothing of ours\n\t"models": [],\n}\n';
+		await writeFile(join(workspaceRoot, '.continue/config.json'), own);
+		const migrator = createHostConfigMigrator();
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+		await migrator.apply(ctx(workspaceRoot));
+		expect(
+			await readFile(
+				join(workspaceRoot, '.continue/config.json'),
+				'utf8',
+			),
+		).toBe(own);
+	});
+});
+
+describe('host-config.migrator — the editor config is JSONC', () => {
+	// A `.vscode/mcp.json` with a comment above the object is what the
+	// editor itself accepts, and what a generator script writes. Read as
+	// plain JSON it was unreadable, and the error it raised reached the
+	// boot of every project that has one.
+	const commented = [
+		'// Generated by `bun run mcp:sync` — do not edit by hand.',
+		'// The MCP servers are declared once, in the root .mcp.json.',
+		'{',
+		'\t"servers": {',
+		'\t\t"mcp-vertex": {',
+		'\t\t\t"type": "stdio",',
+		'\t\t\t"command": "bun",',
+		'\t\t\t"args": ["@mcp-vertex/core"]',
+		'\t\t}',
+		'\t}',
+		'}',
+		'',
+	].join('\n');
+
+	it('reads a commented editor config, rewrites it and keeps its comments', async () => {
+		const path = await writeHostConfig(workspaceRoot, commented);
+		const migrator = createHostConfigMigrator();
+
+		expect(await migrator.plan(ctx(workspaceRoot))).toHaveLength(1);
+		await migrator.apply(ctx(workspaceRoot));
+
+		const after = await readFile(path, 'utf8');
+		expect(after).toContain(
+			'// Generated by `bun run mcp:sync` — do not edit by hand.',
+		);
+		expect(after).toContain(
+			'// The MCP servers are declared once, in the root .mcp.json.',
+		);
+		expect(after).not.toContain('mcp-vertex');
+		const parsed = parseJsonc(after);
+		expect(parsed.errors).toEqual([]);
+		const servers = (
+			parsed.value as { readonly servers: Record<string, unknown> }
+		).servers;
+		expect(Object.keys(servers)).toEqual(['delendai']);
+	});
+
+	it('leaves a commented editor config that names nothing old byte-identical', async () => {
+		const own = [
+			'// Generated by `bun run mcp:sync` — do not edit by hand.',
+			'{',
+			'\t"servers": {',
+			'\t\t"delendai": { "type": "stdio", "command": "bun" }',
+			'\t}',
+			'}',
+			'',
+		].join('\n');
+		const path = await writeHostConfig(workspaceRoot, own);
+		const migrator = createHostConfigMigrator();
+		expect(await migrator.plan(ctx(workspaceRoot))).toEqual([]);
+		await migrator.apply(ctx(workspaceRoot));
+		expect(await readFile(path, 'utf8')).toBe(own);
+	});
+
+	it('writes a plain JSON editor config exactly as it always did', async () => {
+		const path = await writeHostConfig(
+			workspaceRoot,
+			pretty({
+				servers: { 'mcp-vertex': { type: 'stdio', command: 'bun' } },
+			}),
+		);
+		const migrator = createHostConfigMigrator();
+		await migrator.apply(ctx(workspaceRoot));
+		expect(await readFile(path, 'utf8')).toBe(
+			pretty({
+				servers: { delendai: { type: 'stdio', command: 'bun' } },
+			}),
+		);
+	});
+
+	it('still refuses a file that is neither JSON nor JSONC', async () => {
+		const path = await writeHostConfig(
+			workspaceRoot,
+			'{ "servers": { "mcp-vertex": },,, }\n',
+		);
+		const original = await readFile(path, 'utf8');
+		const migrator = createHostConfigMigrator();
+		await expect(migrator.apply(ctx(workspaceRoot))).rejects.toBeInstanceOf(
+			HostConfigParseError,
+		);
+		expect(await readFile(path, 'utf8')).toBe(original);
 	});
 });

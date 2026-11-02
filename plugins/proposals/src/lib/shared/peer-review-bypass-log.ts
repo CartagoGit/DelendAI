@@ -92,7 +92,9 @@ export const recordPeerReviewBypass = (input: {
 		ts: new Date(nowMs).toISOString(),
 		proposalId: input.proposalId,
 		agent: (input.agent ?? 'unknown').trim() || 'unknown',
-		reason,
+		// Redacted once, here: the stored event, the sink and the fallback
+		// line all carry it, and the fallback used to print it raw.
+		reason: redactSecrets(reason).text,
 		via: input.via,
 	};
 	events.push(event);
@@ -101,7 +103,7 @@ export const recordPeerReviewBypass = (input: {
 	// The `redactSecrets` call strips GitHub PATs / AWS keys / JWT
 	// out of the operator-supplied reason so a bypass-log entry
 	// cannot exfiltrate secrets pasted into the UI.
-	const redactedReason = redactSecrets(event.reason).text;
+	const redactedReason = event.reason;
 	const logPayload = {
 		severity: 'warning' as const,
 		incidentType: 'peer-review-bypass' as const,

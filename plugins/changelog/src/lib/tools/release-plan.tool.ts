@@ -25,6 +25,7 @@ import {
 	type IBumpKind,
 } from '../bump/infer-bump';
 import type { IConventionalCommit } from '../render';
+import { discoverPublishOrder } from './discover-publish-order.service';
 
 export interface IPublishOrderEntry {
 	readonly dir: string;
@@ -41,7 +42,9 @@ export interface IReleasePlanOutput {
 
 export interface IReleasePlanToolOptions {
 	readonly namespacePrefix: string;
-	/** Injectable publish-order snapshot. Defaults to the canonical project order. */
+	/** Workspace root the publish order is derived from when none is injected. */
+	readonly workspaceRootAbs?: string;
+	/** Injectable publish-order snapshot. Defaults to the workspace's own packages. */
 	readonly publishOrder?: readonly IPublishOrderEntry[];
 	/** Injectable bump inference (defaults to the bundled `inferBump`). */
 	readonly inferBump?: (
@@ -155,7 +158,6 @@ export const buildReleasePlan = (
 export const buildReleasePlanToolRegistration = (
 	options: IReleasePlanToolOptions,
 ): IToolRegistration => {
-	const publishOrder = options.publishOrder ?? [];
 	const infer = options.inferBump ?? inferBump;
 
 	return {
@@ -174,10 +176,17 @@ export const buildReleasePlanToolRegistration = (
 					outputSchema: ALL_OUTPUT,
 				},
 				async (args) => {
+					const publishOrder =
+						options.publishOrder ??
+						(options.workspaceRootAbs === undefined
+							? []
+							: await discoverPublishOrder(
+									options.workspaceRootAbs,
+								));
 					if (publishOrder.length === 0) {
 						return toolError(
 							'publish-order-missing',
-							'The plugin must be configured with a non-empty `publishOrder` snapshot. Inject one via `options.publishOrder` in tests.',
+							'No publishable workspace package was found. Declare `workspaces` in the root package.json, or inject a `publishOrder` snapshot.',
 						);
 					}
 					const parsed = INPUT.safeParse(args);

@@ -267,14 +267,16 @@ describe('providerModelReading', () => {
 		});
 	});
 
-	it('names the freshest model when one workspace has several entries', () => {
+	it('names the model still at work when an older entry has run out', () => {
 		const { file, env } = bridge();
 		const now = Date.now();
 		write(file, {
 			entries: {
 				'/work/a': {
 					model: 'older',
-					at: new Date(now - 60_000).toISOString(),
+					at: new Date(
+						now - 2 * PROVIDER_MODEL_MAX_AGE_MS,
+					).toISOString(),
 				},
 				'/work/a/.worktrees/u': {
 					model: 'newer',
@@ -283,6 +285,50 @@ describe('providerModelReading', () => {
 			},
 		});
 		expect(providerModelId({ env, workspace: '/work/a' })).toBe('newer');
+	});
+
+	it('names no model when two conversations in the workspace work on different ones', () => {
+		const { file, env } = bridge();
+		const now = Date.now();
+		write(file, {
+			entries: {
+				'/work/a': [
+					{
+						conversation: 'c1',
+						model: 'claude-opus-5-5',
+						at: new Date(now - 60_000).toISOString(),
+					},
+					{
+						conversation: 'c2',
+						model: 'glm-5.3',
+						at: new Date(now).toISOString(),
+					},
+				],
+			},
+		});
+		const reading = providerModelReading({ env, workspace: '/work/a' });
+		expect(reading).toMatchObject({
+			reason: 'ambiguous',
+			models: ['glm-5.3', 'claude-opus-5-5'],
+		});
+		expect(providerBridgeSilence(reading)).toContain('different models');
+	});
+
+	it('names the model when every conversation at work in the workspace is on it', () => {
+		const { file, env } = bridge();
+		const at = new Date().toISOString();
+		write(file, {
+			entries: {
+				'/work/a': [
+					{ conversation: 'c1', model: 'glm-5.3', at, provider: 'p' },
+					{ conversation: 'c2', model: 'glm-5.3', at },
+				],
+			},
+		});
+		expect(providerModelReading({ env, workspace: '/work/a' })).toEqual({
+			model: 'glm-5.3',
+			provider: 'p',
+		});
 	});
 
 	it('says why it named nothing, and how to fix it', () => {

@@ -503,3 +503,123 @@ describe('runBranchStatusEngine', () => {
 		expect(result.branches[0]?.mergedIntoBase).toBe(true);
 	});
 });
+
+describe('runBranchStatusEngine decision branches (keep, delete, unknown)', () => {
+	const workspaceRoot = '/ws';
+	const BASE = 'develop';
+	const WORKTREE_LIST = [
+		'worktree /ws/.cache/delendai/.worktrees/orion',
+		'HEAD def5678',
+		'branch refs/heads/agent/orion',
+	].join('\n');
+
+	/** A repository answering the questions the engine asks, one override per verb. */
+	const repo = (
+		answers: Partial<{
+			readonly status: IGitRunResult;
+			readonly log: IGitRunResult;
+			readonly revList: IGitRunResult;
+			readonly merged: IGitRunResult;
+			readonly gap: IGitRunResult;
+			readonly worktrees: IGitRunResult;
+		}> = {},
+	): IGitRunner => {
+		const ok = (output: string): IGitRunResult => ({ ok: true, output });
+		return (args) => {
+			if (args[0] === 'branch' && args.includes('--merged'))
+				return Promise.resolve(answers.merged ?? ok(''));
+			if (args[0] === 'branch')
+				return Promise.resolve(ok('  agent/orion'));
+			if (args[0] === 'worktree')
+				return Promise.resolve(answers.worktrees ?? ok(WORKTREE_LIST));
+			if (args[0] === '-C')
+				return Promise.resolve(answers.status ?? ok(''));
+			if (args[0] === 'log')
+				return Promise.resolve(answers.log ?? ok('1735000000'));
+			if (args[0] === 'rev-list' && args[1] === '--left-right')
+				return Promise.resolve(answers.revList ?? ok('0\t0'));
+			if (args[0] === 'rev-list')
+				return Promise.resolve(answers.gap ?? ok('0'));
+			return Promise.resolve(ok('abcdef0'));
+		};
+	};
+
+	const snapshotOf = async (run: IGitRunner) => {
+		const result = await runBranchStatusEngine({
+			run,
+			workspaceRoot,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		if (!result.ok) throw new Error(result.reason);
+		return result;
+	};
+
+	it('reports a branch reachable from base with no unique commit as merged (delete)', async () => {
+		const snapshot = await snapshotOf(
+			repo({ merged: { ok: true, output: '  agent/orion' } }),
+		);
+		expect(snapshot.branches[0]?.mergedIntoBase).toBe(true);
+	});
+
+	it('keeps a branch as unmerged when the base gap cannot be counted (unknown is never merged)', async () => {
+		const snapshot = await snapshotOf(
+			repo({
+				merged: { ok: true, output: '  agent/orion' },
+				gap: { ok: false, output: '', reason: 'lock held' },
+			}),
+		);
+		expect(snapshot.branches[0]?.mergedIntoBase).toBe(false);
+	});
+
+	it('keeps a branch as unmerged when the gap is not a number', async () => {
+		const snapshot = await snapshotOf(
+			repo({
+				merged: { ok: true, output: '  agent/orion' },
+				gap: { ok: true, output: 'garbled' },
+			}),
+		);
+		expect(snapshot.branches[0]?.mergedIntoBase).toBe(false);
+	});
+
+	it('marks a worktree whose status cannot be read instead of calling it clean', async () => {
+		const snapshot = await snapshotOf(
+			repo({ status: { ok: false, output: '', reason: 'locked' } }),
+		);
+		const worktree = snapshot.worktrees[0];
+		expect(worktree?.statusUnreadable).toBe(true);
+		expect(worktree?.dirtyFiles).toBe(0);
+	});
+
+	it('reports an unreadable commit time as -1 minutes and an unknown age', async () => {
+		const snapshot = await snapshotOf(
+			repo({ log: { ok: false, output: '' } }),
+		);
+		expect(snapshot.branches[0]?.lastCommitMinutesAgo).toBe(-1);
+	});
+
+	it('treats an ahead/behind count it cannot read as zero on both sides', async () => {
+		const snapshot = await snapshotOf(
+			repo({ revList: { ok: true, output: 'one' } }),
+		);
+		expect(snapshot.branches[0]).toMatchObject({ ahead: 0, behind: 0 });
+	});
+
+	it('fails with a reason when the worktree list cannot be read', async () => {
+		const result = await runBranchStatusEngine({
+			run: repo({
+				worktrees: {
+					ok: false,
+					output: '',
+					reason: 'not a repository',
+				},
+			}),
+			workspaceRoot,
+			baseBranch: BASE,
+			now: FIXED_NOW,
+		});
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.reason).toContain('not a repository');
+	});
+});

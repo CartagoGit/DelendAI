@@ -69,4 +69,25 @@ describe('progress weighting', () => {
 		);
 		expect(aggregateProgress([])).toBe(0);
 	});
+
+	it('sums in one order whatever order slices the locale ties arrive in', () => {
+		// Canonically equivalent ids: `localeCompare` answers 0 for every
+		// pair, and a float sum's last bit depends on the order.
+		const slices = [
+			{ sliceId: '\u00c5', progress: 0.1, weight: 1 },
+			{ sliceId: 'A\u030a', progress: 0.2, weight: 1 },
+			{ sliceId: '\u212b', progress: 0.3, weight: 1 },
+		];
+		const orders = [
+			[0, 1, 2],
+			[0, 2, 1],
+			[1, 0, 2],
+			[1, 2, 0],
+			[2, 0, 1],
+			[2, 1, 0],
+		].map((order) =>
+			aggregateProgress(order.map((index) => slices[index]!)),
+		);
+		expect(new Set(orders).size).toBe(1);
+	});
 });

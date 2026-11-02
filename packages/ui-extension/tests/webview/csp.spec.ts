@@ -16,6 +16,7 @@ import {
 	resolveCspPolicy,
 	withCsp,
 	type IWebviewCspPolicy,
+	SCRIPT_NONCE,
 } from '../../src/webview/csp';
 
 describe('DEFAULT_DENY', () => {
@@ -55,7 +56,7 @@ describe('resolveCspPolicy', () => {
 	it('replaces (not appends) overridden directives', () => {
 		const policy = resolveCspPolicy('toolbar');
 		// override is `script-src 'unsafe-inline'` — exactly that, no 'none'.
-		expect(policy.scriptSrc).toEqual(["'unsafe-inline'"]);
+		expect(policy.scriptSrc).toEqual([SCRIPT_NONCE]);
 		expect(policy.scriptSrc).not.toContain("'none'");
 		expect(policy.connectSrc).toEqual(["'self'"]);
 		// untouched directives keep the default-deny value.
@@ -149,5 +150,33 @@ describe('WEBVIEW_CSP_OVERRIDES coverage', () => {
 		]) {
 			expect(WEBVIEW_CSP_OVERRIDES.has(name)).toBe(true);
 		}
+	});
+});
+
+describe('injectCspMeta with a script nonce', () => {
+	const policy = { ...DEFAULT_DENY, scriptSrc: [SCRIPT_NONCE] };
+	const html =
+		'<html><head></head><body><script>run()</script><SCRIPT src="a.js"></SCRIPT></body></html>';
+
+	it('allows only the document scripts, by a nonce drawn for it', () => {
+		const out = injectCspMeta(html, policy);
+		const nonce = /'nonce-([0-9a-f]+)'/u.exec(out)?.[1];
+		expect(nonce).toBeDefined();
+		expect(out).not.toContain("script-src 'unsafe-inline'");
+		expect(
+			out.match(new RegExp(`<script nonce="${String(nonce)}"`, 'giu')),
+		).toHaveLength(2);
+		expect(injectCspMeta(html, policy)).not.toContain(
+			`nonce-${String(nonce)}`,
+		);
+	});
+
+	it('escapes the header, so a quote in a source cannot end the attribute', () => {
+		const out = injectCspMeta(html, {
+			...DEFAULT_DENY,
+			connectSrc: ['https://a.test/"><script>x()</script>'],
+		});
+		expect(out).toContain('&quot;&gt;&lt;script&gt;');
+		expect(out).not.toContain('"><script>x()');
 	});
 });

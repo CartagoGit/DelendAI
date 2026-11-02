@@ -54,6 +54,7 @@ export const SOURCE_PREFIXES = [
 export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'lint-biome',
+		docs: 'skip', // Biome formats and lints code and JSON, not Markdown.
 		touches: 'always',
 		because:
 			'formatting and lint rules apply to every file in the repo, including the ones a docs-only change touches.',
@@ -142,6 +143,12 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
 	},
 	{
+		job: 'wake-the-queue',
+		touches: 'always',
+		because:
+			'it wakes the queue when a publication goes green, which no file change describes.',
+	},
+	{
 		job: 'develop-protection-live',
 		touches: 'always',
 		because:
@@ -155,11 +162,13 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'manifests-check',
+		docs: 'skip', // a manifest is built from plugin code.
 		touches: 'always',
 		because: 'plugin manifests are derived from every plugin at once.',
 	},
 	{
 		job: 'metrics-gate',
+		docs: 'skip', // no Markdown reaches the build it measures.
 		touches: 'always',
 		because:
 			'it compares a snapshot of the whole build against a baseline; a subset snapshot is not comparable to it.',
@@ -185,6 +194,8 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'sqlite-cutover-ready',
 		touches: [
 			'packages/state-sqlite/',
+			'packages/state/',
+			'tools/scripts/state/',
 			'packages/proposals-sqlite/',
 			'packages/sqlite/',
 			'plugins/proposals/',
@@ -193,7 +204,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'bun.lock',
 		],
 		because:
-			'it runs the bun-only SQLite suite and the cutover gate over the SQLite packages and their fixtures. The one spec that reads the real proposal tree also runs in lint-governance on every change, so a proposal edit alone does not need this job; every pull request edits a proposal, and this job ran on all of them.',
+			'it runs the bun-only SQLite suite, the cutover gate over the SQLite packages and their fixtures, and the driver parity sampler, which compares the in-memory driver (packages/state) with the SQLite one. The one spec that reads the real proposal tree also runs in lint-governance on every change, so a proposal edit alone does not need this job; every pull request edits a proposal, and this job ran on all of them.',
 	},
 	{
 		job: 'delendai-rebuild-digest',
@@ -203,7 +214,17 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'pack-smoke',
+		// What can change what a tarball holds or whether it installs: a
+		// manifest, the lockfile, the build configuration and scripts, and
+		// the entry files that are the export surface. A change inside an
+		// existing module cannot, and typecheck compiles it.
+		matches:
+			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$)|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
 		touches: [
+			// The scripts it runs: a change to how dist is built or packed
+			// is a change to what the tarball holds.
+			'tools/scripts/compile/',
+			'tools/scripts/smoke/pack.script.ts',
 			'packages/',
 			'plugins/',
 			'apps/shared/',
@@ -217,6 +238,8 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'build-clean',
 		touches: [
+			// The scripts it runs, build and build-clean among them.
+			'tools/scripts/compile/',
 			'packages/',
 			'plugins/',
 			'apps/',

@@ -481,7 +481,12 @@ export const buildKpiSnapshot = async (
 		generatedAt,
 		windowDays,
 		health: await buildHealthSection(options, generatedAt),
-		usage: await buildUsageSection(options, generatedAt, windowDays, nowMs),
+		usage: await buildUsageSection(
+			options,
+			generatedAt,
+			options.usageSpanDays ?? windowDays,
+			nowMs,
+		),
 		delivery: buildDeliverySection(),
 		...(workflow !== undefined ? { workflow } : {}),
 	} satisfies Omit<IKpiSnapshot, 'bytes' | 'truncated' | 'originalBytes'>;

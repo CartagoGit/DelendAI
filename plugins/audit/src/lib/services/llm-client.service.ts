@@ -413,33 +413,6 @@ export const callLlm = async (
 };
 
 // ---------------------------------------------------------------------------
-// Fan-out
-// ---------------------------------------------------------------------------
-
-/**
- * Dispatch one brief to N targets in parallel. Uses
- * `Promise.allSettled` semantics: the function never throws on a
- * provider failure — every target resolves to an {@link ILlmCallOutcome}.
- *
- * Concurrency is bounded to the lesser of the target list length and
- * 4 — beyond that, a host with many cores is rarely going to
- * benefit and we'd just be hammering providers with simultaneous
- * cold-start handshakes. The cap is documented in
- * `IPlanToolOptions` so hosts can override.
- */
-export const callLlmFanOut = async (
-	targets: readonly IModelTarget[],
-	brief: string,
-	options: ILlmClientOptions = {},
-): Promise<readonly ILlmCallOutcome[]> => {
-	const bounded = targets.slice(0, 4);
-	const results = await Promise.all(
-		bounded.map((t) => callLlm(t, brief, options)),
-	);
-	return results;
-};
-
-// ---------------------------------------------------------------------------
 // Filename helpers
 // ---------------------------------------------------------------------------
 

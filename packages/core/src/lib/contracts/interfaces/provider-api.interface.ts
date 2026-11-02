@@ -2,9 +2,10 @@
  * provider-api.interface.ts — calling a provider's API directly, through
  * the family its catalogue entry names.
  */
+import type { PROVIDER_API_FAMILY_IDS } from '../constants/provider-api-families.constant';
 
 /** The wire protocols delendai speaks to a provider. */
-export type IProviderApiFamily = 'openai' | 'anthropic';
+export type IProviderApiFamily = (typeof PROVIDER_API_FAMILY_IDS)[number];
 
 /** What is needed to call one provider: where, how, and which variable holds the key. */
 export interface IProviderEndpoint {

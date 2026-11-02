@@ -19,6 +19,8 @@ import {
 
 import z from 'zod';
 
+import { TASK_QUEUE_DEFAULT_LEASE_MS } from '../contracts/constants/task-queue-limits.constant';
+
 // ---------------------------------------------------------------------------
 // Error codes
 // ---------------------------------------------------------------------------
@@ -122,6 +124,10 @@ export interface IPersistentTaskEntry {
 	consumedAt?: string;
 	cancelledAt?: string;
 	expiresAt?: string;
+	/** Until when the worker that dequeued the task holds it. */
+	leaseUntil?: string;
+	/** How many times the task went back to the queue after a lapsed lease. */
+	reclaims?: number;
 }
 
 export interface IPersistentTaskQueue {
@@ -233,6 +239,8 @@ const PersistentTaskEntrySchema = z.object({
 	consumedAt: z.string().optional(),
 	cancelledAt: z.string().optional(),
 	expiresAt: z.string().optional(),
+	leaseUntil: z.string().optional(),
+	reclaims: z.number().int().nonnegative().optional(),
 });
 
 const PersistentTaskQueueSchema = z.object({
@@ -495,6 +503,69 @@ export const enqueue = (
 };
 
 // ---------------------------------------------------------------------------
+// leases — a dequeued task belongs to its worker for a while, not forever
+// ---------------------------------------------------------------------------
+
+/** `entry`, consumed by a worker that holds it until `leaseMs` from now. */
+export const leaseEntry = (
+	entry: IPersistentTaskEntry,
+	nowMs: number,
+	leaseMs: number = TASK_QUEUE_DEFAULT_LEASE_MS,
+): IPersistentTaskEntry => ({
+	...entry,
+	status: 'consumed',
+	consumedAt: new Date(nowMs).toISOString(),
+	leaseUntil: new Date(nowMs + leaseMs).toISOString(),
+});
+
+/** Whether `entry` is held by a worker whose lease has not lapsed. */
+export const isLeaseLive = (
+	entry: IPersistentTaskEntry,
+	nowMs: number,
+): boolean =>
+	entry.status === 'consumed' &&
+	entry.leaseUntil !== undefined &&
+	Date.parse(entry.leaseUntil) > nowMs;
+
+/**
+ * Return to the queue every consumed task whose worker's lease lapsed
+ * without the task closing. A consumed task used to be gone for good:
+ * the worker that died with it was the only one that would ever run it.
+ * A task consumed before leases existed carries none and is left alone.
+ */
+export const reclaimLapsedLeases = (
+	queue: IPersistentTaskQueue,
+	closedTaskIds: ReadonlySet<string>,
+	nowMs: number,
+): { readonly queue: IPersistentTaskQueue; readonly reclaimed: string[] } => {
+	const reclaimed: string[] = [];
+	const entries = queue.entries.map((entry) => {
+		if (
+			entry.status !== 'consumed' ||
+			entry.leaseUntil === undefined ||
+			Date.parse(entry.leaseUntil) > nowMs ||
+			closedTaskIds.has(entry.taskId)
+		) {
+			return entry;
+		}
+		reclaimed.push(entry.taskId);
+		const { consumedAt: _consumed, leaseUntil: _lease, ...rest } = entry;
+		return {
+			...rest,
+			status: 'queued' as const,
+			reclaims: (entry.reclaims ?? 0) + 1,
+		};
+	});
+	return { queue: { ...queue, entries }, reclaimed };
+};
+
+/** Tasks still waiting to be worked: queued or promoted. */
+export const liveTaskCount = (queue: IPersistentTaskQueue): number =>
+	queue.entries.filter(
+		(entry) => entry.status === 'queued' || entry.status === 'promoted',
+	).length;
+
+// ---------------------------------------------------------------------------
 // dequeue — mutates entry to consumed
 // ---------------------------------------------------------------------------
 
@@ -513,11 +584,7 @@ export const dequeue = async (
 		);
 	}
 
-	const updated: IPersistentTaskEntry = {
-		...queue.entries[idx]!,
-		status: 'consumed',
-		consumedAt: new Date().toISOString(),
-	};
+	const updated = leaseEntry(queue.entries[idx]!, Date.now());
 
 	const entries = [...queue.entries];
 	entries[idx] = updated;

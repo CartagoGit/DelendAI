@@ -38,6 +38,7 @@ const ENGLISH: IOfferMessages = {
 		'seen-models': 'Models your chats used',
 		'plan-tool': 'Plan tool',
 		'local-endpoint': 'Server on this machine',
+		'host-byok': 'Model your editor serves on your key',
 	},
 	subject: (finding: IAccountFinding) => {
 		const name = finding.subject ?? finding.displayName;
@@ -55,6 +56,7 @@ const ENGLISH: IOfferMessages = {
 		'official-subscription-login': 'logged in with a subscription',
 		'provider-plan-token': 'a plan token',
 		'byok-api-key': 'your own API key',
+		'host-held': 'your key, kept by your editor',
 		'local-none': 'no credential',
 	},
 	billingModes: {
@@ -144,6 +146,7 @@ const SPANISH: IOfferMessages = {
 		'seen-models': 'Modelos que usaron tus chats',
 		'plan-tool': 'Herramienta de plan',
 		'local-endpoint': 'Servidor en esta máquina',
+		'host-byok': 'Modelo que tu editor sirve con tu clave',
 	},
 	subject: (finding: IAccountFinding) => {
 		const name = finding.subject ?? finding.displayName;
@@ -162,6 +165,7 @@ const SPANISH: IOfferMessages = {
 		'official-subscription-login': 'sesión con suscripción',
 		'provider-plan-token': 'token de un plan',
 		'byok-api-key': 'tu propia clave de API',
+		'host-held': 'tu clave, guardada por tu editor',
 		'local-none': 'sin credencial',
 	},
 	billingModes: {

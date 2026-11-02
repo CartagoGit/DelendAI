@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'issues',
 	package: '@delendai/issues',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',
@@ -32,11 +32,11 @@ export default definePluginManifest({
 		setup_github: ['forge-write', 'network', 'secrets'],
 	},
 	tokenBudget: {
-		staticBytes: 4_900,
+		staticBytes: 822,
 		adaptiveActivationBytes: 880,
 		typicalOutput: 1_300,
-		caps: { hard: 5_900, warning: 5_300 },
-		measuredAt: '2026-08-25',
+		caps: { hard: 950, warning: 870 },
+		measuredAt: '2026-11-01',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

@@ -335,4 +335,34 @@ describe('createRemoteHttpClient', () => {
 			}),
 		).rejects.toMatchObject({ code: 'invalid-response' });
 	});
+
+	it('sends nothing, and no token, to a path outside its base', async () => {
+		const called: string[] = [];
+		const client = createRemoteHttpClient(
+			{
+				provider: 'gitlab',
+				baseUrl: 'https://gitlab.example/api/v4',
+				token: 'secret-token',
+			},
+			{
+				fetchFn: async (url) => {
+					called.push(url);
+					return new Response('{}', { status: 200 });
+				},
+			},
+		);
+		for (const path of [
+			'https://evil.example/steal',
+			'//evil.example/steal',
+			'../../steal',
+		]) {
+			await expect(client.request({ path })).rejects.toMatchObject({
+				code: 'invalid-config',
+			});
+		}
+		expect(called).toEqual([]);
+
+		await client.request({ path: '/projects' });
+		expect(called).toEqual(['https://gitlab.example/api/v4/projects']);
+	});
 });

@@ -48,6 +48,34 @@ const refusalOf = (result: {
 	return result.content?.[0]?.text ?? 'the transition was refused';
 };
 
+/** The gates a verdict's transition must apply as the project set them. */
+type IVerdictGatePolicy = Pick<
+	IProposalTransitionToolOptions,
+	| 'peerReviewLogPathAbs'
+	| 'requirePeerReview'
+	| 'reviewIndependence'
+	| 'requireValidateEvidence'
+	| 'folderPolicy'
+	| 'validateEvidenceDeps'
+>;
+
+/**
+ * The project's gate settings, carried whole into the transition a
+ * verdict runs. Each was once copied by hand at the call site, and the
+ * one left out (what makes a reviewer independent) silently fell back
+ * to the transition's default.
+ */
+export const verdictGatePolicy = (
+	policy: {
+		readonly [K in keyof IVerdictGatePolicy]-?:
+			| IVerdictGatePolicy[K]
+			| undefined;
+	},
+): IVerdictGatePolicy =>
+	Object.fromEntries(
+		Object.entries(policy).filter(([, value]) => value !== undefined),
+	) as IVerdictGatePolicy;
+
 export const moveProposalAfterVerdict = async (input: {
 	readonly close: boolean;
 	readonly reopen: boolean;

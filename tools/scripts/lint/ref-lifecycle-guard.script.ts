@@ -376,13 +376,42 @@ const retireOnForge = (
 		}
 		if (kept !== sha) return false;
 	}
-	execFileSync('gh', [
-		'api',
-		'-X',
-		'DELETE',
-		`repos/${REPOSITORY_SLUG}/git/refs/heads/${name}`,
-	]);
-	return true;
+	return deleteForgeBranch(name) !== 'failed';
+};
+
+/**
+ * Delete a branch on the forge. One already gone is the outcome wanted,
+ * not a failure: a candidate merged and deleted between the listing and
+ * the deletion crashed the whole reap, and the queue run with it.
+ */
+export const deleteForgeBranch = (
+	name: string,
+	run: (args: readonly string[]) => void = (args) => {
+		execFileSync('gh', [...args], { stdio: ['ignore', 'pipe', 'pipe'] });
+	},
+	exists: (name: string) => boolean = (branch) => {
+		try {
+			ghScalar(
+				`repos/${REPOSITORY_SLUG}/git/ref/heads/${branch}`,
+				'.object.sha',
+			);
+			return true;
+		} catch {
+			return false;
+		}
+	},
+): 'deleted' | 'gone' | 'failed' => {
+	try {
+		run([
+			'api',
+			'-X',
+			'DELETE',
+			`repos/${REPOSITORY_SLUG}/git/refs/heads/${name}`,
+		]);
+		return 'deleted';
+	} catch {
+		return exists(name) ? 'failed' : 'gone';
+	}
 };
 
 const main = (): void => {
@@ -419,15 +448,15 @@ const main = (): void => {
 		});
 	const refs = observed.map((branch) => {
 		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
-			return { name: branch.name };
+			return { name: branch.name, sha: branch.sha };
 		}
 		const publishedIn = publishedInFor(branch, containers, contains);
 		// A work ref ends on the forge when what it holds is published,
 		// whether or not its proposal goes on: the unit is kept where it
 		// is worked on and pushes the ref again with its next commit.
 		return publishedIn === undefined
-			? { name: branch.name }
-			: { name: branch.name, publishedIn };
+			? { name: branch.name, sha: branch.sha }
+			: { name: branch.name, sha: branch.sha, publishedIn };
 	});
 	const pullRequests = (
 		gh(
@@ -437,7 +466,7 @@ const main = (): void => {
 			readonly state: string;
 			readonly merged_at: string | null;
 			readonly closed_at?: string | null;
-			readonly head: { readonly ref: string };
+			readonly head: { readonly ref: string; readonly sha: string };
 		}[]
 	).map((request) => {
 		const closedAt =
@@ -447,6 +476,7 @@ const main = (): void => {
 		return {
 			number: request.number,
 			headRefName: request.head.ref,
+			headSha: request.head.sha,
 			state: pullRequestState(request),
 			...(Number.isNaN(closedAt) ? {} : { closedAt }),
 		};
@@ -526,14 +556,19 @@ const main = (): void => {
 			);
 			continue;
 		}
-		execFileSync('gh', [
-			'api',
-			'-X',
-			'DELETE',
-			`repos/${REPOSITORY_SLUG}/git/refs/heads/${verdict.name}`,
-		]);
+		const outcome = deleteForgeBranch(verdict.name);
+		if (outcome === 'failed') {
+			console.log(
+				`ref-lifecycle: could not delete ${verdict.name} (${evidence}); the next run tries again.`,
+			);
+			continue;
+		}
 		deleted.add(verdict.name);
-		console.log(`ref-lifecycle: deleted ${verdict.name} (${evidence}).`);
+		console.log(
+			outcome === 'gone'
+				? `ref-lifecycle: ${verdict.name} was already gone (${evidence}).`
+				: `ref-lifecycle: deleted ${verdict.name} (${evidence}).`,
+		);
 	}
 
 	// A publication closed without merging is retired, not deleted: its tip

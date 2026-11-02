@@ -509,6 +509,14 @@ const main = async (): Promise<number> => {
 	// downstream takes the resolved root as an argument.
 	const workspaceRoot = options.workspace ?? process.cwd();
 	const discovered = await discoverPlugins(workspaceRoot);
+	// Zero plugins verified is not zero failures: a wrong cwd or a renamed
+	// folder exited 0 having checked nothing.
+	if (discovered.length === 0 && options.pluginFilter === undefined) {
+		console.error(
+			`✖ verify:tools: no plugin was discovered under ${workspaceRoot}/plugins; nothing was verified.`,
+		);
+		return 1;
+	}
 	const list =
 		options.pluginFilter !== undefined
 			? [options.pluginFilter]

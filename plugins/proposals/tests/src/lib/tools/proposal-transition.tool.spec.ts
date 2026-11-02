@@ -687,6 +687,67 @@ describe('proposal_transition', async () => {
 			expect(entry.from).toBe('done');
 			expect(entry.to).toBe('review');
 			expect(entry.caller.agent).toBe('agent-s1');
+			expect(entry.via).toBe('force');
+			expect(entry.skippedGates).toEqual(['state-machine']);
+		});
+
+		it('records each gate a forced hand-over to review skipped', async () => {
+			await writeProposal(root, 'in-progress', 'f91005-forced.md', {
+				id: 'f91005',
+				status: 'in-progress',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91005',
+					to: 'review',
+					reason: 'its files are restored in the next commit',
+					force: true,
+					agent: 'agent-s1',
+				},
+				options,
+			);
+			expect(result.isError).toBeUndefined();
+			const entry = JSON.parse(
+				(
+					await readFile(
+						join(root, '.cache', 'delendai', 'proposals-state.log'),
+						'utf8',
+					)
+				).trim(),
+			);
+			expect(entry).toMatchObject({
+				proposalId: 'f91005',
+				via: 'force',
+				skippedGates: ['review-entry'],
+			});
+		});
+
+		it('refuses force when the project reserves it to people, and records nothing', async () => {
+			await writeProposal(root, 'done', 'f91006-regress.md', {
+				id: 'f91006',
+				status: 'done',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91006',
+					to: 'review',
+					reason: 're-open after post-ship audit',
+					force: true,
+					agent: 'agent-s1',
+				},
+				{ ...options, forceTransitions: 'people' },
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('force-reserved-to-people');
+			await expect(
+				readFile(
+					join(root, '.cache', 'delendai', 'proposals-state.log'),
+				),
+			).rejects.toThrow();
+			await expect(
+				readFile(join(root, 'done', 'f91006-regress.md'), 'utf8'),
+			).resolves.toContain('status: done');
 		});
 
 		it('blocks done -> review with force and blank reason', async () => {

@@ -10,6 +10,7 @@ import {
 	readLock,
 	type ILockEntry,
 } from '../locks/agent-lock-engine';
+import { deriveFileLockTablePath } from '../locks/file-lock-table';
 import { readWaitDiagnostics } from '../locks/wait-registry-reader';
 
 const ZOMBIE_AGE_MS = 30_000;
@@ -175,8 +176,9 @@ const diagnoseAgentsLock = async (
 	options: IAgentsLockDiagnoseToolOptions,
 ): Promise<z.infer<typeof AGENTS_LOCK_DIAGNOSE_OUTPUT_SCHEMA>> => {
 	const nowMs = Date.now();
+	// The claims' one critical section is keyed on the file-lock table.
 	const lock = await withFileMutex(
-		options.lockPathAbs,
+		deriveFileLockTablePath(options.lockPathAbs),
 		() => readLock({ lockPath: options.lockPathAbs }),
 		{ onContention: 'fail', timeoutMs: 10_000 },
 	);

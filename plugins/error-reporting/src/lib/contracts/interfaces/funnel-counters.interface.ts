@@ -16,6 +16,8 @@ export interface IFunnelCounters {
 	readonly privacyBlocked: number;
 	readonly deduplicated: number;
 	readonly rateLimited: number;
+	/** Reports not dispatched because the report store could not be read: a failure, not a duplicate. */
+	readonly dispatchUnclaimed: number;
 	readonly submissionAttempted: number;
 	readonly submissionSucceeded: number;
 	readonly submissionFailed: number;

@@ -16,13 +16,17 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { toolError, toolOk } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	deriveDefaultProtectedBranches,
+	toolError,
+	toolOk,
+} from '@delendai/core/public';
 import { withOkEnvelope } from '@delendai/core/plugin';
 
 import { STATUS_OUTPUT_SCHEMA } from '../contracts/constants/status-tool.constant';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
-import { isBranchProtected } from '../contracts/branch';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import { localizedString } from '../contracts/i18n-types';
 import type { IIdentityResolverContext } from '../identity/resolver';
@@ -31,6 +35,7 @@ import {
 	gitCurrentBranch,
 	gitUnpushedCommitCount,
 } from '../services/git-extra';
+import { directPushRefusal } from '../services/push-driver';
 import type { BranchProtectionAdapter } from '../services/branch-protection-adapter';
 
 export interface IStatusToolOptions {
@@ -38,6 +43,8 @@ export interface IStatusToolOptions {
 	readonly options: ICommitPolicyOptions;
 	readonly identityCtx: IIdentityResolverContext;
 	readonly branchProtectionAdapter?: BranchProtectionAdapter | undefined;
+	/** The resolved development policy; the push decision reads it exactly as the engine does. */
+	readonly development?: IResolvedDevelopmentPolicy | undefined;
 	/** BCP-47 locale tag (`en`, `es`, …). Defaults to English. */
 	readonly locale?: string | undefined;
 }
@@ -51,15 +58,20 @@ export const runCommitPolicyStatus = async (
 	);
 	const currentBranch = await gitCurrentBranch(options.identityCtx.run);
 	const protectedBranches = resolveProtectedBranches(
-		options.options.push.protectedBranches,
+		options.options.push.protectedBranches ??
+			deriveDefaultProtectedBranches(options.development),
 	);
 	const protectedPrefixes = [
 		...(options.options.push.protectedPrefixes ?? []),
 	];
-	const currentBranchProtected = isBranchProtected(currentBranch, {
-		protected: protectedBranches,
-		protectedPrefixes,
-	});
+	// The engine's own decision (push-driver), not a second copy of it.
+	const currentBranchProtected =
+		currentBranch !== undefined &&
+		directPushRefusal(
+			currentBranch,
+			options.options.push,
+			options.development,
+		) !== undefined;
 	const remoteProtection = options.branchProtectionAdapter?.getLastResult();
 
 	// S3: live ahead/upstream state for the status tool.

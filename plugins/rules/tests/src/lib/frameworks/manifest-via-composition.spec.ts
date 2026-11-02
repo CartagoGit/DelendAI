@@ -96,6 +96,23 @@ describe('manifest-via-composition (DIP, S)', async () => {
 		]);
 	});
 
+	it('finds an area under services/, as the legacy builder did', async () => {
+		const reader = readerFromFiles({
+			'package.json': JSON.stringify({ name: 'demo' }),
+			'services/api/Cargo.toml': '[package]\nname = "api"',
+		});
+		const manifest = await buildManifestViaComposition(
+			reader,
+			'demo',
+			'.cache/delendai/rules',
+			'mixed',
+			buildRoot(),
+		);
+		expect(manifest.projects.demo?.['services/api']?.presetId).toBe(
+			'rust-clippy',
+		);
+	});
+
 	it('honours an area override (S — override is a separate concern)', async () => {
 		const reader = readerFromFiles({
 			'package.json': JSON.stringify({ name: 'demo' }),

@@ -18,6 +18,10 @@ export interface DelendaiDocsDocsGenerateOutput {
 		path: string;
 		markdown: string;
 	}[];
+	unreadable: {
+		path: string;
+		reason: string;
+	}[];
 }
 
 export interface DelendaiDocsDocsListOutput {

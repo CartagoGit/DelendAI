@@ -34,6 +34,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
+
 import { repoRoot } from '../lib/repo-root';
 
 import { DEFAULT_PROTECTED } from './reclaim-local.constant';
@@ -153,9 +155,13 @@ const git = (args: readonly string[]): string =>
 /** The branch names the project's policy protects. */
 const protectedBranches = (): readonly string[] => {
 	try {
-		const parsed = JSON.parse(
+		const { value, errors } = parseJsonc(
 			readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-		) as {
+		);
+		// A config that does not parse declares no branches: the defaults
+		// stand, exactly as they did when the read threw.
+		if (errors.length > 0) return DEFAULT_PROTECTED;
+		const parsed = value as {
 			readonly development?: {
 				readonly branches?: {
 					readonly integration?: string;

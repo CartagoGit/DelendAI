@@ -17,8 +17,9 @@ Registers `<prefix>_web_fetch`.
 - **`<prefix>_web_fetch`** `{ url, maxBytes?, timeoutMs? }` →
   `{ ok, url, status, contentType, body, truncated }` on success, or
   `{ ok: false, reason, detail? }` on failure.
-  `reason` is one of `blocked-host`, `invalid-url`, `redirect-blocked`,
-  `too-many-redirects`, `timeout`, `fetch-error`.
+  `reason` is one of `blocked-host`, `blocked-address`, `invalid-url`,
+  `redirect-blocked`, `redirect-invalid`, `too-many-redirects`,
+  `timeout`, `fetch-error`.
 
 ## Configuration (`delendai.config.json`)
 
@@ -28,7 +29,8 @@ Registers `<prefix>_web_fetch`.
 
 `allowList` accepts exact hostnames and `*.suffix` wildcards. **An
 empty/missing allow-list rejects every call** — the plugin fails closed,
-not open.
+not open. `allowPrivateAddresses: true` lets an allow-listed name resolve
+to a private address, for an intranet host.
 
 ## Security model
 
@@ -37,6 +39,14 @@ not open.
   disabled (`redirect: 'manual'`); each hop is re-validated before being
   followed, so an allow-listed URL that redirects to a non-allow-listed
   host is rejected (`reason: 'redirect-blocked'`), not silently followed.
+- The host of the URL and of every hop is **resolved**, and each address
+  it answers is checked: a name that resolves to a private, loopback,
+  link-local or unspecified address is refused (`reason:
+  'blocked-address'`), so an allow-listed name pointed at `127.0.0.1` or
+  a metadata address does not reach inside the machine. Allow-listing a
+  literal address or `localhost` is the opt-in for that address; the
+  `allowPrivateAddresses` option is the opt-in for every name.
+- A `Location` that is not a URL returns `reason: 'redirect-invalid'`.
 - Response bodies are capped at `maxBytes` (default 50 KiB,
   configurable per call); a capped response returns `truncated: true`,
   not a failure.
@@ -45,11 +55,11 @@ not open.
 
 ### Out of scope (host-level concerns)
 
-DNS-rebinding and IPv6/`localhost`-equivalent bypass of the hostname check
-are **not** mitigated by this plugin — a hostname can resolve to a
-different IP between the allow-list check and the actual connection. If
-your deployment needs that guarantee, enforce it at the network layer
-(e.g. an egress proxy/firewall), not in this plugin.
+The connection resolves the name again: a resolver that answers a public
+address to the check and a private one to the connection, within that
+instant, is not caught here — the runtime's `fetch` takes no pinned
+address. If your deployment needs that guarantee, enforce it at the
+network layer (an egress proxy or firewall).
 
 ## Scope
 

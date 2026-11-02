@@ -59,10 +59,16 @@ export const buildDocsToolRegistrations = (
 						limit?: number | undefined;
 						offset?: number | undefined;
 					}) => {
+						// Pages are cut from the whole catalogue, so `total` is
+						// the real total; `truncated` says the catalogue itself
+						// stopped at its ceiling or at the configured maximum.
 						const { docs, truncated, diagnostic } = await listDocs(
 							options.workspaceRootAbs,
 							{
 								...defaults,
+								maxResults:
+									defaults.maxResults ??
+									Number.POSITIVE_INFINITY,
 								...(args.roots ? { roots: args.roots } : {}),
 							},
 						);

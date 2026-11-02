@@ -69,15 +69,42 @@ describe('completion tools', () => {
 			taskId: 't1',
 			summary: 'shipped the feature',
 			reviewEvidence: 'tests green + diff reviewed',
-		})) as { structuredContent: { ok: boolean; record: unknown } };
+		})) as {
+			structuredContent: {
+				ok: boolean;
+				record: unknown;
+				notified: boolean;
+			};
+		};
 
 		expect(result.structuredContent.ok).toBe(true);
+		expect(result.structuredContent.notified).toBe(true);
 		expect(messages).toHaveLength(1);
 		expect(messages[0]!.logger).toBe('completion_completion');
 		expect(
 			(messages[0]!.data as { event?: string; taskId?: string }).event,
 		).toBe('agent-complete');
 		expect((messages[0]!.data as { taskId?: string }).taskId).toBe('t1');
+	});
+
+	it('report_complete keeps the record and says so when the host refuses the notification', async () => {
+		const tools = new Map<string, IFakeRegisteredTool>();
+		const server = createFakeToolServer({
+			onRegisterTool: (call) => tools.set(call.name, call),
+			onSendLoggingMessage: () => {
+				throw new Error('no logging channel');
+			},
+		});
+		await buildReportCompleteRegistration(options(dir)).register(server);
+		const result = (await tools.get('completion_report_complete')!.handler({
+			taskId: 't2',
+			summary: 'done',
+			reviewEvidence: 'tests green',
+		})) as { structuredContent: { ok: boolean; notified: boolean } };
+		expect(result.structuredContent).toMatchObject({
+			ok: true,
+			notified: false,
+		});
 	});
 
 	it('report_complete redacts secrets before persisting', async () => {

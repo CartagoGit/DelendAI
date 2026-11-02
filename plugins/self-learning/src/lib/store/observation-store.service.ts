@@ -30,7 +30,7 @@ import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
 import { realpathContained } from '@delendai/core/public';
-import { writeFileAtomic } from '@delendai/core/runtime';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
 	OBSERVATION_KINDS,
@@ -141,26 +141,6 @@ export const appendObservations = async (
 	incoming: readonly IObservation[],
 ): Promise<IObservationWriteResult> => {
 	const max = options.maxObservations ?? DEFAULT_MAX_OBSERVATIONS;
-	const existing = await readObservations(options);
-	const seen = new Set(existing.map(identityOf));
-
-	const accepted: IObservation[] = [];
-	let skipped = 0;
-	for (const observation of incoming) {
-		const identity = identityOf(observation);
-		if (seen.has(identity)) {
-			skipped += 1;
-			continue;
-		}
-		seen.add(identity);
-		accepted.push(observation);
-	}
-
-	const combined = [...existing, ...accepted].sort(
-		(left, right) => left.atMs - right.atMs,
-	);
-	const compacted = Math.max(0, combined.length - max);
-	const kept = compacted > 0 ? combined.slice(compacted) : combined;
 
 	// PHYSICAL containment before the directory is created and
 	// the store is rewritten. `filePath` is lexically contained at
@@ -173,21 +153,48 @@ export const appendObservations = async (
 		);
 	}
 	await mkdir(dirname(options.filePath), { recursive: true });
-	// Atomic, per the repo's durable-writes rule: this rewrite is the one
-	// moment the whole store is in flight, and a process killed halfway
-	// through a plain write leaves a truncated file that the next read
-	// would silently treat as a smaller store.
-	await writeFileAtomic(
-		options.filePath,
-		kept.length > 0 ? `${kept.map(serialise).join('\n')}\n` : '',
-	);
 
-	return {
-		appended: accepted.length,
-		skipped,
-		total: kept.length,
-		compacted,
-	};
+	// The read, the merge and the rewrite are one critical section: two
+	// collectors appending at once would otherwise each rewrite the file
+	// from the same snapshot and one of them would lose its observations.
+	return withFileMutex(options.filePath, async () => {
+		const existing = await readObservations(options);
+		const seen = new Set(existing.map(identityOf));
+
+		const accepted: IObservation[] = [];
+		let skipped = 0;
+		for (const observation of incoming) {
+			const identity = identityOf(observation);
+			if (seen.has(identity)) {
+				skipped += 1;
+				continue;
+			}
+			seen.add(identity);
+			accepted.push(observation);
+		}
+
+		const combined = [...existing, ...accepted].sort(
+			(left, right) => left.atMs - right.atMs,
+		);
+		const compacted = Math.max(0, combined.length - max);
+		const kept = compacted > 0 ? combined.slice(compacted) : combined;
+
+		// Atomic, per the repo's durable-writes rule: this rewrite is the
+		// one moment the whole store is in flight, and a process killed
+		// halfway through a plain write leaves a truncated file that the
+		// next read would silently treat as a smaller store.
+		await writeFileAtomic(
+			options.filePath,
+			kept.length > 0 ? `${kept.map(serialise).join('\n')}\n` : '',
+		);
+
+		return {
+			appended: accepted.length,
+			skipped,
+			total: kept.length,
+			compacted,
+		};
+	});
 };
 
 /** Read with a filter applied. Newest first — recency is the question. */

@@ -9,7 +9,13 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import type { IRemoteProviderError } from '@delendai/contracts/remote-provider';
 
 import { GitHubRequestError } from '../client';
+import { allWorkflowRunJobs } from './workflow-run-jobs.helper';
 import type { IGitHubProviderContext } from '../config';
+import {
+	GITHUB_NUMBER_SCHEMA,
+	GITHUB_OWNER_SCHEMA,
+	GITHUB_REPOSITORY_SCHEMA,
+} from '../contracts/constants/github-selectors.constant';
 
 type GitHubClient = { readonly request: (request: any) => Promise<any> };
 
@@ -176,8 +182,8 @@ const localEnvelopeSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 
 const repoSelectorSchema = z
 	.object({
-		owner: z.string().min(1).optional(),
-		repository: z.string().min(1).optional(),
+		owner: GITHUB_OWNER_SCHEMA.optional(),
+		repository: GITHUB_REPOSITORY_SCHEMA.optional(),
 	})
 	.strict();
 const pagingSchema = z
@@ -330,6 +336,8 @@ const workflowRunSchema = z
 					.strict(),
 			)
 			.optional(),
+		/** False when jobs were left past the page bound. */
+		jobsComplete: z.boolean().optional(),
 	})
 	.strict();
 const jobSchema = z
@@ -861,7 +869,7 @@ export const buildGitHubRepositoriesToolRegistrations = (
 		z
 			.object({
 				query: z.string().min(1),
-				owner: z.string().min(1).optional(),
+				owner: GITHUB_OWNER_SCHEMA.optional(),
 				...pagingSchema.shape,
 			})
 			.strict(),
@@ -982,10 +990,7 @@ export const buildGitHubIssuesToolRegistrations = (
 		'Show one issue with its comments.',
 		repoSelectorSchema
 			.extend({
-				issue: z.union([
-					z.string().min(1),
-					z.number().int().positive(),
-				]),
+				issue: GITHUB_NUMBER_SCHEMA,
 			})
 			.strict(),
 		envelopeSchema(
@@ -1460,10 +1465,10 @@ export const buildGitHubWorkflowsToolRegistrations = (
 					path: `/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}`,
 					responseSchema: z.record(z.string(), z.unknown()),
 				}),
-				options.client.request({
-					path: `/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}/jobs`,
-					responseSchema: z.record(z.string(), z.unknown()),
-				}),
+				allWorkflowRunJobs(
+					options.client,
+					`/repos/${repo.owner}/${repo.repository}/actions/runs/${args.runId}/jobs`,
+				),
 			]);
 			return {
 				ok: true as const,
@@ -1471,9 +1476,8 @@ export const buildGitHubWorkflowsToolRegistrations = (
 				data: {
 					run: {
 						...mapWorkflowRun(runResult.data),
-						jobs: asArray(asRecord(jobsResult.data).jobs).map(
-							mapJob,
-						),
+						jobs: jobsResult.jobs.map(mapJob),
+						jobsComplete: jobsResult.complete,
 					},
 				},
 				meta: runResult.meta,

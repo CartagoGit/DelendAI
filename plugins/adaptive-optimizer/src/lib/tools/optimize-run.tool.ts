@@ -79,6 +79,7 @@ const RankedSchema = z.object({
 
 export const OptimizeRunOutputSchema = z.object({
 	ranked: z.array(RankedSchema),
+	spent: z.number().nonnegative(),
 	budget: z.number().positive(),
 	consent: z.boolean(),
 	bytes: z.number(),

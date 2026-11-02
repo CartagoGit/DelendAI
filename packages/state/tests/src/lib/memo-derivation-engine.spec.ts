@@ -95,4 +95,41 @@ describe('createMemoDerivationEngine', () => {
 			inMemory.apply('nope', { inputs: [], fingerprint: 'x' }),
 		).rejects.toThrow(/Unknown derivation/u);
 	});
+
+	it('keeps one value per scope for the same fingerprint', async () => {
+		const other: StateScope = {
+			...scope,
+			locator: { ...scope.locator, worktreeId: asWorktreeId('wt-other') },
+		};
+		let derived = 0;
+		const engine = createMemoDerivationEngine({ scope, now: () => 5 });
+		engine.register({
+			name: 'count',
+			fingerprint: () => 'same',
+			derive: async () => {
+				derived += 1;
+				return { n: derived };
+			},
+		});
+		const inputUnder = (at: StateScope) => ({
+			inputs: [
+				{
+					key: { scope: at, kind: 'artifact' as const, id: 'a' },
+					value: 1,
+					contentHash: 'h',
+					createdAt: 1,
+					updatedAt: 1,
+					reconciledCommitSha: '',
+				},
+			],
+			fingerprint: 'x',
+		});
+		const here = await engine.apply('count', inputUnder(scope));
+		const there = await engine.apply('count', inputUnder(other));
+		expect(here.value).toEqual({ n: 1 });
+		expect(there.value).toEqual({ n: 2 });
+		expect((await engine.apply('count', inputUnder(scope))).value).toEqual({
+			n: 1,
+		});
+	});
 });

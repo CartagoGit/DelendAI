@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
 import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 import {
 	parseZoneReadMap,
+	readersOf,
+	onlyScriptsChanged,
 	runsEverything,
 	testRunnerChanged,
 	zonesReadingRootFiles,
@@ -171,6 +173,27 @@ describe('a workflow edit', () => {
 		expect(runsEverything(edited('.github/workflows/ci.yml'))).toBe(true);
 	});
 
+	it('lets prose reach only the zones that read it, and not configuration', () => {
+		for (const path of [
+			'README.md',
+			'CHANGELOG.md',
+			'LICENSE',
+			'.mailmap',
+			'.github/agents/delendai.agent.md',
+			'.github/SECURITY.md',
+		])
+			expect(runsEverything(edited(path))).toBe(false);
+		for (const path of [
+			'delendai.config.json',
+			'package.json',
+			'bun.lock',
+			'tsconfig.json',
+			'vitest.config.ts',
+			'.gitattributes',
+		])
+			expect(runsEverything(edited(path))).toBe(true);
+	});
+
 	it('still runs everything for a composite action, which every job uses', () => {
 		expect(
 			runsEverything({
@@ -178,5 +201,97 @@ describe('a workflow edit', () => {
 				runnerChanged: false,
 			}),
 		).toBe(true);
+	});
+});
+
+describe('a change to the root manifest', () => {
+	const manifest = (scripts: object, devDependencies: object = {}): string =>
+		JSON.stringify({ name: 'root', scripts, devDependencies });
+
+	it('reaches only its readers when only other scripts changed', () => {
+		const scriptsOnly = onlyScriptsChanged(
+			manifest({ 'lint:a': 'one', test: 'vitest' }),
+			manifest({ 'lint:a': 'two', 'lint:b': 'new', test: 'vitest' }),
+		);
+		expect(scriptsOnly).toBe(true);
+		expect(runsEverything({ ...edited('package.json'), scriptsOnly })).toBe(
+			false,
+		);
+	});
+
+	it('runs everything for a test script, an install hook or a dependency', () => {
+		for (const [before, after] of [
+			[manifest({ 'test:shard': 'a' }), manifest({ 'test:shard': 'b' })],
+			[manifest({ prepare: 'a' }), manifest({ prepare: 'b' })],
+			[manifest({ postinstall: 'a' }), manifest({})],
+			[
+				manifest({}, { vitest: '5.0.0' }),
+				manifest({}, { vitest: '5.0.3' }),
+			],
+		] as const) {
+			const scriptsOnly = onlyScriptsChanged(before, after);
+			expect(scriptsOnly).toBe(false);
+			expect(
+				runsEverything({ ...edited('package.json'), scriptsOnly }),
+			).toBe(true);
+		}
+	});
+
+	it('runs everything when a side is missing, unreadable, or never compared', () => {
+		expect(onlyScriptsChanged(undefined, manifest({}))).toBe(false);
+		expect(onlyScriptsChanged('{nope', manifest({}))).toBe(false);
+		expect(runsEverything(edited('package.json'))).toBe(true);
+	});
+
+	it('does not excuse another root file that claims the same', () => {
+		expect(
+			runsEverything({ ...edited('tsconfig.json'), scriptsOnly: true }),
+		).toBe(true);
+	});
+});
+
+describe('readersOf', () => {
+	const map: IZoneReadMap = {
+		zones: {
+			plugins: {
+				read: ['docs/a.md'],
+				listed: ['docs/delendai/proposals/review'],
+				specs: {
+					'plugins/x/a.spec.ts': { read: ['docs/a.md'], listed: [] },
+					'plugins/y/b.spec.ts': {
+						read: [],
+						listed: ['docs/delendai/proposals/review'],
+					},
+					'plugins/z/c.spec.ts': {
+						read: ['docs/other.md'],
+						listed: [],
+					},
+				},
+			},
+			core: { read: ['docs/a.md'], listed: [] },
+		},
+	};
+
+	it('names the specs that read a changed file or list the folder of a moved one', () => {
+		const readers = readersOf(
+			[
+				{ path: 'docs/a.md', listing: false },
+				{ path: 'docs/delendai/proposals/review/x1.md', listing: true },
+			],
+			map,
+		);
+		expect(readers.get('plugins')).toEqual([
+			'plugins/x/a.spec.ts',
+			'plugins/y/b.spec.ts',
+		]);
+	});
+
+	it('says nothing of a zone whose map has no per-spec reads, and nothing for an edit in a listed folder', () => {
+		const readers = readersOf(
+			[{ path: 'docs/delendai/proposals/review/x1.md', listing: false }],
+			map,
+		);
+		expect(readers.get('plugins')).toEqual([]);
+		expect(readers.has('core')).toBe(false);
 	});
 });

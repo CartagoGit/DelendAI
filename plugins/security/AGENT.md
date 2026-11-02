@@ -8,6 +8,7 @@
 ## Public API
 
 - scanSecrets
+- isTestPath
 - runSecretScan
 - realScanDeps
 - parseAuditJson
@@ -21,6 +22,7 @@
 
 ## Depends on
 
+- @delendai/contracts
 - @delendai/deps
 - @delendai/web-fetch
 - @modelcontextprotocol/sdk

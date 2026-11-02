@@ -14,6 +14,12 @@ export interface IProjectHealthScore {
 	readonly deps: number;
 	readonly quality: number;
 	readonly debt: number;
+	/**
+	 * How much the summary rests on: `medium` when every presence signal
+	 * was found (lockfile, quality scopes, a lint or test config), `low`
+	 * when one is missing. Never `high`: nothing here was measured.
+	 */
+	readonly confidence: 'low' | 'medium';
 }
 
 export interface IProjectHealthSignals {

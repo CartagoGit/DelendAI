@@ -101,11 +101,18 @@ export const openStyleWorkspace = async (
 		profile.markupRoots,
 		MARKUP_EXTENSIONS,
 	);
+	// The declared token files first, then any token a stylesheet under the
+	// style roots declares: a project that keeps them beside its components
+	// still has them, configured or not.
 	const tokens = [];
 	for (const file of profile.tokenFiles) {
 		const text = await readOrNothing(reader, file);
 		if (text !== undefined)
 			tokens.push(...designTokensOf({ path: file, text }));
+	}
+	for (const sheet of stylesheets) {
+		if (profile.tokenFiles.includes(sheet.path)) continue;
+		tokens.push(...designTokensOf(sheet));
 	}
 	return {
 		profile,

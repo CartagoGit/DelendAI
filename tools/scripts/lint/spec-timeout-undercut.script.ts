@@ -29,6 +29,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 
 const REPO_ROOT = process.cwd();
 
@@ -506,6 +507,13 @@ export const formatReport = (
 };
 
 export const main = (): number => {
+	if (
+		refuseMissingScanRoots('spec-timeout-undercut', REPO_ROOT, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	const files = walk(REPO_ROOT);
 	const findings = findUndercuts(files, (path) => {
 		try {

@@ -1,5 +1,12 @@
 import type { ITestConvention } from './convention';
 import { effectiveMockStyle } from './convention';
+import {
+	isSpec,
+	isTsSource,
+	isSpecLikePath,
+	specStemOf,
+	stemOf,
+} from './scan-paths.helper';
 
 /**
  * Minimal recursive-directory-listing port for the scan engine
@@ -75,6 +82,8 @@ export interface IDriftReport {
 	readonly counts: IDriftCounts;
 	readonly violations: readonly IDrift[];
 	readonly scannedFiles: number;
+	/** Files in scope the scan did not read because it reached `maxFiles`. */
+	readonly skippedFiles: number;
 }
 
 interface ILineHit {
@@ -91,15 +100,6 @@ const findHits = (source: string, re: RegExp): readonly ILineHit[] => {
 	}
 	return hits;
 };
-
-const isSpec = (path: string, ext: string): boolean => path.endsWith(`.${ext}`);
-
-const SPEC_RE = /\.(?:spec|test)\.tsx?$/u;
-
-const isTsSource = (path: string): boolean =>
-	/^src\/.+\.tsx?$/u.test(path) &&
-	!path.endsWith('.d.ts') &&
-	!SPEC_RE.test(path);
 
 const exportNamesOf = (source: string): readonly string[] => {
 	const out: string[] = [];
@@ -265,7 +265,7 @@ export const scanDrift = async (
 	// (e.g. `foo.test.ts` when the convention is `*.spec.ts`). They
 	// get scanned so we can flag the wrong extension.
 	const misnamedSpecLike = all.filter(
-		(p) => !isSpec(p, specExt) && SPEC_RE.test(p),
+		(p) => !isSpec(p, specExt) && isSpecLikePath(p),
 	);
 
 	const targets =
@@ -287,9 +287,18 @@ export const scanDrift = async (
 		violations.push(d);
 	};
 
+	// A spec names its source by file name, beside it or in a mirrored
+	// tests tree (`plugins/x/tests/src/a.spec.ts` for `plugins/x/src/a.ts`).
+	const specStems = new Set(
+		[...specFiles, ...misnamedSpecLike].map(specStemOf),
+	);
 	let scanned = 0;
+	let skipped = 0;
 	for (const path of targets) {
-		if (scanned >= maxFiles) break;
+		if (scanned >= maxFiles) {
+			skipped += 1;
+			continue;
+		}
 		const contents = await reader.readFile(path);
 		if (contents === undefined) continue;
 		scanned += 1;
@@ -297,7 +306,7 @@ export const scanDrift = async (
 		const looksSpec = looksLikeSpec(contents);
 		const isCanonicalSpec = isSpec(path, specExt);
 		const isMisnamedSpec =
-			!isCanonicalSpec && SPEC_RE.test(path) && looksSpec;
+			!isCanonicalSpec && isSpecLikePath(path) && looksSpec;
 		const isSpecLike = isCanonicalSpec || isMisnamedSpec;
 
 		// Spec-content rules (missing describe, mock API, forbidden
@@ -324,13 +333,16 @@ export const scanDrift = async (
 			// Missing spec companion: source exports but no spec file exists.
 			const exports = exportNamesOf(contents);
 			if (exports.length > 0) {
-				const expected = path.replace(/\.tsx?$/u, () => `.${specExt}`);
-				if (!all.includes(expected) && !specFiles.includes(expected)) {
+				const expected = path.replace(
+					/\.[cm]?[jt]sx?$/u,
+					() => `.${specExt}`,
+				);
+				if (!specStems.has(stemOf(path))) {
 					push({
 						id: 'missing-spec-for-export',
 						file: path,
 						severity: 'warning',
-						hint: `source exports "${exports.join(', ')}" but no ${expected} found`,
+						hint: `source exports "${exports.join(', ')}" but no spec named for it was found (expected ${expected} or a ${stemOf(path)} spec under tests/)`,
 					});
 				}
 			}
@@ -351,6 +363,7 @@ export const scanDrift = async (
 		counts: { error, warning, info },
 		violations,
 		scannedFiles: scanned,
+		skippedFiles: skipped,
 	};
 };
 

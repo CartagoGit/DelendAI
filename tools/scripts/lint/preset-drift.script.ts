@@ -36,6 +36,7 @@ import {
 	PACK_DEFAULTS_OVERLAY,
 	PACK_IDS,
 	PRESET_KIND,
+	parseJsonc,
 } from '@delendai/core/cli';
 
 // Internal path on purpose: the generated lazy index is a build-time
@@ -430,7 +431,14 @@ export const detectCatalogPresetDrift = async (
 
 	try {
 		const configRaw = await readFile(resolve(rootDir, configPath), 'utf8');
-		const config = JSON.parse(configRaw) as {
+		const { value, errors } = parseJsonc(configRaw);
+		const [first] = errors;
+		if (first !== undefined) {
+			throw new Error(
+				`${configPath} is not valid JSONC: ${first.line}:${first.column} ${first.message}`,
+			);
+		}
+		const config = value as {
 			plugins?: Readonly<Record<string, unknown>>;
 		};
 		const configPluginIds = await presetEligible(

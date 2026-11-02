@@ -11,7 +11,7 @@
 | audit-orchestrator | @delendai/audit-orchestrator | public | experimental | full |
 | auto-agent-selector | @delendai/auto-agent-selector | public | stable | standard, swarm, full, dogfood |
 | auto-plugin-selector | @delendai/auto-plugin-selector | public | stable | dogfood |
-| browser | @delendai/browser | public | stable | full |
+| browser | @delendai/browser | public | experimental | full |
 | cache | @delendai/cache | public | stable | full |
 | commit-policy | @delendai/commit-policy | public | experimental | dogfood |
 | completion | @delendai/completion | public | stable | swarm, full, dogfood |
@@ -67,67 +67,67 @@
 
 | id | warning | hard | releaseRelativePercent |
 | --- | --- | --- | --- |
-| adaptive-optimizer | 2700 | 3000 | 20 |
-| agent-orchestrator | 2700 | 3000 | 20 |
-| api | 2700 | 3000 | 20 |
-| audit | 2700 | 3000 | 20 |
-| audit-orchestrator | 2700 | 3000 | 20 |
-| auto-agent-selector | 2700 | 3000 | 20 |
-| auto-plugin-selector | 2700 | 3000 | 20 |
-| browser | 2700 | 3000 | 20 |
-| cache | 2700 | 3000 | 20 |
+| adaptive-optimizer | 8130 | 8900 | 20 |
+| agent-orchestrator | 11550 | 12650 | 20 |
+| api | 3800 | 4160 | 20 |
+| audit | 12150 | 13310 | 20 |
+| audit-orchestrator | 1750 | 1910 | 20 |
+| auto-agent-selector | 7230 | 7920 | 20 |
+| auto-plugin-selector | 3920 | 4290 | 20 |
+| browser | 6250 | 6840 | 20 |
+| cache | 2160 | 2370 | 20 |
 | changelog | 2700 | 3000 | 20 |
-| commit-policy | 4800 | 5200 | 20 |
-| completion | 2700 | 3000 | 20 |
-| container | 6800 | 7500 | 20 |
-| context-for-change | 2700 | 3000 | 20 |
-| conventions | 2700 | 3000 | 20 |
-| database | 2700 | 3000 | 20 |
-| deps | 2700 | 3000 | 20 |
-| diagram | 2700 | 3000 | 20 |
-| docs | 2700 | 3000 | 20 |
-| env | 2700 | 3000 | 20 |
-| error-reporting | 3800 | 4200 | 20 |
+| commit-policy | 12200 | 13360 | 20 |
+| completion | 2560 | 2800 | 20 |
+| container | 9100 | 9970 | 20 |
+| context-for-change | 1090 | 1190 | 20 |
+| conventions | 5430 | 5940 | 20 |
+| database | 4130 | 4520 | 20 |
+| deps | 5530 | 6060 | 20 |
+| diagram | 3450 | 3770 | 20 |
+| docs | 3100 | 3400 | 20 |
+| env | 3660 | 4010 | 20 |
+| error-reporting | 1480 | 1620 | 20 |
 | execution-env | 2700 | 3000 | 20 |
-| external-mcps | 2700 | 3000 | 20 |
-| forge | 7400 | 8200 | 20 |
+| external-mcps | 9870 | 10810 | 20 |
+| forge | 4950 | 5420 | 20 |
 | framework-knowledge | 2700 | 3000 | 20 |
-| git | 6200 | 6800 | 20 |
+| git | 4850 | 5310 | 20 |
 | github | 2700 | 3000 | 20 |
 | gitlab | 2700 | 3000 | 20 |
-| i18n | 2700 | 3000 | 20 |
-| impact-analysis | 2700 | 3000 | 20 |
-| issues | 5300 | 5900 | 20 |
+| i18n | 2710 | 2970 | 20 |
+| impact-analysis | 2000 | 2190 | 20 |
+| issues | 870 | 950 | 20 |
 | issues-triage | 2700 | 3000 | 20 |
-| link-check | 2700 | 3000 | 20 |
-| logs | 2700 | 3000 | 20 |
-| memory | 4900 | 5400 | 20 |
-| notification | 2700 | 3000 | 20 |
-| observability | 2700 | 3000 | 20 |
-| orchestrator-runner | 2700 | 3000 | 20 |
-| perf | 2700 | 3000 | 20 |
-| project-health | 2700 | 3000 | 20 |
-| project-kpis | 2700 | 3000 | 20 |
-| prompt-eval | 2700 | 3000 | 20 |
+| link-check | 1810 | 1990 | 20 |
+| logs | 7670 | 8400 | 20 |
+| memory | 8620 | 9440 | 20 |
+| notification | 1970 | 2160 | 20 |
+| observability | 6030 | 6600 | 20 |
+| orchestrator-runner | 37870 | 41480 | 20 |
+| perf | 3860 | 4220 | 20 |
+| project-health | 1450 | 1580 | 20 |
+| project-kpis | 4300 | 4710 | 20 |
+| prompt-eval | 2640 | 2900 | 20 |
 | prompts-pack | 2700 | 3000 | 20 |
-| proposals | 13500 | 15000 | 20 |
-| quality | 9000 | 9800 | 20 |
-| quality-policy | 2700 | 3000 | 20 |
-| refactor | 2700 | 3000 | 20 |
+| proposals | 83980 | 91970 | 20 |
+| quality | 3810 | 4180 | 20 |
+| quality-policy | 1160 | 1270 | 20 |
+| refactor | 6590 | 7220 | 20 |
 | remote-provider-core | 2700 | 3000 | 20 |
 | roadmap | 10800 | 11500 | 20 |
-| rules | 2700 | 3000 | 20 |
-| search | 2700 | 3000 | 20 |
-| security | 2700 | 3000 | 20 |
+| rules | 5920 | 6480 | 20 |
+| search | 3400 | 3720 | 20 |
+| security | 5990 | 6560 | 20 |
 | self-learning | 2700 | 3000 | 20 |
 | skills-pack | 2700 | 3000 | 20 |
-| status-marker | 2700 | 3000 | 20 |
+| status-marker | 2150 | 2350 | 20 |
 | style-convention | 3900 | 4200 | 20 |
-| tech-debt | 2700 | 3000 | 20 |
-| test-convention | 2700 | 3000 | 20 |
-| test-policy | 2700 | 3000 | 20 |
-| usage-tracking | 2700 | 3000 | 20 |
-| web-fetch | 2700 | 3000 | 20 |
+| tech-debt | 1870 | 2050 | 20 |
+| test-convention | 3400 | 3720 | 20 |
+| test-policy | 1960 | 2150 | 20 |
+| usage-tracking | 1970 | 2160 | 20 |
+| web-fetch | 1000 | 1070 | 20 |
 
 ## Permissions
 
@@ -153,7 +153,7 @@
 | diagram | filesystem-read, filesystem-write |  |
 | docs | filesystem-read, filesystem-write |  |
 | env | filesystem-read, env-read |  |
-| error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: network, forge-write |
+| error-reporting | filesystem-read, filesystem-write, network, forge-write | report_status: filesystem-read; diagnose_log: filesystem-read |
 | execution-env | filesystem-read, filesystem-write, process, env-read |  |
 | external-mcps | filesystem-read, process, network, env-read |  |
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
@@ -170,7 +170,7 @@
 | memory | filesystem-read, filesystem-write |  |
 | notification | filesystem-read, filesystem-write |  |
 | observability | filesystem-read, filesystem-write, network, env-read |  |
-| orchestrator-runner | filesystem-read, process, network, env-read |  |
+| orchestrator-runner | filesystem-read, filesystem-write, process, network, env-read |  |
 | perf | filesystem-read, filesystem-write, process |  |
 | project-health | filesystem-read |  |
 | project-kpis | filesystem-read, filesystem-write |  |

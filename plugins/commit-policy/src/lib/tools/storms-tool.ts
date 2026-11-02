@@ -80,7 +80,7 @@ export const buildStormsToolRegistration = (
 ): IToolRegistration => ({
 	id: 'commit_policy_storms',
 	summary:
-		'Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. x00419 lets agents consume their own stderr and file `kind: fix` proposals without a human intermediary.',
+		"Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. Filing the repair is the agent's step (skill read-stderr-storm).",
 	tags: ['commit-policy', 'diagnostics', 'x00419', 'read-only'],
 	register: async (server: McpServer) => {
 		server.registerTool(

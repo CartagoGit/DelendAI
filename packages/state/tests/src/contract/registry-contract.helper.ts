@@ -29,7 +29,7 @@ import { asRepositoryInstanceId, asWorktreeId } from '../../../src/lib/scope';
 import type { IStateStorageIdentity } from '../../../src/lib/fingerprint';
 import type { IHydrateInput } from '../../../src/lib/registry';
 
-const projectScope: StateScope = {
+export const projectScope: StateScope = {
 	kind: 'project',
 	locator: {
 		workspaceRoot: '/repo',
@@ -52,7 +52,7 @@ const storage: IStateStorageIdentity = {
 	worktreeId: 'wt-A',
 };
 
-function makeSnapshot(
+export function makeSnapshot(
 	producer: IStateProducer,
 	content: Uint8Array = new Uint8Array(),
 ): IStateInputSnapshot {
@@ -93,7 +93,7 @@ function makeSnapshot(
 	};
 }
 
-function countingProducer(
+export function countingProducer(
 	overrides: Partial<IStateProducer> = {},
 ): IStateProducer {
 	let calls = 0;
@@ -125,7 +125,7 @@ function countingProducer(
 	return producer;
 }
 
-function hydrateInput(
+export function hydrateInput(
 	scope: StateScope,
 	producer: IStateProducer,
 ): IHydrateInput {

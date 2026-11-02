@@ -49,6 +49,8 @@ const PROPOSAL_CANONICAL_ORDER = [
 	'slices',
 	'dependency graph',
 	'acceptance',
+	// A plan that contains audits settles each finding here.
+	'ledger',
 	'risks and mitigations',
 	'notes',
 ];

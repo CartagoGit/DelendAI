@@ -12,14 +12,6 @@ import type { IGitRunner } from '@delendai/core/contracts';
 /** Radix for `Number.parseInt` of `git rev-list --count` output. */
 const DEC_RADIX = 10;
 
-/** Removes the proposal/path serialization used for rename entries. */
-const normalizeDirtyPath = (raw: string): string => {
-	const trimmed = raw.trim();
-	const arrow = trimmed.lastIndexOf(' -> ');
-	if (arrow >= 0) return trimmed.slice(arrow + 4).trim();
-	return trimmed;
-};
-
 /**
  * Current branch (short name, no refs/heads/ prefix). Returns
  * `undefined` when git is not a repo, the HEAD is detached, or the
@@ -56,17 +48,6 @@ export const gitUpstream = async (
 };
 
 /**
- * Count the files currently dirty in the worktree (porcelain v1).
- * Used by the threshold trigger. `0` when not a repo.
- */
-export const gitDirtyFileCount = async (run: IGitRunner): Promise<number> => {
-	const result = await run(['status', '--porcelain=v1']);
-	if (!result.ok) return 0;
-	const lines = result.output.split('\n').filter((line) => line.length > 0);
-	return lines.length;
-};
-
-/**
  * x00264 (AUD-CP-006): list of paths currently dirty in the
  * worktree, parsed from `git status --porcelain=v1`. The
  * trigger carries these in the event so the driver can stage
@@ -100,37 +81,57 @@ const TRANSIENT_PATH_PATTERN = /(^|\/)\.git\/|\.mutex$|\.tmp-[^/]*$/u;
 export const isTransientWorkspacePath = (path: string): boolean =>
 	TRANSIENT_PATH_PATTERN.test(path);
 
-export const gitDirtyFilePaths = async (
-	run: IGitRunner,
-): Promise<readonly string[]> => {
-	const result = await run(['status', '--porcelain=v1']);
-	if (!result.ok) return [];
+/**
+ * `git status` arguments every dirty-path reader uses. `-z` makes paths
+ * NUL-separated and unquoted (a file with spaces or non-ASCII characters
+ * arrives verbatim); `--untracked-files=all` lists the files of an
+ * untracked folder instead of the folder.
+ */
+const STATUS_ARGS = [
+	'status',
+	'--porcelain=v1',
+	'-z',
+	'--untracked-files=all',
+] as const;
+
+/** Length of the `XY ` prefix of a porcelain entry. */
+const STATUS_PREFIX_LENGTH = 3;
+
+const isRenameOrCopyCode = (code: string): boolean =>
+	code === 'R' || code === 'C';
+
+const parseDirtyPaths = (output: string): readonly string[] => {
+	const entries = output.split('\0');
 	const paths: string[] = [];
-	for (const raw of result.output.split('\n')) {
-		const line = raw.trimEnd();
-		if (line.length < 4) continue;
-		const rest = line.slice(3);
-		if (rest.length === 0) continue;
-		const isRenameOrCopy =
-			(line[0] === 'R' ||
-				line[0] === 'C' ||
-				line[1] === 'R' ||
-				line[1] === 'C') &&
-			rest.includes('->');
-		if (line[1] === ' ' && !isRenameOrCopy) continue;
-		if (isRenameOrCopy) {
-			const arrow = rest.indexOf('->');
-			const target = normalizeDirtyPath(
-				arrow >= 0 ? rest.slice(arrow + 2) : rest,
-			);
-			if (target.length > 0) paths.push(target);
-		} else {
-			const path = normalizeDirtyPath(rest);
-			if (path.length > 0) paths.push(path);
-		}
+	for (let index = 0; index < entries.length; index += 1) {
+		const entry = entries[index] ?? '';
+		if (entry.length <= STATUS_PREFIX_LENGTH) continue;
+		const x = entry[0] ?? ' ';
+		const y = entry[1] ?? ' ';
+		const path = entry.slice(STATUS_PREFIX_LENGTH);
+		const isRenameOrCopy = isRenameOrCopyCode(x) || isRenameOrCopyCode(y);
+		// A rename/copy is `XY target` followed by its own source entry.
+		if (isRenameOrCopy) index += 1;
+		if (y === ' ' && !isRenameOrCopy) continue;
+		paths.push(path);
 	}
 	return paths.filter((path) => !isTransientWorkspacePath(path));
 };
+
+export const gitDirtyFilePaths = async (
+	run: IGitRunner,
+): Promise<readonly string[]> => {
+	const result = await run([...STATUS_ARGS]);
+	if (!result.ok) return [];
+	return parseDirtyPaths(result.output);
+};
+
+/**
+ * Count the files currently dirty in the worktree, by the same parse as
+ * `gitDirtyFilePaths`. `0` when not a repo.
+ */
+export const gitDirtyFileCount = async (run: IGitRunner): Promise<number> =>
+	(await gitDirtyFilePaths(run)).length;
 
 /**
  * Count unpushed commits on the current branch (ahead-of-upstream).

@@ -377,6 +377,25 @@ const normalizeFilter = (
 	};
 };
 
+/** The snapshot's end and span, from the query's from/to when it has them. */
+const snapshotIntervalOf = (
+	query: IKpiQuery,
+): {
+	readonly now?: Date;
+	readonly windowDays?: number;
+	readonly usageSpanDays?: number;
+} => {
+	const windowDays =
+		query.windowDays === undefined ? {} : { windowDays: query.windowDays };
+	if (query.from === undefined || query.to === undefined) return windowDays;
+	const toMs = parseTime(query.to);
+	return {
+		...windowDays,
+		now: new Date(toMs),
+		usageSpanDays: Math.max(0, toMs - parseTime(query.from)) / DAY_MS,
+	};
+};
+
 const toKpiQuery = (query: IResolvedQuery): IKpiQuery => ({
 	view: query.view,
 	from: query.from,
@@ -773,11 +792,13 @@ const sourcesOf = (state: IToolSourceState): IProjectKpisOutput['sources'] => {
 			...(latestHistory?.snapshot.generatedAt !== undefined
 				? { observedAt: latestHistory.snapshot.generatedAt }
 				: {}),
-			...(state.historyExists
-				? {}
-				: {
-						note: 'No persisted KPI history was found for trend views.',
-					}),
+			...(state.history.degraded !== undefined
+				? { note: state.history.degraded }
+				: state.historyExists
+					? {}
+					: {
+							note: 'No persisted KPI history was found for trend views.',
+						}),
 		}),
 		buildSource({
 			id: 'trend',
@@ -862,6 +883,17 @@ const findingsOf = (
 		source: 'project-kpis/S5',
 		items: [],
 	};
+	if (state.history.degraded !== undefined) {
+		findings.items.push({
+			id: 'history-corrupt',
+			severity: 'warning',
+			status: 'partial',
+			summary: 'The persisted KPI history was corrupt and was set aside.',
+			evidence: state.history.degraded,
+			recommendation:
+				'Inspect the kept copy; the next persisted snapshot starts a new history.',
+		});
+	}
 	if (!state.historyExists || state.history.entries.length === 0) {
 		findings.items.push({
 			id: 'history-missing',
@@ -1069,10 +1101,11 @@ const loadState = async (
 				workspaceRootAbs: currentOptions.workspaceRootAbs,
 				usageSummaryPathAbs: summaryPathAbs,
 				usageInvocationsPathAbs: invocationsPathAbs,
-				...(currentOptions.now !== undefined ? { now } : {}),
-				...(currentQuery.windowDays !== undefined
-					? { windowDays: currentQuery.windowDays }
-					: {}),
+				// The interval the history is read over: ending at `to` and
+				// spanning exactly from..to. Ending at "now" over a rounded
+				// window, the snapshot described another stretch of time
+				// than the history beside it.
+				...snapshotIntervalOf(currentQuery),
 				...(currentQuery.maxBytes !== undefined
 					? { maxBytes: currentQuery.maxBytes }
 					: {}),

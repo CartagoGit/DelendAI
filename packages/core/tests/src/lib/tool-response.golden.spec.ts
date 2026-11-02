@@ -298,7 +298,7 @@ describe('r00001 S0 — core outputSchema golden snapshot', async () => {
 				// only emits the exhaustive blueprint/files payload on opt-in.
 				'6cdb7899522cb0cfe5cef81af8710a7c72a1751331de823f36d0206f528c3821',
 			scaffold:
-				'd2f13f06246544b123f1b3dcc98c68e0159ed91002df748df86ad72343a49ffc',
+				'3e129dbd3588f1b8e41b1bbe5caefa3c6619a3b077d3db26c6f1a253d69378d3',
 			metrics:
 				'f81e96e3832567b1c3ed3a95b7ff7a4c5ea4a0b68e7f95a16e0b76659e566ce1',
 		};

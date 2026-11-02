@@ -9,12 +9,7 @@ import {
 	POLICY_GUIDANCE,
 	resolveTestPolicy,
 } from '@delendai/test-policy/public';
-import {
-	checkRepo,
-	createGitRunner,
-	gitChanged,
-	gitDiffStat,
-} from '@delendai/git/public';
+import { checkRepo, createGitRunner, gitChanged } from '@delendai/git/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
 
@@ -218,6 +213,7 @@ const resolveAnchorFiles = async (
 	args: {
 		readonly files?: readonly string[] | undefined;
 		readonly gitDiff?: string | undefined;
+		readonly symbols?: readonly string[] | undefined;
 	},
 	options: IImpactAnalysisToolOptions,
 ): Promise<string[]> => {
@@ -226,10 +222,15 @@ const resolveAnchorFiles = async (
 		args.files?.map((file) => normalizePath(reader, file)) ?? [];
 	const diffFiles =
 		args.gitDiff === undefined ? [] : parseFilesFromGitDiff(args.gitDiff);
+	// A slice the caller named is the whole slice: the working tree's other
+	// edits belong to another change. It stands in only when nothing is named.
+	const named =
+		args.files !== undefined ||
+		args.gitDiff !== undefined ||
+		(args.symbols?.length ?? 0) > 0;
 	const runner = createGitRunner(options.workspaceRootAbs);
-	const repo = await checkRepo(runner);
-	const changedFiles = repo.ok ? await gitChanged(runner) : [];
-	void (repo.ok ? await gitDiffStat(runner) : undefined);
+	const changedFiles =
+		!named && (await checkRepo(runner)).ok ? await gitChanged(runner) : [];
 	return unique([...normalizedFiles, ...diffFiles, ...changedFiles])
 		.filter((file) => isSourceFile(file))
 		.slice(0, MAX_IMPACT_ANALYSIS_FILES);

@@ -1,5 +1,6 @@
 /**
- * agent-usage-doc.service.ts — a usage page per agent, under
+ * agent-usage-doc.service.ts — a usage page per agent and per model
+ * provider, under
  * docs/delendai/models/, built from its catalogue entry and from what it
  * says about itself (its ACP greeting), never from text delendai keeps,
  * and nothing about the machine it was written on.
@@ -13,6 +14,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IAcpIntroduction } from '../contracts/interfaces/acp.interface';
+import type { ICatalogueProvider } from '../contracts/interfaces/account-finding.interface';
 import type { IKnownAgent } from '../contracts/interfaces/declared-agent.interface';
 import { USAGE_PAGES_DIR } from '../contracts/constants/agent-usage-doc.constant';
 import { writeFileAtomic } from './atomic-write';
@@ -92,25 +94,18 @@ const personalPart = (page: string): string | undefined => {
 		: page.slice(start + PERSON_START.length, end).trim();
 };
 
-/**
- * Write the page of `agent` into `workspace`; `false` when it already says
- * the same. A page without the generated marker is a person's own and is
- * left alone.
- */
-export const writeAgentUsagePage = async (input: {
-	readonly workspace: string;
-	readonly agent: IKnownAgent;
-	readonly introduction?: IAcpIntroduction | undefined;
-}): Promise<{
+/** Write `render`'s page at `<workspace>/<USAGE_PAGES_DIR>/<id>.md`, keeping the person's part. */
+const writeUsagePage = async (
+	workspace: string,
+	id: string,
+	render: (personal: string | undefined) => string,
+): Promise<{
 	readonly path: string;
 	readonly written: boolean;
 	readonly reason: string;
 }> => {
-	const dir = join(input.workspace, USAGE_PAGES_DIR);
-	const path = join(
-		dir,
-		`${input.agent.id.replace(/[^a-z0-9.-]/giu, '-')}.md`,
-	);
+	const dir = join(workspace, USAGE_PAGES_DIR);
+	const path = join(dir, `${id.replace(/[^a-z0-9.-]/giu, '-')}.md`);
 	const current = await readFile(path, 'utf8').catch(() => undefined);
 	if (current !== undefined && !current.startsWith(GENERATED))
 		return {
@@ -118,11 +113,9 @@ export const writeAgentUsagePage = async (input: {
 			written: false,
 			reason: 'a page written by hand is never replaced',
 		};
-	const next = renderAgentUsagePage({
-		agent: input.agent,
-		introduction: input.introduction,
-		personal: current === undefined ? undefined : personalPart(current),
-	});
+	const next = render(
+		current === undefined ? undefined : personalPart(current),
+	);
 	if (current === next) return { path, written: false, reason: 'unchanged' };
 	await mkdir(dir, { recursive: true });
 	await writeFileAtomic(path, next);
@@ -135,3 +128,75 @@ export const writeAgentUsagePage = async (input: {
 				: 'its version or declaration changed',
 	};
 };
+
+/**
+ * Write the page of `agent` into `workspace`; `false` when it already says
+ * the same. A page without the generated marker is a person's own and is
+ * left alone.
+ */
+export const writeAgentUsagePage = (input: {
+	readonly workspace: string;
+	readonly agent: IKnownAgent;
+	readonly introduction?: IAcpIntroduction | undefined;
+}) =>
+	writeUsagePage(input.workspace, input.agent.id, (personal) =>
+		renderAgentUsagePage({
+			agent: input.agent,
+			introduction: input.introduction,
+			personal,
+		}),
+	);
+
+/**
+ * The page of a model provider, from its own catalogue entry: how it is
+ * reached (its API family and URL), how it logs in (its key variables, by
+ * name) and its models, with the catalogue's date it was written for.
+ * Nothing delendai keeps beside the entry, nothing about the machine.
+ */
+export const renderProviderUsagePage = (input: {
+	readonly provider: ICatalogueProvider;
+	/** When the catalogue the entry came from was read. */
+	readonly catalogueDate?: string | undefined;
+	readonly personal?: string | undefined;
+}): string => {
+	const { provider } = input;
+	const print = createHash('sha256')
+		.update(JSON.stringify({ provider, date: input.catalogueDate ?? null }))
+		.digest('hex')
+		.slice(0, 16);
+	return [
+		`${GENERATED} ${print} -->`,
+		`# ${provider.name}`,
+		'',
+		`- **Id**: \`${provider.id}\` (model provider)`,
+		`- **Reached through**: ${provider.npm === undefined ? 'no API family named' : `the \`${provider.npm}\` family`}${provider.api === undefined ? '' : ` at ${provider.api}`}`,
+		`- **Logs in with**: ${provider.env.length === 0 ? 'no key variable named' : `a key in ${list(provider.env)}`}`,
+		`- **Models**: ${list(provider.models)}`,
+		...(provider.doc === undefined
+			? []
+			: [`- **Its documentation**: ${provider.doc}`]),
+		`- **Written for**: the model catalogue of ${input.catalogueDate ?? 'an unknown date'}`,
+		'',
+		'## Notes',
+		'',
+		PERSON_START,
+		input.personal ??
+			'Anything written here is kept when the page is regenerated.',
+		PERSON_END,
+		'',
+	].join('\n');
+};
+
+/** Write the page of a model provider into `workspace`, as `writeAgentUsagePage` does. */
+export const writeProviderUsagePage = (input: {
+	readonly workspace: string;
+	readonly provider: ICatalogueProvider;
+	readonly catalogueDate?: string | undefined;
+}) =>
+	writeUsagePage(input.workspace, input.provider.id, (personal) =>
+		renderProviderUsagePage({
+			provider: input.provider,
+			catalogueDate: input.catalogueDate,
+			personal,
+		}),
+	);

@@ -62,7 +62,8 @@ export type ProviderKind =
 	| 'subscription' // Claude Code / Codex / Copilot / Cursor subscription
 	| 'cli' // spawn a CLI process (aider, cn, agent)
 	| 'mcp-server' // spawn an MCP server (codex mcp-server) and call it as a tool
-	| 'acp'; // start an agent and drive it over the Agent Client Protocol
+	| 'acp' // start an agent and drive it over the Agent Client Protocol
+	| 'host-sampling'; // ask the host editor to run one of its models (MCP sampling)
 
 /**
  * x00183 (F7): the runtime-known hosts as of this writing — kept only as
@@ -134,6 +135,14 @@ export type IProviderInvoke =
 			/** Or the command that starts it, with its arguments. */
 			readonly command?: string;
 			readonly args?: readonly string[];
+	  }
+	| {
+			readonly kind: 'host-sampling';
+			/**
+			 * The model the host is asked for, as the host names it (a BYOK
+			 * model id); the host holds its key and may refuse.
+			 */
+			readonly model: string;
 	  };
 
 /** The cost tier of a provider, 1 (cheapest) … 5 (most expensive). */
@@ -201,6 +210,7 @@ export type RoutingStrategy =
 	| 'api' // direct HTTP call (requires executeApi + confirmBeforeExecute)
 	| 'cli' // spawn a subprocess (claude -p, codex exec, aider --message, cn -p)
 	| 'mcp-tool' // spawn an MCP server, call it as a tool
+	| 'host-sampling' // ask the host editor to run one of its models
 	| 'handoff'; // generate a command for the user to run
 
 export type RoutingMode = 'plan' | 'explore' | 'implement' | 'review';

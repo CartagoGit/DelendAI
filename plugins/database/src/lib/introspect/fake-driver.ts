@@ -11,11 +11,14 @@ import type {
 	IDatabaseDriver,
 	IIndexInfo,
 	IForeignKeyInfo,
+	ITableRef,
 } from './introspect-engine';
 
 export interface IFakeDatabaseFixture {
 	readonly tables: readonly {
 		readonly name: string;
+		/** Defaults to `null`: one unnamed namespace. */
+		readonly schema?: string | null;
 		readonly columns: IColumnInfo[];
 		readonly indexes?: IIndexInfo[];
 		readonly foreignKeys?: IForeignKeyInfo[];
@@ -25,24 +28,38 @@ export interface IFakeDatabaseFixture {
 export const buildFakeDriver = (
 	fixture: IFakeDatabaseFixture,
 ): IDatabaseDriver => {
-	const byName = new Map(fixture.tables.map((t) => [t.name, t]));
+	const keyOf = (table: ITableRef): string =>
+		`${table.schema ?? ''}\u0000${table.name}`;
+	const byKey = new Map(
+		fixture.tables.map((t) => [
+			keyOf({ name: t.name, schema: t.schema ?? null }),
+			t,
+		]),
+	);
 	return {
 		kind: 'sqlite',
 		async listTables() {
-			return fixture.tables.map((t) => t.name).sort();
+			return fixture.tables
+				.map(
+					(t): ITableRef => ({
+						name: t.name,
+						schema: t.schema ?? null,
+					}),
+				)
+				.sort((a, b) => keyOf(a).localeCompare(keyOf(b)));
 		},
 		async listColumns(table) {
-			const t = byName.get(table);
+			const t = byKey.get(keyOf(table));
 			if (!t) {
-				throw new Error(`fake-driver: unknown table "${table}"`);
+				throw new Error(`fake-driver: unknown table "${table.name}"`);
 			}
 			return t.columns;
 		},
 		async listIndexes(table) {
-			return byName.get(table)?.indexes ?? [];
+			return byKey.get(keyOf(table))?.indexes ?? [];
 		},
 		async listForeignKeys(table) {
-			return byName.get(table)?.foreignKeys ?? [];
+			return byKey.get(keyOf(table))?.foreignKeys ?? [];
 		},
 	};
 };

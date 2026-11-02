@@ -55,4 +55,17 @@ describe('detectStack', () => {
 		expect(stack.languages).toContain('typescript');
 		expect(stack.languages).toContain('python');
 	});
+
+	it('lists every source file in name order, however many there are', async () => {
+		const names = Array.from(
+			{ length: 4100 },
+			(_, index) => `src/f${String(4099 - index).padStart(4, '0')}.ts`,
+		);
+		const dir = await workspace(
+			Object.fromEntries(names.map((name) => [name, 'export {};'])),
+		);
+		const stack = await detectStack(dir);
+		expect(stack.files).toHaveLength(4100);
+		expect(stack.files).toEqual([...names].sort());
+	});
 });

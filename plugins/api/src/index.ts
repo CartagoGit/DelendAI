@@ -84,7 +84,7 @@ export default definePlugin({
 						'',
 						'- Inputs: `operationId`, `response`, and either `spec` or `specUrl` + `allowList`.',
 						'- Output: normalized findings plus severity summary and worst severity.',
-						'- Coverage: required fields, type drift, enum drift, email/uri format checks, nullable fields, nested arrays/objects, and closed-object extra properties.',
+						'- Coverage: required fields, type drift, enum drift, numeric, length and item bounds, email/uri format checks, nullable fields, nested arrays/objects, and closed-object extra properties. `oneOf`/`anyOf` are refused, not passed.',
 					].join('\n'),
 				},
 				{
@@ -98,8 +98,8 @@ export default definePlugin({
 						'- Inputs: `operationId` (required) or `method` + `path`, plus either `spec` or `specUrl` + `allowList`.',
 						'- Optional `statusCode` picks a specific response (default: the first 2xx or `default`).',
 						'- Optional `count` generates a list of `count` unique mocks (default 1).',
-						'- Deterministic by default; pass `randomize: true` to mix the operationId + path + status into the seed between calls.',
-						'- Output: `{ ok, operationId, response }` where `response` carries the chosen status, content type, and the generated body that satisfies the spec.',
+						'- Reproducible: the same arguments give the same output. `randomize: false` returns the minimal body (required fields, lowest bounds).',
+						'- Output: `{ ok, operationId, method, path, selectedStatus, selectedBody, samples, allResponses, count }`. `samples` holds the `count` generated responses, `selectedBody` is the first of them, and `allResponses` has one example per declared response.',
 					].join('\n'),
 				},
 				{

@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, matchesGlob, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
-import { sharedSetupFiles } from './vitest.shared';
+import { sharedSetupFiles } from './vitest.shared.ts';
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -58,6 +58,49 @@ const pureBarrelCoverageExcludes = COVERAGE_INDEX_ROOTS.flatMap((root) =>
 		.map(normalizeWorkspacePath),
 );
 
+// What coverage measures. A pull request's gate judges only the files
+// the change touched (`changed-file-coverage`), so instrumenting the
+// rest of the repository bought a number nobody reads: measured, a
+// zone ran 52s with every file instrumented and 24s with the touched
+// one alone. `VITEST_COVERAGE_FILES` (newline-separated, set by CI on
+// pull requests) narrows the selection to the touched files these
+// globs already select — never widens it — so every verdict on a
+// touched file is the one the full selection gives.
+const COVERAGE_INCLUDE = [
+	'packages/*/src/**/*.ts',
+	'plugins/*/src/**/*.ts',
+	'apps/shared/src/**/*.ts',
+	'apps/web/src/lib/**/*.ts',
+	'apps/web/src/data/**/*.ts',
+	'apps/web/src/components/ui/**/*.ts',
+	'apps/web/src/i18n/tools/index.ts',
+	'apps/web/scripts/**/*.ts',
+	'extensions/vscode/src/**/*.ts',
+	'tools/scripts/lib/**/*.ts',
+] as const;
+
+/**
+ * Past this many paths the list costs more than the globs it narrows: the
+ * 1,782 of a promotion took a worker past 4 GB with a single spec running. A
+ * change that large measures everything, which a promotion should anyway.
+ */
+const MAX_TOUCHED_COVERAGE_FILES = 200;
+
+const coverageInclude = (touched: string | undefined): string[] => {
+	if (touched === undefined) return [...COVERAGE_INCLUDE];
+	const selected = touched
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((file) =>
+			COVERAGE_INCLUDE.some((glob) => matchesGlob(file, glob)),
+		);
+	if (selected.length > MAX_TOUCHED_COVERAGE_FILES)
+		return [...COVERAGE_INCLUDE];
+	// An empty `include` means "everything" to vitest; a change that
+	// touched no measured file measures nothing instead.
+	return selected.length > 0 ? selected : ['.cache/no-touched-source'];
+};
+
 export default defineConfig({
 	resolve: {
 		// r00045 S4: tell vitest's vite-node resolver to prefer the
@@ -66,8 +109,26 @@ export default defineConfig({
 		// tsconfig path aliases + customConditions), never against the
 		// `dist/` build artefact (now under `build/`).
 		conditions: ['@delendai/source', 'node', 'import', 'default'],
+		// The reporters load in this root context, without the projects'
+		// aliases: the test journal redacts through core, core takes its
+		// secret rule set from the contracts root, and a checkout with no
+		// built contracts failed to load the reporter at all.
+		alias: [
+			{
+				find: /^@delendai\/contracts$/,
+				replacement: join(
+					workspaceRoot,
+					'packages/contracts/src/index.ts',
+				),
+			},
+		],
 	},
 	test: {
+		// Transformed modules are kept on disk and reused by the next run and
+		// by every project (node_modules/.vitest-cache, invalidated with the
+		// dependencies). Cold, a run spent most of its time transforming the
+		// same modules again; CI restores the directory between runs.
+		fsModuleCache: true,
 		// Projects run as their own vitest instances; the root shell walks
 		// the listed globs to wire them up. Plugins that need to pause
 		// their own runtime tests temporarily (e.g. while still in
@@ -122,7 +183,20 @@ export default defineConfig({
 		// judges the files the change actually touched, so a filter that
 		// wrongly selected nothing is still caught there.
 		passWithNoTests: process.env['VITEST_CHANGED_RUN'] === 'true',
-		reporters: ['verbose', './tools/scripts/test/journal-reporter.ts'],
+		reporters: [
+			'verbose',
+			'./tools/scripts/test/journal-reporter.ts',
+			// A full run's merge records how long each spec took, which the
+			// planner splits zones by (spec-timings.script.ts).
+			...(process.env['VITEST_TIMINGS_OUT'] === undefined
+				? []
+				: [
+						[
+							'json',
+							{ outputFile: process.env['VITEST_TIMINGS_OUT'] },
+						] as ['json', { outputFile: string }],
+					]),
+		],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
 		// `bun run test` stays fast.
@@ -165,18 +239,7 @@ export default defineConfig({
 			// in selectively: pure TS logic, data builders, controller
 			// helpers and generation scripts — not `.astro` pages nor the
 			// generated/i18n leaf catalogues with little behavioural value.
-			include: [
-				'packages/*/src/**/*.ts',
-				'plugins/*/src/**/*.ts',
-				'apps/shared/src/**/*.ts',
-				'apps/web/src/lib/**/*.ts',
-				'apps/web/src/data/**/*.ts',
-				'apps/web/src/components/ui/**/*.ts',
-				'apps/web/src/i18n/tools/index.ts',
-				'apps/web/scripts/**/*.ts',
-				'extensions/vscode/src/**/*.ts',
-				'tools/scripts/lib/**/*.ts',
-			],
+			include: coverageInclude(process.env['VITEST_COVERAGE_FILES']),
 			exclude: [
 				'**/*.spec.ts',
 				'**/*.test.ts',

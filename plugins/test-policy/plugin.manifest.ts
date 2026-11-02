@@ -1,9 +1,9 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'test-policy',
 	package: '@delendai/test-policy',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Test policy mode (TDD, tests-after, free, none).',
 	tags: ['tests', 'policy'],
@@ -18,7 +18,12 @@ export default definePluginManifest({
 		'backend-api',
 		'cli-tool',
 	],
-	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
+	tokenBudget: {
+		staticBytes: 1_861,
+		caps: { hard: 2_150, warning: 1_960 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['tests', 'policy'],
 });

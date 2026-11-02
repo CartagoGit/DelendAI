@@ -105,7 +105,7 @@ describe('api-call (f00130 S1)', () => {
 			a: unknown,
 		) => Promise<unknown>;
 		const err = parseError(await handler({ operationId: 'getUser' }));
-		expect(err.reason).toMatch(/spec or specUrl/);
+		expect(err.reason).toBe('missing-spec');
 	});
 
 	it('returns an actionable error when the operationId is unknown', async () => {

@@ -14,8 +14,10 @@ import type {
 	IDatabaseDriver,
 	IIndexInfo,
 	IForeignKeyInfo,
+	ITableRef,
 } from './introspect-engine';
 import { normaliseColumnType } from './introspect-engine';
+import type { IBetterSqliteCtor } from '../contracts/interfaces/sqlite-binding.interface';
 
 export interface IInstallHint {
 	readonly ok: false;
@@ -30,18 +32,6 @@ export interface ILoadOk {
 }
 
 export type CreateSqliteDriverResult = IInstallHint | ILoadOk;
-
-interface IBetterSqlite {
-	prepare: (sql: string) => {
-		all: (...params: unknown[]) => unknown[];
-		iterate: (...params: unknown[]) => Iterable<unknown>;
-	};
-	close: () => void;
-}
-
-interface IBetterSqliteCtor {
-	new (path: string): IBetterSqlite;
-}
 
 /**
  * Strip the `file:` prefix (and any `?mode=...&...` query) that
@@ -75,8 +65,10 @@ const tryLoadBetterSqlite = async (): Promise<IBetterSqliteCtor | null> => {
 /** Open a sqlite database at `dsn` and wrap it in an `IDatabaseDriver`. */
 export const createSqliteDriver = async (
 	dsn: string,
+	/** Loads the native binding; a test passes its own database. */
+	load: () => Promise<IBetterSqliteCtor | null> = tryLoadBetterSqlite,
 ): Promise<CreateSqliteDriverResult> => {
-	const Ctor = await tryLoadBetterSqlite();
+	const Ctor = await load();
 	if (!Ctor) {
 		return {
 			ok: false,
@@ -97,18 +89,33 @@ export const createSqliteDriver = async (
 		ok: true,
 		driver: {
 			kind: 'sqlite',
+			// Every database the connection holds — `main` and each one
+			// attached — so a table is named with its schema and two tables
+			// of the same name stay apart.
 			async listTables() {
-				const rows = db
-					.prepare(
-						"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
-					)
-					.all() as Array<{ name: string }>;
-				return rows.map((r) => r.name);
+				const schemas = (
+					db.prepare('PRAGMA database_list').all() as Array<{
+						name: string;
+					}>
+				)
+					.map((row) => row.name)
+					.filter((name) => name !== 'temp');
+				return schemas.flatMap((schema) =>
+					(
+						db
+							.prepare(
+								`SELECT name FROM ${quoteIdent(schema)}.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`,
+							)
+							.all() as Array<{ name: string }>
+					).map((row): ITableRef => ({ name: row.name, schema })),
+				);
 			},
 			async listColumns(table) {
 				const uniqueColumns = new Set(
 					db
-						.prepare(`PRAGMA index_list(${quoteIdent(table)})`)
+						.prepare(
+							`PRAGMA ${pragmaOf(table)}index_list(${quoteIdent(table.name)})`,
+						)
 						.all()
 						.filter(
 							(row) => (row as { unique: 0 | 1 }).unique !== 0,
@@ -116,7 +123,7 @@ export const createSqliteDriver = async (
 						.flatMap((row) =>
 							db
 								.prepare(
-									`PRAGMA index_info(${quoteIdent((row as { name: string }).name)})`,
+									`PRAGMA ${pragmaOf(table)}index_info(${quoteIdent((row as { name: string }).name)})`,
 								)
 								.all()
 								.map(
@@ -126,7 +133,9 @@ export const createSqliteDriver = async (
 						),
 				);
 				const rows = db
-					.prepare(`PRAGMA table_info(${quoteIdent(table)})`)
+					.prepare(
+						`PRAGMA ${pragmaOf(table)}table_info(${quoteIdent(table.name)})`,
+					)
 					.all() as Array<{
 					name: string;
 					type: string;
@@ -146,14 +155,18 @@ export const createSqliteDriver = async (
 			},
 			async listIndexes(table) {
 				const rows = db
-					.prepare(`PRAGMA index_list(${quoteIdent(table)})`)
+					.prepare(
+						`PRAGMA ${pragmaOf(table)}index_list(${quoteIdent(table.name)})`,
+					)
 					.all() as Array<{
 					name: string;
 					unique: 0 | 1;
 				}>;
 				return rows.map<IIndexInfo>((r) => {
 					const cols = db
-						.prepare(`PRAGMA index_info(${quoteIdent(r.name)})`)
+						.prepare(
+							`PRAGMA ${pragmaOf(table)}index_info(${quoteIdent(r.name)})`,
+						)
 						.all() as Array<{
 						name: string;
 					}>;
@@ -166,7 +179,9 @@ export const createSqliteDriver = async (
 			},
 			async listForeignKeys(table) {
 				const rows = db
-					.prepare(`PRAGMA foreign_key_list(${quoteIdent(table)})`)
+					.prepare(
+						`PRAGMA ${pragmaOf(table)}foreign_key_list(${quoteIdent(table.name)})`,
+					)
 					.all() as Array<{
 					id: number;
 					from: string;
@@ -185,10 +200,12 @@ export const createSqliteDriver = async (
 						});
 					} else {
 						grouped.set(r.id, {
-							name: `fk_${table}_${r.id}`,
-							fromTable: table,
+							name: `fk_${table.name}_${r.id}`,
+							fromTable: table.name,
 							fromColumns: [r.from],
 							toTable: r.table,
+							// SQLite resolves a foreign key in its own database.
+							toSchema: table.schema,
 							toColumns: [r.to],
 						});
 					}
@@ -204,3 +221,7 @@ const quoteIdent = (name: string): string => {
 	if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) return `"${name}"`;
 	return `"${name.replace(/"/g, '""')}"`;
 };
+
+/** The schema prefix of a PRAGMA on `table`: `"aux".` or nothing. */
+const pragmaOf = (table: ITableRef): string =>
+	table.schema === null ? '' : `${quoteIdent(table.schema)}.`;

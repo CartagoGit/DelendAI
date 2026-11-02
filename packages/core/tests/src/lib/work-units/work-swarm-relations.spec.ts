@@ -42,7 +42,7 @@ describe('a unit whose base moved', () => {
 		behind: by,
 	});
 
-	it('is told to bring it forward when it holds work, and last', () => {
+	it('is told it moved, and to merge only on a conflict, when it holds work', () => {
 		const relations = relationsOf({
 			units: [
 				behind('ns/wip/a/implement/x1-S1-g1/t', 2, 5),
@@ -66,7 +66,9 @@ describe('a unit whose base moved', () => {
 				),
 			},
 		]);
-		expect(relations[0]?.detail).toContain('git merge');
+		// Every merge into a published unit re-runs its whole forge run.
+		expect(relations[0]?.detail).toContain('need not be brought forward');
+		expect(relations[0]?.detail).toContain('only when');
 	});
 });
 

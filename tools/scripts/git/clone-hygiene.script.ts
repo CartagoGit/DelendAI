@@ -34,6 +34,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -71,14 +72,7 @@ export const settingsToApply = (
 	settings.filter((setting) => current(setting.key) !== setting.value);
 
 const read = (key: string): string | undefined => {
-	try {
-		return execFileSync('git', ['config', '--local', '--get', key], {
-			cwd: ROOT,
-			encoding: 'utf8',
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	return readGit(ROOT, ['config', '--local', '--get', key]);
 };
 
 const main = (): number => {

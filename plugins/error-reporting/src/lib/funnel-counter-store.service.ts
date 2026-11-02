@@ -3,7 +3,10 @@ import { join, dirname } from 'node:path';
 
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
-import { FUNNEL_STAGES } from './contracts/constants/funnel-stages.constant';
+import {
+	EMPTY_FUNNEL_COUNTERS,
+	FUNNEL_STAGES,
+} from './contracts/constants/funnel-stages.constant';
 import { SAFE_REPORTER_FAILURE_CODES } from './contracts/constants/safe-reporter-failure-codes.constant';
 import type {
 	IFunnelCounterEvent,
@@ -11,18 +14,6 @@ import type {
 	IFunnelCounterStore,
 } from './contracts/interfaces/funnel-counters.interface';
 import type { SafeReporterFailureCode } from './contracts/constants/safe-reporter-failure-codes.constant';
-
-const EMPTY_COUNTERS: IFunnelCounters = {
-	observedFailures: 0,
-	ignoredNonFailures: 0,
-	notVertexInternal: 0,
-	privacyBlocked: 0,
-	deduplicated: 0,
-	rateLimited: 0,
-	submissionAttempted: 0,
-	submissionSucceeded: 0,
-	submissionFailed: 0,
-};
 
 const asNonNegativeInt = (value: unknown): number =>
 	typeof value === 'number' && Number.isInteger(value) && value >= 0
@@ -42,7 +33,7 @@ const isSafeReporterFailureCode = (
 
 /** Coerce arbitrary JSON into a well-typed counters record, never throwing. */
 const normalize = (raw: unknown): IFunnelCounters => {
-	if (typeof raw !== 'object' || raw === null) return EMPTY_COUNTERS;
+	if (typeof raw !== 'object' || raw === null) return EMPTY_FUNNEL_COUNTERS;
 	const record = raw as Record<string, unknown>;
 	const counters: Record<string, number> = {};
 	for (const stage of FUNNEL_STAGES) {
@@ -70,7 +61,7 @@ const readAll = async (statePath: string): Promise<IFunnelCounters> => {
 		const raw = await readFile(statePath, 'utf8');
 		return normalize(JSON.parse(raw));
 	} catch {
-		return EMPTY_COUNTERS;
+		return EMPTY_FUNNEL_COUNTERS;
 	}
 };
 

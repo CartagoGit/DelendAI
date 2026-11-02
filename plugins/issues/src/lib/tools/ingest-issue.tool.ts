@@ -110,11 +110,11 @@ export const writeNewScaffold = async (
 ): Promise<IScaffoldFileRef> => {
 	await mkdir(scaffoldDirAbs, { recursive: true });
 	const existing = await listExistingFileNames(scaffoldDirAbs);
-	const fileName = buildScaffoldFileName(
-		issueDetail.number,
-		issueDetail.title,
-		existing,
-	);
+	// One scaffold per issue number: a re-ingest after a title change
+	// rewrites the file already there instead of adding a second one.
+	const fileName =
+		(await findExistingScaffoldFile(scaffoldDirAbs, issueDetail.number)) ??
+		buildScaffoldFileName(issueDetail.number, issueDetail.title, existing);
 	const filePath = join(scaffoldDirAbs, fileName);
 	const scaffold = buildScaffold(issueDetail, issueDetail.comments);
 	await withFileMutex(filePath, async () => {

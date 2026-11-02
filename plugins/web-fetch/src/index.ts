@@ -27,11 +27,13 @@ import { buildWebToolRegistrations } from './lib/tools';
  */
 const OptionsSchema = z.object({
 	allowList: z.array(z.string()).optional(),
+	/** An allow-listed name may resolve to a private address (an intranet host). */
+	allowPrivateAddresses: z.boolean().optional(),
 });
 
 export default definePlugin({
 	name: 'web-fetch',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Opt-in web_fetch: resolve one allow-listed URL, return capped text. Network, fails closed without an allow-list.',
 	optionsSchema: OptionsSchema,
@@ -53,6 +55,9 @@ export default definePlugin({
 			tools: buildWebToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				allowList,
+				...(parsed.data.allowPrivateAddresses === true
+					? { allowPrivateAddresses: true }
+					: {}),
 			}),
 			knowledge: [
 				{

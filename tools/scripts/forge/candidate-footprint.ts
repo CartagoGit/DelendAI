@@ -3,6 +3,7 @@
  * same planner that decides which test zones a pull request runs (f00755).
  */
 import { execFileSync } from 'node:child_process';
+import { readGit } from '@delendai/core/runtime';
 
 import { gitDiffChanges } from '../ci/affected.script';
 import { zoneReach } from '../ci/test-zones.script';
@@ -60,12 +61,5 @@ export const mergeBaseOf = (
 	a: string,
 	b: string,
 ): string | undefined => {
-	try {
-		return execFileSync('git', ['merge-base', a, b], {
-			cwd: root,
-			encoding: 'utf8',
-		}).trim();
-	} catch {
-		return undefined;
-	}
+	return readGit(root, ['merge-base', a, b]);
 };

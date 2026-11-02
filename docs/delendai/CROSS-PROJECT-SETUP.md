@@ -237,4 +237,4 @@ fallback with the identical shape.
 - [PLUGINS-DELENDAI.md](./PLUGINS-DELENDAI.md) for plugin authoring and the issues-plugin setup note.
 - [NPM_PUBLISH.md](./NPM_PUBLISH.md) if you are packaging or shipping the repo after setup is working.
 
-Last reviewed: 2026-06-22. Source proposal: [f00030-cross-project-setup-and-github-config.md](./proposals/ready/f00030-cross-project-setup-and-github-config.md).
+Last reviewed: 2026-06-22. Source proposal: [f00030-cross-project-setup-and-github-config.md](proposals/legacy/closed/feats/f00030-cross-project-setup-and-github-config.md).

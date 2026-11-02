@@ -251,6 +251,23 @@ const inferIteration = (
 const isTimeoutLike = (code: string, message: string): boolean =>
 	/timeout|timed out|deadline|abort/iu.test(`${code} ${message}`);
 
+/**
+ * Validation issues as a validator reports them: entries with a `path`
+ * and a `message`. `issues` is also an ordinary collection (an issue
+ * tracker's list), and a successful `issues: []` was counted as a schema
+ * failure because the field was merely present.
+ */
+const isValidationIssueList = (value: unknown): boolean =>
+	Array.isArray(value) &&
+	value.length > 0 &&
+	value.every(
+		(entry) =>
+			typeof entry === 'object' &&
+			entry !== null &&
+			Array.isArray((entry as { path?: unknown }).path) &&
+			typeof (entry as { message?: unknown }).message === 'string',
+	);
+
 const hasSchemaIncongruence = (
 	result: Record<string, unknown> | null,
 	message: string | null,
@@ -258,8 +275,8 @@ const hasSchemaIncongruence = (
 	if (
 		result?.zodError ||
 		result?.validationErrors ||
-		result?.issues ||
-		result?.schemaError
+		result?.schemaError ||
+		(result?.ok !== true && isValidationIssueList(result?.issues))
 	) {
 		return true;
 	}

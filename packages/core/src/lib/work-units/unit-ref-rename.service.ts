@@ -47,8 +47,23 @@ export const renameUnitRef = <T extends IRefRename>(
 ): T | IWorkClaimRefusal => {
 	const to = `refs/heads/${rename.to}`;
 	const from = `refs/heads/${rename.from}`;
+	// Create-only: the destination is a name another unit may hold. An
+	// unconditional update moved this work over that unit's tip, and the
+	// work on it was reachable from nowhere.
+	let holder = '';
 	try {
-		git(root, ['update-ref', to, rename.sha]);
+		holder = git(root, ['rev-parse', '--verify', '--quiet', to]);
+	} catch {
+		holder = '';
+	}
+	if (holder.length > 0) {
+		return {
+			ref: rename.from,
+			reason: `${rename.to} already exists (at ${holder.slice(0, 12)}): another unit holds that name. Nothing was renamed.`,
+		};
+	}
+	try {
+		git(root, ['update-ref', to, rename.sha, '']);
 	} catch (error) {
 		return {
 			ref: rename.from,

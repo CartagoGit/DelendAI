@@ -18,6 +18,21 @@ const strong = cand('strong', 5);
 const roster = [strong, cheap, mid]; // deliberately unsorted
 
 describe('rankProviders', () => {
+	it('the task type shapes the ranking at a neutral dial', () => {
+		const first = (taskType: string) =>
+			rankProviders({
+				available: roster,
+				costQualityTradeoff: 5,
+				taskType,
+			})[0]?.candidate.id;
+		expect(first('plan')).toBe('strong');
+		expect(first('explore the repo')).toBe('cheap');
+		expect(first('unrelated')).toBe(
+			rankProviders({ available: roster, costQualityTradeoff: 5 })[0]
+				?.candidate.id,
+		);
+	});
+
 	it('dial 10 (cheapest) ranks the cheapest provider first', () => {
 		const ranked = rankProviders({
 			available: roster,

@@ -95,6 +95,33 @@ describe('readPublicCatalogue', () => {
 		expect(asked.map((each) => each.url)).toHaveLength(4);
 	});
 
+	it('asks again within the recheck window once the configured sources change', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
+		const first = recording({
+			'https://c.test': { status: 200, body: { items: ['old'] } },
+		});
+		await read(dir, first.fetch, ['https://c.test']);
+		const mine = recording({
+			'https://mine.test': { status: 200, body: { items: ['mine'] } },
+		});
+		const got = await read(dir, mine.fetch, [
+			'https://mine.test',
+			'https://c.test',
+		]);
+		expect(got?.origin).toBe('source');
+		expect(got?.data.items).toEqual(['mine']);
+		const soon = recording({});
+		expect(
+			(
+				await read(dir, soon.fetch, [
+					'https://mine.test',
+					'https://c.test',
+				])
+			)?.origin,
+		).toBe('cache');
+		expect(soon.asked).toEqual([]);
+	});
+
 	it('serves the copy without asking within the recheck window, then asks with its ETag', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
 		const first = recording({
@@ -123,6 +150,41 @@ describe('readPublicCatalogue', () => {
 			(await readCatalogueCopy<IList>(catalogueCachePath('agents', dir)))
 				?.meta.checkedAt,
 		).toBe(LATER.toISOString());
+	});
+
+	it('takes the first source that answers: a later one is its fallback, on a 304 as on a 200', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'layers-'));
+		const first = recording({
+			'https://a.test': {
+				status: 200,
+				body: { items: ['a'] },
+				etag: '"1"',
+			},
+		});
+		await read(dir, first.fetch, ['https://a.test']);
+		const appended = recording({ 'https://a.test': { status: 304 } });
+		const read304 = await read(
+			dir,
+			appended.fetch,
+			['https://a.test', 'https://b.test'],
+			LATER,
+		);
+		expect(read304?.origin).toBe('unchanged');
+		expect(appended.asked.map((call) => call.url)).toEqual([
+			'https://a.test',
+		]);
+
+		// A new first source is asked, and its answer replaces the copy.
+		const moved = recording({
+			'https://b.test': { status: 200, body: { items: ['b'] } },
+		});
+		const fresh = await read(
+			dir,
+			moved.fetch,
+			['https://b.test', 'https://a.test'],
+			new Date(LATER.getTime() + 1),
+		);
+		expect(fresh?.data).toEqual({ items: ['b'] });
 	});
 
 	it('keeps the copy when every source fails, and falls back to the snapshot without one', async () => {

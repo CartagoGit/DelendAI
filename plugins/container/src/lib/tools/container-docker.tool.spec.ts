@@ -90,7 +90,13 @@ describe('container docker tools', () => {
 				command: ['ls'],
 				dryRun: true,
 			}),
-		).toEqual({ ok: 'dry-run', command: 'docker exec web ls' });
+		).toMatchObject({
+			ok: 'dry-run',
+			command: 'docker exec web ls',
+			dryRun: true,
+			risk: 'medium',
+			wouldRun: [{ target: 'docker exec web ls' }],
+		});
 		expect(calls).toEqual([]);
 	});
 

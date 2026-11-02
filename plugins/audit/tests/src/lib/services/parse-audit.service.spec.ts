@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseAuditBody } from '../../../../src/lib/services/parse-audit.service';
+import {
+	parseAuditBody,
+	parseAuditFiles,
+	parseAuditFilesDetailed,
+} from '../../../../src/lib/services/parse-audit.service';
 import type {
 	IAuditDocument,
 	IAuditFinding,
@@ -364,5 +368,28 @@ describe('the shapes the audit brief actually asks for', () => {
 		expect(doc.source.host).toBe('unknown');
 		expect(doc.findings).toHaveLength(1);
 		expect(doc.findings[0]?.files).toEqual([]);
+	});
+});
+
+describe('parseAuditFilesDetailed', () => {
+	it('keeps the parsed documents and names the inputs that did not parse', () => {
+		const good =
+			'# Audit\n\n## 🔴 FATAL\n\n### 1. Bug\n**File**: `a.ts`\n\nx\n';
+		const batch = parseAuditFilesDetailed([
+			{ path: '14-06-2026- Host (Model).md', body: good },
+			{
+				path: 'broken.md',
+				// A getter that throws stands in for a body the parser cannot take.
+				get body(): string {
+					throw new Error('cannot read body');
+				},
+			},
+			{ path: '14-06-2026- Host (Model).md', body: good },
+		]);
+		expect(batch.documents).toHaveLength(1);
+		expect(batch.rejected).toEqual([
+			{ path: 'broken.md', reason: 'unparsable: cannot read body' },
+		]);
+		expect(parseAuditFiles([{ path: 'x.md', body: good }])).toHaveLength(1);
 	});
 });

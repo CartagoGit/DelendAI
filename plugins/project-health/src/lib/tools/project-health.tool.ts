@@ -36,6 +36,7 @@ export const ProjectHealthOutputSchema = z.object({
 	deps: z.number().int().min(0).max(100).optional(),
 	quality: z.number().int().min(0).max(100).optional(),
 	debt: z.number().int().min(0).max(100).optional(),
+	confidence: z.enum(['low', 'medium']).optional(),
 	next: z.array(NextActionSchema).optional(),
 	domain: z.enum(PROJECT_HEALTH_DOMAINS).optional(),
 	tool: z.string().optional(),

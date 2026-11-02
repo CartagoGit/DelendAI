@@ -1,6 +1,7 @@
 /**
  * agents.command.ts — `delendai agents list [--all]`, `agents add`,
- * `agents install <id> [--yes]` and `agents show <id>`.
+ * `agents install <id> [--yes]`, `agents show <id>` and
+ * `agents answer <name> --yes|--no`.
  *
  * The agents this project can reach: from the public ACP registry, from
  * the project's and the person's declarations, and from what this machine
@@ -10,11 +11,13 @@
  * it is, which costs nothing.
  */
 import {
+	answerAgentCandidate,
 	declareAgent,
 	installAgent,
 	introduceAgent,
 	listAgents,
 	writeAgentUsagePage,
+	writeProviderUsagePage,
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -32,6 +35,8 @@ import {
 
 const USAGE_ADD =
 	'agents add --id=<id> --kind=acp|cli|exec|http|file|mcp [--command=<c>] [--args=a,b] [--path=<p>] [--url=<u>] [--mcp-server=<s>] [--name=<n>]';
+
+const USAGE_ANSWER = 'agents answer <name> --yes|--no';
 
 const usageError = (form: string): ICliCommandResult => ({
 	code: EXIT_CODE.USAGE,
@@ -51,11 +56,11 @@ const list = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
-	const { agents } = await listAgents({
+	const { agents, candidates } = await listAgents({
 		workspace: ctx.cwd,
 		all: hasFlag(args, 'all'),
 	});
-	if (ctx.globals.json) return data({ agents });
+	if (ctx.globals.json) return data({ agents, candidates });
 	const lines = agents.map((agent) => {
 		const where = agent.found.map((each) => each.evidence).join('; ');
 		return `${agent.id.padEnd(22)} ${agent.kind.padEnd(5)} ${agent.origin.padEnd(9)} ${agent.launch === undefined ? '-' : 'can start'}${where === '' ? '' : `  (${where})`}`;
@@ -63,7 +68,68 @@ const list = async (
 	process.stdout.write(
 		`${[`${agents.length} agent(s)`, ...lines].join('\n')}\n`,
 	);
-	return { ...data({ agents }), suppressDefaultPrint: true };
+	await offerCandidates(
+		candidates.map((each) => each.name),
+		ctx,
+	);
+	return { ...data({ agents, candidates }), suppressDefaultPrint: true };
+};
+
+/**
+ * Each executable that looks like an agent is offered once: asked here
+ * when someone can answer, otherwise named with the command that answers
+ * it. The answer is kept, so it is never asked again.
+ */
+const offerCandidates = async (
+	names: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<void> => {
+	if (names.length === 0) return;
+	if (!isInteractive()) {
+		process.stdout.write(
+			`${names.length} possible agent(s) to answer: ${names
+				.map((name) => `delendai agents answer ${name} --yes|--no`)
+				.join(', ')}\n`,
+		);
+		return;
+	}
+	const rl = openRl();
+	try {
+		for (const name of names) {
+			const accept = await askConfirm(
+				rl,
+				`Use ${name} as an agent of this project?`,
+				false,
+			);
+			await answerAgentCandidate({ workspace: ctx.cwd, name, accept });
+		}
+	} finally {
+		rl.close();
+	}
+};
+
+/** `agents answer <name> --yes|--no`: keep the answer about an offered executable. */
+const answer = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const name = args.find((arg) => !arg.startsWith('--'));
+	const accept = hasFlag(args, 'yes');
+	if (name === undefined || accept === hasFlag(args, 'no'))
+		return usageError(USAGE_ANSWER);
+	try {
+		return data({
+			name,
+			accepted: accept,
+			...(await answerAgentCandidate({
+				workspace: ctx.cwd,
+				name,
+				accept,
+			})),
+		});
+	} catch (error) {
+		return failed(error);
+	}
 };
 
 const add = async (
@@ -129,9 +195,25 @@ const show = async (
 ): Promise<ICliCommandResult> => {
 	const id = args[1];
 	if (id === undefined) return usageError('agents show <id> [--write]');
-	const { agents } = await listAgents({ workspace: ctx.cwd, all: true });
+	const { agents, catalogue } = await listAgents({
+		workspace: ctx.cwd,
+		all: true,
+	});
 	const agent = agents.find((each) => each.id === id);
-	if (agent === undefined) return failed(new Error(`no agent ${id}`));
+	if (agent === undefined) {
+		// A model provider says about itself what its catalogue entry says.
+		const provider = catalogue?.providers.find((each) => each.id === id);
+		if (provider === undefined)
+			return failed(new Error(`no agent or model provider ${id}`));
+		const page = hasFlag(args, 'write')
+			? await writeProviderUsagePage({
+					workspace: ctx.cwd,
+					provider,
+					catalogueDate: catalogue?.fetchedAt,
+				})
+			: undefined;
+		return data({ id, provider, ...(page === undefined ? {} : { page }) });
+	}
 	if (agent.launch === undefined)
 		return data({
 			agent,
@@ -189,7 +271,16 @@ export const agentsShowCommand: ICliCommand = {
 	name: 'agents show',
 	offline: true,
 	summary:
-		'Greet an ACP agent and show what it says it is; nothing is spent.',
+		"Greet an ACP agent, or read a model provider's catalogue entry, and show what it says it is; nothing is spent.",
 	usage: 'agents show <id> [--write]',
 	run: (args, ctx) => show(['show', ...args], ctx),
+};
+
+export const agentsAnswerCommand: ICliCommand = {
+	name: 'agents answer',
+	offline: true,
+	summary:
+		'Keep your answer about an executable offered as an agent, so it is not asked again.',
+	usage: USAGE_ANSWER,
+	run: answer,
 };

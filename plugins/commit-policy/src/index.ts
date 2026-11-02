@@ -38,17 +38,17 @@ import { createPolicyPersistence } from './lib/persistence/wip-persistence';
 import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 // Declared core surface (`./cli`), because a plugin must install from npm:
 // the `lib/` path only resolves through tsconfig paths in this monorepo.
-import { providerModelId } from '@delendai/core/cli';
+import { providerModelId, readSliceOwnership } from '@delendai/core/cli';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
-import { fileRepairProposals } from './lib/services/repair-proposer';
 import { StormDetector } from './lib/services/storm-detector';
 import { StormLog } from './lib/services/storm-log';
 import { buildCommitToolRegistration } from './lib/tools/commit-tool';
 import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
+import { buildStatusToolRegistration } from './lib/tools/status-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
@@ -189,7 +189,7 @@ export const validateCommitPolicyConfiguration = (
 
 export default definePlugin({
 	name: 'commit-policy',
-	version: '0.2.4',
+	version: '0.3.0',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
 		{ source: '.commit-policy/settlement.json' },
@@ -391,46 +391,6 @@ export default definePlugin({
 		// missing directory as "no history", which is exactly what it is.
 		await stormLog.replayInto(stormDetector);
 
-		// File a `kind: fix` proposal for any storm
-		// that crossed the threshold. Idempotent — a proposal with
-		// the same slug is not re-created. The host boot step runs
-		// after plugin registration, so by the time `register()`
-		// runs the in-memory detector has already been seeded from
-		// the on-disk log; storms detected at boot feed into the
-		// next `auto_work` cycle.
-		//
-		// S1: writing the proposal needs an `IProposalStorePort`
-		// (id allocation + registry sync). commit-policy no longer
-		// imports the proposals plugin to get one — that import was one
-		// edge of a build-order cycle — and the plugin context has no
-		// field through which a peer can hand one over yet, the way
-		// `ctx.logs` does for the logs plugin. Until it does, no port is
-		// injected here: every qualifying storm comes back
-		// `proposed: false` with `NO_PROPOSAL_STORE_REASON`, storms are
-		// still detected, logged and exposed through `commit_policy_storms`,
-		// and nothing else about this plugin changes.
-		const repairResults = await fileRepairProposals(
-			stormDetector.snapshot().storms,
-			{
-				workspaceRoot: ctx.workspace.root,
-				cacheDir: ctx.cacheDir,
-				docsDir: ctx.docsDir,
-			},
-		);
-		for (const r of repairResults) {
-			if (r.proposed) {
-				console.warn(
-					JSON.stringify({
-						event: 'commit-policy.repair-proposed',
-						code: r.storm.code,
-						trigger: r.storm.trigger,
-						file: r.filePath,
-						sampleProposalIds: r.storm.sampleProposalIds,
-					}),
-				);
-			}
-		}
-
 		const tools: IToolRegistration[] = [
 			buildBranchProtectionToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,
@@ -450,6 +410,16 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				pluginCacheDir: ctx.pluginCacheDir,
 				identityCtx,
+				locale: process.env.DELENDAI_LOCALE ?? 'en',
+				...(ctx.developmentPolicy !== undefined
+					? { development: ctx.developmentPolicy }
+					: {}),
+			}),
+			buildStatusToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				options: policy,
+				identityCtx,
+				branchProtectionAdapter,
 				locale: process.env.DELENDAI_LOCALE ?? 'en',
 				...(ctx.developmentPolicy !== undefined
 					? { development: ctx.developmentPolicy }
@@ -531,6 +501,7 @@ export default definePlugin({
 					: {}),
 			}),
 		);
+		const developmentPolicy = ctx.developmentPolicy;
 		const persistence = createPolicyPersistence({
 			...(ctx.developmentPolicy !== undefined
 				? { policy: ctx.developmentPolicy }
@@ -550,6 +521,31 @@ export default definePlugin({
 				workspaceRoot: ctx.workspace.root,
 				proposalsDir: joinRel(ctx.docsDir, 'proposals'),
 			}),
+			...(developmentPolicy === undefined
+				? {}
+				: {
+						sliceOwnership: async (input: {
+							readonly agent: string;
+							readonly proposalId: string;
+							readonly sliceId: string;
+						}) => {
+							const held = await readSliceOwnership({
+								root: ctx.workspace.root,
+								policy: developmentPolicy,
+								agent: input.agent,
+								kind: 'implement',
+								proposal: input.proposalId,
+								slice: input.sliceId,
+							});
+							return {
+								others: held.others.map((unit) => ({
+									agent: unit.agent,
+									ref: unit.ref,
+								})),
+								own: held.own,
+							};
+						},
+					}),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
 				: {}),

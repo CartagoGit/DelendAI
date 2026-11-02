@@ -7,3 +7,9 @@
  */
 export const DEFAULT_SETTLEMENT_EXEMPT_PROPOSAL_ID_PREFIXES: readonly string[] =
 	['e'];
+
+/** Names a slice's hold in the worker registry, apart from any agent. */
+export const SLICE_HOLD_PREFIX = 'slice:';
+
+/** A hold older than this outlived its process: it blocks nothing. */
+export const SLICE_HOLD_TTL_MS = 30 * 60 * 1000;

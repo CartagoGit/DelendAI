@@ -21,6 +21,10 @@ vi.mock('@delendai/changelog/public', async (importOriginal) => {
 	};
 });
 
+// A worker that already ran another spec holds the service bound to the
+// real changelog plugin; the mock only binds to a module loaded after this.
+vi.resetModules();
+
 const { buildBumpIntent, deriveBumpFromKinds } = await import(
 	'../../../../src/lib/bump/roadmap-bump-intent.service'
 );

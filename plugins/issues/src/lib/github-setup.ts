@@ -12,6 +12,7 @@
  * The `setup-github` MCP tool and (via the same core engine) the CLI
  * subcommand emit identical guidance.
  */
+import { parseJsonc } from '@delendai/core/cli';
 import {
 	buildGithubSetupSteps,
 	renderCrossProjectGuide,
@@ -65,14 +66,14 @@ export const resolveTier = (
 /** True when the config text declares `plugins.issues`. */
 export const isIssuesConfigured = (configText: string | undefined): boolean => {
 	if (configText === undefined) return false;
-	try {
-		const parsed = JSON.parse(configText) as {
-			plugins?: Record<string, unknown>;
-		};
-		return parsed.plugins !== undefined && 'issues' in parsed.plugins;
-	} catch {
-		return false;
-	}
+	// The config file is JSONC by contract, so a commented file is a
+	// valid file. `JSON.parse` threw on it and the project was reported
+	// as "issues not configured" while its config plainly declared them.
+	const { value, errors } = parseJsonc(configText);
+	if (errors.length > 0) return false;
+	const parsed = value as { plugins?: Record<string, unknown> } | null;
+	if (parsed === null || typeof parsed !== 'object') return false;
+	return parsed.plugins !== undefined && 'issues' in parsed.plugins;
 };
 
 /**
