@@ -89,6 +89,8 @@ const SANCTIONED_TOP_LEVEL: ReadonlySet<string> = new Set([
 	// configuration, project profile, backups), moved here from `.delendai/`.
 	RECORDS_DIR,
 	// Per-plugin ephemeral exec dir (f00080)
+	// The trees of the branches projects chose with `--branch`.
+	'branch-runtime',
 	// Per-agent git worktrees — not source code, never stray.
 	'.worktrees',
 	// The host server's startup reconciliation lock.

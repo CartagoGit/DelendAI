@@ -74,23 +74,23 @@ describe('the branch flag', () => {
 });
 
 describe('branchHostScript', () => {
-	it('runs the branch from its own tree and leaves the checkout alone', () => {
+	it('runs the branch from its own tree and leaves the checkout alone', async () => {
 		const root = repo();
-		const script = branchHostScript(root, 'main', noInstall);
+		const script = await branchHostScript(root, 'main', noInstall);
 		expect(script).toContain('.cache/delendai/branch-runtime/main/');
 		expect(git(root, 'branch', '--show-current')).toBe('develop');
 	});
 
-	it('follows the branch on the next start', () => {
+	it('follows the branch on the next start', async () => {
 		const root = repo();
-		branchHostScript(root, 'main', noInstall);
+		await branchHostScript(root, 'main', noInstall);
 		git(root, 'switch', '-q', '--ignore-other-worktrees', 'main');
 		writeFileSync(join(root, 'new.txt'), 'x');
 		git(root, 'add', 'new.txt');
 		git(root, 'commit', '-qm', 'two');
 		const tip = git(root, 'rev-parse', 'HEAD');
 		git(root, 'switch', '-q', 'develop');
-		const script = branchHostScript(root, 'main', noInstall) ?? '';
+		const script = (await branchHostScript(root, 'main', noInstall)) ?? '';
 		const tree = script.replace(
 			'/tools/scripts/host/host-server.script.ts',
 			'',
@@ -98,13 +98,27 @@ describe('branchHostScript', () => {
 		expect(git(tree, 'rev-parse', 'HEAD')).toBe(tip);
 	});
 
-	it('answers nothing for a branch that does not exist', () => {
-		expect(branchHostScript(repo(), 'nope', noInstall)).toBeUndefined();
+	it('gives each branch its own tree, and one tree to two starts', async () => {
+		const root = repo();
+		git(root, 'branch', 'other');
+		const [main, again, other] = await Promise.all([
+			branchHostScript(root, 'main', noInstall),
+			branchHostScript(root, 'main', noInstall),
+			branchHostScript(root, 'other', noInstall),
+		]);
+		expect(main).toBe(again);
+		expect(other).toContain('branch-runtime/other/');
 	});
 
-	it('refuses a name that could be read as an option', () => {
+	it('answers nothing for a branch that does not exist', async () => {
 		expect(
-			branchHostScript(repo(), '--upload-pack=x', noInstall),
+			await branchHostScript(repo(), 'nope', noInstall),
+		).toBeUndefined();
+	});
+
+	it('refuses a name that could be read as an option', async () => {
+		expect(
+			await branchHostScript(repo(), '--upload-pack=x', noInstall),
 		).toBeUndefined();
 	});
 });

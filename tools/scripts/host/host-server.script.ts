@@ -599,7 +599,7 @@ if (import.meta.main) {
 			dirname(fileURLToPath(import.meta.url)),
 			'../../..',
 		);
-		const script = branchHostScript(repository, branch);
+		const script = await branchHostScript(repository, branch);
 		if (script !== undefined) {
 			const child = spawn(
 				process.execPath,

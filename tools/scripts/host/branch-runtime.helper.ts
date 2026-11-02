@@ -10,8 +10,10 @@
  * and says so.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+
+import { withFileMutex } from '@delendai/core/runtime';
 
 const BRANCH_FLAG = '--branch=';
 const RUNTIME_DIR = '.cache/delendai/branch-runtime';
@@ -48,16 +50,12 @@ export const branchFlag = (argv: readonly string[]): string | undefined => {
 export const withoutBranchFlag = (argv: readonly string[]): readonly string[] =>
 	argv.filter((arg) => !arg.startsWith(BRANCH_FLAG));
 
-/**
- * The host script of `branch`, brought up to date, or `undefined` when there
- * is no such branch here or on its remote.
- */
-export const branchHostScript = (
+/** The host script of `branch`, up to date; `undefined` when there is no such branch. */
+const updatedHostScript = (
 	root: string,
 	branch: string,
-	run: TRun = runQuietly,
+	run: TRun,
 ): string | undefined => {
-	if (!SAFE_BRANCH.test(branch)) return undefined;
 	// Offline a project still starts, on what this clone last saw.
 	run('git', ['fetch', '--quiet', 'origin', branch], root);
 	const sha =
@@ -74,4 +72,22 @@ export const branchHostScript = (
 	// Scripts off: an install script once rewrote the shared git config.
 	run('bun', ['install', '--frozen-lockfile', '--ignore-scripts'], tree);
 	return join(tree, HOST_SCRIPT);
+};
+
+/**
+ * Projects on different branches never meet: each branch has its own tree.
+ * Two on one branch can start together, and one of them must not run a tree
+ * the other is still installing, so a branch is prepared by one at a time.
+ */
+export const branchHostScript = async (
+	root: string,
+	branch: string,
+	run: TRun = runQuietly,
+): Promise<string | undefined> => {
+	if (!SAFE_BRANCH.test(branch)) return undefined;
+	mkdirSync(join(root, RUNTIME_DIR), { recursive: true });
+	return withFileMutex(
+		join(root, RUNTIME_DIR, `${branch.replaceAll('/', '-')}.lock`),
+		async () => updatedHostScript(root, branch, run),
+	);
 };
