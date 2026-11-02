@@ -273,3 +273,7 @@ export {
 	DISCOVERY_CONSENT_QUESTION,
 } from '../lib/contracts/constants/discovery-consent.constant';
 export type { IDiscoveryConsentAnswer } from '../lib/contracts/interfaces/discovery-consent-answer.interface';
+export type {
+	ITaskBriefing,
+	ITaskBriefingRequest,
+} from '../lib/contracts/interfaces/work-briefing.interface';

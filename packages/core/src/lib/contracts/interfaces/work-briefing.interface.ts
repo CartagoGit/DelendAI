@@ -27,6 +27,41 @@ export interface IWorkBriefing {
 	readonly contested: readonly string[];
 }
 
+/** One file a task names, by reference: its size says what reading it costs. */
+export interface ITaskFile {
+	readonly path: string;
+	/** Absent when the task will create it. */
+	readonly bytes?: number;
+}
+
+/**
+ * What a unit is for, so an agent starts on its task instead of searching for
+ * it. By reference, never by body: the reach follows the slice, from one file
+ * to hundreds, and the agent reads what the work needs.
+ */
+export interface ITaskBriefing {
+	readonly goal: string;
+	readonly slices: readonly {
+		readonly id: string;
+		readonly title: string;
+		readonly acceptance: readonly string[];
+	}[];
+	readonly files: readonly ITaskFile[];
+	readonly specs: readonly string[];
+}
+
+/** A unit a task briefing is asked for. */
+export interface ITaskBriefingRequest {
+	readonly worktree: string;
+	readonly proposal: string;
+	readonly slice: string;
+}
+
+/** Where tasks live is the planning plugin's; core only asks. */
+export type TTaskBriefingProvider = (
+	request: ITaskBriefingRequest,
+) => Promise<ITaskBriefing | undefined>;
+
 /** The worktree `work enter` hands back, before the briefing is added. */
 export interface IEnteredWorktree {
 	/** The logical ref this identity works in. */

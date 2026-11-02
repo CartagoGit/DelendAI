@@ -41,7 +41,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 
 ### S1 — A unit starts with its task
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `plugins/proposals/src/index.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/core/src/cli.ts`, `packages/core/src/contracts/index.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/src/lib/work-units/task-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/task-briefing.service.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/services/task-briefing.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/task-briefing.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Through a port core declares and the proposals plugin fills, `work enter` returns the slice's goal, acceptance, files with their sizes and nearest specs, by reference and not by body; a project with no proposals plugin enters as before."
@@ -84,3 +84,4 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 
 ## notes
 - 2026-11-01: the owner made the right path a standing rule for every agent, so it opens the invariants of AGENT-BOOTSTRAP.md, ahead of the split of S3.
+- 2026-11-02, S1: `work enter` answers with the task in about 2 KB. The CLI reads proposals from the default layout, so a project with a relocated folder gets the task through its server, and no task block from the CLI.

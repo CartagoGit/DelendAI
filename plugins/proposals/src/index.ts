@@ -37,6 +37,8 @@ import {
 	type IObservedToolCall,
 } from './lib/services/checkpoint-advisory-micro-validation.service';
 import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
+import { registerTaskBriefingProvider } from '@delendai/core/cli';
+import { taskBriefingOf } from './lib/services/task-briefing.service';
 import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import {
@@ -123,6 +125,9 @@ export default definePlugin({
 			ctx.cacheDir,
 			ctx.docsDir,
 			parsedOptions.data.proposalsDir,
+		);
+		registerTaskBriefingProvider((request) =>
+			taskBriefingOf(request, layout.proposalsDir),
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);

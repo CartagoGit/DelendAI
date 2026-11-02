@@ -4,6 +4,7 @@
  * the building blocks for hosts that wire the engines directly.
  */
 export { default } from '../index';
+export { taskBriefingOf } from '../lib/services/task-briefing.service';
 
 export { registerProposalsStableTools } from '../lib/api/proposals-stable-tools';
 
