@@ -2,14 +2,14 @@
 id: x01002
 title: "A stranded proposal is told to hand over, not to close by hand"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
-last-correlation-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T14:37:40.712Z
+last-transition-id: a7fe6f70-d81d-4839-b13c-76e7e24a5dec
+last-correlation-id: a7fe6f70-d81d-4839-b13c-76e7e24a5dec
+last-transition-from: review
+last-transition-at: 2026-11-02T20:25:38.744Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
