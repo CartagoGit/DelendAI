@@ -36,7 +36,8 @@ export const holdsFrom =
 		);
 		if (entry === undefined) return true;
 		if (entry.publicationRef !== null) return true;
-		return entry.standing === 'live';
+		// A unit its owner parked keeps its claims while it waits.
+		return entry.standing === 'live' || entry.standing === 'waiting';
 	};
 
 /** The predicate a claim reader asks, for the workspace at `root`. */

@@ -51,6 +51,22 @@ describe('judgeUnit', () => {
 		expect(standingAfter(WINDOW * 8 + 1)).toBe('abandoned');
 	});
 
+	it('waits, neither idle nor abandoned, once its owner parked it', () => {
+		const parked = (silentFor: number) =>
+			judgeUnit({
+				lease: lease(silentFor),
+				delivered: false,
+				now: NOW,
+				windowSeconds: WINDOW,
+				parked: "the owner's sampling run",
+			});
+		expect(parked(WINDOW - 1).standing).toBe('live');
+		expect(parked(WINDOW * 20).standing).toBe('waiting');
+		expect(parked(WINDOW * 20).reason).toContain(
+			"the owner's sampling run",
+		);
+	});
+
 	it('is delivered when proved so and its owner has gone quiet', () => {
 		expect(standingAfter(WINDOW + 1, true)).toBe('delivered');
 	});

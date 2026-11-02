@@ -246,12 +246,15 @@ export const checkWorkflowInvariants = (input: {
 		now: input.now,
 		stillOpen: (ref) =>
 			landedForgeRefKept(root, policy, remote, integration, ref),
+		published,
 	});
 	add({
 		scope: 'forge',
 		id: 'no-remote-work-refs',
 		claim: 'no work ref outlived its unit on the forge',
-		holds: remoteWork.length === 0,
+		// A unit its owner parked is listed, with what it waits on, and
+		// is not a broken one.
+		holds: remoteWork.every((each) => each.waiting === true),
 		observed:
 			remoteWork.length === 0
 				? 'none'
@@ -259,7 +262,7 @@ export const checkWorkflowInvariants = (input: {
 						.slice(0, 3)
 						.map((each) => `${each.ref} (${each.why})`)
 						.join(', ')}`,
-		remedy: 'publish the unit (`delendai work publish`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
+		remedy: 'publish the unit (`delendai work publish`); one that waits on someone says so with a commit in it (`git commit --allow-empty -m "parked" --trailer "Delendai-Parked: <what it waits on>"`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
 	add(unitsOnForgeInvariant({ root, remote, integration, workPrefix }));

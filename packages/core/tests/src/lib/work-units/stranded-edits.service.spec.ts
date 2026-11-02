@@ -41,6 +41,9 @@ const git = (cwd: string, ...args: string[]): string =>
 		},
 	).trim();
 
+const tipOf = (root: string, ref: string): string =>
+	git(root, 'rev-parse', ref);
+
 /** A shared checkout on develop, and agent-a's unit that changed a.ts. */
 const repo = (): string => {
 	const root = mkdtempSync(join(tmpdir(), 'stranded-'));
@@ -95,7 +98,7 @@ describe('keepStrandedEdits', () => {
 			'already-kept',
 		);
 		expect(listStrandedEdits({ root, policy })).toEqual([
-			{ ref: kept.ref, agent: 'agent-a' },
+			{ ref: kept.ref, agent: 'agent-a', keptAt: expect.any(String) },
 		]);
 	});
 
@@ -140,6 +143,7 @@ describe('dropLandedStrandedEdits', () => {
 		const second = await keepStrandedEdits({ root, policy });
 		if (first.outcome !== 'kept' || second.outcome !== 'kept')
 			throw new Error('not kept');
+		const firstTip = tipOf(root, first.ref);
 		// The first snapshot's a.ts is in the newer one; the newer one holds
 		// new.ts, which no branch has.
 		const dropped = dropLandedStrandedEdits({
@@ -147,7 +151,7 @@ describe('dropLandedStrandedEdits', () => {
 			policy,
 			integration: 'develop',
 		});
-		expect(dropped).toEqual([first.ref]);
+		expect(dropped).toEqual([`${first.ref}@${firstTip}`]);
 		expect(
 			listStrandedEdits({ root, policy }).map((each) => each.ref),
 		).toEqual([second.ref]);
@@ -164,8 +168,32 @@ describe('dropLandedStrandedEdits', () => {
 			'HEAD',
 		);
 		git(root, 'switch', '-q', 'develop');
+		const secondTip = tipOf(root, second.ref);
 		expect(
 			dropLandedStrandedEdits({ root, policy, integration: 'develop' }),
-		).toEqual([second.ref]);
+		).toEqual([`${second.ref}@${secondTip}`]);
+	});
+
+	it('drops a snapshot of a version the integration branch held and moved past', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
+		const stale = await keepStrandedEdits({ root, policy });
+		if (stale.outcome !== 'kept') throw new Error('not kept');
+		const tip = tipOf(root, stale.ref);
+		// The same version lands on develop, then develop moves on.
+		git(root, 'commit', '-q', '-am', 'lands a = 3');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 4;\n');
+		git(root, 'commit', '-q', '-am', 'moves on');
+		expect(
+			dropLandedStrandedEdits({ root, policy, integration: 'develop' }),
+		).toEqual([`${stale.ref}@${tip}`]);
+	});
+
+	it('lists what it keeps oldest first, with when it was kept', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'a.ts'), 'export const a = 9;\n');
+		await keepStrandedEdits({ root, policy });
+		const [kept] = listStrandedEdits({ root, policy });
+		expect(Number.isNaN(Date.parse(kept?.keptAt ?? ''))).toBe(false);
 	});
 });

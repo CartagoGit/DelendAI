@@ -24,6 +24,11 @@ export const silentWorkRefs = (input: {
 	readonly refs: readonly IDatedWorkRef[];
 	readonly leaseTtlMinutes: number;
 	readonly now: number;
+	/**
+	 * Whether its owner parked it (a `Delendai-Parked` trailer): it waits
+	 * on someone and is kept. Asked only of the refs otherwise retired.
+	 */
+	readonly isParked?: ((name: string) => boolean) | undefined;
 }): readonly { readonly name: string; readonly hours: number }[] => {
 	const limit = abandonedAfterSeconds(input.leaseTtlMinutes);
 	return input.refs
@@ -32,7 +37,8 @@ export const silentWorkRefs = (input: {
 				!ref.published &&
 				Number.isFinite(ref.committedAt) &&
 				ref.committedAt > 0 &&
-				input.now - ref.committedAt > limit,
+				input.now - ref.committedAt > limit &&
+				input.isParked?.(ref.name) !== true,
 		)
 		.map((ref) => ({
 			name: ref.name,

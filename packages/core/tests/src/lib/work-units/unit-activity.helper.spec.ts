@@ -5,7 +5,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ownActivityAt } from '../../../../src/lib/work-units/unit-activity.helper';
+import {
+	ownActivityAt,
+	parkedReason,
+} from '../../../../src/lib/work-units/unit-activity.helper';
 
 const OWN = 1_700_000_000;
 const LATER = OWN + 86_400;
@@ -79,5 +82,45 @@ describe('ownActivityAt', () => {
 		const repo = repository();
 		expect(ownActivityAt(repo.read, 'develop', 'develop')).toBe(OWN - 100);
 		expect(ownActivityAt(repo.read, 'missing', 'develop')).toBeUndefined();
+	});
+});
+
+describe('parkedReason', () => {
+	it('reads what a unit waits on from its latest own commit, until it moves on', () => {
+		const repo = repository();
+		repo.run(['checkout', '-q', '-b', 'unit']);
+		repo.run(['commit', '-q', '--allow-empty', '-m', 'own work'], OWN);
+		expect(parkedReason(repo.read, 'unit', 'develop')).toBeUndefined();
+		repo.run(
+			[
+				'commit',
+				'-q',
+				'--allow-empty',
+				'-m',
+				'parked',
+				'--trailer',
+				"Delendai-Parked: the owner's sampling run",
+			],
+			OWN + 10,
+		);
+		expect(parkedReason(repo.read, 'unit', 'develop')).toBe(
+			"the owner's sampling run",
+		);
+		// A merge of the integration branch is no work of its own.
+		repo.run(['checkout', '-q', 'develop']);
+		repo.run(['commit', '-q', '--allow-empty', '-m', 'others'], OWN + 20);
+		repo.run(['checkout', '-q', 'unit']);
+		repo.run(
+			['merge', '-q', '--no-ff', '-m', 'hydrate', 'develop'],
+			OWN + 30,
+		);
+		expect(parkedReason(repo.read, 'unit', 'develop')).toBe(
+			"the owner's sampling run",
+		);
+		repo.run(
+			['commit', '-q', '--allow-empty', '-m', 'back at it'],
+			OWN + 40,
+		);
+		expect(parkedReason(repo.read, 'unit', 'develop')).toBeUndefined();
 	});
 });

@@ -16,7 +16,7 @@
  */
 import { readGit } from '../shared/git-read.helper';
 
-import { ownActivityAt } from './unit-activity.helper';
+import { ownActivityAt, parkedReason } from './unit-activity.helper';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import {
 	ABANDONED_AFTER_LEASE_WINDOWS,
@@ -49,7 +49,14 @@ export const hangingForgeWorkRefs = (input: {
 	 * landed is not hanging while that holds.
 	 */
 	readonly stillOpen?: ((ref: string) => boolean) | undefined;
-}): readonly { readonly ref: string; readonly why: string }[] => {
+	/** The publications on the forge, by short name: one may hold a ref. */
+	readonly published?: readonly string[] | undefined;
+}): readonly {
+	readonly ref: string;
+	readonly why: string;
+	/** Quiet on purpose: its owner said what it waits on. */
+	readonly waiting?: true;
+}[] => {
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const limit = abandonedAfterSeconds(input.leaseTtlMinutes);
 	return input.refs.flatMap((ref) => {
@@ -73,14 +80,27 @@ export const hangingForgeWorkRefs = (input: {
 		// A ref this clone never fetched cannot be dated: not judged.
 		if (!Number.isFinite(tipAt) || tipAt === 0) return [];
 		const silent = now - tipAt;
-		return silent > limit
-			? [
-					{
-						ref,
-						why: `silent ${String(Math.round(silent / SECONDS_PER_MINUTE / 60))} h`,
-					},
-				]
-			: [];
+		if (silent <= limit) return [];
+		// A publication that holds the whole ref is what it waits on: the
+		// pull request's review or checks, not an owner who is gone.
+		const heldByPublication = (input.published ?? []).some(
+			(publication) =>
+				git(input.root, [
+					'rev-list',
+					'--count',
+					`${input.remote}/${publication}..${tracked}`,
+				]) === '0',
+		);
+		if (heldByPublication) return [];
+		const hours = String(Math.round(silent / SECONDS_PER_MINUTE / 60));
+		const parked = parkedReason(
+			(args) => git(input.root, args),
+			tracked,
+			`${input.remote}/${input.integration}`,
+		);
+		return parked === undefined
+			? [{ ref, why: `silent ${hours} h` }]
+			: [{ ref, why: `waiting ${hours} h on: ${parked}`, waiting: true }];
 	});
 };
 
