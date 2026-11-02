@@ -9,7 +9,7 @@ import {
 	type IExitCode,
 } from '../contracts/constants/exit-code.constant';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
-import { deliverUnit, answerOf } from './work-deliver.service';
+import { answerOf, deliverUnit, unitFlagsOf } from './work-deliver.service';
 
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },
@@ -115,5 +115,34 @@ describe('answerOf', () => {
 			result: { content: [{ text: 'not json' }] },
 		});
 		await expect(answerOf(Promise.reject(prose))).rejects.toBe(prose);
+	});
+});
+
+describe('unitFlagsOf', () => {
+	const parse = (ref: string) =>
+		ref === 'refs/heads/delendai/wip/a/implement/x1-S2-g2/the-fix'
+			? { proposal: 'x1', slice: 'S2', generation: 2, topic: 'the-fix' }
+			: undefined;
+
+	it('names the unit of the branch a delivery runs on', () => {
+		expect(
+			unitFlagsOf(
+				'delendai/wip/a/implement/x1-S2-g2/the-fix',
+				'x1',
+				parse,
+			),
+		).toEqual(['--slice=S2', '--generation=2', '--topic=the-fix']);
+	});
+
+	it('names nothing off a unit, or on another proposal', () => {
+		expect(unitFlagsOf('develop', 'x1', parse)).toEqual([]);
+		expect(unitFlagsOf(undefined, 'x1', parse)).toEqual([]);
+		expect(
+			unitFlagsOf(
+				'delendai/wip/a/implement/x1-S2-g2/the-fix',
+				'x2',
+				parse,
+			),
+		).toEqual([]);
 	});
 });
