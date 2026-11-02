@@ -2,14 +2,14 @@
 id: x01002
 title: "A stranded proposal is told to hand over, not to close by hand"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: a7fe6f70-d81d-4839-b13c-76e7e24a5dec
-last-correlation-id: a7fe6f70-d81d-4839-b13c-76e7e24a5dec
-last-transition-from: review
-last-transition-at: 2026-11-02T20:25:38.744Z
+last-transition-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
+last-correlation-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T20:40:14.716Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -66,11 +66,14 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-implementer: claude-opus-5-5
 
 ### S4 — Prove and publish take the unit they run in
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work prove and work publish run in a unit's worktree with no --slice, --generation or --topic act on that unit, read from its branch, by the helper work deliver shares; a spec checks it."
+- shipped-in: `748438914ccf`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
