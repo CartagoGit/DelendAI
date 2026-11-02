@@ -2,14 +2,16 @@
 id: x00984
 title: "Read-only commands leave a project as they found it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
-last-transition-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
-last-correlation-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T09:56:07.495Z
+last-transition-id: 8f546e13-6638-4df0-a33b-08ad677df1c7
+last-correlation-id: 8f546e13-6638-4df0-a33b-08ad677df1c7
+last-transition-from: review
+last-transition-at: 2026-11-02T22:05:20.893Z
+shipped-in:
+  - "9f2554a01f10bddf63a24b8eb81cccc74899f36e"
 ---
 
 # x00984 — Read-only commands leave a project as they found it
@@ -34,15 +36,17 @@ The cause is structural: every CLI command reaches its tool through a full delen
 - global_gate: type
 
 ### S1 — A server started for a read-only command writes nothing until something is written
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/leave-no-trace.service.ts`, `packages/cli/src/lib/leave-no-trace.service.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/registry-delegation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "In a folder with no .cache/delendai, status, overview and adopt each exit 0 and the folder holds no new file afterwards; a spec runs each against a fresh folder."
   - "In a project that already has .cache/delendai, the same commands report what they reported before."
 - shipped-in: `c149012b5c28`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 9f2554a01f10, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 2/2: (1) At 9f2554a0 the new leave-no-trace service computes, before the server starts, the outermost directory the run would have to create, and removes exactly that d… (2) At 9f2554a0 the service returns no cleanup at all when the project already holds its cache, so what was there is neither changed nor removed, and the command's… — Approved on the delivered state of 9f2554a01f10bddf63a24b8eb81cccc74899f36e. A read-only command no longer leaves a cache directory behind: the service works out before the server starts which directory the run would have created and removes exactly that one afterwards, and a project that already had its cache is left as it was. The type gate exited 0 and the two slice specs pass 19 of 19. Four residuals, recorded and not blocking: the assertion that a project with a cache keeps what the run wrote is vacuous, because the two directories the run creates already satisfy it; the service's cache directory parameter is never populated, so a custom cache directory would not be honoured; when the cache did not exist before the run, the cleanup removes the whole cache directory, so anything another process writes into it during the run goes with it; and only the three named commands declare themselves read-only, while the goal spoke of any command that only reads.
 
 ## acceptance
 
