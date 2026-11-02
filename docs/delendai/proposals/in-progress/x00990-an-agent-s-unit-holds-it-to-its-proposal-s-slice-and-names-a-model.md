@@ -77,13 +77,6 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - acceptance:
   - "Work left uncommitted in the shared checkout is kept under the identity of the session that wrote it (or `unknown` with the evidence), never the identity of whichever session found it."
 
-### S6 — A unit commits only what was written in it
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`
-- **Gate**: type
-- acceptance:
-  - "A call's automatic commit takes only paths written inside the unit's worktree by that call; a hunk present only in the shared checkout never enters a unit."
-
 ### S7 — A reviewer does not implement what it reviews
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
@@ -106,7 +99,6 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - An agent id that matches no model of the model catalogue, or carries a date or the product's name, is recorded with an unverified confidence and work status says so; the project's identity policy decides whether it may enter.
 - Entering or committing in a unit whose changed files overlap another live unit's lists that unit, its agent and the shared files.
 - Work left uncommitted in the shared checkout is kept under the identity of the session that wrote it (or `unknown` with the evidence), never the identity of whichever session found it.
-- A call's automatic commit takes only paths written inside the unit's worktree by that call; a hunk present only in the shared checkout never enters a unit.
 - work enter --kind=implement on a proposal in review/ is refused to an agent that holds or held a review round on it, naming the round.
 - After `work claim`, `work enter` with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice.
 
@@ -118,3 +110,4 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - S3, 2026-11-02. A date alone is no sign: real model ids carry one (`claude-3-5-sonnet-20241022`), so it is not refused. The product's name with a version is: `delendai-` is followed by words only when this product signs its own work, so `delendai-m3-docs-20261028` is refused at entry as the product's name posing as a model's maker. Every other name at work that no model seen on this machine and no roster entry confirms is listed by `work status` under `unverifiedAgents`; whether it may enter stays with the identity policy (`development.identity`).
 - S5, 2026-11-02. Git cannot tell who wrote an uncommitted file, and the session that keeps it is only the one that found it (keeping never used it). The edits were named after any agent whose unit covered one of the paths: minimax's unit held one `package.json` hunk of 24 paths another agent wrote. An agent is now named only when its units cover every path; otherwise they are kept as `unattributed`, and the commit lists each unit that changes some of them, as evidence.
 - S6, analysed 2026-11-02 and left pending: the per-call commit (`commit-call-writes.ts`) cannot take a hunk from the shared checkout, since it commits only paths whose state changed in the unit's own worktree during the call. The incident's commits were commit-policy slice commits (`feat(x00722): commit via slice S1`), which checkpoint the slice's declared Files from the shared checkout into the work ref: a `package.json` hunk another agent left there entered every unit whose slice named `package.json`. The fix belongs in commit-policy's slice persistence, which must take only what its own unit wrote; this slice's Files should move there before it is implemented.
+- S6 cut on 2026-11-02 into x01003 ("A slice commit takes only what its own unit wrote"): the hunk came through commit-policy's slice persistence, not the per-call commit, and it needs a design before code.
