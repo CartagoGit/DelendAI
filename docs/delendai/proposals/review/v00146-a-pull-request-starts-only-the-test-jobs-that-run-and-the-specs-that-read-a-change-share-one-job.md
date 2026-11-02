@@ -70,14 +70,16 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the shard step and the merge step set the coverage file list from the files changed since the base on a pull request, and the vitest configuration n… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. A pull request instruments only the files it touched, and the coverage selection is narrowed to the intersection with its own globs, so a file outside them stays unmeasured and a change that touches nothing measures nothing. The type gate exited 0. One check was recorded for this slice and it is a state check, not a test suite: the delivered workflow and the delivered vitest configuration were read. One residual, recorded and not blocking: no spec pins either the narrowing or the empty case, so a future change would be silent.
 
 ### S4 — A publication that goes green wakes the queue
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/forge/certify-integration.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A publication whose `delendai-validate` goes green dispatches the queue (`wake-the-queue` in ci.yml, under `!cancelled()` so the jobs a pull request scopes out do not skip it, own `delendai/pr/` branches only; certify-integration.script.spec.ts), so it is armed within minutes with every other green candidate instead of at the next hourly run."
 - shipped-in: `15f8c5aaa2c0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the workflow has a job that wakes the queue once the validation job is green, under a condition that is not cancelled, that the publication's own br… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. A publication whose validation goes green wakes the queue within minutes, on its own branches only, and the condition is not cancelled, so the jobs a pull request scopes out do not skip it. The type gate exited 0 and the slice spec passes 17 of 17. One residual, recorded and not blocking: the condition asks for a pull request event, so a publication branch pushed without a pull request does not wake the queue.
 
 ### S5 — Prose reaches its readers, and readers run beside a changed zone
 - **Status**: review
