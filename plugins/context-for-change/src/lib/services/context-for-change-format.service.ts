@@ -15,11 +15,24 @@ import type {
 	TContextForChangeSource,
 } from '../contracts/interfaces/context-for-change.interface';
 
+/**
+ * `value` within `maxChars`, and when it is cut, how much: `…+N` names the
+ * characters left out, so a reader knows to ask for the rest.
+ */
 export const limitContextPreview = (
 	value: string,
 	maxChars: number = CONTEXT_FOR_CHANGE_MAX_PREVIEW_CHARS,
-): string =>
-	value.length <= maxChars ? value : `${value.slice(0, maxChars - 1)}…`;
+): string => {
+	if (value.length <= maxChars) return value;
+	let kept = maxChars - 1;
+	for (;;) {
+		const suffix = `…+${String(value.length - kept)}`;
+		if (kept + suffix.length <= maxChars || kept === 0) {
+			return `${value.slice(0, kept)}${suffix}`;
+		}
+		kept -= 1;
+	}
+};
 
 export const makeContextSection = (
 	source: TContextForChangeSource,
@@ -50,6 +63,7 @@ export const buildTruncatedContextOutput = (
 		readonly originalBytes: number;
 	},
 	files: readonly string[],
+	maxBytes: number = DEFAULT_CONTEXT_FOR_CHANGE_MAX_BYTES,
 ): IContextForChangeOutput => {
 	const head = JSON.stringify(
 		(isTruncatedEnvelope(truncation.value)
@@ -62,7 +76,7 @@ export const buildTruncatedContextOutput = (
 		sections: [
 			makeContextSection(
 				'git',
-				`Output truncated to stay within ${DEFAULT_CONTEXT_FOR_CHANGE_MAX_BYTES} bytes. Preview: ${limitContextPreview(head)}`,
+				`Output truncated to stay within ${String(maxBytes)} bytes (it was ${String(truncation.originalBytes)}): name fewer files, or raise maxBytes. Preview: ${limitContextPreview(head)}`,
 			),
 		],
 		bytes: truncation.finalBytes,

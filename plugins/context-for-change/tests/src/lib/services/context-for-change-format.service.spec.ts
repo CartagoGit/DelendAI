@@ -10,7 +10,9 @@ describe('context-for-change-format.service', () => {
 	it('unit > limitContextPreview > adds an ellipsis when the preview exceeds the budget', () => {
 		const preview = limitContextPreview('abcdefghij', 6);
 
-		expect(preview).toBe('abcde…');
+		// Within the budget, and saying how many characters it left out.
+		expect(preview).toBe('abc…+7');
+		expect(preview.length).toBeLessThanOrEqual(6);
 	});
 
 	it('unit > formatTestPolicySummary > resolves the configured mode with its first guidance rule', () => {

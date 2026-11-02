@@ -96,10 +96,10 @@ const toContainmentToolError = (
 		'Pass only workspace-contained source paths; absolute paths outside the workspace and reserved paths like .git, .env and node_modules are rejected.',
 	);
 
+// Every symbol: the reach below decides how many are shown, and says so.
 const collectSymbolNames = (source: string, filePath: string): string[] =>
 	buildNavEngine(filePath, source)
 		.listSymbols()
-		.slice(0, MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE)
 		.map((hit) => hit.name);
 
 const collectReferenceSummary = async (
@@ -251,9 +251,12 @@ export const runContextForChangeService = async (
 		const repo = await checkRepo(runner);
 		// The context is anchored on what the caller named, never on the
 		// working tree's other edits: those are another change's.
-		const anchorFiles = unique([...inputFiles, ...gitDiffFiles])
-			.filter((file) => isSourceFile(file))
-			.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES);
+		// Every file the caller named is the change: none is dropped.
+		const anchorFiles = unique([...inputFiles, ...gitDiffFiles]).filter(
+			(file) => isSourceFile(file),
+		);
+		// What a search found and left out, with how to get it.
+		const leftOut: string[] = [];
 
 		if (anchorFiles.length === 0 && args.symbol !== undefined) {
 			const roots = await projectSearchRoots(options.workspaceRootAbs);
@@ -266,12 +269,15 @@ export const runContextForChangeService = async (
 					maxResults: CONTEXT_FOR_CHANGE_SEARCH_MAX_RESULTS,
 				},
 			);
+			const found = unique(symbolHits.hits.map((hit) => hit.file));
 			anchorFiles.push(
-				...unique(symbolHits.hits.map((hit) => hit.file)).slice(
-					0,
-					MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES,
-				),
+				...found.slice(0, MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES),
 			);
+			if (found.length > MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES) {
+				leftOut.push(
+					`${String(found.length - MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES)} more file(s) name \`${args.symbol}\` (${found.slice(MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES).join(', ')}): pass them as files to read them too`,
+				);
+			}
 		}
 
 		const sections: IContextForChangeSection[] = [];
@@ -304,15 +310,27 @@ export const runContextForChangeService = async (
 		if (args.symbol !== undefined) {
 			symbolNames.add(args.symbol);
 		}
-		const compactSymbols = [...symbolNames].slice(
-			0,
-			MAX_CONTEXT_FOR_CHANGE_SOURCE_FILES *
-				MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE,
-		);
-		if (compactSymbols.length > 0) {
-			sections.push(
-				makeContextSection('symbols', compactSymbols.join(', ')),
+		// The reach of the symbols follows the files given, not a fixed cap.
+		const symbolReach =
+			Math.max(anchorFiles.length, 1) *
+			MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE;
+		const compactSymbols = [...symbolNames].slice(0, symbolReach);
+		if (symbolNames.size > symbolReach) {
+			leftOut.push(
+				`${String(symbolNames.size - symbolReach)} more symbol(s) of these files: ask with symbol=<name> for one of them`,
 			);
+		}
+		if (compactSymbols.length > 0 || leftOut.length > 0) {
+			sections.push(
+				makeContextSection(
+					'symbols',
+					[compactSymbols.join(', '), ...leftOut]
+						.filter((part) => part.length > 0)
+						.join(' | '),
+				),
+			);
+		}
+		if (compactSymbols.length > 0) {
 			sections.push(
 				makeContextSection(
 					'references',
@@ -386,7 +404,11 @@ export const runContextForChangeService = async (
 		};
 		const truncation = truncateIfTooLarge(rawOutput, options.maxBytes);
 		const output: IContextForChangeOutput = truncation.truncated
-			? buildTruncatedContextOutput(truncation, anchorFiles)
+			? buildTruncatedContextOutput(
+					truncation,
+					anchorFiles,
+					options.maxBytes,
+				)
 			: {
 					dependsOn: [...CONTEXT_FOR_CHANGE_DEPENDS_ON],
 					files: anchorFiles,
