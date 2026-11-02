@@ -10,6 +10,7 @@ last-transition-id: 47caab71-09a7-4ec1-8127-6b4a8385dcc6
 last-correlation-id: 47caab71-09a7-4ec1-8127-6b4a8385dcc6
 last-transition-from: review
 last-transition-at: 2026-11-02T09:18:35.626Z
+shipped-in: [724cbf9f8, e6e29e76f, e705aa7c4, 9767d0086]
 ---
 
 # x00989 — A host config with comments no longer stops the server
