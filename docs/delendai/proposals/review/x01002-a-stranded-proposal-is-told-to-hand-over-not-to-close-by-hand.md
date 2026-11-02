@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-02T20:40:14.716Z
 shipped-in:
   - "7b79f76fb5cb6676e9325e5c6b90f40023e5dad7"
+  - "0bcd4e037ad7782397a8cf2dbde751429638657b"
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -49,15 +50,17 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-log: approved by minimax-m3.1-flash — verified at 7b79f76fb5cb, validate exit 0 and tests 13/13 claimed, no recorded run cited; acceptance 2/2: (1) At 7b79f76f the lint branches on the proposal's status folder, and for a proposal in ready or in-progress it tells the reader to set the slices back to pending… (2) At 7b79f76f the review branch of the same advice is untouched, so a proposal in review keeps the submit, approve and transition to done route; the spec asserts… — Approved on the delivered state of 7b79f76fb5cb6676e9325e5c6b90f40023e5dad7. A stranded proposal in ready or in-progress is told to hand over rather than to close, while a proposal in review keeps its review-then-done advice. The type gate exited 0 and the slice spec passes 13 of 13. Two residuals, recorded and not blocking: the new spec exercises the in-progress folder only, and the ready folder reaches the same code but is not pinned by a test; and the review assertion pins only the transition to done, not the submit and approve wording that goes with it.
 
 ### S2 — A tool that refuses through the resolver fails the command
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`
 - **Gate**: type
 - acceptance:
   - "A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it."
   - "`proposals create --title=probe --slices='[{\"id\":\"S1\"}]'` exits non-zero."
 - shipped-in: `1faa04180151`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 0bcd4e037ad7, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 2/2: (1) At 5e687b03 the client reads the isError flag of a result that arrived through the resolver and turns it into the same tool error a direct call raises, and tha… (2) At 5e687b03 the create command forwards the slice list and the server refuses a slice that names no files and no slice id, and the client turns that refusal in… — Approved on the delivered state of 5e687b033a10724e43ac83ca38cff19a39f3814d. A tool that refuses through the resolver now raises the same error a direct call would, carrying the tool's own words, and the create command exits non-zero on a slice list the contract cannot accept instead of writing a broken proposal. The type gate exited 0 and the slice specs pass 8 of 8. Two residuals, recorded and not blocking: the client spec pins the message but not the error class, and no spec pins the command's exit code end to end, which was established here by running it against a real server; the half that reads a refusal back out of the error arrived in a different pull request than the two this slice names, though it is in the delivered tree.
 
 ### S3 — Deliver takes the unit it runs in
 - **Status**: review
