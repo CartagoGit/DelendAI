@@ -10,6 +10,8 @@ last-transition-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
 last-correlation-id: 4ad6e68f-3b17-4776-8adc-be08ce68d034
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T04:00:12.751Z
+shipped-in:
+  - "b86756b4f329f64a3b79338c6a543459b5175d3f"
 ---
 
 # x00967 — A git, forge or dependency read that fails says so instead of reporting clean
@@ -31,15 +33,17 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 - global_gate: type
 
 ### S1 — deps
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/deps/src/lib/services/audit.ts`, `plugins/deps/src/lib/services/licenses.ts`, `plugins/deps/src/lib/tools/tools.ts`, `plugins/deps/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "A failed or unparsable audit is an error with the cause (D68, G61-DEPS-01)."
   - "An unreadable manifest or node_modules is an error, not zero licences (D69)."
 - shipped-in: `48a4f5c96a9d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b86756b4f329, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 2/2: (1) At b86756b4 the deps audit returns a discriminated result that names the cause, naming a timeout and an audit that gave no report, and the tool throws that cau… (2) At b86756b4 the licence reader no longer swallows a failed manifest or package read, so an unreadable manifest propagates and a node_modules whose packages can… — Approved on the delivered state of b86756b4f329f64a3b79338c6a543459b5175d3f. A failed or unparsable audit is now an error that carries its cause, and an unreadable manifest or node_modules is an error rather than a report of zero licences: the two swallowing try and catch blocks are gone from the licence reader and the audit result names the cause. The type gate exited 0 and the two slice specs pass 19 of 19. Residuals, recorded and not blocking: the cause of a single unreadable dependency is discarded and counted instead, a partly unreadable workspace yields a missing-licence finding rather than an error, and the compatibility wrapper the security plugin uses still renders a failed audit as an explicit skipped state with its cause, which the goal sentence allows.
 
 ### S2 — git and forge reads
 - **Status**: review
