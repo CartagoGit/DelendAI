@@ -209,7 +209,12 @@ export const keepStrandedEditsAtStart = async (
 export const listStrandedEdits = (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
-}): readonly { readonly ref: string; readonly agent: string }[] => {
+}): readonly {
+	readonly ref: string;
+	readonly agent: string;
+	/** When the edits were kept: how long they have waited for their owner. */
+	readonly keptAt: string;
+}[] => {
 	const prefix = namespacedRef(
 		input.policy.branches.namespacePrefix,
 		'stranded',
@@ -217,16 +222,21 @@ export const listStrandedEdits = (input: {
 	return (
 		readGit(input.root, [
 			'for-each-ref',
-			'--format=%(refname)',
+			'--sort=committerdate',
+			'--format=%(refname) %(committerdate:iso-strict)',
 			`${prefix}/`,
 		]) ?? ''
 	)
 		.split('\n')
-		.filter((ref) => ref.length > 0)
-		.map((ref) => ({
-			ref,
-			agent: ref.slice(prefix.length + 1).split('/')[0] ?? '',
-		}));
+		.filter((line) => line.length > 0)
+		.map((line) => {
+			const [ref = '', keptAt = ''] = line.split(' ');
+			return {
+				ref,
+				agent: ref.slice(prefix.length + 1).split('/')[0] ?? '',
+				keptAt,
+			};
+		});
 };
 
 /**
@@ -267,9 +277,42 @@ const blobsOf = (
 };
 
 /**
+ * Every version, as `path\0blob`, that the integration branch's history
+ * ever held of `paths`: one walk, paid only when a stranded ref exists.
+ */
+const integratedVersions = (
+	root: string,
+	integration: string,
+	paths: readonly string[],
+): ReadonlySet<string> => {
+	if (paths.length === 0) return new Set();
+	const raw =
+		readGit(root, [
+			'log',
+			'--raw',
+			'--no-abbrev',
+			'--no-renames',
+			'--format=',
+			integration,
+			'--',
+			...new Set(paths),
+		]) ?? '';
+	const versions = new Set<string>();
+	for (const line of raw.split('\n')) {
+		const [meta, path] = line.split('\t');
+		const after = meta?.split(' ')[3];
+		if (path !== undefined && after !== undefined) {
+			versions.add(`${path}\0${after}`);
+		}
+	}
+	return versions;
+};
+
+/**
  * Drop the stranded refs that keep nothing found nowhere else: every file
  * such a ref saved is, byte for byte, on the integration branch, on a
- * work or publication branch, or in a larger stranded ref kept. One that holds a
+ * work or publication branch, or in a larger stranded ref kept, or is a
+ * version the integration branch's history once held. One that holds a
  * single file found nowhere else is kept. On 2026-10-29 one checkout held
  * 15 stranded refs: five kept nothing (repeated snapshots of one tree, and
  * edits a unit had since published) and ten held edits no branch had.
@@ -317,6 +360,11 @@ export const dropLandedStrandedEdits = (input: {
 	if (blobs === undefined) return [];
 	const blob = (ref: string, path: string): string | undefined =>
 		blobs.get(`${ref}:${path}`);
+	const integrated = integratedVersions(
+		input.root,
+		input.integration,
+		ordered.flatMap((entry) => entry.paths),
+	);
 	const kept: string[] = [];
 	const dropped: string[] = [];
 	for (const { ref, paths } of ordered) {
@@ -325,18 +373,23 @@ export const dropLandedStrandedEdits = (input: {
 			const saved = blob(ref, path);
 			// A file the ref deleted keeps nothing to restore.
 			if (saved === undefined) return false;
+			// A version the integration branch once held reached it: the
+			// snapshot was a stale copy of work that landed and moved on.
+			if (integrated.has(`${path}\0${saved}`)) return false;
 			return !elsewhere.some((other) => blob(other, path) === saved);
 		});
 		if (keepsSomething) {
 			kept.push(ref);
 			continue;
 		}
+		const tip = readGit(input.root, ['rev-parse', ref])?.trim();
 		try {
 			execFileSync('git', ['update-ref', '-d', ref], {
 				cwd: input.root,
 				stdio: 'ignore',
 			});
-			dropped.push(ref);
+			// Named with its commit, so the journal line can restore it.
+			dropped.push(tip === undefined ? ref : `${ref}@${tip}`);
 		} catch {
 			// Kept: it is dropped on a later start.
 		}

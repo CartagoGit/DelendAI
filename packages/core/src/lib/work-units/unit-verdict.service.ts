@@ -90,6 +90,16 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 			reason: `${source} is ${minutes(silentSeconds)} old, inside the ${minutes(evidence.windowSeconds)} window`,
 		};
 	}
+	// Quiet because its owner is waiting on someone, as they said: not an
+	// owner who is gone, and not work to adopt.
+	if (evidence.parked !== undefined) {
+		return {
+			standing: 'waiting',
+			owner,
+			silentSeconds,
+			reason: `waits on: ${evidence.parked} (${source} is ${minutes(silentSeconds)} old); any new commit of its own ends the wait`,
+		};
+	}
 	if (
 		silentSeconds <=
 		evidence.windowSeconds * ABANDONED_AFTER_LEASE_WINDOWS

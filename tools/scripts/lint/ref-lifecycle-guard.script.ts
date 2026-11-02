@@ -51,6 +51,7 @@ import {
 } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import { silentWorkRefs } from './silent-work-refs';
+import { PARKED_TRAILER } from '@delendai/core/lib/contracts/constants/unit-parked.constant';
 import {
 	inProgressOrUnknown,
 	keepInProgressWorkRefs,
@@ -633,6 +634,18 @@ const main = (): void => {
 			}),
 		leaseTtlMinutes: declaredLeaseTtlMinutes(repoRoot()),
 		now: Math.floor(Date.now() / 1000),
+		isParked: (name) => {
+			const sha = observed.find((branch) => branch.name === name)?.sha;
+			return (
+				sha !== undefined &&
+				new RegExp(`^${PARKED_TRAILER}:`, 'mu').test(
+					ghScalar(
+						`repos/${REPOSITORY_SLUG}/commits/${sha}`,
+						'.commit.message',
+					),
+				)
+			);
+		},
 	});
 	for (const ref of silent) {
 		const plan = planRetirement({

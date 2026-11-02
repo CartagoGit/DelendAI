@@ -31,6 +31,7 @@ describe('whether a unit holds its claims', () => {
 		standing('quiet-agent', 'idle'),
 		standing('gone-agent', 'abandoned'),
 		standing('landed-agent', 'delivered'),
+		standing('parked-agent', 'waiting'),
 		standing(
 			'published-agent',
 			'idle',
@@ -41,6 +42,10 @@ describe('whether a unit holds its claims', () => {
 	it('is yes while its holder is live, local or as the remote copy', () => {
 		expect(holds(`refs/heads/${unit('live-agent')}`)).toBe(true);
 		expect(holds(`refs/remotes/origin/${unit('live-agent')}`)).toBe(true);
+	});
+
+	it('is yes while its owner has parked it, waiting on someone', () => {
+		expect(holds(`refs/heads/${unit('parked-agent')}`)).toBe(true);
 	});
 
 	it('is yes while its publication is open, however quiet its holder', () => {
