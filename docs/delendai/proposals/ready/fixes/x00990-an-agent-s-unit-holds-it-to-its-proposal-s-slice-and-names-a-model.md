@@ -39,7 +39,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 ### S1 — A unit is entered only for an open slice, and stays inside it
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
+- **Files**: `packages/core/src/lib/work-units/closed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/closed-proposal.service.spec.ts`, `packages/core/tests/src/lib/work-units/outside-slice.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter --kind=implement on a proposal in done/ (or a slice whose status is done) is refused, naming the proposal's state and the command for a new fix proposal."
@@ -47,7 +47,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 ### S2 — A slice commit says what changed
 - **Status**: pending
-- **Files**: `plugins/commit-policy/src/lib/engine.ts`
+- **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The slice event's subject is built from the slice's title (or the paths it staged), never the fixed text `commit via slice`."
@@ -105,3 +105,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - A call's automatic commit takes only paths written inside the unit's worktree by that call; a hunk present only in the shared checkout never enters a unit.
 - work enter --kind=implement on a proposal in review/ is refused to an agent that holds or held a review round on it, naming the round.
 - After `work claim`, `work enter` with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice.
+
+## notes
+
+- 2026-11-02. S1: `work enter --kind=implement` on a proposal in done/ or a done slice is refused, naming the state and the commands for a new fix proposal (tried on x00722: refused, exit 4). `work status` lists, under `outsideSlice`, each implement unit with the authored files it changed that no slice of its proposal names, reading the proposal as the unit holds it, since one unit carries a whole proposal and names the files it needs as it goes; the proposals folder is never outside. S2: the slice commit's subject names the files it changed (`feat(x1): S1 changes a.ts, b.ts +2 more`); the slice event carries no title. S7 was already in place: since b0dbbb782 (2026-10-03) `work enter` refuses an implement unit to an agent named as a reviewer of that slice.
