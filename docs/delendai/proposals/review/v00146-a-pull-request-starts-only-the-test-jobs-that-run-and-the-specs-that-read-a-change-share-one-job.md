@@ -10,6 +10,8 @@ last-transition-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
 last-correlation-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
 last-transition-from: in-progress
 last-transition-at: 2026-10-29T14:35:16.995Z
+shipped-in:
+  - "822b2d84ec6fd185ee94970f0638e6bf0656ec14"
 ---
 
 # v00146 — A pull request starts only the test jobs that run, and the specs that read a change share one job
@@ -31,14 +33,16 @@ After v00143 a zone the change does not reach still started its job, which took 
 - global_gate: type
 
 ### S1 — Only the jobs that run, readers merged
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`compactMatrix` keeps the jobs that run, merges every `readers` job into one named `readers` with the union of their specs, and returns a single `none` job when nothing runs (test-zones.script.spec.ts); the planner prints each zone it does not start."
 - shipped-in: `ff793d6e4a20`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 822b2d84ec6f, validate exit 0 and tests 33/33 claimed, no recorded run cited; acceptance 1/1: (1) At 822b2d84 the matrix keeps only the jobs that run, merges every readers job into one named readers holding the union of their specs, and returns a single job… — Approved on the delivered state of 822b2d84ec6fd185ee94970f0638e6bf0656ec14. The matrix keeps the jobs that run, folds the readers jobs into one, and says so when nothing runs, and the planner names each zone it does not start. The type gate exited 0 and the slice spec passes 33 of 33. One residual, recorded and not blocking: the printing is not pinned by any spec, it was verified by reading the code and by running the planner, which printed eleven lines for the zones it did not start.
 
 ### S2 — The tests plan without waiting for the type and format checks
 - **Status**: review
