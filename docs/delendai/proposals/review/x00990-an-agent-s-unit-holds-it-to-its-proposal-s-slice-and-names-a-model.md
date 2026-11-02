@@ -10,6 +10,8 @@ last-transition-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
 last-correlation-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T14:50:25.187Z
+shipped-in:
+  - "158fe5045a3b7772b0f5b23a19696b691fa2dd12"
 ---
 
 # x00990 — An agent's unit holds it to its proposal's slice, and names a model
@@ -42,15 +44,17 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - global_gate: type
 
 ### S1 — A unit is entered only for an open slice, and stays inside it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/closed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/closed-proposal.service.spec.ts`, `packages/core/tests/src/lib/work-units/outside-slice.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter --kind=implement on a proposal in done/ (or a slice whose status is done) is refused, naming the proposal's state and the command for a new fix proposal."
   - "A commit in an implement unit that touches a file outside the slice's Files is reported on the unit (work status), naming the file."
 - shipped-in: `bf7e7d8c3332`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 2/2: (1) At 158fe504 the closed-proposal service names the state of a proposal in done or of a slice whose status is done, and the enter path refuses an implement unit … (2) At 158fe504 the paths an implement unit authored are compared with the files the proposal names, and the ones outside that list are reported on the unit with t… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An implement unit on a closed proposal or a closed slice is refused with the state named and the command that starts the new work, and a commit that touches a file outside the slice's list is reported on the unit with the file named. The type gate exited 0 and the two slice specs pass 5 of 5. Three residuals, recorded and not blocking: the comparison is against the whole proposal's file list and not the slice's own, which the proposal records as deliberate; the report appears only in the JSON payload, not in the text of work status; and a later commit in the same delivery shortened the remedy, dropping the literal command for a new fix proposal, so what remains names work enter for a new proposal instead.
 
 ### S2 — A slice commit says what changed
 - **Status**: review
