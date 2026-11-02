@@ -17,6 +17,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
+
 /** Source roots whose sorts all feed canonical hashes, digests or projections. */
 export const CANONICAL_ROOTS = [
 	'packages/state/src',
@@ -66,6 +68,13 @@ export const localeOrderLines = (file: string, text: string): string[] =>
 
 const main = (): number => {
 	const root = process.cwd();
+	if (
+		refuseMissingScanRoots('no-locale-order-in-canonical', root, [
+			'packages',
+			'plugins',
+		])
+	)
+		return 1;
 	let scanned = 0;
 	const found: string[] = [];
 	for (const rel of sources(root)) {
