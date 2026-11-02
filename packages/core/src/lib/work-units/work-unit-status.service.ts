@@ -1,5 +1,7 @@
 import { describeLoop, workRefLoopsAt } from './work-ref-moves.service';
 import { unitsOutsideTheirSlice } from './outside-slice.service';
+import { unverifiedAgents } from './unverified-agents.service';
+import { seenModels } from '../work-identity/model-identity.helper';
 import { readWorkspaceDocsDir } from './development-policy.service';
 import {
 	anchorFromPolicy,
@@ -100,6 +102,15 @@ export const statusOf = async (
 		dirty: paths.dirty,
 		undurable: paths.undurable,
 		units: countStandings(standings),
+		// Names at work that nothing confirms are a model's.
+		unverifiedAgents: unverifiedAgents({
+			agents: [...swarm.units, ...swarm.published].map(
+				(unit) => unit.agent,
+			),
+			seen: seenModels(),
+			roster: policy.coordination.roster ?? [],
+			namespacePrefix: policy.branches.namespacePrefix,
+		}),
 		// Implement units that changed files their slice does not name.
 		outsideSlice: unitsOutsideTheirSlice({
 			root,

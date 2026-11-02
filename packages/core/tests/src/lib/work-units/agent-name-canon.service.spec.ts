@@ -47,4 +47,13 @@ describe('the shape of an agent name', () => {
 			'no version',
 		);
 	});
+
+	it("refuses the product's name posing as a model's maker, and keeps a dated model id", () => {
+		expect(
+			describeAgentNameShape('delendai-m3-docs-20261028', 'delendai'),
+		).toContain("this product's name, not a model's maker");
+		expect(
+			describeAgentNameShape('claude-3-5-sonnet-20241022', 'delendai'),
+		).toBeUndefined();
+	});
 });
