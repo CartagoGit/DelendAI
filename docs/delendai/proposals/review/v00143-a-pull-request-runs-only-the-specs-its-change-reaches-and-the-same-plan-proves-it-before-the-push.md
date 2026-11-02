@@ -74,14 +74,26 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 - review-log: approved by minimax-m3.1-flash — verified at 84a042d1b596, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 84a042d1 the proof plans the change against the integration branch as the forge does, runs the selected specs the way the forge runs them, runs the typechec… — Approved on the delivered state of 84a042d1b596. The proof plans against the integration branch, runs the selected specs and the typecheck, and prints each step's time and the verdict. The type gate exited 0 and the slice spec passes 7 of 7. Two deviations, recorded and not blocking, and the same pack delivers the first: the proof runs a fixed list of four lints instead of the lints the forge runs for the kinds of file touched, a second hand-written list that drifts from the workflow; the slice S1 of v00147, approved in this same pack, replaces it by reading the static checks out of the workflow itself. And the plan is not printed, only the per-step label and the verdict.
 
 ### S4 — Documentation-only changes skip the code analyses
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`
 - **Gate**: type
 - acceptance:
   - "A pull request that changes only Markdown under docs/ reports CodeQL, lint-security, verify-runtime, pack smoke and the web build as passed without running them (a required check still reports), and runs the proposal and documentation lints."
 - shipped-in: `84a042d1b596`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S4, the documentation-only change that skips the code analyses.
+
+WHAT IS WRONG. The slice was never delivered under this proposal. At its delivery commit 84a042d1 the workflow changed only the zone job: the CodeQL workflow is not in that delivery at all, and no rule that skips the code analyses for a prose change was added. Measured there, a Markdown-only change gave lint-biome, lint-security, verify-runtime, pack smoke and the site the plan to run, with only the typecheck and the metrics skipped: CodeQL analysed the whole repository and the secret scan still ran.
+
+WHERE. The delivered state of this slice arrived later, inside v00144's S1 and S2, at commit 099561bea: the CodeQL workflow became scoped rather than skipped, and the job-scope table learned to skip the code jobs for a prose change.
+
+HOW TO REPRODUCE. In a checkout of 84a042d1, run the job-scope plan for a change that touches only Markdown under docs/: the plan reports lint-security to run and verify-runtime, pack smoke and the site to skip, and the CodeQL workflow at that commit analyses the whole repository unscoped.
+
+WHAT MUST HOLD, AND A CONFLICT THE OWNER MUST SETTLE. This slice's text asks for the secret scan to be reported as passed without running, and v00144's S2, which is a later proposal and is approved in this same pack, asks for the secret check to RUN on a prose change. The two cannot both stand. The delivered behaviour is v00144's: the secret scan runs, the code analyses are scoped rather than skipped, and the verification, pack smoke and site jobs skip. Either this proposal's text is amended to match the later decision, or the later one is changed; that is the owner's call, and this slice cannot be approved as written.
+
+The remaining requirement, that a prose change still runs the proposal and documentation lints and that a required check still reports, is met by the delivered state.
 
 ## acceptance
 
