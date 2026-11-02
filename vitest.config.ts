@@ -79,6 +79,13 @@ const COVERAGE_INCLUDE = [
 	'tools/scripts/lib/**/*.ts',
 ] as const;
 
+/**
+ * Past this many paths the list costs more than the globs it narrows: the
+ * 1,782 of a promotion took a worker past 4 GB with a single spec running. A
+ * change that large measures everything, which a promotion should anyway.
+ */
+const MAX_TOUCHED_COVERAGE_FILES = 200;
+
 const coverageInclude = (touched: string | undefined): string[] => {
 	if (touched === undefined) return [...COVERAGE_INCLUDE];
 	const selected = touched
@@ -87,6 +94,8 @@ const coverageInclude = (touched: string | undefined): string[] => {
 		.filter((file) =>
 			COVERAGE_INCLUDE.some((glob) => matchesGlob(file, glob)),
 		);
+	if (selected.length > MAX_TOUCHED_COVERAGE_FILES)
+		return [...COVERAGE_INCLUDE];
 	// An empty `include` means "everything" to vitest; a change that
 	// touched no measured file measures nothing instead.
 	return selected.length > 0 ? selected : ['.cache/no-touched-source'];
