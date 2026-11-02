@@ -10,6 +10,8 @@ last-transition-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
 last-correlation-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T06:25:25.790Z
+shipped-in:
+  - "a6c27d556c95"
 ---
 
 # x00973 — Code-analysis tools scan the scope they announce, or name what they left out
@@ -31,14 +33,16 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
 - global_gate: type
 
 ### S1 — Explicit slices stay explicit
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `plugins/impact-analysis/tests/src/lib/services/impact-analysis.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With files or a diff given, the working tree is not added (D116, D118)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 1/1: (1) At a6c27d556c95 context-for-change.service.ts builds its anchor files from the files and the diff that were given and no longer imports gitChanged, and impact-… — Approved on the delivered state of a6c27d556c95 (PR #1531). The context-for-change service now anchors on the files and the diff it is given and never mixes the working tree in, the gitChanged import is gone and the working tree part of the git section was deleted, and impact-analysis only falls back to the working tree when nothing at all is named. The two slice specs pass 12 of 12 and the type gate exited 0. One note, not a criterion failure: for context_for_change the working tree never stands in at all, the service refuses when nothing is named, which is stricter than the proposal text describes.
 
 ### S2 — Scans report their coverage
 - **Status**: review
