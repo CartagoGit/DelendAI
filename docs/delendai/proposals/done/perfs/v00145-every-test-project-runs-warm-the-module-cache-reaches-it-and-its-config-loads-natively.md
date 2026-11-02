@@ -2,14 +2,14 @@
 id: v00145
 title: "Every test project runs warm: the module cache reaches it and its config loads natively"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 66684ce6-5718-4132-a0fd-825f3df40c9c
-last-correlation-id: 66684ce6-5718-4132-a0fd-825f3df40c9c
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T03:08:09.961Z
+last-transition-id: 60bd43de-e309-4362-9db6-102dfc3ec9a9
+last-correlation-id: 60bd43de-e309-4362-9db6-102dfc3ec9a9
+last-transition-from: review
+last-transition-at: 2026-11-02T17:22:41.479Z
 shipped-in:
   - "8f9a2ccf56207dead0f61d2884fe67c1e6f56815"
 ---
