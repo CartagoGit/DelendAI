@@ -17,6 +17,7 @@ import {
 	printPathOnly,
 	withSlicesView,
 	unitHere,
+	withUnitHere,
 } from './work.command';
 
 const globals = (json: boolean) => ({
@@ -155,7 +156,31 @@ describe('work deliver', () => {
 	});
 });
 
+describe('work prove and publish', () => {
+	const command = createWorkCommand();
+	it.each(['prove', 'publish'])(
+		'%s looks for its unit from where it runs',
+		async (action) => {
+			const ctx = createNoopContext('/nowhere', globals(true));
+			const result = await command.run(
+				[action, '--proposal=x00001', '--locate'],
+				ctx,
+			);
+			// No repository here: the unit is not found, and nothing is run.
+			expect(result.code).not.toBe(0);
+		},
+	);
+});
+
 describe('entering a unit from the CLI', () => {
+	it('prints no path when the entry is refused', async () => {
+		const result = await createWorkCommand().run(
+			['enter', '--proposal=x00001', '--print-path'],
+			createNoopContext('/nowhere', globals(true)),
+		);
+		expect(result.code).not.toBe(0);
+	});
+
 	it('asks the planning plugin, which knows no such proposal here', async () => {
 		const worktree = mkdtempSync(join(tmpdir(), 'work-briefing-'));
 		await briefOnEntering();
@@ -220,6 +245,45 @@ describe('unitHere', () => {
 			'--topic=the-fix',
 		]);
 		expect(await unitHere(dir, 'x00002')).toEqual([]);
+		rmSync(dir, { recursive: true, force: true });
+	});
+});
+
+describe('withUnitHere', () => {
+	const inUnit = () => {
+		const dir = mkdtempSync(join(tmpdir(), 'with-unit-here-'));
+		const git = (...args: string[]) =>
+			execFileSync(
+				'git',
+				['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
+				{ cwd: dir },
+			);
+		git('init', '-q', '-b', 'develop');
+		writeFileSync(
+			join(dir, 'delendai.config.json'),
+			'{"development":{"profile":"shared-checkout-pr","branches":{"namespacePrefix":"delendai"}}}\n',
+		);
+		git('commit', '-q', '--allow-empty', '-m', 'base');
+		git('switch', '-q', '-c', 'delendai/wip/a/implement/x00001-S2-g2/fix');
+		return dir;
+	};
+
+	it('adds the unit of the branch when the args name none', async () => {
+		const dir = inUnit();
+		expect(await withUnitHere(['--proposal=x00001'], dir)).toEqual([
+			'--proposal=x00001',
+			'--slice=S2',
+			'--generation=2',
+			'--topic=fix',
+		]);
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('leaves args that name a unit flag, or no proposal, as they are', async () => {
+		const dir = inUnit();
+		const named = ['--proposal=x00001', '--generation=1'];
+		expect(await withUnitHere(named, dir)).toEqual(named);
+		expect(await withUnitHere(['--agent=a'], dir)).toEqual(['--agent=a']);
 		rmSync(dir, { recursive: true, force: true });
 	});
 });
