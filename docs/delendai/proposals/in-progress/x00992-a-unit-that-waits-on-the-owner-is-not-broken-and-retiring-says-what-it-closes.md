@@ -2,10 +2,14 @@
 id: x00992
 title: "A unit that waits on the owner is not broken, and retiring says what it closes"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
+last-transition-id: 38f15478-9d9e-4b3f-b04a-121268f5ab08
+last-correlation-id: 38f15478-9d9e-4b3f-b04a-121268f5ab08
+last-transition-from: ready
+last-transition-at: 2026-11-02T10:50:04.836Z
 ---
 
 # x00992 — A unit that waits on the owner is not broken, and retiring says what it closes
