@@ -75,6 +75,13 @@ pre-commit:
             run: bun "$(git rev-parse --path-format=absolute --git-common-dir)/../packages/cli/src/index.ts" --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
             stage_fixed: false
 
+        # What fails in seconds fails here: the agent notes are regenerated
+        # and staged, and the lints a proof would run later answer now.
+        commit-time-checks:
+            env: *hook-locale
+            run: bun tools/scripts/hooks/commit-time-checks.script.ts
+            stage_fixed: true
+
         # Staged-file Biome formatter (x00088). The script filters staged
         # files itself and re-stages the formatted bytes; it NEVER blocks
         # the commit (Biome CI mode in `bun run validate` is the gate).
