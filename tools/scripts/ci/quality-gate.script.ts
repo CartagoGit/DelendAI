@@ -111,11 +111,24 @@ const hasFlag = (argv: readonly string[], name: string): boolean =>
 const matchesSelector = (step: IStep, selector: string): boolean =>
 	step.name === selector || step.aliases?.includes(selector) === true;
 
+/**
+ * Scripts under `lint/` that are guards run with their caller's inputs, not
+ * checks of this repository: with nothing to compare they fail by design.
+ */
+const NOT_A_REPOSITORY_CHECK: ReadonlySet<string> = new Set([
+	'host-manifest-drift.script.ts',
+]);
+
 const listLintSteps = async (cwd: string): Promise<readonly IStep[]> => {
 	const lintDir = join(cwd, 'tools/scripts/lint');
 	const files = await readdir(lintDir, { withFileTypes: true });
 	return files
-		.filter((entry) => entry.isFile() && entry.name.endsWith('.script.ts'))
+		.filter(
+			(entry) =>
+				entry.isFile() &&
+				entry.name.endsWith('.script.ts') &&
+				!NOT_A_REPOSITORY_CHECK.has(entry.name),
+		)
 		.map((entry) => entry.name)
 		.sort((left, right) => left.localeCompare(right))
 		.map((fileName) => {

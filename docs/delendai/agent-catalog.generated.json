@@ -1042,6 +1042,19 @@
 			"bodyPath": "plugins/audit/skills/audit-runner/SKILL.md"
 		},
 		{
+			"id": "delendai-auto-agent-selector-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to pick the cheapest capable provider for a task and learn from the outcome with the auto-agent-selector tools. Advisory only; nothing here spends.",
+			"appliesTo": [
+				"@delendai/auto-agent-selector"
+			],
+			"tags": [
+				"auto-agent-selector"
+			],
+			"bodyPath": "plugins/auto-agent-selector/skills/delendai-auto-agent-selector-playbook/SKILL.md"
+		},
+		{
 			"id": "delendai-concurrency-patterns",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -1224,6 +1237,19 @@
 			"bodyPath": "packages/core/skills/operator/SKILL.md"
 		},
 		{
+			"id": "delendai-orchestrator-runner-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to route a task to a model provider with the orchestrator-runner tools, from setting up the roster to advising, handing off or invoking, without spending by accident.",
+			"appliesTo": [
+				"@delendai/orchestrator-runner"
+			],
+			"tags": [
+				"orchestrator-runner"
+			],
+			"bodyPath": "plugins/orchestrator-runner/skills/delendai-orchestrator-runner-playbook/SKILL.md"
+		},
+		{
 			"id": "delendai-performance-optimization",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -1321,6 +1347,19 @@
 				"rules"
 			],
 			"bodyPath": "plugins/quality/skills/quality-and-rules-gates/SKILL.md"
+		},
+		{
+			"id": "delendai-read-stderr-storm",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when asked to check the logs, when code repeats, or after a slice returns ERR: read the storm and file a fix proposal.",
+			"appliesTo": [
+				"@delendai/commit-policy"
+			],
+			"tags": [
+				"commit-policy"
+			],
+			"bodyPath": "plugins/commit-policy/skills/read-stderr-storm/SKILL.md"
 		},
 		{
 			"id": "delendai-rules-dogma-priority",
@@ -1476,6 +1515,19 @@
 				"token-budget"
 			],
 			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-work-unit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to run a unit of work with the work tool: enter, checkpoint, publish or retire, so shared files are never edited in place and every unit ends. Read before the first edit of a proposal slice.",
+			"appliesTo": [
+				"@delendai/proposals"
+			],
+			"tags": [
+				"proposals"
+			],
+			"bodyPath": "plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md"
 		}
 	]
 }

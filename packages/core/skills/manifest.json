@@ -298,6 +298,42 @@
 			"bodyPath": "packages/core/skills/shell-fallback/SKILL.md",
 			"tags": ["shell", "terminal"],
 			"appliesTo": ["@delendai/core"]
+		},
+		{
+			"id": "delendai-auto-agent-selector-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to pick the cheapest capable provider for a task and learn from the outcome with the auto-agent-selector tools. Advisory only; nothing here spends.",
+			"bodyPath": "plugins/auto-agent-selector/skills/delendai-auto-agent-selector-playbook/SKILL.md",
+			"tags": ["auto-agent-selector"],
+			"appliesTo": ["@delendai/auto-agent-selector"]
+		},
+		{
+			"id": "delendai-read-stderr-storm",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when asked to check the logs, when code repeats, or after a slice returns ERR: read the storm and file a fix proposal.",
+			"bodyPath": "plugins/commit-policy/skills/read-stderr-storm/SKILL.md",
+			"tags": ["commit-policy"],
+			"appliesTo": ["@delendai/commit-policy"]
+		},
+		{
+			"id": "delendai-orchestrator-runner-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to route a task to a model provider with the orchestrator-runner tools, from setting up the roster to advising, handing off or invoking, without spending by accident.",
+			"bodyPath": "plugins/orchestrator-runner/skills/delendai-orchestrator-runner-playbook/SKILL.md",
+			"tags": ["orchestrator-runner"],
+			"appliesTo": ["@delendai/orchestrator-runner"]
+		},
+		{
+			"id": "delendai-work-unit-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "How to run a unit of work with the work tool: enter, checkpoint, publish or retire, so shared files are never edited in place and every unit ends. Read before the first edit of a proposal slice.",
+			"bodyPath": "plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md",
+			"tags": ["proposals"],
+			"appliesTo": ["@delendai/proposals"]
 		}
 	]
 }
