@@ -89,8 +89,8 @@ describe('quality-gate script', () => {
 			loadSteps: async () => TEST_STEPS,
 			scripts: {
 				typecheck: 'tsc',
-				validate: 'bun run typecheck && bun run lint:other',
-				'lint:other': 'bun tools/scripts/lint/other.script.ts',
+				validate: 'bun run typecheck && bun run lint:privacy',
+				'lint:privacy': 'bun tools/scripts/lint/other.script.ts',
 			},
 			workflows: 'run: bun run typecheck',
 			out: (msg) => stdout.push(msg),
