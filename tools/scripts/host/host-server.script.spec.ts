@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
+	createStopHandler,
 	describeMigrationRun,
 	hasHelpFlag,
 	CANDIDATE_REFRESH_INTERVAL_ENV,
@@ -219,5 +220,28 @@ describe('candidateRefreshIntervalMs', () => {
 				}),
 			).toBe(DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS);
 		}
+	});
+});
+
+describe('createStopHandler', () => {
+	it('stops cleanly when a signal lands before anything has started', () => {
+		const shutdown = vi.fn();
+		const targets = {};
+		expect(() => createStopHandler(targets, shutdown)(143)).not.toThrow();
+		expect(shutdown).toHaveBeenCalledWith(143);
+	});
+
+	it('stops what has started by the time the signal arrives', () => {
+		const shutdown = vi.fn();
+		const maintenance = { stop: vi.fn() };
+		const hydration = { stop: vi.fn() };
+		const targets: Parameters<typeof createStopHandler>[0] = {};
+		const handler = createStopHandler(targets, shutdown);
+		targets.maintenance = maintenance;
+		targets.hydration = hydration;
+		handler(130);
+		expect(maintenance.stop).toHaveBeenCalledOnce();
+		expect(hydration.stop).toHaveBeenCalledOnce();
+		expect(shutdown).toHaveBeenCalledWith(130);
 	});
 });

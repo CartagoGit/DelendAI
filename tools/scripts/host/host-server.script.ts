@@ -248,6 +248,33 @@ export const resolveWorkspaceFlag = (
 export const hasHelpFlag = (argv: readonly string[]): boolean =>
 	argv.includes('--help') || argv.includes('-h');
 
+/** What a stop signal may find already started; each is optional because a signal can land at any point of start-up. */
+export interface StopTargets {
+	hydration?: { stop(): unknown } | undefined;
+	candidateRefresh?: ReturnType<typeof setInterval> | undefined;
+	maintenance?: { stop(): unknown } | undefined;
+}
+
+/**
+ * The stop run on a signal. It reads `targets` when the signal arrives, so
+ * whatever has not started yet is skipped and never a temporal-dead-zone read.
+ */
+export const createStopHandler =
+	(
+		targets: StopTargets,
+		shutdown: (code: number) => unknown,
+	): ((code: number) => void) =>
+	(code) => {
+		targets.hydration?.stop();
+		if (targets.candidateRefresh !== undefined) {
+			clearInterval(targets.candidateRefresh);
+		}
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void targets.maintenance?.stop();
+		void shutdown(code);
+	};
+
 const run = async (): Promise<void> => {
 	const forwarded = process.argv.slice(2);
 	if (hasHelpFlag(forwarded)) {
@@ -346,14 +373,21 @@ const run = async (): Promise<void> => {
 	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	let hydration: ReturnType<typeof startCheckoutHydration> | undefined;
 	let candidateRefresh: ReturnType<typeof setInterval> | undefined;
-	const onSignal = (code: number): void => {
-		hydration?.stop();
-		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
-		// Another server takes the workspace over at once, not after the
-		// lease runs out.
-		void maintenance?.stop();
-		void gracefulShutdown(assembled.server, { exitCode: code });
-	};
+	let maintenance: typeof config.maintenance;
+	const onSignal = createStopHandler(
+		{
+			get hydration() {
+				return hydration;
+			},
+			get candidateRefresh() {
+				return candidateRefresh;
+			},
+			get maintenance() {
+				return maintenance;
+			},
+		},
+		(code) => gracefulShutdown(assembled.server, { exitCode: code }),
+	);
 	process.on('SIGTERM', () => onSignal(143));
 	process.on('SIGINT', () => onSignal(130));
 	process.on('SIGHUP', () => onSignal(129));
@@ -484,11 +518,12 @@ const run = async (): Promise<void> => {
 	// them — and every pass that moves the tree says so on stderr,
 	// because silently changing what somebody is looking at is its own
 	// kind of surprise.
-	const { maintenance } = config;
+	const startedMaintenance = config.maintenance;
+	maintenance = startedMaintenance;
 	const standDown =
-		maintenance === undefined
+		startedMaintenance === undefined
 			? config.runtimeBehindCheckout
-			: () => maintenance.gate().standDown();
+			: () => startedMaintenance.gate().standDown();
 	const hydrationInterval = hydrationIntervalMs(process.env);
 	hydration =
 		policy === undefined || hydrationInterval === 0

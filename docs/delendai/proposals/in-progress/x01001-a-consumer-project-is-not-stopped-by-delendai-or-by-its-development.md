@@ -72,6 +72,13 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
   - "Creating a proposal in a project writes that proposal and its index entry, and moves no other file: in api-source-tanit, creating x00077 moved 16 archived proposals to the folders this repository's rule names, which that project's own lint refuses."
   - "Where a consumer files done proposals is the consumer's: one rule, read from its configuration."
 
+### S6 — A server stopped during start-up stops cleanly
+- **Status**: pending
+- **Files**: `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/host-server.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A stop signal that arrives at any point of start-up, before the maintenance or the checkout watch exists, stops the server cleanly and skips what is not yet started, instead of throwing."
+
 ## acceptance
 
 - A vanished ref whose publication merged is a note, not a blocker.
