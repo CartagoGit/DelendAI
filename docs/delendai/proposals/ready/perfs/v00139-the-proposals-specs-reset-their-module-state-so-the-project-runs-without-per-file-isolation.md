@@ -47,3 +47,13 @@ Measured for v00138 on 2026-10-27: the proposals project evaluated its 1,631 mod
 - Every module whose state leaked in a no-isolation run is named in a setup file that resets it before each spec file, through the module's own reset (no spec reaches into another's internals).
 - Three no-isolation runs of the proposals project in different file orders (vitest --sequence.shuffle) pass.
 - plugins/proposals/vitest.config.ts sets isolate: false; the module evaluations report (tools/scripts/report/vitest-module-evaluations.script.ts) shows the proposals count below a tenth of 175,702, and the run time is recorded before and after.
+
+## notes
+
+Measured 2026-11-02 with `bunx vitest run --project proposals` (CLAUDECODE/AI_AGENT unset), 283 files, 2318 tests:
+
+- Before (isolate on): 685 s.
+- After (`isolate: false` plus `tests/setup/reset-module-state.setup.ts`): 484 s, a 29% saving, all green.
+- Shuffled order (`--sequence.shuffle --sequence.seed=11`): 371 s, all green.
+
+The whole project drops isolation; no spec is excluded. x00994 is left alone: it edits specs in cli, core and roadmap, a different change.
