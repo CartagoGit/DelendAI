@@ -46,15 +46,17 @@ Joint audit a00095 and gpt-6.1-sol. D68: deps_audit degrades run or parse failur
 - review-log: approved by minimax-m3.1-flash — verified at b86756b4f329, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 2/2: (1) At b86756b4 the deps audit returns a discriminated result that names the cause, naming a timeout and an audit that gave no report, and the tool throws that cau… (2) At b86756b4 the licence reader no longer swallows a failed manifest or package read, so an unreadable manifest propagates and a node_modules whose packages can… — Approved on the delivered state of b86756b4f329f64a3b79338c6a543459b5175d3f. A failed or unparsable audit is now an error that carries its cause, and an unreadable manifest or node_modules is an error rather than a report of zero licences: the two swallowing try and catch blocks are gone from the licence reader and the audit result names the cause. The type gate exited 0 and the two slice specs pass 19 of 19. Residuals, recorded and not blocking: the cause of a single unreadable dependency is discarded and counted instead, a partly unreadable workspace yields a missing-licence finding rather than an error, and the compatibility wrapper the security plugin uses still renders a failed audit as an explicit skipped state with its cause, which the goal sentence allows.
 
 ### S2 — git and forge reads
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/lib/services/forge.ts`
 - **Gate**: type
 - acceptance:
   - "A git status that fails returns an error, never clean (D87)."
   - "A gh failure returns available:false with the reason (D110)."
 - shipped-in: `0b0c4aaa1b75`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b86756b4f329, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) At b86756b4 the git read layer funnels every status, change and diff read through a helper that throws the reason when git did not succeed, and the runner neve… (2) At b86756b4 the forge read returns available false with the reason and the remediation when the call fails, and the spec asserts that a gh error surfaces as a … — Approved on the delivered state of b86756b4f329f64a3b79338c6a543459b5175d3f. A git status that fails now returns an error and never a clean tree, and a forge failure returns available false with the reason the client reads. The type gate exited 0 and the two slice specs pass 22 of 22. Residuals, recorded and not blocking and outside the slices' declared files: the single pull request view still reports available true when the tool is present but failing, the log read still reads a failed call as no commits, and the commit-policy plugin's own dirty-file read still degrades a failed status to a clean tree.
 
 ### S3 — Branch protection survives a failed refresh
 - **Status**: review
