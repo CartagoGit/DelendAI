@@ -213,7 +213,7 @@ export const createResolver =
 				specifier.startsWith(alias.slice(0, -1))
 			)
 				return pick(
-					target.replace('*', specifier.slice(alias.length - 1)),
+					target.replaceAll('*', specifier.slice(alias.length - 1)),
 				);
 		}
 		return undefined;
