@@ -37,6 +37,7 @@ import {
 	type IObservedToolCall,
 } from './lib/services/checkpoint-advisory-micro-validation.service';
 import { registerProposalsWorkflowContribution } from './lib/skills/proposals-workflow-contribution';
+import { registerProposalsTaskBriefing } from './lib/services/task-briefing.service';
 import { buildCloseSliceValidationProvider } from './lib/swarm/validation-provider';
 import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import {
@@ -124,6 +125,7 @@ export default definePlugin({
 			ctx.docsDir,
 			parsedOptions.data.proposalsDir,
 		);
+		registerProposalsTaskBriefing(layout.proposalsDir);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 		// The database stays at its canonical place when the cache moves;

@@ -260,6 +260,8 @@ export const enteredHeld = async (
 		.split('\n\n')
 		.find((block) => block.includes(`branch ${ref}`));
 	const session = sessionFor(args);
+	const briefed = (data: Parameters<typeof withBriefing>[4]) =>
+		withBriefing(ctx, root, policy, agent, data, { proposal, slice });
 	if (known !== undefined) {
 		const path = known
 			.split('\n')
@@ -270,7 +272,7 @@ export const enteredHeld = async (
 		if (held !== undefined) return held;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
-		return withBriefing(ctx, root, policy, agent, {
+		return briefed({
 			ref,
 			branch,
 			path: path ?? null,
@@ -294,7 +296,7 @@ export const enteredHeld = async (
 		const path = continued.path;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
-		return withBriefing(ctx, root, policy, agent, {
+		return briefed({
 			ref: continued.ref,
 			branch: continued.ref.replace(/^refs\/heads\//u, ''),
 			path: continued.path,
@@ -386,7 +388,7 @@ export const enteredHeld = async (
 	// instance took this unit as free (x00731).
 	const path = resolve(root, dir);
 	const claimed = claimWorktree(path, agent, session);
-	return withBriefing(ctx, root, policy, agent, {
+	return briefed({
 		ref,
 		branch,
 		path,

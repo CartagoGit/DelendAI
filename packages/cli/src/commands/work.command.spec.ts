@@ -10,7 +10,13 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createNoopContext } from '../lib/noop-context.factory';
-import { createWorkCommand, withSlicesView } from './work.command';
+import { taskBriefingFor } from '@delendai/core/cli';
+import {
+	briefOnEntering,
+	createWorkCommand,
+	printPathOnly,
+	withSlicesView,
+} from './work.command';
 
 const globals = (json: boolean) => ({
 	workspace: '/work',
@@ -145,5 +151,41 @@ describe('work deliver', () => {
 		// No repository here: the unit cannot be found, and nothing moves.
 		expect(result.code).not.toBe(0);
 		expect(result.error).not.toContain('work deliver --proposal=<id>');
+	});
+});
+
+describe('entering a unit from the CLI', () => {
+	it('asks the planning plugin, which knows no such proposal here', async () => {
+		const worktree = mkdtempSync(join(tmpdir(), 'work-briefing-'));
+		await briefOnEntering();
+		const task = await taskBriefingFor({
+			worktree,
+			proposal: 'f00001',
+			slice: 'S1',
+		});
+		rmSync(worktree, { recursive: true, force: true });
+		expect(task).toBeUndefined();
+	});
+});
+
+describe('printPathOnly', () => {
+	it('prints the path alone', () => {
+		const written = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		expect(printPathOnly({ code: 0, data: { path: '/w' } })).toEqual({
+			code: 0,
+		});
+		expect(written).toHaveBeenCalledWith('/w\n');
+		written.mockRestore();
+	});
+
+	it('fails an answer with no path, so a script cannot carry on', () => {
+		expect(printPathOnly({ code: 0, data: {} }).code).not.toBe(0);
+	});
+
+	it('keeps a refusal as it came', () => {
+		const refused = { code: 4 as const, error: 'held' };
+		expect(printPathOnly(refused)).toEqual(refused);
 	});
 });

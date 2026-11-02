@@ -69,10 +69,19 @@ export const printPathOnly = (result: ICliCommandResult): ICliCommandResult => {
 		: result;
 };
 
+/** The planning plugin is loaded only when a unit is entered. */
+export const briefOnEntering = async (): Promise<void> => {
+	const { DEFAULT_PATH_LAYOUT, registerProposalsTaskBriefing } = await import(
+		'@delendai/proposals/public'
+	);
+	registerProposalsTaskBriefing(DEFAULT_PATH_LAYOUT.proposalsDir);
+};
+
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
 	run: async (args, ctx) => {
+		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
 		if (args[0] === 'deliver') {
 			const unit = args.slice(1);
