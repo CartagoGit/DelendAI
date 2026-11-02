@@ -63,6 +63,7 @@ import { securityCommands } from './groups/security';
 import { statusMarkerCommands } from './groups/status-marker';
 import { testConventionCommands } from './groups/test-convention';
 import { usageTrackingCommands } from './groups/usage-tracking';
+import { usageHostSessionsCommand } from './usage-host-sessions.command';
 import { webFetchCommands } from './groups/web-fetch';
 
 const text = (
@@ -731,6 +732,7 @@ export const registerAllCommands = async (): Promise<
 	...conventionsCommands,
 	...doctorCommands,
 	...usageTrackingCommands,
+	usageHostSessionsCommand,
 	...securityCommands,
 	...routerDashboardCommands,
 ];

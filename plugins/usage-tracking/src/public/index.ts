@@ -116,3 +116,16 @@ export {
 	indexToolInvocationTelemetry,
 	summarizeToolInvocationTelemetry,
 } from '../lib/preferred-path-metrics';
+export {
+	claudeProjectDirName,
+	claudeProjectsDir,
+	meterSession,
+	meterSessions,
+	meterTranscript,
+} from '../lib/services/host-session-tokens.service';
+export type {
+	IHostSessionTokens,
+	IHostSessionWindow,
+	IMeterSessionsOptions,
+	IThreadTokens,
+} from '../lib/contracts/host-session-tokens.interface';
