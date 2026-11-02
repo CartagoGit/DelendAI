@@ -13,12 +13,13 @@ export const CORE_EVICTION_DAY_MS = 24 * 60 * 60 * 1000;
 /**
  * What eviction never touches under the cache directory, because another
  * owner decides when it goes: the units (`work reap`, which keeps any
- * uncommitted edit on the forge first), delendai's records, and the state
- * database with its journal files. A rule naming one of these, or a path
+ * uncommitted edit on the forge first), the trees running servers use,
+ * delendai's records, and the state database with its journal files. A rule naming one of these, or a path
  * inside one, is refused when it is registered.
  */
 export const EVICTION_PROTECTED_PATHS = [
 	'.worktrees',
+	'branch-runtime',
 	'records',
 	'state',
 ] as const;

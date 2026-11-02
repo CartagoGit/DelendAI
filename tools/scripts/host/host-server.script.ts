@@ -7,11 +7,17 @@
  * branches a long-running server process never needs.
  */
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawn } from 'node:child_process';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
+import {
+	branchFlag,
+	branchHostScript,
+	withoutBranchFlag,
+} from './branch-runtime.helper';
 import {
 	assembleCliConfig,
 	createMcpProject,
@@ -565,9 +571,7 @@ const handleBootFailure = (err: unknown): void => {
 	process.exit(1);
 };
 
-// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
-// module (to unit-test the argv parsing) without also booting a real server.
-if (import.meta.main) {
+const startHost = (): void => {
 	// The process a host starts supervises a server child, which it moves
 	// onto the checkout's current code when that changes (x00756).
 	if (shouldSupervise(process.env)) {
@@ -581,5 +585,38 @@ if (import.meta.main) {
 		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
 	} else {
 		run().catch(handleBootFailure);
+	}
+};
+
+// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
+// module (to unit-test the argv parsing) without also booting a real server.
+if (import.meta.main) {
+	// A project that names a branch runs that branch's own host, supervisor
+	// included, so this checkout moving restarts nothing there.
+	const branch = branchFlag(process.argv);
+	if (branch !== undefined) {
+		const repository = resolve(
+			dirname(fileURLToPath(import.meta.url)),
+			'../../..',
+		);
+		const script = await branchHostScript(repository, branch);
+		if (script !== undefined) {
+			const child = spawn(
+				process.execPath,
+				[script, ...withoutBranchFlag(process.argv.slice(2))],
+				{ stdio: 'inherit' },
+			);
+			for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
+				process.on(signal, () => child.kill(signal));
+			child.on('exit', (code) => process.exit(code ?? 1));
+		} else {
+			process.stderr.write(
+				`[delendai] no branch "${branch}": running this checkout's code.\n`,
+			);
+			process.argv = [...withoutBranchFlag(process.argv)];
+			startHost();
+		}
+	} else {
+		startHost();
 	}
 }
