@@ -25,6 +25,7 @@ import {
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 import { readTextIfPresent } from '../lib/read-text-if-present';
+import { compareCodeUnits } from '@delendai/state';
 
 // The repository root, from this script's own location: run from any
 // directory, it reads and writes this repository's files.
@@ -53,7 +54,8 @@ const normalizeManifest = (manifest: TStableManifest): string =>
 const isSortedByName = (manifest: TStableManifest): boolean =>
 	manifest.tools.every(
 		(tool, index, tools) =>
-			index === 0 || tools[index - 1]!.name.localeCompare(tool.name) <= 0,
+			index === 0 ||
+			compareCodeUnits(tools[index - 1]!.name, tool.name) <= 0,
 	);
 
 const assertCanonicalManifest = (
