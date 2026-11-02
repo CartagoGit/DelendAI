@@ -25,7 +25,12 @@ describe('pr-ci-cost', () => {
 	it('sums runner seconds, spans wall time and keeps the five slowest', () => {
 		const jobs = [10, 20, 30, 40, 50, 60].map((s, i) => ({
 			name: `j${i}`,
-			steps: [step('00:00', `00:${s}`)],
+			steps: [
+				step(
+					'00:00',
+					`0${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`,
+				),
+			],
 		}));
 		const cost = summarize(jobs);
 		expect(cost.jobs).toBe(6);
