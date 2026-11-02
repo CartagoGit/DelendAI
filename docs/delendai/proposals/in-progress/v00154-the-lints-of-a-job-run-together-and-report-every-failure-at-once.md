@@ -2,10 +2,14 @@
 id: v00154
 title: "the lints of a job run together and report every failure at once"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-02
+last-transition-id: a0234006-ddcc-44b5-88b1-38b4ded6bc12
+last-correlation-id: a0234006-ddcc-44b5-88b1-38b4ded6bc12
+last-transition-from: ready
+last-transition-at: 2026-11-02T04:08:35.618Z
 ---
 
 # v00154 — the lints of a job run together and report every failure at once
