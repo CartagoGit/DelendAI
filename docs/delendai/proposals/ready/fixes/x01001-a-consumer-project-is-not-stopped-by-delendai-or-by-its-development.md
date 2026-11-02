@@ -58,11 +58,14 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 - **Files**: `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
 - acceptance:
-  - "A project outside this repository runs a released or pinned delendai, and develop moving here does not restart its server."
+  - "A project outside this repository runs a checkout of `main` kept apart from this one (delendai is not on npm), so develop moving here restarts nothing; it changes over only after a promotion, because `main` trailed develop by 1,418 commits on 2026-11-02 and its state was written by newer code. Its logs stay readable here for debugging."
 
 ## acceptance
 
 - A vanished ref whose publication merged is a note, not a blocker.
 - An agent refused by blocked mutations receives each blocking finding and its repair command, and never a message it can read as another agent's lock.
 - While mutations are blocked, opening a publication outside the work flow is refused or recorded as a departure the owner sees.
-- A project outside this repository runs a released or pinned delendai, and develop moving here does not restart its server.
+- A project outside this repository runs a checkout of `main` kept apart from this one (delendai is not on npm), so develop moving here restarts nothing; it changes over only after a promotion, because `main` trailed develop by 1,418 commits on 2026-11-02 and its state was written by newer code. Its logs stay readable here for debugging.
+
+## notes
+- 2026-11-02: the owner chose `main` over a registry: delendai is not published, and a consumer's agents are useful evidence. Their logs and refs are read from here for findings.
