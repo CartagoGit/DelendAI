@@ -10,6 +10,8 @@ last-transition-id: b1ba65b1-115c-4c0c-be1d-6103976c4dd9
 last-correlation-id: b1ba65b1-115c-4c0c-be1d-6103976c4dd9
 last-transition-from: in-progress
 last-transition-at: 2026-10-28T19:09:04.067Z
+shipped-in:
+  - "38804da0a0b09dd024c7cb9d8c709386ec108636"
 ---
 
 # x00991 — A standing check is not a one-shot rename: the journal never silences it
@@ -42,7 +44,7 @@ The engine has no way to express the difference today, because `IMigration` says
 - global_gate: lint
 
 ### S1 — The engine tells a standing check from a one-shot rename
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/workspace-migration.interface.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -52,8 +54,10 @@ The engine has no way to express the difference today, because `IMigration` says
   - "A standing check that has something to do applies it, and the engine still stops at the first failure rather than stacking the next migration on an unfinished one."
   - "The dry run reports the standing check's steps as planned, exactly as it reports a one-shot rename's."
 - shipped-in: `5fe3e9334`
-- review-state: in_review
+- review-state: done
 - review-implementer: minimax-m3.1-flash-preview
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 38804da0a0b0, validate exit 0 and tests 29/29 claimed, no recorded run cited; acceptance 5/5: (1) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the IMigration contract declares an optional convergent flag, and legacy-migration.service.ts skips a migration who… (2) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the same guard keeps the one-shot skip, and the spec asserts that a one-shot rename already in the journal is not a… (3) At 38804da0a0b09dd024c7cb9d8c709386ec108636 a standing check whose detection finds nothing continues before the plan and the apply, so no step is reported and … (4) At 38804da0a0b09dd024c7cb9d8c709386ec108636 a standing check with work to do reaches the apply, and a failure pushes the failed outcome and returns, so the run… (5) At 38804da0a0b09dd024c7cb9d8c709386ec108636 the dry run is one shared statement for both kinds, pushing status planned with the migration id and its steps, and… — Approved on the delivered state of 38804da0a0b09dd024c7cb9d8c709386ec108636. The migration contract now carries a convergent flag and the engine reads it at every journal-skip site, so a standing check is asked again even when the journal records it while a one-shot rename keeps the skip it had, the transaction engine applies the same rule, and the standing check is not journalled, which is what makes it standing. The dry run reports it as planned through the same statement that reports a one-shot rename, and a failing standing check still stops the run. The lint gate exited 0 and the slice spec passes 29 of 29. Four coverage gaps, recorded and not blocking: the standing check's quietness is asserted without a byte snapshot, the dry run test asserts the status and the id but not the steps, the transaction engine's equivalent change shipped with no test at all, and that file is outside both slices' declared file list.
 
 ### S2 — The policy-alignment migrator is a standing check
 - **Status**: review
