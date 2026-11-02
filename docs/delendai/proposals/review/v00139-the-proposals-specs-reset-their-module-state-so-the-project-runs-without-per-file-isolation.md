@@ -2,14 +2,14 @@
 id: v00139
 title: "The proposals specs reset their module state, so the project runs without per-file isolation"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-27
-last-transition-id: 9056bbe9-da37-4757-8961-f6e5c4223dbb
-last-correlation-id: 9056bbe9-da37-4757-8961-f6e5c4223dbb
-last-transition-from: ready
-last-transition-at: 2026-11-02T03:07:58.433Z
+last-transition-id: afa30025-8ddc-4238-baf0-85ae7e64d678
+last-correlation-id: afa30025-8ddc-4238-baf0-85ae7e64d678
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T03:16:10.703Z
 ---
 
 # v00139 — The proposals specs reset their module state, so the project runs without per-file isolation
@@ -32,19 +32,25 @@ Measured for v00138 on 2026-10-27: the proposals project evaluated its 1,631 mod
 - global_gate: type
 
 ### S1 — Each stateful module resets between files
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/tests/setup/reset-module-state.setup.ts`, `plugins/proposals/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "Every module whose state leaked in a no-isolation run is named in a setup file that resets it before each spec file, through the module's own reset (no spec reaches into another's internals)."
   - "Three no-isolation runs of the proposals project in different file orders (vitest --sequence.shuffle) pass."
+- shipped-in: `02efbd523c6b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The project runs without per-file isolation
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "plugins/proposals/vitest.config.ts sets isolate: false; the module evaluations report (tools/scripts/report/vitest-module-evaluations.script.ts) shows the proposals count below a tenth of 175,702, and the run time is recorded before and after."
+- shipped-in: `02efbd523c6b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
