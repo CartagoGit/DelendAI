@@ -2,10 +2,14 @@
 id: x01001
 title: "a consumer project is not stopped by delendai or by its development"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: startup
 date: 2026-11-01
+last-transition-id: ee0b80ba-1bde-45e5-8a30-4655ba9f91de
+last-correlation-id: ee0b80ba-1bde-45e5-8a30-4655ba9f91de
+last-transition-from: ready
+last-transition-at: 2026-11-02T14:55:43.999Z
 ---
 
 # x01001 — a consumer project is not stopped by delendai or by its development
