@@ -96,10 +96,10 @@ const toContainmentToolError = (
 		'Pass only workspace-contained source paths; absolute paths outside the workspace and reserved paths like .git, .env and node_modules are rejected.',
 	);
 
+// Every symbol: the reach below decides how many are shown, and says so.
 const collectSymbolNames = (source: string, filePath: string): string[] =>
 	buildNavEngine(filePath, source)
 		.listSymbols()
-		.slice(0, MAX_CONTEXT_FOR_CHANGE_SYMBOLS_PER_FILE)
 		.map((hit) => hit.name);
 
 const collectReferenceSummary = async (

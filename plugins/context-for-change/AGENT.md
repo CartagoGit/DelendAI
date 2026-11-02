@@ -34,6 +34,7 @@
 
 ## Tests
 
+- plugins/context-for-change/tests/src/context-for-change-reach.tool.spec.ts
 - plugins/context-for-change/tests/src/context-for-change.tool.spec.ts
 - plugins/context-for-change/tests/src/lib/services/context-for-change-format.service.spec.ts
 - plugins/context-for-change/tests/src/lib/services/project-roots.helper.spec.ts

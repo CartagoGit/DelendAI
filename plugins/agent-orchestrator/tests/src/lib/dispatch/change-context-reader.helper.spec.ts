@@ -57,6 +57,7 @@ describe('changeContextReader', () => {
 		expect(budget).toBe(24_000);
 	});
 
+	// Importing the real plugin takes seconds, and far more under coverage.
 	it('loads the real plugin when nothing is injected', async () => {
 		const read = changeContextReader({
 			workspaceRoot: '/nonexistent-workspace',
@@ -64,5 +65,5 @@ describe('changeContextReader', () => {
 			options: {},
 		});
 		await expect(read([])).resolves.toBeDefined();
-	});
+	}, 120_000);
 });
