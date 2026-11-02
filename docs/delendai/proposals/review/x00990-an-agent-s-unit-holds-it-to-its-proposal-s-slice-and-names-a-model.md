@@ -69,14 +69,16 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the slice event's subject is built from the slice's id and the paths it staged, and the fixed text survives only in the history and in unrelated fi… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The slice commit's subject is built from the slice and the paths it staged, never from a fixed text. The type gate exited 0 and the slice spec passes 19 of 19. Two residuals, recorded and not blocking: the subject is built from the files the event declares and not from the paths actually committed, so it can name a file that was not in the commit; and the criterion's first option, the slice's title, is not implemented, only the paths.
 
 ### S3 — An identity that names no model is marked unverified
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/agent-name-canon.service.ts`, `packages/core/src/lib/work-units/unverified-agents.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/agent-name-canon.service.spec.ts`, `packages/core/tests/src/lib/work-units/unverified-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent id that matches no model of the model catalogue, or carries a date or the product's name, is recorded with an unverified confidence and work status says so; the project's identity policy decides whether it may enter."
 - shipped-in: `d910b67fab2a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an agent id that no seen model and no roster entry confirms is listed as unverified with the reason, an id carrying the product's own name is refus… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent id no model confirms is listed as unverified with the reason, and the product's own name posing as a model's maker is refused at entry. The type gate exited 0 and the two slice specs pass 7 of 7. Three residuals, recorded and not blocking, and they are the criterion's own wording rather than the behaviour: the unverified agents are a list and not a confidence value, the work identity's own confidence vocabulary is untouched; the list speaks only in the JSON output of work status, not in its text; and the delivery declines the clause about an id carrying a date, on the grounds that a date alone is no sign, which the proposal's notes record.
 
 ### S4 — Units changing the same files hear of each other
 - **Status**: review
