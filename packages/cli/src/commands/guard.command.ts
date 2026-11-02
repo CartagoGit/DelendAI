@@ -90,6 +90,7 @@ export const operationsForHook = (
 	facts: {
 		readonly branch: string | undefined;
 		readonly isMerge: boolean;
+		readonly founding?: boolean;
 		readonly inMainWorktree?: boolean;
 		readonly author?: string | undefined;
 		readonly configuredAuthor?: string | undefined;
@@ -106,6 +107,7 @@ export const operationsForHook = (
 				kind: 'commit',
 				branch: facts.branch,
 				isMerge: facts.isMerge,
+				...(facts.founding === true ? { founding: true } : {}),
 				inMainWorktree: facts.inMainWorktree ?? true,
 				author: facts.author,
 				configuredAuthor: facts.configuredAuthor,
@@ -168,6 +170,11 @@ export const operationsForHook = (
 					kind: 'push' as const,
 					remoteRef,
 					deleting,
+					...(!deleting &&
+					remoteOid !== undefined &&
+					ZERO_OID.test(remoteOid)
+						? { creating: true }
+						: {}),
 					...(deletedTipKept === undefined ? {} : { deletedTipKept }),
 				},
 			];
@@ -201,6 +208,8 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	isMerge: () =>
 		git(workspace, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !==
 		undefined,
+	founding: () =>
+		git(workspace, ['rev-parse', '-q', '--verify', 'HEAD']) === undefined,
 	// A linked worktree has its own `.git` directory; the main one is the
 	// common directory itself. That difference is what separates "an
 	// agent working in its own worktree" from "somebody moved the shared
@@ -384,9 +393,12 @@ export const indexWarning = (
 		readonly staged: readonly string[];
 		/** Whether the index is the tree of the integration branch's remote tip. */
 		readonly followsIntegration: boolean;
+		/** No commit yet: what is staged is the project's founding commit. */
+		readonly founding?: boolean;
 	},
 ): string => {
 	if (!policy.workspace.pinnedCheckout || !facts.inMainWorktree) return '';
+	if (facts.founding === true) return '';
 	if (facts.branch !== policy.branches.integration) return '';
 	if (facts.staged.length === 0 || facts.followsIntegration) return '';
 	const shown = facts.staged.slice(0, 3).join(', ');
@@ -666,6 +678,7 @@ export const createGuardCommand = (
 				followsIntegration:
 					remoteTree !== undefined &&
 					remoteTree === git(workspace, ['write-tree']),
+				founding: facts.founding?.() === true,
 			});
 			if (warning.length > 0) process.stderr.write(`${warning}\n`);
 			return { code: EXIT_CODE.OK };
@@ -754,6 +767,7 @@ export const createGuardCommand = (
 			{
 				branch: facts.branch(),
 				isMerge: facts.isMerge(),
+				founding: facts.founding?.() === true,
 				inMainWorktree: facts.inMainWorktree(),
 				...(facts.tipKept === undefined
 					? {}

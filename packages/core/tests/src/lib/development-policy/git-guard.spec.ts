@@ -616,3 +616,44 @@ describe('delendai governs agents; a person uses git freely (x00626)', () => {
 		}
 	});
 });
+
+describe('a new project under a pull-request profile', () => {
+	const policy = expandProfile('shared-checkout-pr');
+
+	it('makes its founding commit on the integration branch, and no other', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				{
+					kind: 'commit',
+					branch: 'develop',
+					isMerge: false,
+					founding: true,
+				},
+				AGENT,
+			).refused,
+		).toBe(false);
+		expect(
+			judgeGitOperation(policy, commit('develop'), AGENT).refused,
+		).toBe(true);
+	});
+
+	it('pushes the integration branch to a forge that lacks it, and only then', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				{
+					kind: 'push',
+					remoteRef: 'refs/heads/develop',
+					deleting: false,
+					creating: true,
+				},
+				AGENT,
+			).refused,
+		).toBe(false);
+		expect(
+			judgeGitOperation(policy, push('refs/heads/develop'), AGENT)
+				.refused,
+		).toBe(true);
+	});
+});

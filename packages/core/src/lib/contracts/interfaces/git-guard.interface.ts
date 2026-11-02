@@ -13,6 +13,8 @@ export type IGuardedGitOperation =
 			/** Short branch name; undefined on a detached HEAD. */
 			readonly branch: string | undefined;
 			readonly isMerge: boolean;
+			/** HEAD has no commit yet: this is the repository's first. */
+			readonly founding?: boolean | undefined;
 			/**
 			 * True in the repository's MAIN working tree — the shared
 			 * checkout a pinned policy anchors. False in a linked worktree,
@@ -58,6 +60,8 @@ export type IGuardedGitOperation =
 			/** Fully qualified remote ref, e.g. `refs/heads/develop`. */
 			readonly remoteRef: string;
 			readonly deleting: boolean;
+			/** The remote has no such branch yet: this push creates it. */
+			readonly creating?: boolean | undefined;
 			/**
 			 * For a deletion: whether the commit being deleted stays reachable
 			 * from another ref (the integration branch, a publication, another
