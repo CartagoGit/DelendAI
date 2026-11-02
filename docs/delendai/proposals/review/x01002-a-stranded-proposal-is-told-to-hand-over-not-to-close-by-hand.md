@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: eeaf6c6b-3a05-4310-8e30-84a49e83961a
-last-correlation-id: eeaf6c6b-3a05-4310-8e30-84a49e83961a
+last-transition-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
+last-correlation-id: ad7256d8-3493-462d-ab82-3d816d37ac4c
 last-transition-from: in-progress
-last-transition-at: 2026-11-02T13:30:15.600Z
+last-transition-at: 2026-11-02T14:37:40.712Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -55,12 +55,23 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S3 — Deliver takes the unit it runs in
+- **Status**: review
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "work deliver run in a unit's worktree with no --slice proves and hands over that unit, its slice, generation and topic read from its branch; elsewhere it still takes the proposal's all unit."
+- shipped-in: `126209b18798`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - A finding in ready/ or in-progress/ names work deliver and setting the slices back to pending, and names no transition to done; a spec checks it.
 - A finding in review/ keeps its review-then-done advice.
 - A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it.
 - `proposals create` with a malformed slice exits non-zero.
+- `work deliver` in a unit's worktree with no `--slice` delivers that unit.
 
 ## notes
 
