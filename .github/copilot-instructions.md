@@ -6,7 +6,7 @@
 > server (`delendai_overview`, `delendai_agent_catalog`) is the live
 > source of truth and changes every week.
 >
-> **Host appendix in effect:** §8.1 (Copilot Chat — close-marker contract).
+> **Host appendix in effect:** [`docs/delendai/host-appendices/copilot-chat.md`](../docs/delendai/host-appendices/copilot-chat.md) (Copilot Chat — close-marker contract).
 
 This file is a pointer. All content lives in the bootstrap.
 

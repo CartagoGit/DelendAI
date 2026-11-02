@@ -55,7 +55,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 
 ### S3 — The always-read rules are the rules this host needs
 - **Status**: pending
-- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `docs/delendai/host-appendices/copilot-chat.md`, `docs/delendai/host-appendices/claude-code.md`, `docs/delendai/host-appendices/codex-cli.md`, `docs/delendai/host-appendices/generic-hosts.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `plugins/quality/skills/quality-and-rules-gates/SKILL.md`, `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`, `tools/scripts/lint/system-prompt-size.script.ts`
 - **Gate**: type
 - acceptance:
   - "A host reads only its own appendix, and rules that apply to one activity load with that activity; the always-read part has a measured budget a gate holds, and no rule is lost."
@@ -85,3 +85,4 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 ## notes
 - 2026-11-01: the owner made the right path a standing rule for every agent, so it opens the invariants of AGENT-BOOTSTRAP.md, ahead of the split of S3.
 - 2026-11-02, S1: `work enter` answers with the task in about 2 KB. The CLI reads proposals from the default layout, so a project with a relocated folder gets the task through its server, and no task block from the CLI.
+- S3, 2026-11-02. Every agent reads the bootstrap at the start of each session: it was 31,974 B, the four host appendices among it (6.3 KB, of which a host needs one) and three rules of one activity each (checkpoint advisories, rebaselining a lint, cross-plugin configuration: 4.5 KB). Each appendix is now a file of its own under `docs/delendai/host-appendices/`, named by its host's instruction file and listed in §8 under its old number; each activity rule moved, whole, to the skill or guide that activity reads, and the bootstrap keeps one line pointing at it. The bootstrap is 21,819 B (about 2,500 tokens less per read); `system-prompt-size` holds it at 23,000 B and each appendix at 3,000 B.

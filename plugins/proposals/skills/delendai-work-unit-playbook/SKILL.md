@@ -37,3 +37,28 @@ edited there.
 - The agent id is lowercase, maker first, then version, then tier; no effort word.
 - Never leave a unit idle: every work command is its heartbeat, and 30 minutes of silence
   lists it for adoption.
+
+## Checkpoint advisories
+
+When any delendai tool result carries `checkpointAdvisory` in the result
+`_meta` (the protocol metadata channel — never `structuredContent`, which is
+schema-validated) with `triggered: true`:
+
+1. Surface `checkpointAdvisory.message` to the user **verbatim**. Do not
+   silently consume or paraphrase it.
+2. Explain the reason in at most one short sentence.
+3. Follow `nextAction` unless the user explicitly asks to continue.
+4. Never repeat the same advisory until its `dedupeKey` changes.
+
+Every visible recommendation begins with **At this point, I recommend**.
+
+**Agent-enforced fallback (host-private terminals):** if you run two or more
+equivalent validation cycles without a meaningful implementation delta, treat
+it as a micro-validation loop and surface the same advisory. That signal is
+agent-enforced; server-observed validation is whatever MCP quality/git tools
+the server can see. See `docs/delendai/CHECKPOINT-ADVISORIES.md`.
+
+Preferred fresh-session sequence: coherent boundary → semantic checkpoint →
+persist proposal/slice state → release unnecessary locks → new session →
+orient → resume from `memory_checkpoint_packet`. Session age by itself must
+never hard-block work.
