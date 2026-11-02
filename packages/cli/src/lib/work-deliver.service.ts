@@ -54,6 +54,35 @@ export const answerOf = async (call: Promise<unknown>): Promise<unknown> => {
 	}
 };
 
+/**
+ * The unit flags of the branch a delivery runs on, when it is a unit of
+ * `proposal`; none otherwise. Run from a unit's worktree with no
+ * `--slice`, deliver looked for the proposal's `all` unit of the first
+ * generation, and refused a unit entered for S2 in its second.
+ */
+export const unitFlagsOf = (
+	branch: string | undefined,
+	proposal: string,
+	parse: (ref: string) =>
+		| {
+				readonly proposal: string;
+				readonly slice: string;
+				readonly generation: number;
+				readonly topic?: string | undefined;
+		  }
+		| undefined,
+): readonly string[] => {
+	const unit =
+		branch === undefined ? undefined : parse(`refs/heads/${branch}`);
+	return unit === undefined || unit.proposal !== proposal
+		? []
+		: [
+				`--slice=${unit.slice}`,
+				`--generation=${String(unit.generation)}`,
+				...(unit.topic === undefined ? [] : [`--topic=${unit.topic}`]),
+			];
+};
+
 /** A refusal that only says the proposal already stands past that step. */
 const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&

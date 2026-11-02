@@ -55,6 +55,13 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S3 — Deliver takes the unit it runs in
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "work deliver run in a unit's worktree with no --slice proves and hands over that unit, its slice, generation and topic read from its branch; elsewhere it still takes the proposal's all unit."
+
 ## acceptance
 
 - A finding in ready/ or in-progress/ names work deliver and setting the slices back to pending, and names no transition to done; a spec checks it.
@@ -65,3 +72,4 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 ## notes
 
 - S2, reopened 2026-11-02: once a refusal through the resolver failed the call, `work deliver` failed on its own first step, the transition to in-progress of a proposal already there, whose refusal it reads to carry on (x00992's second delivery, exit 5). Its transition port now reads the refusal back from the error (`answerOf`); an error that carries no answer still fails.
+- `work deliver` in a unit's worktree with no `--slice` delivers that unit.
