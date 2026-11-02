@@ -30,6 +30,33 @@ describe('silentWorkRefs', () => {
 		]);
 	});
 
+	it('leaves a unit its owner parked, asking only of the refs it would retire', () => {
+		const asked: string[] = [];
+		expect(
+			silentWorkRefs({
+				refs: [
+					{
+						name: 'parked',
+						committedAt: NOW - limit - 60,
+						published: false,
+					},
+					{
+						name: 'working',
+						committedAt: NOW - 60,
+						published: false,
+					},
+				],
+				leaseTtlMinutes: LEASE,
+				now: NOW,
+				isParked: (name) => {
+					asked.push(name);
+					return name === 'parked';
+				},
+			}),
+		).toEqual([]);
+		expect(asked).toEqual(['parked']);
+	});
+
 	it('leaves a unit that is working, one that is published, and one it cannot date', () => {
 		expect(
 			silentWorkRefs({

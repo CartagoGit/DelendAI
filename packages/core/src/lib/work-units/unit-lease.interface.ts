@@ -10,6 +10,11 @@ export const UNIT_STANDINGS = [
 	'abandoned',
 	/** Its work is provably in the integration branch or a publication. */
 	'delivered',
+	/**
+	 * Its owner said it waits on someone else (a `Delendai-Parked` trailer):
+	 * quiet on purpose, so neither listed for adoption nor reaped.
+	 */
+	'waiting',
 ] as const;
 export type IUnitStanding = (typeof UNIT_STANDINGS)[number];
 
@@ -62,6 +67,8 @@ export interface IUnitEvidence {
 	readonly proposalInProgress?: boolean | undefined;
 	/** Another agent already works on the same proposal. */
 	readonly claimedByOther?: boolean | undefined;
+	/** What the unit waits on, as its owner's `Delendai-Parked` trailer says. */
+	readonly parked?: string | undefined;
 }
 
 /** The one verdict on a unit. */

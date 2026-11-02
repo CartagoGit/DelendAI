@@ -18,7 +18,7 @@ import type {
 	IUnitStandingEntry,
 } from './unit-lease.interface';
 import { carriesNothingBeyond } from './landed-work.service';
-import { ownActivityAt } from './unit-activity.helper';
+import { ownActivityAt, parkedReason } from './unit-activity.helper';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { listWorkRefs } from './work-swarm.service';
 import { proposalInProgress } from './publication-target.service';
@@ -185,6 +185,11 @@ export const readUnitStandings = async (
 					),
 				now,
 				windowSeconds: window,
+				parked: parkedReason(
+					(args) => readGit(root, args) ?? '',
+					sha,
+					integration,
+				),
 			});
 			const publicationSha = delivery.publication?.sha;
 			return {
@@ -210,6 +215,7 @@ export const countStandings = (
 		idle: 0,
 		abandoned: 0,
 		delivered: 0,
+		waiting: 0,
 	};
 	for (const entry of entries) counts[entry.standing] += 1;
 	return counts;
@@ -236,7 +242,7 @@ export const summarizeStandings = (
 	entries: readonly IUnitStandingEntry[],
 ): { readonly line: string; readonly nextAction: string | null } => {
 	const counts = countStandings(entries);
-	const line = `units: ${String(counts.live)} live, ${String(counts.idle)} idle, ${String(counts.abandoned)} abandoned, ${String(counts.delivered)} delivered`;
+	const line = `units: ${String(counts.live)} live, ${String(counts.idle)} idle, ${String(counts.abandoned)} abandoned, ${String(counts.delivered)} delivered, ${String(counts.waiting)} waiting`;
 	const next = nextCommand(counts);
 	return {
 		line,

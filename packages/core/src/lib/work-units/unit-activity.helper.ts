@@ -11,6 +11,7 @@
  * holding nothing beyond it is dated by its tip.
  */
 
+import { PARKED_TRAILER } from '../contracts/constants/unit-parked.constant';
 import type { IGitRead } from '../contracts/interfaces/git-runner.interface';
 
 const epoch = (text: string): number | undefined => {
@@ -30,4 +31,24 @@ export const ownActivityAt = (
 	const first = epoch(git(['log', '--reverse', '--format=%ct', range]));
 	if (first !== undefined) return first;
 	return epoch(git(['log', '-1', '--format=%ct', ref]));
+};
+
+/**
+ * What `ref` waits on, when its latest own commit says so with a
+ * `Delendai-Parked: <reason>` trailer; nothing otherwise. Any later
+ * commit of its own ends the wait.
+ */
+export const parkedReason = (
+	git: IGitRead,
+	ref: string,
+	integration: string,
+): string | undefined => {
+	const reason = git([
+		'log',
+		'-1',
+		'--no-merges',
+		`--format=%(trailers:key=${PARKED_TRAILER},valueonly,separator=%x20)`,
+		`${integration}..${ref}`,
+	]).trim();
+	return reason.length > 0 ? reason : undefined;
 };
