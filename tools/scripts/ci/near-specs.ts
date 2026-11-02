@@ -100,29 +100,6 @@ const readMapAt = (root: string): IZoneReadMap | undefined => {
 	}
 };
 
-/** The files of `pattern` that import a module stem by path. */
-const importersIn = (
-	root: string,
-	stem: string,
-	pattern: string,
-): readonly string[] => {
-	try {
-		return lines(
-			git(root, [
-				'grep',
-				'-l',
-				'-E',
-				`from ['"][^'"]*/${stem.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(\\.ts)?['"]`,
-				'--',
-				pattern,
-			]),
-		);
-	} catch {
-		// `git grep` exits 1 when nothing matches.
-		return [];
-	}
-};
-
 /**
  * The specs the read map records reading a changed file. A spec that reads
  * a file from disk imports nothing the nearest specs can find: the published
