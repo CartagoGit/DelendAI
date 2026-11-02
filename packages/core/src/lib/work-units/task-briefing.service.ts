@@ -9,13 +9,13 @@
 import type {
 	ITaskBriefing,
 	ITaskBriefingRequest,
-	TTaskBriefingProvider,
+	ITaskBriefingProvider,
 } from '../contracts/interfaces/work-briefing.interface';
 
-let provider: TTaskBriefingProvider | undefined;
+let provider: ITaskBriefingProvider | undefined;
 
 export const registerTaskBriefingProvider = (
-	next: TTaskBriefingProvider | undefined,
+	next: ITaskBriefingProvider | undefined,
 ): void => {
 	provider = next;
 };

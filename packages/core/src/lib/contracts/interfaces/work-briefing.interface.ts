@@ -58,7 +58,7 @@ export interface ITaskBriefingRequest {
 }
 
 /** Where tasks live is the planning plugin's; core only asks. */
-export type TTaskBriefingProvider = (
+export type ITaskBriefingProvider = (
 	request: ITaskBriefingRequest,
 ) => Promise<ITaskBriefing | undefined>;
 
