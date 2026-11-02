@@ -63,7 +63,7 @@ Boot reaches the running state but reports:
   The file was left untouched.
 ```
 
-…followed by `Mutations blocked: true | recovery required: true` and
+…followed by a line saying that nothing is locked and no work is refused, how many findings wait for a decision and that recovery is required, and
 `Phases NOT EXECUTED: forge, governance` (on a host that binds no forge reader).
 
 ### Why

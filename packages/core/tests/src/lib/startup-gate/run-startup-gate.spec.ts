@@ -189,6 +189,13 @@ describe('runStartupGate', () => {
 			expect(lines.join('\n')).toContain(
 				'Generated repair work (ids are stable across boots)',
 			);
+			// Nothing refuses work for a finding: the banner may not read
+			// as a lock, and each repair says how to record its decision.
+			expect(lines.join('\n')).toContain(
+				'Nothing is locked and no work is refused',
+			);
+			expect(lines.join('\n')).not.toContain('Mutations blocked');
+			expect(lines.join('\n')).toContain('delendai repair resolve');
 		} finally {
 			removeTestWorkspace(workspace);
 		}

@@ -286,6 +286,7 @@ const reconcileUnderLock = async (args: {
 				: []),
 		],
 		answered: answeredBy(resolutions),
+		branches: policy.branches,
 		now,
 	});
 	collect(phases, {

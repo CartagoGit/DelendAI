@@ -35,6 +35,7 @@ import type { IStartupGitSeam } from '../seams.interface';
 import type { IStartupStatePorts } from '../state-ports.interface';
 
 import { heldByAny } from './held-by-any.helper';
+import { publicationMergedFor } from './merged-publications.helper';
 
 import type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
@@ -56,6 +57,14 @@ export const runIntegrationEvidencePhase = async (input: {
 	 * work ref, which is not a loss (x00702).
 	 */
 	readonly keptBy?: readonly string[];
+	/** Where work and publications live, to read which publications merged. */
+	readonly branches?:
+		| {
+				readonly integration: string;
+				readonly workRefPrefix: string;
+				readonly publicationRefPrefix: string;
+		  }
+		| undefined;
 	/**
 	 * Commits the forge keeps as retired work. A unit given up with
 	 * `work retire` is kept there, so its work ref is gone and nothing is
@@ -95,6 +104,14 @@ export const runIntegrationEvidencePhase = async (input: {
 	}
 
 	const inIntegration = heldByAny(input.git, [input.integrationSha]);
+	const publicationMerged =
+		input.branches === undefined
+			? () => false
+			: await publicationMergedFor(input.git, {
+					...input.branches,
+					// The integration commit judged here, not the clone's branch.
+					integration: input.integrationSha,
+				});
 	const heldByRef = heldByAny(input.git, input.keptBy ?? []);
 	const heldAsRetired = heldByAny(input.git, input.retiredTips ?? []);
 
@@ -217,6 +234,20 @@ export const runIntegrationEvidencePhase = async (input: {
 							kind: 'note',
 							subject: generation.wipRef,
 							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is held by another ref (its publication): the work was published, not lost.`,
+						}),
+					);
+					continue;
+				}
+				// Its unit landed through its pull request, rewritten on the
+				// way: the merge names the publication, so nothing was lost.
+				if (publicationMerged(generation.wipRef)) {
+					findings.push(
+						finding({
+							code: 'integration-evidence.publication-merged',
+							phase: 'integration-evidence',
+							kind: 'note',
+							subject: generation.wipRef,
+							message: `The ref ${generation.wipRef} is gone and its checkpoint ${generation.wipHeadSha} is not in the integration branch, but a merge there names its unit's publication: the unit landed through its pull request, its last checkpoint rewritten before publishing.`,
 						}),
 					);
 					continue;
