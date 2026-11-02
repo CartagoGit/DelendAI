@@ -2,10 +2,14 @@
 id: x00997
 title: "A project that uses delendai gets every plugin and skill its configuration names"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: distribution
 date: 2026-10-31
+last-transition-id: 840b7506-649e-48f8-a6c3-758a952ebc11
+last-correlation-id: 840b7506-649e-48f8-a6c3-758a952ebc11
+last-transition-from: ready
+last-transition-at: 2026-11-02T22:57:31.141Z
 ---
 
 # x00997 — A project that uses delendai gets every plugin and skill its configuration names
