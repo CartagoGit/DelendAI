@@ -11,7 +11,10 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { ISwarmUnit } from '../contracts/interfaces/work-swarm.interface';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
-import { integratedDocumentOf } from './reviewed-proposal.service';
+import {
+	integratedDocumentOf,
+	integratedDocumentPathOf,
+} from './reviewed-proposal.service';
 
 const FILES_LINE = /^\s*-\s*\*\*Files\*\*:(?<list>.*)$/u;
 const QUOTED = /`(?<path>[^`]+)`/gu;
@@ -63,19 +66,19 @@ export const unitsOutsideTheirSlice = (input: {
 		if (identity === undefined || identity.kind !== 'implement') return [];
 		// The proposal as the unit holds it: a unit names the files it
 		// needs in its own proposal, and one unit carries a whole proposal.
-		const document = integratedDocumentOf({
+		const where = {
 			root: input.root,
 			base: unit.tip,
 			docsDir: input.docsDir,
 			proposal: identity.proposal,
-		});
+		};
+		const document = integratedDocumentOf(where);
 		if (document === undefined) return [];
+		const own = integratedDocumentPathOf(where);
 		const named = namedFiles(document);
-		// The proposals folder is the record of the work, never outside it.
+		// The proposal's own document is the record of the work.
 		const files = unit.paths.filter(
-			(path) =>
-				!path.startsWith(`${input.docsDir}/proposals/`) &&
-				!isNamed(path, named),
+			(path) => path !== own && !isNamed(path, named),
 		);
 		return files.length > 0 ? [{ ref: unit.ref, files }] : [];
 	});
