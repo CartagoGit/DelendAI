@@ -2,10 +2,14 @@
 id: q00038
 title: "Plan: every check runs only for what the change can affect"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-02
+last-transition-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
+last-correlation-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
+last-transition-from: ready
+last-transition-at: 2026-11-02T08:27:41.982Z
 ---
 
 # q00038 — Plan: every check runs only for what the change can affect
