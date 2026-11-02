@@ -2,14 +2,14 @@
 id: x01004
 title: "A new project under a pull-request profile can make its first commit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 85c618cc-6f5e-4507-b512-daceb34d7906
-last-correlation-id: 85c618cc-6f5e-4507-b512-daceb34d7906
-last-transition-from: ready
-last-transition-at: 2026-11-02T19:08:09.204Z
+last-transition-id: 399249f9-df82-4a43-ac2c-bc0df3e14dc2
+last-correlation-id: 399249f9-df82-4a43-ac2c-bc0df3e14dc2
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T19:24:59.160Z
 ---
 
 # x01004 — A new project under a pull-request profile can make its first commit
@@ -32,11 +32,14 @@ Reported by the owner on 2026-11-02: a project started with a profile that lands
 - global_gate: none
 
 ### S1 — The founding commit and its first push are allowed
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`
 - **Gate**: none
 - acceptance:
   - "In a fresh repository under shared-checkout-pr, the first commit on the integration branch succeeds and the push that creates it on an empty forge succeeds; a second direct commit on it is refused as before. A spec covers each."
+- shipped-in: `03de08ec0861`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
