@@ -34,6 +34,7 @@ import { parseCliInvocation } from './lib/parser.service';
 import { cliLanguage } from './lib/cli-language.service';
 import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
+import { leaveNoTrace } from './lib/leave-no-trace.service';
 import { formatJson } from './lib/stable-json.service';
 
 export {
@@ -158,6 +159,10 @@ export const runHumanCli = async (
 		command.name === 'guard' ||
 		command.name === 'migrate';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
+	const tidy =
+		command.readsOnly?.(commandArgs) === true
+			? leaveNoTrace(parsed.globals.workspace, parsed.globals.cacheDir)
+			: () => undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
 		// where to write (see noop-context.factory.ts) — they never look
@@ -221,6 +226,7 @@ export const runHumanCli = async (
 		return Number.isFinite(code) ? code : EXIT_CODE.RUNTIME;
 	} finally {
 		await ctx?.close();
+		tidy();
 	}
 };
 

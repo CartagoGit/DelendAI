@@ -156,6 +156,8 @@ const projectCreateCommand: ICliCommand = {
 
 const adoptCommand: ICliCommand = {
 	name: 'adopt',
+	// Without --write it only assesses the project.
+	readsOnly: (args) => !hasFlag(args, 'write'),
 	summary: 'Assess or scaffold delendai adoption for the current project.',
 	async run(args, ctx) {
 		return data(
