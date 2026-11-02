@@ -2,10 +2,14 @@
 id: x00984
 title: "Read-only commands leave a project as they found it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
+last-transition-id: 21acf82d-05b1-4da8-afb8-826634ca0cb4
+last-correlation-id: 21acf82d-05b1-4da8-afb8-826634ca0cb4
+last-transition-from: ready
+last-transition-at: 2026-11-02T09:19:36.210Z
 ---
 
 # x00984 — Read-only commands leave a project as they found it
