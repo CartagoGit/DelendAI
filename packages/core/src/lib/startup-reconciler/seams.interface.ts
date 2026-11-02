@@ -158,6 +158,12 @@ export interface IStartupGitSeam {
 	reachableFrom?(
 		tips: readonly string[],
 	): Promise<ReadonlySet<string> | undefined>;
+	/**
+	 * The subjects of the integration branch's own merges, newest first:
+	 * each names the branch it came from (`Merge pull request #N from
+	 * owner/<branch>`).
+	 */
+	mergeSubjects?(integration: string): Promise<readonly string[]>;
 	/** The branch HEAD points at, or undefined when detached. */
 	currentBranch(): Promise<string | undefined>;
 	/**

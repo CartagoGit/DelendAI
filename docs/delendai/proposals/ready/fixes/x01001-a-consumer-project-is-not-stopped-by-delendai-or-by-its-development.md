@@ -34,7 +34,7 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 
 ### S1 — A merged pull request answers a vanished ref
 - **Status**: pending
-- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
+- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/src/lib/startup-reconciler/phases/merged-publications.helper.ts`, `packages/core/src/lib/startup-reconciler/seams.interface.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/merge-subjects.service.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A vanished ref whose publication merged is a note, not a blocker."
@@ -79,3 +79,4 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 - 2026-11-02: the owner chose `main` over a registry: delendai is not published, and a consumer's agents are useful evidence. Their logs and refs are read from here for findings.
 - 2026-11-02: the owner chose a `--branch` flag on the MCP entry over any copy kept by hand. delendai keeps the tree in its cache. Moving a consumer to `main` waits for a promotion, since `main` trails develop by 1,418 commits.
 - 2026-11-02: seen in api-source-tanit while landing x00077 there: `proposals create` moved 16 archived proposals between `done/` subfolders (S5). Its own suite also has a test that fails under load and passes alone, `tests/cli/writing-commands.test.ts > generate --open` (tanit's to fix).
+- S1, 2026-11-02. Read from tanit: the vanished checkpoint `6098918` of `batch-infra-g11` is not the commit PR #56 merged (`891bb0d`, same subject, a different diff), and the integration branch changed those files later, so neither ancestry, nor identical content, nor patch equivalence (`git cherry` answers `+`) holds. What does hold is local and cheap: the integration branch's merge names the publication of the same unit (`Merge pull request #56 from CartagoGit/pr/minimax-m3/implement/batch-infra-g11/…`). A vanished ref whose unit's publication a merge of the integration commit names is now the note `integration-evidence.publication-merged`, naming its checkpoint; one with no such merge stays the blocker.

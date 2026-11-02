@@ -240,6 +240,44 @@ describe('integration evidence', () => {
 		).toBe(true);
 	});
 
+	it('notes a vanished ref whose unit landed rewritten through its pull request', async () => {
+		expect((await boot()).status).toBe('READY');
+
+		const integrator = origin.clone('integrator');
+		integrator.git('checkout', '--quiet', '-b', 'side');
+		integrator.write('src/alpha.ts', 'export const alpha = 2;\n');
+		integrator.git('add', '-A');
+		integrator.git(
+			'commit',
+			'--quiet',
+			'--no-verify',
+			'-m',
+			'wip a, rewritten',
+		);
+		integrator.git('checkout', '--quiet', INTEGRATION_BRANCH);
+		integrator.git(
+			'merge',
+			'--no-ff',
+			'--quiet',
+			'-m',
+			'Merge pull request #1 from owner/pr/agent-a/f1-s1-g1',
+			'side',
+		);
+		integrator.write('src/alpha.ts', 'export const alpha = 3;\n');
+		integrator.git('add', '-A');
+		integrator.git('commit', '--quiet', '--no-verify', '-m', 'later');
+		integrator.push(INTEGRATION_BRANCH);
+		integrator.git('push', '--quiet', 'origin', `:${REF}`);
+
+		const report = await boot();
+		expect(report.status).toBe('READY');
+		expect(
+			report.blockers.some(
+				(item) => item.code === 'integration-evidence.ref-vanished',
+			),
+		).toBe(false);
+	});
+
 	it('records an empty checkpoint as integrated: it carries nothing to lose', async () => {
 		// An empty checkpoint on the integration tip, the shape nine
 		// "commit via slice" checkpoints had on 2026-09-26.
