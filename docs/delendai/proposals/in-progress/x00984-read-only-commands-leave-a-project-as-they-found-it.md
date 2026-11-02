@@ -34,8 +34,8 @@ The cause is structural: every CLI command reaches its tool through a full delen
 - global_gate: type
 
 ### S1 — A server started for a read-only command writes nothing until something is written
-- **Status**: done
-- **Files**: `packages/cli/src/lib/leave-no-trace.service.ts`, `packages/cli/src/lib/leave-no-trace.service.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/groups/core.ts`
+- **Status**: pending
+- **Files**: `packages/cli/src/lib/leave-no-trace.service.ts`, `packages/cli/src/lib/leave-no-trace.service.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/registry-delegation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "In a folder with no .cache/delendai, status, overview and adopt each exit 0 and the folder holds no new file afterwards; a spec runs each against a fresh folder."
