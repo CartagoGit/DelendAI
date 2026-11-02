@@ -2,14 +2,14 @@
 id: x00984
 title: "Read-only commands leave a project as they found it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-27
-last-transition-id: 21acf82d-05b1-4da8-afb8-826634ca0cb4
-last-correlation-id: 21acf82d-05b1-4da8-afb8-826634ca0cb4
-last-transition-from: ready
-last-transition-at: 2026-11-02T09:19:36.210Z
+last-transition-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
+last-correlation-id: 17b68439-ea60-44aa-a7df-b4dcff47fe6a
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T09:56:07.495Z
 ---
 
 # x00984 — Read-only commands leave a project as they found it
@@ -34,12 +34,15 @@ The cause is structural: every CLI command reaches its tool through a full delen
 - global_gate: type
 
 ### S1 — A server started for a read-only command writes nothing until something is written
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/leave-no-trace.service.ts`, `packages/cli/src/lib/leave-no-trace.service.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/registry-delegation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "In a folder with no .cache/delendai, status, overview and adopt each exit 0 and the folder holds no new file afterwards; a spec runs each against a fresh folder."
   - "In a project that already has .cache/delendai, the same commands report what they reported before."
+- shipped-in: `c149012b5c28`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
