@@ -1,7 +1,11 @@
 #!/usr/bin/env bun
 /**
- * Verify that every first-party plugin owns an executable test suite and
- * run all discovered plugin tests through one Vitest invocation.
+ * Verify that every first-party plugin owns an executable test suite.
+ *
+ * The root vitest config already runs each plugin as a project with its own
+ * config, so running them again here repeated the whole plugin suite, in
+ * series: it outlasted every job. `--run` still runs each through its own
+ * package process, side by side, for whoever wants that by hand.
  *
  * The plugin list and test files are derived from the workspace. Adding a
  * plugin without tests therefore fails this gate without requiring a
@@ -9,7 +13,10 @@
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { availableParallelism } from 'node:os';
+
+import { inPool } from '../lint/run-together.script';
 
 export interface IPluginTestSuite {
 	readonly id: string;
@@ -90,6 +97,33 @@ export const buildPluginTestCommand = (
 	suite: IPluginTestSuite,
 ): readonly string[] => ['run', '--cwd', `plugins/${suite.id}`, 'test'];
 
+const runSuite = (
+	workspaceRoot: string,
+	suite: IPluginTestSuite,
+): Promise<{
+	readonly id: string;
+	readonly code: number;
+	readonly output: string;
+}> =>
+	new Promise((resolve) => {
+		const child = spawn('bun', [...buildPluginTestCommand(suite)], {
+			cwd: workspaceRoot,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		let output = '';
+		const keep = (chunk: unknown): void => {
+			output += String(chunk);
+		};
+		child.stdout.on('data', keep);
+		child.stderr.on('data', keep);
+		child.on('error', (error) => {
+			resolve({ id: suite.id, code: 1, output: error.message });
+		});
+		child.on('close', (code) => {
+			resolve({ id: suite.id, code: code ?? 1, output });
+		});
+	});
+
 export const runPluginSuites = async (
 	workspaceRoot: string,
 ): Promise<number> => {
@@ -103,22 +137,19 @@ export const runPluginSuites = async (
 		0,
 	);
 	process.stdout.write(
-		`plugin-suites: ${suites.length} plugins, ${testFiles} test files; isolated processes\n`,
+		`plugin-suites: ${suites.length} plugins, ${testFiles} test files; isolated processes, side by side\n`,
 	);
-	const failures: string[] = [];
-	for (const suite of suites) {
-		const result = spawnSync('bun', buildPluginTestCommand(suite), {
-			cwd: workspaceRoot,
-			stdio: 'inherit',
-		});
-		if (result.error) {
-			failures.push(`${suite.id}: ${result.error.message}`);
-			continue;
-		}
-		if ((result.status ?? 1) !== 0) {
-			failures.push(`${suite.id}: exit ${result.status ?? 1}`);
-		}
+	// Each suite in its own process, as before, but side by side: one after
+	// another, fifty suites outlasted every job that ran them.
+	const runs = await inPool(suites, availableParallelism(), (suite) =>
+		runSuite(workspaceRoot, suite),
+	);
+	for (const run of runs) {
+		if (run.code !== 0) process.stderr.write(run.output);
 	}
+	const failures = runs
+		.filter((run) => run.code !== 0)
+		.map((run) => `${run.id}: exit ${String(run.code)}`);
 	if (failures.length > 0) {
 		process.stderr.write(
 			`plugin-suites: ${failures.length} suite(s) failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}\n`,
@@ -129,9 +160,26 @@ export const runPluginSuites = async (
 	return 0;
 };
 
+/** Each plugin has a suite: throws when one has none. */
+export const verifyPluginSuites = async (
+	workspaceRoot: string,
+): Promise<number> => {
+	const suites = await discoverPluginTestSuites(workspaceRoot);
+	if (suites.length === 0) {
+		throw new Error('no plugin test suites discovered');
+	}
+	process.stdout.write(
+		`plugin-suites: ${suites.length} plugins each own a test suite\n`,
+	);
+	return 0;
+};
+
 if (import.meta.main) {
 	const workspaceRoot = resolve(process.cwd());
-	runPluginSuites(workspaceRoot)
+	(process.argv.includes('--run')
+		? runPluginSuites(workspaceRoot)
+		: verifyPluginSuites(workspaceRoot)
+	)
 		.then((code) => process.exit(code))
 		.catch((error: unknown) => {
 			process.stderr.write(

@@ -17,6 +17,11 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 		bundled: false,
 	},
 	{
+		id: 'delendai-auto-agent-selector-playbook',
+		appliesTo: '@delendai/auto-agent-selector',
+		bundled: false,
+	},
+	{
 		id: 'delendai-concurrency-patterns',
 		appliesTo: '@delendai/proposals, @delendai/notification',
 		bundled: false,
@@ -74,6 +79,11 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 		bundled: true,
 	},
 	{
+		id: 'delendai-orchestrator-runner-playbook',
+		appliesTo: '@delendai/orchestrator-runner',
+		bundled: false,
+	},
+	{
 		id: 'delendai-performance-optimization',
 		appliesTo: '@delendai/skills-pack, @delendai/perf, @delendai/quality',
 		bundled: false,
@@ -102,6 +112,11 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 	{
 		id: 'delendai-quality-and-rules-gates',
 		appliesTo: '@delendai/quality, @delendai/rules',
+		bundled: false,
+	},
+	{
+		id: 'delendai-read-stderr-storm',
+		appliesTo: '@delendai/commit-policy',
 		bundled: false,
 	},
 	{
@@ -153,5 +168,10 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 		id: 'delendai-token-budget-playbook',
 		appliesTo: '@delendai/*',
 		bundled: true,
+	},
+	{
+		id: 'delendai-work-unit-playbook',
+		appliesTo: '@delendai/proposals',
+		bundled: false,
 	},
 ];

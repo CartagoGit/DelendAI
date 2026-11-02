@@ -80,26 +80,11 @@ jobs:
                   bun run lint:agents
                   bun run lint:workflow
 
-    tests:
-        name: tests
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Run vitest
-              run: bunx vitest run
-
     quality-gate:
-        # Mirrors the historical `quality-gate` job but keeps
-        # the budget inside tier2's envelope. The full matrix
-        # script already enforces typecheck + lint + tests, so
-        # this is a defence-in-depth check.
+        # What no workflow already runs on this pull request, and only that.
+        # The whole gate was a third copy of ci.yml (its `validate` step ran
+        # the suite again) and never fitted its budget; the lints CI does not
+        # reach are what this job adds.
         name: quality-gate
         runs-on: ubuntu-latest
         timeout-minutes: 10
@@ -112,4 +97,4 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Run integrated quality gate
-              run: bun tools/scripts/ci/quality-gate.script.ts --real
+              run: bun tools/scripts/ci/quality-gate.script.ts --real --not-in-ci
