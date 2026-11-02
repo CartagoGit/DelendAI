@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'logs',
 	package: '@delendai/logs',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Structured logs reader (tail, query, redact).',
 	tags: ['logs', 'observability'],

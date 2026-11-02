@@ -31,7 +31,7 @@ import {
  */
 export default definePlugin({
 	name: 'completion',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Records an agent declaring its original task done + reviewed and pushes a notification so the human knows the agent is idle awaiting explicit instruction.',
 	optionsSchema: z.object({

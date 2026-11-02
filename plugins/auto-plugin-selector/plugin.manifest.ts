@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'auto-plugin-selector',
 	package: '@delendai/auto-plugin-selector',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Recommends the best plugin set for this project from its signals (manifest, files, git, task).',

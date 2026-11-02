@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'orchestrator-runner',
 	package: '@delendai/orchestrator-runner',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Orchestrator-runner runtime utilities.',
 	tags: ['orchestrator', 'runner'],

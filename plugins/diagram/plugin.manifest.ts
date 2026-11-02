@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'diagram',
 	package: '@delendai/diagram',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Diagram generator (mermaid, dot) from code structure.',
 	tags: ['diagram', 'docs'],

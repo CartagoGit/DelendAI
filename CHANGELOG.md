@@ -11,6 +11,87 @@ only fixes, then a patch. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-11-02
+
+### Added
+
+- Joint audits: a plan settles every finding of the audits it contains (f00764)
+- The audit protocol assigns seats, slices and phases the product can verify (f00789)
+- Consent and dry-run are checked by the server, not asserted by the caller (f00791)
+- The promotion to the release branch opens by itself when the next roadmap milestone is ready (f00795)
+- Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused (f00796)
+- One command proves, hands over and publishes a unit (f00797)
+- an agent finds the skill for what it is doing without carrying any skill it is not using (f00798)
+
+### Changed
+
+- Core and tooling take the workspace root from their caller, never process.cwd() (r00645)
+- The proposals specs reset their module state, so the project runs without per-file isolation (v00139)
+- The queue lands a change in minutes: it arms while the last merge certifies, and CI brings candidates forward (v00142)
+- A pull request runs only the specs its change reaches, and the same plan proves it before the push (v00143)
+- Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind (v00144)
+- Every test project runs warm: the module cache reaches it and its config loads natively (v00145)
+- A pull request starts only the test jobs that run, and the specs that read a change share one job (v00146)
+- The local proof runs the static checks a pull request runs, read from the workflow (v00147)
+- Test shards are balanced by the time their specs take, not by how many there are (v00148)
+- A unit is brought forward only when it must be, so one landing does not send the others back (v00149)
+- A configuration change runs only what it configures (v00150)
+- The compact router returns each result once (v00151)
+- The local proof runs only what the forge would run for the change (v00152)
+- the MCP server answers initialize inside any client's connect window (v00153)
+- the lints of a job run together and report every failure at once (v00154)
+
+### Fixed
+
+- A proposal claim is computed and written under one lock, and only its owner releases it (x00942)
+- The proposals plugin's queue, journal and lookups never lose or invent state (x00943)
+- A transition, close or review accepts only evidence it checked (x00944)
+- A workspace migration and its rollback touch exactly what they backed up, atomically (x00945)
+- One migrate run converges and rewrites every host file the rename touches (x00946)
+- A work unit's identity, claim and generation follow the project's policy, not origin's defaults (x00947)
+- Ref maintenance deletes only what it proved delivered, at the tip it proved it on (x00948)
+- The queue and start-up admit work only on positive certification (x00949)
+- A gate that measured nothing, or could not run, fails (x00950)
+- Every network call a plugin makes goes through the governed fetch engine (x00951)
+- Plugin writes and installs stay inside the directory they were given (x00952)
+- Commands a tool runs get an argv, an allowlist and a scoped environment (x00953)
+- One secret rule set redacts and scans, and no value leaves through an error (x00955)
+- A foreign project gets the plugins, policy and diagnostics that fit it (x00958)
+- Orchestrators and reviewers are held to their own rules by the product (x00959)
+- The api plugin validates and sends exactly the request its spec describes (x00960)
+- The audit tools run every target and scanner they list, and read real plans (x00962)
+- commit-policy stages, trails and settles exactly what it says (x00963)
+- Context references and catalogues are keyed by what they contain (x00964)
+- Memory, issues, search and roadmap keep one record per thing and never merge two (x00965)
+- Webviews escape through one helper and run under a CSP without unsafe-inline (x00966)
+- A git, forge or dependency read that fails says so instead of reporting clean (x00967)
+- A corrupt or unreadable store is reported and preserved, never read as empty (x00970)
+- One host catalog, and a host server that stops with its client and runs current rules (x00971)
+- Logs, traces, KPIs and notifications report the window and events they were asked for (x00972)
+- Code-analysis tools scan the scope they announce, or name what they left out (x00973)
+- Security, perf and operations tools do what their description says (x00974)
+- The selectors and optimizers use every input they accept (x00975)
+- The state engine drains, persists and memoises each scope once (x00976)
+- Every token figure states its baseline and measures what the model receives (x00977)
+- Budget specs measure a complete boot, never a degraded one (x00983)
+- A slice sent back for rework, or one that names only its own proposal, is not read as already shipped (x00986)
+- The security gate scans every tracked source file, in a fixed order (x00987)
+- Batuta can delegate on a fresh machine: consent, roster and costs are told apart (x00988)
+- A standing check is not a one-shot rename: the journal never silences it (x00991)
+- The already-implemented lint reads git once, so lint-governance finishes inside its time limit (x00993)
+- No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason (x00995)
+- A file a proposal shipped still names what it shipped after a later change deletes it (x00996)
+- The local proof reaches the specs that read data inside a workspace (x00998)
+- A merged pull request spends only the head it merged (x00999)
+- every client of a server reaches the tools the surface hides (x01000)
+
+### Maintenance
+
+- Every logo comes from apps/shared/brand and the mono logo is monochrome (c00533)
+- Half-built packages are finished or removed, and duplicate engines are merged (c00534)
+- Actions are pinned by SHA, packages by exact version, and provenance reaches npm (c00535)
+- qs is pinned past GHSA-6pq8-jhm2-2vcw (c00536)
+
 ## [0.2.4] — 2026-10-24
 
 ### Fixed

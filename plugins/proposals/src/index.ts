@@ -74,7 +74,7 @@ export { buildSqlLifecycleReaders } from './lib/sql/lifecycle-readers';
 
 export default definePlugin({
 	name: 'proposals',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	optionsSchema: PROPOSALS_OPTIONS_SCHEMA,

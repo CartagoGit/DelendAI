@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'search',
 	package: '@delendai/search',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Code search (semantic + symbol + references).',
 	tags: ['search', 'symbol', 'f00136'],

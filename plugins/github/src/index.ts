@@ -87,7 +87,7 @@ const buildGitHubKnowledgeEntry = (input: {
 
 export default definePlugin({
 	name: 'github',
-	version: '0.2.4',
+	version: '0.3.0',
 	describe:
 		'GitHub provider context and injectable HTTP client for read tools plus opt-in mutable remote actions. No dependency on plugin-git or a local checkout.',
 	optionsSchema: OptionsSchema,

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'test-convention',
 	package: '@delendai/test-convention',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Test-file convention enforcement (spec path, mock style, forbidden patterns).',

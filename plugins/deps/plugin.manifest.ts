@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'deps',
 	package: '@delendai/deps',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree).',

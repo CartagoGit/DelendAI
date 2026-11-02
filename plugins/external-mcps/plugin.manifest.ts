@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'external-mcps',
 	package: '@delendai/external-mcps',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Compose third-party MCP servers through the catalog + human ack.',
 	tags: ['external-mcps', 'composition'],

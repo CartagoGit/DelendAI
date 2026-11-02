@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'browser',
 	package: '@delendai/browser',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Headless browser automation tools; they need Playwright installed and answer with an install hint without it.',
