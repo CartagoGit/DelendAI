@@ -5,9 +5,7 @@
  * of the session: a window reloading among other extensions can miss the
  * window, and nothing asked again.
  */
-export const RECONNECT_DELAYS_MS = [
-	2_000, 5_000, 15_000, 30_000, 60_000,
-] as const;
+const RECONNECT_DELAYS_MS = [2_000, 5_000, 15_000, 30_000, 60_000] as const;
 
 export const keepConnected = async (input: {
 	readonly attempt: () => Promise<void>;

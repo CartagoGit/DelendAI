@@ -31,11 +31,12 @@ The views ask once while the client is still connecting and nothing asks again w
 
 ### S1 — Views fill when the client connects
 - **Status**: pending
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/providers/status-bar.ts`
+- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/host/keep-connected.helper.ts`, `extensions/vscode/src/test/extension-runtime-paths.spec.ts`, `extensions/vscode/src/test/keep-connected.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every view refreshes when the client connects or reconnects, and a view never stays on a connecting message once the server answers."
-  - "The first tool call after connecting waits for the start instead of failing."
+  - "Every call reaches the server through the shared client, with no router of the extension's own."
+  - "A connection that fails says why and is tried again."
 
 ### S2 — The proposals board reads the real payload
 - **Status**: pending
@@ -68,8 +69,12 @@ The views ask once while the client is still connecting and nothing asks again w
 ## acceptance
 
 - Every view refreshes when the client connects or reconnects, and a view never stays on a connecting message once the server answers.
-- The first tool call after connecting waits for the start instead of failing.
+- Every call reaches the server through the shared client, with no router of the extension's own.
+- A connection that fails says why and is tried again.
 - The Proposals view lists the real proposals by status from a real server, and a spec drives it through the real client shape.
 - The dashboard shows live units, publications and their checks, what the queue is doing, blocked mutations with their cause, and current token use, refreshed by events and not by polling every panel.
 - The Dashboard view shows its content at side-bar width: its navigation does not cover it.
 - A spec activates the built extension against a real server in a throwaway project and reads a populated view model.
+
+## notes
+- 2026-11-02: the panels failed because the extension routed every call through `delendai_vertex`, a router the server no longer exposes, in 70 lines that repeated the shared client. For a later slice: the `DelendAI Runtime` channel replays 77,611 history lines on every load.
