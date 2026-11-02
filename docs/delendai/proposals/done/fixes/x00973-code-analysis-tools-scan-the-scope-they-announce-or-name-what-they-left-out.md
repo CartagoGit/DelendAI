@@ -2,14 +2,16 @@
 id: x00973
 title: "Code-analysis tools scan the scope they announce, or name what they left out"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
-last-correlation-id: 735c91de-2996-4a1f-bdd4-42927a058bb0
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T06:25:25.790Z
+last-transition-id: ff5d7f82-4f45-4ddd-a169-71a2b195924c
+last-correlation-id: ff5d7f82-4f45-4ddd-a169-71a2b195924c
+last-transition-from: review
+last-transition-at: 2026-11-02T17:40:17.357Z
+shipped-in:
+  - "a6c27d556c95"
 ---
 
 # x00973 — Code-analysis tools scan the scope they announce, or name what they left out
@@ -31,17 +33,19 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
 - global_gate: type
 
 ### S1 — Explicit slices stay explicit
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `plugins/impact-analysis/tests/src/lib/services/impact-analysis.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With files or a diff given, the working tree is not added (D116, D118)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 1/1: (1) At a6c27d556c95 context-for-change.service.ts builds its anchor files from the files and the diff that were given and no longer imports gitChanged, and impact-… — Approved on the delivered state of a6c27d556c95 (PR #1531). The context-for-change service now anchors on the files and the diff it is given and never mixes the working tree in, the gitChanged import is gone and the working tree part of the git section was deleted, and impact-analysis only falls back to the working tree when nothing at all is named. The two slice specs pass 12 of 12 and the type gate exited 0. One note, not a criterion failure: for context_for_change the working tree never stands in at all, the service refuses when nothing is named, which is stricter than the proposal text describes.
 
 ### S2 — Scans report their coverage
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/diagram/src/lib/graph/real-deps.ts`, `plugins/diagram/tests/src/lib/graph/real-deps.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/tests/src/lib/docs-list-pagination.spec.ts`, `plugins/link-check/src/lib/contracts/constants/link-check.constant.ts`, `plugins/link-check/src/lib/contracts/interfaces/link-check.interface.ts`, `plugins/link-check/src/lib/link-check/real-deps.ts`, `plugins/link-check/src/lib/tools/link-check.tool.ts`, `plugins/link-check/tests/src/lib/link-check-coverage.spec.ts`, `plugins/tech-debt/src/lib/contracts/constants/tech-debt.constant.ts`, `plugins/tech-debt/src/lib/contracts/interfaces/tech-debt.interface.ts`, `plugins/tech-debt/src/lib/tech-debt/real-deps.ts`, `plugins/tech-debt/src/lib/tools/debt-scan.tool.ts`, `plugins/tech-debt/tests/src/lib/debt-scan-coverage.spec.ts`, `packages/core/src/lib/shared/scan-scope.helper.ts`, `packages/core/tests/src/lib/shared/scan-scope.helper.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -49,29 +53,35 @@ Joint audit a00095. D60: framework_guidance promises to pick in a mixed repo but
   - "docs_list paginates the full collection; total is the real total (D109)."
   - "diagram_deps reads the root workspaces list (D119)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 3/3: (1) At a6c27d556c95 link-check.constant.ts sets the document glob to *.{md,mdx} with a cap of 5000 documents, and link-check and tech-debt both publish a coverage … (2) At a6c27d556c95 the docs engine enumerates the whole catalogue up to 10000 entries instead of cutting it at 200, and the tool slices the page while reporting t… (3) At a6c27d556c95 diagram/src/lib/graph/real-deps.ts iterates the workspace packages of the root manifest through workspacePackageDirs instead of a hard-coded li… — Approved on the delivered state of a6c27d556c95 (PR #1531). The link check now covers md and mdx and reports both the findings truncation and the scan cap, the debt scan reports the same coverage shape, the docs list enumerates the whole catalogue and reports the real total, and the diagram dependency graph reads the root workspaces list, which reaches the tools family the audit said was missing. The five slice specs pass 9 of 9 and the type gate exited 0. One wording note, not a criterion failure: the top-level truncated flag is the pre-existing findings-list flag and the scan cap is reported as coverage.capped with its value in coverage.maxDocs and coverage.maxFiles, so the criterion spans two flags rather than one.
 
 ### S3 — Language and convention tools see the repo
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/generated/tool-outputs.ts`, `packages/core/src/lib/shared/workspace-packages.helper.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/shared/workspace-packages.helper.spec.ts`, `plugins/conventions/src/lib/tools/explain-path.tool.ts`, `plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts`, `plugins/framework-knowledge/src/lib/resolve/installed-framework.helper.ts`, `plugins/framework-knowledge/src/lib/tools/guidance.tool.ts`, `plugins/framework-knowledge/tests/src/lib/resolve/installed-framework.helper.spec.ts`, `plugins/i18n/src/lib/contracts/interfaces/i18n.interface.ts`, `plugins/i18n/src/lib/i18n/check-i18n.ts`, `plugins/i18n/src/lib/keys/extract-used-keys.ts`, `plugins/i18n/src/lib/tools/i18n-check.tool.ts`, `plugins/i18n/tests/src/lib/keys/extract-used-keys.spec.ts`, `plugins/style-convention/src/lib/profile/style-workspace.service.ts`, `plugins/style-convention/tests/src/lib/profile/style-workspace.service.spec.ts`, `plugins/test-convention/src/generated/tool-outputs.ts`, `plugins/test-convention/src/lib/tools/scan-drift.ts`, `plugins/test-convention/src/scan.ts`, `plugins/test-convention/tests/src/lib/scan.spec.ts`, `plugins/test-convention/src/scan-paths.helper.ts`
 - **Gate**: type
 - acceptance:
   - "Each finding's tool covers the declared scope or names what it left out (D60, D72, D77, D108, D78, D107)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 1/1: (1) At a6c27d556c95 framework-knowledge merges the dependencies of every workspace package with the root's, i18n extracts used keys from call, property, pipe and n… — Approved on the delivered state of a6c27d556c95 (PR #1531). Each finding tool now covers the scope it declares, and the one that had to name what it left out does so: the test-convention scan computes skippedFiles, declares it in the tool output schema, returns it in the payload and publishes it in the generated contract, so the report is delivered and not merely computed. The six slice specs pass 35 of 35 and the type gate exited 0. Residual observations, outside the criteria and not blocking: the languages field of the test-convention contract still takes no part in discovery, tokens declared in markup blocks are still not counted and are not reported as omitted, and in a repository with several frameworks the merged dependency map still yields a single framework id.
 
 ### S4 — rules and quality-policy
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/quality-policy/src/lib/contracts/constants/quality-policy.constant.ts`, `plugins/quality-policy/src/lib/contracts/interfaces/quality-policy.interface.ts`, `plugins/quality-policy/src/lib/services/quality-policy-types.service.ts`, `plugins/quality-policy/src/lib/services/quality-policy.service.ts`, `plugins/quality-policy/src/lib/tools/quality-policy.tool.ts`, `plugins/quality-policy/tests/src/lib/services/quality-policy-types.service.spec.ts`, `plugins/rules/src/lib/contracts/constants/area-group-dirs.constant.ts`, `plugins/rules/src/lib/frameworks/manifest-via-composition.ts`, `plugins/rules/src/lib/frameworks/manifest.ts`, `plugins/rules/tests/src/lib/frameworks/manifest-via-composition.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The composed rules builder covers services/ as the legacy one did (D85)."
   - "quality_policy derives its areas from the workspaces and every tsconfig (D105, D49)."
 - shipped-in: `a6c27d556c95`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a6c27d556c95, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 2/2: (1) At a6c27d556c95 plugins/rules holds one AREA_GROUP_DIRS list that includes services, and both the composed builder and the legacy manifest builder read it, so … (2) At a6c27d556c95 quality-policy derives its lint areas from the workspace packages of the root manifest instead of a fixed trio, and the types service reads eve… — Approved on the delivered state of a6c27d556c95 (PR #1531). The composed rules builder and the legacy one now read the same area-group list, which includes services, and the quality policy derives its areas from the workspaces and reads every package tsconfig, naming the divergent ones in tsconfigAreas, which survives the byte-bounded compaction path through the summary. The two slice specs pass 8 of 8 and the type gate exited 0. One residual observation, outside the criteria and not blocking: the tsconfig extends chain is resolved as a filesystem path only, so a package extending a node_modules preset is named but its resolved flags are not stated.
 
 ## acceptance
 
