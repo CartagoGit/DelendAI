@@ -62,7 +62,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 
 ### S4 — A self-contained playbook runs apart
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`
+- **Files**: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`, `docs/delendai/host-appendices/claude-code.md`
 - **Gate**: type
 - acceptance:
   - "On a host that can run a skill in its own context, a long self-contained skill does so and only its result reaches the main thread; a host that cannot reads it as before."
