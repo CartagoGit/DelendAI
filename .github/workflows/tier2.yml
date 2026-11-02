@@ -65,6 +65,10 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              # A proposal's shipped files are looked up in the commits that
+              # shipped them, which a shallow checkout does not hold.
+              with:
+                  fetch-depth: '0'
 
             - name: Run biome and architecture lints
               run: |
