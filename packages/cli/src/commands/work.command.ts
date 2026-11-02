@@ -18,7 +18,7 @@ import {
 	request,
 	scalarArg,
 } from '../lib/helpers/cli-command.helper';
-import { deliverUnit } from '../lib/work-deliver.service';
+import { answerOf, deliverUnit } from '../lib/work-deliver.service';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -102,13 +102,15 @@ export const createWorkCommand = (): ICliCommand => ({
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
 				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
 				transition: (to, checkout) =>
-					request(ctx, 'delendai_proposals_proposal_transition', {
-						id,
-						to,
-						reason,
-						...(agent === undefined ? {} : { agent }),
-						checkout: checkout ?? ctx.cwd,
-					}),
+					answerOf(
+						request(ctx, 'delendai_proposals_proposal_transition', {
+							id,
+							to,
+							reason,
+							...(agent === undefined ? {} : { agent }),
+							checkout: checkout ?? ctx.cwd,
+						}),
+					),
 			});
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {

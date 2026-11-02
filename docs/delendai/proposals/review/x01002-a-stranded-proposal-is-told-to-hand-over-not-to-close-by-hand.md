@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: e501261a-07f8-46b9-9163-eda65905bf5c
-last-correlation-id: e501261a-07f8-46b9-9163-eda65905bf5c
+last-transition-id: eeaf6c6b-3a05-4310-8e30-84a49e83961a
+last-correlation-id: eeaf6c6b-3a05-4310-8e30-84a49e83961a
 last-transition-from: in-progress
-last-transition-at: 2026-11-02T10:33:24.144Z
+last-transition-at: 2026-11-02T13:30:15.600Z
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -46,7 +46,7 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 
 ### S2 — A tool that refuses through the resolver fails the command
 - **Status**: review
-- **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/tests/transport/tool-reach.spec.ts`
+- **Files**: `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`
 - **Gate**: type
 - acceptance:
   - "A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it."
@@ -61,3 +61,7 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - A finding in review/ keeps its review-then-done advice.
 - A hidden tool whose result carries isError, reached through the resolver, rejects with McpToolError carrying the tool's words; a spec checks it.
 - `proposals create` with a malformed slice exits non-zero.
+
+## notes
+
+- S2, reopened 2026-11-02: once a refusal through the resolver failed the call, `work deliver` failed on its own first step, the transition to in-progress of a proposal already there, whose refusal it reads to carry on (x00992's second delivery, exit 5). Its transition port now reads the refusal back from the error (`answerOf`); an error that carries no answer still fails.
