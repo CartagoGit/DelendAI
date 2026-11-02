@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'container',
 	package: '@delendai/container',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Container inspection + lint (docker ps/images, k8s, Dockerfile rules).',

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'i18n',
 	package: '@delendai/i18n',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'i18n key/interpolation validation across locale JSON files.',
 	tags: ['i18n', 'l10n'],

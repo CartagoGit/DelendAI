@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'prompt-eval',
 	package: '@delendai/prompt-eval',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Prompt-eval harness (golden prompts, scoring).',
 	tags: ['prompts', 'eval'],

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'audit',
 	package: '@delendai/audit',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.',

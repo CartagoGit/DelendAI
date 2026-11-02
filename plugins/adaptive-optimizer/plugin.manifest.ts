@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'adaptive-optimizer',
 	package: '@delendai/adaptive-optimizer',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards.',

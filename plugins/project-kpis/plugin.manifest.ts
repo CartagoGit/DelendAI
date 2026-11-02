@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'project-kpis',
 	package: '@delendai/project-kpis',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary:
 		'Versioned project KPI snapshots and observability views across health, usage, economics and delivery.',

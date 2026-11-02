@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'api',
 	package: '@delendai/api',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'REST/GraphQL API surface for delendai plugins.',
 	tags: ['api', 'surface'],

@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'link-check',
 	package: '@delendai/link-check',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Markdown link checker.',
 	tags: ['docs', 'links'],

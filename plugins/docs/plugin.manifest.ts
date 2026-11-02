@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'docs',
 	package: '@delendai/docs',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Doc generation, search, and rendered catalog.',
 	tags: ['docs', 'catalog'],

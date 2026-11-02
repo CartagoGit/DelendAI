@@ -3,7 +3,7 @@ import { definePluginManifest } from '@delendai/core/public';
 export default definePluginManifest({
 	id: 'web-fetch',
 	package: '@delendai/web-fetch',
-	version: '0.2.4',
+	version: '0.3.0',
 	visibility: 'public',
 	summary: 'Web fetch (allow-listed URLs only).',
 	tags: ['web', 'fetch'],
