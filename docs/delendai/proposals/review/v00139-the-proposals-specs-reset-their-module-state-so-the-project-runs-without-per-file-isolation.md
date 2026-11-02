@@ -10,6 +10,8 @@ last-transition-id: ec0ffee5-784f-4573-babe-f156fd749a68
 last-correlation-id: ec0ffee5-784f-4573-babe-f156fd749a68
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T05:03:19.098Z
+shipped-in:
+  - "467ac87e92c2a97d92c2863ded2d804ef141337f"
 ---
 
 # v00139 — The proposals specs reset their module state, so the project runs without per-file isolation
@@ -43,14 +45,16 @@ Measured for v00138 on 2026-10-27: the proposals project evaluated its 1,631 mod
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — The project runs without per-file isolation
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "plugins/proposals/vitest.config.ts sets isolate: false; the module evaluations report (tools/scripts/report/vitest-module-evaluations.script.ts) shows the proposals count below a tenth of 175,702, and the run time is recorded before and after."
 - shipped-in: `02efbd523c6b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 467ac87e92c2, validate exit 0 and tests 285/285 claimed, no recorded run cited; acceptance 1/1: (1) At 467ac87e92c2a97d92c2863ded2d804ef141337f plugins/proposals/vitest.config.ts sets isolate false, and it is the only project in the repository that does, so n… — Approved on the delivered state of 467ac87e92c2a97d92c2863ded2d804ef141337f. The proposals project runs without per-file isolation and the run time is recorded before and after, 685 s against 484 s. One clause of the criterion cannot hold as written and is named here so the proposal text can be amended rather than the slice blocked forever: the module evaluations report reads the line Vitest prints only when isolation is on, so a run without isolation prints no evaluations line at all and the report has nothing to read. The delivery's own notes say the same. The count below a tenth of 175,702 was therefore never measured; what was measured is the wall clock, which fell by 29 percent. The type gate exited 0 and the project passed 285 of the 285 files in a shuffled run. The run still exits 1 because of the unhandled rejections that slice S1 is sent back for, which is a defect of the reset and not of this slice.
 
 ## acceptance
 
