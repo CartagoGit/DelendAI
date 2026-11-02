@@ -1050,6 +1050,13 @@ jobs:
             - name: Smoke — an external project installs, inits and connects
               run: bun run verify:external-install
 
+            # A project that installs only the published CLI: its npm install
+            # (from a local registry serving the packed tarballs) must bring
+            # every plugin `init` configures, the server must activate each,
+            # and each host folder must hold the skills.
+            - name: Smoke — an installed CLI reaches every configured plugin
+              run: bun tools/scripts/smoke/installed-cli-plugins.script.ts
+
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
