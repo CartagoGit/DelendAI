@@ -103,3 +103,17 @@ get_rules {}
 Returns `{ mode, modeGuidance, supported, areas, conventions }` — read
 `mode` before calling `apply_rules`, then confirm the returned `steps` match
 the table above for that mode.
+
+## Rebaseline with `--update`
+
+When a lint fails because a **baselined historical value** drifted (for example,
+an already-closed proposal still cites an old path or an old orphan commit), do
+not hand-edit the baseline JSON unless the script explicitly tells you to. First
+check whether the lint supports `--update` and re-run the lint through that
+entrypoint so the script itself rewrites its canonical baseline format. Manual
+edits are the fallback only when no `--update` mode exists.
+
+| Lint / script                                             | `--update` support | Use case                                                                                                                                                      |
+| --------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun tools/scripts/lint/proposal-files-exist.script.ts`   | Yes                | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
+| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes                | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt.        |

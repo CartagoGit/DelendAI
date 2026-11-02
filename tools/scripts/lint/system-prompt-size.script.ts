@@ -76,7 +76,14 @@ export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 1_000 },
 	{ file: 'CLAUDE.md', maxBytes: 1_000 },
 	{ file: '.github/copilot-instructions.md', maxBytes: 1_000 },
-	{ file: 'docs/delendai/AGENT-BOOTSTRAP.md', maxBytes: 32_000 }, // 2026-09-06: bumped 30k→32k for proposal canonical-filename rule (§4 archived block)
+	// 2026-11-02: 32k→23k once each host appendix moved to a file of its
+	// own, read by its host only, and the rules of one activity moved to
+	// the skill or guide that activity reads (21.8 KB measured that day).
+	{ file: 'docs/delendai/AGENT-BOOTSTRAP.md', maxBytes: 23_000 },
+	{ file: 'docs/delendai/host-appendices/copilot-chat.md', maxBytes: 3_000 },
+	{ file: 'docs/delendai/host-appendices/claude-code.md', maxBytes: 3_000 },
+	{ file: 'docs/delendai/host-appendices/codex-cli.md', maxBytes: 3_000 },
+	{ file: 'docs/delendai/host-appendices/generic-hosts.md', maxBytes: 3_000 },
 ] as const;
 
 export interface IPromptSizeResult {

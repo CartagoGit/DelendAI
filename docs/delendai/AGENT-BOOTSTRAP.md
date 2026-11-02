@@ -173,44 +173,9 @@ Codex, or another host's subscription usage. `usage-tracking` remains useful
 for local MCP activity, while the host dashboard remains the source of truth
 for host-level limits.
 
-### 4.d Checkpoint advisories (f00156)
+### 4.d Checkpoint advisories — when a tool result carries `checkpointAdvisory` in `_meta` with `triggered: true`, follow the `delendai-work-unit-playbook` skill (*Checkpoint advisories*).
 
-When any delendai tool result carries `checkpointAdvisory` in the result
-`_meta` (the protocol metadata channel — never `structuredContent`, which is
-schema-validated) with `triggered: true`:
-
-1. Surface `checkpointAdvisory.message` to the user **verbatim**. Do not
-   silently consume or paraphrase it.
-2. Explain the reason in at most one short sentence.
-3. Follow `nextAction` unless the user explicitly asks to continue.
-4. Never repeat the same advisory until its `dedupeKey` changes.
-
-Every visible recommendation begins with **At this point, I recommend**.
-
-**Agent-enforced fallback (host-private terminals):** if you run two or more
-equivalent validation cycles without a meaningful implementation delta, treat
-it as a micro-validation loop and surface the same advisory. That signal is
-agent-enforced; server-observed validation is whatever MCP quality/git tools
-the server can see. See `docs/delendai/CHECKPOINT-ADVISORIES.md`.
-
-Preferred fresh-session sequence: coherent boundary → semantic checkpoint →
-persist proposal/slice state → release unnecessary locks → new session →
-orient → resume from `memory_checkpoint_packet`. Session age by itself must
-never hard-block work.
-
-### 4.e Rebaseline with `--update`
-
-When a lint fails because a **baselined historical value** drifted (for example,
-an already-closed proposal still cites an old path or an old orphan commit), do
-not hand-edit the baseline JSON unless the script explicitly tells you to. First
-check whether the lint supports `--update` and re-run the lint through that
-entrypoint so the script itself rewrites its canonical baseline format. Manual
-edits are the fallback only when no `--update` mode exists.
-
-| Lint / script                                             | `--update` support | Use case                                                                                                                                                      |
-| --------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bun tools/scripts/lint/proposal-files-exist.script.ts`   | Yes                | Rebaseline known dangling `Files:` references in historical `done/`, `review/` or `in-progress` proposals after an intentional rename or archived path drift. |
-| `bun tools/scripts/lint/proposal-cited-commits.script.ts` | Yes                | Rebaseline known orphan commit citations in historical `done/*` proposals when the commit was intentionally rebased away or documented as legacy debt.        |
+### 4.e Rebaseline with `--update` — when a lint fails on a baselined historical value, follow the `quality-and-rules-gates` skill (*Rebaseline with `--update`*); never hand-edit a baseline first.
 
 ### 4.b Coexistence with parallel work (c00012)
 
@@ -264,38 +229,7 @@ the focused validation pass before committing. The read-only guard is
 `bun tools/scripts/lint/branch-protection-guard.script.ts` (`--live` when
 `gh` is authenticated). Never weaken a required check to pass a gate.
 
-### Cross-plugin configuration compatibility
-
-Plugin options are persistent host configuration, not suggestions. Plugins
-may complement one another when they own different effects, but the core
-performs a compatibility preflight before any plugin `register()` hook runs.
-If enabled plugins claim the same automatic side effect, startup stops with a
-diagnostic containing the exact configuration keys, effective values,
-precedence, and a JSON patch for `delendai.config.json`. The core remains
-agnostic; each plugin declares only the compatibility rules for its own
-interactions. Two common `delendai.config.json` trip-ups (and their fixes)
-are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
-
-- `bun run validate` is green (typecheck + lint + tests + drift guards).
-- Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
-  automatic on `main`. No manual bumps.
-- **Work is committed and pushed under the configured author identity.**
-  A finished task ends with its changes committed (Conventional Commit)
-  and pushed — via the git write tools when the host enabled them, or the
-  proposals persist step otherwise. The author is resolved centrally, so
-  never ask the user whose name to use and never leave completed work
-  uncommitted waiting for a reminder.
-
-- **Delegated agents follow the configured workspace policy.** With
-  `agentWorktree: false`, agents edit the shared checkout and never move
-  it (§6). With `agentWorktree: true`, `proposals_delegate` creates the
-  worktree before claiming files and returns `worktree.path` and `cwd`;
-  the host launches the agent there. A host never infers a different
-  workspace policy from a tool handoff.
-- Touched a tool? Kept its `outputSchema`. Added a tool? Added its
-  output to the catalog generator (if it isn't picked up automatically).
-- Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
-- Wrote a secret through a durable store? Ran it through `redactSecrets`.
+### Cross-plugin configuration compatibility — when startup stops on a plugin compatibility diagnostic, read [`PLUGIN-CONFIGURATION-GUIDE.md`](PLUGIN-CONFIGURATION-GUIDE.md) (*Cross-plugin configuration compatibility*).
 
 ## 6. Invariants you must not break
 
@@ -429,137 +363,14 @@ consults `AGENTS.md`).
 
 ## 8. Host appendices
 
-These are the only places host-specific rules live. **All host
-instruction files just point at this file and pick the appendix that
-applies.** When a rule changes, it changes here once — every host picks
-it up on its next read.
+Host-specific rules live in one file per host, and a host reads only its
+own: the host's instruction file names it. When a rule changes, it
+changes there once.
 
-### 8.1 Copilot Chat — close-marker contract
-
-The `@delendai/status-marker` plugin is loaded in this workspace
-(`delendai_overview` reports it; its `ping` tool answers). The plugin
-is agent-driven today: the core does **not** yet have an `onAfterRespond`
-hook, so the model is responsible for closing every response with
-exactly one line from the canonical 8-state table.
-
-**Mandatory behaviour for every response, with no exceptions:**
-
-1. Pick the state that best describes the turn's outcome (`HECHO` when
-   work is complete and nothing pending; `CAP` when handing off
-   mid-turn; `RE-PIVOT` when the cascade changed direction;
-   `CHECKPOINT-REQUIRED` when handing off to the orchestrator;
-   `REPAIR-NEEDED` when the verifier asked for repair; `BLOQUEADO` on a
-   hard blocker; `SIN PROPUESTAS LIBRES` when the catalog only has
-   claimed work; `SIN PROPUESTA DE NINGUN TIPO` when nothing is
-   executable at all).
-2. Call `<prefix>_close { state, reason? }` (prefix is `status-marker` —
-   confirm via `delendai_overview`). Never hand-format the line.
-3. Paste the returned `line` as the **literal last line** of the
-   response. No prose after it — not even whitespace-then-text. The
-   line must be ≤ 120 chars (the helper truncates with `…` if needed).
-4. Five states require a `reason`: `CAP`, `RE-PIVOT`,
-   `CHECKPOINT-REQUIRED`, `REPAIR-NEEDED`, `BLOQUEADO`. Omitting it
-   makes the helper insert the literal `<reason-missing>` token — that
-   is **not** a valid response.
-5. If unsure whether a draft response is compliant, run
-   `<prefix>_validate { text: <full draft> }` first and check `ok`.
-
-**Bilingual rendering toggle.** The close marker supports two
-bracket-text locales: `'es'` (default — `[HECHO]`, `[CAP]`, …,
-byte-identical to legacy) and `'en'` (shorter English tokens —
-`[DONE]`, `[HANDOFF]`, `[REPIVOT]`, `[CHECKPOINT]`, `[REPAIR]`,
-`[BLOCKED]`, `[NO_FREE_PROPOSALS]`, `[NO_WORK]`). Pass `locale: "en"`
-to `<prefix>_close` (or to `formatCloseMarker` directly) to switch.
-The validator and the 8-state semantics are unchanged — only the
-bracket text differs; pick whichever locale matches the host's UI.
-The detailed contract lives in the status-marker skill (use
-`delendai_agent_catalog` to find its current path).
-
-### 8.2 Claude Code — keep the main thread cheap
-
-This repo's MCP host (`scripts/host-server.ts`) runs `--preset=swarm`,
-which loads the active plugin preset. Tool *results* stay in context
-for the rest of the session, so how you call these tools matters:
-
-- **Delegate non-trivial work.** For any real change to `packages/core`,
-  a plugin, the build/release scripts, or `apps/web`, use the
-  `delendai-orchestrator` subagent instead of driving `proposals_*`
-  tools directly from the main thread. As an operational threshold,
-  treat a task as non-trivial once it needs more than 3 tool calls,
-  touches multiple files, or needs repeated MCP reads to complete. It
-  knows the working loop, the invariants, and the multi-agent
-  coordination primitives.
-- **Prefer compact tools when orienting directly.** Use
-  `delendai_overview` with `compact: true`, `proposals_auto_work`,
-  and `proposals_compact_status` over verbose equivalents
-  (`proposal_board`, full `state_health` dumps) unless you specifically
-  need the verbose detail.
-- **Prefer distilled recall over re-reading.** If a fact should survive
-  beyond the current slice, recall it from durable memory; if it is
-  only useful right now, keep it transient and compact it away when the
-  task changes.
-- **`/compact` between unrelated tasks.** Once a slice/proposal is
-  closed and before starting unrelated work, compact — don't carry its
-  tool output forward for the rest of the session.
-- **Rotate before the danger zone.** At the host's context warning (or about
-  100k tokens when Claude exposes the meter), checkpoint with the memory
-  digest, then start a fresh session. Use `/compact` only to continue related
-  work; use `/clear` before unrelated work. Do not leave an idle Claude Code
-  session running in the background; a continuous session beyond two hours
-  needs an intentional checkpoint, and one approaching many hours should end.
-
-### 8.3 Codex CLI — custom subagents + workspace AGENTS.md
-
-Codex CLI reads the workspace-root `AGENTS.md` (shared with Copilot
-Chat — no per-host duplication) and recognises **custom subagents**
-defined as `.codex/agents/<name>.md`. The scaffolder emits one file
-per role (`orchestrator`, `proposal-guardian`, `implementation-runner`,
-`delivery-verifier`, `technical-investigator`) whenever it runs in any
-mode (`create_project { kind: "host" }`, `delendai init`, or
-`delendai init:default`). Do not delete them — the orchestrator subagent
-becomes invisible to Codex without them, even though `AGENTS.md` is
-present.
-
-Frontmatter contract for `.codex/agents/<name>.md`:
-
-- `name` — kebab-case (e.g. `orchestrator`, `proposal-guardian`).
-- `description` — single-line, describes when to invoke. The
-  scaffolder's wording is: "Root orchestrator for <project>. The real
-  contract lives in the delendai MCP server — use for any
-  non-trivial change (more than 3 tool calls, multiple files, or
-  repeated MCP reads)."
-- No `tools:` field is emitted — Codex inherits every tool available
-  to subagents in the session. Inventing a per-host vocabulary
-  mapping would trade one inaccuracy for another.
-
-The MCP server config is in `.codex/config.toml` and is generated by
-`delendai init` (or hand-authored). It launches the repo-local delendai
-host (`bun tools/scripts/host/host-server.script.ts`). Codex CLI's
-custom-agent feature treats a subagent file as a named, invocable
-prompt template — the body is free-form Markdown after the closing
-`---`.
-
-### 8.4 Cursor / Aider / Continue — generic LLM hosts
-
-These hosts typically read a workspace-root `AGENTS.md` (Cursor, Aider)
-or have their own config file. Use the same single-pointer pattern:
-
-- Place an `AGENTS.md` (or the host's equivalent config file) at the
-  workspace root whose entire content is:
-
-  ````text
-  # Agent instructions
-
-  Follow [`docs/delendai/AGENT-BOOTSTRAP.md`](docs/delendai/AGENT-BOOTSTRAP.md)
-  — that file is the only source of agent rules. The server
-  (`delendai_overview`, `delendai_agent_catalog`) is the only source
-  of truth for what is loaded. Do not enumerate tools, skills, or
-  proposal ids in your answers.
-  ````
-
-- That's it. No other content. When the bootstrap changes, the host
-  picks it up on the next session.
-
+- **8.1 Copilot Chat — close-marker contract** — [`host-appendices/copilot-chat.md`](host-appendices/copilot-chat.md)
+- **8.2 Claude Code — keep the main thread cheap** — [`host-appendices/claude-code.md`](host-appendices/claude-code.md)
+- **8.3 Codex CLI — custom subagents + workspace AGENTS.md** — [`host-appendices/codex-cli.md`](host-appendices/codex-cli.md)
+- **8.4 Cursor / Aider / Continue — generic LLM hosts** — [`host-appendices/generic-hosts.md`](host-appendices/generic-hosts.md)
 
 ## Build / dist layout
 

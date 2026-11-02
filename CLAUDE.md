@@ -6,7 +6,7 @@
 > server (`delendai_overview`, `delendai_agent_catalog`) is the live
 > source of truth and changes every week.
 >
-> **Host appendix in effect:** §8.2 (Claude Code — keep the main thread cheap).
+> **Host appendix in effect:** [`docs/delendai/host-appendices/claude-code.md`](docs/delendai/host-appendices/claude-code.md) (Claude Code — keep the main thread cheap).
 
 This file is a pointer. All content lives in the bootstrap.
 

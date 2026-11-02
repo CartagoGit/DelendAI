@@ -162,3 +162,36 @@ There is no need to remind each agent: invariant §6 already requires it, and
 - `PLUGINS-DELENDAI.md` — how a plugin is **authorized** (if you create one).
 - `README-DELENDAI.md` — CLI flags and presets.
 - `FILE-CONVENTIONS.md` — canonical file-conventions profile.
+
+## Cross-plugin configuration compatibility
+
+Plugin options are persistent host configuration, not suggestions. Plugins
+may complement one another when they own different effects, but the core
+performs a compatibility preflight before any plugin `register()` hook runs.
+If enabled plugins claim the same automatic side effect, startup stops with a
+diagnostic containing the exact configuration keys, effective values,
+precedence, and a JSON patch for `delendai.config.json`. The core remains
+agnostic; each plugin declares only the compatibility rules for its own
+interactions. Two common `delendai.config.json` trip-ups (and their fixes)
+are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
+
+- `bun run validate` is green (typecheck + lint + tests + drift guards).
+- Conventional Commits (`fix:` / `feat:` / `feat!:`) — versioning is
+  automatic on `main`. No manual bumps.
+- **Work is committed and pushed under the configured author identity.**
+  A finished task ends with its changes committed (Conventional Commit)
+  and pushed — via the git write tools when the host enabled them, or the
+  proposals persist step otherwise. The author is resolved centrally, so
+  never ask the user whose name to use and never leave completed work
+  uncommitted waiting for a reminder.
+
+- **Delegated agents follow the configured workspace policy.** With
+  `agentWorktree: false`, agents edit the shared checkout and never move
+  it (§6). With `agentWorktree: true`, `proposals_delegate` creates the
+  worktree before claiming files and returns `worktree.path` and `cwd`;
+  the host launches the agent there. A host never infers a different
+  workspace policy from a tool handoff.
+- Touched a tool? Kept its `outputSchema`. Added a tool? Added its
+  output to the catalog generator (if it isn't picked up automatically).
+- Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
+- Wrote a secret through a durable store? Ran it through `redactSecrets`.
