@@ -1,0 +1,75 @@
+---
+id: f00800
+title: "the VS Code extension shows delendai's live state"
+kind: feat
+status: ready
+type: proposal
+track: extension
+date: 2026-11-01
+---
+
+# f00800 — the VS Code extension shows delendai's live state
+
+## goal
+
+An owner sees in the editor what is running, blocked and landing, from the real server, without asking an agent.
+
+## why
+
+The owner wants the extension to watch delendai's work live, and today it shows nothing. It failed to load from at least 2026-10-29 until the bundle was fixed, and with that fixed, on 2026-11-02, the Dashboard view is an open menu over empty content, Tools and Memory say `MCP server is connecting` for good, and Proposals says `proposal_board returned no payload`.
+
+The views ask once while the client is still connecting and nothing asks again when it connects. Specs drive a fake client, so none of this reached a test. What the panels show was also designed before units, publications, the queue and managed surfaces, so it does not answer what an owner asks: what is running, what is blocked and why, what is about to land.
+
+## non-goals
+
+- Editing state from the extension: it stays a read-only view, plus the commands it has.
+- A second source of truth: every panel reads the server, and the web dashboard shares the same model.
+
+## slices
+
+- global_gate: type
+
+### S1 — Views fill when the client connects
+- **Status**: pending
+- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/providers/status-bar.ts`
+- **Gate**: type
+- acceptance:
+  - "Every view refreshes when the client connects or reconnects, and a view never stays on a connecting message once the server answers."
+  - "The first tool call after connecting waits for the start instead of failing."
+
+### S2 — The proposals board reads the real payload
+- **Status**: pending
+- **Files**: `extensions/vscode/src/lib/proposals-snapshot.ts`
+- **Gate**: type
+- acceptance:
+  - "The Proposals view lists the real proposals by status from a real server, and a spec drives it through the real client shape."
+
+### S3 — The dashboard answers what is happening now
+- **Status**: pending
+- **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`
+- **Gate**: type
+- acceptance:
+  - "The dashboard shows live units, publications and their checks, what the queue is doing, blocked mutations with their cause, and current token use, refreshed by events and not by polling every panel."
+
+### S4 — The layout works in a side bar
+- **Status**: pending
+- **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`
+- **Gate**: type
+- acceptance:
+  - "The Dashboard view shows its content at side-bar width: its navigation does not cover it."
+
+### S5 — A test drives the extension against a real server
+- **Status**: pending
+- **Files**: `extensions/vscode/src/test/build-smoke.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A spec activates the built extension against a real server in a throwaway project and reads a populated view model."
+
+## acceptance
+
+- Every view refreshes when the client connects or reconnects, and a view never stays on a connecting message once the server answers.
+- The first tool call after connecting waits for the start instead of failing.
+- The Proposals view lists the real proposals by status from a real server, and a spec drives it through the real client shape.
+- The dashboard shows live units, publications and their checks, what the queue is doing, blocked mutations with their cause, and current token use, refreshed by events and not by polling every panel.
+- The Dashboard view shows its content at side-bar width: its navigation does not cover it.
+- A spec activates the built extension against a real server in a throwaway project and reads a populated view model.
