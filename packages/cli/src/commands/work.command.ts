@@ -3,7 +3,13 @@
  * core (`runWorkUnit`), which the MCP `work` tool runs too, and the
  * `progress` view of the work, which is the CLI's own.
  */
-import { runWorkUnit } from '@delendai/core/cli';
+import { spawnSync } from 'node:child_process';
+
+import {
+	compileWorkRefParser,
+	readWorkspacePolicy,
+	runWorkUnit,
+} from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 
@@ -18,7 +24,11 @@ import {
 	request,
 	scalarArg,
 } from '../lib/helpers/cli-command.helper';
-import { answerOf, deliverUnit } from '../lib/work-deliver.service';
+import {
+	answerOf,
+	deliverUnit,
+	unitFlagsOf,
+} from '../lib/work-deliver.service';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -77,6 +87,33 @@ export const briefOnEntering = async (): Promise<void> => {
 	registerProposalsTaskBriefing(DEFAULT_PATH_LAYOUT.proposalsDir);
 };
 
+/** The unit flags of the branch checked out at `cwd`, for `proposal`. */
+export const unitHere = async (
+	cwd: string,
+	proposal: string,
+): Promise<readonly string[]> => {
+	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
+	if (policy === undefined) return [];
+	const parser = compileWorkRefParser(
+		policy.branches.workRefTemplate,
+		policy.branches.workRefPrefix,
+		{ requireKind: false },
+	);
+	const branch = spawnSync(
+		'git',
+		['symbolic-ref', '--quiet', '--short', 'HEAD'],
+		{
+			cwd,
+			encoding: 'utf8',
+		},
+	).stdout?.trim();
+	return unitFlagsOf(
+		branch === undefined || branch.length === 0 ? undefined : branch,
+		proposal,
+		(ref) => parser?.parse(ref),
+	);
+};
+
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
@@ -94,9 +131,12 @@ export const createWorkCommand = (): ICliCommand => ({
 				};
 			}
 			const agent = scalarArg(unit, 'agent');
+			const here = unit.some((arg) => arg.startsWith('--slice='))
+				? []
+				: await unitHere(ctx.cwd, id);
 			const withSlice = unit.some((arg) => arg.startsWith('--slice='))
 				? unit
-				: [...unit, '--slice=all'];
+				: [...unit, ...(here.length > 0 ? here : ['--slice=all'])];
 			return deliverUnit({
 				locate: () =>
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),

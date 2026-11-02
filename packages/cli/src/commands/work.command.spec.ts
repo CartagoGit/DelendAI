@@ -16,6 +16,7 @@ import {
 	createWorkCommand,
 	printPathOnly,
 	withSlicesView,
+	unitHere,
 } from './work.command';
 
 const globals = (json: boolean) => ({
@@ -187,5 +188,38 @@ describe('printPathOnly', () => {
 	it('keeps a refusal as it came', () => {
 		const refused = { code: 4 as const, error: 'held' };
 		expect(printPathOnly(refused)).toEqual(refused);
+	});
+});
+
+describe('unitHere', () => {
+	it('reads the unit from the branch a worktree stands on, for that proposal only', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'unit-here-'));
+		const git = (...args: string[]) =>
+			execFileSync(
+				'git',
+				['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
+				{
+					cwd: dir,
+				},
+			);
+		git('init', '-q', '-b', 'develop');
+		writeFileSync(
+			join(dir, 'delendai.config.json'),
+			'{"development":{"profile":"shared-checkout-pr","branches":{"namespacePrefix":"delendai"}}}\n',
+		);
+		git('commit', '-q', '--allow-empty', '-m', 'base');
+		git(
+			'switch',
+			'-q',
+			'-c',
+			'delendai/wip/a/implement/x00001-S2-g2/the-fix',
+		);
+		expect(await unitHere(dir, 'x00001')).toEqual([
+			'--slice=S2',
+			'--generation=2',
+			'--topic=the-fix',
+		]);
+		expect(await unitHere(dir, 'x00002')).toEqual([]);
+		rmSync(dir, { recursive: true, force: true });
 	});
 });
