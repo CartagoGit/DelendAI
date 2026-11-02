@@ -16,11 +16,14 @@ commit-policy's slice persistence checkpoints into a work ref only changes the u
 
 ## why
 
-TODO: why this work matters now.
+Cut from x00990 S6 on 2026-11-02, where it was analysed. On 2026-10-28 a `package.json` hunk that another agent left uncommitted in the shared checkout was committed into two of `minimax-m3.1-flash-preview`'s units (`implement/x00950-S3-g1`, `implement/x00956-S2-g1`) as their only change. The per-call commit (`commit-call-writes.ts`) cannot do that: it commits only paths whose state changed in the unit's own worktree during the call. The commits came from commit-policy's slice persistence, which checkpoints the slice's declared Files from the shared checkout into the work ref, whoever changed them, so every unit whose slice named `package.json` took the hunk.
+
+Checkpointing from the shared checkout is a supported route here (`work checkpoint --paths`, persistence `wip-ref` with exact scope), so refusing it is not the fix, and git cannot say who wrote which hunk of a file. What the persistence can know is what its unit already holds and what it saw change: a design is needed before code.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The per-call commit in a unit's worktree, which already commits only what the call changed.
+- Refusing `work checkpoint` from the shared checkout.
 
 ## slices
 
