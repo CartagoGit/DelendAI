@@ -63,7 +63,7 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 
 ### S4 — The saving is measured
 - **Status**: pending
-- **Files**: `tools/scripts/ci/test-zones.script.ts`
+- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
@@ -105,3 +105,4 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - On a pull request, verify:tools verifies only the plugins the change can reach, and every plugin on a full run.
 - Each publishable package is packed once per run.
 - Measured 2026-11-02 on two CLI-only pull requests: before S5/S6 (#1659), 27 jobs, 1,511 runner-seconds and 265 s of wall time, with pack smoke at 180 s and verify-runtime at 149 s; after them (#1666), 25 jobs, 1,157 runner-seconds and 216 s, verify:tools saying that the change reaches no plugin. Of verify-runtime's remaining 136 s, 87 s were `verify:external-install`, which built, packed and installed the published packages again, so S7 moves it to the pack-smoke job.
+- S4 `bun run ci:cost -- <pr>` measures each job from its first step start to its last step end (the figures above counted until GitHub marked the job complete, which can be minutes later). Re-measured 2026-11-02: #1659 (before S5/S6) 27 jobs, 1,396 runner-seconds, 263 s wall; #1666 (after) 25 jobs, 1,040 runner-seconds, 214 s wall; #1675 (a docs-and-tooling pull request) 26 jobs, 1,067 runner-seconds, 318 s wall, slowest web site build at 97 s.
