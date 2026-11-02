@@ -10,6 +10,7 @@ import {
 } from './work-claim.service';
 import { scalarArg } from './command-args.helper';
 import { carryUnitRecords } from './unit-adoption.service';
+import { releaseClaimedSlices } from './slice-reservation.service';
 
 import {
 	agentFor,
@@ -104,6 +105,13 @@ export const claimed = async (
 		to: result.to,
 		owner: result.claimedBy,
 	});
+	// A reservation names the unit by its old name: left, it kept the
+	// slice the previous agent's, and the claimant was refused its own unit.
+	const released = releaseClaimedSlices(
+		opened.root,
+		opened.policy,
+		result.from,
+	);
 	process.stdout.write(
 		`${[
 			`claimed  ${result.from}`,
@@ -114,7 +122,7 @@ export const claimed = async (
 	);
 	return {
 		code: EXIT_CODE.OK,
-		data: { ...result, ...carried },
+		data: { ...result, ...carried, releasedReservations: released },
 		suppressDefaultPrint: true,
 	};
 };

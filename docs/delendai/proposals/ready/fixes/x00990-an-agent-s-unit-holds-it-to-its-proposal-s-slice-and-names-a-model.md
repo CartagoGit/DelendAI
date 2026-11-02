@@ -89,7 +89,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 ### S8 — Claiming a unit hands over its worktree and its hold
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-claim.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-claim.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After `work claim`, `work enter` with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice."
@@ -110,3 +110,4 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 - 2026-11-02. S1: `work enter --kind=implement` on a proposal in done/ or a done slice is refused, naming the state and the commands for a new fix proposal (tried on x00722: refused, exit 4). `work status` lists, under `outsideSlice`, each implement unit with the authored files it changed that no slice of its proposal names, reading the proposal as the unit holds it, since one unit carries a whole proposal and names the files it needs as it goes; the proposals folder is never outside. S2: the slice commit's subject names the files it changed (`feat(x1): S1 changes a.ts, b.ts +2 more`); the slice event carries no title. S7 was already in place: since b0dbbb782 (2026-10-03) `work enter` refuses an implement unit to an agent named as a reviewer of that slice.
 - S4, 2026-11-02. Entering a unit adds `shared` to its briefing: each other live or published unit that changes a file this one changes, its agent and the files. A commit on a work ref prints, from the commit hook, each other unit that also changes a staged file; it tells and never refuses, and reading the swarm costs about 0.4 s.
+- S8, 2026-11-02. The worktree already followed a claim (`renameUnitRef` moves a worktree standing on the old name) and the lease already moved to the claimant. What held the slice was its reservation on the forge, which names the unit by its old name and stayed taken through its grace window. The claim now gives those reservations back (`releaseClaimedSlices`, reported as `releasedReservations`), so the claimant's entry reserves the slice for itself.

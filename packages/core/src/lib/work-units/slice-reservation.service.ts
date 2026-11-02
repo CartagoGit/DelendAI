@@ -189,6 +189,32 @@ export const releaseSlices = (input: {
 	return released;
 };
 
+/**
+ * Give back what the unit at `from`, a work ref by its short name, had
+ * reserved: after a claim it goes by another name, and holds nothing as
+ * the old one.
+ */
+export const releaseClaimedSlices = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	from: string,
+): number => {
+	const unit = from
+		.replace(/^refs\/heads\//u, '')
+		.slice(bare(policy.branches.workRefPrefix).length);
+	const proposal = /^[^/]+\/implement\/(?<proposal>[^-/]+)-/u.exec(unit)
+		?.groups?.proposal;
+	return proposal === undefined
+		? 0
+		: releaseSlices({
+				root,
+				remote: integrationRemote(root, policy),
+				namespace: policy.branches.namespacePrefix,
+				proposal,
+				unit,
+			});
+};
+
 /** The namespace prefix as it appears in a branch name. */
 const bare = (prefix: string): string =>
 	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');

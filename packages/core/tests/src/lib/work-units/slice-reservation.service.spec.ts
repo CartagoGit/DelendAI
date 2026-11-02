@@ -13,6 +13,7 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import {
+	releaseClaimedSlices,
 	releaseSlices,
 	reserveSlice,
 } from '@delendai/core/lib/work-units/slice-reservation.service';
@@ -153,6 +154,18 @@ describe('work enter on two machines', () => {
 			}),
 		);
 		expect(retired.code).toBe(0);
+		expect((await enter(second.root, 'qwen-3.8-flash', 'S1')).code).toBe(0);
+	});
+});
+
+describe('a claimed unit', () => {
+	it('gives back what it reserved under its old name', async () => {
+		const { first, second } = twoMachines();
+		const held = (await enter(first.root, 'glm-5.3-flash', 'S1')).data as {
+			branch: string;
+		};
+		const policy = await readWorkspacePolicy(first.root);
+		expect(releaseClaimedSlices(first.root, policy, held.branch)).toBe(1);
 		expect((await enter(second.root, 'qwen-3.8-flash', 'S1')).code).toBe(0);
 	});
 });
