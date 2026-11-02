@@ -28,6 +28,32 @@ const refusalOf = (answer: unknown): string | undefined => {
 	);
 };
 
+/**
+ * The tool's answer, a refusal included. A tool reached through the
+ * resolver that refuses now fails the call, as a direct call does; the
+ * refusal it carries is what this flow reads to tell "already past that
+ * step" from a real refusal, so it is read back from the error.
+ */
+export const answerOf = async (call: Promise<unknown>): Promise<unknown> => {
+	try {
+		return await call;
+	} catch (error) {
+		const result = isRecord(error) ? error.result : undefined;
+		const content = isRecord(result) ? result.content : undefined;
+		const text = Array.isArray(content)
+			? (content as readonly unknown[])
+					.map((part) => (isRecord(part) ? part.text : undefined))
+					.find((part): part is string => typeof part === 'string')
+			: undefined;
+		if (text === undefined) throw error;
+		try {
+			return JSON.parse(text) as unknown;
+		} catch {
+			throw error;
+		}
+	}
+};
+
 /** A refusal that only says the proposal already stands past that step. */
 const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&
