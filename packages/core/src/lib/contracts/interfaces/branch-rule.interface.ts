@@ -21,7 +21,7 @@ export interface IBranchRule {
 	readonly pattern: string;
 	/** Carried through unrecognised so validation can name it back. */
 	readonly takesIn: IBranchTakeIn;
-	/** The branch this one is promoted from (`main` from `develop`). */
+	/** The branch this one is promoted from (a release branch from its integration branch). */
 	readonly promotedFrom?: string;
 	/** The branch this one takes in after that one moves. */
 	readonly follows?: string;

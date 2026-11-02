@@ -241,14 +241,14 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 											.string()
 											.min(1)
 											.describe(
-												'The branch this one is promoted from, such as `develop` for `main`.',
+												'The branch this one is promoted from, such as the integration branch for the release branch.',
 											)
 											.optional(),
 										follows: z
 											.string()
 											.min(1)
 											.describe(
-												'The branch this one takes in after that branch moves, such as `main` for `develop`.',
+												'The branch this one takes in after that branch moves, such as the release branch for the integration branch.',
 											)
 											.optional(),
 									})

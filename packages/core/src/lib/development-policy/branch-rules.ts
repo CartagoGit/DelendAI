@@ -23,6 +23,12 @@ const globToRegExp = (glob: string): RegExp =>
 		'u',
 	);
 
+interface IRuleDetail {
+	readonly takesIn?: unknown;
+	readonly promotedFrom?: unknown;
+	readonly follows?: unknown;
+}
+
 const optionalName = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
 
@@ -36,13 +42,11 @@ export const declaredBranchRules = (
 ): readonly IBranchRule[] | undefined => {
 	if (declared === undefined) return undefined;
 	return Object.entries(declared).map(([pattern, value]): IBranchRule => {
-		const detail =
-			typeof value === 'object' && value !== null
-				? (value as Readonly<Record<string, unknown>>)
-				: {};
-		const mode = typeof value === 'string' ? value : detail['takesIn'];
-		const promotedFrom = optionalName(detail['promotedFrom']);
-		const follows = optionalName(detail['follows']);
+		const detail: IRuleDetail =
+			typeof value === 'object' && value !== null ? value : {};
+		const mode = typeof value === 'string' ? value : detail.takesIn;
+		const promotedFrom = optionalName(detail.promotedFrom);
+		const follows = optionalName(detail.follows);
 		return {
 			pattern,
 			takesIn: (typeof mode === 'string' ? mode : '') as IBranchTakeIn,

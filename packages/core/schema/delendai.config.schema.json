@@ -376,12 +376,12 @@
 											"promotedFrom": {
 												"type": "string",
 												"minLength": 1,
-												"description": "The branch this one is promoted from, such as `develop` for `main`."
+												"description": "The branch this one is promoted from, such as the integration branch for the release branch."
 											},
 											"follows": {
 												"type": "string",
 												"minLength": 1,
-												"description": "The branch this one takes in after that branch moves, such as `main` for `develop`."
+												"description": "The branch this one takes in after that branch moves, such as the release branch for the integration branch."
 											}
 										},
 										"required": [
