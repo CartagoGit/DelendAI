@@ -6,8 +6,8 @@
 # signal on top of the `ready_for_review` event type).
 #
 # Runs the same gates the historical `quality-gate.yml`
-# already enforces, with a budget that fits the suite
-# so PRs can rely on the gate being meaningful at
+# already enforces, but keeps the budget under ten minutes
+# per job so PRs can rely on the gate being meaningful at
 # the moment of approval.
 #
 # Triggers:
@@ -83,7 +83,7 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 10
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -102,7 +102,7 @@ jobs:
         # this is a defence-in-depth check.
         name: quality-gate
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 10
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)

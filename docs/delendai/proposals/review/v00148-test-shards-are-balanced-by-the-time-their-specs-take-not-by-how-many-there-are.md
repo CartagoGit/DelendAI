@@ -57,4 +57,4 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 
 - 2026-11-02: the coverage list has a limit: at 1,782 paths, the first promotion since it existed, every test shard ran out of memory. Reproduced with one spec, 4 GB in 50 s; past 200 paths the globs are used, and the same input ends in 18 s.
 
-- 2026-11-02: tier2, seen for the first time since the suite grew: `lint-full` had a shallow checkout, so a lint that reads the commits that shipped a file reported 38 false gaps, and `tests` and `quality-gate` were cancelled at their ten-minute limit.
+- 2026-11-02: tier2, seen for the first time since the suite grew: `lint-full` had a shallow checkout, so a lint that reads the commits that shipped a file reported 38 false gaps; fixed. `tests` and `quality-gate` there are cancelled at the ten-minute budget a spec holds: the budget stands, and the suite no longer fits a single job. Open: they repeat what CI's shards run, so shard them or drop the repeat.
