@@ -2,14 +2,14 @@
 id: v00154
 title: "the lints of a job run together and report every failure at once"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-02
-last-transition-id: a0234006-ddcc-44b5-88b1-38b4ded6bc12
-last-correlation-id: a0234006-ddcc-44b5-88b1-38b4ded6bc12
-last-transition-from: ready
-last-transition-at: 2026-11-02T04:08:35.618Z
+last-transition-id: f0ba0828-18f3-4495-b689-a547faf31973
+last-correlation-id: f0ba0828-18f3-4495-b689-a547faf31973
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T04:29:37.044Z
 ---
 
 # v00154 — the lints of a job run together and report every failure at once
@@ -35,7 +35,7 @@ Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:
 - global_gate: type
 
 ### S1 — A job's lints run together
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `tools/scripts/lint/repository-identity.script.ts`, `tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts`, `.github/workflows/ci.yml`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -43,6 +43,9 @@ Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:
   - "A failing job names every failing lint in one pass."
   - "`lints-reach-ci` follows a chain run together."
   - "No lint is dropped."
+- shipped-in: `058eaeabea17`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
