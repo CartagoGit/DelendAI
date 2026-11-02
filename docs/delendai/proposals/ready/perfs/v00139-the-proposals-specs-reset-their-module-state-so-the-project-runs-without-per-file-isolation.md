@@ -1,0 +1,2 @@
+
+Update: a third shuffled run (seed 333) passed. The module evaluations report on the isolated baseline shows 183,494 evaluations (108.3 per module); the no-isolation run prints no "modules were evaluated" line at all, because vitest reports that only where modules are re-evaluated per file. The config also sets `sequence.groupOrder`, which vitest requires when projects in one run have different worker settings.
