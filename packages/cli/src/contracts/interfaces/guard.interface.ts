@@ -18,6 +18,8 @@ export interface IGuardFacts {
 	readonly branch: () => string | undefined;
 	/** True while a merge is being concluded. */
 	readonly isMerge: () => boolean;
+	/** HEAD has no commit yet: the repository's first is being made. */
+	readonly founding?: () => boolean;
 	/**
 	 * True in the repository's MAIN working tree — the shared checkout a
 	 * pinned policy anchors — and false in a linked worktree, where an

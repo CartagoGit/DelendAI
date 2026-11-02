@@ -157,7 +157,13 @@ describe('operationsForHook', () => {
 				isMerge: false,
 			}),
 		).toEqual([
-			{ kind: 'push', remoteRef: 'refs/heads/wip/a/x', deleting: false },
+			// The remote has no such branch: the push creates it.
+			{
+				kind: 'push',
+				remoteRef: 'refs/heads/wip/a/x',
+				deleting: false,
+				creating: true,
+			},
 			{ kind: 'push', remoteRef: 'refs/heads/old', deleting: true },
 		]);
 	});
