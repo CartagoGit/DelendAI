@@ -8,6 +8,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/runtime';
+import { compareCodeUnits } from '@delendai/state';
 
 /**
  * A durable declaration that an agent finished its ORIGINAL task, reviewed
@@ -153,7 +154,7 @@ export const createCompletionStore = (
 				// corrupt or partially-written record: skip, never throw
 			}
 		}
-		records.sort((a, b) => b.ts.localeCompare(a.ts));
+		records.sort((a, b) => compareCodeUnits(b.ts, a.ts));
 		return records;
 	},
 

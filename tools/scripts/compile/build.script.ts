@@ -44,6 +44,7 @@ import {
 	readWorkspaceManifests,
 	undeclaredByPublisher,
 } from './inlined-packages';
+import { compareCodeUnits } from '@delendai/state';
 
 // Walk up from this file's directory until we find a directory that
 // contains `delendai.config.json` (or `.git`). That is the repo root.
@@ -106,7 +107,7 @@ const discover = (): string[] => {
 					existsSync(join(ROOT, rel, 'package.json')) &&
 					existsSync(join(ROOT, rel, 'src', 'index.ts')),
 			),
-	).sort((a, b) => a.localeCompare(b));
+	).sort(compareCodeUnits);
 	// A dependency cycle is a hard failure that names the cycle (x00531
 	// S1 acceptance): no build order can satisfy one, so producing an
 	// arbitrary order would only hide the defect behind stale artefacts.

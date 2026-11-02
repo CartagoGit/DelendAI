@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface ILegacyWorkspaceFixtureOptions {
 	readonly workspaceRoot: string;
@@ -317,7 +318,7 @@ export const hashWorkspaceTree = async (
 		}
 	};
 	await walk(root);
-	files.sort((left, right) => left.path.localeCompare(right.path));
+	files.sort((left, right) => compareCodeUnits(left.path, right.path));
 	return createHash('sha256')
 		.update(
 			files.map((file) => `${file.path}\0${file.contents}`).join('\n'),

@@ -64,6 +64,7 @@ import {
 	buildPackageModules,
 	type IHarvestedTool,
 } from './emit-tool-types.script';
+import { compareCodeUnits } from '@delendai/state';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -182,7 +183,7 @@ export const harvestToolSchemas = async (): Promise<IHarvestedTool[]> => {
 						}),
 			});
 		}
-		tools.sort((a, b) => a.name.localeCompare(b.name));
+		tools.sort((a, b) => compareCodeUnits(a.name, b.name));
 		return tools;
 	} finally {
 		await assembled.server.close();

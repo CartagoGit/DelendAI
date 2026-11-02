@@ -39,6 +39,7 @@ import {
 	refuseBaselineGrowth,
 	setBaselineGrowth,
 } from './baseline-growth.helper';
+import { compareCodeUnits } from '@delendai/state';
 
 export interface IRoleFinding {
 	readonly relPath: string;
@@ -76,7 +77,7 @@ export const writeBaseline = async (
 	path: string,
 	relPaths: readonly string[],
 ): Promise<void> => {
-	const sorted = [...relPaths].sort((a, b) => a.localeCompare(b));
+	const sorted = [...relPaths].sort(compareCodeUnits);
 	await writeFile(path, `${JSON.stringify(sorted, null, '\t')}\n`, 'utf8');
 };
 

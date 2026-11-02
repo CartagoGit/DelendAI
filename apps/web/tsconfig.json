@@ -21,6 +21,7 @@
 				"../../packages/core/src/public/index.ts"
 			],
 			"@delendai/core/*": ["../../packages/core/src/*"],
+			"@delendai/state": ["../../packages/state/src/public/index.ts"],
 			"@delendai/proposals": ["../../plugins/proposals/src/index.ts"],
 			"@delendai/proposals/public": [
 				"../../plugins/proposals/src/public/index.ts"

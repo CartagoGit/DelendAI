@@ -19,6 +19,7 @@ import {
 } from '../contracts/interfaces/project-profile.interface';
 import { recordPath } from '../shared/delendai-records';
 import { PROJECT_PROFILE_RECORD } from '../contracts/constants/delendai-records.constant';
+import { compareCodeUnits } from '@delendai/state';
 
 const isStringArray = (value: unknown): value is string[] =>
 	Array.isArray(value) && value.every((entry) => typeof entry === 'string');
@@ -119,7 +120,7 @@ const normalizeWorkspaceList = (
 		});
 	}
 	return [...deduped.values()].sort((left, right) =>
-		left.path.localeCompare(right.path),
+		compareCodeUnits(left.path, right.path),
 	);
 };
 

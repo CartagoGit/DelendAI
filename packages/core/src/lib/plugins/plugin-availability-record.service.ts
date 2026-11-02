@@ -16,6 +16,7 @@ import type { IPluginAvailability } from '../contracts/interfaces/plugin-availab
 import type { IPluginAvailabilityRecord } from '../contracts/interfaces/plugin-availability-record.interface';
 import { provenAvailabilityOf } from './plugin-availability.service';
 import type { IMcpPlugin, IMcpPluginContext } from './plugin-contract';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Where the answers of one workspace live. */
 export const pluginAvailabilityDir = (
@@ -80,6 +81,6 @@ export const readPluginAvailabilities = async (
 		}
 	}
 	return records.sort((left, right) =>
-		left.plugin.localeCompare(right.plugin),
+		compareCodeUnits(left.plugin, right.plugin),
 	);
 };

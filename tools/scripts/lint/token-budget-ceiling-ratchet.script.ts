@@ -44,6 +44,7 @@ import { TOKEN_BUDGETS } from '@delendai/core/public';
 import type { ITokenBudgetRegistry } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -234,7 +235,9 @@ export const computeRatchetViolations = (
 			});
 		}
 	}
-	return violations.sort((left, right) => left.key.localeCompare(right.key));
+	return violations.sort((left, right) =>
+		compareCodeUnits(left.key, right.key),
+	);
 };
 
 export const buildRatchetReport = (
@@ -300,7 +303,7 @@ export const writeRatchetBaseline = async (
 ): Promise<void> => {
 	const sorted: Record<string, number> = {};
 	for (const key of Object.keys(snapshot).sort((a, b) =>
-		a.localeCompare(b),
+		compareCodeUnits(a, b),
 	)) {
 		sorted[key] = snapshot[key] as number;
 	}

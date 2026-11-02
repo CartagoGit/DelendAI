@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { cp, mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { writeFileAtomic } from '@delendai/core/runtime';
+import { compareCodeUnits } from '@delendai/state';
 
 /**
  * Maps each rewritable `@delendai/*` package name to the version its OWN
@@ -179,7 +180,7 @@ const collectChangedKeys = (
 	}
 	return {
 		rewritten,
-		changedKeys: [...changedKeys].sort((a, b) => a.localeCompare(b)),
+		changedKeys: [...changedKeys].sort(compareCodeUnits),
 	};
 };
 
@@ -328,7 +329,7 @@ const walkPackageJsonFiles = async (
 			}
 		}
 	}
-	return out.sort((a, b) => a.localeCompare(b));
+	return out.sort(compareCodeUnits);
 };
 
 export const findWorkspaceConsumers = async (

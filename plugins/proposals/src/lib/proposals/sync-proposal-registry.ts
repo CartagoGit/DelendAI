@@ -54,7 +54,7 @@ import {
 	slugFromTitle,
 	stripIdPrefixFromTitle,
 } from '../shared/string-helpers';
-import { canonicalStateHash } from '@delendai/state';
+import { canonicalStateHash, compareCodeUnits } from '@delendai/state';
 
 import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
 import type { IProposalRegistryIndex } from '../contracts/interfaces/registry-snapshot.interface';
@@ -710,10 +710,10 @@ export const findDuplicateProposalIds = async (
 		if (paths.length < 2) continue;
 		out.push({
 			id,
-			paths: [...paths].sort((a, b) => a.localeCompare(b)),
+			paths: [...paths].sort(compareCodeUnits),
 		});
 	}
-	out.sort((a, b) => a.id.localeCompare(b.id));
+	out.sort((a, b) => compareCodeUnits(a.id, b.id));
 	return out;
 };
 
@@ -809,7 +809,7 @@ export const findProposalFolderDrift = async (
 			status: file.status,
 		});
 	}
-	drift.sort((a, b) => a.id.localeCompare(b.id));
+	drift.sort((a, b) => compareCodeUnits(a.id, b.id));
 	return drift;
 };
 
@@ -1109,7 +1109,7 @@ const snapshotRegistry = async (input: {
 			proposalsDir,
 			quarantineContext,
 		);
-		result.entries.sort((a, b) => a.id.localeCompare(b.id));
+		result.entries.sort((a, b) => compareCodeUnits(a.id, b.id));
 		entries.push(...result.entries);
 		warnings.push(...result.warnings);
 	}

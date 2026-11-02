@@ -23,6 +23,7 @@ import type {
 	ICacheLayoutRatchetSnapshot,
 	ICacheLayoutRatchetVerdict,
 } from './cache-layout-ratchet.interface';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Order-independent checksum of what the manifest says exists. */
 export const manifestChecksum = (manifest: ICacheLayoutManifest): string =>
@@ -31,7 +32,9 @@ export const manifestChecksum = (manifest: ICacheLayoutManifest): string =>
 			JSON.stringify(
 				[...manifest.artifacts]
 					.map((a) => [a.id, a.owner, a.path, a.class])
-					.sort((x, y) => String(x[0]).localeCompare(String(y[0]))),
+					.sort((x, y) =>
+						compareCodeUnits(String(x[0]), String(y[0])),
+					),
 			),
 		)
 		.digest('hex');

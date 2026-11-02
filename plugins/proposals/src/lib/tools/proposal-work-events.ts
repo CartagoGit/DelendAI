@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { sharedCheckout } from '@delendai/core/public';
 
 import { appendPeerReviewJsonl } from '../shared/peer-review-log';
+import { compareCodeUnits } from '@delendai/state';
 
 /** The work item a whole-proposal event belongs to. */
 const WHOLE_PROPOSAL_ITEM = 'all';
@@ -19,7 +20,9 @@ const hashOf = (detail: Readonly<Record<string, string>>): string =>
 	createHash('sha256')
 		.update(
 			JSON.stringify(
-				Object.entries(detail).sort(([a], [b]) => a.localeCompare(b)),
+				Object.entries(detail).sort(([a], [b]) =>
+					compareCodeUnits(a, b),
+				),
 			),
 		)
 		.digest('hex');

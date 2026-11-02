@@ -1,9 +1,10 @@
+import { compareCodeUnits } from '@delendai/state';
 const sortValue = (value: unknown): unknown => {
 	if (Array.isArray(value)) return value.map(sortValue);
 	if (value === null || typeof value !== 'object') return value;
 	return Object.fromEntries(
 		Object.entries(value as Record<string, unknown>)
-			.sort(([a], [b]) => a.localeCompare(b))
+			.sort(([a], [b]) => compareCodeUnits(a, b))
 			.map(([key, entry]) => [key, sortValue(entry)]),
 	);
 };

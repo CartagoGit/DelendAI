@@ -18,6 +18,7 @@ import {
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { skillOwnerRoots } from '@delendai/core/public';
+import { compareCodeUnits } from '@delendai/state';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');
@@ -33,7 +34,7 @@ const pluginNames = (): string[] => {
 	return readdirSync(pluginsDir, { withFileTypes: true })
 		.filter((entry) => entry.isDirectory())
 		.map((entry) => entry.name)
-		.sort((a, b) => a.localeCompare(b));
+		.sort(compareCodeUnits);
 };
 
 interface ISkill {
@@ -141,7 +142,7 @@ const walkSkillsInternal = (
 			});
 		}
 	}
-	return out.sort((a, b) => a.name.localeCompare(b.name));
+	return out.sort((a, b) => compareCodeUnits(a.name, b.name));
 };
 
 /** Last non-empty path segment of `p`, with back-slashes normalised. */
@@ -159,7 +160,7 @@ const main = (): void => {
 	const roots = skillOwnerRoots(pluginNames());
 	const skills = roots
 		.flatMap((rel) => walkSkills(join(ROOT, ...rel.split('/')), rel))
-		.sort((a, b) => a.name.localeCompare(b.name));
+		.sort((a, b) => compareCodeUnits(a.name, b.name));
 	if (skills.length === 0) {
 		const msg = `no SKILL.md files found under any owner skill root (${roots.join(', ')})`;
 		if (strict) {

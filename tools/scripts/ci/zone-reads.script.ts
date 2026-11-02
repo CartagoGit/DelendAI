@@ -32,6 +32,7 @@ import { join } from 'node:path';
 import { repoRoot } from '../lib/repo-root';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
 import type { IZoneReadMap } from './test-zones.interface';
+import { compareCodeUnits } from '@delendai/state';
 
 /** Turn raw recorded paths per zone into the committed map. */
 export const buildZoneReadMap = (
@@ -47,7 +48,7 @@ export const buildZoneReadMap = (
 		}
 	> = {};
 	for (const [zone, lines] of Object.entries(raw).sort(([a], [b]) =>
-		a.localeCompare(b),
+		compareCodeUnits(a, b),
 	)) {
 		const read = new Set<string>();
 		const listed = new Set<string>();
@@ -80,7 +81,7 @@ export const buildZoneReadMap = (
 				: {
 						specs: Object.fromEntries(
 							[...bySpec.entries()]
-								.sort(([a], [b]) => a.localeCompare(b))
+								.sort(([a], [b]) => compareCodeUnits(a, b))
 								.map(([spec, entry]) => [
 									spec,
 									{

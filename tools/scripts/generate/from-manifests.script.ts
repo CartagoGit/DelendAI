@@ -17,6 +17,7 @@ import {
 	type IMcpPlugin,
 	type IPluginRegistryEntry,
 } from '@delendai/core/cli';
+import { compareCodeUnits } from '@delendai/state';
 
 export const GENERATED_FIRST_PARTY_INDEX_PATH =
 	'packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts';
@@ -313,7 +314,7 @@ export const loadPluginManifests = async (
 			plugin: pluginFromModule(pluginMod ?? {}),
 		});
 	}
-	return loaded.sort((left, right) => left.id.localeCompare(right.id));
+	return loaded.sort((left, right) => compareCodeUnits(left.id, right.id));
 };
 
 export const buildGeneratedFirstPartyEntries = (

@@ -61,6 +61,7 @@ import {
 } from '../../../plugins/proposals/src/lib/proposals/frontmatter-parser';
 import type { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import { KIND_TO_DONE_SUBFOLDER } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
+import { compareCodeUnits } from '@delendai/state';
 
 interface ICollectedProposal {
 	readonly relPath: string;
@@ -175,7 +176,7 @@ const main = async (): Promise<number> => {
 	if (process.argv.slice(2).includes('--seed')) {
 		const index = Object.fromEntries(
 			[...collected]
-				.sort((a, b) => a.id.localeCompare(b.id))
+				.sort((a, b) => compareCodeUnits(a.id, b.id))
 				.map((proposal) => [proposal.id, proposal.contentSha256]),
 		);
 		writeFileSync(

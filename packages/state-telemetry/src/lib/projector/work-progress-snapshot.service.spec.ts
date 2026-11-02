@@ -62,6 +62,18 @@ describe('work progress snapshot', () => {
 		expect(rebuildRows([...events].reverse(), [])).toEqual(forward);
 	});
 
+	it('orders two ids localeCompare ties the same in both insertion orders', () => {
+		const tied = ['p/\u19D2', 'p/\u0C7D'] as const;
+		expect(tied[0].localeCompare(tied[1])).toBe(0);
+		const events = tied.map((id, index) =>
+			makeEvent(id, 'git_change', index + 1),
+		);
+		const order = (input: typeof events) =>
+			rebuildRows(input, []).map((row) => row.snapshot.workItemId);
+		expect(order(events)).toEqual(['p/\u0C7D', 'p/\u19D2']);
+		expect(order([...events].reverse())).toEqual(order(events));
+	});
+
 	it('creates rows for items that have no events yet', () => {
 		const rows = rebuildRows(
 			[],

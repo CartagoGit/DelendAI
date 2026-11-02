@@ -18,7 +18,7 @@
 
 ## Depends on
 
-_(none)_
+- @delendai/state
 
 ## Writes
 

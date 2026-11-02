@@ -42,6 +42,7 @@ import { spawnSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
 import { repoRoot } from './lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 const RELAX_ENV = 'DELENDAI_RELAX_EXACT_OPTIONAL';
 const DEFAULT_PROJECT = 'tsconfig.json';
@@ -266,7 +267,7 @@ export const expandWorkspaceGlob = (
 	return readdirSync(absBase, { withFileTypes: true })
 		.filter((e) => e.isDirectory())
 		.map((e) => `${base}/${e.name}`)
-		.sort((a, b) => a.localeCompare(b));
+		.sort(compareCodeUnits);
 };
 
 /**

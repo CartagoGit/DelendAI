@@ -59,6 +59,7 @@ import { detectExistingDelendaiInstall } from '../scaffold/detect-existing-insta
 import { DEFAULT_DELENDAI_SERVER_NAME } from '../contracts/constants/mcp-server-name.constant';
 import { PROJECT_PROFILE_RECORD } from '../contracts/constants/delendai-records.constant';
 import { recordPath } from '../shared/delendai-records';
+import { compareCodeUnits } from '@delendai/state';
 
 const CONFIG_FILENAME = 'delendai.config.json';
 
@@ -317,7 +318,7 @@ const listWorkspaceCandidates = async (
 			}
 		}
 	}
-	return [...candidates].sort((left, right) => left.localeCompare(right));
+	return [...candidates].sort(compareCodeUnits);
 };
 
 const createScopedReader = (

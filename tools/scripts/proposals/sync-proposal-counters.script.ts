@@ -28,6 +28,7 @@ import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import { PROPOSAL_SCAN_FOLDERS } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import { compareCodeUnits } from '@delendai/state';
 
 const PROPOSAL_FILENAME = /^([a-z])(\d{2,5})-[a-z0-9-]+\.md$/;
 
@@ -111,7 +112,7 @@ if (isMainModule()) {
 			`✓ sync-proposal-counters: ${relative(root, countersPathAbs)} refreshed (${Object.keys(counters).length} prefixes).`,
 		);
 		for (const [prefix, n] of Object.entries(counters).sort(([a], [b]) =>
-			a.localeCompare(b),
+			compareCodeUnits(a, b),
 		)) {
 			const prev = existing?.[prefix] ?? 0;
 			const delta = n - prev;

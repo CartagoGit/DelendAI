@@ -46,6 +46,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 import { refuseMissingScanRoots } from './lib/scan-roots.lib';
+import { compareCodeUnits } from '@delendai/state';
 
 const REPO_ROOT = process.cwd();
 
@@ -387,7 +388,7 @@ export const writeBaseline = async (
 			lines: [...lines].sort((a, b) => a - b),
 			reason: 'Legacy proposal-id reference carried in code from before c00141; cleanup pending in a follow-up slice.',
 		}))
-		.sort((a, b) => a.path.localeCompare(b.path));
+		.sort((a, b) => compareCodeUnits(a.path, b.path));
 	const baselinePath =
 		options.baselinePath ??
 		join(

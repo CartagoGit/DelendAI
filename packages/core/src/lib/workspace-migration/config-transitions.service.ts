@@ -76,6 +76,7 @@ import { writeFileAtomic } from '../shared/atomic-write';
 /** Where the applied-configuration record lives, for the report to name. */
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { compareCodeUnits } from '@delendai/state';
 
 export type {
 	IAppliedConfigSnapshot,
@@ -106,7 +107,7 @@ export const snapshotOf = (
 	plugins: Object.entries(config.plugins ?? {})
 		.filter(([, entry]) => entry.enabled !== false)
 		.map(([name]) => name)
-		.sort((left, right) => left.localeCompare(right)),
+		.sort(compareCodeUnits),
 	namespacePrefix: config.namespacePrefix ?? 'delendai',
 });
 
