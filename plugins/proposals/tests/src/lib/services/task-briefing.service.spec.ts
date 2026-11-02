@@ -87,8 +87,8 @@ describe('taskBriefingOf', () => {
 		writeFileSync(
 			join(root, 'docs/ready/feats/f00002-b.md'),
 			DOCUMENT.replace('f00001', 'f00002').replace(
-				'\\`src/b.ts\\`',
-				'\\`pkg/src/c.ts\\`',
+				'`src/b.ts`',
+				'`pkg/src/c.ts`',
 			),
 		);
 		const task = await brief(root, 'S2', 'f00002');
