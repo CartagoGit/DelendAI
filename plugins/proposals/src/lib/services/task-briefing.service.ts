@@ -10,6 +10,7 @@ import type {
 	ITaskBriefing,
 	ITaskBriefingRequest,
 } from '@delendai/core/contracts';
+import { registerTaskBriefingProvider } from '@delendai/core/cli';
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { locateProposal } from '../proposals/locate';
@@ -101,4 +102,11 @@ export const taskBriefingOf = async (
 		files: await Promise.all(paths.map((path) => fileOf(reader, path))),
 		specs: [...new Set(specs.flatMap((spec) => spec ?? []))],
 	};
+};
+
+/** Answer every entry from this project's proposals folder. */
+export const registerProposalsTaskBriefing = (proposalsDir: string): void => {
+	registerTaskBriefingProvider((request) =>
+		taskBriefingOf(request, proposalsDir),
+	);
 };

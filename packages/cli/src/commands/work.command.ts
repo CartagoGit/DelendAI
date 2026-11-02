@@ -3,7 +3,7 @@
  * core (`runWorkUnit`), which the MCP `work` tool runs too, and the
  * `progress` view of the work, which is the CLI's own.
  */
-import { registerTaskBriefingProvider, runWorkUnit } from '@delendai/core/cli';
+import { runWorkUnit } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 
@@ -71,12 +71,10 @@ export const printPathOnly = (result: ICliCommandResult): ICliCommandResult => {
 
 /** The planning plugin is loaded only when a unit is entered. */
 export const briefOnEntering = async (): Promise<void> => {
-	const { DEFAULT_PATH_LAYOUT, taskBriefingOf } = await import(
+	const { DEFAULT_PATH_LAYOUT, registerProposalsTaskBriefing } = await import(
 		'@delendai/proposals/public'
 	);
-	registerTaskBriefingProvider((request) =>
-		taskBriefingOf(request, DEFAULT_PATH_LAYOUT.proposalsDir),
-	);
+	registerProposalsTaskBriefing(DEFAULT_PATH_LAYOUT.proposalsDir);
 };
 
 export const createWorkCommand = (): ICliCommand => ({

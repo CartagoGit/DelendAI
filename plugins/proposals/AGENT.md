@@ -8,7 +8,7 @@
 ## Public API
 
 - default
-- taskBriefingOf
+- registerProposalsTaskBriefing
 - registerProposalsStableTools
 - PROPOSALS_STABLE_TOOL_SURFACE
 - PROPOSAL_ADAPTIVE_FACADE_INTENTS

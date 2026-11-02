@@ -4,7 +4,11 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { taskBriefingOf } from '@delendai/proposals/lib/services/task-briefing.service';
+import { taskBriefingFor } from '@delendai/core/cli';
+import {
+	registerProposalsTaskBriefing,
+	taskBriefingOf,
+} from '@delendai/proposals/lib/services/task-briefing.service';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -93,6 +97,16 @@ describe('taskBriefingOf', () => {
 		);
 		const task = await brief(root, 'S2', 'f00002');
 		expect(task?.specs).toEqual(['pkg/tests/src/c.spec.ts']);
+	});
+
+	it('answers entries once registered with the project folder', async () => {
+		registerProposalsTaskBriefing('docs');
+		const task = await taskBriefingFor({
+			worktree: worktree(),
+			proposal: 'f00001',
+			slice: 'S1',
+		});
+		expect(task?.goal).toBe('The goal of it.');
 	});
 
 	it('has nothing to say about a proposal it cannot find', async () => {
