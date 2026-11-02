@@ -2,14 +2,14 @@
 id: v00139
 title: "The proposals specs reset their module state, so the project runs without per-file isolation"
 kind: perf
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-27
-last-transition-id: ec0ffee5-784f-4573-babe-f156fd749a68
-last-correlation-id: ec0ffee5-784f-4573-babe-f156fd749a68
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T05:03:19.098Z
+last-transition-id: f4379616-0be8-48ef-ac7b-b95b3f57ab4c
+last-correlation-id: f4379616-0be8-48ef-ac7b-b95b3f57ab4c
+last-transition-from: review
+last-transition-at: 2026-11-02T20:15:24.467Z
 shipped-in:
   - "467ac87e92c2a97d92c2863ded2d804ef141337f"
 ---
@@ -34,15 +34,27 @@ Measured for v00138 on 2026-10-27: the proposals project evaluated its 1,631 mod
 - global_gate: type
 
 ### S1 — Each stateful module resets between files
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/tests/setup/reset-module-state.setup.ts`, `plugins/proposals/vitest.config.ts`
 - **Gate**: type
 - acceptance:
   - "Every module whose state leaked in a no-isolation run is named in a setup file that resets it before each spec file, through the module's own reset (no spec reaches into another's internals)."
   - "Three no-isolation runs of the proposals project in different file orders (vitest --sequence.shuffle) pass."
 - shipped-in: `02efbd523c6b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S1, the reset that makes the shared worker safe.
+
+WHAT IS WRONG. The setup file plugins/proposals/tests/setup/reset-module-state.setup.ts names five modules to reset before each spec file: the index reader's fallback notice, the index read stats, the stale projection checks, the plan closure bypass log and the peer review bypass log. The agent lock session store is not among them, and its module state leaks between spec files now that the project runs with isolate false. That leak is observable: the cached session balance path set by an earlier file is still set when a later file calls resetAgentLockSessionBalance, and resetSessionBalance in plugins/proposals/src/lib/locks/agent-lock-session-store.ts:198 creates the directory of the stale path before it clears it. When the earlier file used a workspace root of /ws, the reset tries to create /ws and fails.
+
+WHERE. plugins/proposals/tests/setup/reset-module-state.setup.ts, which does not name the agent lock session store or the session balance; plugins/proposals/src/lib/locks/agent-lock-session-store.ts:198 to 204, where resetSessionBalance awaits mkdir of dirname(cachedPath) before setting cachedPath to null; and the two specs that call resetAgentLockSessionBalance without awaiting it, plugins/proposals/tests/src/lib/state-tools.spec.ts:43 and plugins/proposals/tests/src/lib/agent-lock-ok-contract.spec.ts:26.
+
+HOW TO REPRODUCE. From the repository root run bunx vitest run --project proposals --sequence.shuffle --sequence.seed=4242 --bail 0 --reporter=default. All 285 files and all 2325 tests pass, but the run exits 1: Vitest reports two unhandled rejections, both EACCES: permission denied, mkdir '/ws', raised from resetSessionBalance through resetAgentLockSessionBalance, and it attributes them to state-tools.spec.ts and agent-lock-ok-contract.spec.ts. The order decides whether the two files meet, which is exactly what the criterion asks to be true of every order. Running the same two files alone passes, so the failure needs the file that seeds the root to run first.
+
+WHAT MUST HOLD. A no isolation run of the proposals project exits 0 in every file order, with no unhandled rejection left behind. Two ways reach it: the setup file resets the agent lock session store through its own exported reset before each spec file, and that reset clears the cached path before it touches the filesystem, or the specs await the reset they call. The first criterion asks for every module whose state leaked to be named in the setup file, and this module's state leaked.
+
+Slice S2 is judged separately: its isolate false setting and its recorded run time hold, and the module evaluations clause is named in its own note.
 
 ### S2 — The project runs without per-file isolation
 - **Status**: done
