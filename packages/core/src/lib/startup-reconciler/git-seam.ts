@@ -35,6 +35,7 @@ import {
 import { RELEASE_TAG_REFSPEC } from './contracts.constant';
 import { journalRefPublisher } from './journal-publish.service';
 import { journalRefReader } from './journal-ref.service';
+import { mergeSubjectsReader } from './merge-subjects.service';
 import { retiredTipsLister } from './retired-tips.service';
 import { checkpointContainment } from './checkpoint-containment';
 
@@ -75,6 +76,8 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	};
 
 	const { contentContained } = checkpointContainment(run, isAncestor);
+
+	const mergeSubjects = mergeSubjectsReader(run);
 
 	const fetch = async (request: {
 		readonly integrationBranch: string;
@@ -372,6 +375,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		describeRef,
 		isAncestor,
 		contentContained,
+		mergeSubjects,
 		reachableFrom,
 		currentBranch,
 		dirtyPaths,
