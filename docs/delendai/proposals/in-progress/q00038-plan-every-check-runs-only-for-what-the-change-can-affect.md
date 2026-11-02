@@ -47,12 +47,12 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
   - "A zone the change reaches no spec of starts no job."
   - "The local proof runs the same specs the forge would, from the same analysis."
 
-### S2 — Lints run what the change can affect
+### S2 — Lint jobs share their setup
 - **Status**: pending
 - **Files**: `tools/scripts/lint/run-together.script.ts`
 - **Gate**: type
 - acceptance:
-  - "What each lint reads is recorded on the integration branch's full run, a pull request runs the lints whose reads its change touches, and a lint never recorded runs."
+  - "The lint jobs run in fewer runners, each lint family together, so a pull request stops paying a checkout and an install per family; no lint is dropped and every failure is still named."
 
 ### S3 — Types are checked incrementally
 - **Status**: pending
@@ -73,6 +73,9 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
 - A zone the change reaches no spec of starts no job.
 - The local proof runs the same specs the forge would, from the same analysis.
-- What each lint reads is recorded on the integration branch's full run, a pull request runs the lints whose reads its change touches, and a lint never recorded runs.
+- The lint jobs run in fewer runners, each lint family together, so a pull request stops paying a checkout and an install per family; no lint is dropped and every failure is still named.
 - The typecheck reuses the integration branch's incremental state, so a change pays for what it touches.
 - Runner minutes and wall time per pull request are reported before and after each slice.
+
+## notes
+- 2026-11-02, S2 measured before building: recording what the 47 architecture lints read showed 26 of them call `git` (mostly `ls-files`), which reads the whole tree. Over the last 14 merged pull requests a per-lint selection would still run 31 to 43 of 47, and the lints already run together in 9 s, so the saving would be seconds for a recorder in every bun process. S2 is changed to what does cost: each lint job pays its own checkout and install, about 20 s each.
