@@ -2,14 +2,14 @@
 id: x00992
 title: "A unit that waits on the owner is not broken, and retiring says what it closes"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 38f15478-9d9e-4b3f-b04a-121268f5ab08
-last-correlation-id: 38f15478-9d9e-4b3f-b04a-121268f5ab08
-last-transition-from: ready
-last-transition-at: 2026-11-02T10:50:04.836Z
+last-transition-id: 7f005ace-da1e-43b1-97f3-5875812d5528
+last-correlation-id: 7f005ace-da1e-43b1-97f3-5875812d5528
+last-transition-from: in-progress
+last-transition-at: 2026-11-02T14:13:42.744Z
 ---
 
 # x00992 — A unit that waits on the owner is not broken, and retiring says what it closes
@@ -37,20 +37,26 @@ The owner, on 2026-10-28, saw the project filling with branches that never finis
 - global_gate: type
 
 ### S1 — A unit that waits on the owner says so
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/unit-parked.constant.ts`, `packages/core/src/lib/work-units/unit-activity.helper.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-verdict.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `tools/scripts/lint/silent-work-refs.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `packages/core/tests/src/lib/work-units/unit-activity.helper.spec.ts`, `packages/core/tests/src/lib/work-units/unit-verdict.service.spec.ts`, `packages/core/tests/src/lib/work-units/forge-work-refs.service.spec.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`, `tools/scripts/lint/silent-work-refs.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A commit in the unit with a `Delendai-Parked: <what it waits for>` trailer marks it as waiting; `no-remote-work-refs` lists a parked unit as waiting with its reason instead of BROKEN, the unit is neither offered for adoption nor reaped (locally or by the queue), and it keeps its claims; any later commit of its own ends the wait."
   - "A wip whose publication holds all its commits is not reported silent."
+- shipped-in: `0b4ae2991775`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Retiring says what it closes, and recovery refs expire
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire` on a unit with an open pull request names the pull request it closes in its output."
   - "A stranded ref whose paths all reached develop, a unit or a publication is dropped by startup reconciliation, journalled; the others are listed by `work status` with their age."
+- shipped-in: `cb3f7db50ee5`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
