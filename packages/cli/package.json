@@ -68,6 +68,7 @@
 		"@delendai/status-marker": "workspace:*",
 		"@delendai/test-convention": "workspace:*",
 		"@delendai/test-policy": "workspace:*",
+		"@delendai/usage-tracking": "workspace:*",
 		"zod": "^4.6.6"
 	},
 	"devDependencies": {
