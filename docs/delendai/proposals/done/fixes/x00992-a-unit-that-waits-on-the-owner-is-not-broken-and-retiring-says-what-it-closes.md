@@ -2,16 +2,17 @@
 id: x00992
 title: "A unit that waits on the owner is not broken, and retiring says what it closes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 51f8949f-f099-4255-95ae-988ee3ad11e0
-last-correlation-id: 51f8949f-f099-4255-95ae-988ee3ad11e0
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T15:53:55.804Z
+last-transition-id: 0aa60014-1c94-4c8c-aabf-01fe78fe08c4
+last-correlation-id: 0aa60014-1c94-4c8c-aabf-01fe78fe08c4
+last-transition-from: review
+last-transition-at: 2026-11-02T22:41:53.987Z
 shipped-in:
   - "9e8af977fa511499f3eed03211ab7a8625efc6fc"
+  - "880aaa2ed55dbf1b48a3dc48dae6079e4f0987c5"
 ---
 
 # x00992 — A unit that waits on the owner is not broken, and retiring says what it closes
@@ -52,15 +53,17 @@ The owner, on 2026-10-28, saw the project filling with branches that never finis
 - review-log: approved by minimax-m3.1-flash — verified at 9e8af977fa51, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 2/2: (1) At 9e8af977 the parked trailer is read from the unit's latest own commit, the unit is listed as waiting with the reason instead of broken, it is not offered fo… (2) At 9e8af977 a work ref whose publication branch already holds all of its commits is not reported at all; the spec asserts that one whose publication holds its … — Approved on the delivered state of 9e8af977fa511499f3eed03211ab7a8625efc6fc. A unit whose owner parked it with the trailer is asked for rather than treated as broken: it is listed as waiting with the reason, it is not offered for adoption, neither the local reaper nor the queue touches it, it keeps its claims, and a later commit of its own ends the wait. The type gate exited 0 and the six slice specs pass 35 of 35. Four residuals, recorded and not blocking: the queue reads the park marker from the forge branch tip while the core reads it from the unit's latest own commit, so a unit whose tip is a merge would be seen as parked by one reader and not by the other; the rule that every hanging ref must be waiting is not pinned at the invariant level; nothing pins that a waiting unit is not reaped locally nor offered for adoption; and the queue's marker check is case-sensitive while git matches trailer keys without regard to case.
 
 ### S2 — Retiring says what it closes, and recovery refs expire
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work retire` on a unit with an open pull request names the pull request it closes in its output."
   - "A stranded ref whose paths all reached develop, a unit or a publication is dropped by startup reconciliation, journalled; the others are listed by `work status` with their age."
 - shipped-in: `cb3f7db50ee5`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 880aaa2ed55d, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 2/2: (1) At 880aaa2e retiring a unit lists the open pull requests it closes, closes them, and returns their numbers, which the command prints; the slice spec passes 7 o… (2) At 880aaa2e the startup reconciliation drops the stranded refs whose paths all reached develop, a unit or a publication, journals the drop with the ref and the… — Approved on the delivered state of 880aaa2ed55dbf1b48a3dc48dae6079e4f0987c5. Retiring a unit names the pull requests it closes, and the startup reconciliation drops the stranded refs that keep nothing found nowhere else, journals the drop, and lists the rest by age. The type gate exited 0 and the slice spec passes 7 of 7. Two residuals, recorded and not blocking: the retiring half that names and closes the pull requests is not pinned by any test, it came with an earlier commit than this delivery and the proposal's own notes say so; and the drop is journalled into the log rather than into the work status payload.
 
 ## acceptance
 
