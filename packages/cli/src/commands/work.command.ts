@@ -114,6 +114,27 @@ export const unitHere = async (
 	);
 };
 
+const UNIT_FLAGS = ['--slice=', '--generation=', '--topic='] as const;
+
+/**
+ * `args` with the unit the checked-out branch stands for, when they name
+ * none of its slice, generation or topic: `work prove` and `work publish`
+ * run in a unit's worktree find that unit, as `work deliver` does.
+ */
+export const withUnitHere = async (
+	args: readonly string[],
+	cwd: string,
+): Promise<readonly string[]> => {
+	const proposal = scalarArg(args, 'proposal');
+	if (
+		proposal === undefined ||
+		args.some((arg) => UNIT_FLAGS.some((flag) => arg.startsWith(flag)))
+	) {
+		return args;
+	}
+	return [...args, ...(await unitHere(cwd, proposal))];
+};
+
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
@@ -131,12 +152,10 @@ export const createWorkCommand = (): ICliCommand => ({
 				};
 			}
 			const agent = scalarArg(unit, 'agent');
-			const here = unit.some((arg) => arg.startsWith('--slice='))
-				? []
-				: await unitHere(ctx.cwd, id);
-			const withSlice = unit.some((arg) => arg.startsWith('--slice='))
-				? unit
-				: [...unit, ...(here.length > 0 ? here : ['--slice=all'])];
+			const here = await withUnitHere(unit, ctx.cwd);
+			const withSlice = here.some((arg) => arg.startsWith('--slice='))
+				? here
+				: [...here, '--slice=all'];
 			return deliverUnit({
 				locate: () =>
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
@@ -161,7 +180,11 @@ export const createWorkCommand = (): ICliCommand => ({
 				),
 			);
 		}
-		const result = await runWorkUnit(args, ctx);
+		const unitArgs =
+			args[0] === 'prove' || args[0] === 'publish'
+				? [args[0], ...(await withUnitHere(args.slice(1), ctx.cwd))]
+				: args;
+		const result = await runWorkUnit(unitArgs, ctx);
 		return args[0] === 'enter' ? withSlicesView(result, ctx) : result;
 	},
 });

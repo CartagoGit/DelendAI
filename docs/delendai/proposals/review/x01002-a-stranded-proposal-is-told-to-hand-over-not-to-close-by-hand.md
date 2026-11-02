@@ -65,6 +65,13 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S4 — Prove and publish take the unit they run in
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "work prove and work publish run in a unit's worktree with no --slice, --generation or --topic act on that unit, read from its branch, by the helper work deliver shares; a spec checks it."
+
 ## acceptance
 
 - A finding in ready/ or in-progress/ names work deliver and setting the slices back to pending, and names no transition to done; a spec checks it.
