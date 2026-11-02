@@ -10,6 +10,8 @@ last-transition-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
 last-correlation-id: 54a4a196-6b5f-44ef-8ae0-aeb8e8137346
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T20:40:14.716Z
+shipped-in:
+  - "7b79f76fb5cb6676e9325e5c6b90f40023e5dad7"
 ---
 
 # x01002 — A stranded proposal is told to hand over, not to close by hand
@@ -34,15 +36,17 @@ The same session, `proposals create` with a malformed `--slices` printed the val
 - global_gate: type
 
 ### S1 — The stranded advice names the hand-over
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A finding in ready/ or in-progress/ names work deliver and setting the slices back to pending, and names no transition to done; a spec checks it."
   - "A finding in review/ keeps its review-then-done advice."
 - shipped-in: `1faa04180151`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 7b79f76fb5cb, validate exit 0 and tests 13/13 claimed, no recorded run cited; acceptance 2/2: (1) At 7b79f76f the lint branches on the proposal's status folder, and for a proposal in ready or in-progress it tells the reader to set the slices back to pending… (2) At 7b79f76f the review branch of the same advice is untouched, so a proposal in review keeps the submit, approve and transition to done route; the spec asserts… — Approved on the delivered state of 7b79f76fb5cb6676e9325e5c6b90f40023e5dad7. A stranded proposal in ready or in-progress is told to hand over rather than to close, while a proposal in review keeps its review-then-done advice. The type gate exited 0 and the slice spec passes 13 of 13. Two residuals, recorded and not blocking: the new spec exercises the in-progress folder only, and the ready folder reaches the same code but is not pinned by a test; and the review assertion pins only the transition to done, not the submit and approve wording that goes with it.
 
 ### S2 — A tool that refuses through the resolver fails the command
 - **Status**: review
