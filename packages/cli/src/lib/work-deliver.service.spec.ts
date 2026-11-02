@@ -9,7 +9,7 @@ import {
 	type IExitCode,
 } from '../contracts/constants/exit-code.constant';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
-import { deliverUnit } from './work-deliver.service';
+import { deliverUnit, answerOf } from './work-deliver.service';
 
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },
@@ -85,5 +85,35 @@ describe('deliverUnit', () => {
 		expect((await deliverUnit(ports({}).value)).data).toMatchObject({
 			publication: 'pr/unit',
 		});
+	});
+});
+
+describe('answerOf', () => {
+	it('reads the refusal a failed call carries, and passes an answer through', async () => {
+		const refusal = {
+			ok: false,
+			reason: 'illegal transition: "in-progress" → "in-progress"',
+		};
+		const failed = Object.assign(new Error('returned an error'), {
+			result: {
+				content: [{ type: 'text', text: JSON.stringify(refusal) }],
+				isError: true,
+			},
+		});
+		await expect(answerOf(Promise.reject(failed))).resolves.toEqual(
+			refusal,
+		);
+		await expect(answerOf(Promise.resolve({ ok: true }))).resolves.toEqual({
+			ok: true,
+		});
+	});
+
+	it('keeps an error that carries no answer', async () => {
+		const bare = new Error('Connection closed');
+		await expect(answerOf(Promise.reject(bare))).rejects.toBe(bare);
+		const prose = Object.assign(new Error('x'), {
+			result: { content: [{ text: 'not json' }] },
+		});
+		await expect(answerOf(Promise.reject(prose))).rejects.toBe(prose);
 	});
 });
