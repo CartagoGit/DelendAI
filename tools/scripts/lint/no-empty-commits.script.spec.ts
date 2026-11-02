@@ -74,6 +74,36 @@ describe('findEmptyCommits against a real repository', () => {
 		}
 	});
 
+	it('exempts the empty commit that parks a unit, and only that one', async () => {
+		const base = git('rev-parse', 'HEAD').trim();
+		git(
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'chore(delendai): x00001 waits on a decision',
+			'--trailer',
+			"Delendai-Parked: the owner's call",
+		);
+		git(
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			'feat(x00000): via slice S1',
+		);
+		const cwd = process.cwd();
+		try {
+			process.chdir(repo);
+			const empties = await findEmptyCommits(`${base}..HEAD`);
+			expect(empties.map((each) => each.subject)).toEqual([
+				'feat(x00000): via slice S1',
+			]);
+		} finally {
+			process.chdir(cwd);
+		}
+	});
+
 	it('does not flag a commit that changed something', async () => {
 		const base = git('rev-parse', 'HEAD').trim();
 		writeFileSync(join(repo, 'a.txt'), 'two\n');
