@@ -2,14 +2,14 @@
 id: v00146
 title: "A pull request starts only the test jobs that run, and the specs that read a change share one job"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
-last-correlation-id: 18dcf0d5-b04e-4237-b92e-c368a0d8c939
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T14:35:16.995Z
+last-transition-id: dd133c18-fb00-4d9e-9ec0-f27f73cdd5c6
+last-correlation-id: dd133c18-fb00-4d9e-9ec0-f27f73cdd5c6
+last-transition-from: review
+last-transition-at: 2026-11-02T23:17:52.424Z
 shipped-in:
   - "822b2d84ec6fd185ee94970f0638e6bf0656ec14"
   - "67efd58de1f0f9327a41ba73235b5eef9972d2dd"
@@ -82,14 +82,16 @@ After v00143 a zone the change does not reach still started its job, which took 
 - review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 the workflow has a job that wakes the queue once the validation job is green, under a condition that is not cancelled, that the publication's own br… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. A publication whose validation goes green wakes the queue within minutes, on its own branches only, and the condition is not cancelled, so the jobs a pull request scopes out do not skip it. The type gate exited 0 and the slice spec passes 17 of 17. One residual, recorded and not blocking: the condition asks for a pull request event, so a publication branch pushed without a pull request does not wake the queue.
 
 ### S5 — Prose reaches its readers, and readers run beside a changed zone
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "A changed root `*.md`, `LICENSE`, `.mailmap` or `.github/` file outside workflows and actions reaches only the specs that read it, while configuration (`delendai.config.json`, `package.json`, the lockfile, `tsconfig`, the vitest configs) still runs every zone (zone-reads.spec.ts); in a zone its code reaches too, the specs that read the root file run in the shared readers job (test-zones.script.spec.ts), so the shard step no longer runs a zone unfiltered because a workflow or `.yml` changed."
 - shipped-in: `15f8c5aaa2c0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 67efd58de1f0, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 1/1: (1) At 67efd58 a changed root prose file, licence, mailmap or a github file outside the workflows and the actions reaches only the zones that read it, while the co… — Approved on the delivered state of 67efd58de1f0f9327a41ba73235b5eef9972d2dd. A prose change reaches only the specs that read it, the configuration files still run every zone, and the readers of a root file in a zone whose code is reached too run in the shared readers job, so a workflow change no longer runs a zone unfiltered. The type gate exited 0 and the slice spec passes 22 of 22. No defect found.
 
 ## acceptance
 
