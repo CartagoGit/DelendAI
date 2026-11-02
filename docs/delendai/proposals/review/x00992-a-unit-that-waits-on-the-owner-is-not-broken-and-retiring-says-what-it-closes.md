@@ -10,6 +10,8 @@ last-transition-id: 51f8949f-f099-4255-95ae-988ee3ad11e0
 last-correlation-id: 51f8949f-f099-4255-95ae-988ee3ad11e0
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T15:53:55.804Z
+shipped-in:
+  - "9e8af977fa511499f3eed03211ab7a8625efc6fc"
 ---
 
 # x00992 — A unit that waits on the owner is not broken, and retiring says what it closes
@@ -37,15 +39,17 @@ The owner, on 2026-10-28, saw the project filling with branches that never finis
 - global_gate: type
 
 ### S1 — A unit that waits on the owner says so
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/unit-parked.constant.ts`, `packages/core/src/lib/work-units/unit-activity.helper.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-verdict.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/forge-work-refs.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `tools/scripts/lint/silent-work-refs.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `packages/core/tests/src/lib/work-units/unit-activity.helper.spec.ts`, `packages/core/tests/src/lib/work-units/unit-verdict.service.spec.ts`, `packages/core/tests/src/lib/work-units/forge-work-refs.service.spec.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`, `tools/scripts/lint/silent-work-refs.spec.ts`, `tools/scripts/lint/no-empty-commits.script.ts`, `tools/scripts/lint/no-empty-commits.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A commit in the unit with a `Delendai-Parked: <what it waits for>` trailer marks it as waiting; `no-remote-work-refs` lists a parked unit as waiting with its reason instead of BROKEN, the unit is neither offered for adoption nor reaped (locally or by the queue), and it keeps its claims; any later commit of its own ends the wait."
   - "A wip whose publication holds all its commits is not reported silent."
 - shipped-in: `0b4ae2991775`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 9e8af977fa51, validate exit 0 and tests 35/35 claimed, no recorded run cited; acceptance 2/2: (1) At 9e8af977 the parked trailer is read from the unit's latest own commit, the unit is listed as waiting with the reason instead of broken, it is not offered fo… (2) At 9e8af977 a work ref whose publication branch already holds all of its commits is not reported at all; the spec asserts that one whose publication holds its … — Approved on the delivered state of 9e8af977fa511499f3eed03211ab7a8625efc6fc. A unit whose owner parked it with the trailer is asked for rather than treated as broken: it is listed as waiting with the reason, it is not offered for adoption, neither the local reaper nor the queue touches it, it keeps its claims, and a later commit of its own ends the wait. The type gate exited 0 and the six slice specs pass 35 of 35. Four residuals, recorded and not blocking: the queue reads the park marker from the forge branch tip while the core reads it from the unit's latest own commit, so a unit whose tip is a merge would be seen as parked by one reader and not by the other; the rule that every hanging ref must be waiting is not pinned at the invariant level; nothing pins that a waiting unit is not reaped locally nor offered for adoption; and the queue's marker check is case-sensitive while git matches trailer keys without regard to case.
 
 ### S2 — Retiring says what it closes, and recovery refs expire
 - **Status**: review
