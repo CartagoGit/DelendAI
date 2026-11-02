@@ -14,8 +14,10 @@ seams a contributor must respect to keep the plugin extensible.
 
 ## 1. Contracts layer (`src/lib/frameworks/contracts/`)
 
-The contracts layer is the **only** layer other modules may import
-`@delendai/rules/lib/frameworks/contracts` from. It exposes:
+The canonical contracts live in `src/lib/contracts/`; the
+`src/lib/frameworks/contracts/` barrel re-exports them (plus a few
+mirrored `*.interface.ts` files kept for older imports), so framework
+code imports from `../contracts`. Together they expose:
 
 | Type | Principle | Consumer |
 |---|---|---|
@@ -35,43 +37,61 @@ The contracts layer is the **only** layer other modules may import
 **Rule of thumb:** a new module that needs a *subset* of these
 contracts should depend on the narrowest one. The barrel
 `contracts/index.ts` re-exports all of them so consumers can
-`import type { ... } from '@delendai/rules/lib/frameworks/contracts'`.
+`import type { ... } from '../contracts'` (from inside `frameworks/`).
 
 ## 2. Registry layer (`src/lib/frameworks/registry/`)
 
-Three classes + one factory + one validator. The layer is
-**closed for modification** (the classes never change) and
-**open for extension** (the factory + validator accept new
-inputs).
+Three classes, one factory, one composition root, one validator and
+a validator registry. The layer is **closed for modification** (the
+classes never change) and **open for extension** (the factory
+lists and the validators accept new inputs).
 
 | Class / module | Principle | Construction |
 |---|---|---|
 | `PresetRegistry` | DIP (D) | `new PresetRegistry({ presets, adapters, defaultCommandSetProvider })` |
 | `DogmaRegistry` | S | `new DogmaRegistry([RUST_DOGMA, …])` |
 | `PresetDetector` | OCP + DIP (O + D) | `new PresetDetector(registry)` |
-| `buildDefaultComposition` | DIP (D) | single composition root; consumers call it once |
+| `buildDefaultComposition` (`factory.ts`) | DIP (D) | the default wiring; consumers call it once. Takes optional overrides (`presets`, `adapters`, `dogmas`, `validators`, `policyResolver`, ...) |
+| `composeRoot` (`composition-root.ts`) | DIP (D) | assembles an `ICompositionRoot` from the seams it is given; no defaults |
+| `buildValidatorRegistry` | OCP (O) | wraps the validator list |
 | `defaultPresetValidator` + `composeValidators` | OCP (O) | appending to the array adds a check |
+
+### The factory lists
+
+`buildDefaultComposition` in `registry/factory.ts` owns three default
+lists:
+
+- **presets**: `VANILLA_JS_FALLBACK_PRESET`, `RULE_PRESETS`
+  (`presets.ts`) and `ALL_PRESET_DATA` (`presets/data/index.ts`).
+- **adapters** (in detection order of priority): `rustAdapter`,
+  `pythonAdapter`, then `goAdapter`, `rubyAdapter`, `elixirAdapter`,
+  `kotlinAdapter`, `javaAdapter`, `swiftAdapter`, `csharpAdapter`,
+  `phpAdapter`, `jsTsAdapter`, `dartAdapter`, `scalaAdapter`,
+  `haskellAdapter`, `zigAdapter`, `cppAdapter`. Only Rust
+  (`languages/rust/`) and Python (`languages/python.adapter.ts`) have
+  their own files; the others are small marker-file adapters declared
+  in `factory.ts` itself.
+- **dogmas**: `DEFAULT_DOGMA_ADAPTERS` (`dogmas/index.ts`).
 
 ### Adding a new language — the OCP hinge
 
-1. Create `src/lib/frameworks/languages/<lang>/<lang>.adapter.ts`
-   that exports an `ILanguageAdapter` (priority + detection +
-   optional `commands`).
-2. Create `src/lib/frameworks/languages/<lang>/<lang>-command.provider.ts`
-   if the linter has a non-ESLint shape.
-3. Create `src/lib/frameworks/presets/data/<family>.ts` with the
-   preset DATA (file contents as text).
-4. Create `src/lib/frameworks/dogmas/<lang>.dogma.ts` with the
+1. Add an `ILanguageAdapter` (priority + detection + optional
+   `commands`): a marker-file adapter in `registry/factory.ts`, or a
+   file under `languages/<lang>/` when it brings its own
+   `ICommandSetProvider` (as Rust does).
+2. Create `src/lib/frameworks/presets/data/<family>.ts` with the
+   preset DATA (file contents as text) and export it from
+   `presets/data/index.ts` (`ALL_PRESET_DATA`).
+3. Create `src/lib/frameworks/dogmas/<lang>.dogma.ts` with the
    `IDogmaAdapter` (ownership/error/null/naming/async/visibility/
-   immutability/testing + bullets).
-5. Add the new symbols to the three barrels
-   (`languages/index.ts`, `presets/data/index.ts`,
-   `dogmas/index.ts`).
+   immutability/testing + bullets) and add it to
+   `DEFAULT_DOGMA_ADAPTERS` in `dogmas/index.ts`.
+4. Add the adapter to the `adapters` list in `registry/factory.ts`.
 
-**No other file changes.** The detectors, registries, manifest
-writer, and tools stay untouched. This is the OCP hinge: the
-plugin is open for extension (a 5-file PR) and closed for
-modification (zero existing files change).
+The detectors, registry classes, manifest writer and tools stay
+untouched: the plugin is open for extension (an adapter, a preset
+data file, a dogma and three list entries) and closed for
+modification (no registry class changes).
 
 ## 3. Legacy shape layer (`src/lib/frameworks/legacy-shape/`)
 
@@ -115,7 +135,7 @@ proves the composition works end-to-end:
 1. **Read the table in §1** to find the narrowest contract for
    your concern.
 2. **Read §2** to understand which registry you plug into.
-3. **Add the new language in 5 files** (per §2). Do not edit
+3. **Add the new language** (per §2). Do not edit
    any file outside `contracts/`, `registry/`, `languages/`,
    `dogmas/`, `presets/data/`, or `legacy-shape/`.
 4. **Run `bun run test`** inside `plugins/rules/`. The smoke

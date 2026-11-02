@@ -1,7 +1,7 @@
 ---
 name: delendai-conventional-commits-and-release
 appliesTo: ['@delendai/core']
-description: How a commit message maps to the next semver bump, why `derive-version.ts` (not a human) decides the version, and the exact dry-run -> --write -> tag -> publish flow `release.script.ts` drives. Use before writing a commit message or running anything under `bun run release`.
+description: How a commit message is written, how `release:prepare` picks the version and the CHANGELOG section from finished proposals, how a push to main becomes a tag and a GitHub Release, and why npm publishing is a separate manual act. Use before writing a commit message or running anything under `bun run release`.
 ---
 
 # delendai conventional commits + release
@@ -9,18 +9,19 @@ description: How a commit message maps to the next semver bump, why `derive-vers
 ## Decision tree
 
 1. About to commit? -> pick the Conventional Commit type from the table below.
-   Never hand-edit a `package.json` `version` field — that's `derive-version`'s job.
-2. About to release? -> `bun run release` (dry-run, no flags) first. Read the
-   printed plan.
-3. Plan looks right? -> add `--write` to apply the bump to every `package.json`.
-4. Ready to ship? -> `--publish` (builds `dist/`, runs `bun run validate` unless
-   `--no-validate`, then publishes `PUBLISH_ORDER` in sequence).
-5. CI path: a push to `main` runs `derive-version.ts` (no flags) to decide
-   `release`/`version`/`bump` from commits since the last `vX.Y.Z` tag — it
-   never touches `package.json`; the git tag is the only source of truth for
-   "what was the last released version".
+   Never hand-edit a `package.json` `version` field.
+2. Preparing a promotion to `main`? -> `bun run release:prepare` (prints the
+   version and the CHANGELOG section, writes nothing). Read it.
+3. Plan looks right? -> `bun run release:prepare --write` applies the lockstep
+   version (through `release.script.ts --set=<version> --write`) and writes the
+   CHANGELOG section. `release:check` / the `release-pr-gate` check that the
+   promotion carries both.
+4. Merged to `main`? -> the `Release` workflow tags the commit `vX.Y.Z` and
+   opens the GitHub Release by itself. Nothing is pushed by hand.
+5. npm is a separate decision: only a manual `Release` run with
+   `publish_npm: true` publishes; no tag and no merge does.
 
-## Commit type -> semver bump
+## Commit type -> bump `derive-version` would compute
 
 | Commit prefix | Bump | Notes |
 |---|---|---|
@@ -28,85 +29,84 @@ description: How a commit message maps to the next semver bump, why `derive-vers
 | `feat:` | minor | |
 | `feat!:` / any `!:` / body has `BREAKING CHANGE:` | major | breaking always wins, regardless of type |
 | `docs:` `chore:` `ci:` `test:` `style:` `build:` `refactor:` `revert:` | none | recognised but non-releasable — contributes nothing to the bump |
-| anything else with real content (non-Conventional-Commit message) | patch | safe default in `classifyBump` (`scripts/derive-version.ts`), because automated commits sometimes don't follow the convention |
+| anything else with real content (non-Conventional-Commit message) | patch | safe default in `classifyBump` (`derive-version.script.ts`), because automated commits sometimes don't follow the convention |
 
-Source of truth: `classifyBump` in `scripts/derive-version.ts` — the strongest
-bump across all commits since the last tag wins (major > minor > patch > none).
-Merge commits (`^Merge `) are skipped; they carry no release intent of their own.
+`classifyBump` in `tools/scripts/release/derive-version.script.ts` still
+classifies commits this way (the strongest bump wins; merge commits are
+skipped), but the release workflow no longer runs it: the version of a
+release comes from `release:prepare`, below. The commit type still matters for
+commit-lint and for readable history.
 
-## `derive-version` is the single source of truth
+## `release:prepare` decides the version
 
-- Never bump a `package.json` version by hand. `derive-version.ts` computes
-  `{ release, version, bump, lastTag }` from git history; `release.script.ts`
-  (`bun run release`) is the only writer, and only behind `--write`.
-- First release ever (no `vX.Y.Z` tag yet): publishes whatever version is
-  already declared in `packages/core/package.json`, unchanged.
+- Unit of change is the **proposal**, not the commit: every proposal that
+  reached `done/` or `review/` between the last `vX.Y.Z` tag (`origin/main`
+  when there is none) and HEAD, and that an earlier CHANGELOG section does not
+  already list, gives one line, grouped Keep-a-Changelog style by its kind
+  (`feat` -> Added, `fix` -> Fixed, ...; plans and audits are listed by id).
+  No such proposal -> it exits 1: nothing to release.
+- Bump: a **minor**, or a **patch** when every proposal is a `fix`; a
+  `breaking` proposal is a **major** from 1.0 on (a minor below it).
+- A version already prepared and not yet tagged is refreshed in place, not
+  bumped again.
 - The lockstep lives in `tools/scripts/release/release-plan.ts`
   (`computeReleasePlan`): every package in `PUBLISH_ORDER` moves to the SAME
   target version, and any package with a `peerDependencies['@delendai/core']`
-  gets that range rewritten to `^<target>`.
+  gets that range rewritten to `^<target>`. `release.script.ts` is the writer.
+- First release ever (no tag yet): the version declared in
+  `packages/core/package.json` is the base.
 
-## Flow: dry-run -> --write -> tag -> publish
-
-```
-bun run release                       # dry-run: print current versions, no writes
-bun run release --bump=patch          # dry-run: plan a patch bump
-bun run release --bump=minor --write  # APPLY: write version+peer to every package.json
-git tag vX.Y.Z && git push --tags     # tag the bumped commit (manual step today)
-bun run release --publish             # validate -> build -> bun publish, in PUBLISH_ORDER
-```
-
-`--bump` and `--set=X.Y.Z` are mutually exclusive. `--publish` alone (no
-`--bump`/`--set`) publishes the CURRENT versions as-is — useful for a re-run
-after a failed publish without re-bumping.
-
-## `publishOrder` (10 packages, fixed order)
-
-From `tools/scripts/release/release-plan.ts` `PUBLISH_ORDER` — core first
-(every plugin declares it as a `peerDependency`), then plugins:
+## Flow: prepare -> merge to main -> GitHub Release -> (owner) npm
 
 ```
-packages/core
-plugins/proposals
-plugins/rules
-plugins/memory
-plugins/git
-plugins/quality
-plugins/search
-plugins/notification
-plugins/docs
-plugins/deps
+bun run release:prepare                    # print version + CHANGELOG section
+bun run release:prepare --write            # apply lockstep version + write the section
+bun run release:notes --version=X.Y.Z      # a version's CHANGELOG section (the Release notes)
 ```
+
+`.github/workflows/release.yml`, on a push to `main`: read the version of
+`packages/core/package.json`; if `vX.Y.Z` is not tagged yet, tag the pushed
+commit and `gh release create` it (title `vX.Y.Z`, notes from `release:notes`,
+marked latest). A push whose version is already tagged does nothing. A manual
+run refreshes the notes of the current version (`gh release edit`).
+
+npm: only `workflow_dispatch` with `publish_npm: true`, which runs
+`bun run release --set="$VERSION" --write --publish --tool=npm --provenance`
+on the tagged ref. The lower-level `bun run release` (dry-run without flags;
+`--bump=`/`--set=` mutually exclusive; `--write`; `--publish`;
+`--no-validate`; `--tool=bun|npm`) is what that run drives. `--publish` alone
+publishes the CURRENT versions as-is, for a re-run after a failed publish.
+
+## `PUBLISH_ORDER` (66 packages, fixed order)
+
+From `tools/scripts/release/release-plan.ts` — leaf packages first
+(`packages/contracts`, `packages/state`, `packages/sqlite`,
+`packages/context-compiler`, `packages/core`, ...), then `packages/cli` and
+the `plugins/*`. Read the file for the list; do not copy it here.
 
 ## Risks
 
-- **`fix:` misclassified as `feat:`** — ships an undeserved minor bump.
-  Re-read the change: did it add new capability (feat) or just correct
-  behaviour (fix)? When in doubt, `fix:` is the safer default.
-- **`chore:` breaking Conventional Commits** — `chore:` itself contributes
-  `none` to the bump (correct), but a malformed header (e.g. missing the
-  trailing `:`, or `Chore:` capitalised) falls through `parseHeader`'s regex
-  and gets treated as "non-conventional with content" -> an unwanted patch
-  bump, and CI's commit-lint may fail it outright. Keep the exact lowercase
-  `type:` / `type(scope):` / `type!:` shape.
+- **A malformed header** (missing the trailing `:`, or `Chore:` capitalised)
+  falls through `parseHeader`'s regex and CI's commit-lint may fail it. Keep
+  the exact lowercase `type:` / `type(scope):` / `type!:` shape.
+- **Misclassifying the proposal kind** — the release bump comes from the
+  proposal `kind` (`fix` only -> patch, otherwise minor), so a `feat`
+  proposal filed as `fix` ships a patch where a minor was due.
 
 ## Never do
 
-- Never hand-edit a `version` field in any `package.json` — `derive-version`
+- Never hand-edit a `version` field in any `package.json` — `release:prepare`
   / `release.script.ts` own that field exclusively.
+- Never push a `vX.Y.Z` tag by hand or start an npm publish without the
+  owner's decision: the tag is the workflow's act, npm is manual.
 - Never run `--publish` without first reading the dry-run plan it prints.
 - Never reorder `PUBLISH_ORDER` locally to "fix" a perceived dependency
   issue — it is derived from the real `peerDependencies` graph; if it looks
   wrong, that's a finding for a proposal, not a one-off local edit.
-- Never assume a non-conventional commit message is harmless — it silently
-  becomes a patch release.
 
 ## Smoke
 
 ```
-bun tools/scripts/release/derive-version.script.ts   # or: bunx vitest run tools/scripts/release/*.spec.ts
+bunx vitest run tools/scripts/release/*.spec.ts
+bun run release:prepare   # prints the plan, writes nothing
 ```
-Confirms `classifyBump(['feat: x']) === 'minor'`,
-`classifyBump(['fix: x']) === 'patch'`,
-`classifyBump(['feat!: x']) === 'major'`, and that `bun run release` (no
-flags) prints the 10-package `PUBLISH_ORDER` table without writing anything.
