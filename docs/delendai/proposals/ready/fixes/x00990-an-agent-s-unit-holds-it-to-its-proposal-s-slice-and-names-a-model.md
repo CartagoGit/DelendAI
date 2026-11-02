@@ -2,14 +2,16 @@
 id: x00990
 title: "An agent's unit holds it to its proposal's slice, and names a model"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
-last-correlation-id: 1083d68a-d2f1-46d5-8916-637bf3b6951a
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T14:50:25.187Z
+last-transition-id: 89c05960-e832-40a0-8867-ec108f9fb9b7
+last-correlation-id: 89c05960-e832-40a0-8867-ec108f9fb9b7
+last-transition-from: review
+last-transition-at: 2026-11-02T22:38:14.193Z
+shipped-in:
+  - "158fe5045a3b7772b0f5b23a19696b691fa2dd12"
 ---
 
 # x00990 — An agent's unit holds it to its proposal's slice, and names a model
@@ -42,75 +44,97 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - global_gate: type
 
 ### S1 — A unit is entered only for an open slice, and stays inside it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/closed-proposal.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/closed-proposal.service.spec.ts`, `packages/core/tests/src/lib/work-units/outside-slice.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter --kind=implement on a proposal in done/ (or a slice whose status is done) is refused, naming the proposal's state and the command for a new fix proposal."
   - "A commit in an implement unit that touches a file outside the slice's Files is reported on the unit (work status), naming the file."
 - shipped-in: `bf7e7d8c3332`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 2/2: (1) At 158fe504 the closed-proposal service names the state of a proposal in done or of a slice whose status is done, and the enter path refuses an implement unit … (2) At 158fe504 the paths an implement unit authored are compared with the files the proposal names, and the ones outside that list are reported on the unit with t… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An implement unit on a closed proposal or a closed slice is refused with the state named and the command that starts the new work, and a commit that touches a file outside the slice's list is reported on the unit with the file named. The type gate exited 0 and the two slice specs pass 5 of 5. Three residuals, recorded and not blocking: the comparison is against the whole proposal's file list and not the slice's own, which the proposal records as deliberate; the report appears only in the JSON payload, not in the text of work status; and a later commit in the same delivery shortened the remedy, dropping the literal command for a new fix proposal, so what remains names work enter for a new proposal instead.
 
 ### S2 — A slice commit says what changed
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The slice event's subject is built from the slice's title (or the paths it staged), never the fixed text `commit via slice`."
 - shipped-in: `60ddb5e2fb37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the slice event's subject is built from the slice's id and the paths it staged, and the fixed text survives only in the history and in unrelated fi… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The slice commit's subject is built from the slice and the paths it staged, never from a fixed text. The type gate exited 0 and the slice spec passes 19 of 19. Two residuals, recorded and not blocking: the subject is built from the files the event declares and not from the paths actually committed, so it can name a file that was not in the commit; and the criterion's first option, the slice's title, is not implemented, only the paths.
 
 ### S3 — An identity that names no model is marked unverified
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/agent-name-canon.service.ts`, `packages/core/src/lib/work-units/unverified-agents.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/agent-name-canon.service.spec.ts`, `packages/core/tests/src/lib/work-units/unverified-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent id that matches no model of the model catalogue, or carries a date or the product's name, is recorded with an unverified confidence and work status says so; the project's identity policy decides whether it may enter."
 - shipped-in: `d910b67fab2a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an agent id that no seen model and no roster entry confirms is listed as unverified with the reason, an id carrying the product's own name is refus… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent id no model confirms is listed as unverified with the reason, and the product's own name posing as a model's maker is refused at entry. The type gate exited 0 and the two slice specs pass 7 of 7. Three residuals, recorded and not blocking, and they are the criterion's own wording rather than the behaviour: the unverified agents are a list and not a confidence value, the work identity's own confidence vocabulary is untouched; the list speaks only in the JSON output of work status, not in its text; and the delivery declines the clause about an id carrying a date, on the grounds that a date alone is no sign, which the proposal's notes record.
 
 ### S4 — Units changing the same files hear of each other
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-briefing.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/work-briefing.service.spec.ts`, `tools/scripts/hooks/commit-time-checks.script.ts`, `tools/scripts/hooks/commit-time-checks.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Entering or committing in a unit whose changed files overlap another live unit's lists that unit, its agent and the shared files."
 - shipped-in: `8c4260b8441a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 entering a unit reads the units that change the same files and names that unit, its agent and the shared files, and the commit-time check names the… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. A unit whose changed files overlap another live unit's lists is told that unit, its agent and the shared files, both when it enters and when it commits. The type gate exited 0 and the two slice specs pass 10 of 10. One residual, recorded and not blocking: the commit half is pinned only as a pure function, the part that reads the swarm is not tested.
 
 ### S5 — Stranded work is kept under the agent that wrote it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Work left uncommitted in the shared checkout is kept under the identity of the session that wrote it (or `unknown` with the evidence), never the identity of whichever session found it."
 - shipped-in: `de5ce5a6f51a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the stranded work is kept under the agent whose live units cover every changed path, and when no unit covers them all the ref is kept unattributed … — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The work left uncommitted in the shared checkout is kept under the identity of the agent whose unit covers it, and never under the identity of whichever session found it, which the implementation guarantees by never reading a finder at all. The type gate exited 0 and the slice spec passes 7 of 7. Two residuals, recorded and not blocking: the word is unattributed and not the unknown the criterion names, and the evidence sits in the commit message rather than in the work status payload; and the writer is inferred from which unit covers the paths, so an agent whose unit covers them all is named even if it did not write them.
 
 ### S7 — A reviewer does not implement what it reviews
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`
 - **Gate**: type
 - acceptance:
   - "work enter --kind=implement on a proposal in review/ is refused to an agent that holds or held a review round on it, naming the round."
 - shipped-in: `60ddb5e2fb37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 an implement unit on a proposal under this agent's review is refused, naming the reviewer and the rule that a reviewer does not implement what it r… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An agent that holds or held a review round on a proposal is refused an implement unit on it. The type gate exited 0 and the slice spec passes 8 of 8. Two residuals, recorded and not blocking: the refusal names the reviewer and not the round, which the criterion asks for; and the slice delivered almost nothing of its own, the proposal's notes record that the refusal was already in place, and this delivery only moved the call next to the closed-proposal check, so the spec that pins it is older than the slice.
 
 ### S8 — Claiming a unit hands over its worktree and its hold
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-claim.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After `work claim`, `work enter` with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice."
 - shipped-in: `410f5c107eca`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S8, the claim that hands a slice to another agent.
+
+WHAT IS WRONG. The criterion has two halves and the first one fails. After work claim, the claimant is still refused entry to the worktree it now owns, because the claim does not re-stamp the worktree: the unit stays bound to the previous agent's session, and the entry is refused as held by another session. The delivery moved the forge reservation to the claimant and released what the old name had reserved, which is the second half of the criterion, and it left the worktree stamp alone.
+
+WHERE. packages/core/src/lib/work-units/worktree-agent.service.ts, whose stampWorktreeAgent writes the agent and the session of the worktree and is not called by the claim path; packages/core/src/lib/work-units/work-unit-shared.service.ts, whose heldByAnother refuses the entry when the stamp names another session; and packages/core/src/lib/work-units/work-unit-claim.service.ts, which releases the reservation without moving the stamp.
+
+HOW TO REPRODUCE. In a temporary repository, enter an implement unit as one agent, then run work claim --agent=<the other agent>, then work enter --agent=<the other agent> --generation=2. The claim answers with the ref renamed to the new agent and the worktree followed, and the old ref gone. The enter then answers with exit code 4 and the refusal that the worktree is held by another session, the unit being someone else's work even under the same agent id. Running the same enter from inside that worktree gives the same refusal. Only passing the previous agent's session makes it succeed and return the same worktree.
+
+WHAT MUST HOLD. After work claim, work enter with the claimed generation enters the same worktree for the claimant, and the previous agent no longer holds the slice. The claim must re-stamp the worktree with the claimant, or the entry must follow the reservation instead of the stamp. A test that runs work claim and then work enter with the claimed generation would pin it; the slice's new spec pins only the release of the reservation.
 
 ## acceptance
 
