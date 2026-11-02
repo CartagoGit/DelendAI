@@ -176,6 +176,7 @@ const EXPECTED_COMMANDS = [
 	'completion',
 	'usage-tracking report',
 	'usage-tracking clear',
+	'usage host-sessions',
 	'security secrets',
 	'security audit',
 	'router-dashboard',

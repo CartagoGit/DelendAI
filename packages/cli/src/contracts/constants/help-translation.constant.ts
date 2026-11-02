@@ -190,6 +190,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Report recorded tool usage/cost grouped by provider, plugin, agent or extension.',
 	'usage-tracking clear':
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
+	'usage host-sessions':
+		'Report the tokens each thread of a Claude Code session spent: main and every subagent.',
 	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
 	// S1.6 (cli-i18n gate repair): three commands shipped
 	// without being indexed in HELP_TRANSLATIONS. Their summaries

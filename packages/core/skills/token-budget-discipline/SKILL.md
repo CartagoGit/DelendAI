@@ -6,5 +6,5 @@ description: Thin pointer to delendai-token-budget-playbook. The canonical token
 
 # delendai token budget discipline
 
-The canonical guidance now lives in [token-budget-playbook](../token-budget-playbook/SKILL.md).
+The canonical guidance now lives in [token-budget-playbook](../delendai-token-budget-playbook/SKILL.md).
 Keep this skill only as a compatibility pointer for older manifests and links.
