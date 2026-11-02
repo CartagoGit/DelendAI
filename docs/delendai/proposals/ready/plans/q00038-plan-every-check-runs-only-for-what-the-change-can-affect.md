@@ -16,21 +16,59 @@ A pull request and a local proof run the tests, lints and types its change can a
 
 ## why
 
-TODO: why this work matters now.
+The owner asked several times that a pull request check only what its change can affect, and the forge did not. Measured on 2026-11-02:
+
+- Tests chose by module. `vitest --changed` follows imports, and nearly every spec imports a barrel that imports everything: one change in core reached 1,362 of 2,407 specs, and `vitest related` took about four minutes to say so.
+- Lints ran whole in every pull request, one job per family, whatever changed.
+- The local proof used a third answer, a grep for importers, so what passed locally was not what the forge ran.
+
+Followed by symbol, the same core change reaches 240 specs, found in under a second. Over the last 14 merged pull requests the analysis picks between 0 and 503 specs. A mutation of `toolError` passed in all 55 sampled specs the analysis leaves out and failed in the ones it picks.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Dropping the full run on develop: it stays the net for what an analysis cannot see.
+- A list kept by hand of what a check reads: it is derived, or measured.
+- Making a check weaker to make it faster.
 
 ## slices
 
-- global_gate: none
+- global_gate: type
 
-### S1 — S1
+### S1 — Tests run what the change reaches, by symbol
 - **Status**: pending
-- **Files**: `tools/scripts/ci/affected-specs.service.ts`
-- **Gate**: none
+- **Files**: `tools/scripts/ci/affected-specs.service.ts`, `tools/scripts/ci/affected-specs.interface.ts`, `tools/scripts/ci/affected-specs.service.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/near-specs.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads."
+  - "A zone the change reaches no spec of starts no job."
+  - "The local proof runs the same specs the forge would, from the same analysis."
+
+### S2 — Lints run what the change can affect
+- **Status**: pending
+- **Files**: `tools/scripts/lint/run-together.script.ts`
+- **Gate**: type
+- acceptance:
+  - "What each lint reads is recorded on the integration branch's full run, a pull request runs the lints whose reads its change touches, and a lint never recorded runs."
+
+### S3 — Types are checked incrementally
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "The typecheck reuses the integration branch's incremental state, so a change pays for what it touches."
+
+### S4 — The saving is measured
+- **Status**: pending
+- **Files**: `tools/scripts/ci/test-zones.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Runner minutes and wall time per pull request are reported before and after each slice."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
+- A zone the change reaches no spec of starts no job.
+- The local proof runs the same specs the forge would, from the same analysis.
+- What each lint reads is recorded on the integration branch's full run, a pull request runs the lints whose reads its change touches, and a lint never recorded runs.
+- The typecheck reuses the integration branch's incremental state, so a change pays for what it touches.
+- Runner minutes and wall time per pull request are reported before and after each slice.

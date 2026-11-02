@@ -641,7 +641,10 @@ jobs:
                       --passWithNoTests
                     exit 0
                   fi
-                  if [ "${{ github.event_name }}" = "pull_request" ] && [ "${ZONE_FILTER:-}" != "all" ]; then
+                  # A listed job already holds the exact specs the change
+                  # reaches (affected-specs.service); `--changed` on top
+                  # would walk the whole import graph again for nothing.
+                  if [ "${{ github.event_name }}" = "pull_request" ] && [ "${ZONE_FILTER:-}" != "all" ] && [ -z "${ZONE_FILES:-}" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
                     # A spec that READS a changed workflow or root file
                     # is not reached by `--changed`, which follows imports;
