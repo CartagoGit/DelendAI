@@ -70,7 +70,7 @@ export const printPathOnly = (result: ICliCommandResult): ICliCommandResult => {
 };
 
 /** The planning plugin is loaded only when a unit is entered. */
-const briefOnEntering = async (): Promise<void> => {
+export const briefOnEntering = async (): Promise<void> => {
 	const { DEFAULT_PATH_LAYOUT, taskBriefingOf } = await import(
 		'@delendai/proposals/public'
 	);

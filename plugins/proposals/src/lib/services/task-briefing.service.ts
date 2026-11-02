@@ -4,13 +4,13 @@
  * Files come by reference with their sizes and the nearest specs by path: the
  * reach is the slice's own, and the agent opens what the work needs.
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 
 import type {
 	ITaskBriefing,
 	ITaskBriefingRequest,
 } from '@delendai/core/contracts';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import { locateProposal } from '../proposals/locate';
 
@@ -48,15 +48,28 @@ const slicesOf = (body: string, slice: string) => {
 };
 
 /** The spec beside a source file, or mirrored under its package's tests. */
-const nearestSpec = (worktree: string, file: string): string | undefined => {
+const nearestSpec = async (
+	reader: SafeWorkspaceReader,
+	file: string,
+): Promise<string | undefined> => {
 	if (!/\.tsx?$/u.test(file) || file.includes('.spec.')) return undefined;
 	const spec = join(
 		dirname(file),
 		basename(file).replace(/\.(tsx?)$/u, '.spec.$1'),
 	);
-	return [spec, spec.replace(/\/src\//u, '/tests/src/')].find((path) =>
-		existsSync(join(worktree, path)),
-	);
+	for (const path of [spec, spec.replace(/\/src\//u, '/tests/src/')]) {
+		if ((await reader.exists(path)) !== null) return path;
+	}
+	return undefined;
+};
+
+/** A file by reference; a path outside the tree or still to come has no size. */
+const fileOf = async (reader: SafeWorkspaceReader, path: string) => {
+	try {
+		return { path, bytes: (await reader.stat(path)).stats.size };
+	} catch {
+		return { path };
+	}
 };
 
 export const taskBriefingOf = async (
@@ -69,9 +82,15 @@ export const taskBriefingOf = async (
 		proposalsDirAbs,
 	});
 	if (located === null) return undefined;
-	const body = readFileSync(located.absPath, 'utf8');
+	const reader = new SafeWorkspaceReader(request.worktree);
+	const body = (
+		await reader.readText(relative(request.worktree, located.absPath))
+	).content;
 	const slices = slicesOf(body, request.slice);
 	const paths = [...new Set(slices.flatMap((slice) => slice.files))];
+	const specs = await Promise.all(
+		paths.map((path) => nearestSpec(reader, path)),
+	);
 	return {
 		goal: sectionOf(body, 'goal'),
 		slices: slices.map(({ id, title, acceptance }) => ({
@@ -79,18 +98,7 @@ export const taskBriefingOf = async (
 			title,
 			acceptance,
 		})),
-		files: paths.map((path) => {
-			const absolute = join(request.worktree, path);
-			return existsSync(absolute)
-				? { path, bytes: statSync(absolute).size }
-				: { path };
-		}),
-		specs: [
-			...new Set(
-				paths.flatMap(
-					(path) => nearestSpec(request.worktree, path) ?? [],
-				),
-			),
-		],
+		files: await Promise.all(paths.map((path) => fileOf(reader, path))),
+		specs: [...new Set(specs.flatMap((spec) => spec ?? []))],
 	};
 };

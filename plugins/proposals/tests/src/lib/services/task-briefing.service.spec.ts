@@ -78,6 +78,23 @@ describe('taskBriefingOf', () => {
 		expect(task?.files).toHaveLength(3);
 	});
 
+	it('finds a spec mirrored under the package tests', async () => {
+		const root = worktree();
+		mkdirSync(join(root, 'pkg/src'), { recursive: true });
+		mkdirSync(join(root, 'pkg/tests/src'), { recursive: true });
+		writeFileSync(join(root, 'pkg/src/c.ts'), '');
+		writeFileSync(join(root, 'pkg/tests/src/c.spec.ts'), '');
+		writeFileSync(
+			join(root, 'docs/ready/feats/f00002-b.md'),
+			DOCUMENT.replace('f00001', 'f00002').replace(
+				'\\`src/b.ts\\`',
+				'\\`pkg/src/c.ts\\`',
+			),
+		);
+		const task = await brief(root, 'S2', 'f00002');
+		expect(task?.specs).toEqual(['pkg/tests/src/c.spec.ts']);
+	});
+
 	it('has nothing to say about a proposal it cannot find', async () => {
 		expect(await brief(worktree(), 'S1', 'x00009')).toBeUndefined();
 	});
