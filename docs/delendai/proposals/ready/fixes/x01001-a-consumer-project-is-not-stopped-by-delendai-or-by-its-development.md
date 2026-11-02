@@ -55,7 +55,7 @@ Findings from a real consumer, api-source-tanit, read from its logs on 2026-11-0
 
 ### S4 — A consumer does not run a moving checkout
 - **Status**: pending
-- **Files**: `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`
+- **Files**: `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `tools/scripts/lint/check-stray-cache-files.script.ts`, `packages/core/src/lib/contracts/constants/core-eviction.constant.ts`
 - **Gate**: type
 - acceptance:
   - "A project picks the delendai branch it runs with `--branch=<name>` on its MCP entry, the shared checkout stays where it is, a move on another branch restarts nothing there, and a branch that does not exist falls back to the checkout's code and says so."

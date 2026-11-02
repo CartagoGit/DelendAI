@@ -122,6 +122,7 @@ const SANCTIONED_SUBPATH_PREFIXES: readonly string[] = [
 	'logs/',
 	'rules/',
 	'.worktrees/',
+	'branch-runtime/',
 ];
 
 /** Executable-looking extensions an agent might leave in the cache by mistake. */
