@@ -1,0 +1,67 @@
+/* delendai VS Code host — extension overrides for the shared
+ * `@delendai/ui-extension` component runtime.
+ *
+ * This file contains ONLY:
+ *   1. `--vscode-*` fallbacks so the shared CSS picks up the host's theme.
+ *   2. VS Code-specific layout adjustments that have no equivalent on the
+ *      docs site.
+ *
+ * It MUST NOT contain:
+ *   - The brand hex literals (the canonical values live in
+ *     `apps/shared/src/styles/_themes.scss`; the
+ *     `tools/scripts/lint/no-duplicate-brand-hex.script.ts` lint fails the
+ *     build if they leak in here).
+ *   - Token redefinitions (radii, font stacks, spacing scale). Those
+ *     live in `apps/shared/src/styles/_tokens.scss`.
+ *
+ * The shared component CSS is injected by every webview via
+ * `componentCss` (from `@delendai/ui-extension/public`); this file
+ * wins on equal specificity for the host theme fallbacks.
+ */
+
+:root {
+	--delendai-bg: var(--vscode-editor-background, #0d1117);
+	--delendai-fg: var(--vscode-foreground, #c9d1d9);
+	--delendai-fg-muted: var(--vscode-description-foreground, #8b949e);
+	--delendai-line: var(--vscode-widget-border, #30363d);
+	--delendai-bg-soft: var(--vscode-side-bar-background, #161b22);
+	--delendai-card: var(--vscode-editorWidget-background, #1c2128);
+	--delendai-font-prose: var(--vscode-font-family, system-ui, sans-serif);
+	--delendai-font-mono: var(
+		--vscode-editor-font-family,
+		ui-monospace,
+		SFMono-Regular,
+		Menlo,
+		monospace
+	);
+}
+
+body {
+	margin: 0;
+	font-family: var(--vscode-font-family, system-ui, sans-serif);
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+a {
+	color: var(--vscode-textLink-foreground, var(--delendai-brand-blue));
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+/* VS Code-specific: tabs use a translucent backdrop over the editor. */
+.delendai-tabs {
+	background: var(
+		--vscode-editorGroupHeader-tabsBackground,
+		var(--delendai-bg-soft)
+	);
+}
+.delendai-tab[aria-selected='true'] {
+	color: var(--vscode-tab-activeForeground, var(--delendai-fg));
+	border-bottom-color: var(
+		--vscode-tab-activeBorderTop,
+		var(--delendai-accent)
+	);
+}
