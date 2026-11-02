@@ -9,6 +9,10 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 
+import { readWorkspacePolicy } from '@delendai/core/lib/work-units/development-policy.service';
+import { shortName } from '@delendai/core/lib/development-policy/git-guard-namespaces';
+import { readSwarm } from '@delendai/core/lib/work-units/work-swarm.service';
+
 const TYPESCRIPT = /\.tsx?$/u;
 /** What can change what a tool costs or tells the site. */
 const TOOL_SURFACE =
@@ -68,10 +72,51 @@ const failureOf = (command: readonly string[]): Promise<string | undefined> =>
 		});
 	});
 
+/**
+ * The other live units that change a file this commit changes, in words:
+ * three units once rewrote one reader at once, and none was told.
+ */
+export const sharedWith = (
+	staged: readonly string[],
+	branch: string,
+	units: readonly {
+		readonly ref: string;
+		readonly agent: string;
+		readonly paths: readonly string[];
+	}[],
+): readonly string[] =>
+	units.flatMap((unit) => {
+		if (unit.ref === branch) return [];
+		const shared = unit.paths.filter((path) => staged.includes(path));
+		return shared.length === 0
+			? []
+			: [
+					`[delendai] ${unit.agent}'s ${unit.ref} also changes: ${shared.join(', ')}`,
+				];
+	});
+
+const tellSharedFiles = async (staged: readonly string[]): Promise<void> => {
+	const branch = git('symbolic-ref', '--quiet', '--short', 'HEAD').trim();
+	const root = git('rev-parse', '--show-toplevel').trim();
+	if (branch.length === 0 || root.length === 0) return;
+	const policy = await readWorkspacePolicy(root);
+	const prefix = shortName(policy.branches.workRefPrefix);
+	if (prefix.length === 0 || !branch.startsWith(prefix)) return;
+	for (const line of sharedWith(
+		staged,
+		branch,
+		readSwarm({ root, policy }).units,
+	)) {
+		process.stderr.write(`${line}\n`);
+	}
+};
+
 const main = async (): Promise<number> => {
 	const paths = git('diff', '--cached', '--name-only', '--diff-filter=d')
 		.split('\n')
 		.filter((path) => path.length > 0);
+	// Told, never refused: a shared file is something to talk about.
+	await tellSharedFiles(paths).catch(() => undefined);
 	const checks = checksFor(paths);
 	if (checks.length === 0) return 0;
 	syncAgentNotes();

@@ -61,7 +61,7 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 
 ### S4 — Units changing the same files hear of each other
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-briefing.service.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/work-briefing.service.spec.ts`, `tools/scripts/hooks/commit-time-checks.script.ts`, `tools/scripts/hooks/commit-time-checks.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Entering or committing in a unit whose changed files overlap another live unit's lists that unit, its agent and the shared files."
@@ -109,3 +109,4 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 ## notes
 
 - 2026-11-02. S1: `work enter --kind=implement` on a proposal in done/ or a done slice is refused, naming the state and the commands for a new fix proposal (tried on x00722: refused, exit 4). `work status` lists, under `outsideSlice`, each implement unit with the authored files it changed that no slice of its proposal names, reading the proposal as the unit holds it, since one unit carries a whole proposal and names the files it needs as it goes; the proposals folder is never outside. S2: the slice commit's subject names the files it changed (`feat(x1): S1 changes a.ts, b.ts +2 more`); the slice event carries no title. S7 was already in place: since b0dbbb782 (2026-10-03) `work enter` refuses an implement unit to an agent named as a reviewer of that slice.
+- S4, 2026-11-02. Entering a unit adds `shared` to its briefing: each other live or published unit that changes a file this one changes, its agent and the files. A commit on a work ref prints, from the commit hook, each other unit that also changes a staged file; it tells and never refuses, and reading the swarm costs about 0.4 s.

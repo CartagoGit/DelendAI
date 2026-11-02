@@ -25,6 +25,12 @@ export interface IWorkBriefing {
 	readonly others: readonly IBriefedUnit[];
 	/** Paths more than one unit of work is already changing. */
 	readonly contested: readonly string[];
+	/** The other units the entered one shares changed files with, and which. */
+	readonly shared: readonly {
+		readonly agent: string;
+		readonly ref: string;
+		readonly paths: readonly string[];
+	}[];
 }
 
 /** One file a task names, by reference: its size says what reading it costs. */

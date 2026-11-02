@@ -60,6 +60,31 @@ describe('briefingFrom (x00555 S3)', () => {
 		).toStrictEqual(['src/a.ts']);
 	});
 
+	it('names the units the entered one shares files with, and which files', () => {
+		const mine = unit('a', ['src/a.ts', 'src/b.ts']);
+		const theirs = unit('gpt-5', ['src/a.ts']);
+		const shared = fakePartial<
+			ISwarmView,
+			'units' | 'overlaps' | 'published'
+		>({
+			units: [mine, theirs],
+			published: [],
+			overlaps: [{ path: 'src/a.ts', refs: [mine.ref, theirs.ref] }],
+		});
+		const briefing = briefingFrom({
+			agent: 'a',
+			view: shared,
+			unit: mine.ref,
+		});
+		expect(briefing.shared).toEqual([
+			{ agent: 'gpt-5', ref: theirs.ref, paths: ['src/a.ts'] },
+		]);
+		expect(describeBriefing(briefing).join('\n')).toContain(
+			`this unit and gpt-5's ${theirs.ref} both change 1 file(s)`,
+		);
+		expect(briefingFrom({ agent: 'a', view: shared }).shared).toEqual([]);
+	});
+
 	it('says nobody else out loud rather than printing nothing', () => {
 		const lines = describeBriefing(
 			briefingFrom({ agent: 'a', view: view([]) }),

@@ -38,6 +38,8 @@ export type {
 export const briefingFrom = (input: {
 	readonly view: ISwarmView;
 	readonly agent: string;
+	/** The unit being entered, by its short ref name. */
+	readonly unit?: string | undefined;
 }): IWorkBriefing => {
 	const briefed =
 		(published: boolean) =>
@@ -58,9 +60,28 @@ export const briefingFrom = (input: {
 			.filter((unit) => theirs(unit) && unit.ahead > 0)
 			.map(briefed(true)),
 	];
+	// The units that change a file the entered one changes, by unit.
+	const shared = new Map<string, string[]>();
+	for (const overlap of input.view.overlaps) {
+		if (input.unit === undefined || !overlap.refs.includes(input.unit)) {
+			continue;
+		}
+		for (const ref of overlap.refs.filter((each) => each !== input.unit)) {
+			shared.set(ref, [...(shared.get(ref) ?? []), overlap.path]);
+		}
+	}
+	const agentOf = (ref: string): string =>
+		[...input.view.units, ...input.view.published].find(
+			(unit) => unit.ref === ref,
+		)?.agent ?? '';
 	return {
 		others,
 		contested: input.view.overlaps.map((overlap) => overlap.path),
+		shared: [...shared].map(([ref, paths]) => ({
+			agent: agentOf(ref),
+			ref,
+			paths,
+		})),
 	};
 };
 
@@ -81,6 +102,10 @@ export const describeBriefing = (
 		(unit) =>
 			`  ${unit.agent}  ${unit.subject}  ${String(unit.paths.length)} path(s)${unit.published ? '  (published, waiting to land)' : ''}  ${unit.ref}`,
 	),
+	...briefing.shared.flatMap((other) => [
+		`shared           this unit and ${other.agent}'s ${other.ref} both change ${String(other.paths.length)} file(s):`,
+		...other.paths.map((path) => `  ${path}`),
+	]),
 	...(briefing.contested.length === 0
 		? []
 		: [
