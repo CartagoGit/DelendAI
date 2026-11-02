@@ -249,7 +249,7 @@ export const hasHelpFlag = (argv: readonly string[]): boolean =>
 	argv.includes('--help') || argv.includes('-h');
 
 /** What a stop signal may find already started; each is optional because a signal can land at any point of start-up. */
-export interface StopTargets {
+export interface IStopTargets {
 	hydration?: { stop(): unknown } | undefined;
 	candidateRefresh?: ReturnType<typeof setInterval> | undefined;
 	maintenance?: { stop(): unknown } | undefined;
@@ -261,7 +261,7 @@ export interface StopTargets {
  */
 export const createStopHandler =
 	(
-		targets: StopTargets,
+		targets: IStopTargets,
 		shutdown: (code: number) => unknown,
 	): ((code: number) => void) =>
 	(code) => {
