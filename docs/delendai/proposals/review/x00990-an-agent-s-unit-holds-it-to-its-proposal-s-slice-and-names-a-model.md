@@ -57,14 +57,16 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 2/2: (1) At 158fe504 the closed-proposal service names the state of a proposal in done or of a slice whose status is done, and the enter path refuses an implement unit … (2) At 158fe504 the paths an implement unit authored are compared with the files the proposal names, and the ones outside that list are reported on the unit with t… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. An implement unit on a closed proposal or a closed slice is refused with the state named and the command that starts the new work, and a commit that touches a file outside the slice's list is reported on the unit with the file named. The type gate exited 0 and the two slice specs pass 5 of 5. Three residuals, recorded and not blocking: the comparison is against the whole proposal's file list and not the slice's own, which the proposal records as deliberate; the report appears only in the JSON payload, not in the text of work status; and a later commit in the same delivery shortened the remedy, dropping the literal command for a new fix proposal, so what remains names work enter for a new proposal instead.
 
 ### S2 — A slice commit says what changed
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/engine.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The slice event's subject is built from the slice's title (or the paths it staged), never the fixed text `commit via slice`."
 - shipped-in: `60ddb5e2fb37`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 19/19 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the slice event's subject is built from the slice's id and the paths it staged, and the fixed text survives only in the history and in unrelated fi… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The slice commit's subject is built from the slice and the paths it staged, never from a fixed text. The type gate exited 0 and the slice spec passes 19 of 19. Two residuals, recorded and not blocking: the subject is built from the files the event declares and not from the paths actually committed, so it can name a file that was not in the commit; and the criterion's first option, the slice's title, is not implemented, only the paths.
 
 ### S3 — An identity that names no model is marked unverified
 - **Status**: review
