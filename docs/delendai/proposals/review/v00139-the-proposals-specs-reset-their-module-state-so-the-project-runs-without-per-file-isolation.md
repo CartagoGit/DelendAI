@@ -67,3 +67,5 @@ Measured 2026-11-02 with `bunx vitest run --project proposals` (CLAUDECODE/AI_AG
 - Shuffled order (`--sequence.shuffle --sequence.seed=11`): 371 s, all green.
 
 The whole project drops isolation; no spec is excluded. x00994 is left alone: it edits specs in cli, core and roadmap, a different change.
+
+- 2026-11-02: `sequence.groupOrder` on the project: without isolation its workers differ from the others, and a zone running several projects together failed before any test ran (#1645, `tests: readers`). A third shuffled run, seed 333, passed in 324 s. The module-evaluations report has its isolated baseline, 183,494 evaluations; a run without isolation prints no evaluations line, so that report cannot compare the two.
