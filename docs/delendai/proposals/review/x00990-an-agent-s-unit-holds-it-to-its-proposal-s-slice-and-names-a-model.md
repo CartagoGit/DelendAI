@@ -93,14 +93,16 @@ On 2026-10-28 the owner ran three Copilot BYOK agents on a MiniMax account besid
 - review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 entering a unit reads the units that change the same files and names that unit, its agent and the shared files, and the commit-time check names the… — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. A unit whose changed files overlap another live unit's lists is told that unit, its agent and the shared files, both when it enters and when it commits. The type gate exited 0 and the two slice specs pass 10 of 10. One residual, recorded and not blocking: the commit half is pinned only as a pure function, the part that reads the swarm is not tested.
 
 ### S5 — Stranded work is kept under the agent that wrote it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Work left uncommitted in the shared checkout is kept under the identity of the session that wrote it (or `unknown` with the evidence), never the identity of whichever session found it."
 - shipped-in: `de5ce5a6f51a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 158fe5045a3b, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 1/1: (1) At 158fe504 the stranded work is kept under the agent whose live units cover every changed path, and when no unit covers them all the ref is kept unattributed … — Approved on the delivered state of 158fe5045a3b7772b0f5b23a19696b691fa2dd12. The work left uncommitted in the shared checkout is kept under the identity of the agent whose unit covers it, and never under the identity of whichever session found it, which the implementation guarantees by never reading a finder at all. The type gate exited 0 and the slice spec passes 7 of 7. Two residuals, recorded and not blocking: the word is unattributed and not the unknown the criterion names, and the evidence sits in the commit message rather than in the work status payload; and the writer is inferred from which unit covers the paths, so an agent whose unit covers them all is named even if it did not write them.
 
 ### S7 — A reviewer does not implement what it reviews
 - **Status**: review
