@@ -36,7 +36,7 @@ Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:
 
 ### S1 — A job's lints run together
 - **Status**: pending
-- **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts`, `.github/workflows/ci.yml`, `package.json`
+- **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `tools/scripts/lint/repository-identity.script.ts`, `tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts`, `.github/workflows/ci.yml`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Each lint job's list lives in one `package.json` chain, and the job runs it at once."
