@@ -19,7 +19,6 @@ import { join } from 'node:path';
 import { createWorkspaceFileReader } from '../bootstrap/workspace-file-reader';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import { DEFAULT_CONFIG_FILENAME } from '../plugins/load-config-file';
-import { migrateWorkspacePresetProvenance } from '../plugins/preset-migration';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 import { findDelendaiServerName } from '../scaffold/detect-existing-install';
@@ -91,9 +90,6 @@ export const reportFirstRunSetup = async (
 	namespacePrefix?: string,
 	write: (line: string) => void = (line) => process.stderr.write(line),
 ): Promise<void> => {
-	// Journals which retired preset an existing plugin map still equals;
-	// never throws and never edits the config.
-	await migrateWorkspacePresetProvenance({ workspace: workspaceRoot });
 	try {
 		const created = await firstRunSetup(workspaceRoot, namespacePrefix);
 		if (created === undefined || created.length === 0) return;
