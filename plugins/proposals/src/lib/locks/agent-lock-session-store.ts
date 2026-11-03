@@ -196,9 +196,6 @@ export const readSessionBalanceSync = async (
 	readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
 
 export const resetSessionBalance = async (): Promise<void> => {
-	if (cachedPath !== null) {
-		await mkdir(dirname(cachedPath), { recursive: true });
-	}
 	_cachedBalance = null;
 	cachedPath = null;
 };
