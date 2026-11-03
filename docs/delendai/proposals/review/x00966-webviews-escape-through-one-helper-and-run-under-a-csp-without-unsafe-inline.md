@@ -33,14 +33,24 @@ Joint audit a00095. G42: escapeHtml exists six times and five of them do not esc
 - global_gate: type
 
 ### S1 — One escapeHtml
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/ui-extension/src/dashboard/format.ts`, `packages/ui-extension/src/dashboard/render-output-schema.ts`, `extensions/vscode/src/views/render-output-schema.ts`, `extensions/vscode/src/webviews/setup-github.ts`, `extensions/vscode/src/dev/entry.ts`, `extensions/vscode/src/commands/types.ts`, `apps/shared/src/public/index.ts`, `packages/ui-extension/src/dashboard/format.ts`, `extensions/vscode/src/commands/types.ts`
 - **Gate**: type
 - acceptance:
   - "Every renderer imports the one escapeHtml, defined in `@delendai/shared` and re-exported by ui-extension, which escapes & < > " and '; no second definition remains in a renderer (G42). The extension scaffold's generated template keeps its own, since it writes into a project with no dependency on these packages. `extensions/vscode/src/dev/entry.ts`, the local development harness that is not shipped, keeps its own too."
 - shipped-in: `87cdd379e676`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — WHAT IS WRONG: two renderers still define their own escape helper, so the slice's own criterion ("no second definition remains in a renderer", G42) does not hold at HEAD.
+
+WHERE:
+- apps/shared/src/components/ui/tabs.ts:81-87 defines `escapeText` beside the import of the shared helper it should use (the same file imports escapeAttr from ../../lib/escape at :50). It escapes the five characters, but it is a second definition in a renderer, which is what the criterion forbids, and it will drift from the shared one the moment the shared set changes.
+- extensions/vscode/src/views/metrics-sparkline.ts:85-90 defines `escapeXml`, which escapes only & < > " and NOT the single quote, and uses it at :34 to build the aria-label attribute. This is precisely the shape G42 names: a second escape definition in a renderer that does not escape the single quote.
+
+HOW TO REPRODUCE: grep -n "const escape" apps/shared/src/components/ui/tabs.ts extensions/vscode/src/views/metrics-sparkline.ts -> two definitions outside the two the criterion exempts (the extension scaffold template and extensions/vscode/src/dev/entry.ts). Compare with the canonical helper: apps/shared/src/lib/escape.ts:39-51 escapes & < > " and '.
+
+WHAT MUST HOLD: every renderer imports the one escapeHtml from @delendai/shared (re-exported by ui-extension), which escapes all five characters, and no second escape definition remains in a renderer anywhere in the tree. The two exemptions the criterion names stay as they are; every other definition goes, including escapeText in tabs.ts and escapeXml in metrics-sparkline.ts. A spec that asserts the canonical helper escapes the single quote and that no renderer defines its own would keep it true.
 
 ### S2 — CSP without unsafe-inline, built safely
 - **Status**: review
