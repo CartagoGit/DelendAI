@@ -10,6 +10,8 @@ last-transition-id: 422237f7-6c24-441c-93e2-7845c875ff17
 last-correlation-id: 422237f7-6c24-441c-93e2-7845c875ff17
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T04:33:30.397Z
+shipped-in:
+  - "bb57c75d7494"
 ---
 
 # f00791 — Consent and dry-run are checked by the server, not asserted by the caller
@@ -31,15 +33,17 @@ Joint audit a00095. G121: consent a person can verify exists only for spending (
 - global_gate: type
 
 ### S1 — A server-issued consent token
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`, `plugins/orchestrator-runner/src/lib/services/spend-confirmation.service.ts`, `packages/core/src/lib/consent/consent-token.service.ts`, `packages/core/src/lib/contracts/interfaces/consent-signer.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/tests/src/lib/consent/consent-token.service.spec.ts`, `plugins/orchestrator-runner/src/lib/invoke/token.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.spec.ts`, `plugins/refactor/src/lib/tools/refactor-consent.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A core service issues a token bound to the action digest and verifies it on apply. `refactor_rename` returns one for its exact plan, and `refactor_apply` refuses a token it did not issue or a diff edited since (D62, G121). The token proves the diff is the plan the server made, not that a person approved it: a person's approval remains the spend gate's elicitation."
   - "Spend confirmation uses the same service."
 - shipped-in: `bb57c75d7494`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at bb57c75d7494, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 2/2: (1) At bb57c75d the core service issues a token bound to the action and verifies it on apply: packages/core/src/lib/consent/consent-token.service.ts:20-21 hashes t… (2) At bb57c75d the spend confirmation uses that same service: plugins/orchestrator-runner/src/lib/invoke/token.ts:17-20 imports createConsentSigner from the core … — Approved on the delivered state of bb57c75d7494. A core service issues a token bound to the action digest and verifies it on apply: the rename tool returns a token for its exact plan, the apply side refuses a token the server did not issue and a diff edited since the plan, and the spend confirmation mints and verifies through the same service. The type gate exited 0 and the slice's specs pass 15 of 15. One residual, recorded and not blocking: the refusal is proven by refactor-consent.spec.ts and not by refactor-rename.tool.spec.ts, which injects a signer that always verifies, so the guard is proven where the refusal lives.
 
 ### S2 — dry-run before the effect
 - **Status**: review
