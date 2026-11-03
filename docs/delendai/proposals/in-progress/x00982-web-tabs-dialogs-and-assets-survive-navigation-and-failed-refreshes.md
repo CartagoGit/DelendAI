@@ -2,10 +2,14 @@
 id: x00982
 title: "Web tabs, dialogs and assets survive navigation and failed refreshes"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 467b40fd-c2d9-4176-8c82-0d12306ce2b7
+last-correlation-id: 467b40fd-c2d9-4176-8c82-0d12306ce2b7
+last-transition-from: ready
+last-transition-at: 2026-11-03T01:55:50.995Z
 ---
 
 # x00982 — Web tabs, dialogs and assets survive navigation and failed refreshes
