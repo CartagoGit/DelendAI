@@ -29,7 +29,7 @@ export default definePluginManifest({
 	tags: ['orchestrator', 'policy', 'workflow', 'subagent'],
 	maturity: 'experimental',
 	permissions: ['process'],
-	presets: ['standard', 'swarm', 'full', 'dogfood'],
+	presets: ['swarm', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 10_998,
 		caps: { hard: 12_650, warning: 11_550 },

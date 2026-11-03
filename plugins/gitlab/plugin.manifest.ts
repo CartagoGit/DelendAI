@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['gitlab', 'provider'],
 	maturity: 'experimental',
 	permissions: ['filesystem-write', 'network', 'env-read'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@delendai/contracts', 'zod'],
 	capabilities: ['gitlab', 'remote-provider'],

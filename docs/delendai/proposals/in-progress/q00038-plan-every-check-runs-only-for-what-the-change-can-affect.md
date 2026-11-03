@@ -10,6 +10,12 @@ last-transition-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
 last-correlation-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
 last-transition-from: ready
 last-transition-at: 2026-11-02T08:27:41.982Z
+shipped-in:
+  - "07672aeb0"
+  - "81bb8408a"
+  - "ec67a86ad"
+  - "cbedb634b"
+  - "aea829e83"
 ---
 
 # q00038 — Plan: every check runs only for what the change can affect
@@ -39,7 +45,7 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - global_gate: type
 
 ### S1 — Tests run what the change reaches, by symbol
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/affected-specs.service.ts`, `tools/scripts/ci/affected-specs.interface.ts`, `tools/scripts/ci/affected-specs.service.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/near-specs.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -62,14 +68,14 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
   - "The typecheck reuses the integration branch's incremental state, so a change pays for what it touches."
 
 ### S4 — The saving is measured
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
 
 ### S5 — Tools are verified for the plugins the change reaches
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/verify/affected-plugins.helper.ts`, `tools/scripts/verify/affected-plugins.helper.spec.ts`, `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/ci/affected-specs.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -77,14 +83,14 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
   - "A run without --affected-since, as on the integration branch, still verifies every plugin."
 
 ### S6 — Each publishable package is packed once
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "pack smoke no longer runs npm pack --dry-run over the raw workspace directories: the tarball smoke packs every publishable package of the release order from its staged copy, a superset checked on 2026-11-02 (59 of 59 non-private packages)."
 
 ### S7 — The external install runs where the packaging can change
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:

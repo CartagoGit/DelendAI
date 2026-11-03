@@ -11,14 +11,13 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'process', 'git-read', 'git-write'],
 	presets: [
 		'minimal',
-		'lean',
-		'standard',
+		'solo',
+		'team-pr',
 		'swarm',
-		'full',
+		'audit',
+		'docs-web',
+		'everything',
 		'dogfood',
-		'web-app',
-		'backend-api',
-		'cli-tool',
 	],
 	// f00180 S2 / MAN-004 — per-tool permission map. Read-only tools
 	// declare `git-read` only; write tools (`commit`, `push`) declare

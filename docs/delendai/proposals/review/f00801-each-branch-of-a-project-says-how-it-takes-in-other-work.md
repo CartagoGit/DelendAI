@@ -2,10 +2,14 @@
 id: f00801
 title: "Each branch of a project says how it takes in other work"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
+last-transition-id: 88db4867-1a94-4593-a727-9ecdb306fd5f
+last-correlation-id: 88db4867-1a94-4593-a727-9ecdb306fd5f
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T15:27:27.110Z
 ---
 
 # f00801 — Each branch of a project says how it takes in other work
@@ -34,25 +38,34 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 - global_gate: type
 
 ### S1 — A branch declares how it takes in work
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/contracts/interfaces/branch-rule.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/derive.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/src/lib/development-policy/validate-branch-rules.ts`, `packages/core/src/lib/development-policy/validate-combinations.ts`, `packages/core/tests/src/lib/development-policy/branch-rules.spec.ts`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`development.branches.rules` maps a branch name (or a glob) to how it takes in work, `pull-request`, `merge` or `direct`, and, for the integration and release branches, defaults to what the profile does today; an invalid combination (a release looser than its integration branch, a direct branch inside delendai's namespaces) is refused at load with the key that is wrong."
+- shipped-in: `a9c123c3345d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The guard and the work flow follow each branch's rule
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/tests/src/lib/development-policy/git-guard-branch-rules.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "A direct push or commit to a `pull-request` branch is refused, a merge into a `merge` branch is allowed and `work publish` lands there by merge, and a `direct` branch takes commits and pushes; one spec per rule, under both pinned profiles."
+- shipped-in: `a9c123c3345d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Promotion and follow
-- **Status**: pending
-- **Files**: `packages/core/src/lib/release/forward-sync.service.ts`, `packages/cli/src/commands/groups/release.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/release/forward-sync.service.ts`, `packages/cli/src/commands/groups/release.ts`, `packages/core/src/lib/contracts/interfaces/forward-sync.interface.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/core/tests/src/lib/release/forward-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A rule may name the branch it is promoted from (`main` from `develop`) and the branch it follows (`develop` follows `main`): one delendai command opens the promotion by that branch's own route, and once the promotion lands the follower takes in what it brought by its own route, merged or by pull request; nothing happens when there is nothing to take."
+- shipped-in: `b49221bce0a2`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

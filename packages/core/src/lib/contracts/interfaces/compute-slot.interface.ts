@@ -8,4 +8,8 @@ export interface IComputeSlotRequest<T> {
 	readonly timeoutMs?: number;
 	readonly staleMs?: number;
 	readonly waitNoticeMs?: number;
+	/** With `tip`: the unit asking, so its waiting turns are not duplicated. */
+	readonly unit?: string;
+	/** The commit being proved: same unit and tip join one wait. */
+	readonly tip?: string;
 }

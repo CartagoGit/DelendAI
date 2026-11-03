@@ -11,7 +11,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 import { resolvePlugins } from './resolve';
-import { PRESET_KIND } from '../plugins/preset-catalog';
+import { PRESET_KIND, RETIRED_PRESET_ID } from '../plugins/preset-catalog';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import type {
 	IPluginRegistrySource,
@@ -32,14 +32,9 @@ const ENTRY = z.object({
 	summary: z.string(),
 	tags: z.array(z.string()),
 	origin: z.enum(['first-party', 'community']),
-	// Accept the canonical preset ids + the legacy 'vertex' brand alias
+	// Accept the canonical preset ids + every retired id
 	// (still valid input; resolvePresetMembers normalises it).
-	defaultPreset: z
-		.enum([
-			...PRESET_KIND,
-			'vertex', // legacy brand alias → resolves to 'dogfood'
-		])
-		.optional(),
+	defaultPreset: z.enum([...PRESET_KIND, ...RETIRED_PRESET_ID]).optional(),
 	// Every optional field a registry entry can carry. A client that listed
 	// tools rejects undeclared keys, so an entry schema narrower than the
 	// entries `resolvePlugins` returns made the whole answer unusable.

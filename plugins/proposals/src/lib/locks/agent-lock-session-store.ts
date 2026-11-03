@@ -74,7 +74,6 @@ const readSessionLogPrefix = async (path: string): Promise<string> => {
 };
 
 let _cachedBalance: ISessionBalance | null = null;
-let cachedPath: string | null = null;
 
 /**
  * Resolve the absolute path of the session log for a workspace.
@@ -133,11 +132,7 @@ const deriveBalance = (text: string): ISessionBalance => {
 	};
 };
 
-const updateCache = (
-	path: string,
-	balance: ISessionBalance,
-): ISessionBalance => {
-	cachedPath = path;
+const updateCache = (balance: ISessionBalance): ISessionBalance => {
 	_cachedBalance = balance;
 	return balance;
 };
@@ -151,9 +146,9 @@ const readSessionBalanceFromFile = async (
 				basename(path),
 			)
 		).content;
-		return updateCache(path, deriveBalance(text));
+		return updateCache(deriveBalance(text));
 	} catch {
-		return updateCache(path, emptyBalance());
+		return updateCache(emptyBalance());
 	}
 };
 
@@ -166,7 +161,7 @@ export const appendSessionEntry = async (
 		await mkdir(dirname(path), { recursive: true });
 		const prefix = await readSessionLogPrefix(path);
 		await writeFileAtomic(path, `${prefix}${JSON.stringify(entry)}\n`);
-		updateCache(path, deriveBalance(`${prefix}${JSON.stringify(entry)}\n`));
+		updateCache(deriveBalance(`${prefix}${JSON.stringify(entry)}\n`));
 	});
 };
 
@@ -176,7 +171,6 @@ export const readSessionBalance = async (
 	const path = sessionLogPath(workspaceRootAbs);
 	try {
 		return updateCache(
-			path,
 			deriveBalance(
 				(
 					await new SafeWorkspaceReader(dirname(path)).readText(
@@ -186,7 +180,7 @@ export const readSessionBalance = async (
 			),
 		);
 	} catch {
-		return updateCache(path, emptyBalance());
+		return updateCache(emptyBalance());
 	}
 };
 
@@ -196,9 +190,5 @@ export const readSessionBalanceSync = async (
 	readSessionBalanceFromFile(sessionLogPath(workspaceRootAbs));
 
 export const resetSessionBalance = async (): Promise<void> => {
-	if (cachedPath !== null) {
-		await mkdir(dirname(cachedPath), { recursive: true });
-	}
 	_cachedBalance = null;
-	cachedPath = null;
 };
