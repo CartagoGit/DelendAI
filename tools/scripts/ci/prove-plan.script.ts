@@ -205,7 +205,11 @@ const runChecks = async (
 		readFileSync('.github/workflows/ci.yml', 'utf8'),
 		base,
 		'develop',
-	).filter((check) => jobMustRun({ job: check.job, changed }));
+	).filter(
+		(check) =>
+			jobMustRun({ job: check.job, changed }) &&
+			(!isProposalOnly(changed) || PROPOSAL_CHECKS.has(check.job)),
+	);
 	const first = await runTogether(
 		[
 			...(jobMustRun({ job: 'typecheck', changed })
@@ -258,6 +262,56 @@ const step = (label: string, command: readonly string[]): boolean => {
 	return ok;
 };
 
+/** A proposal file: prose the proposal gates read, that no code reads. */
+const PROPOSAL_FILE = /^docs\/delendai\/proposals\//u;
+
+/**
+ * Whether the change is proposals and nothing else. Measured 2026-11-03: a
+ * proposal-only change ran ten checks for 651 s, of which the proposal gates
+ * and the generators that read proposals took under a minute. The tool
+ * budgets, the preset and architecture lints, the token measurement and the
+ * quality gate read code and the catalog's code inputs, which such a change
+ * cannot move; the forge still runs every one of them.
+ */
+export const isProposalOnly = (changed: readonly string[]): boolean =>
+	changed.length > 0 && changed.every((path) => PROPOSAL_FILE.test(path));
+
+/** The static checks a proposal-only change can affect. */
+export const PROPOSAL_CHECKS: ReadonlySet<string> = new Set([
+	'lint-governance',
+	'lint-docs',
+	'lint-security',
+]);
+
+/** The generators that read proposals, each checked on its own (seconds). */
+const PROPOSAL_GENERATORS: readonly (readonly [string, readonly string[]])[] = [
+	[
+		'agent-catalog current',
+		[
+			'bun',
+			'tools/scripts/gen-all.script.ts',
+			'--check',
+			'--only',
+			'agent-catalog',
+		],
+	],
+	[
+		'docs-index current',
+		['bun', 'tools/scripts/docs/generate-docs-index.script.ts', '--check'],
+	],
+	[
+		'host-hints current',
+		[
+			'bun',
+			'tools/scripts/gen-all.script.ts',
+			'--check',
+			'--only',
+			'host-hints',
+		],
+	],
+	['roadmap drift', ['bun', 'tools/scripts/lint/roadmap-drift.script.ts']],
+];
+
 /** A file that can change what a tool tells the site. */
 const TOOL_SOURCE = /^(plugins|packages)\/.*\.tool\.ts$/u;
 
@@ -304,6 +358,11 @@ export const fastSteps = (
  * bytes was reported after eleven minutes of checks that could not change it.
  */
 export const earlySteps = (
+	changed: readonly string[],
+): readonly (readonly [string, readonly string[]])[] =>
+	isProposalOnly(changed) ? PROPOSAL_GENERATORS : earlyStepsOfCode(changed);
+
+const earlyStepsOfCode = (
 	changed: readonly string[],
 ): readonly (readonly [string, readonly string[]])[] => [
 	[
