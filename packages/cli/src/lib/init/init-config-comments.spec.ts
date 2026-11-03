@@ -45,7 +45,7 @@ afterAll(async () => {
 describe('the config init writes explains itself (f00794 S3)', () => {
 	it('carries a comment above every top-level block', () => {
 		const rendered = renderDelendaiConfig(
-			answers({ preset: 'standard' }),
+			answers({ preset: 'solo' }),
 			['git'],
 			{ profile: 'shared-checkout-pr' },
 		);
@@ -70,7 +70,7 @@ describe('the config init writes explains itself (f00794 S3)', () => {
 	});
 
 	it('keeps the plugin comments, inside the plugins block', () => {
-		const rendered = renderDelendaiConfig(answers({ preset: 'standard' }), [
+		const rendered = renderDelendaiConfig(answers({ preset: 'solo' }), [
 			'git',
 		]);
 		expect(rendered.content).toContain('// Git wrappers');
@@ -82,7 +82,7 @@ describe('the config init writes explains itself (f00794 S3)', () => {
 
 	it('writes the same VALUES it wrote before the comments', () => {
 		const rendered = renderDelendaiConfig(
-			answers({ preset: 'standard', hosts: ['copilot'] }),
+			answers({ preset: 'solo', hosts: ['copilot'] }),
 			['git'],
 			{ profile: 'shared-checkout-pr' },
 		);
@@ -102,10 +102,10 @@ describe('the config init writes explains itself (f00794 S3)', () => {
 	});
 
 	it('does not duplicate a comment when it renders twice', () => {
-		const first = renderDelendaiConfig(answers({ preset: 'standard' }), [
+		const first = renderDelendaiConfig(answers({ preset: 'solo' }), [
 			'git',
 		]);
-		const second = renderDelendaiConfig(answers({ preset: 'standard' }), [
+		const second = renderDelendaiConfig(answers({ preset: 'solo' }), [
 			'git',
 		]);
 		expect(second.content).toBe(first.content);

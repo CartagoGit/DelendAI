@@ -12,7 +12,7 @@ The plugin ships three tools — `api_call`, `api_validate`, and `api_mock` — 
 | `api_validate` | Check a decoded JSON response against the success response schema for one operation. | no |
 | `api_mock` | Generate a deterministic example response for one operation from the spec, no live server needed. | no |
 
-Pack membership: `backend-api` — the API plugin ships alongside `database`, `browser`, and `observability` in the backend-api preset pack.
+Pack membership: the API plugin ships in the `everything` pack, not in the `backend-api` stack overlay.
 
 ## api_call
 

@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['external-mcps', 'composition'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 9_394,
 		caps: { hard: 10_810, warning: 9_870 },

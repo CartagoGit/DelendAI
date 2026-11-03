@@ -311,7 +311,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			adoption: {
 				"from": "repo",
 				"option": "repo",
-				"launchPreset": "full",
+				"launchPreset": "everything",
 				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
 				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
 				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."

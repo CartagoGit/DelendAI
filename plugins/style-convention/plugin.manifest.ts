@@ -18,7 +18,7 @@ export default definePluginManifest({
 		style_check: ['filesystem-read'],
 	},
 	// In no preset: a project opts in by declaring where its styles are.
-	presets: [],
+	presets: ['everything'],
 	tokenBudget: STYLE_CONVENTION_TOKEN_BUDGET,
 	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['styles', 'design-tokens'],

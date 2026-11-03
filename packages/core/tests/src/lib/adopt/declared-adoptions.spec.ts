@@ -86,6 +86,6 @@ describe('declaredAdoptions', () => {
 		expect(declared.plugins.issues).toEqual({
 			options: { repo: 'acme/widgets' },
 		});
-		expect(declared.launchPreset).toBe('full');
+		expect(declared.launchPreset).toBe('everything');
 	});
 });

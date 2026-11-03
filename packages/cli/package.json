@@ -40,6 +40,7 @@
 		"@delendai/agent-orchestrator": "workspace:*",
 		"@delendai/auto-agent-selector": "workspace:*",
 		"@delendai/client": "workspace:*",
+		"@delendai/commit-policy": "workspace:*",
 		"@delendai/completion": "workspace:*",
 		"@delendai/container": "workspace:*",
 		"@delendai/conventions": "workspace:*",
