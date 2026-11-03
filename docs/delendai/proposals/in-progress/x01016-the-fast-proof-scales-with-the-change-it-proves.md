@@ -2,10 +2,14 @@
 id: x01016
 title: "The fast proof scales with the change it proves"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: a716a59e-6434-41d8-aae5-03fa2b1f790a
+last-correlation-id: a716a59e-6434-41d8-aae5-03fa2b1f790a
+last-transition-from: ready
+last-transition-at: 2026-11-03T18:17:22.889Z
 ---
 
 # x01016 — The fast proof scales with the change it proves
