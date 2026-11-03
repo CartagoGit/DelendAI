@@ -2,14 +2,14 @@
 id: x01009
 title: "Resetting the session balance writes nothing"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 35fea25e-d113-42c1-8693-0b5f81b1e3cb
-last-correlation-id: 35fea25e-d113-42c1-8693-0b5f81b1e3cb
-last-transition-from: ready
-last-transition-at: 2026-11-03T10:27:10.168Z
+last-transition-id: 0286ffff-4409-42df-b248-74fbef88213f
+last-correlation-id: 0286ffff-4409-42df-b248-74fbef88213f
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T11:34:21.157Z
 ---
 
 # x01009 — Resetting the session balance writes nothing
@@ -31,11 +31,14 @@ PR #1706 failed CI on 2026-11-03 in `tests: proposals 1/3` with no failing test.
 - global_gate: none
 
 ### S1 — The reset forgets, the append creates
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/locks/agent-lock-session-store.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts`
 - **Gate**: none
 - acceptance:
   - "resetSessionBalance makes no filesystem call; a spec resets after a balance read under an unwritable root and sees no rejection, and appendSessionEntry still creates its folder."
+- shipped-in: `c7406b8dfeb4`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
