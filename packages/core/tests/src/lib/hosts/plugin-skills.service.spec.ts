@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AGENT_HOSTS } from '../../../../src/lib/contracts/constants/agent-hosts.constant';
 import {
 	hostsReadingSkills,
+	skillForHost,
 	syncPluginSkills,
 } from '../../../../src/lib/hosts/plugin-skills.service';
 import { activePluginSkills } from '../../../../src/lib/skills/active-plugin-skills';
@@ -24,6 +25,53 @@ const hostsNamed = (...ids: string[]) =>
 
 const body = (text: string): string =>
 	`---\nname: demo-skill\ndescription: ${text}\n---\n\n# Demo\n`;
+
+const apart = `---\nname: demo-skill\ndescription: one\nrunsApart: true\n---\n\n# Demo\n`;
+
+describe('a skill that runs apart', () => {
+	let root: string;
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'plugin-skills-apart-'));
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+	const text = (dir: string) =>
+		readFileSync(join(root, dir, 'demo-skill/SKILL.md'), 'utf8');
+
+	it('forks its context only in the copy of a host that can', async () => {
+		await syncPluginSkills({
+			root,
+			hosts: hostsNamed('claude', 'copilot', 'codex', 'opencode'),
+			skills: [{ id: 'demo-skill', plugin: 'demo', body: apart }],
+		});
+
+		expect(text('.claude/skills')).toContain(
+			'runsApart: true\ncontext: fork\n---',
+		);
+		for (const dir of [
+			'.github/skills',
+			'.agents/skills',
+			'.opencode/skills',
+		]) {
+			expect(text(dir)).not.toContain('context:');
+			expect(text(dir)).toContain(apart);
+		}
+	});
+
+	it('leaves a skill that does not declare it, and an existing context, alone', () => {
+		const claude = hostsNamed('claude')[0];
+		if (claude === undefined) throw new Error('no claude host');
+		const plain = body('one');
+		const own = apart.replace(
+			'runsApart: true',
+			'runsApart: true\ncontext: inline',
+		);
+
+		expect(skillForHost(plain, claude)).toBe(plain);
+		expect(skillForHost(own, claude)).toBe(own);
+	});
+});
 
 describe('syncPluginSkills', () => {
 	let root: string;

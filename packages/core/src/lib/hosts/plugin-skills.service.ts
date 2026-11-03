@@ -36,6 +36,25 @@ export const hostsReadingSkills = (
 const readText = (path: string): Promise<string | undefined> =>
 	readFile(path, 'utf8').catch(() => undefined);
 
+const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?=\r?\n|$)/u;
+const RUNS_APART = /^runsApart:\s*true\s*$/mu;
+const HAS_CONTEXT = /^context:/mu;
+
+/**
+ * A skill that declares `runsApart: true` in its frontmatter, as a host
+ * that can fork a skill's context reads it: `context: fork` added to the
+ * frontmatter. Any other skill, or host, gets the source as it is.
+ */
+export const skillForHost = (body: string, host: IAgentHost): string => {
+	if (host.skills?.forkContext !== true) return body;
+	const match = FRONTMATTER.exec(body);
+	const block = match?.[1];
+	if (block === undefined || !RUNS_APART.test(block)) return body;
+	if (HAS_CONTEXT.test(block)) return body;
+	const end = (match?.index ?? 0) + 3 + 1 + block.length;
+	return `${body.slice(0, end)}\ncontext: fork${body.slice(end)}`;
+};
+
 /** The files to write: one per skill and host folder, signed. */
 const wantedFiles = (
 	hosts: readonly IAgentHost[],
@@ -49,7 +68,11 @@ const wantedFiles = (
 			if (!SKILL_ID.test(skill.id)) continue;
 			wanted.set(`${dir}/${skill.id}/${SKILL_FILE}`, {
 				plugin: skill.plugin,
-				content: signAgent(skill.body, 'plugin-skill', skill.plugin),
+				content: signAgent(
+					skillForHost(skill.body, host),
+					'plugin-skill',
+					skill.plugin,
+				),
 			});
 		}
 	}
