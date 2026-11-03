@@ -10,6 +10,8 @@ last-transition-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
 last-correlation-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T05:06:44.345Z
+shipped-in:
+  - "a61ca69ab579"
 ---
 
 # x00963 — commit-policy stages, trails and settles exactly what it says
@@ -32,14 +34,16 @@ gpt-6.1-sol's contribution and a00095. CP-02: gitDirtyFilePaths keeps porcelain 
 - global_gate: type
 
 ### S1 — Staging and triggers
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/git-extra.ts`
 - **Gate**: type
 - acceptance:
   - "Paths are read with -z; a file with spaces is staged; an untracked folder counts its files (CP-02, CP-07)."
 - shipped-in: `b7df7dab5334`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a61ca69ab579, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 1/1: (1) At b7df7dab the dirty paths are read with the null-separated status, so a path with spaces is staged as it is, an untracked folder counts its files rather than… — Approved on the delivered state of b7df7dab5334. The commit policy stages exactly what it says. The type gate exited 0 and the commit-policy specs pass 20 of 20. No defect found.
 
 ### S2 — Production wiring
 - **Status**: review
