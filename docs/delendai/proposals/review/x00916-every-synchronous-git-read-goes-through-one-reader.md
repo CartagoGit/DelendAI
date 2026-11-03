@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-01T13:10:55.276Z
 shipped-in:
   - "336f3fede"
+  - "f4e5c68f2964ea100f307f38a7ded73dba1012cf"
 ---
 
 # x00916 — Every synchronous git read goes through one reader
@@ -86,7 +87,7 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 
 ### S3 — The scripts read through it
 
-- **Status**: review
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/publication-scope.script.ts`
   - `tools/scripts/git/prepare-clone.script.ts`
@@ -111,9 +112,11 @@ A synchronous git read anywhere in the repository (core, CLI, plugins, test kit,
 - acceptance:
   - "Every `tools/scripts` wrapper of the plain-read shape (try `execFileSync('git', …)`, trimmed or not, `''` or `undefined` on failure) delegates to the reader from `@delendai/core/runtime`, and the three that strip a hook's variables on purpose use `runGitCommand` with `hookFree`. The hook scripts stay as they are: run in the hook's own worktree, they mean to answer about it (`refuse-integration-commit` reads the commit being made), and the reader would answer about `repoRoot()` instead when that is another checkout. The other shapes stay too, named: throwing wrappers (`lint/candidate-delivers`, `lint/verdicts-through-the-tool`, `lint/closed-with-independent-approval`, `reclaim/reclaim-local`, `forge/sync-with-integration`, `git/rewrite-llm-attribution`), `spawnSync` with a status check (`forge/release-checkout`, `lint/no-llm-attribution`), untrimmed large-buffer reads (`reclaim/reclaim-worktrees`, `lint/publication-scope` before this slice), and inline calls without a wrapper. `test/journal-reporter` stays too: a vitest reporter loads before the workspace aliases exist, so it cannot import the reader."
 - shipped-in: `d649733e9637`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Changes requested on the first clause only: the three hook-stripping scripts do use runGitCommand with hookFree, the hook script and the named shapes stay, but 18 plain-read wrappers under tools/scripts - in 15 files - still wrap execFileSync('git', ...) themselves and are in none of the criterion's named lists (the full list is in the evidence). The slice converted six scripts this way, so the remainder is the same mechanical change. Delivery: commit d649733e9637 ('the scripts read git through the shared reader'), merged as 336f3fede (PR #1219).
+- review-log: approved by minimax-m3.1-flash — verified at f4e5c68f2964, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 1/1: (1) At f4e5c68 every plain-read wrapper in the tools scripts delegates to the reader from the core runtime, the three that strip a hook's variables on purpose use … — Approved on the delivered state of f4e5c68f2964ea100f307f38a7ded73dba1012cf. The plain-read wrappers in the tools scripts now delegate to the one reader, and the three that strip a hook's variables on purpose use the hook-free switch. The type gate exited 0 and the tool scripts' specs pass 15 of 15. One residual, recorded and not blocking: thirteen wrappers of adjacent shapes stay and none of them is named by the criterion's own list of the shapes that stay, five of them reading git in a try and catch whose failure yields an empty collection rather than an empty string, so they are not the shape the criterion bounds. The slice's recorded shipped-in still names the first delivery, which was sent back, and its acceptance text was not amended by the re-delivery.
 
 ## acceptance
 
