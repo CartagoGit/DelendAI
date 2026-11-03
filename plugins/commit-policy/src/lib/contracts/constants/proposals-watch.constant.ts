@@ -8,3 +8,6 @@ export const PROPOSALS_WATCH_DEBOUNCE_MS = 300;
 
 /** How often the safety poll still runs while a watcher is live. */
 export const PROPOSALS_SAFETY_POLL_MS = 300_000;
+
+/** How often a watching server asks whether it holds the lease now. */
+export const PROPOSALS_TAKEOVER_POLL_MS = 30_000;
