@@ -72,6 +72,7 @@ export const PROJECT_PLUGINS_OUTPUT_SCHEMA = z.object({
 				summary: z.string(),
 			}),
 		)
+		.readonly()
 		.optional(),
 	risk: z.string().optional(),
 	ok: z.boolean(),
