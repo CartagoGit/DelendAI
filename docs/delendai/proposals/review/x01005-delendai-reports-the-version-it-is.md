@@ -2,14 +2,14 @@
 id: x01005
 title: "delendai reports the version it is"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 37ae3393-85f8-4a12-8ecb-54ca1a6ed367
-last-correlation-id: 37ae3393-85f8-4a12-8ecb-54ca1a6ed367
-last-transition-from: ready
-last-transition-at: 2026-11-02T23:19:46.116Z
+last-transition-id: 093f7ee3-fca8-4a2a-abdb-8175426ea2f1
+last-correlation-id: 093f7ee3-fca8-4a2a-abdb-8175426ea2f1
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T00:27:07.506Z
 ---
 
 # x01005 — delendai reports the version it is
@@ -32,13 +32,16 @@ delendai --version, the help header and the server startup report printed 0.1.0 
 - global_gate: none
 
 ### S1 — Read each version from its own package.json and guard it
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/contracts/constants/version.constant.ts`, `packages/cli/src/contracts/constants/version.constant.spec.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/scaffold/standalone-core-tools.ts`, `packages/core/src/lib/version.spec.ts`
 - **Gate**: none
 - acceptance:
   - "CLI_VERSION equals packages/cli/package.json version"
   - "DEFAULT_CLI_ARGS.serverVersion equals packages/core/package.json version"
   - "a spec fails when a version-defining source holds a literal semver string"
+- shipped-in: `0ba3b22bf10f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
