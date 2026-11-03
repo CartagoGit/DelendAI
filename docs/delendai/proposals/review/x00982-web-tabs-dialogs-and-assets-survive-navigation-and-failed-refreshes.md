@@ -2,14 +2,14 @@
 id: x00982
 title: "Web tabs, dialogs and assets survive navigation and failed refreshes"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 467b40fd-c2d9-4176-8c82-0d12306ce2b7
-last-correlation-id: 467b40fd-c2d9-4176-8c82-0d12306ce2b7
-last-transition-from: ready
-last-transition-at: 2026-11-03T01:55:50.995Z
+last-transition-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
+last-correlation-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T05:01:54.171Z
 ---
 
 # x00982 — Web tabs, dialogs and assets survive navigation and failed refreshes
@@ -31,20 +31,26 @@ gpt-6.1-sol's contribution to a00095, confirmed in a real Chrome: WEB-TABS01 an 
 - global_gate: type
 
 ### S1 — Tabs, copy and focus
-- **Status**: pending
+- **Status**: review
 - **Files**: `apps/web/src/components/ui/_tabs-controller.ts`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/ui/CopyButton.astro`, `apps/web/src/components/ui/CodeBlock.astro`, `apps/web/src/components/Config.astro`, `apps/web/src/components/ui/_focus-trap.ts`, `apps/web/src/components/ui/_focus-trap.spec.ts`, `apps/web/src/components/ui/_tabs-controller.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Controllers rebind on astro:page-load and cancel stale fade callbacks (WEB-TABS01, WEB-TABS02)."
   - "The settings dialog moves focus in and traps it (WEB-A11Y01)."
+- shipped-in: `d0e829dafe93`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Nav styles and brand assets
-- **Status**: pending
+- **Status**: review
 - **Files**: `apps/web/src/components/SiteNav.astro`, `apps/web/src/styles/components/_nav.scss`, `apps/web/src/styles/components/_nav-media.scss`, `apps/web/scripts/fetch-brand-logos.ts`, `apps/web/scripts/lib/brand-logo-files.ts`, `apps/web/scripts/lib/brand-logo-refresh.ts`, `apps/web/scripts/__tests__/brand-logo-files.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The More dropdown classes are styled (WEB-CSS01)."
   - "A fetch writes to a temp file and replaces the cached logo only when the response is SVG (WEB-ASSET01, WEB-ASSET02)."
+- shipped-in: `14985863ee4f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
