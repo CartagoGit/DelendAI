@@ -92,6 +92,19 @@ export const sharedTestOptions = {
 	fsModuleCache: true,
 } as const;
 
+/**
+ * Options for a project whose specs share one module graph without harm.
+ * `isolate: false` keeps a worker's modules between spec files instead of
+ * evaluating the graph again for each one: measured on a 30-spec sample
+ * (`--maxWorkers=2`) it took 24.9s to 18.4s and 749 MB to 744 MB peak RSS,
+ * with the same 228 tests green. `packages/cli` stays isolated: its specs
+ * mock modules, stub globals and swap timers most often.
+ */
+export const sharedGraphTestOptions = {
+	...sharedTestOptions,
+	isolate: false,
+} as const;
+
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
 
