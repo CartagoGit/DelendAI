@@ -16,11 +16,20 @@ Six specs failed in proofs on 2026-11-03 while the machine was loaded and passed
 
 ## why
 
-TODO: why this work matters now.
+Every PR pays for these specs in proof retries, and each passes alone, so the retry hides a real defect in the spec. Reproduced with 40 busy loops on 10 cores. Root causes:
+
+- coordination-chaos "40 concurrent disjoint claims": the lock mutex gave up after 10 s with 40 claims queued, leaving 11 entries; the test never looked at the claim results, so a timeout read as a lost update.
+- close-slice-gate "process vanished": the call's wait is a wall-clock deadline fixed before the first start; a loaded machine spent it on that start and the second look, which finds the process gone, never ran.
+- guard "hand-made branch": about a dozen git commands each start a bun hook process, so a 60 s ceiling is not enough when the machine is loaded.
+- full-pipeline e2e: the invoke carried `timeoutMs: 5_000`; a loaded machine took longer, the invoke returned without a decision (`reading 'decision'`).
+- token-budget dashboard addendum: building the dashboard measures every preset and surface and took 124 s under load against a 120 s ceiling.
+- 1000-calls latency: the secondary bound compared wall-clock p99, which counts every slice the scheduler gives to other processes; CPU time counts only the process's own work.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing product code: no product race was found; each failure was a spec deadline.
+- Dropping, skipping or loosening any assertion, or changing the bound's formula.
+- Speeding the dashboard generator itself.
 
 ## slices
 
@@ -43,4 +52,6 @@ TODO: why this work matters now.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- Each of the six specs passes with 40 busy loops running on a 10-core machine.
+- The chaos spec now asserts that every claim succeeded before counting entries.
+- The vanished-process spec asserts the finding names the gone process.
