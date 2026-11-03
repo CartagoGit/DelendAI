@@ -10,6 +10,7 @@ import {
 	resolvePresetMembers,
 	type IPresetKind,
 } from './preset-catalog';
+import { resolvePresetForLaunch } from './preset-migration';
 import { DELENDAI_VERSION } from '../version';
 import { resolve as resolvePath } from 'node:path';
 
@@ -83,7 +84,9 @@ export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> =
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */
 export const resolvePreset = (name: string | undefined): readonly string[] =>
-	resolvePresetMembers(name);
+	resolvePresetForLaunch(name, (line) => {
+		process.stderr.write(line);
+	});
 
 /** Whether the caller explicitly selected the plugin surface. */
 export const hasExplicitPluginSurfaceSelection = (
