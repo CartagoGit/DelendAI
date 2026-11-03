@@ -26,13 +26,13 @@ import {
 import type { IComputeSlotRequest } from '../contracts/interfaces/compute-slot.interface';
 import {
 	alive,
-	holderOf,
+	slotHolderOf,
 	joinUrgentLane,
 	laneNotice,
 	leaveUrgentLane,
 	ownerFile,
-	pause,
-	readJson,
+	pauseSlot,
+	readSlotJson,
 	readLane,
 	recordUrgentTurn,
 } from './compute-slot-lane.service';
@@ -115,13 +115,13 @@ const withUnitTurn = async <T>(
 		claim: ITurnClaim,
 	): Promise<{ readonly result?: TurnResult }> => {
 		for (;;) {
-			const result = await readJson<TurnResult>(
+			const result = await readSlotJson<TurnResult>(
 				resultPath(name, claim.id),
 			);
 			if (result !== undefined) return { result };
-			const now = await readJson<ITurnClaim>(claimPath(name));
+			const now = await readSlotJson<ITurnClaim>(claimPath(name));
 			if (now?.id !== claim.id || !alive(claim.pid)) return {};
-			await pause(JOIN_POLL_MS);
+			await pauseSlot(JOIN_POLL_MS);
 		}
 	};
 	const settle = (result: TurnResult): T => {
@@ -135,8 +135,8 @@ const withUnitTurn = async <T>(
 
 	const joinOnly = async (name: string): Promise<T | typeof SUPERSEDED> => {
 		const claim =
-			(await readJson<ITurnClaim>(claimPath(name))) ??
-			(await readJson<ITurnClaim>(donePath(name)));
+			(await readSlotJson<ITurnClaim>(claimPath(name))) ??
+			(await readSlotJson<ITurnClaim>(donePath(name)));
 		if (claim === undefined) return SUPERSEDED;
 		const { result } = await follow(name, claim);
 		if (result === undefined) return SUPERSEDED;
@@ -148,7 +148,7 @@ const withUnitTurn = async <T>(
 	};
 
 	for (;;) {
-		const claim = await readJson<ITurnClaim>(claimPath(tip));
+		const claim = await readSlotJson<ITurnClaim>(claimPath(tip));
 		if (claim !== undefined && alive(claim.pid)) {
 			const { result } = await follow(tip, claim);
 			if (result === undefined) continue;
@@ -242,7 +242,7 @@ const withComputeSlotTurn = async <T>(
 	let waiting = false;
 	let notice: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
 		waiting = true;
-		void Promise.all([holderOf(lockPath), readLane(lockPath)]).then(
+		void Promise.all([slotHolderOf(lockPath), readLane(lockPath)]).then(
 			([holder, lane]) => {
 				if (waiting) {
 					notify(
@@ -292,7 +292,7 @@ const withComputeSlotTurn = async <T>(
 				},
 			);
 			if (outcome !== YIELD) return outcome;
-			await pause(LANE_YIELD_MS);
+			await pauseSlot(LANE_YIELD_MS);
 		}
 	} finally {
 		waiting = false;

@@ -30,7 +30,7 @@ export const alive = (pid: number): boolean => {
 	}
 };
 
-export const readJson = async <V>(path: string): Promise<V | undefined> => {
+export const readSlotJson = async <V>(path: string): Promise<V | undefined> => {
 	try {
 		return JSON.parse(await readFile(path, 'utf8')) as V;
 	} catch {
@@ -38,7 +38,7 @@ export const readJson = async <V>(path: string): Promise<V | undefined> => {
 	}
 };
 
-export const pause = (ms: number): Promise<void> =>
+export const pauseSlot = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
 export const ownerFile = (lockPath: string): string => `${lockPath}.owner`;
@@ -49,8 +49,8 @@ interface ISlotOwner {
 	readonly urgent?: string;
 }
 
-export const holderOf = async (lockPath: string): Promise<string> => {
-	const owner = await readJson<ISlotOwner>(ownerFile(lockPath));
+export const slotHolderOf = async (lockPath: string): Promise<string> => {
+	const owner = await readSlotJson<ISlotOwner>(ownerFile(lockPath));
 	if (owner === undefined) return 'another run';
 	return `${owner.label ?? 'another run'} (pid ${String(owner.pid)})${owner.urgent === undefined ? '' : ` [urgent: ${owner.urgent}]`}`;
 };
@@ -68,7 +68,7 @@ export const readLane = async (
 	const names = await readdir(laneDir(lockPath)).catch(() => []);
 	const tickets: (IUrgentTicket & { readonly name: string })[] = [];
 	for (const name of [...names].sort()) {
-		const ticket = await readJson<IUrgentTicket>(
+		const ticket = await readSlotJson<IUrgentTicket>(
 			join(laneDir(lockPath), name),
 		);
 		if (ticket !== undefined && alive(ticket.pid)) {
@@ -122,9 +122,9 @@ export const readComputeSlotLane = async (
 	readonly urgent: readonly IUrgentTicket[];
 }> => ({
 	holder:
-		(await readJson(ownerFile(lockPath))) === undefined
+		(await readSlotJson(ownerFile(lockPath))) === undefined
 			? undefined
-			: await holderOf(lockPath),
+			: await slotHolderOf(lockPath),
 	urgent: await readLane(lockPath),
 });
 

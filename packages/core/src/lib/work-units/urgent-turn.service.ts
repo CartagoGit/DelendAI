@@ -8,15 +8,12 @@
  * one waits for.
  */
 import { execFileSync } from 'node:child_process';
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import type {
 	ICertificationLookup,
 	IUrgentTurnRequest,
 } from '../contracts/interfaces/urgent-turn.interface';
 import { scalarArg } from './command-args.helper';
-import { readWorkspaceDocsDir } from './development-policy.service';
 
 /** The workflow whose latest finished run certifies the integration branch. */
 const CERTIFYING_WORKFLOW = 'ci.yml';
@@ -55,21 +52,8 @@ const ghCertification: ICertificationLookup = (integration) =>
 		})(),
 	);
 
-/** The `kind` a proposal declares, wherever its document sits. */
-const proposalKind = async (
-	root: string,
-	proposal: string,
-): Promise<string | undefined> => {
-	const proposals = join(root, await readWorkspaceDocsDir(root), 'proposals');
-	for (const status of await readdir(proposals).catch(() => [])) {
-		const names = await readdir(join(proposals, status)).catch(() => []);
-		const name = names.find((entry) => entry.startsWith(`${proposal}-`));
-		if (name === undefined) continue;
-		const text = await readFile(join(proposals, status, name), 'utf8');
-		return /^kind:\s*"?([a-z-]+)"?\s*$/mu.exec(text)?.[1];
-	}
-	return undefined;
-};
+/** A fix's id carries the fix prefix (its kind's letter in the proposal glossary). */
+const FIX_ID_PREFIX = 'x';
 
 /** The reason this unit's proof is urgent, or undefined for a normal turn. */
 export const urgentReasonOf = async (
@@ -78,9 +62,7 @@ export const urgentReasonOf = async (
 	const stated = scalarArg(request.args, 'urgent');
 	if (stated !== undefined && stated.length > 0) return stated;
 	if (request.proposal === undefined) return undefined;
-	if ((await proposalKind(request.root, request.proposal)) !== 'fix') {
-		return undefined;
-	}
+	if (!request.proposal.startsWith(FIX_ID_PREFIX)) return undefined;
 	const conclusion = await (request.certification ?? ghCertification)(
 		request.integration,
 	);
