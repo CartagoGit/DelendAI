@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	HYDRATION_LOG_MAX_BYTES,
 	HYDRATION_STEPS,
+	QUICK_STEPS,
 	logIsFull,
 	skipReason,
 } from './hydrate-candidates-after-merge.script';
@@ -80,6 +81,22 @@ describe('what bringing the candidates forward runs', () => {
 			'tools/scripts/git/refresh-candidate-artifacts.script.ts',
 		);
 		expect(scripts.join(' ')).not.toContain('refresh-candidates');
+	});
+});
+
+describe('the quick steps', () => {
+	it('are the short ones, so a long refresh never starves them', () => {
+		expect(QUICK_STEPS).toEqual([
+			'tools/scripts/forge/certify-integration.script.ts',
+			'tools/scripts/forge/advance-queue.script.ts',
+		]);
+		for (const [script, timeout] of HYDRATION_STEPS) {
+			if (QUICK_STEPS.includes(script)) {
+				expect(timeout).toBeLessThanOrEqual(60_000);
+			} else {
+				expect(timeout).toBeGreaterThanOrEqual(180_000);
+			}
+		}
 	});
 });
 

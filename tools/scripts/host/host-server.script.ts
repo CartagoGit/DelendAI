@@ -535,6 +535,12 @@ const run = async (): Promise<void> => {
 						? {}
 						: { intervalMs: hydrationInterval }),
 					...(standDown === undefined ? {} : { standDown }),
+					// Finished units end here, in every project, not only
+					// where the repository ships its own maintenance.
+					root: config.workspace.root,
+					onUnitsEnded: (message) => {
+						process.stderr.write(`[delendai] ${message}\n`);
+					},
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
 						// The integration branch just moved HERE, which is

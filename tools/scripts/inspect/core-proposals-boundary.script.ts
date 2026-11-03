@@ -980,6 +980,14 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'El preset derivado materializa proposals en la composicion por defecto.',
 	},
 	{
+		file: 'packages/core/src/lib/contracts/constants/preset-migration.constant.ts',
+		symbolOrLiteral: 'retired full preset includes proposals',
+		category: 'plugin-name',
+		destination: 'composition',
+		needle: "'proposals',",
+		note: 'El preset full retirado incluia proposals; reconocer su mapa de plugins necesita ese id.',
+	},
+	{
 		file: 'packages/core/src/lib/plugins/preset-catalog.ts',
 		symbolOrLiteral: '{ plugin: proposals }',
 		category: 'plugin-name',
