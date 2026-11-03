@@ -62,6 +62,7 @@ const DEFAULT_BRANCHES = {
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.
 	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
+	rules: [], // defaults are added by `deriveCapabilities`
 } as const;
 
 /**

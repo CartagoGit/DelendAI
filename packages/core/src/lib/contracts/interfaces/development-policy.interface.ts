@@ -16,6 +16,7 @@
  * policy; the runtime consumes the resolved booleans, never a profile name.
  */
 
+import type { IBranchRule } from './branch-rule.interface';
 import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyGuard } from './policy-guard.interface';
 import type { IPolicyIdentity } from './policy-identity.interface';
@@ -173,6 +174,11 @@ export interface IPolicyBranches {
 	 * mine" from "abandoned" is cleanup nobody can safely enable.
 	 */
 	readonly foreignRefPrefixes: readonly string[];
+	/**
+	 * How each branch takes in work: the project's declared rules, plus the
+	 * profile's way for the integration and release branches no rule covers.
+	 */
+	readonly rules: readonly IBranchRule[];
 }
 
 /** Workspace axis, plus the capability booleans the runtime reads. */

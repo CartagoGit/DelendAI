@@ -215,7 +215,8 @@ describe('resolveDevelopmentPolicy — derived capabilities', () => {
 		const twice = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',
-				branches: once.branches,
+				// Rules are declared as a map; the resolved list is not that shape.
+				branches: { ...once.branches, rules: undefined },
 				workspace: { strategy: once.workspace.strategy },
 				persistence: { strategy: once.persistence.strategy },
 				checkpoint: {
