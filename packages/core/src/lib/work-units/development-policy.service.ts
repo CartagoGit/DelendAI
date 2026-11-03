@@ -85,3 +85,20 @@ export const readWorkspaceDocsDir = async (root: string): Promise<string> => {
 		? parsed.docsDir
 		: DEFAULT_CORE_PATHS.docsDir;
 };
+
+/**
+ * The project's cache root, as the assembled server resolves it: the
+ * declared `cacheDir`, or the default. The units of work live under it,
+ * so a project that moves its cache out of the tree moves its worktrees
+ * with it — and an editor watching the tree stops seeing a checkout
+ * appear and disappear.
+ */
+export const readWorkspaceCacheDir = async (root: string): Promise<string> => {
+	const text = await readConfigText(root);
+	const parsed = text === undefined ? undefined : parseJsonc(text).value;
+	return isRecord(parsed) &&
+		typeof parsed.cacheDir === 'string' &&
+		parsed.cacheDir.length > 0
+		? parsed.cacheDir
+		: DEFAULT_CORE_PATHS.cacheDir;
+};
