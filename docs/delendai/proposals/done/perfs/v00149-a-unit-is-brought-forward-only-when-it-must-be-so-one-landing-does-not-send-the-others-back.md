@@ -2,16 +2,17 @@
 id: v00149
 title: "A unit is brought forward only when it must be, so one landing does not send the others back"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
-last-correlation-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T00:22:13.808Z
+last-transition-id: cb0b6780-c515-4cbc-8091-9c197152396a
+last-correlation-id: cb0b6780-c515-4cbc-8091-9c197152396a
+last-transition-from: review
+last-transition-at: 2026-11-03T00:52:48.268Z
 shipped-in:
   - "09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444"
+  - "b2bb6dfc8334814aab9d82d9bda3004fc69230ce"
 ---
 
 # v00149 — A unit is brought forward only when it must be, so one landing does not send the others back
@@ -78,14 +79,16 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 a unit whose base moved is told so and told that it need not be brought forward, and is told to merge the integration branch into it only when publ… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. A unit whose base moved is told so and told it need not be brought forward, and is told to merge only on a conflict. The type gate exited 0 and the slice spec passes 16 of 16. No defect found.
 
 ### S4 — A candidate is not sent back for what its checks already saw
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/candidate-tested-base.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A candidate's overlap is counted from the integration commit its latest pull-request run saw, read from the run's start, with a margin for the merge ref, and only forward of where it left. When that cannot be told, it counts from where the candidate left, as before (queue-acceptance.spec.ts)."
 - shipped-in: `39f3d8323b50`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b2bb6dfc8334, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 1/1: (1) At b2bb6dfc a candidate's overlap is counted from the integration commit its latest pull request run saw, read from the run's start with a margin for the merge… — Approved on the delivered state of b2bb6dfc8334814aab9d82d9bda3004fc69230ce. The overlap of a candidate is counted from what its last run saw. The type gate exited 0 and the slice spec passes 6 of 6. No defect found.
 
 ## acceptance
 
