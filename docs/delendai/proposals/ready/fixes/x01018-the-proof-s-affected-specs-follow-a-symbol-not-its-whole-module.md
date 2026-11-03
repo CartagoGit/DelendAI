@@ -16,11 +16,12 @@ The shared affected-specs analysis taints the exports that use a changed symbol 
 
 ## why
 
-TODO: why this work matters now.
+The fast proof of f00803 S2 ran about 15 vitest forks at 60% CPU for most of a 15-minute proof. It selects specs with the same analysis the forge uses (`affectedSpecsSince`, since bf41e0108), so local and forge agree, but the analysis itself reaches too far. Measured on 2026-11-03: the S2 diff (17 files) selects 720 specs, and the leaves `classify-origin.ts`, `feature-flags.ts` and `parse-cli-args.ts` select 184, 131 and 192, where the specs named after them are 1 or 2. The reach is module-level after the first hop: a module that imports one changed name is tainted as a whole, so every importer of any other name it exports is affected, and the taint climbs through core into every plugin. The change narrows the taint to the exports whose declaration uses a changed name. This completes q00038 S1's third acceptance line, that the local proof runs the same specs the forge would from the same analysis, by making that one analysis precise. The proof also runs its workers unbounded; it caps them to half the cores, overridable, so the machine stays usable.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Sharding the local proof: it would run the same work with more parallelism.
+- Dropping any spec that really reaches the change.
 
 ## slices
 
