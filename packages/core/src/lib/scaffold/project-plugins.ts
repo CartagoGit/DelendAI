@@ -5,7 +5,6 @@ import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
-import { DRY_RUN_PLAN_FIELDS } from '../contracts/constants/dry-run-plan-fields.constant';
 import { planDryRun } from '../dry-run/enforce';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toKebabCase } from '../shared/string-normalize';
@@ -64,8 +63,17 @@ const DIAGNOSTIC_SCHEMA = z.object({
 });
 
 export const PROJECT_PLUGINS_OUTPUT_SCHEMA = z.object({
-	...DRY_RUN_PLAN_FIELDS,
 	dryRun: z.literal(true).optional(),
+	wouldChange: z
+		.array(
+			z.object({
+				kind: z.string(),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.optional(),
+	risk: z.string().optional(),
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })

@@ -977,18 +977,13 @@ export interface DelendaiProjectContextOutput {
 }
 
 export interface DelendaiProjectPluginsCreateOutput {
-	wouldChange?: Array<{
-		kind: "write" | "delete" | "rename" | "create" | "patch";
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
 		path: string;
 		summary: string;
-	}>;
-	wouldRun?: Array<{
-		shape: "shell" | "network" | "process" | "git" | "mcp";
-		target: string;
-		summary: string;
-	}>;
-	risk?: "low" | "medium" | "high";
-	dryRun?: true;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -1026,18 +1021,13 @@ export interface DelendaiProjectPluginsCreateOutput {
 }
 
 export interface DelendaiProjectPluginsInspectOutput {
-	wouldChange?: Array<{
-		kind: "write" | "delete" | "rename" | "create" | "patch";
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
 		path: string;
 		summary: string;
-	}>;
-	wouldRun?: Array<{
-		shape: "shell" | "network" | "process" | "git" | "mcp";
-		target: string;
-		summary: string;
-	}>;
-	risk?: "low" | "medium" | "high";
-	dryRun?: true;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -1075,18 +1065,13 @@ export interface DelendaiProjectPluginsInspectOutput {
 }
 
 export interface DelendaiProjectPluginsRepairOutput {
-	wouldChange?: Array<{
-		kind: "write" | "delete" | "rename" | "create" | "patch";
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
 		path: string;
 		summary: string;
-	}>;
-	wouldRun?: Array<{
-		shape: "shell" | "network" | "process" | "git" | "mcp";
-		target: string;
-		summary: string;
-	}>;
-	risk?: "low" | "medium" | "high";
-	dryRun?: true;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;
