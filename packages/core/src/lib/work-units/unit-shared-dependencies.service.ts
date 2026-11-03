@@ -10,7 +10,6 @@
  * to the unit's own sources. A unit whose lockfile differs, or a shared
  * checkout with no modules, gets nothing here and installs as before.
  */
-import { execFile } from 'node:child_process';
 import {
 	mkdir,
 	readdir,
@@ -20,8 +19,7 @@ import {
 	stat,
 	symlink,
 } from 'node:fs/promises';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { promisify } from 'node:util';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import {
 	UNIT_INSTALL_BY_LOCKFILE,
@@ -29,9 +27,8 @@ import {
 	UNIT_LINK_SHARED_HIDDEN,
 	UNIT_LINK_SKIPPED_FOLDERS,
 } from '../contracts/constants/unit-dependencies.constant';
+import { sharedCheckout } from '../shared/shared-checkout';
 import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencies.interface';
-
-const git = promisify(execFile);
 
 const isDirectory = (path: string): Promise<boolean> =>
 	stat(path).then(
@@ -44,20 +41,6 @@ const read = (path: string): Promise<Buffer | undefined> =>
 		(bytes) => bytes,
 		() => undefined,
 	);
-
-/** The checkout every worktree of this clone shares, or undefined. */
-const sharedCheckout = async (path: string): Promise<string | undefined> => {
-	try {
-		const { stdout } = await git(
-			'git',
-			['rev-parse', '--path-format=absolute', '--git-common-dir'],
-			{ cwd: path },
-		);
-		return dirname(stdout.trim());
-	} catch {
-		return undefined;
-	}
-};
 
 /** Every folder under `root` that holds a `node_modules`, the root included. */
 const moduleFolders = async (
@@ -136,7 +119,7 @@ const mirror = async (
 export const linkSharedDependencies = async (
 	path: string,
 ): Promise<IUnitDependencies | undefined> => {
-	const shared = await sharedCheckout(path);
+	const shared = sharedCheckout(path);
 	if (shared === undefined || resolve(shared) === resolve(path))
 		return undefined;
 	for (const { lockfile } of UNIT_INSTALL_BY_LOCKFILE) {
