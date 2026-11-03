@@ -20,3 +20,5 @@ or have their own config file. Use the same single-pointer pattern:
 
 - That's it. No other content. When the bootstrap changes, the host
   picks it up on the next session.
+- Save a fact or rule about this project in the host's project-scoped
+  memory, never in a memory shared by every project.

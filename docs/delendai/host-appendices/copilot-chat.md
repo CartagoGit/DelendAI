@@ -40,3 +40,11 @@ The validator and the 8-state semantics are unchanged — only the
 bracket text differs; pick whichever locale matches the host's UI.
 The detailed contract lives in the status-marker skill (use
 `delendai_agent_catalog` to find its current path).
+
+**Memory scope.** Copilot's memory tool has a user scope
+(`/memories/`), shared by every workspace, and a repository scope
+(`/memories/repo/`), kept per workspace. A fact, rule or feedback about
+this project (folder layout, naming, conventions) goes to
+`/memories/repo/`, never to the user scope: agents in other projects
+would read it and apply it there. Only what is true of the person in
+every project goes to the user scope.

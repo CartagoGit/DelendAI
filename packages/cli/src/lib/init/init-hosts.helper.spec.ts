@@ -33,6 +33,9 @@ describe('hostInstructionTargets', () => {
 		const appendixOf = (relPath: string): string =>
 			targets.find((each) => each.relPath === relPath)?.appendix ?? '';
 		expect(appendixOf('.github/copilot-instructions.md')).toContain('§8.1');
+		expect(appendixOf('.github/copilot-instructions.md')).toContain(
+			'`/memories/repo/`',
+		);
 		expect(appendixOf('CLAUDE.md')).toContain('§8.2');
 		expect(appendixOf('AGENTS.md')).toContain('§7');
 		const claude = targets.find((each) => each.relPath === 'CLAUDE.md');
