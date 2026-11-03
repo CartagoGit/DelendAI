@@ -15,7 +15,7 @@ import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
-import { DEFAULT_UNITS_DIRECTORY } from './units-directory.constant';
+import { resolveUnitsDirectory } from './units-directory.service';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
 import { createUnitRef } from './unit-start-point.service';
@@ -346,7 +346,8 @@ export const enteredHeld = async (
 		(await freeDirectory(
 			resolve(
 				sharedCheckout(root) ?? root,
-				scalarArg(args, 'worktrees') ?? DEFAULT_UNITS_DIRECTORY,
+				scalarArg(args, 'worktrees') ??
+					(await resolveUnitsDirectory(root)),
 				sanitizeRefComponent(
 					`${agent}-${proposal}-${slice}${unitGeneration(args) > 1 ? `-g${String(unitGeneration(args))}` : ''}`,
 				),

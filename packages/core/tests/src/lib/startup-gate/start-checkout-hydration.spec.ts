@@ -11,6 +11,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { startCheckoutHydration } from '@delendai/core/lib/startup-gate/start-checkout-hydration';
+import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
 
 import {
 	createStartupOrigin,
@@ -82,5 +83,59 @@ describe('startCheckoutHydration', () => {
 		// the default is core's decision, not something each host
 		// re-derives.
 		expect(() => watch.stop()).not.toThrow();
+	});
+
+	it('ends the finished units of the clone it was given, after a pass that ran', async () => {
+		origin = createStartupOrigin();
+		const local = origin.clone('maintainer');
+		const policy = testPolicy();
+		const unit = `${policy.branches.workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}reviewer/review/i00002-all-g1/verdicts`;
+		local.git('checkout', '--quiet', '-b', unit);
+		await recordUnitEntered({
+			cwd: local.dir,
+			ref: unit,
+			owner: { agent: 'reviewer', session: 's' },
+			worktree: null,
+			now: Math.floor(Date.now() / 1000) - 90 * 60,
+		});
+		local.write('verdict.md', 'approved\n');
+		local.git('add', '-A');
+		local.git('commit', '--quiet', '--no-verify', '-m', 'verdict');
+		local.push(unit);
+		local.git('checkout', '--quiet', 'develop');
+		local.git(
+			'merge',
+			'--quiet',
+			'--no-ff',
+			'--no-verify',
+			'-m',
+			'land',
+			unit,
+		);
+		local.push('develop');
+
+		const ended: string[] = [];
+		const watch = startCheckoutHydration({
+			run: runnerFor(local.dir),
+			policy,
+			intervalMs: 25,
+			root: local.dir,
+			onHydrated: () => undefined,
+			onUnitsEnded: (message) => ended.push(message),
+		});
+		try {
+			await vi.waitFor(
+				() => {
+					expect(ended.length).toBeGreaterThan(0);
+				},
+				{ timeout: 15_000, interval: 25 },
+			);
+		} finally {
+			watch.stop();
+		}
+
+		expect(ended[0]).toContain('ended 1 finished unit');
+		expect(local.git('branch', '--list', unit).trim()).toBe('');
+		expect(local.git('ls-remote', 'origin', unit).trim()).toBe('');
 	});
 });

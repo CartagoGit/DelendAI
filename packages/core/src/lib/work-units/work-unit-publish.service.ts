@@ -272,9 +272,8 @@ export const published = async (
 			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
 		);
 	}
-	// The proof every agent is told to run, run here: a pull request is
-	// only opened for work that passed it. A review records verdicts and
-	// proves nothing; a project that declares no proof is told how to.
+	// The proof every agent is told to run, run here: a pull request is only
+	// opened for work that passed it. A review proves nothing; no proof declared, told how.
 	const proof =
 		tipOfUnit !== undefined &&
 		provesBeforePublishing(policy) &&
@@ -287,6 +286,7 @@ export const published = async (
 					),
 					tipSha: tipOfUnit,
 					integrationSha: base,
+					urgency: { args, proposal, policy },
 				})
 			: undefined;
 	if (proof !== undefined && !proof.passed) {
