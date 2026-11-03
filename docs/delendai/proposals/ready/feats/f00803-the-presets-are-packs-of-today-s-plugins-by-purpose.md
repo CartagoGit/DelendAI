@@ -96,7 +96,7 @@ Tools / tools-list bytes (from the marginal dashboard); "-" = not measured (no t
 | project-kpis | KPI snapshots | project-health, usage-tracking | none | 1 | 4,093 | dogfood only |
 | quality-policy | unified quality surface | conventions, quality, rules, test-convention, test-policy | none | 2 | 1,101 | dogfood only |
 | security | secrets/dependency/static scan | contracts, deps, web-fetch | network for advisories | 4 | 5,697 | dogfood only |
-| tech-debt | TODO/FIXME scan | - | none | 1 | 1,778 | dogfood only |
+| tech-debt | debt marker scan | - | none | 1 | 1,778 | dogfood only |
 | usage-tracking | tool usage log | contracts, state | none | 3 | 1,870 | dogfood only |
 | execution-env | local/docker/remote command envs | - | docker | - | - | NO PRESET (dependency of orchestrator-runner) |
 | framework-knowledge | installed framework version facts | - | none | - | - | NO PRESET (dependency of external-mcps) |
