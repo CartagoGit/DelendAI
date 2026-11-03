@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: general
 date: 2026-11-03
+shipped-in:
+  - "9740e9514"
+  - "5e2124099"
 ---
 
 # x01013 — La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir
@@ -16,15 +19,20 @@ Que el cliente LSP de Biome deje de inundar el log con «Notifying file events f
 
 ## why
 
-TODO: why this work matters now.
+El enjambre abre un worktree git por agente y slice bajo `.cache/delendai/.worktrees/`, y cada worktree trae su propio `biome.json` y su propio `.gitignore`. El repositorio no excluye `.cache/` del watcher de VS Code, así que cada alta y cada baja de worktree (unas veinte rutas) llega al cliente LSP de Biome; las que caen en la ventana en que el cliente no está corriendo fallan con `-32096`. En dos días el log de Biome acumuló 2040 de esos errores frente a 415 notificaciones entregadas, con cuatro reinicios de servidor y dos lecturas de ficheros ya borrados.
+
+La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cacheDir` está documentado como «Where the server keeps its caches — worktrees, indexes, generated artefacts», pero el motor de trabajo lo ignora y usa la constante `DEFAULT_UNITS_DIRECTORY = '.cache/delendai/.worktrees'`. Un proyecto que declara otra `cacheDir` sigue metiendo sus worktrees dentro del árbol, sigue recibiendo la tormenta y además rompe la única autoridad de rutas que ya existe (`buildSwarmPaths` → `<cacheDir>/.worktrees`; `EVICTION_PROTECTED_PATHS` → `.worktrees` bajo la raíz de caché).
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- No se mueve la caché de este repositorio fuera del árbol: `delendai.config.json` no cambia, porque el lint del repo exige una única raíz `.cache/` dentro del checkout.
+- No se toca `biome.json` ni la extensión `biomejs.biome`: el formateador ya excluye `!.cache` y `!.worktrees`; el problema es de entrega de eventos, no de análisis.
+- No se añade un knob nuevo de configuración: la autoridad ya existe (`cacheDir`), y un knob paralelo volvería a tener dos verdades.
+- No se cambia la política de eviction, la creación de refs ni la forma de publicar una unidad.
 
 ## slices
 
-- global_gate: none
+- global_gate: lint
 
 ### S1 — El watcher de VS Code ignora la raíz de caché
 - **Status**: pending
@@ -35,6 +43,7 @@ TODO: why this work matters now.
   - "`.vscode/settings.json` declara `search.exclude` con `**/.cache/**` en `true`."
   - "El fichero sigue siendo JSONC válido: se parsea con el parser JSONC del repo y conserva sus comentarios."
   - "La exclusión cubre `.cache/delendai/.worktrees/`, la ruta donde el enjambre abre sus worktrees."
+- shipped-in: `9740e9514`
 
 ### S2 — El directorio de unidades sigue al `cacheDir` configurado
 - **Status**: pending
@@ -46,6 +55,7 @@ TODO: why this work matters now.
   - "`work enter` y el invariante `no-husk-directories` de `work doctor` miran el mismo directorio."
   - "Un `cacheDir` absoluto coloca las unidades fuera del checkout, sin dejar un directorio suelto en la rama de integración."
   - "El typecheck del paquete core pasa y los tests del motor de trabajo pasan."
+- shipped-in: `5e2124099`
 
 ## acceptance
 
