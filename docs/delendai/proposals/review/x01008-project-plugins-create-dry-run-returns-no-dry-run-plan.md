@@ -2,14 +2,14 @@
 id: x01008
 title: "project_plugins_create dry run returns no dry-run plan"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: e7df742e-5586-4e55-b366-a1775a81bfa1
-last-correlation-id: e7df742e-5586-4e55-b366-a1775a81bfa1
-last-transition-from: ready
-last-transition-at: 2026-11-03T05:35:15.201Z
+last-transition-id: e3f70734-9447-4670-a9e0-51a7ff8e6b05
+last-correlation-id: e3f70734-9447-4670-a9e0-51a7ff8e6b05
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T09:58:00.842Z
 ---
 
 # x01008 — project_plugins_create dry run returns no dry-run plan
@@ -31,9 +31,12 @@ A consumer reported that the dry run of project-plugin create writes files. The 
 - global_gate: none
 
 ### S1 — Return the dry-run plan from project_plugins_create
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/scaffold/project-plugins.ts`, `packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: none
+- shipped-in: `6747b9bb94c5`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
