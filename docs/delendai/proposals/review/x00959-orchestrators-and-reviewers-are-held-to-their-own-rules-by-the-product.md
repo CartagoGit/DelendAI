@@ -10,6 +10,8 @@ last-transition-id: d058b005-2a97-4e76-baa0-048d61750b10
 last-correlation-id: d058b005-2a97-4e76-baa0-048d61750b10
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T06:21:52.476Z
+shipped-in:
+  - "1160da332a9c"
 ---
 
 # x00959 — Orchestrators and reviewers are held to their own rules by the product
@@ -31,15 +33,17 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 - global_gate: type
 
 ### S1 — Units
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/unit-departures.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
 - **Gate**: type
 - acceptance:
   - "A create unit refuses a second create_proposal (C5)."
   - "Publish compares the delivered paths with the slices' Files and lists departures in its report, without blocking (C11)."
 - shipped-in: `5df4bc2d99f7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 1160da332a9c, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) At 3ee75073 a create unit that already carries a proposal is refused with the reason and names the first proposal; the publish step compares the paths the unit… (2) At 3ee75073 the publish step compares the paths the unit delivered with the files its slices declare and reports the departures in its answer without blocking … — Approved on the delivered state of 3ee75073fb0c. The product holds its own rules: a create unit delivers one proposal, and the departures of a unit from its slices' files are reported. The type gate exited 0 and the specs pass 22 of 22. No defect found.
 
 ### S2 — Gates as one command and hooks
 - **Status**: review
