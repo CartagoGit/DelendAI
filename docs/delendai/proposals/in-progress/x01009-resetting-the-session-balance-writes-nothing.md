@@ -2,10 +2,14 @@
 id: x01009
 title: "Resetting the session balance writes nothing"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 35fea25e-d113-42c1-8693-0b5f81b1e3cb
+last-correlation-id: 35fea25e-d113-42c1-8693-0b5f81b1e3cb
+last-transition-from: ready
+last-transition-at: 2026-11-03T10:27:10.168Z
 ---
 
 # x01009 — Resetting the session balance writes nothing
