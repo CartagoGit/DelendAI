@@ -20,6 +20,7 @@ import type { IStandaloneCoreToolsOptions } from '../contracts/interfaces/standa
 import { buildBootstrapToolRegistrations } from '../bootstrap/bootstrap-tool';
 import type { IOverviewSnapshot } from '../tools/overview-tool';
 import { buildOverviewToolRegistration } from '../tools/overview-tool';
+import { DELENDAI_VERSION } from '../version';
 import { buildScaffoldToolRegistration } from './scaffold-tool';
 
 export type { IStandaloneCoreToolsOptions } from '../contracts/interfaces/standalone-core-tools.interface';
@@ -40,7 +41,7 @@ export const buildStandaloneCoreToolRegistrations = (
 		projectName,
 		projectPackageName,
 		serverName = `${namespacePrefix}-mcp-server`,
-		serverVersion = '0.1.0',
+		serverVersion = DELENDAI_VERSION,
 		corePaths = {
 			cacheDir: '.cache/delendai',
 			docsDir: 'docs/delendai',
