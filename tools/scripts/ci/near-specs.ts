@@ -3,15 +3,17 @@
  *
  * `vitest --changed` walks the whole import graph, and a change to core
  * reached nearly every spec through its barrels: 656 s on average. The
- * proof now asks the same analysis as the forge's test plan, followed by
- * symbol (`affected-specs.service`), plus the specs that read a changed
- * file: one answer, so what passes here is what the forge runs.
+ * proof runs the specs the change touched (`test-scope`) and nothing else,
+ * unless `testing.scope` in `delendai.config.json` asks for more: `reach`
+ * is the analysis of the forge's test plan, followed by symbol
+ * (`affected-specs.service`), plus the specs that read a changed file.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { affectedSpecsSince } from './affected-specs.service';
+import { affectedSpecsSince, repositorySince } from './affected-specs.service';
+import { readTestScope, touchedSpecsOf, type TTestScope } from './test-scope';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
 import type { IZoneReadMap } from './test-zones.interface';
 import { parseZoneReadMap, readersOf } from './zone-reads';
@@ -118,12 +120,29 @@ export const readerSpecs = (
 		.flat()
 		.sort();
 
-/** The nearest specs of the branch's change since `base`, read from git. */
-export const nearSpecsSince = (root: string, base: string): readonly string[] =>
-	[
-		...new Set([
-			// The same answer the forge's test plan gives: followed by symbol.
-			...affectedSpecsSince(root, base),
-			...readerSpecs(changedSince(root, base), readMapAt(root)),
-		]),
-	].sort();
+/**
+ * The specs to run for the branch's change since `base`, read from git, by
+ * the project's `testing.scope`: the touched ones by default (`test-scope`),
+ * what the change reaches (the forge's analysis, plus the specs that read a
+ * changed file) for `reach`, every tracked spec for `all`.
+ */
+export const nearSpecsSince = (
+	root: string,
+	base: string,
+	scope: TTestScope = readTestScope(root),
+): readonly string[] => {
+	if (scope === 'reach')
+		return [
+			...new Set([
+				// The same answer the forge's test plan gives: followed by symbol.
+				...affectedSpecsSince(root, base),
+				...readerSpecs(changedSince(root, base), readMapAt(root)),
+			]),
+		].sort();
+	const { files, changed, paths } = repositorySince(root, base);
+	if (scope === 'all')
+		return files
+			.filter((file) => /\.(?:spec|test)\.tsx?$/u.test(file))
+			.sort();
+	return touchedSpecsOf(root, changed, files, paths);
+};

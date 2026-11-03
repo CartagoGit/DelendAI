@@ -16,11 +16,12 @@ By default delendai runs only the specs a change touched: a changed spec, the sp
 
 ## why
 
-TODO: why this work matters now.
+The owner's rule, product-wide: by default delendai runs only the tests of what was touched, and a wider scope runs only when the project asks. Measured on 2026-11-03: the fast proof of f00803 S2 (17 files) ran 720 specs, about 15 vitest forks at 60% CPU for most of a 15-minute proof, because the analysis it shares with the forge follows every module that uses a changed one. A single leaf (`classify-origin.ts`, `feature-flags.ts`) reached 184 and 131 specs; its own spec is 1. With the touched scope the S2 diff selects 101 specs (changed specs, mirrors and direct importers) and the two leaves 1 each. This completes q00038 S1's third acceptance line, that the local proof runs the same specs from one analysis, by giving that analysis one setting (`testing.scope`: touched, reach, all) the proof reads. The forge's own plan is unchanged and keeps its wider reach.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The forge's test plan (`test-zones.script.ts`): it keeps its wider scope.
+- Narrowing the symbol analysis itself.
 
 ## slices
 
