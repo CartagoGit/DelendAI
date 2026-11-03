@@ -18,7 +18,7 @@ export default definePluginManifest({
 		'forge-write',
 		'env-read',
 	],
-	presets: ['full'],
+	presets: ['everything'],
 	// f00180 S2 / MAN-004 — per-tool permission map. Read tools
 	// declare `forge-read` + `network`; write tools add `forge-write`.
 	// `setup_github` is a one-shot credential bootstrap tool — it
@@ -46,7 +46,7 @@ export default definePluginManifest({
 	adoption: {
 		from: 'repo',
 		option: 'repo',
-		launchPreset: 'full',
+		launchPreset: 'everything',
 		rationale:
 			'GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).',
 		whenWired:

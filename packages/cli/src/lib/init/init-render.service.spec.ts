@@ -862,7 +862,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 	});
 
 	it('web-fetch is empty by default (fail closed)', async () => {
-		const bundle = await renderInitBundle(parseAnswers({ preset: 'full' }));
+		const bundle = await renderInitBundle(
+			parseAnswers({ preset: 'everything' }),
+		);
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
@@ -875,7 +877,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 	it('issues repo answer overrides the issues plugin repo option', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({
-				preset: 'full',
+				preset: 'everything',
 				issuesRepo: 'octo/example',
 			}),
 		);
@@ -891,7 +893,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 	it('web-fetch allow-list answer overrides the default empty allow-list', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({
-				preset: 'full',
+				preset: 'everything',
 				webFetchAllowList: ['api.github.com', 'example.com'],
 			}),
 		);

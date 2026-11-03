@@ -15,10 +15,10 @@ _(none)_
 - @delendai/agent-orchestrator
 - @delendai/auto-agent-selector
 - @delendai/client
+- @delendai/commit-policy
 - @delendai/completion
 - @delendai/container
 - @delendai/conventions
-- @delendai/core
 
 ## Writes
 

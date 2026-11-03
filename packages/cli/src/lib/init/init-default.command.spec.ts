@@ -391,7 +391,7 @@ describe('init:default (f00103)', () => {
 
 	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
 		// The requirement comes from the managed catalog, not from importing
-		// the database plugin: this case used to pay every standard-preset
+		// the database plugin: this case used to pay every solo-pack
 		// plugin's module graph (v00137).
 		const stderr = vi
 			.spyOn(process.stderr, 'write')
@@ -402,8 +402,8 @@ describe('init:default (f00103)', () => {
 				`--delendai-root=${HOST_ENTRY_PATH}`,
 			]);
 			const answers = await detectAndDecorateAnswers(tmp, flags, {
-				preset: 'standard',
-				extraPlugins: [],
+				preset: 'solo',
+				extraPlugins: ['database'],
 				excludedPlugins: [],
 				hostInstructions: 'append',
 				copyCoreSkills: true,

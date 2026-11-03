@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['plugins', 'catalog', 'routing'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['dogfood'],
+	presets: ['everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 3_726,
 		caps: { hard: 4_290, warning: 3_920 },

@@ -3,7 +3,7 @@ id: conventions
 package: @delendai/conventions
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Conventions
@@ -20,8 +20,9 @@ Repo file-convention enforcement (interface, constant, service, tool …).
 
 ## Presets
 
+- team-pr
 - swarm
-- full
+- everything
 - dogfood
 
 ## Permissions

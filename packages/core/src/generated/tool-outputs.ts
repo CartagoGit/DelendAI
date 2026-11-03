@@ -920,7 +920,7 @@ export interface DelendaiPluginAddOutput {
 		summary: string;
 		tags: string[];
 		origin: "first-party" | "community";
-		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
+		defaultPreset?: "minimal" | "solo" | "team-pr" | "swarm" | "audit" | "docs-web" | "everything" | "dogfood" | "vertex" | "lean" | "standard" | "full" | "web-app" | "backend-api" | "cli-tool";
 	};
 	steps: Array<{
 		kind: "install" | "wire" | "config";
@@ -948,7 +948,7 @@ export interface DelendaiPluginSearchOutput {
 		summary: string;
 		tags: string[];
 		origin: "first-party" | "community";
-		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
+		defaultPreset?: "minimal" | "solo" | "team-pr" | "swarm" | "audit" | "docs-web" | "everything" | "dogfood" | "vertex";
 		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
 		configDocs?: {
 			summary?: string;

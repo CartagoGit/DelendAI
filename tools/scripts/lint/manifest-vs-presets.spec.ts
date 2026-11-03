@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { lintManifestVsPresets } from './manifest-vs-presets.script.ts';
+import {
+	findMissingPresetDependencies,
+	lintManifestVsPresets,
+} from './manifest-vs-presets.script.ts';
 
 const writeManifest = async (
 	root: string,
@@ -40,14 +43,13 @@ const withFixture = async (
 		await mkdir(join(root, 'plugins/search'), { recursive: true });
 		await writeManifest(root, [
 			'minimal',
-			'lean',
-			'standard',
+			'solo',
+			'team-pr',
 			'swarm',
-			'full',
+			'audit',
+			'docs-web',
+			'everything',
 			'dogfood',
-			'web-app',
-			'backend-api',
-			'cli-tool',
 		]);
 		await callback(root);
 	} finally {
@@ -167,5 +169,35 @@ describe('manifest-vs-presets lint', () => {
 				violations.some((v) => v.rule === 'MANIFEST-PRESET-002'),
 			).toBe(true);
 		});
+	});
+});
+
+describe('findMissingPresetDependencies (MANIFEST-PRESET-005)', () => {
+	const manifests = [
+		{
+			id: 'parent',
+			package: '@delendai/parent',
+			dependencies: ['@delendai/child', 'zod'],
+		},
+		{ id: 'child', package: '@delendai/child', dependencies: [] },
+	];
+
+	it('fails a pack that ships a member without its declared dependency', () => {
+		const violations = findMissingPresetDependencies(
+			manifests,
+			new Map([['solo', new Set(['parent'])]]),
+		);
+		expect(violations).toHaveLength(1);
+		expect(violations[0]?.rule).toBe('MANIFEST-PRESET-005');
+		expect(violations[0]?.message).toContain('"child"');
+	});
+
+	it('passes a pack that carries the dependency', () => {
+		expect(
+			findMissingPresetDependencies(
+				manifests,
+				new Map([['solo', new Set(['parent', 'child'])]]),
+			),
+		).toEqual([]);
 	});
 });

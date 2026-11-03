@@ -3,7 +3,7 @@ id: remote-provider-core
 package: @delendai/remote-provider-core
 version: 0.3.0
 maturity: beta
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Remote Provider Core
@@ -23,7 +23,7 @@ Shared remote-provider foundation: validated config, injectable HTTP, normalized
 
 ## Presets
 
-- full
+- everything
 
 ## Permissions
 

@@ -3,7 +3,7 @@ id: refactor
 package: @delendai/refactor
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Refactor
@@ -20,11 +20,10 @@ Refactor primitives (symbols, definition, references, rename, codemod).
 
 ## Presets
 
-- standard
-- swarm
-- full
-- web-app
-- backend-api
+- solo
+- team-pr
+- audit
+- everything
 
 ## Permissions
 

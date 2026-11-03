@@ -3,7 +3,7 @@ id: quality
 package: @delendai/quality
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Quality
@@ -21,12 +21,12 @@ Quality gates: coverage, complexity, lint, type-check orchestration.
 
 ## Presets
 
-- standard
+- solo
+- team-pr
 - swarm
-- full
+- audit
+- everything
 - dogfood
-- web-app
-- backend-api
 
 ## Permissions
 

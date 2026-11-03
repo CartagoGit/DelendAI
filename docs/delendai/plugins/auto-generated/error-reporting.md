@@ -3,7 +3,7 @@ id: error-reporting
 package: @delendai/error-reporting
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Error Reporting
@@ -22,9 +22,9 @@ Automatic delendai error reporting, on by default and announced at every start: 
 
 ## Presets
 
-- standard
+- team-pr
 - swarm
-- full
+- everything
 - dogfood
 
 ## Permissions

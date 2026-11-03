@@ -3,7 +3,7 @@ id: test-convention
 package: @delendai/test-convention
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Test Convention
@@ -21,11 +21,10 @@ Test-file convention enforcement (spec path, mock style, forbidden patterns).
 
 ## Presets
 
+- team-pr
 - swarm
-- full
+- everything
 - dogfood
-- web-app
-- backend-api
 
 ## Permissions
 

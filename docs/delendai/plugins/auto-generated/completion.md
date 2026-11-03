@@ -3,7 +3,7 @@ id: completion
 package: @delendai/completion
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Completion
@@ -22,7 +22,7 @@ Task-completion notifier: records an agent declaring its original task done + re
 ## Presets
 
 - swarm
-- full
+- everything
 - dogfood
 
 ## Permissions

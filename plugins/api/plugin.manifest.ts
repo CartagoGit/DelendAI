@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['api', 'surface'],
 	maturity: 'stable',
 	permissions: ['process', 'network'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 3_613,
 		caps: { hard: 4_160, warning: 3_800 },

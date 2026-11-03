@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['status-marker', 'closure'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['swarm', 'full', 'dogfood', 'web-app'],
+	presets: ['team-pr', 'swarm', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 2_043,
 		caps: { hard: 2_350, warning: 2_150 },

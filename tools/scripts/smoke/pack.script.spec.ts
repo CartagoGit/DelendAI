@@ -43,18 +43,17 @@ describe('deriveDistributablePresets', () => {
 		);
 	});
 
-	it('includes all 9 distribuible presets (minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool)', () => {
+	it('includes all 8 distribuible presets (minimal, solo, team-pr, swarm, audit, docs-web, everything, dogfood)', () => {
 		const result = deriveDistributablePresets();
 		const expected: readonly IPresetKind[] = [
 			'minimal',
-			'lean',
-			'standard',
+			'solo',
+			'team-pr',
 			'swarm',
-			'full',
+			'audit',
+			'docs-web',
+			'everything',
 			'dogfood',
-			'web-app',
-			'backend-api',
-			'cli-tool',
 		];
 		for (const preset of expected) {
 			expect(result).toContain(preset);
@@ -72,15 +71,15 @@ describe('parsePresetsArg', () => {
 	});
 
 	it('parses a comma-separated list trimming whitespace', () => {
-		expect(parsePresetsArg('minimal, lean, standard')).toEqual([
+		expect(parsePresetsArg('minimal, solo, team-pr')).toEqual([
 			'minimal',
-			'lean',
-			'standard',
+			'solo',
+			'team-pr',
 		]);
 	});
 
 	it('drops empty entries from trailing/double commas', () => {
-		expect(parsePresetsArg('minimal,,lean,')).toEqual(['minimal', 'lean']);
+		expect(parsePresetsArg('minimal,,solo,')).toEqual(['minimal', 'solo']);
 	});
 
 	it('throws on an unknown preset id', () => {
@@ -102,9 +101,9 @@ describe('parseCliArgs', () => {
 	});
 
 	it('returns the presets mode + the parsed subset when --presets=A,B,C is set', () => {
-		const result = parseCliArgs(['--presets=minimal,full,dogfood']);
+		const result = parseCliArgs(['--presets=minimal,everything,dogfood']);
 		expect(result.mode).toBe('presets');
-		expect(result.presetIds).toEqual(['minimal', 'full', 'dogfood']);
+		expect(result.presetIds).toEqual(['minimal', 'everything', 'dogfood']);
 	});
 
 	it('throws on an unknown flag (rejects future arg drift)', () => {
@@ -114,9 +113,9 @@ describe('parseCliArgs', () => {
 	});
 
 	it('throws on an unknown preset id inside --presets=', () => {
-		expect(() => parseCliArgs(['--presets=full,unknown'])).toThrowError(
-			/unknown preset "unknown"/u,
-		);
+		expect(() =>
+			parseCliArgs(['--presets=everything,unknown']),
+		).toThrowError(/unknown preset "unknown"/u);
 	});
 });
 

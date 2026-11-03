@@ -644,6 +644,21 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			},
 		),
 		tools(
+			'execution-env',
+			'@delendai/execution-env',
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Execution environments: one contract and registry for running commands locally, in Docker, Docker Compose, over SSH or inside an existing container.',
+				tags: ['execution', 'docker', 'ssh'],
+			},
+		),
+		tools(
 			'external-mcps',
 			'@delendai/external-mcps',
 			[
@@ -727,6 +742,27 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					release:
 						'Create a forge release from a tag with explicit confirmation.',
 					search_code: 'Run remote code search on the origin forge.',
+				},
+			},
+		),
+		tools(
+			'framework-knowledge',
+			'@delendai/framework-knowledge',
+			['framework_guidance', 'framework_source'],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Resolves what the project’s installed framework version allows, recommends and forbids, before an agent writes code.',
+				tags: ['knowledge', 'frameworks', 'policy'],
+				toolSummaries: {
+					framework_guidance:
+						'What the installed framework version allows, recommends and forbids for one topic, as a small resolved answer.',
+					framework_source:
+						'The evidence (source and retrieval time) behind one framework rule, only when asked.',
 				},
 			},
 		),
@@ -1560,6 +1596,27 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			},
 		),
 		tools(
+			'self-learning',
+			'@delendai/self-learning',
+			['observations', 'lessons'],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.',
+				tags: ['self-learning', 'observability'],
+				toolSummaries: {
+					observations:
+						'What this project has already taught us: collected observations, filtered.',
+					lessons:
+						'What this project has taught us, with the evidence and a confidence that can fall.',
+				},
+			},
+		),
+		tools(
 			'skills-pack',
 			'@delendai/skills-pack',
 			[],
@@ -1599,6 +1656,21 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Audit a response: does its last line match the canonical close marker?',
 					ping: 'Health check for the status-marker plugin.',
 				},
+			},
+		),
+		tools(
+			'style-convention',
+			'@delendai/style-convention',
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			{
+				summary:
+					'The style surface: who may define a selector, what a change to it reaches, and whether a hard-coded value already has a design token.',
+				tags: ['styles', 'scss', 'design-tokens'],
 			},
 		),
 		tools(

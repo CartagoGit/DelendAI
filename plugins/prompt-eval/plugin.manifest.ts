@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['prompts', 'eval'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 2_514,
 		caps: { hard: 2_900, warning: 2_640 },

@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['docs', 'links'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['dogfood'],
+	presets: ['audit', 'docs-web', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 1_722,
 		caps: { hard: 1_990, warning: 1_810 },

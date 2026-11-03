@@ -46,7 +46,7 @@ export type ITokenBudgetRegistry = {
 	readonly governedPresetIds: readonly string[];
 	readonly invariants: {
 		readonly compactVsFullMaxRatio: number;
-		readonly leanVsSwarmToolsListMaxRatio: number;
+		readonly minimalVsSwarmToolsListMaxRatio: number;
 	};
 	readonly toolPayloads: {
 		readonly overviewFull: ITokenBudgetSurface;
@@ -73,10 +73,12 @@ export type ITokenBudgetRegistry = {
 	};
 	readonly presets: {
 		readonly minimal: IPresetTokenBudgetProfile;
-		readonly lean: IPresetTokenBudgetProfile;
-		readonly standard: IPresetTokenBudgetProfile;
+		readonly solo: IPresetTokenBudgetProfile;
+		readonly 'team-pr': IPresetTokenBudgetProfile;
 		readonly swarm: IPresetTokenBudgetProfile;
-		readonly full: IPresetTokenBudgetProfile;
+		readonly audit: IPresetTokenBudgetProfile;
+		readonly 'docs-web': IPresetTokenBudgetProfile;
+		readonly everything: IPresetTokenBudgetProfile;
 		readonly dogfood: IPresetTokenBudgetProfile;
 	};
 	readonly bumpPolicy: {
@@ -90,21 +92,22 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 	fixturePluginIds: ['proposals', 'memory'],
 	dashboardPresetIds: [
 		'minimal',
-		'lean',
-		'standard',
+		'solo',
+		'team-pr',
 		'swarm',
-		'full',
+		'audit',
+		'docs-web',
+		'everything',
 		'dogfood',
-		'web-app',
-		'backend-api',
-		'cli-tool',
 	],
 	governedPresetIds: [
 		'minimal',
-		'lean',
-		'standard',
+		'solo',
+		'team-pr',
 		'swarm',
-		'full',
+		'audit',
+		'docs-web',
+		'everything',
 		'dogfood',
 	],
 	invariants: {
@@ -117,7 +120,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		// compact stays bounded by full (never larger), not a strict
 		// 0.7 reduction.
 		compactVsFullMaxRatio: 1.0,
-		leanVsSwarmToolsListMaxRatio: 0.4,
+		minimalVsSwarmToolsListMaxRatio: 0.4,
 	},
 	toolPayloads: {
 		overviewFull: {
@@ -254,32 +257,24 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				marginalPluginWarning: 6_000,
 			},
 		},
-		lean: {
+		solo: {
 			toolsList: {
-				// The stable bootstrap registrations are present in
-				// the native measurement baseline too; the current 69,115 B
-				// roster needs a small, explicit guard band.
-				hard: 70_000,
-				warning: 69_000,
+				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 76,087 B native; the largest non-core owner is `memory` (8.2 KB).
+				hard: 108_000,
+				warning: 100_000,
 				releaseRelativePercent: 20,
-				marginalPluginHard: 30_000,
-				marginalPluginWarning: 24_000,
+				marginalPluginHard: 11000,
+				marginalPluginWarning: 9500,
 			},
 		},
-		standard: {
+		'team-pr': {
 			toolsList: {
-				hard: 144_000,
-				warning: 132_000,
+				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 101,723 B native; the largest non-core owner is `commit-policy` (11.6 KB).
+				hard: 146_000,
+				warning: 136_000,
 				releaseRelativePercent: 20,
-				// AUD-B02/x00283: standard's largest non-core owner
-				// measured today is `memory` at 8,221 B (`core` is
-				// excluded — see the `minimal` comment above). A guard
-				// band over that keeps room for the next plugin added to
-				// this preset without licensing a `proposals`-scale
-				// (45,277 B) jump; if that plugin is ever added here this
-				// ceiling must be revisited deliberately, per bumpPolicy.
-				marginalPluginHard: 11_000,
-				marginalPluginWarning: 9_500,
+				marginalPluginHard: 14000,
+				marginalPluginWarning: 12000,
 			},
 		},
 		swarm: {
@@ -299,8 +294,8 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				// administrative ones reachable through the router: the
 				// native surface measures 177_349 B (was 236_176 B), back
 				// under the original ceiling.
-				hard: 210_000,
-				warning: 204_000,
+				hard: 160_000,
+				warning: 148_000,
 				releaseRelativePercent: 20,
 				marginalPluginHard: 80_000,
 				marginalPluginWarning: 70_000,
@@ -318,24 +313,34 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				releaseRelativePercent: 20,
 			},
 		},
-		full: {
+		audit: {
 			toolsList: {
-				// 2026-09-15: the temporary exception that raised this to
-				// 280_000 B (dated to expire 2026-09-30) is retired, not
-				// renewed. v00135 turned progressive disclosure on for
-				// `full` as for `swarm`: the native surface measures
-				// 210_800 B (was 269_627 B), back under the original ceiling.
-				hard: 256_000,
-				warning: 236_000,
+				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 87,762 B native; the largest non-core owner is `audit` (11.6 KB).
+				hard: 126_000,
+				warning: 116_000,
 				releaseRelativePercent: 20,
-				// AUD-B02/x00283: `full` carries `proposals` at
-				// 45,277 B, the same plugin at the same measured size as
-				// `swarm` (both load it). Reusing swarm's marginal
-				// ceiling is not a copy of convenience — it is the same
-				// absolute plugin cost, so the same governed limit
-				// applies honestly.
-				marginalPluginHard: 80_000,
-				marginalPluginWarning: 70_000,
+				marginalPluginHard: 14000,
+				marginalPluginWarning: 12000,
+			},
+		},
+		'docs-web': {
+			toolsList: {
+				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 62,726 B native; the largest non-core owner is `memory` (8.2 KB).
+				hard: 90_000,
+				warning: 82_000,
+				releaseRelativePercent: 20,
+				marginalPluginHard: 11000,
+				marginalPluginWarning: 9500,
+			},
+		},
+		everything: {
+			toolsList: {
+				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): gate figure 295,693 B (dashboard 236,429 B). The pack is now every published plugin, `orchestrator-runner`, `audit` and `commit-policy` among them, plus the four plugins no preset reached (execution-env, framework-knowledge, style-convention, self-learning); the old `full` was a diagnostic subset. Ceiling re-set at +5% warning over the new measurement. `proposals` counted with progressive disclosure keeps the same marginal ceiling as `swarm`.
+				hard: 340_000,
+				warning: 310_000,
+				releaseRelativePercent: 20,
+				marginalPluginHard: 80000,
+				marginalPluginWarning: 70000,
 			},
 		},
 		dogfood: {

@@ -3,7 +3,7 @@ id: external-mcps
 package: @delendai/external-mcps
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # External Mcps
@@ -21,7 +21,7 @@ Compose third-party MCP servers through the catalog + human ack.
 
 ## Presets
 
-- full
+- everything
 
 ## Permissions
 

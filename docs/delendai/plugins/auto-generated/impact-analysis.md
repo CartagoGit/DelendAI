@@ -3,7 +3,7 @@ id: impact-analysis
 package: @delendai/impact-analysis
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Impact Analysis
@@ -22,6 +22,8 @@ Bounded impact analysis and test selection across changed symbols, dependents an
 
 ## Presets
 
+- audit
+- everything
 - dogfood
 
 ## Permissions

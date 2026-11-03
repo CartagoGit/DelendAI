@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['routing', 'agents'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
-	presets: ['standard', 'swarm', 'full', 'dogfood'],
+	presets: ['swarm', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 6_881,
 		caps: { hard: 7_920, warning: 7_230 },

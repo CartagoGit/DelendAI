@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['impact', 'tests', 'f00169'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
-	presets: ['dogfood'],
+	presets: ['audit', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 1_904,
 		caps: { hard: 2_190, warning: 2_000 },

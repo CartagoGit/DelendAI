@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['cache', 'lifecycle'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'env-read'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 2_057,
 		caps: { hard: 2_370, warning: 2_160 },

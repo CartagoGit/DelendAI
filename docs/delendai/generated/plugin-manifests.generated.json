@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-02T05:50:26.888Z",
+	"generatedAt": "2026-11-03T01:24:49.458Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -18,6 +18,7 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -60,9 +61,8 @@
 				"process"
 			],
 			"presets": [
-				"standard",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -100,7 +100,7 @@
 				"network"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 3613,
@@ -139,6 +139,8 @@
 				"env-read"
 			],
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -179,7 +181,7 @@
 				"process"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 1660,
@@ -218,9 +220,8 @@
 				"env-read"
 			],
 			"presets": [
-				"standard",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -258,6 +259,7 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -299,7 +301,7 @@
 				"browser"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 5945,
@@ -336,7 +338,7 @@
 				"env-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 2057,
@@ -432,6 +434,9 @@
 				]
 			},
 			"presets": [
+				"team-pr",
+				"swarm",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -471,7 +476,7 @@
 			],
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -555,12 +560,8 @@
 				]
 			},
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 8663,
@@ -601,6 +602,7 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -642,8 +644,9 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -680,10 +683,7 @@
 				"database"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"backend-api"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 3927,
@@ -720,12 +720,11 @@
 				"network"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 5261,
@@ -762,12 +761,8 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3277,
@@ -806,14 +801,13 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 2949,
@@ -850,13 +844,11 @@
 				"env-read"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"solo",
+				"team-pr",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3480,
@@ -904,9 +896,9 @@
 				]
 			},
 			"presets": [
-				"standard",
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -950,7 +942,9 @@
 				"process",
 				"env-read"
 			],
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -982,7 +976,7 @@
 				"env-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 9394,
@@ -1065,8 +1059,9 @@
 				]
 			},
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1107,7 +1102,9 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -1170,14 +1167,13 @@
 			},
 			"presets": [
 				"minimal",
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 4611,
@@ -1217,7 +1213,7 @@
 				"env-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1251,7 +1247,7 @@
 				"env-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1283,11 +1279,9 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app"
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 2577,
@@ -1324,6 +1318,8 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1397,7 +1393,7 @@
 				]
 			},
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 822,
@@ -1423,7 +1419,7 @@
 			"adoption": {
 				"from": "repo",
 				"option": "repo",
-				"launchPreset": "full",
+				"launchPreset": "everything",
 				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
 				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
 				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
@@ -1485,6 +1481,9 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"audit",
+				"docs-web",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1523,7 +1522,8 @@
 			],
 			"presets": [
 				"swarm",
-				"full",
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1561,14 +1561,12 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 8202,
@@ -1608,7 +1606,7 @@
 			],
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1647,7 +1645,7 @@
 				"env-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 5734,
@@ -1685,6 +1683,7 @@
 				"env-read"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1723,8 +1722,8 @@
 				"process"
 			],
 			"presets": [
-				"dogfood",
-				"cli-tool"
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3668,
@@ -1761,6 +1760,8 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1803,6 +1804,7 @@
 				"filesystem-write"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -1842,7 +1844,7 @@
 				"process"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 2514,
@@ -1879,11 +1881,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"everything"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1989,7 +1987,7 @@
 			},
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -2051,12 +2049,12 @@
 				"process"
 			],
 			"presets": [
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3627,
@@ -2098,6 +2096,7 @@
 				"process"
 			],
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -2138,11 +2137,10 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"audit",
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 6270,
@@ -2178,7 +2176,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"full"
+				"everything"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -2274,12 +2272,10 @@
 				"env-read"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 5634,
@@ -2319,14 +2315,13 @@
 			],
 			"presets": [
 				"minimal",
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3233,
@@ -2369,6 +2364,9 @@
 				"env-read"
 			],
 			"presets": [
+				"team-pr",
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -2407,7 +2405,9 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"tokenBudget": {
 				"hard": 3000,
 				"warning": 2700,
@@ -2435,11 +2435,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"everything"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -2468,10 +2464,10 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app"
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 2043,
@@ -2518,7 +2514,9 @@
 					"filesystem-read"
 				]
 			},
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"tokenBudget": {
 				"staticBytes": 3500,
 				"adaptiveActivationBytes": 1430,
@@ -2552,6 +2550,8 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -2587,11 +2587,10 @@
 				"filesystem-read"
 			],
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3232,
@@ -2628,13 +2627,12 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 1861,
@@ -2673,6 +2671,8 @@
 				"env-read"
 			],
 			"presets": [
+				"swarm",
+				"everything",
 				"dogfood"
 			],
 			"tokenBudget": {
@@ -2709,8 +2709,10 @@
 				"network"
 			],
 			"presets": [
-				"full",
-				"web-app"
+				"team-pr",
+				"audit",
+				"docs-web",
+				"everything"
 			],
 			"tokenBudget": {
 				"staticBytes": 1000,
@@ -3414,7 +3416,7 @@
 			"adoption": {
 				"from": "repo",
 				"option": "repo",
-				"launchPreset": "full",
+				"launchPreset": "everything",
 				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
 				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
 				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
@@ -4139,6 +4141,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4166,9 +4169,8 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"standard",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4195,7 +4197,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"api",
@@ -4223,6 +4225,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4255,7 +4259,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"audit-orchestration",
@@ -4282,9 +4286,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4315,6 +4318,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4342,7 +4346,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"browser",
@@ -4371,7 +4375,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"cache",
@@ -4402,6 +4406,9 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
+				"swarm",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4434,7 +4441,7 @@
 			"visibility": "public",
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4463,12 +4470,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"container",
@@ -4499,6 +4502,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4523,8 +4527,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4550,10 +4555,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"backend-api"
+				"everything"
 			],
 			"capabilities": [
 				"database",
@@ -4580,12 +4582,11 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"deps",
@@ -4612,12 +4613,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"diagram",
@@ -4644,14 +4641,13 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"docs",
@@ -4678,13 +4674,11 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"solo",
+				"team-pr",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"env",
@@ -4712,9 +4706,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4745,7 +4739,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"capabilities": [
 				"execution-env"
 			],
@@ -4772,7 +4768,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"external-mcps",
@@ -4802,8 +4798,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -4835,7 +4832,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"capabilities": [],
 			"permissions": [
 				"filesystem-read",
@@ -4859,14 +4858,13 @@
 			"visibility": "public",
 			"presets": [
 				"minimal",
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"git",
@@ -4895,7 +4893,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"github",
@@ -4923,7 +4921,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"gitlab",
@@ -4951,11 +4949,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app"
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"i18n",
@@ -4982,6 +4978,8 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5009,7 +5007,7 @@
 			"maturity": "beta",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"issues",
@@ -5042,6 +5040,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"audit",
+				"docs-web",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5069,7 +5070,8 @@
 			"visibility": "public",
 			"presets": [
 				"swarm",
-				"full",
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5097,14 +5099,12 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"memory",
@@ -5132,7 +5132,7 @@
 			"visibility": "public",
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5159,7 +5159,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"observability"
@@ -5187,6 +5187,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5217,8 +5218,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"dogfood",
-				"cli-tool"
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"perf",
@@ -5247,6 +5248,8 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5274,6 +5277,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5302,7 +5306,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"prompts",
@@ -5328,11 +5332,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"everything"
 			],
 			"capabilities": [
 				"prompts"
@@ -5359,7 +5359,7 @@
 			"visibility": "public",
 			"presets": [
 				"swarm",
-				"full",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5392,12 +5392,12 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"quality",
@@ -5426,6 +5426,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5452,11 +5453,10 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"audit",
+				"everything"
 			],
 			"capabilities": [
 				"refactor"
@@ -5484,7 +5484,7 @@
 			"maturity": "beta",
 			"visibility": "public",
 			"presets": [
-				"full"
+				"everything"
 			],
 			"capabilities": [
 				"remote-provider"
@@ -5509,12 +5509,10 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"solo",
+				"team-pr",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"rules",
@@ -5544,14 +5542,13 @@
 			"visibility": "public",
 			"presets": [
 				"minimal",
-				"lean",
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"docs-web",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"lexical-search",
@@ -5581,6 +5578,9 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5609,7 +5609,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"capabilities": [
 				"self-learning"
 			],
@@ -5633,11 +5635,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
-				"swarm",
-				"full",
-				"web-app",
-				"backend-api"
+				"everything"
 			],
 			"capabilities": [
 				"skills"
@@ -5662,10 +5660,10 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app"
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"status-marker",
@@ -5691,7 +5689,9 @@
 			],
 			"maturity": "experimental",
 			"visibility": "public",
-			"presets": [],
+			"presets": [
+				"everything"
+			],
 			"capabilities": [
 				"styles",
 				"design-tokens"
@@ -5715,6 +5715,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"audit",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5740,11 +5742,10 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api"
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"tests",
@@ -5770,13 +5771,12 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"standard",
+				"solo",
+				"team-pr",
 				"swarm",
-				"full",
-				"dogfood",
-				"web-app",
-				"backend-api",
-				"cli-tool"
+				"audit",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"tests",
@@ -5803,6 +5803,8 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
+				"swarm",
+				"everything",
 				"dogfood"
 			],
 			"capabilities": [
@@ -5832,8 +5834,10 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"full",
-				"web-app"
+				"team-pr",
+				"audit",
+				"docs-web",
+				"everything"
 			],
 			"capabilities": [
 				"web",
@@ -6970,14 +6974,14 @@
 		},
 		{
 			"pluginId": "adaptive-optimizer",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "adaptive-optimizer",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6991,9 +6995,23 @@
 		},
 		{
 			"pluginId": "adaptive-optimizer",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "adaptive-optimizer",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7004,27 +7022,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "adaptive-optimizer",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "adaptive-optimizer",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "adaptive-optimizer",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "agent-orchestrator",
 			"presetId": "minimal",
 			"declared": false,
@@ -7033,16 +7030,16 @@
 		},
 		{
 			"pluginId": "agent-orchestrator",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "agent-orchestrator",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -7054,7 +7051,21 @@
 		},
 		{
 			"pluginId": "agent-orchestrator",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "agent-orchestrator",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "agent-orchestrator",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7067,27 +7078,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "agent-orchestrator",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "agent-orchestrator",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "agent-orchestrator",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "api",
 			"presetId": "minimal",
 			"declared": false,
@@ -7096,14 +7086,14 @@
 		},
 		{
 			"pluginId": "api",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "api",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7117,7 +7107,21 @@
 		},
 		{
 			"pluginId": "api",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "api",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "api",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7130,27 +7134,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "api",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "api",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "api",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "audit",
 			"presetId": "minimal",
 			"declared": false,
@@ -7159,14 +7142,14 @@
 		},
 		{
 			"pluginId": "audit",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "audit",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7180,9 +7163,23 @@
 		},
 		{
 			"pluginId": "audit",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "audit",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "audit",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7193,27 +7190,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "audit",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "audit",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "audit",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "audit-orchestrator",
 			"presetId": "minimal",
 			"declared": false,
@@ -7222,14 +7198,14 @@
 		},
 		{
 			"pluginId": "audit-orchestrator",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "audit-orchestrator",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7243,7 +7219,21 @@
 		},
 		{
 			"pluginId": "audit-orchestrator",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "audit-orchestrator",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "audit-orchestrator",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7256,27 +7246,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "audit-orchestrator",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "audit-orchestrator",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "audit-orchestrator",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "auto-agent-selector",
 			"presetId": "minimal",
 			"declared": false,
@@ -7285,16 +7254,16 @@
 		},
 		{
 			"pluginId": "auto-agent-selector",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "auto-agent-selector",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -7306,7 +7275,21 @@
 		},
 		{
 			"pluginId": "auto-agent-selector",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "auto-agent-selector",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "auto-agent-selector",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7319,27 +7302,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "auto-agent-selector",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "auto-agent-selector",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "auto-agent-selector",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "auto-plugin-selector",
 			"presetId": "minimal",
 			"declared": false,
@@ -7348,14 +7310,14 @@
 		},
 		{
 			"pluginId": "auto-plugin-selector",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "auto-plugin-selector",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7369,9 +7331,23 @@
 		},
 		{
 			"pluginId": "auto-plugin-selector",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "auto-plugin-selector",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "auto-plugin-selector",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7382,27 +7358,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "auto-plugin-selector",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "auto-plugin-selector",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "auto-plugin-selector",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "browser",
 			"presetId": "minimal",
 			"declared": false,
@@ -7411,14 +7366,14 @@
 		},
 		{
 			"pluginId": "browser",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "browser",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7432,7 +7387,21 @@
 		},
 		{
 			"pluginId": "browser",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "browser",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "browser",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7445,27 +7414,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "browser",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "browser",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "browser",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "cache",
 			"presetId": "minimal",
 			"declared": false,
@@ -7474,14 +7422,14 @@
 		},
 		{
 			"pluginId": "cache",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "cache",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7495,7 +7443,21 @@
 		},
 		{
 			"pluginId": "cache",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "cache",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "cache",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7508,27 +7470,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "cache",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "cache",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "cache",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "changelog",
 			"presetId": "minimal",
 			"declared": false,
@@ -7537,14 +7478,14 @@
 		},
 		{
 			"pluginId": "changelog",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "changelog",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7558,7 +7499,21 @@
 		},
 		{
 			"pluginId": "changelog",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "changelog",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "changelog",
+			"presetId": "everything",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7571,27 +7526,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "changelog",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "changelog",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "changelog",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "commit-policy",
 			"presetId": "minimal",
 			"declared": false,
@@ -7600,30 +7534,44 @@
 		},
 		{
 			"pluginId": "commit-policy",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "commit-policy",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "commit-policy",
 			"presetId": "swarm",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "commit-policy",
-			"presetId": "full",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "commit-policy",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7634,27 +7582,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "commit-policy",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "commit-policy",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "commit-policy",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "completion",
 			"presetId": "minimal",
 			"declared": false,
@@ -7663,14 +7590,14 @@
 		},
 		{
 			"pluginId": "completion",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "completion",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7684,7 +7611,21 @@
 		},
 		{
 			"pluginId": "completion",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "completion",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "completion",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7697,27 +7638,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "completion",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "completion",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "completion",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "container",
 			"presetId": "minimal",
 			"declared": false,
@@ -7726,28 +7646,42 @@
 		},
 		{
 			"pluginId": "container",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "container",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "container",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "container",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "container",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "container",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7760,27 +7694,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "container",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "container",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "container",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "context-for-change",
 			"presetId": "minimal",
 			"declared": false,
@@ -7789,14 +7702,14 @@
 		},
 		{
 			"pluginId": "context-for-change",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "context-for-change",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7810,9 +7723,23 @@
 		},
 		{
 			"pluginId": "context-for-change",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "context-for-change",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7823,27 +7750,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "context-for-change",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "context-for-change",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "context-for-change",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "conventions",
 			"presetId": "minimal",
 			"declared": false,
@@ -7852,16 +7758,16 @@
 		},
 		{
 			"pluginId": "conventions",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "conventions",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -7873,7 +7779,21 @@
 		},
 		{
 			"pluginId": "conventions",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "conventions",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "conventions",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7886,27 +7806,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "conventions",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "conventions",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "conventions",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "database",
 			"presetId": "minimal",
 			"declared": false,
@@ -7915,28 +7814,42 @@
 		},
 		{
 			"pluginId": "database",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "database",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "database",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "database",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "database",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "database",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7944,27 +7857,6 @@
 		{
 			"pluginId": "database",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "database",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "database",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "database",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7978,28 +7870,42 @@
 		},
 		{
 			"pluginId": "deps",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "deps",
-			"presetId": "standard",
+			"presetId": "solo",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "deps",
-			"presetId": "swarm",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "deps",
-			"presetId": "full",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "deps",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "deps",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "deps",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8012,27 +7918,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "deps",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "deps",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "deps",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "diagram",
 			"presetId": "minimal",
 			"declared": false,
@@ -8041,28 +7926,42 @@
 		},
 		{
 			"pluginId": "diagram",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "diagram",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "diagram",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "diagram",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "diagram",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "diagram",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8075,27 +7974,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "diagram",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "diagram",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "diagram",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "docs",
 			"presetId": "minimal",
 			"declared": false,
@@ -8104,14 +7982,14 @@
 		},
 		{
 			"pluginId": "docs",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "docs",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8125,7 +8003,21 @@
 		},
 		{
 			"pluginId": "docs",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "docs",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "docs",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8138,27 +8030,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "docs",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "docs",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "docs",
-			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
 			"pluginId": "env",
 			"presetId": "minimal",
 			"declared": false,
@@ -8167,14 +8038,14 @@
 		},
 		{
 			"pluginId": "env",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "solo",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "env",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8182,13 +8053,27 @@
 		{
 			"pluginId": "env",
 			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "env",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "env",
+			"presetId": "docs-web",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "env",
-			"presetId": "full",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8196,27 +8081,6 @@
 		{
 			"pluginId": "env",
 			"presetId": "dogfood",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "env",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "env",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "env",
-			"presetId": "cli-tool",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8230,14 +8094,14 @@
 		},
 		{
 			"pluginId": "error-reporting",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "error-reporting",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8251,7 +8115,21 @@
 		},
 		{
 			"pluginId": "error-reporting",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "error-reporting",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "error-reporting",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8264,27 +8142,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "error-reporting",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "error-reporting",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "error-reporting",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "execution-env",
 			"presetId": "minimal",
 			"declared": false,
@@ -8293,14 +8150,14 @@
 		},
 		{
 			"pluginId": "execution-env",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "execution-env",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8314,9 +8171,23 @@
 		},
 		{
 			"pluginId": "execution-env",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "execution-env",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8327,27 +8198,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "execution-env",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "execution-env",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "execution-env",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "external-mcps",
 			"presetId": "minimal",
 			"declared": false,
@@ -8356,14 +8206,14 @@
 		},
 		{
 			"pluginId": "external-mcps",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "external-mcps",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8377,7 +8227,21 @@
 		},
 		{
 			"pluginId": "external-mcps",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "external-mcps",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "external-mcps",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8390,27 +8254,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "external-mcps",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "external-mcps",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "external-mcps",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "forge",
 			"presetId": "minimal",
 			"declared": false,
@@ -8419,16 +8262,16 @@
 		},
 		{
 			"pluginId": "forge",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "forge",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8440,7 +8283,21 @@
 		},
 		{
 			"pluginId": "forge",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "forge",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "forge",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8453,27 +8310,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "forge",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "forge",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "forge",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "framework-knowledge",
 			"presetId": "minimal",
 			"declared": false,
@@ -8482,14 +8318,14 @@
 		},
 		{
 			"pluginId": "framework-knowledge",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "framework-knowledge",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8503,9 +8339,23 @@
 		},
 		{
 			"pluginId": "framework-knowledge",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "framework-knowledge",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8516,27 +8366,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "framework-knowledge",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "framework-knowledge",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "framework-knowledge",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "git",
 			"presetId": "minimal",
 			"declared": true,
@@ -8545,14 +8374,14 @@
 		},
 		{
 			"pluginId": "git",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "git",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8566,7 +8395,21 @@
 		},
 		{
 			"pluginId": "git",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "git",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "git",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8579,27 +8422,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "git",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "git",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "git",
-			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
 			"pluginId": "github",
 			"presetId": "minimal",
 			"declared": false,
@@ -8608,14 +8430,14 @@
 		},
 		{
 			"pluginId": "github",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "github",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8629,7 +8451,21 @@
 		},
 		{
 			"pluginId": "github",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "github",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8642,27 +8478,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "github",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "github",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "github",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "gitlab",
 			"presetId": "minimal",
 			"declared": false,
@@ -8671,14 +8486,14 @@
 		},
 		{
 			"pluginId": "gitlab",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "gitlab",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8692,7 +8507,21 @@
 		},
 		{
 			"pluginId": "gitlab",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "gitlab",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8705,27 +8534,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "gitlab",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "gitlab",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "gitlab",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "i18n",
 			"presetId": "minimal",
 			"declared": false,
@@ -8734,28 +8542,42 @@
 		},
 		{
 			"pluginId": "i18n",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "i18n",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "i18n",
 			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "i18n",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "i18n",
+			"presetId": "docs-web",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "i18n",
-			"presetId": "full",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8768,27 +8590,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "i18n",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "i18n",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "i18n",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "impact-analysis",
 			"presetId": "minimal",
 			"declared": false,
@@ -8797,14 +8598,14 @@
 		},
 		{
 			"pluginId": "impact-analysis",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "impact-analysis",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8818,9 +8619,23 @@
 		},
 		{
 			"pluginId": "impact-analysis",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "impact-analysis",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -8831,27 +8646,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "impact-analysis",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "impact-analysis",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "impact-analysis",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "issues",
 			"presetId": "minimal",
 			"declared": false,
@@ -8860,14 +8654,14 @@
 		},
 		{
 			"pluginId": "issues",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "issues",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8881,7 +8675,21 @@
 		},
 		{
 			"pluginId": "issues",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "issues",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "issues",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8894,27 +8702,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "issues",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "issues",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "issues",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "issues-triage",
 			"presetId": "minimal",
 			"declared": false,
@@ -8923,14 +8710,14 @@
 		},
 		{
 			"pluginId": "issues-triage",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "issues-triage",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8944,7 +8731,21 @@
 		},
 		{
 			"pluginId": "issues-triage",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "issues-triage",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "issues-triage",
+			"presetId": "everything",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8957,27 +8758,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "issues-triage",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "issues-triage",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "issues-triage",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "link-check",
 			"presetId": "minimal",
 			"declared": false,
@@ -8986,14 +8766,14 @@
 		},
 		{
 			"pluginId": "link-check",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "link-check",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9007,9 +8787,23 @@
 		},
 		{
 			"pluginId": "link-check",
-			"presetId": "full",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "link-check",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "link-check",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9020,27 +8814,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "link-check",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "link-check",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "link-check",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "logs",
 			"presetId": "minimal",
 			"declared": false,
@@ -9049,14 +8822,14 @@
 		},
 		{
 			"pluginId": "logs",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "logs",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9070,7 +8843,21 @@
 		},
 		{
 			"pluginId": "logs",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "logs",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "logs",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9083,27 +8870,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "logs",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "logs",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "logs",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "memory",
 			"presetId": "minimal",
 			"declared": false,
@@ -9112,14 +8878,14 @@
 		},
 		{
 			"pluginId": "memory",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "memory",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9133,7 +8899,21 @@
 		},
 		{
 			"pluginId": "memory",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "memory",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "memory",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9146,27 +8926,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "memory",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "memory",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "memory",
-			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
 			"pluginId": "notification",
 			"presetId": "minimal",
 			"declared": false,
@@ -9175,14 +8934,14 @@
 		},
 		{
 			"pluginId": "notification",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "notification",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9196,7 +8955,21 @@
 		},
 		{
 			"pluginId": "notification",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "notification",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "notification",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9209,27 +8982,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "notification",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "notification",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "notification",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "observability",
 			"presetId": "minimal",
 			"declared": false,
@@ -9238,14 +8990,14 @@
 		},
 		{
 			"pluginId": "observability",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "observability",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9259,7 +9011,21 @@
 		},
 		{
 			"pluginId": "observability",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "observability",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "observability",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9272,27 +9038,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "observability",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "observability",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "observability",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "orchestrator-runner",
 			"presetId": "minimal",
 			"declared": false,
@@ -9301,14 +9046,14 @@
 		},
 		{
 			"pluginId": "orchestrator-runner",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "orchestrator-runner",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9322,9 +9067,23 @@
 		},
 		{
 			"pluginId": "orchestrator-runner",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "orchestrator-runner",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "orchestrator-runner",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9335,27 +9094,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "orchestrator-runner",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "orchestrator-runner",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "orchestrator-runner",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "perf",
 			"presetId": "minimal",
 			"declared": false,
@@ -9364,14 +9102,14 @@
 		},
 		{
 			"pluginId": "perf",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "perf",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9385,9 +9123,23 @@
 		},
 		{
 			"pluginId": "perf",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "perf",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "perf",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9398,27 +9150,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "perf",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "perf",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "perf",
-			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
 			"pluginId": "project-health",
 			"presetId": "minimal",
 			"declared": false,
@@ -9427,14 +9158,14 @@
 		},
 		{
 			"pluginId": "project-health",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "project-health",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9448,9 +9179,23 @@
 		},
 		{
 			"pluginId": "project-health",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-health",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9461,27 +9206,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "project-health",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "project-health",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "project-health",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "project-kpis",
 			"presetId": "minimal",
 			"declared": false,
@@ -9490,14 +9214,14 @@
 		},
 		{
 			"pluginId": "project-kpis",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "project-kpis",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9511,9 +9235,23 @@
 		},
 		{
 			"pluginId": "project-kpis",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9524,27 +9262,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "project-kpis",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "project-kpis",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "project-kpis",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "prompt-eval",
 			"presetId": "minimal",
 			"declared": false,
@@ -9553,14 +9270,14 @@
 		},
 		{
 			"pluginId": "prompt-eval",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "prompt-eval",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9574,7 +9291,21 @@
 		},
 		{
 			"pluginId": "prompt-eval",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "prompt-eval",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "prompt-eval",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9587,27 +9318,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "prompt-eval",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "prompt-eval",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "prompt-eval",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "prompts-pack",
 			"presetId": "minimal",
 			"declared": false,
@@ -9616,28 +9326,42 @@
 		},
 		{
 			"pluginId": "prompts-pack",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "prompts-pack",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "prompts-pack",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "prompts-pack",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "prompts-pack",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "prompts-pack",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9645,27 +9369,6 @@
 		{
 			"pluginId": "prompts-pack",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "prompts-pack",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "prompts-pack",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "prompts-pack",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9679,14 +9382,14 @@
 		},
 		{
 			"pluginId": "proposals",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "proposals",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9700,7 +9403,21 @@
 		},
 		{
 			"pluginId": "proposals",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "proposals",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "proposals",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9713,27 +9430,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "proposals",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "proposals",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "proposals",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "quality",
 			"presetId": "minimal",
 			"declared": false,
@@ -9742,14 +9438,14 @@
 		},
 		{
 			"pluginId": "quality",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "solo",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "quality",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9763,7 +9459,21 @@
 		},
 		{
 			"pluginId": "quality",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "quality",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9776,27 +9486,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "quality",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "quality",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "quality",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "quality-policy",
 			"presetId": "minimal",
 			"declared": false,
@@ -9805,14 +9494,14 @@
 		},
 		{
 			"pluginId": "quality-policy",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "quality-policy",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9826,9 +9515,23 @@
 		},
 		{
 			"pluginId": "quality-policy",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "quality-policy",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -9839,27 +9542,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "quality-policy",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "quality-policy",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "quality-policy",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "refactor",
 			"presetId": "minimal",
 			"declared": false,
@@ -9868,14 +9550,14 @@
 		},
 		{
 			"pluginId": "refactor",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "solo",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "refactor",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9883,13 +9565,27 @@
 		{
 			"pluginId": "refactor",
 			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "refactor",
+			"presetId": "audit",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "refactor",
-			"presetId": "full",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "refactor",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9897,27 +9593,6 @@
 		{
 			"pluginId": "refactor",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "refactor",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "refactor",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "refactor",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9931,14 +9606,14 @@
 		},
 		{
 			"pluginId": "remote-provider-core",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "remote-provider-core",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9952,7 +9627,21 @@
 		},
 		{
 			"pluginId": "remote-provider-core",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "remote-provider-core",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9965,27 +9654,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "remote-provider-core",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "remote-provider-core",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "remote-provider-core",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "roadmap",
 			"presetId": "minimal",
 			"declared": false,
@@ -9994,14 +9662,14 @@
 		},
 		{
 			"pluginId": "roadmap",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "roadmap",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10015,7 +9683,21 @@
 		},
 		{
 			"pluginId": "roadmap",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "roadmap",
+			"presetId": "everything",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10028,27 +9710,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "roadmap",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "roadmap",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "roadmap",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "rules",
 			"presetId": "minimal",
 			"declared": false,
@@ -10057,14 +9718,14 @@
 		},
 		{
 			"pluginId": "rules",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "solo",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "rules",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10072,13 +9733,27 @@
 		{
 			"pluginId": "rules",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "rules",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "rules",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "rules",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10091,27 +9766,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "rules",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "rules",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "rules",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "search",
 			"presetId": "minimal",
 			"declared": true,
@@ -10120,14 +9774,14 @@
 		},
 		{
 			"pluginId": "search",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "search",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10141,7 +9795,21 @@
 		},
 		{
 			"pluginId": "search",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "search",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10154,27 +9822,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "search",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "search",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "search",
-			"presetId": "cli-tool",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
 			"pluginId": "security",
 			"presetId": "minimal",
 			"declared": false,
@@ -10183,16 +9830,16 @@
 		},
 		{
 			"pluginId": "security",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "security",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10204,9 +9851,23 @@
 		},
 		{
 			"pluginId": "security",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "security",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "security",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10214,27 +9875,6 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "security",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "security",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "security",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -10246,14 +9886,14 @@
 		},
 		{
 			"pluginId": "self-learning",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "self-learning",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10267,9 +9907,23 @@
 		},
 		{
 			"pluginId": "self-learning",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10280,27 +9934,6 @@
 			"matches": true
 		},
 		{
-			"pluginId": "self-learning",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "self-learning",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "self-learning",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
 			"pluginId": "skills-pack",
 			"presetId": "minimal",
 			"declared": false,
@@ -10309,28 +9942,42 @@
 		},
 		{
 			"pluginId": "skills-pack",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "skills-pack",
-			"presetId": "standard",
-			"declared": true,
-			"catalogMember": true,
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "skills-pack",
 			"presetId": "swarm",
-			"declared": true,
-			"catalogMember": true,
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "skills-pack",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "skills-pack",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "skills-pack",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10338,27 +9985,6 @@
 		{
 			"pluginId": "skills-pack",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "skills-pack",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "skills-pack",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "skills-pack",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10372,16 +9998,16 @@
 		},
 		{
 			"pluginId": "status-marker",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "status-marker",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10393,7 +10019,21 @@
 		},
 		{
 			"pluginId": "status-marker",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "status-marker",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "status-marker",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10403,27 +10043,6 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "status-marker",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "status-marker",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "status-marker",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -10435,14 +10054,14 @@
 		},
 		{
 			"pluginId": "style-convention",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "style-convention",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10456,35 +10075,28 @@
 		},
 		{
 			"pluginId": "style-convention",
-			"presetId": "full",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "style-convention",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "style-convention",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "style-convention",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "style-convention",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "style-convention",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10498,14 +10110,14 @@
 		},
 		{
 			"pluginId": "tech-debt",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "tech-debt",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10519,9 +10131,23 @@
 		},
 		{
 			"pluginId": "tech-debt",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "tech-debt",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "tech-debt",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10529,27 +10155,6 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "tech-debt",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "tech-debt",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "tech-debt",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -10561,16 +10166,16 @@
 		},
 		{
 			"pluginId": "test-convention",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "test-convention",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10582,7 +10187,21 @@
 		},
 		{
 			"pluginId": "test-convention",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "test-convention",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "test-convention",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10592,27 +10211,6 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-convention",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-convention",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-convention",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -10624,14 +10222,14 @@
 		},
 		{
 			"pluginId": "test-policy",
-			"presetId": "lean",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "solo",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
 			"pluginId": "test-policy",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10645,7 +10243,21 @@
 		},
 		{
 			"pluginId": "test-policy",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "test-policy",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "test-policy",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10653,27 +10265,6 @@
 		{
 			"pluginId": "test-policy",
 			"presetId": "dogfood",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-policy",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-policy",
-			"presetId": "backend-api",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "test-policy",
-			"presetId": "cli-tool",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10687,14 +10278,14 @@
 		},
 		{
 			"pluginId": "usage-tracking",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "usage-tracking",
-			"presetId": "standard",
+			"presetId": "team-pr",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -10702,15 +10293,29 @@
 		{
 			"pluginId": "usage-tracking",
 			"presetId": "swarm",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "usage-tracking",
+			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "usage-tracking",
-			"presetId": "full",
+			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "usage-tracking",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10718,27 +10323,6 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "usage-tracking",
-			"presetId": "web-app",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "usage-tracking",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "usage-tracking",
-			"presetId": "cli-tool",
-			"declared": false,
-			"catalogMember": false,
 			"matches": true
 		},
 		{
@@ -10750,16 +10334,16 @@
 		},
 		{
 			"pluginId": "web-fetch",
-			"presetId": "lean",
+			"presetId": "solo",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "web-fetch",
-			"presetId": "standard",
-			"declared": false,
-			"catalogMember": false,
+			"presetId": "team-pr",
+			"declared": true,
+			"catalogMember": true,
 			"matches": true
 		},
 		{
@@ -10771,7 +10355,21 @@
 		},
 		{
 			"pluginId": "web-fetch",
-			"presetId": "full",
+			"presetId": "audit",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "web-fetch",
+			"presetId": "docs-web",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "web-fetch",
+			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -10779,27 +10377,6 @@
 		{
 			"pluginId": "web-fetch",
 			"presetId": "dogfood",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "web-fetch",
-			"presetId": "web-app",
-			"declared": true,
-			"catalogMember": true,
-			"matches": true
-		},
-		{
-			"pluginId": "web-fetch",
-			"presetId": "backend-api",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "web-fetch",
-			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true

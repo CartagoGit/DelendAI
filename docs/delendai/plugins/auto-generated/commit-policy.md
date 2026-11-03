@@ -3,7 +3,7 @@ id: commit-policy
 package: @delendai/commit-policy
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Commit Policy
@@ -24,6 +24,9 @@ Commit-authority plugin: configurable identity, cadence and audit-trail policy w
 
 ## Presets
 
+- team-pr
+- swarm
+- everything
 - dogfood
 
 ## Permissions

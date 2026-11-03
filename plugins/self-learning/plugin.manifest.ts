@@ -13,7 +13,7 @@ export default definePluginManifest({
 	// Deliberately in NO preset. What it accumulates is cheap, but it is
 	// still a file in somebody's repository: a project that has not asked
 	// to be observed should not be.
-	presets: [],
+	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['self-learning'],

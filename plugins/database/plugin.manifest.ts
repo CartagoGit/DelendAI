@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['database', 'schema'],
 	maturity: 'stable',
 	permissions: ['env-read', 'database'],
-	presets: ['standard', 'swarm', 'full', 'backend-api'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 3_927,
 		caps: { hard: 4_520, warning: 4_130 },

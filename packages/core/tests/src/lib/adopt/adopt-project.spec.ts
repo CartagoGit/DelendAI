@@ -188,7 +188,7 @@ describe('adopt_project (f00157 S1)', () => {
 		const launch = result.residual.find((r: string) =>
 			r.includes('__serve'),
 		);
-		expect(launch).toContain('--preset full');
+		expect(launch).toContain('--preset everything');
 		expect(result.residual).toContain(
 			'Verify GitHub issues: run `delendai_setup_github` and confirm the acme/widgets tier resolves.',
 		);
@@ -205,7 +205,7 @@ describe('adopt_project (f00157 S1)', () => {
 		const launch = result.residual.find((r: string) =>
 			r.includes('__serve'),
 		);
-		expect(launch).not.toContain('--preset full');
+		expect(launch).not.toContain('--preset everything');
 		expect(
 			result.residual.some((r: string) =>
 				r.startsWith('Verify GitHub issues'),
@@ -222,7 +222,7 @@ describe('adopt_project (f00157 S1)', () => {
 		const launch = result.residual.find((r: string) =>
 			r.includes('__serve'),
 		);
-		expect(launch).not.toContain('--preset full');
+		expect(launch).not.toContain('--preset everything');
 		expect(result.residual).toContain(
 			'(Optional) Wire GitHub issues later: run `delendai_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
 		);
@@ -241,7 +241,7 @@ describe('adopt_project (f00157 S1)', () => {
 		const launch = result.residual.find((r: string) =>
 			r.includes('__serve'),
 		);
-		expect(launch).toContain('--preset full');
+		expect(launch).toContain('--preset everything');
 	});
 
 	it('detects an existing MCP server key and emits agents against that server', async () => {

@@ -153,6 +153,7 @@ export { announceLines } from '../lib/shared/announce-lines';
 export {
 	PRESET_CATALOG,
 	resolvePresetMembers,
+	resolveStackPackMembers,
 } from '../lib/plugins/preset-catalog';
 export type {
 	IPresetDefinition,

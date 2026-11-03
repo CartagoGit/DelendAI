@@ -131,16 +131,11 @@ describe('isPackId', () => {
 
 describe('overlay coherence with the catalog', () => {
 	it('every overlay plugin id is a member of its pack in PRESET_CATALOG', async () => {
-		const { PRESET_CATALOG } = await import(
+		const { resolveStackPackMembers } = await import(
 			'@delendai/core/lib/plugins/preset-catalog'
 		);
 		for (const packId of PACK_IDS) {
-			const def = PRESET_CATALOG.find((d) => d.id === packId);
-			expect(
-				def,
-				`pack ${packId} missing from PRESET_CATALOG`,
-			).toBeDefined();
-			const members = new Set(def?.members.map((m) => m.plugin) ?? []);
+			const members = new Set(resolveStackPackMembers(packId));
 			for (const pluginId of Object.keys(PACK_DEFAULTS_OVERLAY[packId])) {
 				expect(
 					members.has(pluginId),

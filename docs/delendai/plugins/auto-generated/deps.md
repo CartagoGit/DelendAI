@@ -3,7 +3,7 @@ id: deps
 package: @delendai/deps
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Deps
@@ -21,12 +21,11 @@ Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_l
 
 ## Presets
 
-- standard
-- swarm
-- full
+- solo
+- team-pr
+- audit
+- everything
 - dogfood
-- web-app
-- backend-api
 
 ## Permissions
 

@@ -281,19 +281,33 @@ export const collectInitAnswers = async (
 			'Which preset?',
 			[
 				{
-					label: 'minimal — git + search (read-only)',
+					label: 'minimal — git + search, read-only orientation',
 					value: 'minimal',
 				},
 				{
-					label: 'lean — the 4 essentials: git + search + memory + docs',
-					value: 'lean',
+					label: 'solo — one developer, one agent, day-to-day coding',
+					value: 'solo',
 				},
-				{ label: 'standard — single-agent toolkit', value: 'standard' },
 				{
-					label: 'swarm — multi-agent coordination (recommended)',
+					label: 'team-pr — a team on pull requests',
+					value: 'team-pr',
+				},
+				{
+					label: 'swarm — several agents sharing a checkout',
 					value: 'swarm',
 				},
-				{ label: 'full — swarm + web-fetch + issues', value: 'full' },
+				{
+					label: 'audit — read-only review and audit runs',
+					value: 'audit',
+				},
+				{
+					label: 'docs-web — documentation and web sites',
+					value: 'docs-web',
+				},
+				{
+					label: 'everything — every published plugin',
+					value: 'everything',
+				},
 				{
 					label: 'dogfood — snapshot of delendai itself (recommended for your own projects)',
 					value: 'dogfood',

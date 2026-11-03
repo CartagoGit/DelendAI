@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['usage', 'spend'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
-	presets: ['dogfood'],
+	presets: ['swarm', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 1_870,
 		caps: { hard: 2_160, warning: 1_970 },

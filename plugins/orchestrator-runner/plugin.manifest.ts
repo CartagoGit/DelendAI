@@ -15,7 +15,7 @@ export default definePluginManifest({
 		'network',
 		'env-read',
 	],
-	presets: ['dogfood'],
+	presets: ['everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 36_062,
 		caps: { hard: 41_480, warning: 37_870 },

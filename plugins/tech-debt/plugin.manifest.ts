@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['tech-debt'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['dogfood'],
+	presets: ['audit', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 1_778,
 		caps: { hard: 2_050, warning: 1_870 },

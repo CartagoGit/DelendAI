@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['web', 'fetch'],
 	maturity: 'stable',
 	permissions: ['network'],
-	presets: ['full', 'web-app'],
+	presets: ['team-pr', 'audit', 'docs-web', 'everything'],
 	tokenBudget: {
 		staticBytes: 1_000,
 		caps: { hard: 1_070, warning: 1_000 },

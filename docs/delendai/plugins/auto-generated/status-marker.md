@@ -3,7 +3,7 @@ id: status-marker
 package: @delendai/status-marker
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Status Marker
@@ -21,10 +21,10 @@ Status marker + closure canonical line.
 
 ## Presets
 
+- team-pr
 - swarm
-- full
+- everything
 - dogfood
-- web-app
 
 ## Permissions
 

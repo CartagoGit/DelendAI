@@ -921,31 +921,41 @@
 											}
 										},
 										"defaultPreset": {
-											"description": "The preset this plugin belongs to — the group of plugins the server installs together. `vertex` is a legacy brand alias that resolves to `dogfood`.",
+											"description": "The preset this plugin belongs to — the group of plugins the server installs together. Retired ids (`vertex`, `lean`, `standard`, `full` and the stack packs) still resolve to their replacement.",
 											"type": "string",
 											"enum": [
 												"minimal",
+												"solo",
+												"team-pr",
+												"swarm",
+												"audit",
+												"docs-web",
+												"everything",
+												"dogfood",
+												"vertex",
 												"lean",
 												"standard",
-												"swarm",
 												"full",
-												"dogfood",
 												"web-app",
 												"backend-api",
-												"cli-tool",
-												"vertex"
+												"cli-tool"
 											],
 											"enumDescriptions": {
-												"minimal": "The smallest preset: the plugins a project needs to read and edit code, and nothing else.",
-												"lean": "A small preset: `minimal` plus the plugins that keep a repository healthy.",
-												"standard": "The default preset: the plugins most projects want on day one.",
-												"swarm": "The preset for a multi-agent project: `standard` plus the plugins that coordinate agents.",
-												"full": "Every plugin the project ships.",
-												"dogfood": "The preset this project uses on itself: everything, tuned for working on delendai.",
-												"web-app": "A stack pack for a web application. Independent of the presets above: it resolves to its own plugin set.",
-												"backend-api": "A stack pack for a backend service. Independent of the presets above.",
-												"cli-tool": "A stack pack for a command line tool. Independent of the presets above.",
-												"vertex": "A legacy brand alias that resolves to `dogfood`. Kept so older configurations keep working."
+												"minimal": "The smallest pack: the plugins a project needs to read and edit code, and nothing else.",
+												"solo": "One developer and one agent: orientation, memory, docs and the quality, rules and refactor tools for day-to-day coding.",
+												"team-pr": "A team on pull requests: `solo` plus the forge, commit policy, conventions, security and status marker.",
+												"swarm": "Several agents sharing a checkout: the proposal engine, orchestration, logs and the plugins that coordinate agents.",
+												"audit": "Read-only review and audit runs: audit, security, dependency, debt and link checks.",
+												"docs-web": "Documentation and web sites: docs, i18n, link check and allow-listed fetch.",
+												"everything": "Every published plugin, for diagnostics.",
+												"dogfood": "The pack this project uses on itself: a snapshot of its own configuration.",
+												"vertex": "A legacy brand alias that resolves to `dogfood`. Kept so older configurations keep working.",
+												"lean": "Retired: resolves to `solo`.",
+												"standard": "Retired: resolves to `solo`.",
+												"full": "Retired: resolves to `everything`.",
+												"web-app": "Retired as a pack: a stack overlay (i18n, web-fetch) on `solo`.",
+												"backend-api": "Retired as a pack: a stack overlay (container, database) on `solo`.",
+												"cli-tool": "Retired as a pack: a stack overlay (perf) on `solo`."
 											}
 										}
 									},

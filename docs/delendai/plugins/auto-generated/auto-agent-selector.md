@@ -3,7 +3,7 @@ id: auto-agent-selector
 package: @delendai/auto-agent-selector
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Auto Agent Selector
@@ -21,9 +21,8 @@ Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation
 
 ## Presets
 
-- standard
 - swarm
-- full
+- everything
 - dogfood
 
 ## Permissions

@@ -3,7 +3,7 @@ id: context-for-change
 package: @delendai/context-for-change
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Context For Change
@@ -23,6 +23,7 @@ Compact task-oriented change context orchestration across diff, symbols, tests, 
 
 ## Presets
 
+- everything
 - dogfood
 
 ## Permissions

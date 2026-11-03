@@ -13,6 +13,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -40,9 +41,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"standard",
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -69,7 +69,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"api",
@@ -97,6 +97,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -129,7 +131,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"audit-orchestration",
@@ -156,9 +158,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -189,6 +190,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -216,7 +218,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"browser",
@@ -245,7 +247,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"cache",
@@ -276,6 +278,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
+			"swarm",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -308,7 +313,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -337,12 +342,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"container",
@@ -373,6 +374,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -397,8 +399,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -424,10 +427,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"backend-api"
+			"everything"
 		],
 		"capabilities": [
 			"database",
@@ -454,12 +454,11 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"solo",
+			"team-pr",
+			"audit",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"deps",
@@ -486,12 +485,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"diagram",
@@ -518,14 +513,13 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"lean",
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"audit",
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"docs",
@@ -552,13 +546,11 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"solo",
+			"team-pr",
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"env",
@@ -586,9 +578,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
+			"team-pr",
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -619,7 +611,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"everything"
+		],
 		"capabilities": [
 			"execution-env"
 		],
@@ -646,7 +640,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"external-mcps",
@@ -676,8 +670,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -709,7 +704,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"everything"
+		],
 		"capabilities": [],
 		"permissions": [
 			"filesystem-read",
@@ -733,14 +730,13 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"minimal",
-			"lean",
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"audit",
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"git",
@@ -769,7 +765,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"github",
@@ -797,7 +793,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"gitlab",
@@ -825,11 +821,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app"
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"i18n",
@@ -856,6 +850,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -883,7 +879,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "beta",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"issues",
@@ -916,6 +912,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"audit",
+			"docs-web",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -943,7 +942,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"swarm",
-			"full",
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -971,14 +971,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"lean",
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"memory",
@@ -1006,7 +1004,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1033,7 +1031,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"observability"
@@ -1061,6 +1059,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1091,8 +1090,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"dogfood",
-			"cli-tool"
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"perf",
@@ -1121,6 +1120,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1148,6 +1149,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1176,7 +1178,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"prompts",
@@ -1202,11 +1204,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"web-app",
-			"backend-api"
+			"everything"
 		],
 		"capabilities": [
 			"prompts"
@@ -1233,7 +1231,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"swarm",
-			"full",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1266,12 +1264,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"audit",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"quality",
@@ -1300,6 +1298,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1326,11 +1325,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"web-app",
-			"backend-api"
+			"solo",
+			"team-pr",
+			"audit",
+			"everything"
 		],
 		"capabilities": [
 			"refactor"
@@ -1358,7 +1356,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "beta",
 		"visibility": "public",
 		"presets": [
-			"full"
+			"everything"
 		],
 		"capabilities": [
 			"remote-provider"
@@ -1383,12 +1381,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"solo",
+			"team-pr",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"rules",
@@ -1418,14 +1414,13 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"visibility": "public",
 		"presets": [
 			"minimal",
-			"lean",
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"audit",
+			"docs-web",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"lexical-search",
@@ -1455,6 +1450,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1483,7 +1481,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"everything"
+		],
 		"capabilities": [
 			"self-learning"
 		],
@@ -1507,11 +1507,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
-			"swarm",
-			"full",
-			"web-app",
-			"backend-api"
+			"everything"
 		],
 		"capabilities": [
 			"skills"
@@ -1536,10 +1532,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app"
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"status-marker",
@@ -1565,7 +1561,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"maturity": "experimental",
 		"visibility": "public",
-		"presets": [],
+		"presets": [
+			"everything"
+		],
 		"capabilities": [
 			"styles",
 			"design-tokens"
@@ -1589,6 +1587,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"audit",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1614,11 +1614,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api"
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"tests",
@@ -1644,13 +1643,12 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"standard",
+			"solo",
+			"team-pr",
 			"swarm",
-			"full",
-			"dogfood",
-			"web-app",
-			"backend-api",
-			"cli-tool"
+			"audit",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"tests",
@@ -1677,6 +1675,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
+			"swarm",
+			"everything",
 			"dogfood"
 		],
 		"capabilities": [
@@ -1706,8 +1706,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"full",
-			"web-app"
+			"team-pr",
+			"audit",
+			"docs-web",
+			"everything"
 		],
 		"capabilities": [
 			"web",

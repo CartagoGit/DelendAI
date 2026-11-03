@@ -15,6 +15,40 @@ interface IViolation {
 	readonly message: string;
 }
 
+/**
+ * MANIFEST-PRESET-005: a pack must carry every plugin its members declare
+ * as a dependency. A member whose dependency is missing would install a
+ * plugin that cannot resolve what it needs.
+ */
+export const findMissingPresetDependencies = (
+	manifests: readonly {
+		readonly id: string;
+		readonly package: string;
+		readonly dependencies: readonly string[];
+	}[],
+	presetMembership: ReadonlyMap<string, ReadonlySet<string>>,
+): readonly IViolation[] => {
+	const idByPackage = new Map(manifests.map((m) => [m.package, m.id]));
+	const violations: IViolation[] = [];
+	for (const manifest of manifests) {
+		const needed = manifest.dependencies
+			.map((dependency) => idByPackage.get(dependency))
+			.filter((id): id is string => id !== undefined);
+		for (const [preset, members] of presetMembership) {
+			if (!members.has(manifest.id)) continue;
+			for (const dependency of needed) {
+				if (members.has(dependency)) continue;
+				violations.push({
+					plugin: manifest.id,
+					rule: 'MANIFEST-PRESET-005',
+					message: `preset ${JSON.stringify(preset)} ships ${JSON.stringify(manifest.id)} but not its declared dependency ${JSON.stringify(dependency)}.`,
+				});
+			}
+		}
+	}
+	return violations;
+};
+
 export const lintManifestVsPresets = async (
 	root = repoRoot(),
 ): Promise<readonly IViolation[]> => {
@@ -69,6 +103,15 @@ export const lintManifestVsPresets = async (
 			});
 		}
 	}
+	// `dogfood` is a snapshot of this repository's own delendai.config.json,
+	// which `preset-drift` pins; the repository decides what it loads, so a
+	// dependency it leaves out is not the catalogue's to add.
+	const packMembership = new Map(
+		[...presetMembership].filter(([preset]) => preset !== 'dogfood'),
+	);
+	violations.push(
+		...findMissingPresetDependencies(manifests, packMembership),
+	);
 	return violations;
 };
 

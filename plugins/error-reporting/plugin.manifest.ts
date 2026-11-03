@@ -15,7 +15,7 @@ export default definePluginManifest({
 		'network',
 		'forge-write',
 	],
-	presets: ['standard', 'swarm', 'full', 'dogfood'],
+	presets: ['team-pr', 'swarm', 'everything', 'dogfood'],
 	startupActivation: true,
 	// Per-tool permissions: each tool asks for what it does. Both tools
 	// read local state only; the reporter that opens issues is not a tool.

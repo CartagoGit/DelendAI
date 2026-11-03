@@ -3,7 +3,7 @@ id: tech-debt
 package: @delendai/tech-debt
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Tech Debt
@@ -20,6 +20,8 @@ Tech-debt scanner (TODO/FIXME/HACK inventory).
 
 ## Presets
 
+- audit
+- everything
 - dogfood
 
 ## Permissions

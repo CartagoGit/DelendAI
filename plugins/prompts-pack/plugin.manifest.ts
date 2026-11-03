@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['prompts'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['standard', 'swarm', 'full', 'web-app', 'backend-api'],
+	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core'],
 	capabilities: ['prompts'],

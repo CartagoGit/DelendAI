@@ -10,7 +10,7 @@
 import apiPackageJson from '../package.json';
 import z from 'zod';
 
-import { resolvePresetMembers } from '@delendai/core/public';
+import { resolveStackPackMembers } from '@delendai/core/public';
 import { definePlugin } from '@delendai/core/plugin';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
@@ -28,8 +28,8 @@ const formatPluginList = (plugins: readonly string[]): string => {
 };
 
 const backendApiPackMembershipLine = (): string => {
-	const members = resolvePresetMembers('backend-api');
-	return `- \`backend-api\` — the preset currently ships ${formatPluginList(members)}; it does not include \`api\` by default.`;
+	const members = resolveStackPackMembers('backend-api');
+	return `- \`backend-api\` — the stack overlay currently ships ${formatPluginList(members)}; it does not include \`api\` by default.`;
 };
 
 const OptionsSchema = z

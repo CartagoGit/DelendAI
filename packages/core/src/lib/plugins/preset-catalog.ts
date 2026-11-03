@@ -1,6 +1,17 @@
 import { PRESET_METADATA } from '../contracts/constants/preset-metadata.generated';
-import { PRESET_ROLES } from '../contracts/constants/preset-roles.constant';
+import {
+	PRESET_PURPOSES,
+	PRESET_ROLES,
+} from '../contracts/constants/preset-roles.constant';
 import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget-profile.interface';
+import {
+	RETIRED_PRESET_ID,
+	type IRetiredPresetId,
+} from '../contracts/constants/retired-preset-ids.constant';
+import {
+	STACK_PACKS,
+	type IPackId,
+} from '../contracts/constants/stack-packs.constant';
 import { derivePresetBudget, derivePresetSummary } from './preset-derived';
 
 /**
@@ -10,27 +21,25 @@ import { derivePresetBudget, derivePresetSummary } from './preset-derived';
  * `/es/presets` table, the install docs, and any future consumer
  * that wants to know "which plugins does preset X ship?".
  *
- * Invariants (enforced by `preset-catalog.spec.ts` and
- * `tools/scripts/lint/preset-drift.script.ts`):
+ * Invariants (enforced by `preset-catalog.spec.ts`,
+ * `tools/scripts/lint/preset-drift.script.ts` and
+ * `tools/scripts/lint/manifest-vs-presets.script.ts`):
  *
- *   1. The catalog stores DELTAS, not full membership lists. Each
- *      preset's `members` array lists only the plugins *added* on
- *      top of the previous preset in the ⊇ chain. Resolved
- *      membership is the union of every preceding preset.
- *   2. The chain is `full, dogfood ⊇ swarm ⊇ standard ⊇ minimal`,
- *      where `dogfood` is an alternative sibling to `full` (its
- *      delta on top of `swarm` covers everything the delendai
- *      project itself ships, including host-only + opt-in
- *      plugins). Presets marked `independent: true` skip the
- *      chain accumulation and resolve to their own members only.
- *   3. Every `members[i].plugin` corresponds to a real package
- *      either under `plugins/<id>/package.json` or
- *      `packages/<id>/package.json`. Unknown ids fail the lint.
- *   4. Plugins marked `hostOnly: true` MAY appear in `full` or
- *      `dogfood` and MUST NOT appear in `minimal`, `standard`, or
- *      `swarm`.
- *   5. The list of presets is closed: it is exactly the
- *      `PRESET_KIND` tuple.
+ *   1. A preset is a pack BY PURPOSE: it lists its full membership, and
+ *      no pack is a superset of another by construction. Every pack is
+ *      `independent: true`; the delta-chain resolution below is kept only
+ *      for a future pack that wants it.
+ *   2. Every member's declared plugin dependencies are members of the
+ *      same pack (`MANIFEST-PRESET-004`).
+ *   3. Every `members[i].plugin` corresponds to a real package either
+ *      under `plugins/<id>/package.json` or `packages/<id>/package.json`.
+ *   4. Plugins marked `hostOnly: true` MAY appear in `everything`,
+ *      `dogfood` or a pack whose purpose needs them, and MUST NOT appear
+ *      in `minimal`, `solo` or `swarm`.
+ *   5. The list of presets is closed: it is exactly the `PRESET_KIND`
+ *      tuple. Retired ids and the stack packs (`web-app`, `backend-api`,
+ *      `cli-tool`: a purpose pack plus a stack overlay, see
+ *      `pack-defaults-overlay.ts`) resolve through `PRESET_ALIASES`.
  *
  * The catalog is plain data, no plugin-name vocabulary leaks into
  * the rest of the core: only the ids the user types in `--plugins=`
@@ -38,18 +47,13 @@ import { derivePresetBudget, derivePresetSummary } from './preset-derived';
  */
 export const PRESET_KIND = [
 	'minimal',
-	'lean',
-	'standard',
+	'solo',
+	'team-pr',
 	'swarm',
-	'full',
+	'audit',
+	'docs-web',
+	'everything',
 	'dogfood',
-	// Stack packs. Independent: each pack resolves to exactly its
-	// own plugin set + tuned defaults; they never accumulate the
-	// chain and never perturb the resolved membership of
-	// `minimal`/`lean`/`standard`/`swarm`/`full`/`dogfood`.
-	'web-app',
-	'backend-api',
-	'cli-tool',
 ] as const;
 export type IPresetKind = (typeof PRESET_KIND)[number];
 
@@ -72,6 +76,8 @@ export interface IPresetDefinition {
 	readonly summary: string;
 	/** Why this preset exists operationally. */
 	readonly role: string;
+	/** Who the pack is for (i18n key: `preset.<id>.purpose`). */
+	readonly purpose: string;
 	/**
 	 * DELTA members. The effective membership is the union of every
 	 * preceding preset in `PRESET_KIND` plus this `members` array,
@@ -106,7 +112,7 @@ export interface IPresetDefinition {
 	 * callable through the router, `searchTools` and `resolveRoute`. A
 	 * workspace's `managedSurface.progressiveDisclosure` still wins.
 	 *
-	 * On for `swarm` and `full` (v00135): both ship `proposals`, whose 48
+	 * On for `swarm` and `everything` (v00135): both ship `proposals`, whose 48
 	 * tools are a third of their static surface and whose 29
 	 * administrative tools are repair and diagnosis an agent rarely needs
 	 * as its next step. Measured on the native surface it saves 58,827 B
@@ -133,131 +139,205 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'minimal',
 		title: 'minimal',
-		role: PRESET_ROLES.minimal!,
+		role: PRESET_ROLES['minimal']!,
+		purpose: PRESET_PURPOSES['minimal']!,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
+		independent: true,
 	},
 	{
-		// `lean` is the 4-plugin essentials preset: version control
-		// (git), code discovery (search), cross-session continuity
-		// (memory), and documentation (docs) — nothing heavy. Marked
-		// `independent: true` so `resolvePresetMembers('lean')` resolves
-		// to EXACTLY those 4 members and never accumulates the chain.
-		// Because it is independent, its presence between `minimal` and
-		// `standard` does NOT change the resolved membership of
-		// `standard`/`swarm`/`full` (the accumulation loop skips
-		// independent defs that are not the target).
-		id: 'lean',
-		title: 'lean',
-		role: PRESET_ROLES.lean!,
+		id: 'solo',
+		title: 'solo',
+		role: PRESET_ROLES['solo']!,
+		purpose: PRESET_PURPOSES['solo']!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
+			{ plugin: 'quality' },
+			{ plugin: 'rules' },
+			{ plugin: 'deps' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'env' },
+			{ plugin: 'refactor' },
 		],
 		independent: true,
 	},
 	{
-		id: 'standard',
-		title: 'standard',
-		role: PRESET_ROLES.standard!,
+		id: 'team-pr',
+		title: 'team-pr',
+		role: PRESET_ROLES['team-pr']!,
+		purpose: PRESET_PURPOSES['team-pr']!,
 		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
 			{ plugin: 'memory' },
 			{ plugin: 'docs' },
-			{ plugin: 'i18n' },
-			{ plugin: 'prompts-pack' },
-			{ plugin: 'rules' },
 			{ plugin: 'quality' },
-			{ plugin: 'refactor' },
+			{ plugin: 'rules' },
 			{ plugin: 'deps' },
 			{ plugin: 'test-policy' },
-			{ plugin: 'database' },
-			{ plugin: 'container' },
-			{ plugin: 'diagram' },
 			{ plugin: 'env' },
-			{ plugin: 'skills-pack' },
+			{ plugin: 'refactor' },
+			{ plugin: 'forge' },
+			{ plugin: 'commit-policy' },
+			{ plugin: 'conventions' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'security' },
+			{ plugin: 'web-fetch', hostOnly: true },
+			{ plugin: 'status-marker' },
 			{ plugin: 'error-reporting' },
-			{ plugin: 'auto-agent-selector' },
-			{ plugin: 'agent-orchestrator' },
 		],
+		independent: true,
 	},
 	{
 		id: 'swarm',
 		title: 'swarm',
-		role: PRESET_ROLES.swarm!,
+		role: PRESET_ROLES['swarm']!,
+		purpose: PRESET_PURPOSES['swarm']!,
 		progressiveDisclosure: true,
 		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+			{ plugin: 'quality' },
+			{ plugin: 'test-policy' },
 			{ plugin: 'proposals' },
+			{ plugin: 'error-reporting' },
+			{ plugin: 'logs' },
+			{ plugin: 'agent-orchestrator' },
+			{ plugin: 'auto-agent-selector' },
 			{ plugin: 'notification' },
 			{ plugin: 'completion' },
-			{ plugin: 'logs' },
 			{ plugin: 'status-marker' },
-			{ plugin: 'test-convention' },
-			{ plugin: 'conventions' },
 			{ plugin: 'forge' },
-			{ plugin: 'agent-orchestrator' },
+			{ plugin: 'commit-policy' },
+			{ plugin: 'conventions' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'usage-tracking' },
 		],
+		independent: true,
 	},
 	{
-		id: 'full',
-		title: 'full',
-		role: PRESET_ROLES.full!,
+		id: 'audit',
+		title: 'audit',
+		role: PRESET_ROLES['audit']!,
+		purpose: PRESET_PURPOSES['audit']!,
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'docs' },
+			{ plugin: 'audit' },
+			{ plugin: 'security' },
+			{ plugin: 'web-fetch', hostOnly: true },
+			{ plugin: 'deps' },
+			{ plugin: 'tech-debt' },
+			{ plugin: 'link-check' },
+			{ plugin: 'project-health' },
+			{ plugin: 'impact-analysis' },
+			{ plugin: 'refactor' },
+			{ plugin: 'quality' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'logs' },
+		],
+		independent: true,
+	},
+	{
+		id: 'docs-web',
+		title: 'docs-web',
+		role: PRESET_ROLES['docs-web']!,
+		purpose: PRESET_PURPOSES['docs-web']!,
+		members: [
+			{ plugin: 'git' },
+			{ plugin: 'search' },
+			{ plugin: 'memory' },
+			{ plugin: 'docs' },
+			{ plugin: 'i18n' },
+			{ plugin: 'link-check' },
+			{ plugin: 'web-fetch', hostOnly: true },
+			{ plugin: 'env' },
+		],
+		independent: true,
+	},
+	{
+		id: 'everything',
+		title: 'everything',
+		role: PRESET_ROLES['everything']!,
+		purpose: PRESET_PURPOSES['everything']!,
 		progressiveDisclosure: true,
 		members: [
-			{ plugin: 'web-fetch', hostOnly: true },
-			{ plugin: 'issues', hostOnly: true },
-			{ plugin: 'api' },
-			{ plugin: 'remote-provider-core' },
-			{ plugin: 'github' },
-			{ plugin: 'gitlab' },
-			{ plugin: 'prompt-eval' },
+			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'agent-orchestrator' },
-			// Loadable and configurable but, until now, reachable from no
-			// preset at all — `verify:plugin-wiring` flagged them for weeks.
-			// They ship only here, in `full`, because each one costs real
-			// tokens on an adopter's surface. That cost is bounded by lazy
-			// loading: they are in `managed-lazy-catalog.generated.ts`, so a
-			// `full` install pays for a catalog entry, not an imported
-			// module, until a tool of theirs is actually called. If you add a
-			// plugin to any preset, REGENERATE that catalog
-			// (`bun tools/scripts/generate/managed-lazy-catalog.script.ts`) —
-			// one unindexed plugin demotes the entire surface to eager
-			// loading for everyone (`managed-lazy-demotion.ts` now says so on
-			// stderr instead of letting it pass silently).
+			{ plugin: 'api' },
+			{ plugin: 'audit' },
 			{ plugin: 'audit-orchestrator' },
+			{ plugin: 'auto-agent-selector' },
+			{ plugin: 'auto-plugin-selector' },
 			{ plugin: 'browser' },
 			{ plugin: 'cache' },
+			{ plugin: 'commit-policy' },
+			{ plugin: 'completion' },
+			{ plugin: 'container' },
+			{ plugin: 'context-for-change' },
+			{ plugin: 'conventions' },
+			{ plugin: 'database' },
+			{ plugin: 'deps' },
+			{ plugin: 'diagram' },
+			{ plugin: 'docs' },
+			{ plugin: 'env' },
+			{ plugin: 'error-reporting' },
+			{ plugin: 'execution-env' },
 			{ plugin: 'external-mcps' },
+			{ plugin: 'forge' },
+			{ plugin: 'framework-knowledge' },
+			{ plugin: 'git' },
+			{ plugin: 'github' },
+			{ plugin: 'gitlab' },
+			{ plugin: 'i18n' },
+			{ plugin: 'impact-analysis' },
+			{ plugin: 'issues', hostOnly: true },
+			{ plugin: 'link-check' },
+			{ plugin: 'logs' },
+			{ plugin: 'memory' },
+			{ plugin: 'notification' },
 			{ plugin: 'observability' },
-			// `changelog` removed — private, unpublished.
+			{ plugin: 'orchestrator-runner' },
+			{ plugin: 'perf' },
+			{ plugin: 'project-health' },
+			{ plugin: 'project-kpis' },
+			{ plugin: 'prompt-eval' },
+			{ plugin: 'prompts-pack' },
+			{ plugin: 'proposals' },
+			{ plugin: 'quality' },
+			{ plugin: 'quality-policy' },
+			{ plugin: 'refactor' },
+			{ plugin: 'remote-provider-core' },
+			{ plugin: 'rules' },
+			{ plugin: 'search' },
+			{ plugin: 'security' },
+			{ plugin: 'self-learning' },
+			{ plugin: 'skills-pack' },
+			{ plugin: 'status-marker' },
+			{ plugin: 'style-convention' },
+			{ plugin: 'tech-debt' },
+			{ plugin: 'test-convention' },
+			{ plugin: 'test-policy' },
+			{ plugin: 'usage-tracking' },
+			{ plugin: 'web-fetch', hostOnly: true },
 		],
+		independent: true,
 	},
 	{
-		// `dogfood` mirrors the plugin set of the delendai project
-		// itself (`delendai.config.json` at the repo root) — every
-		// key under its `plugins` object, INCLUDING `proposals` (the
-		// orchestration/swarm engine): delendai dogfoods its own
-		// orchestrator in its own dev surface, and this preset is what
-		// a new adopter gets via `delendai init:default`'s default, so it
-		// must include `proposals` too (x00166 — the orchestrator is
-		// the whole point of adopting delendai; this preset used to
-		// silently omit it, a stale drift caught live 2026-07-29).
-		// Marked `independent: true` so `resolvePresetMembers` skips the
-		// chain accumulation and returns ONLY the members listed
-		// below — the exact snapshot the project ships. `preset-drift`
-		// verifies this list against the live root
-		// `delendai.config.json` plugin keys on every validate pass.
-		//
-		// Rename: this preset was renamed from `vertex` (the
-		// legacy brand id) to `dogfood` (the semantic name — what the
-		// delendai team uses internally; matches the canonical role
-		// `'delendai-dogfood'` already in `preset-roles.constant.ts`).
-		// Old configs / scripts that pass `--preset=vertex` are still
-		// accepted via the `PRESET_ALIASES` map in
-		// `resolvePresetMembers` below; new code MUST use `dogfood`.
+		// `dogfood` is this repository's own snapshot: every key under the
+		// `plugins` object of the root `delendai.config.json`, and nothing
+		// else. `preset-drift` verifies the list against that file on every
+		// validate pass, so it changes only when the repository's own config
+		// does. It is a peer of the purpose packs, never a superset of one.
 		id: 'dogfood',
 		title: 'dogfood',
 		role: PRESET_ROLES.dogfood!,
+		purpose: PRESET_PURPOSES.dogfood!,
 		members: [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
@@ -297,76 +377,6 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'test-policy' },
 			{ plugin: 'usage-tracking' },
 			{ plugin: 'error-reporting' },
-		],
-		independent: true,
-	},
-	// Stack packs. Each resolves to exactly its own members;
-	// never accumulates the ⊇ chain. `resolvePackOptions`
-	// (in `pack-defaults.ts`) overlays tuned per-plugin defaults on
-	// top of `PLUGIN_DEFAULTS` and below the user's explicit config.
-	{
-		id: 'web-app',
-		title: 'web-app',
-		role: PRESET_ROLES['web-app']!,
-		members: [
-			{ plugin: 'git' },
-			{ plugin: 'search' },
-			{ plugin: 'memory' },
-			{ plugin: 'docs' },
-			{ plugin: 'i18n' },
-			{ plugin: 'rules' },
-			{ plugin: 'quality' },
-			{ plugin: 'refactor' },
-			{ plugin: 'deps' },
-			{ plugin: 'test-policy' },
-			{ plugin: 'test-convention' },
-			{ plugin: 'diagram' },
-			{ plugin: 'env' },
-			{ plugin: 'container' },
-			{ plugin: 'web-fetch', hostOnly: true },
-			{ plugin: 'status-marker' },
-			{ plugin: 'skills-pack' },
-			{ plugin: 'prompts-pack' },
-		],
-		independent: true,
-	},
-	{
-		id: 'backend-api',
-		title: 'backend-api',
-		role: PRESET_ROLES['backend-api']!,
-		members: [
-			{ plugin: 'git' },
-			{ plugin: 'search' },
-			{ plugin: 'memory' },
-			{ plugin: 'docs' },
-			{ plugin: 'rules' },
-			{ plugin: 'quality' },
-			{ plugin: 'refactor' },
-			{ plugin: 'deps' },
-			{ plugin: 'test-policy' },
-			{ plugin: 'test-convention' },
-			{ plugin: 'database' },
-			{ plugin: 'diagram' },
-			{ plugin: 'env' },
-			{ plugin: 'container' },
-			{ plugin: 'skills-pack' },
-			{ plugin: 'prompts-pack' },
-		],
-		independent: true,
-	},
-	{
-		id: 'cli-tool',
-		title: 'cli-tool',
-		role: PRESET_ROLES['cli-tool']!,
-		members: [
-			{ plugin: 'git' },
-			{ plugin: 'search' },
-			{ plugin: 'memory' },
-			{ plugin: 'docs' },
-			{ plugin: 'env' },
-			// `changelog` removed — private, unpublished.
-			{ plugin: 'perf' },
-			{ plugin: 'test-policy' },
 		],
 		independent: true,
 	},
@@ -427,25 +437,46 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
 );
 
 /**
- * Backward-compatibility aliases for renamed presets.
+ * Backward-compatibility aliases for retired preset ids.
  *
- * Maps deprecated preset ids (the legacy `vertex` brand) to their
- * canonical successor (`dogfood`). Applied inside `resolvePresetMembers`
- * BEFORE the catalog lookup so old configs / scripts that pass
- * `--preset=vertex` continue to resolve to the same plugin set as
- * `--preset=dogfood`.
+ * Maps every id the catalogue stopped listing to the pack that replaces
+ * it, and, for the stack packs, to the stack overlay layered on top
+ * (`STACK_PACKS`). Applied inside `resolvePresetMembers` and
+ * `normalizePresetInput` BEFORE the catalog lookup so old configs and
+ * scripts that pass `--preset=<retired id>` keep resolving.
  *
- * A non-empty stderr line is emitted on every alias hit so operators
- * see the deprecation in CI logs. The runtime behavior is unchanged.
+ * A non-empty stderr line naming the replacement is emitted on every
+ * alias hit so operators see the deprecation in CI logs.
  *
- * Adding a new alias: drop the legacy id → canonical id mapping here.
- * Removing one: gate on a removal-release doc + a follow-up audit
- * proposal (this file is the single switchboard for the rename).
+ * Adding a new alias: drop the legacy id here. Removing one: gate on a
+ * removal-release doc + a follow-up audit proposal (this table is the
+ * single switchboard for renames).
  */
-const PRESET_ALIASES: Readonly<Record<string, IPresetKind>> = {
-	// Rename: `vertex` (legacy brand id) → `dogfood`
-	// (semantic name — what the delendai team uses internally).
-	vertex: 'dogfood',
+interface IPresetAlias {
+	readonly replacement: IPresetKind;
+	/** The stack overlay the old id also stood for, when it was a stack pack. */
+	readonly stack?: IPackId;
+}
+
+export { RETIRED_PRESET_ID, type IRetiredPresetId };
+
+const PRESET_ALIASES: Readonly<Record<IRetiredPresetId, IPresetAlias>> = {
+	vertex: { replacement: 'dogfood' },
+	lean: { replacement: 'solo' },
+	standard: { replacement: 'solo' },
+	full: { replacement: 'everything' },
+	'web-app': {
+		replacement: STACK_PACKS['web-app'].basePack,
+		stack: 'web-app',
+	},
+	'backend-api': {
+		replacement: STACK_PACKS['backend-api'].basePack,
+		stack: 'backend-api',
+	},
+	'cli-tool': {
+		replacement: STACK_PACKS['cli-tool'].basePack,
+		stack: 'cli-tool',
+	},
 };
 
 /**
@@ -466,12 +497,33 @@ type TStderrHost = {
 	};
 };
 
-const warnDeprecatedPresetAlias = (alias: string, canonical: string): void => {
-	const write = (globalThis as TStderrHost).process?.stderr?.write;
-	write?.(
-		`[delendai/preset] preset '${alias}' is deprecated, use '${canonical}' instead. ` +
-			`Both resolve to the same plugin set; the alias will be removed in a future release.\n`,
+const warnDeprecatedPresetAlias = (
+	alias: string,
+	{ replacement, stack }: IPresetAlias,
+): void => {
+	const stderr = (globalThis as TStderrHost).process?.stderr;
+	const instead =
+		stack === undefined
+			? `'${replacement}'`
+			: `'${replacement}' with the '${stack}' stack overlay`;
+	stderr?.write?.(
+		`[delendai/preset] preset '${alias}' is deprecated, use ${instead} instead. ` +
+			`The alias will be removed in a future release.\n`,
 	);
+};
+
+/**
+ * The plugins of a stack overlay: its base purpose pack plus the plugins
+ * the stack adds, deduplicated. Silent, unlike resolving a retired id.
+ */
+export const resolveStackPackMembers = (stack: IPackId): readonly string[] => {
+	const { basePack, plugins } = STACK_PACKS[stack];
+	return [
+		...new Set([
+			...resolvePresetMembersFrom(PRESET_CATALOG, basePack),
+			...plugins,
+		]),
+	];
 };
 
 /**
@@ -484,7 +536,7 @@ const warnDeprecatedPresetAlias = (alias: string, canonical: string): void => {
  * first, host-only last), is deduplicated, and is safe to feed
  * straight into `--plugins=A,B,C`.
  *
- * Deprecated preset ids (`vertex`) are accepted via `PRESET_ALIASES`
+ * Retired preset ids are accepted via `PRESET_ALIASES`
  * and resolved to their canonical successor; a deprecation warning
  * is emitted on stderr for each alias hit.
  */
@@ -492,9 +544,11 @@ export const resolvePresetMembers = (
 	id: IPresetKind | string | undefined,
 ): readonly string[] => {
 	if (typeof id === 'string' && Object.hasOwn(PRESET_ALIASES, id)) {
-		const canonical = PRESET_ALIASES[id] as IPresetKind;
-		warnDeprecatedPresetAlias(id, canonical);
-		return resolvePresetMembersFrom(PRESET_CATALOG, canonical);
+		const alias = PRESET_ALIASES[id as IRetiredPresetId];
+		warnDeprecatedPresetAlias(id, alias);
+		return alias.stack === undefined
+			? resolvePresetMembersFrom(PRESET_CATALOG, alias.replacement)
+			: resolveStackPackMembers(alias.stack);
 	}
 	return resolvePresetMembersFrom(PRESET_CATALOG, id);
 };
@@ -502,7 +556,7 @@ export const resolvePresetMembers = (
 /**
  * b00239 rename / single-frontier contract (x00504 / reviewer):
  * `normalizePresetInput()` is the ONLY place that translates the
- * external aliases (`vertex`) into the internal `IPresetKind`.
+ * external aliases (retired ids) into the internal `IPresetKind`.
  * After this call all downstream code can rely on the kind being
  * one of the values of `PRESET_KIND`; schemas (`z.enum(PRESET_KIND)`),
  * type guards (`isPresetKind`), and dispatch tables can assume the
@@ -516,9 +570,9 @@ export const normalizePresetInput = (
 ): IPresetKind | undefined => {
 	if (value === undefined || value === null) return undefined;
 	if (Object.hasOwn(PRESET_ALIASES, value)) {
-		const canonical = PRESET_ALIASES[value] as IPresetKind;
-		warnDeprecatedPresetAlias(value, canonical);
-		return canonical;
+		const alias = PRESET_ALIASES[value as IRetiredPresetId];
+		warnDeprecatedPresetAlias(value, alias);
+		return alias.replacement;
 	}
 	if ((PRESET_KIND as readonly string[]).includes(value)) {
 		return value as IPresetKind;

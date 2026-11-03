@@ -23,7 +23,7 @@ describe('InitAnswers schema (f00084 S1)', () => {
 
 	it('accepts a fully specified answer set', () => {
 		const parsed = InitAnswers.parse({
-			preset: 'full',
+			preset: 'everything',
 			extraPlugins: ['audit'],
 			excludedPlugins: ['issues'],
 			hostInstructions: 'overwrite',
@@ -35,7 +35,7 @@ describe('InitAnswers schema (f00084 S1)', () => {
 			webFetchAllowList: ['api.github.com'],
 			workspaceRoot: '/tmp/x',
 		});
-		expect(parsed.preset).toBe('full');
+		expect(parsed.preset).toBe('everything');
 		expect(parsed.extraPlugins).toEqual(['audit']);
 		expect(parsed.excludedPlugins).toEqual(['issues']);
 		expect(parsed.hostInstructions).toBe('overwrite');

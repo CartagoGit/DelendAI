@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['refactor'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: ['standard', 'swarm', 'full', 'web-app', 'backend-api'],
+	presets: ['solo', 'team-pr', 'audit', 'everything'],
 	tokenBudget: {
 		staticBytes: 6_270,
 		caps: { hard: 7_220, warning: 6_590 },

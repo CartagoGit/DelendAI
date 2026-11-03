@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['perf', 'benchmark'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'process'],
-	presets: ['dogfood', 'cli-tool'],
+	presets: ['everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 3_668,
 		caps: { hard: 4_220, warning: 3_860 },

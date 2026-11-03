@@ -53,7 +53,7 @@ describe('preset metadata generation', () => {
 	it('rejects duplicate or missing preset entries', () => {
 		const withoutCliTool = PRESET_METADATA_IDS.slice(0, -1).map(makeEntry);
 		expect(() => orderPresetMetadataEntries(withoutCliTool)).toThrow(
-			'missing generated entries for cli-tool',
+			'missing generated entries for dogfood',
 		);
 
 		const duplicateMinimal = [

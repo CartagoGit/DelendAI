@@ -30,12 +30,14 @@ import { join, relative, resolve } from 'node:path';
 import {
 	PRESET_CATALOG,
 	resolvePresetMembers,
+	resolveStackPackMembers,
 	type IPresetDefinition,
 } from '@delendai/core/public';
 import {
 	PACK_DEFAULTS_OVERLAY,
 	PACK_IDS,
 	PRESET_KIND,
+	RETIRED_PRESET_ID,
 	parseJsonc,
 } from '@delendai/core/cli';
 
@@ -63,12 +65,7 @@ const SCAN_ROOTS: readonly string[] = [
 
 const FILE_GLOBS = /\.(md|mdx|astro|ts|tsx|js|mjs)$/;
 
-const NON_HOST_CHAIN_PRESETS = [
-	'minimal',
-	'lean',
-	'standard',
-	'swarm',
-] as const;
+const NON_HOST_CHAIN_PRESETS = ['minimal', 'solo', 'swarm'] as const;
 
 const PRESET_MEMBERSHIPS: Readonly<Record<string, readonly string[]>> =
 	Object.fromEntries(
@@ -161,13 +158,16 @@ export const scanText = (
 		const presetMatch = line.match(/--preset=([a-z][a-z0-9-]*)/);
 		if (presetMatch?.[1] !== undefined) {
 			const name = presetMatch[1];
-			if (!(PRESET_KIND as readonly string[]).includes(name)) {
+			if (
+				!(PRESET_KIND as readonly string[]).includes(name) &&
+				!(RETIRED_PRESET_ID as readonly string[]).includes(name)
+			) {
 				findings.push({
 					absPath,
 					relPath,
 					line: i + 1,
 					kind: 'unknown-preset',
-					detail: `--preset=${name} is not a known preset (known: ${PRESET_KIND.join(', ')})`,
+					detail: `--preset=${name} is not a known preset (known: ${[...PRESET_KIND, ...RETIRED_PRESET_ID].join(', ')})`,
 				});
 			}
 		}
@@ -284,7 +284,7 @@ export const findHostOnlyChainViolations = (
 				relPath: 'packages/core/src/lib/plugins/preset-catalog.ts',
 				line: 0,
 				kind: 'host-only-chain-violation' as const,
-				detail: `preset "${definition.id}" includes host-only plugin "${member.plugin}"; host-only members belong only in full/dogfood or independent host-facing packs.`,
+				detail: `preset "${definition.id}" includes host-only plugin "${member.plugin}"; host-only members belong only in everything/dogfood or a pack whose purpose needs them.`,
 			}));
 	});
 
@@ -337,7 +337,11 @@ export const findPackOverlayDrift = (
 ): readonly IPresetDriftFinding[] => {
 	const findings: IPresetDriftFinding[] = [];
 	for (const packId of packIds) {
-		const memberSet = new Set(resolvePresetMembers(packId));
+		const memberSet = new Set(
+			resolveStackPackMembers(
+				packId as Parameters<typeof resolveStackPackMembers>[0],
+			),
+		);
 		for (const pluginId of Object.keys(overlay[packId] ?? {})) {
 			if (memberSet.has(pluginId)) continue;
 			findings.push({
@@ -346,7 +350,7 @@ export const findPackOverlayDrift = (
 					'packages/core/src/lib/plugins/pack-defaults-overlay.ts',
 				line: 0,
 				kind: 'stack-pack-overlay-drift',
-				detail: `pack overlay "${packId}" configures plugin "${pluginId}", but PRESET_CATALOG does not ship that plugin in preset "${packId}".`,
+				detail: `pack overlay "${packId}" configures plugin "${pluginId}", but the "${packId}" stack overlay (its base pack plus its own plugins) does not ship that plugin.`,
 			});
 		}
 	}

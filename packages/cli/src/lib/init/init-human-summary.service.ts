@@ -20,6 +20,8 @@
  * Pure functions — no IO, no env reads outside the call site.
  */
 
+import { resolvePresetMembers } from '@delendai/core/public';
+
 import type { IInitHumanInput } from '../../contracts/interfaces/init.interface';
 import {
 	arrow,
@@ -169,7 +171,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			),
 		);
 	}
-	if (answers.preset === 'dogfood' || answers.preset === 'standard') {
+	if (resolvePresetMembers(answers.preset).includes('error-reporting')) {
 		lines.push('');
 		lines.push(enabled ? subheading('Error reporting') : 'Error reporting');
 		lines.push(

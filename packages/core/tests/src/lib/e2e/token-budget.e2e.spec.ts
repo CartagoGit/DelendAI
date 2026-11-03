@@ -492,37 +492,46 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		}
 	});
 
-	it('lean preset remains materially smaller than the collaboration surface', async () => {
-		const lean = await connectClient('lean', true, {
-			clientInfo: modernClientInfo,
-			surfaceMode: 'native',
-		});
-		try {
-			const toolList = await lean.client.listTools();
-			const toolsListBytes = Buffer.byteLength(
-				JSON.stringify(toolList.tools),
-				'utf8',
-			);
-			const maxPluginBytes = marginalPluginBytes(
-				toolList.tools,
-				lean.pluginIds,
-			);
-			expectWithinBudget(
-				'lean tools/list',
-				toolsListBytes,
-				TOKEN_BUDGETS.presets.lean.toolsList,
-			);
-			expectWithinBudget('lean marginal plugin bytes', maxPluginBytes, {
-				hard: TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginHard,
-				warning:
-					TOKEN_BUDGETS.presets.lean.toolsList.marginalPluginWarning,
+	it('solo preset stays within its budget and minimal remains materially smaller than the collaboration surface', async () => {
+		for (const presetId of ['minimal', 'solo'] as const) {
+			const connection = await connectClient(presetId, true, {
+				clientInfo: modernClientInfo,
+				surfaceMode: 'native',
 			});
-			expect(toolsListBytes).toBeLessThan(
-				TOKEN_BUDGETS.presets.swarm.toolsList.hard *
-					TOKEN_BUDGETS.invariants.leanVsSwarmToolsListMaxRatio,
-			);
-		} finally {
-			await lean.close();
+			try {
+				const toolList = await connection.client.listTools();
+				const toolsListBytes = Buffer.byteLength(
+					JSON.stringify(toolList.tools),
+					'utf8',
+				);
+				const maxPluginBytes = marginalPluginBytes(
+					toolList.tools,
+					connection.pluginIds,
+				);
+				const budget = TOKEN_BUDGETS.presets[presetId].toolsList;
+				expectWithinBudget(
+					`${presetId} tools/list`,
+					toolsListBytes,
+					budget,
+				);
+				expectWithinBudget(
+					`${presetId} marginal plugin bytes`,
+					maxPluginBytes,
+					{
+						hard: budget.marginalPluginHard,
+						warning: budget.marginalPluginWarning,
+					},
+				);
+				if (presetId === 'minimal') {
+					expect(toolsListBytes).toBeLessThan(
+						TOKEN_BUDGETS.presets.swarm.toolsList.hard *
+							TOKEN_BUDGETS.invariants
+								.minimalVsSwarmToolsListMaxRatio,
+					);
+				}
+			} finally {
+				await connection.close();
+			}
 		}
 	});
 
@@ -540,7 +549,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	 * the alias map in `preset-catalog.ts`, but `TOKEN_BUDGETS.presets`
 	 * only carries the canonical key).
 	 */
-	it.each(['minimal', 'standard', 'full', 'dogfood'] as const)(
+	it.each(['team-pr', 'audit', 'docs-web', 'everything', 'dogfood'] as const)(
 		'%s preset keeps its marginal plugin ceiling honest',
 		async (presetId) => {
 			// Native, pinned: the marginal ceiling governs the static
