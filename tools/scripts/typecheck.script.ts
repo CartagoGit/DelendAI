@@ -93,7 +93,7 @@ function runTsc(
 	// checked again (measured 71 s cold, 3.5 s warm for a one-file change).
 	const buildInfo = join(
 		rootDir,
-		'.cache/delendai/tsc',
+		'.cache/delendai/state/tsc',
 		`${projectPath.replace(/[^\w.-]+/gu, '_')}.tsbuildinfo`,
 	);
 	const result = spawnSync(
