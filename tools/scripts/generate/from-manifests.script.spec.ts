@@ -199,7 +199,7 @@ const withFixture = async (
 				"\ttags: ['health', 'aggregation', 'f00166'],",
 				"\tmaturity: 'experimental',",
 				"\tpermissions: ['filesystem-read'],",
-				"\tpresets: ['everything', 'dogfood'],",
+				"\tpresets: ['audit', 'everything', 'dogfood'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['health-aggregation'],",
