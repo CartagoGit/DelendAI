@@ -2,10 +2,14 @@
 id: x01011
 title: "Callers in one process take the compute slot in call order"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 62759aba-7d6c-4929-842b-55e701e67c68
+last-correlation-id: 62759aba-7d6c-4929-842b-55e701e67c68
+last-transition-from: ready
+last-transition-at: 2026-11-03T17:05:59.122Z
 ---
 
 # x01011 — Callers in one process take the compute slot in call order
