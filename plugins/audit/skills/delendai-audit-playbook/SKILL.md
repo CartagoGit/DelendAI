@@ -3,6 +3,7 @@ name: delendai-audit-playbook
 appliesTo: ['@delendai/audit']
 description: Use when running an exhaustive qualitative audit by reading code: what to read, in which order, what counts as a finding. Read before creating an audit proposal.
 tools: ['delendai_audit_audit_plan', 'delendai_audit_audit_run', 'delendai_audit_self_audit']
+runsApart: true
 ---
 
 # Audit Playbook — delendai exhaustive audit
