@@ -50,11 +50,11 @@ const fakeClient = (): McpStdioClient =>
 
 const makeView = (): {
 	view: IWebviewPanel;
-	posted: Array<Record<string, unknown>>;
+	posted: Array<{ command?: unknown; [key: string]: unknown }>;
 	dispose(): void;
 	send(message: unknown): Promise<unknown>;
 } => {
-	const posted: Array<Record<string, unknown>> = [];
+	const posted: Array<{ command?: unknown; [key: string]: unknown }> = [];
 	let onDispose: (() => void) | undefined;
 	let onMessage: ((message: unknown) => unknown) | undefined;
 	const view: IWebviewPanel = {
@@ -332,7 +332,7 @@ describe('DashboardWebviewViewProvider messages', () => {
 			settings: { theme: 'not-a-theme' },
 		});
 		const results = view.posted.filter(
-			(m) => m['command'] === 'settingsResult',
+			(m) => m.command === 'settingsResult',
 		);
 		expect(results).toHaveLength(3);
 		expect(results[0]).toHaveProperty('settings');
@@ -343,7 +343,7 @@ describe('DashboardWebviewViewProvider messages', () => {
 		const { provider, view } = setup();
 		await provider.resolveWebviewView(view.view);
 		await view.send({ command: 'settings', action: 'reset' });
-		expect(view.posted.some((m) => m['command'] === 'settingsResult')).toBe(
+		expect(view.posted.some((m) => m.command === 'settingsResult')).toBe(
 			false,
 		);
 	});
@@ -401,7 +401,7 @@ describe('DashboardWebviewViewProvider messages', () => {
 		await waitUntil('live event posted', () =>
 			view.posted.some(
 				(m) =>
-					m['command'] === 'hostLogEvent' &&
+					m.command === 'hostLogEvent' &&
 					JSON.stringify(m).includes('live'),
 			),
 		);
