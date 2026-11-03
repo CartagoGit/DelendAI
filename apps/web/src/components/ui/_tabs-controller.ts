@@ -77,19 +77,21 @@ const bindOne = (root: HTMLElement): void => {
 	/** Run `finish` once, on `animationend` or after the fallback delay. */
 	const scheduleFade = (p: HTMLElement, finish: () => void): void => {
 		cancelFade(p);
+		let live = true;
 		let timer: ReturnType<typeof setTimeout> | undefined;
-		const cancel = (): void => {
-			p.removeEventListener('animationend', done);
-			if (timer !== undefined) clearTimeout(timer);
-		};
 		const done = (): void => {
-			cancel();
+			if (!live) return;
+			live = false;
+			if (timer !== undefined) clearTimeout(timer);
 			pending.delete(p);
 			finish();
 		};
 		p.addEventListener('animationend', done, { once: true });
 		timer = setTimeout(done, FADE_FALLBACK_MS);
-		pending.set(p, cancel);
+		pending.set(p, () => {
+			live = false;
+			if (timer !== undefined) clearTimeout(timer);
+		});
 	};
 
 	/**

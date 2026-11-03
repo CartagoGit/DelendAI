@@ -32,7 +32,7 @@ gpt-6.1-sol's contribution to a00095, confirmed in a real Chrome: WEB-TABS01 an 
 
 ### S1 — Tabs, copy and focus
 - **Status**: pending
-- **Files**: `apps/web/src/components/ui/_tabs-controller.ts`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/ui/CopyButton.astro`, `apps/web/src/components/ui/CodeBlock.astro`, `apps/web/src/components/Config.astro`, `apps/web/src/components/ui/_focus-trap.ts`, `apps/web/src/components/ui/_focus-trap.spec.ts`
+- **Files**: `apps/web/src/components/ui/_tabs-controller.ts`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/ui/CopyButton.astro`, `apps/web/src/components/ui/CodeBlock.astro`, `apps/web/src/components/Config.astro`, `apps/web/src/components/ui/_focus-trap.ts`, `apps/web/src/components/ui/_focus-trap.spec.ts`, `apps/web/src/components/ui/_tabs-controller.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Controllers rebind on astro:page-load and cancel stale fade callbacks (WEB-TABS01, WEB-TABS02)."
@@ -40,7 +40,7 @@ gpt-6.1-sol's contribution to a00095, confirmed in a real Chrome: WEB-TABS01 an 
 
 ### S2 — Nav styles and brand assets
 - **Status**: pending
-- **Files**: `apps/web/src/components/SiteNav.astro`, `apps/web/src/styles/components/_nav.scss`, `apps/web/src/styles/components/_nav-media.scss`, `apps/web/scripts/fetch-brand-logos.ts`, `apps/web/scripts/lib/brand-logo-files.ts`, `apps/web/scripts/__tests__/brand-logo-files.spec.ts`
+- **Files**: `apps/web/src/components/SiteNav.astro`, `apps/web/src/styles/components/_nav.scss`, `apps/web/src/styles/components/_nav-media.scss`, `apps/web/scripts/fetch-brand-logos.ts`, `apps/web/scripts/lib/brand-logo-files.ts`, `apps/web/scripts/lib/brand-logo-refresh.ts`, `apps/web/scripts/__tests__/brand-logo-files.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The More dropdown classes are styled (WEB-CSS01)."

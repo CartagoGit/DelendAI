@@ -15,6 +15,7 @@ import {
 	sniff,
 	staleLogoFiles,
 } from '../lib/brand-logo-files';
+import { refreshLogos } from '../lib/brand-logo-refresh';
 
 const bytes = (s: string): Uint8Array => new TextEncoder().encode(s);
 const dirs: string[] = [];
@@ -65,5 +66,81 @@ describe('staleLogoFiles', () => {
 		expect(
 			staleLogoFiles(files, new Set(['github']), new Set(['github.png'])),
 		).toEqual(['github.svg']);
+	});
+});
+
+describe('refreshLogos', () => {
+	const run = async (
+		body: (url: string) => Response,
+		cached: Record<string, string>,
+	) => {
+		const dir = mkdtempSync(join(tmpdir(), 'logos-'));
+		dirs.push(dir);
+		for (const [name, content] of Object.entries(cached)) {
+			writeFileSync(join(dir, name), content);
+		}
+		const fake = ((url: string) =>
+			Promise.resolve(body(url))) as typeof fetch;
+		await refreshLogos(
+			[
+				{ outName: 'a', sources: ['https://x/a.svg'] },
+				{ outName: 'b', sources: ['https://x/b.svg'] },
+			],
+			dir,
+			fake,
+		);
+		return dir;
+	};
+
+	it('keeps the cached logo when the source is unreachable or serves HTML', async () => {
+		const dir = await run(
+			(url) =>
+				url.endsWith('a.svg')
+					? new Response('<html>502</html>')
+					: new Response('nope', { status: 500 }),
+			{ 'a.svg': '<svg>old-a</svg>', 'b.svg': '<svg>old-b</svg>' },
+		);
+		expect(readFileSync(join(dir, 'a.svg'), 'utf8')).toBe(
+			'<svg>old-a</svg>',
+		);
+		expect(readFileSync(join(dir, 'b.svg'), 'utf8')).toBe(
+			'<svg>old-b</svg>',
+		);
+	});
+
+	it('replaces a cached logo with a fresh SVG and reports unchanged ones', async () => {
+		const dir = await run(
+			(url) =>
+				new Response(
+					url.endsWith('a.svg')
+						? '<svg>new-a</svg>'
+						: '<svg>old-b</svg>',
+				),
+			{ 'a.svg': '<svg>old-a</svg>', 'b.svg': '<svg>old-b</svg>' },
+		);
+		expect(readFileSync(join(dir, 'a.svg'), 'utf8')).toBe(
+			'<svg>new-a</svg>',
+		);
+		expect(readFileSync(join(dir, 'b.svg'), 'utf8')).toBe(
+			'<svg>old-b</svg>',
+		);
+	});
+
+	it('removes a stale logo of another extension once the brand refreshed', async () => {
+		const dir = await run(() => new Response('<svg/>'), { 'a.png': 'x' });
+		expect(readdirSync(dir)).not.toContain('a.png');
+		expect(readdirSync(dir)).toContain('a.svg');
+	});
+
+	it('survives a rejecting fetch', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'logos-'));
+		dirs.push(dir);
+		const boom = (() => Promise.reject(new Error('down'))) as typeof fetch;
+		await refreshLogos(
+			[{ outName: 'a', sources: ['https://x/a'] }],
+			dir,
+			boom,
+		);
+		expect(readdirSync(dir)).toEqual(['.gitkeep']);
 	});
 });
