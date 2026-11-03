@@ -85,6 +85,20 @@ What exists already: a managed, lazy tool surface; compact tools; the bootstrap 
 - acceptance:
   - "work enter, prove, deliver and publish answer agents in a few lines by default (the PR, the failing lines), with the full record behind a flag; measured before and after."
 
+### S8 — One waiter per thing, ending with its work
+- **Status**: pending
+- **Files**: `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `docs/delendai/host-appendices/generic-hosts.md`
+- **Gate**: none
+- acceptance:
+  - "An agent waiting on delendai work is given one way to wait that ends when the work does (the command's exit or a marker it writes, never a pattern that can match the waiter itself), and is told to start it once and to leave none behind when it reports; measured on 2026-11-03: an 18-hour orphan, a self-matching `pgrep -f`, and twelve copies of one loop."
+
+### S9 — The proof queue takes one turn per unit and tip
+- **Status**: pending
+- **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`
+- **Gate**: none
+- acceptance:
+  - "A second prove, deliver or publish of a unit whose tip is already waiting for the slot joins that wait and receives its answer instead of queueing a second proof; a spec covers two callers on one tip, and two tips of one unit, where only the newer one is proved."
+
 ## acceptance
 
 - Every host in the catalogue states how it runs subagents (and whether one starts with its own context), whether a skill can run apart, how long its prompt cache lives, how it compacts, and where its usage can be read; what is not known is stated as unknown, never guessed.
@@ -94,3 +108,5 @@ What exists already: a managed, lazy tool surface; compact tools; the bootstrap 
 - An agent that waits on long work is told, from its host profile, when to take a turn so its cache does not expire, and the guidance reaches every project through the skill and the host text init writes.
 - How many agents work at once is bounded by the machine slot and the quota left; work beyond it queues and says so, and time spent queued is reported, so parallelism never costs more than it saves.
 - work enter, prove, deliver and publish answer agents in a few lines by default (the PR, the failing lines), with the full record behind a flag; measured before and after.
+- An agent waiting on delendai work is given one way to wait that ends when the work does (the command's exit or a marker it writes, never a pattern that can match the waiter itself), and is told to start it once and to leave none behind when it reports; measured on 2026-11-03: an 18-hour orphan, a self-matching `pgrep -f`, and twelve copies of one loop.
+- A second prove, deliver or publish of a unit whose tip is already waiting for the slot joins that wait and receives its answer instead of queueing a second proof; a spec covers two callers on one tip, and two tips of one unit, where only the newer one is proved.
