@@ -18,7 +18,13 @@ import {
 	type IHostAdapter,
 	type IWebviewPanel,
 } from '@delendai/ui-extension/public';
-import { withCsp } from '@delendai/ui-extension/webview';
+import {
+	renderProposalDetailBody,
+	renderToolDetailBody,
+	type IProposalDetail,
+	type IToolDetail,
+	withCsp,
+} from '@delendai/ui-extension/webview';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
 import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';
@@ -266,6 +272,12 @@ export class DashboardWebviewViewProvider {
 			await view.webview.postMessage?.({
 				command,
 				model: payload.model,
+				html:
+					payload.kind === 'tool'
+						? renderToolDetailBody(payload.model as IToolDetail)
+						: renderProposalDetailBody(
+								payload.model as IProposalDetail,
+							),
 			});
 			return true;
 		} catch {
@@ -287,6 +299,8 @@ export class DashboardWebviewViewProvider {
 	async resolveWebviewView(view: IWebviewPanel): Promise<void> {
 		this.view = view;
 		view.onDidDispose(() => {
+			this.logsAbort?.abort();
+			this.logsAbort = undefined;
 			if (this.view === view) this.view = undefined;
 		});
 		view.webview.onDidReceiveMessage?.((message: unknown) =>

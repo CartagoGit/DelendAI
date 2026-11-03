@@ -18,8 +18,6 @@ import { buildKpiStrip } from './builders/build-kpi-strip';
 import { buildTabsBar } from './builders/build-tabs-bar';
 import { buildPanels } from './builders/build-panels';
 import { buildFooter } from './builders/build-footer';
-import { renderToolDetailBody } from './render-tool-detail';
-import { renderProposalDetailBody } from './render-proposal-detail';
 
 export interface IRenderDashboardOptions {
 	readonly docsUrl: string;
@@ -112,6 +110,12 @@ const CLIENT_SCRIPT = `
   function applyTheme(theme) {
     if (!theme) return;
     root.setAttribute('data-theme', theme);
+    document.querySelectorAll('input[name="theme"]').forEach((radio) => {
+      if (radio instanceof HTMLInputElement) radio.checked = radio.value === theme;
+    });
+    document.querySelectorAll('select[name="theme"]').forEach((select) => {
+      if (select instanceof HTMLSelectElement) select.value = theme;
+    });
   }
   function applyLanguage(language) {
     if (!language) return;
@@ -119,6 +123,9 @@ const CLIENT_SCRIPT = `
     root.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
     const preview = document.querySelector('.delendai-settings__preview');
     if (preview) preview.setAttribute('dir', RTL.has(language) ? 'rtl' : 'ltr');
+    document.querySelectorAll('input[name="language"]').forEach((radio) => {
+      if (radio instanceof HTMLInputElement) radio.checked = radio.value === language;
+    });
     document.querySelectorAll('[data-lang-card]').forEach((card) => {
       card.setAttribute('aria-pressed',
         card.getAttribute('data-lang-card') === language ? 'true' : 'false');
@@ -139,6 +146,14 @@ const CLIENT_SCRIPT = `
     new FormData(settingsForm ?? document.createElement('form')).forEach(
       (value, key) => { out[key] = value; },
     );
+    // The header selects live outside the form; the root attributes hold
+    // the values the user last chose, so they win over stale form fields.
+    const theme = root.getAttribute('data-theme');
+    const language = root.getAttribute('lang');
+    const motion = root.getAttribute('data-motion');
+    if (theme) out.theme = theme;
+    if (language) out.language = language;
+    if (motion) out.motion = motion;
     const allowLocalhost = document.querySelector('input[name="allowLocalhost"]');
     const allowPrivateIps = document.querySelector('input[name="allowPrivateIps"]');
     out.allowLocalhost = allowLocalhost instanceof HTMLInputElement ? allowLocalhost.checked : false;
@@ -272,7 +287,7 @@ const CLIENT_SCRIPT = `
   const logsEmpty = document.getElementById('delendai-logs-empty');
   const logsStatus = document.getElementById('delendai-logs-status');
   const logsControls = document.getElementById('delendai-logs-controls');
-  const logsState = { paused: false, source: 'all', followTail: true };
+  const logsState = { paused: true, source: 'all', followTail: true };
   function setLogsStatus(text) {
     if (logsStatus) logsStatus.textContent = text;
   }
@@ -414,7 +429,7 @@ const CLIENT_SCRIPT = `
   toggleLiveBtn?.addEventListener('click', () => {
     logsState.paused = !logsState.paused;
     if (toggleLiveBtn) {
-      toggleLiveBtn.textContent = logsState.paused ? 'Resume realtime' : 'Pause realtime';
+      toggleLiveBtn.textContent = logsState.paused ? 'Start realtime' : 'Pause realtime';
     }
     setLogsStatus(logsState.paused ? 'Realtime paused' : 'Following live events');
     host?.postMessage({ command: 'logs', action: logsState.paused ? 'stop' : 'start' });
@@ -475,8 +490,8 @@ const CLIENT_SCRIPT = `
   // The dashboard provider can push hostToolDetail / hostProposalDetail
   // / hostHideDetail payloads so a click on a tool/proposal row opens
   // the detail inside the shell instead of a native webview panel.
-  // The renderers are imported eagerly below as RENDER_TOOL_BODY and
-  // RENDER_PROPOSAL_BODY.
+  // The host renders the body HTML (it owns the renderers and their
+  // helpers) and posts it as \`html\`; this script needs no imports.
   const overlay = document.getElementById('delendai-detail-overlay');
   const overlayBody = document.getElementById('delendai-detail-overlay-body');
   const overlayTitle = document.getElementById('delendai-detail-overlay-title');
@@ -506,11 +521,10 @@ const CLIENT_SCRIPT = `
   window.addEventListener('message', (event) => {
     const data = event && event.data;
     if (!data || typeof data !== 'object') return;
-    const detail = window.__DELENDAI_DASHBOARD_DETAIL__ || {};
-    if (data.command === 'hostToolDetail' && data.model && typeof detail.RENDER_TOOL_BODY === 'function') {
-      showOverlay((data.model.tool && data.model.tool.name) || 'Tool', detail.RENDER_TOOL_BODY(data.model));
-    } else if (data.command === 'hostProposalDetail' && data.model && typeof detail.RENDER_PROPOSAL_BODY === 'function') {
-      showOverlay(data.model.id || 'Proposal', detail.RENDER_PROPOSAL_BODY(data.model));
+    if (data.command === 'hostToolDetail' && typeof data.html === 'string') {
+      showOverlay((data.model && data.model.tool && data.model.tool.name) || 'Tool', data.html);
+    } else if (data.command === 'hostProposalDetail' && typeof data.html === 'string') {
+      showOverlay((data.model && data.model.id) || 'Proposal', data.html);
     } else if (data.command === 'hostHideDetail') {
       hideOverlay();
     }
@@ -677,7 +691,6 @@ export const renderDashboard = (
 		</div>
 	</div>
 	<script>${CLIENT_SCRIPT}</script>
-	<script>window.__DELENDAI_DASHBOARD_DETAIL__ = { RENDER_TOOL_BODY: ${renderToolDetailBody.toString()}, RENDER_PROPOSAL_BODY: ${renderProposalDetailBody.toString()} };</script>
 	${renderRuntime()}
 </body>
 </html>`;

@@ -1,5 +1,3 @@
-import { basename } from 'node:path';
-
 import {
 	formatToolName,
 	readConfigurationDocument,
@@ -21,6 +19,7 @@ import { configurationCenterStringsByLang } from '../i18n/configuration-center.s
 import { RESTART_SERVER_COMMAND } from './restart-server';
 import { HOST_LANG_KEY } from './setup-github';
 import type { IWebviewPanel } from '../extension';
+import { resolveWorkspaceFolder } from './resolve-workspace-folder';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -89,20 +88,14 @@ const selectWorkspace = async (
 	deps: ICommandDeps,
 	strings: ConfigurationCenterStrings,
 ): Promise<string | undefined> => {
-	const folders = deps.vscode.workspace?.workspaceFolders ?? [];
-	if (folders.length === 0) {
+	const folder = await resolveWorkspaceFolder(deps.vscode);
+	if (
+		folder === undefined &&
+		(deps.vscode.workspace?.workspaceFolders ?? []).length === 0
+	) {
 		await deps.vscode.window.showErrorMessage?.(strings.workspaceRequired);
-		return undefined;
 	}
-	if (folders.length === 1) return folders[0]?.uri.fsPath;
-	const picked = await deps.vscode.window.showQuickPick?.(
-		folders.map((folder) => ({
-			id: folder.uri.fsPath,
-			label: basename(folder.uri.fsPath),
-			description: folder.uri.fsPath,
-		})),
-	);
-	return picked?.id;
+	return folder?.uri.fsPath;
 };
 
 const readAll = async <T>(

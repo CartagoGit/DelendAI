@@ -144,3 +144,37 @@ describe('the dashboard page and the text it did not write', () => {
 		expect(html.includes('<script>alert')).toBe(false);
 	});
 });
+
+const scripts = (html: string): string[] =>
+	[...html.matchAll(/<script>([\s\S]*?)<\/script>/gu)].map(
+		(match) => match[1] ?? '',
+	);
+
+describe('the dashboard script is self-contained (UI-01)', () => {
+	it('inlines no serialised function and every script parses', () => {
+		const html = renderDashboard(hostileModel(), OPTIONS);
+		expect(html).not.toContain('__DELENDAI_DASHBOARD_DETAIL__ =');
+		for (const body of scripts(html)) {
+			expect(() => new Function(body)).not.toThrow();
+		}
+	});
+
+	it('renders the overlay from host-posted html', () => {
+		const html = renderDashboard(hostileModel(), OPTIONS);
+		expect(html).toContain("typeof data.html === 'string'");
+	});
+});
+
+describe('dashboard controls and realtime toggle', () => {
+	it('starts realtime on the first click (UI-LOG01)', () => {
+		const html = renderDashboard(hostileModel(), OPTIONS);
+		expect(html).toContain('const logsState = { paused: true');
+	});
+
+	it('submits the current theme, language and motion (UI-PREF01)', () => {
+		const html = renderDashboard(hostileModel(), OPTIONS);
+		expect(html).toContain("root.getAttribute('data-theme')");
+		expect(html).toContain('if (theme) out.theme = theme;');
+		expect(html).toContain('input[name="theme"]');
+	});
+});

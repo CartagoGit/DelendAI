@@ -242,10 +242,14 @@ describe('delendai.openPluginConfig', () => {
 		await panel.fire({ command: 'notACommand' });
 		expect(panel.outbound).toHaveLength(2);
 
-		const htmlAfterSave = panel.html;
+		// Discard restores the LAST SAVED state (UI-CFG02), not the snapshot
+		// the panel opened with: the digest is the one the save produced.
+		const saved = await readConfigurationDocument({ workspaceRoot: root });
+		expect(saved.digest).not.toBe(snapshot.digest);
 		panel.html = '<mutated>';
 		await panel.fire({ command: 'discardConfiguration' });
-		expect(panel.html).toBe(htmlAfterSave);
+		expect(panel.html).toContain(`data-config-digest="${saved.digest}"`);
+		expect(panel.html).not.toContain(snapshot.digest);
 	});
 
 	it('opens the full, unscoped center when no plugin id is given', async () => {

@@ -120,6 +120,7 @@ const createClient = (opts: {
 const createVscode = (opts?: {
 	readonly confirmAnswer?: string;
 	readonly inputAnswer?: string;
+	readonly cancelInput?: boolean;
 }) => {
 	const commands = new Map<
 		string,
@@ -150,6 +151,7 @@ const createVscode = (opts?: {
 				return items[0];
 			},
 			async showInputBox() {
+				if (opts?.cancelInput === true) return undefined;
 				return opts?.inputAnswer ?? 'maintenance window';
 			},
 			async showWarningMessage(_message, _options, ..._actions) {
@@ -245,6 +247,22 @@ describe('provider dashboard commands (f00098 S3)', () => {
 			state: 'rate-limited',
 			reason: 'maintenance window',
 		});
+	});
+
+	it('cancelling the reason dialog changes nothing (UI-ACTION01)', async () => {
+		const calls: Array<{ name: string; args: unknown }> = [];
+		const { vscode, commands, messages } = createVscode({
+			cancelInput: true,
+		});
+		registerProviderActionCommands({
+			vscode,
+			client: createClient({ calls }),
+		});
+		await commands.get(PROVIDERS_PAUSE_COMMAND)?.();
+		expect(
+			calls.filter((c) => c.name.endsWith('set_provider_state')),
+		).toEqual([]);
+		expect(messages).toEqual([]);
 	});
 
 	it('the 12-language string table is complete', () => {

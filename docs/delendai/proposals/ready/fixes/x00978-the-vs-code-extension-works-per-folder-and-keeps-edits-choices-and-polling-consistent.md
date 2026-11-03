@@ -28,7 +28,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 
 ### S1 — Folder and cwd
 - **Status**: pending
-- **Files**: `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/run-validation.ts`, `extensions/vscode/src/test/commands.spec.ts`
+- **Files**: `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/run-validation.ts`, `extensions/vscode/src/commands/resolve-workspace-folder.ts`, `extensions/vscode/src/commands/types.ts`, `extensions/vscode/src/test/resolve-workspace-folder.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Commands resolve the folder of the active editor or the picked folder (D24)."
@@ -36,15 +36,16 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 
 ### S2 — Edits and choices
 - **Status**: pending
-- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `packages/ui-extension/src/configuration-center/configuration-center-script.ts`, `extensions/vscode/src/commands/provider-actions.ts`
+- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `packages/ui-extension/src/configuration-center/configuration-center-script.ts`, `extensions/vscode/src/commands/provider-actions.ts`, `extensions/vscode/src/test/open-plugin-config.spec.ts`, `extensions/vscode/src/test/provider-actions.spec.ts`, `packages/ui-extension/tests/dashboard/configuration-center-script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An acknowledgement clears only the edits it saved (UI-CFG01); discard restores the last saved state (UI-CFG02); cancel changes nothing (UI-ACTION01)."
 
 ### S3 — Routing, dashboard and polling
 - **Status**: pending
-- **Files**: `extensions/vscode/src/extension.ts`, `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `packages/client/src/lib/services/logs.service.ts`
+- **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `extensions/vscode/src/test/dashboard-detail-broker.spec.ts`, `packages/ui-extension/tests/dashboard/render-dashboard-escaping.spec.ts`
 - **Gate**: type
+- **Notes**: UI-ROUTE01 was already fixed: no source under extensions/vscode or packages/client names the retired vertex tool; non-direct calls go through the client's resolve_capability broker path (mcp-stdio-client.ts), which compact_router shares. extension.ts and logs.service.ts needed no change (the subscribe loop already stops on abort; the dispose hook now aborts it).
 - acceptance:
   - "Calls route through delendai_compact_router (UI-ROUTE01)."
   - "The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02)."

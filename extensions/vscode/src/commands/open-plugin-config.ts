@@ -26,6 +26,7 @@ import {
 	type IConfigurationPlugin,
 } from '@delendai/client';
 import { saveAndAnswer } from './open-configuration-center';
+import { resolveWorkspaceFolder } from './resolve-workspace-folder';
 import type { ICommandDeps } from './types';
 import { showCommandError } from './types';
 
@@ -77,11 +78,14 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 		async (rawPluginId?: unknown) => {
 			const lang: Lang = defaultLang;
 			const strings = configurationCenterStringsByLang[lang];
-			const folder = deps.vscode.workspace?.workspaceFolders?.[0];
+			const folder = await resolveWorkspaceFolder(deps.vscode);
 			if (folder === undefined) {
-				await deps.vscode.window.showErrorMessage?.(
-					strings.workspaceRequired,
-				);
+				if (
+					(deps.vscode.workspace?.workspaceFolders ?? []).length === 0
+				)
+					await deps.vscode.window.showErrorMessage?.(
+						strings.workspaceRequired,
+					);
 				return;
 			}
 			const workspaceRoot = folder.uri.fsPath;
@@ -90,54 +94,59 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 					? rawPluginId
 					: undefined;
 			try {
-				const tool = formatToolName(
-					deps.namespacePrefix,
-					'configuration_center',
-				);
-				const [document, config, summary, plugins, artifacts] =
-					await Promise.all([
-						readConfigurationDocument({ workspaceRoot }),
-						deps.client.request<
-							{ section: 'config' },
-							IConfigurationCenterResult
-						>(tool, { section: 'config' }),
-						deps.client.request<
-							{ section: 'summary' },
-							IConfigurationCenterResult
-						>(tool, { section: 'summary' }),
-						readAll<IConfigurationPlugin>(
-							deps,
-							'plugins',
-							(page) => page.plugins,
+				// Built from disk each time so a discard shows the last saved
+				// state, not the snapshot the panel opened with.
+				const buildHtml = async (): Promise<string> => {
+					const tool = formatToolName(
+						deps.namespacePrefix,
+						'configuration_center',
+					);
+					const [document, config, summary, plugins, artifacts] =
+						await Promise.all([
+							readConfigurationDocument({ workspaceRoot }),
+							deps.client.request<
+								{ section: 'config' },
+								IConfigurationCenterResult
+							>(tool, { section: 'config' }),
+							deps.client.request<
+								{ section: 'summary' },
+								IConfigurationCenterResult
+							>(tool, { section: 'summary' }),
+							readAll<IConfigurationPlugin>(
+								deps,
+								'plugins',
+								(page) => page.plugins,
+							),
+							readAll<IConfigurationArtifact>(
+								deps,
+								'artifacts',
+								(page) => page.artifacts,
+							),
+						]);
+					if (config.configSchema === undefined) {
+						throw new Error('configuration schema is unavailable');
+					}
+					const model = buildConfigurationCenterModel({
+						document,
+						copy: strings.copy,
+						configSchema: config.configSchema,
+						plugins,
+						artifacts,
+						unavailableArtifactKinds:
+							summary.summary?.unavailableArtifactKinds ?? [],
+					});
+					return withCsp(
+						'configuration-center',
+						injectBridge(
+							renderConfigurationCenter({
+								model,
+								lang,
+								...(pluginId === undefined ? {} : { pluginId }),
+							}),
 						),
-						readAll<IConfigurationArtifact>(
-							deps,
-							'artifacts',
-							(page) => page.artifacts,
-						),
-					]);
-				if (config.configSchema === undefined) {
-					throw new Error('configuration schema is unavailable');
-				}
-				const model = buildConfigurationCenterModel({
-					document,
-					copy: strings.copy,
-					configSchema: config.configSchema,
-					plugins,
-					artifacts,
-					unavailableArtifactKinds:
-						summary.summary?.unavailableArtifactKinds ?? [],
-				});
-				const html = withCsp(
-					'configuration-center',
-					injectBridge(
-						renderConfigurationCenter({
-							model,
-							lang,
-							...(pluginId === undefined ? {} : { pluginId }),
-						}),
-					),
-				);
+					);
+				};
+				const html = await buildHtml();
 				const panel = deps.vscode.window.createWebviewPanel(
 					'delendaiPluginConfig',
 					pluginId === undefined
@@ -157,7 +166,7 @@ export const registerOpenPluginConfigCommand = (deps: ICommandDeps) =>
 						CONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse(raw);
 					if (!parsed.success) return;
 					if (parsed.data.command === 'discardConfiguration') {
-						panel.webview.html = html;
+						panel.webview.html = await buildHtml();
 						return;
 					}
 					// This panel used to drop `saveConfiguration`: the webview
