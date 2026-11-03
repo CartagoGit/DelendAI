@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['kpi', 'observability', 'economics', 'project-health'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: ['dogfood'],
+	presets: ['everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 4_093,
 		caps: { hard: 4_710, warning: 4_300 },

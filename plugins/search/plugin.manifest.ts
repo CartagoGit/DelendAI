@@ -11,14 +11,13 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'process', 'env-read'],
 	presets: [
 		'minimal',
-		'lean',
-		'standard',
+		'solo',
+		'team-pr',
 		'swarm',
-		'full',
+		'audit',
+		'docs-web',
+		'everything',
 		'dogfood',
-		'web-app',
-		'backend-api',
-		'cli-tool',
 	],
 	// f00179 S2 — search was the original placeholder value
 	// (`TOKEN_BUDGETS.toolPayloads.search`). The real measured number

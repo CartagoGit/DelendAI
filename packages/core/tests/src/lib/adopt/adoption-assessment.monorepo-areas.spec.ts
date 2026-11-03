@@ -64,7 +64,7 @@ describe('buildAdoptionAssessment monorepo area breakdown', () => {
 				expect.objectContaining({
 					workspacePath: 'packages/shared-lib',
 					area: 'packages',
-					candidatePresetId: 'lean',
+					candidatePresetId: 'solo',
 				}),
 			]),
 		);

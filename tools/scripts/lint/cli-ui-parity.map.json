@@ -80,6 +80,9 @@
 		"repair": {
 			"waiver": "x00552: records the human conclusion that closes a startup repair task; the DEGRADED boot report prints the exact command, and the decision is a tracked file reviewed in a pull request rather than a UI action"
 		},
+		"release": {
+			"waiver": "f00801: promotes a branch and has a follower take in what moved, by each branch's own route; a git and forge workflow an agent or a pipeline runs, with the resulting pull requests and merges visible on the forge"
+		},
 		"work": {
 			"waiver": "x00553: persists work to its ref and gives an agent its own worktree; it is the git-side workflow an agent or a hook runs, and the UI surfaces the resulting work units rather than the plumbing"
 		},

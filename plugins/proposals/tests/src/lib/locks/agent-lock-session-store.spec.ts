@@ -7,6 +7,7 @@
 
 import {
 	chmodSync,
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -137,6 +138,14 @@ describe('agent-lock-session-store', () => {
 		expect(
 			readFileSync(sessionLogPath(workspace), 'utf8').trim().split('\n'),
 		).toHaveLength(2);
+	});
+
+	it('resets without touching the disk, even after reading an unwritable root', async () => {
+		await readSessionBalance('/ws');
+		await expect(resetSessionBalance()).resolves.toBeUndefined();
+		await readSessionBalance(workspace);
+		await resetSessionBalance();
+		expect(existsSync(dirname(sessionLogPath(workspace)))).toBe(false);
 	});
 
 	// x00154 S6 — the prefix read inside `appendSessionEntry` must
