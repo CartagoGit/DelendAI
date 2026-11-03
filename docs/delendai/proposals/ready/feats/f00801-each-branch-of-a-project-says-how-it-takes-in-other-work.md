@@ -42,7 +42,7 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 
 ### S2 — The guard and the work flow follow each branch's rule
 - **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/tests/src/lib/development-policy/git-guard-branch-rules.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "A direct push or commit to a `pull-request` branch is refused, a merge into a `merge` branch is allowed and `work publish` lands there by merge, and a `direct` branch takes commits and pushes; one spec per rule, under both pinned profiles."
