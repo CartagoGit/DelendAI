@@ -21,7 +21,7 @@
  * plan takes minutes; the forge still runs the plan, and is the authority.
  */
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { readFileSync, rmSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
 import { RUN_ALONE, staticChecksOf } from './ci-static-steps';
@@ -56,6 +56,39 @@ export const PROVE_GATES: readonly (readonly string[])[] = [
 
 /** What failed, said last: a caller keeps only the tail of the output. */
 const failed: string[] = [];
+
+/** What each step took, in the order it finished: the table printed last. */
+const timings: { label: string; seconds: number; ok: boolean }[] = [];
+
+/** Where the table of the last proofs is kept, one JSON line a proof. */
+const TIMINGS_LOG = '.cache/delendai/results/logs/prove-timings.jsonl';
+
+/** The step-timing table, slowest first, as plain lines. Pure. */
+export const timingTableOf = (
+	steps: readonly { label: string; seconds: number; ok: boolean }[],
+): readonly string[] => [
+	'prove: step timings (slowest first)',
+	...[...steps]
+		.sort((a, b) => b.seconds - a.seconds)
+		.map(
+			(each) =>
+				`prove:   ${String(each.seconds).padStart(5)}s  ${each.ok ? 'ok  ' : 'FAIL'}  ${each.label}`,
+		),
+];
+
+/** Print the table and keep it, so the next regression is visible. */
+const saveTimings = (base: string, total: number, proved: boolean): void => {
+	for (const line of timingTableOf(timings)) console.error(line);
+	try {
+		mkdirSync('.cache/delendai/results/logs', { recursive: true });
+		appendFileSync(
+			TIMINGS_LOG,
+			`${JSON.stringify({ at: new Date().toISOString(), base: base.slice(0, 9), totalSeconds: total, proved, steps: timings })}\n`,
+		);
+	} catch {
+		// the table was printed; a log that cannot be written proves nothing less
+	}
+};
 
 /** The lines that say why, printed last with it. */
 const causes: string[] = [];
@@ -124,6 +157,11 @@ const runTogether = async (
 				child.on('close', (status) => done({ code: status, output }));
 			});
 			const passed = code === 0;
+			timings.push({
+				label,
+				seconds: Math.round((Date.now() - started) / 1000),
+				ok: passed,
+			});
 			ok = passed && ok;
 			if (!passed) {
 				failed.push(label);
@@ -203,6 +241,11 @@ const step = (label: string, command: readonly string[]): boolean => {
 	});
 	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;
+	timings.push({
+		label,
+		seconds: Math.round((Date.now() - started) / 1000),
+		ok,
+	});
 	if (!ok) {
 		failed.push(label);
 		causes.push(
@@ -299,6 +342,7 @@ const main = async (): Promise<number> => {
 			early = step(label, command) && early;
 		}
 		if (!early) {
+			saveTimings(base, Math.round((Date.now() - started) / 1000), false);
 			printCauses();
 			console.error(
 				`prove: NOT PROVED, failed: ${failed.join(', ')}; (early) in ${String(Math.round((Date.now() - started) / 1000))}s`,
@@ -316,6 +360,7 @@ const main = async (): Promise<number> => {
 		)) {
 			ok = step(label, command) && ok;
 		}
+		saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 		printCauses();
 		console.error(
 			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
@@ -346,6 +391,7 @@ const main = async (): Promise<number> => {
 				'--passWithNoTests',
 			]) && ok;
 	}
+	saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 	printCauses();
 	console.log(
 		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
