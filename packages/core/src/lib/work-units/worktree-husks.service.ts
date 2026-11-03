@@ -25,11 +25,8 @@ import type {
 	IHusk,
 	IReapedHusk,
 } from '../contracts/interfaces/worktree-husks.interface';
-import {
-	DEFAULT_UNITS_DIRECTORY,
-	EMPTY_TREE,
-	HUSK_SEARCH_DEPTH,
-} from './units-directory.constant';
+import { EMPTY_TREE, HUSK_SEARCH_DEPTH } from './units-directory.constant';
+import { resolveUnitsDirectory } from './units-directory.service';
 import { readGit } from './work-unit-shared.service';
 import { namespacedRef } from './namespaced-ref.helper';
 
@@ -89,7 +86,7 @@ export const huskDirectories = async (input: {
 }): Promise<readonly IHusk[]> => {
 	const folder = resolve(
 		input.root,
-		input.unitsDirectory ?? DEFAULT_UNITS_DIRECTORY,
+		input.unitsDirectory ?? (await resolveUnitsDirectory(input.root)),
 	);
 	const registered = registeredWorktrees(input.root);
 	const husks: IHusk[] = [];
