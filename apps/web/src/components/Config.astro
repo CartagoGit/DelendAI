@@ -105,6 +105,9 @@ const langLinksHtml = renderLangLinks({
 </div>
 
 <script>
+	import { trapTarget } from './ui/_focus-trap';
+	const FOCUSABLE_SELECTOR =
+		'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 	// Settings modal: theme + language + motion. Re-runs after every Astro view
 	// transition (the `astro:page-load` event) so listeners don't accumulate.
 	// We use an AbortController to revoke the previous batch cleanly.
@@ -170,15 +173,25 @@ const langLinksHtml = renderLangLinks({
 		const openBtn = document.getElementById('cfg-open');
 		const motion = document.getElementById('cfg-motion') as HTMLInputElement | null;
 
+		let opener: HTMLElement | null = null;
+		const focusables = () =>
+			Array.from(modal?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? []);
 		const open = () => {
+			opener = document.activeElement as HTMLElement | null;
 			modal?.removeAttribute('hidden');
 			modal?.classList.add('modal--open');
+			// Move focus into the dialog (WEB-A11Y01): the close button is
+			// the first control and always present.
+			modal?.querySelector<HTMLElement>('.modal__close')?.focus();
 			if (motion) motion.checked = readMotion() !== 'reduced';
 			markActiveTheme();
 			markActiveLang();
 		};
 		const close = () => {
+			const wasOpen = modal?.classList.contains('modal--open');
 			modal?.classList.remove('modal--open');
+			if (wasOpen && opener?.isConnected) opener.focus();
+			opener = null;
 			// Keep the node in the DOM until the pop-out animation ends so the
 			// transition can play. Then hide it so it disappears from the a11y tree.
 			window.setTimeout(() => {
@@ -195,7 +208,19 @@ const langLinksHtml = renderLangLinks({
 		document.addEventListener(
 			'keydown',
 			(e) => {
+				if (!modal?.classList.contains('modal--open')) return;
 				if (e.key === 'Escape') close();
+				else if (e.key === 'Tab') {
+					const target = trapTarget(
+						focusables(),
+						document.activeElement as HTMLElement | null,
+						e.shiftKey,
+					);
+					if (target) {
+						e.preventDefault();
+						target.focus();
+					}
+				}
 			},
 			{ signal }
 		);
