@@ -19,7 +19,6 @@ const lockIn = (): string => {
 	dirs.push(dir);
 	return join(dir, 'heavy-compute.lock');
 };
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 afterEach(() => {
 	for (const dir of dirs.splice(0))
@@ -31,21 +30,39 @@ describe('withComputeSlot', () => {
 		const lockPath = lockIn();
 		const events: string[] = [];
 		const notices: string[] = [];
-		const job = (name: string, label: string) =>
+		let release: () => void = () => undefined;
+		const held = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		let waiterSpoke: () => void = () => undefined;
+		const spoke = new Promise<void>((resolve) => {
+			waiterSpoke = resolve;
+		});
+		const job = (
+			name: string,
+			label: string,
+			hold: Promise<void> | undefined,
+		) =>
 			withComputeSlot({
 				lockPath,
 				label,
 				waitNoticeMs: 20,
-				notify: (message) => notices.push(message),
+				notify: (message) => {
+					notices.push(message);
+					waiterSpoke();
+				},
 				run: async () => {
 					events.push(`${name}:start`);
-					await sleep(300);
+					await hold;
 					events.push(`${name}:end`);
 				},
 			});
-		const first = job('a', 'proof of aaa by agent-a');
-		await sleep(100);
-		await Promise.all([first, job('b', 'proof of bbb by agent-b')]);
+		const first = job('a', 'proof of aaa by agent-a', held);
+		const second = job('b', 'proof of bbb by agent-b', undefined);
+		await spoke;
+		expect(events).toEqual(['a:start']);
+		release();
+		await Promise.all([first, second]);
 		expect(events).toEqual(['a:start', 'a:end', 'b:start', 'b:end']);
 		expect(notices.join('\n')).toMatch(
 			/"proof of bbb by agent-b" is waiting.*proof of aaa by agent-a/u,
@@ -100,5 +117,5 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 			}),
 		).resolves.toBe('got it');
 		expect(Date.now() - started).toBeLessThan(10_000);
-	}, 60_000);
+	});
 });
