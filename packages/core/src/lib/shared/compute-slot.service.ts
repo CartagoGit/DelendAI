@@ -229,6 +229,9 @@ export const withComputeSlot = <T>(
 		? withUnitTurn(request, request.unit, request.tip)
 		: withComputeSlotTurn(request, request.run);
 
+/** The turns this process has asked for, per slot, in order. */
+const processQueue = new Map<string, Promise<void>>();
+
 const withComputeSlotTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	body: () => Promise<T> | T,
@@ -241,7 +244,26 @@ const withComputeSlotTurn = async <T>(
 	}
 	const notify =
 		request.notify ?? ((message: string) => console.error(message));
-	await mkdir(dirname(lockPath), { recursive: true });
+	// Callers in this process reach the slot in the order they asked: the
+	// file mutex alone lets a later caller overtake an earlier one while
+	// both are still preparing to contend for it.
+	const before = processQueue.get(lockPath) ?? Promise.resolve();
+	let leave: () => void = () => undefined;
+	const mine = new Promise<void>((resolve) => {
+		leave = resolve;
+	});
+	const tail = before.then(() => mine);
+	processQueue.set(lockPath, tail);
+	const clearQueue = (): void => {
+		leave();
+		if (processQueue.get(lockPath) === tail) processQueue.delete(lockPath);
+	};
+	await mkdir(dirname(lockPath), { recursive: true }).catch(
+		(error: unknown) => {
+			clearQueue();
+			throw error;
+		},
+	);
 	let waiting = false;
 	let notice: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
 		waiting = true;
@@ -253,6 +275,7 @@ const withComputeSlotTurn = async <T>(
 			}
 		});
 	}, request.waitNoticeMs ?? WAIT_NOTICE_MS);
+	await before;
 	return withFileMutex(
 		lockPath,
 		async () => {
@@ -278,6 +301,7 @@ const withComputeSlotTurn = async <T>(
 			onContention: 'fail',
 		},
 	).finally(() => {
+		clearQueue();
 		waiting = false;
 		if (notice !== undefined) clearTimeout(notice);
 	});
