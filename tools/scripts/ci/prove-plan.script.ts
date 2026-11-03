@@ -219,7 +219,7 @@ const runChecks = async (
 				.filter((check) => !RUN_ALONE.has(check.job))
 				.map((check) => [check.job, check.script] as const),
 		],
-		availableParallelism(),
+		Number(process.env.PROVE_PARALLEL) || availableParallelism(),
 	);
 	const alone = await runTogether(
 		checks
