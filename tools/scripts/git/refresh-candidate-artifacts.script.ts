@@ -139,10 +139,17 @@ export const staleCandidates = (
  * stayed behind with no way to learn why short of redoing it by hand.
  */
 export const pushRefusalReason = (output: string): string => {
+	// Informational "[delendai] ..." banners (e.g. "error-reporting is ON")
+	// contain the word "error" and are not the refusal.
 	const lines = output
 		.split('\n')
 		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
+		.filter((line) => line.length > 0)
+		.filter(
+			(line) =>
+				!/^\[delendai\]/u.test(line) ||
+				/✖|\bFAIL\b|rejected|refused|denied/iu.test(line),
+		);
 	const marked = lines.filter((line) =>
 		/✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu.test(line),
 	);
