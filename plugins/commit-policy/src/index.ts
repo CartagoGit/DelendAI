@@ -741,6 +741,7 @@ export default definePlugin({
 						? await filesAreCommitted(paths)
 						: await sliceFilesAreCommitted(run, paths);
 				},
+				{ watch: true },
 			);
 			// Deliberately not awaited: registration must not block the
 			// host on a filesystem-and-git check. `start` returns the

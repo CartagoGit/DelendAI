@@ -11,7 +11,7 @@
  * un-marked so the next poll re-emits it — guaranteed delivery.
  */
 
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
@@ -20,6 +20,9 @@ import {
 	MAX_DELIVERY_ATTEMPTS,
 } from '../contracts/constants/slice-listener.constant';
 import type { ISliceSnapshotEntry as SliceSnapshotEntry } from '../contracts/interfaces/slice-snapshot.interface';
+import { PROPOSALS_SAFETY_POLL_MS } from '../contracts/constants/proposals-watch.constant';
+import type { IProposalsWatch } from '../contracts/interfaces/proposals-watch.interface';
+import { watchProposals } from './proposals-watch.service';
 import { createSliceSnapshotReader } from './slice-snapshot.service';
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
@@ -281,6 +284,11 @@ export const createSliceListener = (
 		event: ITriggerEvent,
 		asked: 'at-start' | 'on-change',
 	) => Promise<boolean>,
+	/**
+	 * `watch` wakes the listener when a proposal document changes and
+	 * leaves a slow safety poll, so an idle server reads nothing.
+	 */
+	options: { readonly watch?: boolean } = {},
 ): ISliceListener => {
 	const snapshot = createSliceSnapshotReader(
 		new SafeWorkspaceReader(workspaceRoot),
@@ -300,6 +308,7 @@ export const createSliceListener = (
 	// which poll first saw the index, it is whether each already-`done`
 	// slice was ever actually persisted — and only the store knows that.
 	let timer: ReturnType<typeof setInterval> | undefined;
+	let watcher: IProposalsWatch | undefined;
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending = new Map<string, ITriggerEvent>();
 	const acknowledged = new Map<string, string>();
@@ -532,23 +541,66 @@ export const createSliceListener = (
 			refusals.length = 0;
 			return out;
 		},
-		start() {
-			if (timer !== undefined) return Promise.resolve();
+		async start() {
+			if (timer !== undefined) return;
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
 			const primed = check().then(() => undefined);
 			const pacer = createPollPacer();
-			timer = setInterval(() => {
+			const poll = (): void => {
 				const finished = pacer.begin();
 				if (finished === undefined) return;
 				void check()
 					.catch(() => undefined)
 					.finally(finished);
-			}, pollMs);
-			if (typeof timer.unref === 'function') timer.unref();
-			return primed;
+			};
+			let checking = false;
+			let again = false;
+			const onChange = (): void => {
+				if (checking) {
+					again = true;
+					return;
+				}
+				checking = true;
+				void check()
+					.catch(() => undefined)
+					.finally(() => {
+						checking = false;
+						if (again) {
+							again = false;
+							onChange();
+						}
+					});
+			};
+			timer = setInterval(poll, pollMs);
+			timer.unref();
+			const watching =
+				options.watch === true
+					? await watchProposals(
+							resolve(
+								workspaceRoot,
+								join(proposalsDir, 'proposals'),
+							),
+							onChange,
+						)
+					: undefined;
+			if (watching !== undefined && timer === undefined) {
+				// Stopped while the watch was being set up.
+				watching.close();
+			} else if (watching !== undefined) {
+				watcher = watching;
+				clearInterval(timer);
+				timer = setInterval(
+					poll,
+					Math.max(pollMs, PROPOSALS_SAFETY_POLL_MS),
+				);
+				timer.unref();
+			}
+			await primed;
 		},
 		stop() {
+			watcher?.close();
+			watcher = undefined;
 			if (timer !== undefined) {
 				clearInterval(timer);
 				timer = undefined;
