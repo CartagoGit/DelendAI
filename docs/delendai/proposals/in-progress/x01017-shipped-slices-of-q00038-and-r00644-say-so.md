@@ -2,10 +2,14 @@
 id: x01017
 title: "Shipped slices of q00038 and r00644 say so"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 87f7d07d-bbd3-48e1-9625-89640d83fa18
+last-correlation-id: 87f7d07d-bbd3-48e1-9625-89640d83fa18
+last-transition-from: ready
+last-transition-at: 2026-11-03T18:45:44.596Z
 ---
 
 # x01017 — Shipped slices of q00038 and r00644 say so
