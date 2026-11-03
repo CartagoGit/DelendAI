@@ -34,6 +34,13 @@ The owner asked several times that a pull request check only what its change can
 
 Followed by symbol, the same core change reaches 240 specs, found in under a second. Over the last 14 merged pull requests the analysis picks between 0 and 503 specs. A mutation of `toolError` passed in all 55 sampled specs the analysis leaves out and failed in the ones it picks.
 
+On 2026-11-04 the owner restated the rule: every validation (tests, lints and types) checks only what the change affects, on the pull request and locally. The rule stands until a configuration says otherwise; there is nothing left to decide. Measured that day:
+- `tools/scripts/ci/job-scope.constant.ts` declares every lint job `touches: 'always'`, and the typecheck covers every source prefix.
+- `ci.yml` runs the nine static jobs and the typecheck unconditionally.
+- The local proof runs the same ten checks, each over the whole repository.
+
+So S1 sectioned the tests, while lints and types still ran in full for a one-file change. S2 and S3 are rewritten from cost-sharing to sectioning, and no longer wait on a decision.
+
 ## non-goals
 
 - Dropping the full run on develop: it stays the net for what an analysis cannot see.
@@ -53,19 +60,22 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
   - "A zone the change reaches no spec of starts no job."
   - "The local proof runs the same specs the forge would, from the same analysis."
 
-### S2 — Lint jobs share their setup
+### S2 — Every lint runs only for the files it reads
 - **Status**: pending
-- **Files**: `tools/scripts/lint/run-together.script.ts`
+- **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/prove-plan.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "The lint jobs run in fewer runners, each lint family together, so a pull request stops paying a checkout and an install per family; no lint is dropped and every failure is still named."
+  - "No lint job is declared `touches: 'always'` without a measured reason. Each lint family (biome, architecture, presets, docs, security, governance, quality-gate, manifests, generated artifacts) declares the paths it reads, and runs on a pull request and in the local proof only when the change touches them."
+  - "A lint that judges files one by one (biome, docs, proposal and naming lints) is given the changed files, not the repository. A repository-wide lint runs only when the change touches what it reads."
+  - "A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not."
 
-### S3 — Types are checked incrementally
+### S3 — Types are checked only where the change reaches
 - **Status**: pending
-- **Files**: `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/typecheck.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
-  - "The typecheck reuses the integration branch's incremental state, so a change pays for what it touches."
+  - "The typecheck checks the packages the change touches and the packages that depend on them, through project references or per-package runs with incremental state; a change in one plugin does not typecheck every other plugin."
+  - "The local proof and the pull request check the same packages, and the run names them."
 
 ### S4 — The saving is measured
 - **Status**: done
@@ -101,8 +111,11 @@ Followed by symbol, the same core change reaches 240 specs, found in under a sec
 - A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
 - A zone the change reaches no spec of starts no job.
 - The local proof runs the same specs the forge would, from the same analysis.
-- The lint jobs run in fewer runners, each lint family together, so a pull request stops paying a checkout and an install per family; no lint is dropped and every failure is still named.
-- The typecheck reuses the integration branch's incremental state, so a change pays for what it touches.
+- No lint job is declared `touches: 'always'` without a measured reason. Each lint family (biome, architecture, presets, docs, security, governance, quality-gate, manifests, generated artifacts) declares the paths it reads, and runs on a pull request and in the local proof only when the change touches them.
+- A lint that judges files one by one (biome, docs, proposal and naming lints) is given the changed files, not the repository. A repository-wide lint runs only when the change touches what it reads.
+- A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not.
+- The typecheck checks the packages the change touches and the packages that depend on them, through project references or per-package runs with incremental state; a change in one plugin does not typecheck every other plugin.
+- The local proof and the pull request check the same packages, and the run names them.
 - Runner minutes and wall time per pull request are reported before and after each slice.
 - The external install runs only where packaging or init can change it.
 
