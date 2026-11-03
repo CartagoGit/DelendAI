@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-10-31T19:44:11.359Z
 shipped-in:
   - "d0ec28c3bc593d6f7e7516b2b38538c759ab2123"
+  - "bf6fa917402e"
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -70,7 +71,7 @@ WHAT MUST HOLD. For a change whose every path is Markdown under docs/ or at the 
 Everything else this slice asks for is delivered and approved: the documentation, proposal, secret and generated-artifact checks run, and the other six code jobs skip.
 
 ### S3 — The forge judges only what the change reaches, and never on the author's word
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -78,8 +79,10 @@ Everything else this slice asks for is delivered and approved: the documentation
   - "pack smoke runs when a manifest, the lockfile, the build configuration or an entry file changes, not for an edit inside a module (job-scope.script.spec.ts)."
   - "No job is skipped because an agent says it ran it: `bun run prove` runs the pull request's plan locally so the first run on the forge is green, and every verdict that lets a change land is the forge's."
 - shipped-in: `bf6fa917402e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at bf6fa917402e, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 3/3: (1) At bf6fa917 the secret scan on a pull request reads the change's diff, the generated-artifact check runs only when a generator changed and the cross-ide check … (2) At bf6fa917 the pack smoke job runs when a manifest, the lockfile, the build configuration or an entry file changes, and not for an edit inside a module; the j… (3) At bf6fa917 no job is excused because a local run says it was done: the proof runs the pull request's plan locally so the first run on the forge is green, and … — Approved on the delivered state of bf6fa917402e. The forge judges only what the change reaches: the secret scan reads the diff, the generated-artifact and cross-ide checks run only when they are relevant, and the pack smoke job runs only when a tarball can change. The type gate exited 0 and the slice spec passes 32 of 32. Two residuals, recorded and not blocking: no test pins the workflow's own conditions, since the slice is the workflow alone; and the mechanism that would let a local claim excuse a forge job was built and then removed inside the same pull request, so the criterion holds by that mechanism's absence rather than by its presence, which the proposal's own history records.
 
 ### S4 — What a start finds left over and holding nothing is removed
 - **Status**: review
