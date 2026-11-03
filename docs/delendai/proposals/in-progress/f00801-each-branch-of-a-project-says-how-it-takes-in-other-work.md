@@ -2,10 +2,14 @@
 id: f00801
 title: "Each branch of a project says how it takes in other work"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
+last-transition-id: 66d96908-7e38-4f68-bb8b-fa9e3a29ebf5
+last-correlation-id: 66d96908-7e38-4f68-bb8b-fa9e3a29ebf5
+last-transition-from: ready
+last-transition-at: 2026-11-03T15:26:16.789Z
 ---
 
 # f00801 — Each branch of a project says how it takes in other work
