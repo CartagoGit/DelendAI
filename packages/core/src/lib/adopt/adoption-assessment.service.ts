@@ -1,8 +1,10 @@
 import { deriveConfig } from '../bootstrap/derive-config';
 import type { IProjectAnalysis } from '../bootstrap/analyze-project';
+import { isPackId } from '../plugins/pack-defaults-overlay';
 import {
 	PRESET_CATALOG,
 	resolvePresetMembers,
+	resolveStackPackMembers,
 } from '../plugins/preset-catalog';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import { TOKEN_BUDGETS } from '../contracts/constants/token-budgets.constant';
@@ -345,21 +347,47 @@ const rationaleFor = (
 	return `Not recommended by the ${presetId} adoption surface; add it only if this project explicitly needs that capability.`;
 };
 
+/**
+ * Plugins no purpose pack carries but a repo's own files ask for: a
+ * Dockerfile, a schema or locale files are the signal, so the stack
+ * overlays (`container`+`database` for a backend, `i18n` for a web app)
+ * are recommended on that signal alone, whatever the candidate pack.
+ */
+const SIGNAL_DRIVEN_PLUGINS: ReadonlySet<string> = new Set([
+	'container',
+	'database',
+	'i18n',
+]);
+
+/**
+ * Membership of a candidate id: the stack ids are overlays, resolved
+ * without the retired-id notice, since the assessment reports them as
+ * candidates rather than reading a configuration.
+ */
+const candidateMembers = (candidateId: string): ReadonlySet<string> =>
+	new Set(
+		isPackId(candidateId)
+			? resolveStackPackMembers(candidateId)
+			: resolvePresetMembers(candidateId),
+	);
+
 const buildPluginRecommendations = (
 	analysis: IProjectAnalysis,
 	topLevelDirs: readonly string[],
 	presetId: string,
 ): readonly IPluginRecommendation[] => {
 	const entries = toEntrySet(topLevelDirs);
-	const presetMembers = new Set(resolvePresetMembers(presetId));
+	const presetMembers = candidateMembers(presetId);
+	const inSurface = (id: string): boolean =>
+		presetMembers.has(id) || SIGNAL_DRIVEN_PLUGINS.has(id);
 	return FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => ({
 		id: entry.id,
 		recommended:
-			presetMembers.has(entry.id) &&
+			inSurface(entry.id) &&
 			pluginSignalAllows(entry.id, analysis, entries),
 		rationale: rationaleFor(
 			entry.id,
-			presetMembers.has(entry.id) &&
+			inSurface(entry.id) &&
 				pluginSignalAllows(entry.id, analysis, entries),
 			presetId,
 			analysis,
@@ -371,7 +399,7 @@ const coversAll = (
 	presetId: string,
 	pluginIds: ReadonlySet<string>,
 ): boolean => {
-	const covered = new Set(resolvePresetMembers(presetId));
+	const covered = candidateMembers(presetId);
 	for (const pluginId of pluginIds) {
 		if (!covered.has(pluginId)) return false;
 	}

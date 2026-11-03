@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['rules', 'lint'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'network', 'env-read'],
-	presets: ['standard', 'swarm', 'full', 'dogfood', 'web-app', 'backend-api'],
+	presets: ['solo', 'team-pr', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 5_634,
 		caps: { hard: 6_480, warning: 5_920 },

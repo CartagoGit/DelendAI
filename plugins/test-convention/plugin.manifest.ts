@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['tests', 'convention'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['swarm', 'full', 'dogfood', 'web-app', 'backend-api'],
+	presets: ['team-pr', 'swarm', 'everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 3_232,
 		caps: { hard: 3_720, warning: 3_400 },

@@ -3,7 +3,7 @@ id: env
 package: @delendai/env
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Env
@@ -21,13 +21,11 @@ Environment config validation (.env check + schema + env_explains).
 
 ## Presets
 
-- standard
-- swarm
-- full
+- solo
+- team-pr
+- docs-web
+- everything
 - dogfood
-- web-app
-- backend-api
-- cli-tool
 
 ## Permissions
 

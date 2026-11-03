@@ -14,7 +14,7 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'filesystem-write'],
 	// Deliberately in NO preset: adopting a framework rule is a decision
 	// a project opts into, not a default.
-	presets: [],
+	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', 'zod'],
 	capabilities: [],

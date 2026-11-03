@@ -62,9 +62,9 @@ describe('collectInitAnswers in a terminal', () => {
 	});
 
 	it('walks every question: a plugin added and excluded, a bad id, a typo, the issues repo, the allow-list', async () => {
-		answers.set('Which preset?', ['5']);
+		answers.set('Which preset?', ['3']);
 		answers.set('Add plugin?', ['not-a-plugin', 'audit']);
-		answers.set('Add another plugin?', ['', '']);
+		answers.set('Add another plugin?', ['issues', '']);
 		answers.set('Exclude any', ['audit']);
 		answers.set('How to centralize', ['1']);
 		answers.set('Copy core skills', ['ye', 'y']);
@@ -74,8 +74,8 @@ describe('collectInitAnswers in a terminal', () => {
 		answers.set('Add another hostname', ['n']);
 		const result = await collectInitAnswers('/ws');
 		expect(result).toMatchObject({
-			preset: 'full',
-			extraPlugins: ['audit'],
+			preset: 'team-pr',
+			extraPlugins: ['audit', 'issues'],
 			excludedPlugins: ['audit'],
 			copyCoreSkills: true,
 			generateAgentMd: false,

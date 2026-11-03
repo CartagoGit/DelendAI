@@ -129,7 +129,7 @@ export const buildAdoptProjectPlan = (
 
 const ADOPT_PROJECT_OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
-	preset: z.enum(['lean', 'standard', 'minimal', 'swarm']),
+	preset: z.enum(['solo', 'team-pr', 'minimal', 'swarm']),
 	stage: z.enum(ADOPTION_STAGES).optional(),
 	config: z.record(z.string(), z.unknown()).optional(),
 	rationale: z.array(z.string()).optional(),
