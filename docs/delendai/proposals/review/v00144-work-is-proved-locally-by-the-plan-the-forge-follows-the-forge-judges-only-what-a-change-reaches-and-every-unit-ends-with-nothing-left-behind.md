@@ -13,6 +13,7 @@ last-transition-at: 2026-10-31T19:44:11.359Z
 shipped-in:
   - "d0ec28c3bc593d6f7e7516b2b38538c759ab2123"
   - "bf6fa917402e"
+  - "29c0c7a2d84e8e5e5d68dbe824dc4e7de90d3da2"
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -85,15 +86,17 @@ Everything else this slice asks for is delivered and approved: the documentation
 - review-log: approved by minimax-m3.1-flash — verified at bf6fa917402e, validate exit 0 and tests 32/32 claimed, no recorded run cited; acceptance 3/3: (1) At bf6fa917 the secret scan on a pull request reads the change's diff, the generated-artifact check runs only when a generator changed and the cross-ide check … (2) At bf6fa917 the pack smoke job runs when a manifest, the lockfile, the build configuration or an entry file changes, and not for an edit inside a module; the j… (3) At bf6fa917 no job is excused because a local run says it was done: the proof runs the pull request's plan locally so the first run on the forge is green, and … — Approved on the delivered state of bf6fa917402e. The forge judges only what the change reaches: the secret scan reads the diff, the generated-artifact and cross-ide checks run only when they are relevant, and the pack smoke job runs only when a tarball can change. The type gate exited 0 and the slice spec passes 32 of 32. Two residuals, recorded and not blocking: no test pins the workflow's own conditions, since the slice is the workflow alone; and the mechanism that would let a local claim excuse a forge job was built and then removed inside the same pull request, so the criterion holds by that mechanism's absence rather than by its presence, which the proposal's own history records.
 
 ### S4 — What a start finds left over and holding nothing is removed
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/cache/cache-layout-bootstrap.ts`, `packages/core/tests/src/lib/cache/cache-layout-bootstrap.spec.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Start-up removes a cache folder a day old that holds no file (65 such folders on 2026-10-29) and keeps any folder with a file (cache-layout-bootstrap.spec.ts)."
   - "Start-up drops a stranded ref whose every saved file is, byte for byte, on the integration branch, on a work or publication branch, or in a larger stranded ref kept, and keeps one that holds a file found nowhere else (stranded-edits.service.spec.ts; on 2026-10-29: 5 of 15 dropped, 10 kept)."
 - shipped-in: `373e3f316977`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 29c0c7a2d84e, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 2/2: (1) At 29c0c7a2 the start-up removes a cache folder a day old that holds no file and keeps any folder with a file, and drops a stranded ref whose every saved file … (2) At 29c0c7a2 the start-up drops a stranded ref whose every saved file is byte for byte on the integration branch, on a work or publication branch, or in a large… — Approved on the delivered state of 29c0c7a2d84e8e5e5d68dbe824dc4e7de90d3da2. What a start finds left over and holding nothing is removed. The type gate exited 0 and the two slice specs pass 17 of 17. Two residuals, recorded and not blocking: the branch comparison covers only the remotes under the repository's own namespace, so a work branch under another namespace is not compared; and the cache half of this slice shipped in the slice S1 delivery rather than in this one.
 
 ### S5 — Publishing refuses a unit that holds nothing new
 - **Status**: review
