@@ -146,7 +146,7 @@ describe('the dashboard page and the text it did not write', () => {
 });
 
 const scripts = (html: string): string[] =>
-	[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/giu)].map(
+	[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script[^>]*>/giu)].map(
 		(match) => match[1] ?? '',
 	);
 
