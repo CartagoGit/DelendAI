@@ -109,6 +109,7 @@
         "zod": "^4.6.6",
       },
       "devDependencies": {
+        "@delendai/test-kit": "workspace:*",
         "@types/vscode": "^1.90.0",
         "@vscode/test-electron": "^2.5.2",
         "@vscode/vsce": "^3.6.3",

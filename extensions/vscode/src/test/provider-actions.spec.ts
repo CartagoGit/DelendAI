@@ -13,9 +13,12 @@ import { describe, expect, it } from 'vitest';
 import { McpStdioClient } from '@delendai/client';
 
 import {
+	PROVIDERS_HEALTHCHECK_COMMAND,
 	PROVIDERS_OPEN_DASHBOARD_COMMAND,
 	PROVIDERS_PAUSE_COMMAND,
+	PROVIDERS_RESUME_COMMAND,
 	USAGE_CLEAR_COMMAND,
+	USAGE_REPORT_COMMAND,
 	registerProviderActionCommands,
 	type IProviderActionsVscodeApi,
 } from '../commands/provider-actions';
@@ -263,6 +266,71 @@ describe('provider dashboard commands (f00098 S3)', () => {
 			calls.filter((c) => c.name.endsWith('set_provider_state')),
 		).toEqual([]);
 		expect(messages).toEqual([]);
+	});
+
+	it('healthcheck repaints the open dashboard and resume sets available', async () => {
+		const calls: Array<{ name: string; args: unknown }> = [];
+		const { vscode, commands, messages, panels } = createVscode();
+		registerProviderActionCommands({
+			vscode,
+			client: createClient({ calls }),
+		});
+		await commands.get(PROVIDERS_OPEN_DASHBOARD_COMMAND)?.();
+		panels[0]!.webview.html = '<stale>';
+		await commands.get(PROVIDERS_HEALTHCHECK_COMMAND)?.();
+		expect(panels[0]!.webview.html).toContain('claude-sonnet');
+		await commands.get(PROVIDERS_RESUME_COMMAND)?.();
+		expect(
+			calls.filter((c) => c.name.endsWith('set_provider_state')).at(-1)!
+				.args,
+		).toMatchObject({ state: 'available' });
+		expect(messages.length).toBeGreaterThanOrEqual(2);
+	});
+
+	it('usage report reopens the dashboard through its command', async () => {
+		const { vscode, commands } = createVscode();
+		const executed: string[] = [];
+		registerProviderActionCommands({
+			vscode: {
+				...vscode,
+				commands: {
+					...vscode.commands,
+					executeCommand: async (command: string) => {
+						executed.push(command);
+					},
+				},
+			},
+			client: createClient({}),
+		});
+		await commands.get(USAGE_REPORT_COMMAND)?.();
+		expect(executed).toEqual([PROVIDERS_OPEN_DASHBOARD_COMMAND]);
+	});
+
+	it('reports failures of healthcheck, pause, resume and clear instead of throwing', async () => {
+		const errors: string[] = [];
+		const { vscode, commands } = createVscode({ confirmAnswer: 'Clear' });
+		const failing = McpStdioClient.fromTransport({
+			async callTool() {
+				throw new Error('server offline');
+			},
+		});
+		registerProviderActionCommands({
+			vscode: {
+				...vscode,
+				window: {
+					...vscode.window,
+					showErrorMessage: async (message: string) => {
+						errors.push(message);
+						return undefined;
+					},
+				},
+			},
+			client: failing,
+		});
+		await commands.get(PROVIDERS_HEALTHCHECK_COMMAND)?.();
+		await commands.get(PROVIDERS_PAUSE_COMMAND)?.();
+		await commands.get(PROVIDERS_RESUME_COMMAND)?.();
+		expect(errors.length).toBeGreaterThanOrEqual(3);
 	});
 
 	it('the 12-language string table is complete', () => {
