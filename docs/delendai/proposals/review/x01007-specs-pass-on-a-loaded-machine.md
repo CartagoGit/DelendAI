@@ -2,14 +2,14 @@
 id: x01007
 title: "Specs pass on a loaded machine"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: a378a4b6-7fb5-4c9b-be1c-8aaac025d9ee
-last-correlation-id: a378a4b6-7fb5-4c9b-be1c-8aaac025d9ee
-last-transition-from: ready
-last-transition-at: 2026-11-03T05:03:14.642Z
+last-transition-id: e11ac77c-46d4-4845-8d29-359809d3090e
+last-correlation-id: e11ac77c-46d4-4845-8d29-359809d3090e
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T05:14:39.029Z
 ---
 
 # x01007 — Specs pass on a loaded machine
@@ -40,19 +40,28 @@ Every PR pays for these specs in proof retries, and each passes alone, so the re
 - global_gate: none
 
 ### S1 — Close gate and lock chaos specs wait on the work, not the clock
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts`
 - **Gate**: none
+- shipped-in: `34c7e62db9e2`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Process-spawning and measuring specs get ceilings a loaded machine fits under
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/guard.command.spec.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`, `tests/e2e/routing/full-pipeline.e2e.spec.ts`
 - **Gate**: none
+- shipped-in: `34c7e62db9e2`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Latency overhead is measured in CPU time
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts`
 - **Gate**: none
+- shipped-in: `34c7e62db9e2`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
