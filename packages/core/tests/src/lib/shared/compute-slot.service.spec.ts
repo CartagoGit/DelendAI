@@ -184,3 +184,53 @@ describe('withComputeSlot per unit and tip', () => {
 		expect(proved).toEqual(['new']);
 	});
 });
+
+describe('withComputeSlot across processes', () => {
+	const moduleUrl = new URL(
+		'../../../../src/lib/shared/compute-slot.service.ts',
+		import.meta.url,
+	).href;
+	const child = (lockPath: string, tip: string, marker: string) => {
+		const script = `
+			import { appendFileSync } from 'node:fs';
+			const { withComputeSlot } = await import(${JSON.stringify(moduleUrl)});
+			const value = await withComputeSlot({
+				lockPath: ${JSON.stringify(lockPath)}, label: 'child', unit: 'u1',
+				tip: ${JSON.stringify(tip)}, notify: () => undefined,
+				run: async () => {
+					appendFileSync(${JSON.stringify(marker)}, ${JSON.stringify(tip)} + '\\n');
+					await new Promise((r) => setTimeout(r, 1500));
+					return 'proof-of-' + ${JSON.stringify(tip)};
+				},
+			});
+			console.log('ANSWER ' + value);
+		`;
+		return new Promise<string>((resolve, reject) => {
+			const proc = spawn('bun', ['-e', script], {
+				stdio: ['ignore', 'pipe', 'inherit'],
+			});
+			let out = '';
+			proc.stdout.on('data', (c: Buffer) => (out += c.toString()));
+			proc.on('error', reject);
+			proc.on('close', () => resolve(out));
+		});
+	};
+
+	it('joins two processes on one tip and proves it once', async () => {
+		const lockPath = lockIn();
+		const marker = `${lockPath}.ran`;
+		const [one, two] = await Promise.all([
+			child(lockPath, 'aaa', marker),
+			(async () => {
+				await new Promise((r) => setTimeout(r, 600));
+				return child(lockPath, 'aaa', marker);
+			})(),
+		]);
+		expect(one).toContain('ANSWER proof-of-aaa');
+		expect(two).toContain('ANSWER proof-of-aaa');
+		const { readFileSync } = await import('node:fs');
+		expect(readFileSync(marker, 'utf8').trim().split('\n')).toEqual([
+			'aaa',
+		]);
+	}, 30_000);
+});
