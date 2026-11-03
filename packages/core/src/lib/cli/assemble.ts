@@ -38,7 +38,7 @@ import {
 import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { createStaleRuntimeWatch } from '../development-policy/stale-runtime-advisory';
 import { createHostMaintenance } from '../development-policy/maintenance-lease.service';
-import { MAINTENANCE_LEASE_FILE } from '../contracts/constants/maintenance-lease.constant';
+import { maintenanceLeasePath } from '../development-policy/maintenance-lease-path';
 import { resolveEffectivePolicy } from '../development-policy/effective-policy';
 import { legacyFieldsOf } from '../work-units/development-policy.service';
 import {
@@ -363,7 +363,7 @@ export const assembleCliConfig = async (
 	const corePaths = { cacheDir, docsDir };
 	// One maintainer per workspace: made here, taken on first use.
 	const maintenance = createHostMaintenance({
-		path: workspace.resolve(joinRel(cacheDir, MAINTENANCE_LEASE_FILE)),
+		path: maintenanceLeasePath(workspace.root, cacheDir),
 		behind: staleRuntime.behind,
 		// stdout is the MCP transport; the log is stderr.
 		report: (line) => {
