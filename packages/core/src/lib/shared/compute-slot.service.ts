@@ -113,19 +113,30 @@ const pause = (ms: number): Promise<void> =>
  * A newer tip of the unit supersedes an older one that has not started: the
  * older one gives its turn up and returns the newer tip's answer.
  */
+const localCurrent = new Map<string, string>();
+
+const unitDir = (lockPath: string, unit: string): string =>
+	`${lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
+
 const withUnitTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	unit: string,
 	tip: string,
 ): Promise<T> => {
-	const dir = `${request.lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
-	await mkdir(dir, { recursive: true });
+	const dir = unitDir(request.lockPath, unit);
 	const currentPath = join(dir, 'current');
 	const claimPath = (name: string): string => join(dir, `${name}.claim`);
 	const donePath = (name: string): string => join(dir, `${name}.done`);
 	const resultPath = (name: string, id: string): string =>
 		join(dir, `${name}.${id}.result`);
+	// On record at once in this process, so a newer tip is known before any
+	// older tip can take the slot; the file tells other processes.
+	localCurrent.set(dir, tip);
+	await mkdir(dir, { recursive: true });
 	await writeFile(currentPath, tip);
+	const currentTip = async (): Promise<string> =>
+		localCurrent.get(dir) ??
+		(await readFile(currentPath, 'utf8').catch(() => tip));
 
 	const follow = async (
 		name: string,
@@ -158,7 +169,7 @@ const withUnitTurn = async <T>(
 		const { result } = await follow(name, claim);
 		if (result === undefined) return SUPERSEDED;
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => name);
+			const newer = await currentTip();
 			return newer === name ? SUPERSEDED : joinOnly(newer);
 		}
 		return settle(result);
@@ -170,9 +181,7 @@ const withUnitTurn = async <T>(
 			const { result } = await follow(tip, claim);
 			if (result === undefined) continue;
 			if ('superseded' in result) {
-				const newer = await readFile(currentPath, 'utf8').catch(
-					() => tip,
-				);
+				const newer = await currentTip();
 				const joined =
 					newer === tip ? SUPERSEDED : await joinOnly(newer);
 				if (joined !== SUPERSEDED) return joined;
@@ -196,10 +205,7 @@ const withUnitTurn = async <T>(
 			const value = await withComputeSlotTurn<T | typeof SUPERSEDED>(
 				request,
 				async () =>
-					(await readFile(currentPath, 'utf8').catch(() => tip)) ===
-					tip
-						? request.run()
-						: SUPERSEDED,
+					(await currentTip()) === tip ? request.run() : SUPERSEDED,
 			);
 			result = value === SUPERSEDED ? { superseded: true } : { value };
 		} catch (error) {
@@ -212,7 +218,7 @@ const withUnitTurn = async <T>(
 		await writeFile(donePath(tip), JSON.stringify(mine));
 		await rm(claimPath(tip), { force: true });
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => tip);
+			const newer = await currentTip();
 			const joined = newer === tip ? SUPERSEDED : await joinOnly(newer);
 			if (joined !== SUPERSEDED) return joined;
 			await writeFile(currentPath, tip);
@@ -226,7 +232,11 @@ export const withComputeSlot = <T>(
 	request: IComputeSlotRequest<T>,
 ): Promise<T> =>
 	request.unit !== undefined && request.tip !== undefined
-		? withUnitTurn(request, request.unit, request.tip)
+		? withUnitTurn(request, request.unit, request.tip).finally(() => {
+				const dir = unitDir(request.lockPath, request.unit ?? '');
+				if (localCurrent.get(dir) === request.tip)
+					localCurrent.delete(dir);
+			})
 		: withComputeSlotTurn(request, request.run);
 
 /** The turns this process has asked for, per slot, in order. */
