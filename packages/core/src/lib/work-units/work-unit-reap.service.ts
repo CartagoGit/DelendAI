@@ -1,3 +1,4 @@
+import { shortName } from '../development-policy/git-guard-namespaces';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -8,6 +9,7 @@ import { reapSpentReservations } from './slice-reservation-reap.service';
 import { hydrateKeptUnits } from './kept-unit-hydration.service';
 import { releaseIdleDependencies } from './idle-unit-dependencies.service';
 import { reapDeliveredUnits } from './unit-reaper.service';
+import { endFinishedUnits } from './finished-units-end.service';
 import { worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
@@ -42,11 +44,24 @@ export const reaped = async (
 		policy: opened.policy,
 		apply: args.includes('--apply'),
 	});
+	// Every unit the integration branch holds whole, here and on the
+	// forge, with its tips kept: what the maintaining server runs.
+	const ended = (
+		await endFinishedUnits({
+			root: opened.root,
+			policy: opened.policy,
+			apply: args.includes('--apply'),
+		})
+	).filter((unit) => unit.outcome !== 'kept');
 	// What was not removed and holds nothing is brought forward, so a unit
 	// kept for its proposal's next slice does not fall behind unseen.
 	// A unit the reaper just judged spent is not also brought forward.
 	const spent = new Set<string>();
 	for (const unit of units) spent.add(unit.ref);
+	for (const unit of ended)
+		spent.add(
+			`${shortName(opened.policy.branches.workRefPrefix)}${unit.unit}`,
+		);
 	const kept = (
 		await readUnitStandings({
 			root: opened.root,
@@ -114,6 +129,7 @@ export const reaped = async (
 		code: EXIT_CODE.OK,
 		data: {
 			units,
+			ended,
 			advanced,
 			dependencies,
 			husks,
