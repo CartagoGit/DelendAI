@@ -38,6 +38,22 @@ edited there.
 - Never leave a unit idle: every work command is its heartbeat, and 30 minutes of silence
   lists it for adoption.
 
+## Waiting on long work
+
+`prove`, `deliver` and `publish` can wait their turn for the machine's proof slot. Wait
+for them one way, once:
+
+- Run the command itself in the background and let its exit wake you. When a check has
+  to run alone, test something that ends with the work: `kill -0 <pid>`, or a marker
+  the command writes when it exits.
+- Never wait on a pattern that can match the waiter itself. `pgrep -f '<command>'`
+  finds its own shell and never ends.
+- Start a waiter once, never again on each turn, and stop every waiter you started
+  before you report. A leftover waiter keeps the machine busy and wakes whoever started
+  it, and each wake costs a read of that agent's whole context.
+- Do not start a second `prove`, `deliver` or `publish` of a unit that is already
+  waiting; it queues a second proof.
+
 ## Checkpoint advisories
 
 When any delendai tool result carries `checkpointAdvisory` in the result

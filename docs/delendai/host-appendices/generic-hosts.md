@@ -20,3 +20,8 @@ or have their own config file. Use the same single-pointer pattern:
 
 - That's it. No other content. When the bootstrap changes, the host
   picks it up on the next session.
+
+When you wait on long work, have one waiter per thing, and make it end with
+the work: the command's exit, `kill -0 <pid>`, or a marker the command writes.
+Never use a `pgrep -f` that matches itself. Leave no waiter behind when you
+report (see the work unit playbook).
