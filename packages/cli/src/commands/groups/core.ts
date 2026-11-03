@@ -282,14 +282,25 @@ const lazyRepairCommand: ICliCommand = {
 };
 
 /** f00801 S3: promotion and follow by each branch's own route. */
-const lazyReleaseCommand: ICliCommand = {
-	name: 'release',
+const lazyReleasePromoteCommand: ICliCommand = {
+	name: 'release promote',
 	summary:
-		'Open a promotion into a branch, or make following branches take in their source, each by its own route.',
-	usage: 'release <promote <branch>|follow> [--workspace=<path>]',
+		"Open the promotion into a branch from the branch its rule names, by the target branch's own route.",
+	usage: 'release promote <branch> [--workspace=<path>]',
 	async run(args, ctx) {
-		const { releaseCommand: release } = await import('./release');
-		return release.run(args, ctx);
+		const { releasePromoteCommand: promote } = await import('./release');
+		return promote.run(args, ctx);
+	},
+};
+
+const lazyReleaseFollowCommand: ICliCommand = {
+	name: 'release follow',
+	summary:
+		'Make each branch that follows another take in what it has moved on, by its own route.',
+	usage: 'release follow [--workspace=<path>]',
+	async run(args, ctx) {
+		const { releaseFollowCommand: follow } = await import('./release');
+		return follow.run(args, ctx);
 	},
 };
 
@@ -332,7 +343,8 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	buildPluginNewCommand(),
 	lazyGuardCommand,
 	lazyRepairCommand,
-	lazyReleaseCommand,
+	lazyReleasePromoteCommand,
+	lazyReleaseFollowCommand,
 	lazyWorkCommand,
 	lazyReviewCommand,
 ];

@@ -4,7 +4,7 @@
  * git and the forge's CLI.
  *
  *   release promote <branch>   open the promotion into <branch>
- *   release follow             make each following branch take in its source
+ *   release follow              make each following branch take in its source
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -20,7 +20,10 @@ import {
 } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
-import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
+import type {
+	ICliCommand,
+	ICliCommandContext,
+} from '../../contracts/interfaces/cli-command.interface';
 import { positionalArg } from './group-helpers';
 
 const REMOTE = 'origin';
@@ -117,7 +120,7 @@ const portsAt = (cwd: string): IBranchSyncPorts => ({
 		}),
 });
 
-const report = (results: readonly IBranchSyncResult[]) => ({
+export const report = (results: readonly IBranchSyncResult[]) => ({
 	code: results.some((r) => r.outcome === 'failed')
 		? EXIT_CODE.VALIDATION
 		: EXIT_CODE.OK,
@@ -130,31 +133,42 @@ const report = (results: readonly IBranchSyncResult[]) => ({
 		.join('\n'),
 });
 
-export const releaseCommand: ICliCommand = {
-	name: 'release',
+const rootOf = (ctx: ICliCommandContext): string =>
+	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
+
+export const releasePromoteCommand: ICliCommand = {
+	name: 'release promote',
 	summary:
-		'Open a promotion into a branch, or make following branches take in their source, each by its own route.',
-	usage: 'release <promote <branch>|follow> [--workspace=<path>]',
+		"Open the promotion into a branch from the branch its rule names, by the target branch's own route.",
+	usage: 'release promote <branch> [--workspace=<path>]',
 	async run(args, ctx) {
-		const root =
-			ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
-		const sub = args[0];
-		const policy = await readWorkspacePolicy(root);
-		const ports = portsAt(root);
-		if (sub === 'promote') {
-			const branch = positionalArg(args.slice(1));
-			if (branch === undefined) {
-				return {
-					code: EXIT_CODE.USAGE,
-					error: 'usage: release promote <branch>',
-				};
-			}
-			return report([promoteBranch(policy, branch, ports)]);
+		const branch = positionalArg(args);
+		if (branch === undefined) {
+			return {
+				code: EXIT_CODE.USAGE,
+				error: 'usage: release promote <branch>',
+			};
 		}
-		if (sub === 'follow') return report(followBranches(policy, ports));
-		return {
-			code: EXIT_CODE.USAGE,
-			error: `Unknown subcommand '${String(sub)}'. Use promote or follow.`,
-		};
+		const root = rootOf(ctx);
+		return report([
+			promoteBranch(
+				await readWorkspacePolicy(root),
+				branch,
+				portsAt(root),
+			),
+		]);
+	},
+};
+
+export const releaseFollowCommand: ICliCommand = {
+	name: 'release follow',
+	summary:
+		'Make each branch that follows another take in what it has moved on, by its own route.',
+	usage: 'release follow [--workspace=<path>]',
+	async run(_args, ctx) {
+		const root = rootOf(ctx);
+		return report(
+			followBranches(await readWorkspacePolicy(root), portsAt(root)),
+		);
 	},
 };

@@ -56,6 +56,8 @@ describe('core extra group (f00046 S5)', async () => {
 			'plugin new',
 			'guard',
 			'repair',
+			'release promote',
+			'release follow',
 			'work',
 			'review',
 		]);
