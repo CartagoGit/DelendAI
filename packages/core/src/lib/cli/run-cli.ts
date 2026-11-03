@@ -26,6 +26,7 @@ import {
 import { trimTrailingChar } from '../shared/string-normalize';
 import { assembleCliConfig, type IAssembleCliDeps } from './assemble';
 import { reportFirstRunSetup } from '../adopt/first-run-setup.service';
+import { migrateWorkspacePresetProvenance } from '../plugins/preset-migration';
 import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
@@ -251,6 +252,10 @@ export const runCli = async (
 	// configuration, so this start already runs on what it created.
 	if (args.configPath === undefined)
 		await reportFirstRunSetup(args.workspace, args.namespacePrefix);
+	await migrateWorkspacePresetProvenance({
+		workspace: args.workspace,
+		configPath: args.configPath,
+	});
 	const {
 		config,
 		loadResult,

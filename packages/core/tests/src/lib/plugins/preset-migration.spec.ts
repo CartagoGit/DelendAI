@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	describeRetiredPresetMatch,
+	migrateWorkspacePresetProvenance,
+	resolvePresetForLaunch,
 	migratePresetProvenance,
 	resolveRetiredPreset,
 } from '../../../../src/lib/plugins/preset-migration';
@@ -13,7 +15,10 @@ import {
 	PRESET_MIGRATION_JOURNAL,
 	RETIRED_PRESET_MEMBERS,
 } from '../../../../src/lib/contracts/constants/preset-migration.constant';
-import { RETIRED_PRESET_ID } from '../../../../src/lib/plugins/preset-catalog';
+import {
+	resolvePresetMembers,
+	RETIRED_PRESET_ID,
+} from '../../../../src/lib/plugins/preset-catalog';
 
 const mapOf = (plugins: readonly string[]) =>
 	Object.fromEntries(plugins.map((plugin) => [plugin, {}]));
@@ -87,5 +92,42 @@ describe('preset migration', () => {
 		});
 		expect(changed.outcome).toBe('unchanged');
 		expect(changed.match).toBeUndefined();
+	});
+
+	it('resolves a launch argument through the migration and prints the notice', () => {
+		const lines: string[] = [];
+		const members = resolvePresetForLaunch('lean', (line) => {
+			lines.push(line);
+		});
+		expect(members).toEqual(resolveRetiredPreset('lean')?.members);
+		expect(lines).toHaveLength(1);
+		expect(lines[0]).toContain("preset 'lean' is deprecated, use 'solo'");
+		const plain: string[] = [];
+		expect(resolvePresetForLaunch('solo', (l) => plain.push(l))).toEqual(
+			resolvePresetMembers('solo'),
+		);
+		expect(plain).toEqual([]);
+	});
+
+	it('runs at startup from the workspace config and journals it', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'preset-startup-'));
+		dirs.push(root);
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				plugins: mapOf(RETIRED_PRESET_MEMBERS['cli-tool'] ?? []),
+			}),
+		);
+		const result = await migrateWorkspacePresetProvenance({
+			workspace: root,
+		});
+		expect(result.outcome).toBe('recorded');
+		expect(result.match?.retired).toBe('cli-tool');
+		const none = await mkdtemp(join(tmpdir(), 'preset-startup-none-'));
+		dirs.push(none);
+		expect(
+			(await migrateWorkspacePresetProvenance({ workspace: none }))
+				.outcome,
+		).toBe('unchanged');
 	});
 });

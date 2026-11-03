@@ -30,6 +30,7 @@ import type {
 	IPresetMigrationResult,
 	IRetiredPresetResolution,
 } from '../contracts/interfaces/preset-migration.interface';
+import { DEFAULT_CONFIG_FILENAME, parseConfigFile } from './load-config-file';
 import {
 	type IRetiredPresetId,
 	presetAliasOf,
@@ -145,4 +146,42 @@ export const migratePresetProvenance = async (
 	} catch {
 		return { outcome: 'unchanged', match };
 	}
+};
+
+/**
+ * The plugins a `--preset=<id>` launch argument selects. A retired id
+ * resolves to its replacement and the notice naming it goes to `write`
+ * (stderr in the server: stdout is the MCP transport); any other id
+ * resolves through the catalogue.
+ */
+export const resolvePresetForLaunch = (
+	id: string | undefined,
+	write: (line: string) => void,
+): readonly string[] => {
+	const retired = resolveRetiredPreset(id);
+	if (retired === undefined) return resolvePresetMembers(id);
+	write(`[delendai/preset] ${retired.notice}\n`);
+	return retired.members;
+};
+
+/**
+ * Start-up entry: reads the workspace's config and journals which
+ * retired preset its plugin map matches. Never throws and never writes
+ * the config.
+ */
+export const migrateWorkspacePresetProvenance = async (input: {
+	readonly workspace: string;
+	readonly configPath?: string | undefined;
+	readonly now?: Date | undefined;
+}): Promise<IPresetMigrationResult> => {
+	const path =
+		input.configPath ?? join(input.workspace, DEFAULT_CONFIG_FILENAME);
+	const text = await readFile(path, 'utf8').catch(() => undefined);
+	const plugins = parseConfigFile(text).plugins;
+	if (plugins === undefined) return { outcome: 'unchanged' };
+	return migratePresetProvenance({
+		root: input.workspace,
+		plugins,
+		now: input.now,
+	});
 };
