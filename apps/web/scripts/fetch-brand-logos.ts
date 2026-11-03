@@ -44,6 +44,13 @@ import { readdir, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+	extensionForKind,
+	replaceFile,
+	sniff,
+	staleLogoFiles,
+} from './lib/brand-logo-files';
+
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const APPS_WEB = join(SCRIPT_DIR, '..');
 const OUT = join(APPS_WEB, 'public/logos');
@@ -53,39 +60,13 @@ interface IBrandEntry {
 	readonly sources: ReadonlyArray<string>;
 }
 
-type ImageKind = 'svg' | 'png' | 'ico';
-
-const MAGIC: Record<ImageKind, ReadonlyArray<number>> = {
-	svg: [0x3c], // "<svg" — only check the first byte (always '<')
-	png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
-	ico: [0x00, 0x00, 0x01, 0x00],
-};
-
-const sniff = (buf: Uint8Array): ImageKind | null => {
-	for (const kind of ['svg', 'png', 'ico'] as const) {
-		const sig = MAGIC[kind];
-		if (buf.byteLength < sig.length) continue;
-		let ok = true;
-		for (let i = 0; i < sig.length; i++) {
-			if (buf[i] !== sig[i]) {
-				ok = false;
-				break;
-			}
-		}
-		if (ok) return kind;
-	}
-	return null;
-};
-
-const extensionForKind = (kind: ImageKind): string => {
-	if (kind === 'svg') return 'svg';
-	if (kind === 'png') return 'png';
-	return 'ico';
-};
-
 const fetchUrl = async (
 	url: string,
-): Promise<{ body: Uint8Array; kind: ImageKind; bytes: number } | null> => {
+): Promise<{
+	body: Uint8Array;
+	kind: NonNullable<ReturnType<typeof sniff>>;
+	bytes: number;
+} | null> => {
 	try {
 		const res = await fetch(url, {
 			redirect: 'follow',
@@ -239,10 +220,14 @@ const main = async (): Promise<void> => {
 	let written = 0;
 	let failed = 0;
 	const writtenThisRun = new Set<string>();
+	const refreshedBases = new Set<string>();
 
 	for (const brand of BRANDS) {
-		let hit: { body: Uint8Array; kind: ImageKind; bytes: number } | null =
-			null;
+		let hit: {
+			body: Uint8Array;
+			kind: NonNullable<ReturnType<typeof sniff>>;
+			bytes: number;
+		} | null = null;
 		for (const url of brand.sources) {
 			hit = await fetchUrl(url);
 			if (hit) break;
@@ -255,6 +240,7 @@ const main = async (): Promise<void> => {
 			continue;
 		}
 		fetched += 1;
+		refreshedBases.add(brand.outName);
 		const outName = `${brand.outName}.${extensionForKind(hit.kind)}`;
 		const outPath = join(OUT, outName);
 		// Read once, no existence check first: the two could see different files.
@@ -272,7 +258,7 @@ const main = async (): Promise<void> => {
 			writtenThisRun.add(outName);
 			continue;
 		}
-		writeFileSync(outPath, hit.body);
+		replaceFile(outPath, hit.body);
 		written += 1;
 		writtenThisRun.add(outName);
 		console.log(`wrote ${outName} (${hit.bytes}B, ${hit.kind})`);
@@ -285,13 +271,12 @@ const main = async (): Promise<void> => {
 	// the .svg gets deleted. The `<base>.<ext>` we want is the
 	// one in `writtenThisRun`; everything else matching a brand
 	// base is stale.
-	const wantedBases = new Set(BRANDS.map((b) => b.outName));
-	for (const file of await readdir(OUT)) {
-		const m = file.match(/^(.+)\.(svg|png|ico)$/);
-		if (!m) continue;
-		const [, base] = m;
-		if (!wantedBases.has(base)) continue;
-		if (writtenThisRun.has(file)) continue;
+	// A brand whose fetch failed keeps its cached logo (WEB-ASSET01).
+	for (const file of staleLogoFiles(
+		await readdir(OUT),
+		refreshedBases,
+		writtenThisRun,
+	)) {
 		console.log(`removing stale ${file}`);
 		await unlink(join(OUT, file));
 	}
