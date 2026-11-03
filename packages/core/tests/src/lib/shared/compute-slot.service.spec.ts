@@ -2,6 +2,7 @@
  * compute-slot.service.spec.ts — heavy compute on one machine takes turns:
  * a second caller waits (and says for whom), and a dead holder frees the slot.
  */
+// delendai:timing-is-the-subject — a slot holder must still be running when a second process asks for its turn.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -199,6 +200,7 @@ describe('withComputeSlot across processes', () => {
 				tip: ${JSON.stringify(tip)}, notify: () => undefined,
 				run: async () => {
 					appendFileSync(${JSON.stringify(marker)}, ${JSON.stringify(tip)} + '\\n');
+					// delendai:timing-is-the-subject — the holder outlasts the second asker.
 					await new Promise((r) => setTimeout(r, 1500));
 					return 'proof-of-' + ${JSON.stringify(tip)};
 				},
@@ -222,6 +224,7 @@ describe('withComputeSlot across processes', () => {
 		const [one, two] = await Promise.all([
 			child(lockPath, 'aaa', marker),
 			(async () => {
+				// delendai:timing-is-the-subject — the second process must ask while the first holds the turn.
 				await new Promise((r) => setTimeout(r, 600));
 				return child(lockPath, 'aaa', marker);
 			})(),
@@ -232,5 +235,5 @@ describe('withComputeSlot across processes', () => {
 		expect(readFileSync(marker, 'utf8').trim().split('\n')).toEqual([
 			'aaa',
 		]);
-	}, 30_000);
+	});
 });
