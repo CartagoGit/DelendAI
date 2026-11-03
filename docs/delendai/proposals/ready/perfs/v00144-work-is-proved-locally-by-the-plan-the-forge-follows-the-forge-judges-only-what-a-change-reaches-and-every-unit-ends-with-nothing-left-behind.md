@@ -2,19 +2,20 @@
 id: v00144
 title: "Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind"
 kind: perf
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
-last-correlation-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
-last-transition-from: in-progress
-last-transition-at: 2026-10-31T19:44:11.359Z
+last-transition-id: ec43b508-e844-4048-988b-fad325aaaa3a
+last-correlation-id: ec43b508-e844-4048-988b-fad325aaaa3a
+last-transition-from: review
+last-transition-at: 2026-11-03T00:28:10.623Z
 shipped-in:
   - "d0ec28c3bc593d6f7e7516b2b38538c759ab2123"
   - "bf6fa917402e"
   - "29c0c7a2d84e8e5e5d68dbe824dc4e7de90d3da2"
   - "6202e06e7aaf"
+  - "27e997af5202"
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -112,14 +113,16 @@ Everything else this slice asks for is delivered and approved: the documentation
 - review-log: approved by minimax-m3.1-flash — verified at 6202e06e7aaf, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 1/1: (1) At 6202e06e publishing refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integra… — Approved on the delivered state of 6202e06e7aaf. Publishing refuses a unit that holds nothing the integration branch lacks, and says how to end it, which is what an empty republish was. The type gate exited 0 and the slice spec passes 2 of 2. No defect found.
 
 ### S6 — Every unit ends clean
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`
 - **Gate**: type
 - acceptance:
   - "`work reap --apply` removes the worktree and local branch of every delivered unit and every directory beside the units that is no unit, keeping on the forge what such a directory held that no commit has, and it reports only without `--apply`. Measured on 2026-10-31 after a week of units: three local branches and no orphan directory. No second command was added."
 - shipped-in: `27e997af5202`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 27e997af5202, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 1/1: (1) At 27e997af reaping with the apply flag removes the worktree and local branch of every delivered unit and every directory beside the units that is no unit, kee… — Approved on the delivered state of 27e997af5202. Every unit ends clean: the reaper removes the delivered units and the stray directories beside them, keeps what such a directory held that no commit has, and reports only without the apply flag, and no second command was added. The type gate exited 0 and the slice spec passes 8 of 8. One residual, recorded and not blocking: the cited commit is not a delivery of this slice. It is a single-parent commit from eleven days before this proposal was written, already merged, and the capability itself was delivered earlier under another proposal, so the slice shipped no new work and the behaviour it asks for was already in the repository.
 
 ## acceptance
 
