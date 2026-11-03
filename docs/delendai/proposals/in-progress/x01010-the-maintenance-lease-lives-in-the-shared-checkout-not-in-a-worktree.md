@@ -35,7 +35,7 @@ The CLI assembly (`cli/assemble.ts`) resolved the lease path against the workspa
 
 - global_gate: none
 
-### S1 - Put the maintenance lease in the shared checkout
+### S1 — Put the maintenance lease in the shared checkout
 - **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease-path.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease-path.spec.ts`
 - **Gate**: none
