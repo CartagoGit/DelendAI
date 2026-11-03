@@ -2,14 +2,14 @@
 id: x00978
 title: "The VS Code extension works per folder and keeps edits, choices and polling consistent"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 844bb148-ef07-4cbf-8cb1-d24fa61d6f4a
-last-correlation-id: 844bb148-ef07-4cbf-8cb1-d24fa61d6f4a
-last-transition-from: ready
-last-transition-at: 2026-11-03T02:01:22.605Z
+last-transition-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
+last-correlation-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T05:20:28.703Z
 ---
 
 # x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
@@ -31,28 +31,37 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - global_gate: type
 
 ### S1 — Folder and cwd
-- **Status**: pending
+- **Status**: review
 - **Files**: `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/run-validation.ts`, `extensions/vscode/src/commands/resolve-workspace-folder.ts`, `extensions/vscode/src/commands/types.ts`, `extensions/vscode/src/test/resolve-workspace-folder.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Commands resolve the folder of the active editor or the picked folder (D24)."
   - "The re-run passes the dry-run command's cwd (D25)."
+- shipped-in: `3cef0ac90073`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Edits and choices
-- **Status**: pending
+- **Status**: review
 - **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `packages/ui-extension/src/configuration-center/configuration-center-script.ts`, `extensions/vscode/src/commands/provider-actions.ts`, `extensions/vscode/src/test/open-plugin-config.spec.ts`, `extensions/vscode/src/test/provider-actions.spec.ts`, `packages/ui-extension/tests/dashboard/configuration-center-script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An acknowledgement clears only the edits it saved (UI-CFG01); discard restores the last saved state (UI-CFG02); cancel changes nothing (UI-ACTION01)."
+- shipped-in: `8fe0646db56a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Routing, dashboard and polling
-- **Status**: pending
+- **Status**: review
 - **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `extensions/vscode/src/test/dashboard-detail-broker.spec.ts`, `packages/ui-extension/tests/dashboard/render-dashboard-escaping.spec.ts`
 - **Gate**: type
 - **Notes**: UI-ROUTE01 was already fixed: no source under extensions/vscode or packages/client names the retired vertex tool; non-direct calls go through the client's resolve_capability broker path (mcp-stdio-client.ts), which compact_router shares. extension.ts and logs.service.ts needed no change (the subscribe loop already stops on abort; the dispose hook now aborts it).
 - acceptance:
   - "Calls route through delendai_compact_router (UI-ROUTE01)."
   - "The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02)."
+- shipped-in: `99169458ee61`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
