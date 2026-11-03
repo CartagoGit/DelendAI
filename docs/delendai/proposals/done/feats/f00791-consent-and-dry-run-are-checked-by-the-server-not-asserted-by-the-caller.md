@@ -2,16 +2,17 @@
 id: f00791
 title: "Consent and dry-run are checked by the server, not asserted by the caller"
 kind: feat
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 422237f7-6c24-441c-93e2-7845c875ff17
-last-correlation-id: 422237f7-6c24-441c-93e2-7845c875ff17
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T04:33:30.397Z
+last-transition-id: b88a9237-0135-4f26-8355-833aedb71555
+last-correlation-id: b88a9237-0135-4f26-8355-833aedb71555
+last-transition-from: review
+last-transition-at: 2026-11-03T04:49:22.440Z
 shipped-in:
   - "bb57c75d7494"
+  - "44e4385ea036"
 ---
 
 # f00791 — Consent and dry-run are checked by the server, not asserted by the caller
@@ -46,15 +47,17 @@ Joint audit a00095. G121: consent a person can verify exists only for spending (
 - review-log: approved by minimax-m3.1-flash — verified at bb57c75d7494, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 2/2: (1) At bb57c75d the core service issues a token bound to the action and verifies it on apply: packages/core/src/lib/consent/consent-token.service.ts:20-21 hashes t… (2) At bb57c75d the spend confirmation uses that same service: plugins/orchestrator-runner/src/lib/invoke/token.ts:17-20 imports createConsentSigner from the core … — Approved on the delivered state of bb57c75d7494. A core service issues a token bound to the action digest and verifies it on apply: the rename tool returns a token for its exact plan, the apply side refuses a token the server did not issue and a diff edited since the plan, and the spend confirmation mints and verifies through the same service. The type gate exited 0 and the slice's specs pass 15 of 15. One residual, recorded and not blocking: the refusal is proven by refactor-consent.spec.ts and not by refactor-rename.tool.spec.ts, which injects a signer that always verifies, so the guard is proven where the refusal lives.
 
 ### S2 — dry-run before the effect
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/dry-run/enforce.ts`, `packages/core/src/lib/dry-run/protocol.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/contracts/constants/dry-run-plan-fields.constant.ts`, `packages/core/src/lib/contracts/constants/plugin-wiring-schemas.constant.ts`, `tools/scripts/lint/dry-run-coverage.script.ts`, `tools/scripts/lint/dry-run-coverage.script.spec.ts`, `tools/scripts/lint/dry-run-coverage.baseline.json`, `docs/delendai/security/dry-run-contract.md`, `packages/core/src/lib/scaffold/create-plugin.tool.ts`, `plugins/container/src/lib/run/docker-command.service.ts`, `plugins/container/src/lib/tools/container-build.tool.ts`, `plugins/container/src/lib/tools/container-docker.tool.ts`, `plugins/database/src/lib/tools/db-query.tool.ts`, `plugins/proposals/src/lib/tools/branch-gc.tool.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `plugins/quality/src/index.ts`
 - **Gate**: type
 - acceptance:
   - "A dryRun call to a tool whose input schema does not accept the flag is refused before its handler runs, a plan without its lists is refused instead of throwing, and tools that honour dryRun return the contract plan; `lint:dry-run-coverage` prints and ratchets the count of effectful registrations without support (G122)."
   - "Each decorative parameter G101 lists is enforced, removed or owned by a named proposal, recorded per tool in the notes."
 - shipped-in: `db27f9e2426d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 44e4385ea036, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 2/2: (1) At db27f9e2 the refusal comes before the handler runs: packages/core/src/lib/project/tool-surface-runtime.service.ts:862-869 refuses a dryRun on a tool whose s… (2) At db27f9e2 each parameter the finding lists is enforced: refactor_apply's consentToken is refused at plugins/refactor/src/lib/tools/refactor-rename.tool.ts:29… — Approved on the delivered state of db27f9e2426d. A dryRun call to a tool that does not accept the flag is refused before the handler runs, a plan without its lists is refused instead of throwing, the tools that honour dryRun return the contract plan, the coverage lint prints and ratchets the count, and every decorative parameter the finding lists is enforced or owned by a named proposal. The type gate exited 0 and the slice's specs pass 54 of 54. One residual, recorded and not blocking: the proposal's notes still say self_audit's capabilities are decorative, which was true when the notes were written and is not true now, since x00962 landed and the capability filter is at plugins/audit/src/lib/self-audit/aggregate.ts:74-80; the note is stale, the criterion is met.
 
 ## acceptance
 
