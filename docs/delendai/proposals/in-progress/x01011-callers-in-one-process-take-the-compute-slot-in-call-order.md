@@ -20,11 +20,12 @@ Two callers of the compute slot in one process reach the slot in the order they 
 
 ## why
 
-TODO: why this work matters now.
+Develop's CI failed `compute-slot.service.spec.ts` (two concurrent proofs one after the other): two callers in one process reached the slot in the order their async setup finished, not the order they asked, so the later one could take the slot first. A newer tip of a unit was also not on record until its file write ended, so an older tip could be proved. Both made the proof queue unpredictable and blocked the queue.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Ordering between processes: the file mutex decides there.
+- Changing the cross-process claim files of the unit turn.
 
 ## slices
 
