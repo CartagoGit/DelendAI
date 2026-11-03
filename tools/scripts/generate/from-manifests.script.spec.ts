@@ -65,7 +65,7 @@ const withFixture = async (
 				"\ttags: ['search', 'symbol', 'f00136'],",
 				"\tmaturity: 'stable',",
 				"\tpermissions: ['filesystem-read'],",
-				"\tpresets: ['minimal', 'lean', 'standard', 'swarm', 'full', 'dogfood', 'web-app', 'backend-api', 'cli-tool'],",
+				"\tpresets: ['minimal', 'solo', 'team-pr', 'swarm', 'audit', 'docs-web', 'everything', 'dogfood'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
 				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['lexical-search', 'regex-search'],",

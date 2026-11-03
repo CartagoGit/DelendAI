@@ -193,7 +193,7 @@ const clientOf = (
 
 const plan = {
 	ok: true,
-	preset: 'lean',
+	preset: 'solo',
 	wrote: false,
 	created: [],
 	skipped: [],

@@ -139,16 +139,16 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'minimal',
 		title: 'minimal',
-		role: PRESET_ROLES['minimal']!,
-		purpose: PRESET_PURPOSES['minimal']!,
+		role: PRESET_ROLES.minimal!,
+		purpose: PRESET_PURPOSES.minimal!,
 		members: [{ plugin: 'git' }, { plugin: 'search' }],
 		independent: true,
 	},
 	{
 		id: 'solo',
 		title: 'solo',
-		role: PRESET_ROLES['solo']!,
-		purpose: PRESET_PURPOSES['solo']!,
+		role: PRESET_ROLES.solo!,
+		purpose: PRESET_PURPOSES.solo!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -193,8 +193,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'swarm',
 		title: 'swarm',
-		role: PRESET_ROLES['swarm']!,
-		purpose: PRESET_PURPOSES['swarm']!,
+		role: PRESET_ROLES.swarm!,
+		purpose: PRESET_PURPOSES.swarm!,
 		progressiveDisclosure: true,
 		members: [
 			{ plugin: 'git' },
@@ -222,8 +222,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'audit',
 		title: 'audit',
-		role: PRESET_ROLES['audit']!,
-		purpose: PRESET_PURPOSES['audit']!,
+		role: PRESET_ROLES.audit!,
+		purpose: PRESET_PURPOSES.audit!,
 		members: [
 			{ plugin: 'git' },
 			{ plugin: 'search' },
@@ -263,8 +263,8 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 	{
 		id: 'everything',
 		title: 'everything',
-		role: PRESET_ROLES['everything']!,
-		purpose: PRESET_PURPOSES['everything']!,
+		role: PRESET_ROLES.everything!,
+		purpose: PRESET_PURPOSES.everything!,
 		progressiveDisclosure: true,
 		members: [
 			{ plugin: 'adaptive-optimizer' },

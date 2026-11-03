@@ -263,15 +263,15 @@ describe('PRESET_CATALOG', async () => {
 			(entry) => entry.id === 'api-plugin-catalog',
 		);
 		expect(knowledge).toBeDefined();
-		const expectedLine = `- \`backend-api\` — the stack overlay currently ships ${resolveStackPackMembers(
-			'backend-api',
+		const expectedLine = `- \`backend-api\` — the stack overlay is \`solo\` (${resolvePresetMembers(
+			'solo',
 		)
 			.map((plugin) => `\`${plugin}\``)
 			.join(', ')
 			.replace(
 				/, ([^,]+)$/u,
 				', and $1',
-			)}; it does not include \`api\` by default.`;
+			)}) plus \`container\` and \`database\`; it does not include \`api\` by default.`;
 		expect(knowledge?.body).toContain(expectedLine);
 	});
 

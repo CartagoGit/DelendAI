@@ -51,9 +51,9 @@ describe('deriveConfig (f00117 S1)', () => {
 		expect(derived.rationale.length).toBeGreaterThan(0);
 	});
 
-	it('TS single package → lean essentials', () => {
+	it('TS single package → solo toolkit', () => {
 		const derived = deriveConfig(analysis({}), { topLevelDirs: ['src'] });
-		expect(derived.preset).toBe('lean');
+		expect(derived.preset).toBe('solo');
 		expect(Object.keys(derived.config.plugins)).toEqual([
 			'git',
 			'search',

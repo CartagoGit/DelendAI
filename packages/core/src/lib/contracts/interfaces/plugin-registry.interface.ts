@@ -45,10 +45,12 @@ export interface IPluginRegistryEntry {
 	/** Optional default preset id where this plugin lives. */
 	readonly defaultPreset?:
 		| 'minimal'
-		| 'lean'
-		| 'standard'
+		| 'solo'
+		| 'team-pr'
 		| 'swarm'
-		| 'full'
+		| 'audit'
+		| 'docs-web'
+		| 'everything'
 		| 'dogfood';
 	/**
 	 * f00179 S2/S3 — measured `staticBytes` for this plugin when its

@@ -20,7 +20,7 @@ export interface IDeriveConfigContext {
 
 export interface IDerivedConfig {
 	/** The preset whose membership seeded the plugins map. */
-	readonly preset: 'lean' | 'standard' | 'minimal' | 'swarm';
+	readonly preset: 'solo' | 'team-pr' | 'minimal' | 'swarm';
 	readonly config: {
 		readonly $schema: string;
 		readonly cacheDir: string;
@@ -93,10 +93,10 @@ export const deriveConfig = (
 		// `full` (it needs a GitHub repo).
 		preset = 'swarm';
 		rationale.push(
-			`TypeScript monorepo (${analysis.monorepoTool}) — the swarm preset loads the proposal workflow (proposals + coordination) on top of the standard toolkit; upgrade to full for the GitHub issues plugin.`,
+			`TypeScript monorepo (${analysis.monorepoTool}) — the swarm preset loads the proposal workflow (proposals + coordination) on top of the solo toolkit; upgrade to everything for the GitHub issues plugin.`,
 		);
 	} else {
-		preset = 'lean';
+		preset = 'solo';
 		rationale.push(
 			'Single-package TypeScript project — the 4 lean essentials (git, search, memory, docs) keep the token surface small; switch to swarm when you need the proposal workflow.',
 		);

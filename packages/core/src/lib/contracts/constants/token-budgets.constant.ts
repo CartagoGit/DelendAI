@@ -259,7 +259,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		solo: {
 			toolsList: {
-				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 76,087 B native; the largest non-core owner is `memory` (8.2 KB).
+				// Pack ceiling (set are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 76,087 B native; the largest non-core owner is `memory` (8.2 KB).
 				hard: 108_000,
 				warning: 100_000,
 				releaseRelativePercent: 20,
@@ -269,7 +269,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		'team-pr': {
 			toolsList: {
-				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 101,723 B native; the largest non-core owner is `commit-policy` (11.6 KB).
+				// Pack ceiling (set are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 101,723 B native; the largest non-core owner is `commit-policy` (11.6 KB).
 				hard: 146_000,
 				warning: 136_000,
 				releaseRelativePercent: 20,
@@ -315,7 +315,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		audit: {
 			toolsList: {
-				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 87,762 B native; the largest non-core owner is `audit` (11.6 KB).
+				// Pack ceiling (set are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 87,762 B native; the largest non-core owner is `audit` (11.6 KB).
 				hard: 126_000,
 				warning: 116_000,
 				releaseRelativePercent: 20,
@@ -325,7 +325,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		'docs-web': {
 			toolsList: {
-				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 62,726 B native; the largest non-core owner is `memory` (8.2 KB).
+				// Pack ceiling (set are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): measured 62,726 B native; the largest non-core owner is `memory` (8.2 KB).
 				hard: 90_000,
 				warning: 82_000,
 				releaseRelativePercent: 20,
@@ -335,7 +335,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		everything: {
 			toolsList: {
-				// f00803 S1 (ceilings are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): gate figure 295,693 B (dashboard 236,429 B). The pack is now every published plugin, `orchestrator-runner`, `audit` and `commit-policy` among them, plus the four plugins no preset reached (execution-env, framework-knowledge, style-convention, self-learning); the old `full` was a diagnostic subset. Ceiling re-set at +5% warning over the new measurement. `proposals` counted with progressive disclosure keeps the same marginal ceiling as `swarm`.
+				// Pack ceiling (set are set against the gate's tools/list figure, which is the dashboard figure plus the dynamic-surface tools and, where `proposals` is a member, its undisclosed administrative tools): gate figure 295,693 B (dashboard 236,429 B). The pack is now every published plugin, `orchestrator-runner`, `audit` and `commit-policy` among them, plus the four plugins no preset reached (execution-env, framework-knowledge, style-convention, self-learning); the old `full` was a diagnostic subset. Ceiling re-set at +5% warning over the new measurement. `proposals` counted with progressive disclosure keeps the same marginal ceiling as `swarm`.
 				hard: 340_000,
 				warning: 310_000,
 				releaseRelativePercent: 20,

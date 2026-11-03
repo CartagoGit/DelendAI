@@ -49,7 +49,7 @@ describe('delendai.adopt', () => {
 	it('asks the server for an assessment only and renders the plan', async () => {
 		const plan = {
 			ok: true,
-			preset: 'lean',
+			preset: 'solo',
 			wrote: false,
 			created: [],
 			skipped: [],
