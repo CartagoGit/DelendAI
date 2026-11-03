@@ -10,6 +10,8 @@ last-transition-id: 9f819b3a-ac78-4fc0-af88-d8097b942318
 last-correlation-id: 9f819b3a-ac78-4fc0-af88-d8097b942318
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T02:10:58.747Z
+shipped-in:
+  - "3e8b12e7d"
 ---
 
 # x00966 — Webviews escape through one helper and run under a CSP without unsafe-inline
@@ -53,14 +55,16 @@ Joint audit a00095. G42: escapeHtml exists six times and five of them do not esc
 - review-implementer: claude-opus-5-5
 
 ### S3 — Trailers are serialised
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/tests/src/lib/audit/trailer.spec.ts`
 - **Gate**: type
 - acceptance:
   - "body-metadata uses JSON.stringify for each value; a model name with a quote round-trips (CP-09)."
 - shipped-in: `b17cfeae1abf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 3e8b12e7d, validate exit 0 and tests 10/10 claimed, no recorded run cited; acceptance 1/1: (1) plugins/commit-policy/src/lib/audit/trailer.ts:134-141 serialises each value of the body-metadata trailer with JSON.stringify before interpolating it into the … — Approved at 3e8b12e7d on the delivered state of the commit-policy trailer, verified in the pack worktree against origin/develop. Type gate: bun run typecheck exited 0 for the pack unit. Slice specs: trailer.spec.ts, 1 file / 10 tests, exit 0. Acceptance 1/1: the body-metadata trailer serialises every value with JSON.stringify, and the spec writes a model name with a quote and asserts it round-trips.
 
 ## acceptance
 
