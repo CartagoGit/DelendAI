@@ -2,14 +2,14 @@
 id: x00966
 title: "Webviews escape through one helper and run under a CSP without unsafe-inline"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 9f819b3a-ac78-4fc0-af88-d8097b942318
-last-correlation-id: 9f819b3a-ac78-4fc0-af88-d8097b942318
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T02:10:58.747Z
+last-transition-id: 8872e394-2b88-489a-ad53-0de179fecda3
+last-correlation-id: 8872e394-2b88-489a-ad53-0de179fecda3
+last-transition-from: review
+last-transition-at: 2026-11-03T19:43:06.207Z
 shipped-in:
   - "3e8b12e7d"
 ---
@@ -53,7 +53,7 @@ HOW TO REPRODUCE: grep -n "const escape" apps/shared/src/components/ui/tabs.ts e
 WHAT MUST HOLD: every renderer imports the one escapeHtml from @delendai/shared (re-exported by ui-extension), which escapes all five characters, and no second escape definition remains in a renderer anywhere in the tree. The two exemptions the criterion names stay as they are; every other definition goes, including escapeText in tabs.ts and escapeXml in metrics-sparkline.ts. A spec that asserts the canonical helper escapes the single quote and that no renderer defines its own would keep it true.
 
 ### S2 — CSP without unsafe-inline, built safely
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/ui-extension/src/webview/csp.ts`, `packages/ui-extension/src/webview/index.ts`, `packages/ui-extension/tests/webview/csp.spec.ts`, `extensions/vscode/src/contracts/constants/webview-message-schemas.constant.ts`, `extensions/vscode/src/test/webview-message-schemas.spec.ts`, `extensions/vscode/src/test/webview-csp.spec.ts`, `extensions/vscode/src/commands/open-knowledge.ts`, `extensions/vscode/src/commands/open-settings.ts`, `extensions/vscode/src/commands/open-toolbar.ts`
 - **Gate**: type
 - acceptance:
@@ -61,8 +61,20 @@ WHAT MUST HOLD: every renderer imports the one escapeHtml from @delendai/shared 
   - "The meta tag escapes the header value; a spec with a quote in a source does not break the attribute (D45)."
   - "Every webview message handler validates with safeParse against its schema (G11)."
 - shipped-in: `96003045314a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — WHAT IS WRONG: the slice's first criterion ("Webview scripts load with a nonce and script-src has no 'unsafe-inline'", D17) holds only for the five surfaces the override map names, while three shipped webviews that carry an inline <script> run under no Content-Security-Policy at all, and one webview message handler never validates what it receives (G11).
+
+WHERE:
+- extensions/vscode/src/webviews/setup-github.ts:128 renders an inline <script>; the panel is created with { enableScripts: true } at extensions/vscode/src/commands/setup-github.ts:45 and its html is assigned raw at :47, with no withCsp(...) and no injectCspMeta. Nothing in that file mentions a CSP.
+- extensions/vscode/src/views/agent-catalog-webview.ts:156 renders an inline <script>; the panel is created with { enableScripts: true } at extensions/vscode/src/commands/open-agent-catalog.ts:139 and the html comes from loadCatalogHtml (:58-70) with no CSP.
+- packages/ui-extension/src/kpi-dashboard.ts:471 defines CLIENT_SCRIPT and injects it at :760; the KPI view is filled at extensions/vscode/src/providers/kpi-dashboard-provider.ts:877 with setHtml(renderKpiDashboard(...)) and no CSP.
+- extensions/vscode/src/commands/open-plugin-config.ts:150 registers a second webview message listener that discards the payload with `void raw` and never parses it; the listener at :155 validates with CONFIGURATION_CENTER_MESSAGE_SCHEMA.safeParse, so the panel validates in one listener and not in the other.
+
+HOW TO REPRODUCE: grep -n "<script" extensions/vscode/src/webviews/setup-github.ts extensions/vscode/src/views/agent-catalog-webview.ts packages/ui-extension/src/kpi-dashboard.ts -> three script-bearing surfaces; grep -rn "withCsp(" over those files and their command boundaries -> none of the three is covered. grep -n "onDidReceiveMessage" extensions/vscode/src/commands/open-plugin-config.ts -> two listeners, the first at :150 without safeParse.
+
+WHAT MUST HOLD: every shipped webview that carries a script runs under a Content-Security-Policy whose script-src names a per-document nonce and never 'unsafe-inline' -- the five surfaces in WEBVIEW_CSP_OVERRIDES already do, and setup-github, agent-catalog and the KPI dashboard must join them (a nonce per document, as SCRIPT_NONCE already provides). And every webview message handler validates what it receives with safeParse against its schema, so no listener is left taking a payload it never checks. A spec that asserts each script-bearing webview's html carries script-src with a nonce and no 'unsafe-inline' would pin it.
 
 ### S3 — Trailers are serialised
 - **Status**: done
