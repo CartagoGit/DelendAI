@@ -67,6 +67,16 @@ distil it into durable memory first. If it would only help while the current
 investigation is still warm, do not persist it — compact it away with the
 rest of the transient context.
 
+## Orchestrating cost
+
+- Brief a subagent with the task and the one fact it cannot find, not with
+  context it can read itself.
+- The prompt cache lives about an hour after the last request. A large
+  thread that waits on long work should take a turn before the hour runs
+  out (a background timer): rewriting it cold costs far more than a cached
+  read. Keep one conversation and let it compact, rather than starting new
+  ones that re-read the project.
+
 ## Smoke
 
 The in-process token-budget e2e

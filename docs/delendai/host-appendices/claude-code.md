@@ -36,3 +36,10 @@ for the rest of the session, so how you call these tools matters:
   work; use `/clear` before unrelated work. Do not leave an idle Claude Code
   session running in the background; a continuous session beyond two hours
   needs an intentional checkpoint, and one approaching many hours should end.
+- **Brief a subagent with the task and the one fact it cannot find**, not
+  with context it can read itself.
+- **Take a turn before the cache expires.** The prompt cache lives about an
+  hour after the last request; a large thread waiting on long work should
+  wake (a background timer) before then, since rewriting it cold costs far
+  more than a cached read. Keep one conversation and let it compact; new
+  ones re-read the project.
