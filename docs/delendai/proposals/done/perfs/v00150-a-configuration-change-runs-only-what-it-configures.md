@@ -2,14 +2,16 @@
 id: v00150
 title: "A configuration change runs only what it configures"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: d7efaf92-ba11-47b0-a216-50c5d55171d3
-last-correlation-id: d7efaf92-ba11-47b0-a216-50c5d55171d3
-last-transition-from: in-progress
-last-transition-at: 2026-10-31T19:33:43.031Z
+last-transition-id: b9cbe144-085d-4c09-a49d-227d9ae0462d
+last-correlation-id: b9cbe144-085d-4c09-a49d-227d9ae0462d
+last-transition-from: review
+last-transition-at: 2026-11-03T00:54:38.825Z
+shipped-in:
+  - "39995a022c492cfb6c87f2e644ceae9c3a049e87"
 ---
 
 # v00150 — A configuration change runs only what it configures
@@ -37,14 +39,16 @@ A mixed pull request is not narrowed further: when other code changed too, `vite
 - global_gate: type
 
 ### S1 — A package.json change reaches what its changed fields reach
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`
 - **Gate**: type
 - acceptance:
   - "A root `package.json` change whose only changed fields are scripts no test run or install uses reaches only the specs that read the file. A change to a test script, an install hook or any other field, or a side that does not parse, still runs every zone (zone-reads.spec.ts)."
 - shipped-in: `8866a9564388`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 39995a022c49, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 1/1: (1) At 39995a02 the root manifest is excused from running every zone only when the two sides differ in nothing but scripts that no test run or install uses, while … — Approved on the delivered state of 39995a022c492cfb6c87f2e644ceae9c3a049e87. A configuration change runs only what it configures. The type gate exited 0 and the slice spec passes 22 of 22. Two residuals, recorded and not blocking: no spec drives the planner with a manifest change, so the wiring is unpinned; and the reader that decides this matches any script whose name begins with pre or post, so a formatting script is treated as a runner, which is the conservative side.
 
 ## acceptance
 

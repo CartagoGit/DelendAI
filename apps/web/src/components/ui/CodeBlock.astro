@@ -55,4 +55,6 @@ const label = copyLabel ?? t.ui.codeCopy;
 	 */
 	import { initCopyButtons } from './_code-copy-controller';
 	initCopyButtons(document);
+	// Client navigation swaps the body without re-running this module.
+	document.addEventListener('astro:page-load', () => initCopyButtons(document));
 </script>

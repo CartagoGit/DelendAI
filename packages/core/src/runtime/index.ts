@@ -13,6 +13,11 @@ export {
 	writeFileAtomic,
 	writeFileAtomicSync,
 } from '../lib/shared/atomic-write';
+export { COMPUTE_SLOT_ENV } from '../lib/contracts/constants/compute-slot.constant';
+export {
+	computeSlotPath,
+	withComputeSlot,
+} from '../lib/shared/compute-slot.service';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
 // One record of how each model did, read by every ranking and learner.
 export { modelOutcomeStoreAt } from '../lib/shared/model-outcome-store.service';

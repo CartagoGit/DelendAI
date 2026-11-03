@@ -78,9 +78,11 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('renders the reproducible task_context_cost block with the fixed published values', {
-		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
-		// narrower per-test timeout here made a busy machine look like a hang.
-		timeout: 120_000,
+		// Building the dashboard measures every preset on every surface,
+		// which took 124 s with the machine at a load of 75 on 10 cores. The
+		// ceiling is a hang detector, so it sits well above what a loaded
+		// machine needs rather than just above an idle one.
+		timeout: 600_000,
 	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);
@@ -95,9 +97,11 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('publishes the task_context_cost addendum from the dashboard generator output', {
-		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
-		// narrower per-test timeout here made a busy machine look like a hang.
-		timeout: 120_000,
+		// Building the dashboard measures every preset on every surface,
+		// which took 124 s with the machine at a load of 75 on 10 cores. The
+		// ceiling is a hang detector, so it sits well above what a loaded
+		// machine needs rather than just above an idle one.
+		timeout: 600_000,
 	}, async () => {
 		const [measurement, dashboardMarkdown] = await Promise.all([
 			measurementPromise,
@@ -109,9 +113,11 @@ describe('token-budget dashboard publication', () => {
 	});
 
 	it('keeps the published token budget artifact aligned with the generated addendum', {
-		// The project-wide ceiling in `tools/vitest.config.ts` applies; a
-		// narrower per-test timeout here made a busy machine look like a hang.
-		timeout: 120_000,
+		// Building the dashboard measures every preset on every surface,
+		// which took 124 s with the machine at a load of 75 on 10 cores. The
+		// ceiling is a hang detector, so it sits well above what a loaded
+		// machine needs rather than just above an idle one.
+		timeout: 600_000,
 	}, async () => {
 		const measurement = await measurementPromise;
 		const addendum = renderCatalogAndTaskContextMarkdown(measurement);

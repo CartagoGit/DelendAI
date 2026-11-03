@@ -2,14 +2,14 @@
 id: f00786
 title: "A hop on another vendor carries the delegated task, not a free prompt, under the target model's own budget"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: architecture
 date: 2026-10-22
-last-transition-id: aaf70c6d-3efa-47e8-b616-8d546a632a09
-last-correlation-id: aaf70c6d-3efa-47e8-b616-8d546a632a09
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T07:41:59.869Z
+last-transition-id: a44b0292-916a-4841-9f0e-ff778d17bf00
+last-correlation-id: a44b0292-916a-4841-9f0e-ff778d17bf00
+last-transition-from: review
+last-transition-at: 2026-11-03T04:05:23.224Z
 shipped-in:
   - "34c56b60e3229de38164cc30bf1cc079c5da29ee"
 ---
@@ -69,16 +69,28 @@ f00774 (in review) scopes the tools a hop may call; this proposal scopes what it
 - review-log: approved by minimax-m3.1-flash-preview — verified at 34c56b60e322, validate exit 0, tests 23/23; acceptance 3/3: (1) `hopInputBudget` takes the target model's context window, multiplies it by the declared `HOP_CONTEXT_WINDOW_SHARE` (0.5, plugins/orchestrator-runner/src/lib/co… (2) The refusal is taken in `runOne` before `holdQuota` is called and before any process starts; the hop is journalled as 'blocked' with the reason, and the messag… (3) The spec 'holds two models to their own windows, under the task budget' drives an 8,000-token model and a 1,000,000-token model over the same task: the first i… — Gate is `type`: `bun run typecheck` exits 0 in this worktree. Verified: the hop budget is half the target model's context window as the public catalogue states it (format 3 keeps `limit.context`), else the roster entry, capped by the task's own `inputBudget`, with the rule that applied (`model-window`, `task`, `none`) in the journal; a pack over the budget is refused before any quota is held or process started, naming size and budget, and the refusal is per provider so a larger window next in the fallback chain may still take it; and a spec drives two models with different windows over the same task and asserts the budgets differ and the smaller refuses a pack the larger accepts. The slice's specs pass 23/23. Delivery: the slice's commit is 28e0212bd416, merged as 34c56b60e32 (PR #1361).
 
 ### S3 — The bytes a hop was given are recorded with it
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`, `plugins/orchestrator-runner/src/lib/invoke/build-manager.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts`, `plugins/orchestrator-runner/src/index.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/manager-journal.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The hop journal entry records whether the hop went with a delegated task or an instruction only, the rendered prompt's bytes, and the budget it was held to — the `IDelegationRecord` vocabulary (`delegation`, `manifestBytes`) the host path already uses."
   - "A spec asserts a delegated hop and an instruction-only hop journal differently, and that no prompt text is journalled, only its size."
 - shipped-in: `a9690a70a62d`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — The hop journal entry does not speak the `IDelegationRecord` vocabulary the criterion names; it declares a parallel, plugin-local type. The delivered record is `IHopDelegation { kind: 'manifest' | 'instruction-only'; promptBytes: number; budget?: IHopBudget }` (plugins/orchestrator-runner/src/lib/contracts/interfaces/task-pack.interface.ts:22-27) and the journal entry holds it as `delegation?: IHopDelegation` (plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts:34-35). The shared contract the criterion names is `IDelegationRecord` in `@delendai/contracts`: `delegation: IDelegationKind` ('manifest' | 'instruction-only') and `manifestBytes?: number` (packages/contracts/src/delegated-task.interface.ts:42-60). WHAT IS MISSING: the record names the discriminant `kind` where the criterion says `delegation`, and the byte count `promptBytes` where the criterion says `manifestBytes`, and it re-spells the union instead of importing `IDelegationKind`. WHY IT MATTERS: the reader of the shared vocabulary already exists - `delegationsOf` accepts an entry only when it carries `tags`, `tokensUsed` and a `delegation` of 'manifest' or 'instruction-only' (plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts:42-54) - so a hop record in this shape is silently dropped by the uniform reader the host path feeds, and f00768, the learned store of hop outcomes that this proposal's own non-goals name as the reader of these bytes, would have to know two spellings of the same thing. HOW TO REPRODUCE: compare plugins/orchestrator-runner/src/lib/contracts/interfaces/task-pack.interface.ts:22-27 with packages/contracts/src/delegated-task.interface.ts:52-60 and observe the differently named discriminant and byte count. WHAT MUST HOLD: the hop journal's delegation record is the shared `IDelegationRecord` vocabulary - the discriminant field is `delegation` with the values of `IDelegationKind` and the byte count is `manifestBytes` - extended with the hop's budget rather than replaced by a second type, the way plugins/agent-orchestrator/src/lib/dispatch/contracts.ts:40 already extends it (`Omit<IDelegationRecord, 'tags'>`); the budget may ride alongside as an extra field. The spec 'journals a delegated hop with the budget its model holds it to' (tests/src/lib/invoke/manager-journal.spec.ts:167-181) must then assert the shared field names.
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S3, the hop journal.
+
+WHAT IS WRONG. The criterion names the vocabulary the entry must use: the `IDelegationRecord` of `@delendai/contracts`, with the discriminant `delegation` and the byte count `manifestBytes`. The delivery declares a parallel, plugin-local type instead: `IHopDelegation` with the discriminant `kind` and the field `promptBytes`, re-spelling the union rather than importing `IDelegationKind`. The second criterion is met, the spec drives the two hop shapes differently and journals the prompt's size and never its text.
+
+WHERE. plugins/orchestrator-runner/src/lib/contracts/interfaces/task-pack.interface.ts:22-27, where IHopDelegation is declared; plugins/orchestrator-runner/src/lib/contracts/interfaces/invocation-journal.interface.ts:20 and :35, where the journal entry imports and holds it; packages/contracts/src/delegated-task.interface.ts:42 and :52-60, where the shared vocabulary lives.
+
+HOW TO REPRODUCE. Compare the two declarations: the plugin's record has `kind` and `promptBytes`, the shared record has `delegation` and `manifestBytes`. `git grep -n promptBytes plugins/orchestrator-runner` answers the plugin's own spelling; `git grep -n manifestBytes packages/contracts` answers the shared one.
+
+WHY IT MATTERS. The reader of the shared vocabulary already exists and drops what it cannot read: plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts:42-54 accepts an entry only when it carries `tags`, `tokensUsed` and a `delegation` of 'manifest' or 'instruction-only'. A hop record in the delivered shape is silently dropped by the uniform reader, and f00768, the learned store of hop outcomes that this proposal's own non-goals name as the reader of these bytes, would have to know two spellings of the same thing.
+
+WHAT MUST HOLD. The hop journal's delegation record is the shared `IDelegationRecord` vocabulary: the discriminant field is `delegation`, the byte count is `manifestBytes`, and the union is imported rather than re-spelled, with the budget it was held to carried alongside it. The type gate exited 0 and the slice's spec passes 8 of 8.
 
 ## acceptance
 
