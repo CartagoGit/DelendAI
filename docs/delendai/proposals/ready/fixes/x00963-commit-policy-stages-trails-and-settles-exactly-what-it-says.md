@@ -2,14 +2,14 @@
 id: x00963
 title: "commit-policy stages, trails and settles exactly what it says"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
-last-correlation-id: 2108085d-48be-4775-8a7c-1ca02a4713bd
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T05:06:44.345Z
+last-transition-id: 66733320-a2d7-4d60-82fc-99659ef6d01b
+last-correlation-id: 66733320-a2d7-4d60-82fc-99659ef6d01b
+last-transition-from: review
+last-transition-at: 2026-11-03T02:45:09.714Z
 shipped-in:
   - "a61ca69ab579"
 ---
@@ -46,14 +46,24 @@ gpt-6.1-sol's contribution and a00095. CP-02: gitDirtyFilePaths keeps porcelain 
 - review-log: approved by minimax-m3.1-flash — verified at a61ca69ab579, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 1/1: (1) At b7df7dab the dirty paths are read with the null-separated status, so a path with spaces is staged as it is, an untracked folder counts its files rather than… — Approved on the delivered state of b7df7dab5334. The commit policy stages exactly what it says. The type gate exited 0 and the commit-policy specs pass 20 of 20. No defect found.
 
 ### S2 — Production wiring
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/tools/storms-tool.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/skills/read-stderr-storm/SKILL.md`
 - **Gate**: type
 - acceptance:
   - "register passes workspaceRoot (CP-03); status is registered and the docs show the real defaults (CP-06). A candidate reports `work publish` as its way to integration (CP-10), and the storm surface promises no filing, its unreachable filer removed (CP-11)."
 - shipped-in: `69dbbcd9e7eb`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S2, the commit policy's registration and its documentation.
+
+WHAT IS WRONG. Two of the four clauses are not met. The registration still passes no workspace root to the shared driver, so the commit driver skips its isolated-index path and the shared-index exclusion stays disabled, which is the whole point of the first clause. And the documentation still states that the protected branches and prefixes default to empty lists, while the delivered status tool derives the effective protected branches from the development policy, so the documented defaults are stale against the delivered behaviour.
+
+WHERE. plugins/commit-policy/src/index.ts, the registration's shared driver, which carries no workspace root; plugins/commit-policy/src/lib/services/commit-driver.ts, where the driver takes the shared-index path when the workspace root is missing; plugins/commit-policy/README.md, which documents the old defaults.
+
+HOW TO REPRODUCE. At the delivered commit, the registration's shared driver has no workspace root, and the commit driver branches to the shared-index guard when the workspace root or the branch is undefined. Read the README's description of the protected branch defaults and compare it with the status tool, which derives them from the development policy.
+
+WHAT MUST HOLD. The registration passes the workspace root, so the shared-index exclusion is on; and the documentation shows the real defaults, the ones the status tool derives. The third clause, that a candidate reports the publish command as its way to integration, and the fourth, that the storm surface no longer promises a filing and its filer is removed, are delivered and pinned by the specs.
 
 ### S3 — Trailers, status and settlement
 - **Status**: done
