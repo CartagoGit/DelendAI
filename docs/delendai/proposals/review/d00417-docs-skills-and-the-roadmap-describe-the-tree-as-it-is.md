@@ -10,6 +10,8 @@ last-transition-id: f7297fdf-811f-41d0-937d-79fed966714f
 last-correlation-id: f7297fdf-811f-41d0-937d-79fed966714f
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T22:00:18.942Z
+shipped-in:
+  - "350ba7dfb7b4"
 ---
 
 # d00417 — Docs, skills and the roadmap describe the tree as it is
@@ -53,14 +55,16 @@ Joint audit a00095 and gpt-6.1-sol. D14: 16 broken internal links in root docs, 
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — Manifest, rules and release skills
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/rules/skills/rules-solid-architecture/SKILL.md`, `packages/core/skills/conventional-commits-and-release/SKILL.md`
 - **Gate**: type
 - acceptance:
   - "The storm-repair skill is in the manifest (SKILL-03); the rules skill describes the factory list (SKILL-05); the release skill describes release:prepare and the GitHub Release flow (SKILL-06)."
 - shipped-in: `7724c3db2751`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 350ba7dfb7b4, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 1/1: (1) At 7724c3db the storm-repair skill is in the manifest and the file it names exists: packages/core/skills/manifest.json:312-318 lists the id `delendai-read-stde… — Approved on the delivered state of 7724c3db2751. The storm-repair skill is in the manifest, the rules skill describes the factory list the registry holds, and the release skill describes release:prepare and the GitHub Release flow with the commands that exist. The type gate exited 0 and the manifest's check passes 9 of 9. Two residuals, recorded and not blocking: the manifest entry for the storm-repair skill was added by 2417963b2, an ancestor of this slice, so the clause holds by the tree and not by this slice's own commit, and the rules skill this slice edited still carries a link to a proposal that has moved, which the previous slice's SKILL-04 clause names and this verdict leaves to that request.
 
 ## acceptance
 
