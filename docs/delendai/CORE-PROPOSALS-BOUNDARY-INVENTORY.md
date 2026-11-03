@@ -80,7 +80,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | pluginDefaults.proposals | plugin-name | composition | 1 | Los defaults de plugins reservan un bloque nominal para proposals. |
-| packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 2 | El catalogo de presets describe proposals como plugin concreto de composicion. |
+| packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 3 | El catalogo de presets describe proposals como plugin concreto de composicion. |
 | packages/core/src/lib/plugins/preset-derived.ts | preset includes proposals | plugin-name | composition | 1 | El preset derivado materializa proposals en la composicion por defecto. |
 | packages/core/src/lib/prompts/agent-bootstrap.prompt.ts | Actionable proposals | message | intentional-compat | 1 | El resumen textual del prompt sigue nombrando actionable proposals. |
 | packages/core/src/lib/prompts/agent-bootstrap.prompt.ts | actionable proposals available right now | message | intentional-compat | 1 | La instruccion bootstrap publica proposals como unidad accionable. |

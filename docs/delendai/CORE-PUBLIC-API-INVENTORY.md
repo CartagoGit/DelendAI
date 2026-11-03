@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 424
+Total exports: 423
 
 | Maturity | Count |
 | --- | --- |
-| stable | 421 |
+| stable | 420 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -379,7 +379,6 @@ Total exports: 424
 | `resolvePluginSpecifier` | const | stable | `../plugin` |
 | `resolvePresetMembers` | const | stable | `../lib/plugins/preset-catalog` |
 | `resolvePublicToolIdentity` | const | stable | `../lib/contracts/resolvers/safe-tool-identity.resolver` |
-| `resolveStackPackMembers` | const | stable | `../lib/plugins/preset-catalog` |
 | `resolveTokenBudget` | const | stable | `../lib/contracts/interfaces/plugin-token-budget.interface` |
 | `resolveToolPermissions` | const | stable | `../lib/contracts/interfaces/plugin-tool-permissions.interface` |
 | `resolveWorkAgentId` | const | stable | `../lib/work-identity/resolve-work-agent.service` |

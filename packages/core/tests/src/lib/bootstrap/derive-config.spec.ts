@@ -59,6 +59,12 @@ describe('deriveConfig (f00117 S1)', () => {
 			'search',
 			'memory',
 			'docs',
+			'quality',
+			'rules',
+			'deps',
+			'test-policy',
+			'env',
+			'refactor',
 		]);
 	});
 

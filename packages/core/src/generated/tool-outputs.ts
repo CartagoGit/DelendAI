@@ -14,7 +14,7 @@
 
 export interface DelendaiAdoptProjectOutput {
 	ok: true;
-	preset: "lean" | "standard" | "minimal" | "swarm";
+	preset: "solo" | "team-pr" | "minimal" | "swarm";
 	stage?: "core" | "standard" | "agents" | "specialized";
 	config?: Record<string, unknown>;
 	rationale?: string[];
@@ -640,7 +640,7 @@ export interface DelendaiInitConfigOutput {
 		reason: string;
 		nextAction?: string;
 	};
-	preset?: "lean" | "standard" | "minimal" | "swarm";
+	preset?: "solo" | "team-pr" | "minimal" | "swarm";
 	config?: Record<string, unknown>;
 	rationale?: string[];
 	wrote?: boolean;
@@ -948,7 +948,7 @@ export interface DelendaiPluginSearchOutput {
 		summary: string;
 		tags: string[];
 		origin: "first-party" | "community";
-		defaultPreset?: "minimal" | "solo" | "team-pr" | "swarm" | "audit" | "docs-web" | "everything" | "dogfood" | "vertex";
+		defaultPreset?: "minimal" | "solo" | "team-pr" | "swarm" | "audit" | "docs-web" | "everything" | "dogfood" | "vertex" | "lean" | "standard" | "full" | "web-app" | "backend-api" | "cli-tool";
 		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
 		configDocs?: {
 			summary?: string;

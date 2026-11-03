@@ -136,13 +136,13 @@ describe('resolvePlugins', () => {
 				sample({ id: 'zeta', summary: 'no preset' }),
 				sample({
 					id: 'alpha',
-					summary: 'standard',
-					defaultPreset: 'standard',
+					summary: 'team-pr',
+					defaultPreset: 'team-pr',
 				}),
 				sample({
 					id: 'beta',
-					summary: 'standard',
-					defaultPreset: 'standard',
+					summary: 'team-pr',
+					defaultPreset: 'team-pr',
 				}),
 			],
 		};

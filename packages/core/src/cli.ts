@@ -241,7 +241,11 @@ export {
 } from './lib/plugins/pack-defaults-overlay';
 export { hasExplicitPluginSurfaceSelection } from './lib/plugins/parse-cli-args';
 export { resolvePluginOptions } from './lib/plugins/plugin-defaults';
-export { PRESET_KIND, RETIRED_PRESET_ID } from './lib/plugins/preset-catalog';
+export {
+	PRESET_KIND,
+	RETIRED_PRESET_ID,
+	resolveStackPackMembers,
+} from './lib/plugins/preset-catalog';
 export {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,

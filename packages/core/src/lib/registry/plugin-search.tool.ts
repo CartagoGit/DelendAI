@@ -34,12 +34,7 @@ const ENTRY = z.object({
 	origin: z.enum(['first-party', 'community']),
 	// Accept the canonical preset ids + every retired id
 	// (still valid input; resolvePresetMembers normalises it).
-	defaultPreset: z
-		.enum([
-			...PRESET_KIND,
-			'vertex', // legacy brand alias → resolves to 'dogfood'
-		])
-		.optional(),
+	defaultPreset: z.enum([...PRESET_KIND, ...RETIRED_PRESET_ID]).optional(),
 	// Every optional field a registry entry can carry. A client that listed
 	// tools rejects undeclared keys, so an entry schema narrower than the
 	// entries `resolvePlugins` returns made the whole answer unusable.

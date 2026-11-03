@@ -30,7 +30,6 @@ import { join, relative, resolve } from 'node:path';
 import {
 	PRESET_CATALOG,
 	resolvePresetMembers,
-	resolveStackPackMembers,
 	type IPresetDefinition,
 } from '@delendai/core/public';
 import {
@@ -38,6 +37,7 @@ import {
 	PACK_IDS,
 	PRESET_KIND,
 	RETIRED_PRESET_ID,
+	resolveStackPackMembers,
 	parseJsonc,
 } from '@delendai/core/cli';
 
