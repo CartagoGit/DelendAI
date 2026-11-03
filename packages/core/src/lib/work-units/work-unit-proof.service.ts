@@ -32,6 +32,10 @@ import type {
 } from '../contracts/interfaces/unit-proof.interface';
 import { commitSubjectFor } from '../shared/commit-call-writes';
 import { readWorkspaceDocsDir } from './development-policy.service';
+import {
+	computeSlotPath,
+	withComputeSlot,
+} from '../shared/compute-slot.service';
 import { runGitCommand } from '../shared/git-command.helper';
 import { runCertificationCommand } from './local-certification.service';
 import {
@@ -167,99 +171,127 @@ export const proveUnit = async (
 		sha = git(root, ['rev-parse', `${sha}^`]).out;
 	}
 
-	// The unit's own worktree, when it stands on the tip with nothing
-	// uncommitted: what runs there is exactly what would be published.
-	const own =
-		request.worktree !== undefined &&
-		git(request.worktree, ['rev-parse', 'HEAD']).out === tipSha &&
-		git(request.worktree, ['status', '--porcelain']).out.length === 0
-			? request.worktree
-			: undefined;
-	if (request.worktree !== undefined && own === undefined) {
-		return {
-			declared: true,
-			passed: false,
-			steps,
-			setupFailure: `${request.worktree} is not on the unit's tip with a clean tree: commit (or drop) what is uncommitted, then publish again — the proof covers what is published, nothing else.`,
-		};
-	}
-	const temporary =
-		own === undefined
-			? join(
-					gitDir.out,
-					'delendai-prove',
-					`${tipSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
-				)
-			: undefined;
-	if (temporary !== undefined) {
-		await mkdir(join(gitDir.out, 'delendai-prove'), { recursive: true });
-		const added = git(root, [
-			'worktree',
-			'add',
-			'--detach',
-			'-q',
-			temporary,
-			tipSha,
-		]);
-		if (!added.ok) {
+	// The machine has one set of cores: the proof waits for its turn, and
+	// the commands it runs inherit the slot instead of waiting for it.
+	const slot = computeSlotPath(root);
+	const onSlot = async (): Promise<IUnitProofReport> => {
+		// The unit's own worktree, when it stands on the tip with nothing
+		// uncommitted: what runs there is exactly what would be published.
+		const own =
+			request.worktree !== undefined &&
+			git(request.worktree, ['rev-parse', 'HEAD']).out === tipSha &&
+			git(request.worktree, ['status', '--porcelain']).out.length === 0
+				? request.worktree
+				: undefined;
+		if (request.worktree !== undefined && own === undefined) {
 			return {
 				declared: true,
 				passed: false,
 				steps,
-				setupFailure: `could not put ${tipSha.slice(0, 12)} on disk to prove it: ${added.out}`,
+				setupFailure: `${request.worktree} is not on the unit's tip with a clean tree: commit (or drop) what is uncommitted, then publish again — the proof covers what is published, nothing else.`,
 			};
 		}
-	}
-	const dir = own ?? temporary ?? root;
-	const inTip = (path: string): boolean =>
-		git(root, ['cat-file', '-e', `${tipSha}:${path}`]).ok;
-	const run = request.run ?? runCertificationCommand;
-	try {
-		// A fresh checkout has no dependencies; a project with no package
-		// manifest has none to install (its proof is `make test`, say).
-		if (
-			temporary !== undefined &&
-			(await exists(join(dir, 'package.json')))
-		) {
-			const install = run(
-				`${packageManagerFrom((path) => (inTip(path) ? '' : undefined))} install`,
-				dir,
-			);
-			if (install.code !== 0) {
+		const temporary =
+			own === undefined
+				? join(
+						gitDir.out,
+						'delendai-prove',
+						`${tipSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
+					)
+				: undefined;
+		if (temporary !== undefined) {
+			await mkdir(join(gitDir.out, 'delendai-prove'), {
+				recursive: true,
+			});
+			const added = git(root, [
+				'worktree',
+				'add',
+				'--detach',
+				'-q',
+				temporary,
+				tipSha,
+			]);
+			if (!added.ok) {
 				return {
 					declared: true,
 					passed: false,
 					steps,
-					setupFailure: `could not install the unit's dependencies to prove it:\n${tailOf(install.output)}`,
+					setupFailure: `could not put ${tipSha.slice(0, 12)} on disk to prove it: ${added.out}`,
 				};
 			}
 		}
-		// Every step runs: one blocker found per attempt costs an attempt
-		// per blocker.
-		const results = steps.map((step) => {
-			const outcome = run(step.command, dir);
-			if (outcome.code === 0) return { ...step, passed: true };
-			const tail = tailOf(outcome.output);
-			return tail.length === 0
-				? { ...step, passed: false }
-				: { ...step, passed: false, outputTail: tail };
-		});
-		const passed = results.every((step) => step.passed);
-		if (passed) {
-			await mkdir(join(gitDir.out, 'delendai-proofs'), {
-				recursive: true,
+		const dir = own ?? temporary ?? root;
+		const inTip = (path: string): boolean =>
+			git(root, ['cat-file', '-e', `${tipSha}:${path}`]).ok;
+		const run = request.run ?? runCertificationCommand;
+		try {
+			// A fresh checkout has no dependencies; a project with no package
+			// manifest has none to install (its proof is `make test`, say).
+			if (
+				temporary !== undefined &&
+				(await exists(join(dir, 'package.json')))
+			) {
+				const install = run(
+					`${packageManagerFrom((path) => (inTip(path) ? '' : undefined))} install`,
+					dir,
+				);
+				if (install.code !== 0) {
+					return {
+						declared: true,
+						passed: false,
+						steps,
+						setupFailure: `could not install the unit's dependencies to prove it:\n${tailOf(install.output)}`,
+					};
+				}
+			}
+			// Every step runs: one blocker found per attempt costs an attempt
+			// per blocker.
+			const results = steps.map((step) => {
+				const outcome = run(step.command, dir);
+				if (outcome.code === 0) return { ...step, passed: true };
+				const tail = tailOf(outcome.output);
+				return tail.length === 0
+					? { ...step, passed: false }
+					: { ...step, passed: false, outputTail: tail };
 			});
-			await writeFile(
-				record,
-				`${JSON.stringify({ tree: tree.out, tip: tipSha, steps: steps.map((step) => step.command), at: new Date().toISOString() })}\n`,
-			);
+			const passed = results.every((step) => step.passed);
+			if (passed) {
+				await mkdir(join(gitDir.out, 'delendai-proofs'), {
+					recursive: true,
+				});
+				await writeFile(
+					record,
+					`${JSON.stringify({ tree: tree.out, tip: tipSha, steps: steps.map((step) => step.command), at: new Date().toISOString() })}\n`,
+				);
+			}
+			return { declared: true, passed, steps: results };
+		} finally {
+			if (temporary !== undefined) {
+				git(root, ['worktree', 'remove', '--force', temporary]);
+				git(root, ['worktree', 'prune']);
+			}
 		}
-		return { declared: true, passed, steps: results };
-	} finally {
-		if (temporary !== undefined) {
-			git(root, ['worktree', 'remove', '--force', temporary]);
-			git(root, ['worktree', 'prune']);
-		}
+	};
+	if (slot === undefined) return onSlot();
+	try {
+		return await withComputeSlot({
+			lockPath: slot,
+			label: `proof of ${tipSha.slice(0, 12)} by ${process.env.DELENDAI_AGENT_ID ?? 'an unidentified agent'}`,
+			run: onSlot,
+		});
+	} catch (error) {
+		if (
+			(error as { code?: string }).code !==
+			'lock-contention-budget-exceeded'
+		)
+			throw error;
+		return {
+			declared: true,
+			passed: false,
+			steps,
+			setupFailure:
+				'gave up waiting for the machine compute slot: another proof held it the whole time. Prove again shortly.',
+		};
 	}
 };
 

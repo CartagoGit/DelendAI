@@ -16,11 +16,12 @@ A unit proof waits for the machine's one compute slot (shared with test/typechec
 
 ## why
 
-TODO: why this work matters now.
+On 2026-11-03 several agents proved units at once on one machine (load 20-30): each proof took 30-60 minutes, timing-sensitive specs failed and a CLI call to the MCP server timed out. Running them one at a time under flock fixed it, so the product must serialise proofs itself instead of relying on each agent to do so.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- No new locking mechanism: the existing file mutex and the compute-lock script are reused.
+- No change to what a proof runs or to how a passing proof is remembered.
 
 ## slices
 
