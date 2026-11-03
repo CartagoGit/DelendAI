@@ -19,7 +19,14 @@
  *     `setTimeout` cleans up classes + sets `hidden` regardless.
  *
  * The controller is idempotent: each root gets a one-shot
- * `data-tabs-bound` marker so a second call does nothing.
+ * `data-tabs-bound` marker so a second call does nothing. The host
+ * scripts call it again on every `astro:page-load`, so roots that
+ * arrive with a client navigation get bound too.
+ *
+ * Fade callbacks are cancellable (WEB-TABS01): every panel owns at
+ * most one pending finish callback, and any later swap that touches
+ * the panel cancels it first, so a stale callback from an earlier
+ * swap can never hide the panel that became active again.
  */
 
 const isButton = (n: EventTarget | null): n is HTMLButtonElement => {
@@ -62,6 +69,31 @@ const bindOne = (root: HTMLElement): void => {
 		if (id) idToTrigger.set(id, t);
 	}
 
+	const pending = new Map<HTMLElement, () => void>();
+	const cancelFade = (p: HTMLElement): void => {
+		pending.get(p)?.();
+		pending.delete(p);
+	};
+	/** Run `finish` once, on `animationend` or after the fallback delay. */
+	const scheduleFade = (p: HTMLElement, finish: () => void): void => {
+		cancelFade(p);
+		let live = true;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const done = (): void => {
+			if (!live) return;
+			live = false;
+			if (timer !== undefined) clearTimeout(timer);
+			pending.delete(p);
+			finish();
+		};
+		p.addEventListener('animationend', done, { once: true });
+		timer = setTimeout(done, FADE_FALLBACK_MS);
+		pending.set(p, () => {
+			live = false;
+			if (timer !== undefined) clearTimeout(timer);
+		});
+	};
+
 	/**
 	 * Drive a real cross-fade: fade the previous panel out and the
 	 * new panel in. On first paint (no `previousId`) the initial
@@ -88,6 +120,7 @@ const bindOne = (root: HTMLElement): void => {
 			const wasActive = p.dataset.tabPanel === previousId;
 
 			if (match) {
+				cancelFade(p);
 				// Make the panel visible so the fade-in animation runs.
 				p.removeAttribute('hidden');
 				// Drop any leftover classes from a previous swap.
@@ -103,36 +136,19 @@ const bindOne = (root: HTMLElement): void => {
 				// animation cleanly (offsetHeight is the canonical
 				// reflow trigger; `void` discards the value).
 				void p.offsetHeight;
-				p.addEventListener(
-					'animationend',
-					() => {
-						p.classList.remove('is-entering');
-					},
-					{ once: true },
-				);
-				// Fallback in case `animationend` doesn't fire
-				// (e.g. reduced-motion: reduce disables the animation
-				// in CSS, so `animationend` never dispatches).
-				setTimeout(() => {
+				scheduleFade(p, () => {
 					p.classList.remove('is-entering');
-				}, FADE_FALLBACK_MS);
+				});
 			} else if (wasActive) {
 				// Fade the outgoing panel out, then hide it.
 				p.classList.remove('is-entering');
 				p.classList.add('is-leaving');
-				p.addEventListener(
-					'animationend',
-					() => {
-						p.classList.remove('is-leaving');
-						p.setAttribute('hidden', '');
-					},
-					{ once: true },
-				);
-				setTimeout(() => {
+				scheduleFade(p, () => {
 					p.classList.remove('is-leaving');
 					p.setAttribute('hidden', '');
-				}, FADE_FALLBACK_MS);
+				});
 			} else {
+				cancelFade(p);
 				// Inactive + never active: keep hidden, drop any
 				// stray transition classes (defensive).
 				p.setAttribute('hidden', '');

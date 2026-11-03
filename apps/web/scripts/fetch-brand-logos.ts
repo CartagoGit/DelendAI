@@ -39,85 +39,18 @@
  *
  * Usage: `bun run fetch:logos` from `apps/web/`.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { readdir, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const APPS_WEB = join(SCRIPT_DIR, '..');
-const OUT = join(APPS_WEB, 'public/logos');
+import { refreshLogos } from './lib/brand-logo-refresh';
 
-interface IBrandEntry {
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const OUT = join(SCRIPT_DIR, '..', 'public/logos');
+
+const BRANDS: ReadonlyArray<{
 	readonly outName: string;
 	readonly sources: ReadonlyArray<string>;
-}
-
-type ImageKind = 'svg' | 'png' | 'ico';
-
-const MAGIC: Record<ImageKind, ReadonlyArray<number>> = {
-	svg: [0x3c], // "<svg" — only check the first byte (always '<')
-	png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
-	ico: [0x00, 0x00, 0x01, 0x00],
-};
-
-const sniff = (buf: Uint8Array): ImageKind | null => {
-	for (const kind of ['svg', 'png', 'ico'] as const) {
-		const sig = MAGIC[kind];
-		if (buf.byteLength < sig.length) continue;
-		let ok = true;
-		for (let i = 0; i < sig.length; i++) {
-			if (buf[i] !== sig[i]) {
-				ok = false;
-				break;
-			}
-		}
-		if (ok) return kind;
-	}
-	return null;
-};
-
-const extensionForKind = (kind: ImageKind): string => {
-	if (kind === 'svg') return 'svg';
-	if (kind === 'png') return 'png';
-	return 'ico';
-};
-
-const fetchUrl = async (
-	url: string,
-): Promise<{ body: Uint8Array; kind: ImageKind; bytes: number } | null> => {
-	try {
-		const res = await fetch(url, {
-			redirect: 'follow',
-			headers: {
-				'User-Agent':
-					'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-				// Bun's fetch auto-decompresses gzip bodies, so we
-				// arrive at the raw bytes regardless of the
-				// upstream's Content-Encoding.
-				Accept: 'image/svg+xml,image/png,image/webp,image/*,*/*;q=0.8',
-			},
-		});
-		if (!res.ok) return null;
-		const buf = new Uint8Array(await res.arrayBuffer());
-		if (buf.byteLength === 0) return null;
-		const kind = sniff(buf);
-		if (!kind) {
-			console.warn(
-				`  ${url} → magic bytes ${Array.from(buf.slice(0, 8))
-					.map((b) => b.toString(16).padStart(2, '0'))
-					.join(' ')}, skipping (likely HTML/gzip redirect)`,
-			);
-			return null;
-		}
-		return { body: buf, kind, bytes: buf.byteLength };
-	} catch (e) {
-		console.warn(`  ${url} → ${(e as Error).message}`);
-		return null;
-	}
-};
-
-const BRANDS: ReadonlyArray<IBrandEntry> = [
+}> = [
 	{
 		outName: 'npm',
 		// npmjs.com is behind Cloudflare; the npm/logos GitHub repo is
@@ -233,76 +166,4 @@ const BRANDS: ReadonlyArray<IBrandEntry> = [
 	},
 ];
 
-const main = async (): Promise<void> => {
-	mkdirSync(OUT, { recursive: true });
-	let fetched = 0;
-	let written = 0;
-	let failed = 0;
-	const writtenThisRun = new Set<string>();
-
-	for (const brand of BRANDS) {
-		let hit: { body: Uint8Array; kind: ImageKind; bytes: number } | null =
-			null;
-		for (const url of brand.sources) {
-			hit = await fetchUrl(url);
-			if (hit) break;
-		}
-		if (!hit) {
-			console.warn(
-				`FAILED ${brand.outName} (no source responded with an image)`,
-			);
-			failed += 1;
-			continue;
-		}
-		fetched += 1;
-		const outName = `${brand.outName}.${extensionForKind(hit.kind)}`;
-		const outPath = join(OUT, outName);
-		// Read once, no existence check first: the two could see different files.
-		let existing: Buffer | null;
-		try {
-			existing = readFileSync(outPath);
-		} catch {
-			existing = null;
-		}
-		// a00084 F35: byteLength alone treats two DIFFERENT logos that happen
-		// to share a byte count as "unchanged", silently keeping the stale
-		// cached asset. Buffer#equals compares actual content.
-		if (existing?.equals(hit.body)) {
-			console.log(`unchanged ${outName} (${hit.bytes}B)`);
-			writtenThisRun.add(outName);
-			continue;
-		}
-		writeFileSync(outPath, hit.body);
-		written += 1;
-		writtenThisRun.add(outName);
-		console.log(`wrote ${outName} (${hit.bytes}B, ${hit.kind})`);
-	}
-
-	// Remove any stale logo file with the same `<base>` but a
-	// different extension than what we wrote this run. e.g. if
-	// the previous x128 attempt left `github.svg` (from simple-
-	// icons) and this run downloaded the real `github.png`,
-	// the .svg gets deleted. The `<base>.<ext>` we want is the
-	// one in `writtenThisRun`; everything else matching a brand
-	// base is stale.
-	const wantedBases = new Set(BRANDS.map((b) => b.outName));
-	for (const file of await readdir(OUT)) {
-		const m = file.match(/^(.+)\.(svg|png|ico)$/);
-		if (!m) continue;
-		const [, base] = m;
-		if (!wantedBases.has(base)) continue;
-		if (writtenThisRun.has(file)) continue;
-		console.log(`removing stale ${file}`);
-		await unlink(join(OUT, file));
-	}
-
-	if (!existsSync(join(OUT, '.gitkeep'))) {
-		writeFileSync(join(OUT, '.gitkeep'), '');
-	}
-
-	console.log(
-		`fetch-brand-logos: ${BRANDS.length} brands — ${fetched} fetched, ${written} (re)written, ${failed} failed`,
-	);
-};
-
-await main();
+await refreshLogos(BRANDS, OUT);

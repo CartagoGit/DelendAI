@@ -98,13 +98,13 @@ const drawerLinks = [
 			    in `Base.astro` (which already drives every other
 			    dropdown in the site) can manage open/close +
 			    outside-click + Esc from one place. We pass
-			    `classPrefix: 'nav__more'` so the BEM shape stays
+			    `classPrefix: 'nav-more'` so the BEM shape stays
 			    aligned with the existing `_nav.scss` rules instead
 			    of forcing a parallel `delendai-dropdown__*` style layer. */}
 			<Fragment set:html={renderDropdown({
 				id: 'nav-more',
 				idPrefix: 'nav-more',
-				classPrefix: 'nav__more',
+				classPrefix: 'nav-more',
 				label: t.nav.more,
 				align: 'right',
 				items: navCore.map((l) => ({
