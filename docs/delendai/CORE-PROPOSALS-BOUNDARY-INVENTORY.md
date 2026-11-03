@@ -5,14 +5,14 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 90
+- Findings: 91
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 41
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 5
-- plugin-name: 11
+- plugin-name: 12
 - type: 54
 - message: 19
 - index-access: 0
@@ -74,6 +74,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries freeze result | type | intentional-compat | 1 | La materializacion del estado conserva el campo de compatibilidad. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries optional carrier field | type | intentional-compat | 1 | El carrier agnostico conserva el campo opcional por compatibilidad. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries returned field | type | intentional-compat | 1 | El estado ensamblado devuelve proposalSummaries por compatibilidad con la API publica. |
+| packages/core/src/lib/contracts/constants/preset-migration.constant.ts | retired full preset includes proposals | plugin-name | composition | 1 | El preset full retirado incluia proposals; reconocer su mapa de plugins necesita ese id. |
 | packages/core/src/lib/contracts/constants/token-budgets.constant.ts | fixturePluginIds: ['proposals', 'memory'] | plugin-name | intentional-compat | 1 | Los fixtures de presupuesto siguen nombrando proposals como plugin representativo. |
 | packages/core/src/lib/contracts/file-conventions.contract.ts | folderRule('proposal', 'proposals') | path | contract | 1 | La convencion de ficheros publica el plural proposals como layout nominal. |
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
