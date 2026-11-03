@@ -80,14 +80,23 @@ export const readLane = async (
 	return tickets;
 };
 
-/** Take a place in the urgent lane; the name orders the lane. */
+/** Orders tickets taken in the same millisecond by this process. */
+let ticketSequence = 0;
+
+/** A place in the urgent lane, fixed at call time: the name orders the lane. */
+export const urgentTicketName = (): string => {
+	ticketSequence += 1;
+	return `${String(Date.now()).padStart(15, '0')}-${String(ticketSequence).padStart(9, '0')}-${randomUUID()}`;
+};
+
+/** Take that place: the caller waits in the lane from now on. */
 export const joinUrgentLane = async (
 	lockPath: string,
+	name: string,
 	label: string,
 	reason: string,
-): Promise<string> => {
+): Promise<void> => {
 	await mkdir(laneDir(lockPath), { recursive: true });
-	const name = `${String(Date.now()).padStart(15, '0')}-${randomUUID()}`;
 	const ticket: IUrgentTicket = {
 		label,
 		pid: process.pid,
@@ -95,7 +104,6 @@ export const joinUrgentLane = async (
 		at: new Date().toISOString(),
 	};
 	await writeFile(join(laneDir(lockPath), name), JSON.stringify(ticket));
-	return name;
 };
 
 export const leaveUrgentLane = (

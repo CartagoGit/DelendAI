@@ -28,6 +28,7 @@ import {
 	alive,
 	slotHolderOf,
 	joinUrgentLane,
+	urgentTicketName,
 	laneNotice,
 	leaveUrgentLane,
 	ownerFile,
@@ -219,6 +220,8 @@ const withComputeSlotTurn = async <T>(
 	body: () => Promise<T> | T,
 ): Promise<T> => {
 	const { lockPath, label, urgent } = request;
+	// The place in the urgent lane is fixed by call order, before any wait.
+	const ticketName = urgent === undefined ? undefined : urgentTicketName();
 	// Held by an ancestor process (a proof running this very command): the
 	// turn is already ours. Held by THIS process means another caller here.
 	if (heldByAncestor(lockPath)) {
@@ -229,10 +232,9 @@ const withComputeSlotTurn = async <T>(
 	await mkdir(dirname(lockPath), { recursive: true });
 	// An urgent caller joins the lane before it waits: normal callers yield
 	// to every live ticket, urgent ones to the tickets ahead of theirs.
-	const ticketName =
-		urgent === undefined
-			? undefined
-			: await joinUrgentLane(lockPath, label, urgent);
+	if (ticketName !== undefined && urgent !== undefined) {
+		await joinUrgentLane(lockPath, ticketName, label, urgent);
+	}
 	const mustYield = async (): Promise<boolean> => {
 		const lane = await readLane(lockPath);
 		return ticketName === undefined
