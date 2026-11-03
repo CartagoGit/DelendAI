@@ -73,6 +73,7 @@ export const proved = async (
 		worktree,
 		tipSha: tip,
 		integrationSha: base,
+		urgency: { args, proposal, policy },
 	});
 	if (!proof.passed) {
 		return refused(

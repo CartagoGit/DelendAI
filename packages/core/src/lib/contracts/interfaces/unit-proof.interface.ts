@@ -15,6 +15,14 @@ export interface IProveUnitRequest {
 	/** The integration head, whose declaration names the proof. */
 	readonly integrationSha: string;
 	readonly run?: ICertificationCommandRunner;
+	/** What decides whether this proof takes the compute slot ahead of the rest. */
+	readonly urgency?: {
+		readonly args: readonly string[];
+		readonly proposal: string | undefined;
+		readonly policy: {
+			readonly branches: { readonly integration: string };
+		};
+	};
 }
 
 /** The verdict of a unit's proof. */

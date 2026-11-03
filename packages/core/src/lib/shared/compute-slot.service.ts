@@ -19,8 +19,23 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { COMPUTE_SLOT_ENV } from '../contracts/constants/compute-slot.constant';
+import {
+	COMPUTE_SLOT_ENV,
+	LANE_YIELD_MS,
+} from '../contracts/constants/compute-slot.constant';
 import type { IComputeSlotRequest } from '../contracts/interfaces/compute-slot.interface';
+import {
+	alive,
+	holderOf,
+	joinUrgentLane,
+	laneNotice,
+	leaveUrgentLane,
+	ownerFile,
+	pause,
+	readJson,
+	readLane,
+	recordUrgentTurn,
+} from './compute-slot-lane.service';
 import { runGitCommand } from './git-command.helper';
 import { withFileMutex } from './with-file-mutex';
 
@@ -59,18 +74,6 @@ const heldByAncestor = (lockPath: string): boolean => {
 	return Number.isInteger(pid) && pid !== process.pid;
 };
 
-const ownerFile = (lockPath: string): string => `${lockPath}.owner`;
-
-const holderOf = async (lockPath: string): Promise<string> => {
-	try {
-		const raw = await readFile(ownerFile(lockPath), 'utf8');
-		const owner = JSON.parse(raw) as { label?: string; pid?: number };
-		return `${owner.label ?? 'another run'} (pid ${String(owner.pid)})`;
-	} catch {
-		return 'another run';
-	}
-};
-
 const SUPERSEDED = Symbol('superseded');
 
 /** How often a joiner looks for the owner's result. */
@@ -85,26 +88,6 @@ type TurnResult =
 	| { readonly value: unknown }
 	| { readonly superseded: true }
 	| { readonly error: string; readonly code?: string | undefined };
-
-const alive = (pid: number): boolean => {
-	try {
-		process.kill(pid, 0);
-		return true;
-	} catch (error) {
-		return (error as { code?: string }).code === 'EPERM';
-	}
-};
-
-const readJson = async <V>(path: string): Promise<V | undefined> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as V;
-	} catch {
-		return undefined;
-	}
-};
-
-const pause = (ms: number): Promise<void> =>
-	new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * One turn per unit and tip, across processes: the first caller of a tip
@@ -229,11 +212,13 @@ export const withComputeSlot = <T>(
 		? withUnitTurn(request, request.unit, request.tip)
 		: withComputeSlotTurn(request, request.run);
 
+const YIELD = Symbol('yield');
+
 const withComputeSlotTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	body: () => Promise<T> | T,
 ): Promise<T> => {
-	const { lockPath, label } = request;
+	const { lockPath, label, urgent } = request;
 	// Held by an ancestor process (a proof running this very command): the
 	// turn is already ours. Held by THIS process means another caller here.
 	if (heldByAncestor(lockPath)) {
@@ -242,43 +227,78 @@ const withComputeSlotTurn = async <T>(
 	const notify =
 		request.notify ?? ((message: string) => console.error(message));
 	await mkdir(dirname(lockPath), { recursive: true });
+	// An urgent caller joins the lane before it waits: normal callers yield
+	// to every live ticket, urgent ones to the tickets ahead of theirs.
+	const ticketName =
+		urgent === undefined
+			? undefined
+			: await joinUrgentLane(lockPath, label, urgent);
+	const mustYield = async (): Promise<boolean> => {
+		const lane = await readLane(lockPath);
+		return ticketName === undefined
+			? lane.length > 0
+			: lane.some((ticket) => ticket.name < (ticketName as string));
+	};
 	let waiting = false;
 	let notice: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
 		waiting = true;
-		void holderOf(lockPath).then((holder) => {
-			if (waiting) {
-				notify(
-					`[compute-slot] "${label}" is waiting — ${holder} holds the machine's compute slot. Waiting my turn...`,
-				);
-			}
-		});
+		void Promise.all([holderOf(lockPath), readLane(lockPath)]).then(
+			([holder, lane]) => {
+				if (waiting) {
+					notify(
+						`[compute-slot] "${label}" is waiting — ${holder} holds the machine's compute slot.${urgent === undefined ? '' : ` This turn is urgent (${urgent}): it goes next.`}${laneNotice(lane)} Waiting my turn...`,
+					);
+				}
+			},
+		);
 	}, request.waitNoticeMs ?? WAIT_NOTICE_MS);
-	return withFileMutex(
-		lockPath,
-		async () => {
-			clearTimeout(notice);
-			notice = undefined;
-			if (waiting) notify(`[compute-slot] "${label}" got its turn.`);
-			waiting = false;
-			await writeFile(
-				ownerFile(lockPath),
-				JSON.stringify({ label, pid: process.pid }),
+	try {
+		for (;;) {
+			const outcome = await withFileMutex(
+				lockPath,
+				async () => {
+					if (await mustYield()) return YIELD;
+					clearTimeout(notice);
+					notice = undefined;
+					if (waiting)
+						notify(`[compute-slot] "${label}" got its turn.`);
+					waiting = false;
+					await writeFile(
+						ownerFile(lockPath),
+						JSON.stringify({
+							label,
+							pid: process.pid,
+							...(urgent === undefined ? {} : { urgent }),
+						}),
+					);
+					if (urgent !== undefined) {
+						await recordUrgentTurn(lockPath, label, urgent);
+					}
+					process.env[COMPUTE_SLOT_ENV] = heldBy(
+						lockPath,
+						process.pid,
+					);
+					try {
+						return await body();
+					} finally {
+						delete process.env[COMPUTE_SLOT_ENV];
+						await rm(ownerFile(lockPath), { force: true });
+					}
+				},
+				{
+					timeoutMs: request.timeoutMs ?? WAIT_BUDGET_MS,
+					staleMs: request.staleMs ?? STALE_MS,
+					onContention: 'fail',
+				},
 			);
-			process.env[COMPUTE_SLOT_ENV] = heldBy(lockPath, process.pid);
-			try {
-				return await body();
-			} finally {
-				delete process.env[COMPUTE_SLOT_ENV];
-				await rm(ownerFile(lockPath), { force: true });
-			}
-		},
-		{
-			timeoutMs: request.timeoutMs ?? WAIT_BUDGET_MS,
-			staleMs: request.staleMs ?? STALE_MS,
-			onContention: 'fail',
-		},
-	).finally(() => {
+			if (outcome !== YIELD) return outcome;
+			await pause(LANE_YIELD_MS);
+		}
+	} finally {
 		waiting = false;
 		if (notice !== undefined) clearTimeout(notice);
-	});
+		if (ticketName !== undefined) {
+			await leaveUrgentLane(lockPath, ticketName);
+		}
+	}
 };
