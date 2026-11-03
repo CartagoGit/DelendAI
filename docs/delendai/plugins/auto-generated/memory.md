@@ -3,7 +3,7 @@ id: memory
 package: @delendai/memory
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Memory
@@ -21,14 +21,12 @@ Persistent memory store (BM25 + recall, save, search).
 
 ## Presets
 
-- lean
-- standard
+- solo
+- team-pr
 - swarm
-- full
+- docs-web
+- everything
 - dogfood
-- web-app
-- backend-api
-- cli-tool
 
 ## Permissions
 

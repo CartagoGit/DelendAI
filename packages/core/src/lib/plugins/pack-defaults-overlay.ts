@@ -1,8 +1,8 @@
 /**
  * pack-defaults-overlay.ts — r00011 S1: per-pack tuned option overlays.
  *
- * Each stack pack (e.g. `web-app`, `backend-api`, `cli-tool`) bundles
- * a curated plugin set + a small set of tuned per-plugin defaults.
+ * Each stack overlay (`web-app`, `backend-api`, `cli-tool`) layers a few
+ * plugins (`STACK_PACKS`) on a purpose pack + a small set of tuned per-plugin defaults.
  * Precedence is:
  *   PLUGIN_DEFAULTS  →  PACK_DEFAULTS_OVERLAY[packId][pluginId]  →  user config
  * (user always wins).
@@ -11,25 +11,20 @@
  * Apply it via `mergePackDefaults(plugins, userConfig, packId)` so a
  * caller (init, configuration_center) can compose the final config.
  */
-import type { IPresetKind } from './preset-catalog';
 
-/**
- * The set of valid pack ids. Mirrors the new PRESET_KIND entries added
- * by r00011 S1 (`web-app`, `backend-api`, `cli-tool`). Kept narrow on
- * purpose: the chain presets (`minimal`..`vertex`) do not get an
- * overlay — they are pure plugin-selection presets.
- */
-export type IPackId = Extract<
-	IPresetKind,
-	'web-app' | 'backend-api' | 'cli-tool'
->;
+import {
+	STACK_PACKS,
+	type IPackId,
+} from '../contracts/constants/stack-packs.constant';
+
+export { STACK_PACKS, type IPackId };
 
 /** A read-only map of plugin id → options. */
 export type IPluginOptionsMap = Readonly<Record<string, unknown>>;
 
 /**
  * The overlay table: pack id → plugin id → options. Adding a new
- * pack means adding one entry here + one entry in PRESET_CATALOG.
+ * stack means adding one entry here + one entry in STACK_PACKS.
  * The two stay in sync via the `lint:setup` (preset-drift) gate
  * which knows the pack membership.
  */
@@ -79,11 +74,7 @@ export const PACK_DEFAULTS_OVERLAY: Readonly<
 /**
  * The set of valid pack ids. Useful as a runtime guard.
  */
-export const PACK_IDS: readonly IPackId[] = [
-	'web-app',
-	'backend-api',
-	'cli-tool',
-];
+export const PACK_IDS = Object.keys(STACK_PACKS) as readonly IPackId[];
 
 /**
  * Resolve the pack overlay for one (pack, plugin) pair. Pure.

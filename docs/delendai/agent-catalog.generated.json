@@ -206,26 +206,6 @@
 			"name": "delendai_create_project"
 		},
 		{
-			"name": "delendai_database_db_erd",
-			"plugin": "database"
-		},
-		{
-			"name": "delendai_database_db_explain",
-			"plugin": "database"
-		},
-		{
-			"name": "delendai_database_db_probe",
-			"plugin": "database"
-		},
-		{
-			"name": "delendai_database_db_query",
-			"plugin": "database"
-		},
-		{
-			"name": "delendai_database_db_schema",
-			"plugin": "database"
-		},
-		{
 			"name": "delendai_deps_deps_audit",
 			"plugin": "deps"
 		},
@@ -847,30 +827,6 @@
 		{
 			"name": "delendai_quality-policy_quality_policy_run_settlement",
 			"plugin": "quality-policy"
-		},
-		{
-			"name": "delendai_refactor_refactor_apply",
-			"plugin": "refactor"
-		},
-		{
-			"name": "delendai_refactor_refactor_codemod",
-			"plugin": "refactor"
-		},
-		{
-			"name": "delendai_refactor_refactor_definition",
-			"plugin": "refactor"
-		},
-		{
-			"name": "delendai_refactor_refactor_references",
-			"plugin": "refactor"
-		},
-		{
-			"name": "delendai_refactor_refactor_rename",
-			"plugin": "refactor"
-		},
-		{
-			"name": "delendai_refactor_refactor_symbols",
-			"plugin": "refactor"
 		},
 		{
 			"name": "delendai_resolve_capability"

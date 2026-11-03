@@ -3,7 +3,7 @@ id: skills-pack
 package: @delendai/skills-pack
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Skills Pack
@@ -20,11 +20,7 @@ Curated skill pack (debugging, perf, pr-review, security, incident, migration).
 
 ## Presets
 
-- standard
-- swarm
-- full
-- web-app
-- backend-api
+- everything
 
 ## Permissions
 

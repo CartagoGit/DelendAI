@@ -11,7 +11,7 @@ export default definePluginManifest({
 	// Without a detected Playwright no page can be opened.
 	maturity: 'experimental',
 	permissions: ['filesystem-write', 'process', 'network', 'browser'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 5_945,
 		caps: { hard: 6_840, warning: 6_250 },

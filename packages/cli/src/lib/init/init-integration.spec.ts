@@ -46,7 +46,7 @@ describe('init integration (f00084 S10)', () => {
 
 	it('renders, writes, re-renders idempotently, and persists plugin defaults end-to-end', async () => {
 		const answers = parseAnswers(workspace, {
-			preset: 'full',
+			preset: 'everything',
 			extraPlugins: ['audit'],
 		});
 		const resolvedPlugins = resolvePluginSet(answers);
