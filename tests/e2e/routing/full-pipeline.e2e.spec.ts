@@ -384,7 +384,9 @@ describe('e2e: routing full pipeline smoke', () => {
 				detail: 'full',
 				sessionId: 'routing-smoke-session',
 				toolsAllow: [...PUBLISHED_PIPELINE_TOOL_NAMES],
-				timeoutMs: 5_000,
+				// The provider answers at once; the deadline only has to outlast
+				// a machine too loaded to start the server in five seconds.
+				timeoutMs: 120_000,
 				fallbackStrategy: 'rerank',
 			},
 		})) as TStructuredResult<{
@@ -460,5 +462,5 @@ describe('e2e: routing full pipeline smoke', () => {
 		expect(
 			summary.invocationTelemetry.totals.totalTokens,
 		).toBeLessThanOrEqual(expectedBudgetTokens + HOST_OVERHEAD_TOKENS);
-	});
+	}, 300_000); // took 29-32 s under load; the 30 s default is a hang detector set too tight
 });
