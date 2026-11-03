@@ -2,14 +2,14 @@
 id: x00959
 title: "Orchestrators and reviewers are held to their own rules by the product"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: d058b005-2a97-4e76-baa0-048d61750b10
-last-correlation-id: d058b005-2a97-4e76-baa0-048d61750b10
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T06:21:52.476Z
+last-transition-id: da2eb8e7-92af-44c5-9518-a43989b05631
+last-correlation-id: da2eb8e7-92af-44c5-9518-a43989b05631
+last-transition-from: review
+last-transition-at: 2026-11-03T02:28:04.967Z
 shipped-in:
   - "1160da332a9c"
 ---
@@ -59,15 +59,17 @@ Joint audit a00095 and the reviewer observations recorded during it. C4: identit
 - review-log: approved by minimax-m3.1-flash — verified at 1160da332a9c, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 2/2: (1) At 5df4bc2d the proof command runs the gates the forge runs for the unit's changes, reading the workflow's matrix and building each job's own test arguments; a… (2) At 5df4bc2d a publication whose proof is red is refused before it leaves the unit, with the failure described and the way to fix it, and a commit in a unit sta… — Approved on the delivered state of 5df4bc2d99f7. The proof runs what the forge runs, and a red proof stops the publication. The type gate exited 0 and the specs pass 15 of 15. One residual, recorded and not blocking: the proof before publishing is conditional on the profile, so under a profile that declares no proof the publication proceeds and the report says so, which is the product's documented behaviour but the criterion reads unconditionally.
 
 ### S3 — Reviewers
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-earlier-pack.service.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer session holds one review unit; claiming again from another unit is refused while the first holds unpublished verdicts."
   - "Identity stays the declared model id: a name suffix is not read as an instance, because `gpt-5-mini` is not `gpt-5` (C4)."
 - shipped-in: `3ee75073fb0c`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 1160da332a9c, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 2/2: (1) At 3ee75073 a review unit holds one pack: a claim from another unit is refused while the first holds verdicts it has not published; and the identity stays the … (2) At 3ee75073 the identity comparison reads the letters and digits of a name and does not read a trailing segment as an instance, so a smaller model is not the l… — Approved on the delivered state of 3ee75073fb0c. One review unit per session, and the identity stays the model that was declared. The type gate exited 0 and the specs pass 9 of 9. One residual, recorded and not blocking: the identity half was already true before this slice, which did not change the alias service, so the criterion holds by the surrounding code rather than by this slice's own change.
 
 ## acceptance
 
