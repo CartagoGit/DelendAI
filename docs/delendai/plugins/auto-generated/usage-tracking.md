@@ -3,7 +3,7 @@ id: usage-tracking
 package: @delendai/usage-tracking
 version: 0.3.0
 maturity: stable
-generated: 2026-11-02T05:50:26.888Z
+generated: 2026-11-03T01:24:49.458Z
 ---
 
 # Usage Tracking
@@ -21,6 +21,8 @@ Per-token/per-call usage tracking (spend, budget).
 
 ## Presets
 
+- swarm
+- everything
 - dogfood
 
 ## Permissions

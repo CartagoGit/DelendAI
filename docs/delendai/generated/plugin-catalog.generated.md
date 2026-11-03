@@ -140,67 +140,67 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 
 | id | defaultPreset | memberOf |
 | --- | --- | --- |
-| `adaptive-optimizer` | none | dogfood |
-| `agent-orchestrator` | none | standard, swarm, full, dogfood |
-| `api` | none | full |
-| `audit` | none | dogfood |
-| `audit-orchestrator` | none | full |
-| `auto-agent-selector` | none | standard, swarm, full, dogfood |
-| `auto-plugin-selector` | none | dogfood |
-| `browser` | none | full |
-| `cache` | none | full |
+| `adaptive-optimizer` | none | everything, dogfood |
+| `agent-orchestrator` | none | swarm, everything, dogfood |
+| `api` | none | everything |
+| `audit` | none | audit, everything, dogfood |
+| `audit-orchestrator` | none | everything |
+| `auto-agent-selector` | none | swarm, everything, dogfood |
+| `auto-plugin-selector` | none | everything, dogfood |
+| `browser` | none | everything |
+| `cache` | none | everything |
 | `changelog` | none | none |
-| `commit-policy` | none | dogfood |
-| `completion` | none | swarm, full, dogfood |
-| `container` | none | standard, swarm, full, dogfood, web-app, backend-api |
-| `context-for-change` | none | dogfood |
-| `conventions` | none | swarm, full, dogfood |
-| `database` | none | standard, swarm, full, backend-api |
-| `deps` | none | standard, swarm, full, dogfood, web-app, backend-api |
-| `diagram` | none | standard, swarm, full, dogfood, web-app, backend-api |
-| `docs` | none | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `env` | none | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `error-reporting` | none | standard, swarm, full, dogfood |
-| `execution-env` | none | none |
-| `external-mcps` | none | full |
-| `forge` | none | swarm, full, dogfood |
-| `framework-knowledge` | none | none |
-| `git` | none | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `github` | none | full |
-| `gitlab` | none | full |
-| `i18n` | none | standard, swarm, full, dogfood, web-app |
-| `impact-analysis` | none | dogfood |
-| `issues` | none | full |
+| `commit-policy` | none | team-pr, swarm, everything, dogfood |
+| `completion` | none | swarm, everything, dogfood |
+| `container` | none | everything, dogfood |
+| `context-for-change` | none | everything, dogfood |
+| `conventions` | none | team-pr, swarm, everything, dogfood |
+| `database` | none | everything |
+| `deps` | none | solo, team-pr, audit, everything, dogfood |
+| `diagram` | none | everything, dogfood |
+| `docs` | none | solo, team-pr, swarm, audit, docs-web, everything, dogfood |
+| `env` | none | solo, team-pr, docs-web, everything, dogfood |
+| `error-reporting` | none | team-pr, swarm, everything, dogfood |
+| `execution-env` | none | everything |
+| `external-mcps` | none | everything |
+| `forge` | none | team-pr, swarm, everything, dogfood |
+| `framework-knowledge` | none | everything |
+| `git` | none | minimal, solo, team-pr, swarm, audit, docs-web, everything, dogfood |
+| `github` | none | everything |
+| `gitlab` | none | everything |
+| `i18n` | none | docs-web, everything, dogfood |
+| `impact-analysis` | none | audit, everything, dogfood |
+| `issues` | none | everything |
 | `issues-triage` | none | none |
-| `link-check` | none | dogfood |
-| `logs` | none | swarm, full, dogfood |
-| `memory` | none | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `notification` | none | swarm, full, dogfood |
-| `observability` | none | full |
-| `orchestrator-runner` | none | dogfood |
-| `perf` | none | dogfood, cli-tool |
-| `project-health` | none | dogfood |
-| `project-kpis` | none | dogfood |
-| `prompt-eval` | none | full |
-| `prompts-pack` | none | standard, swarm, full, web-app, backend-api |
-| `proposals` | none | swarm, full, dogfood |
-| `quality` | none | standard, swarm, full, dogfood, web-app, backend-api |
-| `quality-policy` | none | dogfood |
-| `refactor` | none | standard, swarm, full, web-app, backend-api |
-| `remote-provider-core` | none | full |
+| `link-check` | none | audit, docs-web, everything, dogfood |
+| `logs` | none | swarm, audit, everything, dogfood |
+| `memory` | none | solo, team-pr, swarm, docs-web, everything, dogfood |
+| `notification` | none | swarm, everything, dogfood |
+| `observability` | none | everything |
+| `orchestrator-runner` | none | everything, dogfood |
+| `perf` | none | everything, dogfood |
+| `project-health` | none | audit, everything, dogfood |
+| `project-kpis` | none | everything, dogfood |
+| `prompt-eval` | none | everything |
+| `prompts-pack` | none | everything |
+| `proposals` | none | swarm, everything, dogfood |
+| `quality` | none | solo, team-pr, swarm, audit, everything, dogfood |
+| `quality-policy` | none | everything, dogfood |
+| `refactor` | none | solo, team-pr, audit, everything |
+| `remote-provider-core` | none | everything |
 | `roadmap` | none | none |
-| `rules` | none | standard, swarm, full, dogfood, web-app, backend-api |
-| `search` | none | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `security` | none | dogfood |
-| `self-learning` | none | none |
-| `skills-pack` | none | standard, swarm, full, web-app, backend-api |
-| `status-marker` | none | swarm, full, dogfood, web-app |
-| `style-convention` | none | none |
-| `tech-debt` | none | dogfood |
-| `test-convention` | none | swarm, full, dogfood, web-app, backend-api |
-| `test-policy` | none | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
-| `usage-tracking` | none | dogfood |
-| `web-fetch` | none | full, web-app |
+| `rules` | none | solo, team-pr, everything, dogfood |
+| `search` | none | minimal, solo, team-pr, swarm, audit, docs-web, everything, dogfood |
+| `security` | none | team-pr, audit, everything, dogfood |
+| `self-learning` | none | everything |
+| `skills-pack` | none | everything |
+| `status-marker` | none | team-pr, swarm, everything, dogfood |
+| `style-convention` | none | everything |
+| `tech-debt` | none | audit, everything, dogfood |
+| `test-convention` | none | team-pr, swarm, everything, dogfood |
+| `test-policy` | none | solo, team-pr, swarm, audit, everything, dogfood |
+| `usage-tracking` | none | swarm, everything, dogfood |
+| `web-fetch` | none | team-pr, audit, docs-web, everything |
 
 ## Capabilities
 

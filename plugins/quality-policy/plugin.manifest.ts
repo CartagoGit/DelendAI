@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['quality', 'policy', 'aggregation', 'f00167'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'filesystem-write', 'process'],
-	presets: ['dogfood'],
+	presets: ['everything', 'dogfood'],
 	tokenBudget: {
 		staticBytes: 1_101,
 		caps: { hard: 1_270, warning: 1_160 },

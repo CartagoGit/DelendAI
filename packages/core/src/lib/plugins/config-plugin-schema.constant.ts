@@ -23,7 +23,7 @@ import {
 	PROVIDER_ENTRY_SCHEMA,
 } from '../contracts/constants/provider-entry-schema.constant';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
-import { PRESET_KIND } from './preset-catalog';
+import { PRESET_KIND, RETIRED_PRESET_ID } from './preset-catalog';
 import { accountIssues } from './account-registry.helper';
 import { documentedEnum } from './config-schema-docs';
 import {
@@ -70,15 +70,15 @@ const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 			.describe(
 				'The resource groups the plugin’s tools are allowed to touch. Declaring them is what lets the registry warn before an entry is adopted.',
 			),
-		// Accept the canonical preset ids + the legacy 'vertex' brand alias
+		// Accept the canonical preset ids + every retired id
 		// (still valid input; resolvePresetMembers normalises it).
 		defaultPreset: documentedEnum(
-			[...PRESET_KIND, 'vertex'],
+			[...PRESET_KIND, ...RETIRED_PRESET_ID],
 			PLUGIN_REGISTRY_DEFAULT_PRESET_DOCS,
 		)
 			.optional()
 			.describe(
-				'The preset this plugin belongs to — the group of plugins the server installs together. `vertex` is a legacy brand alias that resolves to `dogfood`.',
+				'The preset this plugin belongs to — the group of plugins the server installs together. Retired ids (`vertex`, `lean`, `standard`, `full` and the stack packs) still resolve to their replacement.',
 			),
 	})
 	.strict();

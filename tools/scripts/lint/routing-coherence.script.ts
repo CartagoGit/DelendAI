@@ -24,14 +24,13 @@ const CORE_PACKAGE = '@delendai/core';
 const TOKEN_BUDGETS_REL = 'docs/delendai/TOKEN-BUDGETS.md';
 const GOVERNED_PRESET_IDS = new Set([
 	'minimal',
-	'lean',
-	'standard',
+	'solo',
+	'team-pr',
 	'swarm',
-	'full',
+	'audit',
+	'docs-web',
+	'everything',
 	'dogfood',
-	'web-app',
-	'backend-api',
-	'cli-tool',
 ]);
 
 export interface IRoutingStackPlugin {
