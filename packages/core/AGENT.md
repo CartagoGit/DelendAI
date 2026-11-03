@@ -42,10 +42,10 @@ _(none)_
 
 ## Tests
 
-- packages/core/src/lib/plugins/parse-cli-args.spec.ts
 - packages/core/src/lib/version.spec.ts
 - packages/core/tests/config-schema.spec.ts
 - packages/core/tests/derive-version.spec.ts
+- packages/core/tests/lint-proposals.spec.ts
 
 ## Do not
 
