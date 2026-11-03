@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { affectedSpecsSince, repositorySince } from './affected-specs.service';
-import { readTestScope, touchedSpecsOf, type TTestScope } from './test-scope';
+import { readTestScope, touchedSpecsOf, type ITestScope } from './test-scope';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
 import type { IZoneReadMap } from './test-zones.interface';
 import { parseZoneReadMap, readersOf } from './zone-reads';
@@ -129,7 +129,7 @@ export const readerSpecs = (
 export const nearSpecsSince = (
 	root: string,
 	base: string,
-	scope: TTestScope = readTestScope(root),
+	scope: ITestScope = readTestScope(root),
 ): readonly string[] => {
 	if (scope === 'reach')
 		return [

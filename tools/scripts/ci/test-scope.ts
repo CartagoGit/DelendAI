@@ -13,27 +13,28 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
+import { parseJsonc } from '@delendai/core/cli';
+
 import { createResolver, factsOf } from './affected-specs.service';
 
 export const TEST_SCOPES = ['touched', 'reach', 'all'] as const;
-export type TTestScope = (typeof TEST_SCOPES)[number];
+export type ITestScope = (typeof TEST_SCOPES)[number];
 
-export const DEFAULT_TEST_SCOPE: TTestScope = 'touched';
+export const DEFAULT_TEST_SCOPE: ITestScope = 'touched';
 
 /** The scope a parsed config asks for; anything else is the default. */
-export const testScopeOf = (config: unknown): TTestScope => {
+export const testScopeOf = (config: unknown): ITestScope => {
 	const scope = (config as { testing?: { scope?: unknown } } | null)?.testing
 		?.scope;
 	return TEST_SCOPES.find((known) => known === scope) ?? DEFAULT_TEST_SCOPE;
 };
 
 /** The scope `delendai.config.json` under `root` asks for. */
-export const readTestScope = (root: string): TTestScope => {
+export const readTestScope = (root: string): ITestScope => {
 	try {
 		return testScopeOf(
-			JSON.parse(
-				readFileSync(join(root, 'delendai.config.json'), 'utf8'),
-			),
+			parseJsonc(readFileSync(join(root, 'delendai.config.json'), 'utf8'))
+				.value,
 		);
 	} catch {
 		return DEFAULT_TEST_SCOPE;
