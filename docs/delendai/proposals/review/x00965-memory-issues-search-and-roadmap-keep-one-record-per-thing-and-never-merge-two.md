@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-01T17:30:40.773Z
 shipped-in:
   - "4d4d01d0c"
+  - "b2badb096"
 ---
 
 # x00965 — Memory, issues, search and roadmap keep one record per thing and never merge two
@@ -46,15 +47,17 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - review-log: approved by minimax-m3.1-flash — verified at 4d4d01d0c, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 2/2: (1) store-records.ts:63-64 derives a note's id from the kebab slug of the title or, when the slug is empty, a sha256 of the trimmed title (titleHash at :55); resol… (2) checkpoint-freshness.ts:33-89 assesses a checkpoint's freshness from the note's updatedAt (:89), so a rewritten checkpoint reads as fresh; store-portable.ts:15… — Approved at 4d4d01d0c on the delivered state of the memory store, verified in the pack worktree against origin/develop. Type gate: bun run typecheck exited 0 for the pack unit. Slice specs: one-record-per-note.spec.ts and checkpoint-freshness.spec.ts, 2 files / 7 tests, exit 0. Acceptance 2/2: (1) titles that share a slug get distinct ids (the exact-title hash is appended when the slug is taken by another title) and saveNote upserts by id so no id on disk is rewritten, pinned by the spec that saves both 'release/v1' and 'release-v1' and asserts two records; (2) an updated checkpoint reads as fresh because freshness is assessed from updatedAt, and an import with an unreadable timestamp or tag is refused before it is written. Residual (non-blocking, pre-existing): a store written by a released version before v0.3.0 -- v0.2.0 (2026-10-22) and v0.2.4 (2026-10-24) both ship deriveNoteId = kebab(title) || note-<base36 timestamp> -- holds ids the new derivation does not re-derive, so re-saving such a title appends a second record instead of updating the first. The fix (992b77931, 2026-11-01) ships in v0.3.0 (2026-11-02), so a store written by a 0.2.x release is the one that carries the old shape; the proposal's own scope says no migration is needed and this slice delivers that (an id already on disk is never rewritten).
 
 ### S2 — issues and search
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/issues/src/lib/tools/ingest-issue.tool.ts`, `plugins/issues/src/lib/frontmatter.ts`, `plugins/issues/tests/src/lib/one-scaffold-per-issue.spec.ts`, `plugins/search/src/lib/embed/embed-pipeline.ts`, `plugins/search/src/lib/embed/embedder.ts`, `plugins/search/src/lib/embed/index-store.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`, `plugins/search/tests/src/lib/embed/index-identity.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One scaffold per issue number (D56); multi-line comments round-trip (ISSUES-01)."
   - "The index keys on path plus hash and the cache on embedder id and dimension (SEARCH-01, SEARCH-02)."
 - shipped-in: `992b77931962`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b2badb096, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 2/2: (1) ingest-issue.tool.ts:79-88 finds the existing scaffold for an issue by the prefix github#<n>-, and the tool at :116 and :140 reuses that file instead of writin… (2) embed-pipeline.ts:181-182 builds the index key from the relative path and the file hash (embedIndexKey), and :233 uses that key per file; the cached vector is … — Approved at b2badb096 on the delivered state of the issues ingest and the search pipeline, verified in the pack worktree against origin/develop. Type gate: bun run typecheck exited 0 for the pack unit. Slice specs: one-scaffold-per-issue.spec.ts and index-identity.spec.ts, 2 files / 4 tests, exit 0. Acceptance 2/2: (1) the issues tool finds the scaffold of an issue by its github#<n>- prefix and rewrites that same file, so one scaffold per issue number, and a multi-line comment body is serialised as JSON and read back unchanged, both pinned by the issues spec; (2) the search index keys each entry on path plus hash and reuses a cached vector only when the embedder id and the dimension match, pinned by the index-identity spec.
 
 ### S3 — roadmap and self-learning
 - **Status**: review
