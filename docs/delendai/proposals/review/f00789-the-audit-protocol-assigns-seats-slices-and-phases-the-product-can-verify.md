@@ -31,15 +31,27 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 - global_gate: type
 
 ### S1 — Seats and phases
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/services/audit-seats.service.ts`, `plugins/audit/src/lib/contracts/constants/audit-protocol.constant.ts`, `plugins/audit/src/lib/contracts/interfaces/audit-protocol.interface.ts`, `plugins/audit/tests/src/lib/services/audit-protocol.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A seat is claimed with an exclusive create and two reviewers cannot hold one (C2)."
   - "A reviewer's Phase A file is committed before it can read the others' (G75)."
 - shipped-in: `5c9c99b52b42`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S1, the seats and the phases.
+
+WHAT IS WRONG. The first criterion is delivered: a seat is claimed with an exclusive create and a second reviewer is refused it, and the spec proves it. The second criterion is not: the Phase A gate is the reader's to invoke, and a reader that does not name itself is never checked.
+
+WHERE. plugins/audit/src/lib/tools/audit-consolidate.tool.ts:142 declares `reviewer: z.string().optional()` and :233 runs the gate only `if (args.reviewer !== undefined)`. The close path reads the peers' reports first, plugins/audit/src/lib/tools/audit-close.tool.ts:186, and asks the seats' Phase A state at :210-218, so the read precedes the check.
+
+HOW TO REPRODUCE. Call the consolidate tool over an audit directory that holds seat claims, without the `reviewer` argument: the answer carries every peer's report and no Phase A refusal. The gate itself is proven only for the named reviewer, at plugins/audit/tests/src/lib/tools/audit-close.tool.spec.ts:133.
+
+WHAT MUST HOLD. A reader of the others' reports is checked, not the one who asks to be checked: the reviewer is required whenever the audit directory holds seat claims, and the close path checks the seats' Phase A state before it reads the reports. The criterion is a guarantee about the protocol, and a guarantee the caller can switch off is not the guarantee the criterion names.
+
+The type gate exited 0 and the audit protocol's spec passes 8 of 8.
 
 ### S2 — Contract, inventory and closure
 - **Status**: review
