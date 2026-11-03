@@ -10,6 +10,8 @@ last-transition-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
 last-correlation-id: 16e24fa7-9076-4ba4-b6b6-72283998b5e8
 last-transition-from: in-progress
 last-transition-at: 2026-10-31T19:44:11.359Z
+shipped-in:
+  - "d0ec28c3bc593d6f7e7516b2b38538c759ab2123"
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -34,14 +36,16 @@ The same day the repository held, besides live work: two worktree directories gi
 - global_gate: type
 
 ### S1 — A pull request runs a scoped CodeQL
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/codeql.yml`
 - **Gate**: type
 - acceptance:
   - "On a pull request CodeQL analyses with `security-extended` only the workspaces the change touches (a minimal path for a change touching none), so the required check still reports; a push to develop analyses everything with `security-and-quality`."
 - shipped-in: `099561bea4df`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at d0ec28c3bc59, validate exit 0 and tests 1/1 claimed, no recorded run cited; acceptance 1/1: (1) At d0ec28c3 the CodeQL workflow on a pull request analyses with the extended pack only the workspaces the change touches, falling back to a minimal path when i… — Approved on the delivered state of d0ec28c3bc593d6f7e7516b2b38538c759ab2123. A pull request analyses with the extended pack only the workspaces the change touches, and the required check still reports. The type gate exited 0. One check was recorded for this slice and it is a state check, not a test suite: the delivered CodeQL workflow was read. Two residuals, recorded and not blocking: no test pins it, since the slice is the workflow alone; and the file's own header still names the query pack the workflow no longer uses on a pull request.
 
 ### S2 — A documentation change is judged by the documentation rules
 - **Status**: pending
