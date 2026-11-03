@@ -113,6 +113,7 @@ const pause = (ms: number): Promise<void> =>
  * A newer tip of the unit supersedes an older one that has not started: the
  * older one gives its turn up and returns the newer tip's answer.
  */
+/** The newest tip each unit asked for in this process; one entry per unit. */
 const localCurrent = new Map<string, string>();
 
 const unitDir = (lockPath: string, unit: string): string =>
@@ -162,9 +163,16 @@ const withUnitTurn = async <T>(
 	};
 
 	const joinOnly = async (name: string): Promise<T | typeof SUPERSEDED> => {
-		const claim =
-			(await readJson<ITurnClaim>(claimPath(name))) ??
-			(await readJson<ITurnClaim>(donePath(name)));
+		let claim: ITurnClaim | undefined;
+		// A newer turn of this process is on record before it has written
+		// its claim: wait for the claim instead of proving the old tip.
+		for (;;) {
+			claim =
+				(await readJson<ITurnClaim>(claimPath(name))) ??
+				(await readJson<ITurnClaim>(donePath(name)));
+			if (claim !== undefined || localCurrent.get(dir) !== name) break;
+			await pause(JOIN_POLL_MS);
+		}
 		if (claim === undefined) return SUPERSEDED;
 		const { result } = await follow(name, claim);
 		if (result === undefined) return SUPERSEDED;
@@ -187,6 +195,7 @@ const withUnitTurn = async <T>(
 				if (joined !== SUPERSEDED) return joined;
 				// The newer turn vanished: prove this tip after all.
 				await writeFile(currentPath, tip);
+				await pause(JOIN_POLL_MS);
 				continue;
 			}
 			return settle(result);
@@ -222,6 +231,7 @@ const withUnitTurn = async <T>(
 			const joined = newer === tip ? SUPERSEDED : await joinOnly(newer);
 			if (joined !== SUPERSEDED) return joined;
 			await writeFile(currentPath, tip);
+			await pause(JOIN_POLL_MS);
 			continue;
 		}
 		return settle(result);
@@ -232,11 +242,7 @@ export const withComputeSlot = <T>(
 	request: IComputeSlotRequest<T>,
 ): Promise<T> =>
 	request.unit !== undefined && request.tip !== undefined
-		? withUnitTurn(request, request.unit, request.tip).finally(() => {
-				const dir = unitDir(request.lockPath, request.unit ?? '');
-				if (localCurrent.get(dir) === request.tip)
-					localCurrent.delete(dir);
-			})
+		? withUnitTurn(request, request.unit, request.tip)
 		: withComputeSlotTurn(request, request.run);
 
 /** The turns this process has asked for, per slot, in order. */
