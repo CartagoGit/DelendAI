@@ -33,6 +33,16 @@ The cause is that what ends a branch here is not part of the product:
 - `init` installs hooks, the config and forge plugins, but no reaper (`packages/cli/src/lib/init/init-development-setup.service.ts`).
 - The host server's startup only prunes, locally, refs the remote already deleted (`phases/fetch-refs.ts`).
 - `work reap` reaps worktrees and local branches, and only when someone runs it.
+- Most decisive: the host server runs the whole maintenance chain only where `shipsCandidateMaintenance(root)` is true (`tools/scripts/host/host-server.script.ts:124-135`), that is, only in delendai's own repository. The chain is the `HYDRATION_STEPS` of `tools/scripts/git/hydrate-candidates-after-merge.script.ts`:
+  - certify the integration branch;
+  - refresh the candidates;
+  - maintain the ref namespace;
+  - reap finished units;
+  - open the publication pull requests;
+  - close approved proposals;
+  - advance the queue.
+
+  These are scripts of this repository, not of the product, so every other project skips them entirely. S1 moves the reaping steps into the product, behind the same lease.
 
 ## non-goals
 
