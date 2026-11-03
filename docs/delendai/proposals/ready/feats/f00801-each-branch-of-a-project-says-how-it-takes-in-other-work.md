@@ -49,7 +49,7 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 
 ### S3 — Promotion and follow
 - **Status**: pending
-- **Files**: `packages/core/src/lib/release/forward-sync.service.ts`, `packages/cli/src/commands/groups/release.ts`
+- **Files**: `packages/core/src/lib/release/forward-sync.service.ts`, `packages/cli/src/commands/groups/release.ts`, `packages/core/src/lib/contracts/interfaces/forward-sync.interface.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/core/tests/src/lib/release/forward-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A rule may name the branch it is promoted from (`main` from `develop`) and the branch it follows (`develop` follows `main`): one delendai command opens the promotion by that branch's own route, and once the promotion lands the follower takes in what it brought by its own route, merged or by pull request; nothing happens when there is nothing to take."

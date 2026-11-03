@@ -281,6 +281,18 @@ const lazyRepairCommand: ICliCommand = {
 	},
 };
 
+/** f00801 S3: promotion and follow by each branch's own route. */
+const lazyReleaseCommand: ICliCommand = {
+	name: 'release',
+	summary:
+		'Open a promotion into a branch, or make following branches take in their source, each by its own route.',
+	usage: 'release <promote <branch>|follow> [--workspace=<path>]',
+	async run(args, ctx) {
+		const { releaseCommand: release } = await import('./release');
+		return release.run(args, ctx);
+	},
+};
+
 /**
  * x00553: persists work to its own ref without moving the shared
  * checkout — the path the policy demands, reachable with no MCP host.
@@ -320,6 +332,7 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	buildPluginNewCommand(),
 	lazyGuardCommand,
 	lazyRepairCommand,
+	lazyReleaseCommand,
 	lazyWorkCommand,
 	lazyReviewCommand,
 ];

@@ -216,6 +216,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	cache: 'Inspect and carry the cache layout: status, registered migrations, migrate, and eviction (gc).',
 	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
 	repair: 'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	release:
+		'Open a promotion into a branch, or make following branches take in their source, each by its own route.',
 	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
 	review: REVIEW_COMMAND.summary,
 };
