@@ -54,14 +54,16 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 the candidate overlap report takes a date, says how many merges of the integration branch the merged pull requests took, how many shared a file wit… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. The report says how much the merged pull requests overlapped each other and which files, marking the derived ones. The type gate exited 0 and the slice spec passes 6 of 6. One residual, recorded and not blocking: the spec exercises the report's pure function with an injected predicate, so the date parsing and the pull request plumbing are unpinned.
 
 ### S2 — A derived file is not an overlap
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-derived.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`overlappingFiles` leaves out every path `.gitattributes` marks `merge=delendai-generated` (`derivedPaths`, read through `git check-attr`, so `AGENT.md` and the `**/src/generated` outputs count as derived), besides the projections `gen:all` rebuilds (refresh-candidate-derived.spec.ts)."
 - shipped-in: `c7f671363467`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 the overlapping files leave out every path the attributes mark as generated, read through the attribute reader, so the agent index and the generate… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. The generated paths are left out of the overlap. The type gate exited 0 and the slice spec passes 5 of 5. One residual, recorded and not blocking: the spec pins the derived-path reader and not the overlap's use of it, so a regression that stopped calling it would not be caught.
 
 ### S3 — A unit is not told to merge what it need not
 - **Status**: review
