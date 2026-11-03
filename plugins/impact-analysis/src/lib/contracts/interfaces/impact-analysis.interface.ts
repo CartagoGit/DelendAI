@@ -61,3 +61,6 @@ export interface IImpactAnalysisToolOptions {
 	readonly workspaceRootAbs: string;
 	readonly maxBytes: number;
 }
+
+/** Which specs a change recommends: `testing.scope` in `delendai.config.json`. */
+export type ITestScope = 'touched' | 'reach' | 'all';
