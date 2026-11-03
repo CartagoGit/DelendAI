@@ -2,14 +2,16 @@
 id: v00154
 title: "the lints of a job run together and report every failure at once"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-11-02
-last-transition-id: f0ba0828-18f3-4495-b689-a547faf31973
-last-correlation-id: f0ba0828-18f3-4495-b689-a547faf31973
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T04:29:37.044Z
+last-transition-id: 73353117-1fb2-4ded-98c4-b92f3359d73b
+last-correlation-id: 73353117-1fb2-4ded-98c4-b92f3359d73b
+last-transition-from: review
+last-transition-at: 2026-11-03T01:00:02.175Z
+shipped-in:
+  - "50e91dfdf72fcf4193385d969efd56b129ceb183"
 ---
 
 # v00154 — the lints of a job run together and report every failure at once
@@ -35,7 +37,7 @@ Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:
 - global_gate: type
 
 ### S1 — A job's lints run together
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/lints-reach-ci.script.ts`, `tools/scripts/lint/repository-identity.script.ts`, `tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts`, `.github/workflows/ci.yml`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -44,8 +46,10 @@ Run together, `lint:architecture` takes 9 s, `lint:job:security` 6 s, `lint:job:
   - "`lints-reach-ci` follows a chain run together."
   - "No lint is dropped."
 - shipped-in: `058eaeabea17`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 50e91dfdf72f, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 4/4: (1) At 50e91dfd each lint job's list lives in one chain in the manifest and the job runs it at once, with the architecture, presets, documentation, security and go… (2) At 50e91dfd a failing job runs every command of its chain and then names every failing lint in one pass with its output; the run-together and the drift specs p… (3) At 50e91dfd the check that a lint reaches the forge follows a chain that runs together; the run-together and the drift specs pass 12 of 12. (4) Comparing the lints the workflow runs before and after the delivery, the set is identical: 202 unconditional and 5 conditional before, 202 unconditional and 5 … — Approved on the delivered state of 50e91dfdf72fcf4193385d969efd56b129ceb183. The lints of a job run together, a failing job names every failing lint in one pass, the check that a lint reaches the forge follows a chain that runs together, and no lint is dropped. The type gate exited 0 and the two slice specs pass 12 of 12. Two residuals, recorded and not blocking: the format job still runs its two commands rather than one chain, and the secret scan stays outside the chain, which the proposal itself prescribes; and none of the new chains, the failure naming or the chain-following check is pinned by a spec, so a future edit to them would be silent.
 
 ## acceptance
 

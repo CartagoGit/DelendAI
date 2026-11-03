@@ -2,10 +2,14 @@
 id: v00138
 title: "CI transforms each module once and keeps its caches between runs"
 kind: perf
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+last-transition-id: adea2a63-def1-48c8-8b05-2096e82a8b77
+last-correlation-id: adea2a63-def1-48c8-8b05-2096e82a8b77
+last-transition-from: in-progress
+last-transition-at: 2026-11-03T03:56:31.762Z
 ---
 
 # v00138 — CI transforms each module once and keeps its caches between runs
@@ -28,19 +32,25 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 - global_gate: type
 
 ### S1 — The transform cache persists in CI
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86)."
+- shipped-in: `93abaae43aed`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — proposals evaluates each module once where state allows
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/report/vitest-module-evaluations.script.ts`, `tools/tests/report/vitest-module-evaluations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A report script prints module evaluations per project from a vitest run (G12)."
   - "The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them."
+- shipped-in: `93abaae43aed`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
@@ -51,3 +61,4 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 ## notes
 - 2026-10-27, S1: `fsModuleCache` is on in the root vitest config, and each CI test zone restores `node_modules/.vitest-cache` after the install, keyed on `bun.lock` and the vitest configs, per zone, and saves it at the end. Locally, three projects (i18n, diagram, docs) took 46 s cold and 33 s warm on a loaded machine. The first CI run after merge seeds the cache; the closing evidence compares the second.
 - S2: `tools/scripts/report/vitest-module-evaluations.script.ts` prints each project's evaluations from a run's output. Measured: proposals evaluated 1,631 modules 175,702 times (108 per module, 269 s importing) in an 839 s run. With `--no-isolate` the run took 359 s, but failed specs that depend on module state, and different ones in two runs: first 5 tests in 4 files, then `index-reader.spec.ts` (its fallback notice is logged once per process and the bookkeeping leaks between files) and `db-doctor.tool.spec.ts`. Isolation is not neutral for proposals, as G12 recorded; it stays. Relaxing it needs each of those modules to reset its state between files first, which is the follow-up.
+- 2026-11-03, closing evidence. S1 and S2 had both shipped (#1536, 996d991e4), so nothing is left to change, and a change that saves nothing is not made. Local, three projects (i18n, diagram, docs; 20 files), cache removed then rerun: cold 62.1 s (transform 90%), warm 15.6 s (transform 76%), 4.0x faster. In CI the cache works: every test zone restores and saves it (run 41561573725); the restore and the post-save steps take 1-6 s each, the largest being plugins (~185 MB per entry). The zone job time cannot be attributed to the cache: develop push runs before it (39921217765, 23 Oct: zones 92-410 s, proposals one 410 s job) and after it (41561573725, 3 Nov: zones 97-211 s) also differ in sharding, and `--changed` picks different specs per run, so no CI saving is claimed. CI logs do not print vitest's Duration line, so a CI transform time needs the reporter to print it; that is the follow-up if the CI figure is wanted. Seen: each run saves a new entry keyed on the sha, so the 10 GB repository cache evicts older entries quickly.

@@ -11,7 +11,7 @@
  *
  * ANTI-FLAKE CHOICE (deliberate — this file runs inside the normal 3900+
  * test parallel suite, where absolute wall-clock thresholds flake under CPU
- * load): we do NOT assert an absolute p99 like `< 5ms`. The PRIMARY, timing-
+ * load): we do NOT assert an absolute wall-clock figure like `< 5ms`. The PRIMARY, timing-
  * free guarantee we assert is the STRUCTURAL one that actually matters:
  *   1. `push()` does ZERO synchronous disk work — after a fully synchronous
  *      1000-push burst, not one byte has landed (flushes are async/batched),
@@ -19,7 +19,7 @@
  *   2. every record still survives the drain (no loss).
  * The timing assertion is kept only as a loose sanity net with a very wide
  * margin (multiple + absolute slack) computed from the SAME-process baseline,
- * and it reads p99 (not max) so a stray GC pause in the top 1% is ignored.
+ * and it reads CPU time, not wall time, so a preempted call is not a slow one.
  */
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -42,9 +42,17 @@ const readLines = (path: string): string[] => {
 	}
 };
 
-const p99Of = (samples: number[]): number => {
-	const sorted = [...samples].sort((a, b) => a - b);
-	return sorted[Math.floor(sorted.length * 0.99)] ?? 0;
+/**
+ * CPU milliseconds this process spends running `body`. Wall time also counts
+ * every slice the scheduler gives to someone else, so on a loaded machine a
+ * preempted call looked like a slow one; CPU time counts only the work the
+ * process itself did, which is the overhead the plugin adds.
+ */
+const cpuMsOf = (body: () => void): number => {
+	const before = process.cpuUsage();
+	body();
+	const used = process.cpuUsage(before);
+	return (used.user + used.system) / 1000;
 };
 
 /** The "tool result" a call produces — the work both scenarios share. */
@@ -89,25 +97,23 @@ describe('f00067 S10 — 1000-call usage-tracking latency overhead', () => {
 		}
 
 		// --- Baseline: the bare tool call (no record path). ---
-		const baseline: number[] = [];
 		const sink: unknown[] = [];
-		for (let i = 0; i < N; i += 1) {
-			const start = performance.now();
-			// Keep the result so the work is not optimised away.
-			sink.push(makeResult(i));
-			baseline.push(performance.now() - start);
-		}
+		const baselineCpuMs = cpuMsOf(() => {
+			for (let i = 0; i < N; i += 1) {
+				// Keep the result so the work is not optimised away.
+				sink.push(makeResult(i));
+			}
+		});
 		expect(sink).toHaveLength(N);
 
 		// --- With tracking: the same call + buildRecord + buffered push. ---
-		const withTracking: number[] = [];
-		for (let i = 0; i < N; i += 1) {
-			const start = performance.now();
-			const result = makeResult(i);
-			const record = buildOneRecord(result);
-			buf.push(record);
-			withTracking.push(performance.now() - start);
-		}
+		const withTrackingCpuMs = cpuMsOf(() => {
+			for (let i = 0; i < N; i += 1) {
+				const result = makeResult(i);
+				const record = buildOneRecord(result);
+				buf.push(record);
+			}
+		});
 
 		// PRIMARY GUARANTEE #1 — the append is buffered, NOT synchronous disk
 		// work: after a fully synchronous 1000-push burst, the event loop has
@@ -119,13 +125,13 @@ describe('f00067 S10 — 1000-call usage-tracking latency overhead', () => {
 		await buf.close();
 		expect(readLines(logPath)).toHaveLength(N);
 
-		// SECONDARY sanity net — the added p99 overhead stays within a very
-		// wide margin of the same-process baseline. Wide on purpose: 3x plus a
-		// 5ms absolute slack, read at p99 (not max), so a top-1% GC pause is
-		// ignored and this never flakes under the parallel suite.
-		const baselineP99 = p99Of(baseline);
-		const withP99 = p99Of(withTracking);
-		const bound = baselineP99 * 3 + 5;
-		expect(withP99).toBeLessThanOrEqual(bound);
+		// SECONDARY sanity net — the added per-call overhead stays within a
+		// very wide margin of the same-process baseline: 3x plus a 5ms
+		// absolute slack per call. Measured in CPU time, so a loaded machine
+		// that preempts the process cannot fail it.
+		const baselinePerCall = baselineCpuMs / N;
+		const withPerCall = withTrackingCpuMs / N;
+		const bound = baselinePerCall * 3 + 5;
+		expect(withPerCall).toBeLessThanOrEqual(bound);
 	});
 });
