@@ -22,7 +22,14 @@ export interface IAgentHost {
 	 * folder per skill, each holding a `SKILL.md`. Absent for a host that
 	 * reads none.
 	 */
-	readonly skills?: { readonly dir: string };
+	readonly skills?: {
+		readonly dir: string;
+		/**
+		 * It can run a skill in a forked context (`context: fork` in the
+		 * skill's frontmatter), returning only the result to the main thread.
+		 */
+		readonly forkContext?: boolean;
+	};
 	/** The instructions file it reads, relative to the project root. */
 	readonly instructions?: string;
 	/**
