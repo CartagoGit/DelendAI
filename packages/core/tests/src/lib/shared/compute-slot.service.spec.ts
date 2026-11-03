@@ -119,3 +119,68 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 		expect(Date.now() - started).toBeLessThan(10_000);
 	});
 });
+
+describe('withComputeSlot per unit and tip', () => {
+	const gate = () => {
+		let open: () => void = () => undefined;
+		const promise = new Promise<void>((resolve) => {
+			open = resolve;
+		});
+		return { promise, open };
+	};
+
+	it('joins a second caller on the same tip to the first wait', async () => {
+		const lockPath = lockIn();
+		const blocker = gate();
+		const holding = withComputeSlot({
+			lockPath,
+			label: 'holder',
+			run: () => blocker.promise,
+		});
+		let runs = 0;
+		const ask = () =>
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u1',
+				tip: 'aaa',
+				notify: () => undefined,
+				run: () => ++runs,
+			});
+		const first = ask();
+		const second = ask();
+		blocker.open();
+		await holding;
+		expect(await Promise.all([first, second])).toEqual([1, 1]);
+		expect(runs).toBe(1);
+	});
+
+	it('proves only the newer tip of one unit', async () => {
+		const lockPath = lockIn();
+		const blocker = gate();
+		const holding = withComputeSlot({
+			lockPath,
+			label: 'holder',
+			run: () => blocker.promise,
+		});
+		const proved: string[] = [];
+		const ask = (tip: string) =>
+			withComputeSlot({
+				lockPath,
+				label: tip,
+				unit: 'u1',
+				tip,
+				notify: () => undefined,
+				run: () => {
+					proved.push(tip);
+					return tip;
+				},
+			});
+		const older = ask('old');
+		const newer = ask('new');
+		blocker.open();
+		await holding;
+		expect(await Promise.all([older, newer])).toEqual(['new', 'new']);
+		expect(proved).toEqual(['new']);
+	});
+});

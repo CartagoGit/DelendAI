@@ -70,15 +70,75 @@ const holderOf = async (lockPath: string): Promise<string> => {
 	}
 };
 
-/** Run `request.run` once the machine's compute slot is this caller's. */
-export const withComputeSlot = async <T>(
+interface IPendingTurn {
+	readonly tip: string;
+	started: boolean;
+	superseded: boolean;
+	result: Promise<unknown>;
+}
+
+/** Turns still queued or running in this process, by slot and unit. */
+const pendingTurns = new Map<string, IPendingTurn>();
+
+const SUPERSEDED = Symbol('superseded');
+
+/**
+ * One turn per unit and tip: a caller whose unit and tip already wait joins
+ * that wait and gets its answer; a newer tip of the unit takes over, and
+ * the older one, if it has not started, gives its turn up and gets the
+ * newer answer instead of proving a tip nobody wants any more.
+ */
+const withUnitTurn = async <T>(
 	request: IComputeSlotRequest<T>,
+	unit: string,
+	tip: string,
+): Promise<T> => {
+	const key = `${request.lockPath}\0${unit}`;
+	const current = pendingTurns.get(key);
+	if (current?.tip === tip) return current.result as Promise<T>;
+	if (current !== undefined && !current.started) current.superseded = true;
+	const turn: IPendingTurn = {
+		tip,
+		started: false,
+		superseded: false,
+		result: Promise.resolve(),
+	};
+	turn.result = withComputeSlotTurn<T | typeof SUPERSEDED>(request, () => {
+		if (turn.superseded) return SUPERSEDED;
+		turn.started = true;
+		return request.run();
+	})
+		.then(async (value) => {
+			if (value !== SUPERSEDED) return value;
+			const newest = pendingTurns.get(key);
+			return newest === undefined || newest === turn
+				? request.run()
+				: newest.result;
+		})
+		.finally(() => {
+			if (pendingTurns.get(key) === turn) pendingTurns.delete(key);
+		});
+	pendingTurns.set(key, turn);
+	return turn.result as Promise<T>;
+};
+
+/** Run `request.run` once the machine's compute slot is this caller's. */
+export const withComputeSlot = <T>(
+	request: IComputeSlotRequest<T>,
+): Promise<T> =>
+	request.unit !== undefined && request.tip !== undefined
+		? withUnitTurn(request, request.unit, request.tip)
+		: withComputeSlotTurn(request, request.run);
+
+const withComputeSlotTurn = async <T>(
+	request: IComputeSlotRequest<T>,
+	body: () => Promise<T> | T,
 ): Promise<T> => {
 	const { lockPath, label } = request;
 	// Held by an ancestor process (a proof running this very command): the
 	// turn is already ours. Held by THIS process means another caller here.
 	if (heldByAncestor(lockPath)) {
-		return request.run();
+		return body();
 	}
 	const notify =
 		request.notify ?? ((message: string) => console.error(message));
@@ -107,7 +167,7 @@ export const withComputeSlot = async <T>(
 			);
 			process.env[COMPUTE_SLOT_ENV] = heldBy(lockPath, process.pid);
 			try {
-				return await request.run();
+				return await body();
 			} finally {
 				delete process.env[COMPUTE_SLOT_ENV];
 				await rm(ownerFile(lockPath), { force: true });
