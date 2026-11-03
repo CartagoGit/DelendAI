@@ -2,10 +2,14 @@
 id: x00978
 title: "The VS Code extension works per folder and keeps edits, choices and polling consistent"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: 844bb148-ef07-4cbf-8cb1-d24fa61d6f4a
+last-correlation-id: 844bb148-ef07-4cbf-8cb1-d24fa61d6f4a
+last-transition-from: ready
+last-transition-at: 2026-11-03T02:01:22.605Z
 ---
 
 # x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
