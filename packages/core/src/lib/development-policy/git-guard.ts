@@ -15,6 +15,7 @@ import type {
 	IGuardedGitOperation,
 	IUnitRefFacts,
 } from '../contracts/interfaces/git-guard.interface';
+import { takeInOf } from './branch-rules';
 import { briefWorkModel } from './declare-workflow';
 import { describeWorkIsolation } from './work-isolation';
 import {
@@ -62,14 +63,27 @@ const judgeCommit = (
 			'the founding commit: the integration branch has no commit for a unit to start from.',
 		);
 	}
+	const takeIn = takeInOf(policy, branch);
+	// A `direct` branch takes an agent's commits like any other.
+	if (takeIn === 'direct') {
+		return allow(`\`${branch}\` takes commits directly (its branch rule).`);
+	}
 	if (
 		branch === policy.branches.integration &&
-		!policy.persistence.allowsDirectIntegrationCommit
+		(!policy.persistence.allowsDirectIntegrationCommit ||
+			takeIn === 'pull-request')
 	) {
 		return {
 			refused: true,
 			reason: `the \`${policy.profile}\` development profile forbids committing directly to \`${branch}\`, the integration branch: no agent commits there, whatever its model or host.`,
 			remedy: `${describeWorkIsolation(policy).rule} Set DELENDAI_AGENT_ID to your exact model id so the work ref carries it. A person who owns this checkout can allow their own commits with \`development.guard.unknownActor: "person"\`.`,
+		};
+	}
+	if (takeIn === 'pull-request') {
+		return {
+			refused: true,
+			reason: `\`${branch}\` takes in work by pull request (its branch rule): no agent commits there directly.`,
+			remedy: `${describeWorkIsolation(policy).rule} Land the work through a pull request into \`${branch}\`.`,
 		};
 	}
 	if (policy.workspace.pinnedCheckout && !insideNamespaces(policy, branch)) {
@@ -159,7 +173,21 @@ const judgePush = (
 			`\`${branch}\` is not on the forge yet: a pull request needs it to go into.`,
 		);
 	}
-	if (protectedBranch && policy.integration.requiresPullRequest) {
+	const takeIn = takeInOf(policy, branch);
+	if (takeIn === 'direct') {
+		return allow(`\`${branch}\` takes pushes directly (its branch rule).`);
+	}
+	if (
+		takeIn === 'pull-request' ||
+		(takeIn === undefined &&
+			protectedBranch &&
+			policy.integration.requiresPullRequest)
+	) {
+		if (creating) {
+			return allow(
+				`\`${branch}\` is not on the forge yet: a pull request needs it to go into.`,
+			);
+		}
 		return {
 			refused: true,
 			reason: `the \`${policy.profile}\` development profile integrates \`${branch}\` through pull requests, not pushes.`,

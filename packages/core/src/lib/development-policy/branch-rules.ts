@@ -97,3 +97,26 @@ export const withDefaultBranchRules = (
 /** Position in `BRANCH_TAKE_IN_MODES`; `-1` for an unrecognised mode. */
 export const takeInStrictness = (mode: string): number =>
 	(BRANCH_TAKE_IN_MODES as readonly string[]).indexOf(mode);
+
+/**
+ * How `branch` takes in work under a resolved policy, or `undefined` when
+ * no rule covers it (a branch outside the declared rules keeps what the
+ * profile does).
+ */
+export const takeInOf = (
+	policy: { readonly branches: { readonly rules?: readonly IBranchRule[] } },
+	branch: string,
+): IBranchTakeIn | undefined =>
+	branchRuleFor(policy.branches.rules ?? [], branch)?.takesIn;
+
+/** Whether work reaches the integration branch by pull request. */
+export const landsByPullRequest = (policy: {
+	readonly branches: {
+		readonly integration: string;
+		readonly rules?: readonly IBranchRule[];
+	};
+	readonly integration: { readonly requiresPullRequest: boolean };
+}): boolean =>
+	(takeInOf(policy, policy.branches.integration) ??
+		profileTakeIn(policy.integration.requiresPullRequest)) ===
+	'pull-request';
