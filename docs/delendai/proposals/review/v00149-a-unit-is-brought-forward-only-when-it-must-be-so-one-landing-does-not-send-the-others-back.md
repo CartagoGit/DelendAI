@@ -66,14 +66,16 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 the overlapping files leave out every path the attributes mark as generated, read through the attribute reader, so the agent index and the generate… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. The generated paths are left out of the overlap. The type gate exited 0 and the slice spec passes 5 of 5. One residual, recorded and not blocking: the spec pins the derived-path reader and not the overlap's use of it, so a regression that stopped calling it would not be caught.
 
 ### S3 — A unit is not told to merge what it need not
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit with work whose base moved is told so and that it need not be brought forward. It is told to merge the integration branch into it only when publishing or its pull request reports a conflict (work-swarm-relations.spec.ts)."
 - shipped-in: `c7f671363467`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 a unit whose base moved is told so and told that it need not be brought forward, and is told to merge the integration branch into it only when publ… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. A unit whose base moved is told so and told it need not be brought forward, and is told to merge only on a conflict. The type gate exited 0 and the slice spec passes 16 of 16. No defect found.
 
 ### S4 — A candidate is not sent back for what its checks already saw
 - **Status**: review
