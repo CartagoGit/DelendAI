@@ -2,10 +2,14 @@
 id: x01008
 title: "project_plugins_create dry run returns no dry-run plan"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
+last-transition-id: e7df742e-5586-4e55-b366-a1775a81bfa1
+last-correlation-id: e7df742e-5586-4e55-b366-a1775a81bfa1
+last-transition-from: ready
+last-transition-at: 2026-11-03T05:35:15.201Z
 ---
 
 # x01008 — project_plugins_create dry run returns no dry-run plan
