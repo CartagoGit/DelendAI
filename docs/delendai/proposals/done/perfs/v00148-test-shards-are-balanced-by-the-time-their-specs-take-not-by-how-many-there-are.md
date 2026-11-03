@@ -2,16 +2,17 @@
 id: v00148
 title: "Test shards are balanced by the time their specs take, not by how many there are"
 kind: perf
-status: review
+status: done
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: bc2e301b-2f0e-47ba-aedb-a5fbd634e761
-last-correlation-id: bc2e301b-2f0e-47ba-aedb-a5fbd634e761
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T21:07:54.162Z
+last-transition-id: 2aaa17d3-bf2d-4f69-a157-6b36180bdb04
+last-correlation-id: 2aaa17d3-bf2d-4f69-a157-6b36180bdb04
+last-transition-from: review
+last-transition-at: 2026-11-03T00:46:34.952Z
 shipped-in:
   - "d69db7d8b484a62b388ed434ad9513c89806439e"
+  - "d70e7944f922321dd71d6f55ce125468ead1c968"
 ---
 
 # v00148 — Test shards are balanced by the time their specs take, not by how many there are
@@ -45,14 +46,16 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 - review-log: approved by minimax-m3.1-flash — verified at d69db7d8b484, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 1/1: (1) At d69db7d8 the merge of the shards on a full run of the integration branch writes the test runner's JSON report, the timings script turns it into each spec fi… — Approved on the delivered state of d69db7d8b484a62b388ed434ad9513c89806439e. A full run of the integration branch records how long each spec takes and publishes it as an artifact, and neither step can fail the run it measures, and nothing is committed. The type gate exited 0 and the slice spec passes 5 of 5. Two residuals, recorded and not blocking: nothing pins the workflow's own claims, so a later edit could drop the continue-on-error and the suite would stay green; and the named delivery commit does not carry this feature in its diff, it arrived in the two earlier commits the slice names.
 
 ### S2 — The planner splits a zone by time
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/test-zones.interface.ts`, `tools/scripts/ci/test-zones.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "`plan-tests` downloads the latest `spec-timings` of the integration branch. A zone split into shards is then divided by longest-first assignment, a spec with no time counting as the zone's median, and each matrix job carries its spec list (`files`) instead of `--shard`. Every spec runs exactly once, and without timings the split is by count as before. The lists travel in the `zone-files` artifact, not the matrix, which the planner refuses over 64 KiB. `proposals` runs on three jobs and `packages` on two, by their measured cost (test-zones.script.spec.ts, spec-timings.spec.ts)."
 - shipped-in: `4f03720080cc`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at d70e7944f922, validate exit 0 and tests 33/33 claimed, no recorded run cited; acceptance 1/1: (1) At d70e7944 the planning job downloads the latest timings of the integration branch, a zone split into shards is divided by longest-first assignment with a spe… — Approved on the delivered state of d70e7944f922321dd71d6f55ce125468ead1c968. The shards are balanced by the time their specs take, every spec runs exactly once, an unmeasured spec counts as the zone's median, and with no timings the split is by count as before. The type gate exited 0 and the slice spec passes 33 of 33. Two deviations, recorded and not blocking: the split of the two zones the criterion names is not the one this delivery carries, it arrives in a later merge, so the approval follows the later state in which the claim holds; and nothing pins a job count for those two zones, so the sentence stays unpinned even after that merge.
 
 ## acceptance
 
