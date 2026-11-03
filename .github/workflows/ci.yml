@@ -57,7 +57,14 @@ concurrency:
 jobs:
     lint-biome:
         name: lint-biome
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-biome']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # A `uses: ./path` step can only be resolved once the repo holding
@@ -81,7 +88,14 @@ jobs:
 
     lint-architecture:
         name: lint-architecture
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-architecture']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -100,7 +114,14 @@ jobs:
 
     lint-presets:
         name: lint-presets
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-presets']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -146,7 +167,14 @@ jobs:
 
     lint-docs:
         name: lint-docs
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-docs']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -163,7 +191,14 @@ jobs:
 
     lint-security:
         name: lint-security
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-security']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -282,7 +317,14 @@ jobs:
 
     lint-governance:
         name: lint-governance
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['lint-governance']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Full history: this job verifies that commits cited by proposals
@@ -331,6 +373,8 @@ jobs:
 
     typecheck:
         name: typecheck
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['typecheck']
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -340,9 +384,15 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The packages to check are read from the diff against the
+                  # base commit, which a shallow clone does not have.
+                  fetch-depth: '0'
 
+            # On a pull request, the workspaces the change touches and those
+            # that depend on them; on a push, every project. The run names them.
             - name: Typecheck
-              run: bun run typecheck
+              run: bun run typecheck -- --base=${{ github.event.pull_request.base.sha || '' }}
 
     # The suite used to run TWICE in one job: `bun run test` and then
     # `bun run test:coverage`, which is the same specs with coverage
@@ -388,6 +438,7 @@ jobs:
         outputs:
             plan: ${{ steps.plan.outputs.plan }}
             not-applicable: ${{ steps.plan.outputs.not-applicable }}
+            changed: ${{ steps.plan.outputs.changed }}
         steps:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -411,6 +462,7 @@ jobs:
                     | tee /tmp/job-scope.txt
                   grep '^plan=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
                   grep '^not-applicable=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+                  grep '^changed=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
 
     # Which named areas the suite is split into, and which of them are
     # big enough to need more than one machine.
@@ -862,7 +914,14 @@ jobs:
 
     quality-gate:
         name: quality-gate
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['quality-gate']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -881,7 +940,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['verify-runtime'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -917,7 +977,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -936,7 +997,14 @@ jobs:
 
     manifests-check:
         name: manifests-check
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['manifests-check']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -956,7 +1024,14 @@ jobs:
 
     generated-artifacts-check:
         name: generated-artifacts-check
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check']
         runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
         timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -979,7 +1054,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['site']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['site'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -999,7 +1075,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['pack-smoke'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1061,7 +1138,9 @@ jobs:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
         timeout-minutes: 15
-        needs: typecheck
+        needs: [plan-scope, typecheck]
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['metrics-gate'] }}
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -1109,7 +1188,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1133,7 +1213,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1166,7 +1247,8 @@ jobs:
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
-        if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
+        # A typecheck the plan skipped is not a failed one (job-scope.constant.ts).
+        if: ${{ !cancelled() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && fromJSON(needs.plan-scope.outputs.plan)['build-clean'] }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:

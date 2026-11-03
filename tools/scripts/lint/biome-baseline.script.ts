@@ -51,6 +51,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { changedFilesScope } from '../lib/changed-files-scope';
 import { repoRoot } from '../lib/monorepo-paths';
 import { compareCodeUnits } from '@delendai/state';
 
@@ -165,11 +166,21 @@ const readReason = (argv: readonly string[]): string | undefined => {
 	return index >= 0 ? argv[index + 1] : undefined;
 };
 
-/** Runs `biome ci --reporter=json` over `SCAN_DIRS` and returns raw stdout. */
-export const runBiomeCi = (root: string): string => {
+/** Runs `biome ci --reporter=json` over `paths` (`SCAN_DIRS`) and returns raw stdout. */
+export const runBiomeCi = (
+	root: string,
+	paths: readonly string[] = SCAN_DIRS,
+): string => {
 	const res = spawnSync(
 		'bun',
-		['x', 'biome', 'ci', ...SCAN_DIRS, '--reporter=json'],
+		[
+			'x',
+			'biome',
+			'ci',
+			...(paths === SCAN_DIRS ? [] : ['--no-errors-on-unmatched']),
+			...paths,
+			'--reporter=json',
+		],
 		{
 			cwd: root,
 			encoding: 'utf8',
@@ -253,9 +264,60 @@ export const renderOffenders = (
 	].join('\n');
 };
 
+/** A change to one of these can move the diagnostics of every file. */
+const WHOLE_TREE =
+	/(^|\/)biome\.jsonc?$|^package\.json$|^bun\.lock$|^tools\/scripts\/lint\/biome-baseline\./u;
+
+/**
+ * The changed files the gate has to look at, or `undefined` when it has to
+ * judge the repository. Pure.
+ */
+export const changedFilesToLint = (
+	scope: ReadonlySet<string> | undefined,
+): readonly string[] | undefined => {
+	if (scope === undefined) return undefined;
+	const files = [...scope];
+	if (files.some((file) => WHOLE_TREE.test(file))) return undefined;
+	return files.filter((file) =>
+		SCAN_DIRS.some((dir) => file.startsWith(`${dir}/`)),
+	);
+};
+
+/**
+ * For a change: Biome judges each file alone, so a category's total can only
+ * grow through a changed file. When the changed files carry no diagnostic,
+ * no total grew past what the integration branch, green, already had.
+ * Otherwise the repository is judged against the baseline, as before.
+ */
+const judgeTheChange = (root: string): number | undefined => {
+	const files = changedFilesToLint(changedFilesScope(root));
+	if (files === undefined) return undefined;
+	if (files.length === 0) {
+		process.stderr.write(
+			`✓ biome-baseline: no changed file is under ${SCAN_DIRS.join(', ')}; nothing it judges changed.\n`,
+		);
+		return 0;
+	}
+	const { diagnostics } = parseBiomeJsonOutput(runBiomeCi(root, files));
+	if (diagnostics.length === 0) {
+		process.stderr.write(
+			`✓ biome-baseline: the ${String(files.length)} changed file(s) carry no Biome diagnostic.\n`,
+		);
+		return 0;
+	}
+	process.stderr.write(
+		`biome-baseline: the changed files carry ${String(diagnostics.length)} diagnostic(s); judging the repository against the baseline.\n`,
+	);
+	return undefined;
+};
+
 const main = (): number => {
 	const root = repoRoot();
 	const args = new Set(process.argv.slice(2));
+	if (!args.has('--update') && !args.has('--report')) {
+		const verdict = judgeTheChange(root);
+		if (verdict !== undefined) return verdict;
+	}
 
 	const raw = runBiomeCi(root);
 	const { summary, diagnostics } = parseBiomeJsonOutput(raw);

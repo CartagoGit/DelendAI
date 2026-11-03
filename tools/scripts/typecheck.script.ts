@@ -37,12 +37,24 @@
  *   - `bun tools/scripts/typecheck.script.ts --update` rewrites
  *     `tools/tsconfig.baseline.json` to the current per-file counts.
  */
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { join, resolve } from 'node:path';
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import { repoRoot } from './lib/monorepo-paths';
 import { compareCodeUnits } from '@delendai/state';
+
+import {
+	type ITypecheckScope,
+	readWorkspaces,
+	typecheckScopeOf,
+} from './ci/typecheck-scope.helper';
 
 const RELAX_ENV = 'DELENDAI_RELAX_EXACT_OPTIONAL';
 const DEFAULT_PROJECT = 'tsconfig.json';
@@ -379,20 +391,127 @@ export const findUncoveredWorkspaces = (
 	return uncovered;
 };
 
+/** Every path the change touched, deletions included: a deleted module breaks its importers. */
+const changedFilesSince = (
+	rootDir: string,
+	base: string,
+): readonly string[] => {
+	try {
+		return execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+			cwd: rootDir,
+			encoding: 'utf8',
+			maxBuffer: 64 * 1024 * 1024,
+		})
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+	} catch {
+		// An unreadable diff widens the check to everything.
+		return [];
+	}
+};
+
+/** The scope `--base=<ref>` asks for; without one, everything. */
+export const scopeOfRun = (
+	rootDir: string,
+	args: readonly string[],
+	project: string,
+): ITypecheckScope => {
+	const base = args
+		.find((each) => each.startsWith('--base='))
+		?.slice('--base='.length);
+	if (base === undefined || base.length === 0) {
+		return { full: true, why: 'no --base: every project is checked' };
+	}
+	const config = JSON.parse(
+		readFileSync(resolve(rootDir, project), 'utf8'),
+	) as { readonly include?: readonly string[] };
+	return typecheckScopeOf({
+		changed: changedFilesSince(rootDir, base),
+		workspaces: readWorkspaces(rootDir),
+		rootInclude: config.include ?? [],
+	});
+};
+
+/**
+ * The root project narrowed to `include`: it extends the root one, so every
+ * file keeps the options it is always checked under. Written under the cache,
+ * with its own incremental state.
+ */
+const writeSectionedProject = (
+	rootDir: string,
+	project: string,
+	include: readonly string[],
+): string => {
+	const path = join(
+		rootDir,
+		'.cache/delendai/state/tsc/tsconfig.sectioned.json',
+	);
+	mkdirSync(dirname(path), { recursive: true });
+	const fromHere = (target: string): string =>
+		relative(dirname(path), resolve(rootDir, target)).split('\\').join('/');
+	writeFileSync(
+		path,
+		`${JSON.stringify(
+			{
+				extends: fromHere(project),
+				include: include.map(fromHere),
+			},
+			null,
+			'\t',
+		)}\n`,
+	);
+	return path;
+};
+
+const printScope = (scope: ITypecheckScope, total: number): void => {
+	if (scope.full) {
+		console.log(
+			`[typecheck] all ${String(total)} workspaces — ${scope.why}`,
+		);
+		return;
+	}
+	console.log(
+		`[typecheck] sectioned: ${String(scope.workspaces.length)} of ${String(total)} workspaces${scope.tools ? ', with tools/' : ''}`,
+	);
+	for (const each of scope.workspaces) {
+		console.log(`[typecheck]   ${each.dir} — ${each.why}`);
+	}
+};
+
 export const runTypecheck = (
 	args: readonly string[] = process.argv.slice(2),
 ): number => {
 	const rootDir = repoRoot();
-	const projectPath = resolve(rootDir, resolveProject());
-	const mainStatus = runTsc(rootDir, projectPath, {
-		outputMode: 'inherit',
-	}).status;
-	if (mainStatus !== 0) {
-		// The root project has zero tolerance for errors — no baseline,
-		// no ratchet. Fail fast without even running the tools/ pass.
-		return mainStatus;
+	const project = resolveProject();
+	// `--update` rewrites the tools baseline, which needs the whole picture.
+	const scope = hasUpdateFlag(args)
+		? ({ full: true, why: '--update needs every file' } as const)
+		: scopeOfRun(rootDir, args, project);
+	printScope(scope, readWorkspaces(rootDir).length);
+	if (!scope.full && scope.include.length > 0) {
+		const status = runTsc(
+			rootDir,
+			writeSectionedProject(rootDir, project, scope.include),
+			{ outputMode: 'inherit' },
+		).status;
+		if (status !== 0) return status;
+	} else if (scope.full) {
+		const mainStatus = runTsc(rootDir, resolve(rootDir, project), {
+			outputMode: 'inherit',
+		}).status;
+		if (mainStatus !== 0) {
+			// The root project has zero tolerance for errors — no baseline,
+			// no ratchet. Fail fast without even running the tools/ pass.
+			return mainStatus;
+		}
 	}
-
+	if (!scope.full && !scope.tools) {
+		console.log(
+			'[typecheck:tools] not run — the change reaches no tools/ code.',
+		);
+		return 0;
+	}
 	return runToolsTypecheck(rootDir, args);
 };
 
