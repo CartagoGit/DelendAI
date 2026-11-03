@@ -60,7 +60,7 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - review-log: approved by minimax-m3.1-flash — verified at b2badb096, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 2/2: (1) ingest-issue.tool.ts:79-88 finds the existing scaffold for an issue by the prefix github#<n>-, and the tool at :116 and :140 reuses that file instead of writin… (2) embed-pipeline.ts:181-182 builds the index key from the relative path and the file hash (embedIndexKey), and :233 uses that key per file; the cached vector is … — Approved at b2badb096 on the delivered state of the issues ingest and the search pipeline, verified in the pack worktree against origin/develop. Type gate: bun run typecheck exited 0 for the pack unit. Slice specs: one-scaffold-per-issue.spec.ts and index-identity.spec.ts, 2 files / 4 tests, exit 0. Acceptance 2/2: (1) the issues tool finds the scaffold of an issue by its github#<n>- prefix and rewrites that same file, so one scaffold per issue number, and a multi-line comment body is serialised as JSON and read back unchanged, both pinned by the issues spec; (2) the search index keys each entry on path plus hash and reuses a cached vector only when the embedder id and the dimension match, pinned by the index-identity spec.
 
 ### S3 — roadmap and self-learning
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/roadmap/src/lib/workspace/roadmap-workspace.service.ts`, `plugins/roadmap/src/lib/tools/plan-close.tool.ts`, `plugins/roadmap/src/lib/tools/shared/record-change.helper.ts`, `plugins/roadmap/tests/src/lib/tools/one-record-per-entry.spec.ts`, `plugins/self-learning/src/lib/store/observation-store.service.ts`, `plugins/self-learning/tests/src/lib/store/observation-store.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -68,8 +68,10 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
   - "The observation store writes under withFileMutex (D47)."
   - "The roadmap-sqlite package no longer exists in the tree, so its migration cannot lose rows (D46)."
 - shipped-in: `992b77931962`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at b2badb096, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 3/3: (1) roadmap-workspace.service.ts:60-62 reads a proposal archived under legacy/closed as done, and gate.constant.ts:8 lists done as a delivered proposal status, so … (2) observation-store.service.ts:160 wraps the read, the merge and the rewrite of the observation file in withFileMutex(options.filePath), so two collectors append… (3) git ls-files packages/roadmap-sqlite returns 0 files: the package is gone from the tracked tree, so there is no migration that could lose rows; no source file … — Approved at b2badb096 on the delivered state of the roadmap and the self-learning store, verified in the pack worktree against origin/develop. Type gate: bun run typecheck exited 0 for the pack unit. Slice specs: one-record-per-entry.spec.ts and observation-store.spec.ts, 2 files / 17 tests, exit 0. Acceptance 3/3: (1) a proposal archived under legacy/closed reads as done and is delivered, closing an entry rewrites only that entry in the horizon where it was found, and a failed chronology write rolls the authority file back, each pinned by the roadmap spec; (2) the observation store wraps its read-merge-rewrite in withFileMutex, pinned by the spec that appends from several writers at once; (3) packages/roadmap-sqlite has no tracked file left in the tree, so there is no migration that could lose rows. Residual (non-blocking): the empty directory and its ignored node_modules survive on disk from the removal; they are not tracked and nothing builds from them.
 
 ## acceptance
 
