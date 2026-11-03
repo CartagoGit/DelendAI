@@ -16,11 +16,16 @@ delendai uses little disk, CPU and processes on the owner's machine: one install
 
 ## why
 
-TODO: why this work matters now.
+The owner's machine suffered on 2026-11-03. Measured in WSL:
+
+- 61 GB written in 2 h 50 min (/proc/diskstats on sdd).
+- 7 unit worktrees taking 4 GB, each with its own `bun install`.
+- Three delendai host servers on one repo, from one VS Code window: one from `.vscode/mcp.json`, one from `.mcp.json` (VS Code loads it too) and one from Claude Code. Each uses about 6% CPU while idle, and the maintenance chain runs unniced.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Removing a unit's own `node_modules` when its lockfile differs from the shared checkout's: that unit still installs.
+- Changing what the proof checks; only how much machine it takes.
 
 ## slices
 
