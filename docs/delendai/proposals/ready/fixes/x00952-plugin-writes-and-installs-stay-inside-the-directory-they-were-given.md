@@ -2,14 +2,14 @@
 id: x00952
 title: "Plugin writes and installs stay inside the directory they were given"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 5620da05-bffb-499d-88f0-1d6b4b1b4a89
-last-correlation-id: 5620da05-bffb-499d-88f0-1d6b4b1b4a89
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T00:34:32.835Z
+last-transition-id: 6d30fa33-ee2a-4516-8b98-5acfa42625c2
+last-correlation-id: 6d30fa33-ee2a-4516-8b98-5acfa42625c2
+last-transition-from: review
+last-transition-at: 2026-11-03T02:01:30.857Z
 shipped-in:
   - "ce33cce00"
 ---
@@ -60,7 +60,7 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
 - review-log: approved by minimax-m3.1-flash-preview — verified at ce33cce00, validate exit 0 and tests 50/50 claimed, no recorded run cited; acceptance 2/2: (1) gitlab shared.ts:1845-1852 checks the artefact path after the real path is resolved and refuses a symlink in the cache that points outside it; the spec 'refuse… (2) browser-inspect.tool.ts:112 adds a random suffix after the millisecond, and the spec 'two screenshots in the same millisecond keep both files' fixes the clock … — Type gate ran once for the pack in the unit worktree: bun run typecheck exited 0. Slice specs: 4 files / 50 tests, exit 0.
 
 ### S3 — Agent installs are contained, transactional and verified
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`, `scripts/install.spec.ts`, `tools/vitest.config.ts`
 - **Gate**: type
 - acceptance:
@@ -68,9 +68,21 @@ Joint audit a00095 and gpt-6.1-sol. D22: createProjectPlugin() joins pluginsRoot
   - "Extraction goes to a staging directory and replaces the install only on success; a failed unpack keeps the previous version (AGENT-INSTALL02)."
   - "The installer downloads nothing while no release publishes the binary: it refuses and names the checkout install instead (G108) — delivered earlier, in 4be71381e; scripts/install.spec.ts proves the refusal."
 - shipped-in: `ce33cce00`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
 - review-log: requested_changes by minimax-m3.1-flash-preview — The spec the criterion names does not pass and no gate runs it. scripts/install.spec.ts is not collected by the repository's vitest projects, so the slice's own file list (bunx vitest run packages/core/tests/src/lib/shared/declared-agents.service.spec.ts scripts/install.spec.ts) reports only one file collected. Run directly it fails: bunx vitest run --root scripts install.spec.ts reports Tests 3 failed | 8 passed (11), exit 1. One of the failures is the refusal case at install.spec.ts:154-157, which expects the message about an empty directory but receives 'refusing to install: no release publishes delendai-shim-linux-amd64.' - the refusal has replaced the argument check. The run helper at install.spec.ts:94-127 also does not drive main() with the argv it is given. How to reproduce: cd <worktree> && bunx vitest run --root scripts install.spec.ts. What must hold to approve: the spec must set process.argv (or pass argv into main()), the refusal case must assert the checkout hint (bun run cli:link or --local) as well as the no-release message, and the file must be collected by a vitest project so it runs green in CI. The first two criteria of this slice are met: declared-agents.service.ts:32-53 refuses an id or version that is not a single path segment, and :201-224 unpacks into a staging directory and keeps the previous install when the unpack fails.
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S3, the agent install.
+
+WHAT IS WRONG. The behaviour of the third criterion is delivered: the installer refuses to download when no release publishes the asset and names the checkout install instead, and the re-delivery made the spec drive the installer with the arguments it names and made the project collect that spec. What is still missing is the assertion the previous review asked for and this delivery did not add: the refusal case checks that the error text carries the no-release message and that no binary was written, but it does not check that the checkout hint is there, and the hint is printed on standard output while the assertion reads the error stream.
+
+WHERE. scripts/install.spec.ts, the refusal case; scripts/install.script.ts, which prints the refusal and the hint on different streams.
+
+HOW TO REPRODUCE. Run the refusal case and read it: it asserts the error stream contains the no-release message and that nothing was written, and nothing asserts the hint. The hint itself goes to standard output, so an assertion on the error stream can never see it.
+
+WHAT MUST HOLD. The refusal case asserts the checkout hint, the command to link the checkout or the local flag, as well as the no-release message, and the hint and the message are on the same stream so the assertion can read them.
+
+Everything else this slice asks for is delivered and pinned: an agent identifier that is not one path segment is refused, the extraction goes to a staging directory, and a failed unpack leaves the previous version in place. The type gate exited 0 and the specs pass 8 of 8 and 11 of 11.
 
 ### S4 — The container risk model sees bind mounts
 - **Status**: done

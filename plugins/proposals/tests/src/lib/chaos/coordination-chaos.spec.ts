@@ -39,9 +39,17 @@ describe('coordination chaos — heavy contention invariants (N23)', async () =>
 	const readJson = <T>(p: string): T =>
 		JSON.parse(readFileSync(p, 'utf8')) as T;
 
-	it('40 concurrent disjoint claims: no lost updates, valid file', async () => {
+	// The mutex deadline is wall clock: forty claims queue behind one lock
+	// file, and a machine too loaded to turn them over in 10 s made the
+	// late ones give up, leaving 11 of 40 entries. The deadline here only
+	// has to outlast the queue; the claims are still all awaited, and every
+	// one must report success, so a claim that gave up is named, not
+	// counted as a lost update.
+	it('40 concurrent disjoint claims: no lost updates, valid file', {
+		timeout: 240_000,
+	}, async () => {
 		const n = 40;
-		await Promise.all(
+		const results = await Promise.all(
 			Array.from({ length: n }, (_, i) =>
 				runAgentLockEngine(
 					{
@@ -52,13 +60,22 @@ describe('coordination chaos — heavy contention invariants (N23)', async () =>
 					},
 					{
 						lockPath,
-						mutexTimeoutMs: 10_000,
-						mutexStaleMs: 5_000,
+						mutexTimeoutMs: 200_000,
+						mutexStaleMs: 120_000,
 						mutexPollMs: 5,
 					},
 				),
 			),
 		);
+		const failed = results.filter((r) => {
+			const text =
+				(r.content as Array<{ text: string }>)[0]?.text ?? '{}';
+			return (
+				(r as { isError?: boolean }).isError === true ||
+				(JSON.parse(text) as { blocked?: boolean }).blocked === true
+			);
+		});
+		expect(failed).toHaveLength(0);
 		const lock = readJson<ILockFile>(lockPath);
 		expect(lock.in_flight).toHaveLength(n); // none lost
 		expect(new Set(lock.in_flight.map((e) => e.task_id)).size).toBe(n);
