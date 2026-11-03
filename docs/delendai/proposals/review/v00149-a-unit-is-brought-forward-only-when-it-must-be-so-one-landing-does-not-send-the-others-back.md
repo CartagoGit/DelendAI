@@ -10,6 +10,8 @@ last-transition-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
 last-correlation-id: a2599c1d-8d66-4ca2-8644-85953d476f9f
 last-transition-from: in-progress
 last-transition-at: 2026-11-01T00:22:13.808Z
+shipped-in:
+  - "09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444"
 ---
 
 # v00149 — A unit is brought forward only when it must be, so one landing does not send the others back
@@ -40,14 +42,16 @@ The proposal first suspected the derived files every change regenerates. Measuri
 - global_gate: type
 
 ### S1 — What sends candidates back is measured
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/candidate-overlap-report.script.ts`, `tools/scripts/forge/candidate-overlap-report.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`candidate-overlap-report.script.ts --since=<date>` says how many merges of the integration branch the merged pull requests took, how many shared a file with what they brought, and which files, each marked derived when `.gitattributes` declares it generated (candidate-overlap-report.script.spec.ts)."
 - shipped-in: `c7f671363467`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 09f24ba3ec4c, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 1/1: (1) At 09f24ba3 the candidate overlap report takes a date, says how many merges of the integration branch the merged pull requests took, how many shared a file wit… — Approved on the delivered state of 09f24ba3ec4cd19ddfaf0c7f56e1f8bc30cf2444. The report says how much the merged pull requests overlapped each other and which files, marking the derived ones. The type gate exited 0 and the slice spec passes 6 of 6. One residual, recorded and not blocking: the spec exercises the report's pure function with an injected predicate, so the date parsing and the pull request plumbing are unpinned.
 
 ### S2 — A derived file is not an overlap
 - **Status**: review
