@@ -10,6 +10,8 @@ last-transition-id: bc2e301b-2f0e-47ba-aedb-a5fbd634e761
 last-correlation-id: bc2e301b-2f0e-47ba-aedb-a5fbd634e761
 last-transition-from: in-progress
 last-transition-at: 2026-10-29T21:07:54.162Z
+shipped-in:
+  - "d69db7d8b484a62b388ed434ad9513c89806439e"
 ---
 
 # v00148 — Test shards are balanced by the time their specs take, not by how many there are
@@ -31,14 +33,16 @@ Every shard of a test zone takes about the same time, so a run's wall time is se
 - global_gate: type
 
 ### S1 — The time each spec takes is recorded
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `tools/scripts/ci/quality-gate.script.ts`, `tools/scripts/ci/quality-gate.spec.ts`, `tools/scripts/verify/plugin-suites-verify.script.ts`, `tools/scripts/verify/plugin-suites-verify.script.spec.ts`, `packages/core/skills/manifest.json`, `packages/cli/src/lib/init/init-skill-inventory.generated.ts`, `.github/workflows/tier2.yml`, `vitest.config.ts`, `tools/scripts/ci/spec-timings.ts`, `tools/scripts/ci/spec-timings.spec.ts`, `tools/scripts/ci/spec-timings.script.ts`, `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "On a full run of the integration branch, the merge of the shards also writes vitest's JSON report (`VITEST_TIMINGS_OUT`). `spec-timings.script.ts` turns it into each spec file's duration, which is uploaded as the `spec-timings` artifact. Both steps are `continue-on-error`: an optimisation never fails the run it measures. Nothing is committed, since a timings file every change rewrote would send open pull requests back (spec-timings.spec.ts)."
 - shipped-in: `6a7cbf607025`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at d69db7d8b484, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 1/1: (1) At d69db7d8 the merge of the shards on a full run of the integration branch writes the test runner's JSON report, the timings script turns it into each spec fi… — Approved on the delivered state of d69db7d8b484a62b388ed434ad9513c89806439e. A full run of the integration branch records how long each spec takes and publishes it as an artifact, and neither step can fail the run it measures, and nothing is committed. The type gate exited 0 and the slice spec passes 5 of 5. Two residuals, recorded and not blocking: nothing pins the workflow's own claims, so a later edit could drop the continue-on-error and the suite would stay green; and the named delivery commit does not carry this feature in its diff, it arrived in the two earlier commits the slice names.
 
 ### S2 — The planner splits a zone by time
 - **Status**: review
