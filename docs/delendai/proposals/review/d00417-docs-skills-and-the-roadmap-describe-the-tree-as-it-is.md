@@ -33,15 +33,29 @@ Joint audit a00095 and gpt-6.1-sol. D14: 16 broken internal links in root docs, 
 - global_gate: type
 
 ### S1 — Links and the roadmap
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/CROSS-IDE.md`, `docs/delendai/ROADMAP.md`, `tools/scripts/lint/doc-links.script.ts`, `tools/scripts/lint/doc-links.script.spec.ts`, `tools/scripts/gen/provenance-truth.script.ts`, `tools/scripts/gen/provenance-truth.spec.ts`, `tools/scripts/catalog/render-host-hints.script.ts`, `docs/delendai/generated/observability-provenance.generated.md`, `docs/delendai/host-hints/agent-instructions.generated.md`, `docs/delendai/wiki/00-glossary.md`, `docs/delendai/wiki/02-our-infrastructure.md`, `docs/delendai/wiki/09-plugin-auto-agent-selector.md`, `docs/delendai/wiki/migration-to-delendai.md`, `docs/delendai/wiki/external/README.md`, `docs/delendai/examples/host-checkpoint-adapter.md`, `docs/delendai/plugins/logs/AUTHORING.md`, `docs/external-mcps/README.md`
 - **Gate**: type
 - acceptance:
   - "link-check over docs/ finds no broken internal link (D14)."
   - "ROADMAP states each track from its gate proposal's status (D37)."
 - shipped-in: `5343646ab6a0`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S1, the links and the roadmap.
+
+WHAT IS WRONG. The second criterion is not delivered. The roadmap states each track by hand instead of from its gate proposal's status, and the hand-written states contradict the proposals they name.
+
+WHERE. docs/delendai/ROADMAP.md:130 says the file is the authority and that the data is edited by hand; each entry carries a literal `state:` field, for example :10 `state: in-progress`. The gate evaluator does read a proposal's status, plugins/roadmap/src/lib/gates/gate-evaluator.service.ts:33 `const status = evidence.proposalStatus?.(target);`, but it produces a gate verdict and never writes that field.
+
+HOW TO REPRODUCE. Read the eleven entries of the roadmap's data block and compare each `state:` with the status of the gate proposal it names: roadmap is in-progress while f00756 is done, style-surface is proposed while f00548 is done, capability-contract is proposed while f00550 is done, docker-tools is proposed while f00543 is done, fast-flow is committed while v00144 is ready, and batuta-works is committed while x00988 is in review. The slice's commit, 5343646ab6a0, touches no roadmap file, and the proposal's own notes say the roadmap half of the slice is still open.
+
+WHAT MUST HOLD. The roadmap states each track from its gate proposal's status: the `state:` of every entry is derived from that proposal's status rather than typed by hand, and a check fails when the two disagree. A hand-written roadmap that has drifted from its gates is what the criterion forbids.
+
+The first criterion is delivered for the scope the linter covers and is recorded as such: the check reaches every depth under docs/ and reports a broken internal link, the run reports 237 documents with every internal link resolved, and the two generators now resolve their targets. One limit is recorded, not blocking the verdict: the check leaves out the proposals subtree, which is where the remaining broken links are.
+
+The type gate exited 0 and the linter's spec passes 2 of 2.
 
 ### S2 — Skills match the tools
 - **Status**: review
