@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
+shipped-in:
+  - "c79af46f5"
 ---
 
 # r00644 — The proposals plugin is split along its engines, and each engine is covered
@@ -58,7 +60,7 @@ Joint audit a00095. G2: plugins/proposals is a monolith; authoring.tool.ts is 3,
   - "forge-governance/ and integration-engine/ files without a nominal spec are listed in the closing evidence with the spec that covers each, or get one (D15)."
 
 ### S5 — One published size measure
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/report/plugin-size-report.script.ts`, `tools/scripts/report/plugin-size-report.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
