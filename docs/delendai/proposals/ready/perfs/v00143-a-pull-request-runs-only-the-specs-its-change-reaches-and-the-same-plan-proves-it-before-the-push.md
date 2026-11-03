@@ -2,14 +2,14 @@
 id: v00143
 title: "A pull request runs only the specs its change reaches, and the same plan proves it before the push"
 kind: perf
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-28
-last-transition-id: 597cc08e-b645-400c-b253-33254bc0b5d8
-last-correlation-id: 597cc08e-b645-400c-b253-33254bc0b5d8
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T13:26:17.659Z
+last-transition-id: 9f183b25-57d3-4f3e-b651-3ea852ba850a
+last-correlation-id: 9f183b25-57d3-4f3e-b651-3ea852ba850a
+last-transition-from: review
+last-transition-at: 2026-11-03T00:01:25.986Z
 shipped-in:
   - "84a042d1b596"
 ---
@@ -51,15 +51,17 @@ Measured on 2026-10-28 on #1552, a pull request that moves one proposal file fro
 - review-log: approved by minimax-m3.1-flash — verified at 84a042d1b596, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 1/1: (1) At 84a042d1 the recorder writes each read with the spec that made it, and the committed map holds, per zone, the specs and the files and directories each read … — Approved on the delivered state of 84a042d1b596. The read map says which spec read what, and holds the specs and the files and directories each read beside the zone totals it already held. The type gate exited 0 and the slice spec passes 6 of 6. One residual, recorded and not blocking: the recorder only wraps the node filesystem calls, so a spec that reads through another API is not attributed.
 
 ### S2 — A job runs the specs the change reaches, or does not start
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/zone-reads.ts`, `tools/scripts/ci/zone-reads.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "For a change outside every workspace, a zone's jobs receive the list of its specs that read or list a changed path and run exactly those; with none, the zone does not start (the move of one proposal, #1552's change, starts 4 jobs running the 6 specs that read it instead of 12 jobs running none)."
   - "A change inside a workspace still runs `--changed` for the specs its imports reach, plus the listed readers of any changed root file."
 - shipped-in: `84a042d1b596`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 84a042d1b596, validate exit 0 and tests 22/22 claimed, no recorded run cited; acceptance 2/2: (1) At 84a042d1 a change outside every workspace gives each zone the list of its specs that read or list the changed path and runs exactly those, and with none the… (2) At 84a042d1 a change inside a workspace still runs the changed selection for the specs its imports reach; the readers of a changed root file are named only for… — Approved on the delivered state of 84a042d1b596. A change outside every workspace reaches exactly the specs that read it, and a change inside a workspace still runs the changed selection. The type gate exited 0 and the slice spec passes 22 of 22. One deviation, recorded and not blocking, and the same pack delivers the missing half: the readers of a changed root file are attached only to a zone that the change reaches exclusively by reading, so when the same zone is also reached by code those readers are dropped and the plan runs the zone unfiltered for them. The slice S5 of v00146, approved in this same pack, delivers exactly that half: the readers of a root file in a zone whose code is reached too are named and merged into the shared readers job.
 
 ### S3 — The push is proved by the same plan
 - **Status**: done
