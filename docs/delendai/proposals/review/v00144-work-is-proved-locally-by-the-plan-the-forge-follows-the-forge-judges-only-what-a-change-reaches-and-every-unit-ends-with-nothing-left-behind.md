@@ -14,6 +14,7 @@ shipped-in:
   - "d0ec28c3bc593d6f7e7516b2b38538c759ab2123"
   - "bf6fa917402e"
   - "29c0c7a2d84e8e5e5d68dbe824dc4e7de90d3da2"
+  - "6202e06e7aaf"
 ---
 
 # v00144 — Work is proved locally by the plan the forge follows, the forge judges only what a change reaches, and every unit ends with nothing left behind
@@ -99,14 +100,16 @@ Everything else this slice asks for is delivered and approved: the documentation
 - review-log: approved by minimax-m3.1-flash — verified at 29c0c7a2d84e, validate exit 0 and tests 17/17 claimed, no recorded run cited; acceptance 2/2: (1) At 29c0c7a2 the start-up removes a cache folder a day old that holds no file and keeps any folder with a file, and drops a stranded ref whose every saved file … (2) At 29c0c7a2 the start-up drops a stranded ref whose every saved file is byte for byte on the integration branch, on a work or publication branch, or in a large… — Approved on the delivered state of 29c0c7a2d84e8e5e5d68dbe824dc4e7de90d3da2. What a start finds left over and holding nothing is removed. The type gate exited 0 and the two slice specs pass 17 of 17. Two residuals, recorded and not blocking: the branch comparison covers only the remotes under the repository's own namespace, so a work branch under another namespace is not compared; and the cache half of this slice shipped in the slice S1 delivery rather than in this one.
 
 ### S5 — Publishing refuses a unit that holds nothing new
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-failure.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work publish` refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integration branch lacks and how to end it (work-unit-publish-failure.spec.ts); on 2026-10-28 such a republish opened #1563, an empty pull request."
 - shipped-in: `6202e06e7aaf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at 6202e06e7aaf, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 1/1: (1) At 6202e06e publishing refuses a unit whose tip the integration branch already contains, or that carries only merges of it, saying it holds nothing the integra… — Approved on the delivered state of 6202e06e7aaf. Publishing refuses a unit that holds nothing the integration branch lacks, and says how to end it, which is what an empty republish was. The type gate exited 0 and the slice spec passes 2 of 2. No defect found.
 
 ### S6 — Every unit ends clean
 - **Status**: review
