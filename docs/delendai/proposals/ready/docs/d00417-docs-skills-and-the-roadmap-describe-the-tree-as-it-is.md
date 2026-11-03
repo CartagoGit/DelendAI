@@ -2,14 +2,14 @@
 id: d00417
 title: "Docs, skills and the roadmap describe the tree as it is"
 kind: docs
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: f7297fdf-811f-41d0-937d-79fed966714f
-last-correlation-id: f7297fdf-811f-41d0-937d-79fed966714f
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T22:00:18.942Z
+last-transition-id: b9db8d4a-5444-4288-bdb9-d8bbf286f1d7
+last-correlation-id: b9db8d4a-5444-4288-bdb9-d8bbf286f1d7
+last-transition-from: review
+last-transition-at: 2026-11-03T04:25:35.163Z
 shipped-in:
   - "350ba7dfb7b4"
 ---
@@ -58,15 +58,29 @@ The first criterion is delivered for the scope the linter covers and is recorded
 The type gate exited 0 and the linter's spec passes 2 of 2.
 
 ### S2 — Skills match the tools
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/skills/delendai-token-budget-playbook/SKILL.md`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`, `plugins/proposals/skills/concurrency-patterns/SKILL.md`, `plugins/proposals/skills/multi-agent-coordination/SKILL.md`, `plugins/quality/skills/quality-and-rules-gates/SKILL.md`, `packages/core/skills/token-budget-discipline/SKILL.md`, `tools/scripts/lint/check-skills.script.ts`
 - **Gate**: type
 - acceptance:
   - "check-skills fails on a tool name or argument a skill uses that no server registers (SKILL-01)."
   - "Coordination skills describe work units, not per-agent worktrees (SKILL-02); links resolve (SKILL-04)."
 - shipped-in: `cf6a616354bb`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S2, the skills that name tools.
+
+WHAT IS WRONG. The criterion asks that check-skills fail on a tool name or an argument a skill uses that no server registers. The detector for the tool name was written and never wired in, and the argument half was never written.
+
+WHERE. tools/scripts/lint/check-skills.script.ts:143 exports checkSkillToolNames and :152 gives it the kind `unregistered-tool`; the only check the command runs is at :192, `const issues = checkSkillsManifest(manifest, onDisk);`, and the kinds at :42-48 have no argument variant and no tool's input schema is ever read.
+
+HOW TO REPRODUCE. `git grep -n checkSkillToolNames` answers the script and its spec and nothing else, so the function has no caller on the executable path. Run `bun tools/scripts/lint/check-skills.script.ts` after naming an unregistered tool in a skill: the run still prints that the skills match the manifest.
+
+WHAT MUST HOLD. The command calls the detector with the set of tools the server registers and fails with the skill and the name it names, and a second check fails on an argument that no registered tool's schema declares, with a spec for each. A detector nothing calls is not a gate.
+
+The second criterion is not delivered either, in the slice's own file list. The workflow playbook still opens its decision tree with "creates the per-agent worktree" (plugins/proposals/skills/proposals-workflow-playbook/SKILL.md:22) and keeps an explicit `agent_worktree create` step (:87-90), while the criterion asks that the coordination skills describe work units and not per-agent worktrees; the other two coordination skills do. And one link in the skills does not resolve: plugins/rules/skills/rules-solid-architecture/SKILL.md:11 points at a proposal that has moved to docs/delendai/proposals/legacy/closed/feats/.
+
+The type gate exited 0 and the linter's spec passes 9 of 9.
 
 ### S3 — Manifest, rules and release skills
 - **Status**: done
