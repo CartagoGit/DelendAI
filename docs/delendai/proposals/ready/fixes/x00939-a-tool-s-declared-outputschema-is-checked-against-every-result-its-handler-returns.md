@@ -2,14 +2,14 @@
 id: x00939
 title: "A tool's declared outputSchema is checked against every result its handler returns"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: a1d8b10a-3df0-4d70-8522-f158480e9c12
-last-correlation-id: a1d8b10a-3df0-4d70-8522-f158480e9c12
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T00:41:09.440Z
+last-transition-id: f70a2c95-e1f1-4b38-bac9-41d2cfbc4ef7
+last-correlation-id: f70a2c95-e1f1-4b38-bac9-41d2cfbc4ef7
+last-transition-from: review
+last-transition-at: 2026-11-03T01:59:13.611Z
 shipped-in:
   - "40c0b226b46ab1eaf5c31ac4197efc95cb4140f6"
 ---
@@ -61,16 +61,28 @@ Joint audit a00095. D20: the outputSchema ratchet checks the declared shape, nev
 - review-log: approved by claude-sonnet-5-5 — verified at 40c0b226b46a, validate exit 0 and tests 39/39 claimed, no recorded run cited; acceptance 2/2: (1) tool-ok-envelope.script.spec 'counts calls in source, not in specs nor in the helper' and 'fails over the ceiling and asks to lower it' pass; lint run clean (2) compact-output-schema.helper.ts JSDoc changed (diff lists it) — verified by code reading and spec runs
 
 ### S3 — The contracts envelope is the one tools produce, or it goes
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/contracts/src/envelopes.ts`, `packages/contracts/tests/src/envelopes.spec.ts`, `packages/core/src/lib/shared/tool-response.ts`, `packages/core/tests/src/lib/shared/tool-response.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Either toolOk/toolError build their envelope from the contracts type and a spec proves a real tool result parses with it, or the unused envelope and its spec are removed with a note in the contracts README (G110)."
   - "No export of packages/contracts is left without a producer or a consumer in the workspace."
 - shipped-in: `17e9c3011e3c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
 - review-log: requested_changes by claude-sonnet-5-5 — Criterion 1 holds: tool-response.spec 'toolError and toolOk produce the envelopes @delendai/contracts declares' passes. Criterion 2 does not: ICheckpointAdvisoryEnvelope (packages/contracts/src/envelopes.ts:43) is referenced only by packages/contracts/tests/src/envelopes.spec.ts, no producer or consumer in the workspace. Remove it with its spec case, or use it.
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S3, the contracts package.
+
+WHAT IS WRONG. The criterion's second clause asks that no export of the contracts package be left without a producer or a consumer in the workspace. The re-delivery removed the two exports the previous review named, the advisory checkpoint type and the invocation outcome type, and left twenty-nine more that nothing in the workspace produces or consumes: the effect capability, the host capability manifest contract and version, the containment probe, the host capabilities and surface support, the language finding, the operation error, the plugin capability and invocation result, the prompt and resource registration shapes, the remote provider failure, the resource route and route table, the signal confidence, the tool error detail and registration shape, the posix relative path, the four remote diagnostic kinds and their state, the remote mutation error code, the remote provider result, the rate limit scope, the remote ref kind and the resource URI scheme, and the safety block reason.
+
+WHERE. packages/contracts/src, the package whose exports these are. The sweep is over every exported name of that package against every tracked file in the tree, ignoring the barrel's own export lines: ISafetyBlockReason, IRouteTable, RemoteRefKind and IToolErrorDetail each have hits only inside the file that declares them.
+
+HOW TO REPRODUCE. At the delivered commit, search the tree for each of those names; every hit is inside packages/contracts. `git grep -n ISafetyBlock <commit>` answers three hits, all in that package.
+
+WHAT MUST HOLD. No export of the contracts package is left without a producer or a consumer in the workspace: each of the twenty-nine is either used by something in the tree or removed, and the removal is recorded. The first branch of the criterion's first clause is already met, the error envelope is built from the contracts type and a spec proves a real tool result parses with it, so only the orphans are in question.
+
+Two notes for the implementer: only the error answer is typed by the contracts type, the success answer is still built untyped, and the contracts package ships types and no runtime schema, so the spec that proves the envelope parses does so with a cast and field assertions rather than a runtime parse.
 
 ## acceptance
 
