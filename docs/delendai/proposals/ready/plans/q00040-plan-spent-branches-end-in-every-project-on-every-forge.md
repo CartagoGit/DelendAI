@@ -63,7 +63,7 @@ The cause is that what ends a branch here is not part of the product:
 - **Files**: `packages/cli/src/lib/init/init-development-setup.service.ts`
 - **Gate**: type
 - acceptance:
-  - "init offers the forge's delete-the-branch-on-merge setting (GitHub delete_branch_on_merge, GitLab remove_source_branch), turns it on with consent, and says so when it cannot."
+  - "init offers the forge's delete-the-branch-on-merge setting (GitHub delete_branch_on_merge, GitLab remove_source_branch), turns it on with consent, and says so when it cannot. The setting removes only publication heads (delendai/pr/...); work refs (delendai/wip/...) live until their proposal closes, which is why `integration.deleteMergedWorkRef` is false in the pull-request profiles (profiles.ts). Whoever closes a proposal ends its work ref, here and in every project."
 
 ### S4 — Old and stranded refs are brought in
 - **Status**: pending
@@ -90,7 +90,7 @@ The cause is that what ends a branch here is not part of the product:
 
 - The server that holds the maintenance lease, in any project, deletes the remote publication head of a pull request that merged or closed, and every work ref whose tip the integration branch contains and no live unit holds. It keeps each tip under refs/delendai/retired first; a ref holding work the integration branch lacks is never deleted.
 - Whether a publication landed is judged from git: ancestry, and the merge commit that names it. The forge plugin only adds pull requests closed unmerged, where it can see them, so a GitLab project or one with no forge CLI is reaped the same way.
-- init offers the forge's delete-the-branch-on-merge setting (GitHub delete_branch_on_merge, GitLab remove_source_branch), turns it on with consent, and says so when it cannot.
+- init offers the forge's delete-the-branch-on-merge setting (GitHub delete_branch_on_merge, GitLab remove_source_branch), turns it on with consent, and says so when it cannot. The setting removes only publication heads (delendai/pr/...); work refs (delendai/wip/...) live until their proposal closes, which is why `integration.deleteMergedWorkRef` is false in the pull-request profiles (profiles.ts). Whoever closes a proposal ends its work ref, here and in every project.
 - At startup, refs in delendai's old namespace (wip/<agent>/...) are renamed into the current one, or retired with their tip when the integration branch holds them. stranded/unattributed refs are reported with the one command that settles each. Branches outside delendai's namespaces are never touched.
 - A unit past the recovery window that nobody adopts, reviewer units included, is retired with its tip kept and named in the next status, so no unit stays half-done for good.
 - In a throwaway consumer project with a merged pull request, a closed one, an old-namespace ref and an abandoned unit, one maintenance pass leaves no spent ref and every tip under refs/delendai/retired. The run is recorded in this proposal's notes.
