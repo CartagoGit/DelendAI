@@ -118,4 +118,65 @@ describe('impact-analysis.service', () => {
 			expect(analysis.changedSymbols).toContain('elsewhere');
 		});
 	});
+
+	describe('recommended tests follow testing.scope', () => {
+		const roots: string[] = [];
+		afterEach(async () => {
+			for (const root of roots.splice(0))
+				await rm(root, { recursive: true, force: true });
+		});
+
+		/** A leaf, its mirror, a direct importer and a transitive one. */
+		const fixture = async (config?: string): Promise<string> => {
+			const root = await mkdtemp(join(tmpdir(), 'impact-scope-'));
+			roots.push(root);
+			const files: Record<string, string> = {
+				'packages/p/src/leaf.ts': 'export const leafValue = 1;\n',
+				'packages/p/src/user.ts':
+					"import { leafValue } from './leaf';\nexport const userValue = leafValue + 1;\n",
+				'packages/p/tests/leaf.spec.ts':
+					"it('mirror', () => undefined);\n",
+				'packages/p/tests/direct.spec.ts':
+					"import { leafValue } from '../src/leaf';\nit('direct', () => leafValue);\n",
+				'packages/p/tests/transitive.spec.ts':
+					"import { userValue } from '../src/user';\nit('transitive', () => userValue);\n// leafValue\n",
+			};
+			if (config !== undefined) files['delendai.config.json'] = config;
+			for (const [file, text] of Object.entries(files)) {
+				await mkdir(join(root, file, '..'), { recursive: true });
+				await writeFile(join(root, file), text);
+			}
+			return root;
+		};
+		const options = (root: string) => ({
+			namespacePrefix: 'delendai',
+			workspaceRootAbs: root,
+			maxBytes: 4000,
+		});
+		const recommended = async (root: string): Promise<readonly string[]> =>
+			(
+				await computeImpactAnalysis(
+					{ files: ['packages/p/src/leaf.ts'] },
+					options(root),
+				)
+			).recommendedTests
+				.slice()
+				.sort();
+
+		it('recommends the mirror and the direct importer, not the transitive one, by default', async () => {
+			expect(await recommended(await fixture())).toEqual([
+				'packages/p/tests/direct.spec.ts',
+				'packages/p/tests/leaf.spec.ts',
+			]);
+		});
+
+		it('recommends what the change reaches when the config asks for reach', async () => {
+			const root = await fixture(
+				'{\n// wider\n"testing": { "scope": "reach" }\n}\n',
+			);
+			expect(await recommended(root)).toContain(
+				'packages/p/tests/transitive.spec.ts',
+			);
+		});
+	});
 });
