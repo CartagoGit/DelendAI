@@ -149,7 +149,10 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing what any plugin does or how its tools are described.
+- Removing or unpublishing plugins.
+- Changing this repository's own `dogfood` configuration, which stays as declared.
+- Touching private plugins (changelog, roadmap, issues-triage).
 
 ## slices
 
