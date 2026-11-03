@@ -16,21 +16,22 @@ A dryRun call to project_plugins_create writes nothing but returns a non-IDryRun
 
 ## why
 
-TODO: why this work matters now.
+A consumer reported that the dry run of project-plugin create writes files. The flag reaches runProjectPluginCreate and no file is written, but the handler returns a plain create payload instead of the dry-run plan, so the router's dry-run guard rejects the call as a contract violation and the caller cannot preflight.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing the real (non dry-run) create behaviour.
 
 ## slices
 
 - global_gate: none
 
-### S1 — TODO
+### S1 — Return the dry-run plan from project_plugins_create
 - **Status**: pending
-- **Files**: `TODO`
+- **Files**: `packages/core/src/lib/scaffold/project-plugins.ts`, `packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: none
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- `project-plugin create <name> --dry-run` writes nothing and answers with `dryRun: true`, `wouldChange` and `risk`.
+- The behaviour spec asserts the plan and that no config or plugin file exists afterwards.

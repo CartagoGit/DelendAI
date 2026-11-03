@@ -123,6 +123,9 @@ describe('project_plugins_create', () => {
 		};
 		expect(files.written).toEqual([]);
 		expect(files.planned.length).toBeGreaterThan(0);
+		expect(body(result)).toMatchObject({ dryRun: true, risk: 'low' });
+		expect(body(result).wouldChange).toHaveLength(files.planned.length + 1);
+		expect(existsSync(join(ws.root, 'packages'))).toBe(false);
 		expect(() => ws.config()).toThrow();
 	});
 
