@@ -278,6 +278,8 @@ export const proveUnit = async (
 			lockPath: slot,
 			label: `proof of ${tipSha.slice(0, 12)} by ${process.env.DELENDAI_AGENT_ID ?? 'an unidentified agent'}`,
 			run: onSlot,
+			unit: request.worktree ?? tipSha,
+			tip: tipSha,
 		});
 	} catch (error) {
 		if (
