@@ -2,6 +2,7 @@
  * compute-slot.service.spec.ts — heavy compute on one machine takes turns:
  * a second caller waits (and says for whom), and a dead holder frees the slot.
  */
+// delendai:timing-is-the-subject — a slot holder must still be running when a second process asks for its turn.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -117,5 +118,122 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 			}),
 		).resolves.toBe('got it');
 		expect(Date.now() - started).toBeLessThan(10_000);
+	});
+});
+
+describe('withComputeSlot per unit and tip', () => {
+	const gate = () => {
+		let open: () => void = () => undefined;
+		const promise = new Promise<void>((resolve) => {
+			open = resolve;
+		});
+		return { promise, open };
+	};
+
+	it('joins a second caller on the same tip to the first wait', async () => {
+		const lockPath = lockIn();
+		const blocker = gate();
+		const holding = withComputeSlot({
+			lockPath,
+			label: 'holder',
+			run: () => blocker.promise,
+		});
+		let runs = 0;
+		const ask = () =>
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u1',
+				tip: 'aaa',
+				notify: () => undefined,
+				run: () => ++runs,
+			});
+		const first = ask();
+		const second = ask();
+		blocker.open();
+		await holding;
+		expect(await Promise.all([first, second])).toEqual([1, 1]);
+		expect(runs).toBe(1);
+	});
+
+	it('proves only the newer tip of one unit', async () => {
+		const lockPath = lockIn();
+		const blocker = gate();
+		const holding = withComputeSlot({
+			lockPath,
+			label: 'holder',
+			run: () => blocker.promise,
+		});
+		const proved: string[] = [];
+		const ask = (tip: string) =>
+			withComputeSlot({
+				lockPath,
+				label: tip,
+				unit: 'u1',
+				tip,
+				notify: () => undefined,
+				run: () => {
+					proved.push(tip);
+					return tip;
+				},
+			});
+		const older = ask('old');
+		const newer = ask('new');
+		blocker.open();
+		await holding;
+		expect(await Promise.all([older, newer])).toEqual(['new', 'new']);
+		expect(proved).toEqual(['new']);
+	});
+});
+
+describe('withComputeSlot across processes', () => {
+	const moduleUrl = new URL(
+		'../../../../src/lib/shared/compute-slot.service.ts',
+		import.meta.url,
+	).href;
+	const child = (lockPath: string, tip: string, marker: string) => {
+		const script = `
+			import { appendFileSync } from 'node:fs';
+			const { withComputeSlot } = await import(${JSON.stringify(moduleUrl)});
+			const value = await withComputeSlot({
+				lockPath: ${JSON.stringify(lockPath)}, label: 'child', unit: 'u1',
+				tip: ${JSON.stringify(tip)}, notify: () => undefined,
+				run: async () => {
+					appendFileSync(${JSON.stringify(marker)}, ${JSON.stringify(tip)} + '\\n');
+					// delendai:timing-is-the-subject — the holder outlasts the second asker.
+					await new Promise((r) => setTimeout(r, 1500));
+					return 'proof-of-' + ${JSON.stringify(tip)};
+				},
+			});
+			console.log('ANSWER ' + value);
+		`;
+		return new Promise<string>((resolve, reject) => {
+			const proc = spawn('bun', ['-e', script], {
+				stdio: ['ignore', 'pipe', 'inherit'],
+			});
+			let out = '';
+			proc.stdout.on('data', (c: Buffer) => (out += c.toString()));
+			proc.on('error', reject);
+			proc.on('close', () => resolve(out));
+		});
+	};
+
+	it('joins two processes on one tip and proves it once', async () => {
+		const lockPath = lockIn();
+		const marker = `${lockPath}.ran`;
+		const [one, two] = await Promise.all([
+			child(lockPath, 'aaa', marker),
+			(async () => {
+				// delendai:timing-is-the-subject — the second process must ask while the first holds the turn.
+				await new Promise((r) => setTimeout(r, 600));
+				return child(lockPath, 'aaa', marker);
+			})(),
+		]);
+		expect(one).toContain('ANSWER proof-of-aaa');
+		expect(two).toContain('ANSWER proof-of-aaa');
+		const { readFileSync } = await import('node:fs');
+		expect(readFileSync(marker, 'utf8').trim().split('\n')).toEqual([
+			'aaa',
+		]);
 	});
 });
