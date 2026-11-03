@@ -19,8 +19,8 @@
  * - its worktree holds no edit of its own, and it is not the shared
  *   checkout.
  *
- * Each tip is kept under `refs/<namespace>/retired/` before any ref is
- * deleted, and every deletion is compare-and-swap at the tip judged, so a
+ * Each tip is kept under `refs/<namespace>/retired/`, here and pushed to
+ * the forge as `work retire` keeps it, before any ref is deleted, and every deletion is compare-and-swap at the tip judged, so a
  * copy somebody moved since is not the unit that was judged. Only refs
  * under the work and publication prefixes are read: a person's branches
  * are never seen. Everything is plain git, so a GitLab project or one
@@ -141,23 +141,48 @@ const copiesOf = (
 };
 
 /**
- * Writes `sha` under the unit's retired name unless it is kept there
- * already; a name taken by another tip gets the commit appended. Create
- * only: an existing retired ref is never moved.
+ * Keeps `sha` under the unit's retired name, here and on `forge`, as
+ * `work retire` does: a tip kept on one machine is lost with it. A name
+ * taken by another tip, here or there, gets the commit appended. Create
+ * only, on both sides: an existing retired ref is never moved. Answers
+ * the name only once every side holds the tip; `forge` is undefined only
+ * for a clone with no remote at all.
  */
 const keepTip = (
 	root: string,
+	forge: string | undefined,
 	namespace: string,
 	unit: string,
 	sha: string,
 ): string | undefined => {
 	const plain = namespacedRef(namespace, 'retired', unit);
 	for (const ref of [plain, `${plain}-${sha.slice(0, 12)}`]) {
-		const existing = commitOf(root, ref);
-		if (existing === sha) return ref;
-		if (existing !== undefined) continue;
-		const written = readGit(root, ['update-ref', ref, sha, '']);
-		if (written !== undefined) return ref;
+		const here = commitOf(root, ref);
+		if (here !== undefined && here !== sha) continue;
+		const listed =
+			forge === undefined
+				? ''
+				: readGit(root, ['ls-remote', '--', forge, ref]);
+		// A forge that cannot be read keeps nothing: nothing is deleted.
+		if (listed === undefined) return undefined;
+		const there = listed.split('\t')[0] ?? '';
+		if (there.length > 0 && there !== sha) continue;
+		if (
+			here === undefined &&
+			readGit(root, ['update-ref', ref, sha, '']) === undefined
+		)
+			return undefined;
+		if (forge !== undefined && there !== sha) {
+			const pushed = readGit(root, [
+				'push',
+				'--quiet',
+				`--force-with-lease=${ref}:`,
+				forge,
+				`${sha}:${ref}`,
+			]);
+			if (pushed === undefined) return undefined;
+		}
+		return ref;
 	}
 	return undefined;
 };
@@ -172,6 +197,10 @@ export const endFinishedUnits = async (
 	const publication = shortName(policy.branches.publicationRefPrefix);
 	if (base === undefined || work.length === 0) return [];
 	const remote = integrationRemote(root, policy);
+	const forge =
+		readGit(root, ['remote', 'get-url', remote]) === undefined
+			? undefined
+			: remote;
 	const subjects = await mergeSubjectsReader(async (args) => {
 		const output = readGit(root, args);
 		return { ok: output !== undefined, output: output ?? '' };
@@ -275,6 +304,7 @@ export const endFinishedUnits = async (
 		for (const sha of new Set(copies.map((copy) => copy.sha))) {
 			const ref = keepTip(
 				root,
+				forge,
 				policy.branches.namespacePrefix,
 				unit,
 				sha,

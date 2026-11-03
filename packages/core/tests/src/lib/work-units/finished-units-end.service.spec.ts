@@ -84,6 +84,14 @@ describe('endFinishedUnits', () => {
 				'refs/delendai/retired/auditor/review/i00002-all-g1/verdicts',
 			),
 		).toBe(tip);
+		// Kept on the forge too, as `work retire` keeps it.
+		expect(
+			git(
+				forge,
+				'rev-parse',
+				'refs/delendai/retired/auditor/review/i00002-all-g1/verdicts',
+			),
+		).toBe(tip);
 		expect(git(repo.root, 'branch', '--list', 'fix/typo')).toContain(
 			'fix/typo',
 		);
@@ -203,5 +211,24 @@ describe('endFinishedUnits', () => {
 		});
 		expect(kept).toMatchObject({ outcome: 'kept', reason: 'unstarted' });
 		expect(existsSync(worktree)).toBe(true);
+	});
+
+	it('deletes nothing while the forge cannot keep the retired tip', async () => {
+		const { repo, forge } = withForge();
+		const ref = reviewRef('offline');
+		const worktree = await quietUnit(repo, ref, 'verdict.md');
+		landOnForge(repo.root, ref);
+		git(repo.root, 'remote', 'set-url', 'origin', join(forge, 'gone'));
+
+		const [kept] = await endFinishedUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+		});
+
+		expect(kept).toMatchObject({ outcome: 'kept', reason: 'refused' });
+		expect(existsSync(worktree)).toBe(true);
+		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
+		expect(git(forge, 'branch', '--list', ref)).toContain(ref);
 	});
 });
