@@ -56,7 +56,7 @@ gpt-6.1-sol's contribution and a00095. CP-02: gitDirtyFilePaths keeps porcelain 
 - review-implementer: claude-opus-5-5
 
 ### S3 — Trailers, status and settlement
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/src/lib/tools/status-tool.ts`, `plugins/commit-policy/src/lib/services/push-driver.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/src/lib/settlement/worker.registry.ts`, `plugins/commit-policy/src/lib/settlement/settlement-gate.helper.ts`, `plugins/commit-policy/src/lib/tools/settlement-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -64,8 +64,10 @@ gpt-6.1-sol's contribution and a00095. CP-02: gitDirtyFilePaths keeps porcelain 
   - "status derives permission with the engine's function (D50)."
   - "The settlement tool conducts the cycle (enter, complete); entering is atomic with slice admission under one lock, and a slice holds the boundary until its event ends (G48, G49, CP-12)."
 - shipped-in: `b7df7dab5334`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3.1-flash
+- review-log: approved by minimax-m3.1-flash — verified at a61ca69ab579, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 3/3: (1) At b7df7dab adding a trailer keeps the subject, the body and the other trailers, and never strips a subject shaped like a trailer; the status answer derives th… (2) At b7df7dab the status answer derives the permission with the engine's own function, so it agrees with the engine where the old protected-list check did not; t… (3) At b7df7dab the settlement tool conducts the cycle, entering and completing, the entry takes the same lock as the slice admission, and the slice holds the boun… — Approved on the delivered state of b7df7dab5334. A trailer keeps what the message said, the status and the engine agree, and the settlement entry is atomic with the slice admission. The type gate exited 0 and the commit-policy specs pass 20 of 20. No defect found in the delivered change.
 
 ## acceptance
 
