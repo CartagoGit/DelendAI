@@ -2,10 +2,14 @@
 id: f00804
 title: "The proof slot has an urgent lane"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 9a7b70f7-ef48-490d-bb01-7c581daf8f70
+last-correlation-id: 9a7b70f7-ef48-490d-bb01-7c581daf8f70
+last-transition-from: ready
+last-transition-at: 2026-11-03T17:09:54.478Z
 ---
 
 # f00804 — The proof slot has an urgent lane
