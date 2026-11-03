@@ -186,10 +186,20 @@ describe('runCloseSliceGate', () => {
 		};
 
 		const verdict = await runCloseSliceGate(
-			depsFor(fixture, { process: vanishing, waitMs: 1_000 }),
+			// The wait is a deadline on the wall clock: on a loaded machine the
+			// first start can eat all of it and the second look never happens.
+			// A frozen clock keeps the window open for exactly the look that
+			// finds the process gone, and a no-op sleep makes it immediate.
+			depsFor(fixture, {
+				process: vanishing,
+				waitMs: 1_000,
+				now: () => 0,
+				sleep: async () => undefined,
+			}),
 		);
 
 		expect(verdict.state).toBe('unverifiable');
+		expect(verdict.findings.join('\n')).toContain('process is gone');
 	});
 
 	it('says so when the project declares no gate', async () => {

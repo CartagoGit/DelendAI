@@ -367,6 +367,11 @@ const CLI_ENTRY = resolve(
 	'index.ts',
 );
 
+// Every git command in these cases starts a bun process through the hook,
+// so a case is a dozen process starts. A minute covers an idle machine; a
+// loaded one needs several, and the ceiling only has to catch a hang.
+const REAL_HOOKS_TIMEOUT_MS = 300_000;
+
 describe('guard through real git hooks', () => {
 	const roots: string[] = [];
 	// The owner's identity is the global config's (x00698), so the machine
@@ -572,142 +577,168 @@ describe('guard through real git hooks', () => {
 		expect(committed.stderr).toContain('Guard <guard@example.com>');
 	});
 
-	it('refuses a borrowed author on a delendai branch, however it was borrowed (f00644)', () => {
-		const root = repoWith({
-			development: {
-				profile: 'shared-checkout-pr',
-				branches: { namespacePrefix: 'delendai' },
-			},
-		});
-		const unit = join(root, '..', `${root.split('/').at(-1)}-unit`);
-		roots.push(unit);
-		expect(
-			git(
+	it(
+		'refuses a borrowed author on a delendai branch, however it was borrowed (f00644)',
+		() => {
+			const root = repoWith({
+				development: {
+					profile: 'shared-checkout-pr',
+					branches: { namespacePrefix: 'delendai' },
+				},
+			});
+			const unit = join(root, '..', `${root.split('/').at(-1)}-unit`);
+			roots.push(unit);
+			expect(
+				git(
+					root,
+					'worktree',
+					'add',
+					'-q',
+					'-b',
+					'delendai/wip/gpt-5-codex/implement/x00056-S1-g1/t',
+					unit,
+				).status,
+			).toBe(0);
+			writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
+			git(unit, 'add', 'a.ts');
+			for (const args of [
+				[
+					'commit',
+					'-q',
+					'--author=Bot <bot@x.invalid>',
+					'-m',
+					'feat: a',
+				],
+				[
+					'-c',
+					'user.name=Bot',
+					'-c',
+					'user.email=bot@x.invalid',
+					'commit',
+					'-q',
+					'-m',
+					'feat: a',
+				],
+			]) {
+				const borrowed = git(unit, ...args);
+				expect(borrowed.status).not.toBe(0);
+				expect(borrowed.stderr).toContain('is authored as');
+			}
+			expect(git(unit, 'commit', '-q', '-m', 'feat: a').status).toBe(0);
+		},
+		REAL_HOOKS_TIMEOUT_MS,
+	);
+
+	it(
+		'under shared-checkout-merge, blocks the hand-made branch and the direct commit',
+		() => {
+			const root = repoWith({
+				development: { profile: 'shared-checkout-merge' },
+			});
+
+			const agentBranch = git(
+				root,
+				'switch',
+				'-c',
+				'agent/runner/x00056-S1',
+			);
+			expect(agentBranch.status).not.toBe(0);
+			expect(agentBranch.stderr).toContain('refused');
+			// The observed agent made its worktrees this way.
+			const worktree = git(
 				root,
 				'worktree',
 				'add',
 				'-q',
 				'-b',
-				'delendai/wip/gpt-5-codex/implement/x00056-S1-g1/t',
-				unit,
-			).status,
-		).toBe(0);
-		writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
-		git(unit, 'add', 'a.ts');
-		for (const args of [
-			['commit', '-q', '--author=Bot <bot@x.invalid>', '-m', 'feat: a'],
-			[
-				'-c',
-				'user.name=Bot',
-				'-c',
-				'user.email=bot@x.invalid',
+				'agent/runner/x00056-S2',
+				join(root, '..', `${root.split('/').at(-1)}-wt`),
+			);
+			roots.push(join(root, '..', `${root.split('/').at(-1)}-wt`));
+			expect(worktree.status).not.toBe(0);
+			expect(worktree.stderr).toContain('refused');
+
+			writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+			git(root, 'add', 'a.ts');
+			const direct = git(root, 'commit', '-q', '-m', 'feat: direct');
+			expect(direct.status).not.toBe(0);
+			expect(direct.stderr).toContain(
+				'forbids committing directly to `develop`',
+			);
+
+			// delendai's own work ref may be created — but committing on it
+			// from the SHARED checkout is refused (x00553): work refs are
+			// written by the engine, never checked out and committed on.
+			expect(
+				git(
+					root,
+					'switch',
+					'-q',
+					'-c',
+					'wip/gpt-5-codex/implement/x00056-S1-g1/t',
+				).status,
+			).toBe(0);
+			const onWorkBranch = git(
+				root,
 				'commit',
 				'-q',
 				'-m',
-				'feat: a',
-			],
-		]) {
-			const borrowed = git(unit, ...args);
-			expect(borrowed.status).not.toBe(0);
-			expect(borrowed.stderr).toContain('is authored as');
-		}
-		expect(git(unit, 'commit', '-q', '-m', 'feat: a').status).toBe(0);
-	}, 60_000);
-
-	it('under shared-checkout-merge, blocks the hand-made branch and the direct commit', () => {
-		const root = repoWith({
-			development: { profile: 'shared-checkout-merge' },
-		});
-
-		const agentBranch = git(root, 'switch', '-c', 'agent/runner/x00056-S1');
-		expect(agentBranch.status).not.toBe(0);
-		expect(agentBranch.stderr).toContain('refused');
-		// The observed agent made its worktrees this way.
-		const worktree = git(
-			root,
-			'worktree',
-			'add',
-			'-q',
-			'-b',
-			'agent/runner/x00056-S2',
-			join(root, '..', `${root.split('/').at(-1)}-wt`),
-		);
-		roots.push(join(root, '..', `${root.split('/').at(-1)}-wt`));
-		expect(worktree.status).not.toBe(0);
-		expect(worktree.stderr).toContain('refused');
-
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		git(root, 'add', 'a.ts');
-		const direct = git(root, 'commit', '-q', '-m', 'feat: direct');
-		expect(direct.status).not.toBe(0);
-		expect(direct.stderr).toContain(
-			'forbids committing directly to `develop`',
-		);
-
-		// delendai's own work ref may be created — but committing on it
-		// from the SHARED checkout is refused (x00553): work refs are
-		// written by the engine, never checked out and committed on.
-		expect(
-			git(
-				root,
-				'switch',
-				'-q',
-				'-c',
-				'wip/gpt-5-codex/implement/x00056-S1-g1/t',
-			).status,
-		).toBe(0);
-		const onWorkBranch = git(
-			root,
-			'commit',
-			'-q',
-			'-m',
-			'feat: on the work branch',
-		);
-		expect(onWorkBranch.status).not.toBe(0);
-		expect(onWorkBranch.stderr).toContain('anchors it to `develop`');
-		// The engine writes the ref with plumbing instead, which runs no
-		// hooks and never moves HEAD — reproduced here with the same
-		// commands it uses, so the merge below integrates real work.
-		const plumb = (...args: string[]): string =>
-			execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-		// Throwaway fixture repository: drop the refused change entirely.
-		plumb('reset', '-q', '--hard', 'HEAD');
-		plumb('switch', '-q', 'develop');
-		const tree = plumb('rev-parse', 'HEAD^{tree}');
-		const commit = plumb(
-			'commit-tree',
-			tree,
-			'-p',
-			plumb('rev-parse', 'HEAD'),
-			'-m',
-			'feat: written to the work ref by plumbing',
-		);
-		plumb(
-			'update-ref',
-			'refs/heads/wip/gpt-5-codex/implement/x00056-S1-g1/t',
-			commit,
-		);
-		// HEAD never moved: the shared checkout is still on develop.
-		expect(plumb('symbolic-ref', '--short', 'HEAD')).toBe('develop');
-		expect(
-			git(
-				root,
-				'merge',
-				'-q',
-				'--no-ff',
+				'feat: on the work branch',
+			);
+			expect(onWorkBranch.status).not.toBe(0);
+			expect(onWorkBranch.stderr).toContain('anchors it to `develop`');
+			// The engine writes the ref with plumbing instead, which runs no
+			// hooks and never moves HEAD — reproduced here with the same
+			// commands it uses, so the merge below integrates real work.
+			const plumb = (...args: string[]): string =>
+				execFileSync('git', args, {
+					cwd: root,
+					encoding: 'utf8',
+				}).trim();
+			// Throwaway fixture repository: drop the refused change entirely.
+			plumb('reset', '-q', '--hard', 'HEAD');
+			plumb('switch', '-q', 'develop');
+			const tree = plumb('rev-parse', 'HEAD^{tree}');
+			const commit = plumb(
+				'commit-tree',
+				tree,
+				'-p',
+				plumb('rev-parse', 'HEAD'),
 				'-m',
-				'merge work',
-				'wip/gpt-5-codex/implement/x00056-S1-g1/t',
-			).status,
-		).toBe(0);
-	}, 60_000);
+				'feat: written to the work ref by plumbing',
+			);
+			plumb(
+				'update-ref',
+				'refs/heads/wip/gpt-5-codex/implement/x00056-S1-g1/t',
+				commit,
+			);
+			// HEAD never moved: the shared checkout is still on develop.
+			expect(plumb('symbolic-ref', '--short', 'HEAD')).toBe('develop');
+			expect(
+				git(
+					root,
+					'merge',
+					'-q',
+					'--no-ff',
+					'-m',
+					'merge work',
+					'wip/gpt-5-codex/implement/x00056-S1-g1/t',
+				).status,
+			).toBe(0);
+		},
+		REAL_HOOKS_TIMEOUT_MS,
+	);
 
-	it('without a declared policy, the adopted default judges an agent', () => {
-		const root = repoWith(undefined);
-		const created = git(root, 'switch', '-q', '-c', 'agent/runner/x');
-		expect(created.status).not.toBe(0);
-		expect(created.stderr).toContain('`shared-checkout-merge`');
-	}, 60_000);
+	it(
+		'without a declared policy, the adopted default judges an agent',
+		() => {
+			const root = repoWith(undefined);
+			const created = git(root, 'switch', '-q', '-c', 'agent/runner/x');
+			expect(created.status).not.toBe(0);
+			expect(created.stderr).toContain('`shared-checkout-merge`');
+		},
+		REAL_HOOKS_TIMEOUT_MS,
+	);
 });
 
 describe('post-checkout (x00553)', () => {

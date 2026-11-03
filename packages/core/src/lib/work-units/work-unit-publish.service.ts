@@ -45,6 +45,7 @@ import {
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
+import { landsByPullRequest } from '../development-policy/branch-rules';
 import { readSupersedingUnit } from './unit-fence.service';
 import { worktreeOfRef } from './unit-removal.service';
 import {
@@ -330,12 +331,11 @@ export const published = async (
 			: {}),
 	};
 	// The publication becomes a pull request here, by the machine that
-	// holds the forge credential (x00677): a publication nobody opened a
-	// pull request for is work that never lands.
+	// holds the forge credential (x00677), when the branch takes PRs.
 	const pullRequest =
 		outcome.published &&
 		outcome.tip !== null &&
-		policy.integration.requiresPullRequest &&
+		landsByPullRequest(policy) &&
 		!args.includes('--no-pull-request')
 			? openPublicationPullRequest({
 					remote,
