@@ -2,10 +2,14 @@
 id: x01012
 title: "The editor never watches the cache"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: aebdb9e9-cb24-4960-a618-8295722512d9
+last-correlation-id: aebdb9e9-cb24-4960-a618-8295722512d9
+last-transition-from: ready
+last-transition-at: 2026-11-03T13:49:24.804Z
 ---
 
 # x01012 — The editor never watches the cache
