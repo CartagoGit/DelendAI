@@ -10,6 +10,7 @@ import {
 	resolvePresetMembers,
 	type IPresetKind,
 } from './preset-catalog';
+import { DELENDAI_VERSION } from '../version';
 import { resolve as resolvePath } from 'node:path';
 
 import { nearestConfiguredRoot } from '../workspace/nearest-configured-root.helper';
@@ -18,7 +19,7 @@ export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
 	serverName: 'DelendAI',
-	serverVersion: '0.1.0',
+	serverVersion: DELENDAI_VERSION,
 } as const;
 
 const KNOWN_KEYS = new Set([
