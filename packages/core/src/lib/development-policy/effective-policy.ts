@@ -20,6 +20,7 @@ import { sharedCheckout } from '../shared/shared-checkout';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import { readAdoptionRecord } from './adoption-record';
+import { declaredBranchRules, withDefaultBranchRules } from './branch-rules';
 import { defaultBranchOf } from './default-branch';
 import { resolveDevelopmentPolicy } from './resolve';
 import type { IEffectivePolicyInput } from './effective-policy.interface';
@@ -69,14 +70,23 @@ const withDiscoveredBranches = (
 	) {
 		return policy;
 	}
+	const moved = {
+		integration: discovered,
+		release:
+			nonEmptyString(input.development?.branches?.release) ?? discovered,
+	};
 	return {
 		...policy,
 		branches: {
 			...policy.branches,
-			integration: discovered,
-			release:
-				nonEmptyString(input.development?.branches?.release) ??
-				discovered,
+			...moved,
+			// The profile's default rules name the branches, so they move
+			// with them; the rules the project declared stay as written.
+			rules: withDefaultBranchRules(
+				moved,
+				declaredBranchRules(input.development?.branches?.rules) ?? [],
+				policy.integration.requiresPullRequest,
+			),
 		},
 	};
 };

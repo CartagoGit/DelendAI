@@ -215,6 +215,53 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 						'Ref prefixes delendai does not own and must never reap — the forge’s own automation, chiefly. Set it when a cleanup would otherwise mistake a foreign ref for abandoned work.',
 					)
 					.optional(),
+				rules: z
+					.record(
+						z
+							.string()
+							.min(1)
+							.describe(
+								'A branch name, or a glob (`*` within a segment, `**` across segments) such as `sandbox/**`.',
+							),
+						z
+							.union([
+								z.enum(['pull-request', 'merge', 'direct']),
+								z
+									.object({
+										takesIn: z
+											.enum([
+												'pull-request',
+												'merge',
+												'direct',
+											])
+											.describe(
+												'How the branch takes in work: `pull-request` (a reviewed pull request), `merge` (a merge certified by the local gate) or `direct` (commits and pushes straight onto it).',
+											),
+										promotedFrom: z
+											.string()
+											.min(1)
+											.describe(
+												'The branch this one is promoted from, such as the integration branch for the release branch.',
+											)
+											.optional(),
+										follows: z
+											.string()
+											.min(1)
+											.describe(
+												'The branch this one takes in after that branch moves, such as the release branch for the integration branch.',
+											)
+											.optional(),
+									})
+									.strict(),
+							])
+							.describe(
+								'The way the branch takes in work, either as the bare mode or with the branches it is promoted from and follows.',
+							),
+					)
+					.describe(
+						'How each branch takes in work, keyed by branch name or glob. The integration and release branches that no rule covers keep what the profile does today (`pull-request` when it requires pull requests, otherwise `merge`). A release branch looser than the integration branch, or a `direct` rule inside the namespaces delendai owns, is refused at load.',
+					)
+					.optional(),
 				release: z
 					.string()
 					.min(1)

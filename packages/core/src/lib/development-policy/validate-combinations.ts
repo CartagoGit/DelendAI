@@ -17,6 +17,7 @@ import type {
 	IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { hasSeparateReleaseBranch } from './release-branch';
+import { validateBranchRules } from './validate-branch-rules';
 
 /** Cross-axis coherence — the combinations that cannot be honoured. */
 export const validateCombinations = (
@@ -189,4 +190,6 @@ export const validateCombinations = (
 			remedy: 'Set `development.persistence.autoPushAfterCommit` to true, or set `development.recovery.strategy` to "none" and stop promising recovery.',
 		});
 	}
+
+	validateBranchRules(policy, out);
 };
