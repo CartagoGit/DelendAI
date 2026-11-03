@@ -16,11 +16,21 @@ Whatever host and model a project uses, and however many agents and subagents wo
 
 ## why
 
-TODO: why this work matters now.
+Asked by the owner on 2026-11-03, after a day of measured orchestration: delendai should make any host and any model spend little on agents and subagents, in every project, not only here. Measured that day (Claude Code, `delendai usage host-sessions`):
+
+- **The thread is the cost.** The main thread ran 1,111 calls at a median 557k tokens of context (max 966k): every call re-reads all of it. A Sonnet subagent did the same kind of task at about 65k, roughly nine times cheaper (d00417 S2: 46 calls, 2.9M cache reads against ~25M in the main thread).
+- **The cache has a lifetime.** A prompt cache lives about an hour after the last request (each provider differs: Anthropic offers 5-minute and 1-hour tiers, OpenAI caches automatically for minutes, Gemini caches explicitly). A large thread that waits longer on its subagents rewrites its whole context at the cache-write price.
+- **Briefs repeat what can be read.** Subagent prompts carried the bootstrap, the flow and the commands, which each subagent then read again on its own.
+- **Parallel work fights itself.** Six subagents ran proofs at once on one machine: load 20 to 30, proofs of 30 to 60 minutes, timing-sensitive specs failing, a CLI call timing out, and retries paid in tokens. Running them one at a time fixed it (now x01006).
+- **Our own answers are long.** `work deliver`, `prove` and `publish` print large JSON records that every agent reads into its context.
+- **Leftover background work wakes the thread.** Subagents leave background waiters running after they report; each repeated notice gives the large thread a turn, at the price of a cached read of its whole context.
+
+What exists already: a managed, lazy tool surface; compact tools; the bootstrap at 21.8 KB under a gate; host appendices per host; task briefings at entry (f00799 S1); skills that run apart on Claude Code (S4); the Claude Code meter (S5); the proof queue (x01006); checks scoped to the change (q00038). What is missing is the host's cost profile: the catalogue describes where each host keeps its agents, skills and instructions, and nothing about how it runs subagents, how long its cache lives, how it compacts or where its usage can be read, so delendai cannot advise on any host but Claude Code.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Choosing a provider's prices for the user, or spending without consent: Batuta stays advisory unless the project allows it.
+- Replacing a host's own compaction.
 
 ## slices
 
