@@ -116,4 +116,42 @@ describe('a unit under a former namespace', () => {
 		expect(unitGeneration(['--generation=3'])).toBe(3);
 		expect(unitGeneration([])).toBe(1);
 	});
+
+	it('finds a unit written before its shape named the kind', () => {
+		const root = repo();
+		const legacy = 'refs/heads/wip/agent-a/x00001-S1-g1/topic';
+		git(root, 'update-ref', legacy, 'HEAD');
+		expect(
+			existingWorkRef(
+				root,
+				['--topic=topic'],
+				policy,
+				'agent-a',
+				'x00001',
+				'S1',
+			),
+		).toBe(legacy);
+		expect(
+			existingWorkRef(root, ARGS, policy, 'agent-a', 'x00001', 'S1'),
+		).toBe(NEW);
+	});
+
+	it('is not ambiguous for the one ref the arguments render', () => {
+		const root = repo();
+		git(root, 'update-ref', NEW, 'HEAD');
+		git(root, 'update-ref', OLD, 'HEAD');
+		expect(
+			ambiguousUnit(root, ARGS, policy, 'agent-a', 'x00001', 'S1'),
+		).toBeUndefined();
+		expect(
+			chooseGeneration(
+				root,
+				['--kind=implement', '--generation=1'],
+				policy,
+				'agent-a',
+				'x00001',
+				'S1',
+			),
+		).toEqual({ generation: 1 });
+	});
 });
