@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 
 import {
 	sharedSetupFiles,
-	sharedGraphTestOptions,
+	isolationSplit,
 	workspaceAliases,
 } from '../vitest.shared.ts';
 
@@ -21,25 +21,34 @@ const workspaceRoot = resolve(here, '..');
  * from the shared root — vitest resolves it before any spec is
  * collected.
  */
-export default defineConfig({
-	root: here,
-	resolve: { alias: workspaceAliases(workspaceRoot) },
-	test: {
-		...sharedGraphTestOptions,
-		// `scripts/` holds the installer and belongs to no workspace: outside the
-		// root, its spec was collected by no project and gated nothing.
-		include: ['**/*.spec.ts', '../scripts/**/*.spec.ts'],
-		exclude: ['**/node_modules/**', '**/dist/**'],
-		setupFiles: sharedSetupFiles(workspaceRoot),
-		// Several specs here scan the whole repository or boot a real MCP
-		// server; they are slow by nature, not by defect. The 5s default
-		// (and even a hand-written 30s) turns them into coin flips whenever
-		// the machine is busy — and because `bun run validate` is the
-		// evidence `close_slice` / `proposal_transition` require, a flaky
-		// failure here blocks every proposal from closing. Widen the
-		// ceiling: a genuine hang still fails, it just takes longer to say
-		// so. Mirrors the same reasoning in `plugins/proposals/vitest.config.ts`.
-		testTimeout: 120_000,
-		hookTimeout: 120_000,
-	},
-});
+export const toolsConfig = (half: 'shared' | 'isolated') => {
+	const split = isolationSplit(here, '', half);
+	return defineConfig({
+		root: here,
+		resolve: { alias: workspaceAliases(workspaceRoot) },
+		test: {
+			...split.options,
+			// `scripts/` holds the installer and belongs to no workspace: outside the
+			// root, its spec was collected by no project and gated nothing.
+			name: `tools${split.nameSuffix}`,
+			include: split.include ?? [
+				'**/*.spec.ts',
+				'../scripts/**/*.spec.ts',
+			],
+			exclude: ['**/node_modules/**', '**/dist/**', ...split.exclude],
+			setupFiles: sharedSetupFiles(workspaceRoot),
+			// Several specs here scan the whole repository or boot a real MCP
+			// server; they are slow by nature, not by defect. The 5s default
+			// (and even a hand-written 30s) turns them into coin flips whenever
+			// the machine is busy — and because `bun run validate` is the
+			// evidence `close_slice` / `proposal_transition` require, a flaky
+			// failure here blocks every proposal from closing. Widen the
+			// ceiling: a genuine hang still fails, it just takes longer to say
+			// so. Mirrors the same reasoning in `plugins/proposals/vitest.config.ts`.
+			testTimeout: 120_000,
+			hookTimeout: 120_000,
+		},
+	});
+};
+
+export default toolsConfig('shared');
