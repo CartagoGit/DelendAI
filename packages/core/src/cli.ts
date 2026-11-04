@@ -89,6 +89,7 @@ export {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
 } from './lib/development-policy/owned-ref-prefixes';
+export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,
