@@ -204,6 +204,14 @@ export const CORE_PROPOSALS_BOUNDARY_EXCEPTIONS: readonly ICoreProposalsBoundary
 			kind: 'literal',
 		},
 		{
+			file: 'packages/core/src/lib/contracts/constants/preset-migration.constant.ts',
+			needle: 'proposals',
+			until: '2027-03-31',
+			classification: 'host-composition',
+			reason: 'The retired full preset expanded to a plugin map that included the proposals plugin; recognising it needs that id.',
+			kind: 'literal',
+		},
+		{
 			file: 'packages/core/src/lib/plugins/preset-derived.ts',
 			needle: 'proposals',
 			until: '2027-03-31',

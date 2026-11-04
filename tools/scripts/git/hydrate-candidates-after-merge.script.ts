@@ -117,6 +117,31 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	['tools/scripts/forge/advance-queue.script.ts', 60_000],
 ];
 
+/** The short steps: never held back by a long one (they run under their own lock). */
+export const QUICK_STEPS: readonly string[] = [
+	'tools/scripts/forge/certify-integration.script.ts',
+	'tools/scripts/forge/advance-queue.script.ts',
+];
+
+/** Run the listed steps in order; a step that fails is reported, never thrown. */
+const runSteps = (root: string, names: ReadonlySet<string>): void => {
+	for (const [script, timeout] of HYDRATION_STEPS) {
+		if (!names.has(script)) continue;
+		try {
+			execFileSync('bun', [script, '--apply'], {
+				cwd: root,
+				stdio: ['ignore', 'inherit', 'inherit'],
+				timeout,
+			});
+		} catch {
+			// Never fail: the merge already happened. Say what did not run.
+			console.log(
+				`hydrate-candidates: ${script} could not complete; run it with --apply when convenient.`,
+			);
+		}
+	}
+};
+
 const main = (): void => {
 	const root = repoRoot();
 	const { value, errors } = parseJsonc(
@@ -168,22 +193,27 @@ const main = (): void => {
 	// and the holder goes round again for it.
 	const lockDir = join(root, '.cache', 'delendai');
 	mkdirSync(lockDir, { recursive: true });
+	// The quick steps have a lock of their own, so a refresh that waits an
+	// hour for the proof slot never starves them (2026-11-03: a merge got
+	// no full CI run for 50 minutes). Two refreshes still never overlap.
+	const quickDir = join(lockDir, 'quick');
+	mkdirSync(quickDir, { recursive: true });
+	const quick = (script: string): void => {
+		runExclusively(quickDir, () => runSteps(root, new Set([script])));
+	};
+	const [certify, advance] = QUICK_STEPS;
+	quick(certify as string);
 	const outcome = runExclusively(lockDir, () => {
-		for (const [script, timeout] of HYDRATION_STEPS) {
-			try {
-				execFileSync('bun', [script, '--apply'], {
-					cwd: root,
-					stdio: ['ignore', 'inherit', 'inherit'],
-					timeout,
-				});
-			} catch {
-				// Never fail: the merge already happened. Say what did not run.
-				console.log(
-					`hydrate-candidates: ${script} could not complete; run it with --apply when convenient.`,
-				);
-			}
-		}
+		runSteps(
+			root,
+			new Set(
+				HYDRATION_STEPS.map(([script]) => script).filter(
+					(script) => !QUICK_STEPS.includes(script),
+				),
+			),
+		);
 	});
+	quick(advance as string);
 	if (outcome === 'deferred') {
 		console.log(
 			'hydrate-candidates: another hydration is running; it will go round again.',

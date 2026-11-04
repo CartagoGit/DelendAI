@@ -17,4 +17,11 @@ export interface IStartCheckoutHydrationInput {
 	readonly onHydrated: (message: string) => void;
 	/** Why this process must not move the checkout now; see the watch. */
 	readonly standDown?: (() => Promise<string | undefined>) | undefined;
+	/**
+	 * The clone whose finished units end after every pass that ran under
+	 * the lease and fetched. Omit and nothing ends here.
+	 */
+	readonly root?: string | undefined;
+	/** Called when a pass ended units, with a sentence for the operator. */
+	readonly onUnitsEnded?: ((message: string) => void) | undefined;
 }

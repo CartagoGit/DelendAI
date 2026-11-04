@@ -5,7 +5,8 @@
  * `work enter` made a worktree without the project's dependencies, and
  * the pre-push proof runs the typecheck, so the first publish of every
  * unit failed on a missing module until somebody who knew installed
- * them by hand. Entering now installs them with the project's own
+ * them by hand. Entering now links the shared checkout's when its lockfile
+ * is the same (no install, no gigabytes per unit), and otherwise installs them with the project's own
  * package manager, from its lockfile, with scripts off (an install
  * script run in a worktree once rewrote the shared git configuration).
  * It never fails the entry: when it cannot, the answer says so and
@@ -23,6 +24,7 @@ import {
 	UNIT_INSTALL_VARIABLE,
 } from '../contracts/constants/unit-dependencies.constant';
 import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencies.interface';
+import { linkSharedDependencies } from './unit-shared-dependencies.service';
 
 const run = promisify(execFile);
 
@@ -39,6 +41,8 @@ export const installUnitDependencies = async (
 	if (env[UNIT_INSTALL_VARIABLE] === 'off')
 		return { status: 'skipped', reason: `${UNIT_INSTALL_VARIABLE}=off` };
 	if (await exists(join(path, 'node_modules'))) return { status: 'present' };
+	const linked = await linkSharedDependencies(path);
+	if (linked !== undefined) return linked;
 	let install: (typeof UNIT_INSTALL_BY_LOCKFILE)[number] | undefined;
 	for (const candidate of UNIT_INSTALL_BY_LOCKFILE)
 		if (await exists(join(path, candidate.lockfile))) {

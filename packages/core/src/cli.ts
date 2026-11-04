@@ -249,6 +249,7 @@ export {
 } from './lib/plugins/pack-defaults-overlay';
 export { hasExplicitPluginSurfaceSelection } from './lib/plugins/parse-cli-args';
 export { resolvePluginOptions } from './lib/plugins/plugin-defaults';
+export { describeRetiredPresetMatch } from './lib/plugins/preset-migration';
 export {
 	PRESET_KIND,
 	RETIRED_PRESET_ID,

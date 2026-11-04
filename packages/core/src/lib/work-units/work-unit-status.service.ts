@@ -42,6 +42,8 @@ import {
 	undurableAdvice,
 	workspaceOf,
 } from './work-unit-shared.service';
+import { computeSlotPath } from '../shared/compute-slot.service';
+import { readComputeSlotLane } from '../shared/compute-slot-lane.service';
 import { namespacedRef } from './namespaced-ref.helper';
 
 /** How many units whose publication moved ahead `work status` names. */
@@ -84,7 +86,16 @@ export const statusOf = async (
 	});
 	const base = integrationBase(root, policy);
 	const standings = await readUnitStandings({ root, policy });
+	const slotPath = computeSlotPath(root);
+	const slot =
+		slotPath === undefined
+			? undefined
+			: await readComputeSlotLane(slotPath);
 	const payload = {
+		computeSlot: {
+			holder: slot?.holder ?? null,
+			urgent: slot?.urgent ?? [],
+		},
 		profile: policy.profile,
 		policySource: policy.source,
 		adoptionWrittenTo: policy.adoption?.writtenTo ?? null,
@@ -167,6 +178,12 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...(payload.computeSlot.holder === null &&
+			payload.computeSlot.urgent.length === 0
+				? []
+				: [
+						`compute slot     ${payload.computeSlot.holder ?? 'free'}${payload.computeSlot.urgent.length === 0 ? '' : `; urgent lane: ${payload.computeSlot.urgent.map((ticket) => `"${ticket.label}" — ${ticket.reason}`).join('; ')}`}`,
+					]),
 			...payload.stranded.map(
 				(kept) =>
 					`stranded         ${kept.ref} (for ${kept.agent}): ${kept.resume}`,
