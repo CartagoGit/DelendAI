@@ -2,14 +2,14 @@
 id: x00978
 title: "The VS Code extension works per folder and keeps edits, choices and polling consistent"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
-last-correlation-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T05:20:28.703Z
+last-transition-id: 12085c2c-cdf2-4cde-809d-9cc22e65579e
+last-correlation-id: 12085c2c-cdf2-4cde-809d-9cc22e65579e
+last-transition-from: review
+last-transition-at: 2026-11-04T20:28:52.607Z
 ---
 
 # x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
@@ -56,7 +56,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for the three UI acceptance points (save ack granularity, discard restores last-saved, cancel leaves provider state unchanged). Please re-run and resubmit with fresh empirical proof.
 
 ### S3 — Routing, dashboard and polling
-- **Status**: review
+- **Status**: pending
 - **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `extensions/vscode/src/test/dashboard-detail-broker.spec.ts`, `packages/ui-extension/tests/dashboard/render-dashboard-escaping.spec.ts`
 - **Gate**: type
 - **Notes**: UI-ROUTE01 was already fixed: no source under extensions/vscode or packages/client names the retired vertex tool; non-direct calls go through the client's resolve_capability broker path (mcp-stdio-client.ts), which compact_router shares. extension.ts and logs.service.ts needed no change (the subscribe loop already stops on abort; the dispose hook now aborts it).
@@ -64,8 +64,10 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
   - "Calls route through delendai_compact_router (UI-ROUTE01)."
   - "The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02)."
 - shipped-in: `99169458ee61`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 99169458ee61 is stale for this slice. `git log 99169458ee61..develop -- <S3 files>` shows later commits in listed files (e.g. d8f054d49, bd8a13152), and current submission also lacks reproducible acceptance evidence for routing + dashboard/polling behaviors on develop. Please re-validate and resubmit with fresh proof.
 
 ## acceptance
 
