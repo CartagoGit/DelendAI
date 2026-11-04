@@ -485,6 +485,14 @@ export interface IMcpPlugin {
 	/** One-line, model-agnostic description of what the plugin adds. */
 	readonly describe?: string;
 	/**
+	 * A forge plugin's change-request adapter (x01023): how the core reads
+	 * and rewrites the title and body of a pull or merge request without
+	 * importing the plugin.
+	 */
+	readonly changeRequestForge?:
+		| import('../contracts/interfaces/change-request-forge.interface').IChangeRequestForge
+		| undefined;
+	/**
 	 * Other plugin ids (by `name`) this plugin requires to be present in
 	 * the same load set. Additive/optional: most plugins have no
 	 * dependencies. The loader (`load-plugins.ts`) builds a dependency
