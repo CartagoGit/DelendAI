@@ -8,12 +8,14 @@
  * loads any plugin. A plugin that is not installed is skipped, so a
  * project on one forge never needs the other.
  */
+import { execFileSync } from 'node:child_process';
+
 import type {
 	IChangeRequestForge,
 	IChangeRequestRunner,
 } from '../contracts/interfaces/change-request-forge.interface';
 import type { IPullRequestPorts } from '../contracts/interfaces/publication-pull-request.interface';
-import { forgeCli, readGit } from './work-unit-shared.service';
+import { readGit } from './work-unit-shared.service';
 import { nodeDynamicImport } from '../plugins/load-plugins';
 
 /** The first-party plugins that host change requests. */
@@ -67,8 +69,17 @@ export const pullRequestPorts = async (
 	root: string,
 	load?: Parameters<typeof loadChangeRequestForges>[1],
 ): Promise<IPullRequestPorts> => {
-	const cli = (bin: string, args: readonly string[]) =>
-		forgeCli(root, args, bin);
+	const cli = (bin: string, args: readonly string[]) => {
+		try {
+			return execFileSync(bin, [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'ignore'],
+			}).trim();
+		} catch {
+			return undefined;
+		}
+	};
 	return {
 		git: (args) => readGit(root, args),
 		gh: (args) => cli('gh', args),
