@@ -6,7 +6,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	createWorkspaceBackup,
+	backupSnapshotPathFor,
 	hashWorkspaceAt,
+	persistBackups,
+	readPersistedBackups,
 	recordWrittenSince,
 	rollback,
 } from '@delendai/core/lib/workspace-migration/transaction/rollback';
@@ -145,5 +148,74 @@ describe('rollback (b00239 S6)', () => {
 		expect(
 			await readFile(join(workspaceRoot, 'made', 'a.txt'), 'utf8'),
 		).toBe('edited by them\n');
+	});
+
+	it('removes a file the backup recorded as absent, and skips one already gone', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'delendai-x01026-absent-'),
+		);
+		await writeFile(join(workspaceRoot, 'there.txt'), 'x\n');
+		const report = await rollback(
+			[
+				{ kind: 'file', path: 'there.txt', contentBase64: null },
+				{ kind: 'file', path: 'gone.txt', contentBase64: null },
+			],
+			{ workspaceRoot },
+			'test',
+		);
+		expect(report.removed).toEqual(['there.txt']);
+		expect(report.skipped).toEqual(['gone.txt']);
+		expect(report.errors).toEqual([]);
+	});
+
+	it('reads back only well-formed persisted backups', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'delendai-x01026-persist-'),
+		);
+		const input = { id: 'm', timestamp: 't' };
+		expect(await readPersistedBackups(workspaceRoot, input)).toBeNull();
+		await persistBackups(workspaceRoot, input, [
+			{ kind: 'file', path: 'a.txt', contentBase64: 'eAo=' },
+			{ kind: 'file', path: 'b.txt', contentBase64: null },
+		]);
+		expect(await readPersistedBackups(workspaceRoot, input)).toEqual([
+			{ kind: 'file', path: 'a.txt', contentBase64: 'eAo=' },
+			{ kind: 'file', path: 'b.txt', contentBase64: null },
+		]);
+		await writeFile(
+			backupSnapshotPathFor(workspaceRoot, input),
+			JSON.stringify([
+				null,
+				{ kind: 'directory', path: 'd' },
+				{ kind: 'file', path: 'ok', contentBase64: 'eAo=' },
+				{ kind: 'file', path: 'bad', contentBase64: 5 },
+				{ kind: 7, path: 'x' },
+			]),
+		);
+		expect(await readPersistedBackups(workspaceRoot, input)).toEqual([
+			{ kind: 'directory', path: 'd' },
+			{ kind: 'file', path: 'ok', contentBase64: 'eAo=' },
+		]);
+		await writeFile(backupSnapshotPathFor(workspaceRoot, input), '{}');
+		expect(await readPersistedBackups(workspaceRoot, input)).toBeNull();
+	});
+
+	it('leaves a recorded directory that still holds something', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'delendai-x01026-notempty-'),
+		);
+		const backups = await createWorkspaceBackup(workspaceRoot);
+		await mkdir(join(workspaceRoot, 'made'));
+		const written = await recordWrittenSince(workspaceRoot, backups);
+		await writeFile(join(workspaceRoot, 'made', 'theirs.txt'), 'y\n');
+		const report = await rollback(
+			backups,
+			{ workspaceRoot },
+			't',
+			undefined,
+			written,
+		);
+		expect(report.skipped).toContain('made');
+		expect(report.errors).toEqual([]);
 	});
 });
