@@ -45,7 +45,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 1eba86877d7f is stale: S1 files changed in many later commits (e.g. f44c79120, da3d5a486, 5f76c7077, 8fe0646db). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — Shim, prompts and bootstrap
-- **Status**: review
+- **Status**: pending
 - **Files**: `bin/delendai-shim/main.go`, `plugins/prompts-pack/src/prompts/prompts.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
@@ -53,8 +53,10 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
   - "No NUL byte in prompts; a spec asserts it (G60, D38)."
   - "The bootstrap describes the dist mirrors the builder makes (ORCH-06)."
 - shipped-in: `524f03fe0f84`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 524f03fe0f84 is stale: S2 files changed afterward (e.g. ef203ed1f, a9ba21a1e, 502cf5a86). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and gate evidence.
 
 ### S3 — Duplicate engines
 - **Status**: review
