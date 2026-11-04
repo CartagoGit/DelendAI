@@ -59,14 +59,16 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: target files changed in newer commits (e.g. 6d3edff4b, 51fbac099). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S4 — A promotion that is not a release yet is held back and says how to prepare it
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/release/release-pr-check.script.ts`
 - **Gate**: type
 - acceptance:
   - "`open-promotion` holds the promotion back while develop carries no version above main's or no CHANGELOG section for it (the gaps `release:check` reports, from one `releaseGaps`), naming each gap and `bun run release:prepare --write` as the fix, so it never opens a promotion the release gate refuses (open-promotion.script.spec.ts)."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: open-promotion/release-check files changed in newer commits (e.g. cada9abdf). Redeliver S4 on current HEAD and resubmit with fresh shipped-in + gate evidence.
 
 ### S3 — The roadmap names the next milestone
 - **Status**: pending
