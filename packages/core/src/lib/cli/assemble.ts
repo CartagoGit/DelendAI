@@ -363,6 +363,7 @@ export const assembleCliConfig = async (
 	const corePaths = { cacheDir, docsDir };
 	// One maintainer per workspace: made here, taken on first use.
 	const maintenance = createHostMaintenance({
+		workspace: workspace.root,
 		path: maintenanceLeasePath(workspace.root, cacheDir),
 		behind: staleRuntime.behind,
 		// stdout is the MCP transport; the log is stderr.
