@@ -11,6 +11,25 @@ The server (`delendai_overview`, `delendai_agent_catalog`,
 is loaded. Always ask the server rather than guessing from a list, a
 hardcoded id, or a previous session.
 
+## 0. Product principles — decide by these when unsure
+
+delendai is a layer that any project puts under its LLMs, agents, skills,
+tools, IDE and host. This repository builds delendai with delendai, but
+every change must work the same in any other project, with any agent and
+any host. Judge each change by this order:
+
+- **Efficient and fast.** Check only what the change affects (tests, lints
+  and types) and measure before and after (CPU, disk, time). Never saturate
+  the machine.
+- **Robust.** No work is lost or mixed between agents. Every unit ends,
+  and nothing waits forever.
+- **Cheap in tokens.** Short answers, lazy context. Count tokens per
+  accepted task.
+- **Easy to use.** The default works with no configuration.
+- **Agnostic.** No host-specific or undocumented behaviour. A fix reaches
+  every consuming project, not only this one.
+- **Bounded.** Limits, states and refusals an agent cannot talk past.
+
 ---
 
 ## 1. Orient first — one cheap call
