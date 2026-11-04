@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { judgeEmptyRootRuns } from './empty-root-probe.lib';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { judgeEmptyRootRuns, runOverEmptyRoot } from './empty-root-probe.lib';
 
 const LINT = 'tools/scripts/lint/a.script.ts';
 
@@ -42,5 +46,32 @@ describe('judgeEmptyRootRuns', () => {
 			}),
 		).toEqual([]);
 		expect(judgeEmptyRootRuns([], { [LINT]: 'why' })).toHaveLength(1);
+	});
+});
+
+describe('runOverEmptyRoot', () => {
+	it('runs each lint from a tree holding only tools/ and reports its exit code', () => {
+		const repo = mkdtempSync(join(tmpdir(), 'delendai-x01027-probe-'));
+		try {
+			mkdirSync(join(repo, 'tools'));
+			writeFileSync(join(repo, 'tools', 'ok.ts'), 'process.exit(0);\n');
+			writeFileSync(
+				join(repo, 'tools', 'refuses.ts'),
+				'process.exit(3);\n',
+			);
+			// Proves the probe tree is not the real one: only tools/ is there.
+			writeFileSync(
+				join(repo, 'tools', 'sees.ts'),
+				"import { existsSync } from 'node:fs';\nprocess.exit(existsSync('packages') ? 1 : 0);\n",
+			);
+			const runs = runOverEmptyRoot(repo, [
+				'tools/ok.ts',
+				'tools/refuses.ts',
+				'tools/sees.ts',
+			]);
+			expect(runs.map((run) => run.exitCode)).toEqual([0, 3, 0]);
+		} finally {
+			rmSync(repo, { recursive: true, force: true });
+		}
 	});
 });
