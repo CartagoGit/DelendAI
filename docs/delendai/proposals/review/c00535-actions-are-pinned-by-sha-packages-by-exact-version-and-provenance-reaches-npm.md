@@ -31,14 +31,16 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - global_gate: type
 
 ### S1 — Actions by SHA
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/dependabot.yml`, `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.github/workflows/setup-bun.yml`, `tools/scripts/lint/workflow-yaml.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every `uses:` names a 40-hex SHA with the tag in a comment; a lint fails on a tag reference; Dependabot updates github-actions weekly (G130)."
 - shipped-in: `51fbac099a82`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 51fbac099a82 is stale: S1 workflow/lint files changed afterward (e.g. 434c4c8c9, 07672aeb0, a631c551c, 5b0b2b860). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ### S2 — Exact external servers and npm provenance
 - **Status**: review
