@@ -2,14 +2,14 @@
 id: v00142
 title: "The queue lands a change in minutes: it arms while the last merge certifies, and CI brings candidates forward"
 kind: perf
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-28
-last-transition-id: cbba4d8e-7578-4f19-bcb2-e66d6274fa3b
-last-correlation-id: cbba4d8e-7578-4f19-bcb2-e66d6274fa3b
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T04:14:30.514Z
+last-transition-id: 8946b4f0-0419-4cbc-b1fd-4cb520d0affd
+last-correlation-id: 8946b4f0-0419-4cbc-b1fd-4cb520d0affd
+last-transition-from: review
+last-transition-at: 2026-11-04T18:23:35.251Z
 ---
 
 # v00142 — The queue lands a change in minutes: it arms while the last merge certifies, and CI brings candidates forward
@@ -60,14 +60,16 @@ Measured on 2026-10-28: a pull request's CI takes about 5 minutes (run 406317493
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 2726a782c991 is stale: this slice file changed in newer commits (e.g. 3eedd5a48, 49d70916f, 51fbac099). Redeliver S2 on current HEAD and resubmit with a fresh shipped-in commit and scoped evidence.
 
 ### S3 — An author's own commands bring its red candidates forward
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
   - "`bun run forge:refresh -- --apply --author=<agent>` brings forward the agent's own publications the queue hands back to their author (merge the integration branch, regenerate, push, from a throwaway worktree; a conflict is reported and left), so no owner machine has to be on (candidate-disposition.spec.ts)."
 - shipped-in: `2726a782c991`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 2726a782c991 is stale: the same slice files changed in newer commits (e.g. cb62d7939, 11f2dd739, 3eedd5a48, c7f671363). Redeliver S3 on current HEAD and resubmit with a fresh shipped-in commit plus gate evidence.
 
 ## acceptance
 
