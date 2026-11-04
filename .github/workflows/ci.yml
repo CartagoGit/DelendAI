@@ -861,6 +861,16 @@ jobs:
                     --from=.cache/spec-timings/report.json \
                     --out=.cache/spec-timings/spec-timings.json
 
+            - name: Hold every spec to its time budget
+              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
+              # q00045 S1: a spec file over 5 s outside the e2e tier fails
+              # the integration branch's certification, blamed on the
+              # change that merged it.
+              run: |
+                  set -euo pipefail
+                  bun run lint:spec-duration-budget -- \
+                    --timings=.cache/spec-timings/spec-timings.json
+
             - name: Upload the spec timings
               if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
               # An optimisation of the next pull requests' split: it never
