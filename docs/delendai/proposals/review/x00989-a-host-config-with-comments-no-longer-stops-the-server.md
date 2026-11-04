@@ -10,6 +10,8 @@ last-transition-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
 last-correlation-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T09:54:24.414Z
+shipped-in:
+  - "8a64228535a5"
 ---
 
 # x00989 — A host config with comments no longer stops the server
@@ -40,7 +42,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -50,8 +52,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A commented `.vscode/mcp.json` that names the old identity is rewritten, and the file keeps its comments outside the rewritten member, its key order and its own formatting."
   - "A commented `.vscode/mcp.json` that names nothing old is not written at all — byte-identical before and after."
 - shipped-in: `724cbf9f8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 5/5: (1) host-config.migrator.spec.ts passed in local run; commit 8a64228535a5 includes host-config.migrator.ts and associated JSONC parsing/rewrite support. (2) host-config.migrator.spec.ts passed, and commit 8a64228535a5 includes host-config-parse.error.ts + migrator updates for tolerant parse and strict failure cases. (3) host-config.migrator.spec.ts passed formatting-preservation assertions on plain JSON rewrite path. (4) host-config.migrator.spec.ts passed JSONC rewrite assertions with comment/order/format retention. (5) host-config.migrator.spec.ts passed no-op JSONC scenario confirming unchanged file bytes.
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
 - **Status**: review
