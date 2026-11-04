@@ -244,10 +244,16 @@ deno run -A npm:@delendai/cli validate
 
 ### minimal
 
+推荐用途：只读定位和 CI smoke test。
+大小：2个插件 · 42个工具 · ~11805 冷启动 token
+
 - git
 - search
 
 ### solo
+
+推荐用途：一名开发者加一个 agent 的日常编码；是 `init` 的默认值。
+大小：10个插件 · 79个工具 · ~19037 冷启动 token
 
 - git
 - search
@@ -261,6 +267,9 @@ deno run -A npm:@delendai/cli validate
 - refactor
 
 ### team-pr
+
+推荐用途：通过 pull request 协作的团队，带有 commit 与测试约定。
+大小：18个插件 · 116个工具 · ~25446 冷启动 token
 
 - git
 - search
@@ -282,6 +291,9 @@ deno run -A npm:@delendai/cli validate
 - error-reporting
 
 ### swarm
+
+推荐用途：多个 agent 共用一个 checkout，带有提案、日志和收尾标记。
+大小：19个插件 · 125个工具 · ~26802 冷启动 token
 
 - git
 - search
@@ -305,6 +317,9 @@ deno run -A npm:@delendai/cli validate
 
 ### audit
 
+推荐用途：只读的评审与审计。
+大小：15个插件 · 89个工具 · ~21955 冷启动 token
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ deno run -A npm:@delendai/cli validate
 
 ### docs-web
 
+推荐用途：文档与网站。
+大小：8个插件 · 61个工具 · ~15696 冷启动 token
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ deno run -A npm:@delendai/cli validate
 - env
 
 ### everything
+
+推荐用途：包含所有已发布插件（含使用网络或凭据的插件）的诊断。
+大小：58个插件 · 236个工具 · ~59122 冷启动 token
 
 - adaptive-optimizer
 - agent-orchestrator

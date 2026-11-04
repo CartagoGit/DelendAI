@@ -244,10 +244,16 @@ deno run -A npm:@delendai/cli validate
 
 ### minimal
 
+推奨用途: 読み取り専用のオリエンテーションと CI smoke test。
+サイズ: 2 プラグイン · 42 ツール · ~11805 コールドスタート時のトークン
+
 - git
 - search
 
 ### solo
+
+推奨用途: 日常のコーディングを行う開発者 1 人とエージェント 1 つ。`init` の既定値。
+サイズ: 10 プラグイン · 79 ツール · ~19037 コールドスタート時のトークン
 
 - git
 - search
@@ -261,6 +267,9 @@ deno run -A npm:@delendai/cli validate
 - refactor
 
 ### team-pr
+
+推奨用途: pull request で進めるチーム。コミットとテストの規約付き。
+サイズ: 18 プラグイン · 116 ツール · ~25446 コールドスタート時のトークン
 
 - git
 - search
@@ -282,6 +291,9 @@ deno run -A npm:@delendai/cli validate
 - error-reporting
 
 ### swarm
+
+推奨用途: 1 つの checkout を共有する複数のエージェント。提案、ログ、クローズマーカー付き。
+サイズ: 19 プラグイン · 125 ツール · ~26802 コールドスタート時のトークン
 
 - git
 - search
@@ -305,6 +317,9 @@ deno run -A npm:@delendai/cli validate
 
 ### audit
 
+推奨用途: 読み取り専用のレビューと監査。
+サイズ: 15 プラグイン · 89 ツール · ~21955 コールドスタート時のトークン
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ deno run -A npm:@delendai/cli validate
 
 ### docs-web
 
+推奨用途: ドキュメントと Web サイト。
+サイズ: 8 プラグイン · 61 ツール · ~15696 コールドスタート時のトークン
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ deno run -A npm:@delendai/cli validate
 - env
 
 ### everything
+
+推奨用途: ネットワークや認証情報を使うものを含む、公開済みの全プラグインによる診断。
+サイズ: 58 プラグイン · 236 ツール · ~59122 コールドスタート時のトークン
 
 - adaptive-optimizer
 - agent-orchestrator

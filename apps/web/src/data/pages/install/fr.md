@@ -244,10 +244,16 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 
 ### minimal
 
+Usage recommandé : orientation en lecture seule et smoke tests CI.
+Taille : 2 plugins · 42 outils · ~11805 tokens au démarrage
+
 - git
 - search
 
 ### solo
+
+Usage recommandé : un développeur et un agent au travail quotidien ; la valeur par défaut de `init`.
+Taille : 10 plugins · 79 outils · ~19037 tokens au démarrage
 
 - git
 - search
@@ -261,6 +267,9 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 - refactor
 
 ### team-pr
+
+Usage recommandé : une équipe qui travaille par pull requests, avec des conventions de commit et de tests.
+Taille : 18 plugins · 116 outils · ~25446 tokens au démarrage
 
 - git
 - search
@@ -282,6 +291,9 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 - error-reporting
 
 ### swarm
+
+Usage recommandé : plusieurs agents partageant un checkout, avec propositions, logs et marqueurs de clôture.
+Taille : 19 plugins · 125 outils · ~26802 tokens au démarrage
 
 - git
 - search
@@ -305,6 +317,9 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 
 ### audit
 
+Usage recommandé : revues et audits en lecture seule.
+Taille : 15 plugins · 89 outils · ~21955 tokens au démarrage
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 
 ### docs-web
 
+Usage recommandé : documentation et sites web.
+Taille : 8 plugins · 61 outils · ~15696 tokens au démarrage
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 - env
 
 ### everything
+
+Usage recommandé : diagnostic avec tous les plugins publiés, y compris ceux qui utilisent le réseau ou des identifiants.
+Taille : 58 plugins · 236 outils · ~59122 tokens au démarrage
 
 - adaptive-optimizer
 - agent-orchestrator

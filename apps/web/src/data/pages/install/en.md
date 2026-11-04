@@ -273,10 +273,16 @@ Presets are additive. Start small, then widen the plugin set only when your work
 
 ### minimal
 
+Recommended use: read-only orientation and CI smoke tests.
+Size: 2 plugins · 42 tools · ~11805 tokens at cold start
+
 - git
 - search
 
 ### solo
+
+Recommended use: one developer and one agent doing day-to-day coding; the default for `init`.
+Size: 10 plugins · 79 tools · ~19037 tokens at cold start
 
 - git
 - search
@@ -290,6 +296,9 @@ Presets are additive. Start small, then widen the plugin set only when your work
 - refactor
 
 ### team-pr
+
+Recommended use: a team working through pull requests, with commit and test conventions.
+Size: 18 plugins · 116 tools · ~25446 tokens at cold start
 
 - git
 - search
@@ -311,6 +320,9 @@ Presets are additive. Start small, then widen the plugin set only when your work
 - error-reporting
 
 ### swarm
+
+Recommended use: several agents sharing one checkout, with proposals, logs and close markers.
+Size: 19 plugins · 125 tools · ~26802 tokens at cold start
 
 - git
 - search
@@ -334,6 +346,9 @@ Presets are additive. Start small, then widen the plugin set only when your work
 
 ### audit
 
+Recommended use: read-only review and audit runs.
+Size: 15 plugins · 89 tools · ~21955 tokens at cold start
+
 - git
 - search
 - docs
@@ -352,6 +367,9 @@ Presets are additive. Start small, then widen the plugin set only when your work
 
 ### docs-web
 
+Recommended use: documentation and web sites.
+Size: 8 plugins · 61 tools · ~15696 tokens at cold start
+
 - git
 - search
 - memory
@@ -362,6 +380,9 @@ Presets are additive. Start small, then widen the plugin set only when your work
 - env
 
 ### everything
+
+Recommended use: diagnostics with every published plugin, including the ones that use the network or credentials.
+Size: 58 plugins · 236 tools · ~59122 tokens at cold start
 
 - adaptive-optimizer
 - agent-orchestrator

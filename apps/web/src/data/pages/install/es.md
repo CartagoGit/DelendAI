@@ -275,10 +275,16 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 
 ### minimal
 
+Uso recomendado: orientación de solo lectura y smoke tests de CI.
+Tamaño: 2 plugins · 42 herramientas · ~11805 tokens en el arranque
+
 - git
 - search
 
 ### solo
+
+Uso recomendado: un desarrollador y un agente en el trabajo diario; es el valor por defecto de `init`.
+Tamaño: 10 plugins · 79 herramientas · ~19037 tokens en el arranque
 
 - git
 - search
@@ -292,6 +298,9 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 - refactor
 
 ### team-pr
+
+Uso recomendado: un equipo que trabaja con pull requests, con convenciones de commits y de tests.
+Tamaño: 18 plugins · 116 herramientas · ~25446 tokens en el arranque
 
 - git
 - search
@@ -313,6 +322,9 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 - error-reporting
 
 ### swarm
+
+Uso recomendado: varios agentes que comparten un checkout, con propuestas, logs y marcadores de cierre.
+Tamaño: 19 plugins · 125 herramientas · ~26802 tokens en el arranque
 
 - git
 - search
@@ -336,6 +348,9 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 
 ### audit
 
+Uso recomendado: revisiones y auditorías de solo lectura.
+Tamaño: 15 plugins · 89 herramientas · ~21955 tokens en el arranque
+
 - git
 - search
 - docs
@@ -354,6 +369,9 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 
 ### docs-web
 
+Uso recomendado: documentación y sitios web.
+Tamaño: 8 plugins · 61 herramientas · ~15696 tokens en el arranque
+
 - git
 - search
 - memory
@@ -364,6 +382,9 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 - env
 
 ### everything
+
+Uso recomendado: diagnóstico con todos los plugins publicados, incluidos los que usan la red o credenciales.
+Tamaño: 58 plugins · 236 herramientas · ~59122 tokens en el arranque
 
 - adaptive-optimizer
 - agent-orchestrator

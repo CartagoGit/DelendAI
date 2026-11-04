@@ -244,10 +244,16 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 
 ### minimal
 
+Empfohlener Einsatz: Read-only-Orientierung und CI-Smoke-Tests.
+Größe: 2 Plugins · 42 Tools · ~11805 Tokens beim Kaltstart
+
 - git
 - search
 
 ### solo
+
+Empfohlener Einsatz: eine Entwicklerin oder ein Entwickler mit einem Agenten im Alltag; der Standard von `init`.
+Größe: 10 Plugins · 79 Tools · ~19037 Tokens beim Kaltstart
 
 - git
 - search
@@ -261,6 +267,9 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 - refactor
 
 ### team-pr
+
+Empfohlener Einsatz: ein Team, das über Pull Requests arbeitet, mit Commit- und Testkonventionen.
+Größe: 18 Plugins · 116 Tools · ~25446 Tokens beim Kaltstart
 
 - git
 - search
@@ -282,6 +291,9 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 - error-reporting
 
 ### swarm
+
+Empfohlener Einsatz: mehrere Agenten mit gemeinsamem Checkout, mit Vorschlägen, Logs und Abschlussmarkern.
+Größe: 19 Plugins · 125 Tools · ~26802 Tokens beim Kaltstart
 
 - git
 - search
@@ -305,6 +317,9 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 
 ### audit
 
+Empfohlener Einsatz: schreibgeschützte Reviews und Audits.
+Größe: 15 Plugins · 89 Tools · ~21955 Tokens beim Kaltstart
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 
 ### docs-web
 
+Empfohlener Einsatz: Dokumentation und Websites.
+Größe: 8 Plugins · 61 Tools · ~15696 Tokens beim Kaltstart
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 - env
 
 ### everything
+
+Empfohlener Einsatz: Diagnose mit jedem veröffentlichten Plugin, auch denen mit Netzwerk- oder Zugangsdatenzugriff.
+Größe: 58 Plugins · 236 Tools · ~59122 Tokens beim Kaltstart
 
 - adaptive-optimizer
 - agent-orchestrator

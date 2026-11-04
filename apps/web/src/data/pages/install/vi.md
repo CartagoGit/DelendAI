@@ -244,10 +244,16 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 
 ### minimal
 
+Cách dùng khuyến nghị: định hướng chỉ đọc và smoke test cho CI.
+Kích thước: 2 plugin · 42 công cụ · ~11805 token khi khởi động
+
 - git
 - search
 
 ### solo
+
+Cách dùng khuyến nghị: một lập trình viên và một agent làm việc hằng ngày; là mặc định của `init`.
+Kích thước: 10 plugin · 79 công cụ · ~19037 token khi khởi động
 
 - git
 - search
@@ -261,6 +267,9 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 - refactor
 
 ### team-pr
+
+Cách dùng khuyến nghị: một nhóm làm việc qua pull request, với quy ước commit và kiểm thử.
+Kích thước: 18 plugin · 116 công cụ · ~25446 token khi khởi động
 
 - git
 - search
@@ -282,6 +291,9 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 - error-reporting
 
 ### swarm
+
+Cách dùng khuyến nghị: nhiều agent dùng chung một checkout, với đề xuất, log và dấu hiệu đóng việc.
+Kích thước: 19 plugin · 125 công cụ · ~26802 token khi khởi động
 
 - git
 - search
@@ -305,6 +317,9 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 
 ### audit
 
+Cách dùng khuyến nghị: rà soát và kiểm toán chỉ đọc.
+Kích thước: 15 plugin · 89 công cụ · ~21955 token khi khởi động
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 
 ### docs-web
 
+Cách dùng khuyến nghị: tài liệu và trang web.
+Kích thước: 8 plugin · 61 công cụ · ~15696 token khi khởi động
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 - env
 
 ### everything
+
+Cách dùng khuyến nghị: chẩn đoán với mọi plugin đã phát hành, kể cả plugin dùng mạng hoặc thông tin xác thực.
+Kích thước: 58 plugin · 236 công cụ · ~59122 token khi khởi động
 
 - adaptive-optimizer
 - agent-orchestrator

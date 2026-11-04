@@ -244,10 +244,16 @@ deno run -A npm:@delendai/cli validate
 
 ### minimal
 
+الاستخدام الموصى به: التوجيه للقراءة فقط و smoke tests في CI.
+الحجم: 2 إضافة · 42 أداة · ~11805 رمز عند البدء
+
 - git
 - search
 
 ### solo
+
+الاستخدام الموصى به: مطوّر واحد ووكيل واحد في العمل اليومي؛ وهو الافتراضي في `init`.
+الحجم: 10 إضافة · 79 أداة · ~19037 رمز عند البدء
 
 - git
 - search
@@ -261,6 +267,9 @@ deno run -A npm:@delendai/cli validate
 - refactor
 
 ### team-pr
+
+الاستخدام الموصى به: فريق يعمل عبر pull requests مع اصطلاحات للـ commits والاختبارات.
+الحجم: 18 إضافة · 116 أداة · ~25446 رمز عند البدء
 
 - git
 - search
@@ -282,6 +291,9 @@ deno run -A npm:@delendai/cli validate
 - error-reporting
 
 ### swarm
+
+الاستخدام الموصى به: عدة وكلاء يتشاركون checkout واحدًا، مع المقترحات والسجلات وعلامات الإغلاق.
+الحجم: 19 إضافة · 125 أداة · ~26802 رمز عند البدء
 
 - git
 - search
@@ -305,6 +317,9 @@ deno run -A npm:@delendai/cli validate
 
 ### audit
 
+الاستخدام الموصى به: مراجعات وتدقيقات للقراءة فقط.
+الحجم: 15 إضافة · 89 أداة · ~21955 رمز عند البدء
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ deno run -A npm:@delendai/cli validate
 
 ### docs-web
 
+الاستخدام الموصى به: التوثيق ومواقع الويب.
+الحجم: 8 إضافة · 61 أداة · ~15696 رمز عند البدء
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ deno run -A npm:@delendai/cli validate
 - env
 
 ### everything
+
+الاستخدام الموصى به: تشخيص بكل الإضافات المنشورة، بما فيها التي تستخدم الشبكة أو بيانات الاعتماد.
+الحجم: 58 إضافة · 236 أداة · ~59122 رمز عند البدء
 
 - adaptive-optimizer
 - agent-orchestrator

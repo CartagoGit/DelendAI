@@ -244,10 +244,16 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 
 ### minimal
 
+Uso consigliato: orientamento in sola lettura e smoke test di CI.
+Dimensione: 2 plugin · 42 strumenti · ~11805 token all’avvio
+
 - git
 - search
 
 ### solo
+
+Uso consigliato: uno sviluppatore e un agente nel lavoro quotidiano; è il default di `init`.
+Dimensione: 10 plugin · 79 strumenti · ~19037 token all’avvio
 
 - git
 - search
@@ -261,6 +267,9 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 - refactor
 
 ### team-pr
+
+Uso consigliato: un team che lavora con pull request, con convenzioni di commit e di test.
+Dimensione: 18 plugin · 116 strumenti · ~25446 token all’avvio
 
 - git
 - search
@@ -282,6 +291,9 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 - error-reporting
 
 ### swarm
+
+Uso consigliato: più agenti che condividono un checkout, con proposte, log e marcatori di chiusura.
+Dimensione: 19 plugin · 125 strumenti · ~26802 token all’avvio
 
 - git
 - search
@@ -305,6 +317,9 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 
 ### audit
 
+Uso consigliato: revisioni e audit in sola lettura.
+Dimensione: 15 plugin · 89 strumenti · ~21955 token all’avvio
+
 - git
 - search
 - docs
@@ -323,6 +338,9 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 
 ### docs-web
 
+Uso consigliato: documentazione e siti web.
+Dimensione: 8 plugin · 61 strumenti · ~15696 token all’avvio
+
 - git
 - search
 - memory
@@ -333,6 +351,9 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 - env
 
 ### everything
+
+Uso consigliato: diagnostica con tutti i plugin pubblicati, anche quelli che usano la rete o credenziali.
+Dimensione: 58 plugin · 236 strumenti · ~59122 token all’avvio
 
 - adaptive-optimizer
 - agent-orchestrator
