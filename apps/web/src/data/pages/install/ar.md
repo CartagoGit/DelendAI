@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## اختر بيئة IDE الخاصة بك
 
-تستخدم المقاطع أدناه الإعداد المسبق standard عبر bun. الصق JSON كما هو في الملف المستهدف، ثم دع بيئة IDE تسجّل خادم stdio.
+تستخدم المقاطع أدناه الإعداد المسبق solo عبر bun. الصق JSON كما هو في الملف المستهدف، ثم دع بيئة IDE تسجّل خادم stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ deno run -A npm:@delendai/cli validate
 ### minimal
 
 الاستخدام الموصى به: التوجيه للقراءة فقط و smoke tests في CI.
-الحجم: إضافتان.
+الحجم: 2 إضافة · 42 أداة · ~11805 رمز عند البدء
 
 - git
 - search
 
-### standard
+### solo
 
-الاستخدام الموصى به: عمل وكيل واحد مع memory و docs ومساعدة lint والأنواع والتبعيات.
-الحجم: 7 إضافات.
+الاستخدام الموصى به: مطوّر واحد ووكيل واحد في العمل اليومي؛ وهو الافتراضي في `init`.
+الحجم: 10 إضافة · 79 أداة · ~19037 رمز عند البدء
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+الاستخدام الموصى به: فريق يعمل عبر pull requests مع اصطلاحات للـ commits والاختبارات.
+الحجم: 18 إضافة · 116 أداة · ~25446 رمز عند البدء
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-الاستخدام الموصى به: تنسيق متعدد الوكلاء مع الأقفال والإشعارات والسجلات وعلامات الإغلاق. يظل audit اختياريًا ويجب تحميله منفصلًا بعد انتهاء الجولة.
-الحجم: 13 إضافة.
+الاستخدام الموصى به: عدة وكلاء يتشاركون checkout واحدًا، مع المقترحات والسجلات وعلامات الإغلاق.
+الحجم: 19 إضافة · 125 أداة · ~26802 رمز عند البدء
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-الاستخدام الموصى به: إعداد swarm مع تكاملات host-only مثل web-fetch و issues عندما يوفّرها المضيف.
-الحجم: 15 إضافة.
+الاستخدام الموصى به: مراجعات وتدقيقات للقراءة فقط.
+الحجم: 15 إضافة · 89 أداة · ~21955 رمز عند البدء
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+الاستخدام الموصى به: التوثيق ومواقع الويب.
+الحجم: 8 إضافة · 61 أداة · ~15696 رمز عند البدء
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+الاستخدام الموصى به: تشخيص بكل الإضافات المنشورة، بما فيها التي تستخدم الشبكة أو بيانات الاعتماد.
+الحجم: 58 إضافة · 236 أداة · ~59122 رمز عند البدء
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## التحقّق
 

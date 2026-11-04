@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## IDE を選ぶ
 
-以下のスニペットは bun 上の standard プリセットを使います。JSON を対象ファイルへそのまま貼り付け、IDE 側で stdio サーバーを登録してください。
+以下のスニペットは bun 上の solo プリセットを使います。JSON を対象ファイルへそのまま貼り付け、IDE 側で stdio サーバーを登録してください。
 
 ### VS Code
 
@@ -81,7 +81,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ deno run -A npm:@delendai/cli validate
 ### minimal
 
 推奨用途: 読み取り専用のオリエンテーションと CI smoke test。
-サイズ: 2 プラグイン。
+サイズ: 2 プラグイン · 42 ツール · ~11805 コールドスタート時のトークン
 
 - git
 - search
 
-### standard
+### solo
 
-推奨用途: memory、docs、lint、型、依存関係の補助を含む single-agent 作業。
-サイズ: 7 プラグイン。
+推奨用途: 日常のコーディングを行う開発者 1 人とエージェント 1 つ。`init` の既定値。
+サイズ: 10 プラグイン · 79 ツール · ~19037 コールドスタート時のトークン
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+推奨用途: pull request で進めるチーム。コミットとテストの規約付き。
+サイズ: 18 プラグイン · 116 ツール · ~25446 コールドスタート時のトークン
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-推奨用途: lock、通知、logs、close marker を伴う multi-agent 協調。audit は引き続き opt-in であり、1 ラウンド終了後に別途読み込むべきです。
-サイズ: 13 プラグイン。
+推奨用途: 1 つの checkout を共有する複数のエージェント。提案、ログ、クローズマーカー付き。
+サイズ: 19 プラグイン · 125 ツール · ~26802 コールドスタート時のトークン
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-推奨用途: swarm プリセットに web-fetch や issues のような host-only 統合を加えたいとき。ホストがそれらを公開している場合に使います。
-サイズ: 15 プラグイン。
+推奨用途: 読み取り専用のレビューと監査。
+サイズ: 15 プラグイン · 89 ツール · ~21955 コールドスタート時のトークン
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+推奨用途: ドキュメントと Web サイト。
+サイズ: 8 プラグイン · 61 ツール · ~15696 コールドスタート時のトークン
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+推奨用途: ネットワークや認証情報を使うものを含む、公開済みの全プラグインによる診断。
+サイズ: 58 プラグイン · 236 ツール · ~59122 コールドスタート時のトークン
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## 検証
 

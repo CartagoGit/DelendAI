@@ -81,7 +81,7 @@ Geltungsbereich: Projekt
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Geltungsbereich: Projekt / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Geltungsbereich: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Geltungsbereich: Projekt
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Geltungsbereich: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Geltungsbereich: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Geltungsbereich: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ Presets sind additiv. Starte mit dem kleinsten Satz und erweitere die Plugin-Obe
 ### minimal
 
 Empfohlener Einsatz: Read-only-Orientierung und CI-Smoke-Tests.
-Größe: 2 Plugins.
+Größe: 2 Plugins · 42 Tools · ~11805 Tokens beim Kaltstart
 
 - git
 - search
 
-### standard
+### solo
 
-Empfohlener Einsatz: Single-Agent-Arbeit mit Memory, Docs, Lint-, Typ- und Dependency-Hilfe.
-Größe: 7 Plugins.
+Empfohlener Einsatz: eine Entwicklerin oder ein Entwickler mit einem Agenten im Alltag; der Standard von `init`.
+Größe: 10 Plugins · 79 Tools · ~19037 Tokens beim Kaltstart
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Empfohlener Einsatz: ein Team, das über Pull Requests arbeitet, mit Commit- und Testkonventionen.
+Größe: 18 Plugins · 116 Tools · ~25446 Tokens beim Kaltstart
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Empfohlener Einsatz: Multi-Agent-Koordination mit Locks, Benachrichtigungen, Logs und Close-Markern. Audit bleibt opt-in und sollte nach Abschluss einer Runde separat geladen werden.
-Größe: 13 Plugins.
+Empfohlener Einsatz: mehrere Agenten mit gemeinsamem Checkout, mit Vorschlägen, Logs und Abschlussmarkern.
+Größe: 19 Plugins · 125 Tools · ~26802 Tokens beim Kaltstart
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Empfohlener Einsatz: das Swarm-Preset plus host-only Integrationen wie web-fetch und issues, wenn der Host sie bereitstellt.
-Größe: 15 Plugins.
+Empfohlener Einsatz: schreibgeschützte Reviews und Audits.
+Größe: 15 Plugins · 89 Tools · ~21955 Tokens beim Kaltstart
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Empfohlener Einsatz: Dokumentation und Websites.
+Größe: 8 Plugins · 61 Tools · ~15696 Tokens beim Kaltstart
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Empfohlener Einsatz: Diagnose mit jedem veröffentlichten Plugin, auch denen mit Netzwerk- oder Zugangsdatenzugriff.
+Größe: 58 Plugins · 236 Tools · ~59122 Tokens beim Kaltstart
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Prüfen
 
