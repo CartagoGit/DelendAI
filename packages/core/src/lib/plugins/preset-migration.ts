@@ -19,7 +19,7 @@
  *    matches, once, and touches nothing else.
  */
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import {
 	PRESET_MIGRATION_JOURNAL,
@@ -175,7 +175,9 @@ export const migrateWorkspacePresetProvenance = async (input: {
 	readonly now?: Date | undefined;
 }): Promise<IPresetMigrationResult> => {
 	const path =
-		input.configPath ?? join(input.workspace, DEFAULT_CONFIG_FILENAME);
+		input.configPath === undefined
+			? join(input.workspace, DEFAULT_CONFIG_FILENAME)
+			: resolve(input.workspace, input.configPath);
 	const text = await readFile(path, 'utf8').catch(() => undefined);
 	const plugins = parseConfigFile(text).plugins;
 	if (plugins === undefined) return { outcome: 'unchanged' };
