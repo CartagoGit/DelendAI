@@ -27,8 +27,8 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 - global_gate: type
 
 ### S1 — Permission is decided by the structured operation
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`
+- **Status**: review
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/acp-permission.constant.ts`, `packages/core/src/lib/contracts/interfaces/acp.interface.ts`, `packages/core/src/lib/shared/acp-session.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`
 - **Gate**: type
 - acceptance:
   - "A request whose title names an allowed tool but whose structured operation is another tool is refused."
@@ -36,8 +36,8 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
   - "A spec pins a title that holds both an allowed and a forbidden tool name."
 
 ### S2 — Starting a package that is not installed needs the project to allow it
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/contracts/constants/trusted-agent-packages.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent that needs npx or uvx to fetch its package starts only when the project allows fetching it; otherwise the refusal names the setting that allows it."
