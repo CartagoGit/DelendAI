@@ -60,11 +60,11 @@ The owner's machine suffered on 2026-11-03. Measured in WSL:
   - "Maintenance and proofs run at low OS priority with capped parallelism by default."
 
 ### S5 — init writes one MCP entry per host
-- **Status**: pending
+- **Status**: retired
 - **Files**: `packages/cli/src/lib/init/init-development-setup.service.ts`
 - **Gate**: type
 - acceptance:
-  - "init writes one MCP entry for an editor that loads both .vscode/mcp.json and .mcp.json, not two."
+  - "Answered by S2 and S3, not built: a second server on the same workspace stays idle at about 0.7% CPU (only the lease holder polls and maintains), so the duplicate entry costs almost nothing. Dropping `.vscode/mcp.json` would leave Copilot without delendai wherever VS Code does not load `.mcp.json`, and VS Code documents no setting that says whether it does (`chat.mcp.discovery.enabled` selects per-source discovery of other applications' configs; `chat.mcp.workspaceRootConfig.enabled` only governs the Add Server flow). Undocumented behaviour must not decide whether Copilot reaches delendai, so init keeps writing both files."
 
 ## acceptance
 
@@ -72,4 +72,4 @@ The owner's machine suffered on 2026-11-03. Measured in WSL:
 - Only the lease holder polls and maintains; other servers serve their session and stay idle.
 - The idle 6 percent CPU is attributed by profile and removed; an idle server measures near zero.
 - Maintenance and proofs run at low OS priority with capped parallelism by default.
-- init writes one MCP entry for an editor that loads both .vscode/mcp.json and .mcp.json, not two.
+- S5 retired: answered by S2 and S3 (the idle duplicate server costs about 0.7% CPU); init keeps writing both MCP files.

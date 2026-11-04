@@ -489,29 +489,17 @@ export const renderInitBundle = async (
 			workspace: '${workspaceFolder}',
 			serverName: answers.serverName,
 		});
-	// One server entry per host. VS Code loads the `.mcp.json` Claude Code
-	// reads, so a project that uses both gets that one file; a project that
-	// uses only VS Code's Copilot gets `.vscode/mcp.json`. Writing both made
-	// one editor start two servers on the same workspace.
-	const mcpHosts = (
-		await initHosts(answers.workspaceRoot, { hosts: answers.hosts })
-	).map((host) => host.id);
-	const vscodeOnly =
-		!mcpHosts.includes('claude') && mcpHosts.includes('copilot');
 	const files: IRenderedFile[] = [
 		renderDelendaiConfig(answers, resolvedPlugins, options.development),
-		...(vscodeOnly
-			? [renderVscodeMcpJson(launch, answers.serverName)]
-			: [
-					renderGenericMcpJson(
-						buildCanonicalLaunch({
-							workspace: '.',
-							serverName: answers.serverName,
-						}),
-						answers.serverName,
-					),
-				]),
+		renderVscodeMcpJson(launch, answers.serverName),
 		renderVscodeSettings(),
+		renderGenericMcpJson(
+			buildCanonicalLaunch({
+				workspace: '.',
+				serverName: answers.serverName,
+			}),
+			answers.serverName,
+		),
 	];
 	if (answers.generateAgentMd) {
 		files.push(
