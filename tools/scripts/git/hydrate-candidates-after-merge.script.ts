@@ -24,7 +24,11 @@
  * think their merge failed.
  */
 
-import { runGitCommand } from '@delendai/core/runtime';
+import {
+	backgroundEnv,
+	lowPriority,
+	runGitCommand,
+} from '@delendai/core/runtime';
 import { execFileSync, spawn } from 'node:child_process';
 import {
 	mkdirSync,
@@ -128,8 +132,12 @@ const runSteps = (root: string, names: ReadonlySet<string>): void => {
 	for (const [script, timeout] of HYDRATION_STEPS) {
 		if (!names.has(script)) continue;
 		try {
-			execFileSync('bun', [script, '--apply'], {
+			// Background maintenance is the owner's machine's guest: lowest
+			// priority, half the cores.
+			const step = lowPriority('bun', [script, '--apply']);
+			execFileSync(step.command, [...step.args], {
 				cwd: root,
+				env: backgroundEnv(),
 				stdio: ['ignore', 'inherit', 'inherit'],
 				timeout,
 			});
@@ -172,8 +180,10 @@ const main = (): void => {
 		mkdirSync(join(root, '.cache', 'delendai'), { recursive: true });
 		if (logIsFull(sizeOf(log))) renameSync(log, `${log}.1`);
 		const out = openSync(log, 'a');
-		spawn(process.execPath, [import.meta.path, '--run'], {
+		const pass = lowPriority(process.execPath, [import.meta.path, '--run']);
+		spawn(pass.command, [...pass.args], {
 			cwd: root,
+			env: backgroundEnv(),
 			detached: true,
 			stdio: ['ignore', out, out],
 		}).unref();

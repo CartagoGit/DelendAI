@@ -2,14 +2,15 @@
 id: x01004
 title: "A new project under a pull-request profile can make its first commit"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 399249f9-df82-4a43-ac2c-bc0df3e14dc2
-last-correlation-id: 399249f9-df82-4a43-ac2c-bc0df3e14dc2
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T19:24:59.160Z
+last-transition-id: c6a115f5-8e18-4551-8edd-552c2e3f41b2
+last-correlation-id: c6a115f5-8e18-4551-8edd-552c2e3f41b2
+last-transition-from: paused
+last-transition-at: 2026-11-04T15:56:41.162Z
+paused-reason: "Paused 2026-11-04: temporary hop to repair canonical folder placement after force transition"
 ---
 
 # x01004 — A new project under a pull-request profile can make its first commit
@@ -39,7 +40,7 @@ Reported by the owner on 2026-11-02: a project started with a profile that lands
   - "In a fresh repository under shared-checkout-pr, the first commit on the integration branch succeeds and the push that creates it on an empty forge succeeds; a second direct commit on it is refused as before. A spec covers each."
 - shipped-in: `03de08ec0861`
 - review-state: in_review
-- review-implementer: claude-opus-5-5
+- review-implementer: gpt-5.3-codex
 
 ## acceptance
 

@@ -24,6 +24,7 @@ import {
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
+import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
@@ -153,10 +154,11 @@ const refreshCandidatesInBackground = async (
 	if (reason !== undefined) return;
 	try {
 		const { execFile } = await import('node:child_process');
+		const refresh = lowPriority('bun', [CANDIDATE_MAINTENANCE]);
 		execFile(
-			'bun',
-			[CANDIDATE_MAINTENANCE],
-			{ cwd: root, timeout: 180_000 },
+			refresh.command,
+			[...refresh.args],
+			{ cwd: root, timeout: 180_000, env: backgroundEnv() },
 			(error) => {
 				if (error !== null) {
 					process.stderr.write(
