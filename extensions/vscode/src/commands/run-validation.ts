@@ -2,6 +2,7 @@ import type { IDelendaiToolOutputs } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
+import { resolveWorkspaceFolder } from './resolve-workspace-folder';
 import { runInPrivateTerminalWithRetry } from './private-terminal-supervisor';
 
 export const RUN_VALIDATION_COMMAND = 'delendai.runValidation';
@@ -21,6 +22,7 @@ interface IQualityRunOutput {
 export const registerRunValidationCommand = (deps: ICommandDeps) =>
 	deps.vscode.commands.registerCommand(RUN_VALIDATION_COMMAND, async () => {
 		try {
+			const cwd = (await resolveWorkspaceFolder(deps.vscode))?.uri.fsPath;
 			const matrix = await deps.client.request<
 				Record<string, never>,
 				IDelendaiToolOutputs['delendai_get_validation_matrix']
@@ -37,6 +39,7 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 							deps.vscode,
 							failedCommand.command,
 							{
+								...(cwd === undefined ? {} : { cwd }),
 								timeoutMs: failedCommand.timedOut
 									? 15_000
 									: 120_000,

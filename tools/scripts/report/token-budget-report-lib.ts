@@ -494,3 +494,14 @@ export const asPresetId = (value: string): IPresetKind => value as IPresetKind;
  */
 export const toolsListJsonText = (tools: readonly IToolListEntry[]): string =>
 	JSON.stringify(tools);
+
+/**
+ * What a preset's measurement reads: the code that boots it and everything
+ * that code can load from the repository, as git pathspecs. Proposals and
+ * the web site are loaded by no server.
+ */
+export const PRESET_MEASURED_INPUTS: readonly string[] = [
+	':/',
+	':!docs/delendai/proposals',
+	':!apps/web',
+];

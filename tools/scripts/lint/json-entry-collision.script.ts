@@ -47,6 +47,7 @@ import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
 import { repoRoot } from '../lib/monorepo-paths.ts';
 import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
@@ -164,33 +165,30 @@ export const scanFile = async (
 	// failure mode: a key line that dropped a tab relative to its
 	// enclosing block.
 	const keyRx = /^([ \t]*)(?:"(?:[^"\\]|\\.)*"|\d+)\s*:/;
-	const structuralDepth = (lineIndex: number): number => {
+	// The depth at the start of each line, in one pass over the file: a
+	// walk from the top for every key was quadratic, 31 s over the tree.
+	const depthAt: number[] = [];
+	{
 		let depth = 0;
 		let inString = false;
 		let escaped = false;
-		for (let i = 0; i < lineIndex; i += 1) {
-			const line = stripped[i] ?? '';
-			for (let j = 0; j < line.length; j += 1) {
-				const ch = line[j] ?? '';
-				const next = line[j + 1] ?? '';
+		for (const line of stripped) {
+			depthAt.push(depth);
+			for (const ch of line) {
 				if (inString) {
 					if (escaped) escaped = false;
 					else if (ch === '\\') escaped = true;
 					else if (ch === '"') inString = false;
 					continue;
 				}
-				if (ch === '"') {
-					inString = true;
-				} else if (ch === '{' || ch === '[') {
-					depth += 1;
-				} else if (ch === '}' || ch === ']') {
-					depth -= 1;
-				}
-				void next;
+				if (ch === '"') inString = true;
+				else if (ch === '{' || ch === '[') depth += 1;
+				else if (ch === '}' || ch === ']') depth -= 1;
 			}
 		}
-		return depth;
-	};
+	}
+	const structuralDepth = (lineIndex: number): number =>
+		depthAt[lineIndex] ?? 0;
 	for (let idx = 0; idx < stripped.length; idx += 1) {
 		const strippedLine = stripped[idx] ?? '';
 		const match = keyRx.exec(strippedLine);
@@ -249,16 +247,21 @@ const listTrackedJsonFiles = (rootDir: string): readonly string[] => {
 
 const main = async (): Promise<void> => {
 	const rootDir = repoRoot();
-	const files = listTrackedJsonFiles(rootDir);
+	// A file's verdict is its own: a change is judged in the files it touched.
+	const judged = filesToJudge(
+		listTrackedJsonFiles(rootDir),
+		(rel) => rel,
+		changedFilesScope(rootDir),
+	);
 	const allViolations: IViolation[] = [];
-	for (const rel of files) {
+	for (const rel of judged.files) {
 		const abs = join(rootDir, rel);
 		const found = await scanFile(abs, rel.split(sep).join('/'));
 		allViolations.push(...found);
 	}
 	if (allViolations.length === 0) {
 		console.log(
-			'[json-entry-collision] OK — no glued JSON entries, no indent drift.',
+			`[json-entry-collision] OK — ${String(judged.files.length)} JSON file(s) of ${judged.over}, no glued entries, no indent drift.`,
 		);
 		return;
 	}

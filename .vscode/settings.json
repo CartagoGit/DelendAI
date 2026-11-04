@@ -224,5 +224,11 @@
 	},
 	"[yaml]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"files.watcherExclude": {
+		".cache/**": true
+	},
+	"search.exclude": {
+		".cache/**": true
 	}
 }
