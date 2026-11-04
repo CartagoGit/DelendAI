@@ -3,8 +3,15 @@
  * a second caller waits (and says for whom), and a dead holder frees the slot.
  */
 // delendai:timing-is-the-subject — a slot holder must still be running when a second process asks for its turn.
-import { spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +23,10 @@ import {
 	readComputeSlotLane,
 	urgentLogPath,
 } from '@delendai/core/lib/shared/compute-slot-lane.service';
-import { withComputeSlot } from '@delendai/core/lib/shared/compute-slot.service';
+import {
+	computeSlotPath,
+	withComputeSlot,
+} from '@delendai/core/lib/shared/compute-slot.service';
 
 const dirs: string[] = [];
 const lockIn = (): string => {
@@ -102,7 +112,10 @@ describe('withComputeSlot', () => {
 			'bun',
 			[
 				'-e',
-				`import { withComputeSlot } from ${JSON.stringify(service)};
+				`import {
+	computeSlotPath,
+	withComputeSlot,
+} from ${JSON.stringify(service)};
 await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, label: 'doomed', run: async () => { console.log('held'); await new Promise(() => {}); } });`,
 			],
 			{ stdio: ['ignore', 'pipe', 'inherit'] },
@@ -239,6 +252,117 @@ describe('withComputeSlot across processes', () => {
 		expect(readFileSync(marker, 'utf8').trim().split('\n')).toEqual([
 			'aaa',
 		]);
+	});
+});
+
+describe('withComputeSlot unit turns, failures', () => {
+	it('gives a joiner the failure of the claimant, code included', async () => {
+		const lockPath = lockIn();
+		const ask = () =>
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u2',
+				tip: 'ccc',
+				notify: () => undefined,
+				run: () => {
+					throw Object.assign(new Error('proof broke'), {
+						code: 'proof-broke',
+					});
+				},
+			});
+		const first = ask();
+		const second = ask();
+		const settled = await Promise.allSettled([first, second]);
+		for (const outcome of settled) {
+			expect(outcome).toMatchObject({
+				status: 'rejected',
+				reason: { message: 'proof broke', code: 'proof-broke' },
+			});
+		}
+	});
+
+	it('takes over a claim whose process is gone', async () => {
+		const lockPath = lockIn();
+		const unitHash = createHash('sha1')
+			.update('u3')
+			.digest('hex')
+			.slice(0, 16);
+		const dir = `${lockPath}.units/${unitHash}`;
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(
+			join(dir, 'ddd.claim'),
+			JSON.stringify({ pid: 2 ** 22 + 12345, id: 'gone' }),
+		);
+		await expect(
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u3',
+				tip: 'ddd',
+				notify: () => undefined,
+				run: () => 'mine',
+			}),
+		).resolves.toBe('mine');
+	});
+
+	it('runs again after a finished turn of the same tip', async () => {
+		const lockPath = lockIn();
+		let runs = 0;
+		const ask = () =>
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u4',
+				tip: 'eee',
+				notify: () => undefined,
+				run: () => ++runs,
+			});
+		expect(await ask()).toBe(1);
+		expect(await ask()).toBe(2);
+	});
+});
+
+describe('withComputeSlot superseded turns', () => {
+	it('proves its own tip when the turn it followed gave way and nothing newer answers', async () => {
+		const lockPath = lockIn();
+		const unitHash = createHash('sha1')
+			.update('u5')
+			.digest('hex')
+			.slice(0, 16);
+		const dir = `${lockPath}.units/${unitHash}`;
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(
+			join(dir, 'fff.claim'),
+			JSON.stringify({ pid: process.pid, id: 'gave-way' }),
+		);
+		writeFileSync(
+			join(dir, 'fff.gave-way.result'),
+			JSON.stringify({ superseded: true }),
+		);
+		setTimeout(() => rmSync(join(dir, 'fff.claim'), { force: true }), 80);
+		await expect(
+			withComputeSlot({
+				lockPath,
+				label: 'proof',
+				unit: 'u5',
+				tip: 'fff',
+				notify: () => undefined,
+				run: () => 'own',
+			}),
+		).resolves.toBe('own');
+	});
+});
+
+describe('computeSlotPath', () => {
+	it('lives in the shared git directory, and is absent outside a repository', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'compute-slot-git-'));
+		dirs.push(dir);
+		expect(computeSlotPath(dir)).toBeUndefined();
+		spawnSync('git', ['init', '-q', dir]);
+		expect(computeSlotPath(dir)).toMatch(
+			/\.git[\\/]delendai[\\/]heavy-compute\.lock$/u,
+		);
 	});
 });
 
