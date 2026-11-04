@@ -31,14 +31,16 @@ Joint audit a00095. G42: escapeHtml exists six times and five of them do not esc
 - global_gate: type
 
 ### S1 — One escapeHtml
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/ui-extension/src/dashboard/format.ts`, `packages/ui-extension/src/dashboard/render-output-schema.ts`, `extensions/vscode/src/views/render-output-schema.ts`, `extensions/vscode/src/webviews/setup-github.ts`, `extensions/vscode/src/dev/entry.ts`, `extensions/vscode/src/commands/types.ts`, `apps/shared/src/public/index.ts`, `packages/ui-extension/src/dashboard/format.ts`, `extensions/vscode/src/commands/types.ts`
 - **Gate**: type
 - acceptance:
   - "Every renderer imports the one escapeHtml, defined in `@delendai/shared` and re-exported by ui-extension, which escapes & < > " and '; no second definition remains in a renderer (G42). The extension scaffold's generated template keeps its own, since it writes into a project with no dependency on these packages. `extensions/vscode/src/dev/entry.ts`, the local development harness that is not shipped, keeps its own too."
 - shipped-in: `87cdd379e676`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 87cdd379e676 is stale: S1 renderer files changed afterward (e.g. 3cef0ac90). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ### S2 — CSP without unsafe-inline, built safely
 - **Status**: review
