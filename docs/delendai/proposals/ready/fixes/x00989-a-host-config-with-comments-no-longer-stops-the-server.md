@@ -2,14 +2,14 @@
 id: x00989
 title: "A host config with comments no longer stops the server"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-10-28
-last-transition-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
-last-correlation-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T09:54:24.414Z
+last-transition-id: f40737a4-04f6-44fb-b5ef-ead7e8afc464
+last-correlation-id: f40737a4-04f6-44fb-b5ef-ead7e8afc464
+last-transition-from: review
+last-transition-at: 2026-11-04T23:09:55.802Z
 ---
 
 # x00989 — A host config with comments no longer stops the server
@@ -71,7 +71,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -81,8 +81,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
   - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
 - shipped-in: `9767d0086`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ## acceptance
 
