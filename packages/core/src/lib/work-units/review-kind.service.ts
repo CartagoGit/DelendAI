@@ -69,7 +69,7 @@ export const withReviewKind = async (
 		docsDir: await readWorkspaceDocsDir(root),
 		proposal,
 	});
-	return path !== undefined && path.split('/').includes('review')
+	return path?.split('/').includes('review') === true
 		? { args: asReviewUnit(args) }
 		: { args };
 };

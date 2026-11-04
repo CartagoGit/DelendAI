@@ -10,7 +10,7 @@
  */
 import type { IDivergedReviewPack } from '../contracts/interfaces/diverged-review-pack.interface';
 
-/** The agent and the `<proposal>-<slice>-g<n>` unit a ref names, whatever its kind. */
+/** The lane, agent, kind and unit a unit ref names. */
 const UNIT_OF_REF =
 	/^(?:refs\/heads\/)?(?<prefix>[^/]+)\/(?<lane>wip|pr)\/(?<agent>[^/]+)\/(?<kind>[^/]+)\/(?<unit>[a-z]\d{5,}-[^/]+|batch-[^/]+)(?:\/|$)/iu;
 
