@@ -30,6 +30,10 @@ import {
 } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {
@@ -291,11 +295,13 @@ export const namespaceRuleset = (
 		...protectedBranchNames(policy.branches).map(
 			(branch) => `refs/heads/${branch}`,
 		),
-		...(policy.branches.workRefVisibility === 'visible' &&
-		policy.branches.workRefPrefix.length > 0
-			? [
-					`${policy.branches.workRefPrefix.startsWith('refs/') ? policy.branches.workRefPrefix : `refs/${policy.branches.workRefPrefix}`}**/*`,
-				]
+		// Every owned namespace, the former ones included: a unit entered
+		// before a namespace change still publishes under its own (f00808).
+		...(policy.branches.workRefVisibility === 'visible'
+			? ownedWorkRefPrefixes(policy.branches).map(
+					(prefix) =>
+						`${prefix.startsWith('refs/') ? prefix : `refs/${prefix}`}**/*`,
+				)
 			: []),
 		// The publication namespace is as DEEP as the work namespace,
 		// because a publication carries the name of the work it publishes
@@ -307,9 +313,9 @@ export const namespaceRuleset = (
 		// every `pr/` ref in this namespace had no agent, no slice and no
 		// generation in it. The two namespaces share a shape; they now
 		// share a depth.
-		...(policy.branches.publicationRefPrefix === ''
-			? []
-			: [`refs/heads/${policy.branches.publicationRefPrefix}**/*`]),
+		...ownedPublicationRefPrefixes(policy.branches)
+			.filter((prefix) => prefix !== '')
+			.map((prefix) => `refs/heads/${prefix}**/*`),
 		...policy.branches.foreignRefPrefixes.map(
 			(prefix) => `refs/heads/${prefix}**`,
 		),
