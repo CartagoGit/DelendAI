@@ -20,6 +20,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 
 ## non-goals
 
+- Of the 91 git processes of `work status`, 52 run in the `__serve` MCP server child that every CLI `work` command starts and 39 in the command itself (strace -ff, by parent process); the child's boot is the about 1 s below. This proposal bounds the command's own spawns; the child belongs to the CLI startup proposal.
 - The about 1 s of boot and module load before any work subcommand runs (`delendai work` 1.53 s against `--version` 0.55 s): it is a separate proposal, measured with a CPU profile.
 - Changing any output, refusal, ref name or exit code of a work command.
 - Caching anything across command invocations: every memo lives for one invocation only.
@@ -30,11 +31,11 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 
 ### S1 — Count every git spawn through the seam
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`, `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
+- **Files**: `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`, `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`readGit`, `gitVerbatim` and `runGitCommand` report each spawn (cwd, args) to one injectable observer declared in git-read.interface.ts, and consult an optional per-invocation reader cache through the same contract; with neither installed they behave exactly as today."
-  - "unit-ref-rename.service.ts spawns git only through the seam."
+  - "`readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` installed with `useGitReadCache`, and every spawn is reported to its `ran`. With neither installed they behave exactly as today."
+  - "unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`."
   - "git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing."
 
 ### S2 — Memoise what does not change within one invocation
@@ -79,8 +80,8 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 
 ## acceptance
 
-- `readGit`, `gitVerbatim` and `runGitCommand` report each spawn (cwd, args) to one injectable observer declared in git-read.interface.ts, and consult an optional per-invocation reader cache through the same contract; with neither installed they behave exactly as today.
-- unit-ref-rename.service.ts spawns git only through the seam.
+- `readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` installed with `useGitReadCache`, and every spawn is reported to its `ran`. With neither installed they behave exactly as today.
+- unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`.
 - git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing.
 - One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`.
 - `merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable).
