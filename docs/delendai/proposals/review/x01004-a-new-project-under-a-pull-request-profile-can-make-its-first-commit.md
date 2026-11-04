@@ -39,7 +39,7 @@ Reported by the owner on 2026-11-02: a project started with a profile that lands
   - "In a fresh repository under shared-checkout-pr, the first commit on the integration branch succeeds and the push that creates it on an empty forge succeeds; a second direct commit on it is refused as before. A spec covers each."
 - shipped-in: `03de08ec0861`
 - review-state: in_review
-- review-implementer: claude-opus-5-5
+- review-implementer: gpt-5.3-codex
 
 ## acceptance
 
