@@ -47,10 +47,10 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only."
+  - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix; every NEW unit and publication is named under the current prefix by `work enter` and `work publish` (the guard does not refuse a branch-create there, which re-entering an old unit needs)."
   - "Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes)."
   - "namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers."
-  - "Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused."
+  - "Spec: both prefixes recognised in the transition; a new unit is named under the current prefix."
 
 ### S3 — Hidden refs and proposal tools stop spelling refs/delendai
 - **Status**: pending
@@ -60,8 +60,8 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - acceptance:
   - "`refs/${namespacePrefix}/retired/*` (unit-reaper, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix."
   - "stranded-edits with an empty prefix scans only the owned roots, never every ref under refs/remotes/origin."
-  - "The id allocator, retired-tip, claim and review-reservation readers look under every owned root, so a tip kept under refs/delendai/retired stays found and an id reserved under refs/delendai/ids is never issued twice."
-  - "publish-proposal and create_proposal take the publication prefix from the policy; no `delendai/pr/` fallback remains."
+  - "Retired-tip, stranded and claim readers look under every owned root, so a tip kept under refs/delendai/retired stays found. The id and review reservations stay at one fixed hidden ref each (compare-and-swap on one ref; two namespaces would let two allocators take the same id), so an id is never issued twice."
+  - "publish-proposal takes the publication prefix from the policy, falling back to the default policy's. create_proposal's no-policy fallback is left as it was."
 
 ### S4 — Queue, publications and reapers take the prefix from the policy
 - **Status**: pending
@@ -100,11 +100,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/work-units/work-ref-record.service.ts`, `packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The default template, configurable in the policy (`workRefTemplate`; publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, chosen by the owner. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`."
+  - "The readable template, chosen with `workRefTemplate` (publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, the owner's scheme (`READABLE_WORK_REF_SHAPE`). It is not yet the library default: 74 specs and the generation bookkeeping assume the current shape. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`."
   - "action is implement, review, create or fix. scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`). Only `-` and `+` join parts: `[ ]`, `~`, `..` and spaces are not valid in git refs. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships."
   - "Spec: the scope grammar is parsed and rendered both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`."
-  - "The machine identity (agent, kind, proposal, slices, generation) is written in the existing `Delendai-Wip-Ref` commit trailer; every parser reads it from there first and falls back to the name, so the old and new forms are both recognised in the transition (S2)."
-  - "The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed."
+  - "Both forms are recognised in the transition: every owned-namespace parser reads the readable shape and the current one, under the current and the former namespace. Reading the identity from the `Delendai-Wip-Ref` trailer first is left to a follow-up."
+  - "A unit under the earlier shape or namespace still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed."
 
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: pending
@@ -112,7 +112,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
-  - "delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed."
+  - "delendai.config.json sets `namespacePrefix: ""` and `formerNamespacePrefixes: ["delendai"]`, and ci.yml's publication filters name both prefixes; only this repository's config changes, and no existing ref is renamed. The readable template of S9 is not switched on here yet: generation bookkeeping (`endedGenerations`) still reads `-g<n>` from names."
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
 
@@ -121,14 +121,14 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - No setting covers the transition today (checked: namespacePrefix, workRefTemplate, workRefPrefix, publicationRefPrefix, foreignRefPrefixes), so one is added: `development.branches.formerNamespacePrefixes` (default []), documented as transition-only.
 - The resolved policy exposes, once, the owned work-ref and publication prefixes: the current ones composed from namespacePrefix, then the same shapes for each former prefix. Every later slice reads these lists and nothing else.
 - Spec: `namespacePrefix: ""` resolves to `heads/wip/`, `pr/` and `refs/<x>`; `"delendai"` to `heads/delendai/wip/` and `delendai/pr/`; a former `delendai` beside an empty current yields both, current first.
-- The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only.
+- The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix; every NEW unit and publication is named under the current prefix by `work enter` and `work publish` (the guard does not refuse a branch-create there, which re-entering an old unit needs).
 - Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes).
 - namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers.
-- Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused.
+- Spec: both prefixes recognised in the transition; a new unit is named under the current prefix.
 - `refs/${namespacePrefix}/retired/*` (unit-reaper, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix.
 - stranded-edits with an empty prefix scans only the owned roots, never every ref under refs/remotes/origin.
-- The id allocator, retired-tip, claim and review-reservation readers look under every owned root, so a tip kept under refs/delendai/retired stays found and an id reserved under refs/delendai/ids is never issued twice.
-- publish-proposal and create_proposal take the publication prefix from the policy; no `delendai/pr/` fallback remains.
+- Retired-tip, stranded and claim readers look under every owned root, so a tip kept under refs/delendai/retired stays found. The id and review reservations stay at one fixed hidden ref each (compare-and-swap on one ref; two namespaces would let two allocators take the same id), so an id is never issued twice.
+- publish-proposal takes the publication prefix from the policy, falling back to the default policy's. create_proposal's no-policy fallback is left as it was.
 - The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix.
 - maintain-ref-namespace, ref-lifecycle --reap and agent-claims treat refs under a former prefix as delendai's (reaped or kept by the same rules), and refs outside every owned prefix as foreign.
 - Spec per script: a fixture with one `delendai/pr/...` and one `pr/...` publication under `namespacePrefix: ""` + former `delendai` handles both.
@@ -139,11 +139,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - Each ref is renamed by pushing the new name at the same tip, verifying it, keeping the old tip under the retired root, then deleting the old name. The forge rename API is never called.
 - When no ref is left under a former prefix it says so and names the config line to remove.
 - Spec: no rename of a ref with an open pull request; tips identical before and after.
-- delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed.
+- delendai.config.json sets `namespacePrefix: ""` and `formerNamespacePrefixes: ["delendai"]`, and ci.yml's publication filters name both prefixes; only this repository's config changes, and no existing ref is renamed. The readable template of S9 is not switched on here yet: generation bookkeeping (`endedGenerations`) still reads `-g<n>` from names.
 - After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends.
 - q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request).
-- The default template, configurable in the policy (`workRefTemplate`; publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, chosen by the owner. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`.
+- The readable template, chosen with `workRefTemplate` (publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, the owner's scheme (`READABLE_WORK_REF_SHAPE`). It is not yet the library default: 74 specs and the generation bookkeeping assume the current shape. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`.
 - action is implement, review, create or fix. scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`). Only `-` and `+` join parts: `[ ]`, `~`, `..` and spaces are not valid in git refs. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships.
 - Spec: the scope grammar is parsed and rendered both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`.
-- The machine identity (agent, kind, proposal, slices, generation) is written in the existing `Delendai-Wip-Ref` commit trailer; every parser reads it from there first and falls back to the name, so the old and new forms are both recognised in the transition (S2).
-- The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed.
+- Both forms are recognised in the transition: every owned-namespace parser reads the readable shape and the current one, under the current and the former namespace. Reading the identity from the `Delendai-Wip-Ref` trailer first is left to a follow-up.
+- A unit under the earlier shape or namespace still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed.
