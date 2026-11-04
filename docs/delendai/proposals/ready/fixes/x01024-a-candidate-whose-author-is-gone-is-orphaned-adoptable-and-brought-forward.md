@@ -16,11 +16,12 @@ A publication or unit whose author is gone becomes an explicit orphaned state: s
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refined by the owner. Claim: a candidate handed back to its author (`candidate-disposition.ts`, disposition `author`: red again after being brought forward, `its author pushes next`; `authorsOwn` at line 136) stays stranded forever when the author is gone. Verified by reading `tools/scripts/forge/candidate-disposition.ts`: the `author` branch has no notion of the author being alive, so nothing ever hands the candidate to anyone else. (The audit cites line 98; the branch is at about that line and `authorsOwn` at 136.) Not reproduced. The audit also asks `work status` to show, per open publication, how far behind it is, the overlap, its age and whether its owner is alive.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Implementation in this proposal: it holds the acceptance lines and the specs only.
+- Discarding any tip: retire keeps them.
 
 ## slices
 
