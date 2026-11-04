@@ -925,4 +925,51 @@ const writeSummary = (failing: readonly string[]): void => {
 	);
 };
 
-if (import.meta.main) main();
+/** Why a run of this script ends as it does: one word a person can act on. */
+export type QueueState = 'ok' | 'queue-blocked' | 'internal-error';
+
+/**
+ * Run the report and end with exactly one line naming its state (x01021):
+ * `internal-error` when it threw, `queue-blocked` when it left the exit
+ * code red because candidates wait, `ok` otherwise. The state is also
+ * written to the step's output for the workflow's summary. A thrown error
+ * still fails the job; nothing here softens it.
+ */
+export const runWithState = (
+	body: () => void,
+	io: {
+		readonly say: (line: string) => void;
+		readonly exitCode: () => number | string | undefined;
+		readonly fail: () => void;
+		readonly output: (line: string) => void;
+	},
+): QueueState => {
+	let state: QueueState;
+	try {
+		body();
+		state = Number(io.exitCode() ?? 0) === 0 ? 'ok' : 'queue-blocked';
+	} catch (error) {
+		io.say(
+			`keep-the-queue-moving: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
+		);
+		io.fail();
+		state = 'internal-error';
+	}
+	io.output(`state=${state}`);
+	io.say(`keep-the-queue-moving: state=${state}`);
+	return state;
+};
+
+if (import.meta.main) {
+	runWithState(main, {
+		say: (line) => console.log(line),
+		exitCode: () => process.exitCode,
+		fail: () => {
+			process.exitCode = 1;
+		},
+		output: (line) => {
+			const path = process.env.GITHUB_OUTPUT;
+			if (path !== undefined) appendFileSync(path, `${line}\n`);
+		},
+	});
+}
