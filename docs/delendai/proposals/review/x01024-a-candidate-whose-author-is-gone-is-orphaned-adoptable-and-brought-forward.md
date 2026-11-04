@@ -43,14 +43,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the orphan-detection criteria (alive/idle/finished/out-of-quota cases and lease/heartbeat interplay). Please re-run and submit fresh empirical proof for each acceptance case.
 
 ### S2 — Orphaned units are listed with their reason
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:
   - "work status and work swarm list every orphaned unit with the reason and the time since its last beat, in every project, not only this one. Spec: a roster with one live and one orphaned unit lists only the orphaned one as orphaned."
 - shipped-in: `f4b76a89b021`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for orphan listing behavior in `work status`/`work swarm` (reason + time-since-last-beat, cross-project scope). Please re-run and attach fresh proof.
 
 ### S3 — Any agent can take an orphan over
 - **Status**: review
