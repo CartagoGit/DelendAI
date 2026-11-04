@@ -8,7 +8,7 @@ import {
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
 import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
-import { asArray } from '@delendai/test-kit/public';
+import { asArray, useFakeClock } from '@delendai/test-kit/public';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =
@@ -146,7 +146,7 @@ describe('obs-errors (f00129 S1)', () => {
 		const originalFetch = global.fetch;
 		// The engine's deadline is a timer: a fake one is advanced by the
 		// full timeout when the request is made, as the wait would.
-		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+		const clock = useFakeClock({ toFake: ['setTimeout', 'clearTimeout'] });
 		global.fetch = vi.fn(
 			(_url: string | URL | Request, init?: RequestInit) => {
 				// The one credentialed request — a hung observability
@@ -161,7 +161,7 @@ describe('obs-errors (f00129 S1)', () => {
 							),
 						);
 					});
-					vi.advanceTimersByTime(FETCH_TIMEOUT_MS);
+					clock.advance(FETCH_TIMEOUT_MS);
 				}) as Promise<Response>;
 			},
 		) as unknown as typeof fetch;
@@ -178,7 +178,6 @@ describe('obs-errors (f00129 S1)', () => {
 			expect(global.fetch).toHaveBeenCalledTimes(1);
 		} finally {
 			global.fetch = originalFetch;
-			vi.useRealTimers();
 		}
 	});
 });

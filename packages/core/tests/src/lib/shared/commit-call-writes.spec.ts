@@ -3,26 +3,10 @@
  * returns, on a real repository.
  */
 import { execFileSync } from 'node:child_process';
-import {
-	cpSync,
-	mkdtempSync,
-	readFileSync,
-	realpathSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import {
-	afterAll,
-	afterEach,
-	beforeAll,
-	describe,
-	expect,
-	it,
-	vi,
-} from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
 	commitPendingCallWrites,
@@ -32,90 +16,36 @@ import {
 } from '../../../../src/lib/shared/commit-call-writes';
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
 import { buildFsToolRegistrations } from '../../../../src/lib/shared/fs-tools';
-import { createFakeToolServer } from '@delendai/test-kit';
+import {
+	createFakeToolServer,
+	createGitRepoTemplate,
+	skipLockPauses,
+} from '@delendai/test-kit';
 import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
-
-const made: string[] = [];
-afterEach(() => {
-	vi.unstubAllGlobals();
-	for (const dir of made.splice(0)) {
-		rmSync(dir, { recursive: true, force: true });
-	}
-});
-
-/** How long the product waits between two attempts at a held lock. */
-const LOCK_PAUSE_MS = 1000;
-
-/**
- * The product pauses a second between attempts at a held lock. The pause
- * is skipped here: `onPause` runs where the second would have passed, so
- * a case can let go of the lock exactly then, and the retries still run.
- */
-const skipLockPauses = (onPause?: () => void): void => {
-	const real = globalThis.setTimeout;
-	vi.stubGlobal('setTimeout', (callback: () => void, ms?: number) => {
-		if (ms === LOCK_PAUSE_MS) onPause?.();
-		return real(callback, 0);
-	});
-};
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
-/**
- * A project on work refs, built once for the file: its shared checkout and
- * one unit's worktree. Each case copies the tree and relinks the worktree,
- * which spawns no git process instead of the six that building it takes.
- */
-let template: string;
-beforeAll(() => {
-	template = realpathSync(mkdtempSync(join(tmpdir(), 'x722-template-')));
-	const shared = join(template, 'checkout');
-	execFileSync('git', ['init', '-q', '-b', 'develop', shared]);
-	git(shared, 'config', 'user.email', 'owner@example.test');
-	git(shared, 'config', 'user.name', 'Owner');
-	writeFileSync(
-		join(shared, 'delendai.config.json'),
-		JSON.stringify({
+/** How long the product waits between two attempts at a held lock. */
+const LOCK_PAUSE_MS = 1000;
+
+/** A project on work refs: its shared checkout, and one unit's worktree. */
+const template = createGitRepoTemplate({
+	files: {
+		'delendai.config.json': JSON.stringify({
 			development: {
 				profile: 'shared-checkout-pr',
 				branches: { namespacePrefix: 'delendai' },
 			},
 		}),
-	);
-	writeFileSync(join(shared, 'proposal.md'), 'status: review\n');
-	git(shared, 'add', '-A');
-	git(shared, 'commit', '-q', '-m', 'base');
-	git(
-		shared,
-		'worktree',
-		'add',
-		'-q',
-		'-b',
-		'delendai/wip/qwen/review/batch-g1/backlog',
-		join(template, 'unit'),
-	);
-});
-
-afterAll(() => {
-	rmSync(template, { recursive: true, force: true });
+		'proposal.md': 'status: review\n',
+	},
+	worktrees: { unit: 'delendai/wip/qwen/review/batch-g1/backlog' },
 });
 
 const project = (): { readonly shared: string; readonly unit: string } => {
-	const parent = realpathSync(mkdtempSync(join(tmpdir(), 'x722-')));
-	made.push(parent);
-	cpSync(template, parent, {
-		recursive: true,
-		preserveTimestamps: true,
-	});
-	const shared = join(parent, 'checkout');
-	const unit = join(parent, 'unit');
-	// Point the copied worktree and the copied checkout at each other, by
-	// hand: `git worktree repair` finds the template's links still valid.
-	const admin = join(shared, '.git', 'worktrees', 'unit');
-	writeFileSync(join(unit, '.git'), `gitdir: ${admin}\n`);
-	writeFileSync(join(admin, 'gitdir'), `${join(unit, '.git')}\n`);
-	return { shared, unit };
+	const copy = template.copy();
+	return { shared: copy.root, unit: copy.worktrees.unit ?? '' };
 };
 
 const writing =
@@ -156,7 +86,7 @@ describe('a write in a unit of work is committed as it happens', () => {
 		);
 		writeFileSync(lock, '');
 		// Another process lets go during the first pause.
-		skipLockPauses(() => rmSync(lock, { force: true }));
+		skipLockPauses(LOCK_PAUSE_MS, () => rmSync(lock, { force: true }));
 
 		await withCallWritesCommitted(
 			unit,
@@ -429,7 +359,7 @@ describe('tool writes whose commit failed', () => {
 	};
 
 	it('are committed under the tool subject by the next call', async () => {
-		skipLockPauses();
+		skipLockPauses(LOCK_PAUSE_MS);
 		const { shared, unit } = project();
 		const lock = holdLock(shared);
 		await withCallWritesCommitted(
@@ -459,7 +389,7 @@ describe('tool writes whose commit failed', () => {
 	});
 
 	it('are left uncommitted once somebody changed them since', async () => {
-		skipLockPauses();
+		skipLockPauses(LOCK_PAUSE_MS);
 		const { shared, unit } = project();
 		const lock = holdLock(shared);
 		await withCallWritesCommitted(

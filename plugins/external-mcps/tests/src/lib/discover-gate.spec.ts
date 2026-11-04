@@ -12,6 +12,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
+import { stubAbortSignalTimeout } from '@delendai/test-kit/public';
+
 import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
@@ -175,14 +177,7 @@ describe('createDefaultNpmSearch — network timeout (x00157 S3)', () => {
 		// The request's deadline runs on the platform clock; take the
 		// signal it asks for and fire it when the request is made, as
 		// the timeout elapsing would.
-		const deadlines: AbortController[] = [];
-		const timeoutSpy = vi
-			.spyOn(AbortSignal, 'timeout')
-			.mockImplementation(() => {
-				const controller = new AbortController();
-				deadlines.push(controller);
-				return controller.signal;
-			});
+		const deadlines = stubAbortSignalTimeout();
 		const fetchMock = vi.fn(
 			(_url: string | URL | Request, init?: RequestInit) =>
 				new Promise((_resolve, reject) => {
@@ -197,7 +192,7 @@ describe('createDefaultNpmSearch — network timeout (x00157 S3)', () => {
 							),
 						);
 					});
-					for (const deadline of deadlines) deadline.abort();
+					deadlines.fire();
 				}),
 		);
 		global.fetch = fetchMock as unknown as typeof fetch;
@@ -208,10 +203,9 @@ describe('createDefaultNpmSearch — network timeout (x00157 S3)', () => {
 				| RequestInit
 				| undefined;
 			expect(init?.signal).toBeInstanceOf(AbortSignal);
-			expect(timeoutSpy).toHaveBeenCalledWith(DISCOVER_FETCH_TIMEOUT_MS);
+			expect(deadlines.requested()).toEqual([DISCOVER_FETCH_TIMEOUT_MS]);
 		} finally {
 			global.fetch = originalFetch;
-			timeoutSpy.mockRestore();
 		}
 	});
 });
