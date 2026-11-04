@@ -2,10 +2,14 @@
 id: x01021
 title: "The keep-the-queue-moving workflow says which of three reasons it is red"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
+last-transition-id: 40e571e2-b416-4c26-9c58-9e2723902a85
+last-correlation-id: 40e571e2-b416-4c26-9c58-9e2723902a85
+last-transition-from: ready
+last-transition-at: 2026-11-04T14:19:04.098Z
 ---
 
 # x01021 — The keep-the-queue-moving workflow says which of three reasons it is red
