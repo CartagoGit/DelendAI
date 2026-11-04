@@ -2,7 +2,7 @@
 id: x01023
 title: "A republished pull request is retitled and re-summarised by what it ships now"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-04
