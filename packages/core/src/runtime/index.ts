@@ -125,4 +125,10 @@ export {
 } from '../lib/consent/consent-token.service';
 export type { IConsentSigner } from '../lib/contracts/interfaces/consent-signer.interface';
 export { proposalOfCreateUnit } from '../lib/work-units/unit-adoption.service';
+export {
+	backgroundEnv,
+	backgroundNice,
+	backgroundWorkers,
+	lowPriority,
+} from '../lib/platform/background-load.service';
 export { currentHostMaintenance } from '../lib/development-policy/maintenance-lease.service';

@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 614d2b22-e3ad-44a1-94d4-3605b8366369
-last-correlation-id: 614d2b22-e3ad-44a1-94d4-3605b8366369
+last-transition-id: 60a48f91-c7d0-4525-9810-a388a99c7755
+last-correlation-id: 60a48f91-c7d0-4525-9810-a388a99c7755
 last-transition-from: in-progress
-last-transition-at: 2026-11-04T14:16:31.635Z
+last-transition-at: 2026-11-04T14:53:43.047Z
 ---
 
 # x01023 — A republished pull request is retitled and re-summarised by what it ships now
