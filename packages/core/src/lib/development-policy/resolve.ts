@@ -46,6 +46,19 @@ export type {
 // `resolve-legacy.helper.ts`, split out at the SRP ceiling.
 import { fromLegacy } from './resolve-legacy.helper';
 
+/** Former namespaces, present only when one differs from the current. */
+const formerNamespacesOf = (
+	branches:
+		| { readonly formerNamespacePrefixes?: readonly string[] | undefined }
+		| undefined,
+	current: string,
+): { readonly formerNamespacePrefixes?: readonly string[] } => {
+	const former = (branches?.formerNamespacePrefixes ?? []).filter(
+		(prefix) => prefix !== current,
+	);
+	return former.length === 0 ? {} : { formerNamespacePrefixes: former };
+};
+
 /** Applies an explicit `development` block over an already-chosen base. */
 const applyOverrides = (
 	base: IResolvedDevelopmentPolicy,
@@ -80,6 +93,7 @@ const applyOverrides = (
 		...identityOverride(input.identity),
 		branches: {
 			namespacePrefix,
+			...formerNamespacesOf(input.branches, namespacePrefix),
 			integration:
 				input.branches?.integration ?? base.branches.integration,
 			release: releaseBranchOf(input.branches, base.branches),

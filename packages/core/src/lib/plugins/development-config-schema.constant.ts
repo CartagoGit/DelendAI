@@ -190,6 +190,18 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 						'The namespace for the refs delendai owns, with no trailing slash: empty gives `wip/` and `pr/`, `delendai` gives `delendai/wip/` and `delendai/pr/`. Change it when two projects share a remote and their refs would collide.',
 					)
 					.optional(),
+				formerNamespacePrefixes: z
+					.array(
+						z
+							.string()
+							.describe(
+								'A namespace this project used before, such as `delendai`, with no trailing slash.',
+							),
+					)
+					.describe(
+						'Namespaces the project used before `namespacePrefix`, for the transition only: refs under them stay recognised until they end, new work never goes there, and `delendai work rename-namespace` moves the rest once no pull request uses them.',
+					)
+					.optional(),
 				integration: z
 					.string()
 					.min(1)

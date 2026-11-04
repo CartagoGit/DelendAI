@@ -137,11 +137,10 @@ export interface IPolicyBranches {
 	readonly integration: string;
 	/** Where releases land; equals `integration` for a one-branch project. */
 	readonly release: string;
-	/**
-	 * Namespace for delendai-owned refs, no trailing slash: empty gives `wip/`
-	 * and `pr/`, `delendai` gives `delendai/wip/` and `delendai/pr/`.
-	 */
+	/** delendai's ref namespace, no trailing slash: `` gives `wip/`, `delendai` `delendai/wip/`. */
 	readonly namespacePrefix: string;
+	/** Namespaces used before `namespacePrefix`: still recognised, never written. */
+	readonly formerNamespacePrefixes?: readonly string[];
 	/**
 	 * Template for a unit of work's ref (`${agent}`, `${proposal}`, `${slice}`,
 	 * `${generation}`). Empty when persistence writes no per-unit ref.
