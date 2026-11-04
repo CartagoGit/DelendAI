@@ -73,7 +73,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 4/4: (1) legacy-migration.service.spec.ts passed; commit 8a64228535a5 includes legacy-migration.service.ts and the matching spec with failure-path coverage. (2) legacy-migration.service.spec.ts passed stop-on-failure scenarios in local run. (3) legacy-migration.service.spec.ts passed boot-survival scenarios for failed planning migration outcomes. (4) legacy-migration.service.spec.ts passed journal/recording behavior for failed migration planning.
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -83,8 +83,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
   - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
 - shipped-in: `9767d0086`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 5/5: (1) commit 8a64228535a5 updates both validate.ts and policy-alignment.migrator.ts to align on the shared contradiction rule surface; policy-alignment.migrator.spec… (2) commit 8a64228535a5 includes policy-alignment.migrator.ts and policy-alignment.migrator.spec.ts updates validating selective removal while preserving surroundi… (3) policy-alignment.migrator.spec.ts passed keep-branch scenarios where non-integration branch values remain untouched. (4) development-policy validate path remained enforced via validate.ts and contradiction helper changes; x00989 test run passed with existing refusal behavior cove… (5) policy-alignment.migrator.spec.ts passed idempotence/no-op rerun scenarios in the 54/54 local run.
 
 ## acceptance
 
