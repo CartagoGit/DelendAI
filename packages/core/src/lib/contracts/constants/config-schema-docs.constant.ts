@@ -33,6 +33,18 @@ import type {
 // cost a barrel import its evaluation order.
 import type { DECLARED_AGENT_KINDS } from './declared-agent-schema.constant';
 
+/** The scopes `testing.scope` offers, and what each runs. */
+export const TEST_SCOPES = ['touched', 'reach', 'all'] as const;
+
+export const TEST_SCOPE_DOCS: Readonly<
+	Record<(typeof TEST_SCOPES)[number], string>
+> = {
+	touched:
+		'Run the specs the change touched: a changed spec, the spec that mirrors a changed source, and a spec that imports a changed file directly. Nothing reached through another module. The default; the cheapest proof.',
+	reach: 'Also run every spec the change reaches through other modules, followed by symbol, and the specs that read a changed file. Choose it when a far-away spec has caught what the touched ones missed.',
+	all: 'Run every spec in the project. The most certain, the most expensive; choose it for a release or a change to the test setup itself.',
+};
+
 export const SURFACE_MODE_DOCS: Readonly<
 	Record<(typeof MCP_TOOL_SURFACE_MODE)[number], string>
 > = {
