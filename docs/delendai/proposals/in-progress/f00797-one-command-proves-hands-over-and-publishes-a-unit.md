@@ -2,7 +2,7 @@
 id: f00797
 title: "One command proves, hands over and publishes a unit"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-31
