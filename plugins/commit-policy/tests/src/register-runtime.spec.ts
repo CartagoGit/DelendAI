@@ -301,6 +301,11 @@ describe('commit-policy register() runtime', () => {
 					paths: ['a.ts'],
 					message: 'feat(x00001): slice S1',
 				});
+				// Refused from the shared checkout (x01003), and the refusal
+				// names the ref the client-named agent would own.
+				expect(JSON.stringify(result)).toContain(
+					'WORK_REF_SHARED_CHECKOUT',
+				);
 				expect(JSON.stringify(result)).toContain('runtime-client');
 			} finally {
 				await disposable(runtime).dispose();

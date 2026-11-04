@@ -91,7 +91,7 @@ export const sharedCheckoutCheckpointRefusal = (input: {
 			? undefined
 			: worktreeOfRef(root, ref.replace(/^refs\/heads\//u, ''));
 	return {
-		reason: `Nothing is checkpointed from ${root}: under the \`${policy.profile}\` development profile every unit has its own worktree, and its work reaches its ref by commit there, never from another checkout. Left: ${left.join('; ')}.`,
+		reason: `Nothing is checkpointed from ${root}${ref === undefined ? '' : ` into ${ref.replace(/^refs\/heads\//u, '')}`}: under the \`${policy.profile}\` development profile every unit has its own worktree, and its work reaches its ref by commit there, never from another checkout. Left: ${left.join('; ')}.`,
 		remedy:
 			worktree === undefined
 				? 'Enter the unit (`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>`) and edit and commit in the worktree it prints. Edits already made in the shared checkout: `delendai work rescue` keeps them under a ref, from which the unit takes its own.'

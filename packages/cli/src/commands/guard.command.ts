@@ -61,6 +61,7 @@ import {
 } from '../lib/guard-hooks-autoinstall.service';
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
+import { judgePreEdit } from '../lib/pre-edit-guard.service';
 import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
 import {
 	landedAsFastForward,
@@ -510,6 +511,12 @@ const MANAGEMENT = new Map<
 	) => ICliCommandResult | Promise<ICliCommandResult>
 >(
 	Object.entries({
+		// A host's pre-edit hook, not a git hook: the tool call is on stdin.
+		'pre-edit': async (_args, ctx) =>
+			judgePreEdit({
+				stdin: await readStream(process.stdin),
+				workspace: ctx.globals.workspace,
+			}),
 		install: (args, ctx) => {
 			const runner = flag(args, 'runner') ?? process.execPath;
 			const driverFor = () =>
@@ -595,7 +602,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-edit|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
