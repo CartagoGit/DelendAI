@@ -39,6 +39,7 @@
  */
 
 import { spawn } from 'node:child_process';
+import { availableParallelism } from 'node:os';
 import { gitVerbatim } from '@delendai/core/runtime';
 
 import {
@@ -258,6 +259,8 @@ export const STEPS: readonly IStep[] = [
 ];
 
 export interface IGenAllIo {
+	/** How many read-only checks `--check` runs at once; one when absent. */
+	readonly parallel?: number;
 	/** The checks that passed on this same tree, and how to record more. */
 	readonly checkPasses?: {
 		readonly passed: (step: IStep) => boolean;
@@ -324,6 +327,7 @@ const defaultIo = (): IGenAllIo => ({
 	runCommand: runChild,
 	dirtyPaths,
 	checkPasses: checkPasses(process.cwd()),
+	parallel: Math.max(1, Math.floor(availableParallelism() / 2)),
 });
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
@@ -461,14 +465,41 @@ export const main = async (
 	let worstExit = 0;
 	const passes = check ? io.checkPasses : undefined;
 	const judged: IStep[] = [];
-	for (const step of runnable) {
+	const judge = async (step: IStep): Promise<void> => {
 		if (step.checkCmd !== undefined && passes?.passed(step) === true) {
 			io.out(`▶ ${step.name} — kept: it passed on this same tree`);
-			continue;
+			return;
 		}
 		const code = await runStep(step, check, io);
 		if (code !== 0) worstExit = code;
 		else if (step.checkCmd !== undefined) judged.push(step);
+	};
+	const parallel = check ? (io.parallel ?? 1) : 1;
+	if (parallel <= 1) {
+		for (const step of runnable) await judge(step);
+	} else {
+		// The generators that write run first, in order; the read-only
+		// checks then run at once. A check that ran before a writer saw
+		// the same bytes it sees now unless the writer drifted, and a
+		// drift fails the run either way.
+		for (const step of runnable.filter(
+			(each) => each.checkCmd === undefined,
+		))
+			await judge(step);
+		const queue = runnable.filter((each) => each.checkCmd !== undefined);
+		await Promise.all(
+			Array.from(
+				{ length: Math.min(parallel, queue.length) },
+				async () => {
+					for (
+						let next = queue.shift();
+						next !== undefined;
+						next = queue.shift()
+					)
+						await judge(next);
+				},
+			),
+		);
 	}
 	if (worstExit !== 0) {
 		io.err(
