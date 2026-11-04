@@ -28,6 +28,8 @@ In games/pcf-mods/6, agents spent a day building what delendai should have shipp
 
 On the default flow: commit 70f27f8fc (2026-09-21) changed the default from `shared-direct` to `shared-checkout-merge`. Under `shared-direct` there was no work ref, so every agent edited the shared checkout and the guards refused them. The owner's direct default and that commit's isolation are both kept here: each agent works in its own unit, and a proved unit lands on the integration branch by fast-forward, with no pull request, no merge commit and nothing asked of the forge.
 
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 10. Claim: the quickstart is not proved per host. Not verified in code; S5 here is the proof and gets this requirement.
+
 ## non-goals
 
 - Removing the pull-request and merge routes: they stay, chosen by `--profile` or by `development.branches.rules` (f00801).
@@ -72,6 +74,7 @@ On the default flow: commit 70f27f8fc (2026-09-21) changed the default from `sha
 - **Gate**: none
 - acceptance:
   - "On a fresh project after `init` with no flags, two agents' units land on the integration branch, nothing is left behind, and the project gains no module of its own. The run is recorded in this proposal's notes."
+  - "The quickstart is proved automatically from a clean checkout for each supported host (CI job, not a manual run); a host whose quickstart fails fails the job, naming the host."
 
 ## acceptance
 
@@ -80,3 +83,4 @@ On the default flow: commit 70f27f8fc (2026-09-21) changed the default from `sha
 - The invariants a project needs run from the installed delendai, in the hook and the CI step init sets up: no work ref outlives its unit, and the plugin set matches the config. A project needs no JSONC reader, refs script or gate of its own, and the agent instructions say which delendai command does each of these jobs.
 - init picks the pack from what the project is, and a normal project needs no exclude list. Skills a project does not use, such as plugin authoring, are installed only when it authors plugins.
 - On a fresh project after `init` with no flags, two agents' units land on the integration branch, nothing is left behind, and the project gains no module of its own. The run is recorded in this proposal's notes.
+- The quickstart is proved automatically from a clean checkout for each supported host.

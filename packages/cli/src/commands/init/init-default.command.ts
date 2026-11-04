@@ -9,10 +9,9 @@
  * Defaults — matching the answers selected at the top of f00088 S2's
  * reference prompt flow:
  *
- *   - preset:               dogfood   (snapshot of delendai.config.json —
- *                                    conventions, docs, search, git,
- *                                    web-fetch, status-marker, test-convention,
- *                                    quality, issues, audit)
+ *   - preset:               solo      (one developer, one agent: git, search,
+ *                                    memory, docs, quality, rules, deps,
+ *                                    test-policy, env, refactor)
  *   - extraPlugins:         []        (no additions on top of the preset)
  *   - excludedPlugins:      []        (nothing filtered out)
  *   - hostInstructions:     append (replace only the managed delendai block)
@@ -29,11 +28,8 @@
  * Same flag surface as `init` (`--dry-run`, `--force`, `--delendai-root`,
  * `--plugin-paths-root`, `--options-<plugin>-<k>=<v>`).
  *
- * b00239 rename: the default preset was renamed from `vertex` (legacy
- * brand id) to `dogfood` (semantic name). Old invocations that pass
- * `--preset=vertex` still resolve to the same plugin set via
- * `PRESET_ALIASES` in `@delendai/core`'s preset catalog; new code MUST
- * use `--preset=dogfood`.
+ * Retired preset ids passed with `--preset` still resolve through the alias
+ * table in `@delendai/core`'s preset catalog.
  */
 import type {
 	ICliCommand,
@@ -46,10 +42,11 @@ import {
 	parseFlags,
 	runInitWithAnswers,
 } from './init.command';
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
 import { printInitDefaultHelp } from '../../lib/init/init-default-help.service';
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
-	preset: 'dogfood',
+	preset: DEFAULT_INIT_PRESET,
 	extraPlugins: [],
 	excludedPlugins: [],
 	hostInstructions: 'append',
@@ -65,7 +62,7 @@ const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 export const initDefaultCommand: ICliCommand = {
 	name: 'init:default',
 	summary:
-		'Non-interactive bootstrap with safe project-preserving defaults (dogfood preset + managed instructions + skills + agents + scaffold).',
+		'Non-interactive bootstrap with safe project-preserving defaults (solo preset + managed instructions + skills + agents + scaffold).',
 	usage: 'init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		// Honour `--help` / `-h` as an early-return before any IO. The

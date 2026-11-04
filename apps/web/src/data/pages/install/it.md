@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Scegli il tuo IDE
 
-Gli snippet qui sotto usano il preset standard via bun. Incolla il JSON così com'è nel file di destinazione e lascia che il tuo IDE registri il server stdio.
+Gli snippet qui sotto usano il preset solo via bun. Incolla il JSON così com'è nel file di destinazione e lascia che il tuo IDE registri il server stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Ambito: progetto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Ambito: progetto / globale
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Ambito: globale
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Ambito: progetto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Ambito: globale
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Ambito: globale
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Ambito: globale
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ I preset sono additivi. Parti dal set più piccolo ed espandi la superficie dei 
 ### minimal
 
 Uso consigliato: orientamento in sola lettura e smoke test di CI.
-Dimensione: 2 plugin.
+Dimensione: 2 plugin · 42 strumenti · ~11805 token all’avvio
 
 - git
 - search
 
-### standard
+### solo
 
-Uso consigliato: lavoro single-agent con memoria, docs, aiuto per lint, tipi e dipendenze.
-Dimensione: 7 plugin.
+Uso consigliato: uno sviluppatore e un agente nel lavoro quotidiano; è il default di `init`.
+Dimensione: 10 plugin · 79 strumenti · ~19037 token all’avvio
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Uso consigliato: un team che lavora con pull request, con convenzioni di commit e di test.
+Dimensione: 18 plugin · 116 strumenti · ~25446 token all’avvio
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Uso consigliato: coordinamento multi-agente con lock, notifiche, log e marker di chiusura. Audit resta opt-in e va caricato separatamente quando il round finisce.
-Dimensione: 13 plugin.
+Uso consigliato: più agenti che condividono un checkout, con proposte, log e marcatori di chiusura.
+Dimensione: 19 plugin · 125 strumenti · ~26802 token all’avvio
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Uso consigliato: il preset swarm più integrazioni host-only come web-fetch e issues, quando l'host le espone.
-Dimensione: 15 plugin.
+Uso consigliato: revisioni e audit in sola lettura.
+Dimensione: 15 plugin · 89 strumenti · ~21955 token all’avvio
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Uso consigliato: documentazione e siti web.
+Dimensione: 8 plugin · 61 strumenti · ~15696 token all’avvio
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Uso consigliato: diagnostica con tutti i plugin pubblicati, anche quelli che usano la rete o credenziali.
+Dimensione: 58 plugin · 236 strumenti · ~59122 token all’avvio
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verifica
 

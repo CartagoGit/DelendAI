@@ -293,7 +293,7 @@ export const ideTargets: readonly IIdeTarget[] = [
 export const renderConfig = (
 	ide: IIdeTarget,
 	pm: IPackageManager,
-	preset = 'standard',
+	preset = 'solo',
 ): string => {
 	const args = [...pm.args, `--preset=${preset}`];
 	const server: Record<string, unknown> = { command: pm.command, args };
