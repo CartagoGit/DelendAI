@@ -2,14 +2,14 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
-last-correlation-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T14:23:23.450Z
+last-transition-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
+last-correlation-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
+last-transition-from: review
+last-transition-at: 2026-11-04T18:28:10.694Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
@@ -83,14 +83,16 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: roadmap changed after delivery (e.g. 2e72fc901). Redeliver S3 from current HEAD and resubmit with fresh shipped-in.
 
 ### S5 — The promotion is asked for when its last evidence lands
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/open-promotion.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When code scanning of the integration branch succeeds, `codeql.yml` dispatches `open-promotion` (`ask-for-the-promotion`; open-promotion.script.spec.ts), so a ready promotion opens within minutes of its last evidence landing, with the hourly run as the fallback."
 - shipped-in: `cada9abdf843`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in cada9abdf843 is stale: relevant CI files changed afterward (e.g. 51fbac099, 3eedd5a48). Redeliver S5 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ## acceptance
 
