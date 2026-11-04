@@ -44,15 +44,17 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — A failed secrets listing is reported unknown, not empty
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/tests/src/lib/secrets/real-deps.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A git listing that fails makes the scan report unknown or failed, never zero files."
   - "A spec fails the listing and expects the unknown state."
 - shipped-in: `4079bdb2efdd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — A probe that did not exit is not an accepted run
 - **Status**: review
