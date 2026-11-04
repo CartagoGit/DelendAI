@@ -33,7 +33,7 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
 - global_gate: type
 
 ### S1 — Budgets and recommendations
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`, `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts`, `plugins/adaptive-optimizer/src/lib/contracts/interfaces/adaptive-optimizer.interface.ts`, `plugins/adaptive-optimizer/src/generated/tool-outputs.ts`, `plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.spec.ts`, `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/routing/task-mode.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/src/lib/services/discover-ranked-providers.service.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/prompt-eval/src/lib/score/score.ts`, `plugins/prompt-eval/src/lib/score/score.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,8 +42,10 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "The winner is the cheapest passing provider (D106)."
 - notes: optimize_run keeps ranked candidates while their cumulative token cost stays within budget and reports `spent`; a remove names whether the plugin is outside the catalog, cut by limit/minScore, or has no positive fit; taskHint words matching a plugin's id, tags or summary add score; auto_recommend maps taskType to a ranking mode; the eval_report winner is the passing provider with the lowest cost per attempt. optimize_run plus the auto-agent-selector, prompt-eval and plugins_recommend tool files needed no description change.
 - shipped-in: `1f0c5d911`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 1f0c5d911 is stale for this slice. `git log 1f0c5d911..develop -- <S1 files>` shows post-shipped change(s), including e7c75bfcc in listed files. Please re-validate all acceptance criteria on current develop and resubmit with fresh empirical evidence.
 
 ### S2 — agent-orchestrator, triage and changelog
 - **Status**: done
