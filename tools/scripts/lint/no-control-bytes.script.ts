@@ -53,6 +53,26 @@ export const controlByteLines = (
 				];
 	});
 
+/** Every control-byte line of `files`, and the files `read` could not read. */
+export const scanForControlBytes = (
+	files: readonly string[],
+	read: (file: string) => string,
+): {
+	readonly found: readonly string[];
+	readonly unreadable: readonly string[];
+} => {
+	const unreadable: string[] = [];
+	const found = files.flatMap((file) => {
+		try {
+			return controlByteLines(file, read(file));
+		} catch {
+			unreadable.push(file);
+			return [];
+		}
+	});
+	return { found, unreadable };
+};
+
 const main = (): number => {
 	const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
 		encoding: 'utf8',
@@ -71,16 +91,19 @@ const main = (): number => {
 	}
 	// A control byte is a property of the file that holds it.
 	const judged = filesToJudge(files, (file) => file, changedFilesScope(root));
-	const found = judged.files.flatMap((file) => {
-		try {
-			return controlByteLines(
-				file,
-				readFileSync(join(root, file), 'utf8'),
-			);
-		} catch {
-			return [];
-		}
-	});
+	const { found, unreadable } = scanForControlBytes(judged.files, (file) =>
+		readFileSync(join(root, file), 'utf8'),
+	);
+	// A set that could not be fully scanned is not a clean set.
+	if (unreadable.length > 0) {
+		console.error(
+			`✖ no-control-bytes: ${String(unreadable.length)} tracked source file(s) could not be read, so the scan is incomplete:\n${unreadable
+				.slice(0, 20)
+				.map((file) => `  ${file}`)
+				.join('\n')}`,
+		);
+		return 1;
+	}
 	if (found.length === 0) {
 		console.log(
 			`✓ no-control-bytes: ${String(judged.files.length)} tracked source files of ${judged.over}, none with a raw control byte.`,

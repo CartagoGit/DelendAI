@@ -16,6 +16,17 @@ describe('judgeEmptyRootRuns', () => {
 		).toEqual([]);
 	});
 
+	it('fails a run that did not exit, allowed or not, and names the cause', () => {
+		for (const allowed of [{}, { [LINT]: 'why' }]) {
+			const findings = judgeEmptyRootRuns(
+				[{ file: LINT, exitCode: null }],
+				allowed,
+			);
+			expect(findings).toHaveLength(1);
+			expect(findings[0]?.detail).toContain('did not exit');
+		}
+	});
+
 	it('accepts a lint that fails over the empty tree', () => {
 		expect(judgeEmptyRootRuns([{ file: LINT, exitCode: 1 }], {})).toEqual(
 			[],

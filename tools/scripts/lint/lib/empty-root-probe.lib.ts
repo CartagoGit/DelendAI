@@ -33,6 +33,15 @@ export const judgeEmptyRootRuns = (
 ): readonly IEmptyRootFinding[] => {
 	const ran = new Set(runs.map((run) => run.file));
 	return [
+		// A run that never exited (timeout, failed start) says nothing about
+		// the lint, and must not read as the refusal it never made.
+		...runs
+			.filter((run) => run.exitCode === null)
+			.map((run) => ({
+				file: run.file,
+				detail: 'did not exit over the empty tree (timed out after 60s or failed to start): the probe measured nothing',
+				fix: 'run it by hand from a tree holding only tools/, and fix what hangs or cannot start',
+			})),
 		...runs
 			.filter(
 				(run) => run.exitCode === 0 && allowed[run.file] === undefined,
