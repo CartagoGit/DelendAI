@@ -369,6 +369,8 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	readonly catalogues?: ICatalogueSources;
 	/** Agents the catalogues miss, or reached another way than they say. */
 	readonly agents?: ReadonlyArray<IDeclaredAgent>;
+	/** The exact `name@version` agent packages npx or uvx may fetch and run. */
+	readonly trustedAgentPackages?: readonly string[];
 	/** Model providers in models.dev's shape, over the catalogue's entries. */
 	readonly modelProviders?: ReadonlyArray<IDeclaredProvider>;
 	/**

@@ -66,6 +66,10 @@ export const promptAcpAgent = async (
 				const decision = await decide({
 					title:
 						request.toolCall.title ?? request.toolCall.toolCallId,
+					...(request.toolCall.kind === undefined ||
+					request.toolCall.kind === null
+						? {}
+						: { kind: request.toolCall.kind }),
 					options: request.options.map((option) => ({
 						id: option.optionId,
 						name: option.name,

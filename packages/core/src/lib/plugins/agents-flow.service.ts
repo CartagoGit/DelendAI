@@ -122,6 +122,8 @@ export const listAgents = async (input: {
 		all: input.all,
 		installedDir: (agent) => installed.get(agent.id),
 		answered,
+		// Only the project decides which packages may be fetched and run.
+		trusted: new Set(shared.trustedAgentPackages ?? []),
 	});
 	const offered = new Set(
 		agents.filter((agent) => agent.origin === 'detected').map((a) => a.id),

@@ -21,6 +21,8 @@ export interface IKnownAgent {
 	readonly origin: IAgentOrigin;
 	/** How to start it over ACP, when it is an ACP agent that can start here. */
 	readonly launch?: IAcpLaunch | undefined;
+	/** Why it cannot start here when it could: a package nobody allowed fetching. */
+	readonly refusal?: string | undefined;
 	readonly declared?: IDeclaredAgent | undefined;
 	/** Where the machine shows it. */
 	readonly found: readonly IDetectedAgent[];
