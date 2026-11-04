@@ -32,14 +32,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - global_gate: none
 
 ### S1 — The lease scratch file alerts
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
 - **Gate**: type
 - acceptance:
   - "#477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The markdown parser expressions
 - **Status**: review
