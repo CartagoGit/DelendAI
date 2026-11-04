@@ -38,7 +38,7 @@ describe('buildProposalsAdoptionExtension', () => {
 		const extension = buildProposalsAdoptionExtension();
 		const result = extension.applyAdoptionPlan?.({
 			derived: {
-				preset: 'standard',
+				preset: 'team-pr',
 				config: derivedConfig,
 				rationale: ['derived rationale'],
 			},
@@ -91,7 +91,7 @@ describe('buildProposalsAdoptionExtension', () => {
 		];
 		const result = extension.applyAdoptionPlan?.({
 			derived: {
-				preset: 'standard',
+				preset: 'team-pr',
 				config: derivedConfig,
 				rationale: ['derived rationale'],
 			},

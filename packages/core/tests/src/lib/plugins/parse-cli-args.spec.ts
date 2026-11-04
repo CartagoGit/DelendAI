@@ -87,7 +87,7 @@ describe('parseCliArgs', async () => {
 		const args = parseCliArgs(['--preset=swarm'], '/cwd');
 		expect(args.plugins).toEqual([...resolvePreset('swarm')]);
 		expect(args.plugins).toContain('proposals');
-		expect(args.plugins).toContain('deps');
+		expect(args.plugins).toContain('quality');
 		// `preset` is a known key, not forwarded to extra
 		expect(args.extra.preset).toBeUndefined();
 	});

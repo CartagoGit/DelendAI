@@ -12,6 +12,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
+
 const TAB = 0x09;
 const LINE_FEED = 0x0a;
 const CARRIAGE_RETURN = 0x0d;
@@ -67,7 +69,9 @@ const main = (): number => {
 		console.error('✖ no-control-bytes: no tracked source file was found.');
 		return 1;
 	}
-	const found = files.flatMap((file) => {
+	// A control byte is a property of the file that holds it.
+	const judged = filesToJudge(files, (file) => file, changedFilesScope(root));
+	const found = judged.files.flatMap((file) => {
 		try {
 			return controlByteLines(
 				file,
@@ -79,7 +83,7 @@ const main = (): number => {
 	});
 	if (found.length === 0) {
 		console.log(
-			`✓ no-control-bytes: ${String(files.length)} tracked source files, none with a raw control byte.`,
+			`✓ no-control-bytes: ${String(judged.files.length)} tracked source files of ${judged.over}, none with a raw control byte.`,
 		);
 		return 0;
 	}

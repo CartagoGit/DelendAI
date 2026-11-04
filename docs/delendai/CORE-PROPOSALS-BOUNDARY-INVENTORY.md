@@ -5,14 +5,14 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 90
+- Findings: 91
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 41
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 5
-- plugin-name: 11
+- plugin-name: 12
 - type: 54
 - message: 19
 - index-access: 0
@@ -74,13 +74,14 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries freeze result | type | intentional-compat | 1 | La materializacion del estado conserva el campo de compatibilidad. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries optional carrier field | type | intentional-compat | 1 | El carrier agnostico conserva el campo opcional por compatibilidad. |
 | packages/core/src/lib/cli/workflow-contribution-assembly.ts | proposalSummaries returned field | type | intentional-compat | 1 | El estado ensamblado devuelve proposalSummaries por compatibilidad con la API publica. |
+| packages/core/src/lib/contracts/constants/preset-migration.constant.ts | retired full preset includes proposals | plugin-name | composition | 1 | El preset full retirado incluia proposals; reconocer su mapa de plugins necesita ese id. |
 | packages/core/src/lib/contracts/constants/token-budgets.constant.ts | fixturePluginIds: ['proposals', 'memory'] | plugin-name | intentional-compat | 1 | Los fixtures de presupuesto siguen nombrando proposals como plugin representativo. |
 | packages/core/src/lib/contracts/file-conventions.contract.ts | folderRule('proposal', 'proposals') | path | contract | 1 | La convencion de ficheros publica el plural proposals como layout nominal. |
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | pluginDefaults.proposals | plugin-name | composition | 1 | Los defaults de plugins reservan un bloque nominal para proposals. |
-| packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 2 | El catalogo de presets describe proposals como plugin concreto de composicion. |
+| packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 3 | El catalogo de presets describe proposals como plugin concreto de composicion. |
 | packages/core/src/lib/plugins/preset-derived.ts | preset includes proposals | plugin-name | composition | 1 | El preset derivado materializa proposals en la composicion por defecto. |
 | packages/core/src/lib/prompts/agent-bootstrap.prompt.ts | Actionable proposals | message | intentional-compat | 1 | El resumen textual del prompt sigue nombrando actionable proposals. |
 | packages/core/src/lib/prompts/agent-bootstrap.prompt.ts | actionable proposals available right now | message | intentional-compat | 1 | La instruccion bootstrap publica proposals como unidad accionable. |

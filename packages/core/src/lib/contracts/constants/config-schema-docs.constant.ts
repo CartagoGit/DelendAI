@@ -23,12 +23,27 @@ import type {
 import type { PERMISSION_CATEGORIES } from './permission-categories.constant';
 import type { PUBLICATION_GRANULARITIES } from './publication-granularity.constant';
 import type { STARTUP_REPORT_LEVEL_INPUTS } from '../../startup-report/level';
-import type { PRESET_KIND } from '../../plugins/preset-catalog';
+import type {
+	IRetiredPresetId,
+	PRESET_KIND,
+} from '../../plugins/preset-catalog';
 // Type-only on purpose: the agent kinds are needed for their NAMES here,
 // not their value. Importing the value would make this module depend on
 // the agent schema, which depends on `documentedEnum` — a cycle that
 // cost a barrel import its evaluation order.
 import type { DECLARED_AGENT_KINDS } from './declared-agent-schema.constant';
+
+/** The scopes `testing.scope` offers, and what each runs. */
+export const TEST_SCOPES = ['touched', 'reach', 'all'] as const;
+
+export const TEST_SCOPE_DOCS: Readonly<
+	Record<(typeof TEST_SCOPES)[number], string>
+> = {
+	touched:
+		'Run the specs the change touched: a changed spec, the spec that mirrors a changed source, and a spec that imports a changed file directly. Nothing reached through another module. The default; the cheapest proof.',
+	reach: 'Also run every spec the change reaches through other modules, followed by symbol, and the specs that read a changed file. Choose it when a far-away spec has caught what the touched ones missed.',
+	all: 'Run every spec in the project. The most certain, the most expensive; choose it for a release or a change to the test setup itself.',
+};
 
 export const SURFACE_MODE_DOCS: Readonly<
 	Record<(typeof MCP_TOOL_SURFACE_MODE)[number], string>
@@ -223,23 +238,29 @@ export const PLUGIN_REGISTRY_ORIGIN_DOCS = {
 
 /** The preset a registry entry belongs to. */
 export const PLUGIN_REGISTRY_DEFAULT_PRESET_DOCS: Readonly<
-	Record<(typeof PRESET_KIND)[number] | 'vertex', string>
+	Record<(typeof PRESET_KIND)[number] | IRetiredPresetId, string>
 > = {
 	minimal:
-		'The smallest preset: the plugins a project needs to read and edit code, and nothing else.',
-	lean: 'A small preset: `minimal` plus the plugins that keep a repository healthy.',
-	standard: 'The default preset: the plugins most projects want on day one.',
-	swarm: 'The preset for a multi-agent project: `standard` plus the plugins that coordinate agents.',
-	full: 'Every plugin the project ships.',
+		'The smallest pack: the plugins a project needs to read and edit code, and nothing else.',
+	solo: 'One developer and one agent: orientation, memory, docs and the quality, rules and refactor tools for day-to-day coding.',
+	'team-pr':
+		'A team on pull requests: `solo` plus the forge, commit policy, conventions, security and status marker.',
+	swarm: 'Several agents sharing a checkout: the proposal engine, orchestration, logs and the plugins that coordinate agents.',
+	audit: 'Read-only review and audit runs: audit, security, dependency, debt and link checks.',
+	'docs-web':
+		'Documentation and web sites: docs, i18n, link check and allow-listed fetch.',
+	everything: 'Every published plugin, for diagnostics.',
 	dogfood:
-		'The preset this project uses on itself: everything, tuned for working on delendai.',
-	'web-app':
-		'A stack pack for a web application. Independent of the presets above: it resolves to its own plugin set.',
-	'backend-api':
-		'A stack pack for a backend service. Independent of the presets above.',
-	'cli-tool':
-		'A stack pack for a command line tool. Independent of the presets above.',
+		'The pack this project uses on itself: a snapshot of its own configuration.',
 	vertex: 'A legacy brand alias that resolves to `dogfood`. Kept so older configurations keep working.',
+	lean: 'Retired: resolves to `solo`.',
+	standard: 'Retired: resolves to `solo`.',
+	full: 'Retired: resolves to `everything`.',
+	'web-app':
+		'Retired as a pack: a stack overlay (i18n, web-fetch) on `solo`.',
+	'backend-api':
+		'Retired as a pack: a stack overlay (container, database) on `solo`.',
+	'cli-tool': 'Retired as a pack: a stack overlay (perf) on `solo`.',
 };
 
 /** What a plugin may do, grouped by the resource it touches. */

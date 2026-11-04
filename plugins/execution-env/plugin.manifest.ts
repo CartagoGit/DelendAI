@@ -12,7 +12,7 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'filesystem-write', 'process', 'env-read'],
 	// In no preset: running somewhere other than this machine is a
 	// choice a project makes in its configuration, not a default.
-	presets: [],
+	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['execution-env'],

@@ -29,6 +29,27 @@
 		"source.organizeImports": "explicit"
 	},
 
+	// ──────────────────────────────────────────────────────────────────────
+	// Watcher: la raíz de caché fuera del vigilado del editor.
+	//
+	// El enjambre abre un worktree git por agente y slice bajo
+	// `.cache/delendai/.worktrees/`, y cada uno trae su propio
+	// `biome.json` y su propio `.gitignore`. Sin esta exclusión, cada
+	// alta y cada baja de worktree (unas veinte rutas) llega al cliente
+	// LSP de Biome: las que caen en la ventana en que el cliente no está
+	// corriendo fallan con `-32096 "Client is not running"` y el log del
+	// LSP se llena de errores que no son de Biome.
+	//
+	// `biome.json` ya excluye `!.cache` y `!.worktrees` de SU análisis;
+	// esto es lo que evita que los eventos lleguen siquiera.
+	// ──────────────────────────────────────────────────────────────────────
+	"files.watcherExclude": {
+		"**/.cache/**": true
+	},
+	"search.exclude": {
+		"**/.cache/**": true
+	},
+
 	// Scope format-on-save to the front (Astro site). Backend packages keep
 	// their existing formatter rules; nothing is changed outside apps/web.
 	"[astro]": {
@@ -203,5 +224,11 @@
 	},
 	"[yaml]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"files.watcherExclude": {
+		".cache/**": true
+	},
+	"search.exclude": {
+		".cache/**": true
 	}
 }

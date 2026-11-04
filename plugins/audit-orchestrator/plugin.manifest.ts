@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['audit', 'orchestrator', 'subagent', 'proposals'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read', 'process'],
-	presets: ['full'],
+	presets: ['everything'],
 	tokenBudget: {
 		staticBytes: 1_660,
 		caps: { hard: 1_910, warning: 1_750 },

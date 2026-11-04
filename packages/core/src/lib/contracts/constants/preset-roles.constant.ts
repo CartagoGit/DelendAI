@@ -12,12 +12,28 @@
  */
 export const PRESET_ROLES: Readonly<Record<string, string>> = {
 	minimal: 'orientation',
-	lean: 'habitual-work',
-	standard: 'adaptive-task-aware',
+	solo: 'daily-coding',
+	'team-pr': 'team-pull-requests',
 	swarm: 'multi-agent',
-	full: 'diagnostic',
+	audit: 'read-only-audit',
+	'docs-web': 'docs-and-web',
+	everything: 'diagnostic',
 	dogfood: 'delendai-dogfood',
-	'web-app': 'stack-pack-web',
-	'backend-api': 'stack-pack-backend',
-	'cli-tool': 'stack-pack-cli',
+};
+
+/**
+ * Who each pack is for. Human-authored like the role: the purpose is
+ * policy, not a measurement, so it lives apart from the generated metadata.
+ */
+export const PRESET_PURPOSES: Readonly<Record<string, string>> = {
+	minimal: 'Try-out and read-only orientation with the smallest context.',
+	solo: 'One developer and one agent doing day-to-day coding.',
+	'team-pr':
+		'A team working through pull requests with commit and test conventions.',
+	swarm: 'Several agents sharing one checkout.',
+	audit: 'Read-only review and audit runs.',
+	'docs-web': 'Documentation and web sites.',
+	everything: 'Diagnostics: every published plugin.',
+	dogfood:
+		"This repository's own configuration; offered only where that configuration exists.",
 };

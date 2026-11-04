@@ -46,6 +46,8 @@ import { documentedEnum } from './config-schema-docs';
 import {
 	COMMIT_AUTHOR_MODE_DOCS,
 	SURFACE_MODE_DOCS,
+	TEST_SCOPE_DOCS,
+	TEST_SCOPES,
 } from '../contracts/constants/config-schema-docs.constant';
 
 /** Structural schema for the config file (used by `--check`). */
@@ -105,6 +107,17 @@ export const CONFIG_FILE_SCHEMA = z
 			.describe(
 				'Whether an agent may run its work in a separate git worktree, so parallel agents do not collide in one checkout. Off by default. Turn it on for a project where several agents work at the same time; when a `development` block is present it is an input to that policy instead.',
 			),
+		testing: z
+			.object({
+				scope: documentedEnum(TEST_SCOPES, TEST_SCOPE_DOCS)
+					.optional()
+					.describe(
+						'Which specs an agent runs for a change. `touched` (the default) runs the changed specs, the spec that mirrors a changed source and the specs that import a changed file directly. `reach` adds every spec the change reaches through other modules, and the specs that read a changed file. `all` runs every spec. Choose the wider scopes only when a spec far from the change has caught what the touched ones missed.',
+					),
+			})
+			.strict()
+			.optional()
+			.describe('How tests are chosen when an agent runs them.'),
 		development: DEVELOPMENT_CONFIG_SCHEMA,
 		core: z
 			.object({

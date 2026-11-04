@@ -45,6 +45,7 @@ import {
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
+import { landsByPullRequest } from '../development-policy/branch-rules';
 import { readSupersedingUnit } from './unit-fence.service';
 import { worktreeOfRef } from './unit-removal.service';
 import {
@@ -271,9 +272,8 @@ export const published = async (
 			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
 		);
 	}
-	// The proof every agent is told to run, run here: a pull request is
-	// only opened for work that passed it. A review records verdicts and
-	// proves nothing; a project that declares no proof is told how to.
+	// The proof every agent is told to run, run here: a pull request is only
+	// opened for work that passed it. A review proves nothing; no proof declared, told how.
 	const proof =
 		tipOfUnit !== undefined &&
 		provesBeforePublishing(policy) &&
@@ -286,6 +286,7 @@ export const published = async (
 					),
 					tipSha: tipOfUnit,
 					integrationSha: base,
+					urgency: { args, proposal, policy },
 				})
 			: undefined;
 	if (proof !== undefined && !proof.passed) {
@@ -330,12 +331,11 @@ export const published = async (
 			: {}),
 	};
 	// The publication becomes a pull request here, by the machine that
-	// holds the forge credential (x00677): a publication nobody opened a
-	// pull request for is work that never lands.
+	// holds the forge credential (x00677), when the branch takes PRs.
 	const pullRequest =
 		outcome.published &&
 		outcome.tip !== null &&
-		policy.integration.requiresPullRequest &&
+		landsByPullRequest(policy) &&
 		!args.includes('--no-pull-request')
 			? openPublicationPullRequest({
 					remote,

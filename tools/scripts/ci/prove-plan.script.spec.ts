@@ -6,6 +6,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	causeLinesOf,
 	earlySteps,
+	familyPlanOf,
+	isProposalOnly,
+	proveGatesOf,
+	timingTableOf,
 	fastSteps,
 	vitestArgsOf,
 } from './prove-plan.script';
@@ -57,10 +61,38 @@ describe('earlySteps', () => {
 			'generated files are current',
 			'site tool translations',
 		]);
+		expect(labels('docs/delendai/proposals/ready/a.md')).toEqual([
+			'agent-catalog current',
+			'docs-index current',
+			'host-hints current',
+			'roadmap drift',
+		]);
 		expect(labels('docs/a.md')).toEqual([
 			'tool budgets',
 			'generated files are current',
 		]);
+	});
+});
+
+describe('isProposalOnly', () => {
+	it('holds only when every changed file is a proposal', () => {
+		expect(isProposalOnly(['docs/delendai/proposals/a.md'])).toBe(true);
+		expect(
+			isProposalOnly(['docs/delendai/proposals/a.md', 'plugins/x/a.ts']),
+		).toBe(false);
+		expect(isProposalOnly([])).toBe(false);
+	});
+});
+
+describe('timingTableOf', () => {
+	it('lists the slowest step first', () => {
+		const lines = timingTableOf([
+			{ label: 'a', seconds: 3, ok: true },
+			{ label: 'b', seconds: 70, ok: false },
+		]);
+		expect(lines[1]).toContain('70s');
+		expect(lines[1]).toContain('FAIL');
+		expect(lines[2]).toContain('a');
 	});
 });
 
@@ -121,5 +153,30 @@ describe('causeLinesOf', () => {
 			'(fail) one > two',
 			'proposals: 80,135 B => HARD BREACH',
 		]);
+	});
+});
+
+describe('the sectioned checks', () => {
+	it('typechecks against the base the forge diffs against', () => {
+		expect(proveGatesOf('abc123')).toEqual([
+			['bun', 'run', 'typecheck', '--', '--base=abc123'],
+		]);
+	});
+
+	it('prints which check families run for a docs-only change and why the others do not', () => {
+		const lines = familyPlanOf({
+			changed: ['docs/delendai/guide.md'],
+			structural: [],
+			reached: new Set(),
+		});
+		expect(lines).toContain(
+			'prove: run  lint-docs — docs/delendai/guide.md changed',
+		);
+		expect(lines.find((line) => line.includes(' typecheck — '))).toMatch(
+			/^prove: skip typecheck — no changed file is under /u,
+		);
+		expect(lines.find((line) => line.includes(' lint-biome — '))).toBe(
+			'prove: skip lint-biome — the change is prose only, which this job does not read',
+		);
 	});
 });

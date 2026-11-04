@@ -44,6 +44,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
 import { repoRoot } from '../lib/monorepo-paths';
 import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
 
@@ -161,11 +162,17 @@ if (isMainModule()) {
 	void (async () => {
 		const root = repoRoot();
 		const proposalsDirAbs = join(root, 'docs', 'delendai', 'proposals');
-		const violations = await detectMultipleFrontmatter(proposalsDirAbs);
+		// A second frontmatter block is a property of the file that holds it.
+		const judged = filesToJudge(
+			await detectMultipleFrontmatter(proposalsDirAbs),
+			(each) => relative(root, join(proposalsDirAbs, each.relPath)),
+			changedFilesScope(root),
+		);
+		const violations = judged.files;
 
 		if (violations.length === 0) {
 			console.log(
-				'✓ single-frontmatter: every proposal file has exactly one frontmatter block',
+				`✓ single-frontmatter: every proposal file of ${judged.over} has exactly one frontmatter block`,
 			);
 			return;
 		}

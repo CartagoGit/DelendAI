@@ -166,6 +166,14 @@ export {
 	readWorkspaceDocsDir,
 	readWorkspacePolicy,
 } from './lib/work-units/development-policy.service';
+export {
+	followBranches,
+	promoteBranch,
+} from './lib/release/forward-sync.service';
+export type {
+	IBranchSyncPorts,
+	IBranchSyncResult,
+} from './lib/contracts/interfaces/forward-sync.interface';
 export { openPublicationPullRequest } from './lib/work-units/publication-pull-request.service';
 // The gates a project declares: what `delendai validate` runs, and what
 // certifies a unit before the merge model lands it.
@@ -241,7 +249,12 @@ export {
 } from './lib/plugins/pack-defaults-overlay';
 export { hasExplicitPluginSurfaceSelection } from './lib/plugins/parse-cli-args';
 export { resolvePluginOptions } from './lib/plugins/plugin-defaults';
-export { PRESET_KIND } from './lib/plugins/preset-catalog';
+export { describeRetiredPresetMatch } from './lib/plugins/preset-migration';
+export {
+	PRESET_KIND,
+	RETIRED_PRESET_ID,
+	resolveStackPackMembers,
+} from './lib/plugins/preset-catalog';
 export {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
@@ -310,6 +323,12 @@ export {
 	parseJsonc,
 } from './lib/config/jsonc-document';
 export type { IJsoncEdit } from './lib/config/jsonc-document';
+export {
+	cacheExcludeGlob,
+	mergeCacheExcludes,
+} from './lib/workspace-migration/migrators/vscode-cache-exclude';
+export { CACHE_EXCLUDE_SETTINGS } from './lib/workspace-migration/migrators/vscode-cache-exclude.constant';
+export { configuredCacheDir } from './lib/shared/delendai-records';
 // The prose `init` writes above each block of `delendai.config.json`,
 // derived from the schema itself so the file and the schema cannot
 // disagree about what a key does.

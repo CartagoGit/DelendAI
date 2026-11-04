@@ -9,8 +9,16 @@ import {
 	destroyTokenBudgetFixtureWorkspace,
 	listToolsMetrics,
 	measureToolTextBytes,
+	PRESET_MEASURED_INPUTS,
 	type IToolOwnerMetrics,
 } from '../report/token-budget-report-lib';
+import {
+	hashOfPaths,
+	keyOf,
+	recordedPass,
+	recordPass,
+} from '../lib/content-hash';
+import { repoRoot } from '../lib/monorepo-paths';
 
 import {
 	manifestBudgetDivergence,
@@ -272,6 +280,20 @@ const main = async (): Promise<number> => {
 	return 0;
 };
 
+// The proof runs this gate first and its token job runs it again: a pass
+// under the same measured inputs and arguments is not measured twice.
+const passKey = keyOf({
+	inputs: hashOfPaths(repoRoot(), PRESET_MEASURED_INPUTS),
+	argv: process.argv.slice(2).join(' '),
+});
+const kept = recordedPass(repoRoot(), 'tokens-gate', passKey);
+if (kept !== undefined) {
+	console.log(
+		`run-actual-preset-budget: passed at ${kept.at} under the same measured inputs; kept.`,
+	);
+	process.exit(0);
+}
+
 const exitCode = await main().catch((error: unknown) => {
 	console.error(
 		`run-actual-preset-budget failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -279,4 +301,5 @@ const exitCode = await main().catch((error: unknown) => {
 	return 1;
 });
 
+if (exitCode === 0) recordPass(repoRoot(), 'tokens-gate', passKey);
 process.exit(exitCode);

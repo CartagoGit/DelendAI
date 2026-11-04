@@ -32,6 +32,7 @@ import type {
 } from '../contracts/interfaces/unit-proof.interface';
 import { commitSubjectFor } from '../shared/commit-call-writes';
 import { readWorkspaceDocsDir } from './development-policy.service';
+import { urgentReasonOf } from './urgent-turn.service';
 import {
 	computeSlotPath,
 	withComputeSlot,
@@ -273,11 +274,23 @@ export const proveUnit = async (
 		}
 	};
 	if (slot === undefined) return onSlot();
+	const urgent =
+		request.urgency === undefined
+			? undefined
+			: await urgentReasonOf({
+					root,
+					args: request.urgency.args,
+					proposal: request.urgency.proposal,
+					integration: request.urgency.policy.branches.integration,
+				});
 	try {
 		return await withComputeSlot({
 			lockPath: slot,
 			label: `proof of ${tipSha.slice(0, 12)} by ${process.env.DELENDAI_AGENT_ID ?? 'an unidentified agent'}`,
 			run: onSlot,
+			unit: request.worktree ?? tipSha,
+			tip: tipSha,
+			...(urgent === undefined ? {} : { urgent }),
 		});
 	} catch (error) {
 		if (

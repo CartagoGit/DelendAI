@@ -28,8 +28,8 @@ const formatPluginList = (plugins: readonly string[]): string => {
 };
 
 const backendApiPackMembershipLine = (): string => {
-	const members = resolvePresetMembers('backend-api');
-	return `- \`backend-api\` — the preset currently ships ${formatPluginList(members)}; it does not include \`api\` by default.`;
+	const members = resolvePresetMembers('solo');
+	return `- \`backend-api\` — the stack overlay is \`solo\` (${formatPluginList(members)}) plus \`container\` and \`database\`; it does not include \`api\` by default.`;
 };
 
 const OptionsSchema = z
