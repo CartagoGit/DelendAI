@@ -16,11 +16,11 @@ Every agent in this repository, on any host and model, reads the owner's product
 
 ## why
 
-TODO: why this work matters now.
+On 2026-11-04 the owner set standing product principles for every agent in this repository, not for one session: efficiency, robustness, speed, token saving, ease of use, and above all a fully agnostic product, so that delendai works as a layer in any project, with any agent and host, without agents going off the rails. Agents read only the bootstrap as their rules (every host file points to it), so the principles belong there. That day's defects (checks not sectioned, branches stranded when their author left, maintenance running only in this repository, a host-specific MCP assumption) are each a breach of one of them.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Restating the workflow rules, which already have their own sections.
 
 ## slices
 
