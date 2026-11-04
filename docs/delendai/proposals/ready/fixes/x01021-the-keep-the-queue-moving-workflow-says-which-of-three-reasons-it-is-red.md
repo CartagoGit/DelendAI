@@ -16,11 +16,12 @@ The workflow reports an internal error, a blocked queue and an open security ale
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Claim: the keep-the-queue-moving workflow is red for three different reasons that look the same. Verified by reading `.github/workflows/keep-the-queue-moving.yml` (not by reproducing red runs): the report step (`keep-the-queue-moving.script.ts`), `work:doctor -- --forge` and `forge:promotion-alerts -- --branch=develop` each end the job red with their own output, and nothing in the run's summary names which state it is. A person has to open three logs to tell a script crash from a queue waiting on the owner from a code-scanning alert. The open alerts themselves are triaged in their own proposal.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Making any of the three checks softer; each still fails the job.
+- Triaging the open code-scanning alerts, which has its own proposal.
 
 ## slices
 
