@@ -323,6 +323,12 @@ export {
 	parseJsonc,
 } from './lib/config/jsonc-document';
 export type { IJsoncEdit } from './lib/config/jsonc-document';
+export {
+	cacheExcludeGlob,
+	mergeCacheExcludes,
+} from './lib/workspace-migration/migrators/vscode-cache-exclude';
+export { CACHE_EXCLUDE_SETTINGS } from './lib/workspace-migration/migrators/vscode-cache-exclude.constant';
+export { configuredCacheDir } from './lib/shared/delendai-records';
 // The prose `init` writes above each block of `delendai.config.json`,
 // derived from the schema itself so the file and the schema cannot
 // disagree about what a key does.
