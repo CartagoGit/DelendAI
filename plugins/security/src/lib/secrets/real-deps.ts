@@ -13,6 +13,13 @@ import type { ISecretScanDeps } from '../contracts/interfaces/secrets.interface'
 
 const GIT_TOOL: IExternalTool = { id: 'git', bin: 'git' };
 
+/** Why a git listing is not a list: named, so the scan can report it. */
+const listingFailure = (
+	args: readonly string[],
+	run: { readonly stderr: string; readonly timedOut: boolean },
+): string =>
+	`git ${args.join(' ')} failed${run.timedOut ? ' (timed out)' : ''}: ${run.stderr.trim() || 'no output'}`;
+
 /** Production scan deps rooted at `workspaceRootAbs`. */
 export const realScanDeps = (workspaceRootAbs: string): ISecretScanDeps => {
 	const reader = new SafeWorkspaceReader(workspaceRootAbs);
@@ -33,7 +40,7 @@ export const realScanDeps = (workspaceRootAbs: string): ISecretScanDeps => {
 				cwd: workspaceRootAbs,
 				maxOutputBytes: GIT_LISTING_MAX_OUTPUT_BYTES,
 			});
-			if (!run.ok) return [];
+			if (!run.ok) throw new Error(listingFailure(args, run));
 			return run.stdout
 				.split('\n')
 				.map((line) => line.trim())
@@ -51,7 +58,19 @@ export const realScanDeps = (workspaceRootAbs: string): ISecretScanDeps => {
 				cwd: workspaceRootAbs,
 				maxOutputBytes: GIT_LISTING_MAX_OUTPUT_BYTES,
 			});
-			if (!run.ok) return [];
+			if (!run.ok) {
+				throw new Error(
+					listingFailure(
+						[
+							'ls-files',
+							'--others',
+							'--ignored',
+							'--exclude-standard',
+						],
+						run,
+					),
+				);
+			}
 			return run.stdout
 				.split('\n')
 				.map((line) => line.trim())

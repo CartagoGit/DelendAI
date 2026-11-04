@@ -29,6 +29,21 @@ export const isTestPath = (path: string): boolean =>
 const SECRET_BEARING =
 	/(?:^|\/)(?:\.env(?:\.[\w.-]+)?|[\w.-]*(?:credentials?|secrets?)[\w.-]*\.(?:json|ya?ml|toml|ini|env)|[\w.-]+\.(?:pem|key|p12|pfx))$/i;
 
+/** The outcome of a scan that could not list what to read. */
+const incomplete = (what: string, error: unknown): ISecretScanOutcome => ({
+	scanned: 0,
+	findings: [
+		{
+			ruleId: 'secret-scan-incomplete',
+			severity: 'high',
+			message: `the secret scan could not run: the ${what} failed (${error instanceof Error ? error.message : String(error)}); no file was scanned, so the result is unknown, not clean`,
+			fix: 'fix the git error above and run the scan again',
+		},
+	],
+	ignoredScanned: [],
+	ignoredSkipped: 0,
+});
+
 /**
  * Run a secret scan. `scope` selects the file set ('changed' = working tree,
  * 'tracked' = the whole repo), plus the secret-bearing ignored files that
@@ -43,7 +58,14 @@ export const runSecretScan = async (
 		readonly maxFiles?: number;
 	},
 ): Promise<ISecretScanOutcome> => {
-	const all = await deps.listFiles(options.scope);
+	// A listing that failed is unknown, never an empty list: the scan says
+	// it could not run, as a finding no caller can read as clean.
+	let all: readonly string[];
+	try {
+		all = await deps.listFiles(options.scope);
+	} catch (error) {
+		return incomplete('file listing', error);
+	}
 	const candidates = all
 		.filter(
 			(path) =>
@@ -54,7 +76,12 @@ export const runSecretScan = async (
 	// git ls-files sees only what git tracks or would track, and a local
 	// leak sits in an ignored `.env.local`: the scan said clean without
 	// reading it.
-	const ignored = (await deps.listIgnored?.()) ?? [];
+	let ignored: readonly string[];
+	try {
+		ignored = (await deps.listIgnored?.()) ?? [];
+	} catch (error) {
+		return incomplete('ignored-file listing', error);
+	}
 	const ignoredScanned = ignored.filter(
 		(path) => !path.includes('node_modules/') && SECRET_BEARING.test(path),
 	);
