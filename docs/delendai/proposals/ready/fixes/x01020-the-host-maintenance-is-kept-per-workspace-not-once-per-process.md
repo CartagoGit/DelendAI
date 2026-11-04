@@ -28,8 +28,8 @@ External audit finding 2 (ChatGPT, 2026-11-04, against develop f7f53bf8d), P1: `
 - global_gate: none
 
 ### S1 — The maintenance of a server is looked up by its workspace
-- **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`, `packages/core/src/lib/cli/assemble.ts`, `plugins/commit-policy/src/index.ts`, `packages/core/tests/src/lib/development-policy/current-host-maintenance.spec.ts`
 - **Gate**: type
 - acceptance:
   - "currentHostMaintenance takes the workspace root and returns the maintenance made for that workspace only; a spec starts two servers on two workspaces in one process and each plugin call gets its own workspace maintenance, never the other one"
