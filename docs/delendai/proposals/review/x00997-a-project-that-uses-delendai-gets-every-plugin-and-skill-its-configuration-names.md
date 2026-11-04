@@ -54,14 +54,16 @@ The CLI now depends on the 27 plugins of `swarm`, `init`'s default preset, and a
 - review-log: approved by gpt-5.3-codex — verified at 27f670a5c382, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 1/1: (1) skills-are-published.spec.ts passed (2 tests), and commit 27f670a5c382 includes plugins/commit-policy/package.json plus the lint/spec files.
 
 ### S2 — No skill is left in the documentation
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/skills/shell-status/SKILL.md`, `packages/core/skills/shell-fallback/SKILL.md`, `packages/core/skills/manifest.json`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
   - "`shell-status` and `shell-fallback` live in `packages/core/skills` and in the manifest, not in `docs/delendai/skills`, which is not published. `docs/` holds only the pointer to where skills live."
 - shipped-in: `27f670a5c382`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 27f670a5c382, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 1/1: (1) commit 27f670a5c382 includes packages/core/skills/shell-status/SKILL.md, packages/core/skills/shell-fallback/SKILL.md, packages/core/skills/manifest.json, and …
 
 ### S3 — An installed CLI reaches every configured plugin
 - **Status**: review
