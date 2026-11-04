@@ -11,6 +11,7 @@ import {
 	ownedWorkRefShapes,
 	workShapeOfPublication,
 } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
+import { WORK_REF_SHAPE } from '@delendai/core/lib/development-policy/profiles.constant';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 const transition = resolveDevelopmentPolicy({
@@ -97,8 +98,7 @@ describe('owned shapes at the edges', () => {
 		expect(
 			ownedWorkRefShapes({
 				...transition,
-				workRefTemplate:
-					'refs/units/${agent}/${proposal}-${slice}-g${generation}',
+				workRefTemplate: `refs/units/${WORK_REF_SHAPE}`,
 			}),
 		).toHaveLength(1);
 	});
