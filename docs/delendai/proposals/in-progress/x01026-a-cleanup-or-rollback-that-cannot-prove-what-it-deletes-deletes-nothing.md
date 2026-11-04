@@ -2,7 +2,7 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
