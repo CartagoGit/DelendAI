@@ -32,14 +32,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - global_gate: none
 
 ### S1 — The report script prints one state line
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: type
 - acceptance:
   - "The script ends with exactly one line naming its state: internal-error (it threw), queue-blocked (candidates wait on a person or a red develop) or ok; a spec covers each."
 - shipped-in: `cb62d7939ec9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: no post-shipped drift was observed for this slice, but this submission currently lacks attached reproducible current-develop evidence proving all three terminal state outputs (internal-error, queue-blocked, ok) including the claimed specs. Please re-run and attach fresh empirical proof before re-submitting.
 
 ### S2 — The workflow summary names the state of each step
 - **Status**: review
