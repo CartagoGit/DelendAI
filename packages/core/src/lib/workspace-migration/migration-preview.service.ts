@@ -19,6 +19,7 @@ interface IPreviewInput {
 	readonly journal: IMigrationJournal;
 	readonly workspaceRoot: string;
 	readonly transitions?: readonly IConfigTransition[];
+	readonly explicit?: boolean;
 }
 
 /** What a scratch copy leaves out: installed packages and the repository. */
@@ -93,6 +94,7 @@ export const previewInScratchCopy = async (
 			migrations: input.migrations,
 			journal,
 			workspaceRoot: scratch,
+			...(input.explicit === true ? { explicit: true } : {}),
 			...(input.transitions === undefined
 				? {}
 				: { transitions: input.transitions }),

@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Elige tu IDE
 
-Los snippets de abajo usan el preset standard sobre bun. Pega el JSON en el archivo objetivo tal cual y deja que tu IDE registre el servidor stdio.
+Los snippets de abajo usan el preset solo sobre bun. Pega el JSON en el archivo objetivo tal cual y deja que tu IDE registre el servidor stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Alcance: proyecto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Alcance: proyecto / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Alcance: proyecto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -276,63 +276,174 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 ### minimal
 
 Uso recomendado: orientación de solo lectura y smoke tests de CI.
-Tamaño: 2 plugins.
+Tamaño: 2 plugins · 42 herramientas · ~11805 tokens en el arranque
 
 - git
 - search
 
-### standard
+### solo
 
-Uso recomendado: trabajo de agente único con memoria, docs, ayuda de lint, tipos y dependencias.
-Tamaño: 7 plugins.
+Uso recomendado: un desarrollador y un agente en el trabajo diario; es el valor por defecto de `init`.
+Tamaño: 10 plugins · 79 herramientas · ~19037 tokens en el arranque
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Uso recomendado: un equipo que trabaja con pull requests, con convenciones de commits y de tests.
+Tamaño: 18 plugins · 116 herramientas · ~25446 tokens en el arranque
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Uso recomendado: coordinación multiagente con locks, notificaciones, logs y marcadores de cierre. Audit sigue siendo opt-in y debe cargarse aparte cuando termine la ronda.
-Tamaño: 13 plugins.
+Uso recomendado: varios agentes que comparten un checkout, con propuestas, logs y marcadores de cierre.
+Tamaño: 19 plugins · 125 herramientas · ~26802 tokens en el arranque
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Uso recomendado: el preset swarm más integraciones solo de host como web-fetch e issues, cuando el host las expone.
-Tamaño: 15 plugins.
+Uso recomendado: revisiones y auditorías de solo lectura.
+Tamaño: 15 plugins · 89 herramientas · ~21955 tokens en el arranque
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Uso recomendado: documentación y sitios web.
+Tamaño: 8 plugins · 61 herramientas · ~15696 tokens en el arranque
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Uso recomendado: diagnóstico con todos los plugins publicados, incluidos los que usan la red o credenciales.
+Tamaño: 58 plugins · 236 herramientas · ~59122 tokens en el arranque
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verificar
 

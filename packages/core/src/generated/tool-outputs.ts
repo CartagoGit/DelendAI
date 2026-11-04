@@ -977,6 +977,13 @@ export interface DelendaiProjectContextOutput {
 }
 
 export interface DelendaiProjectPluginsCreateOutput {
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
+		path: string;
+		summary: string;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -1014,6 +1021,13 @@ export interface DelendaiProjectPluginsCreateOutput {
 }
 
 export interface DelendaiProjectPluginsInspectOutput {
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
+		path: string;
+		summary: string;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -1051,6 +1065,13 @@ export interface DelendaiProjectPluginsInspectOutput {
 }
 
 export interface DelendaiProjectPluginsRepairOutput {
+	dryRun?: true;
+	wouldChange?: {
+		kind: string;
+		path: string;
+		summary: string;
+	}[];
+	risk?: string;
 	ok: boolean;
 	error?: {
 		reason: string;

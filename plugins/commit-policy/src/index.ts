@@ -759,7 +759,9 @@ export default definePlugin({
 					watch: true,
 					// Several servers on one workspace close slices once.
 					standDown: async () =>
-						currentHostMaintenance()?.gate().standDown(),
+						currentHostMaintenance(ctx.workspace.root)
+							?.gate()
+							.standDown(),
 				},
 			);
 			// Deliberately not awaited: registration must not block the

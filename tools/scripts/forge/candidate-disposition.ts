@@ -21,7 +21,10 @@
  * nothing touches it until the author pushes. So a genuinely red
  * candidate costs at most one merge of the integration branch per push of
  * its author, which keeps away the merge-per-merge maze that one-at-a-time
- * removed.
+ * removed. And an author who is gone (finished, idle past the recovery
+ * window, out of quota) pushes nothing: that candidate is `orphaned`,
+ * which the hydrator keeps moving a bounded number of times and anyone
+ * may adopt, instead of `author` for good.
  */
 import type {
 	ICandidateState,
@@ -91,13 +94,19 @@ export const candidateDispositions = (
 							disposition: 'refresh-for-verdict',
 							why: 'red against an integration branch that has moved since; brought forward once for a fresh verdict',
 						}
-					: {
-							...base,
-							disposition: 'author',
-							why: candidate.behind
-								? 'red again after being brought forward; its author pushes next'
-								: 'red against the current integration branch; its author pushes next',
-						};
+					: candidate.authorGone !== undefined
+						? {
+								...base,
+								disposition: 'orphaned',
+								why: `red, and its author is gone (${candidate.authorGone}); brought forward a bounded number of times, and anyone may adopt it`,
+							}
+						: {
+								...base,
+								disposition: 'author',
+								why: candidate.behind
+									? 'red again after being brought forward; its author pushes next'
+									: 'red against the current integration branch; its author pushes next',
+							};
 			}
 			if (candidate.number === head?.number) {
 				return {
@@ -123,10 +132,14 @@ export const candidateDispositions = (
 		});
 };
 
-/**
- * The candidates the hydrator brings forward this pass besides the head:
- * red ones owed a fresh verdict, and queued ones something moved under.
- */
+/** The orphaned candidates, for the hydrator's bounded rescue. */
+export const orphanedCandidates = (
+	verdicts: readonly ICandidateVerdict[],
+): readonly string[] =>
+	verdicts
+		.filter((verdict) => verdict.disposition === 'orphaned')
+		.map((verdict) => verdict.headRef);
+
 /**
  * The candidates an agent brings forward itself: its own publications the
  * queue hands back to their author ("red again after being brought
@@ -146,6 +159,10 @@ export const authorsOwn = (
 		)
 		.map((verdict) => verdict.headRef);
 
+/**
+ * The candidates the hydrator brings forward this pass besides the head:
+ * red ones owed a fresh verdict, and queued ones something moved under.
+ */
 export const toBringForward = (
 	verdicts: readonly ICandidateVerdict[],
 ): readonly string[] =>

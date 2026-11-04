@@ -17,6 +17,11 @@ export interface ICandidateState extends IQueueCandidateFacts {
 	 * they are regenerated, never merged by hand.
 	 */
 	readonly overlapping: readonly string[];
+	/**
+	 * Its author is gone (finished, idle past the recovery window, out of
+	 * quota), with why; absent when the author is there or nobody asked.
+	 */
+	readonly authorGone?: string | undefined;
 }
 
 /**
@@ -35,6 +40,9 @@ export interface ICandidateState extends IQueueCandidateFacts {
  *   regenerated once.
  * - `author`: red against the current integration branch, or red again
  *   after being brought forward; nothing moves it until its author pushes.
+ * - `orphaned`: what would be `author`, but its author is gone; the
+ *   hydrator brings it forward, a bounded number of times, and anyone
+ *   may adopt it.
  * - `draft`: not ready; its author's.
  */
 export type ICandidateDisposition =
@@ -44,6 +52,7 @@ export type ICandidateDisposition =
 	| 'refresh-for-verdict'
 	| 'regenerate'
 	| 'author'
+	| 'orphaned'
 	| 'draft';
 
 export interface ICandidateVerdict {

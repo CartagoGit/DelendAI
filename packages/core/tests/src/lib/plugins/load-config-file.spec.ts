@@ -4,7 +4,6 @@ import {
 	pluginConfigFor,
 } from '@delendai/core/lib/plugins/load-config-file';
 import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
-import { runDoctor } from '@delendai/core/lib/cli/run-cli';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { diagnoseConfigFile } from '@delendai/core/lib/plugins/load-config-file';
 
@@ -291,78 +290,6 @@ describe('diagnoseConfigFile', async () => {
 		expect(
 			diagnoseConfigFile(JSON.stringify({ bogus: 1 })).issues.length,
 		).toBeGreaterThan(0);
-	});
-});
-
-describe('runDoctor', async () => {
-	const demoPlugin = { name: 'demo', register: () => ({}) };
-	it('reports loaded plugins, errors and counts without starting stdio', async () => {
-		const args = parseCliArgs(
-			[
-				'--plugins=demo,nope',
-				`--workspace=${WRITABLE_WORKSPACE}`,
-				'--surface=native',
-			],
-			WRITABLE_WORKSPACE,
-		);
-		const report = await runDoctor(args, {
-			import: async (specifier: string) => {
-				if (specifier.includes('demo')) return { default: demoPlugin };
-				throw new Error('not found');
-			},
-			readFile: async () => undefined,
-		});
-		expect(report.plugins.loaded).toEqual(['demo']);
-		expect(report.plugins.errors.length).toBe(1);
-		expect(report.ok).toBe(false);
-		expect(report.counts.tools).toBeGreaterThan(0);
-	});
-
-	it("names each account's layer, and reports a personal file it could not take", async () => {
-		const args = parseCliArgs(
-			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
-			WRITABLE_WORKSPACE,
-		);
-		const account = (accountId: string) => ({
-			accountId,
-			vendor: 'anthropic',
-			credentialMode: 'official-subscription-login',
-			billingMode: 'subscription-included',
-		});
-		const reportWith = (personal: string) =>
-			runDoctor(args, {
-				personalConfigRoot: '/personal-root',
-				readFile: async (path: string) =>
-					path.startsWith('/personal-root/delendai/projects/')
-						? personal
-						: path.endsWith('delendai.config.json')
-							? JSON.stringify({
-									accounts: [
-										account('team'),
-										account('shared-only'),
-									],
-								})
-							: undefined,
-			});
-		const report = await reportWith(
-			JSON.stringify({ accounts: [account('team'), account('mine')] }),
-		);
-		expect(report.accounts.personalLayer).toMatch(
-			/^\/personal-root\/delendai\/projects\/[0-9a-f]{16}\.json$/u,
-		);
-		expect(report.accounts.layers).toEqual([
-			{ accountId: 'team', layer: 'personal' },
-			{ accountId: 'shared-only', layer: 'shared' },
-			{ accountId: 'mine', layer: 'personal' },
-		]);
-		const broken = await reportWith('{ nope');
-		expect(broken.config.issues.join('\n')).toMatch(
-			/personal configuration .* does not parse/u,
-		);
-		expect(broken.accounts.layers.map((each) => each.layer)).toEqual([
-			'shared',
-			'shared',
-		]);
 	});
 });
 

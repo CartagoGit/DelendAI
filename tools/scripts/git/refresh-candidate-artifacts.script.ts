@@ -39,6 +39,7 @@ import { dropConflictingVerdicts } from './stale-verdict-conflicts';
 
 import {
 	hookFreeEnvironment,
+	publicationPresence,
 	runGitCommand,
 	writePublicationDispositions,
 } from '@delendai/core/runtime';
@@ -47,6 +48,7 @@ import {
 	toBringForward,
 	authorsOwn,
 } from '../forge/candidate-disposition';
+import { authorGoneOf, rescueOrphans } from './orphan-rescue';
 import {
 	currentQueueFacts,
 	currentQueueOrder,
@@ -433,7 +435,7 @@ export const shouldAskQueueToRun = (input: {
 	input.head !== undefined &&
 	(input.refreshed || !input.headArmed);
 
-const main = (): void => {
+const main = async (): Promise<void> => {
 	const root = repoRoot();
 	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
@@ -520,7 +522,14 @@ const main = (): void => {
 	console.log(
 		`refresh-candidate-artifacts: head of the queue ${head ?? '(none)'}; ${stale.length === 0 ? 'already level' : 'behind'}${apply ? '' : ' — read-only; pass --apply'}.`,
 	);
-	bringForwardOthers(root, policy, remote, behind, apply, new Set(stale));
+	await bringForwardOthers(
+		root,
+		policy,
+		remote,
+		behind,
+		apply,
+		new Set(stale),
+	);
 	// The queue arms the head once it is level. It runs on pushes to the
 	// integration branch, not to a candidate, so it is asked to run now.
 	if (
@@ -637,14 +646,14 @@ export const overlappingFiles = (
  * whose verdict is older than the integration branch (see
  * candidate-disposition.ts, the one statement of those rules).
  */
-const bringForwardOthers = (
+const bringForwardOthers = async (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	remote: string,
 	behind: ReadonlySet<string>,
 	apply: boolean,
 	alreadyRefreshed: ReadonlySet<string>,
-): void => {
+): Promise<void> => {
 	let facts: ReturnType<typeof currentQueueFacts>;
 	try {
 		facts = currentQueueFacts();
@@ -654,9 +663,16 @@ const bringForwardOthers = (
 		);
 		return;
 	}
+	// Whose author is gone, judged from the leases and heartbeats (x01024).
+	const presence = await publicationPresence({
+		root,
+		policy,
+		publications: facts.facts.map((fact) => fact.headRef),
+	});
 	const verdicts = candidateDispositions(
 		facts.facts.map((fact) => ({
 			...fact,
+			authorGone: authorGoneOf(presence.get(fact.headRef)),
 			behind: behind.has(fact.headRef),
 			headIsIntegrationMerge: headIsIntegrationMerge(
 				root,
@@ -706,7 +722,8 @@ const bringForwardOthers = (
 		author === undefined
 			? []
 			: authorsOwn(verdicts, facts.publicationPrefix, author);
-	for (const candidate of [...toBringForward(verdicts), ...own]) {
+	const rescue = await rescueOrphans(root, verdicts, behind, apply);
+	for (const candidate of [...toBringForward(verdicts), ...own, ...rescue]) {
 		if (!apply || alreadyRefreshed.has(candidate)) continue;
 		const outcome = refreshCandidate({ root, policy, remote, candidate });
 		console.log(
@@ -715,4 +732,4 @@ const bringForwardOthers = (
 	}
 };
 
-if (import.meta.main) main();
+if (import.meta.main) await main();

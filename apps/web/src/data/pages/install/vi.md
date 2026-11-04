@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Chọn IDE của bạn
 
-Các snippet dưới đây dùng preset standard qua bun. Hãy dán nguyên JSON vào tệp đích rồi để IDE của bạn đăng ký stdio server.
+Các snippet dưới đây dùng preset solo qua bun. Hãy dán nguyên JSON vào tệp đích rồi để IDE của bạn đăng ký stdio server.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Phạm vi: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Phạm vi: project / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Phạm vi: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Phạm vi: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Phạm vi: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Phạm vi: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Phạm vi: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ Preset là cộng dồn. Hãy bắt đầu với tập nhỏ nhất, rồi chỉ
 ### minimal
 
 Cách dùng khuyến nghị: định hướng chỉ đọc và smoke test cho CI.
-Kích thước: 2 plugin.
+Kích thước: 2 plugin · 42 công cụ · ~11805 token khi khởi động
 
 - git
 - search
 
-### standard
+### solo
 
-Cách dùng khuyến nghị: làm việc single-agent với memory, docs, hỗ trợ lint, kiểu và dependency.
-Kích thước: 7 plugin.
+Cách dùng khuyến nghị: một lập trình viên và một agent làm việc hằng ngày; là mặc định của `init`.
+Kích thước: 10 plugin · 79 công cụ · ~19037 token khi khởi động
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Cách dùng khuyến nghị: một nhóm làm việc qua pull request, với quy ước commit và kiểm thử.
+Kích thước: 18 plugin · 116 công cụ · ~25446 token khi khởi động
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Cách dùng khuyến nghị: phối hợp multi-agent với lock, notification, log và close marker. Audit vẫn là opt-in và nên được nạp riêng sau khi một vòng làm việc kết thúc.
-Kích thước: 13 plugin.
+Cách dùng khuyến nghị: nhiều agent dùng chung một checkout, với đề xuất, log và dấu hiệu đóng việc.
+Kích thước: 19 plugin · 125 công cụ · ~26802 token khi khởi động
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Cách dùng khuyến nghị: preset swarm cộng thêm các tích hợp host-only như web-fetch và issues khi host của bạn có hỗ trợ chúng.
-Kích thước: 15 plugin.
+Cách dùng khuyến nghị: rà soát và kiểm toán chỉ đọc.
+Kích thước: 15 plugin · 89 công cụ · ~21955 token khi khởi động
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Cách dùng khuyến nghị: tài liệu và trang web.
+Kích thước: 8 plugin · 61 công cụ · ~15696 token khi khởi động
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Cách dùng khuyến nghị: chẩn đoán với mọi plugin đã phát hành, kể cả plugin dùng mạng hoặc thông tin xác thực.
+Kích thước: 58 plugin · 236 công cụ · ~59122 token khi khởi động
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Kiểm tra
 

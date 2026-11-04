@@ -23,7 +23,7 @@
 import { randomUUID } from 'node:crypto';
 import { link, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 import {
 	MAINTENANCE_LEASE_HEARTBEAT_MS,
@@ -264,20 +264,29 @@ export const observeMaintenance = async (
 			};
 };
 
-/** The maintenance this process made, for plugins that run background work. */
-let processMaintenance: IHostMaintenance | undefined;
+/**
+ * The maintenance made in this process, per workspace root. One process
+ * may serve several workspaces; a single slot handed each the last one
+ * made, so a plugin of one workspace stood down on another's lease.
+ */
+const maintenanceByWorkspace = new Map<string, IHostMaintenance>();
 
 /**
- * This server's maintenance, once it was made. A plugin that polls or
- * writes refs in the background asks its gate first, so several servers on
- * one workspace do that work once: the lease holder does, the rest serve
- * their session and stay idle.
+ * This server's maintenance for `workspace`, once it was made. A plugin
+ * that polls or writes refs in the background asks its gate first, so
+ * several servers on one workspace do that work once: the lease holder
+ * does, the rest serve their session and stay idle. A workspace nothing
+ * made one for has none, never another workspace's.
  */
-export const currentHostMaintenance = (): IHostMaintenance | undefined =>
-	processMaintenance;
+export const currentHostMaintenance = (
+	workspace: string,
+): IHostMaintenance | undefined =>
+	maintenanceByWorkspace.get(resolve(workspace));
 
 /** A server's maintenance, from its lease file and its runtime watch. */
 export const createHostMaintenance = (input: {
+	/** The workspace root this maintenance gates. */
+	readonly workspace: string;
 	readonly path: string;
 	readonly behind?: (() => Promise<string | undefined>) | undefined;
 	readonly report?: ((line: string) => void) | undefined;
@@ -286,8 +295,9 @@ export const createHostMaintenance = (input: {
 		path: input.path,
 		machineId: hostname(),
 	});
+	const key = resolve(input.workspace);
 	let made: IMaintenanceGate | undefined;
-	processMaintenance = {
+	const maintenance: IHostMaintenance = {
 		gate: () => {
 			made ??= createMaintenanceGate({
 				lease,
@@ -299,7 +309,11 @@ export const createHostMaintenance = (input: {
 		observe: () => observeMaintenance(lease, input.behind),
 		stop: async () => {
 			await made?.stop();
+			if (maintenanceByWorkspace.get(key) === maintenance) {
+				maintenanceByWorkspace.delete(key);
+			}
 		},
 	};
-	return processMaintenance;
+	maintenanceByWorkspace.set(key, maintenance);
+	return maintenance;
 };
