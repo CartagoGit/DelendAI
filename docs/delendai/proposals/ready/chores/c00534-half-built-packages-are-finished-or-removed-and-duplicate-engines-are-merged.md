@@ -2,14 +2,14 @@
 id: c00534
 title: "Half-built packages are finished or removed, and duplicate engines are merged"
 kind: chore
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 7318557f-147c-4e1f-a855-7656ba6c135e
-last-correlation-id: 7318557f-147c-4e1f-a855-7656ba6c135e
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T01:41:52.171Z
+last-transition-id: 55a8e158-10b5-4c16-8f6d-a5a111e9435f
+last-correlation-id: 55a8e158-10b5-4c16-8f6d-a5a111e9435f
+last-transition-from: review
+last-transition-at: 2026-11-04T19:37:41.351Z
 ---
 
 # c00534 — Half-built packages are finished or removed, and duplicate engines are merged
@@ -59,7 +59,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 524f03fe0f84 is stale: S2 files changed afterward (e.g. ef203ed1f, a9ba21a1e, 502cf5a86). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and gate evidence.
 
 ### S3 — Duplicate engines
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/rules/src/lib/frameworks/manifest.ts`, `plugins/remote-provider-core/src/index.ts`, `plugins/remote-provider-core/src/lib/wire.helper.ts`, `plugins/remote-provider-core/src/lib/contracts/constants/wire.constant.ts`, `plugins/remote-provider-core/src/lib/http-client.ts`, `plugins/remote-provider-core/tests/wire.spec.ts`, `plugins/github/src/lib/client.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/git/package.json`, `plugins/git/src/lib/contracts/interfaces/forge.interface.ts`, `plugins/git/src/lib/services/forge.ts`, `plugins/git/tests/src/lib/forge.spec.ts`, `packages/core/src/lib/dispatch/capability-resolver.error.ts`, `packages/core/src/lib/contracts/constants/resolver-terminal-reasons.constant.ts`, `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/src/lib/tools/resolve-capability.tool.ts`, `packages/core/tests/src/lib/dispatch/capability-resolver.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -68,8 +68,10 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
   - "forge is the one PR reader; git's pr_list and pr_view delegate to it (G106)."
   - "Every resolver terminal reason has a handled branch and a spec (D9)."
 - shipped-in: `9d8977782060`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 9d8977782060 is stale: S3 files changed afterward (e.g. 52a949892, 6aa11ad84, 0b0c4aaa1). Redeliver S3 on current HEAD and resubmit with fresh shipped-in + resolver/forge evidence.
 
 ## acceptance
 
