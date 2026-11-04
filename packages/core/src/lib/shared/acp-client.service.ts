@@ -3,9 +3,10 @@
  * one prompt turn with it over stdio.
  *
  * The registry says how each agent is distributed: an npx or uvx package
- * with its arguments, or a per-platform release archive. Packages run as
- * the registry names them (pinned versions); a binary runs from where it
- * was installed. The process is stopped when the turn ends or times out.
+ * with its arguments, or a per-platform release archive. A package is
+ * fetched from the network only when the project allowed that exact
+ * package and version (`trustedAgentPackages`), and runs pinned; a binary
+ * runs from where it was installed. The process is stopped when the turn ends or times out.
  */
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
@@ -17,9 +18,13 @@ import type {
 	IAcpPromptInput,
 	IAcpPromptResult,
 } from '../contracts/interfaces/acp.interface';
-import type { IRegistryAgent } from '../contracts/interfaces/public-catalogue.interface';
+import type {
+	IAgentPackageLaunch,
+	IRegistryAgent,
+} from '../contracts/interfaces/public-catalogue.interface';
 import { registryPlatform } from '../platform/registry-platform.helper';
 import { introduceAcpAgent, promptAcpAgent } from './acp-session.service';
+import { TRUSTED_AGENT_PACKAGES_SETTING } from '../contracts/constants/trusted-agent-packages.constant';
 
 /**
  * An ACP stream over a process's stdio. Node's web streams and the global
@@ -42,29 +47,76 @@ export const acpStdioStream = async (
 const DEFAULT_TURN_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
- * How to start `agent` here: its package through npx or uvx, else its
- * binary from `installedDir`. `undefined` when neither is available.
+ * The package as it is fetched: the registry's pinned version, or the
+ * agent's own when the package names none. `npx` and `uvx` both read
+ * `name@version`.
+ */
+export const pinnedPackage = (pkg: string, version: string): string =>
+	pkg.lastIndexOf('@') > 0 || pkg.includes('==') || version.length === 0
+		? pkg
+		: `${pkg}@${version}`;
+
+/**
+ * The package `agent` would fetch from the network to start, with the
+ * tool that fetches it; undefined for an agent that fetches nothing.
+ */
+const fetchedPackage = (
+	agent: IRegistryAgent,
+): { readonly tool: 'npx' | 'uvx'; readonly spec: string } | undefined => {
+	const { npx, uvx } = agent.distribution;
+	if (npx !== undefined)
+		return { tool: 'npx', spec: pinnedPackage(npx.package, agent.version) };
+	if (uvx !== undefined)
+		return { tool: 'uvx', spec: pinnedPackage(uvx.package, agent.version) };
+	return undefined;
+};
+
+/**
+ * Why `agent` will not be started here although it could: its package
+ * would be fetched from the network and the project has not allowed that
+ * exact package and version. Undefined when nothing stops it.
+ */
+export const acpFetchRefusal = (
+	agent: IRegistryAgent,
+	trusted: ReadonlySet<string> = new Set(),
+): string | undefined => {
+	const fetched = fetchedPackage(agent);
+	if (fetched === undefined || trusted.has(fetched.spec)) return undefined;
+	return `${agent.id} would be fetched from the network (${fetched.tool} ${fetched.spec}) and this project has not allowed that package: add "${fetched.spec}" to \`${TRUSTED_AGENT_PACKAGES_SETTING}\` in delendai.config.json, or install the agent`;
+};
+
+/**
+ * How to start `agent` here: its package through npx or uvx, pinned and
+ * only when the project allowed that package (`trusted`), else its binary
+ * from `installedDir`. `undefined` when neither is available.
  */
 export const acpLaunchOf = (
 	agent: IRegistryAgent,
 	options: {
 		readonly platform?: string;
 		readonly installedDir?: string;
+		/** The exact `name@version` packages the project allows fetching. */
+		readonly trusted?: ReadonlySet<string>;
 	} = {},
 ): IAcpLaunch | undefined => {
 	const { npx, uvx, binary } = agent.distribution;
-	if (npx !== undefined)
+	const fetched = fetchedPackage(agent);
+	if (
+		fetched !== undefined &&
+		acpFetchRefusal(agent, options.trusted) === undefined
+	) {
+		const extra: Partial<IAgentPackageLaunch> =
+			(fetched.tool === 'npx' ? npx : uvx) ?? {};
 		return {
-			command: 'npx',
-			args: ['-y', npx.package, ...(npx.args ?? [])],
-			env: npx.env,
+			command: fetched.tool,
+			args:
+				fetched.tool === 'npx'
+					? ['-y', fetched.spec, ...(extra.args ?? [])]
+					: [fetched.spec, ...(extra.args ?? [])],
+			env: extra.env,
+			fromNetwork: `${fetched.tool} ${fetched.spec}`,
 		};
-	if (uvx !== undefined)
-		return {
-			command: 'uvx',
-			args: [uvx.package, ...(uvx.args ?? [])],
-			env: uvx.env,
-		};
+	}
 	const build = binary?.[options.platform ?? registryPlatform()];
 	if (build === undefined || options.installedDir === undefined)
 		return undefined;

@@ -75,6 +75,33 @@ const git = (args: readonly string[], cwd = repoRoot()): string => {
 };
 
 /**
+ * Like `git`, but a failure is `undefined`, never an empty answer: a
+ * caller that deletes on the strength of what it read must be able to
+ * tell "nothing there" from "could not read".
+ */
+const gitRead = (args: readonly string[], cwd: string): string | undefined => {
+	try {
+		return execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			maxBuffer: 32 * 1024 * 1024,
+			timeout: 60_000,
+		});
+	} catch {
+		return undefined;
+	}
+};
+
+/** Uncommitted work in a worktree, or `null` when git could not say. */
+export const readDirtyPaths = (worktreePath: string): number | null => {
+	const status = gitRead(['status', '--porcelain'], worktreePath);
+	if (status === undefined) return null;
+	return worksomebodyOwns(
+		status.split('\n').filter((line) => line.trim().length > 0),
+	);
+};
+
+/**
  * Judge every worktree. Pure over its input, so the rule can be pinned
  * by cases instead of by staging thirty checkouts.
  */
@@ -107,6 +134,13 @@ export const judgeWorktrees = (
 				path: tree.path,
 				role: 'locked',
 				reason: 'git has it locked; somebody said not to touch it',
+			};
+		}
+		if (tree.dirtyPaths === null) {
+			return {
+				path: tree.path,
+				role: 'unknown',
+				reason: 'git could not say whether it holds uncommitted work; kept, not assumed clean',
 			};
 		}
 		if (tree.dirtyPaths > 0) {
@@ -229,11 +263,14 @@ export const worksomebodyOwns = (statusLines: readonly string[]): number =>
 				!GENERATED_MARKERS.some((marker) => path.includes(marker)),
 		).length;
 
-const observe = (
+export const observe = (
 	integrationRef: string,
 	currentPath: string,
+	root: string = repoRoot(),
 ): readonly IWorktree[] => {
-	const listed = parseWorktreeList(git(['worktree', 'list', '--porcelain']));
+	const listed = parseWorktreeList(
+		git(['worktree', 'list', '--porcelain'], root),
+	);
 	return listed.map((entry, index) => ({
 		path: entry.path,
 		head: entry.head,
@@ -244,21 +281,18 @@ const observe = (
 		isMain: index === 0,
 		isCurrent: entry.path === currentPath,
 		locked: entry.locked,
-		dirtyPaths: worksomebodyOwns(
-			git(['status', '--porcelain'], entry.path)
-				.split('\n')
-				.filter((line) => line.trim().length > 0),
-		),
+		dirtyPaths: readDirtyPaths(entry.path),
 		delivered:
-			entry.head.length > 0 && isAncestor(entry.head, integrationRef),
+			entry.head.length > 0 &&
+			isAncestor(entry.head, integrationRef, root),
 		lastActivityMs: lastGitActivityMs(entry.path),
 	}));
 };
 
-const isAncestor = (sha: string, ref: string): boolean => {
+const isAncestor = (sha: string, ref: string, root: string): boolean => {
 	try {
 		execFileSync('git', ['merge-base', '--is-ancestor', sha, ref], {
-			cwd: repoRoot(),
+			cwd: root,
 			stdio: 'ignore',
 		});
 		return true;
@@ -288,18 +322,21 @@ export const formatReport = (
 	return lines.join('\n');
 };
 
-export const main = (): number => {
+export const main = (
+	root: string = repoRoot(),
+	apply: boolean = APPLY,
+): number => {
 	const integrationRef = 'origin/develop';
-	const reclamation = judgeWorktrees(observe(integrationRef, repoRoot()));
-	if (APPLY) {
+	const reclamation = judgeWorktrees(observe(integrationRef, root, root));
+	if (apply) {
 		for (const verdict of reclamation.spent) {
-			git(['worktree', 'remove', '--force', verdict.path]);
+			git(['worktree', 'remove', '--force', verdict.path], root);
 		}
 		// One prune after the removals, so git's own bookkeeping matches
 		// the directories that are actually gone.
-		git(['worktree', 'prune']);
+		git(['worktree', 'prune'], root);
 	}
-	console.log(formatReport(reclamation, APPLY));
+	console.log(formatReport(reclamation, apply));
 	return 0;
 };
 

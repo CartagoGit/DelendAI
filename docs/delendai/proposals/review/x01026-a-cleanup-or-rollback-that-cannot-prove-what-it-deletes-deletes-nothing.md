@@ -2,10 +2,14 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
+last-correlation-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:20:16.173Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -28,22 +32,28 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The reaper keeps a worktree it could not read
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A git status that fails or times out makes the worktree unknown, the report says so, and apply never removes it."
   - "git worktree remove --force is used only on a worktree whose clean state was read, not assumed."
   - "A spec simulates the failing git status."
+- shipped-in: `f52293358229`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The rollback reverts only what the transaction wrote
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/rollback.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The transaction records the files it creates, writes and renames, and the rollback reverts exactly those."
   - "A file written by another process after the backup and before the rollback is still there afterwards."
   - "A spec writes such a file between the backup and the rollback."
+- shipped-in: `569c1d67f766`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

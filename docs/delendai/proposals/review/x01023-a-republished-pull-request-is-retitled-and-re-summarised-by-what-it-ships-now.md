@@ -2,10 +2,14 @@
 id: x01023
 title: "A republished pull request is retitled and re-summarised by what it ships now"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-11-04
+last-transition-id: 614d2b22-e3ad-44a1-94d4-3605b8366369
+last-correlation-id: 614d2b22-e3ad-44a1-94d4-3605b8366369
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T14:16:31.635Z
 ---
 
 # x01023 — A republished pull request is retitled and re-summarised by what it ships now
@@ -28,11 +32,14 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 4. Clai
 - global_gate: none
 
 ### S1 — Publish updates the text of an open pull request
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`
 - **Gate**: type
 - acceptance:
   - "When the publication's pull request is already open, work publish rewrites its title and summary from the final diff and the slices the unit now ships, through the REST API, and reports the change; a spec covers a unit whose scope shrank between two publishes."
+- shipped-in: `978be919a1b3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

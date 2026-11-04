@@ -52,6 +52,7 @@ const fakeAgent = (seen: { permission?: unknown; auth?: string }) =>
 						toolCall: {
 							toolCallId: 't1',
 							title: 'Run rm -rf build',
+							kind: 'execute',
 						},
 						options: [
 							{
@@ -120,6 +121,8 @@ describe('promptAcpAgent', () => {
 			},
 		});
 		expect(asks[0]?.title).toBe('Run rm -rf build');
+		// The structured identity reaches the caller, not only the words.
+		expect(asks[0]?.kind).toBe('execute');
 		expect(allowed.permission).toEqual({
 			outcome: { outcome: 'selected', optionId: 'yes' },
 		});

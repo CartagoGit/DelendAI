@@ -12,6 +12,7 @@ import type { IProviderCapabilities } from '@delendai/core/public';
 
 import {
 	createAcpInvoker,
+	permissionVerdict,
 	permittedBy,
 } from '../../../../src/lib/invoke/acp-invoker.service';
 import { InvocationManager } from '../../../../src/lib/invoke/manager';
@@ -47,19 +48,53 @@ const request = (
 });
 
 describe('permittedBy', () => {
-	it('allows a permission only when it names an allowed tool as a whole word', () => {
+	it('grants by the structured tool kind only, never by the title', () => {
 		expect(
-			permittedBy({ title: 'Read src/x.ts', options: [] }, ['Read']),
+			permittedBy({ title: 'Read src/x.ts', kind: 'read', options: [] }, [
+				'Read',
+			]),
 		).toBe(true);
 		expect(
-			permittedBy({ title: 'Bash: rm -rf', options: [] }, ['Read']),
+			permittedBy(
+				{ title: 'Bash: rm -rf', kind: 'execute', options: [] },
+				['Read'],
+			),
 		).toBe(false);
 		expect(
-			permittedBy({ title: 'Reader mode', options: [] }, ['Read']),
+			permittedBy(
+				{ title: 'Read', kind: 'read', options: [] },
+				undefined,
+			),
 		).toBe(false);
-		expect(permittedBy({ title: 'Read', options: [] }, undefined)).toBe(
-			false,
-		);
+	});
+
+	it('refuses a title that names an allowed tool when the operation is another one', () => {
+		const ask = {
+			title: 'Bash: run something after Read',
+			kind: 'execute',
+			options: [],
+		};
+		expect(permissionVerdict(ask, ['Read'])).toEqual({
+			granted: false,
+			why: 'tool kind execute is not in the allowed tools (Read)',
+		});
+	});
+
+	it('refuses a request with no structured identity, and says why', () => {
+		expect(
+			permissionVerdict({ title: 'Read src/x.ts', options: [] }, [
+				'Read',
+			]),
+		).toEqual({
+			granted: false,
+			why: 'the request names no tool kind, and its title is not evidence',
+		});
+		expect(
+			permittedBy({ title: 'Read', kind: 'other', options: [] }, [
+				'Read',
+				'other',
+			]),
+		).toBe(false);
 	});
 });
 
@@ -118,6 +153,66 @@ describe('createAcpInvoker', () => {
 	});
 });
 
+describe('an agent fetched from the network', () => {
+	const listed = (agent: Record<string, unknown>) =>
+		vi.fn(async () => ({
+			agents: [
+				{
+					id: 'coder',
+					name: 'Coder',
+					kind: 'acp' as const,
+					origin: 'registry' as const,
+					found: [],
+					...agent,
+				},
+			],
+			detected: [],
+			candidates: [],
+		}));
+	const run = vi.fn(async () => ({
+		agent: {},
+		protocolVersion: 1,
+		authMethods: [],
+		modes: [],
+		stopReason: 'end_turn',
+		text: 'ok',
+	}));
+
+	it('is refused with the setting that allows it, when the project did not allow its package', async () => {
+		const invoker = createAcpInvoker({
+			cwd: '/ws',
+			listAgents: listed({
+				refusal:
+					'coder would be fetched from the network (npx @q/coder@2) and this project has not allowed that package: add "@q/coder@2" to `trustedAgentPackages` in delendai.config.json, or install the agent',
+			}),
+			run,
+		});
+		await expect(
+			invoker.start(request({ kind: 'acp', agent: 'coder' })).promise,
+		).rejects.toThrow('`trustedAgentPackages`');
+	});
+
+	it('says the run came from the network', async () => {
+		const invoker = createAcpInvoker({
+			cwd: '/ws',
+			listAgents: listed({
+				launch: {
+					command: 'npx',
+					args: ['-y', '@q/coder@2'],
+					fromNetwork: 'npx @q/coder@2',
+				},
+			}),
+			run,
+		});
+		const out = await invoker.start(
+			request({ kind: 'acp', agent: 'coder' }),
+		).promise;
+		expect(out.structuredContent).toMatchObject({
+			fetchedFromNetwork: 'npx @q/coder@2',
+		});
+	});
+});
+
 describe('an acp hop through the manager', () => {
 	const manager = (acp: IKindInvoker) =>
 		new InvocationManager({
@@ -154,7 +249,9 @@ describe('an acp hop through the manager', () => {
 		});
 		expect(out.result?.structuredContent).toMatchObject({
 			stopReason: 'end_turn',
-			refusedPermissions: ['Bash: rm -rf build'],
+			refusedPermissions: [
+				'Bash: rm -rf build (tool kind execute is not in the allowed tools (Read))',
+			],
 		});
 	});
 });

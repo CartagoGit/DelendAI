@@ -115,6 +115,81 @@ export const pullRequestText = (
 	};
 };
 
+/** The number a pull request URL ends in (`…/pull/12`). */
+const NUMBER_OF_URL = /\/(?<number>\d+)\/?$/u;
+
+/**
+ * The slices a unit's subjects cite, as `x01023 S1` (x01023-all: the
+ * proposal alone), in the order they first appear.
+ */
+const slicesCited = (subjects: readonly string[]): readonly string[] => [
+	...new Set(
+		subjects.flatMap(
+			(subject) => /\b[a-z]\d{5,} S\d+\b/iu.exec(subject)?.[0] ?? [],
+		),
+	),
+];
+
+/**
+ * A republished pull request says what it ships now (x01023): the title
+ * and summary are rewritten from the final diff and the slices the unit
+ * carries, through the REST endpoint (the GraphQL surface of `gh pr
+ * edit` aborts on deprecated Projects classic fields). A pull request
+ * whose text already matches is left alone.
+ */
+const refreshOpenPullRequest = (
+	input: Parameters<typeof openPublicationPullRequest>[0],
+	url: string,
+	text: { readonly title: string; readonly body: string },
+	subjects: readonly string[],
+): IPublicationPullRequest => {
+	const number = NUMBER_OF_URL.exec(url)?.groups?.number;
+	if (number === undefined) return { status: 'existing', url };
+	const files = (
+		input.ports.git([
+			'diff',
+			'--name-only',
+			`${input.integrationBase}...${input.tip}`,
+		]) ?? ''
+	)
+		.split('\n')
+		.filter((line) => line.length > 0);
+	const slices = slicesCited(subjects);
+	const shipped = [
+		...(slices.length === 0 ? [] : [`Ships: ${slices.join(', ')}.`]),
+		`Final diff: ${String(files.length)} file(s) changed.`,
+		...files.slice(0, 40).map((file) => `- \`${file}\``),
+		...(files.length > 40
+			? [`- … and ${String(files.length - 40)} more`]
+			: []),
+	].join('\n');
+	const body = `${text.body}\n\n${shipped}`;
+	const current = input.ports.gh([
+		'api',
+		`repos/{owner}/{repo}/pulls/${number}`,
+		'--jq',
+		'[.title, .body] | @json',
+	]);
+	if (current === JSON.stringify([text.title, body])) {
+		return { status: 'existing', url };
+	}
+	const updated = input.ports.gh([
+		'api',
+		'-X',
+		'PATCH',
+		`repos/{owner}/{repo}/pulls/${number}`,
+		'-f',
+		`title=${text.title}`,
+		'-f',
+		`body=${body}`,
+		'--jq',
+		'.html_url',
+	]);
+	return updated === undefined || updated === ''
+		? { status: 'existing', url }
+		: { status: 'updated', url, title: text.title };
+};
+
 /**
  * Find or open the pull request of `branch` into `base`. Only for a
  * GitHub remote with its CLI available; anything else is reported, and
@@ -163,9 +238,6 @@ export const openPublicationPullRequest = (input: {
 		'--jq',
 		'.[0].url // ""',
 	]);
-	if (existing !== undefined && existing !== '') {
-		return { status: 'existing', url: existing };
-	}
 	const subjects = (
 		ports.git([
 			'log',
@@ -177,6 +249,9 @@ export const openPublicationPullRequest = (input: {
 		.split('\n')
 		.filter((line) => line.length > 0);
 	const text = pullRequestText(subjects, input.branch, input.fallbackTitle);
+	if (existing !== undefined && existing !== '') {
+		return refreshOpenPullRequest(input, existing, text, subjects);
+	}
 	const created = ports.gh([
 		'pr',
 		'create',
