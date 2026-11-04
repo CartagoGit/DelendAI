@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	causeLinesOf,
 	earlySteps,
+	familyPlanOf,
 	isProposalOnly,
+	proveGatesOf,
 	timingTableOf,
 	fastSteps,
 	vitestArgsOf,
@@ -151,5 +153,30 @@ describe('causeLinesOf', () => {
 			'(fail) one > two',
 			'proposals: 80,135 B => HARD BREACH',
 		]);
+	});
+});
+
+describe('the sectioned checks', () => {
+	it('typechecks against the base the forge diffs against', () => {
+		expect(proveGatesOf('abc123')).toEqual([
+			['bun', 'run', 'typecheck', '--', '--base=abc123'],
+		]);
+	});
+
+	it('prints which check families run for a docs-only change and why the others do not', () => {
+		const lines = familyPlanOf({
+			changed: ['docs/delendai/guide.md'],
+			structural: [],
+			reached: new Set(),
+		});
+		expect(lines).toContain(
+			'prove: run  lint-docs — docs/delendai/guide.md changed',
+		);
+		expect(lines.find((line) => line.includes(' typecheck — '))).toMatch(
+			/^prove: skip typecheck — no changed file is under /u,
+		);
+		expect(lines.find((line) => line.includes(' lint-biome — '))).toBe(
+			'prove: skip lint-biome — the change is prose only, which this job does not read',
+		);
 	});
 });

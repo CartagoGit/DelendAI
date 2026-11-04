@@ -13,7 +13,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	CHANGED_OUTPUT_MAX_BYTES,
 	JOB_SCOPES,
+	changedOutputOf,
 	explainJobs,
 	isProse,
 	jobMustRun,
@@ -334,5 +336,145 @@ describe('pack smoke', () => {
 		expect(runs('packages/core/src/public/index.ts')).toBe(true);
 		expect(runs('bun.lock')).toBe(true);
 		expect(runs('tools/scripts/compile/build.script.ts')).toBe(true);
+	});
+});
+
+describe('the lint families and the typecheck run for what the change touches (q00038)', () => {
+	const FAMILIES = [
+		'lint-biome',
+		'lint-architecture',
+		'lint-presets',
+		'lint-docs',
+		'lint-security',
+		'lint-governance',
+		'quality-gate',
+		'manifests-check',
+		'generated-artifacts-check',
+		'typecheck',
+	];
+	const ran = (changed: readonly string[]): readonly string[] => {
+		const plan = planJobs({ changed, structural: [], reached: new Set() });
+		return FAMILIES.filter((job) => plan[job] === true);
+	};
+
+	it('runs every family for a one-file core change, since each reads core', () => {
+		expect(
+			ran(['packages/core/src/lib/shared/compute-slot.service.ts']),
+		).toEqual(FAMILIES);
+	});
+
+	it('runs every family for a plugin-only change, since each reads the plugins', () => {
+		expect(ran(['plugins/memory/src/memory.tool.ts'])).toEqual(FAMILIES);
+	});
+
+	it('skips Biome, the manifests and the typecheck for a docs-only change', () => {
+		expect(ran(['docs/delendai/guide.md'])).toEqual([
+			'lint-architecture',
+			'lint-presets',
+			'lint-docs',
+			'lint-security',
+			'lint-governance',
+			'quality-gate',
+			'generated-artifacts-check',
+		]);
+	});
+
+	it('still checks a hand edit to a generated manifest page', () => {
+		expect(
+			ran(['docs/delendai/plugins/auto-generated/memory.md']),
+		).toContain('manifests-check');
+	});
+
+	it('skips the families that read no workflow for a workflow-only change', () => {
+		const families = ran(['.github/workflows/ci.yml']);
+		expect(families).not.toContain('lint-biome');
+		expect(families).not.toContain('manifests-check');
+		expect(families).not.toContain('typecheck');
+		expect(families).toContain('lint-docs');
+	});
+
+	it('declares a measured reason for every lint family left always', () => {
+		for (const scope of JOB_SCOPES.filter((each) =>
+			each.job.startsWith('lint-'),
+		)) {
+			if (scope.touches === 'always')
+				expect(scope.because).toMatch(/^measured: /u);
+		}
+	});
+});
+
+describe('jobMustRun — listings and the scripts a job runs', () => {
+	const scopes: readonly IJobScope[] = [
+		{
+			job: 'walks-docs',
+			touches: ['docs/a.md'],
+			lists: ['docs/'],
+			because: 'test fixture',
+		},
+		{
+			job: 'imports-core',
+			touches: ['docs/'],
+			code: 'scripts',
+			because: 'test fixture',
+		},
+	];
+	const decide = (
+		job: string,
+		changed: readonly string[],
+		more: { structural?: readonly string[]; reached?: ReadonlySet<string> },
+	) => jobMustRun({ job, changed, scopes, ...more });
+
+	it('runs a job that lists a folder when a file is added there, not when one is edited', () => {
+		expect(
+			decide('walks-docs', ['docs/b.md'], { structural: ['docs/b.md'] }),
+		).toBe(true);
+		expect(decide('walks-docs', ['docs/b.md'], { structural: [] })).toBe(
+			false,
+		);
+		// Without the list of additions, every changed path counts as one.
+		expect(decide('walks-docs', ['docs/b.md'], {})).toBe(true);
+	});
+
+	it('runs a job when the change reaches its scripts by symbol, and only then', () => {
+		const changed = ['packages/core/src/x.ts'];
+		expect(
+			decide('imports-core', changed, {
+				reached: new Set(['imports-core']),
+			}),
+		).toBe(true);
+		expect(decide('imports-core', changed, { reached: new Set() })).toBe(
+			false,
+		);
+		// Without the analysis, its scripts count as reached.
+		expect(decide('imports-core', changed, {})).toBe(true);
+	});
+
+	it('says why in the sentence the log prints', () => {
+		const said = explainJobs({
+			changed: ['packages/core/src/x.ts'],
+			scopes,
+			structural: [],
+			reached: new Set(['imports-core']),
+		});
+		expect(said.find((each) => each.job === 'imports-core')?.why).toBe(
+			'the change reaches its scripts by symbol',
+		);
+		expect(said.find((each) => each.job === 'walks-docs')?.why).toBe(
+			'no changed file is under what it reads (docs/a.md)',
+		);
+	});
+});
+
+describe('changedOutputOf', () => {
+	it('passes the change list on as JSON, and nothing past the output limit', () => {
+		expect(changedOutputOf(['a.ts', 'b.md'])).toBe('["a.ts","b.md"]');
+		expect(
+			changedOutputOf(
+				Array.from(
+					{ length: CHANGED_OUTPUT_MAX_BYTES / 4 },
+					(_, i) => `f${i}.ts`,
+				),
+			),
+		).toBe('');
 	});
 });

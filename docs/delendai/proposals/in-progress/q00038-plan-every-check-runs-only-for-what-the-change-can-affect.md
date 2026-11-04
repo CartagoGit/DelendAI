@@ -62,7 +62,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 
 ### S2 — Every lint runs only for the files it reads
 - **Status**: pending
-- **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/prove-plan.script.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/ci/job-reach.helper.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/lib/changed-files-scope.ts`, `tools/scripts/lib/changed-files-scope.spec.ts`, `tools/scripts/lint/biome-baseline.script.ts`, `tools/scripts/lint/file-conventions.script.ts`, `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/single-frontmatter.script.ts`, `tools/scripts/lint/type-naming.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "No lint job is declared `touches: 'always'` without a measured reason. Each lint family (biome, architecture, presets, docs, security, governance, quality-gate, manifests, generated artifacts) declares the paths it reads, and runs on a pull request and in the local proof only when the change touches them."
@@ -71,7 +71,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 
 ### S3 — Types are checked only where the change reaches
 - **Status**: pending
-- **Files**: `tools/scripts/typecheck.script.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/typecheck.script.ts`, `tools/scripts/ci/typecheck-scope.helper.ts`, `tools/scripts/ci/typecheck-scope.helper.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "The typecheck checks the packages the change touches and the packages that depend on them, through project references or per-package runs with incremental state; a change in one plugin does not typecheck every other plugin."
@@ -125,3 +125,5 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - Each publishable package is packed once per run.
 - Measured 2026-11-02 on two CLI-only pull requests: before S5/S6 (#1659), 27 jobs, 1,511 runner-seconds and 265 s of wall time, with pack smoke at 180 s and verify-runtime at 149 s; after them (#1666), 25 jobs, 1,157 runner-seconds and 216 s, verify:tools saying that the change reaches no plugin. Of verify-runtime's remaining 136 s, 87 s were `verify:external-install`, which built, packed and installed the published packages again, so S7 moves it to the pack-smoke job.
 - S4 `bun run ci:cost -- <pr>` measures each job from its first step start to its last step end (the figures above counted until GitHub marked the job complete, which can be minutes later). Re-measured 2026-11-02: #1659 (before S5/S6) 27 jobs, 1,396 runner-seconds, 263 s wall; #1666 (after) 25 jobs, 1,040 runner-seconds, 214 s wall; #1675 (a docs-and-tooling pull request) 26 jobs, 1,067 runner-seconds, 318 s wall, slowest web site build at 97 s.
+- 2026-11-04, S2 and S3 delivered. What each lint family reads was measured by tracing every file its commands opened, less the modules its own scripts import (followed by symbol instead). Architecture, security, governance and the generators read under every tracked top-level entry and stay `always`, with that reason; quality-gate stays `always` because its trace did not complete. Biome, presets, docs and manifests declare what they read and what they list. Every family reads core and the plugins, so a one-file core change or a plugin-only change still runs all of them; a docs-only change skips Biome, the manifests check and the typecheck. The manifests check no longer skips every Markdown-only change: it compares its output with generated pages under docs/delendai. Biome, conflict markers, control bytes, home paths, type naming, file conventions and single frontmatter judge the changed files (`DELENDAI_CHANGED_FILES`); a deletion or rename widens them to the repository. The typecheck checks the workspaces the change touches and their dependents: 71 of 79 for a core change, 11 of 79 for a change in plugins/memory (cold 7.6 s against 13.6 s for everything).
+- Measured 2026-11-04, the local fast proof of a one-file core change (`packages/core/src/lib/shared/compute-slot.service.ts`), cold caches, nice 19 on a shared machine: before, 850 s, of which lint-biome 447 s; after, 594 s, lint-biome 9 s. The nearest specs took 341 s and 456 s, which is load, not the change.
