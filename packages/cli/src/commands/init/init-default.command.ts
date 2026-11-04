@@ -42,7 +42,7 @@ import {
 	parseFlags,
 	runInitWithAnswers,
 } from './init.command';
-import { DEFAULT_INIT_PRESET } from '../../lib/init/init-answers.schema';
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
 import { printInitDefaultHelp } from '../../lib/init/init-default-help.service';
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {

@@ -26,7 +26,8 @@ import { OFFER_MESSAGES } from '../../contracts/constants/offer-messages.constan
 import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
 import type { IYesNoWords } from '../../contracts/interfaces/offer-messages.interface';
 import type { IInitAnswers } from './init-answers.types';
-import { DEFAULT_INIT_PRESET, InitAnswers } from './init-answers.schema';
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
+import { InitAnswers } from './init-answers.schema';
 import {
 	c,
 	heading,

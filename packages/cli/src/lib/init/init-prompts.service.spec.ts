@@ -2,6 +2,10 @@
  * init-prompts.service.spec.ts — the interactive init, driven through a
  * terminal whose answers the spec gives: every default, and every branch.
  */
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /** Answers by the start of each question; a question with none gets ''. */
@@ -48,6 +52,31 @@ afterEach(() => {
 });
 
 describe('collectInitAnswers in a terminal', () => {
+	it('offers dogfood only where delendai.config.json exists', async () => {
+		const menu = async (root: string): Promise<string> => {
+			const writes: string[] = [];
+			vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+				writes.push(String(chunk));
+				return true;
+			});
+			await collectInitAnswers(root);
+			return writes.join('');
+		};
+		const bare = mkdtempSync(join(tmpdir(), 'init-menu-'));
+		const own = mkdtempSync(join(tmpdir(), 'init-menu-'));
+		writeFileSync(join(own, 'delendai.config.json'), '{}');
+		try {
+			const plain = await menu(bare);
+			expect(plain).toContain('solo —');
+			expect(plain).toContain('(default)');
+			expect(plain).not.toContain('dogfood —');
+			expect(await menu(own)).toContain('dogfood —');
+		} finally {
+			rmSync(bare, { recursive: true, force: true });
+			rmSync(own, { recursive: true, force: true });
+		}
+	});
+
 	it('takes every default when the person presses enter', async () => {
 		const result = await collectInitAnswers('/ws');
 		expect(result).toMatchObject({

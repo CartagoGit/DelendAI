@@ -21,6 +21,8 @@
  */
 import z from 'zod';
 
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
+
 import { DEFAULT_DELENDAI_SERVER_NAME, PRESET_KIND } from '@delendai/core/cli';
 
 import { PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
@@ -42,10 +44,6 @@ const initPluginId = z
  * Final schema. Every key has a default so the user can skip a question
  * with Enter and still produce a valid bundle.
  */
-/** The pack a new project gets when nobody chooses one. */
-export const DEFAULT_INIT_PRESET =
-	'solo' satisfies (typeof PRESET_KIND)[number];
-
 export const InitAnswers = z.object({
 	/** Namespace prefix used for generated MCP tools and host agent names. */
 	namespacePrefix: z.string().min(1).default('delendai'),
