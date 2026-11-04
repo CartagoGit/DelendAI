@@ -2,7 +2,7 @@
 id: x01006
 title: "Proofs on one machine take turns"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
