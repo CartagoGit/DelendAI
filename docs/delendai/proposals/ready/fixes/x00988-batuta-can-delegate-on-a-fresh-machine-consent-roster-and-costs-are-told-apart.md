@@ -2,14 +2,14 @@
 id: x00988
 title: "Batuta can delegate on a fresh machine: consent, roster and costs are told apart"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-10-28
-last-transition-id: 0d97ac94-40ee-4fdf-943d-48a3d2a2ab25
-last-correlation-id: 0d97ac94-40ee-4fdf-943d-48a3d2a2ab25
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T06:52:32.141Z
+last-transition-id: a629a7d7-fcd2-4929-b32b-10ceed58fe24
+last-correlation-id: a629a7d7-fcd2-4929-b32b-10ceed58fe24
+last-transition-from: review
+last-transition-at: 2026-11-04T19:32:11.325Z
 ---
 
 # x00988 — Batuta can delegate on a fresh machine: consent, roster and costs are told apart
@@ -64,15 +64,17 @@ f00793 makes the roster detected at server start; this proposal makes what is de
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 8ae0c9882144 is stale: S2 files changed extensively afterward (e.g. ef203ed1f, f4b76a89b, 2ca63f042). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and consent-path evidence.
 
 ### S3 — Proposals differ by cost and serve the models the client lists
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/orchestrator-runner/src/lib/services/acp-roster.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/acp-roster.interface.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/cost-tier.constant.ts`, `plugins/orchestrator-runner/src/lib/tools/discover.tool.ts`, `plugins/orchestrator-runner/tests/src/lib/services/acp-roster.service.spec.ts`, `plugins/orchestrator-runner/src/lib/tools/get-quota.tool.ts`, `apps/web/src/i18n/tools/orchestrator-runner/delendai_orchestrator-runner_get_quota.ts`, `packages/core/src/lib/contracts/interfaces/account-finding.interface.ts`, `packages/core/src/lib/shared/model-catalogue.service.ts`, `packages/core/tests/src/lib/shared/model-catalogue.service.spec.ts`, `packages/core/src/lib/contracts/constants/public-catalogues.constant.ts`, `packages/core/data/model-catalogue.snapshot.json`, `tools/scripts/lint/json-entry-collision.script.ts`
 - **Gate**: type
 - acceptance:
   - "A model the catalogue prices at nothing is proposed in the lowest cost tier and a priced one by its price (the catalogue keeps each model's price, format 4); a provider's proposed model is the first its own client lists that the catalogue knows."
   - "get_quota's description and note name the observation that fills it, and say what to declare when it is empty."
 - shipped-in: `8ef2aa00af53`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 8ef2aa00af53 is stale: S3 files changed afterward (e.g. 7698da8c9 and later). Redeliver S3 on current HEAD and resubmit with fresh shipped-in + roster/cost evidence.
 
 ## acceptance
 
