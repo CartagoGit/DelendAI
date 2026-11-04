@@ -2,14 +2,14 @@
 id: x01025
 title: "An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 538269a2-690f-4569-9d51-b5ef0a95e0b1
-last-correlation-id: 538269a2-690f-4569-9d51-b5ef0a95e0b1
-last-transition-from: ready
-last-transition-at: 2026-11-04T10:03:47.852Z
+last-transition-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
+last-correlation-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:20:11.021Z
 ---
 
 # x01025 — An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words
@@ -38,6 +38,9 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
   - "A request whose title names an allowed tool but whose structured operation is another tool is refused."
   - "A request with no structured identity is refused and the refusal says why (deny by default)."
   - "A spec pins a title that holds both an allowed and a forbidden tool name."
+- shipped-in: `d43290f9b1c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Starting a package that is not installed needs the project to allow it
 - **Status**: review
@@ -46,6 +49,9 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 - acceptance:
   - "An agent that needs npx or uvx to fetch its package starts only when the project allows fetching it; otherwise the refusal names the setting that allows it."
   - "The version run is the one the registry pins, and the run says it came from the network."
+- shipped-in: `d43290f9b1c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
