@@ -31,14 +31,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - global_gate: none
 
 ### S1 — Orphaned is detected from heartbeats and the lease
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.interface.ts`, `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`
 - **Gate**: type
 - acceptance:
   - "A publication or unit is orphaned when its author is gone: finished, idle past the recovery window, or out of quota, meaning no heartbeat and no live session holding its lease. A candidate whose author still has a heartbeat or a live lease stays disposition author. Specs: author alive, author idle past the window, author finished, author out of quota."
 - shipped-in: `f4b76a89b021`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the orphan-detection criteria (alive/idle/finished/out-of-quota cases and lease/heartbeat interplay). Please re-run and submit fresh empirical proof for each acceptance case.
 
 ### S2 — Orphaned units are listed with their reason
 - **Status**: review
