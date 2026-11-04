@@ -47,14 +47,16 @@ A pull request's CodeQL check fails only on alerts its own diff introduces, so a
 - review-implementer: claude-opus-5-5
 
 ### S2 — An open alert is a broken promise
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "The queue job (every hour and after each merge) runs `forge:promotion-alerts --branch=develop`, which lists every open code scanning alert with its rule and place and fails, so the job is red until each is fixed or dismissed with a reason; the release gate counted them only at a promotion."
 - shipped-in: `49d70916f74c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 49d70916f74c is stale: workflow file changed afterward (e.g. 3eedd5a48, 51fbac099). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ## acceptance
 
