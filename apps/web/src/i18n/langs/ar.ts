@@ -183,9 +183,9 @@ const dict: LangDict = {
 			intro: 'لا حاجة لتكامل محرر: شغّل host server من الطرفية ووجّه أي عميل MCP إلى نقل stdio الخاص به.',
 			steps: [
 				'التثبيت: `bun add @delendai/core` (أو `npm install @delendai/core`).',
-				'التشغيل: `bunx delendai --preset=standard` (أو `npx delendai --preset=standard`).',
+				'التشغيل: `bunx delendai --preset=solo` (أو `npx delendai --preset=solo`).',
 				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
-				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',
+				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` (راجع التثبيت لقائمة كاملة بالأعلام).',
 				'استدعِ `delendai_overview { compact: true }` أولًا — يخبرك بما يجب فعله بعد ذلك.',
 			],
 		},

@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Escolha o seu IDE
 
-Os snippets abaixo usam o preset standard com bun. Cole o JSON no ficheiro de destino tal como está e deixe o seu IDE registar o servidor stdio.
+Os snippets abaixo usam o preset solo com bun. Cole o JSON no ficheiro de destino tal como está e deixe o seu IDE registar o servidor stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Ficheiro: .vscode/mcp.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Ficheiro: .cursor/mcp.json ou ~/.cursor/mcp.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Ficheiro: ~/.codeium/windsurf/mcp_config.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Ficheiro: .mcp.json ou via claude mcp add
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Ficheiro: claude_desktop_config.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Ficheiro: ~/.gemini/antigravity-ide/mcp_config.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Ficheiro: settings.json
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -244,64 +244,154 @@ Os presets são aditivos. Comece pelo conjunto menor e só alargue a superfície
 
 ### minimal
 
-Uso recomendado: orientação em modo leitura e smoke tests de CI.
-Tamanho: 2 plugins.
-
 - git
 - search
 
-### standard
-
-Uso recomendado: trabalho de agente único com memória, docs, ajuda de lint, tipos e dependências.
-Tamanho: 7 plugins.
+### solo
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Uso recomendado: coordenação multiagente com locks, notificações, logs e marcadores de fecho. Audit continua a ser opt-in e deve ser carregado separadamente no fim de uma ronda.
-Tamanho: 13 plugins.
-
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
-
-Uso recomendado: o preset swarm mais integrações host-only como web-fetch e issues, quando o host as expõe.
-Tamanho: 15 plugins.
+### audit
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verificar
 

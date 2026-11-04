@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Elige tu IDE
 
-Los snippets de abajo usan el preset standard sobre bun. Pega el JSON en el archivo objetivo tal cual y deja que tu IDE registre el servidor stdio.
+Los snippets de abajo usan el preset solo sobre bun. Pega el JSON en el archivo objetivo tal cual y deja que tu IDE registre el servidor stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Alcance: proyecto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Alcance: proyecto / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Alcance: proyecto
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Alcance: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -275,64 +275,154 @@ Los presets son aditivos. Empieza con el conjunto más pequeño y amplíalo solo
 
 ### minimal
 
-Uso recomendado: orientación de solo lectura y smoke tests de CI.
-Tamaño: 2 plugins.
-
 - git
 - search
 
-### standard
-
-Uso recomendado: trabajo de agente único con memoria, docs, ayuda de lint, tipos y dependencias.
-Tamaño: 7 plugins.
+### solo
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Uso recomendado: coordinación multiagente con locks, notificaciones, logs y marcadores de cierre. Audit sigue siendo opt-in y debe cargarse aparte cuando termine la ronda.
-Tamaño: 13 plugins.
-
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
-
-Uso recomendado: el preset swarm más integraciones solo de host como web-fetch e issues, cuando el host las expone.
-Tamaño: 15 plugins.
+### audit
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verificar
 

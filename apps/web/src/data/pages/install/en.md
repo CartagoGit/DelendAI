@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Pick your IDE
 
-The snippets below use the default standard preset over bun. Paste the JSON into the target file as-is, then let your IDE register the stdio server.
+The snippets below use the default solo preset over bun. Paste the JSON into the target file as-is, then let your IDE register the stdio server.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Scope: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Scope: project / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Scope: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -260,7 +260,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -273,64 +273,154 @@ Presets are additive. Start small, then widen the plugin set only when your work
 
 ### minimal
 
-Recommended use: read-only orientation and CI smoke tests.
-Size: 2 plugins.
-
 - git
 - search
 
-### standard
-
-Recommended use: single-agent work with memory, docs, lint, type, and dependency help.
-Size: 7 plugins.
+### solo
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Recommended use: multi-agent coordination with locks, notifications, logs, and close markers. Audit stays opt-in and should be loaded separately when a round finishes.
-Size: 13 plugins.
-
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
-
-Recommended use: the swarm preset plus host-only integrations such as web-fetch and issues, when the host exposes them.
-Size: 15 plugins.
+### audit
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verify
 

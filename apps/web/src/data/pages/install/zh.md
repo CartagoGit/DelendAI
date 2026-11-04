@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## 选择你的 IDE
 
-下面的片段使用的是基于 bun 的 standard 预设。把 JSON 原样贴进目标文件，然后让你的 IDE 注册这个 stdio 服务器。
+下面的片段使用的是基于 bun 的 solo 预设。把 JSON 原样贴进目标文件，然后让你的 IDE 注册这个 stdio 服务器。
 
 ### VS Code
 
@@ -81,7 +81,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -244,64 +244,154 @@ deno run -A npm:@delendai/cli validate
 
 ### minimal
 
-推荐用途：只读定位和 CI smoke test。
-大小：2 个插件。
-
 - git
 - search
 
-### standard
-
-推荐用途：单智能体工作，需要 memory、docs、lint、类型和依赖辅助。
-大小：7 个插件。
+### solo
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-推荐用途：多智能体协作，需要锁、通知、日志和关闭标记。audit 仍然是 opt-in，应该在一轮工作结束后单独加载。
-大小：13 个插件。
-
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
-
-推荐用途：在 swarm 预设基础上再加上 web-fetch 和 issues 这类 host-only 集成，前提是宿主暴露了它们。
-大小：15 个插件。
+### audit
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## 验证
 
