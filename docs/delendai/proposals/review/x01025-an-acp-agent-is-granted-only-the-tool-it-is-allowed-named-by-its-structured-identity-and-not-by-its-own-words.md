@@ -2,10 +2,14 @@
 id: x01025
 title: "An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
+last-correlation-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:20:11.021Z
 ---
 
 # x01025 — An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words
@@ -27,21 +31,27 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 - global_gate: type
 
 ### S1 — Permission is decided by the structured operation
-- **Status**: pending
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`
+- **Status**: review
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/acp-permission.constant.ts`, `packages/core/src/lib/contracts/interfaces/acp.interface.ts`, `packages/core/src/lib/shared/acp-session.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`
 - **Gate**: type
 - acceptance:
   - "A request whose title names an allowed tool but whose structured operation is another tool is refused."
   - "A request with no structured identity is refused and the refusal says why (deny by default)."
   - "A spec pins a title that holds both an allowed and a forbidden tool name."
+- shipped-in: `d43290f9b1c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Starting a package that is not installed needs the project to allow it
-- **Status**: pending
-- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/contracts/constants/trusted-agent-packages.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent that needs npx or uvx to fetch its package starts only when the project allows fetching it; otherwise the refusal names the setting that allows it."
   - "The version run is the one the registry pins, and the run says it came from the network."
+- shipped-in: `d43290f9b1c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

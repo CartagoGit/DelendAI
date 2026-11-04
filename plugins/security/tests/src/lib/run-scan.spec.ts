@@ -75,4 +75,20 @@ describe('runSecretScan', () => {
 			'.env.local',
 		]);
 	});
+
+	it('reports unknown, not a clean empty scan, when the listing fails', async () => {
+		const out = await runSecretScan(
+			{
+				listFiles: async () => {
+					throw new Error('git ls-files failed');
+				},
+				readFile: async () => undefined,
+			},
+			{ scope: 'tracked', includeTests: false },
+		);
+		expect(out.scanned).toBe(0);
+		expect(out.findings.map((f) => f.ruleId)).toEqual([
+			'secret-scan-incomplete',
+		]);
+	});
 });

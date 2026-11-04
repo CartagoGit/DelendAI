@@ -143,28 +143,21 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 				).toEqual([`refs/heads/${branch}`]);
 			});
 
-			it('checkpoints onto the same unit', async () => {
+			it('takes nothing into the same unit from the shared checkout, and names it (x01003)', async () => {
 				const { root, branch } = repoWithUnitUnder(shape);
 				const before = git(root, 'rev-parse', branch);
-				writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
 				const result = await command.run(
 					[
 						'checkpoint',
 						...ARGS,
-						'--paths=a.ts',
+						'--paths=README.md',
 						'--message=feat: more work',
 					],
 					contextFor(root),
 				);
-				expect(result.code).toBe(0);
-				expect(git(root, 'rev-parse', branch)).not.toBe(before);
-				expect(
-					git(
-						root,
-						'rev-parse',
-						`${git(root, 'rev-parse', branch)}~1`,
-					),
-				).toBe(before);
+				expect(result.code).not.toBe(0);
+				expect(result.error).toContain('Nothing is checkpointed');
+				expect(git(root, 'rev-parse', branch)).toBe(before);
 			});
 
 			it('publishes it under its own name', async () => {

@@ -68,6 +68,11 @@ export interface IGuardFacts {
 	readonly stagedPaths?: () => readonly string[] | undefined;
 	/** The project's documents directory (`docsDir`). */
 	readonly docsDir?: (workspace: string) => Promise<string>;
+	/** The repository's shared checkout and the loose edits it holds. */
+	readonly sharedCheckout?: () => {
+		readonly root: string;
+		readonly paths: readonly string[];
+	};
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**

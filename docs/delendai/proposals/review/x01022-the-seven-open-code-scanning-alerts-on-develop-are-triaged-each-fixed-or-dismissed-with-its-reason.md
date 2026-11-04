@@ -2,10 +2,14 @@
 id: x01022
 title: "The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: ci
 date: 2026-11-04
+last-transition-id: 4a941319-be31-4761-b382-16f949a4b022
+last-correlation-id: 4a941319-be31-4761-b382-16f949a4b022
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:22:34.594Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
@@ -28,28 +32,46 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - global_gate: none
 
 ### S1 — The lease scratch file alerts
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
 - **Gate**: type
 - acceptance:
   - "#477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The markdown parser expressions
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/proposals-sqlite/src/lib/markdown-parser.ts`
 - **Gate**: type
 - acceptance:
   - "#471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The dockerfile and scaffolder expressions
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/container/src/lib/lint/parse-dockerfile.ts`, `plugins/audit/src/lib/services/proposal-scaffolder.service.ts`
 - **Gate**: type
 - acceptance:
   - "#474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
 - #477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal.
 - #471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason.
 - #474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason.
+
+## notes
+
+All seven alerts are real and fixed in code; none is dismissed. Nothing was dismissed on the forge.
+
+- #477, #478 (`js/insecure-temporary-file`, maintenance-lease.service.ts): the premise that the name was safe because it sits in the workspace cache does not hold, since the name was predictable (`<lease>.<holder>`) and written with the default mode, following a planted link. Fixed: every scratch file now has a random-UUID name, is opened `wx` (fails on any existing file or link) with mode 0600, in a directory created 0700; the stale-aside name is random too. Specs: 0600 and no leftovers; a symlink planted at the old name is not written through.
+- #471, #472, #473 (`js/polynomial-redos`, markdown-parser.ts): the title, slice heading, `## Slices`, `##` heading and status matchers are linear string parses with the same grammar. Specs: 100000-space lines for each.
+- #474 (proposal-scaffolder.service.ts): the `-+$` slug trim is an index trim. Spec: a 100000-dash title.
+- #475 (parse-dockerfile.ts): `^([A-Za-z]+)\s+(.*)$` is a linear split. Spec: a 100000-space line.

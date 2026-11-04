@@ -213,6 +213,14 @@ export const AgentsSchema = z
 		'Agents the catalogues miss, or reached another way than they say. Use it to declare an agent this project uses that no registry lists.',
 	);
 
+// The exact agent packages npx or uvx may fetch from the network.
+export const TrustedAgentPackagesSchema = z
+	.array(z.string().min(1))
+	.optional()
+	.describe(
+		'Agent packages, each as the exact `name@version` the registry pins, that this project allows npx or uvx to fetch from the network and run. An agent that is not installed and is not listed here is refused. Leave it out to fetch nothing.',
+	);
+
 // Model providers in models.dev's shape: each replaces the
 // catalogue's entry of the same id.
 export const ModelProviders = z

@@ -9,7 +9,11 @@ import {
 	planWorkClaim,
 } from './work-claim.service';
 import { scalarArg } from './command-args.helper';
-import { carryUnitRecords } from './unit-adoption.service';
+import { carryUnitRecords, handedOver } from './unit-adoption.service';
+import { workRefOfPublication } from './orphaned-work.service';
+import { gitCommonDirOf } from './unit-lease.service';
+import { updateUnitLease } from './unit-lease.store';
+import type { IWorkClaim } from '../contracts/interfaces/work-claim.interface';
 import { releaseClaimedSlices } from './slice-reservation.service';
 
 import {
@@ -78,6 +82,27 @@ export const claimed = async (
 			'Fetch it first, or name a ref that exists here.',
 		);
 	}
+	// A publication whose unit ended (its author finished) has no work ref
+	// to rename: the claimant gets a work ref at its tip, and the
+	// publication stays where it is.
+	const fromPublication = workRefOfPublication(opened.policy, ref);
+	if (
+		fromPublication !== undefined &&
+		readGit(opened.root, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`refs/heads/${fromPublication}`,
+		]) === undefined
+	) {
+		return adoptPublication(
+			opened.root,
+			fromPublication,
+			sha,
+			agent,
+			opened.policy,
+		);
+	}
 	const planned = planWorkClaim({
 		ref,
 		sha,
@@ -123,6 +148,68 @@ export const claimed = async (
 	return {
 		code: EXIT_CODE.OK,
 		data: { ...result, ...carried, releasedReservations: released },
+		suppressDefaultPrint: true,
+	};
+};
+
+/**
+ * Take over a publication whose unit is gone: a new work ref, named after
+ * the claimant, at the publication's tip, and a lease that says whose it
+ * was. Nothing is moved or deleted, so nothing can be lost.
+ */
+const adoptPublication = async (
+	root: string,
+	workRef: string,
+	sha: string,
+	agent: string,
+	policy: Parameters<typeof planWorkClaim>[0]['policy'],
+): Promise<IWorkUnitResult> => {
+	const planned = planWorkClaim({ ref: workRef, sha, agent, policy });
+	if (!('to' in planned)) {
+		return refused(
+			planned.reason,
+			'`delendai work claim` with no --ref lists what is takeable.',
+		);
+	}
+	if (
+		readGit(root, ['update-ref', `refs/heads/${planned.to}`, sha, '']) ===
+		undefined
+	) {
+		return refused(
+			`could not create ${planned.to}: another unit may hold that name.`,
+			'Nothing was changed: the publication is where it was.',
+		);
+	}
+	const common = gitCommonDirOf(root);
+	const now = Math.floor(Date.now() / 1000);
+	if (common !== undefined) {
+		await updateUnitLease(common, planned.to, () =>
+			handedOver(
+				{
+					ref: workRef,
+					owner: { agent: planned.heldBy, session: null },
+					worktree: null,
+					entrySha: sha,
+					enteredAt: now,
+					heartbeatAt: now,
+				},
+				planned.to,
+				agent,
+				now,
+			),
+		);
+	}
+	const claim: IWorkClaim = planned;
+	process.stdout.write(
+		`${[
+			`adopted  ${workRef} (its unit had ended; the publication is kept)`,
+			`      →  ${claim.to}`,
+			`         was ${claim.heldBy}, now ${claim.claimedBy}, generation ${String(claim.generation)}`,
+		].join('\n')}\n`,
+	);
+	return {
+		code: EXIT_CODE.OK,
+		data: { ...claim, adoptedPublication: true },
 		suppressDefaultPrint: true,
 	};
 };

@@ -78,3 +78,58 @@ export const unitRepo = (): IUnitRepo => {
 		},
 	};
 };
+
+/**
+ * Commit `files` onto `ref` the way its unit's worktree would, without a
+ * worktree and without touching the shared checkout: work reaches a ref
+ * by commit, and nothing is taken from the shared checkout (x01003).
+ * Starts the ref at `base` when it does not exist yet.
+ */
+export const commitOnRef = (
+	root: string,
+	ref: string,
+	files: Readonly<Record<string, string>>,
+	options: { readonly base?: string; readonly message?: string } = {},
+): string => {
+	const full = ref.startsWith('refs/') ? ref : `refs/heads/${ref}`;
+	const at = (revision: string): string | undefined => {
+		try {
+			return git(root, 'rev-parse', '--verify', '-q', revision);
+		} catch {
+			return undefined;
+		}
+	};
+	const parent =
+		at(full) ?? git(root, 'rev-parse', options.base ?? 'develop');
+	const dir = mkdtempSync(join(tmpdir(), 'unit-index-'));
+	roots.push(dir);
+	const env = { ...process.env, GIT_INDEX_FILE: join(dir, 'index') };
+	const plumb = (args: readonly string[], input?: string): string =>
+		execFileSync('git', [...args], {
+			cwd: root,
+			env,
+			encoding: 'utf8',
+			...(input === undefined ? {} : { input }),
+		}).trim();
+	plumb(['read-tree', parent]);
+	for (const [path, content] of Object.entries(files)) {
+		const blob = plumb(['hash-object', '-w', '--stdin'], content);
+		plumb([
+			'update-index',
+			'--add',
+			'--cacheinfo',
+			`100644,${blob},${path}`,
+		]);
+	}
+	const tree = plumb(['write-tree']);
+	const commit = plumb([
+		'commit-tree',
+		tree,
+		'-p',
+		parent,
+		'-m',
+		options.message ?? 'feat: the unit',
+	]);
+	plumb(['update-ref', full, commit]);
+	return commit;
+};

@@ -28,6 +28,7 @@ import {
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
+import { sharedCheckoutCheckpointRefusal } from './shared-checkout-clean.service';
 
 export const checkpointed = async (
 	args: readonly string[],
@@ -92,9 +93,21 @@ export const checkpointed = async (
 	if (workPrefix.length > 0 && here.startsWith(`refs/heads/${workPrefix}`)) {
 		return refused(
 			checkedOutHereReason(here),
-			'work checkpoint is for a checkout that is not on the work ref; inside a unit worktree, commit with git.',
+			"This is the unit's worktree: commit here with git.",
 		);
 	}
+	// Every unit has its own worktree, and its work reaches its ref by
+	// commit there. Taking files from this checkout takes whatever is in
+	// it, whoever wrote it (x01003).
+	const badKind = unknownKind(args) ?? kindInAgent(agent);
+	if (badKind !== undefined) return badKind;
+	const outside = sharedCheckoutCheckpointRefusal({
+		root,
+		policy,
+		paths: scope.valid,
+		ref: existingWorkRef(root, args, policy, agent, proposal, slice),
+	});
+	if (outside !== undefined) return refused(outside.reason, outside.remedy);
 	// The anchor is the whole point: a checkpoint taken while the shared
 	// checkout sits somewhere else would record a base nobody agreed on.
 	const anchor = anchorRefusal(
@@ -113,8 +126,6 @@ export const checkpointed = async (
 			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
 	}
-	const badKind = unknownKind(args) ?? kindInAgent(agent);
-	if (badKind !== undefined) return badKind;
 	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
 	if (ambiguous !== undefined) return ambiguous;
 	const ref = existingWorkRef(root, args, policy, agent, proposal, slice);

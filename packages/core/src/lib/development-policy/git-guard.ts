@@ -18,6 +18,11 @@ import type {
 import { takeInOf } from './branch-rules';
 import { briefWorkModel } from './declare-workflow';
 import { describeWorkIsolation } from './work-isolation';
+import { RESCUE_COMMAND } from '../contracts/constants/work-rescue.constant';
+import {
+	looseEditsRefusal,
+	sharedCheckoutStaysClean,
+} from './shared-checkout-clean';
 import {
 	insideNamespaces,
 	policyNamespaces,
@@ -107,7 +112,7 @@ const judgeCommit = (
 		return {
 			refused: true,
 			reason: `the shared checkout is on \`${branch}\`, but the \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`.`,
-			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then persist the work with \`delendai work checkpoint\`, which writes your ref without moving HEAD. ${briefWorkModel(policy).land}`,
+			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then run \`${RESCUE_COMMAND}\`, which keeps them under a ref and restores the shared checkout; take them from that ref into your unit's worktree (\`delendai work enter\`) and commit there. ${briefWorkModel(policy).land}`,
 		};
 	}
 	return allow(`\`${branch}\` is a branch the policy uses.`);
@@ -226,8 +231,24 @@ const judgePush = (
 const judgeStash = (policy: IResolvedDevelopmentPolicy): IGitGuardVerdict => ({
 	refused: true,
 	reason: `an agent does not use \`git stash\` under the \`${policy.profile}\` development profile: \`refs/stash\` is one stack shared by every worktree of this repository, so what goes there is invisible to the work model and can be popped or cleared from anywhere.`,
-	remedy: `Keep the work where it is owned: commit it, or checkpoint it to a work ref (\`delendai work checkpoint\`). ${describeWorkIsolation(policy).rule}`,
+	remedy: `Keep the work where it is owned: commit it in your unit's worktree. ${describeWorkIsolation(policy).rule}`,
 });
+
+/**
+ * No agent commits anywhere while the shared checkout holds loose edits,
+ * under a policy that keeps it clean: an edit there belongs to no unit,
+ * and the next one to take files from it takes another agent's (x01003).
+ */
+const refuseLooseSharedCheckout = (
+	policy: IResolvedDevelopmentPolicy,
+	shared:
+		| { readonly root: string; readonly paths: readonly string[] }
+		| undefined,
+): IGitGuardVerdict | undefined => {
+	if (shared === undefined || shared.paths.length === 0) return undefined;
+	if (!sharedCheckoutStaysClean(policy)) return undefined;
+	return { refused: true, ...looseEditsRefusal(shared.root, shared.paths) };
+};
 
 /**
  * Judge one git operation against the resolved policy.
@@ -275,16 +296,22 @@ const AGENT_JUDGES: {
 		operation: Extract<IGuardedGitOperation, { kind: K }>,
 	) => IGitGuardVerdict;
 } = {
-	commit: (policy, operation) =>
-		refuseBorrowedAuthor(policy, operation) ??
-		refuseReviewOutsideScope(policy, operation) ??
-		judgeCommit(
-			policy,
-			operation.branch,
-			operation.isMerge,
-			operation.inMainWorktree ?? true,
-			operation.founding === true,
-		),
+	commit: (policy, operation) => {
+		const verdict =
+			refuseBorrowedAuthor(policy, operation) ??
+			refuseReviewOutsideScope(policy, operation) ??
+			judgeCommit(
+				policy,
+				operation.branch,
+				operation.isMerge,
+				operation.inMainWorktree ?? true,
+				operation.founding === true,
+			);
+		return verdict.refused
+			? verdict
+			: (refuseLooseSharedCheckout(policy, operation.sharedCheckout) ??
+					verdict);
+	},
 	'branch-create': (policy, operation) =>
 		judgeBranchCreate(policy, operation.ref),
 	push: (policy, operation) =>

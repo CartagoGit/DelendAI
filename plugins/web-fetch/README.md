@@ -55,11 +55,13 @@ to a private address, for an intranet host.
 
 ### Out of scope (host-level concerns)
 
-The connection resolves the name again: a resolver that answers a public
-address to the check and a private one to the connection, within that
-instant, is not caught here — the runtime's `fetch` takes no pinned
-address. If your deployment needs that guarantee, enforce it at the
-network layer (an egress proxy or firewall).
+The connection goes to the address the check validated, with the
+requested host kept as the `Host` header and the TLS server name: the name
+is never resolved a second time, so a resolver that answers a public
+address to the check and a private one afterwards (DNS rebinding) cannot
+reach the private one. What this does not cover is the network itself:
+an egress proxy or firewall is still the place to bound where the machine
+may connect at all.
 
 ## Scope
 

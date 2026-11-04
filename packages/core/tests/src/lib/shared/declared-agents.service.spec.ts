@@ -72,17 +72,46 @@ describe('declaredLaunch', () => {
 			command: 'my-agent',
 			args: ['--acp'],
 		});
+		const fetched = {
+			id: 'b',
+			kind: 'acp',
+			distribution: { npx: { package: 'b@1' } },
+		} as const;
+		// A declared package is fetched only once the project allows it.
+		expect(declaredLaunch(fetched)).toBeUndefined();
 		expect(
-			declaredLaunch({
-				id: 'b',
-				kind: 'acp',
-				distribution: { npx: { package: 'b@1' } },
-			})?.command,
+			declaredLaunch(fetched, undefined, new Set(['b@1']))?.command,
 		).toBe('npx');
 		expect(declaredLaunch({ id: 'c', kind: 'acp' })).toBeUndefined();
 		expect(
 			declaredLaunch({ id: 'd', kind: 'http', url: 'https://d.test' }),
 		).toBeUndefined();
+	});
+});
+
+describe('knownAgents refuses to fetch what the project did not allow', () => {
+	it('says why an untrusted package agent cannot start, and starts it once allowed', () => {
+		const registry = {
+			agents: [
+				{
+					id: 'coder',
+					name: 'Coder',
+					version: '2.0.0',
+					distribution: { npx: { package: '@q/coder' } },
+				},
+			],
+		};
+		const [refused] = knownAgents({ registry, all: true });
+		expect(refused?.launch).toBeUndefined();
+		expect(refused?.refusal).toContain('`trustedAgentPackages`');
+		expect(refused?.refusal).toContain('npx @q/coder@2.0.0');
+		const [allowed] = knownAgents({
+			registry,
+			all: true,
+			trusted: new Set(['@q/coder@2.0.0']),
+		});
+		expect(allowed?.refusal).toBeUndefined();
+		expect(allowed?.launch?.fromNetwork).toBe('npx @q/coder@2.0.0');
 	});
 });
 

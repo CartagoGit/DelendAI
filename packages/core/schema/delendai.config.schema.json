@@ -1755,6 +1755,14 @@
 				"description": "An agent the catalogues do not know about, or one to reach in a way its catalogue entry does not describe. Give it an id, say how it is reached, and, for a command line agent, the commands that answer its probes."
 			}
 		},
+		"trustedAgentPackages": {
+			"description": "Agent packages, each as the exact `name@version` the registry pins, that this project allows npx or uvx to fetch from the network and run. An agent that is not installed and is not listed here is refused. Leave it out to fetch nothing.",
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
 		"modelProviders": {
 			"description": "Model providers in the shape models.dev publishes them, keyed by the same id as the catalogue entry each one replaces.",
 			"type": "array",

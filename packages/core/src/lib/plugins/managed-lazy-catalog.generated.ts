@@ -360,7 +360,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					commit_policy_settlement:
 						'Read or steer the settlement phase commit-policy gates on: status, enter (only with no active workers), or complete with the validate result.',
 					commit_policy_work_ref:
-						'Checkpoint exact claimed files to a policy-derived non-head WIP ref or materialize them back without moving HEAD or the real index.',
+						'Recover a verified orphan checkpoint onto its policy-derived work ref; checkpoint and materialize refuse wherever units have worktrees.',
 				},
 			},
 		),

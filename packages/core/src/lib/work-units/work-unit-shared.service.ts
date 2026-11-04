@@ -256,8 +256,8 @@ export const undurableAdvice = (
 		: [
 				'',
 				'These edits exist only in the working tree — no work ref holds them.',
-				'If they are yours, checkpoint them to your ref:',
-				`  delendai work checkpoint --proposal=<id> --slice=<id> --paths=<a,b> --message="..."`,
+				"If they are yours, keep them under a ref and restore the checkout, then take them into your unit's worktree from the ref it names:",
+				'  delendai work rescue',
 				...undurable.map((path) => `  ${path}`),
 			];
 

@@ -139,6 +139,7 @@ export type IEngineRefusalCode =
 	| 'WIP_SCOPE_NARROWED'
 	| 'WIP_NO_AGENT_IDENTITY'
 	| 'WIP_SLICE_HELD'
+	| 'WIP_SHARED_CHECKOUT'
 	| 'WIP_CHECKPOINT_FAILED';
 
 /**
@@ -183,6 +184,7 @@ export const ENGINE_REFUSAL_CODES = [
 	'WIP_SCOPE_NARROWED',
 	'WIP_NO_AGENT_IDENTITY',
 	'WIP_SLICE_HELD',
+	'WIP_SHARED_CHECKOUT',
 	'WIP_CHECKPOINT_FAILED',
 ] as const satisfies readonly IEngineRefusalCode[];
 
@@ -573,6 +575,30 @@ export const createCommitPolicyEngine = (
 			return finish(err(code, reason, metadata));
 		};
 
+		// A terminal refusal is a final answer: it is recorded so the event
+		// is never replayed, and answered OK so the caller stops.
+		const settleTerminal = async (
+			code: IEngineRefusalCode,
+			reason: string,
+		): Promise<IEngineResult | undefined> => {
+			const terminal = TERMINAL_REFUSAL_OUTCOMES[code];
+			if (terminal === undefined) return undefined;
+			await options.processedEvents?.recordTerminal(
+				computeIdempotencyKey(event),
+				terminal,
+				reason,
+			);
+			completeStep('stage', 'SKIP', { code, reason });
+			return finish({
+				ack: 'OK',
+				committed: false,
+				pushed: false,
+				commitCreated: false,
+				headMoved: false,
+				refusal: reason,
+			});
+		};
+
 		// Step 1 — slice selector (x00262). Slice events carry
 		// proposalId + sliceId from the trigger; manual events
 		// may or may not carry them. Threshold / interval
@@ -778,10 +804,10 @@ export const createCommitPolicyEngine = (
 			});
 			if (outcome.handled) {
 				if (outcome.status === 'refused') {
-					return failAt(
-						'stage',
-						outcome.code,
-						`${outcome.reason} Remedy: ${outcome.remedy}`,
+					const said = `${outcome.reason} Remedy: ${outcome.remedy}`;
+					return (
+						(await settleTerminal(outcome.code, said)) ??
+						failAt('stage', outcome.code, said)
 					);
 				}
 				completeStep('stage', 'OK', {
@@ -963,28 +989,8 @@ export const createCommitPolicyEngine = (
 			// attempt — a single-slice retry loop. Record them as
 			// terminal so the event is never replayed, and answer OK
 			// so the caller stops.
-			const terminal = TERMINAL_REFUSAL_OUTCOMES[refusal.code];
-			if (terminal !== undefined) {
-				if (options.processedEvents !== undefined) {
-					await options.processedEvents.recordTerminal(
-						computeIdempotencyKey(event),
-						terminal,
-						refusal.reason,
-					);
-				}
-				completeStep('stage', 'SKIP', {
-					code: refusal.code,
-					reason: refusal.reason,
-				});
-				return finish({
-					ack: 'OK',
-					committed: false,
-					pushed: false,
-					commitCreated: false,
-					headMoved: false,
-					refusal: refusal.reason,
-				});
-			}
+			const settled = await settleTerminal(refusal.code, refusal.reason);
+			if (settled !== undefined) return settled;
 			completeStep('stage', 'ERR', {
 				code: refusal.code,
 				reason: refusal.reason,
@@ -1352,6 +1358,9 @@ export const TERMINAL_REFUSAL_OUTCOMES: Partial<
 	// refusal string) is left for a follow-up slice that classifies
 	// each remaining driver refusal into a typed code.
 	UNKNOWN_REFUSAL: 'PERMANENT_REFUSAL',
+	// The checkout the event reached is not where the unit's work lives:
+	// replaying the event finds the same checkout (x01003).
+	WIP_SHARED_CHECKOUT: 'PERMANENT_REFUSAL',
 };
 
 /**

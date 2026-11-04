@@ -336,6 +336,35 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(await h.repo.readHead()).toBe(headBefore);
 	});
 
+	it('settles a checkpoint left in the shared checkout as final, so the event is not replayed (x01003)', async () => {
+		const h = await harness('develop');
+		const engine = createCommitPolicyEngine({
+			driver: driverFor(h),
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			persistence: {
+				route: 'wip-ref',
+				routeDetail: { kind: 'wip-ref', reason: 'test' },
+				persist: async () => ({
+					handled: true,
+					status: 'refused',
+					code: 'WIP_SHARED_CHECKOUT',
+					reason: 'WIP_SHARED_CHECKOUT: left src.ts.',
+					remedy: 'Commit in the unit worktree.',
+				}),
+			},
+		});
+
+		const result = await engine.handle(sliceEvent('left-1', ['src.ts']));
+
+		expect(result.ack).toBe('OK');
+		if (result.ack !== 'OK') throw new Error('unreachable');
+		expect(result.committed).toBe(false);
+		expect(result.refusal).toContain('left src.ts');
+		expect(result.refusal).toContain(
+			'Remedy: Commit in the unit worktree.',
+		);
+	});
+
 	it('surfaces scope-narrowed rather than silencing it with the opt-in flag', async () => {
 		const { h, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'a.ts'), 'export const a = 1;\n');
