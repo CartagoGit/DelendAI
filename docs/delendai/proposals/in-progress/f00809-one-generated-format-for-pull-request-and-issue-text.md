@@ -2,10 +2,14 @@
 id: f00809
 title: "One generated format for pull request and issue text"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 5a8070e6-2a7c-4f05-b37c-16b521ca414d
+last-correlation-id: 5a8070e6-2a7c-4f05-b37c-16b521ca414d
+last-transition-from: ready
+last-transition-at: 2026-11-04T20:09:12.870Z
 ---
 
 # f00809 — One generated format for pull request and issue text
