@@ -1,4 +1,5 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { namespaceRenamed } from './work-unit-rename-namespace.service';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
@@ -129,6 +130,7 @@ export const runWorkUnit = async (
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
 	if (sub === 'retire') return retired(args, ctx);
+	if (sub === 'rename-namespace') return namespaceRenamed(args, ctx);
 	if (sub === 'retired') {
 		return args.some((arg) => arg.startsWith('--drop'))
 			? retiredDropped(args, ctx)
@@ -136,6 +138,6 @@ export const runWorkUnit = async (
 	}
 	return {
 		code: EXIT_CODE.VALIDATION,
-		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, prove, publish, retire or reap.`,
+		error: `Unknown subcommand '${sub}'. Use status, swarm, doctor, claim, enter, checkpoint, prove, publish, retire, reap or rename-namespace.`,
 	};
 };
