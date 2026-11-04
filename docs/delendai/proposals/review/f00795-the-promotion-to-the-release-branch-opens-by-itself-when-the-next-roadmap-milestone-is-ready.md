@@ -47,14 +47,16 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-log: requested_changes by gpt-5.3-codex — shipped-in a9b8f5f5371b is stale: slice files changed in newer commits (e.g. 6d3edff4b, 3eedd5a48, 51fbac099). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — The release gate's dispatched run judges what its pull-request run does
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/release-pr-gate.yml`
 - **Gate**: type
 - acceptance:
   - "`release-pr-gate`'s dispatched run checks what its pull-request run checks: the version and changelog of the branch it runs on against main, and the alerts open on that branch."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: target files changed in newer commits (e.g. 6d3edff4b, 51fbac099). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S4 — A promotion that is not a release yet is held back and says how to prepare it
 - **Status**: review
