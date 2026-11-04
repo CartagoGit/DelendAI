@@ -69,14 +69,16 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - review-implementer: claude-opus-5-5
 
 ### S3 — The roadmap names the next milestone
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/ROADMAP.md`
 - **Gate**: type
 - acceptance:
   - "The roadmap holds the 0.3.0 horizon the owner committed on 2026-10-29 (a fast flow, every host held to the workflow, plugins that connect, Batuta working), each entry gated on its proposals being done."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S5 — The promotion is asked for when its last evidence lands
 - **Status**: review
