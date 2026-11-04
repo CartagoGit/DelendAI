@@ -48,14 +48,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — This repository declares its proof
-- **Status**: review
+- **Status**: pending
 - **Files**: `package.json`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "This repository's `prove` script is the fast proof (`prove-plan.script.ts --fast`) and `prove:plan` is the full plan, so the proof publishing runs is declared in the repository and nothing in a home directory is part of the flow."
 - shipped-in: `4bd7c10993ec`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
 - **Status**: review
