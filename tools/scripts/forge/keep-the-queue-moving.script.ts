@@ -926,7 +926,7 @@ const writeSummary = (failing: readonly string[]): void => {
 };
 
 /** Why a run of this script ends as it does: one word a person can act on. */
-export type TQueueState = 'ok' | 'queue-blocked' | 'internal-error';
+export type IQueueState = 'ok' | 'queue-blocked' | 'internal-error';
 
 /**
  * Run the report and end with exactly one line naming its state (x01021):
@@ -943,8 +943,8 @@ export const runWithState = (
 		readonly fail: () => void;
 		readonly output: (line: string) => void;
 	},
-): TQueueState => {
-	let state: TQueueState;
+): IQueueState => {
+	let state: IQueueState;
 	try {
 		body();
 		state = Number(io.exitCode() ?? 0) === 0 ? 'ok' : 'queue-blocked';
