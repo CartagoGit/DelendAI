@@ -34,17 +34,17 @@ agent({ name: 'fake-coder' })
 	.onRequest(
 		methods.agent.session.prompt,
 		async ({ params, client: peer }) => {
-			const ask = async (title: string) =>
+			const ask = async (title: string, kind: 'read' | 'execute') =>
 				peer.request(methods.client.session.requestPermission, {
 					sessionId: params.sessionId,
-					toolCall: { toolCallId: title, title },
+					toolCall: { toolCallId: title, title, kind },
 					options: [
 						{ optionId: 'yes', name: 'Allow', kind: 'allow_once' },
 						{ optionId: 'no', name: 'Reject', kind: 'reject_once' },
 					],
 				});
-			const shell = await ask('Bash: rm -rf build');
-			const read = await ask('Read src/index.ts');
+			const shell = await ask('Bash: rm -rf build', 'execute');
+			const read = await ask('Read src/index.ts', 'read');
 			const said = (answer: {
 				outcome: { outcome: string; optionId?: string };
 			}) =>

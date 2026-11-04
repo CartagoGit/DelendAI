@@ -8,6 +8,11 @@ export interface IAcpLaunch {
 	readonly command: string;
 	readonly args: readonly string[];
 	readonly env?: Readonly<Record<string, string>> | undefined;
+	/**
+	 * The pinned package npx or uvx fetches from the network to run it
+	 * (`npx @scope/agent@1.2.3`); absent for a command already here.
+	 */
+	readonly fromNetwork?: string | undefined;
 }
 
 /** One choice an agent offers when it asks before acting. */
@@ -23,7 +28,13 @@ export interface IAcpPermissionOption {
 
 /** What the agent wants to do, and the choices it offers. */
 export interface IAcpPermissionAsk {
+	/** The agent's own words for it: shown, never evidence. */
 	readonly title: string;
+	/**
+	 * The structured identity of the operation: the protocol's tool kind
+	 * (`read`, `edit`, `execute`, …). Absent when the agent sent none.
+	 */
+	readonly kind?: string | undefined;
 	readonly options: readonly IAcpPermissionOption[];
 }
 

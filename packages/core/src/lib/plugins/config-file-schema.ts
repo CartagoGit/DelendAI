@@ -24,6 +24,7 @@ import { DEVELOPMENT_CONFIG_SCHEMA } from './development-config-schema.constant'
 import {
 	AccountsSchema,
 	AgentsSchema,
+	TrustedAgentPackagesSchema,
 	CataloguesSchema,
 	ClientsSchema,
 	ModelProviders,
@@ -274,6 +275,7 @@ export const CONFIG_FILE_SCHEMA = z
 		clients: ClientsSchema,
 		catalogues: CataloguesSchema,
 		agents: AgentsSchema,
+		trustedAgentPackages: TrustedAgentPackagesSchema,
 		modelProviders: ModelProviders,
 		accounts: AccountsSchema,
 		cache: CacheSchema,
