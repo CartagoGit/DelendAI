@@ -16,6 +16,7 @@
  * checkout pinned in both cases.
  */
 
+import { renderWorkRefScope } from '../development-policy/work-ref-scope';
 import { DEFAULT_WORK_KIND } from '../development-policy/profiles.constant';
 import { workRefPlaceholderPattern } from '../development-policy/work-ref-placeholders';
 
@@ -56,6 +57,12 @@ export const expandWorkRefTemplate = (
 		if (key === 'slice') return sanitizeRefComponent(variables.slice);
 		if (key === 'topic')
 			return sanitizeRefComponent(variables.topic ?? 'work');
+		if (key === 'scope')
+			return renderWorkRefScope({
+				proposal: variables.proposal,
+				slice: variables.slice,
+				generation: Number(variables.generation),
+			});
 		return sanitizeRefComponent(String(variables.generation));
 	});
 

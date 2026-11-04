@@ -1,5 +1,8 @@
 import { ownedRootsOf } from './namespaced-ref.helper';
-import { ownedWorkRefShapes } from '../development-policy/owned-work-ref-parser';
+import {
+	compileOwnedWorkRefParser,
+	ownedWorkRefShapes,
+} from '../development-policy/owned-work-ref-parser';
 import { unitRefsAnyName } from './unit-refs-any-name.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
@@ -146,7 +149,11 @@ export const chooseGeneration = (
 			slice,
 		)
 			.filter((ref) => sessionHolding(root, ref) === session)
-			.map((ref) => Number(/-g(\d+)\//u.exec(ref)?.[1] ?? Number.NaN))
+			.map(
+				(ref) =>
+					compileOwnedWorkRefParser(policy.branches)?.parse(ref)
+						?.generation ?? Number.NaN,
+			)
 			.filter((generation) => Number.isInteger(generation));
 		if (held.length > 0) return { generation: Math.max(...held) };
 	}

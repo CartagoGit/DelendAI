@@ -12,6 +12,7 @@ import {
 	compileWorkRefParser,
 	type IWorkRefParser,
 } from '../startup-reconciler/work-ref-identity';
+import { WORK_REF_SHAPE } from './profiles.constant';
 import {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
@@ -28,26 +29,88 @@ type IShapeBranches = Pick<
 	| 'publicationRefPrefix'
 >;
 
-/** The template and prefix of each owned work namespace, current first. */
-export const ownedWorkRefShapes = (
-	branches: IShapeBranches,
-): readonly IOwnedWorkRefShape[] => {
-	const { workRefTemplate: template, workRefPrefix: prefix } = branches;
-	if (template.length === 0) return [];
-	if (prefix.length === 0 || !template.startsWith(prefix)) {
-		return [{ prefix, template, current: true }];
-	}
-	const shape = template.slice(prefix.length);
-	return ownedWorkRefPrefixes(branches).map((owned, index) => ({
-		prefix: owned,
-		template: `${owned}${shape}`,
-		current: index === 0,
-	}));
-};
-
 /** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
 const bare = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+/** One owned namespace: its prefixes and the shapes a unit there has. */
+interface INamespaceRow {
+	readonly index: number;
+	readonly namespace: string;
+	readonly workPrefix: string;
+	readonly publication: string;
+	readonly shapes: readonly IOwnedWorkRefShape[];
+}
+
+/**
+ * Every owned namespace, current first. A unit may carry the current
+ * shape or the one units had before a project chose another template
+ * (`WORK_REF_SHAPE`): both are read everywhere, the current one first in
+ * the current namespace and the earlier one first in a former namespace
+ * (f00808 S9).
+ */
+const namespaceRows = (branches: IShapeBranches): readonly INamespaceRow[] => {
+	const { workRefTemplate: template, workRefPrefix: prefix } = branches;
+	if (template.length === 0) return [];
+	if (prefix.length === 0 || !template.startsWith(prefix)) {
+		return [
+			{
+				index: 0,
+				namespace: branches.namespacePrefix,
+				workPrefix: prefix,
+				publication: branches.publicationRefPrefix,
+				shapes: [{ prefix, template, current: true }],
+			},
+		];
+	}
+	const shape = template.slice(prefix.length);
+	const earlier = shape === WORK_REF_SHAPE ? [] : [WORK_REF_SHAPE];
+	const namespaces = ownedNamespaces(branches);
+	const publications = ownedPublicationRefPrefixes(branches);
+	return ownedWorkRefPrefixes(branches).map((owned, index) => {
+		const order = index === 0 ? [shape, ...earlier] : [...earlier, shape];
+		return {
+			index,
+			namespace: namespaces[index] ?? '',
+			workPrefix: owned,
+			publication: publications[index] ?? '',
+			shapes: order.map((each) => ({
+				prefix: owned,
+				template: `${owned}${each}`,
+				current: index === 0 && each === shape,
+			})),
+		};
+	});
+};
+
+/** The template and prefix of each owned work shape, current first. */
+export const ownedWorkRefShapes = (
+	branches: IShapeBranches,
+): readonly IOwnedWorkRefShape[] =>
+	namespaceRows(branches).flatMap((row) => row.shapes);
+
+/** The shape of `row` that reads `name` (a work branch), else its first. */
+const shapeReading = (
+	row: INamespaceRow,
+	name: string,
+): IOwnedWorkRefShape | undefined =>
+	row.shapes.find(
+		(shape) =>
+			compileWorkRefParser(shape.template, shape.prefix)?.parse(
+				`refs/heads/${name}`,
+			) !== undefined,
+	) ?? row.shapes[0];
+
+/** The row whose `pick` prefix `name` starts with, longest first. */
+const rowUnder = (
+	branches: IShapeBranches,
+	name: string,
+	pick: (row: INamespaceRow) => string,
+): INamespaceRow | undefined =>
+	[...namespaceRows(branches)]
+		.filter((row) => bare(pick(row)).length > 0)
+		.sort((a, b) => bare(pick(b)).length - bare(pick(a)).length)
+		.find((row) => name.startsWith(bare(pick(row))));
 
 /** The owned work shape a branch (short or qualified) lives under. */
 export const ownedWorkRefShapeOf = (
@@ -55,17 +118,13 @@ export const ownedWorkRefShapeOf = (
 	branch: string,
 ): IOwnedWorkRefShape | undefined => {
 	const name = bare(branch);
-	return [...ownedWorkRefShapes(branches)]
-		.sort((a, b) => b.prefix.length - a.prefix.length)
-		.find((shape) => {
-			const prefix = bare(shape.prefix);
-			return prefix.length > 0 && name.startsWith(prefix);
-		});
+	const row = rowUnder(branches, name, (each) => each.workPrefix);
+	return row === undefined ? undefined : shapeReading(row, name);
 };
 
 /**
- * The work prefix a publication mirrors: a publication under the N-th
- * owned publication prefix publishes a unit under the N-th work prefix.
+ * The work shape a publication mirrors: a publication under a namespace's
+ * publication prefix publishes a unit of that namespace.
  */
 export const workShapeOfPublication = (
 	branches: IShapeBranches,
@@ -73,22 +132,12 @@ export const workShapeOfPublication = (
 ):
 	| { readonly publication: string; readonly shape: IOwnedWorkRefShape }
 	| undefined => {
-	const shapes = ownedWorkRefShapes(branches);
-	const publications = ownedPublicationRefPrefixes(branches);
-	const order = publications
-		.map((publication, index) => ({
-			publication: bare(publication),
-			index,
-		}))
-		.filter(({ publication }) => publication.length > 0)
-		.sort((a, b) => b.publication.length - a.publication.length);
-	const found = order.find(({ publication }) =>
-		branch.startsWith(publication),
-	);
-	const shape = found === undefined ? undefined : shapes[found.index];
-	return found === undefined || shape === undefined
-		? undefined
-		: { publication: found.publication, shape };
+	const row = rowUnder(branches, branch, (each) => each.publication);
+	if (row === undefined) return undefined;
+	const publication = bare(row.publication);
+	const asWork = `${bare(row.workPrefix)}${branch.slice(publication.length)}`;
+	const shape = shapeReading(row, asWork);
+	return shape === undefined ? undefined : { publication, shape };
 };
 
 /**
@@ -122,35 +171,32 @@ export const compileOwnedWorkRefParser = (
 };
 
 /**
- * The branch settings as the namespace `ref` lives under has them: a unit
- * under a former namespace is read, retired and published in its own
- * namespace, never moved into the current one (f00808). The settings as
- * they are for a ref under the current namespace, or under none.
+ * The branch settings as the namespace and shape of `ref` have them: a
+ * unit under a former namespace, or in an earlier shape, is read, retired
+ * and published as it is, never moved (f00808). The settings unchanged for
+ * a unit of the current namespace and shape, or for a ref under none.
  */
 export const branchesForRef = <T extends IShapeBranches>(
 	branches: T,
 	ref: string,
 ): T => {
 	const name = bare(ref);
-	const namespaces = ownedNamespaces(branches);
-	const shapes = ownedWorkRefShapes(branches);
-	const publications = ownedPublicationRefPrefixes(branches);
-	for (let index = 1; index < namespaces.length; index += 1) {
-		const shape = shapes[index];
-		const publication = publications[index] ?? '';
-		const under = [shape?.prefix ?? '', publication]
-			.map(bare)
-			.some((prefix) => prefix.length > 0 && name.startsWith(prefix));
-		if (!under) continue;
-		return {
-			...branches,
-			namespacePrefix: namespaces[index] ?? '',
-			workRefPrefix: shape?.prefix ?? branches.workRefPrefix,
-			workRefTemplate: shape?.template ?? branches.workRefTemplate,
-			publicationRefPrefix: publication,
-		};
-	}
-	return branches;
+	const work = rowUnder(branches, name, (each) => each.workPrefix);
+	const row = work ?? rowUnder(branches, name, (each) => each.publication);
+	if (row === undefined) return branches;
+	const asWork =
+		work !== undefined
+			? name
+			: `${bare(row.workPrefix)}${name.slice(bare(row.publication).length)}`;
+	const shape = shapeReading(row, asWork);
+	if (shape === undefined || shape.current) return branches;
+	return {
+		...branches,
+		namespacePrefix: row.namespace,
+		workRefPrefix: row.workPrefix,
+		workRefTemplate: shape.template,
+		publicationRefPrefix: row.publication,
+	};
 };
 
 /** The policy as the namespace of the unit at `ref` has it (f00808). */

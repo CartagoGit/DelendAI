@@ -101,6 +101,8 @@ export const WORK_REF_PLACEHOLDERS = [
 	'slice',
 	'generation',
 	'topic',
+	// proposal, slice and generation as one readable segment (f00808 S9).
+	'scope',
 ] as const;
 
 /**
@@ -113,6 +115,14 @@ export const WORK_REF_PLACEHOLDERS = [
  */
 export const WORK_REF_SHAPE =
 	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+/**
+ * The shape a person reads at a glance, the owner's scheme (f00808 S9):
+ * `{wip|pr}/{action}/{agent}/{scope}/{topic}`, as in
+ * `wip/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`.
+ * A project chooses it with `development.branches.workRefTemplate`.
+ */
+export const READABLE_WORK_REF_SHAPE = '${kind}/${agent}/${scope}/${topic}';
 
 /**
  * Programs an agent runs inside, which are not agents (x00694). The agent
