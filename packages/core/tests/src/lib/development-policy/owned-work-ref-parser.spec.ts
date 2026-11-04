@@ -5,10 +5,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	branchesForRef,
 	compileOwnedWorkRefParser,
 	ownedWorkRefShapeOf,
 	ownedWorkRefShapes,
-	branchesForRef,
 	unitPolicy,
 	workShapeOfPublication,
 } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
@@ -105,5 +105,32 @@ describe('a unit in its own namespace', () => {
 		expect(unitPolicy(policy, OLD_UNIT).branches.namespacePrefix).toBe(
 			'delendai',
 		);
+
+describe('owned shapes at the edges', () => {
+	it('owns nothing without a template, and one shape for a template outside its prefix', () => {
+		expect(
+			ownedWorkRefShapes({ ...transition, workRefTemplate: '' }),
+		).toEqual([]);
+		expect(
+			ownedWorkRefShapes({
+				...transition,
+				workRefTemplate:
+					'refs/units/${agent}/${proposal}-${slice}-g${generation}',
+			}),
+		).toHaveLength(1);
+	});
+
+	it('reads a former publication in its own namespace', () => {
+		const own = branchesForRef(
+			transition,
+			'delendai/pr/claude-opus-5-5/implement/f00808-S2-g1/guards',
+		);
+		expect(own.publicationRefPrefix).toBe('delendai/pr/');
+		expect(branchesForRef(transition, 'feature/mine')).toBe(transition);
+	});
+
+	it('finds no owned shape for a branch outside every namespace', () => {
+		expect(workShapeOfPublication(transition, 'feature/x')).toBeUndefined();
+		expect(ownedWorkRefShapeOf(transition, 'pr/x')).toBeUndefined();
 	});
 });

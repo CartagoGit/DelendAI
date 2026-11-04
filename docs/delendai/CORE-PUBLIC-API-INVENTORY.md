@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 426
+Total exports: 423
 
 | Maturity | Count |
 | --- | --- |
-| stable | 423 |
+| stable | 420 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -272,7 +272,6 @@ Total exports: 426
 | `classifyPath` | const | stable | `../lib/contracts/file-conventions.contract` |
 | `commitAndPush` | const | stable | `../lib/shared/git-write` |
 | `compactOutputSchema` | const | stable | `../lib/surface/compact-output-schema.helper` |
-| `compileOwnedWorkRefParser` | const | stable | `../lib/development-policy/owned-work-ref-parser` |
 | `compileWorkRefParser` | const | stable | `../lib/startup-reconciler/index` |
 | `computePayloadPercentile` | const | stable | `../lib/metrics/payload-percentile` |
 | `createByteSamplePercentileRegistry` | const | stable | `../lib/metrics/payload-percentile` |
@@ -338,8 +337,6 @@ Total exports: 426
 | `nextVersion` | const | stable | `../lib/contracts/release` |
 | `nodeDynamicImport` | const | deprecated | `../public/index` |
 | `observeAnchor` | const | stable | `../lib/wip-engine/index` |
-| `ownedPublicationRefPrefixes` | const | stable | `../lib/development-policy/owned-ref-prefixes` |
-| `ownedWorkRefPrefixes` | const | stable | `../lib/development-policy/owned-ref-prefixes` |
 | `parseCapability` | const | stable | `../lib/capabilities/schema` |
 | `parseCapabilityRequirement` | const | stable | `../lib/capabilities/versioning` |
 | `parseCliArgs` | const | stable | `../plugin` |

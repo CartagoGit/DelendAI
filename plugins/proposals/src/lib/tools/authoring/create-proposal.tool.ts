@@ -237,7 +237,8 @@ export const buildCreateProposalRegistration = (
 									absPath: created.path,
 									ref: publicationRefFor(
 										options.developmentPolicy?.branches
-											.publicationRefPrefix ?? '',
+											.publicationRefPrefix ??
+											'delendai/pr/',
 										created.id,
 										{
 											title: args.title,
