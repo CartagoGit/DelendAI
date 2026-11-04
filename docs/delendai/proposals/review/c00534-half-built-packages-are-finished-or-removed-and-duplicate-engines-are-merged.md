@@ -31,7 +31,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - global_gate: type
 
 ### S1 — Orphan packages and loaders
-- **Status**: review
+- **Status**: pending
 - **Files**: `bun.lock`, `tsconfig.base.json`, `vitest.shared.ts`, `packages/state-sqlite/package.json`, `packages/state-sqlite/src/lib/sqlite-driver.ts`, `packages/test-kit/package.json`, `packages/ui-extension/package.json`, `plugins/changelog/package.json`, `plugins/roadmap/README.md`, `packages/contracts/README.md`, `packages/proposals-sqlite/README.md`, `packages/sqlite/README.md`, `packages/state-sqlite/README.md`, `packages/state-telemetry/README.md`, `packages/test-kit/README.md`, `packages/ui-extension/README.md`, `plugins/execution-env/README.md`, `plugins/external-mcps/README.md`, `plugins/framework-knowledge/README.md`, `plugins/refactor/README.md`, `plugins/self-learning/README.md`
 - **Gate**: type
 - acceptance:
@@ -39,8 +39,10 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
   - "One SQLite loader is imported by every production user; a test fixture may open `node:sqlite` itself (G24)."
   - "Every package has build and README (G39, G6)."
 - shipped-in: `1eba86877d7f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 1eba86877d7f is stale: S1 files changed in many later commits (e.g. f44c79120, da3d5a486, 5f76c7077, 8fe0646db). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — Shim, prompts and bootstrap
 - **Status**: review
