@@ -2,10 +2,14 @@
 id: x01024
 title: "A candidate whose author is gone is orphaned, adoptable and brought forward"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
+last-transition-id: da9e3d59-d482-45b0-b21f-570bc5797908
+last-correlation-id: da9e3d59-d482-45b0-b21f-570bc5797908
+last-transition-from: ready
+last-transition-at: 2026-11-04T09:20:50.028Z
 ---
 
 # x01024 — A candidate whose author is gone is orphaned, adoptable and brought forward
