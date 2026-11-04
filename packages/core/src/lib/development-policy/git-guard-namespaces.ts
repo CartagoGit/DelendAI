@@ -4,20 +4,24 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from './owned-ref-prefixes';
 import { protectedBranchNames } from './release-branch';
 
 /** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
 export const shortName = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
-/** The branch names and namespaces the policy itself uses. */
+/** The branch names and namespaces the policy uses, former ones included. */
 export const policyNamespaces = (
 	policy: IResolvedDevelopmentPolicy,
 ): { exact: readonly string[]; prefixes: readonly string[] } => ({
 	exact: protectedBranchNames(policy.branches),
 	prefixes: [
-		policy.branches.workRefPrefix,
-		policy.branches.publicationRefPrefix,
+		...ownedWorkRefPrefixes(policy.branches),
+		...ownedPublicationRefPrefixes(policy.branches),
 		...policy.branches.foreignRefPrefixes,
 	]
 		.map(shortName)
