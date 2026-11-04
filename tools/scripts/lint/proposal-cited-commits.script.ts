@@ -211,6 +211,48 @@ const defaultGit = (
 	return { stdout: res.stdout ?? '', status: res.status ?? 1 };
 };
 
+/** What git knows of a cited hash: its object type, and the commit it names. */
+interface ICitedObject {
+	readonly kind?: string;
+	readonly commit?: string;
+}
+
+/**
+ * Every hash's object type and commit, from one `git cat-file` for all of
+ * them: two `git` processes per citation took 12 s over 1,500 citations.
+ * Each line answers what `cat-file -t <hash>` and `rev-parse --verify
+ * <hash>^{commit}` would: a missing or ambiguous name has no answer.
+ */
+export const resolveCitedObjects = (
+	hashes: readonly string[],
+	batch: (input: string) => string = (input) =>
+		spawnSync(
+			'git',
+			['cat-file', '--batch-check=%(objectname) %(objecttype)'],
+			{ cwd: REPO_ROOT, encoding: 'utf8', input, maxBuffer: 1 << 26 },
+		).stdout ?? '',
+): ReadonlyMap<string, ICitedObject> => {
+	const names = hashes.flatMap((hash) => [hash, `${hash}^{commit}`]);
+	const lines = batch(`${names.join('\n')}\n`).split('\n');
+	const answer = (index: number): readonly [string, string] | undefined => {
+		const [id, kind] = (lines[index] ?? '').trim().split(' ');
+		return id?.length === 40 && kind !== undefined ? [id, kind] : undefined;
+	};
+	return new Map(
+		hashes.map((hash, index) => {
+			const object = answer(index * 2);
+			const commit = answer(index * 2 + 1);
+			return [
+				hash,
+				{
+					...(object !== undefined ? { kind: object[1] } : {}),
+					...(commit?.[1] === 'commit' ? { commit: commit[0] } : {}),
+				},
+			];
+		}),
+	);
+};
+
 /**
  * Walk all .md files under the given `done/` subdirectories and
  * return the orphan citations (hashes that look like short-SHAs but
@@ -228,6 +270,10 @@ export const findOrphanHashes = async (
 	let checked = 0;
 	// Walked ONCE for the whole run, not once per citation.
 	const reachable = reachableCommits(git);
+	const files: {
+		readonly filePath: string;
+		readonly cited: ReturnType<typeof extractCitedHashes>;
+	}[] = [];
 	for (const rel of doneDirs) {
 		const abs = join(proposalsDirAbs, rel);
 		if (!existsSync(abs)) continue;
@@ -236,19 +282,40 @@ export const findOrphanHashes = async (
 			if (!name.endsWith('.md')) continue;
 			const filePath = join(abs, name);
 			const markdown = readFileSync(filePath, 'utf8');
-			const cited = extractCitedHashes(markdown);
-			// Dedupe per file so a hash cited 3 times in one proposal is
-			// reported as 3 line-numbered entries, not 1 entry + 1 line.
-			for (const { hash, line } of cited) {
-				checked += 1;
-				if (namesAnotherObject(hash, git)) continue;
-				if (!commitExists(hash, git, reachable)) {
-					orphans.push({
-						hash,
-						proposalRelPath: relative(REPO_ROOT, filePath),
-						line,
-					});
-				}
+			files.push({ filePath, cited: extractCitedHashes(markdown) });
+		}
+	}
+	// The real repository answers every citation in one process; an injected
+	// `git` (a spec's) answers them one by one, as it always did.
+	const objects =
+		git === defaultGit
+			? resolveCitedObjects([
+					...new Set(
+						files.flatMap((file) => file.cited.map((c) => c.hash)),
+					),
+				])
+			: undefined;
+	const isAnotherObject = (hash: string): boolean =>
+		objects === undefined
+			? namesAnotherObject(hash, git)
+			: ['tree', 'blob'].includes(objects.get(hash)?.kind ?? '');
+	const exists = (hash: string): boolean => {
+		if (objects === undefined) return commitExists(hash, git, reachable);
+		const commit = objects.get(hash)?.commit;
+		return commit !== undefined && reachable.has(commit);
+	};
+	for (const { filePath, cited } of files) {
+		// Dedupe per file so a hash cited 3 times in one proposal is
+		// reported as 3 line-numbered entries, not 1 entry + 1 line.
+		for (const { hash, line } of cited) {
+			checked += 1;
+			if (isAnotherObject(hash)) continue;
+			if (!exists(hash)) {
+				orphans.push({
+					hash,
+					proposalRelPath: relative(REPO_ROOT, filePath),
+					line,
+				});
 			}
 		}
 	}

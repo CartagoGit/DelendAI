@@ -63,6 +63,7 @@ import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
 import { createGitignoreMigrator } from './migrators/gitignore.migrator';
+import { createVscodeCacheExcludeMigrator } from './migrators/vscode-cache-exclude.migrator';
 import { createStateDirMigrator } from './migrators/state-dir.migrator';
 import { createStrayMemberCacheMigrator } from './migrators/stray-member-cache.migrator';
 import {
@@ -114,6 +115,8 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
+	// The editor stops watching and searching the cache.
+	createVscodeCacheExcludeMigrator(),
 	// The state directory an older delendai kept at `.delendai/state`.
 	createStateDirMigrator(),
 	// The caches a server wrote inside a workspace member.

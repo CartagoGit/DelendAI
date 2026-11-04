@@ -18,6 +18,47 @@ export const commandsOf = (chain: string): readonly string[] =>
 		.map((command) => command.trim())
 		.filter((command) => command.length > 0);
 
+/** A command that only names another script of the same `package.json`. */
+const NAMED_SCRIPT = /^bun run ([\w:.-]+)$/u;
+
+/**
+ * The commands of `names`, each `bun run <name>` replaced by what it runs
+ * when that is a `bun` command or a chain of them, and every command once.
+ * A chain nested in a chain ran its lints one after another, and a lint two
+ * chains named ran twice: `lint:proposals` cost 10 s in a row, and two of its
+ * lints ran again on their own. A command that changes directory or pipes
+ * stays as written. Pure.
+ */
+export const flatCommandsOf = (
+	names: readonly string[],
+	scripts: Readonly<Record<string, string>>,
+): readonly string[] => {
+	const out = new Set<string>();
+	const expand = (command: string, seen: ReadonlySet<string>): void => {
+		const named = NAMED_SCRIPT.exec(command)?.[1];
+		const body = named === undefined ? undefined : scripts[named];
+		const parts = body === undefined ? [] : commandsOf(body);
+		const plain =
+			named !== undefined &&
+			!seen.has(named) &&
+			parts.length > 0 &&
+			!/\|\||;|\||`|\$\(/u.test(body ?? '') &&
+			parts.every((part) => /^bun (?!x\b)/u.test(part));
+		if (!plain) {
+			out.add(command);
+			return;
+		}
+		for (const part of parts) expand(part, new Set([...seen, named]));
+	};
+	for (const name of names) {
+		const chain = scripts[name];
+		if (chain === undefined) throw new Error(`no script "${name}"`);
+		for (const command of commandsOf(chain))
+			expand(command, new Set([name]));
+	}
+	return [...out];
+};
+
 /** Map `items` with at most `limit` running at once. */
 export const inPool = async <T, R>(
 	items: readonly T[],
@@ -66,11 +107,7 @@ const main = async (names: readonly string[]): Promise<number> => {
 	const { scripts } = JSON.parse(readFileSync('package.json', 'utf8')) as {
 		readonly scripts: Readonly<Record<string, string>>;
 	};
-	const commands = names.flatMap((name) => {
-		const chain = scripts[name];
-		if (chain === undefined) throw new Error(`no script "${name}"`);
-		return commandsOf(chain);
-	});
+	const commands = flatCommandsOf(names, scripts);
 	const started = Date.now();
 	const runs = await inPool(commands, availableParallelism(), runCommand);
 	const failed = runs.filter((run) => run.code !== 0);

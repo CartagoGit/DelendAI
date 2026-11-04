@@ -25,6 +25,10 @@ import { join } from 'node:path';
 
 import {
 	applyJsoncEdits,
+	CACHE_EXCLUDE_SETTINGS,
+	cacheExcludeGlob,
+	configuredCacheDir,
+	mergeCacheExcludes,
 	parseJsonc,
 	type IJsoncEdit,
 } from '@delendai/core/cli';
@@ -131,16 +135,33 @@ export const ensureJsoncAssociation = async (
 	workspace: string,
 ): Promise<IVscodeSettingsResult> => {
 	const path = join(workspace, VSCODE_SETTINGS_RELPATH);
+	const cacheDir = configuredCacheDir(workspace);
 	if (!existsSync(path)) {
+		const glob = cacheExcludeGlob(cacheDir);
+		const fresh: Record<string, unknown> = {
+			...JSONC_ASSOCIATION,
+			...(glob === undefined
+				? {}
+				: Object.fromEntries(
+						CACHE_EXCLUDE_SETTINGS.map((key) => [
+							key,
+							{ [glob]: true },
+						]),
+					)),
+		};
 		const written = await writeWorkspaceFileSafely(
 			workspace,
 			VSCODE_SETTINGS_RELPATH,
-			`${JSON.stringify(JSONC_ASSOCIATION, null, '\t')}\n`,
+			`${JSON.stringify(fresh, null, '\t')}\n`,
 		);
 		return { kind: 'written', path: written };
 	}
 	const existing = await readFile(path, 'utf8');
-	const merged = mergeJsoncAssociation(existing);
+	const associated = mergeJsoncAssociation(existing);
+	// The cache is never watched: excluded wherever the person has not
+	// already said something about it.
+	const merged =
+		mergeCacheExcludes(associated ?? existing, cacheDir) ?? associated;
 	if (merged === undefined) {
 		// Either the association is already there (nothing to do) or the
 		// file is not a settings object we may touch.

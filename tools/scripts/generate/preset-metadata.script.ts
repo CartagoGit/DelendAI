@@ -26,7 +26,8 @@ import { PRESET_KIND } from '@delendai/core/cli';
 import { repoRoot } from '../lib/monorepo-paths';
 import {
 	DASHBOARD_SURFACES,
-	measurePresetDashboard,
+	measurePresetRow,
+	warmPresetRows,
 } from '../report/token-budget-dashboard.script.ts';
 import {
 	createTokenBudgetFixtureWorkspace,
@@ -91,11 +92,14 @@ export const orderPresetMetadataEntries = (
 const measureAllPresets = async (
 	measuredAt = new Date().toISOString(),
 ): Promise<readonly IGeneratedPresetEntry[]> => {
+	await warmPresetRows(
+		PRESET_METADATA_IDS.map((presetId) => [presetId, 0] as const),
+	);
 	const workspace = createTokenBudgetFixtureWorkspace();
 	try {
 		const entries: IGeneratedPresetEntry[] = [];
 		for (const presetId of PRESET_METADATA_IDS) {
-			const row = await measurePresetDashboard(
+			const row = await measurePresetRow(
 				workspace,
 				presetId,
 				NATIVE_SURFACE,
