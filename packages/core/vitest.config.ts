@@ -13,11 +13,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
 
 export const coreConfig = (half: 'shared' | 'isolated') => {
-	const split = isolationSplit(here, 'tests', half);
+	const split = isolationSplit(here, 'tests', half, 'core');
 	return defineConfig({
 		cacheDir: resolve(workspaceRoot, '.cache/vitest/packages-core'),
 		resolve: { alias: workspaceAliases(workspaceRoot) },
 		test: {
+			name: 'core',
 			...split.options,
 			// Concurrency/IO tests can exceed the 5s default under heavy
 			// parallel-suite CPU load; widen so CI is not flaky (a real hang
@@ -37,7 +38,6 @@ export const coreConfig = (half: 'shared' | 'isolated') => {
 			// Hooks interleave with the tests they set up, so they get the
 			// same ceiling for the same reason.
 			hookTimeout: 120_000,
-			name: `core${split.nameSuffix}`,
 			include: split.include ?? ['tests/**/*.spec.ts'],
 			exclude: [
 				'**/node_modules/**',

@@ -22,15 +22,15 @@ const workspaceRoot = resolve(here, '..');
  * collected.
  */
 export const toolsConfig = (half: 'shared' | 'isolated') => {
-	const split = isolationSplit(here, '', half);
+	const split = isolationSplit(here, '', half, 'tools');
 	return defineConfig({
 		root: here,
 		resolve: { alias: workspaceAliases(workspaceRoot) },
 		test: {
+			name: 'tools',
 			...split.options,
 			// `scripts/` holds the installer and belongs to no workspace: outside the
 			// root, its spec was collected by no project and gated nothing.
-			name: `tools${split.nameSuffix}`,
 			include: split.include ?? [
 				'**/*.spec.ts',
 				'../scripts/**/*.spec.ts',

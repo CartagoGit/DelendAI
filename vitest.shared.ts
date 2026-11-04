@@ -101,6 +101,9 @@ export const sharedTestOptions = {
 const NEEDS_ISOLATION =
 	/\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
 
+/** The name of a project's isolated half: the project's name and this. */
+export const ISOLATED_PROJECT_SUFFIX = '-isolated';
+
 const listSpecFiles = (dir: string): string[] =>
 	readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
 		if (entry.name === 'node_modules' || entry.name === 'dist') return [];
@@ -132,13 +135,13 @@ export const isolationSplit = (
 	projectRoot: string,
 	scanDir: string,
 	half: 'shared' | 'isolated',
+	projectName: string,
 ) => {
 	const isolated = isolatedSpecs(join(projectRoot, scanDir)).map((file) =>
 		scanDir === '' ? file : `${scanDir}/${file}`,
 	);
 	return half === 'shared'
 		? {
-				nameSuffix: '',
 				// The same group as the other projects that share a worker:
 				// vitest refuses two groups with different workers but the
 				// same order.
@@ -151,8 +154,10 @@ export const isolationSplit = (
 				exclude: isolated,
 			}
 		: {
-				nameSuffix: '-isolated',
-				options: { ...sharedTestOptions },
+				options: {
+					...sharedTestOptions,
+					name: `${projectName}${ISOLATED_PROJECT_SUFFIX}`,
+				},
 				include: isolated,
 				exclude: [] as string[],
 			};
