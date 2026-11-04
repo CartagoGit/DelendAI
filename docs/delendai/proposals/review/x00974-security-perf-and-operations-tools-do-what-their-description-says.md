@@ -31,15 +31,17 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - global_gate: type
 
 ### S1 — security
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/security/src/index.ts`, `plugins/security/src/lib/audit/sast-scan.helper.ts`, `plugins/security/src/lib/contracts/interfaces/secrets.interface.ts`, `plugins/security/src/lib/tools/security-audit.tool.ts`, `plugins/security/src/lib/tools/security-deps.tool.ts`, `plugins/security/tests/src/lib/sast-scan.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "security_audit runs SAST or the description stops claiming it (D63, D97)."
   - "security_deps declares the base audit's network use (D98)."
 - shipped-in: `6ce6a10a5e29`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6ce6a10a5e29 is stale for this slice. I verified post-shipped changes in slice files via `git log 6ce6a10a5e29..develop -- <S1 files>` (at least commit 282eeb4b3 touches listed files), so acceptance must be re-validated against current develop with fresh empirical evidence.
 
 ### S2 — perf
 - **Status**: review
