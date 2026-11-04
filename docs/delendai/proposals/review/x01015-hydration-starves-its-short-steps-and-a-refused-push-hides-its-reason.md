@@ -33,14 +33,16 @@ On 2026-11-03 one hydration pass sat for 2 hours: refresh-candidate-artifacts wa
 - global_gate: none
 
 ### S1 — Short steps run under their own lock
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 - **Gate**: none
 - acceptance:
   - "certify-integration and advance-queue run under a lock of their own on every pass, even while a refresh holds the long lock, and two refreshes never run at once; a spec pins the quick steps and their short timeouts."
 - shipped-in: `594e69c2dae3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 594e69c2dae3 is stale for this slice. `git log 594e69c2dae3..develop -- <S1 files>` shows post-shipped changes touching listed files (e.g. eb955b9f4), so acceptance must be re-validated on current develop with fresh empirical evidence.
 
 ### S2 — A refused push reports the refusal
 - **Status**: review
