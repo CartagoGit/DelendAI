@@ -24,6 +24,8 @@ import {
 	backupScopeExcludes,
 	readPersistedBackups,
 	rollback,
+	recordWrittenSince,
+	type IWrittenRecord,
 } from '@delendai/core/lib/workspace-migration/transaction/rollback';
 
 const roots: string[] = [];
@@ -147,22 +149,28 @@ describe('migration transaction (b00239 S6)', () => {
 		writeFileSync(join(root, '.git/config'), '[core]\n\tbare = false\n');
 		const gitBefore = readFileSync(join(root, '.git/config'));
 
+		let written: IWrittenRecord | undefined;
+		let taken: readonly IBackup[] = [];
 		const outcome = await runMigrationTransaction(
 			{
 				discover: async () => [baseMigration(async () => undefined)],
 				plan: async () => [],
-				backup: async () => backupOf(root),
+				backup: async () => {
+					taken = backupOf(root);
+					return taken;
+				},
 				apply: async () => {
 					writeFileSync(
 						join(root, 'stray.txt'),
 						'made by the attempt\n',
 					);
+					written = await recordWrittenSince(root, taken);
 					throw new Error('boom-apply');
 				},
 				validate: async () => ({ ok: true, reason: '' }),
 				commit: async () => undefined,
 				rollback: async (backups, ctx, reason) =>
-					rollback(backups, ctx, reason),
+					rollback(backups, ctx, reason, undefined, written),
 			},
 			{ workspaceRoot: root },
 		);

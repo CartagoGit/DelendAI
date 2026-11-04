@@ -12,6 +12,7 @@ import {
 	judgeWorktrees,
 	parseWorktreeList,
 	pathOfStatusLine,
+	readDirtyPaths,
 	worksomebodyOwns,
 	type IWorktree,
 } from './reclaim-worktrees.script.ts';
@@ -60,6 +61,15 @@ describe('judgeWorktrees', () => {
 
 		it('never one with uncommitted work', () => {
 			expect(roleOf({ dirtyPaths: 1 })).toBe('dirty');
+		});
+
+		it('never one whose uncommitted state git could not read', () => {
+			const verdicts = judgeWorktrees(
+				[tree({ dirtyPaths: null })],
+				JUDGEMENT,
+			);
+			expect(verdicts.verdicts[0]?.role).toBe('unknown');
+			expect(verdicts.spent).toHaveLength(0);
 		});
 
 		it('never one whose head the integration branch does not contain', () => {
@@ -195,5 +205,13 @@ describe('formatReport', () => {
 				false,
 			),
 		).toContain('nothing to reclaim');
+	});
+});
+
+describe('readDirtyPaths', () => {
+	it('is null, not zero, when git status cannot run', () => {
+		expect(
+			readDirtyPaths('/nonexistent/delendai-no-such-worktree'),
+		).toBeNull();
 	});
 });
