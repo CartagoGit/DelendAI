@@ -16,11 +16,20 @@ A pull request carries a meaningful batch of work, its CI runs exactly what its 
 
 ## why
 
-TODO: why this work matters now.
+The owner asked on 2026-11-04 why pull requests take so long, why specs take hundreds of milliseconds or seconds, why so much is skipped, why pull requests fail tests their local proof should have caught, and why there are so many pull requests. Measured on develop's last green full run (41847292705):
+
+- **Where test time goes.** 2,406 spec files and 18,643 tests. Test time is 1,039 s in all; 175 files (7%) take 83% of it. The 41 files over 5 s take 54%: `guard.command.spec.ts` 114 s, `proposals.real-server.spec.ts` 68 s, `work-unit.service.spec.ts` 28 s, `token-budget-dashboard.spec.ts` 20 s, and others. The other 2,231 files average 79 ms. A few real-git, real-server and real-time specs are the cost, not the count.
+- **What is skipped.** Only 7 tests are skipped. What looks skipped on a pull request is whole jobs that the job scope leaves out because the change does not touch their zone. That is correct, but the run does not say so.
+- **Why a pull request is red on a test its proof passed.** The local proof runs the tests of what was touched (testing.scope, f00805), while the pull request's CI still runs the zones the change reaches. The two sets differ, so CI finds what the proof never ran.
+- **What a full run costs.** 43 jobs and 3,854 runner seconds. Each test shard takes 3 to 3.5 minutes, much of it checkout and install.
+- **Why there are so many pull requests.** Grouping exists only within a proposal (at most 3 slices and 400 lines make one pull request). Across proposals nothing groups, so on 2026-11-04 sixteen docs-only proposal creations opened sixteen pull requests.
+
+This follows the product principles (bootstrap section 0): efficient, fast and the same in every project.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Dropping coverage: the wider reach still runs, on the integration branch's certification.
+- Replacing vitest: measured on 2026-11-04 against bun test (x01019), and kept.
 
 ## slices
 
