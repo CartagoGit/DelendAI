@@ -50,7 +50,7 @@ describe('owned ref prefixes', () => {
 			namespacePrefix: 'delendai',
 			formerNamespacePrefixes: ['delendai'],
 		});
-		expect(branches.formerNamespacePrefixes).toEqual([]);
+		expect(branches.formerNamespacePrefixes).toBeUndefined();
 		expect(ownedPublicationRefPrefixes(branches)).toEqual(['delendai/pr/']);
 	});
 
