@@ -36,7 +36,7 @@ import type {
 import {
 	backgroundEnv,
 	lowPriorityShell,
-} from '../shared/background-load.service';
+} from '../platform/background-load.service';
 import { validationGateSteps } from './validation-gate-steps.service';
 
 /** How many trailing lines of a failed step's output a report keeps. */

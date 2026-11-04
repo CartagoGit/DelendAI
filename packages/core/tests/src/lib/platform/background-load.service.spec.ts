@@ -6,7 +6,7 @@ import {
 	backgroundWorkers,
 	lowPriority,
 	lowPriorityShell,
-} from '@delendai/core/lib/shared/background-load.service';
+} from '@delendai/core/lib/platform/background-load.service';
 
 describe('background load', () => {
 	it('runs at the lowest priority unless told otherwise', () => {

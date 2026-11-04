@@ -115,4 +115,4 @@ export {
 	backgroundNice,
 	backgroundWorkers,
 	lowPriority,
-} from '../lib/shared/background-load.service';
+} from '../lib/platform/background-load.service';

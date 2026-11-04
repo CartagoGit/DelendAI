@@ -104,6 +104,13 @@ export const detectSelfHostDogfoodDrift = async (
 				await readFile(join(root, target.file), 'utf8'),
 			) as IClientConfig;
 		} catch (error) {
+			// VS Code loads `.mcp.json`, so `.vscode/mcp.json` repeating it
+			// would start the host twice: absent is the right state there.
+			if (
+				target.file === '.vscode/mcp.json' &&
+				(error as NodeJS.ErrnoException).code === 'ENOENT'
+			)
+				continue;
 			findings.push({
 				file: target.file,
 				detail: `cannot read valid JSON: ${error instanceof Error ? error.message : String(error)}`,
