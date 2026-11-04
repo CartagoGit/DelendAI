@@ -61,7 +61,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "The local proof runs the same specs the forge would, from the same analysis."
 
 ### S2 — Every lint runs only for the files it reads
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/ci/job-reach.helper.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/lib/changed-files-scope.ts`, `tools/scripts/lib/changed-files-scope.spec.ts`, `tools/scripts/lint/biome-baseline.script.ts`, `tools/scripts/lint/file-conventions.script.ts`, `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/single-frontmatter.script.ts`, `tools/scripts/lint/type-naming.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -70,7 +70,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not."
 
 ### S3 — Types are checked only where the change reaches
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/typecheck.script.ts`, `tools/scripts/ci/typecheck-scope.helper.ts`, `tools/scripts/ci/typecheck-scope.helper.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
