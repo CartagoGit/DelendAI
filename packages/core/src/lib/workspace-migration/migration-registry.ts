@@ -61,6 +61,7 @@ import { createConfigFileMigrator } from './migrators/config-file.migrator';
 import { createDevelopmentPolicyMigrator } from './migrators/development-policy.migrator';
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
+import { createDuplicateMcpEntryMigrator } from './migrators/duplicate-mcp-entry.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
 import { createGitignoreMigrator } from './migrators/gitignore.migrator';
 import { createStateDirMigrator } from './migrators/state-dir.migrator';
@@ -112,6 +113,8 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	createPersonalAccountsMigrator(),
 	createPackageManifestMigrator(),
 	createHostConfigMigrator(),
+	// One editor, one server: `.vscode/mcp.json` stops repeating `.mcp.json`.
+	createDuplicateMcpEntryMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
 	// The state directory an older delendai kept at `.delendai/state`.

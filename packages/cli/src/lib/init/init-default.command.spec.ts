@@ -153,7 +153,7 @@ describe('init:default (f00103)', () => {
 		const rels = data.files.map((f) => f.relPath);
 		// The vertex preset must populate every expected file family.
 		expect(rels).toContain('delendai.config.json');
-		expect(rels).toContain('.vscode/mcp.json');
+		expect(rels).toContain('.mcp.json');
 		expect(rels).toContain('AGENTS.md');
 		expect(rels).toContain('CLAUDE.md');
 		expect(rels).toContain('.github/copilot-instructions.md');
@@ -291,12 +291,16 @@ describe('init:default (f00103)', () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run([], ctx);
 		expect(result.code).toBe(EXIT_CODE.OK);
-		const vscode = JSON.parse(
-			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
+		// One entry per host: `.mcp.json`, which VS Code loads too.
+		await expect(
+			readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
+		).rejects.toThrow();
+		const project = JSON.parse(
+			await readFile(join(tmp, '.mcp.json'), 'utf8'),
 		) as {
-			servers: Record<string, { command: string; args: string[] }>;
+			mcpServers: Record<string, { command: string; args: string[] }>;
 		};
-		const server = vscode.servers[`DelendAI:${basename(tmp)}`];
+		const server = project.mcpServers[`DelendAI:${basename(tmp)}`];
 		expect(server).toMatchObject({
 			command: 'bunx',
 			args: [
@@ -305,7 +309,7 @@ describe('init:default (f00103)', () => {
 				'delendai',
 				'__serve',
 				'--workspace',
-				'${workspaceFolder}',
+				'.',
 				'--name',
 				`DelendAI:${basename(tmp)}`,
 			],

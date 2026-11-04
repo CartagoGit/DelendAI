@@ -52,8 +52,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		);
 		const rels = bundle.files.map((f) => f.relPath);
 		expect(rels).toContain('delendai.config.json');
-		expect(rels).toContain('.vscode/mcp.json');
+		// One entry per host: VS Code loads the `.mcp.json` Claude Code reads.
 		expect(rels).toContain('.mcp.json');
+		expect(rels).not.toContain('.vscode/mcp.json');
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
 		// x00160 S2: the Claude Code-native subagent format is rendered
 		// alongside the Copilot one — AGENT-BOOTSTRAP.md §8.2 tells every
@@ -71,12 +72,8 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(rels.some((r) => r.includes('adopt-delendai'))).toBe(true);
 	});
 
-	it('renders both MCP config entries from the canonical launch builder', async () => {
+	it('renders one MCP config entry, from the canonical launch builder', async () => {
 		const bundle = await renderInitBundle(parseAnswers());
-		const vscode = JSON.parse(
-			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
-				?.content ?? '{}',
-		) as { servers: { DelendAI: { command: string; args: string[] } } };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
 				?.content ?? '{}',
@@ -84,15 +81,21 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			mcpServers: { DelendAI: { command: string; args: string[] } };
 		};
 
-		expect(vscode.servers.DelendAI).toMatchObject(
-			buildCanonicalLaunch({
-				workspace: '${workspaceFolder}',
-				serverName: 'DelendAI',
-			}),
-		);
+		expect(
+			bundle.files.some((file) => file.relPath === '.vscode/mcp.json'),
+		).toBe(false);
 		expect(generic.mcpServers.DelendAI).toMatchObject(
 			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' }),
 		);
+	});
+
+	it('writes .vscode/mcp.json, and not .mcp.json, for a project that declares only VS Code Copilot', async () => {
+		const bundle = await renderInitBundle(
+			parseAnswers({ hosts: ['copilot'] }),
+		);
+		const rels = bundle.files.map((file) => file.relPath);
+		expect(rels).toContain('.vscode/mcp.json');
+		expect(rels).not.toContain('.mcp.json');
 	});
 
 	it('skips .agent.md AND the Claude Code AND the Codex subagents when generateAgentMd=false', async () => {
@@ -332,10 +335,6 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		const codex = bundle.files.find((file) =>
 			file.relPath.startsWith('.codex/agents/'),
 		);
-		const vscode = JSON.parse(
-			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
-				?.content ?? '{}',
-		) as { servers: Record<string, unknown> };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
 				?.content ?? '{}',
@@ -346,7 +345,6 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		expect(codex?.relPath).toContain('.codex/agents/acme-');
 		expect(github?.content).toContain('name: acme-');
 		expect(github?.content).toContain('acme-tools/*');
-		expect(vscode.servers['acme-tools']).toBeDefined();
 		expect(generic.mcpServers['acme-tools']).toBeDefined();
 	});
 });
