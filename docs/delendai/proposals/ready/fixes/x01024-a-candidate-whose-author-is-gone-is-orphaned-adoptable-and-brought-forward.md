@@ -2,14 +2,14 @@
 id: x01024
 title: "A candidate whose author is gone is orphaned, adoptable and brought forward"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: 7f2e6c02-691a-47dd-b42d-7406ec306e66
-last-correlation-id: 7f2e6c02-691a-47dd-b42d-7406ec306e66
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T09:33:06.573Z
+last-transition-id: 7ce1453e-8a7d-4582-9b36-8d830ff4c653
+last-correlation-id: 7ce1453e-8a7d-4582-9b36-8d830ff4c653
+last-transition-from: review
+last-transition-at: 2026-11-04T21:29:39.207Z
 ---
 
 # x01024 — A candidate whose author is gone is orphaned, adoptable and brought forward
@@ -79,14 +79,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in f4b76a89b021 is stale for this slice. `git log f4b76a89b021..develop -- <S4 files>` shows post-shipped changes in listed files (e.g. eb955b9f4, dad2196b0), so the hydrator/orphan-rescue acceptance must be re-validated on current develop with fresh evidence.
 
 ### S5 — work status shows branch staleness and integration risk
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:
   - "work status prints one line per open publication with: commits behind develop, overlap with other open publications, age, and whether its owner is alive. Spec: a publication behind by 3 with one overlapping file prints those numbers."
 - shipped-in: `f4b76a89b021`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for publication staleness/integration-risk reporting fields (behind count, overlap count, age, owner-alive). Please re-run and include fresh proof before re-submitting.
 
 ## acceptance
 
