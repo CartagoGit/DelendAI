@@ -101,6 +101,13 @@ export const sharedTestOptions = {
 const NEEDS_ISOLATION =
 	/\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
 
+/**
+ * The run order of the projects that share a worker. Vitest refuses two
+ * projects with different `maxWorkers` in the same order, and a project with
+ * `fileParallelism: false` runs on one worker, so it has an order of its own.
+ */
+export const SHARED_GRAPH_GROUP_ORDER = { parallel: 1, serial: 2 } as const;
+
 /** The name of a project's isolated half: the project's name and this. */
 export const ISOLATED_PROJECT_SUFFIX = '-isolated';
 
@@ -142,13 +149,10 @@ export const isolationSplit = (
 	);
 	return half === 'shared'
 		? {
-				// The same group as the other projects that share a worker:
-				// vitest refuses two groups with different workers but the
-				// same order.
 				options: {
 					...sharedTestOptions,
 					isolate: false,
-					sequence: { groupOrder: 1 },
+					sequence: { groupOrder: SHARED_GRAPH_GROUP_ORDER.parallel },
 				},
 				include: undefined,
 				exclude: isolated,
