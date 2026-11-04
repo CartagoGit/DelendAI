@@ -2,10 +2,14 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 52691762-d250-4e86-8640-c84ee20f73ea
+last-correlation-id: 52691762-d250-4e86-8640-c84ee20f73ea
+last-transition-from: ready
+last-transition-at: 2026-11-04T11:19:44.741Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
