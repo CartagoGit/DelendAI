@@ -563,14 +563,11 @@ export const createSliceListener = (
 			let watching = false;
 			let checking = false;
 			let again = false;
-			// Watching, an idle server wakes only to ask whether it holds
-			// the lease; a server that cannot watch polls at that pace.
-			timer = setInterval(
-				() => void poll(),
-				options.watch === true
-					? Math.max(pollMs, PROPOSALS_TAKEOVER_POLL_MS)
-					: pollMs,
-			);
+			// One cheap tick at the poll pace: it reads nothing while a
+			// watch is live (it only asks the lease now and then), and polls
+			// as before while none is, which includes a proposals folder
+			// that did not exist yet.
+			timer = setInterval(() => void poll(), pollMs);
 			timer.unref();
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
@@ -578,7 +575,32 @@ export const createSliceListener = (
 				? check().then(() => undefined)
 				: Promise.resolve();
 			const pacer = createPollPacer();
+			let lastAsk = 0;
+			const connect = async (): Promise<void> => {
+				if (options.watch !== true || watching) return;
+				const found = await watchProposals(
+					resolve(workspaceRoot, join(proposalsDir, 'proposals')),
+					onChange,
+				);
+				if (found === undefined) return;
+				if (timer === undefined) {
+					// Stopped while the watch was being set up.
+					found.close();
+					return;
+				}
+				watcher = found;
+				watching = true;
+				// Whatever changed before the watch began is read once.
+				lastCheck = 0;
+			};
 			const poll = async (): Promise<void> => {
+				await connect();
+				if (
+					watching &&
+					Date.now() - lastAsk < PROPOSALS_TAKEOVER_POLL_MS
+				)
+					return;
+				lastAsk = Date.now();
 				if (!(await mayRun())) {
 					held = false;
 					return;
@@ -618,23 +640,7 @@ export const createSliceListener = (
 						}
 					});
 			};
-			const watcherNow =
-				options.watch === true
-					? await watchProposals(
-							resolve(
-								workspaceRoot,
-								join(proposalsDir, 'proposals'),
-							),
-							onChange,
-						)
-					: undefined;
-			if (watcherNow !== undefined && timer === undefined) {
-				// Stopped while the watch was being set up.
-				watcherNow.close();
-			} else if (watcherNow !== undefined) {
-				watcher = watcherNow;
-				watching = true;
-			}
+			await connect();
 			await primed;
 		},
 		stop() {
