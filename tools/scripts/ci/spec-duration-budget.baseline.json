@@ -6,8 +6,6 @@
 	"packages/core/tests/src/lib/shared/process-tree-kill.spec.ts",
 	"packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts",
 	"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts",
-	"plugins/external-mcps/tests/src/lib/discover-gate.spec.ts",
-	"plugins/observability/src/lib/tools/obs-errors.tool.spec.ts",
 	"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts",
