@@ -67,14 +67,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for orphan adoption flow (handover attribution/history and return to normal state). Please re-run and resubmit with empirical proof.
 
 ### S4 — The hydrator keeps an orphan moving, bounded
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/git/orphan-rescue.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `packages/core/src/lib/contracts/constants/orphaned-work.constant.ts`, `packages/core/src/runtime/index.ts`
 - **Gate**: type
 - acceptance:
   - "While a candidate is orphaned the hydrator keeps bringing it forward, at most N attempts; after N failed attempts the owner is told, once, and no tip is lost (retire keeps it). Specs: attempts below N continue, the Nth failure reports, an adopted candidate is no longer touched as an orphan."
 - shipped-in: `f4b76a89b021`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in f4b76a89b021 is stale for this slice. `git log f4b76a89b021..develop -- <S4 files>` shows post-shipped changes in listed files (e.g. eb955b9f4, dad2196b0), so the hydrator/orphan-rescue acceptance must be re-validated on current develop with fresh evidence.
 
 ### S5 — work status shows branch staleness and integration risk
 - **Status**: review
