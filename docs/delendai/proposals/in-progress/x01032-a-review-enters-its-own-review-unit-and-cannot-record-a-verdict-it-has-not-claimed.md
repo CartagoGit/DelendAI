@@ -33,21 +33,21 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 
 ### S1 — work enter derives the review kind
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter for proposal batch, or for a proposal in review/, derives kind review and topic verdicts itself; a contradicting --kind is refused naming the right command (review next), and a spec covers each."
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and review_queue, called with no unit, enter or reuse the caller's review unit, so a reviewer never chooses a kind; a spec shows an agent with no unit ending in kind review."
 
 ### S3 — proposal_review refuses a verdict on an unclaimed proposal
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/tools/authoring/proposal-review.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
   - "proposal_review submit, approve or request_changes on a proposal the pack has not claimed is refused at once with the review_claim command to run; a spec shows x01004 refused when only x01016 is claimed, and the lint is unchanged."
@@ -59,9 +59,9 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - acceptance:
   - "The pull request of a review unit is titled and summarised from the proposals it judges, never implement batch, on first open and on republish; a spec covers a review unit whose branch names batch."
 
-### S5 — Claims and verdicts land on the review wip, and a diverged pack is reported
+### S5 — One review wip, a diverged pack reported, a sibling publication merged or retired
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/diverged-review-pack.service.ts`, `packages/core/src/lib/work-units/sibling-publications.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/diverged-review-pack.service.spec.ts`, `packages/core/tests/src/lib/work-units/sibling-publications.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and every proposal_review action commit on the reviewer's review wip, and work publish cuts the pack from that wip; work status reports a pack ref holding commits its wip lacks, with the merge to run; specs cover claim and verdict landing on the wip, a publish cutting the pack from it, and a diverged pack reported."
