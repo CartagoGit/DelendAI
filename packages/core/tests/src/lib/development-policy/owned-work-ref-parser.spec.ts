@@ -105,6 +105,8 @@ describe('a unit in its own namespace', () => {
 		expect(unitPolicy(policy, OLD_UNIT).branches.namespacePrefix).toBe(
 			'delendai',
 		);
+	});
+});
 
 describe('owned shapes at the edges', () => {
 	it('owns nothing without a template, and one shape for a template outside its prefix', () => {
