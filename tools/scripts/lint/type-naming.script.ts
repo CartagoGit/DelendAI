@@ -48,6 +48,7 @@ import { join } from 'node:path';
 
 import { walkTsFiles } from '@delendai/core/cli';
 
+import { changedFilesScope } from '../lib/changed-files-scope';
 import { repoRoot } from '../lib/monorepo-paths';
 import {
 	countBaselineGrowth,
@@ -214,7 +215,11 @@ const main = async (): Promise<number> => {
 
 	const baseline = loadBaseline(root);
 	const regressions: string[] = [];
+	// A file's count is a property of that file: for a change, only the
+	// changed files can have moved.
+	const scope = changedFilesScope(root);
 	for (const [rel, count] of Object.entries(current)) {
+		if (scope !== undefined && !scope.has(rel)) continue;
 		const allowed = baseline[rel] ?? 0;
 		if (count > allowed) {
 			regressions.push(

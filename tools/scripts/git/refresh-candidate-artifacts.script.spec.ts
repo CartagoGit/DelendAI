@@ -414,6 +414,14 @@ describe('pushRefusalReason', () => {
 		);
 		expect(pushRefusalReason('\n\n')).toBe('no output');
 	});
+
+	it('skips informational banner lines and reports the refusal itself', () => {
+		expect(
+			pushRefusalReason(
+				'[delendai] error-reporting is ON: bugs are reported.\n[delendai] Only delendai-internal errors.\nremote: ! [remote rejected] x -> x (hook declined)',
+			),
+		).toBe('remote: ! [remote rejected] x -> x (hook declined)');
+	});
 });
 
 describe('overlappingFiles', () => {

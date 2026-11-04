@@ -21,11 +21,21 @@
  * plan takes minutes; the forge still runs the plan, and is the authority.
  */
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { readFileSync, rmSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
-import { RUN_ALONE, staticChecksOf } from './ci-static-steps';
-import { jobMustRun } from './job-scope.script';
+import {
+	RUN_ALONE,
+	STATIC_CHECK_JOBS as STATIC_CHECK_FAMILIES,
+	staticChecksOf,
+} from './ci-static-steps';
+import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
+import {
+	explainJobs,
+	type IPlanInput,
+	jobMustRun,
+	planInputSince,
+} from './job-scope.script';
 
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
@@ -49,13 +59,63 @@ export const vitestArgsOf = (
 		: [...paths, `--shard=${job.shard}`];
 };
 
-/** The gate CI runs in a job of its own, beside the static checks. */
-export const PROVE_GATES: readonly (readonly string[])[] = [
-	['bun', 'run', 'typecheck'],
+/**
+ * The gate CI runs in a job of its own, beside the static checks: the
+ * typecheck of the workspaces the change reaches, as the pull request runs it.
+ */
+export const proveGatesOf = (base: string): readonly (readonly string[])[] => [
+	['bun', 'run', 'typecheck', '--', `--base=${base}`],
 ];
+
+/**
+ * Which check families run for this change and why the others do not, in the
+ * sentences the pull request's plan-scope job prints. Pure.
+ */
+export const familyPlanOf = (input: IPlanInput): readonly string[] => {
+	const families = new Set<string>(['typecheck', ...STATIC_CHECK_FAMILIES]);
+	return explainJobs(input)
+		.filter((each) => families.has(each.job))
+		.map(
+			(each) =>
+				`prove: ${each.runs ? 'run ' : 'skip'} ${each.job} — ${each.why}`,
+		);
+};
 
 /** What failed, said last: a caller keeps only the tail of the output. */
 const failed: string[] = [];
+
+/** What each step took, in the order it finished: the table printed last. */
+const timings: { label: string; seconds: number; ok: boolean }[] = [];
+
+/** Where the table of the last proofs is kept, one JSON line a proof. */
+const TIMINGS_LOG = '.cache/delendai/results/logs/prove-timings.jsonl';
+
+/** The step-timing table, slowest first, as plain lines. Pure. */
+export const timingTableOf = (
+	steps: readonly { label: string; seconds: number; ok: boolean }[],
+): readonly string[] => [
+	'prove: step timings (slowest first)',
+	...[...steps]
+		.sort((a, b) => b.seconds - a.seconds)
+		.map(
+			(each) =>
+				`prove:   ${String(each.seconds).padStart(5)}s  ${each.ok ? 'ok  ' : 'FAIL'}  ${each.label}`,
+		),
+];
+
+/** Print the table and keep it, so the next regression is visible. */
+const saveTimings = (base: string, total: number, proved: boolean): void => {
+	for (const line of timingTableOf(timings)) console.error(line);
+	try {
+		mkdirSync('.cache/delendai/results/logs', { recursive: true });
+		appendFileSync(
+			TIMINGS_LOG,
+			`${JSON.stringify({ at: new Date().toISOString(), base: base.slice(0, 9), totalSeconds: total, proved, steps: timings })}\n`,
+		);
+	} catch {
+		// the table was printed; a log that cannot be written proves nothing less
+	}
+};
 
 /** The lines that say why, printed last with it. */
 const causes: string[] = [];
@@ -85,10 +145,14 @@ const printCauses = (): void => {
 /** How many lines of a failed check's output the proof prints. */
 const FAILED_TAIL_LINES = 30;
 
-/** Run labelled bash scripts at once, at most `limit` together. */
+/**
+ * Run labelled bash scripts at once, at most `limit` together. Each is told
+ * the changed files, so the lints that judge files one by one judge those.
+ */
 const runTogether = async (
 	scripts: readonly (readonly [string, string])[],
 	limit: number,
+	changedFiles: readonly string[],
 ): Promise<boolean> => {
 	let ok = true;
 	const queue = [...scripts];
@@ -112,7 +176,16 @@ const runTogether = async (
 					['-euo', 'pipefail', '-c', script],
 					{
 						stdio: ['ignore', 'pipe', 'pipe'],
-						env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
+						env: {
+							...process.env,
+							VITEST_CHANGED_RUN: 'true',
+							...(changedFiles.length > 0
+								? {
+										[CHANGED_FILES_ENV]:
+											changedFiles.join('\n'),
+									}
+								: {}),
+						},
 					},
 				);
 				child.stdout.on('data', (chunk) => {
@@ -124,6 +197,11 @@ const runTogether = async (
 				child.on('close', (status) => done({ code: status, output }));
 			});
 			const passed = code === 0;
+			timings.push({
+				label,
+				seconds: Math.round((Date.now() - started) / 1000),
+				ok: passed,
+			});
 			ok = passed && ok;
 			if (!passed) {
 				failed.push(label);
@@ -157,37 +235,42 @@ const runTogether = async (
  * the typecheck and the static checks together, then those that must run
  * alone.
  */
-const runChecks = async (
-	base: string,
-	changed: readonly string[],
-): Promise<boolean> => {
+const runChecks = async (base: string): Promise<boolean> => {
+	// Deletions included, as plan-scope reads them: a deleted file can break
+	// what a family reads, and it widens the per-file lints to the repository.
+	const plan = planInputSince(base);
+	const { changed } = plan;
+	for (const line of familyPlanOf(plan)) console.log(line);
 	// What the forge would run for this change: a check it skips proves
 	// nothing here either.
 	const checks = staticChecksOf(
 		readFileSync('.github/workflows/ci.yml', 'utf8'),
 		base,
 		'develop',
-	).filter((check) => jobMustRun({ job: check.job, changed }));
+	).filter(
+		(check) =>
+			jobMustRun({ ...plan, job: check.job }) &&
+			(!isProposalOnly(changed) || PROPOSAL_CHECKS.has(check.job)),
+	);
 	const first = await runTogether(
 		[
-			...(jobMustRun({ job: 'typecheck', changed })
-				? PROVE_GATES
+			...(jobMustRun({ ...plan, job: 'typecheck' })
+				? proveGatesOf(base)
 				: []
-			).map(
-				(command) =>
-					[command.slice(1).join(' '), command.join(' ')] as const,
-			),
+			).map((command) => ['typecheck', command.join(' ')] as const),
 			...checks
 				.filter((check) => !RUN_ALONE.has(check.job))
 				.map((check) => [check.job, check.script] as const),
 		],
-		availableParallelism(),
+		Number(process.env.PROVE_PARALLEL) || availableParallelism(),
+		changed,
 	);
 	const alone = await runTogether(
 		checks
 			.filter((check) => RUN_ALONE.has(check.job))
 			.map((check) => [check.job, check.script] as const),
 		1,
+		changed,
 	);
 	return first && alone;
 };
@@ -203,6 +286,11 @@ const step = (label: string, command: readonly string[]): boolean => {
 	});
 	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;
+	timings.push({
+		label,
+		seconds: Math.round((Date.now() - started) / 1000),
+		ok,
+	});
 	if (!ok) {
 		failed.push(label);
 		causes.push(
@@ -214,6 +302,56 @@ const step = (label: string, command: readonly string[]): boolean => {
 	);
 	return ok;
 };
+
+/** A proposal file: prose the proposal gates read, that no code reads. */
+const PROPOSAL_FILE = /^docs\/delendai\/proposals\//u;
+
+/**
+ * Whether the change is proposals and nothing else. Measured 2026-11-03: a
+ * proposal-only change ran ten checks for 651 s, of which the proposal gates
+ * and the generators that read proposals took under a minute. The tool
+ * budgets, the preset and architecture lints, the token measurement and the
+ * quality gate read code and the catalog's code inputs, which such a change
+ * cannot move; the forge still runs every one of them.
+ */
+export const isProposalOnly = (changed: readonly string[]): boolean =>
+	changed.length > 0 && changed.every((path) => PROPOSAL_FILE.test(path));
+
+/** The static checks a proposal-only change can affect. */
+export const PROPOSAL_CHECKS: ReadonlySet<string> = new Set([
+	'lint-governance',
+	'lint-docs',
+	'lint-security',
+]);
+
+/** The generators that read proposals, each checked on its own (seconds). */
+const PROPOSAL_GENERATORS: readonly (readonly [string, readonly string[]])[] = [
+	[
+		'agent-catalog current',
+		[
+			'bun',
+			'tools/scripts/gen-all.script.ts',
+			'--check',
+			'--only',
+			'agent-catalog',
+		],
+	],
+	[
+		'docs-index current',
+		['bun', 'tools/scripts/docs/generate-docs-index.script.ts', '--check'],
+	],
+	[
+		'host-hints current',
+		[
+			'bun',
+			'tools/scripts/gen-all.script.ts',
+			'--check',
+			'--only',
+			'host-hints',
+		],
+	],
+	['roadmap drift', ['bun', 'tools/scripts/lint/roadmap-drift.script.ts']],
+];
 
 /** A file that can change what a tool tells the site. */
 const TOOL_SOURCE = /^(plugins|packages)\/.*\.tool\.ts$/u;
@@ -262,6 +400,11 @@ export const fastSteps = (
  */
 export const earlySteps = (
 	changed: readonly string[],
+): readonly (readonly [string, readonly string[]])[] =>
+	isProposalOnly(changed) ? PROPOSAL_GENERATORS : earlyStepsOfCode(changed);
+
+const earlyStepsOfCode = (
+	changed: readonly string[],
 ): readonly (readonly [string, readonly string[]])[] => [
 	[
 		'tool budgets',
@@ -299,13 +442,14 @@ const main = async (): Promise<number> => {
 			early = step(label, command) && early;
 		}
 		if (!early) {
+			saveTimings(base, Math.round((Date.now() - started) / 1000), false);
 			printCauses();
 			console.error(
 				`prove: NOT PROVED, failed: ${failed.join(', ')}; (early) in ${String(Math.round((Date.now() - started) / 1000))}s`,
 			);
 			return 1;
 		}
-		let ok = await runChecks(base, changed);
+		let ok = await runChecks(base);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
@@ -316,6 +460,7 @@ const main = async (): Promise<number> => {
 		)) {
 			ok = step(label, command) && ok;
 		}
+		saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 		printCauses();
 		console.error(
 			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
@@ -333,7 +478,7 @@ const main = async (): Promise<number> => {
 			{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
 		),
 	) as readonly IProveJob[];
-	let ok = await runChecks(base, changedSince(process.cwd(), base));
+	let ok = await runChecks(base);
 	for (const job of jobs) {
 		const args = vitestArgsOf(job, base);
 		if (args === undefined) continue;
@@ -346,6 +491,7 @@ const main = async (): Promise<number> => {
 				'--passWithNoTests',
 			]) && ok;
 	}
+	saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 	printCauses();
 	console.log(
 		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,

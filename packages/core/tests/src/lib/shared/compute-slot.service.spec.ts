@@ -4,8 +4,14 @@
  */
 // delendai:timing-is-the-subject — a slot holder must still be running when a second process asks for its turn.
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +19,10 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { COMPUTE_SLOT_ENV } from '@delendai/core/lib/contracts/constants/compute-slot.constant';
+import {
+	readComputeSlotLane,
+	urgentLogPath,
+} from '@delendai/core/lib/shared/compute-slot-lane.service';
 import {
 	computeSlotPath,
 	withComputeSlot,
@@ -353,5 +363,82 @@ describe('computeSlotPath', () => {
 		expect(computeSlotPath(dir)).toMatch(
 			/\.git[\\/]delendai[\\/]heavy-compute\.lock$/u,
 		);
+	});
+});
+
+describe('withComputeSlot urgent lane', () => {
+	const pause = (ms: number) =>
+		new Promise((resolve) => setTimeout(resolve, ms));
+
+	it('runs urgent callers ahead of waiting normals, in order, without interrupting the running proof', async () => {
+		const lockPath = lockIn();
+		const events: string[] = [];
+		const owners: string[] = [];
+		const notices: string[] = [];
+		let release: () => void = () => undefined;
+		const held = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const job = (name: string, urgent?: string, hold?: Promise<void>) =>
+			withComputeSlot({
+				lockPath,
+				label: `proof ${name}`,
+				waitNoticeMs: 20,
+				notify: (message) => notices.push(message),
+				...(urgent === undefined ? {} : { urgent }),
+				run: async () => {
+					events.push(`${name}:start`);
+					if (urgent !== undefined) {
+						owners.push(readFileSync(`${lockPath}.owner`, 'utf8'));
+					}
+					await hold;
+					events.push(`${name}:end`);
+				},
+			});
+		const all = [job('running', undefined, held)];
+		await pause(150);
+		all.push(job('n1'), job('n2'));
+		await pause(150);
+		all.push(job('u1', 'develop is red'), job('u2', 'owner asked'));
+		await pause(400);
+		const lane = await readComputeSlotLane(lockPath);
+		expect(lane.holder).toMatch(/proof running/u);
+		expect(lane.urgent.map((ticket) => ticket.reason)).toEqual([
+			'develop is red',
+			'owner asked',
+		]);
+		// The running proof is untouched while urgent callers wait.
+		expect(events).toEqual(['running:start']);
+		release();
+		await Promise.all(all);
+		expect(events.slice(0, 5)).toEqual([
+			'running:start',
+			'running:end',
+			'u1:start',
+			'u1:end',
+			'u2:start',
+		]);
+		expect(events.indexOf('n1:start')).toBeGreaterThan(
+			events.indexOf('u2:end'),
+		);
+		expect(events.indexOf('n2:start')).toBeGreaterThan(
+			events.indexOf('u2:end'),
+		);
+		expect(owners.map((owner) => JSON.parse(owner).urgent)).toEqual([
+			'develop is red',
+			'owner asked',
+		]);
+		const log = readFileSync(urgentLogPath(lockPath), 'utf8')
+			.trim()
+			.split('\n')
+			.map(
+				(line) => JSON.parse(line) as { reason: string; label: string },
+			);
+		expect(log.map((entry) => entry.reason)).toEqual([
+			'develop is red',
+			'owner asked',
+		]);
+		expect(notices.join('\n')).toMatch(/Urgent lane/u);
+		expect((await readComputeSlotLane(lockPath)).urgent).toEqual([]);
 	});
 });

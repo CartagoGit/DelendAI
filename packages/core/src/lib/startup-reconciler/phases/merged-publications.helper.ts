@@ -28,6 +28,32 @@ const unitAfter = (text: string, prefix: string): string | undefined => {
 };
 
 /**
+ * A predicate on work refs, from the subjects of the integration branch's
+ * merges: true when one names the publication of that ref's unit. Pure,
+ * so the boot (through its seam) and the end of finished units (through
+ * plain git) judge a landing the same way, on every forge.
+ */
+export const mergedPublicationPredicate = (
+	subjects: readonly string[],
+	branches: {
+		readonly workRefPrefix: string;
+		readonly publicationRefPrefix: string;
+	},
+): ((wipRef: string) => boolean) => {
+	const publication = bare(branches.publicationRefPrefix);
+	const merged = new Set(
+		subjects
+			.map((subject) => unitAfter(subject, publication))
+			.filter((unit): unit is string => unit !== undefined),
+	);
+	const work = bare(branches.workRefPrefix);
+	return (wipRef) => {
+		const unit = unitAfter(bare(wipRef), work);
+		return unit !== undefined && merged.has(unit);
+	};
+};
+
+/**
  * A predicate on work refs: true when a merge of the integration branch
  * names the publication of that ref's unit. Never true without a seam
  * that can read the merges.
@@ -39,16 +65,8 @@ export const publicationMergedFor = async (
 		readonly workRefPrefix: string;
 		readonly publicationRefPrefix: string;
 	},
-): Promise<(wipRef: string) => boolean> => {
-	const publication = bare(branches.publicationRefPrefix);
-	const merged = new Set(
-		((await git.mergeSubjects?.(branches.integration)) ?? [])
-			.map((branch) => unitAfter(branch, publication))
-			.filter((unit): unit is string => unit !== undefined),
+): Promise<(wipRef: string) => boolean> =>
+	mergedPublicationPredicate(
+		(await git.mergeSubjects?.(branches.integration)) ?? [],
+		branches,
 	);
-	const work = bare(branches.workRefPrefix);
-	return (wipRef) => {
-		const unit = unitAfter(bare(wipRef), work);
-		return unit !== undefined && merged.has(unit);
-	};
-};

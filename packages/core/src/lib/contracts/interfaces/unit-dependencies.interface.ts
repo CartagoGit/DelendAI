@@ -5,6 +5,8 @@
 export type IUnitDependencies =
 	| { readonly status: 'present' }
 	| { readonly status: 'installed'; readonly command: string }
+	/** The worktree's modules are links to the shared checkout's (same lockfile). */
+	| { readonly status: 'linked'; readonly from: string }
 	| { readonly status: 'skipped'; readonly reason: string }
 	| {
 			readonly status: 'failed';
