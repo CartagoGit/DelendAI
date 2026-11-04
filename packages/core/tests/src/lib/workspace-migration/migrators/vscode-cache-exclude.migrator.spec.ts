@@ -13,7 +13,11 @@ import {
 	cacheExcludeGlob,
 	mergeCacheExcludes,
 } from '@delendai/core/lib/workspace-migration/migrators/vscode-cache-exclude';
-import { createVscodeCacheExcludeMigrator } from '@delendai/core/lib/workspace-migration/migrators/vscode-cache-exclude.migrator';
+import { ensureWorkspaceMigrated } from '@delendai/core/lib/workspace-migration/legacy-migration.service';
+import {
+	createVscodeCacheExcludeMigrator,
+	pendingCacheExclude,
+} from '@delendai/core/lib/workspace-migration/migrators/vscode-cache-exclude.migrator';
 
 let root = '';
 beforeEach(async () => {
@@ -78,5 +82,58 @@ describe('the migrator', () => {
 		await writeFile(settingsPath(), '{}\n', 'utf8');
 		await migrator.apply(ctx(true));
 		expect(await readFile(settingsPath(), 'utf8')).toBe('{}\n');
+	});
+});
+
+describe('a start only reports; migrate applies', () => {
+	const migrations = [createVscodeCacheExcludeMigrator()];
+	const journal = { read: async () => [], record: async () => undefined };
+	const adopt = () =>
+		writeFile(join(root, 'delendai.config.json'), '{}\n', 'utf8');
+
+	it('leaves the settings file as it is on a start and names the command', async () => {
+		await adopt();
+		await writeFile(settingsPath(), '{}\n', 'utf8');
+		const result = await ensureWorkspaceMigrated({
+			migrations,
+			journal,
+			workspaceRoot: root,
+			transitions: [],
+		});
+		expect(result.outcomes).toEqual([{ status: 'not-needed' }]);
+		expect(await readFile(settingsPath(), 'utf8')).toBe('{}\n');
+		expect(await pendingCacheExclude(root)).toContain('migrate run');
+	});
+
+	it('writes it when a person asked, and then has nothing to report', async () => {
+		await adopt();
+		await writeFile(settingsPath(), '{}\n', 'utf8');
+		await ensureWorkspaceMigrated({
+			migrations,
+			journal,
+			workspaceRoot: root,
+			transitions: [],
+			explicit: true,
+		});
+		expect(await readFile(settingsPath(), 'utf8')).toContain(
+			'files.watcherExclude',
+		);
+		expect(await pendingCacheExclude(root)).toBeUndefined();
+	});
+
+	it('reports nothing in a project that never adopted delendai', async () => {
+		await writeFile(settingsPath(), '{}\n', 'utf8');
+		expect(await pendingCacheExclude(root)).toBeUndefined();
+	});
+
+	it('never touches the settings of a linked worktree', async () => {
+		await adopt();
+		await writeFile(join(root, '.git'), 'gitdir: /elsewhere\n', 'utf8');
+		await writeFile(settingsPath(), '{}\n', 'utf8');
+		const migrator = createVscodeCacheExcludeMigrator();
+		expect(await migrator.detect(ctx())).toBe(false);
+		await migrator.apply(ctx());
+		expect(await readFile(settingsPath(), 'utf8')).toBe('{}\n');
+		expect(await pendingCacheExclude(root)).toBeUndefined();
 	});
 });

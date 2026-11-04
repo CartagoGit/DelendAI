@@ -15,6 +15,11 @@ export interface IMigrationContext {
 	readonly workspaceRoot: string;
 	/** True for a rehearsal: detect and plan, change nothing. */
 	readonly dryRun: boolean;
+	/**
+	 * True when a person asked for the migration (`migrate`, `init`), false
+	 * on a start. A migration marked `explicitOnly` runs only when it is.
+	 */
+	readonly explicit?: boolean;
 }
 
 export interface IMigrationPlanStep {
@@ -47,6 +52,12 @@ export interface IMigration {
 	 * remedy the tool is supposed to apply and cannot.
 	 */
 	readonly convergent?: boolean;
+	/**
+	 * Whether this migration edits a file the project tracks for the
+	 * person's editor, so a start must not apply it: it only reports it.
+	 * It runs when `ctx.explicit` is true.
+	 */
+	readonly explicitOnly?: boolean;
 	/**
 	 * Cheap probe: does this workspace carry the old identity at all?
 	 *

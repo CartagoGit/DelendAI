@@ -93,6 +93,11 @@ export const runPendingMigrations = async (input: {
 		// the tool that would remove it has already been marked done.
 		if (!migration.convergent && applied.has(migration.id)) continue;
 
+		// A start reports this one (see `reportPendingCacheExclude`); only
+		// a person's `migrate` applies it.
+		if (migration.explicitOnly === true && input.ctx.explicit !== true)
+			continue;
+
 		// Detect BEFORE plan: the whole point of the cheap probe is that a
 		// workspace with nothing to migrate never reaches the expensive
 		// half.
@@ -225,6 +230,8 @@ export const ensureWorkspaceMigrated = async (input: {
 	 * status` report through it.
 	 */
 	readonly dryRun?: boolean;
+	/** A person asked (`migrate`), not a start: `explicitOnly` migrations run. */
+	readonly explicit?: boolean;
 }): Promise<IMigrationRunResult> => {
 	if (input.dryRun === true) {
 		if (!(await hasAdopted(input.workspaceRoot))) {
@@ -258,7 +265,11 @@ export const ensureWorkspaceMigrated = async (input: {
 	const identity = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,
-		ctx: { workspaceRoot: input.workspaceRoot, dryRun: false },
+		ctx: {
+			workspaceRoot: input.workspaceRoot,
+			dryRun: false,
+			...(input.explicit === true ? { explicit: true } : {}),
+		},
 	});
 	// The cache layout runs after the identity migrators, not before: they
 	// are what move an older build's cache directory to its current name,
