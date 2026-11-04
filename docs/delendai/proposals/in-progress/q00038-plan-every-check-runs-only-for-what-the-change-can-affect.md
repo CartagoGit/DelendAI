@@ -106,6 +106,15 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - acceptance:
   - "verify:external-install runs in the pack-smoke job, whose scope now also names its script, the publish staging and init's code; verify-runtime no longer rebuilds and repacks for it."
 
+### S10 — The repository-wide lints cost only what the change changes
+- **Status**: pending
+- **Files**: `package.json`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lib/changed-files-scope.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "For a one-file core change, each of lint-security, lint-presets, lint-docs, lint-governance, generated-artifacts-check, tokens-budget-real, quality-gate and the generated-files step of the local proof takes under 10 s, and no check they ran before is dropped."
+  - "A lint that judges files one by one judges the changed files (`DELENDAI_CHANGED_FILES`); a lint whose verdict depends on repository-wide inputs keeps its last verdict under a hash of exactly what it reads, and reruns when that hash changes."
+  - "CI and the local proof run the same code."
+
 ## acceptance
 
 - A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads.
