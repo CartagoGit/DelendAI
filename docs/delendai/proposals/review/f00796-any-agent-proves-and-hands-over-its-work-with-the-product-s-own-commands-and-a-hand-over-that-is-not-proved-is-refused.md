@@ -60,14 +60,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "On the pull-request route with `requiresLocalCertification`, `work publish` runs the proof before pushing; so does the publication that `proposal_transition to=review` makes. The proof is read from the integration head: its `prove` script, else its declared gate. It runs in the unit's worktree on its committed tip, refused when the tree has uncommitted edits, or in a temporary worktree when the unit has none. Publishing refuses to push when a step fails and names the step, its output and the fix. A project that declares no proof publishes, with the declaration to add. The workflow sentence every agent receives says so (work-unit-publish-proof.spec.ts, work-unit-proof.service.spec.ts, work-unit-land.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S4 — A proved tree is not proved twice
 - **Status**: review
