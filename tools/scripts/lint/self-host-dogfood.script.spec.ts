@@ -101,13 +101,12 @@ describe('self-host-dogfood', () => {
 		await writeFile(join(root, '.mcp.json'), '{');
 		await rm(join(root, '.vscode/mcp.json'));
 		try {
+			// `.vscode/mcp.json` is absent on purpose (VS Code loads
+			// `.mcp.json`); only the broken file is a finding.
 			const findings = await detectSelfHostDogfoodDrift(root);
-			expect(findings).toHaveLength(2);
-			expect(
-				findings.every((finding) =>
-					finding.detail.includes('valid JSON'),
-				),
-			).toBe(true);
+			expect(findings).toHaveLength(1);
+			expect(findings[0]?.file).toBe('.mcp.json');
+			expect(findings[0]?.detail).toContain('valid JSON');
 		} finally {
 			await rm(root, { recursive: true, force: true });
 		}
