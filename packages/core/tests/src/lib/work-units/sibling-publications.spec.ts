@@ -10,7 +10,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { publishWorkUnit } from '@delendai/core/lib/work-units/work-publish.service';
-import { siblingRefs } from '@delendai/core/lib/work-units/sibling-publications.service';
+import {
+	judgeSiblings,
+	lackingDetail,
+	retireSibling,
+	siblingRefs,
+} from '@delendai/core/lib/work-units/sibling-publications.service';
 
 const roots: string[] = [];
 const git = (cwd: string, ...args: string[]): string =>
@@ -120,5 +125,93 @@ describe('publishing a unit with another open publication', () => {
 				'delendai/retired/gpt-5.3-codex/review/batch-all-g1/verdicts',
 			),
 		).toBe(pack);
+	});
+});
+
+describe('retireSibling', () => {
+	const ok = { ok: true, out: '' };
+	const BY = 'delendai/pr/a/implement/batch-all-g1/work';
+	const OLD = 'delendai/pr/a/review/batch-all-g1/verdicts';
+
+	it('keeps the tip, closes the pull request with a comment, then removes the ref', () => {
+		const calls: string[][] = [];
+		const gh = (args: readonly string[]): string | undefined => {
+			calls.push([...args]);
+			return args.includes('--jq') && args[1]?.includes('pulls?head=')
+				? '12'
+				: 'x';
+		};
+		const steps = retireSibling({
+			git: () => ok,
+			gh,
+			remote: 'origin',
+			sibling: OLD,
+			by: BY,
+		});
+		expect(steps[0]?.ok).toBe(true);
+		expect(steps[0]?.detail).toContain('delendai/retired/a/review');
+		expect(steps[0]?.detail).toContain('pull request closed');
+		expect(calls.some((call) => call.includes('state=closed'))).toBe(true);
+		expect(
+			calls.some((call) => call.join(' ').includes('issues/12/comments')),
+		).toBe(true);
+	});
+
+	it('leaves the publication open when its tip cannot be kept', () => {
+		const steps = retireSibling({
+			git: () => ({ ok: false, out: 'no' }),
+			gh: () => undefined,
+			remote: 'origin',
+			sibling: OLD,
+			by: BY,
+		});
+		expect(steps[0]).toMatchObject({ name: 'retire-sibling', ok: false });
+		expect(steps[0]?.detail).toContain('left open');
+	});
+
+	it('reports a ref that stays, and works without a forge', () => {
+		const steps = retireSibling({
+			git: (args) =>
+				args[0] === 'push' ? { ok: false, out: 'denied' } : ok,
+			gh: () => undefined,
+			remote: 'origin',
+			sibling: OLD,
+			by: BY,
+		});
+		expect(steps[0]?.ok).toBe(false);
+		expect(steps[0]?.detail).toContain('was not removed');
+	});
+});
+
+describe('judgeSiblings and lackingDetail', () => {
+	it('splits siblings into those lacking and those contained, and tolerates a failed listing', () => {
+		const git = (args: readonly string[]) =>
+			args[0] === 'for-each-ref'
+				? {
+						ok: true,
+						out: [
+							'origin/delendai/pr/a/review/batch-all-g1/one',
+							'origin/delendai/pr/a/review/batch-all-g1/two',
+							'origin/delendai/pr/a/implement/batch-all-g1/work',
+						].join('\n'),
+					}
+				: { ok: args.some((arg) => arg.endsWith('/one')), out: '' };
+		expect(
+			judgeSiblings(
+				git,
+				'origin',
+				'refs/heads/delendai/pr/a/implement/batch-all-g1/work',
+				'tip',
+			),
+		).toEqual({
+			contained: ['delendai/pr/a/review/batch-all-g1/one'],
+			lacking: ['delendai/pr/a/review/batch-all-g1/two'],
+		});
+		expect(
+			judgeSiblings(() => ({ ok: false, out: '' }), 'origin', 'x', 't'),
+		).toEqual({ lacking: [], contained: [] });
+		expect(lackingDetail(['p/q'], 'refs/heads/w', 'origin')).toContain(
+			'git merge origin/p/q',
+		);
 	});
 });
