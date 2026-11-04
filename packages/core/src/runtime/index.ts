@@ -55,6 +55,21 @@ export { createFileArtifactStore } from '../lib/context-store/file-artifact-stor
 export { renderDelegationPrompt } from '../lib/subagents/delegation-prompt.helper';
 export { agentToolProfile } from '../lib/agents/agent-tool-profiles';
 export { writePublicationDispositions } from '../lib/work-units/publication-dispositions.service';
+// Work whose author is gone: judged, counted and kept moving (x01024).
+export {
+	judgeAuthor,
+	planOrphanRescues,
+	publicationPresence,
+	readOrphanRescues,
+	writeOrphanRescues,
+} from '../lib/work-units/orphaned-work.service';
+export { recordOwnerOutOfQuota } from '../lib/work-units/unit-lease.service';
+export { ORPHAN_RESCUE_ATTEMPTS } from '../lib/contracts/constants/orphaned-work.constant';
+export type {
+	IAuthorPresence,
+	IOrphanReason,
+	IOrphanRescueStep,
+} from '../lib/contracts/interfaces/orphaned-work.interface';
 export type { ISafeWorkspaceReaderOptions } from '../lib/filesystem/safe-workspace-reader';
 export { WorkspaceContainmentError } from '../lib/filesystem/safe-workspace-reader.errors';
 export type {
@@ -116,3 +131,4 @@ export {
 	backgroundWorkers,
 	lowPriority,
 } from '../lib/platform/background-load.service';
+export { currentHostMaintenance } from '../lib/development-policy/maintenance-lease.service';

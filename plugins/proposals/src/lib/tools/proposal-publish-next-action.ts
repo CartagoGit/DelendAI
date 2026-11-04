@@ -73,7 +73,7 @@ export const proposalPublishNextAction = (input: {
 		const integration = input.policy.branches.integration;
 		return [
 			leftUntracked,
-			`Put it on a unit of work from the checkout that holds it: \`delendai work checkpoint --proposal=${id} --slice=all --kind=create --paths=${path} --message="docs(proposals): add ${id}"\`. Then land the unit on ${integration}: \`delendai work publish --proposal=${id} --slice=all --kind=create\`.`,
+			`Put it on a unit of work: \`delendai work enter --proposal=${id} --slice=all --kind=create\`, then write and commit ${path} in the worktree it prints. Then land the unit on ${integration}: \`delendai work publish --proposal=${id} --slice=all --kind=create\`.`,
 			...steps
 				.filter((step) => step.derivedFrom === 'integration.strategy')
 				.map((step) => step.instruction),

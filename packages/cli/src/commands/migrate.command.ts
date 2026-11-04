@@ -90,6 +90,7 @@ const defaultDeps = (): Required<IMigrateCommandDeps> => {
 				journal,
 				workspaceRoot,
 				dryRun: true,
+				explicit: true,
 			}),
 		runTransaction: async (workspaceRoot) =>
 			runMigrationTransaction(

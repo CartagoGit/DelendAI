@@ -187,9 +187,9 @@ const dict: LangDict = {
 			intro: 'Không cần tích hợp editor: chạy host server từ terminal và trỏ bất kỳ client MCP nào tới transport stdio của nó.',
 			steps: [
 				'Cài đặt: `bun add @delendai/core` (hoặc `npm install @delendai/core`).',
-				'Chạy: `bunx delendai --preset=standard` (hoặc `npx delendai --preset=standard`).',
+				'Chạy: `bunx delendai --preset=solo` (hoặc `npx delendai --preset=solo`).',
 				'Xác minh: tiến trình in ra danh sách plugin đã tải và chờ trên stdio — Ctrl+C để dừng.',
-				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|standard|swarm|full` (xem Cài đặt để có danh sách flag đầy đủ).',
+				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` (xem Cài đặt để có danh sách flag đầy đủ).',
 				'Gọi `delendai_overview { compact: true }` trước tiên — nó cho bạn biết phải làm gì tiếp theo.',
 			],
 		},

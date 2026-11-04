@@ -27,8 +27,10 @@ import {
 	hashFileAt,
 	persistBackups,
 	readPersistedBackups,
+	recordWrittenSince,
 	rollback as runRollback,
 	type IBackup,
+	type IWrittenRecord,
 	type IRollbackReport,
 } from './rollback';
 
@@ -113,6 +115,8 @@ export const createDefaultPhases = (input: {
 	) => Promise<void>;
 }): ITransactionPhases => {
 	let discovered: readonly IMigration[] = [];
+	let written: IWrittenRecord | undefined;
+	let backedUp: readonly IBackup[] = [];
 	const fallbackCommit = input.commit;
 	return {
 		discover: async (ctx) => {
@@ -155,13 +159,20 @@ export const createDefaultPhases = (input: {
 			}
 			return all;
 		},
-		backup: async (_steps, ctx) => createWorkspaceBackup(ctx.workspaceRoot),
+		backup: async (_steps, ctx) => {
+			backedUp = await createWorkspaceBackup(ctx.workspaceRoot);
+			return backedUp;
+		},
 		apply: async (_steps, ctx) => {
-			for (const migration of discovered) {
-				await migration.apply({
-					workspaceRoot: ctx.workspaceRoot,
-					dryRun: false,
-				});
+			try {
+				for (const migration of discovered) {
+					await migration.apply({
+						workspaceRoot: ctx.workspaceRoot,
+						dryRun: false,
+					});
+				}
+			} finally {
+				written = await recordWrittenSince(ctx.workspaceRoot, backedUp);
 			}
 		},
 		validate: async (): Promise<IValidationReport> => ({
@@ -181,7 +192,7 @@ export const createDefaultPhases = (input: {
 			await fallbackCommit?.(backups, manifest, ctx);
 		},
 		rollback: async (backups, ctx, reason) =>
-			runRollback(backups, ctx, reason),
+			runRollback(backups, ctx, reason, undefined, written),
 	};
 };
 
@@ -203,6 +214,7 @@ export const createWorkspaceRoutePhases = (input: {
 			journal: input.journal,
 			workspaceRoot,
 			dryRun,
+			explicit: true,
 		});
 	const steps = async (
 		workspaceRoot: string,
@@ -219,6 +231,8 @@ export const createWorkspaceRoutePhases = (input: {
 	};
 	const base = createDefaultPhases({ migrations: input.migrations });
 	let discovered: readonly IMigration[] = [];
+	let written: IWrittenRecord | undefined;
+	let backedUp: readonly IBackup[] = [];
 	return {
 		...base,
 		discover: async (ctx) => {
@@ -249,14 +263,24 @@ export const createWorkspaceRoutePhases = (input: {
 				kind: step.kind,
 				detail: step.detail,
 			})),
+		backup: async (steps, ctx) => {
+			backedUp = await base.backup(steps, ctx);
+			return backedUp;
+		},
 		apply: async (_steps, ctx) => {
-			for (const migration of discovered) {
-				await migration.apply({
-					workspaceRoot: ctx.workspaceRoot,
-					dryRun: false,
-				});
+			try {
+				for (const migration of discovered) {
+					await migration.apply({
+						workspaceRoot: ctx.workspaceRoot,
+						dryRun: false,
+					});
+				}
+			} finally {
+				written = await recordWrittenSince(ctx.workspaceRoot, backedUp);
 			}
 		},
+		rollback: async (backups, ctx, reason) =>
+			runRollback(backups, ctx, reason, undefined, written),
 	};
 };
 

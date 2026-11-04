@@ -35,6 +35,7 @@ import type {
 	ITestsForChangeToolArgs,
 	TImpactAnalysisRisk,
 } from '../contracts/interfaces/impact-analysis.interface';
+import { readTestScope } from './test-scope.service';
 
 const TEST_DISCOVERY_QUERY = '\\b(?:describe|it|test)\\b';
 
@@ -171,6 +172,45 @@ const collectMatchedTests = async (
 	return [...matches];
 };
 
+const testStem = (filePath: string): string =>
+	basename(filePath).replace(/\.(?:spec|test)\.[cm]?[jt]sx?$/u, '');
+
+/** Whether `source` imports a module named `moduleStem` by a path. */
+const importsModule = (source: string, moduleStem: string): boolean =>
+	new RegExp(
+		`(?:from|import)\\s*\\(?\\s*['"][^'"]*/${moduleStem.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?:\\.[cm]?[jt]sx?)?['"]`,
+		'u',
+	).test(source);
+
+/**
+ * The tests a change touched: a changed test, the test that mirrors a changed
+ * source and a test that imports a changed source directly. Nothing reached
+ * through another module.
+ */
+const collectTouchedTests = async (
+	workspaceRootAbs: string,
+	reader: SafeWorkspaceReader,
+	anchorFiles: readonly string[],
+): Promise<string[]> => {
+	const touched = new Set(anchorFiles.filter(isTestFile));
+	const sources = anchorFiles.filter((anchor) => !isTestFile(anchor));
+	// A mirror spec need not mention the module's name: find it by its own.
+	const known =
+		sources.length > 0 ? await collectAllKnownTests(workspaceRootAbs) : [];
+	for (const file of sources) {
+		const name = stem(file);
+		for (const test of known)
+			if (testStem(test) === name) touched.add(test);
+		for (const hit of await collectSearchHits(workspaceRootAbs, name)) {
+			if (!isTestFile(hit) || touched.has(hit)) continue;
+			const source = await readSource(reader, hit);
+			if (source !== undefined && importsModule(source, name))
+				touched.add(hit);
+		}
+	}
+	return [...touched].slice(0, MAX_IMPACT_ANALYSIS_RECOMMENDED_TESTS);
+};
+
 const collectAllKnownTests = async (
 	workspaceRootAbs: string,
 ): Promise<string[]> => {
@@ -267,10 +307,23 @@ export const computeImpactAnalysis = async (
 		anchorFiles,
 		changedSymbols,
 	);
-	const recommendedTests = await collectMatchedTests(
-		options.workspaceRootAbs,
-		candidateQueries(anchorFiles, changedSymbols),
-	);
+	const scope = await readTestScope(options.workspaceRootAbs);
+	const recommendedTests =
+		scope === 'touched'
+			? await collectTouchedTests(
+					options.workspaceRootAbs,
+					reader,
+					anchorFiles,
+				)
+			: scope === 'all'
+				? (await collectAllKnownTests(options.workspaceRootAbs)).slice(
+						0,
+						MAX_IMPACT_ANALYSIS_RECOMMENDED_TESTS,
+					)
+				: await collectMatchedTests(
+						options.workspaceRootAbs,
+						candidateQueries(anchorFiles, changedSymbols),
+					);
 	const affectedPackages = unique(
 		[...anchorFiles, ...dependents, ...recommendedTests]
 			.map((file) => toPackageScope(file))

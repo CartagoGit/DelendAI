@@ -482,3 +482,16 @@ describe('LSP — sub-interfaces compose into IDelendaiConfigFile', async () => 
 		expect(consumer(onlyPaths)).toBe('/a|/b');
 	});
 });
+
+describe('config-file-schema testing.scope', () => {
+	it('accepts the three scopes and refuses another', () => {
+		for (const scope of ['touched', 'reach', 'all'])
+			expect(
+				CONFIG_FILE_SCHEMA.safeParse({ testing: { scope } }).success,
+			).toBe(true);
+		expect(
+			CONFIG_FILE_SCHEMA.safeParse({ testing: { scope: 'some' } })
+				.success,
+		).toBe(false);
+	});
+});

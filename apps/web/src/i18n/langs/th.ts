@@ -181,9 +181,9 @@ const dict: LangDict = {
 			intro: 'ไม่ต้องผนวกกับตัวแก้ไข: รัน host server จากเทอร์มินัลแล้วชี้ไคลเอนต์ MCP ใดก็ได้ไปที่ stdio transport ของมัน',
 			steps: [
 				'ติดตั้ง: `bun add @delendai/core` (หรือ `npm install @delendai/core`)',
-				'รัน: `bunx delendai --preset=standard` (หรือ `npx delendai --preset=standard`)',
+				'รัน: `bunx delendai --preset=solo` (หรือ `npx delendai --preset=solo`)',
 				'ตรวจสอบ: โปรเซสจะพิมพ์รายการปลั๊กอินที่โหลดและรอบน stdio — กด Ctrl+C เพื่อหยุด',
-				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm|full` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
+				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
 				'เรียก `delendai_overview { compact: true }` ก่อน — มันจะบอกว่าต้องทำอะไรต่อไป',
 			],
 		},

@@ -111,3 +111,20 @@ describe('parseDockerfile', () => {
 		]);
 	});
 });
+
+describe('parseDockerfile on pathological lines (js/polynomial-redos)', () => {
+	it('stays linear on a long run of spaces after the command', () => {
+		const start = performance.now();
+		const parsed = parseDockerfile(`RUN${' '.repeat(100_000)}\u0000`);
+		expect(performance.now() - start).toBeLessThan(500);
+		expect(parsed).toHaveLength(1);
+		expect(parsed[0]?.command).toBe('RUN');
+		expect(parseDockerfile(`RUN${' '.repeat(100_000)}`).length).toBe(0);
+	});
+
+	it('still splits command and arguments', () => {
+		const [first] = parseDockerfile('run   echo hi  ');
+		expect(first?.command).toBe('RUN');
+		expect(first?.args).toBe('echo hi');
+	});
+});

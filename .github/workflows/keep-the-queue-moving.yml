@@ -86,6 +86,7 @@ jobs:
                   fetch-depth: '0'
 
             - name: Report candidates that are behind, and the armed ones that are red
+              id: queue
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun tools/scripts/forge/keep-the-queue-moving.script.ts
@@ -181,6 +182,7 @@ jobs:
             # to end in `|| true`, and a run that left twenty branches behind
             # was green.
             - name: Fail while something hangs on the forge
+              id: doctor
               if: always()
               run: bun run work:doctor -- --forge
 
@@ -190,7 +192,34 @@ jobs:
             # The release gate counted them only at a promotion; this counts
             # them every hour and after every merge.
             - name: Fail while a code scanning alert is open on the integration branch
+              id: alerts
               if: always()
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun run forge:promotion-alerts -- --branch=develop
+
+            # A red run says which of three reasons it is, so nobody opens
+            # three logs to find out (x01021). Each check above still fails
+            # the job by itself; this only names them.
+            - name: Say which of the three reasons the run is red
+              if: always()
+              env:
+                  QUEUE_STATE: ${{ steps.queue.outputs.state }}
+                  QUEUE_OUTCOME: ${{ steps.queue.outcome }}
+                  DOCTOR_OUTCOME: ${{ steps.doctor.outcome }}
+                  ALERTS_OUTCOME: ${{ steps.alerts.outcome }}
+              run: |
+                  verdict() { if [ "$1" = "true" ]; then echo FAIL; else echo pass; fi; }
+                  internal=false
+                  if [ "$QUEUE_STATE" = "internal-error" ] || { [ "$QUEUE_OUTCOME" = "failure" ] && [ -z "$QUEUE_STATE" ]; }; then internal=true; fi
+                  blocked=false
+                  if [ "$QUEUE_STATE" = "queue-blocked" ] || [ "$DOCTOR_OUTCOME" = "failure" ]; then blocked=true; fi
+                  alert=false
+                  if [ "$ALERTS_OUTCOME" = "failure" ]; then alert=true; fi
+                  {
+                    echo "### Why this run is red"
+                    echo
+                    echo "- internal error: $(verdict $internal)"
+                    echo "- queue blocked: $(verdict $blocked)"
+                    echo "- open security alert: $(verdict $alert)"
+                  } >> "$GITHUB_STEP_SUMMARY"

@@ -34,6 +34,8 @@ import { relative, sep } from 'node:path';
 
 import { walkTsFiles } from '@delendai/core/cli';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
+
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
 import {
 	refuseBaselineGrowth,
@@ -243,9 +245,18 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	if (baselineFlag) {
 		const path = baselineFlag.slice('--baseline='.length);
 		const baseline = await loadBaseline(path);
-		const newFindings = filterNewFindings(findings, baseline);
+		// A file's role is a property of its own path: for a change, only
+		// the changed files can be new findings.
+		const judged = filesToJudge(
+			filterNewFindings(findings, baseline),
+			(finding) => finding.relPath,
+			changedFilesScope(rootDir),
+		);
+		const newFindings = judged.files;
 		if (newFindings.length === 0) {
-			const shrank = findings.length < baseline.size;
+			const shrank =
+				judged.over === 'the repository' &&
+				findings.length < baseline.size;
 			process.stderr.write(
 				shrank
 					? `✓ file-conventions: no new unmatched files; debt shrank ${baseline.size} → ${findings.length}. Run --write-baseline to lock in the win.\n`

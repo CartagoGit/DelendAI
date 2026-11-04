@@ -97,12 +97,18 @@ type TurnResult =
  * A newer tip of the unit supersedes an older one that has not started: the
  * older one gives its turn up and returns the newer tip's answer.
  */
+/** The newest tip each unit asked for in this process; one entry per unit. */
+const localCurrent = new Map<string, string>();
+
 const withUnitTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	unit: string,
 	tip: string,
 ): Promise<T> => {
 	const dir = `${request.lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
+	// On record at once in this process, so a newer tip is known before any
+	// older tip can take the slot; the file tells other processes.
+	localCurrent.set(dir, tip);
 	await mkdir(dir, { recursive: true });
 	const currentPath = join(dir, 'current');
 	const claimPath = (name: string): string => join(dir, `${name}.claim`);
@@ -110,6 +116,9 @@ const withUnitTurn = async <T>(
 	const resultPath = (name: string, id: string): string =>
 		join(dir, `${name}.${id}.result`);
 	await writeFile(currentPath, tip);
+	const currentTip = async (): Promise<string> =>
+		localCurrent.get(dir) ??
+		(await readFile(currentPath, 'utf8').catch(() => tip));
 
 	const follow = async (
 		name: string,
@@ -135,14 +144,21 @@ const withUnitTurn = async <T>(
 	};
 
 	const joinOnly = async (name: string): Promise<T | typeof SUPERSEDED> => {
-		const claim =
-			(await readSlotJson<ITurnClaim>(claimPath(name))) ??
-			(await readSlotJson<ITurnClaim>(donePath(name)));
+		let claim: ITurnClaim | undefined;
+		// A newer turn of this process is on record before it has written
+		// its claim: wait for the claim instead of proving the old tip.
+		for (;;) {
+			claim =
+				(await readSlotJson<ITurnClaim>(claimPath(name))) ??
+				(await readSlotJson<ITurnClaim>(donePath(name)));
+			if (claim !== undefined || localCurrent.get(dir) !== name) break;
+			await pauseSlot(JOIN_POLL_MS);
+		}
 		if (claim === undefined) return SUPERSEDED;
 		const { result } = await follow(name, claim);
 		if (result === undefined) return SUPERSEDED;
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => name);
+			const newer = await currentTip();
 			return newer === name ? SUPERSEDED : joinOnly(newer);
 		}
 		return settle(result);
@@ -154,14 +170,13 @@ const withUnitTurn = async <T>(
 			const { result } = await follow(tip, claim);
 			if (result === undefined) continue;
 			if ('superseded' in result) {
-				const newer = await readFile(currentPath, 'utf8').catch(
-					() => tip,
-				);
+				const newer = await currentTip();
 				const joined =
 					newer === tip ? SUPERSEDED : await joinOnly(newer);
 				if (joined !== SUPERSEDED) return joined;
 				// The newer turn vanished: prove this tip after all.
 				await writeFile(currentPath, tip);
+				await pauseSlot(JOIN_POLL_MS);
 				continue;
 			}
 			return settle(result);
@@ -180,10 +195,7 @@ const withUnitTurn = async <T>(
 			const value = await withComputeSlotTurn<T | typeof SUPERSEDED>(
 				request,
 				async () =>
-					(await readFile(currentPath, 'utf8').catch(() => tip)) ===
-					tip
-						? request.run()
-						: SUPERSEDED,
+					(await currentTip()) === tip ? request.run() : SUPERSEDED,
 			);
 			result = value === SUPERSEDED ? { superseded: true } : { value };
 		} catch (error) {
@@ -196,10 +208,11 @@ const withUnitTurn = async <T>(
 		await writeFile(donePath(tip), JSON.stringify(mine));
 		await rm(claimPath(tip), { force: true });
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => tip);
+			const newer = await currentTip();
 			const joined = newer === tip ? SUPERSEDED : await joinOnly(newer);
 			if (joined !== SUPERSEDED) return joined;
 			await writeFile(currentPath, tip);
+			await pauseSlot(JOIN_POLL_MS);
 			continue;
 		}
 		return settle(result);
@@ -215,6 +228,9 @@ export const withComputeSlot = <T>(
 
 const YIELD = Symbol('yield');
 
+/** The normal turns this process has asked for, per slot, in call order. */
+const processQueue = new Map<string, Promise<void>>();
+
 const withComputeSlotTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	body: () => Promise<T> | T,
@@ -229,7 +245,30 @@ const withComputeSlotTurn = async <T>(
 	}
 	const notify =
 		request.notify ?? ((message: string) => console.error(message));
-	await mkdir(dirname(lockPath), { recursive: true });
+	// Normal callers in this process reach the slot in the order they asked:
+	// the file mutex alone lets a later caller overtake an earlier one while
+	// both are still preparing to contend for it. Urgent callers keep their
+	// own lane and never wait behind the queue.
+	const before =
+		urgent === undefined
+			? (processQueue.get(lockPath) ?? Promise.resolve())
+			: Promise.resolve();
+	let leave: () => void = () => undefined;
+	const mine = new Promise<void>((resolve) => {
+		leave = resolve;
+	});
+	const tail = before.then(() => mine);
+	if (urgent === undefined) processQueue.set(lockPath, tail);
+	const clearQueue = (): void => {
+		leave();
+		if (processQueue.get(lockPath) === tail) processQueue.delete(lockPath);
+	};
+	await mkdir(dirname(lockPath), { recursive: true }).catch(
+		(error: unknown) => {
+			clearQueue();
+			throw error;
+		},
+	);
 	// An urgent caller joins the lane before it waits: normal callers yield
 	// to every live ticket, urgent ones to the tickets ahead of theirs.
 	if (ticketName !== undefined && urgent !== undefined) {
@@ -255,6 +294,7 @@ const withComputeSlotTurn = async <T>(
 		);
 	}, request.waitNoticeMs ?? WAIT_NOTICE_MS);
 	try {
+		await before;
 		for (;;) {
 			const outcome = await withFileMutex(
 				lockPath,
@@ -297,6 +337,7 @@ const withComputeSlotTurn = async <T>(
 			await pauseSlot(LANE_YIELD_MS);
 		}
 	} finally {
+		clearQueue();
 		waiting = false;
 		if (notice !== undefined) clearTimeout(notice);
 		if (ticketName !== undefined) {

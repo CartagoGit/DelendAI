@@ -47,7 +47,29 @@ export const recordUnitEntered = async (
 		entrySha: current?.entrySha ?? entrySha,
 		enteredAt: current?.enteredAt ?? now,
 		heartbeatAt: now,
+		...(current?.handedFrom === undefined
+			? {}
+			: { handedFrom: current.handedFrom }),
 	}));
+};
+
+/**
+ * Say that the session holding a unit ran out of quota: the unit is
+ * orphaned now, not after its silence runs past the recovery window. Any
+ * later heartbeat of the owner makes it live again. A unit with no lease
+ * is left as it is: there is no session to speak for.
+ */
+export const recordOwnerOutOfQuota = async (input: {
+	readonly cwd: string;
+	readonly ref: string;
+	readonly now?: number | undefined;
+}): Promise<IUnitLease | undefined> => {
+	const common = gitCommonDirOf(input.cwd);
+	if (common === undefined) return undefined;
+	const now = input.now ?? nowSeconds();
+	return updateUnitLease(common, shortRef(input.ref), (current) =>
+		current === undefined ? undefined : { ...current, outOfQuotaAt: now },
+	);
 };
 
 /**

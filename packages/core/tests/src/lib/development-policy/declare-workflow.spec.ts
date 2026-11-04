@@ -168,13 +168,31 @@ describe('declareWorkflow', () => {
 		expect(text).not.toContain('never commit to it');
 	});
 
+	it.each([
+		'shared-checkout-pr',
+		'shared-checkout-merge',
+		'worktree-pr',
+	] as const)(
+		'%s: no rendered step invites taking files from another checkout (x01003)',
+		(profile) => {
+			const text = declareWorkflow(policyFor(profile))
+				.steps.map((step) => step.instruction)
+				.join('\n');
+			expect(text).not.toContain('work checkpoint');
+			expect(text).not.toContain('from the shared checkout');
+		},
+	);
+
 	it('states how work starts and lands, per profile', () => {
 		const merge = briefWorkModel(policyFor('shared-checkout-merge'));
 		const pr = briefWorkModel(policyFor('shared-checkout-pr'));
 		const direct = briefWorkModel(policyFor('shared-direct'));
 
 		expect(merge.start).toContain('delendai work enter');
-		expect(merge.start).toContain('delendai work checkpoint');
+		// No route takes files from the shared checkout (x01003).
+		expect(merge.start).not.toContain('work checkpoint');
+		expect(merge.start).toContain('Never edit the shared checkout');
+		expect(merge.start).toContain('delendai work rescue');
 		expect(merge.land).toContain('MERGING it into develop');
 		expect(merge.land).toContain('opens no pull request');
 		expect(merge.land).toContain('validation gate');

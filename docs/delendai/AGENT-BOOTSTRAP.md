@@ -11,6 +11,25 @@ The server (`delendai_overview`, `delendai_agent_catalog`,
 is loaded. Always ask the server rather than guessing from a list, a
 hardcoded id, or a previous session.
 
+## 0. Product principles — decide by these when unsure
+
+delendai is a layer that any project puts under its LLMs, agents, skills,
+tools, IDE and host. This repository builds delendai with delendai, but
+every change must work the same in any other project, with any agent and
+any host. Judge each change by this order:
+
+- **Efficient and fast.** Check only what the change affects (tests, lints
+  and types) and measure before and after (CPU, disk, time). Never saturate
+  the machine.
+- **Robust.** No work is lost or mixed between agents. Every unit ends,
+  and nothing waits forever.
+- **Cheap in tokens.** Short answers, lazy context. Count tokens per
+  accepted task.
+- **Easy to use.** The default works with no configuration.
+- **Agnostic.** No host-specific or undocumented behaviour. A fix reaches
+  every consuming project, not only this one.
+- **Bounded.** Limits, states and refusals an agent cannot talk past.
+
 ---
 
 ## 1. Orient first — one cheap call
@@ -276,8 +295,9 @@ the focused validation pass before committing. The read-only guard is
   project's `development` profile, and the server states it: in its
   connect-time instructions, `agent_bootstrap`, `overview` (`workModel`)
   and every refusal. Follow that, never this file or a design doc. The
-  shared checkout never moves; `delendai work status` says where it
-  stands.
+  shared checkout never moves and is never edited: work commands and
+  commits refuse while it holds loose edits (`delendai work rescue` keeps
+  them under a ref); `delendai work status` says where it stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   A unit ends in `delendai work publish` or `delendai work retire`
   (keeps its tip). Before closing a session run `bun run reclaim:orphans`:

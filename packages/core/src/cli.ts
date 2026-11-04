@@ -57,6 +57,15 @@ export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 // A git hook asks the project's development policy whether a commit, a
 // branch creation or a push may proceed (`delendai guard <hook>`).
 export { judgeGitOperation } from './lib/development-policy/git-guard';
+// What the shared checkout holds, for the commit guard and for the routes
+// that must not take files from it (x01003).
+export {
+	sharedCheckoutCheckpointRefusal,
+	sharedCheckoutLooseEdits,
+} from './lib/work-units/shared-checkout-clean.service';
+// The editor-side barrier: a host's pre-edit hook asks it before a write.
+export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
+export { agentFor } from './lib/work-units/work-unit-shared.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
 // whose budget is full — because the CLI resolves and reports agent
@@ -323,6 +332,13 @@ export {
 	parseJsonc,
 } from './lib/config/jsonc-document';
 export type { IJsoncEdit } from './lib/config/jsonc-document';
+export {
+	cacheExcludeGlob,
+	mergeCacheExcludes,
+} from './lib/workspace-migration/migrators/vscode-cache-exclude';
+export { pendingCacheExclude } from './lib/workspace-migration/migrators/vscode-cache-exclude.migrator';
+export { CACHE_EXCLUDE_SETTINGS } from './lib/workspace-migration/migrators/vscode-cache-exclude.constant';
+export { configuredCacheDir } from './lib/shared/delendai-records';
 // The prose `init` writes above each block of `delendai.config.json`,
 // derived from the schema itself so the file and the schema cannot
 // disagree about what a key does.

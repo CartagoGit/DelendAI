@@ -186,21 +186,66 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			);
 		});
 
-		it('checkpoint from the shared checkout takes the unit that enter made', async () => {
+		it('checkpoint from the shared checkout takes nothing and names the unit worktree (x01003)', async () => {
 			const root = repoOn(profile);
-			await runWorkUnit(['enter', ...UNIT], contextFor(root));
-			// A shared checkout is pinned to develop and checkpoints from
-			// there, without moving HEAD.
-			writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
-			const result = await runWorkUnit(
-				['checkpoint', ...UNIT, '--paths=b.ts', '--message=feat: b'],
+			const entered = await runWorkUnit(
+				['enter', ...UNIT],
 				contextFor(root),
 			);
-			expect(result.code).toBe(0);
-			expect(result.data).toMatchObject({
-				status: 'created',
-				ref: 'refs/heads/delendai/wip/claude-sonnet-5-5/implement/x1-S1-g1/probe',
-			});
+			const { path, branch } = entered.data as {
+				readonly path: string;
+				readonly branch: string;
+			};
+			const tip = git(root, 'rev-parse', branch);
+			// A clean file taken from here would put develop's copy over
+			// the unit's own work in its ref.
+			const clean = await runWorkUnit(
+				[
+					'checkpoint',
+					...UNIT,
+					'--paths=README.md',
+					'--message=docs: readme',
+				],
+				contextFor(root),
+			);
+			expect(clean.code).toBe(4);
+			expect(clean.error).toContain('Nothing is checkpointed');
+			expect(clean.error).toContain('README.md: unchanged here');
+			expect(clean.error).toContain(path);
+			expect(git(root, 'rev-parse', branch)).toBe(tip);
+		});
+
+		it('checkpoint leaves a file another writer edited in the shared checkout (x01003)', async () => {
+			const root = repoOn(profile);
+			const entered = await runWorkUnit(
+				['enter', ...UNIT],
+				contextFor(root),
+			);
+			const { path, branch } = entered.data as {
+				readonly path: string;
+				readonly branch: string;
+			};
+			const tip = git(root, 'rev-parse', branch);
+			// Two writers of one file: the unit in its worktree, somebody
+			// else in the shared checkout.
+			writeFileSync(join(path, 'README.md'), '# the unit\n');
+			writeFileSync(join(root, 'README.md'), '# somebody else\n');
+			const result = await runWorkUnit(
+				[
+					'checkpoint',
+					...UNIT,
+					'--paths=README.md',
+					'--message=docs: readme',
+				],
+				contextFor(root),
+			);
+			expect(result.code).toBe(4);
+			expect(result.error).toContain(
+				profile === 'shared-checkout-pr'
+					? 'delendai work rescue'
+					: 'README.md: edited here, and nothing proves the unit wrote it',
+			);
+			expect(git(root, 'rev-parse', branch)).toBe(tip);
 		});
 
 		it('checkpoint from inside the unit worktree is refused and leaves it exactly as it was', async () => {

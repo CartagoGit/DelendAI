@@ -30,6 +30,7 @@ import {
 	parkedRuns,
 	armCandidates,
 	runsThatLostTheirChecks,
+	runWithState,
 } from './keep-the-queue-moving.script';
 
 const run = (name: string, conclusion: string | null): IWorkflowRun => ({
@@ -419,5 +420,49 @@ describe('releaseBranchRecovery — what a lost push of the release branch left 
 				forwardSyncOpen: false,
 			}),
 		).toEqual([]);
+	});
+});
+
+describe('runWithState', () => {
+	const drive = (body: () => void, exitCode?: number) => {
+		const said: string[] = [];
+		const out: string[] = [];
+		let failed = false;
+		const state = runWithState(body, {
+			say: (line) => said.push(line),
+			exitCode: () => (failed ? 1 : exitCode),
+			fail: () => {
+				failed = true;
+			},
+			output: (line) => out.push(line),
+		});
+		return { state, said, out, failed };
+	};
+
+	it('ends with ok when nothing waits', () => {
+		const r = drive(() => undefined, 0);
+		expect(r.state).toBe('ok');
+		expect(r.said.at(-1)).toBe('keep-the-queue-moving: state=ok');
+		expect(r.out).toEqual(['state=ok']);
+	});
+
+	it('ends with queue-blocked when candidates wait', () => {
+		const r = drive(() => undefined, 1);
+		expect(r.state).toBe('queue-blocked');
+		expect(r.said.at(-1)).toBe(
+			'keep-the-queue-moving: state=queue-blocked',
+		);
+	});
+
+	it('ends with internal-error, and red, when it threw', () => {
+		const r = drive(() => {
+			throw new Error('boom');
+		});
+		expect(r.state).toBe('internal-error');
+		expect(r.failed).toBe(true);
+		expect(r.said.at(-1)).toBe(
+			'keep-the-queue-moving: state=internal-error',
+		);
+		expect(r.said.filter((l) => l.includes('state=')).length).toBe(1);
 	});
 });

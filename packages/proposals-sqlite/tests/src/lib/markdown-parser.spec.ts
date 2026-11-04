@@ -4,6 +4,7 @@ import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
 	parseProposalMarkdown,
+	parseSliceSections,
 } from '../../../src/lib/markdown-parser';
 
 const DOC = `---
@@ -81,5 +82,54 @@ describe('markdown-parser (q00022 S2)', () => {
 				'# missing frontmatter',
 			),
 		).toThrow(/Missing YAML frontmatter/);
+	});
+});
+
+// js/polynomial-redos: a long whitespace run must not be quadratic.
+describe('markdown-parser stays linear on pathological lines', () => {
+	const spaces = ' '.repeat(100_000);
+	const timed = (run: () => unknown): number => {
+		const start = performance.now();
+		run();
+		return performance.now() - start;
+	};
+
+	it('reads the title past a 100000-space line', () => {
+		const raw = `---\nid: x1\n---\n#${spaces}x`;
+		let title = '';
+		expect(
+			timed(() => {
+				title = parseProposalMarkdown('p.md', raw).title;
+			}),
+		).toBeLessThan(500);
+		expect(title).toBe('x');
+	});
+
+	it('parses slice headings and status through long runs of spaces', () => {
+		const body = [
+			'## Slices',
+			`###${spaces}S1${spaces}x`,
+			`###${spaces}`,
+			`### S2${spaces}— t`,
+			`-${spaces}**Status**${spaces}:${spaces}`,
+			`-${spaces}**Status**${spaces}: pending${spaces}`,
+		].join('\n');
+		let parsed: ReturnType<typeof parseSliceSections> = [];
+		expect(
+			timed(() => {
+				parsed = parseSliceSections(body);
+			}),
+		).toBeLessThan(500);
+		expect(parsed).toEqual([
+			{ sliceId: 'S2', title: 't', status: 'pending' },
+		]);
+	});
+
+	it('keeps the tolerant slice grammar', () => {
+		expect(
+			parseSliceSections(
+				'## Slices\n### F2-S1 - hello\n- **Status**: done\n### prose — no\n## Next',
+			),
+		).toEqual([{ sliceId: 'F2-S1', title: 'hello', status: 'done' }]);
 	});
 });

@@ -15,7 +15,11 @@ export interface IWorktree {
 	 * excluded, because a file this repository regenerates can be
 	 * rewritten by any command that happens to run and is nobody's.
 	 */
-	readonly dirtyPaths: number;
+	readonly dirtyPaths: number | null;
+	/**
+	 * `dirtyPaths` is `null` when git could not say (the status failed or
+	 * timed out). Unknown is not clean: such a desk is kept.
+	 */
 	/** True when the integration branch contains its head. */
 	readonly delivered: boolean;
 	/** True when git has marked it locked. */
@@ -52,6 +56,8 @@ export const WORKTREE_ROLES = [
 	'locked',
 	/** It has uncommitted changes. They may exist nowhere else. */
 	'dirty',
+	/** Git could not say whether it holds uncommitted work: unproven, so kept. */
+	'unknown',
 	/** Its head is not in the integration branch: unpublished work. */
 	'undelivered',
 	/** Git did something here recently: somebody is probably sitting at it. */

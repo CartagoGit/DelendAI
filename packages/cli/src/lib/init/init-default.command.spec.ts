@@ -73,7 +73,7 @@ const noopCtx = (cwd: string, globals: ICliGlobalOptions): ICliCommandContext =>
 	createNoopContext(cwd, globals);
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
-	preset: 'dogfood',
+	preset: 'solo',
 	extraPlugins: [],
 	excludedPlugins: [],
 	hostInstructions: 'append',
@@ -110,9 +110,8 @@ describe('init:default (f00103)', () => {
 			flags,
 			INIT_DEFAULT_ANSWERS,
 		);
-		// `dogfood` is the operator's chosen default — mirrors the
-		// delendai project's own plugin set.
-		expect(answers.preset).toBe('dogfood');
+		// A new project gets `solo`; `dogfood` is only this repository's own.
+		expect(answers.preset).toBe('solo');
 		expect(answers.extraPlugins).toEqual([]);
 		expect(answers.excludedPlugins).toEqual([]);
 		expect(answers.hostInstructions).toBe('append');
@@ -132,6 +131,22 @@ describe('init:default (f00103)', () => {
 		expect(flags.delendaiRoot).toBe(fakeHostEntry);
 		expect(flags.pluginPathsRoot).toBe('libs');
 		expect(flags.force).toBe(false);
+	});
+
+	it('prints its help and bootstraps nothing', async () => {
+		const write = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
+		const result = await initDefaultCommand.run(
+			['--help'],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		const printed = write.mock.calls
+			.map((call) => String(call[0]))
+			.join('');
+		write.mockRestore();
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(printed).toContain('solo preset');
 	});
 
 	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
@@ -160,13 +175,7 @@ describe('init:default (f00103)', () => {
 		expect(rels.some((r) => r.startsWith('.github/agents/'))).toBe(true);
 		expect(rels).toContain('docs/delendai/skills/manifest.json');
 
-		// The config must include every vertex member — x00166: vertex
-		// now mirrors delendai.config.json's `plugins` keys exactly
-		// (28 total), INCLUDING `proposals` (orchestration/swarm) since
-		// delendai dogfoods its own orchestrator and every adopter via
-		// `init:default` must get it too. Previously vertex silently
-		// excluded proposals/memory/rules/deps/notification/logs and
-		// included 6 phantom plugins that were never actually loaded.
+		// The config carries the solo pack, enabled, with no exclude list.
 		const configFile = data.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
@@ -174,45 +183,28 @@ describe('init:default (f00103)', () => {
 		const config = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
 		}>(configFile?.content);
-		for (const required of [
-			'audit',
-			'auto-agent-selector',
-			'container',
-			'conventions',
-			'deps',
-			'diagram',
-			'docs',
-			'env',
-			'error-reporting',
-			'forge',
+		const soloMembers = [
 			'git',
-			'i18n',
-			'link-check',
-			'logs',
+			'search',
 			'memory',
-			'notification',
-			'orchestrator-runner',
-			'perf',
-			'proposals',
+			'docs',
 			'quality',
 			'rules',
-			'search',
-			'security',
-			'status-marker',
-			'tech-debt',
-			'test-convention',
+			'deps',
 			'test-policy',
-			'usage-tracking',
-		]) {
+			'env',
+			'refactor',
+		];
+		for (const required of soloMembers) {
 			expect(config.plugins[required]).toBeDefined();
 		}
-		// f00502 S4: the config now lists every plugin the catalog knows
-		// about so the user can discover them, so a plugin outside the
-		// preset is present-and-disabled rather than absent.
+		// f00502 S4: the config lists every plugin the catalog knows about
+		// so the user can discover them, so a plugin outside the pack is
+		// present-and-disabled rather than absent.
 		for (const notInPreset of [
+			'proposals',
 			'web-fetch',
 			'issues',
-			'refactor',
 			'api',
 			'prompt-eval',
 			'database',
@@ -221,16 +213,14 @@ describe('init:default (f00103)', () => {
 				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled,
 			).toBe(false);
 		}
-		// The dogfood snapshot enables 38 plugins; this directory has no
-		// forge remote, so the one forge plugin in it (`forge`) is left
-		// off. No extras added.
-		const enabled = Object.values(config.plugins).filter(
-			(entry) => (entry as { enabled?: boolean }).enabled !== false,
-		);
-		expect(enabled.length).toBe(37);
-		expect((config.plugins.forge as { enabled?: boolean })?.enabled).toBe(
-			false,
-		);
+		const enabled = Object.entries(config.plugins)
+			.filter(
+				([, entry]) =>
+					(entry as { enabled?: boolean }).enabled !== false,
+			)
+			.map(([id]) => id)
+			.sort();
+		expect(enabled).toEqual([...soloMembers].sort());
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {

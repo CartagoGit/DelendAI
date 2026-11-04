@@ -15,6 +15,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { IMigration } from '@delendai/core/lib/contracts/interfaces/workspace-migration.interface';
 import {
 	createDefaultPhases,
+	createWorkspaceRoutePhases,
+	rollbackLatestMigration,
 	runMigrationTransaction,
 	type IBackup,
 	type ITransactionPhases,
@@ -24,6 +26,8 @@ import {
 	backupScopeExcludes,
 	readPersistedBackups,
 	rollback,
+	recordWrittenSince,
+	type IWrittenRecord,
 } from '@delendai/core/lib/workspace-migration/transaction/rollback';
 
 const roots: string[] = [];
@@ -147,22 +151,28 @@ describe('migration transaction (b00239 S6)', () => {
 		writeFileSync(join(root, '.git/config'), '[core]\n\tbare = false\n');
 		const gitBefore = readFileSync(join(root, '.git/config'));
 
+		let written: IWrittenRecord | undefined;
+		let taken: readonly IBackup[] = [];
 		const outcome = await runMigrationTransaction(
 			{
 				discover: async () => [baseMigration(async () => undefined)],
 				plan: async () => [],
-				backup: async () => backupOf(root),
+				backup: async () => {
+					taken = backupOf(root);
+					return taken;
+				},
 				apply: async () => {
 					writeFileSync(
 						join(root, 'stray.txt'),
 						'made by the attempt\n',
 					);
+					written = await recordWrittenSince(root, taken);
 					throw new Error('boom-apply');
 				},
 				validate: async () => ({ ok: true, reason: '' }),
 				commit: async () => undefined,
 				rollback: async (backups, ctx, reason) =>
-					rollback(backups, ctx, reason),
+					rollback(backups, ctx, reason, undefined, written),
 			},
 			{ workspaceRoot: root },
 		);
@@ -260,5 +270,201 @@ describe('migration transaction (b00239 S6)', () => {
 					entry.path === 'delendai.config.json',
 			),
 		).toBe(true);
+	});
+
+	it('default phases remove what the attempt created and keep a file another process wrote after', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{"name":"old"}\n');
+		const phases = createDefaultPhases({
+			migrations: [
+				baseMigration(async (workspace) => {
+					mkdirSync(join(workspace, 'made'));
+					writeFileSync(join(workspace, 'made', 'new.txt'), 'ours\n');
+					writeFileSync(
+						join(workspace, 'delendai.config.json'),
+						'{"name":"new"}\n',
+					);
+				}),
+			],
+		});
+
+		const outcome = await runMigrationTransaction(
+			{
+				...phases,
+				// Between the apply and the rollback, somebody else writes.
+				validate: async () => {
+					writeFileSync(join(root, 'bystander.md'), 'not ours\n');
+					return { ok: false, reason: 'forced' };
+				},
+			},
+			{ workspaceRoot: root },
+		);
+
+		expect(outcome.status).toBe('rolled-back');
+		expect(existsSync(join(root, 'made'))).toBe(false);
+		expect(readFileSync(join(root, 'delendai.config.json'), 'utf8')).toBe(
+			'{"name":"old"}\n',
+		);
+		expect(readFileSync(join(root, 'bystander.md'), 'utf8')).toBe(
+			'not ours\n',
+		);
+	});
+
+	it('reads renames, package and host-config changes into the manifest', async () => {
+		const root = makeWorkspace();
+		mkdirSync(join(root, '.vscode'));
+		writeFileSync(join(root, 'package.json'), '{"name":"old"}\n');
+		writeFileSync(join(root, '.vscode/mcp.json'), '{"a":1}\n');
+		const migration: IMigration = {
+			id: 'steps:v1',
+			detect: async () => true,
+			plan: async () => [
+				{ kind: 'rename', detail: 'x: old/dir → new/dir' },
+				{ kind: 'rename', detail: 'not a pair' },
+				{ kind: 'manifest-changed', detail: 'package.json' },
+				{ kind: 'rewrite-host-config', detail: '.vscode/mcp.json' },
+			],
+			apply: async (ctx) => {
+				writeFileSync(
+					join(ctx.workspaceRoot, 'package.json'),
+					'{"name":"new"}\n',
+				);
+				writeFileSync(
+					join(ctx.workspaceRoot, '.vscode/mcp.json'),
+					'{"a":2}\n',
+				);
+			},
+		};
+		const outcome = await runMigrationTransaction(
+			createDefaultPhases({ migrations: [migration] }),
+			{ workspaceRoot: root },
+		);
+		expect(outcome.status).toBe('committed');
+		if (outcome.status !== 'committed') return;
+		expect(outcome.manifest.renames).toEqual([
+			{ from: 'old/dir', to: 'new/dir' },
+		]);
+		expect(outcome.manifest.packageChanges).toHaveLength(1);
+		expect(outcome.manifest.packageChanges[0]?.from).not.toBe(
+			outcome.manifest.packageChanges[0]?.to,
+		);
+		expect(outcome.manifest.hostConfigChanges[0]?.file).toBe(
+			'.vscode/mcp.json',
+		);
+		expect(outcome.manifest.affectedFiles).toEqual([
+			'.vscode/mcp.json',
+			'package.json',
+		]);
+	});
+
+	it('records one-shot migrations in the journal, skips applied ones, and never records a standing check', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{}\n');
+		const recorded: string[] = [];
+		const journal = {
+			read: async () => ['done:v1'],
+			record: async (_root: string, id: string) => {
+				recorded.push(id);
+			},
+		};
+		const make = (id: string, convergent?: boolean): IMigration => ({
+			id,
+			...(convergent === undefined ? {} : { convergent }),
+			detect: async () => true,
+			plan: async () => [],
+			apply: async () => undefined,
+		});
+		let committed = 0;
+		const outcome = await runMigrationTransaction(
+			createDefaultPhases({
+				migrations: [
+					make('done:v1'),
+					make('new:v1'),
+					make('check:v1', true),
+				],
+				journal,
+				commit: async () => {
+					committed += 1;
+				},
+			}),
+			{ workspaceRoot: root },
+		);
+		expect(outcome.status).toBe('committed');
+		expect(recorded).toEqual(['new:v1']);
+		expect(committed).toBe(1);
+	});
+
+	it('reports rollback-failed when the rollback itself throws', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{}\n');
+		const phases = createDefaultPhases({
+			migrations: [
+				baseMigration(async () => {
+					throw new Error('boom');
+				}),
+			],
+		});
+		const outcome = await runMigrationTransaction(
+			{
+				...phases,
+				rollback: async () => {
+					throw new Error('disk gone');
+				},
+			},
+			{ workspaceRoot: root },
+		);
+		expect(outcome.status).toBe('rollback-failed');
+		if (outcome.status !== 'rollback-failed') return;
+		expect(outcome.rollbackErrors[0]?.reason).toBe('disk gone');
+	});
+
+	it('rolls the latest migration back from its persisted backup, leaving files it cannot prove ours', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{"name":"old"}\n');
+		const outcome = await runMigrationTransaction(
+			createDefaultPhases({
+				migrations: [
+					baseMigration(async (workspace) => {
+						writeFileSync(
+							join(workspace, 'delendai.config.json'),
+							'{"name":"new"}\n',
+						);
+						writeFileSync(join(workspace, 'created.txt'), 'x\n');
+					}),
+				],
+			}),
+			{ workspaceRoot: root },
+		);
+		expect(outcome.status).toBe('committed');
+		const report = await rollbackLatestMigration(
+			{ workspaceRoot: root },
+			outcome.manifest,
+			'undo',
+		);
+		expect(report.restored).toContain('delendai.config.json');
+		expect(readFileSync(join(root, 'delendai.config.json'), 'utf8')).toBe(
+			'{"name":"old"}\n',
+		);
+		expect(report.skipped).toContain('created.txt');
+		expect(existsSync(join(root, 'created.txt'))).toBe(true);
+
+		await expect(
+			rollbackLatestMigration(
+				{ workspaceRoot: root },
+				{ id: 'never-ran', timestamp: 'now' },
+				'undo',
+			),
+		).rejects.toThrow(/missing persisted backup/);
+	});
+
+	it('route phases find nothing to do in a workspace that never adopted delendai', async () => {
+		const root = makeWorkspace();
+		const phases = createWorkspaceRoutePhases({
+			migrations: [],
+			journal: { read: async () => [], record: async () => undefined },
+		});
+		expect(await phases.discover({ workspaceRoot: root })).toEqual([]);
+		expect(await phases.plan([], { workspaceRoot: root })).toEqual([]);
+		await phases.apply([], { workspaceRoot: root });
 	});
 });

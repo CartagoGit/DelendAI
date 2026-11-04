@@ -16,8 +16,8 @@ edited there.
 
 1. `action: enter` with `proposal`, `slice` and `agent` (your exact model id). It prints the
    worktree path. Edit and commit only there, and pass it as `checkout` to other tools.
-2. Edit, run the gates the slice names, commit in the worktree. `action: checkpoint` with
-   `paths` and `message` writes the same ref from the shared checkout without moving HEAD.
+2. Edit, run the gates the slice names, commit in the worktree. Nothing reaches the ref
+   from any other checkout: `checkpoint` refuses to take files from the shared checkout.
 3. Prove the candidate in isolation, then `action: publish`. It pushes the pull request
    branch and opens the pull request into `develop`.
 4. A unit that will not be published ends with `action: retire` (its tip is kept).
@@ -33,6 +33,8 @@ edited there.
 ## Rules that bite
 
 - A refused `enter` prints no path. Do not continue in the shared checkout.
+- Never edit the shared checkout. While it holds loose edits every work command and
+  commit refuses; `rescue` keeps them under a ref and restores it.
 - Use the same `topic` for `enter` and `publish`.
 - The agent id is lowercase, maker first, then version, then tier; no effort word.
 - Never leave a unit idle: every work command is its heartbeat, and 30 minutes of silence

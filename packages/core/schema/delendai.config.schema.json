@@ -206,6 +206,27 @@
 			"description": "Whether an agent may run its work in a separate git worktree, so parallel agents do not collide in one checkout. Off by default. Turn it on for a project where several agents work at the same time; when a `development` block is present it is an input to that policy instead.",
 			"type": "boolean"
 		},
+		"testing": {
+			"description": "How tests are chosen when an agent runs them.",
+			"type": "object",
+			"properties": {
+				"scope": {
+					"description": "Which specs an agent runs for a change. `touched` (the default) runs the changed specs, the spec that mirrors a changed source and the specs that import a changed file directly. `reach` adds every spec the change reaches through other modules, and the specs that read a changed file. `all` runs every spec. Choose the wider scopes only when a spec far from the change has caught what the touched ones missed.",
+					"type": "string",
+					"enum": [
+						"touched",
+						"reach",
+						"all"
+					],
+					"enumDescriptions": {
+						"touched": "Run the specs the change touched: a changed spec, the spec that mirrors a changed source, and a spec that imports a changed file directly. Nothing reached through another module. The default; the cheapest proof.",
+						"reach": "Also run every spec the change reaches through other modules, followed by symbol, and the specs that read a changed file. Choose it when a far-away spec has caught what the touched ones missed.",
+						"all": "Run every spec in the project. The most certain, the most expensive; choose it for a release or a change to the test setup itself."
+					}
+				}
+			},
+			"additionalProperties": false
+		},
 		"development": {
 			"type": "object",
 			"properties": {
@@ -1732,6 +1753,14 @@
 				],
 				"additionalProperties": false,
 				"description": "An agent the catalogues do not know about, or one to reach in a way its catalogue entry does not describe. Give it an id, say how it is reached, and, for a command line agent, the commands that answer its probes."
+			}
+		},
+		"trustedAgentPackages": {
+			"description": "Agent packages, each as the exact `name@version` the registry pins, that this project allows npx or uvx to fetch from the network and run. An agent that is not installed and is not listed here is refused. Leave it out to fetch nothing.",
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"modelProviders": {

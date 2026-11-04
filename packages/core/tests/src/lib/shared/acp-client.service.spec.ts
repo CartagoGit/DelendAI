@@ -9,8 +9,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { IRegistryAgent } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
+	acpFetchRefusal,
 	acpLaunchOf,
 	introduceAgent,
+	pinnedPackage,
 	registryPlatform,
 	runAcpAgent,
 } from '../../../../src/lib/shared/acp-client.service';
@@ -27,19 +29,47 @@ const entry = (
 });
 
 describe('acpLaunchOf', () => {
-	it('starts a package through npx or uvx, as the registry names it', () => {
+	it('starts a package through npx or uvx only when the project allowed that exact package', () => {
+		const coder = entry({
+			npx: { package: '@q/code@1.0.0', args: ['--acp'] },
+		});
 		expect(
-			acpLaunchOf(
-				entry({ npx: { package: '@q/code@1.0.0', args: ['--acp'] } }),
-			),
+			acpLaunchOf(coder, { trusted: new Set(['@q/code@1.0.0']) }),
 		).toEqual({
 			command: 'npx',
 			args: ['-y', '@q/code@1.0.0', '--acp'],
 			env: undefined,
+			fromNetwork: 'npx @q/code@1.0.0',
 		});
+		expect(acpLaunchOf(coder)).toBeUndefined();
+		// Another version is another package: not allowed by this one.
 		expect(
-			acpLaunchOf(entry({ uvx: { package: 'fast-agent-acp' } }))?.args,
-		).toEqual(['fast-agent-acp']);
+			acpLaunchOf(coder, { trusted: new Set(['@q/code@1.0.1']) }),
+		).toBeUndefined();
+		expect(
+			acpLaunchOf(entry({ uvx: { package: 'fast-agent-acp' } }), {
+				trusted: new Set(['fast-agent-acp@1']),
+			})?.args,
+		).toEqual(['fast-agent-acp@1']);
+	});
+
+	it('runs the version the registry pins, and names the setting when it refuses', () => {
+		expect(pinnedPackage('fast-agent-acp', '2.1.0')).toBe(
+			'fast-agent-acp@2.1.0',
+		);
+		expect(pinnedPackage('@q/code@1.0.0', '9')).toBe('@q/code@1.0.0');
+		expect(pinnedPackage('@q/code', '')).toBe('@q/code');
+		expect(
+			acpFetchRefusal(entry({ npx: { package: '@q/code@1.0.0' } })),
+		).toBe(
+			'x would be fetched from the network (npx @q/code@1.0.0) and this project has not allowed that package: add "@q/code@1.0.0" to `trustedAgentPackages` in delendai.config.json, or install the agent',
+		);
+		expect(
+			acpFetchRefusal(
+				entry({ npx: { package: '@q/code@1.0.0' } }),
+				new Set(['@q/code@1.0.0']),
+			),
+		).toBeUndefined();
 	});
 
 	it('starts a binary only from where it was installed, for this platform', () => {

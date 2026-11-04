@@ -189,9 +189,9 @@ const dict: LangDict = {
 			intro: 'エディタ統合は不要です。ターミナルから host server を実行し、任意の MCP クライアントをその stdio トランスポートに向けます。',
 			steps: [
 				'インストール：`bun add @delendai/core`（または `npm install @delendai/core`）。',
-				'実行：`bunx delendai --preset=standard`（または `npx delendai --preset=standard`）。',
+				'実行：`bunx delendai --preset=solo`（または `npx delendai --preset=solo`）。',
 				'確認：プロセスが読み込んだプラグイン一覧を表示し、stdio で待機します — 停止するには Ctrl+C。',
-				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|standard|swarm|full` を指定します（フラグの全リストはインストールページを参照）。',
+				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` を指定します（フラグの全リストはインストールページを参照）。',
 				'最初に `delendai_overview { compact: true }` を呼び出してください — 次に何をすべきか教えてくれます。',
 			],
 		},

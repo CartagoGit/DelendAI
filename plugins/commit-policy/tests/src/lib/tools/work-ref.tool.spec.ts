@@ -13,6 +13,7 @@ import {
 } from '@delendai/core/public';
 
 import { runCommitPolicyWorkRef } from '../../../../src/lib/tools/work-ref.tool';
+import { validatePolicyAndRef } from '../../../../src/lib/services/work-ref-policy.service';
 
 const execFileAsync = promisify(execFile);
 const workspaces: string[] = [];
@@ -86,155 +87,93 @@ afterEach(async () => {
 });
 
 describe('commit_policy_work_ref', () => {
-	it('checkpoints exact scope, cleans only owned paths, and materializes without moving HEAD or the real index', async () => {
-		const root = await createRepo();
-		await writeFile(join(root, 'owned.txt'), 'agent-owned\n', 'utf8');
-		await writeFile(join(root, 'foreign.txt'), 'foreign-dirty\n', 'utf8');
-		await writeFile(
-			join(root, 'foreign-untracked.txt'),
-			'keep-me\n',
-			'utf8',
-		);
-		await git(root, 'add', '--', 'foreign.txt');
-		const beforeHead = await git(root, 'rev-parse', 'HEAD');
-		const beforeBranch = await git(root, 'branch', '--show-current');
-		const beforeIndex = await readIndex(root);
-
-		const options = await optionsFor(root);
-		const checkpoint = payloadOf(
-			await runCommitPolicyWorkRef(
-				{
-					action: 'checkpoint',
-					proposal: 'x00545',
-					slice: 'S0',
-					generation: 1,
-					paths: ['owned.txt'],
-					message: 'chore: checkpoint work ref',
-					cleanAfterCheckpoint: true,
-				},
-				options,
-			),
-		);
-		expect(checkpoint.ok).toBe(true);
-		expect(checkpoint.headMoved).toBe(false);
-		expect(checkpoint.indexTouched).toBe(false);
-		expect(checkpoint.published).toBe(true);
-		expect(checkpoint.remote).toBe('origin');
-		expect(checkpoint.cleaned).toEqual(['owned.txt']);
-		expect(await readFile(join(root, 'owned.txt'), 'utf8')).toBe(
-			'base-owned\n',
-		);
-		expect(await readFile(join(root, 'foreign.txt'), 'utf8')).toBe(
-			'foreign-dirty\n',
-		);
-		expect(
-			await readFile(join(root, 'foreign-untracked.txt'), 'utf8'),
-		).toBe('keep-me\n');
-		expect(await git(root, 'rev-parse', 'HEAD')).toBe(beforeHead);
-		expect(await git(root, 'branch', '--show-current')).toBe(beforeBranch);
-		expect(await readIndex(root)).toEqual(beforeIndex);
-
-		const ref = String(checkpoint.ref);
-		// Derived from the policy under test: work refs are visible
-		// branches now, so a literal `refs/wip/` no longer describes them.
-		expect(ref.startsWith(`refs/${policy.branches.workRefPrefix}`)).toBe(
-			true,
-		);
-		expect(await git(root, 'show', `${ref}:owned.txt`)).toBe('agent-owned');
-		expect(await git(root, 'ls-remote', 'origin', ref)).toContain(
-			String(checkpoint.commit),
-		);
-
-		const materialized = payloadOf(
-			await runCommitPolicyWorkRef(
-				{
-					action: 'materialize',
-					proposal: 'x00545',
-					slice: 'S0',
-					generation: 1,
-					paths: ['owned.txt'],
-				},
-				options,
-			),
-		);
-		expect(materialized.ok).toBe(true);
-		expect(materialized.restored).toEqual(['owned.txt']);
-		expect(materialized.headMoved).toBe(false);
-		expect(materialized.indexTouched).toBe(false);
-		expect(await readFile(join(root, 'owned.txt'), 'utf8')).toBe(
-			'agent-owned\n',
-		);
-		expect(
-			await readFile(join(root, 'foreign-untracked.txt'), 'utf8'),
-		).toBe('keep-me\n');
-		expect(await git(root, 'rev-parse', 'HEAD')).toBe(beforeHead);
-		expect(await git(root, 'branch', '--show-current')).toBe(beforeBranch);
-		expect(await readIndex(root)).toEqual(beforeIndex);
-	});
-
-	it('cleans a new claimed file by deleting it after the checkpoint', async () => {
-		const root = await createRepo();
-		await writeFile(
-			join(root, 'new-owned.txt'),
-			'new-agent-work\n',
-			'utf8',
-		);
-		const result = payloadOf(
-			await runCommitPolicyWorkRef(
-				{
-					action: 'checkpoint',
-					proposal: 'x00545',
-					slice: 'S0-new',
-					generation: 1,
-					paths: ['new-owned.txt'],
-					message: 'chore: checkpoint new file',
-					cleanAfterCheckpoint: true,
-				},
-				await optionsFor(root),
-			),
-		);
-		expect(result.ok).toBe(true);
-		expect(result.deleted).toEqual(['new-owned.txt']);
-		await expect(readFile(join(root, 'new-owned.txt'))).rejects.toThrow();
-	});
+	it.each(['shared-checkout-pr', 'shared-checkout-merge', 'worktree-pr'])(
+		'%s: checkpoint and materialize refuse, as `work checkpoint` does, and move nothing (x01003)',
+		async (profile) => {
+			const root = await createRepo();
+			const under = resolveDevelopmentPolicy({
+				development: { profile, branches: { integration: 'develop' } },
+			});
+			const wip = await createWipEngine(root, anchorFromPolicy(under));
+			if (wip === undefined)
+				throw new Error('fixture did not create a WIP engine');
+			const options = {
+				namespacePrefix: 'commit-policy',
+				policy: under,
+				wip,
+				agentId: 'agent-a',
+			};
+			await writeFile(join(root, 'owned.txt'), 'agent-owned\n', 'utf8');
+			const beforeHead = await git(root, 'rev-parse', 'HEAD');
+			const beforeIndex = await readIndex(root);
+			for (const action of ['checkpoint', 'materialize'] as const) {
+				const result = await runCommitPolicyWorkRef(
+					{
+						action,
+						proposal: 'x00545',
+						slice: 'S0',
+						generation: 1,
+						paths: ['owned.txt', 'foreign.txt'],
+						...(action === 'checkpoint'
+							? { message: 'chore: checkpoint work ref' }
+							: {}),
+					},
+					options,
+				);
+				const said = JSON.stringify(result);
+				expect(payloadOf(result).ok).toBe(false);
+				expect(said).toContain('WORK_REF_SHARED_CHECKOUT');
+				// The message `work checkpoint` gives.
+				expect(said).toContain('Nothing is checkpointed from');
+				expect(said).toContain(
+					'owned.txt: edited here, and nothing proves the unit wrote it',
+				);
+				expect(said).toContain('foreign.txt: unchanged here');
+				expect(said).toContain('delendai work enter');
+			}
+			expect(await readFile(join(root, 'owned.txt'), 'utf8')).toBe(
+				'agent-owned\n',
+			);
+			expect(await git(root, 'rev-parse', 'HEAD')).toBe(beforeHead);
+			expect(await readIndex(root)).toEqual(beforeIndex);
+			expect(await git(root, 'for-each-ref', 'refs/heads/delendai')).toBe(
+				'',
+			);
+		},
+	);
 
 	it('recovers and republishes an orphan checkpoint only from its recorded exact scope', async () => {
 		const root = await createRepo();
-		await writeFile(join(root, 'owned.txt'), 'recover-me\n', 'utf8');
 		const options = await optionsFor(root);
-		const checkpoint = payloadOf(
-			await runCommitPolicyWorkRef(
-				{
-					action: 'checkpoint',
-					proposal: 'x00545',
-					slice: 'recovery',
-					generation: 1,
-					paths: ['owned.txt'],
-					message: 'chore: recoverable checkpoint',
-				},
-				options,
-			),
-		);
-		const ref = String(checkpoint.ref);
-		const commit = String(checkpoint.commit);
-		await git(root, 'push', 'origin', `:${ref}`);
+		// An orphan checkpoint object, as an earlier checkpoint left it.
+		await writeFile(join(root, 'owned.txt'), 'recover-me\n', 'utf8');
+		const input = {
+			action: 'recover' as const,
+			proposal: 'x00545',
+			slice: 'recovery',
+			generation: 1,
+			paths: ['owned.txt'],
+		};
+		const resolved = validatePolicyAndRef(options, input);
+		if (!('ref' in resolved)) throw new Error(resolved.reason);
+		const ref = resolved.ref;
+		const made = await options.wip.createOrUpdateWipRef({
+			baseSha: await git(root, 'rev-parse', 'develop'),
+			paths: ['owned.txt'],
+			ref,
+			message: 'chore: recoverable checkpoint',
+		});
+		if (made.status !== 'created') throw new Error('no checkpoint made');
+		const commit = made.commit;
 		await git(root, 'update-ref', '-d', ref);
+		await git(root, 'checkout', '--', 'owned.txt');
 
 		const recovered = payloadOf(
-			await runCommitPolicyWorkRef(
-				{
-					action: 'recover',
-					proposal: 'x00545',
-					slice: 'recovery',
-					generation: 1,
-					paths: ['owned.txt'],
-					commit,
-				},
-				options,
-			),
+			await runCommitPolicyWorkRef({ ...input, commit }, options),
 		);
 		expect(recovered.ok).toBe(true);
 		expect(recovered.published).toBe(true);
+		expect(String(recovered.ref)).toBe(ref);
 		expect(await git(root, 'rev-parse', ref)).toBe(commit);
 		expect(await git(root, 'ls-remote', 'origin', ref)).toContain(commit);
 	});

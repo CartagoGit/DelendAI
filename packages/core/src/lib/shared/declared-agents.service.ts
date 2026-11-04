@@ -23,7 +23,11 @@ import type {
 	IAgentRegistry,
 	IRegistryAgent,
 } from '../contracts/interfaces/public-catalogue.interface';
-import { acpLaunchOf, registryPlatform } from './acp-client.service';
+import {
+	acpFetchRefusal,
+	acpLaunchOf,
+	registryPlatform,
+} from './acp-client.service';
 import { runArgv } from './run-command';
 
 /** One path segment: no separator, no `.` or `..`, nothing empty. */
@@ -56,22 +60,30 @@ export const agentInstallDir = (
 export const declaredLaunch = (
 	agent: IDeclaredAgent,
 	platform?: string,
+	trusted?: ReadonlySet<string>,
 ): IAcpLaunch | undefined => {
 	if (agent.kind !== 'acp') return undefined;
 	if (agent.command !== undefined)
 		return { command: agent.command, args: agent.args ?? [] };
-	return agent.distribution === undefined
+	const entry = asRegistryEntry(agent);
+	return entry === undefined
 		? undefined
-		: acpLaunchOf(
-				{
-					id: agent.id,
-					name: agent.name ?? agent.id,
-					version: '',
-					distribution: agent.distribution,
-				},
-				platform === undefined ? {} : { platform },
-			);
+		: acpLaunchOf(entry, {
+				...(platform === undefined ? {} : { platform }),
+				...(trusted === undefined ? {} : { trusted }),
+			});
 };
+
+/** A declared agent's distribution, read as a registry entry. */
+const asRegistryEntry = (agent: IDeclaredAgent): IRegistryAgent | undefined =>
+	agent.distribution === undefined
+		? undefined
+		: {
+				id: agent.id,
+				name: agent.name ?? agent.id,
+				version: '',
+				distribution: agent.distribution,
+			};
 
 /**
  * A registry agent released as a binary that is already on PATH (installed
@@ -105,7 +117,10 @@ export const knownAgents = (input: {
 		| undefined;
 	/** Candidates the person already answered, by name: never offered again. */
 	readonly answered?: ReadonlySet<string> | undefined;
+	/** The exact packages the project allows npx or uvx to fetch. */
+	readonly trusted?: ReadonlySet<string> | undefined;
 }): readonly IKnownAgent[] => {
+	const trusted = input.trusted ?? new Set<string>();
 	const detected = input.detected ?? [];
 	const foundFor = (id: string) =>
 		detected.filter((each) => each.registryId === id);
@@ -114,31 +129,46 @@ export const knownAgents = (input: {
 		['project', input.project],
 		['personal', input.personal],
 	] as const)
-		for (const agent of list ?? [])
+		for (const agent of list ?? []) {
+			const launch = declaredLaunch(agent, undefined, trusted);
+			const entry = asRegistryEntry(agent);
+			const refusal =
+				launch !== undefined ||
+				agent.kind !== 'acp' ||
+				agent.command !== undefined ||
+				entry === undefined
+					? undefined
+					: acpFetchRefusal(entry, trusted);
 			byId.set(agent.id, {
 				id: agent.id,
 				name: agent.name ?? agent.id,
 				kind: agent.kind,
 				origin,
-				launch: declaredLaunch(agent),
+				launch,
+				...(refusal === undefined ? {} : { refusal }),
 				declared: agent,
 				found: foundFor(agent.id),
 			});
+		}
 	for (const agent of input.registry?.agents ?? []) {
 		if (byId.has(agent.id)) continue;
 		const found = foundFor(agent.id);
 		if (found.length === 0 && input.all !== true) continue;
 		const installed = input.installedDir?.(agent);
+		const launch =
+			acpLaunchOf(agent, {
+				trusted,
+				...(installed === undefined ? {} : { installedDir: installed }),
+			}) ?? onPathLaunch(agent, found);
+		const refusal =
+			launch === undefined ? acpFetchRefusal(agent, trusted) : undefined;
 		byId.set(agent.id, {
 			id: agent.id,
 			name: agent.name,
 			kind: 'acp',
 			origin: found.length === 0 ? 'registry' : 'detected',
-			launch:
-				acpLaunchOf(
-					agent,
-					installed === undefined ? {} : { installedDir: installed },
-				) ?? onPathLaunch(agent, found),
+			launch,
+			...(refusal === undefined ? {} : { refusal }),
 			found,
 		});
 	}

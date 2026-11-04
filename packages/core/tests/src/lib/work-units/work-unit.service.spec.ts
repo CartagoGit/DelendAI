@@ -29,9 +29,13 @@ import type {
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 import { syncUnitsAtStart } from '@delendai/core/lib/work-units/unit-forge-sync.service';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { commitOnRef } from './unit-repo.helper';
 
 const roots: string[] = [];
 const command = { run: runWorkUnit };
+/** The unit these cases work in, and another agent's beside it. */
+const MINE = 'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe';
+const THEIRS = 'delendai/wip/gpt-5/implement/x00553-S9-g1/their-own-slice';
 
 /** A verdict written in a review unit: the change that makes it a pack. */
 const recordVerdict = (unit: string, name: string): void => {
@@ -126,42 +130,24 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('persists work to its ref and never moves the checkout', async () => {
+	it('takes nothing from the shared checkout and never moves it (x01003)', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		const result = await checkpoint(root, ['--paths=a.ts']);
-		expect(result.code).toBe(0);
-		expect(result.data).toMatchObject({
-			status: 'created',
-			ref: 'refs/heads/delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
-		});
-		// The two properties the model rests on.
+		const result = await checkpoint(root, ['--paths=README.md']);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('Nothing is checkpointed');
+		expect(result.error).toContain('README.md: unchanged here');
+		expect(result.error).toContain('delendai work enter');
 		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe('develop');
-		expect(
-			git(
-				root,
-				'show',
-				'--name-only',
-				'--format=',
-				'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
-			),
-		).toBe('a.ts');
+		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 	});
 
-	it('captures only the claimed paths, leaving another agent edits alone', async () => {
+	it("refuses while another agent's edits sit in the shared checkout, and leaves them (x01003)", async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'mine.ts'), 'export const mine = 1;\n');
 		writeFileSync(join(root, 'theirs.ts'), 'export const theirs = 1;\n');
-		await checkpoint(root, ['--paths=mine.ts']);
-		expect(
-			git(
-				root,
-				'show',
-				'--name-only',
-				'--format=',
-				'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
-			),
-		).toBe('mine.ts');
+		const result = await checkpoint(root, ['--paths=theirs.ts']);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('delendai work rescue');
+		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 		// Still dirty in the tree, still theirs.
 		expect(git(root, 'status', '--porcelain')).toContain('theirs.ts');
 	});
@@ -169,11 +155,11 @@ describe('delendai work (x00553)', () => {
 	it('refuses to checkpoint from a checkout that wandered off', async () => {
 		const root = repoWith(PINNED);
 		git(root, 'switch', '-q', '-c', 'somewhere-else');
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		const result = await checkpoint(root, ['--paths=a.ts']);
+		const result = await checkpoint(root, ['--paths=README.md']);
 		expect(result.code).not.toBe(0);
-		expect(result.error).toContain('not anchored');
-		expect(result.error).toContain('git switch develop');
+		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe(
+			'somewhere-else',
+		);
 	});
 
 	it('names what a checkpoint is missing instead of guessing', async () => {
@@ -574,8 +560,7 @@ describe('delendai work (x00553)', () => {
 
 	it('shows the swarm as data, and as lines a person reads', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, ['--paths=a.ts']);
+		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const asData = await command.run(['swarm'], contextFor(root));
 		expect(asData.code).toBe(0);
 		expect(asData.data).toMatchObject({ integration: 'develop' });
@@ -643,8 +628,7 @@ describe('delendai work (x00553)', () => {
 		roots.push(remote);
 		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
 		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, ['--paths=a.ts']);
+		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const result = await command.run(
 			[
 				'publish',
@@ -676,8 +660,7 @@ describe('delendai work (x00553)', () => {
 		roots.push(remote);
 		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
 		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, ['--paths=a.ts']);
+		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const result = await command.run(
 			[
 				'publish',
@@ -706,9 +689,10 @@ describe('delendai work (x00553)', () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
 			recursive: true,
 		});
-		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		commitOnRef(root, MINE, {
+			[doc]: '# x00553\n\n### S1 — one\n',
+			'a.ts': 'export const a = 1;\n',
+		});
 		const result = await command.run(
 			[
 				'publish',
@@ -747,9 +731,10 @@ describe('delendai work (x00553)', () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/done'), {
 			recursive: true,
 		});
-		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		commitOnRef(root, MINE, {
+			[doc]: '# x00553\n\n### S1 — one\n',
+			'a.ts': 'export const a = 1;\n',
+		});
 		const result = await command.run(
 			[
 				'publish',
@@ -783,8 +768,7 @@ describe('delendai work (x00553)', () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/ready/fixes'), {
 			recursive: true,
 		});
-		writeFileSync(join(root, doc), '# x00553\n\nTODO\n');
-		await checkpoint(root, [`--paths=${doc}`]);
+		commitOnRef(root, MINE, { [doc]: '# x00553\n\nTODO\n' });
 		const synced = await syncUnitsAtStart({
 			root,
 			policy: resolveDevelopmentPolicy(PINNED),
@@ -816,9 +800,10 @@ describe('delendai work (x00553)', () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
 			recursive: true,
 		});
-		writeFileSync(join(root, working), '# x00553\n\n### S1 — one\n');
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, [`--paths=a.ts,${working}`]);
+		commitOnRef(root, MINE, {
+			[working]: '# x00553\n\n### S1 — one\n',
+			'a.ts': 'export const a = 1;\n',
+		});
 		const branch = git(
 			root,
 			'for-each-ref',
@@ -1263,8 +1248,7 @@ describe('delendai work (x00553)', () => {
 
 	it('reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await checkpoint(root, ['--paths=a.ts']);
+		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const result = await command.run(
 			[
 				'publish',
@@ -1284,23 +1268,9 @@ describe('delendai work (x00553)', () => {
 	});
 	it('names the agent already in these paths instead of refusing bare (x00555 S2)', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
 		// Another agent gets there first, in a unit of its own.
-		const theirs = await command.run(
-			[
-				'checkpoint',
-				'--proposal=x00553',
-				'--slice=S9',
-				'--agent=gpt-5',
-				'--topic=their-own-slice',
-				'--message=feat: theirs',
-				'--paths=a.ts',
-			],
-			contextFor(root),
-		);
-		expect(theirs.code).toBe(0);
+		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
 
-		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
 		const mine = await checkpoint(root, ['--paths=a.ts']);
 
 		expect(mine.code).not.toBe(0);
@@ -1314,40 +1284,18 @@ describe('delendai work (x00553)', () => {
 		expect(said).toContain('delendai work claim --ref=');
 	});
 
-	it('lets an agent checkpoint beside another unit that shares no path (x00555 S2)', async () => {
+	it('refuses a checkpoint beside another unit for the checkout, not for the unit (x00555 S2, x01003)', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await command.run(
-			[
-				'checkpoint',
-				'--proposal=x00553',
-				'--slice=S9',
-				'--agent=gpt-5',
-				'--topic=their-own-slice',
-				'--message=feat: theirs',
-				'--paths=a.ts',
-			],
-			contextFor(root),
-		);
-		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
-		expect((await checkpoint(root, ['--paths=b.ts'])).code).toBe(0);
+		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
+		const mine = await checkpoint(root, ['--paths=b.ts']);
+		expect(mine.code).not.toBe(0);
+		expect(mine.error).toContain('Nothing is checkpointed');
+		expect(mine.error).not.toContain('gpt-5');
 	});
 	it('tells an entering agent what the rest of the swarm is doing (x00555 S3)', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
 		// Somebody else is already live, on a path of their own.
-		await command.run(
-			[
-				'checkpoint',
-				'--proposal=x00553',
-				'--slice=S9',
-				'--agent=gpt-5',
-				'--topic=their-own-slice',
-				'--message=feat: theirs',
-				'--paths=a.ts',
-			],
-			contextFor(root),
-		);
+		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
 		const entered = await command.run(
 			[
 				'enter',
@@ -1407,19 +1355,7 @@ describe('delendai work, as a person reads it', () => {
 
 	it('prints the briefing to an entering agent, not only the JSON (x00555 S3)', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await command.run(
-			[
-				'checkpoint',
-				'--proposal=x00553',
-				'--slice=S9',
-				'--agent=gpt-5',
-				'--topic=their-own-slice',
-				'--message=feat: theirs',
-				'--paths=a.ts',
-			],
-			contextFor(root),
-		);
+		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
 		const out = await printed(() =>
 			command.run(
 				[
@@ -1439,19 +1375,9 @@ describe('delendai work, as a person reads it', () => {
 
 	it('prints the swarm, naming the paths more than one unit is changing', async () => {
 		const root = repoWith(PINNED);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		await command.run(
-			[
-				'checkpoint',
-				'--proposal=x00553',
-				'--slice=S9',
-				'--agent=gpt-5',
-				'--topic=theirs',
-				'--message=feat: theirs',
-				'--paths=a.ts',
-			],
-			contextFor(root),
-		);
+		commitOnRef(root, 'delendai/wip/gpt-5/implement/x00553-S9-g1/theirs', {
+			'a.ts': 'export const a = 1;\n',
+		});
 		const out = await printed(() =>
 			command.run(['swarm'], contextFor(root, { json: false })),
 		);

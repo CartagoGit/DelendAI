@@ -84,7 +84,48 @@ describe('openPublicationPullRequest', () => {
 			status: 'existing',
 			url: 'https://github.com/owner/repo/pull/3',
 		});
-		expect(ports.created).toEqual([]);
+		expect(ports.created.filter((args) => args[1] === 'create')).toEqual(
+			[],
+		);
+	});
+
+	it('retitles and re-summarises an open pull request whose scope shrank', () => {
+		const patches: string[][] = [];
+		const open = 'https://github.com/owner/repo/pull/3';
+		const run = (subjects: string) => {
+			const ports = portsWith({
+				url: 'https://github.com/owner/repo',
+				existing: open,
+				subjects,
+			});
+			return openPublicationPullRequest({
+				...INPUT,
+				ports: {
+					git: (args) =>
+						args[0] === 'diff' ? 'a.ts' : ports.git(args),
+					gh: (args) => {
+						if (args.includes('PATCH')) {
+							patches.push([...args]);
+							return open;
+						}
+						if (args[0] === 'api') return 'stale';
+						return ports.gh(args);
+					},
+				},
+			});
+		};
+		run('feat(x): one x00001 S1\nfeat(x): two x00001 S2');
+		const result = run('feat(x): one x00001 S1');
+		expect(result).toEqual({
+			status: 'updated',
+			url: open,
+			title: 'feat(x): one x00001 S1',
+		});
+		expect(patches[0]?.join(' ')).toContain('(+1 more)');
+		const last = patches[1]?.join('\n') ?? '';
+		expect(last).not.toContain('more)');
+		expect(last).toContain('Ships: x00001 S1.');
+		expect(last).toContain('Final diff: 1 file(s)');
 	});
 
 	it('says what to do on another forge, or without its CLI', () => {

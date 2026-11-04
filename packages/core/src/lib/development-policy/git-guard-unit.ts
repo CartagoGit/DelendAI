@@ -78,6 +78,6 @@ export const refuseSecondRefOfUnit = (
 	return {
 		refused: true,
 		reason: `\`${branch}\` is a second ref in a unit that already has \`${holder}\`: a unit has one work ref, and anything else under its name reads as work to the swarm and the reconciler.`,
-		remedy: 'Commit in the unit and checkpoint or publish it (`delendai work checkpoint`, `delendai work publish`). Scratch refs and simulations belong in a local throwaway repository, not on the remote.',
+		remedy: "Commit in the unit's worktree and publish it (`delendai work publish`). Scratch refs and simulations belong in a local throwaway repository, not on the remote.",
 	};
 };
