@@ -10,13 +10,22 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { fakePartial } from '@delendai/test-kit';
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+	afterAll,
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from 'vitest';
 
 import {
 	buildAssemblyDiagnostics,
 	formatVerbose,
 	migratePresetOnStart,
 	prepareServerBlueprintOnStart,
+	runCli,
 	runDoctor,
 } from '@delendai/core/lib/cli/run-cli';
 import type { IDelendaiHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
@@ -33,6 +42,21 @@ import type {
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+
+const mocks = vi.hoisted(() => ({
+	create: vi.fn(),
+	shutdown: vi.fn(),
+	runInit: vi.fn(),
+}));
+vi.mock('@delendai/core/lib/project/create-mcp-project', () => ({
+	createMcpProject: mocks.create,
+}));
+vi.mock('@delendai/core/lib/cli/graceful-shutdown', () => ({
+	gracefulShutdown: mocks.shutdown,
+}));
+vi.mock('@delendai/core/lib/cli/run-init', () => ({
+	runInit: mocks.runInit,
+}));
 
 const WRITABLE_WORKSPACE = createTestWorkspace('delendai-run-cli-');
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
@@ -272,5 +296,108 @@ describe('runDoctor', async () => {
 			'shared',
 			'shared',
 		]);
+	});
+});
+
+describe('runCli', () => {
+	const roots: string[] = [];
+	const lean = JSON.stringify({
+		plugins: { docs: {}, git: {}, memory: {}, search: {} },
+	});
+	const workspace = async (): Promise<string> => {
+		const root = await mkdtemp(join(tmpdir(), 'run-cli-'));
+		roots.push(root);
+		return root;
+	};
+	const assembled = () => ({
+		registrationOrder: ['t1'],
+		start: vi.fn(async () => undefined),
+		dispose: vi.fn(async () => undefined),
+		server: {},
+	});
+	beforeEach(() => {
+		mocks.create.mockReset();
+		mocks.shutdown.mockReset();
+		mocks.runInit.mockReset();
+		vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		vi.spyOn(process, 'on').mockImplementation(() => process);
+	});
+	afterEach(async () => {
+		vi.restoreAllMocks();
+		process.exitCode = undefined;
+		await Promise.all(
+			roots
+				.splice(0)
+				.map((root) => rm(root, { recursive: true, force: true })),
+		);
+	});
+
+	it('hands `init` to the init command and stops', async () => {
+		await runCli(['init', '--yes'], '/cwd');
+		expect(mocks.runInit).toHaveBeenCalledWith(['--yes'], '/cwd');
+		expect(mocks.create).not.toHaveBeenCalled();
+	});
+
+	it('prints the doctor report for --check without starting the server', async () => {
+		const root = await workspace();
+		mocks.create.mockResolvedValue(assembled());
+		await runCli(
+			[
+				`--workspace=${root}`,
+				'--surface=native',
+				'--plugins=',
+				'--check',
+			],
+			root,
+		);
+		expect(process.stdout.write).toHaveBeenCalled();
+		expect(mocks.create.mock.calls.length).toBeLessThanOrEqual(1);
+	});
+
+	it('journals the retired preset on start even with an explicit --config', async () => {
+		const root = await workspace();
+		await writeFile(join(root, 'shared.config.json'), lean);
+		const server = assembled();
+		mocks.create.mockResolvedValue(server);
+		await runCli(
+			[
+				`--workspace=${root}`,
+				'--config=shared.config.json',
+				'--surface=native',
+				'--plugins=',
+				'--verbose',
+				'--mcp-project-create=false',
+			],
+			root,
+		);
+		expect(server.start).toHaveBeenCalledOnce();
+		const journal = await readFile(
+			join(root, '.cache/delendai/preset-migration.jsonl'),
+			'utf8',
+		);
+		expect(JSON.parse(journal.trim())).toMatchObject({ retired: 'lean' });
+	});
+
+	it('wires the shutdown signals and prepares the blueprint after boot', async () => {
+		const root = await workspace();
+		const server = assembled();
+		mocks.create.mockResolvedValue(server);
+		await runCli(
+			[`--workspace=${root}`, '--surface=native', '--plugins='],
+			root,
+		);
+		const signals = vi
+			.mocked(process.on)
+			.mock.calls.map(([name]) => String(name));
+		expect(signals).toEqual(expect.arrayContaining(['SIGTERM', 'SIGINT']));
+		const handler = vi
+			.mocked(process.on)
+			.mock.calls.find(([name]) => String(name) === 'SIGTERM')?.[1] as
+			| (() => void)
+			| undefined;
+		handler?.();
+		await vi.waitFor(() => expect(mocks.shutdown).toHaveBeenCalled());
+		expect(server.dispose).toHaveBeenCalled();
 	});
 });
