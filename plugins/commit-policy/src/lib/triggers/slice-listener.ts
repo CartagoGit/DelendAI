@@ -11,7 +11,7 @@
  * un-marked so the next poll re-emits it — guaranteed delivery.
  */
 
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
@@ -20,6 +20,12 @@ import {
 	MAX_DELIVERY_ATTEMPTS,
 } from '../contracts/constants/slice-listener.constant';
 import type { ISliceSnapshotEntry as SliceSnapshotEntry } from '../contracts/interfaces/slice-snapshot.interface';
+import {
+	PROPOSALS_SAFETY_POLL_MS,
+	PROPOSALS_TAKEOVER_POLL_MS,
+} from '../contracts/constants/proposals-watch.constant';
+import type { IProposalsWatch } from '../contracts/interfaces/proposals-watch.interface';
+import { watchProposals } from './proposals-watch.service';
 import { createSliceSnapshotReader } from './slice-snapshot.service';
 import type { ITriggerEvent, ISliceTriggerConfig } from './trigger-types';
 
@@ -281,6 +287,19 @@ export const createSliceListener = (
 		event: ITriggerEvent,
 		asked: 'at-start' | 'on-change',
 	) => Promise<boolean>,
+	/**
+	 * `watch` wakes the listener when a proposal document changes and
+	 * leaves a slow safety poll, so an idle server reads nothing.
+	 */
+	options: {
+		readonly watch?: boolean;
+		/**
+		 * Why this server must not poll now, or `undefined` when it may:
+		 * the maintenance lease. Several servers on one workspace read the
+		 * proposals and close slices once, on the holder.
+		 */
+		readonly standDown?: () => Promise<string | undefined>;
+	} = {},
 ): ISliceListener => {
 	const snapshot = createSliceSnapshotReader(
 		new SafeWorkspaceReader(workspaceRoot),
@@ -300,6 +319,7 @@ export const createSliceListener = (
 	// which poll first saw the index, it is whether each already-`done`
 	// slice was ever actually persisted — and only the store knows that.
 	let timer: ReturnType<typeof setInterval> | undefined;
+	let watcher: IProposalsWatch | undefined;
 	let checkInFlight: Promise<readonly ITriggerEvent[]> | undefined;
 	const pending = new Map<string, ITriggerEvent>();
 	const acknowledged = new Map<string, string>();
@@ -532,23 +552,100 @@ export const createSliceListener = (
 			refusals.length = 0;
 			return out;
 		},
-		start() {
-			if (timer !== undefined) return Promise.resolve();
+		async start() {
+			if (timer !== undefined) return;
+			const mayRun = async (): Promise<boolean> =>
+				options.standDown === undefined ||
+				(await options.standDown().catch(() => 'unknown')) ===
+					undefined;
+			let held = true;
+			let lastCheck = Date.now();
+			let watching = false;
+			let checking = false;
+			let again = false;
+			// One cheap tick at the poll pace: it reads nothing while a
+			// watch is live (it only asks the lease now and then), and polls
+			// as before while none is, which includes a proposals folder
+			// that did not exist yet.
+			timer = setInterval(() => void poll(), pollMs);
+			timer.unref();
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
-			const primed = check().then(() => undefined);
+			const primed = (await mayRun())
+				? check().then(() => undefined)
+				: Promise.resolve();
 			const pacer = createPollPacer();
-			timer = setInterval(() => {
+			let lastAsk = 0;
+			const connect = async (): Promise<void> => {
+				if (options.watch !== true || watching) return;
+				const found = await watchProposals(
+					resolve(workspaceRoot, join(proposalsDir, 'proposals')),
+					onChange,
+				);
+				if (found === undefined) return;
+				if (timer === undefined) {
+					// Stopped while the watch was being set up.
+					found.close();
+					return;
+				}
+				watcher = found;
+				watching = true;
+				// Whatever changed before the watch began is read once.
+				lastCheck = 0;
+			};
+			const poll = async (): Promise<void> => {
+				await connect();
+				if (
+					watching &&
+					Date.now() - lastAsk < PROPOSALS_TAKEOVER_POLL_MS
+				)
+					return;
+				lastAsk = Date.now();
+				if (!(await mayRun())) {
+					held = false;
+					return;
+				}
+				// A server that just took the lease reads once; one that
+				// holds it and is watching reads only as a safety net.
+				const taken = !held;
+				held = true;
+				if (
+					watching &&
+					!taken &&
+					Date.now() - lastCheck < PROPOSALS_SAFETY_POLL_MS
+				)
+					return;
 				const finished = pacer.begin();
 				if (finished === undefined) return;
-				void check()
+				lastCheck = Date.now();
+				await check()
 					.catch(() => undefined)
 					.finally(finished);
-			}, pollMs);
-			if (typeof timer.unref === 'function') timer.unref();
-			return primed;
+			};
+			const onChange = (): void => {
+				if (checking) {
+					again = true;
+					return;
+				}
+				checking = true;
+				void mayRun()
+					.then((may) => (may ? check() : undefined))
+					.catch(() => undefined)
+					.finally(() => {
+						checking = false;
+						lastCheck = Date.now();
+						if (again) {
+							again = false;
+							onChange();
+						}
+					});
+			};
+			await connect();
+			await primed;
 		},
 		stop() {
+			watcher?.close();
+			watcher = undefined;
 			if (timer !== undefined) {
 				clearInterval(timer);
 				timer = undefined;
