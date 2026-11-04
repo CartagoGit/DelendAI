@@ -34,7 +34,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - **Files**: `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`, `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "`readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` installed with `useGitReadCache`, and every spawn is reported to its `ran`. With neither installed they behave exactly as today."
+  - "`readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` that `withGitReadCache` scopes to one call (AsyncLocalStorage, so concurrent invocations never share one), and every spawn is reported to its `ran`. With neither installed they behave exactly as today."
   - "unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`."
   - "git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing."
 
@@ -80,7 +80,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 
 ## acceptance
 
-- `readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` installed with `useGitReadCache`, and every spawn is reported to its `ran`. With neither installed they behave exactly as today.
+- `readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` that `withGitReadCache` scopes to one call (AsyncLocalStorage, so concurrent invocations never share one), and every spawn is reported to its `ran`. With neither installed they behave exactly as today.
 - unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`.
 - git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing.
 - One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`.

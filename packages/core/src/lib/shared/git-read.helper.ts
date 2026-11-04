@@ -8,6 +8,7 @@
  * answer about the hook's. This read drops what a hook told git when the
  * command runs elsewhere, and answers `undefined` on any failure.
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { execFileSync } from 'node:child_process';
 
 import type {
@@ -21,7 +22,7 @@ import { gitEnvironmentFor } from './hook-free-environment.helper';
 const DEFAULT_MAX_BUFFER = 64 * 1024 * 1024;
 
 const observers = new Set<GitSpawnObserver>();
-let readCache: IGitReadCache | undefined;
+const readCache = new AsyncLocalStorage<IGitReadCache>();
 
 /** Watch every git process the seam starts; the answer stops watching. */
 export const observeGitSpawns = (observer: GitSpawnObserver): (() => void) => {
@@ -32,16 +33,12 @@ export const observeGitSpawns = (observer: GitSpawnObserver): (() => void) => {
 };
 
 /**
- * Remember reads through `cache` until the answer is called, which puts
- * back the cache that was there before.
+ * Run `body` with its git reads answered through `cache`. The cache
+ * belongs to that call and what it awaits: two invocations running at
+ * once in one server never see each other's, and none outlives its call.
  */
-export const useGitReadCache = (cache: IGitReadCache): (() => void) => {
-	const previous = readCache;
-	readCache = cache;
-	return () => {
-		readCache = previous;
-	};
-};
+export const withGitReadCache = <T>(cache: IGitReadCache, body: () => T): T =>
+	readCache.run(cache, body);
 
 /**
  * Every git spawn in this package reports here first: the observers count
@@ -49,7 +46,7 @@ export const useGitReadCache = (cache: IGitReadCache): (() => void) => {
  */
 export const noteGitSpawn = (cwd: string, args: readonly string[]): void => {
 	const spawn: IGitSpawn = { cwd, args };
-	readCache?.ran(spawn);
+	readCache.getStore()?.ran(spawn);
 	for (const observer of observers) observer(spawn);
 };
 
@@ -83,7 +80,7 @@ const cachedRead = (
 	args: readonly string[],
 	options: IGitReadOptions,
 ): string | undefined => {
-	const cache = readCache;
+	const cache = readCache.getStore();
 	if (cache === undefined || options.input !== undefined)
 		return spawnRead(cwd, args, options);
 	const spawn: IGitSpawn = { cwd, args };

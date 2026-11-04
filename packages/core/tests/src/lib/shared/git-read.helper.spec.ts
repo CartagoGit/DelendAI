@@ -15,7 +15,7 @@ import {
 	gitVerbatim,
 	observeGitSpawns,
 	readGit,
-	useGitReadCache,
+	withGitReadCache,
 } from '@delendai/core/lib/shared/git-read.helper';
 import { createGitRunner } from '@delendai/core/lib/shared/git-write';
 
@@ -80,20 +80,29 @@ describe('the spawn seam', () => {
 		const ran: string[] = [];
 		const key = ({ cwd, args }: IGitSpawn): string =>
 			`${cwd}\0${args.join('\0')}`;
-		const stop = useGitReadCache({
-			recall: (spawn) =>
+		const cache = {
+			recall: (spawn: IGitSpawn) =>
 				remembered.has(key(spawn))
 					? { output: remembered.get(key(spawn)) }
 					: undefined,
-			remember: (spawn, output) => remembered.set(key(spawn), output),
-			ran: (spawn) => ran.push(spawn.args.join(' ')),
+			remember: (spawn: IGitSpawn, output: string | undefined) => {
+				remembered.set(key(spawn), output);
+			},
+			ran: (spawn: IGitSpawn) => {
+				ran.push(spawn.args.join(' '));
+			},
+		};
+		const [first, again, verbatim] = withGitReadCache(cache, () => {
+			const answers = [
+				readGit(root, ['rev-parse', '--git-dir']),
+				readGit(root, ['rev-parse', '--git-dir']),
+				gitVerbatim(root, ['rev-parse', '--git-dir']),
+			];
+			readGit(root, ['hash-object', '--stdin'], { input: 'x\n' });
+			runGitCommand(root, ['update-ref', 'refs/heads/x', 'HEAD']);
+			return answers;
 		});
-		const first = readGit(root, ['rev-parse', '--git-dir']);
-		const again = readGit(root, ['rev-parse', '--git-dir']);
-		const verbatim = gitVerbatim(root, ['rev-parse', '--git-dir']);
-		readGit(root, ['hash-object', '--stdin'], { input: 'x\n' });
-		runGitCommand(root, ['update-ref', 'refs/heads/x', 'HEAD']);
-		stop();
+		readGit(root, ['rev-parse', '--git-dir']);
 		expect(first).toBe('.git');
 		expect(again).toBe('.git');
 		expect(verbatim).toBe('.git\n');
