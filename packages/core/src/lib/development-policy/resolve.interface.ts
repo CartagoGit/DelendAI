@@ -30,6 +30,9 @@ export interface IDevelopmentConfigInput {
 	readonly branches?:
 		| {
 				readonly namespacePrefix?: string | undefined;
+				readonly formerNamespacePrefixes?:
+					| readonly string[]
+					| undefined;
 				readonly integration?: string | undefined;
 				readonly release?: string | undefined;
 				readonly workRefTemplate?: string | undefined;
