@@ -57,14 +57,16 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 4a3d2988e9ff is stale: S2 files changed after delivery (e.g. 7698da8c9). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and baseline-labelled evidence.
 
 ### S3 — usage-tracking and memory arithmetic
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/usage-tracking/src/lib/rollup.ts`, `plugins/usage-tracking/src/index.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/memory/src/lib/services/store-recall.ts`
 - **Gate**: type
 - acceptance:
   - "Latency uses the elapsed each call carries (USAGE-02); savingsPercent keeps one denominator (USAGE-03); a figure with no baseline is named bytesDelivered, not bytesAvoided (G61-MEM03)."
 - shipped-in: `e7c75bfcca0c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in e7c75bfcca0c is stale: S3 files changed afterward (e.g. 4a6c345e2). Redeliver S3 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S4 — Manifest budgets match the definitions
 - **Status**: review
