@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	namespacedRef,
 	ownedRefRoots,
+	ownedRootsOf,
 } from '@delendai/core/lib/work-units/namespaced-ref.helper';
 
 describe('namespacedRef', () => {
@@ -31,6 +33,23 @@ describe('ownedRefRoots', () => {
 	it('names one root when nothing was left behind', () => {
 		expect(ownedRefRoots(['delendai'], 'ids')).toEqual([
 			'refs/delendai/ids',
+		]);
+	});
+});
+
+describe('ownedRootsOf', () => {
+	it('reads the namespaces from the policy, current first', () => {
+		const branches = resolveDevelopmentPolicy({
+			development: {
+				branches: {
+					namespacePrefix: '',
+					formerNamespacePrefixes: ['delendai'],
+				},
+			},
+		}).branches;
+		expect(ownedRootsOf(branches, 'retired', '*')).toEqual([
+			'refs/retired/*',
+			'refs/delendai/retired/*',
 		]);
 	});
 });

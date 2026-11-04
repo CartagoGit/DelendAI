@@ -40,6 +40,7 @@ import {
 	mergeFlagFor,
 } from '../lib/declared-branches';
 import { hasSeparateReleaseBranch } from '@delendai/core/cli';
+import { ownedPublicationRefPrefixes } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
 
@@ -69,7 +70,28 @@ const APPLY = process.argv.includes('--apply');
  * the sync was open (#913, 2026-10-07): a branch DelendAI made failed
  * the rule DelendAI holds every agent's branches to.
  */
-export const FORWARD_SYNC_REF_PREFIX = 'delendai/pr/delendai/sync/forward-';
+const FORWARD_SYNC_UNIT = 'delendai/sync/forward-';
+
+/**
+ * The forward sync's ref prefix under each publication prefix the policy
+ * owns, current first: the one it is opened under, then those a sync
+ * opened before a namespace change may still carry (f00808).
+ */
+export const forwardSyncRefPrefixes = (
+	branches: Parameters<
+		typeof ownedPublicationRefPrefixes
+	>[0] = declaredBranches(),
+): readonly string[] =>
+	ownedPublicationRefPrefixes(branches).map(
+		(prefix) => `${prefix}${FORWARD_SYNC_UNIT}`,
+	);
+
+/** Whether `ref` is a forward sync, under any owned publication prefix. */
+export const isForwardSyncRef = (
+	ref: string,
+	branches?: Parameters<typeof forwardSyncRefPrefixes>[0],
+): boolean =>
+	forwardSyncRefPrefixes(branches).some((prefix) => ref.startsWith(prefix));
 
 /**
  * What carrying the release tip back amounts to, from facts alone.
@@ -100,8 +122,11 @@ export const mergeOutcome = (input: {
 };
 
 /** One candidate per release tip, so a rerun finds the one it opened. */
-export const forwardSyncRef = (releaseSha: string): string =>
-	`${FORWARD_SYNC_REF_PREFIX}${releaseSha.slice(0, 9)}-g1/carries-the-release-back`;
+export const forwardSyncRef = (
+	releaseSha: string,
+	branches?: Parameters<typeof forwardSyncRefPrefixes>[0],
+): string =>
+	`${forwardSyncRefPrefixes(branches)[0] ?? FORWARD_SYNC_UNIT}${releaseSha.slice(0, 9)}-g1/carries-the-release-back`;
 
 /** The one-line reason, so the verdict never travels without it. */
 export const forwardSyncExplanation = (
@@ -330,7 +355,7 @@ const main = (): number => {
 		return 0;
 	}
 
-	const ref = forwardSyncRef(releaseSha);
+	const ref = forwardSyncRef(releaseSha, branches);
 	const open = must('gh', [
 		'pr',
 		'list',

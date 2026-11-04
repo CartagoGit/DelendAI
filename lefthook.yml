@@ -295,7 +295,7 @@ pre-commit:
 #     publication-proof (skip) no matching push files
 #
 # …followed by a green summary. Reproduced with `git push --dry-run` of a
-# sha at a `refs/heads/delendai/pr/*` ref. lefthook v2 exposes no option
+# sha at a publication ref (`refs/heads/<ns>/pr/*`). lefthook v2 exposes no option
 # that turns this off (`skip_empty` is not in its schema — do not add it
 # back, it is inert).
 #

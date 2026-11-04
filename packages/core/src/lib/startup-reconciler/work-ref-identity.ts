@@ -17,6 +17,8 @@
  * invent an owner for it and refuses, even more firmly, to delete it.
  */
 
+import { WORK_REF_SCOPE_CLASS } from '../contracts/constants/work-ref-scope.constant';
+import { parseWorkRefScope } from '../development-policy/work-ref-scope';
 import { WORK_KINDS } from '../development-policy/profiles.constant';
 import {
 	legacyWorkKind,
@@ -49,6 +51,7 @@ const escapeLiteral = (value: string): string =>
  */
 const classFor = (key: string, nextChar: string | undefined): string => {
 	if (key === 'generation') return '\\d+';
+	if (key === 'scope') return WORK_REF_SCOPE_CLASS;
 	// Only a word of the vocabulary: a kind is never free text, and an
 	// alternation keeps a ref written before the kind segment existed
 	// from being misread with its proposal taken for a kind.
@@ -195,16 +198,26 @@ export const compileWorkRefParser = (
 			order.forEach((key, index) => {
 				values[key] = found[index + 1] ?? '';
 			});
-			const generation = Number.parseInt(values.generation ?? '', 10);
+			// A readable name carries proposal, slice and generation in one
+			// segment (f00808 S9).
+			const scope =
+				values.scope === undefined
+					? undefined
+					: parseWorkRefScope(values.scope);
+			if (values.scope !== undefined && scope === undefined)
+				return undefined;
+			const generation =
+				scope?.generation ??
+				Number.parseInt(values.generation ?? '', 10);
 			if (!Number.isFinite(generation)) return undefined;
-			const slice = values.slice ?? '';
+			const slice = scope?.slice ?? values.slice ?? '';
 			return {
 				agent: values.agent ?? '',
 				kind:
 					values.kind === undefined || values.kind === ''
 						? legacyWorkKind(slice)
 						: values.kind,
-				proposal: values.proposal ?? '',
+				proposal: scope?.proposal ?? values.proposal ?? '',
 				slice,
 				generation,
 				...(values.topic === undefined || values.topic === ''

@@ -18,6 +18,9 @@ import { join } from 'node:path';
 // '@modelcontextprotocol/sdk/server/mcp.js'` — before it could check
 // anything. A lint guard should not need a server to read a branch rule.
 import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
+import { parseJsonc } from '@delendai/core/lib/config/jsonc-document';
+import { ownedPublicationRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 // The branch and its checks come from the generated projection of the
 // canonical development policy, so this guard cannot disagree with the
 // forge settings, the runtime broker, or the health verifiers. It used
@@ -254,6 +257,56 @@ export const compareLive = (
 		throw new Error('live develop allow_deletions differs');
 };
 
+/**
+ * The publication prefixes each `if:` of a workflow names in its
+ * `startsWith(github.head_ref|github.ref, '…pr/')` filters, one set per
+ * line. YAML cannot read the policy, so this is what keeps the filters
+ * and the policy from drifting apart (f00808).
+ */
+export const workflowPublicationFilters = (
+	workflow: string,
+): readonly (readonly string[])[] =>
+	workflow
+		.split('\n')
+		.map((line) =>
+			[
+				...line.matchAll(
+					/startsWith\(github\.(?:head_ref|ref), '([^']*pr\/)'\)/gu,
+				),
+			].map((match) => (match[1] ?? '').replace(/^refs\/heads\//u, '')),
+		)
+		.filter((prefixes) => prefixes.length > 0);
+
+/** Throws when a filter does not name exactly the owned publication prefixes. */
+export const assertPublicationFilters = (
+	workflow: string,
+	owned: readonly string[],
+): void => {
+	const want = [...owned].sort().join(', ');
+	for (const named of workflowPublicationFilters(workflow)) {
+		const got = [...new Set(named)].sort().join(', ');
+		if (got !== want) {
+			throw new Error(
+				`ci.yml filters publications by ${got}, but the policy owns ${want}: name every owned publication prefix (development.branches.namespacePrefix and formerNamespacePrefixes).`,
+			);
+		}
+	}
+};
+
+/** The publication prefixes the declared policy owns, as branch names. */
+const ownedPublicationFilters = (): readonly string[] => {
+	const { value } = parseJsonc(
+		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
+	);
+	const development = (value as { development?: Record<string, unknown> })
+		.development;
+	return ownedPublicationRefPrefixes(
+		resolveDevelopmentPolicy(
+			development === undefined ? {} : { development },
+		).branches,
+	);
+};
+
 export const run = (
 	argv: readonly string[] = process.argv.slice(2),
 ): number => {
@@ -262,6 +315,10 @@ export const run = (
 			readFileSync(SETTINGS_PATH, 'utf8'),
 		);
 		assertDeclaration(declaration);
+		assertPublicationFilters(
+			readFileSync(join(repoRoot(), '.github/workflows/ci.yml'), 'utf8'),
+			ownedPublicationFilters(),
+		);
 		if (argv.includes('--live')) {
 			const repo = process.env.GITHUB_REPOSITORY ?? REPOSITORY_SLUG;
 			let raw: string;

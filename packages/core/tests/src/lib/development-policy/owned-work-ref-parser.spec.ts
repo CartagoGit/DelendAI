@@ -8,6 +8,8 @@ import {
 	compileOwnedWorkRefParser,
 	ownedWorkRefShapeOf,
 	ownedWorkRefShapes,
+	branchesForRef,
+	unitPolicy,
 	workShapeOfPublication,
 } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
@@ -84,6 +86,24 @@ describe('owned work-ref parser', () => {
 		).toBeUndefined();
 		expect(compileOwnedWorkRefParser(plain)?.parse(OLD_UNIT)?.slice).toBe(
 			'S2',
+		);
+	});
+});
+
+describe('a unit in its own namespace', () => {
+	it('gives a former unit the settings of its namespace', () => {
+		const own = branchesForRef(transition, OLD_UNIT);
+		expect(own.namespacePrefix).toBe('delendai');
+		expect(own.workRefPrefix).toBe('heads/delendai/wip/');
+		expect(own.publicationRefPrefix).toBe('delendai/pr/');
+		expect(branchesForRef(transition, NEW_UNIT)).toBe(transition);
+	});
+
+	it('leaves the policy as it is for a current unit', () => {
+		const policy = { branches: transition };
+		expect(unitPolicy(policy, NEW_UNIT)).toBe(policy);
+		expect(unitPolicy(policy, OLD_UNIT).branches.namespacePrefix).toBe(
+			'delendai',
 		);
 	});
 });

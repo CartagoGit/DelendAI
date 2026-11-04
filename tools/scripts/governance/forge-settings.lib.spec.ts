@@ -272,6 +272,31 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 	});
 });
 
+describe('namespaceRuleset in a namespace transition (f00808)', () => {
+	it('lets both prefixes create refs, current first', () => {
+		const moved = policyFor({
+			profile: 'shared-checkout-pr',
+			branches: {
+				namespacePrefix: '',
+				formerNamespacePrefixes: ['delendai'],
+			},
+		});
+		const exclude = (
+			namespaceRuleset(moved) as {
+				conditions: { ref_name: { exclude: readonly string[] } };
+			}
+		).conditions.ref_name.exclude;
+		expect(exclude).toEqual(
+			expect.arrayContaining([
+				'refs/heads/wip/**/*',
+				'refs/heads/delendai/wip/**/*',
+				'refs/heads/pr/**/*',
+				'refs/heads/delendai/pr/**/*',
+			]),
+		);
+	});
+});
+
 describe('a project with one branch', () => {
 	const single = policyFor({
 		profile: 'shared-checkout-pr',

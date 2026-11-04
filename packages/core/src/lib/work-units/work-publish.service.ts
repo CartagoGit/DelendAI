@@ -15,6 +15,7 @@
  * work ref untouched. A publication that half happened must leave the
  * work recoverable, never tidy.
  */
+import { branchesForRef } from '../development-policy/owned-work-ref-parser';
 import { runGitCommand } from '../shared/git-command.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 
@@ -79,13 +80,15 @@ export const publicationRefFromWorkRef = (
 	workRef: string,
 ): string | undefined => {
 	const work = barePrefix(workRef.replace(/^refs\//u, ''));
-	const workPrefix = barePrefix(policy.branches.workRefPrefix);
+	// Each namespace publishes under its own prefix (f00808).
+	const own = branchesForRef(policy.branches, workRef);
+	const workPrefix = barePrefix(own.workRefPrefix);
 	if (workPrefix.length === 0 || !work.startsWith(workPrefix)) {
 		return undefined;
 	}
 	const tail = work.slice(workPrefix.length);
 	if (tail.length === 0) return undefined;
-	return `refs/heads/${barePrefix(policy.branches.publicationRefPrefix)}${tail}`;
+	return `refs/heads/${barePrefix(own.publicationRefPrefix)}${tail}`;
 };
 
 /** The worktree that has this ref checked out, if any. */
