@@ -2,14 +2,14 @@
 id: x01022
 title: "The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-11-04
-last-transition-id: 4a941319-be31-4761-b382-16f949a4b022
-last-correlation-id: 4a941319-be31-4761-b382-16f949a4b022
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:22:34.594Z
+last-transition-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
+last-correlation-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
+last-transition-from: review
+last-transition-at: 2026-11-04T22:16:34.991Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
@@ -56,14 +56,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — The dockerfile and scaffolder expressions
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/container/src/lib/lint/parse-dockerfile.ts`, `plugins/audit/src/lib/services/proposal-scaffolder.service.ts`
 - **Gate**: type
 - acceptance:
   - "#474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
