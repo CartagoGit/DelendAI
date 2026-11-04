@@ -2,7 +2,7 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
