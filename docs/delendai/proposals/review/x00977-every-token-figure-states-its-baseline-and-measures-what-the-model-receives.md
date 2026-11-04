@@ -44,15 +44,17 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 4a3d2988e9ff is stale: multiple S1 files changed afterward (e.g. 9507ac8d5, c86fdb0aa, 4f03c34b2, be1e796df). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ### S2 — Measurements state their baseline
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/report/token-budget-report-lib.ts`, `packages/client/src/lib/services/dashboard.service.ts`, `packages/ui-extension/src/dashboard/render-panel-tokens.ts`, `apps/shared/src/i18n/langs/en.ts`, `apps/shared/src/i18n/langs/es.ts`, `plugins/usage-tracking/src/lib/token-tax.helper.ts`, `plugins/project-kpis/src/lib/services/efficiency-analysis.service.ts`
 - **Gate**: type
 - acceptance:
   - "payloadBytes counts structuredContent, _meta, and text that does not restate the structured content (D36)."
   - "No fixed saving is shown; every figure names its baseline and whether it is measured or estimated (TOK-01, TOK-02, G96, G133)."
 - shipped-in: `4a3d2988e9ff`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 4a3d2988e9ff is stale: S2 files changed after delivery (e.g. 7698da8c9). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and baseline-labelled evidence.
 
 ### S3 — usage-tracking and memory arithmetic
 - **Status**: review
