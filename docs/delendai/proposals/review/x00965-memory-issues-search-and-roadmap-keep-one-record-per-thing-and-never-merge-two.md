@@ -44,15 +44,17 @@ Joint audit a00095 and gpt-6.1-sol. G118 and sol G61-MEM01: a note id comes from
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 992b77931962 is stale for this slice. `git log 992b77931962..develop -- <S1 files>` shows post-shipped changes in listed files (e.g. 1b134cc28), so acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ### S2 — issues and search
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/issues/src/lib/tools/ingest-issue.tool.ts`, `plugins/issues/src/lib/frontmatter.ts`, `plugins/issues/tests/src/lib/one-scaffold-per-issue.spec.ts`, `plugins/search/src/lib/embed/embed-pipeline.ts`, `plugins/search/src/lib/embed/embedder.ts`, `plugins/search/src/lib/embed/index-store.ts`, `plugins/search/src/lib/tools/search-semantic.tool.ts`, `plugins/search/tests/src/lib/embed/index-identity.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One scaffold per issue number (D56); multi-line comments round-trip (ISSUES-01)."
   - "The index keys on path plus hash and the cache on embedder id and dimension (SEARCH-01, SEARCH-02)."
 - shipped-in: `992b77931962`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 992b77931962 is stale for this slice. `git log 992b77931962..develop -- <S2 files>` shows post-shipped changes touching listed files (e.g. 72c295c0f), so acceptance must be re-validated on current develop with fresh empirical evidence.
 
 ### S3 — roadmap and self-learning
 - **Status**: review
