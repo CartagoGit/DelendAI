@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Choisissez votre IDE
 
-Les extraits ci-dessous utilisent le preset standard avec bun. Collez le JSON tel quel dans le fichier cible, puis laissez votre IDE enregistrer le serveur stdio.
+Les extraits ci-dessous utilisent le preset solo avec bun. Collez le JSON tel quel dans le fichier cible, puis laissez votre IDE enregistrer le serveur stdio.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Portée : projet
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Portée : projet / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Portée : global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Portée : projet
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Portée : global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Portée : global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ Portée : global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ Les presets sont additifs. Commencez petit, puis élargissez la surface de plugi
 ### minimal
 
 Usage recommandé : orientation en lecture seule et smoke tests CI.
-Taille : 2 plugins.
+Taille : 2 plugins · 42 outils · ~11805 tokens au démarrage
 
 - git
 - search
 
-### standard
+### solo
 
-Usage recommandé : travail mono-agent avec mémoire, docs, aide lint, types et dépendances.
-Taille : 7 plugins.
+Usage recommandé : un développeur et un agent au travail quotidien ; la valeur par défaut de `init`.
+Taille : 10 plugins · 79 outils · ~19037 tokens au démarrage
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Usage recommandé : une équipe qui travaille par pull requests, avec des conventions de commit et de tests.
+Taille : 18 plugins · 116 outils · ~25446 tokens au démarrage
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Usage recommandé : coordination multi-agent avec verrous, notifications, logs et marqueurs de clôture. Audit reste opt-in et doit être chargé séparément à la fin d'un round.
-Taille : 13 plugins.
+Usage recommandé : plusieurs agents partageant un checkout, avec propositions, logs et marqueurs de clôture.
+Taille : 19 plugins · 125 outils · ~26802 tokens au démarrage
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Usage recommandé : le preset swarm plus les intégrations host-only comme web-fetch et issues, lorsque l'hôte les expose.
-Taille : 15 plugins.
+Usage recommandé : revues et audits en lecture seule.
+Taille : 15 plugins · 89 outils · ~21955 tokens au démarrage
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Usage recommandé : documentation et sites web.
+Taille : 8 plugins · 61 outils · ~15696 tokens au démarrage
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Usage recommandé : diagnostic avec tous les plugins publiés, y compris ceux qui utilisent le réseau ou des identifiants.
+Taille : 58 plugins · 236 outils · ~59122 tokens au démarrage
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Vérifier
 

@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## अपना IDE चुनें
 
-नीचे दिए गए snippets bun पर standard preset का उपयोग करते हैं। JSON को target file में ज्यों का त्यों paste करें, फिर अपने IDE को stdio server register करने दें।
+नीचे दिए गए snippets bun पर solo preset का उपयोग करते हैं। JSON को target file में ज्यों का त्यों paste करें, फिर अपने IDE को stdio server register करने दें।
 
 ### VS Code
 
@@ -81,7 +81,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ deno run -A npm:@delendai/cli validate
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -244,64 +244,175 @@ Preset additive होते हैं। सबसे छोटे set से �
 
 ### minimal
 
-अनुशंसित उपयोग: read-only orientation और CI smoke tests।
-आकार: 2 plugins.
+अनुशंसित उपयोग: केवल-पढ़ने वाला ओरिएंटेशन और CI smoke tests।
+आकार: 2 प्लगइन · 42 टूल · ~11805 शुरुआती टोकन
 
 - git
 - search
 
-### standard
+### solo
 
-अनुशंसित उपयोग: memory, docs, lint, type, और dependency help के साथ single-agent काम।
-आकार: 7 plugins.
+अनुशंसित उपयोग: रोज़मर्रा की कोडिंग में एक डेवलपर और एक एजेंट; `init` का डिफ़ॉल्ट।
+आकार: 10 प्लगइन · 79 टूल · ~19037 शुरुआती टोकन
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+अनुशंसित उपयोग: pull requests के ज़रिए काम करने वाली टीम, commit और test conventions के साथ।
+आकार: 18 प्लगइन · 116 टूल · ~25446 शुरुआती टोकन
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-अनुशंसित उपयोग: locks, notifications, logs, और close markers के साथ multi-agent coordination। Audit अभी भी opt-in है और round खत्म होने पर अलग से load किया जाना चाहिए।
-आकार: 13 plugins.
+अनुशंसित उपयोग: एक checkout साझा करने वाले कई एजेंट, proposals, logs और close markers के साथ।
+आकार: 19 प्लगइन · 125 टूल · ~26802 शुरुआती टोकन
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-अनुशंसित उपयोग: swarm preset के साथ web-fetch और issues जैसी host-only integrations, जब host उन्हें expose करता हो।
-आकार: 15 plugins.
+अनुशंसित उपयोग: केवल-पढ़ने वाली समीक्षा और ऑडिट।
+आकार: 15 प्लगइन · 89 टूल · ~21955 शुरुआती टोकन
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+अनुशंसित उपयोग: दस्तावेज़ और वेब साइटें।
+आकार: 8 प्लगइन · 61 टूल · ~15696 शुरुआती टोकन
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+अनुशंसित उपयोग: सभी प्रकाशित प्लगइन के साथ डायग्नोस्टिक्स, नेटवर्क या क्रेडेंशियल वाले प्लगइन सहित।
+आकार: 58 प्लगइन · 236 टूल · ~59122 शुरुआती टोकन
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verify
 
