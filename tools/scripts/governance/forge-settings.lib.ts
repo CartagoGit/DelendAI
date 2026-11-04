@@ -33,7 +33,7 @@ import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+} from '@delendai/core/cli';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {
