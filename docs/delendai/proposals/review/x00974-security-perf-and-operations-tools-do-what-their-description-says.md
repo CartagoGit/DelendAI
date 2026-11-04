@@ -44,15 +44,17 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6ce6a10a5e29 is stale for this slice. I verified post-shipped changes in slice files via `git log 6ce6a10a5e29..develop -- <S1 files>` (at least commit 282eeb4b3 touches listed files), so acceptance must be re-validated against current develop with fresh empirical evidence.
 
 ### S2 — perf
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/perf/src/lib/contracts/interfaces/perf.interface.ts`, `plugins/perf/src/lib/profile/real-perf-profile-deps.ts`, `plugins/perf/src/lib/profile/run-profile-capture.ts`, `plugins/perf/src/lib/tools/perf-bench.tool.ts`, `plugins/perf/src/lib/tools/perf-profile.tool.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts`, `plugins/perf/tests/src/lib/profile/run-profile-capture.spec.ts`
 - **Gate**: type
 - acceptance:
   - "flamegraph produces a flamegraph artefact (D64)."
   - "perf_bench says it summarizes timings the caller measured and runs nothing itself (D80, D66)."
 - shipped-in: `6ce6a10a5e29`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice has no current-run empirical evidence attached for the accepted behavior in develop, and the shipped-in marker is from 6ce6a10a5e29. Please re-run and attach fresh proof for both criteria (flamegraph artifact path and bench description/behavior alignment) against current develop before re-submitting.
 
 ### S3 — logs, cache and database
 - **Status**: review
