@@ -2,7 +2,7 @@
 id: x01019
 title: "Vitest keeps modules between spec files in core, proposals and tools"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
