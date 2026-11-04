@@ -33,6 +33,11 @@
  */
 import { spawnSync } from 'node:child_process';
 
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/cli';
+
 import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
@@ -61,6 +66,11 @@ export interface ICommitBranchInput {
 	readonly workRefTemplate?: string;
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
+	/**
+	 * Work and publication namespaces of a former namespace: a unit entered
+	 * before the project changed it is still somebody's work (f00808).
+	 */
+	readonly formerPrefixes?: readonly string[];
 	/** Policy release branch (`branches.release`). */
 	readonly releaseBranch?: string;
 	/**
@@ -167,7 +177,10 @@ export const lintCommitBranch = (
 	// to committing on the integration branch.
 	if (
 		inNamespace(currentBranch, workRefPrefix) ||
-		inNamespace(currentBranch, publicationRefPrefix)
+		inNamespace(currentBranch, publicationRefPrefix) ||
+		(input.formerPrefixes ?? []).some((prefix) =>
+			inNamespace(currentBranch, prefix),
+		)
 	) {
 		return { ok: true };
 	}
@@ -319,6 +332,7 @@ const main = async (): Promise<number> => {
 		workRefPrefix?: string;
 		workRefTemplate?: string;
 		publicationRefPrefix?: string;
+		formerPrefixes?: readonly string[];
 	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
@@ -327,6 +341,10 @@ const main = async (): Promise<number> => {
 			workRefPrefix: branches.workRefPrefix,
 			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
+			formerPrefixes: [
+				...ownedWorkRefPrefixes(branches).slice(1),
+				...ownedPublicationRefPrefixes(branches).slice(1),
+			],
 			releaseBranch: branches.release,
 		};
 	} catch {

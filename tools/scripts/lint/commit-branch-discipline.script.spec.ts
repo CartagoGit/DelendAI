@@ -282,3 +282,34 @@ describe('lintCommitBranch', () => {
 		});
 	});
 });
+
+describe('a namespace transition (f00808)', () => {
+	const moved = {
+		...baseInput,
+		stagedFiles: ['packages/core/src/foo.ts'],
+		workRefPrefix: 'heads/wip/',
+		publicationRefPrefix: 'pr/',
+		formerPrefixes: ['heads/delendai/wip/', 'delendai/pr/'],
+	};
+
+	it('lets a unit under the former namespace commit, and one under the current', () => {
+		expect(
+			lintCommitBranch({
+				...moved,
+				currentBranch: 'delendai/wip/agent-a/implement/x1-S1-g1/t',
+			}).ok,
+		).toBe(true);
+		expect(
+			lintCommitBranch({
+				...moved,
+				currentBranch: 'wip/agent-a/implement/x1-S1-g1/t',
+			}).ok,
+		).toBe(true);
+	});
+
+	it('still refuses a branch outside every namespace', () => {
+		expect(
+			lintCommitBranch({ ...moved, currentBranch: 'feature/mine' }).ok,
+		).toBe(false);
+	});
+});

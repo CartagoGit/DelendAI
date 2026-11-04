@@ -1504,7 +1504,7 @@ jobs:
     release-the-queue:
         name: release-the-queue
         needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/delendai/pr/'))) }}
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/pr/') || startsWith(github.ref, 'refs/heads/delendai/pr/')))) }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -1546,7 +1546,7 @@ jobs:
     wake-the-queue:
         name: wake-the-queue
         needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name == 'pull_request' && needs.delendai-validate.result == 'success' && startsWith(github.head_ref, 'delendai/pr/') && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && needs.delendai-validate.result == 'success' && (startsWith(github.head_ref, 'pr/') || startsWith(github.head_ref, 'delendai/pr/')) && github.event.pull_request.head.repo.full_name == github.repository }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:
