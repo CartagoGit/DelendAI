@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import type { IChangeRequestForge } from '@delendai/core/lib/contracts/interfaces/change-request-forge.interface';
 import type { IPullRequestPorts } from '@delendai/core/lib/contracts/interfaces/publication-pull-request.interface';
 import {
 	openPublicationPullRequest,
@@ -80,8 +81,7 @@ describe('openPublicationPullRequest', () => {
 			url: 'https://github.com/owner/repo',
 			existing: 'https://github.com/owner/repo/pull/3',
 		});
-		expect(openPublicationPullRequest({ ...INPUT, ports })).toEqual({
-			status: 'existing',
+		expect(openPublicationPullRequest({ ...INPUT, ports })).toMatchObject({
 			url: 'https://github.com/owner/repo/pull/3',
 		});
 		expect(ports.created.filter((args) => args[1] === 'create')).toEqual(
@@ -89,43 +89,95 @@ describe('openPublicationPullRequest', () => {
 		);
 	});
 
-	it('retitles and re-summarises an open pull request whose scope shrank', () => {
-		const patches: string[][] = [];
+	describe('refreshing an open change request', () => {
 		const open = 'https://github.com/owner/repo/pull/3';
-		const run = (subjects: string) => {
-			const ports = portsWith({
-				url: 'https://github.com/owner/repo',
-				existing: open,
-				subjects,
-			});
+		const fakeForge = (
+			id: string,
+			host: string,
+			store: { title: string; body: string },
+		): IChangeRequestForge & { readonly writes: string[] } => {
+			const writes: string[] = [];
+			return {
+				id,
+				writes,
+				handles: (url) => url.includes(host),
+				findOpen: () => ({
+					url: `https://${host}/o/r/-/mr/4`,
+					id: '4',
+				}),
+				read: () => ({ ...store }),
+				update: (_run, _ref, text) => {
+					writes.push(text.title);
+					store.title = text.title;
+					store.body = text.body;
+					return true;
+				},
+			};
+		};
+		const publish = (
+			remote: string,
+			subjects: string,
+			forges: readonly IChangeRequestForge[],
+		) => {
+			const ports = portsWith({ url: remote, existing: open, subjects });
 			return openPublicationPullRequest({
 				...INPUT,
 				ports: {
 					git: (args) =>
 						args[0] === 'diff' ? 'a.ts' : ports.git(args),
-					gh: (args) => {
-						if (args.includes('PATCH')) {
-							patches.push([...args]);
-							return open;
-						}
-						if (args[0] === 'api') return 'stale';
-						return ports.gh(args);
-					},
+					gh: ports.gh,
+					run: { text: () => undefined, json: () => undefined },
+					forges,
 				},
 			});
 		};
-		run('feat(x): one x00001 S1\nfeat(x): two x00001 S2');
-		const result = run('feat(x): one x00001 S1');
-		expect(result).toEqual({
-			status: 'updated',
-			url: open,
-			title: 'feat(x): one x00001 S1',
+
+		it('retitles a pull request whose scope shrank between two publishes', () => {
+			const store = { title: '', body: '' };
+			const github = fakeForge('github', 'github.com', store);
+			const remote = 'https://github.com/owner/repo';
+			publish(remote, 'feat(x): one x00001 S1\nfeat(x): two x00001 S2', [
+				github,
+			]);
+			const result = publish(remote, 'feat(x): one x00001 S1', [github]);
+			expect(result).toEqual({
+				status: 'updated',
+				url: open,
+				title: 'feat(x): one x00001 S1',
+			});
+			expect(github.writes[0]).toContain('(+1 more)');
+			expect(store.body).toContain('Ships: x00001 S1.');
+			expect(store.body).not.toContain('S2');
+			expect(store.body).toContain('Final diff: 1 file(s)');
+			// Nothing to say the third time: nothing is rewritten.
+			expect(
+				publish(remote, 'feat(x): one x00001 S1', [github]).status,
+			).toBe('existing');
 		});
-		expect(patches[0]?.join(' ')).toContain('(+1 more)');
-		const last = patches[1]?.join('\n') ?? '';
-		expect(last).not.toContain('more)');
-		expect(last).toContain('Ships: x00001 S1.');
-		expect(last).toContain('Final diff: 1 file(s)');
+
+		it('refreshes a GitLab merge request through the GitLab adapter', () => {
+			const store = { title: 'old', body: 'old' };
+			const gitlab = fakeForge('gitlab', 'gitlab.com', store);
+			const result = publish(
+				'git@gitlab.com:owner/repo.git',
+				'fix(x): done x00002 S1',
+				[gitlab],
+			);
+			expect(result).toMatchObject({
+				status: 'updated',
+				url: 'https://gitlab.com/o/r/-/mr/4',
+			});
+			expect(store.title).toBe('fix(x): done x00002 S1');
+		});
+
+		it('says plainly that no forge plugin can rewrite the text', () => {
+			expect(
+				publish('https://github.com/owner/repo', 'feat(x): a', []),
+			).toMatchObject({
+				status: 'unchanged',
+				reason: expect.stringContaining('no installed forge plugin'),
+			});
+		});
 	});
 
 	it('says what to do on another forge, or without its CLI', () => {

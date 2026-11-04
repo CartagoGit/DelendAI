@@ -43,9 +43,10 @@ import {
 export const forgeCli = (
 	cwd: string,
 	args: readonly string[],
+	bin = 'gh',
 ): string | undefined => {
 	try {
-		return execFileSync('gh', [...args], {
+		return execFileSync(bin, [...args], {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],

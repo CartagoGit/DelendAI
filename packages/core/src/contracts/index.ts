@@ -14,6 +14,12 @@
  * replacement.
  */
 
+export type {
+	IChangeRequestForge,
+	IChangeRequestRef,
+	IChangeRequestRunner,
+	IChangeRequestText,
+} from '../lib/contracts/interfaces/change-request-forge.interface';
 export type { IGracefulShutdownOptions } from '../lib/contracts/interfaces/graceful-shutdown.interface';
 export type { IDelendaiProject } from '../lib/contracts/interfaces/delendai-project.interface';
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
