@@ -32,7 +32,7 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
 - commit-policy's `work_ref` tool (checkpoint/materialize from the workspace root): a follow-up proposal; while the shared checkout holds edits every `work` command and commit refuses, so work it took cannot land unnoticed.
 - A host editor hook (Claude Code PreToolUse) refusing writes outside the unit worktree: an optional extra barrier, left for a follow-up.
 
-## design
+## architecture
 
 - One reading, in core: `unitsHaveWorktrees(policy)` (persistence route `wip-ref`) and `sharedCheckoutStaysClean(policy)` (that, plus a pinned checkout), with the refusal text naming `delendai work rescue`.
 - `work checkpoint` refuses under `unitsHaveWorktrees`, naming each declared file it leaves and why, and the unit's worktree when it has one.
