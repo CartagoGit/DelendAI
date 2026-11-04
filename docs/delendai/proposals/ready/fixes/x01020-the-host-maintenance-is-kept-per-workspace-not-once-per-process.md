@@ -16,11 +16,12 @@ Two workspaces served by one process each get their own maintenance gate, never 
 
 ## why
 
-TODO: why this work matters now.
+External audit finding 2 (ChatGPT, 2026-11-04, against develop f7f53bf8d), P1: `currentHostMaintenance()` in `packages/core/src/lib/development-policy/maintenance-lease.service.ts` returns a module singleton, so two workspaces served by one process could be handed the other's maintenance. This is an external audit's claim; I verified it by reading the code: `processMaintenance` is a module-level `let` and `currentHostMaintenance` takes no argument, so the last maintenance made in the process wins for every caller, and `plugins/commit-policy/src/index.ts` asks that gate to stand down work for whichever workspace it runs in. I did not run a two-server reproduction (docs-only unit); S1's spec is that reproduction.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing the lease file format or its ttl, which x01010 owns.
+- Running several workspaces in one process on purpose: this only stops one from borrowing another's gate.
 
 ## slices
 
