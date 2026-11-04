@@ -1,7 +1,7 @@
 export interface IGitRepoTemplateSpec {
 	/** Files committed on the trunk, by repository path. */
 	readonly files?: Readonly<Record<string, string>>;
-	/** The trunk branch. Default `develop`. */
+	/** The trunk branch; git's own default when omitted. */
 	readonly trunk?: string;
 	/** Worktrees to add, by directory name beside the repository, with the branch each checks out. */
 	readonly worktrees?: Readonly<Record<string, string>>;

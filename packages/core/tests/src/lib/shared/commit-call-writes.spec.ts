@@ -31,6 +31,7 @@ const LOCK_PAUSE_MS = 1000;
 
 /** A project on work refs: its shared checkout, and one unit's worktree. */
 const template = createGitRepoTemplate({
+	trunk: 'develop',
 	files: {
 		'delendai.config.json': JSON.stringify({
 			development: {

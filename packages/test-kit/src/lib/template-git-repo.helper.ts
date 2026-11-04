@@ -42,10 +42,15 @@ const rewrite = (file: string, from: string, to: string): void => {
 export const createGitRepoTemplate = (
 	spec: IGitRepoTemplateSpec = {},
 ): IGitRepoTemplate => {
-	const trunk = spec.trunk ?? 'develop';
 	const base = realpathSync(mkdtempSync(join(tmpdir(), 'git-template-')));
 	const root = join(base, 'repo');
-	execFileSync('git', ['init', '-q', '-b', trunk, root]);
+	execFileSync('git', [
+		'init',
+		'-q',
+		...(spec.trunk === undefined ? [] : ['-b', spec.trunk]),
+		root,
+	]);
+	const trunk = git(root, 'symbolic-ref', '--short', 'HEAD');
 	git(root, 'config', 'user.email', 'spec@example.test');
 	git(root, 'config', 'user.name', 'Spec');
 	git(root, 'config', 'commit.gpgsign', 'false');
