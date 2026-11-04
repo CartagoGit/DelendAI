@@ -20,7 +20,6 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 
 ## non-goals
 
-- Implementation in this proposal: it holds the acceptance lines and the specs only.
 - Discarding any tip: retire keeps them.
 
 ## slices
@@ -28,35 +27,35 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - global_gate: none
 
 ### S1 — Orphaned is detected from heartbeats and the lease
-- **Status**: pending
-- **Files**: `tools/scripts/forge/candidate-disposition.ts`
+- **Status**: done
+- **Files**: `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.interface.ts`, `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`
 - **Gate**: type
 - acceptance:
   - "A publication or unit is orphaned when its author is gone: finished, idle past the recovery window, or out of quota, meaning no heartbeat and no live session holding its lease. A candidate whose author still has a heartbeat or a live lease stays disposition author. Specs: author alive, author idle past the window, author finished, author out of quota."
 
 ### S2 — Orphaned units are listed with their reason
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-swarm.service.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:
   - "work status and work swarm list every orphaned unit with the reason and the time since its last beat, in every project, not only this one. Spec: a roster with one live and one orphaned unit lists only the orphaned one as orphaned."
 
 ### S3 — Any agent can take an orphan over
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-claim.service.ts`
 - **Gate**: type
 - acceptance:
   - "An agent takes an orphaned unit over with the existing claim or adopt path; the record says it changed hands and from whom, and the unit returns to its normal state once adopted. Spec: adopt, then the unit is no longer orphaned and its history names both agents."
 
 ### S4 — The hydrator keeps an orphan moving, bounded
-- **Status**: pending
-- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
+- **Status**: done
+- **Files**: `tools/scripts/git/orphan-rescue.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `packages/core/src/lib/contracts/constants/orphaned-work.constant.ts`, `packages/core/src/runtime/index.ts`
 - **Gate**: type
 - acceptance:
   - "While a candidate is orphaned the hydrator keeps bringing it forward, at most N attempts; after N failed attempts the owner is told, once, and no tip is lost (retire keeps it). Specs: attempts below N continue, the Nth failure reports, an adopted candidate is no longer touched as an orphan."
 
 ### S5 — work status shows branch staleness and integration risk
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`
 - **Gate**: type
 - acceptance:

@@ -65,3 +65,13 @@ export type IOrphanRescueStep =
 	| 'report'
 	/** Reported already: left alone, its tip kept. */
 	| 'left';
+
+/** One open publication as `work status` weighs its risk. */
+export interface IPublicationStanding {
+	readonly ref: string;
+	readonly behind: number;
+	/** Authored paths it shares with other open publications. */
+	readonly overlapping: number;
+	readonly ageSeconds: number | null;
+	readonly ownerAlive: boolean;
+}

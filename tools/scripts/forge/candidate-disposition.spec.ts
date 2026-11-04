@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	authorsOwn,
 	candidateDispositions,
+	orphanedCandidates,
 	toBringForward,
 	type ICandidateState,
 } from './candidate-disposition';
@@ -208,5 +209,52 @@ describe('authorsOwn', () => {
 		expect(authorsOwn(verdicts, 'delendai/pr/', 'claude-opus-5-5')).toEqual(
 			['delendai/pr/claude-opus-5-5/implement/x1-all-g1/a'],
 		);
+	});
+});
+
+describe('orphaned candidates', () => {
+	it("a red candidate whose author is there stays the author's", () => {
+		expect(fates([candidate(1, { red: true })])).toEqual([[1, 'author']]);
+	});
+
+	it("a red candidate whose author is gone is orphaned, not the author's", () => {
+		const verdicts = candidateDispositions(
+			[
+				candidate(1, {
+					red: true,
+					authorGone: 'finished: its unit ended',
+				}),
+				candidate(2, {
+					red: true,
+					behind: true,
+					headIsIntegrationMerge: true,
+					authorGone: 'idle-past-window: silent',
+				}),
+				candidate(3, {
+					red: true,
+					authorGone: 'out-of-quota: no life since',
+				}),
+			],
+			PREFIX,
+		);
+		expect(verdicts.map((each) => each.disposition)).toEqual([
+			'orphaned',
+			'orphaned',
+			'orphaned',
+		]);
+		expect(orphanedCandidates(verdicts)).toHaveLength(3);
+		expect(verdicts[0]?.why).toContain('finished');
+	});
+
+	it('a red candidate owed a fresh verdict is brought forward whoever its author is', () => {
+		expect(
+			fates([
+				candidate(1, {
+					red: true,
+					behind: true,
+					authorGone: 'finished',
+				}),
+			]),
+		).toEqual([[1, 'refresh-for-verdict']]);
 	});
 });
