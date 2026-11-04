@@ -16,11 +16,12 @@ Each of the 7 code-scanning alerts open on develop on 2026-11-04 is fixed, or di
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Claim: 7 code-scanning alerts are open on develop. Verified: `gh api repos/CartagoGit/delendai/code-scanning/alerts?state=open` lists exactly these: #477 and #478 `js/insecure-temporary-file` (high) at `maintenance-lease.service.ts` lines 125 and 146; #475 `js/polynomial-redos` (high) at `plugins/container/src/lib/lint/parse-dockerfile.ts:57`; #474 `js/polynomial-redos` at `plugins/audit/src/lib/services/proposal-scaffolder.service.ts:131`; #471, #472, #473 `js/polynomial-redos` at `packages/proposals-sqlite/src/lib/markdown-parser.ts` lines 36, 107 and 119. I read the flagged lines, not a reproduction. The lease scratch file is a name beside the lease inside the workspace cache, written then linked or renamed, so it is not a world-writable temp path: likely dismissible with that reason. The regexes (`^#\s+(.+)$`, `^([A-Za-z]+)\s+(.*)$` and the slice heading and status matchers) run on local documents and are anchored, but several have adjacent overlapping quantifiers around `\s`, so a long whitespace run is quadratic: real but low impact, cheap to fix by bounding the input line. So at least some are real and each needs an owner. x00995 already reports open alerts in the queue job; this proposal clears the ones it reports.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Silencing a query by changing a reviewed design.
+- The report of open alerts in the queue job, which x00995 owns.
 
 ## slices
 
