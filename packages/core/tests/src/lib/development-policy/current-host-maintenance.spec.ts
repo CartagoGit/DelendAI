@@ -7,7 +7,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	createHostMaintenance,
@@ -71,6 +71,7 @@ describe('currentHostMaintenance', () => {
 
 describe('the gate beats on its own', () => {
 	it('decides again on every beat, and a beat that fails is swallowed', async () => {
+		vi.useFakeTimers();
 		const lines: string[] = [];
 		let fail = false;
 		const gate = createMaintenanceGate({
@@ -86,13 +87,14 @@ describe('the gate beats on its own', () => {
 			heartbeatMs: 5,
 			report: (line) => lines.push(line),
 		});
-		await new Promise((done) => setTimeout(done, 30));
+		await vi.advanceTimersByTimeAsync(5);
 		expect(lines).toEqual([
 			'This server (beating) maintains this workspace.',
 		]);
 		fail = true;
-		await new Promise((done) => setTimeout(done, 30));
+		await vi.advanceTimersByTimeAsync(5);
 		expect(lines).toHaveLength(1);
 		await gate.stop();
+		vi.useRealTimers();
 	});
 });
