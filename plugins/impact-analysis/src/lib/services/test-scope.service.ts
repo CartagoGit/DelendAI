@@ -1,7 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import { parseJsonc } from '@delendai/core/cli';
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 
 import type { ITestScope } from '../contracts/interfaces/impact-analysis.interface';
 
@@ -13,10 +11,11 @@ export const readTestScope = async (
 ): Promise<ITestScope> => {
 	try {
 		const config = parseJsonc(
-			await readFile(
-				join(workspaceRootAbs, 'delendai.config.json'),
-				'utf8',
-			),
+			(
+				await new SafeWorkspaceReader(workspaceRootAbs).readText(
+					'delendai.config.json',
+				)
+			).content,
 		).value as { testing?: { scope?: unknown } } | null;
 		return (
 			SCOPES.find((scope) => scope === config?.testing?.scope) ??
