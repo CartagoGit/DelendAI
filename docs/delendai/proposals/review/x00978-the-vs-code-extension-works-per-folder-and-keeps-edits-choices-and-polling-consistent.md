@@ -31,15 +31,17 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - global_gate: type
 
 ### S1 — Folder and cwd
-- **Status**: review
+- **Status**: pending
 - **Files**: `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/run-validation.ts`, `extensions/vscode/src/commands/resolve-workspace-folder.ts`, `extensions/vscode/src/commands/types.ts`, `extensions/vscode/src/test/resolve-workspace-folder.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Commands resolve the folder of the active editor or the picked folder (D24)."
   - "The re-run passes the dry-run command's cwd (D25)."
 - shipped-in: `3cef0ac90073`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale due to drift after shipped-in commit; rebase and re-validate on current develop before approval.
 
 ### S2 — Edits and choices
 - **Status**: review
