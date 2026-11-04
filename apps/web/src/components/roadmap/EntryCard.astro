@@ -1,0 +1,43 @@
+---
+/**
+ * EntryCard.astro — one roadmap entry as the page shows it: its title, its
+ * kind and state in the reader's language, and its estimate when it has
+ * one — always with where the date comes from.
+ */
+import type { Lang } from '#I18N/index';
+import { roadmapBoardByLang } from '#I18N/roadmap-board';
+
+interface Props {
+	readonly lang: Lang;
+	readonly entry: {
+		readonly id: string;
+		readonly title: string;
+		readonly kind: string;
+		readonly state: string;
+		readonly estimate?: {
+			readonly date: string;
+			readonly basis: string;
+			readonly confidence: string;
+		};
+	};
+}
+
+const { lang, entry } = Astro.props;
+const tb = roadmapBoardByLang[lang];
+---
+
+<li class="proposals-board__row" data-entry={entry.id} data-state={entry.state}>
+	<strong class="proposals-board__card-title">{entry.title}</strong>
+	<span class="proposals-board__row-desc">
+		{tb.kinds[entry.kind] ?? entry.kind} · {tb.states[entry.state] ?? entry.state}
+		{
+			entry.estimate !== undefined && (
+				<>
+					{' '}
+					· {tb.estimate}: {entry.estimate.date} ({entry.estimate.basis};{' '}
+					{entry.estimate.confidence})
+				</>
+			)
+		}
+	</span>
+</li>
