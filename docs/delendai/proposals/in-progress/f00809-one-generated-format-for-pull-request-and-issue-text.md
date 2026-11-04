@@ -34,7 +34,7 @@ Titles and bodies differ by agent and path, so history, review and triage cannot
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing commit-message format, or rewriting titles of already merged pull requests and issues.
 
 ## slices
 
