@@ -68,4 +68,39 @@ describe('urgentReasonOf', () => {
 		expect(reason).toBeUndefined();
 		expect(lines.join('')).toContain('no finished ci.yml run on develop');
 	});
+
+	it('is urgent when the caller says so, without asking the forge', async () => {
+		const reason = await urgentReasonOf({
+			...request(() => {
+				throw new Error('must not be called');
+			}),
+			args: ['--urgent=release blocker'],
+		});
+		expect(reason).toBe('release blocker');
+	});
+
+	it('is not urgent for a unit with no proposal or a non-fix proposal', async () => {
+		const forge = () => {
+			throw new Error('must not be called');
+		};
+		expect(
+			await urgentReasonOf({ ...request(forge), proposal: undefined }),
+		).toBeUndefined();
+		expect(
+			await urgentReasonOf({ ...request(forge), proposal: 'f00001' }),
+		).toBeUndefined();
+	});
+
+	it('runs the real gh in the project root and is not urgent when it cannot', async () => {
+		const lines: string[] = [];
+		const reason = await urgentReasonOf({
+			root: '/nonexistent-delendai-root',
+			args: [],
+			proposal: 'x00001',
+			integration: 'develop',
+			log: (line) => lines.push(line),
+		});
+		expect(reason).toBeUndefined();
+		expect(lines.join('')).toContain('not urgent');
+	});
 });
