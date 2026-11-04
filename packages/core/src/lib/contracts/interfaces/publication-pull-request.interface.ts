@@ -9,4 +9,9 @@ export interface IPullRequestPorts {
 /** What happened to the publication's pull request. */
 export type IPublicationPullRequest =
 	| { readonly status: 'opened' | 'existing'; readonly url: string }
+	| {
+			readonly status: 'updated';
+			readonly url: string;
+			readonly title: string;
+	  }
 	| { readonly status: 'skipped' | 'failed'; readonly reason: string };
