@@ -44,14 +44,16 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached empirical evidence from a reproducible run on current develop for both acceptance criteria (folder resolution and cwd propagation on re-run). Please re-run and attach fresh evidence before re-submitting.
 
 ### S2 — Edits and choices
-- **Status**: review
+- **Status**: pending
 - **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `packages/ui-extension/src/configuration-center/configuration-center-script.ts`, `extensions/vscode/src/commands/provider-actions.ts`, `extensions/vscode/src/test/open-plugin-config.spec.ts`, `extensions/vscode/src/test/provider-actions.spec.ts`, `packages/ui-extension/tests/dashboard/configuration-center-script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An acknowledgement clears only the edits it saved (UI-CFG01); discard restores the last saved state (UI-CFG02); cancel changes nothing (UI-ACTION01)."
 - shipped-in: `8fe0646db56a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for the three UI acceptance points (save ack granularity, discard restores last-saved, cancel leaves provider state unchanged). Please re-run and resubmit with fresh empirical proof.
 
 ### S3 — Routing, dashboard and polling
 - **Status**: review
