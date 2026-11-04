@@ -31,6 +31,18 @@ export interface IJobScope {
 	 * cannot change this job's verdict, whatever `touches` says.
 	 */
 	readonly docs?: 'skip' | undefined;
+	/**
+	 * Path prefixes whose listing the job reads (a directory walk, `git
+	 * ls-files`): a file added or removed under one can change the verdict
+	 * even though no file it reads changed. `''` is the whole tree.
+	 */
+	readonly lists?: readonly string[] | undefined;
+	/**
+	 * `scripts`: the job also runs when the change reaches, by symbol, one of
+	 * the scripts it runs (`job-reach.helper.ts`), so its `touches` name only
+	 * what it reads as data.
+	 */
+	readonly code?: 'scripts' | undefined;
 	/** Why this bound is correct — read by whoever widens or narrows it. */
 	readonly because: string;
 }

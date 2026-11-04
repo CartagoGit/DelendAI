@@ -17,6 +17,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
+
 /** A line git writes to open or close a conflict. */
 const MARKER_RE = /^(<{7}|>{7}) /mu;
 
@@ -43,7 +45,9 @@ const main = (): number => {
 	})
 		.split('\n')
 		.filter((file) => file.length > 0 && !BINARY_RE.test(file));
-	const found = files.flatMap((file) => {
+	// A marker is a property of the file that holds it.
+	const judged = filesToJudge(files, (file) => file, changedFilesScope(root));
+	const found = judged.files.flatMap((file) => {
 		try {
 			return markerLines(file, readFileSync(join(root, file), 'utf8'));
 		} catch {
@@ -52,7 +56,7 @@ const main = (): number => {
 	});
 	if (found.length === 0) {
 		console.log(
-			`✓ no-conflict-markers: ${String(files.length)} tracked files, none with a conflict marker.`,
+			`✓ no-conflict-markers: ${String(judged.files.length)} tracked files of ${judged.over}, none with a conflict marker.`,
 		);
 		return 0;
 	}

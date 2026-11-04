@@ -23,6 +23,8 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { changedFilesScope, filesToJudge } from '../lib/changed-files-scope';
+
 import {
 	BASELINE_PATH,
 	HOME_PATTERNS,
@@ -65,25 +67,28 @@ export const findHomePaths = (
 			})),
 		);
 
-const trackedTextFiles = (
-	root: string,
-): readonly { readonly path: string; readonly text: string }[] =>
+const trackedPaths = (root: string): readonly string[] =>
 	execFileSync('git', ['ls-files', '-z'], {
 		cwd: root,
 		encoding: 'utf8',
 		maxBuffer: 64 * 1024 * 1024,
 	})
 		.split('\0')
-		.filter((path) => path.length > 0)
-		.flatMap((path) => {
-			try {
-				return [{ path, text: readFileSync(join(root, path), 'utf8') }];
-			} catch {
-				// Binary, or unreadable: neither can hold a leaked path we
-				// could act on.
-				return [];
-			}
-		});
+		.filter((path) => path.length > 0);
+
+const textFiles = (
+	root: string,
+	paths: readonly string[],
+): readonly { readonly path: string; readonly text: string }[] =>
+	paths.flatMap((path) => {
+		try {
+			return [{ path, text: readFileSync(join(root, path), 'utf8') }];
+		} catch {
+			// Binary, or unreadable: neither can hold a leaked path we
+			// could act on.
+			return [];
+		}
+	});
 
 if (import.meta.main) {
 	const root = process.cwd();
@@ -93,12 +98,18 @@ if (import.meta.main) {
 			})
 		: {};
 	const allowed = new Set(baseline.allowed ?? []);
-	const findings = findHomePaths(trackedTextFiles(root)).filter(
+	// A home path is a property of the file that holds it.
+	const judged = filesToJudge(
+		trackedPaths(root),
+		(path) => path,
+		changedFilesScope(root),
+	);
+	const findings = findHomePaths(textFiles(root, judged.files)).filter(
 		(finding) => !allowed.has(finding.path),
 	);
 	if (findings.length === 0) {
 		console.log(
-			'✓ no-home-directory-in-tracked-files: no machine ships with this repository.',
+			`✓ no-home-directory-in-tracked-files: no machine ships with ${judged.over}.`,
 		);
 		process.exit(0);
 	}

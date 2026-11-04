@@ -166,6 +166,14 @@ export {
 	readWorkspaceDocsDir,
 	readWorkspacePolicy,
 } from './lib/work-units/development-policy.service';
+export {
+	followBranches,
+	promoteBranch,
+} from './lib/release/forward-sync.service';
+export type {
+	IBranchSyncPorts,
+	IBranchSyncResult,
+} from './lib/contracts/interfaces/forward-sync.interface';
 export { openPublicationPullRequest } from './lib/work-units/publication-pull-request.service';
 // The gates a project declares: what `delendai validate` runs, and what
 // certifies a unit before the merge model lands it.
@@ -241,6 +249,7 @@ export {
 } from './lib/plugins/pack-defaults-overlay';
 export { hasExplicitPluginSurfaceSelection } from './lib/plugins/parse-cli-args';
 export { resolvePluginOptions } from './lib/plugins/plugin-defaults';
+export { describeRetiredPresetMatch } from './lib/plugins/preset-migration';
 export {
 	PRESET_KIND,
 	RETIRED_PRESET_ID,

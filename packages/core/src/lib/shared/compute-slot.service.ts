@@ -19,8 +19,24 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { COMPUTE_SLOT_ENV } from '../contracts/constants/compute-slot.constant';
+import {
+	COMPUTE_SLOT_ENV,
+	LANE_YIELD_MS,
+} from '../contracts/constants/compute-slot.constant';
 import type { IComputeSlotRequest } from '../contracts/interfaces/compute-slot.interface';
+import {
+	alive,
+	slotHolderOf,
+	joinUrgentLane,
+	urgentTicketName,
+	laneNotice,
+	leaveUrgentLane,
+	ownerFile,
+	pauseSlot,
+	readSlotJson,
+	readLane,
+	recordUrgentTurn,
+} from './compute-slot-lane.service';
 import { runGitCommand } from './git-command.helper';
 import { withFileMutex } from './with-file-mutex';
 
@@ -59,18 +75,6 @@ const heldByAncestor = (lockPath: string): boolean => {
 	return Number.isInteger(pid) && pid !== process.pid;
 };
 
-const ownerFile = (lockPath: string): string => `${lockPath}.owner`;
-
-const holderOf = async (lockPath: string): Promise<string> => {
-	try {
-		const raw = await readFile(ownerFile(lockPath), 'utf8');
-		const owner = JSON.parse(raw) as { label?: string; pid?: number };
-		return `${owner.label ?? 'another run'} (pid ${String(owner.pid)})`;
-	} catch {
-		return 'another run';
-	}
-};
-
 const SUPERSEDED = Symbol('superseded');
 
 /** How often a joiner looks for the owner's result. */
@@ -86,26 +90,6 @@ type TurnResult =
 	| { readonly superseded: true }
 	| { readonly error: string; readonly code?: string | undefined };
 
-const alive = (pid: number): boolean => {
-	try {
-		process.kill(pid, 0);
-		return true;
-	} catch (error) {
-		return (error as { code?: string }).code === 'EPERM';
-	}
-};
-
-const readJson = async <V>(path: string): Promise<V | undefined> => {
-	try {
-		return JSON.parse(await readFile(path, 'utf8')) as V;
-	} catch {
-		return undefined;
-	}
-};
-
-const pause = (ms: number): Promise<void> =>
-	new Promise((resolve) => setTimeout(resolve, ms));
-
 /**
  * One turn per unit and tip, across processes: the first caller of a tip
  * leaves a claim next to the slot lock; a later caller of that tip, in this
@@ -113,12 +97,18 @@ const pause = (ms: number): Promise<void> =>
  * A newer tip of the unit supersedes an older one that has not started: the
  * older one gives its turn up and returns the newer tip's answer.
  */
+/** The newest tip each unit asked for in this process; one entry per unit. */
+const localCurrent = new Map<string, string>();
+
 const withUnitTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	unit: string,
 	tip: string,
 ): Promise<T> => {
 	const dir = `${request.lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
+	// On record at once in this process, so a newer tip is known before any
+	// older tip can take the slot; the file tells other processes.
+	localCurrent.set(dir, tip);
 	await mkdir(dir, { recursive: true });
 	const currentPath = join(dir, 'current');
 	const claimPath = (name: string): string => join(dir, `${name}.claim`);
@@ -126,19 +116,22 @@ const withUnitTurn = async <T>(
 	const resultPath = (name: string, id: string): string =>
 		join(dir, `${name}.${id}.result`);
 	await writeFile(currentPath, tip);
+	const currentTip = async (): Promise<string> =>
+		localCurrent.get(dir) ??
+		(await readFile(currentPath, 'utf8').catch(() => tip));
 
 	const follow = async (
 		name: string,
 		claim: ITurnClaim,
 	): Promise<{ readonly result?: TurnResult }> => {
 		for (;;) {
-			const result = await readJson<TurnResult>(
+			const result = await readSlotJson<TurnResult>(
 				resultPath(name, claim.id),
 			);
 			if (result !== undefined) return { result };
-			const now = await readJson<ITurnClaim>(claimPath(name));
+			const now = await readSlotJson<ITurnClaim>(claimPath(name));
 			if (now?.id !== claim.id || !alive(claim.pid)) return {};
-			await pause(JOIN_POLL_MS);
+			await pauseSlot(JOIN_POLL_MS);
 		}
 	};
 	const settle = (result: TurnResult): T => {
@@ -151,33 +144,39 @@ const withUnitTurn = async <T>(
 	};
 
 	const joinOnly = async (name: string): Promise<T | typeof SUPERSEDED> => {
-		const claim =
-			(await readJson<ITurnClaim>(claimPath(name))) ??
-			(await readJson<ITurnClaim>(donePath(name)));
+		let claim: ITurnClaim | undefined;
+		// A newer turn of this process is on record before it has written
+		// its claim: wait for the claim instead of proving the old tip.
+		for (;;) {
+			claim =
+				(await readSlotJson<ITurnClaim>(claimPath(name))) ??
+				(await readSlotJson<ITurnClaim>(donePath(name)));
+			if (claim !== undefined || localCurrent.get(dir) !== name) break;
+			await pauseSlot(JOIN_POLL_MS);
+		}
 		if (claim === undefined) return SUPERSEDED;
 		const { result } = await follow(name, claim);
 		if (result === undefined) return SUPERSEDED;
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => name);
+			const newer = await currentTip();
 			return newer === name ? SUPERSEDED : joinOnly(newer);
 		}
 		return settle(result);
 	};
 
 	for (;;) {
-		const claim = await readJson<ITurnClaim>(claimPath(tip));
+		const claim = await readSlotJson<ITurnClaim>(claimPath(tip));
 		if (claim !== undefined && alive(claim.pid)) {
 			const { result } = await follow(tip, claim);
 			if (result === undefined) continue;
 			if ('superseded' in result) {
-				const newer = await readFile(currentPath, 'utf8').catch(
-					() => tip,
-				);
+				const newer = await currentTip();
 				const joined =
 					newer === tip ? SUPERSEDED : await joinOnly(newer);
 				if (joined !== SUPERSEDED) return joined;
 				// The newer turn vanished: prove this tip after all.
 				await writeFile(currentPath, tip);
+				await pauseSlot(JOIN_POLL_MS);
 				continue;
 			}
 			return settle(result);
@@ -196,10 +195,7 @@ const withUnitTurn = async <T>(
 			const value = await withComputeSlotTurn<T | typeof SUPERSEDED>(
 				request,
 				async () =>
-					(await readFile(currentPath, 'utf8').catch(() => tip)) ===
-					tip
-						? request.run()
-						: SUPERSEDED,
+					(await currentTip()) === tip ? request.run() : SUPERSEDED,
 			);
 			result = value === SUPERSEDED ? { superseded: true } : { value };
 		} catch (error) {
@@ -212,10 +208,11 @@ const withUnitTurn = async <T>(
 		await writeFile(donePath(tip), JSON.stringify(mine));
 		await rm(claimPath(tip), { force: true });
 		if ('superseded' in result) {
-			const newer = await readFile(currentPath, 'utf8').catch(() => tip);
+			const newer = await currentTip();
 			const joined = newer === tip ? SUPERSEDED : await joinOnly(newer);
 			if (joined !== SUPERSEDED) return joined;
 			await writeFile(currentPath, tip);
+			await pauseSlot(JOIN_POLL_MS);
 			continue;
 		}
 		return settle(result);
@@ -229,11 +226,18 @@ export const withComputeSlot = <T>(
 		? withUnitTurn(request, request.unit, request.tip)
 		: withComputeSlotTurn(request, request.run);
 
+const YIELD = Symbol('yield');
+
+/** The normal turns this process has asked for, per slot, in call order. */
+const processQueue = new Map<string, Promise<void>>();
+
 const withComputeSlotTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	body: () => Promise<T> | T,
 ): Promise<T> => {
-	const { lockPath, label } = request;
+	const { lockPath, label, urgent } = request;
+	// The place in the urgent lane is fixed by call order, before any wait.
+	const ticketName = urgent === undefined ? undefined : urgentTicketName();
 	// Held by an ancestor process (a proof running this very command): the
 	// turn is already ours. Held by THIS process means another caller here.
 	if (heldByAncestor(lockPath)) {
@@ -241,44 +245,103 @@ const withComputeSlotTurn = async <T>(
 	}
 	const notify =
 		request.notify ?? ((message: string) => console.error(message));
-	await mkdir(dirname(lockPath), { recursive: true });
+	// Normal callers in this process reach the slot in the order they asked:
+	// the file mutex alone lets a later caller overtake an earlier one while
+	// both are still preparing to contend for it. Urgent callers keep their
+	// own lane and never wait behind the queue.
+	const before =
+		urgent === undefined
+			? (processQueue.get(lockPath) ?? Promise.resolve())
+			: Promise.resolve();
+	let leave: () => void = () => undefined;
+	const mine = new Promise<void>((resolve) => {
+		leave = resolve;
+	});
+	const tail = before.then(() => mine);
+	if (urgent === undefined) processQueue.set(lockPath, tail);
+	const clearQueue = (): void => {
+		leave();
+		if (processQueue.get(lockPath) === tail) processQueue.delete(lockPath);
+	};
+	await mkdir(dirname(lockPath), { recursive: true }).catch(
+		(error: unknown) => {
+			clearQueue();
+			throw error;
+		},
+	);
+	// An urgent caller joins the lane before it waits: normal callers yield
+	// to every live ticket, urgent ones to the tickets ahead of theirs.
+	if (ticketName !== undefined && urgent !== undefined) {
+		await joinUrgentLane(lockPath, ticketName, label, urgent);
+	}
+	const mustYield = async (): Promise<boolean> => {
+		const lane = await readLane(lockPath);
+		return ticketName === undefined
+			? lane.length > 0
+			: lane.some((ticket) => ticket.name < (ticketName as string));
+	};
 	let waiting = false;
 	let notice: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
 		waiting = true;
-		void holderOf(lockPath).then((holder) => {
-			if (waiting) {
-				notify(
-					`[compute-slot] "${label}" is waiting — ${holder} holds the machine's compute slot. Waiting my turn...`,
-				);
-			}
-		});
+		void Promise.all([slotHolderOf(lockPath), readLane(lockPath)]).then(
+			([holder, lane]) => {
+				if (waiting) {
+					notify(
+						`[compute-slot] "${label}" is waiting — ${holder} holds the machine's compute slot.${urgent === undefined ? '' : ` This turn is urgent (${urgent}): it goes next.`}${laneNotice(lane)} Waiting my turn...`,
+					);
+				}
+			},
+		);
 	}, request.waitNoticeMs ?? WAIT_NOTICE_MS);
-	return withFileMutex(
-		lockPath,
-		async () => {
-			clearTimeout(notice);
-			notice = undefined;
-			if (waiting) notify(`[compute-slot] "${label}" got its turn.`);
-			waiting = false;
-			await writeFile(
-				ownerFile(lockPath),
-				JSON.stringify({ label, pid: process.pid }),
+	try {
+		await before;
+		for (;;) {
+			const outcome = await withFileMutex(
+				lockPath,
+				async () => {
+					if (await mustYield()) return YIELD;
+					clearTimeout(notice);
+					notice = undefined;
+					if (waiting)
+						notify(`[compute-slot] "${label}" got its turn.`);
+					waiting = false;
+					await writeFile(
+						ownerFile(lockPath),
+						JSON.stringify({
+							label,
+							pid: process.pid,
+							...(urgent === undefined ? {} : { urgent }),
+						}),
+					);
+					if (urgent !== undefined) {
+						await recordUrgentTurn(lockPath, label, urgent);
+					}
+					process.env[COMPUTE_SLOT_ENV] = heldBy(
+						lockPath,
+						process.pid,
+					);
+					try {
+						return await body();
+					} finally {
+						delete process.env[COMPUTE_SLOT_ENV];
+						await rm(ownerFile(lockPath), { force: true });
+					}
+				},
+				{
+					timeoutMs: request.timeoutMs ?? WAIT_BUDGET_MS,
+					staleMs: request.staleMs ?? STALE_MS,
+					onContention: 'fail',
+				},
 			);
-			process.env[COMPUTE_SLOT_ENV] = heldBy(lockPath, process.pid);
-			try {
-				return await body();
-			} finally {
-				delete process.env[COMPUTE_SLOT_ENV];
-				await rm(ownerFile(lockPath), { force: true });
-			}
-		},
-		{
-			timeoutMs: request.timeoutMs ?? WAIT_BUDGET_MS,
-			staleMs: request.staleMs ?? STALE_MS,
-			onContention: 'fail',
-		},
-	).finally(() => {
+			if (outcome !== YIELD) return outcome;
+			await pauseSlot(LANE_YIELD_MS);
+		}
+	} finally {
+		clearQueue();
 		waiting = false;
 		if (notice !== undefined) clearTimeout(notice);
-	});
+		if (ticketName !== undefined) {
+			await leaveUrgentLane(lockPath, ticketName);
+		}
+	}
 };

@@ -497,6 +497,10 @@ type TStderrHost = {
 	};
 };
 
+/** The replacement a retired preset id resolves to, silently. */
+export const presetAliasOf = (id: IRetiredPresetId): IPresetAlias =>
+	PRESET_ALIASES[id];
+
 const warnDeprecatedPresetAlias = (
 	alias: string,
 	{ replacement, stack }: IPresetAlias,

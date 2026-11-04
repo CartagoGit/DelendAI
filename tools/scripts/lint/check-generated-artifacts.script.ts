@@ -15,7 +15,7 @@ import { buildCapabilityMatrixMarkdown } from '../gen/capability-matrix.script.t
 import { buildTokenBudgetDashboardMarkdown } from '../report/token-budget-dashboard.script.ts';
 import { spawnSync } from 'node:child_process';
 
-import { STEPS } from '../gen-all.script.ts';
+import { checkPasses, STEPS } from '../gen-all.script.ts';
 
 /** The `gen:all` steps this script already checks by itself, above. */
 const CHECKED_ABOVE: ReadonlySet<string> = new Set([
@@ -205,11 +205,14 @@ const main = async (): Promise<number> => {
 	// list to keep. Seven of them never ran in CI, the public API inventory
 	// among them, which is how it drifted to 402 exports while the budget
 	// counted 645 with every gate green (x00693).
+	const passes = checkPasses(workspaceRoot);
+	const judged: (typeof STEPS)[number][] = [];
 	for (const step of STEPS) {
 		if (
 			step.checkCmd === undefined ||
 			step.measured === true ||
-			CHECKED_ABOVE.has(step.name)
+			CHECKED_ABOVE.has(step.name) ||
+			passes?.passed(step) === true
 		) {
 			continue;
 		}
@@ -222,7 +225,7 @@ const main = async (): Promise<number> => {
 			failures.push(
 				`${step.name.toUpperCase()}: drift detected. Run \`bun run gen:all\` and commit the generated outputs.`,
 			);
-		}
+		} else judged.push(step);
 	}
 
 	if (failures.length > 0) {
@@ -233,6 +236,7 @@ const main = async (): Promise<number> => {
 		return 1;
 	}
 
+	passes?.record(judged);
 	console.log('All generated artifacts are in sync.');
 	return 0;
 };

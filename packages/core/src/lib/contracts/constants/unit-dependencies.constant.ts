@@ -38,3 +38,22 @@ export const UNIT_INSTALL_TIMEOUT_MS = 10 * 60_000;
 
 /** Room for an install's output; it is discarded unless the install fails. */
 export const UNIT_INSTALL_MAX_OUTPUT_BYTES = 16 * 1024 * 1024;
+
+/** Folders never searched for a workspace package's own `node_modules`. */
+export const UNIT_LINK_SKIPPED_FOLDERS: ReadonlySet<string> = new Set([
+	'node_modules',
+	'.git',
+	'.cache',
+	'build',
+	'dist',
+	'coverage',
+]);
+
+/** Deepest folder, below the root, a workspace package may sit in. */
+export const UNIT_LINK_MAX_DEPTH = 4;
+
+/** Hidden entries of a `node_modules` that are still shared (the rest is cache). */
+export const UNIT_LINK_SHARED_HIDDEN: ReadonlySet<string> = new Set([
+	'.bin',
+	'.bun',
+]);

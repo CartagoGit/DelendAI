@@ -22,3 +22,8 @@ or have their own config file. Use the same single-pointer pattern:
   picks it up on the next session.
 - Save a fact or rule about this project in the host's project-scoped
   memory, never in a memory shared by every project.
+
+When you wait on long work, have one waiter per thing, and make it end with
+the work: the command's exit, `kill -0 <pid>`, or a marker the command writes.
+Never use a `pgrep -f` that matches itself. Leave no waiter behind when you
+report (see the work unit playbook).

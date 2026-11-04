@@ -264,6 +264,18 @@ export const observeMaintenance = async (
 			};
 };
 
+/** The maintenance this process made, for plugins that run background work. */
+let processMaintenance: IHostMaintenance | undefined;
+
+/**
+ * This server's maintenance, once it was made. A plugin that polls or
+ * writes refs in the background asks its gate first, so several servers on
+ * one workspace do that work once: the lease holder does, the rest serve
+ * their session and stay idle.
+ */
+export const currentHostMaintenance = (): IHostMaintenance | undefined =>
+	processMaintenance;
+
 /** A server's maintenance, from its lease file and its runtime watch. */
 export const createHostMaintenance = (input: {
 	readonly path: string;
@@ -275,7 +287,7 @@ export const createHostMaintenance = (input: {
 		machineId: hostname(),
 	});
 	let made: IMaintenanceGate | undefined;
-	return {
+	processMaintenance = {
 		gate: () => {
 			made ??= createMaintenanceGate({
 				lease,
@@ -289,4 +301,5 @@ export const createHostMaintenance = (input: {
 			await made?.stop();
 		},
 	};
+	return processMaintenance;
 };

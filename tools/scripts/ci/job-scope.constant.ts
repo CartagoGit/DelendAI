@@ -52,42 +52,142 @@ export const SOURCE_PREFIXES = [
  * repository and says so.
  */
 export const JOB_SCOPES: readonly IJobScope[] = [
+	// The lint families. What each reads was measured on 2026-11-04 by
+	// tracing every file each of its commands opened (strace over the job's
+	// script, as `ci.yml` runs it), less the modules its own scripts import:
+	// those are followed by symbol instead (`code: 'scripts'`), so a lint that
+	// imports a core barrel does not run for every core change. A family whose
+	// measured reads span every tracked top-level entry stays `always`, and
+	// says so. Re-measure when a lint joins a family: its reads are not here
+	// until then.
 	{
 		job: 'lint-biome',
 		docs: 'skip', // Biome formats and lints code and JSON, not Markdown.
-		touches: 'always',
+		touches: [
+			'apps/',
+			'extensions/',
+			'packages/',
+			'plugins/',
+			'tools/',
+			'biome.json',
+			'stylelint.config.mjs',
+			'.gitignore',
+			'bunfig.toml',
+			'tsconfig',
+			'package.json',
+			'bun.lock',
+		],
+		lists: ['apps/', 'extensions/', 'packages/', 'plugins/', 'tools/'],
+		code: 'scripts',
 		because:
-			'formatting and lint rules apply to every file in the repo, including the ones a docs-only change touches.',
+			'measured: Biome, stylelint and the config and i18n checks read the five source trees, biome.json, stylelint.config.mjs, .gitignore and the root manifests; bun.lock decides the Biome version. Nothing under docs/, .github/ or the host folders. Biome judges each changed file alone (biome-baseline.script.ts).',
 	},
 	{
 		job: 'lint-architecture',
 		touches: 'always',
+		code: 'scripts',
 		because:
-			'the architecture lints read the whole source tree; a rule broken in one package is reported from wherever it is run.',
+			'measured: its 47 lints together read files under every tracked top-level entry, and several list the whole tree with git ls-files. The ones that judge files one by one judge the changed files.',
 	},
 	{
 		job: 'lint-presets',
-		touches: 'always',
+		touches: [
+			'.agents/',
+			'.claude/',
+			'.codex/',
+			'.cursor/',
+			'.github/',
+			'.mcp.json',
+			'.vscode/',
+			'apps/',
+			'config/',
+			'docs/',
+			'extensions/',
+			'packages/',
+			'plugins/',
+			'scripts/',
+			'tests/',
+			'tools/',
+			'biome.json',
+			'bunfig.toml',
+			'delendai.config.json',
+			'stylelint.config.mjs',
+			'tsconfig',
+			'vitest.',
+			'package.json',
+			'bun.lock',
+		],
+		// git ls-files over every *.json and *.jsonc: an added one anywhere.
+		lists: [''],
+		code: 'scripts',
 		because:
-			'the preset and release-surface checks compare the whole catalog against the whole tree, and the catalog changes when a proposal moves.',
+			'measured: the preset, catalog and release-surface checks read the source trees, docs/, the host folders and the root configuration, and list every JSON file; not the root prose (README, AGENTS, CHANGELOG, CLAUDE, LICENSE), .gitattributes, .mailmap, bin/ or lefthook.yml.',
 	},
 	{
 		job: 'lint-docs',
-		touches: 'always',
+		touches: [
+			'.agents/',
+			'.claude/',
+			'.codex/',
+			'.github/',
+			'.gitattributes',
+			'.mailmap',
+			'.mcp.json',
+			'.vscode/',
+			'AGENTS.md',
+			'CHANGELOG.md',
+			'CLAUDE.md',
+			'README.md',
+			'apps/',
+			'config/',
+			'docs/',
+			'extensions/',
+			'packages/',
+			'plugins/',
+			'scripts/',
+			'tests/',
+			'tools/',
+			'bunfig.toml',
+			'delendai.config.json',
+			'tsconfig.base.json',
+			'tsconfig.json',
+			'vitest.',
+			'package.json',
+			'bun.lock',
+		],
+		lists: [
+			'.agents/',
+			'.claude/',
+			'.codex/',
+			'.github/',
+			'apps/',
+			'bin/',
+			'config/',
+			'docs/',
+			'extensions/',
+			'packages/',
+			'plugins/',
+			'scripts/',
+			'tests/',
+			'tools/',
+		],
+		code: 'scripts',
 		because:
-			'docs, skills and host-instruction lints span docs/, plugins/ skills and apps/web together.',
+			'measured: the docs, content, skills, web and host-instruction lints read docs/, the root prose, the host folders and the source trees (tool descriptions, skills, the site); not biome.json, lefthook.yml, LICENSE, .gitignore, bin/ or .cursor/.',
 	},
 	{
 		job: 'lint-security',
 		touches: 'always',
+		code: 'scripts',
 		because:
-			'a cleartext secret or a stray tracked artifact can arrive in any file, which is the entire point of the gate.',
+			'measured: the secret, privacy and hygiene lints read files under every tracked top-level entry and list the whole tree; a cleartext secret can arrive in any file. On a pull request the secret scan reads the diff, and the per-file lints judge the changed files.',
 	},
 	{
 		job: 'lint-governance',
 		touches: 'always',
+		code: 'scripts',
 		because:
-			'proposal integrity is a property of the whole proposal set, not of the files one change touched.',
+			'measured: the proposal, branch and agent lints read files under every tracked top-level entry, and they judge refs and commits that change without a file changing.',
 	},
 	{
 		job: 'typecheck',
@@ -122,7 +222,8 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'quality-gate',
 		touches: 'always',
-		because: 'it runs the configured quality scopes over the repository.',
+		because:
+			'it runs the configured quality scopes over the repository; the 2026-11-04 trace of its run did not complete, so what it reads is not measured and nothing is skipped.',
 	},
 	{
 		job: 'delendai-validate',
@@ -158,13 +259,25 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'generated-artifacts-check',
 		touches: 'always',
 		because:
-			'a generated artifact goes stale because of its INPUTS, and those inputs are spread across proposals, plugins and packages.',
+			'measured: the generators read files under every tracked top-level entry; a generated artifact goes stale because of its inputs, spread across proposals, plugins and packages.',
 	},
 	{
 		job: 'manifests-check',
-		docs: 'skip', // a manifest is built from plugin code.
-		touches: 'always',
-		because: 'plugin manifests are derived from every plugin at once.',
+		touches: [
+			'packages/',
+			'plugins/',
+			// What `generate:from-manifests --check` compares its output with.
+			'docs/delendai/generated/',
+			'docs/delendai/plugins/auto-generated/',
+			'bunfig.toml',
+			'tsconfig',
+			'package.json',
+			'bun.lock',
+		],
+		lists: ['packages/', 'plugins/', 'tools/'],
+		code: 'scripts',
+		because:
+			'measured: plugin manifests are derived from the packages and plugins, and checked against the generated manifest pages under docs/delendai. It used to skip every Markdown-only change, which left a hand edit to a generated page unchecked here.',
 	},
 	{
 		job: 'metrics-gate',
