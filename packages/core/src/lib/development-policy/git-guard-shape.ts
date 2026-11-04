@@ -59,7 +59,7 @@ export const refuseUnshapedWorkRef = (
 		return {
 			refused: true,
 			reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a kind of work, a proposal, a slice or a generation.`,
-			remedy: `Let the name come from the policy instead of typing it: \`delendai work enter --kind=<${WORK_KINDS.join('|')}> --proposal=<id> --slice=<id>\` (or \`work checkpoint\`) renders it from the same template the reconciler reads.`,
+			remedy: `Let the name come from the policy instead of typing it: \`delendai work enter --kind=<${WORK_KINDS.join('|')}> --proposal=<id> --slice=<id>\` renders it from the same template the reconciler reads.`,
 		};
 	}
 	return refuseKindInAgent(identity.agent, branch);

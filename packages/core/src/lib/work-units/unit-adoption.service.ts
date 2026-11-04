@@ -15,6 +15,7 @@ import { shortName } from '../development-policy/git-guard-namespaces';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IUnitLease } from './unit-lease.interface';
 import type {
 	IAdoptedForgeBranch,
 	IUnitAdoption,
@@ -54,6 +55,30 @@ const dropForgeBranch = (
 		: 'removed';
 };
 
+/**
+ * The lease of a unit that changed hands: its new owner, beating now (the
+ * claim is the first sign of life of the new hand), no quota mark of the
+ * old session, and the old hand added to its history.
+ */
+export const handedOver = (
+	lease: IUnitLease,
+	to: string,
+	owner: string,
+	now: number,
+): IUnitLease => {
+	return {
+		...lease,
+		ref: to,
+		outOfQuotaAt: undefined,
+		owner: { agent: owner, session: null },
+		heartbeatAt: now,
+		handedFrom: [
+			...(lease.handedFrom ?? []),
+			{ agent: lease.owner.agent, ref: lease.ref, at: now },
+		],
+	};
+};
+
 /** The lease follows the unit: it is keyed by the ref's name. */
 const moveLease = async (
 	cwd: string,
@@ -61,20 +86,20 @@ const moveLease = async (
 	to: string,
 	/** Who holds the unit now; the lease keeps its owner when absent. */
 	owner?: string,
+	now: number = Math.floor(Date.now() / 1000),
 ): Promise<boolean> => {
 	const common = gitCommonDirOf(cwd);
 	if (common === undefined) return false;
 	const lease = await readUnitLease(common, from);
 	if (lease === undefined) return false;
 	// A claim changes hands: the lease names the claimant, not the agent
-	// the ref used to be named after.
-	await updateUnitLease(common, to, () => ({
-		...lease,
-		ref: to,
-		...(owner === undefined || owner === lease.owner.agent
-			? {}
-			: { owner: { agent: owner, session: null } }),
-	}));
+	// the ref used to be named after, and keeps who held it before, so an
+	// adopted orphan is live again and its history names both agents.
+	await updateUnitLease(common, to, () =>
+		owner === undefined || owner === lease.owner.agent
+			? { ...lease, ref: to }
+			: handedOver(lease, to, owner, now),
+	);
 	await removeUnitLease(common, from);
 	return true;
 };

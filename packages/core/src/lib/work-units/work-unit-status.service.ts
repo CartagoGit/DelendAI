@@ -23,6 +23,13 @@ import {
 	resumeStrandedEdits,
 } from './stranded-edits.service';
 import { describeSwarm, readSwarm } from './work-swarm.service';
+import { reportedOrphans } from './orphaned-work.service';
+import {
+	describeOrphan,
+	describePublicationStanding,
+	publicationStandings,
+	readOrphans,
+} from './publication-standings.service';
 import {
 	countStandings,
 	readUnitStandings,
@@ -86,6 +93,12 @@ export const statusOf = async (
 	});
 	const base = integrationBase(root, policy);
 	const standings = await readUnitStandings({ root, policy });
+	const { orphans, presence } = await readOrphans({
+		root,
+		policy,
+		published: swarm.published,
+		standings,
+	});
 	const slotPath = computeSlotPath(root);
 	const slot =
 		slotPath === undefined
@@ -131,6 +144,19 @@ export const statusOf = async (
 		}),
 		unitsNextAction: summarizeStandings(standings).nextAction,
 		waitingOnAuthor: await waitingOnAuthor(root),
+		orphans,
+		reportedOrphans: await reportedOrphans(root),
+		publications: publicationStandings({
+			published: swarm.published,
+			presence,
+			tipAt: (sha) => {
+				const at = Number(
+					readGit(root, ['log', '-1', '--format=%ct', sha]),
+				);
+				return Number.isFinite(at) && at > 0 ? at : undefined;
+			},
+			now: Math.floor(Date.now() / 1000),
+		}),
 		refLoops: await workRefLoopsAt(root),
 		// Edits an agent left in the shared checkout, kept at a start.
 		stranded: listStrandedEdits({ root, policy }).map((kept) => ({
@@ -199,6 +225,12 @@ export const statusOf = async (
 				(entry) =>
 					`waits on author #${String(entry.number)} ${entry.headRef}: ${entry.why}`,
 			),
+			...payload.orphans.map(describeOrphan),
+			...payload.reportedOrphans.map(
+				(entry) =>
+					`orphan stuck     ${entry.headRef}: brought forward ${String(entry.attempts)} time(s) and still red; the hydrator stopped (its tip is kept). Adopt it: \`delendai work claim --ref=${entry.headRef}\``,
+			),
+			...payload.publications.map(describePublicationStanding),
 			...undurableAdvice(payload.undurable),
 		].join('\n')}\n`,
 	);
@@ -224,6 +256,12 @@ export const swarm = async (
 		policy: opened.policy,
 	});
 	const agents = rosterOf(view, standings);
+	const { orphans } = await readOrphans({
+		root: opened.root,
+		policy: opened.policy,
+		published: view.published,
+		standings,
+	});
 	const ended = new Set(
 		standings
 			.filter(
@@ -233,13 +271,14 @@ export const swarm = async (
 			)
 			.map((entry) => entry.ref),
 	);
-	const data = { ...view, agents };
+	const data = { ...view, agents, orphans };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data };
 	}
 	const lines = [
 		...describeSwarm(view, { ended, all: args.includes('--all') }),
 		...describeRoster(agents),
+		...orphans.map(describeOrphan),
 	];
 	process.stdout.write(`${lines.join('\n')}\n`);
 	return { code: EXIT_CODE.OK, data, suppressDefaultPrint: true };

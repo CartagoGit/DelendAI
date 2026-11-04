@@ -81,4 +81,14 @@ export interface ICreatePolicyPersistenceOptions {
 		readonly proposalId: string;
 		readonly sliceId: string;
 	}) => Promise<number>;
+	/**
+	 * Why nothing may be checkpointed from this checkout into `ref`: under
+	 * a policy that gives every unit its own worktree, a unit's work reaches
+	 * its ref by commit there, and the files here are whoever's wrote them.
+	 * Names each claimed file it leaves and why; `undefined` when it may.
+	 */
+	readonly checkoutRefusal?: (input: {
+		readonly paths: readonly string[];
+		readonly ref: string;
+	}) => { readonly reason: string; readonly remedy: string } | undefined;
 }

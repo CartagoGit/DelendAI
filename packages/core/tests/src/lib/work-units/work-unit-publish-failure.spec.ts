@@ -13,6 +13,7 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
+import { commitOnRef } from './unit-repo.helper';
 
 const roots: string[] = [];
 
@@ -63,15 +64,12 @@ const UNIT = [
 	'--topic=probe',
 ];
 
+const WORK_REF = 'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe';
+
 describe('a publication that cannot reach the remote', () => {
 	it('fails with the reason first, and keeps the work ref', async () => {
 		const root = repo();
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		const checkpointed = await runWorkUnit(
-			['checkpoint', ...UNIT, '--paths=a.ts', '--message=feat: a'],
-			contextFor(root),
-		);
-		expect(checkpointed.code).toBe(0);
+		commitOnRef(root, WORK_REF, { 'a.ts': 'export const a = 1;\n' });
 
 		const published = await runWorkUnit(
 			['publish', ...UNIT, '--no-pull-request'],
@@ -96,21 +94,9 @@ describe('a publication that cannot reach the remote', () => {
 describe('a unit whose work already landed', () => {
 	it('is refused, saying it holds nothing the integration branch lacks', async () => {
 		const root = repo();
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		const checkpointed = await runWorkUnit(
-			['checkpoint', ...UNIT, '--paths=a.ts', '--message=feat: a'],
-			contextFor(root),
-		);
-		expect(checkpointed.code).toBe(0);
+		commitOnRef(root, WORK_REF, { 'a.ts': 'export const a = 1;\n' });
 		// Its pull request merged: develop now holds the unit's commit.
-		rmSync(join(root, 'a.ts'));
-		git(
-			root,
-			'merge',
-			'-q',
-			'--no-edit',
-			'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe',
-		);
+		git(root, 'merge', '-q', '--no-edit', WORK_REF);
 
 		const published = await runWorkUnit(
 			['publish', ...UNIT, '--no-pull-request'],

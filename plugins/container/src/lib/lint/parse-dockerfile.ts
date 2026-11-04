@@ -23,6 +23,25 @@ const COMMANDS = new Set<IDockerfileInstructionCommand>([
 	'STOPSIGNAL',
 ]);
 
+/** `COMMAND args` split without an expression (linear on any input). */
+const splitInstruction = (
+	joined: string,
+): { readonly word: string; readonly args: string } | null => {
+	let end = 0;
+	while (/[A-Za-z]/u.test(joined.charAt(end))) end += 1;
+	if (end === 0 || joined.charAt(end).trim() !== '' || end >= joined.length) {
+		return null;
+	}
+	let argsAt = end;
+	while (argsAt < joined.length && joined.charAt(argsAt).trim() === '') {
+		argsAt += 1;
+	}
+	const args = joined.slice(argsAt);
+	return /[\n\r\u2028\u2029]/u.test(args)
+		? null
+		: { word: joined.slice(0, end), args };
+};
+
 const stripContinuation = (line: string): string =>
 	line.replace(/\\\s*$/u, '').trimEnd();
 
@@ -54,15 +73,15 @@ export const parseDockerfile = (
 		}
 
 		const joined = joinInstructionLines(rawLines);
-		const match = /^([A-Za-z]+)\s+(.*)$/u.exec(joined);
+		const match = splitInstruction(joined);
 		if (match === null) continue;
 		const command =
-			match[1]!.toUpperCase() as IDockerfileInstructionCommand;
+			match.word.toUpperCase() as IDockerfileInstructionCommand;
 		if (!COMMANDS.has(command)) continue;
 
 		instructions.push({
 			command,
-			args: match[2]!.trim(),
+			args: match.args.trim(),
 			line: startLine,
 			raw: rawLines.join('\n').replace(/\r/g, ''),
 		});
