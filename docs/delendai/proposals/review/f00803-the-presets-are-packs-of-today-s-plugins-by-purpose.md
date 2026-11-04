@@ -2,14 +2,14 @@
 id: f00803
 title: "The presets are packs of today's plugins, by purpose"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 1522d07c-f110-4b3f-9081-fcf83ee4a1a1
-last-correlation-id: 1522d07c-f110-4b3f-9081-fcf83ee4a1a1
-last-transition-from: ready
-last-transition-at: 2026-11-04T05:04:35.515Z
+last-transition-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
+last-correlation-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T05:20:59.496Z
 ---
 
 # f00803 — The presets are packs of today's plugins, by purpose
@@ -180,7 +180,7 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
 - global_gate: none
 
 ### S1 — The new catalogue
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/contracts/constants/preset-roles.constant.ts`, `packages/core/src/lib/plugins/pack-defaults-overlay.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts`, `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/src/lib/contracts/constants/config-schema-docs.constant.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/registry/plugin-add.tool.ts`, `packages/core/src/lib/registry/plugin-search.tool.ts`, `packages/core/src/lib/adopt/adoption-assessment.service.ts`, `packages/core/src/public/index.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/plugins/pack-defaults-overlay.spec.ts`, `packages/core/tests/src/lib/plugins/preset-metadata.spec.ts`, `packages/core/tests/src/lib/plugins/parse-cli-args.spec.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `packages/core/tests/src/lib/adopt/adopt-project.spec.ts`, `packages/core/tests/src/lib/adopt/declared-adoptions.spec.ts`, `packages/cli/package.json`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-human-summary.service.ts`, `packages/cli/src/lib/init/init-prompts.service.spec.ts`, `packages/cli/src/lib/init/init-answers.schema.spec.ts`, `packages/cli/src/lib/init/init-config-comments.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-integration.spec.ts`, `packages/cli/src/lib/init/init-render.service.spec.ts`, `plugins/api/src/index.ts`, `plugins/api/README.md`, `plugins/issues/plugin.manifest.ts`, `tools/scripts/lint/manifest-vs-presets.script.ts`, `tools/scripts/lint/manifest-vs-presets.spec.ts`, `tools/scripts/lint/preset-drift.script.ts`, `tools/scripts/smoke/pack.script.spec.ts`, `apps/web/scripts/__tests__/preset-table.spec.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
 - acceptance:
@@ -188,9 +188,12 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "every pack member's declared plugin dependencies are in the pack (lint fails otherwise)"
   - "preset-metadata.generated.ts is regenerated and every pack's measured cost is written into the proposal notes or docs"
   - "the stack packs are overlays on a purpose pack"
+- shipped-in: `301fa9650deb`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Migration of existing configurations
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/plugins/preset-migration.ts`, `packages/core/tests/src/lib/plugins/preset-migration.spec.ts`, `packages/core/src/lib/contracts/constants/preset-migration.constant.ts`, `packages/core/src/lib/contracts/interfaces/preset-migration.interface.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/adopt/first-run-setup.service.ts`, `packages/core/tests/src/lib/adopt/first-run-setup.service.spec.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/doctor/checks/preset.check.ts`, `packages/cli/src/lib/doctor/checks/preset.check.spec.ts`, `packages/cli/src/lib/doctor/checks/index.ts`, `packages/cli/src/lib/doctor/runner.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
 - **Gate**: none
@@ -198,15 +201,21 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "each retired preset id resolves to its replacement with a deprecation notice naming it (alias table in the catalogue from S1, resolution and notice in preset-migration.ts)"
   - "a start-up migration is journalled and never edits a plugin map the user changed"
   - "doctor reports configs whose plugin map equals a retired preset and names the matching pack"
+- shipped-in: `5cabc0b16a93`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — init default and docs
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/init/init-answers.schema.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-default-help.service.ts`, `docs/delendai/CROSS-PROJECT-SETUP.md`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
 - acceptance:
   - "init defaults to solo and its prompt labels are generated from the catalog"
   - "docs and the web presets table match the new catalogue"
+- shipped-in: `7ab2055e9f30`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
