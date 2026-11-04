@@ -39,10 +39,11 @@ describe('stubAbortSignalTimeout', () => {
 describe('skipLockPauses', () => {
 	it('runs a pause of the named length at once and tells the spec', async () => {
 		let paused = 0;
-		skipLockPauses(1_000, () => {
+		const pauseMs = 1_000;
+		skipLockPauses(pauseMs, () => {
 			paused += 1;
 		});
-		await new Promise<void>((done) => setTimeout(done, 1_000));
+		await new Promise<void>((done) => setTimeout(done, pauseMs));
 		expect(paused).toBe(1);
 	});
 });

@@ -15,12 +15,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { compareCodeUnits } from '@delendai/state';
+
 import { repoRoot } from '../lib/monorepo-paths';
 import {
 	countBaselineGrowth,
 	refuseBaselineGrowth,
 } from './baseline-growth.helper';
 import { countSlowSetup, isFastSpec } from './spec-real-waits.helper';
+
+/** This lint's own spec quotes the patterns it looks for. */
+const SELF_SPEC = 'tools/scripts/lint/spec-real-waits.helper.spec.ts';
 
 const BASELINE = join(
 	dirname(fileURLToPath(import.meta.url)),
@@ -34,7 +39,9 @@ const main = (): number => {
 		encoding: 'utf8',
 	})
 		.split('\n')
-		.filter((file) => file !== '' && isFastSpec(file));
+		.filter(
+			(file) => file !== '' && isFastSpec(file) && file !== SELF_SPEC,
+		);
 	const current: Record<string, number> = {};
 	for (const file of files) {
 		const count = countSlowSetup(readFileSync(join(root, file), 'utf8'));
@@ -46,7 +53,7 @@ const main = (): number => {
 	>;
 	if (process.argv.includes('--update')) {
 		const shrunk = Object.fromEntries(
-			Object.entries(current).sort(([a], [b]) => a.localeCompare(b)),
+			Object.entries(current).sort(([a], [b]) => compareCodeUnits(a, b)),
 		);
 		const refusal = refuseBaselineGrowth({
 			gate: 'spec-real-waits',
