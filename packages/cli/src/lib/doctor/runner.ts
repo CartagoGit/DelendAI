@@ -28,6 +28,7 @@ import {
 	checkNetworkDependentSurfaces,
 	checkPluginGraph,
 	checkPorts,
+	checkPreset,
 	checkSchemas,
 	checkTokenBudgets,
 } from './checks';
@@ -52,6 +53,7 @@ export interface IDoctorRunnerOptions {
 
 export const defaultChecks: readonly DoctorCheck[] = [
 	checkConfig,
+	checkPreset,
 	checkManifests,
 	checkPluginGraph,
 	checkDeps,

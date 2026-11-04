@@ -12,8 +12,37 @@ import {
 	extractCitedHashes,
 	findOrphanHashes,
 	namesAnotherObject,
+	resolveCitedObjects,
 	type IBaseline,
 } from './proposal-cited-commits.script';
+
+describe('resolveCitedObjects', () => {
+	it('answers type and commit for every hash from one batch', () => {
+		const full = (c: string): string => c.repeat(40);
+		const inputs: string[] = [];
+		const objects = resolveCitedObjects(
+			['aaaaaaa', 'bbbbbbb', 'ccccccc'],
+			(input) => {
+				inputs.push(input);
+				return [
+					`${full('a')} commit`,
+					`${full('a')} commit`,
+					`${full('b')} tree`,
+					'bbbbbbb^{commit} missing',
+					'ccccccc ambiguous',
+					`${full('c')} commit`,
+				].join('\n');
+			},
+		);
+		expect(inputs).toHaveLength(1);
+		expect(objects.get('aaaaaaa')).toEqual({
+			kind: 'commit',
+			commit: full('a'),
+		});
+		expect(objects.get('bbbbbbb')).toEqual({ kind: 'tree' });
+		expect(objects.get('ccccccc')).toEqual({ commit: full('c') });
+	});
+});
 
 describe('extractCitedHashes', () => {
 	it('returns every backticked hex string with its 1-based line', () => {

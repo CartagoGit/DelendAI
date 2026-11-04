@@ -25,3 +25,4 @@ export {
 export { checkSchemas } from './schemas.check';
 export { checkPorts } from './ports.check';
 export { checkNetworkDependentSurfaces } from './network.check';
+export { checkPreset } from './preset.check';

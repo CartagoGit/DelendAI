@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { commandsOf, inPool } from './run-together.script';
+import { commandsOf, flatCommandsOf, inPool } from './run-together.script';
 
 describe('commandsOf', () => {
 	it('reads the commands of a chain', () => {
@@ -24,5 +24,26 @@ describe('inPool', () => {
 		});
 		expect(doubled).toEqual([2, 4, 6, 8]);
 		expect(peak).toBe(2);
+	});
+});
+
+describe('flatCommandsOf', () => {
+	it('runs a nested chain as its commands, and every command once', () => {
+		const scripts = {
+			job: 'bun run lint:a && bun run lint:b && bun run lint:c && bun run lint:d',
+			'lint:a': 'bun a.ts && bun b.ts',
+			'lint:b': 'bun b.ts',
+			'lint:c': 'cd x && bun c.ts',
+			'lint:d': 'bun run lint:a',
+		};
+		expect(flatCommandsOf(['job'], scripts)).toEqual([
+			'bun a.ts',
+			'bun b.ts',
+			'bun run lint:c',
+		]);
+	});
+
+	it('refuses a chain that does not exist', () => {
+		expect(() => flatCommandsOf(['nope'], {})).toThrow('no script "nope"');
 	});
 });

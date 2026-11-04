@@ -188,6 +188,41 @@ describe('gen-all.script', () => {
 		]);
 	});
 
+	it('--check runs the writers first and the read-only checks at once', async () => {
+		const { io, commands } = createIo({});
+		const exit = await main(['--check'], { ...io, parallel: 4 });
+		expect(exit).toBe(0);
+		const writers = STEPS.filter(
+			(step) => step.checkCmd === undefined && step.measured !== true,
+		).map((step) => step.cmd.join(' '));
+		const checks = STEPS.flatMap((step) =>
+			step.checkCmd === undefined ? [] : [step.checkCmd.join(' ')],
+		);
+		expect(commands.slice(0, writers.length)).toEqual(writers);
+		expect([...commands.slice(writers.length)].sort()).toEqual(
+			[...checks].sort(),
+		);
+	});
+
+	it('--check keeps a check that passed on the same tree, and records the rest', async () => {
+		const { io, commands } = createIo({});
+		const recorded: string[] = [];
+		const exit = await main(['--check'], {
+			...io,
+			checkPasses: {
+				passed: (step) => step.name === 'authorities',
+				record: (steps) =>
+					recorded.push(...steps.map((step) => step.name)),
+			},
+		});
+		expect(exit).toBe(0);
+		expect(commands).not.toContain(
+			'bun tools/scripts/gen/authorities.script.ts --check',
+		);
+		expect(recorded).toContain('plugin-manifests');
+		expect(recorded).not.toContain('authorities');
+	});
+
 	it('--check exits 1 when a generator leaves a checked-in artifact stale', async () => {
 		// The drift the generators caused: nothing was dirty going in, a
 		// generated file is dirty coming out.
