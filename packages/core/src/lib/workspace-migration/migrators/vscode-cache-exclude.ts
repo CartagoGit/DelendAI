@@ -34,10 +34,10 @@ const asRecord = (value: unknown): Record<string, unknown> | undefined =>
  * cache root is derived state), the directory's own `/**` otherwise.
  */
 export const cacheExcludeGlob = (cacheDir: string): string | undefined => {
-	const dir = cacheDir
-		.replace(/\\/gu, '/')
-		.replace(/^(\.\/)+/u, '')
-		.replace(/\/+$/u, '');
+	const normalised = cacheDir.replace(/\\/gu, '/').replace(/^(\.\/)+/u, '');
+	let end = normalised.length;
+	while (end > 0 && normalised[end - 1] === '/') end -= 1;
+	const dir = normalised.slice(0, end);
 	if (dir.length === 0 || isAbsolute(dir) || dir.startsWith('..'))
 		return undefined;
 	if (dir === SHARED_CACHE_ROOT || dir.startsWith(`${SHARED_CACHE_ROOT}/`))
