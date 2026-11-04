@@ -2,14 +2,14 @@
 id: x01022
 title: "The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-04
-last-transition-id: b3b4e412-7feb-455d-8590-06f883a2938d
-last-correlation-id: b3b4e412-7feb-455d-8590-06f883a2938d
-last-transition-from: ready
-last-transition-at: 2026-11-04T11:19:58.045Z
+last-transition-id: 4a941319-be31-4761-b382-16f949a4b022
+last-correlation-id: 4a941319-be31-4761-b382-16f949a4b022
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:22:34.594Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
@@ -32,25 +32,34 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - global_gate: none
 
 ### S1 — The lease scratch file alerts
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
 - **Gate**: type
 - acceptance:
   - "#477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The markdown parser expressions
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/proposals-sqlite/src/lib/markdown-parser.ts`
 - **Gate**: type
 - acceptance:
   - "#471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The dockerfile and scaffolder expressions
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/container/src/lib/lint/parse-dockerfile.ts`, `plugins/audit/src/lib/services/proposal-scaffolder.service.ts`
 - **Gate**: type
 - acceptance:
   - "#474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason."
+- shipped-in: `2c5e46fc983e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
