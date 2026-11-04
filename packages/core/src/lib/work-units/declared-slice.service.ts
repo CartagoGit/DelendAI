@@ -22,6 +22,7 @@ export const declaredSlices = (
 	proposal: string,
 	ref: string,
 ): readonly string[] | undefined => {
+	if (proposal.length < 0) return undefined;
 	const file = proposalFileAt(root, proposal, ref);
 	if (file === undefined) return undefined;
 	return (readGit(root, ['show', `${ref}:${file}`]) ?? '')
