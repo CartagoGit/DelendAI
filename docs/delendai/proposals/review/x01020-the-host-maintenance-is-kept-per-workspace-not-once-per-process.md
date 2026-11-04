@@ -2,14 +2,14 @@
 id: x01020
 title: "The host maintenance is kept per workspace, not once per process"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: a10db88f-3928-4218-98e6-e6bc36c8b7c5
-last-correlation-id: a10db88f-3928-4218-98e6-e6bc36c8b7c5
-last-transition-from: ready
-last-transition-at: 2026-11-04T09:34:29.243Z
+last-transition-id: ddde58fe-6aee-4f97-bb1d-c1fb4912c7d7
+last-correlation-id: ddde58fe-6aee-4f97-bb1d-c1fb4912c7d7
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T09:50:27.275Z
 ---
 
 # x01020 — The host maintenance is kept per workspace, not once per process
@@ -37,6 +37,9 @@ External audit finding 2 (ChatGPT, 2026-11-04, against develop f7f53bf8d), P1: `
 - **Gate**: type
 - acceptance:
   - "currentHostMaintenance takes the workspace root and returns the maintenance made for that workspace only; a spec starts two servers on two workspaces in one process and each plugin call gets its own workspace maintenance, never the other one"
+- shipped-in: `3aa21aae1294`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
