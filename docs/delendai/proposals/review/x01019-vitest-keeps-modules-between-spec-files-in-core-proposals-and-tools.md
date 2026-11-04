@@ -2,14 +2,14 @@
 id: x01019
 title: "Vitest keeps modules between spec files in core, proposals and tools"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: e2f5ebfa-b30b-46cc-9e28-2b22be632c1e
-last-correlation-id: e2f5ebfa-b30b-46cc-9e28-2b22be632c1e
-last-transition-from: ready
-last-transition-at: 2026-11-04T11:37:53.745Z
+last-transition-id: a101cf9c-617f-4c42-b1f6-118c81428f19
+last-correlation-id: a101cf9c-617f-4c42-b1f6-118c81428f19
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:46:29.841Z
 ---
 
 # x01019 — Vitest keeps modules between spec files in core, proposals and tools
@@ -31,11 +31,14 @@ Measured on a 30-spec sample across core, cli, proposals, tools and e2e at maxWo
 - global_gate: none
 
 ### S1 — Share the module graph in core, proposals and tools
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `packages/core/vitest.config.ts`, `plugins/proposals/vitest.config.ts`, `tools/vitest.config.ts`
 - **Gate**: none
 - acceptance:
   - "The 30-spec sample passes 228 of 228 tests under the changed config and runs faster than before."
+- shipped-in: `f4a8b291f6e0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
