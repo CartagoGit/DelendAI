@@ -35,14 +35,16 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - global_gate: type
 
 ### S1 — The queue opens the promotion when it is ready
-- **Status**: review
+- **Status**: pending
 - **Files**: `delendai.config.json`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `.github/workflows/open-promotion.yml`, `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "`plugins.roadmap.options.promotion.schedule` is `on-ready`, and the `open-promotion` workflow projected from it asks every hour (a push comes before the checks its head needs, and a token merge starts none; promotion-workflow.lib.spec.ts), fetching the release branch, and runs `open-promotion --apply`, which opens the develop → main pull request only when develop's required checks are green (a code scanning tool's check counting as reported when that tool has an analysis on the head, open-promotion.script.spec.ts), no code scanning alert is open and the next horizon's blocking gates pass, and says which condition holds it otherwise."
 - shipped-in: `a9b8f5f5371b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — The release gate's dispatched run judges what its pull-request run does
 - **Status**: review
