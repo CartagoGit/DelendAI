@@ -2,14 +2,14 @@
 id: x01023
 title: "A republished pull request is retitled and re-summarised by what it ships now"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 1c94d1cb-ba93-4aa5-9bdf-545e13bcbd7c
-last-correlation-id: 1c94d1cb-ba93-4aa5-9bdf-545e13bcbd7c
-last-transition-from: review
-last-transition-at: 2026-11-04T14:35:31.003Z
+last-transition-id: 60a48f91-c7d0-4525-9810-a388a99c7755
+last-correlation-id: 60a48f91-c7d0-4525-9810-a388a99c7755
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T14:53:43.047Z
 ---
 
 # x01023 — A republished pull request is retitled and re-summarised by what it ships now
