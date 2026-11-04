@@ -72,14 +72,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S4 — A proved tree is not proved twice
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A green proof is recorded under the git directory, keyed by the tree it proved and the proof's commands. Proving or publishing the same tree with the same proof skips the run and says so (`remembered`); any change to either runs it again. `work prove` runs the proof alone, so a hand-over through a tool call finds it already proved, across the commits a product tool made on top of the proved tip that change only Markdown under the docs directory (a proposal's transition is one). Any other commit is proved again. The record is local and never sent to the forge (work-unit-proof.service.spec.ts, work-unit-publish-proof.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S5 — A proof installs only what it lacks
 - **Status**: review
