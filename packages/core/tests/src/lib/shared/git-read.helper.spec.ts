@@ -9,10 +9,15 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import type { IGitSpawn } from '@delendai/core/lib/contracts/interfaces/git-read.interface';
+import { runGitCommand } from '@delendai/core/lib/shared/git-command.helper';
 import {
 	gitVerbatim,
+	observeGitSpawns,
 	readGit,
+	useGitReadCache,
 } from '@delendai/core/lib/shared/git-read.helper';
+import { createGitRunner } from '@delendai/core/lib/shared/git-write';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -53,5 +58,49 @@ describe('readGit', () => {
 		expect(gitVerbatim(asked, ['status', '--porcelain'])).toBe(
 			'?? asked-only.txt\n',
 		);
+	});
+});
+
+describe('the spawn seam', () => {
+	it('tells an observer of every git process, and nothing once it stops', async () => {
+		const root = repo('a.txt');
+		const seen: string[] = [];
+		const stop = observeGitSpawns(({ args }) => seen.push(args[0] ?? ''));
+		readGit(root, ['rev-parse', '--git-dir']);
+		runGitCommand(root, ['status', '--porcelain']);
+		await createGitRunner(root)(['log', '-1']);
+		stop();
+		readGit(root, ['rev-parse', '--git-dir']);
+		expect(seen).toEqual(['rev-parse', 'status', 'log']);
+	});
+
+	it('lets a cache answer a read, and reports every command to it', () => {
+		const root = repo('a.txt');
+		const remembered = new Map<string, string | undefined>();
+		const ran: string[] = [];
+		const key = ({ cwd, args }: IGitSpawn): string =>
+			`${cwd}\0${args.join('\0')}`;
+		const stop = useGitReadCache({
+			recall: (spawn) =>
+				remembered.has(key(spawn))
+					? { output: remembered.get(key(spawn)) }
+					: undefined,
+			remember: (spawn, output) => remembered.set(key(spawn), output),
+			ran: (spawn) => ran.push(spawn.args.join(' ')),
+		});
+		const first = readGit(root, ['rev-parse', '--git-dir']);
+		const again = readGit(root, ['rev-parse', '--git-dir']);
+		const verbatim = gitVerbatim(root, ['rev-parse', '--git-dir']);
+		readGit(root, ['hash-object', '--stdin'], { input: 'x\n' });
+		runGitCommand(root, ['update-ref', 'refs/heads/x', 'HEAD']);
+		stop();
+		expect(first).toBe('.git');
+		expect(again).toBe('.git');
+		expect(verbatim).toBe('.git\n');
+		expect(ran).toEqual([
+			'rev-parse --git-dir',
+			'hash-object --stdin',
+			'update-ref refs/heads/x HEAD',
+		]);
 	});
 });

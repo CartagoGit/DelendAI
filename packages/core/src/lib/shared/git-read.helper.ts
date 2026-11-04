@@ -10,19 +10,57 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import type { IGitReadOptions } from '../contracts/interfaces/git-read.interface';
+import type {
+	GitSpawnObserver,
+	IGitReadCache,
+	IGitReadOptions,
+	IGitSpawn,
+} from '../contracts/interfaces/git-read.interface';
 import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const DEFAULT_MAX_BUFFER = 64 * 1024 * 1024;
 
-/** Git's output (trimmed unless `verbatim`), or `undefined` when it failed. */
-export const readGit = (
+const observers = new Set<GitSpawnObserver>();
+let readCache: IGitReadCache | undefined;
+
+/** Watch every git process the seam starts; the answer stops watching. */
+export const observeGitSpawns = (observer: GitSpawnObserver): (() => void) => {
+	observers.add(observer);
+	return () => {
+		observers.delete(observer);
+	};
+};
+
+/**
+ * Remember reads through `cache` until the answer is called, which puts
+ * back the cache that was there before.
+ */
+export const useGitReadCache = (cache: IGitReadCache): (() => void) => {
+	const previous = readCache;
+	readCache = cache;
+	return () => {
+		readCache = previous;
+	};
+};
+
+/**
+ * Every git spawn in this package reports here first: the observers count
+ * it, and the read cache forgets what it may change.
+ */
+export const noteGitSpawn = (cwd: string, args: readonly string[]): void => {
+	const spawn: IGitSpawn = { cwd, args };
+	readCache?.ran(spawn);
+	for (const observer of observers) observer(spawn);
+};
+
+const spawnRead = (
 	cwd: string,
 	args: readonly string[],
-	options: IGitReadOptions = {},
+	options: IGitReadOptions,
 ): string | undefined => {
+	noteGitSpawn(cwd, args);
 	try {
-		const output = execFileSync('git', [...args], {
+		return execFileSync('git', [...args], {
 			cwd,
 			env: gitEnvironmentFor(cwd),
 			encoding: 'utf8',
@@ -34,10 +72,37 @@ export const readGit = (
 						stdio: ['pipe', 'pipe', 'ignore'] as const,
 					}),
 		});
-		return options.verbatim === true ? output : output.trim();
 	} catch {
 		return undefined;
 	}
+};
+
+/** A read the cache may answer: one with no input to feed git. */
+const cachedRead = (
+	cwd: string,
+	args: readonly string[],
+	options: IGitReadOptions,
+): string | undefined => {
+	const cache = readCache;
+	if (cache === undefined || options.input !== undefined)
+		return spawnRead(cwd, args, options);
+	const spawn: IGitSpawn = { cwd, args };
+	const remembered = cache.recall(spawn);
+	if (remembered !== undefined) return remembered.output;
+	const output = spawnRead(cwd, args, options);
+	cache.remember(spawn, output);
+	return output;
+};
+
+/** Git's output (trimmed unless `verbatim`), or `undefined` when it failed. */
+export const readGit = (
+	cwd: string,
+	args: readonly string[],
+	options: IGitReadOptions = {},
+): string | undefined => {
+	const output = cachedRead(cwd, args, options);
+	if (output === undefined) return undefined;
+	return options.verbatim === true ? output : output.trim();
 };
 
 /** Read-only git, output untouched (porcelain keeps its columns). */
