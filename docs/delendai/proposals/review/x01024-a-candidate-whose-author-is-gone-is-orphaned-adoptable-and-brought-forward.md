@@ -2,14 +2,14 @@
 id: x01024
 title: "A candidate whose author is gone is orphaned, adoptable and brought forward"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: da9e3d59-d482-45b0-b21f-570bc5797908
-last-correlation-id: da9e3d59-d482-45b0-b21f-570bc5797908
-last-transition-from: ready
-last-transition-at: 2026-11-04T09:20:50.028Z
+last-transition-id: 7f2e6c02-691a-47dd-b42d-7406ec306e66
+last-correlation-id: 7f2e6c02-691a-47dd-b42d-7406ec306e66
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T09:33:06.573Z
 ---
 
 # x01024 — A candidate whose author is gone is orphaned, adoptable and brought forward
@@ -36,6 +36,9 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - **Gate**: type
 - acceptance:
   - "A publication or unit is orphaned when its author is gone: finished, idle past the recovery window, or out of quota, meaning no heartbeat and no live session holding its lease. A candidate whose author still has a heartbeat or a live lease stays disposition author. Specs: author alive, author idle past the window, author finished, author out of quota."
+- shipped-in: `f4b76a89b021`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Orphaned units are listed with their reason
 - **Status**: review
@@ -43,6 +46,9 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - **Gate**: type
 - acceptance:
   - "work status and work swarm list every orphaned unit with the reason and the time since its last beat, in every project, not only this one. Spec: a roster with one live and one orphaned unit lists only the orphaned one as orphaned."
+- shipped-in: `f4b76a89b021`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Any agent can take an orphan over
 - **Status**: review
@@ -50,6 +56,9 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - **Gate**: type
 - acceptance:
   - "An agent takes an orphaned unit over with the existing claim or adopt path; the record says it changed hands and from whom, and the unit returns to its normal state once adopted. Spec: adopt, then the unit is no longer orphaned and its history names both agents."
+- shipped-in: `e26e5a73eaa1`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The hydrator keeps an orphan moving, bounded
 - **Status**: review
@@ -57,6 +66,9 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - **Gate**: type
 - acceptance:
   - "While a candidate is orphaned the hydrator keeps bringing it forward, at most N attempts; after N failed attempts the owner is told, once, and no tip is lost (retire keeps it). Specs: attempts below N continue, the Nth failure reports, an adopted candidate is no longer touched as an orphan."
+- shipped-in: `f4b76a89b021`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — work status shows branch staleness and integration risk
 - **Status**: review
@@ -64,6 +76,9 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - **Gate**: type
 - acceptance:
   - "work status prints one line per open publication with: commits behind develop, overlap with other open publications, age, and whether its owner is alive. Spec: a publication behind by 3 with one overlapping file prints those numbers."
+- shipped-in: `f4b76a89b021`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
