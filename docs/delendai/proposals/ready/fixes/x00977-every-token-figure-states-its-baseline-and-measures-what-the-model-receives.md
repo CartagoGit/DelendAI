@@ -2,14 +2,14 @@
 id: x00977
 title: "Every token figure states its baseline and measures what the model receives"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 947328b6-9b36-4339-a20a-650fc0e2c6c7
-last-correlation-id: 947328b6-9b36-4339-a20a-650fc0e2c6c7
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T17:05:01.253Z
+last-transition-id: ebd4a08b-616f-4cdf-9ef8-08d333cf7345
+last-correlation-id: ebd4a08b-616f-4cdf-9ef8-08d333cf7345
+last-transition-from: review
+last-transition-at: 2026-11-04T18:57:31.005Z
 ---
 
 # x00977 — Every token figure states its baseline and measures what the model receives
@@ -69,14 +69,16 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 - review-log: requested_changes by gpt-5.3-codex — shipped-in e7c75bfcca0c is stale: S3 files changed afterward (e.g. 4a6c345e2). Redeliver S3 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S4 — Manifest budgets match the definitions
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/test/manifest-budget.helper.ts`, `tools/scripts/test/manifest-budget.helper.spec.ts`, `tools/scripts/test/run-actual-preset-budget.script.ts`, `plugins/commit-policy/plugin.manifest.ts`, `plugins/rules/plugin.manifest.ts`, `plugins/search/plugin.manifest.ts`, `plugins/issues/plugin.manifest.ts`
 - **Gate**: type
 - acceptance:
   - "A gate measures each plugin's real tools/list bytes against its manifest budget and fails on divergence (CP-08, SURF-01, G4)."
 - shipped-in: `e7c75bfcca0c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in e7c75bfcca0c is stale: S4 files changed afterward (e.g. e7fdcd9df, 7698da8c9). Redeliver S4 on current HEAD and resubmit with fresh shipped-in and manifest-budget gate evidence.
 
 ## acceptance
 
