@@ -40,7 +40,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -50,8 +50,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A commented `.vscode/mcp.json` that names the old identity is rewritten, and the file keeps its comments outside the rewritten member, its key order and its own formatting."
   - "A commented `.vscode/mcp.json` that names nothing old is not written at all — byte-identical before and after."
 - shipped-in: `724cbf9f8`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
 - **Status**: review
