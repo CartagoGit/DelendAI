@@ -39,14 +39,16 @@ f00793 makes the roster detected at server start; this proposal makes what is de
 - global_gate: type
 
 ### S1 — A lazy tool is listed with its own summary
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`
 - **Gate**: type
 - acceptance:
   - "tool_search over an inactive plugin shows each tool's own one-line summary, generated from its registered description, and no two tools of orchestrator-runner share one."
 - shipped-in: `8ef2aa00af53`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 8ef2aa00af53 is stale: S1 files changed afterward (e.g. 8d8aa3be6, b7df7dab5, 599ba2c48). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ### S2 — Consent that the host cannot ask is asked another way
 - **Status**: review
