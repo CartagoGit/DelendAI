@@ -43,7 +43,7 @@ Joint audit a00095. G42: escapeHtml exists six times and five of them do not esc
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 87cdd379e676 is stale: S1 renderer files changed afterward (e.g. 3cef0ac90). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ### S2 — CSP without unsafe-inline, built safely
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/ui-extension/src/webview/csp.ts`, `packages/ui-extension/src/webview/index.ts`, `packages/ui-extension/tests/webview/csp.spec.ts`, `extensions/vscode/src/contracts/constants/webview-message-schemas.constant.ts`, `extensions/vscode/src/test/webview-message-schemas.spec.ts`, `extensions/vscode/src/test/webview-csp.spec.ts`, `extensions/vscode/src/commands/open-knowledge.ts`, `extensions/vscode/src/commands/open-settings.ts`, `extensions/vscode/src/commands/open-toolbar.ts`
 - **Gate**: type
 - acceptance:
@@ -51,8 +51,10 @@ Joint audit a00095. G42: escapeHtml exists six times and five of them do not esc
   - "The meta tag escapes the header value; a spec with a quote in a source does not break the attribute (D45)."
   - "Every webview message handler validates with safeParse against its schema (G11)."
 - shipped-in: `96003045314a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with explicit empirical evidence package for CSP nonce/no-unsafe-inline and safeParse coverage across all handlers; current round lacks reviewer-verifiable run evidence payload.
 
 ### S3 — Trailers are serialised
 - **Status**: review
