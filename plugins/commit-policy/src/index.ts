@@ -39,6 +39,7 @@ import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 // Declared core surface (`./cli`), because a plugin must install from npm:
 // the `lib/` path only resolves through tsconfig paths in this monorepo.
 import { providerModelId, readSliceOwnership } from '@delendai/core/cli';
+import { currentHostMaintenance } from '@delendai/core/runtime';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
@@ -740,6 +741,12 @@ export default definePlugin({
 					return asked === 'at-start'
 						? await filesAreCommitted(paths)
 						: await sliceFilesAreCommitted(run, paths);
+				},
+				{
+					watch: true,
+					// Several servers on one workspace close slices once.
+					standDown: async () =>
+						currentHostMaintenance()?.gate().standDown(),
 				},
 			);
 			// Deliberately not awaited: registration must not block the
