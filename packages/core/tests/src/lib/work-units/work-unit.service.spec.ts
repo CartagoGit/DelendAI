@@ -218,6 +218,61 @@ describe('delendai work (x00553)', () => {
 		expect(paths[1]).toContain('minimax-m3-batch-all');
 	});
 
+	it('enters the batch as a review unit whatever kind the caller left or gave (x01032)', async () => {
+		const root = repoWith(PINNED);
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=gpt-5.3-codex',
+				'--json',
+			],
+			contextFor(root, { json: true }),
+		);
+		expect(entered.code).toBe(0);
+		const data = entered.data as { ref?: string };
+		expect(data.ref).toContain('/review/batch-all');
+		expect(data.ref).toContain('/verdicts');
+
+		const contradicted = await command.run(
+			[
+				'enter',
+				'--kind=implement',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=gpt-5.3-codex',
+				'--json',
+			],
+			contextFor(root, { json: true }),
+		);
+		expect(contradicted.code).not.toBe(0);
+		expect(JSON.stringify(contradicted)).toContain('review next');
+	});
+
+	it("enters a proposal waiting in review/ as the reviewer's batch unit (x01032)", async () => {
+		const root = repoWith(PINNED);
+		const dir = join(root, 'docs/delendai/proposals/review');
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(join(dir, 'x00900-waiting.md'), '# x00900\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'a proposal in review');
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=x00900',
+				'--slice=S1',
+				'--agent=gpt-5.3-codex',
+				'--json',
+			],
+			contextFor(root, { json: true }),
+		);
+		expect(entered.code).toBe(0);
+		expect((entered.data as { ref?: string }).ref).toContain(
+			'/review/batch-all',
+		);
+	});
+
 	it('refuses a new unit whose topic is a list, and creates nothing', async () => {
 		const root = repoWith(PINNED);
 		const listed = await command.run(
