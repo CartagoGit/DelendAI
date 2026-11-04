@@ -55,14 +55,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 6, refi
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for orphan listing behavior in `work status`/`work swarm` (reason + time-since-last-beat, cross-project scope). Please re-run and attach fresh proof.
 
 ### S3 — Any agent can take an orphan over
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-claim.service.ts`
 - **Gate**: type
 - acceptance:
   - "An agent takes an orphaned unit over with the existing claim or adopt path; the record says it changed hands and from whom, and the unit returns to its normal state once adopted. Spec: adopt, then the unit is no longer orphaned and its history names both agents."
 - shipped-in: `e26e5a73eaa1`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for orphan adoption flow (handover attribution/history and return to normal state). Please re-run and resubmit with empirical proof.
 
 ### S4 — The hydrator keeps an orphan moving, bounded
 - **Status**: review
