@@ -217,13 +217,16 @@ const resolveAffectedVitestProjects = (
 		nameToDir.set(name, dir);
 	}
 
-	return affected.map((workspaceName) => {
+	return affected.flatMap((workspaceName) => {
 		const workspaceDir = nameToDir.get(workspaceName);
-		if (workspaceDir === undefined) return workspaceName;
-		return resolveVitestProjectName(
-			join(graph.rootDir, workspaceDir),
-			workspaceName,
-		);
+		if (workspaceDir === undefined) return [workspaceName];
+		const dir = join(graph.rootDir, workspaceDir);
+		const name = resolveVitestProjectName(dir, workspaceName);
+		// A project split by `isolationSplit` is two: its specs that replace
+		// something process-wide run in the project named for the second half.
+		return existsSync(join(dir, 'vitest.isolated.config.ts'))
+			? [name, `${name}-isolated`]
+			: [name];
 	});
 };
 

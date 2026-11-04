@@ -138,6 +138,10 @@ export default defineConfig({
 		// l99 opt-out pattern.
 		projects: [
 			'packages/*',
+			// The halves of a project whose spec files that replace something
+			// process-wide keep a worker each (`isolationSplit`).
+			'packages/core/vitest.isolated.config.ts',
+			'tools/vitest.isolated.config.ts',
 			'plugins/*',
 			'tests/e2e',
 			'docs/delendai/examples/custom-plugin',
