@@ -48,14 +48,16 @@ Measured on 2026-10-28: a pull request's CI takes about 5 minutes (run 406317493
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — The clock runs the integration branch's queue
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "The default branch is the integration branch (repository setting, 2026-10-28), so the hourly run is develop's queue, and the workflow says why next to its schedule."
 - shipped-in: `2726a782c991`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — An author's own commands bring its red candidates forward
 - **Status**: review
