@@ -2,7 +2,7 @@
 id: v00138
 title: "CI transforms each module once and keeps its caches between runs"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
