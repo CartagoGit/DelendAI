@@ -16,11 +16,12 @@ A harness injects the faults a swarm meets and proves the work is never lost: an
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 11 (P2). Claim: failure handling is tested case by case, with no harness that injects whole faults. Not verified exhaustively; I know of focused specs per defect (leases, hydration, ref reaping) but did not audit that none combines faults. Each defect so far (orphaned candidates, lost wips, saturated machine) was found in use, which is the case for the harness.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Running the harness on every pull request; it runs on demand and nightly.
+- Fixing what it finds: each finding becomes its own proposal.
 
 ## slices
 
