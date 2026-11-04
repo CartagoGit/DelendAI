@@ -39,7 +39,7 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
 - global_gate: lint
 
 ### S1 — El watcher de VS Code ignora la raíz de caché
-- **Status**: review
+- **Status**: pending
 - **Files**: `.vscode/settings.json`
 - **Gate**: lint
 - acceptance:
@@ -48,8 +48,10 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
   - "El fichero sigue siendo JSONC válido: se parsea con el parser JSONC del repo y conserva sus comentarios."
   - "La exclusión cubre `.cache/delendai/.worktrees/`, la ruta donde el enjambre abre sus worktrees."
 - shipped-in: `9740e9514`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: minimax-m3.1-flash
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 9740e9514 is stale: .vscode/settings.json changed afterward (e.g. 2261aa0a1). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and JSONC-parse evidence.
 
 ### S2 — El directorio de unidades sigue al `cacheDir` configurado
 - **Status**: review
