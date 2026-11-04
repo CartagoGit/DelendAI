@@ -2,10 +2,14 @@
 id: f00805
 title: "Agents run only the tests of what they touched, unless the project asks for more"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 6cd9cd24-6446-49c1-aa9e-883bde384653
+last-correlation-id: 6cd9cd24-6446-49c1-aa9e-883bde384653
+last-transition-from: ready
+last-transition-at: 2026-11-04T11:25:57.377Z
 ---
 
 # f00805 — Agents run only the tests of what they touched, unless the project asks for more
