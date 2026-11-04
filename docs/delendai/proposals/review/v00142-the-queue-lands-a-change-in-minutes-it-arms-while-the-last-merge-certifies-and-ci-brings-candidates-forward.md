@@ -36,14 +36,16 @@ Measured on 2026-10-28: a pull request's CI takes about 5 minutes (run 406317493
 - global_gate: type
 
 ### S1 — Arm while the last merge certifies
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/queue-arming.ts`, `tools/scripts/forge/queue-arming.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: type
 - acceptance:
   - "`integrationAllowsArming` accepts a `pending` integration commit whose first parent is certified, and nothing else that is not certified (queue-arming.spec.ts); a red one still arms only its repair."
 - shipped-in: `9c43b6214938`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — The clock runs the integration branch's queue
 - **Status**: review
