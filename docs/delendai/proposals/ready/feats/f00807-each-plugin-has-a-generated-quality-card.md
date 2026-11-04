@@ -16,11 +16,12 @@ A generated card per plugin states its version, capabilities, effects, tool coun
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 9. Claim: plugins lack a comparable quality summary. I did not verify this claim beyond noting that the facts exist in separate generated places (plugin manifests, the managed catalog, preset metadata with measured costs, token budgets); no single per-plugin card gathers them. Not audited exhaustively.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Gating releases on the card.
+- Hand-written cards: the card is generated and checked for drift.
 
 ## slices
 
