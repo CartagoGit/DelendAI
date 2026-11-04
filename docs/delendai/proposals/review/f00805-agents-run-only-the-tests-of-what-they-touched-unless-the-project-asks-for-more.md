@@ -2,14 +2,14 @@
 id: f00805
 title: "Agents run only the tests of what they touched, unless the project asks for more"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 6cd9cd24-6446-49c1-aa9e-883bde384653
-last-correlation-id: 6cd9cd24-6446-49c1-aa9e-883bde384653
-last-transition-from: ready
-last-transition-at: 2026-11-04T11:25:57.377Z
+last-transition-id: 74ee566b-0a49-4070-b362-740cbc9bc5de
+last-correlation-id: 74ee566b-0a49-4070-b362-740cbc9bc5de
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:30:01.815Z
 ---
 
 # f00805 — Agents run only the tests of what they touched, unless the project asks for more
@@ -32,18 +32,24 @@ The owner's rule, product-wide: by default delendai runs only the tests of what 
 - global_gate: none
 
 ### S1 — The setting and the proof follow it
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `packages/core/tests/src/lib/plugins/config-file-schema.spec.ts`
 - **Gate**: none
 - acceptance:
   - "testing.scope is touched, reach or all and defaults to touched; work prove and work deliver (prove-plan --fast, near-specs) run the changed specs, the mirror spec and the direct importers only, and a spec that reaches the change through another module does not run unless the scope is reach or all, shown on a fixture diff."
+- shipped-in: `fae717645a14`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The advisory tests-for-change tool follows the setting
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`
 - **Gate**: none
 - acceptance:
   - "impact-analysis tests_for_change recommends the touched specs by default and the symbol-reached ones only when testing.scope is reach or all."
+- shipped-in: `615abe74d1d9`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
