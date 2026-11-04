@@ -2,14 +2,14 @@
 id: f00801
 title: "Each branch of a project says how it takes in other work"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 88db4867-1a94-4593-a727-9ecdb306fd5f
-last-correlation-id: 88db4867-1a94-4593-a727-9ecdb306fd5f
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T15:27:27.110Z
+last-transition-id: db6f249d-3226-4f7c-830f-68776c835442
+last-correlation-id: db6f249d-3226-4f7c-830f-68776c835442
+last-transition-from: review
+last-transition-at: 2026-11-04T19:12:49.131Z
 ---
 
 # f00801 — Each branch of a project says how it takes in other work
@@ -62,14 +62,16 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 - review-log: requested_changes by gpt-5.3-codex — shipped-in a9c123c3345d is stale: S2 files changed afterward (e.g. 2ca63f042, ef203ed1f, aa75627c5). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + gate evidence.
 
 ### S3 — Promotion and follow
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/release/forward-sync.service.ts`, `packages/cli/src/commands/groups/release.ts`, `packages/core/src/lib/contracts/interfaces/forward-sync.interface.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/core/tests/src/lib/release/forward-sync.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A rule may name the branch it is promoted from (`main` from `develop`) and the branch it follows (`develop` follows `main`): one delendai command opens the promotion by that branch's own route, and once the promotion lands the follower takes in what it brought by its own route, merged or by pull request; nothing happens when there is nothing to take."
 - shipped-in: `b49221bce0a2`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in b49221bce0a2 is stale: S3 files changed afterward (e.g. 53c5f4fb0, 2261aa0a1, cccb59b3c, 599ba2c48). Redeliver S3 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ## acceptance
 
