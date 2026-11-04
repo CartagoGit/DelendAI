@@ -2,14 +2,14 @@
 id: v00138
 title: "CI transforms each module once and keeps its caches between runs"
 kind: perf
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: adea2a63-def1-48c8-8b05-2096e82a8b77
-last-correlation-id: adea2a63-def1-48c8-8b05-2096e82a8b77
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T03:56:31.762Z
+last-transition-id: 8569bb10-fd78-4322-b796-55cf94d5d2ee
+last-correlation-id: 8569bb10-fd78-4322-b796-55cf94d5d2ee
+last-transition-from: review
+last-transition-at: 2026-11-04T18:31:07.964Z
 ---
 
 # v00138 — CI transforms each module once and keeps its caches between runs
@@ -44,15 +44,17 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 93abaae43aed is stale: S1 files changed in many newer commits (e.g. f44c79120, 51fbac099, da3d5a486, b0cb32841). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S2 — proposals evaluates each module once where state allows
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/report/vitest-module-evaluations.script.ts`, `tools/tests/report/vitest-module-evaluations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A report script prints module evaluations per project from a vitest run (G12)."
   - "The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them."
 - shipped-in: `93abaae43aed`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 93abaae43aed is stale: S2 files changed in newer commits (e.g. 6a7cbf607 and later CI/perf updates). Redeliver S2 on current HEAD and resubmit with fresh shipped-in plus gate evidence.
 
 ## acceptance
 
