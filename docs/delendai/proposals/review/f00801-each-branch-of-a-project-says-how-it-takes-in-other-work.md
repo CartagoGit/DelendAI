@@ -50,14 +50,16 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 - review-log: requested_changes by gpt-5.3-codex — shipped-in a9c123c3345d is stale: S1 files changed afterward (e.g. 047d74500, 4cdbc4365, d43290f9b). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — The guard and the work flow follow each branch's rule
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/tests/src/lib/development-policy/git-guard-branch-rules.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "A direct push or commit to a `pull-request` branch is refused, a merge into a `merge` branch is allowed and `work publish` lands there by merge, and a `direct` branch takes commits and pushes; one spec per rule, under both pinned profiles."
 - shipped-in: `a9c123c3345d`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in a9c123c3345d is stale: S2 files changed afterward (e.g. 2ca63f042, ef203ed1f, aa75627c5). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + gate evidence.
 
 ### S3 — Promotion and follow
 - **Status**: review
