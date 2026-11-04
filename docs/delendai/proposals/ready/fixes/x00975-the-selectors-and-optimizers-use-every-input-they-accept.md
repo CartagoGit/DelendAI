@@ -2,14 +2,14 @@
 id: x00975
 title: "The selectors and optimizers use every input they accept"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 31fc3cf2-70a5-4d79-b63e-c68bea7e539a
-last-correlation-id: 31fc3cf2-70a5-4d79-b63e-c68bea7e539a
-last-transition-from: in-progress
-last-transition-at: 2026-10-27T17:55:39.844Z
+last-transition-id: 2a274772-8570-4209-a04e-705d8848652c
+last-correlation-id: 2a274772-8570-4209-a04e-705d8848652c
+last-transition-from: review
+last-transition-at: 2026-11-04T20:15:43.876Z
 shipped-in:
   - "1f0c5d911"
 ---
@@ -48,7 +48,7 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 1f0c5d911 is stale for this slice. `git log 1f0c5d911..develop -- <S1 files>` shows post-shipped change(s), including e7c75bfcc in listed files. Please re-validate all acceptance criteria on current develop and resubmit with fresh empirical evidence.
 
 ### S2 — agent-orchestrator, triage and changelog
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/agent-orchestrator/src/lib/tools/plan.tool.ts`, `plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/plan.tool.spec.ts`, `plugins/issues-triage/src/lib/tools/triage.tools.ts`, `plugins/issues-triage/tests/triage-tools.spec.ts`, `plugins/changelog/src/index.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.ts`, `plugins/changelog/src/lib/tools/discover-publish-order.service.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -57,8 +57,10 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "release_plan runs with the default options (D59)."
 - notes: plan and classify now forward files and facts to the classifier and an override re-plans through the named mode so its steps change; triage_run returns the draft when it is not written and reports failed effects in `problems` with ok=false; release_plan derives its publish order from the workspace packages when none is injected. No agent-orchestrator description or output schema grew (execution_policy and the classifier already took files and facts).
 - shipped-in: `1f0c5d911`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 1f0c5d911 is stale for this slice. `git log 1f0c5d911..develop -- <S2 files>` shows post-shipped commits touching listed files (e.g. c5f1b175f), so acceptance needs to be re-validated against current develop with fresh reproducible evidence.
 
 ## acceptance
 
