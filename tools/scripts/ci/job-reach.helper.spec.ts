@@ -4,10 +4,11 @@ import { jobsReached, scriptFilesOf } from './job-reach.helper';
 
 const SCRIPTS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
 	'.': {
-		'lint:job:docs': 'bun run lint:a && bun run lint:b',
-		'lint:a': 'bun tools/scripts/lint/a.script.ts --strict',
-		'lint:b': "bun tools/scripts/lib/lock.script.ts b -- 'bun tools/b.ts'",
-		'lint:vscode': 'bun run --cwd extensions/vscode check',
+		'lint:job:docs': 'bun run lint:doc-links && bun run lint:no-any',
+		'lint:doc-links': 'bun tools/scripts/lint/a.script.ts --strict',
+		'lint:no-any':
+			"bun tools/scripts/lib/lock.script.ts b -- 'bun tools/b.ts'",
+		'lint:skills': 'bun run --cwd extensions/vscode check',
 		'lint:brand': 'cd extensions/vscode && bun scripts/logo.ts',
 	},
 	'extensions/vscode': { check: 'bun scripts/check.ts' },
@@ -44,7 +45,7 @@ describe('scriptFilesOf', () => {
 	});
 
 	it('follows a --cwd and a cd into another package', () => {
-		expect(filesOf('bun run lint:vscode')).toEqual([
+		expect(filesOf('bun run lint:skills')).toEqual([
 			'extensions/vscode/scripts/check.ts',
 		]);
 		expect(filesOf('bun run lint:brand')).toEqual([
