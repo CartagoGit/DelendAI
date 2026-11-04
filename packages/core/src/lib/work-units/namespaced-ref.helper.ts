@@ -7,6 +7,8 @@
  * husk's files or reserving a slice failed there outright.
  */
 
+import { ownedNamespaces } from '../development-policy/owned-ref-prefixes';
+
 /** `refs/<namespace>/<parts…>`, or `refs/<parts…>` with no namespace. */
 export const namespacedRef = (
 	namespace: string,
@@ -27,3 +29,9 @@ export const ownedRefRoots = (
 		namespaces.map((namespace) => namespacedRef(namespace, ...parts)),
 	),
 ];
+
+/** `ownedRefRoots` over the namespaces a policy owns, current first. */
+export const ownedRootsOf = (
+	branches: Parameters<typeof ownedNamespaces>[0],
+	...parts: readonly string[]
+): readonly string[] => ownedRefRoots(ownedNamespaces(branches), ...parts);

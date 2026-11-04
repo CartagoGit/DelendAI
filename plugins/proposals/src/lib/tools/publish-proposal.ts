@@ -44,6 +44,7 @@ import { randomUUID } from 'node:crypto';
 
 import {
 	createWipEngine,
+	resolveDevelopmentPolicy,
 	resolveWorkRef,
 	UNANCHORED,
 	WORK_REF_NAMING,
@@ -92,8 +93,12 @@ export const publicationRefFor = (
 	} = {},
 ): string => {
 	// A blank prefix would produce `/…`, a ref git refuses. Fall back to
-	// the default rather than emit something unpushable.
-	const chosen = prefix.trim().length === 0 ? 'delendai/pr/' : prefix;
+	// the default policy's prefix rather than emit something unpushable,
+	// and never to a spelled namespace (f00808).
+	const chosen =
+		prefix.trim().length === 0
+			? resolveDevelopmentPolicy({}).branches.publicationRefPrefix
+			: prefix;
 	const normalised = chosen.endsWith('/') ? chosen : `${chosen}/`;
 	const template =
 		naming.template === undefined || naming.template === ''
@@ -222,7 +227,7 @@ export const publishProposalOnRef = async (
 	}
 
 	const ref = publicationRefFor(
-		request.policy?.publicationRefPrefix ?? 'delendai/pr/',
+		request.policy?.publicationRefPrefix ?? '',
 		request.proposalId,
 		{
 			agent: request.agent,

@@ -1,4 +1,5 @@
 import { resolveWorkRef } from '../wip-engine/ref-name';
+import { ownedRootsOf } from './namespaced-ref.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
@@ -101,7 +102,7 @@ export const endedGenerations = (
 			'ls-remote',
 			'--',
 			integrationRemoteName,
-			`refs/${policy.branches.namespacePrefix}/retired/*`,
+			...ownedRootsOf(policy.branches, 'retired', '*'),
 		]) ?? '';
 	const ended = new Set<number>();
 	const named = new RegExp(`/${literal(unit)}(\\d+)/`, 'gu');
