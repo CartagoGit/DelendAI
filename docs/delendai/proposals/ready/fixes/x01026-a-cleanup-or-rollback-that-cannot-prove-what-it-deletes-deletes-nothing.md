@@ -2,14 +2,14 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
-last-correlation-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:20:16.173Z
+last-transition-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
+last-correlation-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
+last-transition-from: review
+last-transition-at: 2026-11-04T22:22:52.936Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -46,7 +46,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The rollback reverts only what the transaction wrote
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/rollback.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -54,8 +54,10 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A file written by another process after the backup and before the rollback is still there afterwards."
   - "A spec writes such a file between the backup and the rollback."
 - shipped-in: `569c1d67f766`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
