@@ -2,14 +2,14 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 5dd50411-a0ae-4667-bf86-ea109fdc0d4b
-last-correlation-id: 5dd50411-a0ae-4667-bf86-ea109fdc0d4b
-last-transition-from: ready
-last-transition-at: 2026-11-04T10:10:36.844Z
+last-transition-id: e05b5e36-b3ba-40f4-a4ec-0cb091dad0cf
+last-correlation-id: e05b5e36-b3ba-40f4-a4ec-0cb091dad0cf
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:21:05.606Z
 ---
 
 # x01028 — The governed fetch connects to the address it validated
@@ -38,6 +38,9 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "The request connects to the IP that passed the address policy while the Host header and the TLS name stay the requested host."
   - "A resolver that answers a public address first and a private one second cannot reach the private one (spec)."
   - "The comment that admits the second resolution is removed because it is no longer true."
+- shipped-in: `7f77000da636`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
