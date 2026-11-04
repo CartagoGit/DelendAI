@@ -44,14 +44,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 2c5e46fc983e is stale for this slice. `git log 2c5e46fc983e..develop -- <S1 files>` shows later changes (e.g. 1921c42fa), so the code-scanning acceptance for alerts #477/#478 must be re-validated on current develop with fresh evidence.
 
 ### S2 — The markdown parser expressions
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/markdown-parser.ts`
 - **Gate**: type
 - acceptance:
   - "#471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: no current-run empirical evidence is attached here to prove the pathological-line acceptance on current develop (100000-space behavior for #471/#472/#473). Please re-run and include reproducible evidence tied to this slice before re-submitting.
 
 ### S3 — The dockerfile and scaffolder expressions
 - **Status**: review
