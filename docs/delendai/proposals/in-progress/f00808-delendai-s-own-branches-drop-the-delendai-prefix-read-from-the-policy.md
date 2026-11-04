@@ -20,11 +20,11 @@ In this repository new work refs are `wip/<agent>/...` and publications `pr/<age
 
 ## why
 
-The owner wants this repository, which is delendai itself, to stop prefixing its branches with `delendai/`: the prefix exists so that OTHER projects can tell delendai's branches apart from their own, and in delendai's own repository every branch is delendai's. `init` must keep `delendai/` as the default for every other project. Survey 2026-11-04: the setting is already there (`development.branches.namespacePrefix`, composed into workRefTemplate, workRefPrefix and publicationRefPrefix in packages/core/src/lib/development-policy/resolve.ts) and most of core reads it, but several consumers still spell `delendai/` or `refs/delendai/` literally (ci.yml lines 1497 and 1539, FORWARD_SYNC_REF_PREFIX, agent-claims lint, publish-proposal and create_proposal fallbacks, the proposal-id reservation and retired/claims hidden refs, `refs/${prefix}/retired/*` in two reapers), nothing recognises a FORMER prefix, so flipping the config today would orphan every live `delendai/` unit and split the id allocator. Finding against the request: init does NOT write a prefix today: adopt.ts writes only integration and release, and the library default in profiles.ts is empty, so new consumer projects already get bare `wip/` and `pr/`; S6 makes `delendai` init's written default, as the owner intends. A past rename through the GitHub API closed all 7 open pull requests, so the migration never renames a ref with an open pull request.
+The owner wants this repository, which is delendai itself, to stop prefixing its branches with `delendai/`: the prefix exists so that OTHER projects can tell delendai's branches apart from their own, and in delendai's own repository every branch is delendai's. `init` must keep `delendai/` as the default for every other project. Survey 2026-11-04: the setting is already there (`development.branches.namespacePrefix`, composed into workRefTemplate, workRefPrefix and publicationRefPrefix in packages/core/src/lib/development-policy/resolve.ts) and most of core reads it, but several consumers still spell `delendai/` or `refs/delendai/` literally (ci.yml lines 1497 and 1539, FORWARD_SYNC_REF_PREFIX, agent-claims lint, publish-proposal and create_proposal fallbacks, the proposal-id reservation and retired/claims hidden refs, `refs/${prefix}/retired/*` in two reapers), nothing recognises a FORMER prefix, so flipping the config today would orphan every live `delendai/` unit and split the id allocator. init keeps its current default, no prefix (adopt.ts writes only integration and release; profiles.ts defaults to empty): the owner dropped the slice that would have written `delendai`, so only this repository's config changes. The owner also wants branch names a person can read at a glance: `delendai/wip/gpt-5.3-codex/implement/batch-all-g1/work` says nothing to a person (`batch-all`, `-all`, `-g1`, `work`, `verdicts`). A past rename through the GitHub API closed all 7 open pull requests, so the migration never renames a ref with an open pull request.
 
 ## non-goals
 
-- Changing the library default in profiles.ts (stays empty) or rewriting any existing project's config: adoption never overwrites a declared policy.
+- Changing init's default namespace (stays empty) or rewriting any existing project's config: adoption never overwrites a declared policy.
 - Renaming refs automatically at startup or in a reaper: renaming is only the explicit command of S7.
 - Using the forge's branch-rename API for anything.
 
@@ -34,7 +34,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 
 ### S1 — Former prefixes are part of the policy
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
 - **Gate**: type
 - acceptance:
   - "No setting covers the transition today (checked: namespacePrefix, workRefTemplate, workRefPrefix, publicationRefPrefix, foreignRefPrefixes), so one is added: `development.branches.formerNamespacePrefixes` (default []), documented as transition-only."
@@ -82,14 +82,6 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix."
   - "ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so branch-protection-guard fails when the prefixes ci.yml names differ from the resolved policy's owned publication prefixes."
 
-### S6 — init writes delendai as the default namespace
-- **Status**: pending
-- **Files**: `packages/core/src/lib/development-policy/adopt.ts`, `packages/core/tests/src/lib/development-policy/adopt.spec.ts`
-- **Gate**: type
-- acceptance:
-  - "Today adopt.ts writes only integration and release and the library default is empty, so init gives consumer projects bare `wip/`. Adoption now writes `branches.namespacePrefix: "delendai"`, which makes `delendai/` init's default as the owner intends; the profiles.ts default stays empty and a project that already declares a development block is never rewritten."
-  - "Spec: a fresh init declares `delendai`, a project resolves `heads/delendai/wip/` and `delendai/pr/`, and an existing config is left untouched."
-
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
 - **Status**: pending
 - **DependsOn**: [S3, S4]
@@ -102,13 +94,24 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "When no ref is left under a former prefix it says so and names the config line to remove."
   - "Spec: no rename of a ref with an open pull request; tips identical before and after."
 
+### S9 — Branch names a person can read at a glance
+- **Status**: pending
+- **DependsOn**: [S2]
+- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/work-units/work-ref-record.service.ts`, `packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The readable shape is a template in the policy (`workRefTemplate`, and the publication name after `publicationRefPrefix`), so each project can choose: a work ref names what is done, `wip/<agent>/<proposal>-<short-topic>` (`wip/claude-opus-5-5/x01003-shared-checkout-stays-clean`); a review batch names what it reviews (`wip/gpt-5.3-codex/review-x01004-x01016`); a publication names what it ships (`pr/<agent>/x01003-shared-checkout-stays-clean`)."
+  - "Slice, kind and generation appear in the name only when they disambiguate: a slice when the proposal has another live unit, `review-` for review kind, `-g2` only from the second generation on; no `-all`, `-g1`, `batch-all`, `work` or `verdicts`."
+  - "The machine identity (agent, kind, proposal, slice, generation) is written in the existing `Delendai-Wip-Ref` commit trailer and a ref-attached record; every parser reads it from there first and falls back to the name, so both the old and new forms are recognised in the transition (S2)."
+  - "The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed."
+
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: pending
-- **DependsOn**: [S2, S3, S4, S5]
+- **DependsOn**: [S2, S3, S4, S5, S9]
 - **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
-  - "delendai.config.json sets `namespacePrefix: ""` and `formerNamespacePrefixes: ["delendai"]`; only this repository's config changes."
+  - "delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed."
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
 
@@ -130,13 +133,15 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - Spec per script: a fixture with one `delendai/pr/...` and one `pr/...` publication under `namespacePrefix: ""` + former `delendai` handles both.
 - Rendered rulesets and branch protection cover the work and publication refs of every owned prefix.
 - ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so branch-protection-guard fails when the prefixes ci.yml names differ from the resolved policy's owned publication prefixes.
-- Today adopt.ts writes only integration and release and the library default is empty, so init gives consumer projects bare `wip/`. Adoption now writes `branches.namespacePrefix: "delendai"`, which makes `delendai/` init's default as the owner intends; the profiles.ts default stays empty and a project that already declares a development block is never rewritten.
-- Spec: a fresh init declares `delendai`, a project resolves `heads/delendai/wip/` and `delendai/pr/`, and an existing config is left untouched.
 - `delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary.
 - It refuses as a whole while any open pull request has its head under a former prefix, and when the forge cannot be read; it checks each ref again just before acting.
 - Each ref is renamed by pushing the new name at the same tip, verifying it, keeping the old tip under the retired root, then deleting the old name. The forge rename API is never called.
 - When no ref is left under a former prefix it says so and names the config line to remove.
 - Spec: no rename of a ref with an open pull request; tips identical before and after.
-- delendai.config.json sets `namespacePrefix: ""` and `formerNamespacePrefixes: ["delendai"]`; only this repository's config changes.
+- delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed.
 - After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends.
 - q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request).
+- The readable shape is a template in the policy (`workRefTemplate`, and the publication name after `publicationRefPrefix`), so each project can choose: a work ref names what is done, `wip/<agent>/<proposal>-<short-topic>` (`wip/claude-opus-5-5/x01003-shared-checkout-stays-clean`); a review batch names what it reviews (`wip/gpt-5.3-codex/review-x01004-x01016`); a publication names what it ships (`pr/<agent>/x01003-shared-checkout-stays-clean`).
+- Slice, kind and generation appear in the name only when they disambiguate: a slice when the proposal has another live unit, `review-` for review kind, `-g2` only from the second generation on; no `-all`, `-g1`, `batch-all`, `work` or `verdicts`.
+- The machine identity (agent, kind, proposal, slice, generation) is written in the existing `Delendai-Wip-Ref` commit trailer and a ref-attached record; every parser reads it from there first and falls back to the name, so both the old and new forms are recognised in the transition (S2).
+- The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed.
