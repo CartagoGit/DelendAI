@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## เลือก IDE ของคุณ
 
-snippet ด้านล่างใช้พรีเซ็ต standard ผ่าน bun วาง JSON ลงในไฟล์ปลายทางตามเดิม แล้วให้ IDE ของคุณลงทะเบียน stdio server เอง
+snippet ด้านล่างใช้พรีเซ็ต solo ผ่าน bun วาง JSON ลงในไฟล์ปลายทางตามเดิม แล้วให้ IDE ของคุณลงทะเบียน stdio server เอง
 
 ### VS Code
 
@@ -81,7 +81,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -231,7 +231,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -245,63 +245,174 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
 ### minimal
 
 การใช้งานที่แนะนำ: การวางตำแหน่งแบบอ่านอย่างเดียวและ smoke test ของ CI
-ขนาด: 2 ปลั๊กอิน
+ขนาด: 2 ปลั๊กอิน · 42 เครื่องมือ · ~11805 โทเค็นตอนเริ่มต้น
 
 - git
 - search
 
-### standard
+### solo
 
-การใช้งานที่แนะนำ: งานแบบ single-agent พร้อม memory, docs, ความช่วยเหลือด้าน lint, type และ dependency
-ขนาด: 7 ปลั๊กอิน
+การใช้งานที่แนะนำ: นักพัฒนาหนึ่งคนกับเอเจนต์หนึ่งตัวในงานประจำวัน เป็นค่าเริ่มต้นของ `init`
+ขนาด: 10 ปลั๊กอิน · 79 เครื่องมือ · ~19037 โทเค็นตอนเริ่มต้น
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+การใช้งานที่แนะนำ: ทีมที่ทำงานผ่าน pull request พร้อมแนวปฏิบัติด้าน commit และการทดสอบ
+ขนาด: 18 ปลั๊กอิน · 116 เครื่องมือ · ~25446 โทเค็นตอนเริ่มต้น
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-การใช้งานที่แนะนำ: การประสานงานแบบ multi-agent พร้อม lock, notification, log และ close marker โดย audit ยังเป็น opt-in และควรโหลดแยกหลังจบรอบการทำงาน
-ขนาด: 13 ปลั๊กอิน
+การใช้งานที่แนะนำ: เอเจนต์หลายตัวที่ใช้ checkout ร่วมกัน พร้อมข้อเสนอ บันทึก และตัวบ่งชี้การปิดงาน
+ขนาด: 19 ปลั๊กอิน · 125 เครื่องมือ · ~26802 โทเค็นตอนเริ่มต้น
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-การใช้งานที่แนะนำ: พรีเซ็ต swarm พร้อม integration แบบ host-only เช่น web-fetch และ issues เมื่อ host ของคุณรองรับ
-ขนาด: 15 ปลั๊กอิน
+การใช้งานที่แนะนำ: การรีวิวและตรวจสอบแบบอ่านอย่างเดียว
+ขนาด: 15 ปลั๊กอิน · 89 เครื่องมือ · ~21955 โทเค็นตอนเริ่มต้น
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+การใช้งานที่แนะนำ: เอกสารและเว็บไซต์
+ขนาด: 8 ปลั๊กอิน · 61 เครื่องมือ · ~15696 โทเค็นตอนเริ่มต้น
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+การใช้งานที่แนะนำ: การวินิจฉัยด้วยปลั๊กอินที่เผยแพร่ทั้งหมด รวมถึงตัวที่ใช้เครือข่ายหรือข้อมูลรับรอง
+ขนาด: 58 ปลั๊กอิน · 236 เครื่องมือ · ~59122 โทเค็นตอนเริ่มต้น
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## ตรวจสอบ
 

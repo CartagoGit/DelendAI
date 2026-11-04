@@ -14,12 +14,14 @@
  *   - Pure Zod — no IO, no `Bun.spawn`, no `withFileMutex`. This file is
  *     safe to import from any layer (CLI, MCP, test) without side
  *     effects.
- *   - Defaults reflect the operator's chosen workflow: preset `dogfood`
- *     (snapshot of delendai.config.json), extras empty,
+ *   - Defaults reflect the operator's chosen workflow: preset `solo`
+ *     (one developer, one agent), extras empty,
  *     host-instructions `append` (safe), skills + agent-md generated,
  *     migration offered.
  */
 import z from 'zod';
+
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
 
 import { DEFAULT_DELENDAI_SERVER_NAME, PRESET_KIND } from '@delendai/core/cli';
 
@@ -49,9 +51,9 @@ export const InitAnswers = z.object({
 	/** Server key used by generated MCP host configuration files. */
 	serverName: z.string().min(1).default(DEFAULT_DELENDAI_SERVER_NAME),
 
-	/** Resolved preset id. `dogfood` is the operator's recommended default
-	 * (snapshot of delendai.config.json — see `init:default`). */
-	preset: z.enum(PRESET_KIND).default('dogfood'),
+	/** Resolved preset id. `solo` is the default for a new project; `dogfood`
+	 * (this repository's own snapshot) is only offered where its config exists. */
+	preset: z.enum(PRESET_KIND).default(DEFAULT_INIT_PRESET),
 
 	/** Plugins added on top of the preset (e.g. `audit`). */
 	extraPlugins: z.array(initPluginId).default([]),

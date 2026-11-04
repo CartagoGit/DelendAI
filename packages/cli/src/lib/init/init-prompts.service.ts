@@ -10,9 +10,15 @@
  * `resolvePresetMembers` — adding or removing a plugin in the core
  * catalog re-shapes the prompts automatically, no code change here.
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { createInterface, type Interface as RLInterface } from 'node:readline';
 
-import { resolvePresetMembers, type IPresetKind } from '@delendai/core/public';
+import {
+	PRESET_CATALOG,
+	resolvePresetMembers,
+	type IPresetKind,
+} from '@delendai/core/public';
 import { PRESET_KIND } from '@delendai/core/cli';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
@@ -20,6 +26,7 @@ import { OFFER_MESSAGES } from '../../contracts/constants/offer-messages.constan
 import type { IQuestionPrompt } from '../../contracts/interfaces/init-offer.interface';
 import type { IYesNoWords } from '../../contracts/interfaces/offer-messages.interface';
 import type { IInitAnswers } from './init-answers.types';
+import { DEFAULT_INIT_PRESET } from '../../contracts/constants/init-answers.constant';
 import { InitAnswers } from './init-answers.schema';
 import {
 	c,
@@ -276,44 +283,21 @@ export const collectInitAnswers = async (
 
 	const rl = openRl();
 	try {
+		// Labels come from the catalogue; dogfood is this repository's own
+		// snapshot, so it is offered only where that configuration exists.
+		const offersDogfood = existsSync(
+			join(workspaceRoot, 'delendai.config.json'),
+		);
 		const preset = await askChoice<IPresetKind>(
 			rl,
 			'Which preset?',
-			[
-				{
-					label: 'minimal — git + search, read-only orientation',
-					value: 'minimal',
-				},
-				{
-					label: 'solo — one developer, one agent, day-to-day coding',
-					value: 'solo',
-				},
-				{
-					label: 'team-pr — a team on pull requests',
-					value: 'team-pr',
-				},
-				{
-					label: 'swarm — several agents sharing a checkout',
-					value: 'swarm',
-				},
-				{
-					label: 'audit — read-only review and audit runs',
-					value: 'audit',
-				},
-				{
-					label: 'docs-web — documentation and web sites',
-					value: 'docs-web',
-				},
-				{
-					label: 'everything — every published plugin',
-					value: 'everything',
-				},
-				{
-					label: 'dogfood — snapshot of delendai itself (recommended for your own projects)',
-					value: 'dogfood',
-				},
-			],
-			'dogfood',
+			PRESET_CATALOG.filter(
+				(p) => p.id !== 'dogfood' || offersDogfood,
+			).map((p) => ({
+				label: `${p.title} — ${p.purpose}${p.id === DEFAULT_INIT_PRESET ? ' (default)' : ''}`,
+				value: p.id,
+			})),
+			DEFAULT_INIT_PRESET,
 		);
 
 		// Dynamic menu: the catalog-wide union minus the preset's own

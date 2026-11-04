@@ -22,6 +22,8 @@ The owner's machine suffered on 2026-11-03. Measured in WSL:
 - 7 unit worktrees taking 4 GB, each with its own `bun install`.
 - Three delendai host servers on one repo, from one VS Code window: one from `.vscode/mcp.json`, one from `.mcp.json` (VS Code loads it too) and one from Claude Code. Each uses about 6% CPU while idle, and the maintenance chain runs unniced.
 
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 5. Claim: the proposals watcher does not say whether it works. Verified by reading: `plugins/commit-policy/src/lib/triggers/proposals-watch.service.ts` exists with no state or delay report that I found; not run. S6 adds it.
+
 ## non-goals
 
 - Removing a unit's own `node_modules` when its lockfile differs from the shared checkout's: that unit still installs.
@@ -65,6 +67,13 @@ The owner's machine suffered on 2026-11-03. Measured in WSL:
 - **Gate**: type
 - acceptance:
   - "init writes one MCP entry for an editor that loads both .vscode/mcp.json and .mcp.json, not two."
+
+### S6 — The proposals watcher says how it is working
+- **Status**: pending
+- **Files**: `plugins/commit-policy/src/lib/triggers/proposals-watch.service.ts`
+- **Gate**: type
+- acceptance:
+  - "The watcher exposes its state (active, degraded or polling) through the status tool and a metric for the delay from file event to processing; a spec drives each state and reads the delay."
 
 ## acceptance
 
