@@ -203,6 +203,7 @@ export const createWorkspaceRoutePhases = (input: {
 			journal: input.journal,
 			workspaceRoot,
 			dryRun,
+			explicit: true,
 		});
 	const steps = async (
 		workspaceRoot: string,
