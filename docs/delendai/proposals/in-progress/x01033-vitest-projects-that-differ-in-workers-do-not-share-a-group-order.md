@@ -2,10 +2,14 @@
 id: x01033
 title: "Vitest projects that differ in workers do not share a group order"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 96fa602a-49cd-442c-95f9-92c9986c39b4
+last-correlation-id: 96fa602a-49cd-442c-95f9-92c9986c39b4
+last-transition-from: ready
+last-transition-at: 2026-11-04T19:18:59.121Z
 ---
 
 # x01033 — Vitest projects that differ in workers do not share a group order
