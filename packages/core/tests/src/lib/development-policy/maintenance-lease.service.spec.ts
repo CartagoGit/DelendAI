@@ -210,7 +210,10 @@ describe('observing who maintains', () => {
 
 	it('makes its gate only when a background step first asks', async () => {
 		const path = leasePath();
-		const maintenance = createHostMaintenance({ path });
+		const maintenance = createHostMaintenance({
+			workspace: dirname(path),
+			path,
+		});
 		expect((await maintenance.observe()).maintains).toBe(false);
 		expect(existsSync(path)).toBe(false);
 		expect(await maintenance.gate().standDown()).toBeUndefined();

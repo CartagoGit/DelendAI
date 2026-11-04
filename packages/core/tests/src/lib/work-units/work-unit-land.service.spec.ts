@@ -27,6 +27,7 @@ import type {
 	IWorkUnitResult,
 } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
+import { commitOnRef } from './unit-repo.helper';
 import { briefWorkModel } from '@delendai/core/lib/development-policy/declare-workflow';
 import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
@@ -104,26 +105,18 @@ const UNIT = [
 const WORK_REF =
 	'refs/heads/delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe';
 
-/** Checkpoint `files` to the unit's work ref from the shared checkout. */
+/**
+ * Commit `files` on the unit's work ref, as its worktree would: the
+ * shared checkout carries nothing of the unit, only its ref does.
+ */
 const checkpoint = async (
 	root: string,
 	files: Readonly<Record<string, string>>,
+	workRef: string = WORK_REF,
 ): Promise<void> => {
-	for (const [path, content] of Object.entries(files)) {
-		writeFileSync(join(root, path), content);
-	}
-	const result = await runWorkUnit(
-		[
-			'checkpoint',
-			...UNIT,
-			`--paths=${Object.keys(files).join(',')}`,
-			'--message=feat: the unit',
-		],
-		contextFor(root),
-	);
-	expect(result.code).toBe(0);
-	// The shared checkout carries nothing of the unit: only its ref does.
-	git(root, 'checkout', '--', ...Object.keys(files));
+	commitOnRef(root, workRef, files, {
+		base: git(root, 'symbolic-ref', '--short', 'HEAD'),
+	});
 };
 
 const publish = (
@@ -354,7 +347,7 @@ describe('work publish in a project whose only branch is main', () => {
 		const { root, remote } = projectWith({ ...config, ...GATE }, 'main');
 		const before = remoteDevelop(remote, 'main');
 		const localBefore = git(root, 'rev-parse', 'main');
-		await checkpoint(root, { 'state.txt': 'green\n' });
+		await checkpoint(root, { 'state.txt': 'green\n' }, workRef);
 		const workTip = git(root, 'rev-parse', workRef);
 
 		const result = await publish(root);

@@ -517,7 +517,8 @@ describe('guard through real git hooks', () => {
 		const committed = git(root, 'commit', '-m', 'feat: from a work ref');
 		expect(committed.status).not.toBe(0);
 		expect(committed.stderr).toContain('refused');
-		expect(committed.stderr).toContain('delendai work checkpoint');
+		expect(committed.stderr).toContain('delendai work rescue');
+		expect(committed.stderr).not.toContain('delendai work checkpoint');
 	});
 
 	it('lets git pack an existing ref it would refuse to create (x00703)', () => {
