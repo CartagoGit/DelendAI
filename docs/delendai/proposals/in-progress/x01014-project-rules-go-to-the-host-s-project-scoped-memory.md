@@ -2,7 +2,7 @@
 id: x01014
 title: "Project rules go to the host's project-scoped memory"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
