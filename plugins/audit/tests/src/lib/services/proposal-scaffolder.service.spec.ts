@@ -105,3 +105,17 @@ describe('scaffoldProposals — agnostic contract (x00165)', () => {
 		expect(proposals[2]!.body).toContain('a00001');
 	});
 });
+
+// js/polynomial-redos: the slug trim must be linear on a long dash run.
+describe('proposalFilenameFor on pathological titles', () => {
+	it('slugs a 100000-dash title quickly and trims edge dashes', () => {
+		const start = performance.now();
+		const name = proposalFilenameFor(
+			`${'-'.repeat(100_000)}a${'-'.repeat(100_000)}x`,
+			'x00001',
+		);
+		expect(performance.now() - start).toBeLessThan(500);
+		expect(name).toContain('a-x');
+		expect(name).not.toContain('--');
+	});
+});

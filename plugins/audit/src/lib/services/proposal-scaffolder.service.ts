@@ -128,12 +128,17 @@ const DATE_ONLY_LENGTH = 10;
 
 /** Convert a finding title to a stable, filesystem-safe kebab slug. */
 const toSlug = (title: string, maxLen = DEFAULT_SLUG_MAX_LENGTH): string => {
-	const base = title
+	let base = title
 		.normalize('NFKD')
 		.replace(/[̀-ͯ]/gu, '')
 		.toLowerCase()
-		.replace(/[^a-z0-9]+/gu, '-')
-		.replace(/^-+|-+$/gu, '');
+		.replace(/[^a-z0-9]+/gu, '-');
+	// Trim dashes by index: `-+$` is quadratic on a long run of dashes.
+	let from = 0;
+	let to = base.length;
+	while (from < to && base.charAt(from) === '-') from += 1;
+	while (to > from && base.charAt(to - 1) === '-') to -= 1;
+	base = base.slice(from, to);
 	return base.length > maxLen ? base.slice(0, maxLen) : base;
 };
 
