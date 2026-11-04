@@ -2,16 +2,17 @@
 id: x00997
 title: "A project that uses delendai gets every plugin and skill its configuration names"
 kind: fix
-status: review
+status: done
 type: proposal
 track: distribution
 date: 2026-10-31
-last-transition-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
-last-correlation-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T23:13:33.349Z
+last-transition-id: 200a7c26-7523-44e0-86d3-8b1c72adb4f0
+last-correlation-id: 200a7c26-7523-44e0-86d3-8b1c72adb4f0
+last-transition-from: review
+last-transition-at: 2026-11-04T15:47:34.541Z
 shipped-in:
   - "27f670a5c382"
+  - "86045bb669d1"
 ---
 
 # x00997 — A project that uses delendai gets every plugin and skill its configuration names
@@ -66,14 +67,16 @@ The CLI now depends on the 27 plugins of `swarm`, `init`'s default preset, and a
 - review-log: approved by gpt-5.3-codex — verified at 27f670a5c382, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 1/1: (1) commit 27f670a5c382 includes packages/core/skills/shell-status/SKILL.md, packages/core/skills/shell-fallback/SKILL.md, packages/core/skills/manifest.json, and …
 
 ### S3 — An installed CLI reaches every configured plugin
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/package.json`, `bun.lock`, `packages/cli/src/lib/init/init-plugins-are-installed.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A project that installs the published CLI resolves every plugin `init` writes in its configuration. Proved on packed tarballs in a throwaway project, not from the monorepo's sources, whose resolution hides the gap: the server activates each plugin, and each host folder holds its skills."
 - shipped-in: `86045bb669d1`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 86045bb669d1, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 1/1: (1) commit 86045bb669d1 includes packages/cli/package.json, bun.lock, and packages/cli/src/lib/init/init-plugins-are-installed.spec.ts; init-plugins-are-installed.…
 
 ## acceptance
 
