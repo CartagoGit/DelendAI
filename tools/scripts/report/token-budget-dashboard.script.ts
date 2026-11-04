@@ -1150,7 +1150,7 @@ export const buildTokenBudgetDashboardMarkdown = async (
 	const key = keyOf({ inputs: inputsKey() });
 	const lock = join(
 		repoRoot(),
-		'.cache/delendai/verdicts/token-budget-dashboard',
+		'.cache/delendai/verify/verdicts/token-budget-dashboard',
 	);
 	mkdirSync(dirname(lock), { recursive: true });
 	return withFileMutex(

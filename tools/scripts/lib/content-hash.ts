@@ -21,7 +21,7 @@ import {
 import { dirname, join } from 'node:path';
 
 /** Where the recorded verdicts live, under the checkout. */
-export const VERDICTS_DIR = '.cache/delendai/verdicts';
+export const VERDICTS_DIR = '.cache/delendai/verify/verdicts';
 
 const sha = (data: string | Buffer): string =>
 	createHash('sha256').update(data).digest('hex');
