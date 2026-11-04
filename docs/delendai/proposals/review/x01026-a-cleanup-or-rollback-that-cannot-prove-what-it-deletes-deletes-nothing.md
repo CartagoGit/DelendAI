@@ -32,7 +32,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The reaper keeps a worktree it could not read
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -40,8 +40,10 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "git worktree remove --force is used only on a worktree whose clean state was read, not assumed."
   - "A spec simulates the failing git status."
 - shipped-in: `f52293358229`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the unknown-state handling when git status fails/timeouts and the guarded use of `git worktree remove --force`. Please re-run and attach fresh empirical proof (including the failing-status spec case).
 
 ### S2 — The rollback reverts only what the transaction wrote
 - **Status**: review
