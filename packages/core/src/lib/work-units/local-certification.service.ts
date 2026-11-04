@@ -33,6 +33,10 @@ import type {
 	ICertifyCandidateRequest,
 	ILocalCertificationReport,
 } from '../contracts/interfaces/local-certification.interface';
+import {
+	backgroundEnv,
+	lowPriorityShell,
+} from '../shared/background-load.service';
 import { validationGateSteps } from './validation-gate-steps.service';
 
 /** How many trailing lines of a failed step's output a report keeps. */
@@ -50,8 +54,11 @@ export const runCertificationCommand: ICertificationCommandRunner = (
 	command,
 	cwd,
 ) => {
-	const result = spawnSync(command, {
+	// The machine is the owner's: a proof runs at the lowest priority and
+	// with half the cores unless the environment says otherwise.
+	const result = spawnSync(lowPriorityShell(command), {
 		cwd,
+		env: backgroundEnv(),
 		shell: true,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
