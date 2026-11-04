@@ -57,7 +57,7 @@ delendai overview
     "delendai": {
       "command": "bun",
       "args": ["/absolute/path/to/delendai/packages/cli/src/index.ts", "__serve",
-               "--workspace", "${workspaceFolder}", "--preset", "standard"]
+               "--workspace", "${workspaceFolder}", "--preset", "solo"]
     }
   }
 }
@@ -73,11 +73,17 @@ launch arguments are identical in all of them — only the wrapping changes.
 
 | Preset | For |
 | --- | --- |
-| `minimal` | The built-ins and little else. |
-| `lean` · `standard` | Everyday work, growing surface. |
+| `minimal` | The built-ins and little else: git and search. |
+| `solo` | One developer, one agent, day-to-day coding. The `init` default. |
+| `team-pr` | A team on pull requests, with commit and test conventions. |
 | `swarm` | Several agents on one repository: proposals, locks, coordination. |
-| `full` · `dogfood` | Everything, including host-only plugins. |
-| `web-app` · `backend-api` · `cli-tool` | Stack packs — a tuned set per project shape. |
+| `audit` | Read-only review and audit runs. |
+| `docs-web` | Documentation and web sites. |
+| `everything` | Every published plugin, including host-only ones. |
+| `dogfood` | This repository's own configuration; `init` offers it only where that config exists. |
+| `web-app` · `backend-api` · `cli-tool` | Stack overlays: a purpose pack plus a stack tag. |
+
+The retired ids `lean`, `standard` and `full` still resolve, with a notice naming the replacement.
 
 [Presets, plugin options and precedence →](./docs/delendai/README-DELENDAI.md#passing-values-to-plugins--delendaiconfigjson)
 

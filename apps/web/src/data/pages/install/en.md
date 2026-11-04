@@ -60,7 +60,7 @@ deno run -A npm:@delendai/cli validate
 
 ## Pick your IDE
 
-The snippets below use the default standard preset over bun. Paste the JSON into the target file as-is, then let your IDE register the stdio server.
+The snippets below use the default solo preset over bun. Paste the JSON into the target file as-is, then let your IDE register the stdio server.
 
 ### VS Code
 
@@ -81,7 +81,7 @@ Scope: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -106,7 +106,7 @@ Scope: project / global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -131,7 +131,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -156,7 +156,7 @@ Scope: project
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -181,7 +181,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -206,7 +206,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -260,7 +260,7 @@ Scope: global
         "--workspace",
         ".",
         "--preset",
-        "standard"
+        "solo"
       ]
     }
   }
@@ -274,63 +274,174 @@ Presets are additive. Start small, then widen the plugin set only when your work
 ### minimal
 
 Recommended use: read-only orientation and CI smoke tests.
-Size: 2 plugins.
+Size: 2 plugins · 42 tools · ~11805 tokens at cold start
 
 - git
 - search
 
-### standard
+### solo
 
-Recommended use: single-agent work with memory, docs, lint, type, and dependency help.
-Size: 7 plugins.
+Recommended use: one developer and one agent doing day-to-day coding; the default for `init`.
+Size: 10 plugins · 79 tools · ~19037 tokens at cold start
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
+- rules
 - deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Recommended use: a team working through pull requests, with commit and test conventions.
+Size: 18 plugins · 116 tools · ~25446 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
 
 ### swarm
 
-Recommended use: multi-agent coordination with locks, notifications, logs, and close markers. Audit stays opt-in and should be loaded separately when a round finishes.
-Size: 13 plugins.
+Recommended use: several agents sharing one checkout, with proposals, logs and close markers.
+Size: 19 plugins · 125 tools · ~26802 tokens at cold start
 
 - git
 - search
 - memory
 - docs
-- rules
 - quality
-- deps
+- test-policy
 - proposals
-- notification
+- error-reporting
 - logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
 - status-marker
-- test-convention
+- forge
+- commit-policy
 - conventions
+- test-convention
+- usage-tracking
 
-### full
+### audit
 
-Recommended use: the swarm preset plus host-only integrations such as web-fetch and issues, when the host exposes them.
-Size: 15 plugins.
+Recommended use: read-only review and audit runs.
+Size: 15 plugins · 89 tools · ~21955 tokens at cold start
 
 - git
 - search
-- memory
 - docs
-- rules
-- quality
-- deps
-- proposals
-- notification
-- logs
-- status-marker
-- test-convention
-- conventions
+- audit
+- security
 - web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Recommended use: documentation and web sites.
+Size: 8 plugins · 61 tools · ~15696 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Recommended use: diagnostics with every published plugin, including the ones that use the network or credentials.
+Size: 58 plugins · 236 tools · ~59122 tokens at cold start
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
 - issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
 
 ## Verify
 

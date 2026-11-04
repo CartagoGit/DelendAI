@@ -52,7 +52,7 @@ const GLOBAL_FLAGS: readonly ICliFlag[] = [
 	{
 		flag: '--preset=<name>',
 		summary:
-			'Load a curated plugin set (e.g. standard, swarm). Merges with any explicit --plugins.',
+			'Load a curated plugin set (e.g. solo, swarm). Merges with any explicit --plugins.',
 		example: `npx -y ${PACKAGE} --preset=swarm`,
 	},
 	{
@@ -109,7 +109,7 @@ const WORKFLOWS: readonly ICliWorkflow[] = [
 	{
 		title: 'Start a server for an MCP client',
 		steps: [
-			`Run ${SERVER_NAME} with a preset or explicit plugins: npx -y ${PACKAGE} --preset=standard`,
+			`Run ${SERVER_NAME} with a preset or explicit plugins: npx -y ${PACKAGE} --preset=solo`,
 			'Point your MCP client (VS Code, Cursor, Claude, …) at that command — see the Install page for per-IDE config.',
 			`Call the overview tool first to see what is loaded.`,
 		],
