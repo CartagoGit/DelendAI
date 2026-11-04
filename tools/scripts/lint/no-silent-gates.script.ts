@@ -89,6 +89,16 @@ import {
 	judgeEmptyRootRuns,
 	runOverEmptyRoot,
 } from './lib/empty-root-probe.lib';
+import {
+	hashOfPaths,
+	keyOf,
+	recordedPass,
+	recordPass,
+} from '../lib/content-hash';
+import {
+	CHANGED_FILES_ENV,
+	parseChangedFiles,
+} from '../lib/changed-files-scope';
 
 // Portable: `import.meta.dir` is Bun's alone, and the spec runs under Node.
 const SELF = fileURLToPath(import.meta.url);
@@ -581,8 +591,36 @@ if (isMainModule()) {
 			),
 		),
 	].filter((file) => file.startsWith('tools/scripts/lint/'));
+	// A lint over the empty tree reads only the tree's copy of `tools/` and
+	// the installed modules, so its exit code is kept under a hash of those:
+	// running 149 lints one after another took 17 s on every proof.
+	const runsKey = keyOf({
+		code: hashOfPaths(root, ['tools', 'bun.lock']),
+		lints: lints.join(','),
+		// A lint there narrowed to the changed files judges those it finds in
+		// the copy, which holds `tools/` only.
+		changed: (() => {
+			try {
+				return parseChangedFiles(process.env[CHANGED_FILES_ENV] ?? '')
+					.filter((file) => file.startsWith('tools/'))
+					.join(',');
+			} catch {
+				return '';
+			}
+		})(),
+	});
+	const keptRuns = recordedPass(root, 'empty-root-runs', runsKey)?.kept?.runs;
+	const runs =
+		keptRuns !== undefined
+			? (JSON.parse(keptRuns) as ReturnType<typeof runOverEmptyRoot>)
+			: runOverEmptyRoot(root, lints);
+	if (keptRuns === undefined) {
+		recordPass(root, 'empty-root-runs', runsKey, {
+			runs: JSON.stringify(runs),
+		});
+	}
 	const emptyRoot = judgeEmptyRootRuns(
-		runOverEmptyRoot(root, lints),
+		runs,
 		JSON.parse(
 			readFileSync(join(root, EMPTY_ROOT_ALLOWLIST), 'utf8'),
 		) as Record<string, string>,

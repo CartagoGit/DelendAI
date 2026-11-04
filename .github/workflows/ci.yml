@@ -258,7 +258,8 @@ jobs:
                   # detect, in itself.
                   # r00058 — the hygiene half of the 49 (see lint-architecture).
                   if touches '^(packages/(ui-extension|client|core)|extensions)/|^(package\.json|bun\.lock|tsconfig)'; then
-                    bun run lint:cross-ide
+                    # Its four checks read apart: run at once, every failure named.
+                    bun tools/scripts/lint/run-together.script.ts lint:cross-ide
                   else
                     echo "lint:cross-ide: not run — the change touches neither the UI extension, the client nor core."
                   fi

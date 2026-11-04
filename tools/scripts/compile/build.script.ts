@@ -46,6 +46,14 @@ import {
 } from './inlined-packages';
 import { compareCodeUnits } from '@delendai/state';
 
+import {
+	hashOfDirectory,
+	hashOfPaths,
+	keyOf,
+	recordedPass,
+	recordPass,
+} from '../lib/content-hash';
+
 // Walk up from this file's directory until we find a directory that
 // contains `delendai.config.json` (or `.git`). That is the repo root.
 // This is robust against future moves of the script under
@@ -143,6 +151,43 @@ const run = (cmd: string, args: string[], cwd: string): void => {
 	}
 };
 
+/** What every package's build reads besides its own files. */
+const BUILD_INPUTS = [
+	'tools/scripts/compile',
+	'apps/shared',
+	'package.json',
+	'bun.lock',
+	'tsconfig.base.json',
+];
+
+/** The declarations a built workspace package emitted, hashed once a run. */
+const declarations = new Map<string, string>();
+const declarationsHash = (depRel: string): string => {
+	const known = declarations.get(depRel);
+	if (known !== undefined) return known;
+	const [group, ...rest] = depRel.split('/');
+	const name = rest.join('/');
+	let version = '';
+	try {
+		version =
+			(
+				JSON.parse(
+					readFileSync(join(ROOT, depRel, 'package.json'), 'utf8'),
+				) as { version?: string }
+			).version ?? '';
+	} catch {
+		// No manifest: hashed as a dependency with no output.
+	}
+	const hash = `${hashOfPaths(ROOT, [`${depRel}/package.json`])}:${
+		hashOfDirectory(
+			join(ROOT, 'build', group ?? '', name, version),
+			(file) => file.endsWith('.d.ts'),
+		) ?? 'none'
+	}`;
+	declarations.set(depRel, hash);
+	return hash;
+};
+
 const buildPackage = (rel: string): void => {
 	const dir = join(ROOT, rel);
 	const pkgJsonPath = join(dir, 'package.json');
@@ -225,9 +270,6 @@ const buildPackage = (rel: string): void => {
 	console.log(
 		`\n• ${rel} → build/${group}/${name}/${pkgMeta.version} (${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}, target=${target}${hasBin ? ', bin detected' : ''})`,
 	);
-	// Idempotency: wipe the entire version-dir so a re-run doesn't leave
-	// stale files from a previous version when version bumped.
-	rmSync(outRoot, { recursive: true, force: true });
 
 	// The private workspace packages this one ships inside its bundle:
 	// they are on no registry, so an import of one left in the output
@@ -255,31 +297,6 @@ const buildPackage = (rel: string): void => {
 		);
 	}
 	if (inlined.length > 0) console.log(`  inlines ${inlined.join(', ')}`);
-
-	// 1. JS bundles (deps external; bundler-style imports resolved here).
-	//    a00065: routed through `bundle-js.ts` (a `Bun.build()` wrapper)
-	//    instead of the `bun build` CLI so the repo's `scssPlugin` is
-	//    applied — the CLI does not load plugins, and Bun ≥1.3.x now
-	//    treats a bare `.scss` import as native CSS, which broke
-	//    `packages/ui-extension` (its `import { compiledCss }`) and with
-	//    it `bun run build` + the whole release/pack path.
-	run(
-		'bun',
-		[
-			join(ROOT, 'tools/scripts/compile/bundle-js.ts'),
-			'--cwd',
-			dir,
-			'--target',
-			target,
-			'--root',
-			'src',
-			'--outdir',
-			outRoot,
-			...entries.flatMap((e) => ['--entry', e]),
-			...inlined.flatMap((name) => ['--inline', name]),
-		],
-		dir,
-	);
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
 	//    cross-package `@delendai/*` types resolve from source.
@@ -413,6 +430,71 @@ const buildPackage = (rel: string): void => {
 			}
 		}
 	}
+
+	// A package's build reads its own files, the private packages it
+	// inlines, the build's own code and root configuration, and the
+	// declarations its workspace dependencies emitted. When none of those
+	// changed and its output is the one recorded, building it again would
+	// write the same bytes: it is kept, and its dependents see the same
+	// declarations, so a change that keeps a package's types builds that
+	// package alone.
+	const inputsKey = keyOf({
+		own: hashOfPaths(ROOT, [
+			rel,
+			...[...inlined].flatMap((each) => {
+				const inlinedRel = workspace.get(each)?.rel;
+				return inlinedRel === undefined ? [] : [inlinedRel];
+			}),
+		]),
+		build: hashOfPaths(ROOT, BUILD_INPUTS),
+		target,
+		entries: entries.join(','),
+		declarations: [...mcpDeps]
+			.sort(compareCodeUnits)
+			.map((depRel) => `${depRel}=${declarationsHash(depRel)}`)
+			.join(';'),
+	});
+	const recordName = `build-${rel}`;
+	const kept = recordedPass(ROOT, recordName, inputsKey);
+	if (
+		kept !== undefined &&
+		kept.kept?.output !== undefined &&
+		kept.kept.output === hashOfDirectory(outRoot)
+	) {
+		console.log('  kept: no input changed since it was built');
+		mirrorBuildIntoPackageDist(outRoot, join(dir, 'dist'));
+		return;
+	}
+
+	// Idempotency: wipe the entire version-dir so a re-run doesn't leave
+	// stale files from a previous version when version bumped.
+	rmSync(outRoot, { recursive: true, force: true });
+
+	// 1. JS bundles (deps external; bundler-style imports resolved here).
+	//    a00065: routed through `bundle-js.ts` (a `Bun.build()` wrapper)
+	//    instead of the `bun build` CLI so the repo's `scssPlugin` is
+	//    applied — the CLI does not load plugins, and Bun ≥1.3.x now
+	//    treats a bare `.scss` import as native CSS, which broke
+	//    `packages/ui-extension` (its `import { compiledCss }`) and with
+	//    it `bun run build` + the whole release/pack path.
+	run(
+		'bun',
+		[
+			join(ROOT, 'tools/scripts/compile/bundle-js.ts'),
+			'--cwd',
+			dir,
+			'--target',
+			target,
+			'--root',
+			'src',
+			'--outdir',
+			outRoot,
+			...entries.flatMap((e) => ['--entry', e]),
+			...inlined.flatMap((name) => ['--inline', name]),
+		],
+		dir,
+	);
+
 	const corePaths: Record<string, string[]> = {};
 	for (const depRel of mcpDeps) {
 		const [group, name] = depRel.split('/') as [
@@ -482,6 +564,10 @@ const buildPackage = (rel: string): void => {
 	// that gets built and the thing CI cleans, and `dist/` is the
 	// gitignored view of it that the declared entrypoints resolve to.
 	mirrorBuildIntoPackageDist(outRoot, join(dir, 'dist'));
+	declarations.delete(rel);
+	recordPass(ROOT, recordName, inputsKey, {
+		output: hashOfDirectory(outRoot) ?? '',
+	});
 };
 
 /**
