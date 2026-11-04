@@ -2,14 +2,14 @@
 id: x01016
 title: "The fast proof scales with the change it proves"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 7a34cf1e-9bc0-4d1d-aa07-490dc6457c01
-last-correlation-id: 7a34cf1e-9bc0-4d1d-aa07-490dc6457c01
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T18:46:08.919Z
+last-transition-id: 51f91610-9667-4e15-a057-e2749ba09e4f
+last-correlation-id: 51f91610-9667-4e15-a057-e2749ba09e4f
+last-transition-from: review
+last-transition-at: 2026-11-04T14:46:43.236Z
 ---
 
 # x01016 — The fast proof scales with the change it proves
@@ -38,14 +38,16 @@ Measured on 2026-11-03, each step run on its own (the machine at load 20 to 30):
 - global_gate: none
 
 ### S1 — Scope and time the fast proof
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/typecheck.script.ts`
 - **Gate**: none
 - acceptance:
   - "isProposalOnly and timingTableOf are specified in prove-plan.script.spec.ts; the typecheck is incremental."
 - shipped-in: `4a56f443ac5a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — The shipped-in commit 4a56f443ac5a changes only tools/scripts/typecheck.script.ts (tsbuildinfo path). It does not implement or specify isProposalOnly/timingTableOf in tools/scripts/ci/prove-plan.script.ts and tools/scripts/ci/prove-plan.script.spec.ts, so S1 acceptance is not met. Repro: run `git show --name-only 4a56f443ac5a` and compare with the S1 Files/acceptance section in x01016.
 
 ## acceptance
 
