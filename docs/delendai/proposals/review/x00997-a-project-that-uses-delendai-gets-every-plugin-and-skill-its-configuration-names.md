@@ -10,6 +10,8 @@ last-transition-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
 last-correlation-id: aa3447b5-0c47-4428-801b-b0ffe4ca90c1
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T23:13:33.349Z
+shipped-in:
+  - "27f670a5c382"
 ---
 
 # x00997 — A project that uses delendai gets every plugin and skill its configuration names
@@ -40,14 +42,16 @@ The CLI now depends on the 27 plugins of `swarm`, `init`'s default preset, and a
 - global_gate: type
 
 ### S1 — Every skill folder is published
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/commit-policy/package.json`, `tools/scripts/lint/skills-are-published.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every package that holds a `skills/` folder lists it in its `files`, so its skills are published. `plugins/commit-policy` did not (`skills-are-published.spec.ts`)."
 - shipped-in: `27f670a5c382`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 27f670a5c382, validate exit 0 and tests 3/3 claimed, no recorded run cited; acceptance 1/1: (1) skills-are-published.spec.ts passed (2 tests), and commit 27f670a5c382 includes plugins/commit-policy/package.json plus the lint/spec files.
 
 ### S2 — No skill is left in the documentation
 - **Status**: review
