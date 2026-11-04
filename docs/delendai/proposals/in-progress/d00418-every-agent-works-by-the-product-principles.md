@@ -2,7 +2,7 @@
 id: d00418
 title: "Every agent works by the product principles"
 kind: docs
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
