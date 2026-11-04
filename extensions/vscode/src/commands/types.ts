@@ -86,6 +86,10 @@ export interface ICommandVscodeApi {
 		showQuickPick?(
 			items: ReadonlyArray<ICommandQuickPickItem>,
 		): Thenable<ICommandQuickPickItem | undefined>;
+		/** The focused editor, used to pick the folder a command acts on. */
+		readonly activeTextEditor?: {
+			readonly document: { readonly uri: { readonly fsPath: string } };
+		};
 	};
 	readonly workspace?: {
 		readonly workspaceFolders?: ReadonlyArray<{

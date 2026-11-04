@@ -278,6 +278,10 @@ const setProviderState = async (
 	const reason = await deps.vscode.window.showInputBox?.({
 		prompt: stringsFor(deps).reasonPrompt,
 	});
+	// Escape on the reason dialog cancels the whole action; an empty
+	// answer is a confirmed "no reason".
+	if (reason === undefined && deps.vscode.window.showInputBox !== undefined)
+		return;
 	await deps.client.request(
 		formatToolName(
 			deps.namespacePrefix,
