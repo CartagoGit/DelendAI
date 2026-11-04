@@ -2,7 +2,7 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
