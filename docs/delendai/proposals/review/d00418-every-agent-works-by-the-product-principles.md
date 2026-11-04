@@ -2,14 +2,14 @@
 id: d00418
 title: "Every agent works by the product principles"
 kind: docs
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: 8adf7b6e-2ec3-4b4c-87be-986f0ffe4b3b
-last-correlation-id: 8adf7b6e-2ec3-4b4c-87be-986f0ffe4b3b
-last-transition-from: ready
-last-transition-at: 2026-11-04T04:53:20.477Z
+last-transition-id: f725bd6c-236e-40c6-85a2-f0b87d2e7978
+last-correlation-id: f725bd6c-236e-40c6-85a2-f0b87d2e7978
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T04:57:34.252Z
 ---
 
 # d00418 — Every agent works by the product principles
@@ -31,11 +31,14 @@ On 2026-11-04 the owner set standing product principles for every agent in this 
 - global_gate: none
 
 ### S1 — The principles are in the bootstrap
-- **Status**: pending
+- **Status**: review
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
   - "AGENT-BOOTSTRAP.md states the product principles in one short section before the workflow, and stays within its size budget."
+- shipped-in: `502cf5a86e62`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
