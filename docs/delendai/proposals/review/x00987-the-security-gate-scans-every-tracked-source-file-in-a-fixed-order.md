@@ -48,7 +48,7 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 53f8cbf5d is stale: security stack-detect files changed afterward (e.g. 580606ae9). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S2 — The gate reads every tracked file and its baseline is empty
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/verify/security.script.ts`, `tools/scripts/verify/security.baseline.json`, `plugins/security/src/lib/secrets/run-scan.ts`, `plugins/security/src/public/index.ts`
 - **Gate**: type
 - acceptance:
@@ -56,8 +56,10 @@ The fix carries x00986 (and the qs pin of c00536 within it): every open PR, this
   - "The secret scan in the gate has no file cap."
   - "security.baseline.json holds no critical, and `bun run verify:security` passes."
 - shipped-in: `53f8cbf5d`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 53f8cbf5d is stale: gate/security files changed afterward (e.g. 580606ae9). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + verify evidence.
 
 ### S3 — The flagged statements are written out in full
 - **Status**: done
