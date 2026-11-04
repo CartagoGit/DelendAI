@@ -27,8 +27,8 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The connection uses the validated address
-- **Status**: pending
-- **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/address-policy.ts`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`
+- **Status**: review
+- **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/pinned-connection.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/README.md`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`, `plugins/web-fetch/tests/src/lib/services/pinned-connection.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The request connects to the IP that passed the address policy while the Host header and the TLS name stay the requested host."
