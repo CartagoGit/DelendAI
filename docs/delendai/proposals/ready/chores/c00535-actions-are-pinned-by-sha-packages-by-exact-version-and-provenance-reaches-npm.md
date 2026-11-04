@@ -2,14 +2,14 @@
 id: c00535
 title: "Actions are pinned by SHA, packages by exact version, and provenance reaches npm"
 kind: chore
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 3b0e0aaa-92cc-4ba0-aa72-dbbcfa061e9e
-last-correlation-id: 3b0e0aaa-92cc-4ba0-aa72-dbbcfa061e9e
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T02:20:53.535Z
+last-transition-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
+last-correlation-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
+last-transition-from: review
+last-transition-at: 2026-11-04T19:44:15.949Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
@@ -56,14 +56,16 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 6a9105675c79 is stale: S2 files changed afterward (e.g. b731cdf73, aebe3b62e). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + exact-version/provenance evidence.
 
 ### S3 — One zod range
-- **Status**: review
-- **Files**: `docs/delendai/proposals/review/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
+- **Status**: pending
+- **Files**: `docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
 - **Gate**: type
 - acceptance:
   - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45). Already true at c00535: both declare ^4.6.6, and the lint governs zod; no manifest change was needed."
 - shipped-in: `00dc0104b1f5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 00dc0104b1f5 is stale: proposal file changed afterward (e.g. b54722a88). Redeliver S3 on current HEAD and resubmit with fresh shipped-in.
 
 ## acceptance
 
