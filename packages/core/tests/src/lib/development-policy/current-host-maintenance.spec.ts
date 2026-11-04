@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	createHostMaintenance,
+	createMaintenanceGate,
 	currentHostMaintenance,
 } from '@delendai/core/lib/development-policy/maintenance-lease.service';
 
@@ -65,5 +66,33 @@ describe('currentHostMaintenance', () => {
 		).toBeUndefined();
 		await one.maintenance.stop();
 		expect(currentHostMaintenance(one.root)).toBeUndefined();
+	});
+});
+
+describe('the gate beats on its own', () => {
+	it('decides again on every beat, and a beat that fails is swallowed', async () => {
+		const lines: string[] = [];
+		let fail = false;
+		const gate = createMaintenanceGate({
+			lease: {
+				self: 'beating',
+				hold: async () => {
+					if (fail) throw new Error('lease unreadable');
+					return true;
+				},
+				release: async () => undefined,
+				holder: async () => undefined,
+			},
+			heartbeatMs: 5,
+			report: (line) => lines.push(line),
+		});
+		await new Promise((done) => setTimeout(done, 30));
+		expect(lines).toEqual([
+			'This server (beating) maintains this workspace.',
+		]);
+		fail = true;
+		await new Promise((done) => setTimeout(done, 30));
+		expect(lines).toHaveLength(1);
+		await gate.stop();
 	});
 });
