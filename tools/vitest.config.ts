@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 
 import {
 	sharedSetupFiles,
-	sharedTestOptions,
+	sharedGraphTestOptions,
 	workspaceAliases,
 } from '../vitest.shared.ts';
 
@@ -25,7 +25,7 @@ export default defineConfig({
 	root: here,
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
-		...sharedTestOptions,
+		...sharedGraphTestOptions,
 		// `scripts/` holds the installer and belongs to no workspace: outside the
 		// root, its spec was collected by no project and gated nothing.
 		include: ['**/*.spec.ts', '../scripts/**/*.spec.ts'],

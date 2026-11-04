@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 import {
 	bunOwnedExcludes,
 	sharedSetupFiles,
-	sharedTestOptions,
+	sharedGraphTestOptions,
 	workspaceAliases,
 } from '../../vitest.shared.ts';
 
@@ -16,7 +16,7 @@ export default defineConfig({
 	cacheDir: resolve(workspaceRoot, '.cache/vitest/packages-core'),
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
-		...sharedTestOptions,
+		...sharedGraphTestOptions,
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).
