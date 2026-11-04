@@ -3,11 +3,8 @@
 	"packages/cli/src/lib/init/init-render.service.spec.ts",
 	"packages/cli/src/lib/leave-no-trace.service.spec.ts",
 	"packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts",
-	"packages/core/tests/src/lib/shared/process-tree-kill.spec.ts",
-	"packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts",
 	"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts",
 	"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
-	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts",
-	"tools/scripts/lib/with-compute-lock.spec.ts"
+	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts"
 ]
