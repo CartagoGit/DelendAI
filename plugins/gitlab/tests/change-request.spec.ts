@@ -26,6 +26,8 @@ const runner = (answer: (args: readonly string[]) => string | undefined) => {
 	};
 };
 
+import plugin from '../src/index';
+
 describe('the GitLab change-request forge', () => {
 	it('claims GitLab remotes, self-hosted included, and no other host', () => {
 		expect(forge.handles('git@gitlab.com:o/r.git')).toBe(true);
@@ -76,5 +78,9 @@ describe('the GitLab change-request forge', () => {
 				{ title: 'T', body: 'B' },
 			),
 		).toBe(false);
+	});
+
+	it('is the adapter the plugin exposes to the core', () => {
+		expect(plugin.changeRequestForge).toBe(forge);
 	});
 });

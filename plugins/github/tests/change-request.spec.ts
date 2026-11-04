@@ -26,6 +26,8 @@ const runner = (answer: (args: readonly string[]) => string | undefined) => {
 	};
 };
 
+import plugin from '../src/index';
+
 describe('the GitHub change-request forge', () => {
 	it('claims GitHub remotes and no other host', () => {
 		expect(forge.handles('git@github.com:o/r.git')).toBe(true);
@@ -75,5 +77,9 @@ describe('the GitHub change-request forge', () => {
 				{ title: 'T', body: 'B' },
 			),
 		).toBe(false);
+	});
+
+	it('is the adapter the plugin exposes to the core', () => {
+		expect(plugin.changeRequestForge).toBe(forge);
 	});
 });

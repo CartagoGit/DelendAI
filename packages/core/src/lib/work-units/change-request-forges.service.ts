@@ -65,6 +65,7 @@ const runnerOver = (
 /** What the pull-request step asks of git and of the forges (x01023). */
 export const pullRequestPorts = async (
 	root: string,
+	load?: Parameters<typeof loadChangeRequestForges>[1],
 ): Promise<IPullRequestPorts> => {
 	const cli = (bin: string, args: readonly string[]) =>
 		forgeCli(root, args, bin);
@@ -72,6 +73,6 @@ export const pullRequestPorts = async (
 		git: (args) => readGit(root, args),
 		gh: (args) => cli('gh', args),
 		run: runnerOver(cli),
-		forges: await loadChangeRequestForges(root),
+		forges: await loadChangeRequestForges(root, load),
 	};
 };
