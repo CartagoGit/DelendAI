@@ -1,0 +1,26 @@
+{
+	"entries": [
+		"done/feats/f00067a-provider-schema-catalog-surface-f00067-s1-residual.md",
+		"done/perfs/v00122-collapse-4-call-bootstrap-into-1-call-auto-work.md",
+		"done/perfs/v00123-tokens-dashboard-tools-list-presupuestos-absolutos-y-token-budgets-generado.md",
+		"done/perfs/v00124-memory-freshness-event-driven-debounce-de-invalidaciones-y-metricas-de-hit-rate.md",
+		"done/perfs/v00125-verificar-estado-real-de-develop-verde-protegida-antes-de-cerrar-este-track.md",
+		"done/perfs/v00126-verify-ci-local-reproduce-fallos-reales.md",
+		"done/perfs/v00128-reducir-los-dos-outputschema-mas-caros-del-repo-advise-routing-invoke.md",
+		"done/perfs/v00129-podar-los-5-outputschema-mas-baratos-de-arreglar-del-core-aud-b01.md",
+		"done/perfs/v00130-podar-los-outputschema-de-orchestrator-runner-invoke-advise-routing-y-advise-spend-aud-b01.md",
+		"done/perfs/v00131-podar-los-outputschema-de-quality-policy-y-usage-tracking-aud-b01.md",
+		"done/perfs/v00132-content-0-text-deja-de-duplicar-structuredcontent-en-overview-agent-catalog-y-logs-tail-aud-f06.md",
+		"done/perfs/v00133-schema-surface-compact-projection-artifact-handles-and-task-context-cost.md",
+		"legacy/closed/resumes/n00001-15-06-2026-resumen-sesion-autonoma-claude.md",
+		"legacy/closed/resumes/n00002-15-06-2026-resumen-sesion-oficina-claude.md",
+		"legacy/closed/resumes/n00003-16-06-2026-resumen-sesion-2a-ronda-claude.md",
+		"legacy/closed/resumes/n00004-16-06-2026-resumen-sesion-3a-ronda-claude.md",
+		"legacy/closed/resumes/n00005-16-06-2026-resumen-sesion-4a-ronda-claude.md",
+		"legacy/closed/resumes/n00006-17-06-2026-resumen-sesion-handoff-copilot.md",
+		"legacy/closed/resumes/n00007-resume-kind-handoff-summaries.md",
+		"ready/perfs/v00127-track-a-close-verificar-estado-real-de-main-verde-protegida-consultando-la-api-de-github-no-configs-declarativas.md",
+		"ready/perfs/v00134-schema-surface-compact-projection-artifact-handles-and-task-context-cost.md",
+		"retired/v00001-lean-activation-and-full-preset-context-budgets.md"
+	]
+}
