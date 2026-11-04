@@ -26,6 +26,8 @@ import {
 import { trimTrailingChar } from '../shared/string-normalize';
 import { assembleCliConfig, type IAssembleCliDeps } from './assemble';
 import { reportFirstRunSetup } from '../adopt/first-run-setup.service';
+import type { IPresetMigrationResult } from '../contracts/interfaces/preset-migration.interface';
+import { migrateWorkspacePresetProvenance } from '../plugins/preset-migration';
 import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
@@ -225,6 +227,19 @@ export const formatVerbose = (d: IAssemblyDiagnostics): string => {
 	].join('\n')}\n`;
 };
 
+/**
+ * Journals which retired preset the workspace's plugin map still equals.
+ * Runs on every start, with or without `--config`: consumers launch the
+ * server with an explicit config path. Never throws, never edits the config.
+ */
+export const migratePresetOnStart = (
+	args: Pick<IDelendaiCliArgs, 'workspace' | 'configPath'>,
+): Promise<IPresetMigrationResult> =>
+	migrateWorkspacePresetProvenance({
+		workspace: args.workspace,
+		configPath: args.configPath,
+	});
+
 /** Entry point for the `delendai` bin. */
 export const runCli = async (
 	argv: readonly string[],
@@ -251,6 +266,7 @@ export const runCli = async (
 	// configuration, so this start already runs on what it created.
 	if (args.configPath === undefined)
 		await reportFirstRunSetup(args.workspace, args.namespacePrefix);
+	await migratePresetOnStart(args);
 	const {
 		config,
 		loadResult,

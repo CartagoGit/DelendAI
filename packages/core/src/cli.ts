@@ -327,6 +327,7 @@ export {
 	cacheExcludeGlob,
 	mergeCacheExcludes,
 } from './lib/workspace-migration/migrators/vscode-cache-exclude';
+export { pendingCacheExclude } from './lib/workspace-migration/migrators/vscode-cache-exclude.migrator';
 export { CACHE_EXCLUDE_SETTINGS } from './lib/workspace-migration/migrators/vscode-cache-exclude.constant';
 export { configuredCacheDir } from './lib/shared/delendai-records';
 // The prose `init` writes above each block of `delendai.config.json`,
