@@ -2,10 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 50c80f71-1bc8-4881-8bba-9bfebc595ddb
+last-correlation-id: 50c80f71-1bc8-4881-8bba-9bfebc595ddb
+last-transition-from: ready
+last-transition-at: 2026-11-04T11:21:25.382Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
