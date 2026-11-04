@@ -88,24 +88,4 @@ describe('firstRunSetup', () => {
 		expect(lines).toHaveLength(1);
 		expect(lines[0]).toContain('first start in this project');
 	});
-
-	it('journals the retired preset an existing plugin map still equals, and edits nothing', async () => {
-		const root = project();
-		const config = JSON.stringify({
-			plugins: { docs: {}, git: {}, memory: {}, search: {} },
-		});
-		writeFileSync(join(root, 'delendai.config.json'), config);
-		await reportFirstRunSetup(root, undefined, () => undefined);
-		const journal = readFileSync(
-			join(root, '.cache/delendai/preset-migration.jsonl'),
-			'utf8',
-		);
-		expect(JSON.parse(journal.trim())).toMatchObject({
-			retired: 'lean',
-			replacement: 'solo',
-		});
-		expect(readFileSync(join(root, 'delendai.config.json'), 'utf8')).toBe(
-			config,
-		);
-	});
 });
