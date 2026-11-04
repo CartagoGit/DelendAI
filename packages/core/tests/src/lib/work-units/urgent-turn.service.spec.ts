@@ -1,40 +1,71 @@
 /**
- * urgent-turn.service.spec.ts — a proof is urgent only for a repair of a red
- * integration branch, or when the caller says why.
+ * urgent-turn.service.spec.ts — the urgent lane reads the integration
+ * branch's certification through `gh api`, and unknown is never urgent.
  */
 import { describe, expect, it } from 'vitest';
 
 import { urgentReasonOf } from '@delendai/core/lib/work-units/urgent-turn.service';
 
-const red = () => Promise.resolve('failure');
-const green = () => Promise.resolve('success');
-
-const asked = (
-	proposal: string,
-	certification: typeof red,
-	args: readonly string[] = [],
-) =>
-	urgentReasonOf({
-		root: '/nowhere',
-		args,
-		proposal,
-		integration: 'develop',
-		certification,
-	});
+const request = (
+	runForge: (args: readonly string[], cwd: string) => string,
+	log: (line: string) => void = () => undefined,
+) => ({
+	root: '/project',
+	args: [],
+	proposal: 'x00001',
+	integration: 'develop',
+	runForge,
+	log,
+});
 
 describe('urgentReasonOf', () => {
-	it('is urgent when a fix meets a red integration branch', async () => {
-		expect(await asked('x00001', red)).toMatch(/x00001 repairs develop/u);
+	it('asks the API for the policy branch in the project root and is urgent when it is red', async () => {
+		const calls: { args: readonly string[]; cwd: string }[] = [];
+		const reason = await urgentReasonOf(
+			request((args, cwd) => {
+				calls.push({ args, cwd });
+				return 'failure\n';
+			}),
+		);
+		expect(reason).toContain('whose latest certification is red');
+		expect(calls).toHaveLength(1);
+		expect(calls[0]?.cwd).toBe('/project');
+		expect(calls[0]?.args[0]).toBe('api');
+		expect(calls[0]?.args[1]).toBe(
+			'repos/{owner}/{repo}/actions/workflows/ci.yml/runs?branch=develop&status=completed&per_page=1',
+		);
 	});
 
-	it('is not urgent for a fix on a green branch, or a feature on a red one', async () => {
-		expect(await asked('x00001', green)).toBeUndefined();
-		expect(await asked('f00001', red)).toBeUndefined();
-	});
-
-	it('takes the stated reason from --urgent, whatever the branch', async () => {
+	it('is not urgent when the integration branch is green', async () => {
 		expect(
-			await asked('f00001', green, ['--urgent=the owner is waiting']),
-		).toBe('the owner is waiting');
+			await urgentReasonOf(request(() => 'success\n')),
+		).toBeUndefined();
+	});
+
+	it('is not urgent, and says why, when the forge call fails', async () => {
+		const lines: string[] = [];
+		const reason = await urgentReasonOf(
+			request(
+				() => {
+					throw new Error('gh: not logged in\nmore');
+				},
+				(line) => lines.push(line),
+			),
+		);
+		expect(reason).toBeUndefined();
+		expect(lines.join('')).toContain('gh: not logged in');
+		expect(lines.join('')).toContain('not urgent');
+	});
+
+	it('is not urgent, and says why, when no run has finished', async () => {
+		const lines: string[] = [];
+		const reason = await urgentReasonOf(
+			request(
+				() => '',
+				(line) => lines.push(line),
+			),
+		);
+		expect(reason).toBeUndefined();
+		expect(lines.join('')).toContain('no finished ci.yml run on develop');
 	});
 });
