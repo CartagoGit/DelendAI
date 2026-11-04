@@ -16,11 +16,12 @@ Each slice and proposal says which of implemented, proved, reviewed, integrated 
 
 ## why
 
-TODO: why this work matters now.
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 7. Claim: proposal state conflates stages, so a slice that is finished and only awaits review reads as pending. Verified in part: proposals carry a single `Status` per slice (`pending` in the slice block) plus separate `review-state`, `shipped-in` and `last-transition` fields, as in x00995 (S1 shows `Status: review`, `shipped-in`, `review-state: in_review`); the stages are therefore spread over unrelated fields and no one place states them. I did not audit every consumer of the status field.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Removing the existing status values; the new stages are derived from facts already recorded.
+- Changing the proposal state machine's transitions.
 
 ## slices
 
