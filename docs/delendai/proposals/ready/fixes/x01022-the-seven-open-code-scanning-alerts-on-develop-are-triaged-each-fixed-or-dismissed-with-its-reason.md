@@ -54,7 +54,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - #471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason.
 - #474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason.
 
-## triage (2026-11-04)
+## notes
 
 All seven alerts are real and fixed in code; none is dismissed. Nothing was dismissed on the forge.
 
