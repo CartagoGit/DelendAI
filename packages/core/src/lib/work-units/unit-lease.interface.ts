@@ -1,3 +1,4 @@
+import type { IAuthorPresence } from '../contracts/interfaces/orphaned-work.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 /** What a unit of work is, as far as its owner is concerned. */
@@ -42,6 +43,20 @@ export interface IUnitLease {
 	readonly entrySha: string | null;
 	readonly enteredAt: number;
 	readonly heartbeatAt: number;
+	/**
+	 * When its owner's session said it ran out of quota. A heartbeat after
+	 * it is life again; none since means nobody holds the lease.
+	 */
+	readonly outOfQuotaAt?: number | undefined;
+	/** Every hand the unit passed through before its owner, oldest first. */
+	readonly handedFrom?: readonly IUnitHandover[] | undefined;
+}
+
+/** One change of hands: who held the unit, under which name, until when. */
+export interface IUnitHandover {
+	readonly agent: string;
+	readonly ref: string;
+	readonly at: number;
 }
 
 /** What the verdict is judged from. */
@@ -92,6 +107,8 @@ export interface IUnitStandingEntry extends IUnitVerdict {
 	readonly publicationAhead: boolean;
 	/** The publication ref, when the unit has one. */
 	readonly publicationRef: string | null;
+	/** Whether its author is gone, and why (`orphaned-work.service`). */
+	readonly author?: IAuthorPresence | undefined;
 }
 
 export interface IRecordUnitEntry {
