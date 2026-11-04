@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { namespacedRef } from '@delendai/core/lib/work-units/namespaced-ref.helper';
+import {
+	namespacedRef,
+	ownedRefRoots,
+} from '@delendai/core/lib/work-units/namespaced-ref.helper';
 
 describe('namespacedRef', () => {
 	it('puts the parts under the namespace', () => {
@@ -14,5 +17,20 @@ describe('namespacedRef', () => {
 		expect(namespacedRef('', 'claims', 'slice', 'x00001')).toBe(
 			'refs/claims/slice/x00001',
 		);
+	});
+});
+
+describe('ownedRefRoots', () => {
+	it('lists the current root, then each former one', () => {
+		expect(ownedRefRoots(['', 'delendai'], 'retired')).toEqual([
+			'refs/retired',
+			'refs/delendai/retired',
+		]);
+	});
+
+	it('names one root when nothing was left behind', () => {
+		expect(ownedRefRoots(['delendai'], 'ids')).toEqual([
+			'refs/delendai/ids',
+		]);
 	});
 });

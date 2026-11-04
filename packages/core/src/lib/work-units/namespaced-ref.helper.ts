@@ -13,3 +13,17 @@ export const namespacedRef = (
 	...parts: readonly string[]
 ): string =>
 	['refs', namespace, ...parts].filter((part) => part.length > 0).join('/');
+
+/**
+ * The same ref under each owned namespace, current first, for READERS:
+ * a tip kept under a former namespace stays found (f00808). Writers use
+ * `namespacedRef` with the current namespace alone.
+ */
+export const ownedRefRoots = (
+	namespaces: readonly string[],
+	...parts: readonly string[]
+): readonly string[] => [
+	...new Set(
+		namespaces.map((namespace) => namespacedRef(namespace, ...parts)),
+	),
+];

@@ -19,6 +19,10 @@ import {
 	shortName,
 } from './git-guard-namespaces';
 import { refuseLiveUnitDeletion } from './git-guard-live-unit';
+import {
+	ownedWorkRefShapeOf,
+	workShapeOfPublication,
+} from './owned-work-ref-parser';
 import { refuseSecondRefOfUnit } from './git-guard-unit';
 import { refuseReviewOutsideScope } from './git-guard-review-scope';
 import { WORK_KINDS } from './profiles.constant';
@@ -44,15 +48,15 @@ export const refuseUnshapedWorkRef = (
 	 */
 	requireKind = true,
 ): IGitGuardVerdict | undefined => {
-	const template = policy.branches.workRefTemplate;
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (template.length === 0 || prefix.length === 0) return undefined;
-	if (!branch.startsWith(prefix)) return undefined;
-	const parser = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-		{ strict: true, requireKind },
-	);
+	// A unit under a former namespace is judged by that namespace's own
+	// shape: it is somebody's live work until it ends (f00808).
+	const owned = ownedWorkRefShapeOf(policy.branches, branch);
+	if (owned === undefined) return undefined;
+	const { template } = owned;
+	const parser = compileWorkRefParser(template, owned.prefix, {
+		strict: true,
+		requireKind,
+	});
 	if (parser === undefined) return undefined;
 	const identity = parser.parse(ref);
 	if (identity === undefined) {
@@ -107,19 +111,20 @@ export const refuseUnshapedPublication = (
 	policy: IResolvedDevelopmentPolicy,
 	branch: string,
 ): IGitGuardVerdict | undefined => {
-	const work = shortName(policy.branches.workRefPrefix);
-	const publication = shortName(policy.branches.publicationRefPrefix);
-	const template = policy.branches.workRefTemplate;
-	if (template.length === 0 || work.length === 0 || publication.length === 0)
-		return undefined;
-	if (!branch.startsWith(publication)) return undefined;
+	// Each owned publication prefix mirrors the work prefix of the same
+	// namespace, current or former (f00808).
+	const mirrored = workShapeOfPublication(policy.branches, branch);
+	if (mirrored === undefined) return undefined;
+	const { publication, shape } = mirrored;
+	const work = shortName(shape.prefix);
+	const { template } = shape;
+	if (work.length === 0) return undefined;
 	// Strict about the separators, not about the kind: a publication
 	// mirrors a work ref that may predate the kind segment.
-	const parser = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-		{ strict: true, requireKind: false },
-	);
+	const parser = compileWorkRefParser(template, shape.prefix, {
+		strict: true,
+		requireKind: false,
+	});
 	const asWork = `refs/heads/${work}${branch.slice(publication.length)}`;
 	const identity = parser?.parse(asWork);
 	if (parser === undefined) return undefined;

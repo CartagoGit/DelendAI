@@ -18,8 +18,10 @@ import { basename } from 'node:path';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitGuardVerdict } from '../contracts/interfaces/git-guard.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
-import { shortName } from './git-guard-namespaces';
+import {
+	compileOwnedWorkRefParser,
+	ownedWorkRefShapeOf,
+} from './owned-work-ref-parser';
 import { DOCUMENT_ONLY_KINDS } from './profiles.constant';
 
 /** What a review unit may change: the project's documents, and generated files. */
@@ -36,12 +38,11 @@ export const isReviewUnitBranch = (
 	policy: IResolvedDevelopmentPolicy,
 	branch: string,
 ): boolean => {
-	const work = shortName(policy.branches.workRefPrefix);
-	if (work.length === 0 || !branch.startsWith(work)) return false;
-	const identity = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-	)?.parse(`refs/heads/${branch}`);
+	if (ownedWorkRefShapeOf(policy.branches, branch) === undefined)
+		return false;
+	const identity = compileOwnedWorkRefParser(policy.branches)?.parse(
+		`refs/heads/${branch}`,
+	);
 	return (
 		identity !== undefined &&
 		(DOCUMENT_ONLY_KINDS as readonly string[]).includes(identity.kind)
