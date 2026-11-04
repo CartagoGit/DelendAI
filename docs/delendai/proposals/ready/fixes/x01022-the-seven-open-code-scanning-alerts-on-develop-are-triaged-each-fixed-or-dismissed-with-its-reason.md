@@ -53,3 +53,12 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - #477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal.
 - #471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason.
 - #474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason.
+
+## triage (2026-11-04)
+
+All seven alerts are real and fixed in code; none is dismissed. Nothing was dismissed on the forge.
+
+- #477, #478 (`js/insecure-temporary-file`, maintenance-lease.service.ts): the premise that the name was safe because it sits in the workspace cache does not hold, since the name was predictable (`<lease>.<holder>`) and written with the default mode, following a planted link. Fixed: every scratch file now has a random-UUID name, is opened `wx` (fails on any existing file or link) with mode 0600, in a directory created 0700; the stale-aside name is random too. Specs: 0600 and no leftovers; a symlink planted at the old name is not written through.
+- #471, #472, #473 (`js/polynomial-redos`, markdown-parser.ts): the title, slice heading, `## Slices`, `##` heading and status matchers are linear string parses with the same grammar. Specs: 100000-space lines for each.
+- #474 (proposal-scaffolder.service.ts): the `-+$` slug trim is an index trim. Spec: a 100000-dash title.
+- #475 (parse-dockerfile.ts): `^([A-Za-z]+)\s+(.*)$` is a linear split. Spec: a 100000-space line.

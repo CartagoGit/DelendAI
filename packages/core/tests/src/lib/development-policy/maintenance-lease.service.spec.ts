@@ -6,8 +6,11 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	rmSync,
+	statSync,
+	symlinkSync,
 	writeFileSync,
 } from 'node:fs';
 import { dirname } from 'node:path';
@@ -124,6 +127,28 @@ describe('createMaintenanceLease', () => {
 		});
 		expect(await here.hold()).toBe(true);
 		expect(await there.hold()).toBe(false);
+	});
+});
+
+describe('the lease scratch files (js/insecure-temporary-file)', () => {
+	it('leaves the lease 0600 and no scratch file behind, taking and renewing', async () => {
+		const path = leasePath();
+		const { a } = pair(path, { at: 0 });
+		expect(await a.hold()).toBe(true);
+		expect(await a.hold()).toBe(true);
+		expect(statSync(path).mode & 0o777).toBe(0o600);
+		expect(readdirSync(dirname(path))).toEqual(['maintainer.lease']);
+	});
+
+	it('does not write through a file or link planted at the old predictable name', async () => {
+		const path = leasePath();
+		const { a } = pair(path, { at: 0 });
+		mkdirSync(dirname(path), { recursive: true });
+		const victim = join(dirname(path), 'victim');
+		writeFileSync(victim, 'untouched');
+		symlinkSync(victim, `${path}.${a.self.replace(/[^\w.-]/gu, '_')}`);
+		expect(await a.hold()).toBe(true);
+		expect(readFileSync(victim, 'utf8')).toBe('untouched');
 	});
 });
 

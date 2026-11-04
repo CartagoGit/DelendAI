@@ -49,6 +49,18 @@ const processIsAlive = (pid: number): boolean => {
 };
 
 /**
+ * Write `text` to a new file that only this process can read or write:
+ * the name carries a fresh random part and the open fails if anything
+ * already holds it (`wx`), so a planted file or link is never followed,
+ * and the mode is 0600. Returns the path written.
+ */
+const writeScratch = async (base: string, text: string): Promise<string> => {
+	const file = `${base}.${randomUUID()}.tmp`;
+	await writeFile(file, text, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+	return file;
+};
+
+/**
  * Remove the lease at `path` only while it holds `judged`: moved aside in
  * one rename, compared, and put back when another process replaced it in
  * between. Whether the judged record is gone.
@@ -58,7 +70,7 @@ export const removeIfStill = async (
 	judged: string,
 	scratch: string,
 ): Promise<boolean> => {
-	const aside = `${scratch}.stale`;
+	const aside = `${scratch}.${randomUUID()}.stale`;
 	try {
 		await rename(path, aside);
 	} catch {
@@ -120,15 +132,19 @@ export const createMaintenanceLease = (
 		!(held.machineId === options.machineId && !isAlive(held.pid));
 	const scratch = `${options.path}.${self.replace(/[^\w.-]/gu, '_')}`;
 	const take = async (): Promise<boolean> => {
+		let file: string | undefined;
 		try {
-			await mkdir(dirname(options.path), { recursive: true });
-			await writeFile(scratch, record(), 'utf8');
-			await link(scratch, options.path);
+			await mkdir(dirname(options.path), {
+				recursive: true,
+				mode: 0o700,
+			});
+			file = await writeScratch(scratch, record());
+			await link(file, options.path);
 			return true;
 		} catch {
 			return false;
 		} finally {
-			await rm(scratch, { force: true });
+			if (file !== undefined) await rm(file, { force: true });
 		}
 	};
 	let queue: Promise<unknown> = Promise.resolve();
@@ -143,8 +159,13 @@ export const createMaintenanceLease = (
 			serial(async () => {
 				const held = await readRecord(options.path);
 				if (held?.holder === self) {
-					await writeFile(scratch, record(), 'utf8');
-					await rename(scratch, options.path);
+					const file = await writeScratch(scratch, record());
+					try {
+						await rename(file, options.path);
+					} catch (error) {
+						await rm(file, { force: true });
+						throw error;
+					}
 					return true;
 				}
 				if (held !== undefined && live(held)) return false;
