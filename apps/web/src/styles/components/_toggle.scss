@@ -1,0 +1,17 @@
+// _toggle.scss — labelled switch row inside the settings modal.
+//
+// BEM root: .toggle.  The native `<input>` inside is sized directly here
+// because it has no semantic class — kept in the BEM scope as a literal
+// tag selector via `& input`.
+
+.toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+
+	& input {
+		width: 2.6rem;
+		height: 1.5rem;
+	}
+}
