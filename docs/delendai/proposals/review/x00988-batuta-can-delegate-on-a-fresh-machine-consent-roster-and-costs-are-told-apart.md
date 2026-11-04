@@ -51,15 +51,17 @@ f00793 makes the roster detected at server start; this proposal makes what is de
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 8ef2aa00af53 is stale: S1 files changed afterward (e.g. 8d8aa3be6, b7df7dab5, 599ba2c48). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ### S2 — Consent that the host cannot ask is asked another way
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/orchestrator-runner/src/lib/services/discovery-consent.service.ts`, `plugins/orchestrator-runner/tests/src/lib/services/discovery-consent.service.spec.ts`, `packages/core/src/lib/contracts/constants/discovery-consent.constant.ts`, `packages/core/src/lib/contracts/interfaces/discovery-consent-answer.interface.ts`, `packages/core/src/lib/shared/discovery-consent-record.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/cli.ts`, `packages/core/src/contracts/index.ts`, `packages/cli/src/commands/accounts.command.ts`, `packages/cli/src/commands/accounts.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A decline from the host, or a host that cannot ask, names `delendai accounts consent --yes|--no` as the way to answer, and a recorded answer of either kind is used without asking again (a host that declines on its own cannot be told from a person who said no)."
   - "`delendai accounts consent --yes|--no` records the person's answer in the same record the elicitation writes."
 - shipped-in: `8ae0c9882144`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 8ae0c9882144 is stale: S2 files changed extensively afterward (e.g. ef203ed1f, f4b76a89b, 2ca63f042). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and consent-path evidence.
 
 ### S3 — Proposals differ by cost and serve the models the client lists
 - **Status**: review
