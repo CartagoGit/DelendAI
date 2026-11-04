@@ -31,15 +31,17 @@ Joint audit a00095 and gpt-6.1-sol. G4: token-budget pressure (auto_work over it
 - global_gate: type
 
 ### S1 — The router sends one copy and responses have a budget
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/context-budget/bound-tool-result.service.ts`, `packages/core/tests/src/lib/context-budget/bound-tool-result.service.spec.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: type
 - acceptance:
   - "A routed result carries its payload once (G94): the router drops text that restates the structured content."
   - "Every tool result above a configured byte budget comes back as a stated failure with its head and the path of the kept output; review_queue pages (G95)."
 - shipped-in: `4a3d2988e9ff`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 4a3d2988e9ff is stale: multiple S1 files changed afterward (e.g. 9507ac8d5, c86fdb0aa, 4f03c34b2, be1e796df). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ### S2 — Measurements state their baseline
 - **Status**: review
