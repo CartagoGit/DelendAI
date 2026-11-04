@@ -2,7 +2,7 @@
 id: x00989
 title: "A host config with comments no longer stops the server"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-10-28
