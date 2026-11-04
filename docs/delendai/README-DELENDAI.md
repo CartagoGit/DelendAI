@@ -217,7 +217,7 @@ files, Cursor rules, Codex instructions, or Continue configuration).
 | Argument                     | Default                | Purpose                                                                                                                                                                                                    |
 | ---------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--plugins=a,b,c`            | _(none)_               | Plugins to load. Resolved as `@delendai/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
-| `--preset=NAME`              | _(none)_               | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `standard`, `swarm`, `full`) and rendered on the web presets page.                |
+| `--preset=NAME`              | _(none)_               | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `solo`, `team-pr`, `swarm`, `audit`, `docs-web`, `everything`, `dogfood`) and rendered on the web presets page.                |
 | `--verbose`                  | off                    | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup.                                                                                      |
 | `--cacheDir=DIR`             | `.cache/delendai`      | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`.                                                                                                                                                |
 | `--docsDir=DIR`              | `docs/delendai`        | Human-edited document root (e.g. proposals).                                                                                                                                                               |
@@ -271,7 +271,7 @@ plugin set the server loads is the **union** of four canonical sources,
 applied in this exact order:
 
 1. **`--preset=NAME`** — curated plugin set from the catalog (`minimal`,
-   `standard`, `swarm`, `full`). Resolved once at startup.
+   `solo`, `swarm`, `everything`). Resolved once at startup.
 2. **`--plugins=a,b,c`** — explicit plugins the user wants on top of the
    preset (deduped against the preset).
 3. **`delendai.config.json#plugins`** — workspace-declared plugins with
