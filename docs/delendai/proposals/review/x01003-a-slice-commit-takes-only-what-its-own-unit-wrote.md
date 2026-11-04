@@ -2,14 +2,14 @@
 id: x01003
 title: "A slice commit takes only what its own unit wrote"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 132f297b-eef3-4d4f-991b-40e3df57df48
-last-correlation-id: 132f297b-eef3-4d4f-991b-40e3df57df48
-last-transition-from: ready
-last-transition-at: 2026-11-02T14:52:08.119Z
+last-transition-id: 5675143e-62c4-4fdc-9dfe-eda33385c04b
+last-correlation-id: 5675143e-62c4-4fdc-9dfe-eda33385c04b
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T09:27:59.272Z
 ---
 
 # x01003 — A slice commit takes only what its own unit wrote
@@ -46,7 +46,7 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
 - global_gate: none
 
 ### S1 — Nothing reaches a work ref from the shared checkout, which stays clean
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/shared-checkout-clean.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/cli/src/commands/guard.command.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/engine.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
@@ -55,6 +55,9 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
   - "The commit guard refuses an agent's commit while the shared checkout holds loose edits under shared-checkout-pr, and not under worktree-pr or for a person; a spec covers it."
   - "A slice event whose declared file was changed in the shared checkout by another writer checkpoints none of the declared files, says which file it left and why, and is settled as terminal; specs cover it."
   - "No rendered work-model step under shared-checkout-pr, shared-checkout-merge or worktree-pr contains `work checkpoint`; a spec covers it."
+- shipped-in: `ef203ed1fd27`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
