@@ -48,14 +48,16 @@ Measured on 2026-10-28: a pull request's CI takes about 5 minutes (run 406317493
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 9c43b6214938 is stale: the same slice files changed in newer commits (e.g. cb62d7939, 11f2dd739, 3eedd5a48, c7f671363, 49d70916f). Redeliver S1 on current HEAD and resubmit with a fresh shipped-in commit plus scoped gate evidence.
 
 ### S2 — The clock runs the integration branch's queue
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "The default branch is the integration branch (repository setting, 2026-10-28), so the hourly run is develop's queue, and the workflow says why next to its schedule."
 - shipped-in: `2726a782c991`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 2726a782c991 is stale: this slice file changed in newer commits (e.g. 3eedd5a48, 49d70916f, 51fbac099). Redeliver S2 on current HEAD and resubmit with a fresh shipped-in commit and scoped evidence.
 
 ### S3 — An author's own commands bring its red candidates forward
 - **Status**: review
