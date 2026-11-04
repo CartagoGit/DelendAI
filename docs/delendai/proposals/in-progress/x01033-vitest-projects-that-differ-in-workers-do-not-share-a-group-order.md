@@ -24,7 +24,7 @@ x01019 gave every shared-graph project groupOrder 1, but proposals runs with fil
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The shared-graph isolation split of x01019 stays as it is.
 
 ## slices
 
