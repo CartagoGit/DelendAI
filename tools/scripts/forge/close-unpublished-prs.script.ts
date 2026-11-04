@@ -30,10 +30,7 @@ import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 import { ownBranchesOf, prHeadProblem } from '../lint/pr-head-shape.script';
 import { isForwardSyncRef } from './forward-sync-release.script';
-import {
-	publicationPrefixesOf,
-	underPublication,
-} from './publication-prefixes';
+import { underPublication } from './publication-prefixes';
 
 interface IOpenPullRequest {
 	readonly number: number;

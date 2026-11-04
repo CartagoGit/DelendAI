@@ -6,7 +6,7 @@
  * the former one; the queue keeps arming, ordering and disposing of them
  * until they end (f00808).
  */
-import { ownedPublicationRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+import { ownedPublicationRefPrefixes } from '@delendai/core/public';
 
 /** Whether `ref` lives under one of `prefixes`, followed by `rest`. */
 export const underPublication = (

@@ -40,7 +40,7 @@ import {
 	mergeFlagFor,
 } from '../lib/declared-branches';
 import { hasSeparateReleaseBranch } from '@delendai/core/cli';
-import { ownedPublicationRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+import { ownedPublicationRefPrefixes } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
 
