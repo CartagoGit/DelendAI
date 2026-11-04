@@ -133,6 +133,22 @@ describe('init:default (f00103)', () => {
 		expect(flags.force).toBe(false);
 	});
 
+	it('prints its help and bootstraps nothing', async () => {
+		const write = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation(() => true);
+		const result = await initDefaultCommand.run(
+			['--help'],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		const printed = write.mock.calls
+			.map((call) => String(call[0]))
+			.join('');
+		write.mockRestore();
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(printed).toContain('solo preset');
+	});
+
 	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(

@@ -52,6 +52,31 @@ afterEach(() => {
 });
 
 describe('collectInitAnswers in a terminal', () => {
+	it('shows what was detected before the first question', async () => {
+		const writes: string[] = [];
+		vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+			writes.push(String(chunk));
+			return true;
+		});
+		await collectInitAnswers('/ws', {
+			detected: {
+				language: 'typescript',
+				framework: 'react',
+				packageManager: 'bun',
+				monorepoTool: 'nx',
+				hasMcpProject: true,
+				mcpEvidence: ['.mcp.json'],
+				pluginPathsRoot: 'packages',
+				sourceRoot: 'packages',
+				hostEntrySource: 'unresolved',
+			},
+		});
+		const shown = writes.join('');
+		expect(shown).toContain('typescript + react + bun + nx');
+		expect(shown).toContain('.mcp.json');
+		expect(shown).toContain('packages');
+	});
+
 	it('offers dogfood only where delendai.config.json exists', async () => {
 		const menu = async (root: string): Promise<string> => {
 			const writes: string[] = [];
