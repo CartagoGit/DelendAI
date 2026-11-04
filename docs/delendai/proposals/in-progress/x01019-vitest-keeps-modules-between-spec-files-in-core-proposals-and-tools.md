@@ -2,10 +2,14 @@
 id: x01019
 title: "Vitest keeps modules between spec files in core, proposals and tools"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
+last-transition-id: e2f5ebfa-b30b-46cc-9e28-2b22be632c1e
+last-correlation-id: e2f5ebfa-b30b-46cc-9e28-2b22be632c1e
+last-transition-from: ready
+last-transition-at: 2026-11-04T11:37:53.745Z
 ---
 
 # x01019 — Vitest keeps modules between spec files in core, proposals and tools
