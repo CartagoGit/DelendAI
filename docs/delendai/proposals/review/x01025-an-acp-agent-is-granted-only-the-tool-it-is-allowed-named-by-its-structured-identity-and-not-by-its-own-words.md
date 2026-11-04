@@ -31,7 +31,7 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 - global_gate: type
 
 ### S1 — Permission is decided by the structured operation
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/acp-permission.constant.ts`, `packages/core/src/lib/contracts/interfaces/acp.interface.ts`, `packages/core/src/lib/shared/acp-session.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +39,10 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
   - "A request with no structured identity is refused and the refusal says why (deny by default)."
   - "A spec pins a title that holds both an allowed and a forbidden tool name."
 - shipped-in: `d43290f9b1c0`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the structured-identity permission checks (title spoof refusal, missing structured identity default-deny, mixed-title case). Please re-run and attach fresh empirical proof.
 
 ### S2 — Starting a package that is not installed needs the project to allow it
 - **Status**: review
