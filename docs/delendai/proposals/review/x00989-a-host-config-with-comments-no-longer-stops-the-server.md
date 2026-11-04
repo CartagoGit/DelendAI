@@ -56,7 +56,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -65,8 +65,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr."
   - "A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it."
 - shipped-in: `e705aa7c4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — The push target the profile refuses is removed, not just reported
 - **Status**: review
