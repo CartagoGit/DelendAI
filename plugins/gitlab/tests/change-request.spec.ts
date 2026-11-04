@@ -83,4 +83,23 @@ describe('the GitLab change-request forge', () => {
 	it('is the adapter the plugin exposes to the core', () => {
 		expect(plugin.changeRequestForge).toBe(forge);
 	});
+
+	it('reads nothing from a malformed answer', () => {
+		const odd = { text: () => 'x', json: () => ({}) };
+		const ref = { url: 'u', id: '1' };
+		expect(
+			forge.findOpen({ ...odd, json: () => [1] }, 'b'),
+		).toBeUndefined();
+		expect(
+			forge.findOpen({ ...odd, json: () => [{ iid: 'x' }] }, 'b'),
+		).toBeUndefined();
+		expect(forge.read({ ...odd, json: () => 'nope' }, ref)).toBeUndefined();
+		expect(forge.read({ ...odd, json: () => ({}) }, ref)).toBeUndefined();
+		expect(
+			forge.update({ ...odd, json: () => undefined }, ref, {
+				title: 't',
+				body: 'b',
+			}),
+		).toBe(false);
+	});
 });

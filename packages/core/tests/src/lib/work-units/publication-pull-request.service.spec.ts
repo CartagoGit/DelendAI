@@ -170,6 +170,66 @@ describe('openPublicationPullRequest', () => {
 			expect(store.title).toBe('fix(x): done x00002 S1');
 		});
 
+		it('lists a long diff briefly and reports a forge that refuses', () => {
+			const refusing: IChangeRequestForge = {
+				...fakeForge('github', 'github.com', { title: '', body: '' }),
+				update: () => false,
+			};
+			const ports = portsWith({
+				url: 'https://github.com/owner/repo',
+				existing: open,
+				subjects: 'feat(x): no slice cited',
+			});
+			const result = openPublicationPullRequest({
+				...INPUT,
+				ports: {
+					git: (args) =>
+						args[0] === 'diff'
+							? Array.from(
+									{ length: 45 },
+									(_, i) => `f${String(i)}.ts`,
+								).join('\n')
+							: ports.git(args),
+					gh: ports.gh,
+					run: { text: () => undefined, json: () => undefined },
+					forges: [refusing],
+				},
+			});
+			expect(result).toMatchObject({
+				status: 'unchanged',
+				reason: expect.stringContaining('did not accept'),
+			});
+		});
+
+		it('leaves a pull request whose URL carries no number as it is', () => {
+			const ports = portsWith({
+				url: 'https://github.com/owner/repo',
+				existing: 'https://github.com/owner/repo/pulls',
+			});
+			expect(openPublicationPullRequest({ ...INPUT, ports })).toEqual({
+				status: 'existing',
+				url: 'https://github.com/owner/repo/pulls',
+			});
+		});
+
+		it('skips another forge when no adapter finds a change request there', () => {
+			const ports = portsWith({ url: 'git@gitlab.com:o/r.git' });
+			const none: IChangeRequestForge = {
+				...fakeForge('gitlab', 'gitlab.com', { title: '', body: '' }),
+				findOpen: () => undefined,
+			};
+			expect(
+				openPublicationPullRequest({
+					...INPUT,
+					ports: {
+						...ports,
+						run: { text: () => undefined, json: () => undefined },
+						forges: [none],
+					},
+				}),
+			).toMatchObject({ status: 'skipped' });
+		});
+
 		it('says plainly that no forge plugin can rewrite the text', () => {
 			expect(
 				publish('https://github.com/owner/repo', 'feat(x): a', []),

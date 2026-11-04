@@ -82,4 +82,24 @@ describe('the GitHub change-request forge', () => {
 	it('is the adapter the plugin exposes to the core', () => {
 		expect(plugin.changeRequestForge).toBe(forge);
 	});
+
+	it('reads nothing from a malformed answer', () => {
+		const odd = { text: () => 'x', json: () => ({ url: 1 }) };
+		expect(
+			forge.findOpen({ ...odd, json: () => [1] }, 'b'),
+		).toBeUndefined();
+		expect(
+			forge.findOpen({ ...odd, json: () => [{ url: 'u' }] }, 'b'),
+		).toBeUndefined();
+		expect(
+			forge.read({ ...odd, json: () => ['t'] }, { url: 'u', id: '1' }),
+		).toBeUndefined();
+		expect(
+			forge.update(
+				{ ...odd, text: () => '' },
+				{ url: 'u', id: '1' },
+				{ title: 't', body: 'b' },
+			),
+		).toBe(false);
+	});
 });
