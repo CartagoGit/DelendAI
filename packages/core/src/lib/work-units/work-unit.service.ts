@@ -15,6 +15,7 @@ import { retired, retiredListed } from './work-unit-retire.service';
 import { checkpointed } from './work-unit-checkpoint.service';
 import {
 	agentFor,
+	refused,
 	withSessionOfCwd,
 	workspaceOf,
 } from './work-unit-shared.service';
@@ -23,6 +24,7 @@ import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
 import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
 import { rescued } from './shared-checkout-rescue.service';
+import { looseSharedCheckoutRefusal } from './shared-checkout-clean.service';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
 /**
@@ -79,6 +81,14 @@ const recordEntered = async (
 };
 
 /**
+ * The commands that write a unit's work or land it. None runs while the
+ * shared checkout holds loose edits: they would be carried, lost or taken
+ * for the unit's, and the shared checkout stays clean by construction.
+ * `work deliver` proves first, so it is refused with `prove`.
+ */
+const MUTATING = new Set(['enter', 'checkpoint', 'prove', 'publish']);
+
+/**
  * A unit-of-work operation (`status`, `swarm`, `doctor`, `claim`, `enter`,
  * `checkpoint`, `prove`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
@@ -92,9 +102,14 @@ export const runWorkUnit = async (
 	// One policy read serves the whole operation: the session check and
 	// the entered-unit record both name the agent the same way, and the
 	// way is the project's `development.identity` axis (f00758).
-	const axis = (await readWorkspacePolicy(workspaceOf(ctx))).identity;
+	const policy = await readWorkspacePolicy(workspaceOf(ctx));
+	const axis = policy.identity;
 	args = withSessionOfCwd(args, ctx.cwd, axis);
 	await showLife(ctx);
+	if (sub !== undefined && MUTATING.has(sub)) {
+		const loose = looseSharedCheckoutRefusal(workspaceOf(ctx), policy);
+		if (loose !== undefined) return refused(loose.reason, loose.remedy);
+	}
 	if (sub === 'status' || sub === undefined) return statusOf(ctx);
 	if (sub === 'checkpoint') return checkpointed(args, ctx);
 	if (sub === 'enter') {
