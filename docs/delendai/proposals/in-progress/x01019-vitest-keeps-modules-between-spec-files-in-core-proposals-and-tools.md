@@ -24,7 +24,7 @@ Measured on a 30-spec sample across core, cli, proposals, tools and e2e at maxWo
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Isolation stays on in packages/cli; no pool change; bun test is not adopted (coverage lacks branch data and many vi APIs).
 
 ## slices
 
