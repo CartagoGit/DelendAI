@@ -44,10 +44,12 @@
 	// esto es lo que evita que los eventos lleguen siquiera.
 	// ──────────────────────────────────────────────────────────────────────
 	"files.watcherExclude": {
-		"**/.cache/**": true
+		"**/.cache/**": true,
+		".cache/**": true
 	},
 	"search.exclude": {
-		"**/.cache/**": true
+		"**/.cache/**": true,
+		".cache/**": true
 	},
 
 	// Scope format-on-save to the front (Astro site). Backend packages keep
