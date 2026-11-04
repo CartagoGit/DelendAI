@@ -276,8 +276,9 @@ the focused validation pass before committing. The read-only guard is
   project's `development` profile, and the server states it: in its
   connect-time instructions, `agent_bootstrap`, `overview` (`workModel`)
   and every refusal. Follow that, never this file or a design doc. The
-  shared checkout never moves; `delendai work status` says where it
-  stands.
+  shared checkout never moves and is never edited: work commands and
+  commits refuse while it holds loose edits (`delendai work rescue` keeps
+  them under a ref); `delendai work status` says where it stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   A unit ends in `delendai work publish` or `delendai work retire`
   (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
