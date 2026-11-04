@@ -32,14 +32,16 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 - global_gate: type
 
 ### S1 — The transform cache persists in CI
-- **Status**: review
+- **Status**: pending
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86)."
 - shipped-in: `93abaae43aed`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 93abaae43aed is stale: S1 files changed in many newer commits (e.g. f44c79120, 51fbac099, da3d5a486, b0cb32841). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S2 — proposals evaluates each module once where state allows
 - **Status**: review
