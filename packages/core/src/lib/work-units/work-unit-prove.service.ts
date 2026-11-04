@@ -6,6 +6,7 @@
  * that follows — `work publish`, or the hand-over a proposal transition
  * makes over a tool call — does not run it again.
  */
+import { unitPolicy } from '../development-policy/owned-work-ref-parser';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -31,7 +32,7 @@ export const proved = async (
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
-	const { policy } = opened;
+	let { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
@@ -43,6 +44,8 @@ export const proved = async (
 		);
 	}
 	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
+	// A unit under a former namespace is published in its own (f00808).
+	policy = unitPolicy(policy, workRef);
 	const tip = readGit(root, ['rev-parse', '-q', '--verify', workRef]);
 	const base = integrationBase(root, policy);
 	if (tip === undefined || base === undefined) {

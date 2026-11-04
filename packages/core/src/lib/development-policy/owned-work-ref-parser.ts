@@ -152,3 +152,12 @@ export const branchesForRef = <T extends IShapeBranches>(
 	}
 	return branches;
 };
+
+/** The policy as the namespace of the unit at `ref` has it (f00808). */
+export const unitPolicy = <P extends { readonly branches: IShapeBranches }>(
+	policy: P,
+	ref: string,
+): P => {
+	const branches = branchesForRef(policy.branches, ref);
+	return branches === policy.branches ? policy : { ...policy, branches };
+};
