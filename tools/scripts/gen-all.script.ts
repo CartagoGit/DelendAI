@@ -304,7 +304,9 @@ const runChild = (command: string, args: readonly string[]): Promise<number> =>
  * static jobs, and `check:generated` then reads the same verdicts back
  * instead of running every generator a second time.
  */
-export const checkPasses = (root: string): IGenAllIo['checkPasses'] => {
+export const checkPasses = (
+	root: string,
+): NonNullable<IGenAllIo['checkPasses']> => {
 	const tree = hashOfPaths(root, [':/']);
 	const name = (step: IStep): string => `gen-check-${step.name}`;
 	const key = (step: IStep): string =>
