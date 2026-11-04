@@ -2,7 +2,7 @@
 id: x01003
 title: "A slice commit takes only what its own unit wrote"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
