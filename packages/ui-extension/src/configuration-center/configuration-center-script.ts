@@ -7,6 +7,7 @@ export const configurationCenterScript = (): string => `
   var save = root.querySelector('[data-config-save]');
   var discard = root.querySelector('[data-config-discard]');
   var status = root.querySelector('[data-config-status]');
+  var submitted = new Map();
   var initialDigest = root.getAttribute('data-config-digest') || '';
 
   function post(message) {
@@ -89,7 +90,8 @@ export const configurationCenterScript = (): string => `
     if (save.disabled) return;
     save.disabled = true;
     root.setAttribute('data-state', 'saving');
-    post({ command: 'saveConfiguration', expectedDigest: initialDigest, edits: Array.from(edits.values()) });
+    submitted = new Map(edits);
+    post({ command: 'saveConfiguration', expectedDigest: initialDigest, edits: Array.from(submitted.values()) });
   });
   if (discard) discard.addEventListener('click', function () {
     post({ command: 'discardConfiguration' });
@@ -98,7 +100,12 @@ export const configurationCenterScript = (): string => `
   window.addEventListener('message', function (event) {
     var message = event.data || {};
     if (message.command === 'configurationSaved') {
-      edits.clear();
+      // Only what this request saved is clean; a field edited while the
+      // save was in flight stays dirty against the new digest.
+      submitted.forEach(function (edit, key) {
+        if (edits.get(key) === edit) edits.delete(key);
+      });
+      submitted = new Map();
       initialDigest = typeof message.digest === 'string' ? message.digest : initialDigest;
       root.setAttribute('data-config-digest', initialDigest);
       root.setAttribute('data-state', 'ready');
