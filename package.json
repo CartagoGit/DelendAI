@@ -89,6 +89,7 @@
 		"diagnostics:codex-parse-noise": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts",
 		"diagnostics:codex-parse-noise:rewrite": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite",
 		"lint:tool-schema-shape": "bun tools/scripts/lint/tool-schema-shape.script.ts",
+		"lint:spec-duration-budget": "bun tools/scripts/ci/spec-duration-budget.script.ts",
 		"lint:compact-list-tools": "bun tools/scripts/lint/compact-list-tools.script.ts",
 		"lint:tool-ok-envelope": "bun tools/scripts/lint/tool-ok-envelope.script.ts",
 		"lint:detail-levels-coverage:advisory": "bun tools/scripts/lint/detail-levels-coverage.script.ts",
