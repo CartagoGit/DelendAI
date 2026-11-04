@@ -1,6 +1,8 @@
 import { definePlugin } from '@delendai/core/plugin';
 import z from 'zod';
 
+import { githubChangeRequestForge } from './lib/change-request.helper';
+
 import {
 	createGitHubHttpClient,
 	createGitHubRemoteFetchFn,
@@ -87,6 +89,7 @@ const buildGitHubKnowledgeEntry = (input: {
 
 export default definePlugin({
 	name: 'github',
+	changeRequestForge: githubChangeRequestForge,
 	version: '0.3.0',
 	describe:
 		'GitHub provider context and injectable HTTP client for read tools plus opt-in mutable remote actions. No dependency on plugin-git or a local checkout.',

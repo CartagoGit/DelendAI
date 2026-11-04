@@ -2,6 +2,8 @@ import { definePlugin } from '@delendai/core/plugin';
 import { isAbsolute } from 'node:path';
 import z from 'zod';
 
+import { gitlabChangeRequestForge } from './lib/change-request.helper';
+
 import { createGitLabHttpClient } from './lib/client';
 import { buildGitLabToolRegistrations } from './lib/tools/shared';
 import { buildGitLabWriteToolRegistrations } from './lib/tools/write-tools';
@@ -102,6 +104,7 @@ const buildGitLabKnowledgeEntry = (input: {
 
 export default definePlugin({
 	name: 'gitlab',
+	changeRequestForge: gitlabChangeRequestForge,
 	version: '0.3.0',
 	describe:
 		'GitLab provider context and injectable HTTP client for read tools plus opt-in mutable remote actions. No dependency on plugin-git or a local checkout.',
