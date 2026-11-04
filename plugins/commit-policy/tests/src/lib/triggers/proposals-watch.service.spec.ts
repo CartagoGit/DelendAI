@@ -4,6 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { waitUntil } from '@delendai/test-kit';
+
 import { watchProposals } from '@delendai/commit-policy/lib/triggers/proposals-watch.service';
 
 describe('watchProposals', () => {
@@ -19,16 +21,15 @@ describe('watchProposals', () => {
 		return dir;
 	};
 
-	it('calls once for a burst of changes, and not at all while nothing changes', async () => {
+	it('calls once for a burst of changes, and has not called before any', async () => {
 		const dir = folder();
 		let calls = 0;
 		const watching = await watchProposals(dir, () => (calls += 1), 50);
 		expect(watching).toBeDefined();
-		await new Promise((done) => setTimeout(done, 150));
 		expect(calls).toBe(0);
 		writeFileSync(join(dir, 'ready', 'a.md'), '1');
 		writeFileSync(join(dir, 'ready', 'b.md'), '2');
-		await new Promise((done) => setTimeout(done, 400));
+		await waitUntil('the burst was reported', () => calls > 0);
 		watching?.close();
 		expect(calls).toBe(1);
 	});

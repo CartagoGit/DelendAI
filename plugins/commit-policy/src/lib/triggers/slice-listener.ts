@@ -558,15 +558,26 @@ export const createSliceListener = (
 				options.standDown === undefined ||
 				(await options.standDown().catch(() => 'unknown')) ===
 					undefined;
+			let held = true;
+			let lastCheck = Date.now();
+			let watching = false;
+			let checking = false;
+			let again = false;
+			// Watching, an idle server wakes only to ask whether it holds
+			// the lease; a server that cannot watch polls at that pace.
+			timer = setInterval(
+				() => void poll(),
+				options.watch === true
+					? Math.max(pollMs, PROPOSALS_TAKEOVER_POLL_MS)
+					: pollMs,
+			);
+			timer.unref();
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
 			const primed = (await mayRun())
 				? check().then(() => undefined)
 				: Promise.resolve();
 			const pacer = createPollPacer();
-			let held = true;
-			let lastCheck = Date.now();
-			let watching = false;
 			const poll = async (): Promise<void> => {
 				if (!(await mayRun())) {
 					held = false;
@@ -589,8 +600,6 @@ export const createSliceListener = (
 					.catch(() => undefined)
 					.finally(finished);
 			};
-			let checking = false;
-			let again = false;
 			const onChange = (): void => {
 				if (checking) {
 					again = true;
@@ -609,8 +618,6 @@ export const createSliceListener = (
 						}
 					});
 			};
-			timer = setInterval(() => void poll(), pollMs);
-			timer.unref();
 			const watcherNow =
 				options.watch === true
 					? await watchProposals(
@@ -627,14 +634,6 @@ export const createSliceListener = (
 			} else if (watcherNow !== undefined) {
 				watcher = watcherNow;
 				watching = true;
-				clearInterval(timer);
-				// Often enough to take over from a holder that went away,
-				// rarely enough that an idle server reads nothing.
-				timer = setInterval(
-					() => void poll(),
-					Math.max(pollMs, PROPOSALS_TAKEOVER_POLL_MS),
-				);
-				timer.unref();
 			}
 			await primed;
 		},

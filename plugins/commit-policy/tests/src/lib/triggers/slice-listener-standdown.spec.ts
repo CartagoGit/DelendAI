@@ -6,6 +6,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { waitUntil } from '@delendai/test-kit';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createSliceListener } from '@delendai/commit-policy/lib/triggers/slice-listener';
@@ -47,16 +48,15 @@ describe('createSliceListener standDown', () => {
 			},
 		);
 		await listener.start();
-		await new Promise((done) => setTimeout(done, 100));
-		expect(asked).toBeGreaterThan(1);
+		await waitUntil('the lease was asked again', () => asked > 1);
 		expect(handled).toEqual([]);
 		blocked = undefined;
 		writeFileSync(
 			join(root, 'proposals', 'ready', 'x00001-a.md'),
 			'---\nid: x00001\n---\n## slices\n### S1 — a\n- **Status**: done\n- **Files**: `a.ts`\n',
 		);
-		await new Promise((done) => setTimeout(done, 200));
+		const before = asked;
+		await waitUntil('it asked again', () => asked > before);
 		listener.stop();
-		expect(asked).toBeGreaterThan(2);
 	});
 });

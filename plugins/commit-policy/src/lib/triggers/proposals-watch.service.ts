@@ -7,6 +7,7 @@
  * changing. The directory is watched instead, and the poll stays only as
  * a slow safety net for a platform whose watcher misses events.
  */
+// effect-boundary-authorized: the proposals watch is this plugin's file adapter
 import { stat, watch } from 'node:fs/promises';
 
 import { PROPOSALS_WATCH_DEBOUNCE_MS } from '../contracts/constants/proposals-watch.constant';
