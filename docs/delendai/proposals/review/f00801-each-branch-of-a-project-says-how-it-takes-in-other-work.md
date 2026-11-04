@@ -38,14 +38,16 @@ Asked by the owner on 2026-11-02 for the projects that use delendai, starting wi
 - global_gate: type
 
 ### S1 — A branch declares how it takes in work
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/contracts/interfaces/branch-rule.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/derive.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/effective-policy.ts`, `packages/core/src/lib/development-policy/branch-rules.ts`, `packages/core/src/lib/development-policy/validate-branch-rules.ts`, `packages/core/src/lib/development-policy/validate-combinations.ts`, `packages/core/tests/src/lib/development-policy/branch-rules.spec.ts`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`development.branches.rules` maps a branch name (or a glob) to how it takes in work, `pull-request`, `merge` or `direct`, and, for the integration and release branches, defaults to what the profile does today; an invalid combination (a release looser than its integration branch, a direct branch inside delendai's namespaces) is refused at load with the key that is wrong."
 - shipped-in: `a9c123c3345d`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in a9c123c3345d is stale: S1 files changed afterward (e.g. 047d74500, 4cdbc4365, d43290f9b). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — The guard and the work flow follow each branch's rule
 - **Status**: review
