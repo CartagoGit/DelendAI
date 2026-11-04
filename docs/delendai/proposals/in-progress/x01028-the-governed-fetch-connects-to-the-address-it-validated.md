@@ -2,7 +2,7 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
