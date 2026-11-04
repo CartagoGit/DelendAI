@@ -304,8 +304,9 @@ describe('create_proposal on a project that lands without a pull request', () =>
 		// A concrete step, not "finish the unit" for a unit that does not
 		// exist yet: the file goes onto a create unit, and the unit lands.
 		expect(result.nextAction).toContain(
-			`delendai work checkpoint --proposal=${id} --slice=all --kind=create --paths=docs/delendai/proposals/${result.file}`,
+			`delendai work enter --proposal=${id} --slice=all --kind=create\`, then write and commit docs/delendai/proposals/${result.file}`,
 		);
+		expect(result.nextAction).not.toContain('delendai work checkpoint');
 		expect(result.nextAction).toContain(
 			`delendai work publish --proposal=${id} --slice=all --kind=create`,
 		);

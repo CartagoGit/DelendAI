@@ -84,8 +84,9 @@ describe('proposalPublishNextAction', () => {
 		});
 
 		expect(action).toContain(
-			`delendai work checkpoint --proposal=f00547 --slice=all --kind=create --paths=${PATH}`,
+			`delendai work enter --proposal=f00547 --slice=all --kind=create\`, then write and commit ${PATH}`,
 		);
+		expect(action).not.toContain('delendai work checkpoint');
 		expect(action).toContain(
 			'delendai work publish --proposal=f00547 --slice=all --kind=create',
 		);

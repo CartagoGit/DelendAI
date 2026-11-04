@@ -35,6 +35,17 @@ export type IGuardedGitOperation =
 			readonly paths?: readonly string[] | undefined;
 			/** The project's documents directory (`docsDir`), when observed. */
 			readonly docsDir?: string | undefined;
+			/**
+			 * The repository's shared checkout and the loose edits it holds,
+			 * when observed: a policy that keeps it clean takes no commit
+			 * anywhere while it holds any.
+			 */
+			readonly sharedCheckout?:
+				| {
+						readonly root: string;
+						readonly paths: readonly string[];
+				  }
+				| undefined;
 	  }
 	| {
 			readonly kind: 'branch-create';

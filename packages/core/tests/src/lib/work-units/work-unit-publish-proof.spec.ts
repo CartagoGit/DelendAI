@@ -14,6 +14,7 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
+import { commitOnRef } from './unit-repo.helper';
 
 const roots: string[] = [];
 
@@ -71,13 +72,14 @@ const UNIT = [
 	'--topic=probe',
 ];
 
+/** The unit's commit on its work ref, as its worktree would make it. */
 const checkpoint = async (root: string): Promise<void> => {
-	writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-	const done = await runWorkUnit(
-		['checkpoint', ...UNIT, '--paths=a.ts', '--message=feat: a'],
-		contextFor(root),
+	commitOnRef(
+		root,
+		'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe',
+		{ 'a.ts': 'export const a = 1;\n' },
+		{ message: 'feat: a' },
 	);
-	expect(done.code).toBe(0);
 };
 
 describe('publishing a pull request runs the declared proof', () => {
