@@ -19,6 +19,7 @@ import {
 	choosePublicationTarget,
 	proposalInProgress,
 } from './publication-target.service';
+import { pullRequestPorts } from './change-request-forges.service';
 import { openPublicationPullRequest } from './publication-pull-request.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
@@ -33,7 +34,6 @@ import { endCarriedUnits } from './carried-units.service';
 
 import {
 	agentFor,
-	forgeCli,
 	readGit,
 	integrationBase,
 	integrationRemote,
@@ -332,11 +332,14 @@ export const published = async (
 	};
 	// The publication becomes a pull request here, by the machine that
 	// holds the forge credential (x00677), when the branch takes PRs.
-	const pullRequest =
+	const ports =
 		outcome.published &&
-		outcome.tip !== null &&
 		landsByPullRequest(policy) &&
 		!args.includes('--no-pull-request')
+			? await pullRequestPorts(root)
+			: undefined;
+	const pullRequest =
+		ports !== undefined && outcome.tip !== null
 			? openPublicationPullRequest({
 					remote,
 					base: policy.branches.integration,
@@ -347,10 +350,7 @@ export const published = async (
 					tip: outcome.tip,
 					integrationBase: base,
 					fallbackTitle: `${kindFor(args, slice)} ${proposal}`,
-					ports: {
-						git: (gitArgs) => readGit(root, gitArgs),
-						gh: (ghArgs) => forgeCli(root, ghArgs),
-					},
+					ports,
 				})
 			: undefined;
 	// Published but not cleaned up is not a success: the namespace is

@@ -27,10 +27,10 @@ _(none)_
 
 ## Tests
 
+- plugins/gitlab/tests/change-request.spec.ts
 - plugins/gitlab/tests/diagnose-gitlab-pipeline.spec.ts
 - plugins/gitlab/tests/diagnostics.spec.ts
 - plugins/gitlab/tests/src/lib/client.spec.ts
-- plugins/gitlab/tests/src/lib/mutations.spec.ts
 
 ## Do not
 
