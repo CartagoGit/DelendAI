@@ -38,7 +38,7 @@ It returns a verified checklist (`created` / `skipped` / `residual`). The
 only steps left are the ones that genuinely need a human or the network:
 
 1. **Relaunch the host** with the command the tool printed (e.g.
-   `bunx --package @delendai/cli delendai __serve --workspace . --preset full`).
+   `bunx --package @delendai/cli delendai __serve --workspace . --preset everything`).
 2. **Optional GitHub issues** — run `delendai_setup_github` (read-only
    guide) and set `plugins.issues.options.repo`, or pass `repo:
    "owner/name"` to `adopt_project` so it writes the wiring for you.
@@ -65,7 +65,7 @@ warning rather than preserving an idle background chat.
 The server cannot read a host's private subscription meter. Use the host UI as
 the authority for quota/context, and use the `memory` compaction loop plus
 `usage-tracking` only for the local state and MCP activity they can actually
-observe. The `lean`, `standard`, and larger presets include `memory`; projects
+observe. Every pack except `minimal` includes `memory` (`audit` does not); `solo` is the init default; projects
 that deliberately use a smaller explicit plugin list should load it when they
 want the same compact-and-resume workflow.
 
@@ -114,18 +114,18 @@ vocabulary (`gh`, `rest-authed`, `rest-anon`).
 
 ## Plugin preset wiring
 
-The source of truth for preset membership is [../packages/core/src/lib/plugins/preset-catalog.ts](../../packages/core/src/lib/plugins/preset-catalog.ts). Today `full` resolves to everything in `swarm` plus the host-only plugins that stay user-facing (`web-fetch`, `issues`); `audit` is opt-in via `--plugins=audit`. Prefer `--preset=full` when you want the whole user-facing surface. Use an explicit plugin list only when you intentionally want a smaller launch shape.
+The source of truth for preset membership is [../packages/core/src/lib/plugins/preset-catalog.ts](../../packages/core/src/lib/plugins/preset-catalog.ts). The packs are `minimal`, `solo`, `team-pr`, `swarm`, `audit`, `docs-web`, `everything` and `dogfood` (this repository's own snapshot, offered by `init` only where `delendai.config.json` exists). `init` gives a new project `solo`. Stack overlays are `web-app`, `backend-api` and `cli-tool`, each a purpose pack plus a stack tag. The retired ids (`lean`, `standard`, `full`) still resolve with a deprecation notice that names the replacement. Prefer `--preset=everything` when you want every published plugin. Use an explicit plugin list only when you intentionally want a smaller launch shape.
 
 For ordinary single-agent implementation work, prefer the explicit
-`--preset=lean` surface: git, search, memory and docs. It avoids registering
+`--preset=solo` surface: git, search, memory, docs, quality, rules, deps, test-policy, env and refactor. It avoids registering
 the collaboration tools and their schemas until you actually need them. Switch
-to `--preset=swarm` for locks, proposals and coordination; use `full` only
+to `--preset=swarm` for locks, proposals and coordination; use `everything` only
 when the host-only integrations are also required.
 
 Preferred launch:
 
 ```bash
-bunx --package @delendai/cli delendai __serve --workspace . --preset full
+bunx --package @delendai/cli delendai __serve --workspace . --preset everything
 ```
 
 Explicit minimal alternative for just proposals plus issues:
@@ -141,20 +141,19 @@ The server block is the same across VS Code, Cursor, and Claude Code; only the h
 	"servers": {
 		"delendai": {
 			"command": "bunx",
-			"args": ["--package", "@delendai/cli", "delendai", "__serve", "--workspace", ".", "--preset", "full"]
+			"args": ["--package", "@delendai/cli", "delendai", "__serve", "--workspace", ".", "--preset", "everything"]
 		}
 	}
 }
 ```
 
-If you intentionally avoid `full`, keep the config file and launch shape aligned: a repo that declares `plugins.issues.options.repo` still needs either `--preset=full` or `--plugins=proposals,issues` so the host actually loads the issues tools.
+If you intentionally avoid `everything`, keep the config file and launch shape aligned: a repo that declares `plugins.issues.options.repo` still needs either `--preset=everything` or `--plugins=proposals,issues` so the host actually loads the issues tools.
 
 ## Model providers and the orchestrator (opt-in)
 
-The `orchestrator-runner` (headless routing brain) and `usage-tracking`
-(spend/usage observability) plugins are **opt-in**. They are **not** part of any
-preset — `minimal`, `standard`, `swarm`, and `full` all leave them out — so you
-only pay their cost when you deliberately load them. `orchestrator-runner` has a
+The `orchestrator-runner` (headless routing brain) plugin is **opt-in**: no pack
+but `dogfood` carries it, and `usage-tracking` (spend/usage observability) comes
+with `swarm` and `dogfood` only, so you only pay their cost when you deliberately load them. `orchestrator-runner` has a
 hard dependency on `usage-tracking`: the loader refuses the batch unless both are
 present, because every routing decision it advises (and, once execution is
 enabled, every call it runs) must be recorded for spend auditing.
@@ -227,7 +226,7 @@ fallback with the identical shape.
 | `delendai.config.json` not found | Create `delendai.config.json` at the workspace root, add the `plugins.issues.options.repo` block shown above, then relaunch the host so it reads the config file from the expected root. |
 | Repo slug malformed | Rewrite the value to plain `owner/name`, stripping protocol prefixes, `.git`, extra path segments, or issue numbers. Then rerun the detection/confirmation step until the slug is exactly two path segments. |
 | Anonymous tier hits the `60` requests/hour limit | Stop using `rest-anon` for normal work. Authenticate with `gh auth login` or export `GITHUB_TOKEN`, relaunch the host, and rerun verification so the effective tier changes to `gh` or `rest-authed`. |
-| Host loads `delendai` but no issues tools appear | Your `mcp.json` launch shape is missing the required preset/plugin flags. Change it to `--preset=full` or `--plugins=proposals,issues`, then restart the host and confirm the compact overview lists `issues` as loaded. |
+| Host loads `delendai` but no issues tools appear | Your `mcp.json` launch shape is missing the required preset/plugin flags. Change it to `--preset=everything` or `--plugins=proposals,issues`, then restart the host and confirm the compact overview lists `issues` as loaded. |
 
 ## Where to next
 

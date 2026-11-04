@@ -181,9 +181,9 @@ const dict: LangDict = {
 			intro: '无需编辑器集成：在终端运行 host server，并让任意 MCP 客户端指向其 stdio 传输。',
 			steps: [
 				'安装：`bun add @delendai/core`（或 `npm install @delendai/core`）。',
-				'运行：`bunx delendai --preset=standard`（或 `npx delendai --preset=standard`）。',
+				'运行：`bunx delendai --preset=solo`（或 `npx delendai --preset=solo`）。',
 				'验证：进程会打印已加载的插件列表并在 stdio 上等待——按 Ctrl+C 停止。',
-				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|standard|swarm|full`（完整 flag 列表见“安装”页）。',
+				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything`（完整 flag 列表见“安装”页）。',
 				'先调用 `delendai_overview { compact: true }`——它会告诉你接下来该做什么。',
 			],
 		},

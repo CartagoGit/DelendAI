@@ -186,9 +186,9 @@ const dict: LangDict = {
 			intro: 'No editor integration required: run the host server from a terminal and point any MCP client at its stdio transport.',
 			steps: [
 				'Install: `bun add @delendai/core` (or `npm install @delendai/core`).',
-				'Run: `bunx delendai --preset=standard` (or `npx delendai --preset=standard`).',
+				'Run: `bunx delendai --preset=solo` (or `npx delendai --preset=solo`).',
 				'Verify: the process prints the loaded plugin list and waits on stdio — Ctrl+C to stop.',
-				'Point your MCP client config at the binary with `--preset=minimal|standard|swarm|full` (see Install for the full flag list).',
+				'Point your MCP client config at the binary with `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` (see Install for the full flag list).',
 				'Call `delendai_overview { compact: true }` first — it tells you what to do next.',
 			],
 		},

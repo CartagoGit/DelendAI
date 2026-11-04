@@ -185,9 +185,9 @@ const dict: LangDict = {
 			intro: 'किसी एडिटर इंटीग्रेशन की आवश्यकता नहीं: टर्मिनल से host server चलाएँ और किसी भी MCP क्लाइंट को उसके stdio ट्रांसपोर्ट की ओर इंगित करें।',
 			steps: [
 				'इंस्टॉल करें: `bun add @delendai/core` (या `npm install @delendai/core`)।',
-				'चलाएँ: `bunx delendai --preset=standard` (या `npx delendai --preset=standard`)।',
+				'चलाएँ: `bunx delendai --preset=solo` (या `npx delendai --preset=solo`)।',
 				'जाँचें: प्रोसेस लोड किए गए प्लगइन की सूची प्रिंट करता है और stdio पर प्रतीक्षा करता है — रोकने के लिए Ctrl+C।',
-				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|standard|swarm|full` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',
+				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|solo|team-pr|swarm|audit|docs-web|everything` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',
 				'पहले `delendai_overview { compact: true }` कॉल करें — यह बताता है कि आगे क्या करना है।',
 			],
 		},

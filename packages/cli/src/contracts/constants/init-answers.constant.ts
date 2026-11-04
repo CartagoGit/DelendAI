@@ -42,3 +42,6 @@ export const PLUGIN_IDS: ReadonlySet<string> = pluginIdsFromCatalog();
 
 /** Read-only list of plugin ids accepted by the schema (for help text). */
 export const INIT_VALID_PLUGIN_IDS: ReadonlySet<string> = PLUGIN_IDS;
+
+/** The pack a new project gets when nobody chooses one. */
+export const DEFAULT_INIT_PRESET = 'solo';
