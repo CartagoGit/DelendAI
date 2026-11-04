@@ -2,14 +2,14 @@
 id: x00995
 title: "No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 93c554d4-7447-48ca-a4f8-757286f77432
-last-correlation-id: 93c554d4-7447-48ca-a4f8-757286f77432
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T11:42:49.678Z
+last-transition-id: e743f20c-a234-494b-bb11-f10168e33f55
+last-correlation-id: e743f20c-a234-494b-bb11-f10168e33f55
+last-transition-from: review
+last-transition-at: 2026-11-04T18:53:14.050Z
 ---
 
 # x00995 — No code a spec evaluates is built from a value, and every open CodeQL alert is fixed or dismissed with its reason
@@ -36,15 +36,17 @@ A pull request's CodeQL check fails only on alerts its own diff introduces, so a
 - global_gate: type
 
 ### S1 — The two open alerts
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The spec's grandchild writes a relative `late.txt` in the criterion's `cwd` (`runAcceptanceCriteria(..., { cwd: dir })`), so no value is spliced into evaluated code; left unkilled the same command writes the marker there, so the test still proves the process-group kill."
   - "#464 is dismissed as won't fix with the reason above, on 2026-10-29."
 - shipped-in: `5d36ebea3d6f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit S1 with explicit empirical evidence for both criteria, including the recorded dismissal evidence for alert #464 in the proposal round payload; current round lacks reviewer-verifiable evidence package.
 
 ### S2 — An open alert is a broken promise
 - **Status**: pending
