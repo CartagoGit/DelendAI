@@ -30,7 +30,10 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '@delendai/core/public';
 
-import type { IPersistenceRoute } from '../contracts/interfaces/persistence.interface';
+import type {
+	IPersistenceOutcome,
+	IPersistenceRoute,
+} from '../contracts/interfaces/persistence.interface';
 
 import { HEAD_MOVING_GIT_VERBS } from './persistence-route.constant';
 
@@ -129,3 +132,18 @@ export const resolvePersistenceRoute = (
 		remedy: 'Use a profile whose persistence strategy is `direct-commit` or `wip-ref`, or persist through the worktree host instead of commit-policy.',
 	};
 };
+
+/**
+ * A checkpoint that took nothing from this checkout: every unit has its
+ * own worktree, and its work reaches its ref by commit there (x01003).
+ */
+export const leftInSharedCheckout = (outside: {
+	readonly reason: string;
+	readonly remedy: string;
+}): IPersistenceOutcome => ({
+	handled: true,
+	status: 'refused',
+	code: 'WIP_SHARED_CHECKOUT',
+	reason: `WIP_SHARED_CHECKOUT: ${outside.reason}`,
+	remedy: outside.remedy,
+});

@@ -38,7 +38,11 @@ import { createPolicyPersistence } from './lib/persistence/wip-persistence';
 import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 // Declared core surface (`./cli`), because a plugin must install from npm:
 // the `lib/` path only resolves through tsconfig paths in this monorepo.
-import { providerModelId, readSliceOwnership } from '@delendai/core/cli';
+import {
+	providerModelId,
+	readSliceOwnership,
+	sharedCheckoutCheckpointRefusal,
+} from '@delendai/core/cli';
 import { currentHostMaintenance } from '@delendai/core/runtime';
 
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
@@ -546,6 +550,15 @@ export default definePlugin({
 								own: held.own,
 							};
 						},
+						checkoutRefusal: (input: {
+							readonly paths: readonly string[];
+							readonly ref: string;
+						}) =>
+							sharedCheckoutCheckpointRefusal({
+								root: ctx.workspace.root,
+								policy: developmentPolicy,
+								...input,
+							}),
 					}),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
@@ -746,7 +759,9 @@ export default definePlugin({
 					watch: true,
 					// Several servers on one workspace close slices once.
 					standDown: async () =>
-						currentHostMaintenance()?.gate().standDown(),
+						currentHostMaintenance(ctx.workspace.root)
+							?.gate()
+							.standDown(),
 				},
 			);
 			// Deliberately not awaited: registration must not block the

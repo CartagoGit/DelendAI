@@ -50,17 +50,15 @@ import type {
 	IPersistenceRequest,
 } from '../contracts/interfaces/persistence.interface';
 import { classifyCheckpointIntent } from './checkpoint-intent';
-import { resolvePersistenceRoute } from './persistence-route';
+import { NO_HANDOFF } from './wip-persistence.constant';
+import {
+	leftInSharedCheckout,
+	resolvePersistenceRoute,
+} from './persistence-route';
 
 import type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
 
 export type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
-
-const NO_HANDOFF: IIntegrationHandoffReport = {
-	attempted: false,
-	status: '',
-	reason: 'durability checkpoint; never handed to integration',
-};
 
 /**
  * Read the integration branch head. Deliberately NOT `HEAD`: the
@@ -221,6 +219,11 @@ export const createPolicyPersistence = (
 						slice,
 						generation,
 					});
+		const outside = options.checkoutRefusal?.({
+			paths: request.claimedPaths,
+			ref,
+		});
+		if (outside !== undefined) return leftInSharedCheckout(outside);
 		const result = await wip.createOrUpdateWipRef({
 			baseSha,
 			// The CLAIM, whole. See promise 2 in the file header.

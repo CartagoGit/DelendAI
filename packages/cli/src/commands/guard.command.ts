@@ -12,7 +12,11 @@ import { execFileSync, spawn } from 'node:child_process';
 import { openSync } from 'node:fs';
 import { dirname, join, resolve as resolvePath } from 'node:path';
 
-import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
+import {
+	briefWorkModel,
+	judgeGitOperation,
+	sharedCheckoutLooseEdits,
+} from '@delendai/core/cli';
 import {
 	readGit,
 	recordUnitCommit,
@@ -99,6 +103,9 @@ export const operationsForHook = (
 		readonly worktreeOf?: IGuardFacts['worktreeOf'];
 		readonly paths?: readonly string[] | undefined;
 		readonly docsDir?: string | undefined;
+		readonly sharedCheckout?:
+			| { readonly root: string; readonly paths: readonly string[] }
+			| undefined;
 	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit' || hook === 'commit-msg') {
@@ -113,6 +120,7 @@ export const operationsForHook = (
 				configuredAuthor: facts.configuredAuthor,
 				paths: facts.paths,
 				docsDir: facts.docsDir,
+				sharedCheckout: facts.sharedCheckout,
 			},
 		];
 	}
@@ -218,6 +226,7 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	sharedCheckout: () => sharedCheckoutLooseEdits(workspace),
 	leaseAgent: async (branch) =>
 		(await readLeaseOf(workspace, branch))?.owner.agent,
 	unitRefs: (policy, branch) => readUnitRefFacts(workspace, policy, branch),
@@ -434,7 +443,7 @@ export const checkoutWarning = (
 	return [
 		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
 		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
-		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then run \`delendai work rescue\`, which keeps them under a ref and restores the shared checkout, and take them into your own worktree from there (\`delendai work enter\`).`,
 		briefWorkModel(policy).land,
 	].join('\n');
 };
@@ -782,6 +791,7 @@ export const createGuardCommand = (
 							configuredAuthor: facts.configuredAuthor?.(),
 							paths: facts.stagedPaths?.(),
 							docsDir: await facts.docsDir?.(workspace),
+							sharedCheckout: facts.sharedCheckout?.(),
 						}
 					: {}),
 			},
