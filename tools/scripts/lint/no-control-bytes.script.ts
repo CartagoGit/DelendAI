@@ -73,10 +73,11 @@ export const scanForControlBytes = (
 	return { found, unreadable };
 };
 
-const main = (): number => {
-	const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+export const main = (
+	root: string = execFileSync('git', ['rev-parse', '--show-toplevel'], {
 		encoding: 'utf8',
-	}).trim();
+	}).trim(),
+): number => {
 	const files = execFileSync('git', ['ls-files'], {
 		cwd: root,
 		encoding: 'utf8',
