@@ -2,14 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
-last-correlation-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:22:09.095Z
+last-transition-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
+last-correlation-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
+last-transition-from: review
+last-transition-at: 2026-11-04T22:20:10.943Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
@@ -57,15 +57,17 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — A probe that did not exit is not an accepted run
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/lib/empty-root-probe.lib.ts`, `tools/scripts/lint/lib/empty-root-probe.lib.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A probe whose status is null (timeout or failed start) makes the check fail with the cause."
   - "A spec returns status null and expects a failure."
 - shipped-in: `c424cb36ad51`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
