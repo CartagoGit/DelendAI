@@ -195,7 +195,7 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 301fa9650deb is stale for this slice. `git log 301fa9650deb..develop -- <S1 files>` shows many post-shipped changes in listed files (e.g. d43290f9b, cccb59b3c, be1e796df), so acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ### S2 — Migration of existing configurations
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/plugins/preset-migration.ts`, `packages/core/tests/src/lib/plugins/preset-migration.spec.ts`, `packages/core/src/lib/contracts/constants/preset-migration.constant.ts`, `packages/core/src/lib/contracts/interfaces/preset-migration.interface.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/cli/run-cli.spec.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/doctor/checks/preset.check.ts`, `packages/cli/src/lib/doctor/checks/preset.check.spec.ts`, `packages/cli/src/lib/doctor/checks/index.ts`, `packages/cli/src/lib/doctor/runner.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
 - **Gate**: none
@@ -204,8 +204,10 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "a start-up migration is journalled and never edits a plugin map the user changed"
   - "doctor reports configs whose plugin map equals a retired preset and names the matching pack"
 - shipped-in: `5cabc0b16a93`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 5cabc0b16a93 is stale for this slice. `git log 5cabc0b16a93..develop -- <S2 files>` shows post-shipped changes touching listed files (e.g. 599ba2c48, cccb59b3c, 48f318425), so migration acceptance must be re-validated on current develop with fresh evidence.
 
 ### S3 — init default and docs
 - **Status**: review
