@@ -2,14 +2,14 @@
 id: x01003
 title: "A slice commit takes only what its own unit wrote"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 5675143e-62c4-4fdc-9dfe-eda33385c04b
-last-correlation-id: 5675143e-62c4-4fdc-9dfe-eda33385c04b
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T09:27:59.272Z
+last-transition-id: 95a028fd-bfb5-417d-b2c5-a95fd58bdbf6
+last-correlation-id: 95a028fd-bfb5-417d-b2c5-a95fd58bdbf6
+last-transition-from: review
+last-transition-at: 2026-11-04T20:36:27.673Z
 ---
 
 # x01003 — A slice commit takes only what its own unit wrote
@@ -46,7 +46,7 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
 - global_gate: none
 
 ### S1 — Nothing reaches a work ref from the shared checkout, which stays clean
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/shared-checkout-clean.ts`, `plugins/commit-policy/src/lib/tools/work-ref.tool.ts`, `packages/core/src/lib/work-units/unit-edit-fence.service.ts`, `packages/cli/src/lib/pre-edit-guard.service.ts`, `packages/cli/src/lib/init/init-claude-settings.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/cli/src/commands/guard.command.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/engine.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
@@ -58,8 +58,10 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
   - "commit-policy's `work_ref` checkpoint and materialize refuse from the shared checkout under every work-ref profile with `work checkpoint`'s message and move nothing; a spec covers it."
   - "`delendai guard pre-edit` blocks Edit and Write outside the agent's unit worktree with exit 2 and lets its own worktree through; `init` writes the hook for Claude Code projects and keeps the person's settings; specs cover both."
 - shipped-in: `ef203ed1fd27`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in ef203ed1fd27 is stale for this slice. `git log ef203ed1fd27..develop -- <S1 files>` shows post-shipped changes touching listed files (e.g. 767270991, 599ba2c48, 502cf5a86), so acceptance must be re-validated on current develop with fresh empirical evidence.
 
 ## acceptance
 
