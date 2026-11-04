@@ -36,3 +36,20 @@ describe('ownedRefRoots', () => {
 		]);
 	});
 });
+
+describe('ownedRootsOf', () => {
+	it('reads the namespaces from the policy, current first', () => {
+		const branches = resolveDevelopmentPolicy({
+			development: {
+				branches: {
+					namespacePrefix: '',
+					formerNamespacePrefixes: ['delendai'],
+				},
+			},
+		}).branches;
+		expect(ownedRootsOf(branches, 'retired', '*')).toEqual([
+			'refs/retired/*',
+			'refs/delendai/retired/*',
+		]);
+	});
+});
