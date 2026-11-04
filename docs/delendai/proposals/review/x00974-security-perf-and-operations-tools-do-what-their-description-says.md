@@ -57,7 +57,7 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice has no current-run empirical evidence attached for the accepted behavior in develop, and the shipped-in marker is from 6ce6a10a5e29. Please re-run and attach fresh proof for both criteria (flamegraph artifact path and bench description/behavior alignment) against current develop before re-submitting.
 
 ### S3 — logs, cache and database
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/cache/eviction-registry.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/tests/src/lib/cache/eviction-registry.spec.ts`, `plugins/cache/README.md`, `plugins/database/src/lib/contracts/interfaces/sqlite-binding.interface.ts`, `plugins/database/src/lib/contracts/interfaces/table-ref.interface.ts`, `plugins/database/src/lib/erd/render-erd-schemas.spec.ts`, `plugins/database/src/lib/erd/render-erd.ts`, `plugins/database/src/lib/introspect/fake-driver.ts`, `plugins/database/src/lib/introspect/introspect-engine.ts`, `plugins/database/src/lib/introspect/sqlite-driver-schemas.spec.ts`, `plugins/database/src/lib/introspect/sqlite-driver.ts`, `plugins/logs/src/generated/tool-outputs.ts`, `plugins/logs/src/lib/contracts/interfaces/log-store.interface.ts`, `plugins/logs/src/lib/services/log-search-incidents.ts`, `plugins/logs/src/lib/services/log-store.ts`, `plugins/logs/src/lib/services/log-tail-page.helper.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/src/lib/services/tail-and-incident-window.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -65,8 +65,10 @@ Joint audit a00095. D63/D97: security_audit is announced as running all scanners
   - "cache.maxAgeDays caps every olderThanDays rule (D57)."
   - "Tables carry their schema; two homonymous tables stay distinct (D58)."
 - shipped-in: `6ce6a10a5e29`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6ce6a10a5e29 is stale for this slice. `git log 6ce6a10a5e29..develop -- <S3 files>` shows later changes touching listed files (e.g. d43290f9b, 1921c42fa, 56655a472, e8666f5d4), so the acceptance claims must be re-validated on current develop with fresh reproducible evidence.
 
 ### S4 — github, triage and browser
 - **Status**: review
