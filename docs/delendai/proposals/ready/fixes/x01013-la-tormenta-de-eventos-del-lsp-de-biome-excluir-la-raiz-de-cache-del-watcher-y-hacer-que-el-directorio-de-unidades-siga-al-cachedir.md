@@ -2,17 +2,17 @@
 id: x01013
 title: "La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-03
 shipped-in:
   - "9740e9514"
   - "5e2124099"
-last-transition-id: 24f00b4f-dca1-4c8f-bc97-81ddf2225585
-last-correlation-id: 24f00b4f-dca1-4c8f-bc97-81ddf2225585
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T14:51:55.911Z
+last-transition-id: 5f52335c-801d-4ea8-a5b8-98c9ebda0d03
+last-correlation-id: 5f52335c-801d-4ea8-a5b8-98c9ebda0d03
+last-transition-from: review
+last-transition-at: 2026-11-04T19:55:14.992Z
 ---
 
 # x01013 — La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir
@@ -54,7 +54,7 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 9740e9514 is stale: .vscode/settings.json changed afterward (e.g. 2261aa0a1). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and JSONC-parse evidence.
 
 ### S2 — El directorio de unidades sigue al `cacheDir` configurado
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/units-directory.constant.ts`, `packages/core/src/lib/work-units/units-directory.service.ts`, `packages/core/src/lib/work-units/development-policy.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/tests/src/lib/work-units/units-directory.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -64,8 +64,10 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
   - "Un `cacheDir` absoluto coloca las unidades fuera del checkout, sin dejar un directorio suelto en la rama de integración."
   - "El typecheck del paquete core pasa y los tests del motor de trabajo pasan."
 - shipped-in: `5e2124099`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: minimax-m3.1-flash
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with explicit empirical evidence bundle (typecheck + work-unit tests + absolute cacheDir scenario) in the review payload; current round lacks reviewer-verifiable run references.
 
 ## acceptance
 
