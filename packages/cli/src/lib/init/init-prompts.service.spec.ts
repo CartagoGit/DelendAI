@@ -51,7 +51,7 @@ describe('collectInitAnswers in a terminal', () => {
 	it('takes every default when the person presses enter', async () => {
 		const result = await collectInitAnswers('/ws');
 		expect(result).toMatchObject({
-			preset: 'dogfood',
+			preset: 'solo',
 			extraPlugins: [],
 			excludedPlugins: [],
 			hostInstructions: 'append',
