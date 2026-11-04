@@ -5,9 +5,12 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, rm, rmdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
+import type { IWrittenRecord } from '../../contracts/interfaces/workspace-migration.interface';
 import type { ITxContext } from './migration-transaction';
 import { writeFileAtomic } from '../../shared/atomic-write';
 import { recordPath, recordsDir } from '../../shared/delendai-records';
+
+export type { IWrittenRecord };
 
 export type IBackup =
 	| {
@@ -72,12 +75,53 @@ export const createWorkspaceBackup = async (
 	return snapshot;
 };
 
+/**
+ * Record what now exists in scope that the backup did not hold: the
+ * files and directories the transaction's apply created. Taken right
+ * after the apply, before anything else can be attributed to it.
+ */
+export const recordWrittenSince = async (
+	workspaceRoot: string,
+	backups: readonly IBackup[],
+	excludes: readonly string[] = backupScopeExcludes(workspaceRoot),
+): Promise<IWrittenRecord> => {
+	const known = new Set(
+		backups.filter((b) => b.kind === 'file').map((b) => b.path),
+	);
+	const knownDirs = new Set(
+		backups.filter((b) => b.kind === 'directory').map((b) => b.path),
+	);
+	for (const backup of backups) {
+		if (backup.kind === 'file') {
+			for (const dir of ancestorDirectories(backup.path)) {
+				knownDirs.add(dir);
+			}
+		}
+	}
+	const files: Record<string, string> = {};
+	for (const file of await scanFiles(workspaceRoot, '', excludes)) {
+		if (known.has(file)) continue;
+		files[file] = await hashFileAt(join(workspaceRoot, file));
+	}
+	const directories = (
+		await scanDirectories(workspaceRoot, '', excludes)
+	).filter((dir) => !knownDirs.has(dir));
+	return { files, directories };
+};
+
 export const rollback = async (
 	backups: readonly IBackup[],
 	ctx: ITxContext,
 	_reason: string,
 	/** The scope the backup was taken with; the default backup's by default. */
 	excludes: readonly string[] = backupScopeExcludes(ctx.workspaceRoot),
+	/**
+	 * What the transaction created. A file the backup does not hold is
+	 * deleted only when it is listed here with the bytes recorded; with
+	 * no record nothing is deleted, because a rollback that cannot prove
+	 * a file is its own leaves it for whoever made it.
+	 */
+	written?: IWrittenRecord,
 ): Promise<IRollbackReport> => {
 	const restored: string[] = [];
 	const removed: string[] = [];
@@ -98,7 +142,16 @@ export const rollback = async (
 
 	for (const current of await scanFiles(ctx.workspaceRoot, '', excludes)) {
 		if (expectedFiles.has(current)) continue;
+		const recorded = written?.files[current];
 		try {
+			if (
+				recorded === undefined ||
+				recorded !==
+					(await hashFileAt(join(ctx.workspaceRoot, current)))
+			) {
+				skipped.push(current);
+				continue;
+			}
 			await rm(join(ctx.workspaceRoot, current), { force: false });
 			removed.push(current);
 		} catch (error) {
@@ -134,6 +187,10 @@ export const rollback = async (
 	const dirs = await scanDirectories(ctx.workspaceRoot, '', excludes);
 	for (const dir of [...dirs].sort((a, b) => b.length - a.length)) {
 		if (expectedDirs.has(dir)) continue;
+		if (written?.directories.includes(dir) !== true) {
+			skipped.push(dir);
+			continue;
+		}
 		try {
 			await rmdir(join(ctx.workspaceRoot, dir));
 			removed.push(dir);

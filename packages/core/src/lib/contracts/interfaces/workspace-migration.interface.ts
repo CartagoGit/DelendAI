@@ -130,3 +130,14 @@ export interface IResidualHit {
 	/** Why it was classified this way, so a human can disagree. */
 	readonly reason: string;
 }
+
+/**
+ * What the transaction itself created: a file with the hash it had when
+ * the transaction wrote it, and the directories it made. A rollback
+ * deletes only these, and a file whose bytes have changed since is not
+ * proven to be the transaction's any more.
+ */
+export interface IWrittenRecord {
+	readonly files: Readonly<Record<string, string>>;
+	readonly directories: readonly string[];
+}
