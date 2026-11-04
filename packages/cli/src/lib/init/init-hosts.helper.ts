@@ -25,7 +25,8 @@ const INIT_INSTRUCTED_HOSTS: readonly string[] = [
 
 /** The bootstrap part in effect for a host, when it is not the repo-level rules. */
 const APPENDIX_OF_HOST: Readonly<Record<string, string>> = {
-	copilot: '- Bootstrap §8.1 (Copilot close-marker contract) is in effect.',
+	copilot:
+		'- Bootstrap §8.1 (Copilot close-marker contract) is in effect. Save a fact, rule or feedback about this project in `/memories/repo/`, never in the user scope `/memories/`, which every workspace reads; the user scope holds only what is true of the person in every project.',
 	claude: '- Bootstrap §8.2 (keep the main thread cheap) is in effect. Brief subagents with the task and the one fact they cannot find; the prompt cache lasts about an hour, so a large thread awaiting long work takes a turn before then, and one conversation compacts rather than restarting.',
 };
 const REPO_LEVEL_APPENDIX = '- Bootstrap §7 (repo-level rules) is in effect.';
