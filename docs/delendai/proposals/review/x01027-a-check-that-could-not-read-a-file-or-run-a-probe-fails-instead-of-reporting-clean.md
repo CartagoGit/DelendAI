@@ -2,14 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 50c80f71-1bc8-4881-8bba-9bfebc595ddb
-last-correlation-id: 50c80f71-1bc8-4881-8bba-9bfebc595ddb
-last-transition-from: ready
-last-transition-at: 2026-11-04T11:21:25.382Z
+last-transition-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
+last-correlation-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T11:22:09.095Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
@@ -31,28 +31,37 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — An unreadable file fails the control-byte lint
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-control-bytes.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A tracked source file that cannot be read makes the lint fail and names the file."
   - "A spec makes one file unreadable and expects exit 1."
+- shipped-in: `4079bdb2efdd`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A failed secrets listing is reported unknown, not empty
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/tests/src/lib/secrets/real-deps.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A git listing that fails makes the scan report unknown or failed, never zero files."
   - "A spec fails the listing and expects the unknown state."
+- shipped-in: `4079bdb2efdd`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — A probe that did not exit is not an accepted run
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/lib/empty-root-probe.lib.ts`, `tools/scripts/lint/lib/empty-root-probe.lib.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A probe whose status is null (timeout or failed start) makes the check fail with the cause."
   - "A spec returns status null and expects a failure."
+- shipped-in: `c424cb36ad51`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
