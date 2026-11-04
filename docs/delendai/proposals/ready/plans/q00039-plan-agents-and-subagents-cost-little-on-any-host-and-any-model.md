@@ -27,6 +27,8 @@ Asked by the owner on 2026-11-03, after a day of measured orchestration: delenda
 
 What exists already: a managed, lazy tool surface; compact tools; the bootstrap at 21.8 KB under a gate; host appendices per host; task briefings at entry (f00799 S1); skills that run apart on Claude Code (S4); the Claude Code meter (S5); the proof queue (x01006); checks scoped to the change (q00038). What is missing is the host's cost profile: the catalogue describes where each host keeps its agents, skills and instructions, and nothing about how it runs subagents, how long its cache lives, how it compacts or where its usage can be read, so delendai cannot advise on any host but Claude Code.
 
+External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 8. Claim: cost is not measured per outcome. Not verified in code beyond S2/S3 here, which measure tokens per session, not per accepted unit.
+
 ## non-goals
 
 - Choosing a provider's prices for the user, or spending without consent: Batuta stays advisory unless the project allows it.
@@ -98,6 +100,13 @@ What exists already: a managed, lazy tool surface; compact tools; the bootstrap 
 - **Gate**: none
 - acceptance:
   - "A second prove, deliver or publish of a unit whose tip is already waiting for the slot joins that wait and receives its answer instead of queueing a second proof; a spec covers two callers on one tip, and two tips of one unit, where only the newer one is proved."
+
+### S10 — Tokens per accepted unit
+- **Status**: pending
+- **Files**: `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`
+- **Gate**: type
+- acceptance:
+  - "The KPI tokens per accepted unit is reported per host and model, counting retries, discarded subagent work and review; a spec shows a unit with one retry and one discarded subagent counting all three."
 
 ## acceptance
 

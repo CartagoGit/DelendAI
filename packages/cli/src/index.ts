@@ -22,7 +22,7 @@ import {
 	describeStaleBuild,
 	staleBuildOf,
 } from './lib/stale-build.service';
-import { adoptionReportLines } from '@delendai/core/cli';
+import { adoptionReportLines, pendingCacheExclude } from '@delendai/core/cli';
 import {
 	asksForHelp,
 	renderCommandHelp,
@@ -382,6 +382,11 @@ export const runEntry = async (
 		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
 			report(`[delendai] ${line}`);
 		}
+		// The editor settings are the person's to change: say what is
+		// missing and the command that adds it.
+		const pendingExclude = await pendingCacheExclude(workspaceRoot);
+		if (pendingExclude !== undefined)
+			report(`[delendai] ${pendingExclude}`);
 		// What the work-ref model promises, and whether it is holding.
 		//
 		// The checks existed, in this repository's toolbox, reachable as
