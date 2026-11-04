@@ -88,6 +88,11 @@ export type IFetchLike = (
 		readonly method?: string;
 		readonly headers?: Readonly<Record<string, string>>;
 		readonly body?: string;
+		/**
+		 * The address that passed the address policy: the connection goes
+		 * there, never to a second answer of the resolver.
+		 */
+		readonly address?: string;
 	},
 ) => Promise<{
 	readonly ok: boolean;
