@@ -14,7 +14,7 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitGuardVerdict } from '../contracts/interfaces/git-guard.interface';
-import { shortName } from './git-guard-namespaces';
+import { ownedWorkRefShapeOf } from './owned-work-ref-parser';
 
 export const refuseLiveUnitDeletion = (
 	policy: IResolvedDevelopmentPolicy,
@@ -23,8 +23,8 @@ export const refuseLiveUnitDeletion = (
 	if (operation.worktree === undefined) return undefined;
 	if (!operation.ref.startsWith('refs/heads/')) return undefined;
 	const branch = operation.ref.slice('refs/heads/'.length);
-	const work = shortName(policy.branches.workRefPrefix);
-	if (work.length === 0 || !branch.startsWith(work)) return undefined;
+	if (ownedWorkRefShapeOf(policy.branches, branch) === undefined)
+		return undefined;
 	return {
 		refused: true,
 		reason: `\`${branch}\` is a unit a worktree is working on (${operation.worktree}); deleting its branch leaves that worktree on nothing.`,

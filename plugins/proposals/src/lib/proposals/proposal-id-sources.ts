@@ -73,7 +73,13 @@ export const worktreePathsFrom = (porcelain: string): readonly string[] =>
 		.map((line) => line.slice('worktree '.length).trim())
 		.filter((path) => path !== '');
 
-/** Where an id is claimed on the remote: one ref per id. */
+/**
+ * Where an id is claimed on the remote: one ref per id. Fixed on purpose,
+ * not taken from `namespacePrefix`: the claim is a compare-and-swap on ONE
+ * ref, and two namespaces (a project mid-way through renaming its own)
+ * would let two allocators take the same id (f00808). It is a hidden ref,
+ * never a branch, so it names nothing a person reads.
+ */
 const RESERVATION_NAMESPACE = 'refs/delendai/ids/';
 
 const RESERVATION_REF = /refs\/delendai\/ids\/([a-z])(\d+)\s*$/u;
