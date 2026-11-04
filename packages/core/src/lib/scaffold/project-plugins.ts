@@ -5,6 +5,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
+import { planDryRun } from '../dry-run/enforce';
 import { writeFileAtomic } from '../shared/atomic-write';
 import { toKebabCase } from '../shared/string-normalize';
 import { toolError, toolJson } from '../shared/tool-response';
@@ -62,6 +63,18 @@ const DIAGNOSTIC_SCHEMA = z.object({
 });
 
 export const PROJECT_PLUGINS_OUTPUT_SCHEMA = z.object({
+	dryRun: z.literal(true).optional(),
+	wouldChange: z
+		.array(
+			z.object({
+				kind: z.string(),
+				path: z.string(),
+				summary: z.string(),
+			}),
+		)
+		.readonly()
+		.optional(),
+	risk: z.string().optional(),
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
@@ -479,6 +492,23 @@ export const runProjectPluginCreate = async (
 		registration,
 		diagnostics: afterDiagnostics,
 		autoFixed,
+		...(dryRun
+			? planDryRun({
+					wouldChange: [
+						...fileResult.planned.map((file) => ({
+							kind: 'create' as const,
+							path: file.path,
+							summary: `scaffold ${file.path} for plugin ${pluginId}`,
+						})),
+						{
+							kind: 'patch' as const,
+							path: registration.configFile,
+							summary: `register plugins.${pluginId}.path (${registration.action})`,
+						},
+					],
+					risk: 'low',
+				})
+			: {}),
 		nextSteps: `Restart the MCP host to load plugins.${pluginId}.path; the generated plugin exposes ${toolName}.`,
 	};
 };
