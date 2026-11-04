@@ -6,6 +6,12 @@
  * command is the only place that touches the file system.
  */
 
+import {
+	CLAUDE_HOST_ID,
+	CLAUDE_SETTINGS_RELPATH,
+} from '../../contracts/constants/pre-edit-guard.constant';
+import { claudeSettingsWithHook } from './init-claude-settings';
+
 import type {
 	IHostInstructionTarget,
 	IRenderedBundle,
@@ -353,6 +359,16 @@ export const renderVscodeSettings = (): IRenderedFile => ({
 	content: `${JSON.stringify(JSONC_ASSOCIATION, null, '\t')}\n`,
 });
 
+/**
+ * Renders `.claude/settings.json` with the pre-edit hook, for a project
+ * whose hosts include Claude Code. The writer merges it into an existing
+ * file, keeping every key and comment of the person's own.
+ */
+export const renderClaudeSettings = (): IRenderedFile => ({
+	relPath: CLAUDE_SETTINGS_RELPATH,
+	content: `${JSON.stringify(claudeSettingsWithHook(), null, '\t')}\n`,
+});
+
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
 	serverName = DEFAULT_DELENDAI_SERVER_NAME,
@@ -501,6 +517,10 @@ export const renderInitBundle = async (
 			answers.serverName,
 		),
 	];
+	const hostIds = (
+		await initHosts(answers.workspaceRoot, { hosts: answers.hosts })
+	).map((host) => host.id);
+	if (hostIds.includes(CLAUDE_HOST_ID)) files.push(renderClaudeSettings());
 	if (answers.generateAgentMd) {
 		files.push(
 			...(await renderAgentFiles(answers.workspaceRoot, {

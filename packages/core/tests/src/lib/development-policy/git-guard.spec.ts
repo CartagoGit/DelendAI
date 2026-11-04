@@ -433,6 +433,58 @@ describe('worktree-pr', () => {
 	});
 });
 
+describe('no commit while the shared checkout holds loose edits (x01003)', () => {
+	const policyOf = (profile: string) =>
+		resolveDevelopmentPolicy({
+			development: { profile, branches: { namespacePrefix: 'delendai' } },
+		});
+	const work = 'delendai/wip/claude-opus-5-5/implement/x01003-all-g1/clean';
+	const loose = { root: '/repo', paths: ['stray.ts'] };
+
+	it("refuses an agent's commit in its own worktree, naming work rescue", () => {
+		const verdict = judgeGitOperation(
+			policyOf('shared-checkout-pr'),
+			{ ...commitInWorktree(work), sharedCheckout: loose },
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain(
+			'/repo holds 1 loose edit(s): stray.ts',
+		);
+		expect(verdict.remedy).toContain('delendai work rescue');
+	});
+
+	it('allows it once the shared checkout is clean', () => {
+		expect(
+			judgeGitOperation(
+				policyOf('shared-checkout-pr'),
+				{
+					...commitInWorktree(work),
+					sharedCheckout: { root: '/repo', paths: [] },
+				},
+				AGENT,
+			).refused,
+		).toBe(false);
+	});
+
+	it('leaves a profile whose main checkout is not pinned alone, and a person', () => {
+		expect(
+			judgeGitOperation(
+				policyOf('worktree-pr'),
+				{ ...commitInWorktree(work), sharedCheckout: loose },
+				AGENT,
+			).refused,
+		).toBe(false);
+		expect(
+			judgeGitOperation(
+				policyOf('shared-checkout-pr'),
+				{ ...commitInWorktree(work), sharedCheckout: loose },
+				PERSON,
+			).refused,
+		).toBe(false);
+	});
+});
+
 describe('the shared checkout may not become a work branch (x00553)', () => {
 	const policy = resolveDevelopmentPolicy({
 		development: {
@@ -447,7 +499,8 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 		expect(verdict.refused).toBe(true);
 		expect(verdict.reason).toContain(work);
 		expect(verdict.reason).toContain('`develop`');
-		expect(verdict.remedy).toContain('delendai work checkpoint');
+		expect(verdict.remedy).toContain('delendai work rescue');
+		expect(verdict.remedy).not.toContain('delendai work checkpoint');
 	});
 
 	it('allows the same commit in the agent own worktree', () => {
@@ -594,7 +647,7 @@ describe('delendai governs agents; a person uses git freely (x00626)', () => {
 			// worktree profile as much as for a shared checkout.
 			expect(verdict.reason).toContain('refs/stash');
 			expect(verdict.reason).toContain('CLAUDECODE');
-			expect(verdict.remedy).toContain('work ref');
+			expect(verdict.remedy).toContain("unit's worktree");
 		}
 	});
 

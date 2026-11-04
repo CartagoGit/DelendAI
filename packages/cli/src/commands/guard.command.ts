@@ -12,7 +12,11 @@ import { execFileSync, spawn } from 'node:child_process';
 import { openSync } from 'node:fs';
 import { dirname, join, resolve as resolvePath } from 'node:path';
 
-import { briefWorkModel, judgeGitOperation } from '@delendai/core/cli';
+import {
+	briefWorkModel,
+	judgeGitOperation,
+	sharedCheckoutLooseEdits,
+} from '@delendai/core/cli';
 import {
 	readGit,
 	recordUnitCommit,
@@ -57,6 +61,7 @@ import {
 } from '../lib/guard-hooks-autoinstall.service';
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
+import { judgePreEdit } from '../lib/pre-edit-guard.service';
 import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
 import {
 	landedAsFastForward,
@@ -99,6 +104,9 @@ export const operationsForHook = (
 		readonly worktreeOf?: IGuardFacts['worktreeOf'];
 		readonly paths?: readonly string[] | undefined;
 		readonly docsDir?: string | undefined;
+		readonly sharedCheckout?:
+			| { readonly root: string; readonly paths: readonly string[] }
+			| undefined;
 	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit' || hook === 'commit-msg') {
@@ -113,6 +121,7 @@ export const operationsForHook = (
 				configuredAuthor: facts.configuredAuthor,
 				paths: facts.paths,
 				docsDir: facts.docsDir,
+				sharedCheckout: facts.sharedCheckout,
 			},
 		];
 	}
@@ -218,6 +227,7 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
 	worktreeAgent: () => worktreeAgent(workspace),
+	sharedCheckout: () => sharedCheckoutLooseEdits(workspace),
 	leaseAgent: async (branch) =>
 		(await readLeaseOf(workspace, branch))?.owner.agent,
 	unitRefs: (policy, branch) => readUnitRefFacts(workspace, policy, branch),
@@ -434,7 +444,7 @@ export const checkoutWarning = (
 	return [
 		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
 		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
-		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then run \`delendai work rescue\`, which keeps them under a ref and restores the shared checkout, and take them into your own worktree from there (\`delendai work enter\`).`,
 		briefWorkModel(policy).land,
 	].join('\n');
 };
@@ -501,6 +511,12 @@ const MANAGEMENT = new Map<
 	) => ICliCommandResult | Promise<ICliCommandResult>
 >(
 	Object.entries({
+		// A host's pre-edit hook, not a git hook: the tool call is on stdin.
+		'pre-edit': async (_args, ctx) =>
+			judgePreEdit({
+				stdin: await readStream(process.stdin),
+				workspace: ctx.globals.workspace,
+			}),
 		install: (args, ctx) => {
 			const runner = flag(args, 'runner') ?? process.execPath;
 			const driverFor = () =>
@@ -586,7 +602,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-edit|pre-commit|commit-msg|reference-transaction|pre-push|post-checkout|post-merge|post-commit|post-index-change> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		// A Map, not an object indexed by user input: `delendai guard
@@ -782,6 +798,7 @@ export const createGuardCommand = (
 							configuredAuthor: facts.configuredAuthor?.(),
 							paths: facts.stagedPaths?.(),
 							docsDir: await facts.docsDir?.(workspace),
+							sharedCheckout: facts.sharedCheckout?.(),
 						}
 					: {}),
 			},

@@ -21,9 +21,10 @@
  * - Every hop's host is resolved and each address it answers is checked
  *   (`address-policy.ts`): an allow-listed name that resolves to a
  *   private, loopback or link-local address is refused unless the caller
- *   opted in. The connection itself re-resolves the name, so a resolver
- *   that answers differently within that instant is outside this check
- *   (see the README).
+ *   opted in. The connection then goes to the validated address itself
+ *   (`pinned-connection.ts`), with the requested host as `Host` and TLS
+ *   server name, so a resolver that answers a public address to the check
+ *   and a private one afterwards (DNS rebinding) is never asked again.
  * - Response size is capped at `maxBytes` (default 50 KiB) **while
  *   streaming** (x00097 S4, audit a00052 #14): the cap counts real octets,
  *   the reader is cancelled the moment it is crossed (memory stays
@@ -39,6 +40,7 @@ import type {
 	IWebFetchResult,
 } from '../contracts/interfaces/fetch.interface';
 import { refusedAddress, resolveWithDns } from './address-policy';
+import { pinnedFetch } from './pinned-connection';
 import { readBodyCapped } from './read-body-capped';
 
 export type {
@@ -208,9 +210,8 @@ export const webFetch = async (
 	// The resolver pairs with the fetcher: the network's fetch is checked
 	// through the system resolver; an injected fetcher answers hosts that
 	// need not exist, so it is checked only through a resolver it brings.
-	const resolve =
-		resolveHost ??
-		(fetchImpl === (NETWORK_FETCH as unknown) ? resolveWithDns : undefined);
+	const network = fetchImpl === (NETWORK_FETCH as unknown);
+	const resolve = resolveHost ?? (network ? resolveWithDns : undefined);
 	const { maxBytes, timeoutMs, maxRedirects } = sanitizeBounds(options);
 
 	let currentUrl = parseUrl(options.url);
@@ -234,6 +235,8 @@ export const webFetch = async (
 			};
 		}
 
+		// The address the connection goes to: one the policy passed.
+		let address: string | undefined;
 		if (resolve !== undefined) {
 			let addresses: readonly string[];
 			try {
@@ -257,15 +260,21 @@ export const webFetch = async (
 					detail: `${currentUrl.hostname} resolves to ${refused}`,
 				};
 			}
+			address = addresses[0];
 		}
+		// The network's own fetch would resolve the name again: it is
+		// replaced by a connection to the validated address.
+		const send =
+			network && address !== undefined ? pinnedFetch(address) : fetchImpl;
 
 		const controller = new AbortController();
 		const timer = setTimeout(() => controller.abort(), timeoutMs);
 		let res: Awaited<ReturnType<IFetchLike>>;
 		try {
-			res = await fetchImpl(currentUrl.toString(), {
+			res = await send(currentUrl.toString(), {
 				signal: controller.signal,
 				redirect: 'manual',
+				...(address === undefined ? {} : { address }),
 				...(options.method !== undefined
 					? { method: options.method }
 					: {}),

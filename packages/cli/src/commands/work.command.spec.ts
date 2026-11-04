@@ -104,7 +104,27 @@ describe('work deliver', () => {
 		);
 		git('add', '-A');
 		git('commit', '-q', '-m', 'base');
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		// The unit's commit, made where a unit commits: on its own branch
+		// in a worktree of its own. The shared checkout stays clean.
+		const unit = join(root, '.cache', 'delendai', 'unit');
+		git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe',
+			unit,
+		);
+		writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
+		execFileSync('git', ['add', 'a.ts'], { cwd: unit, stdio: 'ignore' });
+		execFileSync('git', ['commit', '-q', '-m', 'feat: a'], {
+			cwd: unit,
+			stdio: 'ignore',
+		});
+		execFileSync('git', ['worktree', 'remove', '--force', unit], {
+			cwd: root,
+			stdio: 'ignore',
+		});
 		return root;
 	};
 
@@ -124,10 +144,6 @@ describe('work deliver', () => {
 			'--agent=claude-opus-5',
 			'--topic=probe',
 		];
-		await command.run(
-			['checkpoint', ...unit, '--paths=a.ts', '--message=feat: a'],
-			ctx,
-		);
 		const result = await command.run(['deliver', ...unit], ctx);
 		expect(result.error).toBe('held back');
 		expect(asked).toEqual([

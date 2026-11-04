@@ -16,6 +16,8 @@
 
 import { shortName } from './git-guard-namespaces';
 import { persistenceRouteKind } from './resolve';
+import { RESCUE_COMMAND } from '../contracts/constants/work-rescue.constant';
+import { sharedCheckoutStaysClean } from './shared-checkout-clean';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type {
@@ -36,7 +38,7 @@ export type {
 const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
 		return policy.persistence.usesWipRefs
-			? 'Edit in your own worktree: `delendai work enter` makes it for each unit of work, and it is yours alone. Git lets you switch branches in the checkout you were given, but only the work ref `work enter` makes can be published. Commit there with git: `delendai work checkpoint` is for a checkout that is not on the work ref, and inside the worktree it is refused.'
+			? 'Edit in your own worktree: `delendai work enter` makes it for each unit of work, and it is yours alone. Git lets you switch branches in the checkout you were given, but only the work ref `work enter` makes can be published. Commit there with git: a work ref takes files from its own worktree and from no other checkout.'
 			: 'Edit in your own worktree; it is yours alone.';
 	if (
 		policy.workspace.pinnedCheckout &&
@@ -85,7 +87,7 @@ const START_STEPS: Readonly<
 	'wip-ref': (policy) =>
 		(policy.workspace.strategy === 'agent-worktree'
 			? `Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter): it creates your worktree and its branch, ${shortName(policy.branches.workRefTemplate)}, in one step. Edit and commit there with ordinary git, passing it as \`checkout\` to delendai's tools; a worktree or branch made any other way (\`agent_worktree\`, \`git worktree add\`, a hand-named branch) cannot be published. Never commit to ${policy.branches.integration}. In a script, take the path with \`W=$(delendai work enter … --print-path) || exit 1\`: a refused entry prints no path and exits non-zero, and a script that carries on runs in the shared checkout.`
-			: `Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter) and edit and commit in the worktree it prints, passing it as \`checkout\` to delendai's tools; from the shared checkout, \`delendai work checkpoint --proposal=<id> --slice=<slice> --paths=<a,b> --message=<text>\` writes the same ref without moving HEAD. Your work ref is ${shortName(policy.branches.workRefTemplate)}; never commit to ${policy.branches.integration}. In a script, take the path with \`W=$(delendai work enter … --print-path) || exit 1\`: a refused entry prints no path and exits non-zero, and a script that carries on runs in the shared checkout.`) +
+			: `Start each unit of work with \`delendai work enter --proposal=<id> --slice=<slice> --agent=<you>\` (or the \`work\` tool, action enter) and edit and commit in the worktree it prints, passing it as \`checkout\` to delendai's tools. Your work ref is ${shortName(policy.branches.workRefTemplate)}; never commit to ${policy.branches.integration}.${sharedCheckoutStaysClean(policy) ? ` Never edit the shared checkout: no work command and no commit runs while it holds loose edits, and \`${RESCUE_COMMAND}\` keeps them under a ref and restores it.` : ''} In a script, take the path with \`W=$(delendai work enter … --print-path) || exit 1\`: a refused entry prints no path and exits non-zero, and a script that carries on runs in the shared checkout.`) +
 		rosterClause(policy),
 	'direct-commit': (policy) =>
 		`Commit your work directly to ${policy.branches.integration}; there is no unit of work to enter.`,
