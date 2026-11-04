@@ -746,6 +746,11 @@ export {
  * `work publish` applies the one rule instead of restating it.
  */
 export { publicationUnitFor } from '../lib/development-policy/publication-unit';
+export {
+	ownedNamespaces,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '../lib/development-policy/owned-ref-prefixes';
 /**
  * A work model an agent has to infer is one it will infer wrong: two
  * projects on different profiles are identical on disk. The declaration

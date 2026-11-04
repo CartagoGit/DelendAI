@@ -80,6 +80,9 @@ const applyOverrides = (
 		...identityOverride(input.identity),
 		branches: {
 			namespacePrefix,
+			formerNamespacePrefixes: (
+				input.branches?.formerNamespacePrefixes ?? []
+			).filter((former) => former !== namespacePrefix),
 			integration:
 				input.branches?.integration ?? base.branches.integration,
 			release: releaseBranchOf(input.branches, base.branches),
