@@ -2,7 +2,7 @@
 id: f00796
 title: "Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: workflow
 date: 2026-10-29
