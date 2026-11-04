@@ -5,8 +5,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
+
 import {
-	FORWARD_SYNC_REF_PREFIX,
+	forwardSyncRefPrefixes,
+	isForwardSyncRef,
 	forwardSyncBody,
 	forwardSyncExplanation,
 	forwardSyncRef,
@@ -61,18 +64,53 @@ describe('forwardSyncVerdict', () => {
 	});
 });
 
+const POLICY_BRANCHES = resolveDevelopmentPolicy({
+	development: { branches: { namespacePrefix: 'delendai' } },
+}).branches;
+
 describe('forwardSyncRef', () => {
 	it('lives in the namespace the forge lets a workflow create refs in', () => {
-		expect(forwardSyncRef(RELEASE_SHA)).toBe(
-			`${FORWARD_SYNC_REF_PREFIX}c7eda197a-g1/carries-the-release-back`,
+		expect(forwardSyncRef(RELEASE_SHA, POLICY_BRANCHES)).toBe(
+			'delendai/pr/delendai/sync/forward-c7eda197a-g1/carries-the-release-back',
 		);
-		expect(FORWARD_SYNC_REF_PREFIX.startsWith('delendai/pr/')).toBe(true);
+	});
+
+	it('takes the prefix from the policy, and recognises both in a transition', () => {
+		const moved = resolveDevelopmentPolicy({
+			development: {
+				branches: {
+					namespacePrefix: '',
+					formerNamespacePrefixes: ['delendai'],
+				},
+			},
+		}).branches;
+		expect(
+			forwardSyncRef(RELEASE_SHA, moved).startsWith('pr/delendai/sync/'),
+		).toBe(true);
+		expect(forwardSyncRefPrefixes(moved)).toEqual([
+			'pr/delendai/sync/forward-',
+			'delendai/pr/delendai/sync/forward-',
+		]);
+		expect(
+			isForwardSyncRef(
+				'delendai/pr/delendai/sync/forward-abc-g1/x',
+				moved,
+			),
+		).toBe(true);
+		expect(
+			isForwardSyncRef('pr/delendai/sync/forward-abc-g1/x', moved),
+		).toBe(true);
+		expect(isForwardSyncRef('pr/agent/implement/x-S1-g1/y', moved)).toBe(
+			false,
+		);
 	});
 
 	it('has the agent, kind, unit and topic every publication has', () => {
 		// #913: the flat `delendai/pr/forward-sync-<sha>` failed the doctor's
 		// publications-canonical invariant while it was open.
-		const tail = forwardSyncRef(RELEASE_SHA).slice('delendai/pr/'.length);
+		const tail = forwardSyncRef(RELEASE_SHA, POLICY_BRANCHES).slice(
+			'delendai/pr/'.length,
+		);
 		expect(tail.split('/')).toHaveLength(4);
 		expect(tail.split('/')[2]).toMatch(/-g\d+$/u);
 	});
