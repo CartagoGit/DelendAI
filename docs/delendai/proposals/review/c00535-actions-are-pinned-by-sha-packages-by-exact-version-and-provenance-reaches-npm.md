@@ -43,15 +43,17 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 51fbac099a82 is stale: S1 workflow/lint files changed afterward (e.g. 434c4c8c9, 07672aeb0, a631c551c, 5b0b2b860). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ### S2 — Exact external servers and npm provenance
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/external-mcps/src/lib/options-schema.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/skills/external-mcps/SKILL.md`, `tools/scripts/release/publish-tarballs.ts`, `tools/scripts/release/release.script.ts`
 - **Gate**: type
 - acceptance:
   - "A server entry with a version runs `pkg@<version>` exactly (EXT-02)."
   - "--provenance reaches npm publish when requested; a spec on the argv proves it (ORCH-04)."
 - shipped-in: `6a9105675c79`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 6a9105675c79 is stale: S2 files changed afterward (e.g. b731cdf73, aebe3b62e). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + exact-version/provenance evidence.
 
 ### S3 — One zod range
 - **Status**: review
