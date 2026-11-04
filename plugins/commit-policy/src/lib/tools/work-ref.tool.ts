@@ -7,6 +7,7 @@
  * never exposes a branch, checkout or generic git command escape hatch.
  */
 
+import { sharedCheckoutCheckpointRefusal } from '@delendai/core/cli';
 import { validateScopePaths } from '@delendai/core/plugin';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -84,6 +85,23 @@ export const runCommitPolicyWorkRef = async (
 				'WORK_REF_POLICY_REQUIRED: no resolved development policy is available',
 				'Bind the resolved development policy before retrying.',
 			);
+		// Every unit has its own worktree, and its work reaches its ref by
+		// commit there: checkpoint and materialize move files between this
+		// checkout and a ref, the route an MCP-only host would take round
+		// `work checkpoint`'s refusal (x01003). Recovery moves no file.
+		if (input.action !== 'recover') {
+			const outside = sharedCheckoutCheckpointRefusal({
+				root: engine.context.root,
+				policy,
+				paths: validPaths,
+				ref: policyResult.ref,
+			});
+			if (outside !== undefined)
+				return refusal(
+					`WORK_REF_SHARED_CHECKOUT: ${outside.reason}`,
+					outside.remedy,
+				);
+		}
 		const anchor = anchorRefusal(
 			await observeAnchor(engine.context.run, anchorFromPolicy(policy)),
 		);
@@ -268,7 +286,7 @@ export const buildWorkRefToolRegistration = (
 ): IToolRegistration => ({
 	id: 'commit_policy_work_ref',
 	summary:
-		'Checkpoint exact claimed files to a policy-derived non-head WIP ref or materialize them back without moving HEAD or the real index.',
+		'Recover a verified orphan checkpoint onto its policy-derived work ref; checkpoint and materialize refuse wherever units have worktrees.',
 	tags: ['commit-policy', 'wip-ref', 'write'],
 	effects: ['write', 'destructive'],
 	writeRoot: 'repository',
@@ -278,7 +296,7 @@ export const buildWorkRefToolRegistration = (
 			`${options.namespacePrefix}_commit_policy_work_ref`,
 			{
 				description:
-					'Policy-gated shared-checkout persistence. action=checkpoint writes only the exact paths to a non-head work ref, publishes it when policy requires durable remote recovery, and may clean those paths back to the integration base; action=materialize restores only paths recorded in that ref; action=recover reattaches and republishes a verified orphan checkpoint object. It never switches branches, changes HEAD, touches the real git index or commits the integration branch.',
+					'Policy-gated work-ref persistence. action=recover reattaches and republishes a verified orphan checkpoint object. action=checkpoint and action=materialize move files between this checkout and a work ref, and refuse under every policy whose units have their own worktree: there, edit and commit in the unit worktree `delendai work enter` prints. It never switches branches, changes HEAD, touches the real git index or commits the integration branch.',
 				inputSchema: WORK_REF_INPUT_SCHEMA,
 				outputSchema: compactOutputSchema(),
 			},

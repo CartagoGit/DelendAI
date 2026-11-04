@@ -14,6 +14,8 @@
  * consumed by `init:default` (f00103) — that command skips the
  * interactive prompts and pre-bakes the operator's chosen defaults.
  */
+import { CLAUDE_SETTINGS_RELPATH } from '../../contracts/constants/pre-edit-guard.constant';
+import { ensurePreEditHook } from '../../lib/init/init-claude-settings';
 import { entryFromWorkspace } from '../../lib/init/portable-entry.helper';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -742,6 +744,13 @@ export const runInitWithAnswers = async (
 			// settings file is the operator's, so the writer merges:
 			// their other keys and their comments stay.
 			const result = await writeVscodeSettings(answers.workspaceRoot);
+			written.push({ path: result.path, kind: result.kind });
+			continue;
+		}
+		if (file.relPath === CLAUDE_SETTINGS_RELPATH) {
+			// Claude Code's pre-edit hook. The settings are the operator's:
+			// the writer merges, and their own keys and comments stay.
+			const result = await ensurePreEditHook(answers.workspaceRoot);
 			written.push({ path: result.path, kind: result.kind });
 			continue;
 		}
