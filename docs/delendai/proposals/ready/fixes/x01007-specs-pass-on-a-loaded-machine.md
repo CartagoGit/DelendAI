@@ -2,14 +2,14 @@
 id: x01007
 title: "Specs pass on a loaded machine"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: e11ac77c-46d4-4845-8d29-359809d3090e
-last-correlation-id: e11ac77c-46d4-4845-8d29-359809d3090e
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T05:14:39.029Z
+last-transition-id: a19b7b39-d614-44aa-95f6-aed3d282d5b4
+last-correlation-id: a19b7b39-d614-44aa-95f6-aed3d282d5b4
+last-transition-from: review
+last-transition-at: 2026-11-04T19:09:28.245Z
 ---
 
 # x01007 — Specs pass on a loaded machine
@@ -60,12 +60,14 @@ Every PR pays for these specs in proof retries, and each passes alone, so the re
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: S2 files changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S3 — Latency overhead is measured in CPU time
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts`
 - **Gate**: none
 - shipped-in: `34c7e62db9e2`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: S3 file changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S3 on current HEAD and resubmit with fresh shipped-in and evidence.
 
 ## acceptance
 
