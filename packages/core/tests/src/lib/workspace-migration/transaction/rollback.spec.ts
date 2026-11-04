@@ -113,4 +113,37 @@ describe('rollback (b00239 S6)', () => {
 			'x\n',
 		);
 	});
+
+	it('keeps a recorded file whose bytes changed since, and a directory it did not record', async () => {
+		const workspaceRoot = await mkdtemp(
+			join(tmpdir(), 'delendai-x01026-changed-'),
+		);
+		const backups = await createWorkspaceBackup(workspaceRoot);
+		await mkdir(join(workspaceRoot, 'made'));
+		await writeFile(join(workspaceRoot, 'made', 'a.txt'), 'ours\n');
+		const written = await recordWrittenSince(workspaceRoot, backups);
+		expect(written.directories).toEqual(['made']);
+		// Someone edits the file we created, and adds a sibling directory.
+		await writeFile(
+			join(workspaceRoot, 'made', 'a.txt'),
+			'edited by them\n',
+		);
+		await mkdir(join(workspaceRoot, 'theirs'));
+
+		const report = await rollback(
+			backups,
+			{ workspaceRoot },
+			'test',
+			undefined,
+			written,
+		);
+
+		expect(report.removed).toEqual([]);
+		expect(report.skipped).toEqual(
+			expect.arrayContaining(['made/a.txt', 'theirs', 'made']),
+		);
+		expect(
+			await readFile(join(workspaceRoot, 'made', 'a.txt'), 'utf8'),
+		).toBe('edited by them\n');
+	});
 });

@@ -269,4 +269,42 @@ describe('migration transaction (b00239 S6)', () => {
 			),
 		).toBe(true);
 	});
+
+	it('default phases remove what the attempt created and keep a file another process wrote after', async () => {
+		const root = makeWorkspace();
+		writeFileSync(join(root, 'delendai.config.json'), '{"name":"old"}\n');
+		const phases = createDefaultPhases({
+			migrations: [
+				baseMigration(async (workspace) => {
+					mkdirSync(join(workspace, 'made'));
+					writeFileSync(join(workspace, 'made', 'new.txt'), 'ours\n');
+					writeFileSync(
+						join(workspace, 'delendai.config.json'),
+						'{"name":"new"}\n',
+					);
+				}),
+			],
+		});
+
+		const outcome = await runMigrationTransaction(
+			{
+				...phases,
+				// Between the apply and the rollback, somebody else writes.
+				validate: async () => {
+					writeFileSync(join(root, 'bystander.md'), 'not ours\n');
+					return { ok: false, reason: 'forced' };
+				},
+			},
+			{ workspaceRoot: root },
+		);
+
+		expect(outcome.status).toBe('rolled-back');
+		expect(existsSync(join(root, 'made'))).toBe(false);
+		expect(readFileSync(join(root, 'delendai.config.json'), 'utf8')).toBe(
+			'{"name":"old"}\n',
+		);
+		expect(readFileSync(join(root, 'bystander.md'), 'utf8')).toBe(
+			'not ours\n',
+		);
+	});
 });

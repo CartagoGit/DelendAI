@@ -5,13 +5,28 @@
  * The valuable half is everything the reaper REFUSES: a worktree is
  * somebody's desk, and there is exactly one shape it may clear.
  */
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	realpathSync,
+	rmSync,
+	utimesSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import {
 	formatReport,
 	judgeWorktrees,
 	parseWorktreeList,
 	pathOfStatusLine,
+	main,
+	observe,
 	readDirtyPaths,
 	worksomebodyOwns,
 	type IWorktree,
@@ -213,5 +228,79 @@ describe('readDirtyPaths', () => {
 		expect(
 			readDirtyPaths('/nonexistent/delendai-no-such-worktree'),
 		).toBeNull();
+	});
+});
+
+describe('observe and main over a real repository', () => {
+	const sandbox = realpathSync(
+		mkdtempSync(join(tmpdir(), 'delendai-x01026-')),
+	);
+	afterAll(() => rmSync(sandbox, { recursive: true, force: true }));
+	const git = (cwd: string, ...args: string[]): string =>
+		execFileSync('git', args, { cwd, encoding: 'utf8' });
+
+	const root = join(sandbox, 'main');
+	mkdirSync(root);
+	git(root, 'init', '-q', '-b', 'develop');
+	git(root, 'config', 'user.email', 'a@b.c');
+	git(root, 'config', 'user.name', 'n');
+	writeFileSync(join(root, 'a.txt'), 'a\n');
+	git(root, 'add', '-A');
+	git(root, 'commit', '-qm', 'a');
+	git(root, 'update-ref', 'refs/remotes/origin/develop', 'HEAD');
+
+	const addTree = (name: string): string => {
+		const path = join(sandbox, name);
+		git(root, 'worktree', 'add', '-q', '--detach', path, 'HEAD');
+		return path;
+	};
+	const age = (path: string): void => {
+		const gitDir = git(path, 'rev-parse', '--absolute-git-dir').trim();
+		const old = new Date(Date.now() - 48 * HOUR);
+		// Files older than the index, or git status rewrites it as racy.
+		const older = new Date(Date.now() - 49 * HOUR);
+		utimesSync(join(path, 'a.txt'), older, older);
+		for (const file of ['index', 'HEAD']) {
+			utimesSync(join(gitDir, file), old, old);
+		}
+	};
+
+	const spent = addTree('spent');
+	age(spent);
+	const dirty = addTree('dirty');
+	writeFileSync(join(dirty, 'wip.txt'), 'half done\n');
+	age(dirty);
+	const broken = addTree('broken');
+	writeFileSync(join(broken, '.git'), 'gitdir: /nonexistent/nowhere\n');
+
+	it('observe reads dirt, delivery and an unreadable status as unknown', () => {
+		const byPath = new Map(
+			observe('origin/develop', root, root).map((t) => [t.path, t]),
+		);
+		expect(byPath.get(root)?.isMain).toBe(true);
+		expect(byPath.get(spent)).toMatchObject({
+			dirtyPaths: 0,
+			delivered: true,
+		});
+		expect(byPath.get(dirty)?.dirtyPaths).toBe(1);
+		expect(byPath.get(broken)?.dirtyPaths).toBeNull();
+	});
+
+	it('main only reports without apply, and with apply removes just the spent one', () => {
+		const log = vi
+			.spyOn(console, 'log')
+			.mockImplementation(() => undefined);
+		try {
+			expect(main(root, false)).toBe(0);
+			// A dry run reads status too, which freshens the index.
+			age(spent);
+			expect(existsSync(spent)).toBe(true);
+			expect(main(root, true)).toBe(0);
+		} finally {
+			log.mockRestore();
+		}
+		expect(existsSync(spent)).toBe(false);
+		expect(existsSync(dirty)).toBe(true);
+		expect(existsSync(broken)).toBe(true);
 	});
 });

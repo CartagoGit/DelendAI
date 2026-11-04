@@ -263,11 +263,14 @@ export const worksomebodyOwns = (statusLines: readonly string[]): number =>
 				!GENERATED_MARKERS.some((marker) => path.includes(marker)),
 		).length;
 
-const observe = (
+export const observe = (
 	integrationRef: string,
 	currentPath: string,
+	root: string = repoRoot(),
 ): readonly IWorktree[] => {
-	const listed = parseWorktreeList(git(['worktree', 'list', '--porcelain']));
+	const listed = parseWorktreeList(
+		git(['worktree', 'list', '--porcelain'], root),
+	);
 	return listed.map((entry, index) => ({
 		path: entry.path,
 		head: entry.head,
@@ -280,15 +283,16 @@ const observe = (
 		locked: entry.locked,
 		dirtyPaths: readDirtyPaths(entry.path),
 		delivered:
-			entry.head.length > 0 && isAncestor(entry.head, integrationRef),
+			entry.head.length > 0 &&
+			isAncestor(entry.head, integrationRef, root),
 		lastActivityMs: lastGitActivityMs(entry.path),
 	}));
 };
 
-const isAncestor = (sha: string, ref: string): boolean => {
+const isAncestor = (sha: string, ref: string, root: string): boolean => {
 	try {
 		execFileSync('git', ['merge-base', '--is-ancestor', sha, ref], {
-			cwd: repoRoot(),
+			cwd: root,
 			stdio: 'ignore',
 		});
 		return true;
@@ -318,18 +322,21 @@ export const formatReport = (
 	return lines.join('\n');
 };
 
-export const main = (): number => {
+export const main = (
+	root: string = repoRoot(),
+	apply: boolean = APPLY,
+): number => {
 	const integrationRef = 'origin/develop';
-	const reclamation = judgeWorktrees(observe(integrationRef, repoRoot()));
-	if (APPLY) {
+	const reclamation = judgeWorktrees(observe(integrationRef, root, root));
+	if (apply) {
 		for (const verdict of reclamation.spent) {
-			git(['worktree', 'remove', '--force', verdict.path]);
+			git(['worktree', 'remove', '--force', verdict.path], root);
 		}
 		// One prune after the removals, so git's own bookkeeping matches
 		// the directories that are actually gone.
-		git(['worktree', 'prune']);
+		git(['worktree', 'prune'], root);
 	}
-	console.log(formatReport(reclamation, APPLY));
+	console.log(formatReport(reclamation, apply));
 	return 0;
 };
 
