@@ -2,14 +2,14 @@
 id: f00803
 title: "The presets are packs of today's plugins, by purpose"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
-last-correlation-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T05:20:59.496Z
+last-transition-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
+last-correlation-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
+last-transition-from: review
+last-transition-at: 2026-11-04T21:35:42.810Z
 ---
 
 # f00803 — The presets are packs of today's plugins, by purpose
@@ -210,7 +210,7 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 5cabc0b16a93 is stale for this slice. `git log 5cabc0b16a93..develop -- <S2 files>` shows post-shipped changes touching listed files (e.g. 599ba2c48, cccb59b3c, 48f318425), so migration acceptance must be re-validated on current develop with fresh evidence.
 
 ### S3 — init default and docs
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/init/init-answers.schema.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-default-help.service.ts`, `docs/delendai/CROSS-PROJECT-SETUP.md`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
@@ -218,8 +218,10 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "init defaults to solo and its prompt labels are generated from the catalog"
   - "docs and the web presets table match the new catalogue"
 - shipped-in: `7ab2055e9f30`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 7ab2055e9f30 is stale for this slice. `git log 7ab2055e9f30..develop -- <S3 files>` shows post-shipped changes in listed files (e.g. 7b759f0b0, 7d528c27f, 8a8715c6e, be1e796df), so init/docs acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ## acceptance
 
