@@ -53,11 +53,11 @@ import type { IWorkRefVerdict } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { isForwardSyncRef } from '../forge/forward-sync-release.script';
-import { compileOwnedWorkRefParser } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
+import { compileOwnedWorkRefParser } from '@delendai/core/public';
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+} from '@delendai/core/public';
 import { repoRoot } from '../lib/repo-root';
 
 import type {

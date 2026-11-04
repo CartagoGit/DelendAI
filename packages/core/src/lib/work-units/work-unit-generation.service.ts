@@ -1,5 +1,6 @@
-import { resolveWorkRef } from '../wip-engine/ref-name';
 import { ownedRootsOf } from './namespaced-ref.helper';
+import { ownedWorkRefShapes } from '../development-policy/owned-work-ref-parser';
+import { unitRefsAnyName } from './unit-refs-any-name.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
@@ -11,16 +12,12 @@ import { worktreeSession } from './worktree-agent.service';
 import {
 	integrationRemote,
 	readGit,
-	kindFor,
 	refused,
 	sessionFor,
 	workRefFor,
 } from './work-unit-shared.service';
 import { undeclaredSlice } from './declared-slice.service';
 import { takenProposalId } from './taken-proposal-id.service';
-
-/** Stands for "any generation" while matching a unit's refs. */
-const ANY_GENERATION = '987654321';
 
 /** The session holding the worktree `ref` is checked out in, if any. */
 export const sessionHolding = (
@@ -229,56 +226,6 @@ export const chooseGeneration = (
 };
 
 /**
- * The refs of one unit whatever their kind and topic, when those were not
- * asked for. A unit is its agent, proposal, slice and generation; the kind
- * and topic only name it. `work publish` without the `--topic` it was
- * entered with rendered `…/work`, found nothing, and the unit was left
- * unpublished.
- */
-export const unitRefsAnyName = (
-	root: string,
-	args: readonly string[],
-	policy: IResolvedDevelopmentPolicy,
-	agent: string,
-	proposal: string,
-	slice: string,
-): readonly string[] => {
-	const open: Record<string, string> = {};
-	if (scalarArg(args, 'kind') === undefined) open.kind = 'zzanykindzz';
-	if (scalarArg(args, 'topic') === undefined) open.topic = 'zzanytopiczz';
-	// Instances of one model are told apart by generation (x00714): a
-	// unit not asked for by generation is found in any of them.
-	if (scalarArg(args, 'generation') === undefined)
-		open.generation = ANY_GENERATION;
-	if (Object.keys(open).length === 0) return [];
-	const rendered = resolveWorkRef(policy.branches.workRefTemplate, {
-		agent,
-		kind: open.kind ?? kindFor(args, slice),
-		proposal,
-		slice,
-		generation: Number(scalarArg(args, 'generation') ?? ANY_GENERATION),
-		...(open.topic === undefined
-			? { topic: scalarArg(args, 'topic') ?? '' }
-			: { topic: open.topic }),
-	});
-	const sentinels = Object.values(open);
-	const firstOpen = Math.min(
-		...sentinels.map((s) => rendered.indexOf(s)).filter((i) => i >= 0),
-	);
-	if (!Number.isFinite(firstOpen)) return [];
-	const prefix = rendered.slice(0, rendered.lastIndexOf('/', firstOpen) + 1);
-	let pattern = rendered.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-	for (const s of sentinels)
-		pattern = pattern.replace(s, s === ANY_GENERATION ? '[0-9]+' : '[^/]+');
-	const shape = new RegExp(`^${pattern}$`, 'u');
-	return (
-		readGit(root, ['for-each-ref', '--format=%(refname)', prefix]) ?? ''
-	)
-		.split('\n')
-		.filter((name) => shape.test(name));
-};
-
-/**
  * A refusal when the arguments leave open which of one unit's refs is
  * meant, or `undefined`. Picking one would publish or extend the wrong
  * work; rendering a fresh name would start a second copy of the unit.
@@ -351,20 +298,28 @@ export const existingWorkRef = (
 	if (continued !== undefined && (holder === undefined || holder === session))
 		return continued;
 	if (named.length === 1) return named[0] ?? ref;
+	const rendered = (template: string): string =>
+		workRefFor(
+			args,
+			{
+				...policy,
+				branches: { ...policy.branches, workRefTemplate: template },
+			},
+			agent,
+			proposal,
+			slice,
+		);
+	// The same unit under a former namespace (f00808).
+	const former = ownedWorkRefShapes(policy.branches)
+		.slice(1)
+		.map(({ template }) => rendered(template))
+		.find(exists);
+	if (former !== undefined) return former;
 	if (scalarArg(args, 'kind') !== undefined) return ref;
 	const template = policy.branches.workRefTemplate;
 	const withoutKind = template.replace('${kind}/', '');
 	if (withoutKind === template) return ref;
-	const legacy = workRefFor(
-		args,
-		{
-			...policy,
-			branches: { ...policy.branches, workRefTemplate: withoutKind },
-		},
-		agent,
-		proposal,
-		slice,
-	);
+	const legacy = rendered(withoutKind);
 	return exists(legacy) ? legacy : ref;
 };
 
