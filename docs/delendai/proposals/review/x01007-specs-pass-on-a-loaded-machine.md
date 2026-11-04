@@ -40,12 +40,14 @@ Every PR pays for these specs in proof retries, and each passes alone, so the re
 - global_gate: none
 
 ### S1 — Close gate and lock chaos specs wait on the work, not the clock
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts`
 - **Gate**: none
 - shipped-in: `34c7e62db9e2`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: slice files changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus evidence.
 
 ### S2 — Process-spawning and measuring specs get ceilings a loaded machine fits under
 - **Status**: review
