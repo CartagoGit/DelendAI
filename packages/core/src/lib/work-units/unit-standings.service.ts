@@ -20,6 +20,7 @@ import type {
 import { carriesNothingBeyond } from './landed-work.service';
 import { ownActivityAt, parkedReason } from './unit-activity.helper';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
+import { judgeAuthor } from './orphaned-work.service';
 import { listWorkRefs } from './work-swarm.service';
 import { proposalInProgress } from './publication-target.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
@@ -201,6 +202,13 @@ export const readUnitStandings = async (
 					publicationSha !== sha &&
 					!isAncestor(root, publicationSha, sha),
 				...verdict,
+				author: judgeAuthor({
+					lease,
+					...(Number.isFinite(tipAt) && tipAt > 0 ? { tipAt } : {}),
+					unitEnded: false,
+					now,
+					windowSeconds: window,
+				}),
 			};
 		})
 		.sort((left, right) => (left.ref < right.ref ? -1 : 1));
