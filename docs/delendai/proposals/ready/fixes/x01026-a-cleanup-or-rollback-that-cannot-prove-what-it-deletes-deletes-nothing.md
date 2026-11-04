@@ -2,14 +2,14 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
-last-correlation-id: a363f941-e778-4b20-8e04-dcb847ea5fbb
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:20:16.173Z
+last-transition-id: 96e91ff3-ed53-4a9c-8d50-defad3f76756
+last-correlation-id: 96e91ff3-ed53-4a9c-8d50-defad3f76756
+last-transition-from: review
+last-transition-at: 2026-11-04T21:42:38.876Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -46,7 +46,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the unknown-state handling when git status fails/timeouts and the guarded use of `git worktree remove --force`. Please re-run and attach fresh empirical proof (including the failing-status spec case).
 
 ### S2 — The rollback reverts only what the transaction wrote
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/rollback.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -54,8 +54,10 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A file written by another process after the backup and before the rollback is still there afterwards."
   - "A spec writes such a file between the backup and the rollback."
 - shipped-in: `569c1d67f766`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence proving rollback touches exactly transaction-recorded writes and preserves external files created after backup. Please re-run and attach fresh proof (including the spec that creates an external file between backup and rollback).
 
 ## acceptance
 
