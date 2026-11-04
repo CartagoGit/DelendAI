@@ -14,18 +14,18 @@ import type {
 	IGitGuardVerdict,
 	IUnitRefFacts,
 } from '../contracts/interfaces/git-guard.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
-import { shortName } from './git-guard-namespaces';
+import {
+	compileOwnedWorkRefParser,
+	ownedWorkRefShapeOf,
+} from './owned-work-ref-parser';
 
 const parsedWorkRef = (
 	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
 	branch: string,
 ) =>
-	compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	)?.parse(`refs/heads/${branch}`);
+	compileOwnedWorkRefParser(policy.branches, { requireKind: false })?.parse(
+		`refs/heads/${branch}`,
+	);
 
 /** Who works on which proposal, as far as a work ref's name says. */
 export const workUnitIdentityOf = (
@@ -65,9 +65,9 @@ export const refuseSecondRefOfUnit = (
 	branch: string,
 	unit: IUnitRefFacts | undefined,
 ): IGitGuardVerdict | undefined => {
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (unit === undefined || prefix.length === 0) return undefined;
-	if (!branch.startsWith(prefix)) return undefined;
+	if (unit === undefined) return undefined;
+	if (ownedWorkRefShapeOf(policy.branches, branch) === undefined)
+		return undefined;
 	const holder =
 		unit.leasedRef !== undefined
 			? unit.leasedRef !== branch
