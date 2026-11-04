@@ -2,14 +2,14 @@
 id: f00796
 title: "Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: workflow
 date: 2026-10-29
-last-transition-id: 792e76ba-27b7-45d5-b1f1-2ecb129e02bf
-last-correlation-id: 792e76ba-27b7-45d5-b1f1-2ecb129e02bf
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T19:37:22.202Z
+last-transition-id: 9971235e-cc80-48a3-9275-62fdfde66736
+last-correlation-id: 9971235e-cc80-48a3-9275-62fdfde66736
+last-transition-from: review
+last-transition-at: 2026-11-04T23:00:04.051Z
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -84,14 +84,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S5 — A proof installs only what it lacks
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit proved in its own worktree reuses the dependencies installed there. A unit with no worktree is proved in a temporary one, installed first by the lockfile's package manager and removed afterwards. A project with no package manifest installs nothing. A failed install is a refusal that shows its output, never a pass. Stale derived files stay the pre-push drift check's to refuse (work-unit-proof.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ## acceptance
 
