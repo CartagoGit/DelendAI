@@ -1,6 +1,9 @@
 #!/usr/bin/env bun
+import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { availableParallelism } from 'node:os';
+import { mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import {
 	hydrateKpis,
@@ -15,6 +18,12 @@ import {
 	type ITokenBudgetSurface,
 } from '@delendai/core/cli';
 
+import {
+	hashOfPaths,
+	keyOf,
+	recordedPass,
+	recordPass,
+} from '../lib/content-hash';
 import { repoRoot } from '../lib/monorepo-paths';
 import { marginalVerdict } from '../test/preset-marginal-ceiling';
 import {
@@ -26,6 +35,7 @@ import {
 	connectTokenBudgetClient,
 	createTokenBudgetFixtureWorkspace,
 	destroyTokenBudgetFixtureWorkspace,
+	PRESET_MEASURED_INPUTS,
 	DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
 	DYNAMIC_SURFACE_CLIENT_INFO,
 	listToolsMetrics,
@@ -539,6 +549,115 @@ export const measurePresetDashboard = async (
 	}
 };
 
+/** The measured inputs' hash, once a process; a child is handed it. */
+const MEASURE_KEY_ENV = 'DELENDAI_PRESET_MEASURE_KEY';
+let measuredInputsKey: string | undefined;
+const inputsKey = (): string => {
+	measuredInputsKey ??=
+		process.env[MEASURE_KEY_ENV] ??
+		hashOfPaths(repoRoot(), PRESET_MEASURED_INPUTS);
+	return measuredInputsKey;
+};
+const rowName = (
+	presetId: string,
+	measurement: (typeof DASHBOARD_SURFACES)[number],
+): string => `preset-alone-row-${presetId}-${measurement.surfaceMode}`;
+const rowKey = (
+	presetId: string,
+	measurement: (typeof DASHBOARD_SURFACES)[number],
+): string =>
+	keyOf({
+		inputs: inputsKey(),
+		presetId,
+		measurement: JSON.stringify(measurement),
+	});
+
+/** The row recorded for this preset and surface under the same inputs. */
+const recordedRow = (
+	presetId: string,
+	measurement: (typeof DASHBOARD_SURFACES)[number],
+): IPresetDashboardRow | undefined => {
+	const row = recordedPass(
+		repoRoot(),
+		rowName(presetId, measurement),
+		rowKey(presetId, measurement),
+	)?.kept?.row;
+	return row === undefined
+		? undefined
+		: (JSON.parse(row) as IPresetDashboardRow);
+};
+
+/**
+ * One preset's measurement on one surface, in a workspace of its own, read
+ * back when it was measured under the same inputs. Its tool list does not
+ * depend on what ran before it; the overview it also measures does, which
+ * is why the dashboard measures its presets one after another in one
+ * workspace and does not read these rows.
+ */
+export const measurePresetRow = async (
+	workspace: string,
+	presetId: string,
+	measurement: (typeof DASHBOARD_SURFACES)[number],
+): Promise<IPresetDashboardRow> => {
+	const recorded = recordedRow(presetId, measurement);
+	if (recorded !== undefined) return recorded;
+	const row = await measurePresetDashboard(workspace, presetId, measurement);
+	recordPass(
+		repoRoot(),
+		rowName(presetId, measurement),
+		rowKey(presetId, measurement),
+		{
+			row: JSON.stringify(row),
+		},
+	);
+	return row;
+};
+
+/**
+ * Measure the rows not yet recorded, each preset in a process of its own and
+ * several at once: one after another, eight presets took 15 s.
+ */
+export const warmPresetRows = async (
+	pairs: readonly (readonly [string, number])[],
+): Promise<void> => {
+	const missing = pairs.filter(([presetId, surface]) => {
+		const measurement = DASHBOARD_SURFACES[surface];
+		return (
+			measurement !== undefined &&
+			recordedRow(presetId, measurement) === undefined
+		);
+	});
+	if (missing.length < 2) return;
+	const env = { ...process.env, [MEASURE_KEY_ENV]: inputsKey() };
+	const queue = [...missing];
+	const worker = async (): Promise<void> => {
+		for (
+			let next = queue.shift();
+			next !== undefined;
+			next = queue.shift()
+		) {
+			const [presetId, surface] = next;
+			await new Promise<void>((done) => {
+				const child = spawn(
+					process.execPath,
+					[
+						import.meta.path,
+						`--measure-row=${presetId}:${String(surface)}`,
+					],
+					{ env, stdio: 'ignore' },
+				);
+				// A child that fails leaves no row: the caller measures it.
+				child.on('close', () => done());
+			});
+		}
+	};
+	const limit = Math.max(
+		1,
+		Math.min(missing.length, Math.floor(availableParallelism() / 2)),
+	);
+	await Promise.all(Array.from({ length: limit }, worker));
+};
+
 /**
  * c00135 — Per-surface columns. Pairs the `native` and `adaptive` rows of
  * the same preset side-by-side so a reader can compare without scanning
@@ -1019,7 +1138,38 @@ const renderGeneratedMarkdown = (
 	].join('\n');
 };
 
+/**
+ * The dashboard, read back when it was measured under the same inputs. Two
+ * checks build it in one proof, and each took 12 s; under a lock the second
+ * reads what the first measured.
+ */
 export const buildTokenBudgetDashboardMarkdown = async (
+	input: { readonly generatedAt?: string } = {},
+): Promise<string> => {
+	const name = 'token-budget-dashboard';
+	const key = keyOf({ inputs: inputsKey() });
+	const lock = join(
+		repoRoot(),
+		'.cache/delendai/verdicts/token-budget-dashboard',
+	);
+	mkdirSync(dirname(lock), { recursive: true });
+	return withFileMutex(
+		lock,
+		async () => {
+			const kept = recordedPass(repoRoot(), name, key)?.kept?.markdown;
+			if (kept !== undefined) return kept;
+			const markdown = await measureTokenBudgetDashboardMarkdown(input);
+			recordPass(repoRoot(), name, key, { markdown });
+			return markdown;
+		},
+		{
+			// A measurement takes seconds; the waiter waits for it, not 5 s.
+			timeoutMs: 180_000,
+		},
+	);
+};
+
+const measureTokenBudgetDashboardMarkdown = async (
 	_input: { readonly generatedAt?: string } = {},
 ): Promise<string> => {
 	const workspace = createTokenBudgetFixtureWorkspace();
@@ -1072,6 +1222,23 @@ const isMainModule = (): boolean => {
 	const entry = process.argv[1];
 	return entry !== undefined && import.meta.url === `file://${entry}`;
 };
+
+const measureRowArg = process.argv
+	.find((arg) => arg.startsWith('--measure-row='))
+	?.slice('--measure-row='.length);
+
+if (isMainModule() && measureRowArg !== undefined) {
+	const [presetId = '', surface = ''] = measureRowArg.split(':');
+	const measurement = DASHBOARD_SURFACES[Number(surface)];
+	if (measurement === undefined) process.exit(2);
+	const workspace = createTokenBudgetFixtureWorkspace();
+	try {
+		await measurePresetRow(workspace, presetId, measurement);
+	} finally {
+		destroyTokenBudgetFixtureWorkspace(workspace);
+	}
+	process.exit(0);
+}
 
 if (isMainModule()) {
 	const exitCode = await generateTokenBudgetDashboard()

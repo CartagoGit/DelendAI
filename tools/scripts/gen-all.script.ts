@@ -41,6 +41,13 @@
 import { spawn } from 'node:child_process';
 import { gitVerbatim } from '@delendai/core/runtime';
 
+import {
+	hashOfPaths,
+	keyOf,
+	recordedPass,
+	recordPass,
+} from './lib/content-hash';
+
 export interface IStep {
 	readonly name: string;
 	readonly cmd: readonly string[];
@@ -251,6 +258,11 @@ export const STEPS: readonly IStep[] = [
 ];
 
 export interface IGenAllIo {
+	/** The checks that passed on this same tree, and how to record more. */
+	readonly checkPasses?: {
+		readonly passed: (step: IStep) => boolean;
+		readonly record: (steps: readonly IStep[]) => void;
+	};
 	readonly out: (msg: string) => void;
 	readonly err: (msg: string) => void;
 	readonly runCommand: (
@@ -283,11 +295,35 @@ const runChild = (command: string, args: readonly string[]): Promise<number> =>
 		child.once('close', (code) => resolve(code ?? 1));
 	});
 
+/**
+ * A generator's check reads the repository, so a pass is recorded under a
+ * hash of the whole working tree: the proof runs these checks before its
+ * static jobs, and `check:generated` then reads the same verdicts back
+ * instead of running every generator a second time.
+ */
+export const checkPasses = (root: string): IGenAllIo['checkPasses'] => {
+	const tree = hashOfPaths(root, [':/']);
+	const name = (step: IStep): string => `gen-check-${step.name}`;
+	const key = (step: IStep): string =>
+		keyOf({ tree, command: (step.checkCmd ?? step.cmd).join(' ') });
+	return {
+		passed: (step) =>
+			recordedPass(root, name(step), key(step)) !== undefined,
+		record: (steps) => {
+			// Only a run that left the tree as it found it: a generator that
+			// rewrote a file judged the others on a tree no key names.
+			if (hashOfPaths(root, [':/']) !== tree) return;
+			for (const step of steps) recordPass(root, name(step), key(step));
+		},
+	};
+};
+
 const defaultIo = (): IGenAllIo => ({
 	out,
 	err,
 	runCommand: runChild,
 	dirtyPaths,
+	checkPasses: checkPasses(process.cwd()),
 });
 
 const flag = (argv: readonly string[], name: string): string | undefined => {
@@ -423,9 +459,16 @@ export const main = async (
 	// belongs to whoever is editing the tree, not to this run.
 	const dirtyBefore = check ? io.dirtyPaths() : new Set<string>();
 	let worstExit = 0;
+	const passes = check ? io.checkPasses : undefined;
+	const judged: IStep[] = [];
 	for (const step of runnable) {
+		if (step.checkCmd !== undefined && passes?.passed(step) === true) {
+			io.out(`▶ ${step.name} — kept: it passed on this same tree`);
+			continue;
+		}
 		const code = await runStep(step, check, io);
 		if (code !== 0) worstExit = code;
+		else if (step.checkCmd !== undefined) judged.push(step);
 	}
 	if (worstExit !== 0) {
 		io.err(
@@ -441,6 +484,7 @@ export const main = async (
 			);
 			return 1;
 		}
+		passes?.record(judged);
 		io.out(`gen-all: no drift detected ✓`);
 		return 0;
 	}

@@ -108,7 +108,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 
 ### S10 — The repository-wide lints cost only what the change changes
 - **Status**: pending
-- **Files**: `package.json`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lib/changed-files-scope.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/lib/content-hash.ts`, `tools/scripts/lib/content-hash.spec.ts`, `tools/scripts/compile/build.script.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/lint/check-generated-artifacts.script.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-report-lib.ts`, `tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/generate/preset-metadata.script.ts`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/proposal-cited-commits.script.ts`, `tools/scripts/lint/proposal-cited-commits.script.spec.ts`, `tools/scripts/lint/json-entry-collision.script.ts`
 - **Gate**: type
 - acceptance:
   - "For a one-file core change, each of lint-security, lint-presets, lint-docs, lint-governance, generated-artifacts-check, tokens-budget-real, quality-gate and the generated-files step of the local proof takes under 10 s, and no check they ran before is dropped."
