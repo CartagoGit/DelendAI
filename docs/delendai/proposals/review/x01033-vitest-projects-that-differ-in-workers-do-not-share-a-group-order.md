@@ -2,14 +2,14 @@
 id: x01033
 title: "Vitest projects that differ in workers do not share a group order"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 96fa602a-49cd-442c-95f9-92c9986c39b4
-last-correlation-id: 96fa602a-49cd-442c-95f9-92c9986c39b4
-last-transition-from: ready
-last-transition-at: 2026-11-04T19:18:59.121Z
+last-transition-id: 91fb0907-3579-497b-bbac-f492473c8f96
+last-correlation-id: 91fb0907-3579-497b-bbac-f492473c8f96
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T19:41:26.906Z
 ---
 
 # x01033 — Vitest projects that differ in workers do not share a group order
@@ -31,11 +31,14 @@ x01019 gave every shared-graph project groupOrder 1, but proposals runs with fil
 - global_gate: none
 
 ### S1 — Give the serial project its own group order
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `plugins/proposals/vitest.config.ts`, `tools/scripts/test/vitest-group-order.spec.ts`
 - **Gate**: none
 - acceptance:
   - "vitest run with the core and proposals projects together resolves their group orders without error, checked by a spec."
+- shipped-in: `b3b7267fc1d3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
