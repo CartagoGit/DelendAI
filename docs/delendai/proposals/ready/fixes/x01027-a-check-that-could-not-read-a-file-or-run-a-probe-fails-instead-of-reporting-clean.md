@@ -2,14 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
-last-correlation-id: 6cbbc96e-34c7-4901-9b17-1d3299c66261
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:22:09.095Z
+last-transition-id: 4c466a0d-c21d-4682-b2e0-360b1de83cc9
+last-correlation-id: 4c466a0d-c21d-4682-b2e0-360b1de83cc9
+last-transition-from: review
+last-transition-at: 2026-11-04T20:34:09.966Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
@@ -57,15 +57,17 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for the unknown/failed state behavior when git listing fails, including the spec expectation. Please re-run and resubmit with fresh empirical proof.
 
 ### S3 — A probe that did not exit is not an accepted run
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/lib/empty-root-probe.lib.ts`, `tools/scripts/lint/lib/empty-root-probe.lib.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A probe whose status is null (timeout or failed start) makes the check fail with the cause."
   - "A spec returns status null and expects a failure."
 - shipped-in: `c424cb36ad51`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached empirical evidence from a reproducible current-develop run proving status=null is treated as failure with cause (including the spec case). Please re-run and include fresh evidence before re-submitting.
 
 ## acceptance
 
