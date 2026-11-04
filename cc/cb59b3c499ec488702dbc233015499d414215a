@@ -1,0 +1,3 @@
+maker: claude-sonnet-5-5
+unit: delendai/wip/claude-sonnet-5-5/implement/x01012-all-g3/cache-exclude-only-on-request
+session: 1
