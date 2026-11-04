@@ -2,10 +2,14 @@
 id: q00045
 title: "Plan: pull requests are few and fast"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
+last-transition-id: a4f2a334-3ab0-4bd6-9d95-d14fbc09dc49
+last-correlation-id: a4f2a334-3ab0-4bd6-9d95-d14fbc09dc49
+last-transition-from: ready
+last-transition-at: 2026-11-04T16:03:09.591Z
 ---
 
 # q00045 — Plan: pull requests are few and fast
