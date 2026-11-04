@@ -2,14 +2,14 @@
 id: x00978
 title: "The VS Code extension works per folder and keeps edits, choices and polling consistent"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
-last-correlation-id: 01e8017c-5d54-4a0d-aeb5-8d07dacde03b
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T05:20:28.703Z
+last-transition-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
+last-correlation-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
+last-transition-from: review
+last-transition-at: 2026-11-04T22:12:13.800Z
 ---
 
 # x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
@@ -56,7 +56,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — Routing, dashboard and polling
-- **Status**: review
+- **Status**: pending
 - **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `extensions/vscode/src/test/dashboard-detail-broker.spec.ts`, `packages/ui-extension/tests/dashboard/render-dashboard-escaping.spec.ts`
 - **Gate**: type
 - **Notes**: UI-ROUTE01 was already fixed: no source under extensions/vscode or packages/client names the retired vertex tool; non-direct calls go through the client's resolve_capability broker path (mcp-stdio-client.ts), which compact_router shares. extension.ts and logs.service.ts needed no change (the subscribe loop already stops on abort; the dispose hook now aborts it).
@@ -64,8 +64,10 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
   - "Calls route through delendai_compact_router (UI-ROUTE01)."
   - "The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02)."
 - shipped-in: `99169458ee61`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
