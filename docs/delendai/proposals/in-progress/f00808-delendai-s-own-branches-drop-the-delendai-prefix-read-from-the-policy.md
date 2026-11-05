@@ -34,7 +34,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 
 ### S1 — Former prefixes are part of the policy
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`, `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/tests/src/lib/development-policy/owned-ref-prefixes.spec.ts`
 - **Gate**: type
 - acceptance:
   - "No setting covers the transition today (checked: namespacePrefix, workRefTemplate, workRefPrefix, publicationRefPrefix, foreignRefPrefixes), so one is added: `development.branches.formerNamespacePrefixes` (default []), documented as transition-only."
@@ -44,7 +44,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S2 — Guards and ref identity recognise both prefixes
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`, `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/tests/src/lib/development-policy/owned-work-ref-parser.spec.ts`, `packages/core/src/lib/contracts/interfaces/owned-work-ref-shape.interface.ts`
 - **Gate**: type
 - acceptance:
   - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix; every NEW unit and publication is named under the current prefix by `work enter` and `work publish` (the guard does not refuse a branch-create there, which re-entering an old unit needs)."
@@ -55,7 +55,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S3 — Hidden refs and proposal tools stop spelling refs/delendai
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `packages/core/src/lib/work-units/unit-refs-any-name.service.ts`, `packages/core/tests/src/lib/work-units/unit-refs-any-name.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`refs/${namespacePrefix}/retired/*` (unit-reaper, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix."
@@ -66,7 +66,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S4 — Queue, publications and reapers take the prefix from the policy
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`, `tools/scripts/forge/publication-prefixes.ts`, `tools/scripts/forge/publication-prefixes.spec.ts`, `packages/cli/src/lib/review/review-releases.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix."
@@ -76,7 +76,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S5 — Forge rules and CI filters follow the policy
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`
+- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `tools/scripts/lint/ci-publication-filters.script.ts`, `tools/scripts/lint/ci-publication-filters.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix."
@@ -85,7 +85,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
 - **Status**: pending
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `packages/core/src/lib/work-units/work-unit-rename-namespace.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-rename-namespace.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/namespace-rename.interface.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary."
@@ -97,7 +97,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S9 — Branch names a person can read at a glance
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/work-units/work-ref-record.service.ts`, `packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
+- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/development-policy/work-ref-scope.ts`, `packages/core/src/lib/contracts/interfaces/work-ref-scope.interface.ts`, `packages/core/src/lib/contracts/constants/work-ref-scope.constant.ts`, `packages/core/tests/src/lib/development-policy/work-ref-scope.spec.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The readable template, chosen with `workRefTemplate` (publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, the owner's scheme (`READABLE_WORK_REF_SHAPE`). It is not yet the library default: 74 specs and the generation bookkeeping assume the current shape. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`."
