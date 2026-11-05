@@ -45,7 +45,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S2 — Shim, prompts and bootstrap
-- **Status**: review
+- **Status**: pending
 - **Files**: `bin/delendai-shim/main.go`, `plugins/prompts-pack/src/prompts/prompts.spec.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: type
 - acceptance:
@@ -53,8 +53,10 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
   - "No NUL byte in prompts; a spec asserts it (G60, D38)."
   - "The bootstrap describes the dist mirrors the builder makes (ORCH-06)."
 - shipped-in: `524f03fe0f84`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S3 — Duplicate engines
 - **Status**: review
