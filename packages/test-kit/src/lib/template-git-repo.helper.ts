@@ -31,8 +31,17 @@ const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
 const rewrite = (file: string, from: string, to: string): void => {
-	if (!existsSync(file)) return;
-	writeFileSync(file, readFileSync(file, 'utf8').split(from).join(to));
+	// A read that absorbs the absence beats an existsSync that races it:
+	// CodeQL flags the check-then-write on a temporary path as
+	// js/inconsistent-temporary-file, and the file this writes is always
+	// one this helper created inside its own mkdtemp directory.
+	let current: string;
+	try {
+		current = readFileSync(file, 'utf8');
+	} catch {
+		return;
+	}
+	writeFileSync(file, current.split(from).join(to));
 };
 
 /**
