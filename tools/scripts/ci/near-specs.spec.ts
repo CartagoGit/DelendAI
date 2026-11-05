@@ -34,6 +34,20 @@ describe('nearSpecs', () => {
 		]);
 	});
 
+	it('takes the e2e tier of a spec named after the source, so moving a spec there keeps its coverage', () => {
+		const specs = [
+			'packages/core/tests/src/lib/a/widget.service.e2e.spec.ts',
+			'packages/core/tests/src/lib/a/gadget.service.e2e.spec.ts',
+		];
+		expect(
+			nearSpecs(
+				['packages/core/src/lib/a/widget.service.ts'],
+				specs,
+				() => [],
+			),
+		).toEqual(['packages/core/tests/src/lib/a/widget.service.e2e.spec.ts']);
+	});
+
 	it('looks nothing up for prose, configuration, locale leaves or a deleted spec', () => {
 		const asked: string[] = [];
 		expect(
