@@ -15,6 +15,19 @@ export interface Alias {
 }
 
 /**
+ * Drop the trailing slashes of a path.
+ *
+ * A regex would do it in one line, but `/\/+$/` is the shape CodeQL
+ * reports as `js/polynomial-redos` — it already flagged it once in
+ * this repository (x01012) — so the slashes are counted instead.
+ */
+export const trimTrailingSlashes = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value.charAt(end - 1) === '/') end -= 1;
+	return value.slice(0, end);
+};
+
+/**
  * Path to the global console-silencing vitest setup. Wired into every
  * project via `sharedSetupFiles` so production `console.log`/`warn`/
  * `error` calls made from tested code don't drown the validate stream.
@@ -70,7 +83,7 @@ export const BUN_OWNED_SPECS: readonly string[] = [
  * to it, as vitest `exclude` globs.
  */
 export const bunOwnedExcludes = (projectDir: string): string[] => {
-	const prefix = `${projectDir.replace(/\/+$/u, '')}/`;
+	const prefix = `${trimTrailingSlashes(projectDir)}/`;
 	return BUN_OWNED_SPECS.filter((entry) => entry.startsWith(prefix)).map(
 		(entry) => {
 			const relative = entry.slice(prefix.length);

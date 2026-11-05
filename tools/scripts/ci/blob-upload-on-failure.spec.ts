@@ -23,19 +23,38 @@ describe('the coverage blob of a failed zone', () => {
 		'utf8',
 	);
 
+	/**
+	 * The `if:` of the step named `name`, read line by line.
+	 *
+	 * A regex over the workflow would have to span the step's lines, and
+	 * the shape that does it — a nested `(?:\s+.*\n)*` — is exactly the
+	 * polynomial one CodeQL flags. The workflow is a list of lines; so is
+	 * this.
+	 */
+	const conditionOf = (name: string): string | undefined => {
+		const lines = workflow.split('\n');
+		const at = lines.findIndex((line) => line.trim() === `- name: ${name}`);
+		if (at < 0) return undefined;
+		for (let index = at + 1; index < lines.length; index += 1) {
+			const line = lines[index] ?? '';
+			const trimmed = line.trim();
+			if (trimmed.startsWith('- name:')) return undefined;
+			if (trimmed.startsWith('if:')) {
+				return trimmed.slice('if:'.length).trim();
+			}
+		}
+		return undefined;
+	};
+
 	it('is uploaded even when the zone failed', () => {
-		const upload = workflow.match(
-			/- name: Upload this zone's blob report\n(?:\s+.*\n)*?\s+if: ([^\n]+)\n/u,
-		);
-		expect(upload).not.toBeNull();
-		expect(upload?.[1]).toContain('always()');
+		const condition = conditionOf("Upload this zone's blob report");
+		expect(condition).toBeDefined();
+		expect(condition).toContain('always()');
 	});
 
 	it('is uploaded only for a zone that ran', () => {
-		const upload = workflow.match(
-			/- name: Upload this zone's blob report\n(?:\s+.*\n)*?\s+if: ([^\n]+)\n/u,
-		);
-		expect(upload?.[1]).toContain('matrix.zone.run');
+		const condition = conditionOf("Upload this zone's blob report");
+		expect(condition).toContain('matrix.zone.run');
 	});
 
 	it('does not fail the upload when a zone produced no report at all', () => {
