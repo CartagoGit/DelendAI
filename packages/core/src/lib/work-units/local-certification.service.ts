@@ -90,21 +90,17 @@ export const certifyCandidate = async (
 		return { ...base, declared: false, passed: false, steps: [] };
 	}
 
-	const gitDir = git(root, [
-		'rev-parse',
-		'--path-format=absolute',
-		'--git-common-dir',
-	]);
-	if (!gitDir.ok || gitDir.out.length === 0) {
+	const topLevel = git(root, ['rev-parse', '--show-toplevel']);
+	if (!topLevel.ok || topLevel.out.length === 0) {
 		return {
 			...base,
 			declared: true,
 			passed: false,
 			steps: [],
-			setupFailure: `could not locate the git directory: ${gitDir.out}`,
+			setupFailure: `could not locate the git working tree: ${topLevel.out}`,
 		};
 	}
-	const parent = join(gitDir.out, 'delendai-certify');
+	const parent = join(topLevel.out, '.cache', 'delendai', 'certify');
 	const dir = join(
 		parent,
 		`${candidateSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
@@ -147,6 +143,15 @@ export const certifyCandidate = async (
 		};
 	} finally {
 		git(root, ['worktree', 'remove', '--force', dir]);
-		git(root, ['worktree', 'prune']);
+		// NO `git worktree prune` aquí: es global, y borra los worktrees
+		// que OTRA certificación está usando en este mismo momento. Con dos
+		// aterrizajes a la vez, el prune de una se come el árbol de la otra
+		// a mitad del gate: el suite muere con `Cannot find module
+		// '/tests/setup-vitest.ts'` y el aterrizaje se rechaza por un fallo
+		// que no tiene que ver con el candidato.
+		//
+		// `worktree remove --force` ya borra la entrada de este worktree;
+		// los worktrees huérfanos de otra procedencia se limpian con un
+		// prune explícito, fuera de la ventana de un gate.
 	}
 };
