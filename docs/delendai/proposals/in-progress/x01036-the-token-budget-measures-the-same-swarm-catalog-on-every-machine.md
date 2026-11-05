@@ -34,14 +34,14 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 
 - global_gate: none
 
-### S1 - A spec that boots real plugins gets a worker of its own
+### S1 — A spec that boots real plugins gets a worker of its own
 - **Status**: pending
 - **Files**: `vitest.shared.ts`, `tools/scripts/report/token-budget-dashboard.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "A spec carrying the @delendai-isolate pragma is listed by isolatedSpecs and runs in the isolated project; the token budget e2e spec carries it and passes in the full tools 2/4 spec list with 125 swarm tools."
 
-### S2 - A failed zone still uploads the coverage it measured
+### S2 — A failed zone still uploads the coverage it measured
 - **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/blob-upload-on-failure.spec.ts`
 - **Gate**: none
