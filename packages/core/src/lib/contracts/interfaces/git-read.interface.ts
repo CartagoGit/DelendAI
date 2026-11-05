@@ -20,7 +20,7 @@ export interface IGitSpawn {
 }
 
 /** Told of every git process the seam starts, before it starts. */
-export type GitSpawnObserver = (spawn: IGitSpawn) => void;
+export type IGitSpawnObserver = (spawn: IGitSpawn) => void;
 
 /**
  * What one command invocation may remember of its git reads. The seam
