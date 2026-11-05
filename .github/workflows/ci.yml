@@ -719,13 +719,24 @@ jobs:
                     ${CHANGED}
 
             - name: Upload this zone's blob report
-              if: matrix.zone.run
+              # `always()` so a shard that failed still uploads what it
+              # measured. Without it the merge judges the coverage of the
+              # whole run from the shards that happened to pass, and every
+              # file the red shard covered reads as never executed: on
+              # 2026-11-05 one red spec made `lint:no-dead-modules` call
+              # `tools/scripts/lib/monorepo-paths.ts` a module whose every
+              # function had run, because its blob never left the shard.
+              # The zone's own verdict is the shard's exit code; this step
+              # only carries the evidence.
+              if: always() && matrix.zone.run
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
               with:
                   name: vitest-blob-${{ env.BLOB_SLUG }}
                   path: .vitest-reports/
                   retention-days: 1
-                  if-no-files-found: error
+                  # A shard that failed before writing its report has no
+                  # blob to upload; the merge says which zone is missing.
+                  if-no-files-found: warn
                   # `.vitest-reports` starts with a dot, and this action
                   # treats every dot-path as hidden and skips it — so the
                   # first sharded run uploaded nothing and failed with
