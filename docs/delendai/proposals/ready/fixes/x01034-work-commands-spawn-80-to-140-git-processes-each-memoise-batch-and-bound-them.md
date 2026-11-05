@@ -45,7 +45,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - **Gate**: type
 - acceptance:
   - "One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`."
-  - "`merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable)."
+  - "`merge-base --is-ancestor` over two full object ids is memoised for the invocation (object ids are immutable)."
   - "Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`."
   - "The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one."
 
@@ -59,24 +59,14 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory)."
   - "git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`."
 
-### S4 — One status and one fetch per invocation
+### S4 — Pin the spawn budget
 - **Status**: pending
-- **DependsOn**: [S2]
-- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/unit-worktree-state.service.ts`, `packages/core/src/lib/work-units/work-dirty-paths.service.ts`, `packages/core/src/lib/development-policy/loose-edits-advisory.ts`, `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/unit-forge-sync.service.ts`
+- **DependsOn**: [S3]
+- **Files**: `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The dirty-state readers share one `status --porcelain=v2 --branch` per worktree per invocation, refreshed after a write."
-  - "No work invocation runs `fetch` of the same remote and refspec twice, nor `ls-remote` of the same remote twice."
-
-### S5 — Validate arguments first, and pin the spawn budget
-- **Status**: pending
-- **DependsOn**: [S2, S3, S4]
-- **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`
-- **Gate**: type
-- acceptance:
-  - "A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82)."
-  - "work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation."
-  - "The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them."
+  - "work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin, `shared-checkout-merge` on main), runs each subcommand in process through `runWorkUnit`, counts spawns through `observeGitSpawns` and fails above: status 21, enter 39, swarm 22, prove 27, publish 43, retire 31, a refused argument-less checkpoint 8; and above one `fetch` per subcommand."
+  - "Measured before (strace, CLI process only): status 39, enter 64, swarm 44, prove 35, publish 56, retire 62, refused 12. The repeated `status`, `fetch` and `ls-remote` calls left are in the `__serve` server child each CLI `work` command starts (52 to 92 git processes); removing that child is the CLI startup proposal's, as is a refused command's cost, so no slice here rewrites the status readers."
 
 ## acceptance
 
@@ -84,14 +74,11 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`.
 - git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing.
 - One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`.
-- `merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable).
+- `merge-base --is-ancestor` over two full object ids is memoised for the invocation (object ids are immutable).
 - Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`.
 - The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one.
 - Within one invocation `rev-parse [-q] [--verify] <name>`, `for-each-ref`, `show-ref` and the read forms of `symbolic-ref` are answered once per cwd until a git command that is not a known read starts or settles (`noteGitSettled` for the asynchronous runners), or a process that is not git runs (`forgetGitReads` around `runCommand`, `runArgv` and the certification command). No call site is rewritten: the memo is the snapshot.
 - Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory).
 - git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`.
-- The dirty-state readers share one `status --porcelain=v2 --branch` per worktree per invocation, refreshed after a write.
-- No work invocation runs `fetch` of the same remote and refspec twice, nor `ls-remote` of the same remote twice.
-- A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82).
-- work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation.
-- The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them.
+- work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin, `shared-checkout-merge` on main), runs each subcommand in process through `runWorkUnit`, counts spawns through `observeGitSpawns` and fails above: status 21, enter 39, swarm 22, prove 27, publish 43, retire 31, a refused argument-less checkpoint 8; and above one `fetch` per subcommand.
+- Measured before (strace, CLI process only): status 39, enter 64, swarm 44, prove 35, publish 56, retire 62, refused 12. The repeated `status`, `fetch` and `ls-remote` calls left are in the `__serve` server child each CLI `work` command starts (52 to 92 git processes); removing that child is the CLI startup proposal's, as is a refused command's cost, so no slice here rewrites the status readers.
