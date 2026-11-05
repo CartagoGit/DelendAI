@@ -274,6 +274,12 @@ describe('observe and main over a real repository', () => {
 	writeFileSync(join(broken, '.git'), 'gitdir: /nonexistent/nowhere\n');
 
 	it('observe reads dirt, delivery and an unreadable status as unknown', () => {
+		// Every case starts from a freshly aged worktree: `git status`
+		// refreshes the index whose mtime says when git last worked there,
+		// so an earlier `observe` in this file leaves the next one reading
+		// a worktree that looks busy.
+		age(spent);
+		age(dirty);
 		const byPath = new Map(
 			observe('origin/develop', root, root).map((t) => [t.path, t]),
 		);
@@ -286,14 +292,34 @@ describe('observe and main over a real repository', () => {
 		expect(byPath.get(broken)?.dirtyPaths).toBeNull();
 	});
 
+	it('judges a worktree spent even though it read its status', () => {
+		// The reaper reads the status of every worktree, and `git status`
+		// refreshes the index whose mtime says when git last worked there.
+		// A worktree nobody has touched for longer than the window is
+		// still spent: the reaper measured the activity before it touched
+		// anything.
+		//
+		// This case runs before the one that removes the spent worktree,
+		// because that one leaves it gone.
+		age(spent);
+		age(dirty);
+		const verdicts = judgeWorktrees(observe('origin/develop', root, root));
+		const byPath = new Map(verdicts.verdicts.map((v) => [v.path, v]));
+
+		expect(byPath.get(spent)?.role).toBe('spent');
+		expect(byPath.get(dirty)?.role).toBe('dirty');
+		expect(byPath.get(broken)?.role).toBe('unknown');
+	});
+
 	it('main only reports without apply, and with apply removes just the spent one', () => {
+		// The worktree is aged here, not in the setup above: the case
+		// before this one read its status, which refreshed the index.
+		age(spent);
 		const log = vi
 			.spyOn(console, 'log')
 			.mockImplementation(() => undefined);
 		try {
 			expect(main(root, false)).toBe(0);
-			// A dry run reads status too, which freshens the index.
-			age(spent);
 			expect(existsSync(spent)).toBe(true);
 			expect(main(root, true)).toBe(0);
 		} finally {

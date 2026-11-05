@@ -43,7 +43,12 @@ export const nearSpecs = (
 	const out = new Set<string>();
 	const byName = new Map<string, string[]>();
 	for (const spec of specs) {
-		const name = spec.split('/').pop() ?? spec;
+		// `x.e2e.spec.ts` is the heavy tier of `x.spec.ts`: it is near the
+		// same source, so moving a spec there keeps the coverage it gave.
+		const name = (spec.split('/').pop() ?? spec).replace(
+			/\.e2e\.spec\.ts$/u,
+			'.spec.ts',
+		);
 		byName.set(name, [...(byName.get(name) ?? []), spec]);
 	}
 	for (const file of changed.filter(isNearSource)) {
