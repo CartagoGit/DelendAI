@@ -12,6 +12,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
+import { stubAbortSignalTimeout } from '@delendai/test-kit/public';
+
 import type { IToolRegistration } from '@delendai/core/contracts';
 
 import {
@@ -170,40 +172,42 @@ describe('external_mcp_discover — enabled', () => {
 });
 
 describe('createDefaultNpmSearch — network timeout (x00157 S3)', () => {
-	it(
-		'aborts a hanging registry request instead of hanging forever',
-		async () => {
-			const originalFetch = global.fetch;
-			const fetchMock = vi.fn(
-				(_url: string | URL | Request, init?: RequestInit) =>
-					new Promise((_resolve, reject) => {
-						// Never resolves on its own — simulates a hung npm registry.
-						// Only settles when the injected AbortSignal actually fires,
-						// which is exactly what a real hung `fetch` does under Node/Bun.
-						init?.signal?.addEventListener('abort', () => {
-							reject(
-								new DOMException(
-									'The operation was aborted.',
-									'TimeoutError',
-								),
-							);
-						});
-					}),
-			);
-			global.fetch = fetchMock as unknown as typeof fetch;
-			try {
-				const search = createDefaultNpmSearch();
-				await expect(search('zig', 10)).rejects.toThrow();
-				const init = fetchMock.mock.calls[0]?.[1] as
-					| RequestInit
-					| undefined;
-				expect(init?.signal).toBeInstanceOf(AbortSignal);
-			} finally {
-				global.fetch = originalFetch;
-			}
-		},
-		DISCOVER_FETCH_TIMEOUT_MS + 500,
-	);
+	it('aborts a hanging registry request instead of hanging forever', async () => {
+		const originalFetch = global.fetch;
+		// The request's deadline runs on the platform clock; take the
+		// signal it asks for and fire it when the request is made, as
+		// the timeout elapsing would.
+		const deadlines = stubAbortSignalTimeout();
+		const fetchMock = vi.fn(
+			(_url: string | URL | Request, init?: RequestInit) =>
+				new Promise((_resolve, reject) => {
+					// Never resolves on its own — simulates a hung npm registry.
+					// Only settles when the injected AbortSignal actually fires,
+					// which is exactly what a real hung `fetch` does under Node/Bun.
+					init?.signal?.addEventListener('abort', () => {
+						reject(
+							new DOMException(
+								'The operation was aborted.',
+								'TimeoutError',
+							),
+						);
+					});
+					deadlines.fire();
+				}),
+		);
+		global.fetch = fetchMock as unknown as typeof fetch;
+		try {
+			const search = createDefaultNpmSearch();
+			await expect(search('zig', 10)).rejects.toThrow();
+			const init = fetchMock.mock.calls[0]?.[1] as
+				| RequestInit
+				| undefined;
+			expect(init?.signal).toBeInstanceOf(AbortSignal);
+			expect(deadlines.requested()).toEqual([DISCOVER_FETCH_TIMEOUT_MS]);
+		} finally {
+			global.fetch = originalFetch;
+		}
+	});
 });
 
 describe('createCallBudget (pure rolling window)', () => {

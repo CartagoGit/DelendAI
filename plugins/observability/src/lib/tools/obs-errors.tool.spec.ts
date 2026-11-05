@@ -8,7 +8,7 @@ import {
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
 import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
-import { asArray } from '@delendai/test-kit/public';
+import { asArray, useFakeClock } from '@delendai/test-kit/public';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =
@@ -142,42 +142,42 @@ describe('obs-errors (f00129 S1)', () => {
 	// The credentialed request goes through the engine, so its timeout
 	// bounds a hung observability API. Omitting `source.fetch` exercises
 	// that production path through the mocked global `fetch`.
-	it(
-		'rejects a hung observability API within the fetch timeout instead of hanging forever',
-		async () => {
-			const originalFetch = global.fetch;
-			global.fetch = vi.fn(
-				(_url: string | URL | Request, init?: RequestInit) => {
-					// The one credentialed request — a hung observability
-					// API. Never resolves on its own; only rejects when the
-					// engine's AbortSignal fires.
-					return new Promise((_resolve, reject) => {
-						init?.signal?.addEventListener('abort', () => {
-							reject(
-								new DOMException(
-									'The operation was aborted.',
-									'TimeoutError',
-								),
-							);
-						});
-					}) as Promise<Response>;
-				},
-			) as unknown as typeof fetch;
-			try {
-				const source = sourceFixture();
-				(source as { fetch?: IErrorSource['fetch'] }).fetch = undefined;
-				const tools = build(source);
-				const handler = tools.obs_obs_errors?.handler as (
-					a: unknown,
-				) => Promise<{ isError?: boolean }>;
-				const result = await handler({ limit: 10 });
-				expect(result.isError).toBe(true);
-				// One credentialed request: there is no second, unbounded one.
-				expect(global.fetch).toHaveBeenCalledTimes(1);
-			} finally {
-				global.fetch = originalFetch;
-			}
-		},
-		FETCH_TIMEOUT_MS + 1_000,
-	);
+	it('rejects a hung observability API within the fetch timeout instead of hanging forever', async () => {
+		const originalFetch = global.fetch;
+		// The engine's deadline is a timer: a fake one is advanced by the
+		// full timeout when the request is made, as the wait would.
+		const clock = useFakeClock({ toFake: ['setTimeout', 'clearTimeout'] });
+		global.fetch = vi.fn(
+			(_url: string | URL | Request, init?: RequestInit) => {
+				// The one credentialed request — a hung observability
+				// API. Never resolves on its own; only rejects when the
+				// engine's AbortSignal fires.
+				return new Promise((_resolve, reject) => {
+					init?.signal?.addEventListener('abort', () => {
+						reject(
+							new DOMException(
+								'The operation was aborted.',
+								'TimeoutError',
+							),
+						);
+					});
+					clock.advance(FETCH_TIMEOUT_MS);
+				}) as Promise<Response>;
+			},
+		) as unknown as typeof fetch;
+		try {
+			const source = sourceFixture();
+			(source as { fetch?: IErrorSource['fetch'] }).fetch = undefined;
+			const tools = build(source);
+			const handler = tools.obs_obs_errors?.handler as (
+				a: unknown,
+			) => Promise<{ isError?: boolean }>;
+			const result = await handler({ limit: 10 });
+			expect(result.isError).toBe(true);
+			// One credentialed request: there is no second, unbounded one.
+			expect(global.fetch).toHaveBeenCalledTimes(1);
+		} finally {
+			global.fetch = originalFetch;
+		}
+	});
 });
