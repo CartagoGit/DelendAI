@@ -15,6 +15,11 @@
 - waitUntil
 - captureWorkingState
 - workingStateChanges
+- useFakeClock
+- stubAbortSignalTimeout
+- skipLockPauses
+- createGitRepoTemplate
+- createInMemoryGit
 
 ## Depends on
 
@@ -33,7 +38,7 @@ _(none)_
 - packages/test-kit/tests/src/lib/as-array.spec.ts
 - packages/test-kit/tests/src/lib/fake-partial.spec.ts
 - packages/test-kit/tests/src/lib/fake-tool-server.spec.ts
-- packages/test-kit/tests/src/lib/wait-until.helper.spec.ts
+- packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts
 
 ## Do not
 
