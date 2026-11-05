@@ -99,8 +99,38 @@ describe('certifyCandidate', () => {
 		});
 		expect(report.steps[1]?.outputTail).toContain('why it failed');
 		expect(git(root, 'worktree', 'list', '--porcelain')).not.toContain(
-			'delendai-certify',
+			'.cache/delendai/certify',
 		);
+	});
+
+	it('puts the worktree inside the repository but outside any .git directory', async () => {
+		const root = repoWith({
+			'delendai.config.json': JSON.stringify({
+				validationMatrix: { scopes: { a: [{ command: 'first' }] } },
+			}),
+		});
+		const head = git(root, 'rev-parse', 'HEAD');
+		const cwdUsed: string[] = [];
+
+		await certifyCandidate({
+			root,
+			candidateSha: head,
+			integrationSha: head,
+			run: (_command, cwd) => {
+				cwdUsed.push(cwd);
+				return { code: 0, output: '' };
+			},
+		});
+
+		const cwd = cwdUsed[0] ?? '';
+		expect(cwd).not.toBe('');
+		// Inside the repository: `node_modules` must stay reachable by
+		// walking up, or the gate cannot resolve a single dependency.
+		expect(cwd.startsWith(root)).toBe(true);
+		// Outside every `.git` directory: bundlers deny serving files under
+		// `**/.git/**`, so a suite run there cannot load the project's own
+		// setup files.
+		expect(cwd.split('/').includes('.git')).toBe(false);
 	});
 
 	it('certifies nothing when the integration head declares no gate', async () => {

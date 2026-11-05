@@ -7,11 +7,20 @@
  * work ref alone would answer a question about a state the branch will
  * never be in.
  *
- * WHERE: a detached worktree of that commit, added inside the git
- * directory and removed afterwards. The shared checkout is where other
- * agents are editing; running a gate there would test their loose edits
- * and could rewrite their files. Inside the git directory the worktree
- * never shows as an untracked path and dies with the repository.
+ * WHERE: a detached worktree of that commit, added under the
+ * repository's ignored cache directory and removed afterwards. The shared
+ * checkout is where other agents are editing; running a gate there would
+ * test their loose edits and could rewrite their files. Under the cache
+ * directory the worktree never shows as an untracked path and dies with
+ * the repository.
+ *
+ * NOT under `.git/`: bundlers deny serving files that live inside a git
+ * directory (Vite's default `server.fs.deny` denies every path under a
+ * `.git` directory), so a gate that runs a test suite in a worktree
+ * placed there cannot load the project's own setup files — it fails with
+ * `Cannot find module '/tests/setup-vitest.ts'` before a single test
+ * runs. The tree has to be inside the repository (so `node_modules`
+ * still resolves by walking up) but outside any `.git` directory.
  *
  * WITH WHICH GATE: the one the integration head declares, read from that
  * commit — never the candidate's own declaration, or a unit could land by
@@ -104,7 +113,10 @@ export const certifyCandidate = async (
 			setupFailure: `could not locate the git directory: ${gitDir.out}`,
 		};
 	}
-	const parent = join(gitDir.out, 'delendai-certify');
+	const topLevel = git(root, ['rev-parse', '--show-toplevel']);
+	const repoRoot =
+		topLevel.ok && topLevel.out.length > 0 ? topLevel.out : root;
+	const parent = join(repoRoot, '.cache', 'delendai', 'certify');
 	const dir = join(
 		parent,
 		`${candidateSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
