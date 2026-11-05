@@ -271,22 +271,32 @@ export const observe = (
 	const listed = parseWorktreeList(
 		git(['worktree', 'list', '--porcelain'], root),
 	);
-	return listed.map((entry, index) => ({
-		path: entry.path,
-		head: entry.head,
-		// Git lists the main checkout first, and that is the only thing
-		// this relies on: deriving it from a path comparison against the
-		// repository root marks the CURRENT worktree as main when the
-		// reaper runs from inside one, which is a different fact.
-		isMain: index === 0,
-		isCurrent: entry.path === currentPath,
-		locked: entry.locked,
-		dirtyPaths: readDirtyPaths(entry.path),
-		delivered:
-			entry.head.length > 0 &&
-			isAncestor(entry.head, integrationRef, root),
-		lastActivityMs: lastGitActivityMs(entry.path),
-	}));
+	return listed.map((entry, index) => {
+		// The activity is read BEFORE the dirty paths, and the order is not
+		// cosmetic. `git status` rewrites the index it reads, so a
+		// worktree measured after it looks active however long ago it was
+		// last used — and the reaper then never reclaims anything, because
+		// it freshens the very timestamp it judges. On 2026-11-05 that
+		// left every spent worktree looking active and failed the tools
+		// 4/4 shard of PR #1810.
+		const lastActivityMs = lastGitActivityMs(entry.path);
+		return {
+			path: entry.path,
+			head: entry.head,
+			// Git lists the main checkout first, and that is the only thing
+			// this relies on: deriving it from a path comparison against the
+			// repository root marks the CURRENT worktree as main when the
+			// reaper runs from inside one, which is a different fact.
+			isMain: index === 0,
+			isCurrent: entry.path === currentPath,
+			locked: entry.locked,
+			dirtyPaths: readDirtyPaths(entry.path),
+			delivered:
+				entry.head.length > 0 &&
+				isAncestor(entry.head, integrationRef, root),
+			lastActivityMs,
+		};
+	});
 };
 
 const isAncestor = (sha: string, ref: string, root: string): boolean => {
