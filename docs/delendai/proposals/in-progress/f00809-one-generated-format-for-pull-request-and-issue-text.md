@@ -41,8 +41,10 @@ Titles and bodies differ by agent and path, so history, review and triage cannot
 - global_gate: none
 
 ### S1 — Core template service
+
+New files (declared here in prose, as a proposal may name only existing paths): packages/core/src/lib/change-text/change-text-template.service.ts, its spec, and packages/core/src/lib/work-units/publication-pull-request.service.spec.ts.
 - **Status**: pending
-- **Files**: `packages/core/src/lib/change-text/change-text-template.service.ts`, `packages/core/src/lib/change-text/change-text-template.service.spec.ts`, `packages/core/src/lib/change-text/change-text.interface.ts`
+- **Files**: `packages/core/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "A pure renderer yields the title and the body sections in the fixed order for implement, review, create, batch close and issue kinds."
@@ -53,7 +55,7 @@ Titles and bodies differ by agent and path, so history, review and triage cannot
 ### S2 — Work publish and republish use the template
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`
 - **Gate**: type
 - acceptance:
   - "work publish opens and republish (x01023 forge contract, GitHub and GitLab) updates the pull request with the template title and body."
