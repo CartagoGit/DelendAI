@@ -45,9 +45,37 @@ const isConfigRead = (args: readonly string[]): boolean =>
 	((args.length === 3 && args[1] === '--get') ||
 		(args.length === 2 && /^[\w-]+\.[\w.-]+$/u.test(args[1] ?? '')));
 
+/** `rev-parse` flags that resolve one name without changing anything. */
+const RESOLVING_FLAGS = new Set([
+	'-q',
+	'--quiet',
+	'--verify',
+	'--short',
+	'--abbrev-ref',
+	'--symbolic-full-name',
+]);
+
+/** `rev-parse [-q] [--verify] <name>`: one name, read flags only. */
+const isRefResolve = (args: readonly string[]): boolean =>
+	args[0] === 'rev-parse' &&
+	args.slice(1).filter((arg) => !RESOLVING_FLAGS.has(arg)).length === 1 &&
+	!args
+		.slice(1)
+		.some((arg) => arg.startsWith('-') && !RESOLVING_FLAGS.has(arg));
+
+const isSymbolicRefRead = (args: readonly string[]): boolean =>
+	args[0] === 'symbolic-ref' &&
+	args
+		.slice(1)
+		.every((arg) => ['-q', '--quiet', '--short', 'HEAD'].includes(arg));
+
 /** Reads whose answer holds until a git write. */
 const isRepositoryRead = (args: readonly string[]): boolean =>
 	isLocatingRevParse(args) ||
+	isRefResolve(args) ||
+	isSymbolicRefRead(args) ||
+	args[0] === 'for-each-ref' ||
+	args[0] === 'show-ref' ||
 	isConfigRead(args) ||
 	(args[0] === 'remote' &&
 		(args.length === 1 || (args.length === 3 && args[1] === 'get-url'))) ||

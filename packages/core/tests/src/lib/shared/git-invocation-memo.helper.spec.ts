@@ -12,9 +12,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { runGitCommand } from '@delendai/core/lib/shared/git-command.helper';
 import { withGitInvocationMemo } from '@delendai/core/lib/shared/git-invocation-memo.helper';
 import {
+	forgetGitReads,
 	observeGitSpawns,
 	readGit,
 } from '@delendai/core/lib/shared/git-read.helper';
+import { createGitRunner } from '@delendai/core/lib/shared/git-write';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -123,5 +125,51 @@ describe('withGitInvocationMemo', () => {
 			withGitInvocationMemo(async () => readGit(root, ['remote'])),
 		]);
 		expect(both).toEqual(['', '']);
+	});
+
+	it('resolves a ref once until a ref is written, through any runner', async () => {
+		const root = repo();
+		const verify = ['rev-parse', '-q', '--verify', 'refs/heads/main'];
+		const { value, spawns } = await (async () => {
+			const seen: string[] = [];
+			const stop = observeGitSpawns(({ args }) =>
+				seen.push(args[0] ?? ''),
+			);
+			const answers = await withGitInvocationMemo(async () => {
+				const first = readGit(root, verify);
+				readGit(root, verify);
+				readGit(root, ['for-each-ref', '--format=%(refname)']);
+				readGit(root, ['for-each-ref', '--format=%(refname)']);
+				await createGitRunner(root)([
+					'commit',
+					'-q',
+					'--allow-empty',
+					'-m',
+					'two',
+				]);
+				return [first, readGit(root, verify)];
+			});
+			stop();
+			return { value: answers, spawns: seen };
+		})();
+		expect(value[0]).not.toBe(value[1]);
+		expect(spawns).toEqual([
+			'rev-parse',
+			'for-each-ref',
+			'commit',
+			'rev-parse',
+		]);
+	});
+
+	it('forgets when a process that is not git ran', () => {
+		const root = repo();
+		const { spawns } = counting(() =>
+			withGitInvocationMemo(() => {
+				readGit(root, ['symbolic-ref', '--short', 'HEAD']);
+				forgetGitReads();
+				readGit(root, ['symbolic-ref', '--short', 'HEAD']);
+			}),
+		);
+		expect(spawns).toHaveLength(2);
 	});
 });

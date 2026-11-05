@@ -38,6 +38,7 @@ import {
 	lowPriorityShell,
 } from '../platform/background-load.service';
 import { validationGateSteps } from './validation-gate-steps.service';
+import { forgetGitReads } from '../shared/git-read.helper';
 
 /** How many trailing lines of a failed step's output a report keeps. */
 const OUTPUT_TAIL_LINES = 20;
@@ -56,6 +57,7 @@ export const runCertificationCommand: ICertificationCommandRunner = (
 ) => {
 	// The machine is the owner's: a proof runs at the lowest priority and
 	// with half the cores unless the environment says otherwise.
+	forgetGitReads();
 	const result = spawnSync(lowPriorityShell(command), {
 		cwd,
 		env: backgroundEnv(),
@@ -64,6 +66,7 @@ export const runCertificationCommand: ICertificationCommandRunner = (
 		stdio: ['ignore', 'pipe', 'pipe'],
 		maxBuffer: 64 * 1024 * 1024,
 	});
+	forgetGitReads();
 	return {
 		code: result.status ?? 1,
 		output: `${result.stdout ?? ''}${result.stderr ?? ''}${result.error === undefined ? '' : String(result.error)}`,
