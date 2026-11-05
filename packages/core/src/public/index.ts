@@ -864,3 +864,22 @@ export type { IUnitAdoption } from '../lib/contracts/interfaces/unit-adoption.in
 // proposals plugin has just allocated, so the unit is named after it.
 export { adoptProposalId } from '../lib/work-units/unit-adoption.service';
 export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.interface';
+
+// One format of pull request and issue text, whatever agent made the work.
+export {
+	changeTypeOf,
+	proposalScopeOf,
+	renderChangeText,
+	renderIssueText,
+	scopeOfPaths,
+	shapeSummary,
+} from '../lib/change-text/change-text-template.service';
+export type {
+	IChangeKind,
+	IChangeText,
+	IChangeTextInput,
+	IChangeType,
+	IIssueTextInput,
+	IProofStep,
+	IProposalUnit,
+} from '../lib/contracts/interfaces/change-text.interface';
