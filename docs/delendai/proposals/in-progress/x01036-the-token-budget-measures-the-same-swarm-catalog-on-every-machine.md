@@ -2,10 +2,14 @@
 id: x01036
 title: "The token budget measures the same swarm catalog on every machine"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-05
+last-transition-id: 0697dbdf-f5f9-45d8-a676-46a36e3c6169
+last-correlation-id: 0697dbdf-f5f9-45d8-a676-46a36e3c6169
+last-transition-from: ready
+last-transition-at: 2026-11-05T00:32:51.081Z
 ---
 
 # x01036 — The token budget measures the same swarm catalog on every machine
