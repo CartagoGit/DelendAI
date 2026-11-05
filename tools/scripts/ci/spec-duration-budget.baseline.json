@@ -2,8 +2,12 @@
 	"apps/web/scripts/__tests__/gen-capabilities.spec.ts",
 	"packages/cli/src/lib/init/init-render.service.spec.ts",
 	"packages/cli/src/lib/leave-no-trace.service.spec.ts",
+	"packages/core/tests/src/architecture/core-proposals-boundary.spec.ts",
 	"packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts",
+	"packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts",
 	"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts",
+	"packages/core/tests/src/public/deprecation.spec.ts",
+	"plugins/agent-orchestrator/tests/src/lib/dispatch/change-context-reader.helper.spec.ts",
 	"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts"
