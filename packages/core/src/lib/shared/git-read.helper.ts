@@ -12,7 +12,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { execFile, execFileSync } from 'node:child_process';
 
 import type {
-	GitSpawnObserver,
+	IGitSpawnObserver,
 	IGitReadCache,
 	IGitReadOptions,
 	IGitSpawn,
@@ -21,11 +21,11 @@ import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const DEFAULT_MAX_BUFFER = 64 * 1024 * 1024;
 
-const observers = new Set<GitSpawnObserver>();
+const observers = new Set<IGitSpawnObserver>();
 const readCache = new AsyncLocalStorage<IGitReadCache>();
 
 /** Watch every git process the seam starts; the answer stops watching. */
-export const observeGitSpawns = (observer: GitSpawnObserver): (() => void) => {
+export const observeGitSpawns = (observer: IGitSpawnObserver): (() => void) => {
 	observers.add(observer);
 	return () => {
 		observers.delete(observer);
