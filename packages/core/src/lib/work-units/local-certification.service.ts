@@ -152,6 +152,15 @@ export const certifyCandidate = async (
 		};
 	} finally {
 		git(root, ['worktree', 'remove', '--force', dir]);
-		git(root, ['worktree', 'prune']);
+		// NO `git worktree prune` aquí: es global, y borra los worktrees
+		// que OTRA certificación está usando en este mismo momento. Con dos
+		// aterrizajes a la vez, el prune de una se come el árbol de la otra
+		// a mitad del gate: el suite muere con `Cannot find module
+		// '/tests/setup-vitest.ts'` y el aterrizaje se rechaza por un fallo
+		// que no tiene que ver con el candidato.
+		//
+		// `worktree remove --force` ya borra la entrada de este worktree;
+		// los worktrees huérfanos de otra procedencia se limpian con un
+		// prune explícito, fuera de la ventana de un gate.
 	}
 };
