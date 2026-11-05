@@ -3,17 +3,10 @@
  * returns, on a real repository.
  */
 import { execFileSync } from 'node:child_process';
-import {
-	mkdtempSync,
-	readFileSync,
-	realpathSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
 	commitPendingCallWrites,
@@ -23,50 +16,37 @@ import {
 } from '../../../../src/lib/shared/commit-call-writes';
 import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
 import { buildFsToolRegistrations } from '../../../../src/lib/shared/fs-tools';
-import { createFakeToolServer } from '@delendai/test-kit';
+import {
+	createFakeToolServer,
+	createGitRepoTemplate,
+	skipLockPauses,
+} from '@delendai/test-kit';
 import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
-
-const made: string[] = [];
-afterEach(() => {
-	for (const dir of made.splice(0)) {
-		rmSync(dir, { recursive: true, force: true });
-	}
-});
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
+/** How long the product waits between two attempts at a held lock. */
+const LOCK_PAUSE_MS = 1000;
+
 /** A project on work refs: its shared checkout, and one unit's worktree. */
-const project = (): { readonly shared: string; readonly unit: string } => {
-	const parent = realpathSync(mkdtempSync(join(tmpdir(), 'x722-')));
-	made.push(parent);
-	const shared = join(parent, 'checkout');
-	const unit = join(parent, 'unit');
-	execFileSync('git', ['init', '-q', '-b', 'develop', shared]);
-	git(shared, 'config', 'user.email', 'owner@example.test');
-	git(shared, 'config', 'user.name', 'Owner');
-	writeFileSync(
-		join(shared, 'delendai.config.json'),
-		JSON.stringify({
+const template = createGitRepoTemplate({
+	trunk: 'develop',
+	files: {
+		'delendai.config.json': JSON.stringify({
 			development: {
 				profile: 'shared-checkout-pr',
 				branches: { namespacePrefix: 'delendai' },
 			},
 		}),
-	);
-	writeFileSync(join(shared, 'proposal.md'), 'status: review\n');
-	git(shared, 'add', '-A');
-	git(shared, 'commit', '-q', '-m', 'base');
-	git(
-		shared,
-		'worktree',
-		'add',
-		'-q',
-		'-b',
-		'delendai/wip/qwen/review/batch-g1/backlog',
-		unit,
-	);
-	return { shared, unit };
+		'proposal.md': 'status: review\n',
+	},
+	worktrees: { unit: 'delendai/wip/qwen/review/batch-g1/backlog' },
+});
+
+const project = (): { readonly shared: string; readonly unit: string } => {
+	const copy = template.copy();
+	return { shared: copy.root, unit: copy.worktrees.unit ?? '' };
 };
 
 const writing =
@@ -106,7 +86,8 @@ describe('a write in a unit of work is committed as it happens', () => {
 			'.git/refs/heads/delendai/wip/qwen/review/batch-g1/backlog.lock',
 		);
 		writeFileSync(lock, '');
-		setTimeout(() => rmSync(lock, { force: true }), 1500);
+		// Another process lets go during the first pause.
+		skipLockPauses(LOCK_PAUSE_MS, () => rmSync(lock, { force: true }));
 
 		await withCallWritesCommitted(
 			unit,
@@ -379,6 +360,7 @@ describe('tool writes whose commit failed', () => {
 	};
 
 	it('are committed under the tool subject by the next call', async () => {
+		skipLockPauses(LOCK_PAUSE_MS);
 		const { shared, unit } = project();
 		const lock = holdLock(shared);
 		await withCallWritesCommitted(
@@ -408,6 +390,7 @@ describe('tool writes whose commit failed', () => {
 	});
 
 	it('are left uncommitted once somebody changed them since', async () => {
+		skipLockPauses(LOCK_PAUSE_MS);
 		const { shared, unit } = project();
 		const lock = holdLock(shared);
 		await withCallWritesCommitted(
