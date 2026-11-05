@@ -271,32 +271,39 @@ export const observe = (
 	const listed = parseWorktreeList(
 		git(['worktree', 'list', '--porcelain'], root),
 	);
-	return listed.map((entry, index) => {
-		// The activity is read BEFORE the dirty paths, and the order is not
-		// cosmetic. `git status` rewrites the index it reads, so a
-		// worktree measured after it looks active however long ago it was
-		// last used — and the reaper then never reclaims anything, because
-		// it freshens the very timestamp it judges. On 2026-11-05 that
-		// left every spent worktree looking active and failed the tools
-		// 4/4 shard of PR #1810.
-		const lastActivityMs = lastGitActivityMs(entry.path);
-		return {
-			path: entry.path,
-			head: entry.head,
-			// Git lists the main checkout first, and that is the only thing
-			// this relies on: deriving it from a path comparison against the
-			// repository root marks the CURRENT worktree as main when the
-			// reaper runs from inside one, which is a different fact.
-			isMain: index === 0,
-			isCurrent: entry.path === currentPath,
-			locked: entry.locked,
-			dirtyPaths: readDirtyPaths(entry.path),
-			delivered:
-				entry.head.length > 0 &&
-				isAncestor(entry.head, integrationRef, root),
-			lastActivityMs,
-		};
-	});
+	// EVERY worktree's activity is read BEFORE ANY worktree's status.
+	//
+	// `git status` rewrites the index it read when the index looks older
+	// than the file it compared against. The activity is the mtime of that
+	// very index, so a status read refreshes it and the worktree reads as
+	// active -- "git worked here 0 minute(s) ago" -- however long ago it
+	// was really left alone. The reaper then never judges anything spent,
+	// so a finished unit's worktree, branch and disk pile up for ever.
+	//
+	// Reading one worktree's status before another worktree's activity is
+	// measured is the same defect one step to the side: the second
+	// worktree's index was already refreshed by the first one's status.
+	// So the two passes are separate, and the first one touches nothing
+	// but mtimes.
+	const activity = new Map(
+		listed.map((entry) => [entry.path, lastGitActivityMs(entry.path)]),
+	);
+	return listed.map((entry, index) => ({
+		path: entry.path,
+		head: entry.head,
+		// Git lists the main checkout first, and that is the only thing
+		// this relies on: deriving it from a path comparison against the
+		// repository root marks the CURRENT worktree as main when the
+		// reaper runs from inside one, which is a different fact.
+		isMain: index === 0,
+		isCurrent: entry.path === currentPath,
+		locked: entry.locked,
+		dirtyPaths: readDirtyPaths(entry.path),
+		delivered:
+			entry.head.length > 0 &&
+			isAncestor(entry.head, integrationRef, root),
+		lastActivityMs: activity.get(entry.path) ?? 0,
+	}));
 };
 
 const isAncestor = (sha: string, ref: string, root: string): boolean => {
