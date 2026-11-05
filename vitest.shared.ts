@@ -97,9 +97,15 @@ export const sharedTestOptions = {
  * replaces a module, a global, a timer or `process.exit`, or it assigns to
  * `process.env`. With `isolate: false` those replacements outlive the file
  * and break whichever file runs next in the same worker.
+ *
+ * A file that boots real plugins through dynamic imports (the token budget
+ * measurement) opts in with the `@delendai-isolate` pragma: a module a
+ * previous file left in the shared graph keeps its lazy `import()` bound to
+ * that file's torn-down environment, so a plugin silently failed to load and
+ * the measured catalog lost its tools.
  */
 const NEEDS_ISOLATION =
-	/\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+	/@delendai-isolate|\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
 
 /** The name of a project's isolated half: the project's name and this. */
 export const ISOLATED_PROJECT_SUFFIX = '-isolated';
