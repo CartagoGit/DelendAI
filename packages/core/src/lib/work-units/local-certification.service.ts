@@ -99,24 +99,17 @@ export const certifyCandidate = async (
 		return { ...base, declared: false, passed: false, steps: [] };
 	}
 
-	const gitDir = git(root, [
-		'rev-parse',
-		'--path-format=absolute',
-		'--git-common-dir',
-	]);
-	if (!gitDir.ok || gitDir.out.length === 0) {
+	const topLevel = git(root, ['rev-parse', '--show-toplevel']);
+	if (!topLevel.ok || topLevel.out.length === 0) {
 		return {
 			...base,
 			declared: true,
 			passed: false,
 			steps: [],
-			setupFailure: `could not locate the git directory: ${gitDir.out}`,
+			setupFailure: `could not locate the git working tree: ${topLevel.out}`,
 		};
 	}
-	const topLevel = git(root, ['rev-parse', '--show-toplevel']);
-	const repoRoot =
-		topLevel.ok && topLevel.out.length > 0 ? topLevel.out : root;
-	const parent = join(repoRoot, '.cache', 'delendai', 'certify');
+	const parent = join(topLevel.out, '.cache', 'delendai', 'certify');
 	const dir = join(
 		parent,
 		`${candidateSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
