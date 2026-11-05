@@ -3,6 +3,9 @@
  * real measurement. Building the dashboard measures every preset on every
  * surface, so it runs in the e2e tier; the pure summary case stays in
  * token-budget-dashboard.spec.ts.
+ *
+ * @delendai-isolate: it boots every preset's plugins by dynamic import, which
+ * must not run on a module graph shared with other files.
  */
 import { readFileSync } from 'node:fs';
 
