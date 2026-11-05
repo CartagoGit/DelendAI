@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 
 import {
 	bunOwnedExcludes,
+	SHARED_GRAPH_GROUP_ORDER,
 	sharedSetupFiles,
 	sharedTestOptions,
 	workspaceAliases,
@@ -23,9 +24,10 @@ export default defineConfig({
 		// Every module that keeps state between calls is reset per file by
 		// tests/setup/reset-module-state.setup.ts, so files can share a worker.
 		isolate: false,
-		// A shared worker pool differs from the projects that keep isolation, and
-		// vitest refuses two groups with different workers but the same order.
-		sequence: { groupOrder: 1 },
+		// This project runs its files one at a time, so its workers differ from
+		// the other projects that share a graph; vitest refuses two groups with
+		// different workers but the same order.
+		sequence: { groupOrder: SHARED_GRAPH_GROUP_ORDER.serial },
 		// Concurrency/IO tests can exceed the 5s default under heavy
 		// parallel-suite CPU load; widen so CI is not flaky (a real hang
 		// still fails — assertions are the contract, not the wait).
