@@ -1,5 +1,5 @@
 /**
- * local-certification.service.spec.ts — the gate that certifies a merge
+ * local-certification.service.e2e.spec.ts — the gate that certifies a merge
  * candidate runs on that candidate, from the integration head's
  * declaration, in a worktree of its own, and fails closed.
  */

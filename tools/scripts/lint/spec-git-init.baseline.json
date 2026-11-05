@@ -59,7 +59,6 @@
 	"packages/core/tests/src/lib/work-units/integration-base.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/landing-certification-record.service.spec.ts": 1,
-	"packages/core/tests/src/lib/work-units/local-certification.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/outside-slice.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/publication-target.service.spec.ts": 2,
 	"packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts": 1,
