@@ -2,14 +2,14 @@
 id: v00138
 title: "CI transforms each module once and keeps its caches between runs"
 kind: perf
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: adea2a63-def1-48c8-8b05-2096e82a8b77
-last-correlation-id: adea2a63-def1-48c8-8b05-2096e82a8b77
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T03:56:31.762Z
+last-transition-id: bcebcbd0-fc98-45c1-99c7-a3944edffc33
+last-correlation-id: bcebcbd0-fc98-45c1-99c7-a3944edffc33
+last-transition-from: review
+last-transition-at: 2026-11-04T23:11:57.728Z
 ---
 
 # v00138 — CI transforms each module once and keeps its caches between runs
@@ -32,25 +32,29 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 - global_gate: type
 
 ### S1 — The transform cache persists in CI
-- **Status**: review
+- **Status**: pending
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86)."
 - shipped-in: `93abaae43aed`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S2 — proposals evaluates each module once where state allows
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/report/vitest-module-evaluations.script.ts`, `tools/tests/report/vitest-module-evaluations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A report script prints module evaluations per project from a vitest run (G12)."
   - "The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them."
 - shipped-in: `93abaae43aed`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ## acceptance
 

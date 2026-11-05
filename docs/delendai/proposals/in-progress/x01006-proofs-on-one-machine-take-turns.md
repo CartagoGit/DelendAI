@@ -2,14 +2,14 @@
 id: x01006
 title: "Proofs on one machine take turns"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: cc3f535b-2c43-4e80-a471-09860a6797e2
-last-correlation-id: cc3f535b-2c43-4e80-a471-09860a6797e2
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T02:26:14.683Z
+last-transition-id: 5102b610-c1e8-44bf-9c8d-068d045d3376
+last-correlation-id: 5102b610-c1e8-44bf-9c8d-068d045d3376
+last-transition-from: review
+last-transition-at: 2026-11-04T23:01:01.445Z
 ---
 
 # x01006 — Proofs on one machine take turns
@@ -32,15 +32,17 @@ On 2026-11-03 several agents proved units at once on one machine (load 20-30): e
 - global_gate: none
 
 ### S1 — Put the proof under the compute slot
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/lib/contracts/constants/compute-slot.constant.ts`, `packages/core/src/lib/contracts/interfaces/compute-slot.interface.ts`, `tools/scripts/lib/with-compute-lock.script.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Two concurrent proofs run one after the other and the waiter names the holder."
   - "A holder killed without releasing frees the slot for the next caller."
 - shipped-in: `a00512b96772`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ## acceptance
 
