@@ -138,6 +138,26 @@ const heldUnjudged = async (
 	return undefined;
 };
 
+/** Whether the checkout's unit already carries a claim on `proposalId`. */
+export const holdsClaim = async (
+	run: IGitRunner,
+	proposalId: string,
+	integration: string,
+): Promise<boolean> => {
+	const own = await run([
+		'log',
+		CLAIM_TRAILERS_FORMAT,
+		'HEAD',
+		'--not',
+		integration,
+		'--',
+	]);
+	return (
+		own.ok &&
+		heldFromTrailers(own.output).includes(proposalId.toLowerCase())
+	);
+};
+
 /**
  * Claim `proposalId` in the checkout's unit: refused while any other unit
  * holds it, a no-op when this one does.
@@ -237,7 +257,11 @@ export const verdictClaimRefusal = async (
 	integration: string,
 	namespacePrefix: string,
 	/** `claim: false` checks where the verdict is written and claims nothing. */
-	options: { readonly claim?: boolean } = {},
+	options: {
+		readonly claim?: boolean;
+		/** A verdict claims nothing (x01032): refused unless the pack already holds it. */
+		readonly mustHold?: boolean;
+	} = {},
 ): Promise<IVerdictClaimRefusal | undefined> => {
 	if (!(await inReviewUnit(run, shape))) {
 		// A project with no work refs has no unit to write in. One that has
@@ -252,6 +276,15 @@ export const verdictClaimRefusal = async (
 				};
 	}
 	if (options.claim === false) return undefined;
+	if (
+		options.mustHold === true &&
+		!(await holdsClaim(run, proposalId, integration))
+	) {
+		return {
+			reason: `Your review unit has not claimed ${proposalId}, and a verdict on a proposal the pack has not claimed is refused: its pull request could never merge.`,
+			nextAction: `Claim it first with ${namespacePrefix}_review_claim { proposalId: "${proposalId}", agent } (pass your review unit's worktree as \`checkout\`), then record the verdict. Nothing was written.`,
+		};
+	}
 	const outcome = await claimForReview(run, shape, proposalId, integration);
 	if (outcome.kind === 'held') {
 		return {

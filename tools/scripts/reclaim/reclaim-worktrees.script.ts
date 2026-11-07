@@ -94,7 +94,13 @@ const gitRead = (args: readonly string[], cwd: string): string | undefined => {
 
 /** Uncommitted work in a worktree, or `null` when git could not say. */
 export const readDirtyPaths = (worktreePath: string): number | null => {
-	const status = gitRead(['status', '--porcelain'], worktreePath);
+	// `--no-optional-locks`: a read must not refresh the index whose mtime
+	// says when git last worked here, or the dry run leaves the worktree
+	// looking busy to the run that applies.
+	const status = gitRead(
+		['--no-optional-locks', 'status', '--porcelain'],
+		worktreePath,
+	);
 	if (status === undefined) return null;
 	return worksomebodyOwns(
 		status.split('\n').filter((line) => line.trim().length > 0),
@@ -271,6 +277,23 @@ export const observe = (
 	const listed = parseWorktreeList(
 		git(['worktree', 'list', '--porcelain'], root),
 	);
+	// EVERY worktree's activity is read BEFORE ANY worktree's status.
+	//
+	// `git status` rewrites the index it read when the index looks older
+	// than the file it compared against. The activity is the mtime of that
+	// very index, so a status read refreshes it and the worktree reads as
+	// active -- "git worked here 0 minute(s) ago" -- however long ago it
+	// was really left alone. The reaper then never judges anything spent,
+	// so a finished unit's worktree, branch and disk pile up for ever.
+	//
+	// Reading one worktree's status before another worktree's activity is
+	// measured is the same defect one step to the side: the second
+	// worktree's index was already refreshed by the first one's status.
+	// So the two passes are separate, and the first one touches nothing
+	// but mtimes.
+	const activity = new Map(
+		listed.map((entry) => [entry.path, lastGitActivityMs(entry.path)]),
+	);
 	return listed.map((entry, index) => ({
 		path: entry.path,
 		head: entry.head,
@@ -285,7 +308,7 @@ export const observe = (
 		delivered:
 			entry.head.length > 0 &&
 			isAncestor(entry.head, integrationRef, root),
-		lastActivityMs: lastGitActivityMs(entry.path),
+		lastActivityMs: activity.get(entry.path) ?? 0,
 	}));
 };
 
