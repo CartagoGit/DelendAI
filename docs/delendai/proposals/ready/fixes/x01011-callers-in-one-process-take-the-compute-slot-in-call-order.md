@@ -2,14 +2,14 @@
 id: x01011
 title: "Callers in one process take the compute slot in call order"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: e9b15f38-0c5c-4d19-b452-e0367756f2af
-last-correlation-id: e9b15f38-0c5c-4d19-b452-e0367756f2af
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T19:56:55.356Z
+last-transition-id: 092b3077-7331-4d22-adb0-513c0efcab15
+last-correlation-id: 092b3077-7331-4d22-adb0-513c0efcab15
+last-transition-from: review
+last-transition-at: 2026-11-04T22:00:59.270Z
 ---
 
 # x01011 — Callers in one process take the compute slot in call order
@@ -32,14 +32,16 @@ Develop's CI failed `compute-slot.service.spec.ts` (two concurrent proofs one af
 - global_gate: none
 
 ### S1 — One process queues for the slot in call order
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Callers of withComputeSlot in one process take the slot in the order they asked; the spec for two concurrent proofs passes in 20 shuffled runs under load."
 - shipped-in: `4feb256abdfd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale due to post-shipped-in drift: `compute-slot.service.ts` and its spec changed after `4feb256abdfd` on develop (`2ca63f042`, `7b8d0fb38`, `597ee7998`, `2f3d58127`). Rebase and re-validate the FIFO evidence on current develop before approval.
 
 ## acceptance
 

@@ -2,14 +2,14 @@
 id: x01032
 title: "A review enters its own review unit and cannot record a verdict it has not claimed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 3646bfa2-ae35-414f-ab68-785b35c263aa
-last-correlation-id: 3646bfa2-ae35-414f-ab68-785b35c263aa
-last-transition-from: ready
-last-transition-at: 2026-11-04T14:59:20.009Z
+last-transition-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
+last-correlation-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
+last-transition-from: in-progress
+last-transition-at: 2026-11-04T15:42:39.015Z
 ---
 
 # x01032 — A review enters its own review unit and cannot record a verdict it has not claimed
@@ -32,39 +32,54 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - global_gate: none
 
 ### S1 — work enter derives the review kind
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter for proposal batch, or for a proposal in review/, derives kind review and topic verdicts itself; a contradicting --kind is refused naming the right command (review next), and a spec covers each."
+- shipped-in: `247313bf9ee3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
-- **Status**: pending
-- **Files**: `packages/cli/src/commands/review.command.ts`, `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and review_queue, called with no unit, enter or reuse the caller's review unit, so a reviewer never chooses a kind; a spec shows an agent with no unit ending in kind review."
+- shipped-in: `0fb7224c8398`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — proposal_review refuses a verdict on an unclaimed proposal
-- **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-lifecycle.spec.ts`
+- **Status**: review
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/tools/authoring/proposal-review.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
   - "proposal_review submit, approve or request_changes on a proposal the pack has not claimed is refused at once with the review_claim command to run; a spec shows x01004 refused when only x01016 is claimed, and the lint is unchanged."
+- shipped-in: `d08f20884a0d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — A review pack is titled by its verdicts
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The pull request of a review unit is titled and summarised from the proposals it judges, never implement batch, on first open and on republish; a spec covers a review unit whose branch names batch."
+- shipped-in: `f7d36c3592bf`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
-### S5 — Claims and verdicts land on the review wip, and a diverged pack is reported
-- **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts`
+### S5 — One review wip, a diverged pack reported, a sibling publication merged or retired
+- **Status**: review
+- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/diverged-review-pack.service.ts`, `packages/core/src/lib/work-units/sibling-publications.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/diverged-review-pack.service.spec.ts`, `packages/core/tests/src/lib/work-units/sibling-publications.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and every proposal_review action commit on the reviewer's review wip, and work publish cuts the pack from that wip; work status reports a pack ref holding commits its wip lacks, with the merge to run; specs cover claim and verdict landing on the wip, a publish cutting the pack from it, and a diverged pack reported."
+- shipped-in: `247313bf9ee3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
