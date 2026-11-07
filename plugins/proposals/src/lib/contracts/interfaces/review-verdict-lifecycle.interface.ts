@@ -2,10 +2,10 @@
 export interface IReviewVerdictLifecycle {
 	/** The approval ended the proposal and `review → done` ran. */
 	readonly proposalClosed?: boolean;
-	/** Why a close, reopen or hand-over transition was refused, when it was. */
+	/** Why a close or hand-over transition was refused, when it was. */
 	readonly proposalCloseBlocker?: string;
-	/** A change request sent the proposal back to `in-progress`. */
-	readonly proposalReopened?: boolean;
+	/** What happens next when the verdict left the proposal in review/ sent back. */
+	readonly nextAction?: string;
 	/** The submission left no slice to do and the proposal went to `review`. */
 	readonly proposalHandedOver?: boolean;
 }

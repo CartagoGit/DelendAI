@@ -1,7 +1,7 @@
 /**
  * proposal-review-sent-back.spec.ts — the slices a pack sends back are
- * reopened, each one, and their resubmission brings the proposal back to
- * review.
+ * reopened, each one, while the proposal stays in review/ with their
+ * review-state changes_requested; their resubmission is its implementer's.
  */
 import { runProposalTransition } from '@delendai/proposals/lib/tools/proposal-transition.tool';
 import { existsSync, readFileSync } from 'node:fs';
@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe('a pack that sends slices back, and their return', () => {
-	it('keeps the proposal in review while slices wait, and makes it ready with its findings once none does', async () => {
+	it('keeps the proposal in review/ when its review is over and sent slices back', async () => {
 		repo.proposalInReview(
 			`${SLICE_S1('review')}\n### S2 — more work\n- **Status**: review\n- **Files**: \`src/b.ts\`\n- review-state: in_review\n- review-implementer: agent-a\n`,
 		);
@@ -37,16 +37,8 @@ describe('a pack that sends slices back, and their return', () => {
 			agent: 'agent-b',
 			note: 'nothing was delivered for S1',
 		});
-		// S2 still waits for its verdict: the review is not over.
-		expect(first.body.proposalReopened).toBeUndefined();
-		expect(
-			existsSync(
-				join(
-					repo.root,
-					'docs/delendai/proposals/review/x00001-work.md',
-				),
-			),
-		).toBe(true);
+		// S2 still waits for its verdict: nothing for the implementer yet.
+		expect(first.body.nextAction).toBeUndefined();
 
 		const second = await repo.review({
 			sliceId: 'S2',
@@ -57,22 +49,29 @@ describe('a pack that sends slices back, and their return', () => {
 
 		expect(second.body).toMatchObject({
 			status: 'changes_requested',
-			proposalReopened: true,
+			nextAction: expect.stringContaining(
+				'x00001 stays in review/ with review-state changes_requested',
+			),
 		});
-		const ready = repo
-			.git('ls-files', '--others', '--cached', 'docs/delendai/proposals')
-			.split('\n')
-			.find((path) => path.endsWith('x00001-work.md'));
-		expect(ready).toMatch(/proposals\/ready\//u);
-		const markdown = readFileSync(join(repo.root, ready ?? ''), 'utf8');
+		expect(second.body.proposalReopened).toBeUndefined();
+		const path = join(
+			repo.root,
+			'docs/delendai/proposals/review/x00001-work.md',
+		);
+		expect(existsSync(path)).toBe(true);
+		const markdown = readFileSync(path, 'utf8');
+		expect(markdown).toMatch(/^status: review$/mu);
 		// Each slice sent back is work to do, its finding beside it.
 		expect(markdown.match(/^- \*\*Status\*\*: pending$/gmu)).toHaveLength(
 			2,
 		);
+		expect(
+			markdown.match(/^- review-state: changes_requested$/gmu),
+		).toHaveLength(2);
 		expect(markdown).toContain('nothing was delivered for S2');
 	});
 
-	it('makes the proposal ready when its last verdict is an approval but a slice was sent back', async () => {
+	it('keeps the proposal in review/ when its last verdict is an approval but a slice was sent back', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/b.ts',
 			'delendai/pr/agent-a/x00001-S2-g1/the-work',
@@ -93,9 +92,9 @@ describe('a pack that sends slices back, and their return', () => {
 			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
 		});
 
-		expect(approved.body).toMatchObject({ proposalReopened: true });
 		expect(approved.body.proposalClosed).toBeUndefined();
-		expect(repo.documentOf()).toMatch(/proposals\/ready\//u);
+		expect(approved.body.nextAction).toContain('stays in review/');
+		expect(repo.documentOf()).toMatch(/proposals\/review\//u);
 	});
 
 	it('tries to hand the proposal back to review when its last slice sent back is resubmitted', async () => {
@@ -111,7 +110,8 @@ describe('a pack that sends slices back, and their return', () => {
 			});
 		}
 
-		// The review is over and the proposal ready: its implementer takes it.
+		// The review is over and the proposal in review/: its implementer
+		// re-enters it, as `work deliver` does.
 		await runProposalTransition(
 			{
 				id: 'x00001',

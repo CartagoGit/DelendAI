@@ -14,7 +14,10 @@ import {
 	REVIEW_QUEUE_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-queue-schema.constant';
 import { queueForReviewer } from '../services/review-queue-reviewer.service';
-import { proposalsDirOfUnit } from '../services/review-unit-tree.service';
+import {
+	proposalsDirOfUnit,
+	reviewUnitOfAgent,
+} from '../services/review-unit-tree.service';
 import { compactQueue } from '../services/review-queue-view.service';
 import { buildReviewQueue } from '../services/review-queue.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
@@ -61,6 +64,18 @@ export const buildReviewQueueRegistration = (
 			}) => {
 				const scoped = scopeToCaller(options);
 				const run = scoped.run ?? createGitRunner(scoped.workspaceRoot);
+				const branches = scoped.developmentPolicy?.branches;
+				// A reviewer that names only itself reads its own unit: the
+				// verdicts it recorded there take the proposals off its queue.
+				const unit =
+					args.unit ??
+					(args.agent === undefined || branches === undefined
+						? undefined
+						: await reviewUnitOfAgent({
+								run,
+								shape: branches,
+								agent: args.agent,
+							}));
 				const built = await buildReviewQueue({
 					namespacePrefix: options.namespacePrefix,
 					// The reviewer's own verdicts are in its unit, not yet here.
@@ -68,7 +83,7 @@ export const buildReviewQueueRegistration = (
 						run,
 						workspaceRoot: scoped.workspaceRoot,
 						proposalsDirAbs: scoped.proposalsDirAbs,
-						unit: args.unit,
+						unit,
 					}),
 					run,
 					integration:
@@ -89,7 +104,7 @@ export const buildReviewQueueRegistration = (
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
 					offset: args.offset,
 					agent: args.agent,
-					unit: args.unit,
+					unit,
 					// A reviewer that names itself is one of a swarm; one that
 					// does not reads the backlog oldest first.
 					...(args.agent === undefined
