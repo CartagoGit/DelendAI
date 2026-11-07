@@ -3,20 +3,14 @@
  * namespace (f00808).
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import { unitRefsAnyName } from '@delendai/core/lib/work-units/unit-refs-any-name.service';
 
-const roots: string[] = [];
-afterEach(() => {
-	for (const root of roots.splice(0))
-		rmSync(root, { recursive: true, force: true });
-});
+const template = createGitRepoTemplate({ trunk: 'develop' });
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync(
@@ -41,10 +35,7 @@ const policy = resolveDevelopmentPolicy({
 
 describe('unitRefsAnyName', () => {
 	it('finds a unit under both namespaces, whatever its topic', () => {
-		const root = mkdtempSync(join(tmpdir(), 'unit-refs-'));
-		roots.push(root);
-		git(root, 'init', '-q', '-b', 'develop');
-		git(root, 'commit', '-q', '--allow-empty', '-m', 'base');
+		const root = template.copy().root;
 		const old =
 			'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/one';
 		const fresh = 'refs/heads/wip/agent-a/implement/x00001-S1-g2/two';
