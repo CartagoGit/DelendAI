@@ -10,6 +10,10 @@
  * remote, and the packs of its that the integration branch merged. A
  * release stands until the proposal's document changes after it.
  */
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/cli';
 import { gitVerbatim } from '@delendai/core/runtime';
 
 import { RELEASE_TRAILER } from '../../contracts/constants/review-command.constant';
@@ -18,13 +22,39 @@ interface IReviewBranches {
 	readonly integration: string;
 	readonly workRefPrefix: string;
 	readonly publicationRefPrefix: string;
+	readonly namespacePrefix?: string;
+	readonly formerNamespacePrefixes?: readonly string[];
+	readonly workRefVisibility?: 'visible' | 'hidden';
 }
+
+/**
+ * The work and publication prefixes to read, every owned namespace
+ * included when the branches say which they are (f00808).
+ */
+const prefixesOf = (
+	branches: IReviewBranches,
+): {
+	readonly work: readonly string[];
+	readonly publication: readonly string[];
+} => {
+	const { namespacePrefix, workRefVisibility } = branches;
+	if (namespacePrefix === undefined || workRefVisibility === undefined)
+		return {
+			work: [branches.workRefPrefix],
+			publication: [branches.publicationRefPrefix],
+		};
+	const owned = { ...branches, namespacePrefix, workRefVisibility };
+	return {
+		work: ownedWorkRefPrefixes(owned),
+		publication: ownedPublicationRefPrefixes(owned),
+	};
+};
 
 /** The output of a read-only git command, or nothing when it failed. */
 const read = (cwd: string, args: readonly string[]): string =>
 	gitVerbatim(cwd, args) ?? '';
 
-/** `refs/heads/delendai/wip/` and `delendai/wip/` name the same branches. */
+/** `refs/heads/<ns>/wip/` and `<ns>/wip/` name the same branches. */
 const branchPath = (prefix: string): string =>
 	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
@@ -88,9 +118,15 @@ export const releasedElsewhere = (
 				read(cwd, ['rev-parse', '--verify', '--quiet', ref]).length > 0,
 		);
 	if (integration === undefined) return [];
+	const prefixes = prefixesOf(branches);
 	const own = [
-		`refs/heads/${branchPath(branches.workRefPrefix)}${agent}/review/`,
-		`refs/remotes/origin/${branchPath(branches.publicationRefPrefix)}${agent}/review/`,
+		...prefixes.work.map(
+			(prefix) => `refs/heads/${branchPath(prefix)}${agent}/review/`,
+		),
+		...prefixes.publication.map(
+			(prefix) =>
+				`refs/remotes/origin/${branchPath(prefix)}${agent}/review/`,
+		),
 	];
 	const units = read(cwd, ['for-each-ref', '--format=%(refname)', ...own])
 		.split('\n')
@@ -100,7 +136,9 @@ export const releasedElsewhere = (
 	);
 	// A pack that landed: its merge names its branch, its second parent
 	// carries its releases.
-	const packMark = `${branchPath(branches.publicationRefPrefix)}${agent}/review/`;
+	const packMarks = prefixes.publication.map(
+		(prefix) => `${branchPath(prefix)}${agent}/review/`,
+	);
 	for (const line of read(cwd, [
 		'log',
 		'--first-parent',
@@ -110,7 +148,10 @@ export const releasedElsewhere = (
 		integration,
 	]).split('\n')) {
 		const [merge, subject] = line.split('\t');
-		if (merge === undefined || subject?.includes(packMark) !== true)
+		if (
+			merge === undefined ||
+			!packMarks.some((mark) => subject?.includes(mark) === true)
+		)
 			continue;
 		releases.push(...releasesIn(cwd, [`${merge}^1..${merge}^2`]));
 	}

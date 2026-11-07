@@ -21,6 +21,7 @@
  * it started, each a full copy of the repository, and none was ever
  * delivered for this reaper to see.
  */
+import { ownedRootsOf } from './namespaced-ref.helper';
 import { keepUncommittedEdits } from './unit-edits-kept.service';
 import type { IReapedUnit } from './unit-lease.interface';
 import {
@@ -69,7 +70,7 @@ export const reapDeliveredUnits = async (input: {
 				'ls-remote',
 				'--',
 				remote,
-				`refs/${policy.branches.namespacePrefix}/retired/*`,
+				...ownedRootsOf(policy.branches, 'retired', '*'),
 			]) ?? ''
 		)
 			.split('\n')

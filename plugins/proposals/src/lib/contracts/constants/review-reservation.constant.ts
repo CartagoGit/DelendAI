@@ -1,4 +1,8 @@
-/** Where a review's reservation of a proposal lives on the forge. */
+/**
+ * Where a review's reservation of a proposal lives on the forge. Fixed,
+ * not taken from `namespacePrefix`: a reservation is a compare-and-swap on
+ * one ref, and a second namespace would let two reviewers hold it (f00808).
+ */
 export const REVIEW_RESERVATION_NAMESPACE = 'refs/delendai/claims/review/';
 
 /**

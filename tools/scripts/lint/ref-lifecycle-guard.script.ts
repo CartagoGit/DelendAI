@@ -37,6 +37,11 @@ import {
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
 import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
+import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
 import { carriesNothingBeyond } from '@delendai/core/lib/work-units/landed-work.service';
 import { planRetirement } from '@delendai/core/lib/work-units/work-retire.service';
 
@@ -149,11 +154,27 @@ export const unitReader = (branches: {
 	};
 };
 
+/**
+ * `unitReader` over every owned namespace: a ref under a former one is
+ * read with that namespace's own prefixes (f00808).
+ */
+export const ownedUnitReader = (
+	branches: Parameters<typeof branchesForRef>[0],
+): ((name: string) => IRefUnit | undefined) => {
+	const readers = new Map<string, (name: string) => IRefUnit | undefined>();
+	return (name) => {
+		const own = branchesForRef(branches, name);
+		const reader = readers.get(own.workRefPrefix) ?? unitReader(own);
+		readers.set(own.workRefPrefix, reader);
+		return reader(name);
+	};
+};
+
 let projectReader: ((name: string) => IRefUnit | undefined) | undefined;
 
 /** The unit a ref names, under this project's declared branches. */
 const unitOf = (name: string): IRefUnit | undefined => {
-	projectReader ??= unitReader(declaredBranches(repoRoot()));
+	projectReader ??= ownedUnitReader(declaredBranches(repoRoot()));
 	return projectReader(name);
 };
 
@@ -428,13 +449,18 @@ const main = (): void => {
 	// integration branch that already contains its tip;
 	// reconcile then reports it as reapable and fails the gate until the
 	// copy is gone.
-	const workPrefix = shortRef(branches.workRefPrefix);
-	const publicationPrefix = shortRef(branches.publicationRefPrefix);
+	const workPrefixes = ownedWorkRefPrefixes(branches)
+		.map(shortRef)
+		.filter((prefix) => prefix !== '');
+	const publicationPrefixes = ownedPublicationRefPrefixes(branches)
+		.map(shortRef)
+		.filter((prefix) => prefix !== '');
 	const containers = observed.filter(
 		(branch) =>
 			branch.name === branches.integration ||
-			(publicationPrefix !== '' &&
-				branch.name.startsWith(publicationPrefix)),
+			publicationPrefixes.some((prefix) =>
+				branch.name.startsWith(prefix),
+			),
 	);
 	const contains = (baseSha: string, headSha: string): boolean =>
 		containsWith(baseSha, headSha, {
@@ -448,7 +474,7 @@ const main = (): void => {
 			},
 		});
 	const refs = observed.map((branch) => {
-		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
+		if (!workPrefixes.some((prefix) => branch.name.startsWith(prefix))) {
 			return { name: branch.name, sha: branch.sha };
 		}
 		const publishedIn = publishedInFor(branch, containers, contains);
@@ -514,12 +540,12 @@ const main = (): void => {
 
 	// A proposal in progress keeps its one work branch, whatever its
 	// publication already holds: its next slice is committed there.
-	const readUnit = unitReader(branches);
+	const readUnit = ownedUnitReader(branches);
 	const integration = shaOf.get(branches.integration) ?? branches.integration;
 	const inProgressFolder = new Map<string, () => readonly string[]>();
 	const { reapable, kept } = keepInProgressWorkRefs({
 		reapable: result.reapable,
-		workPrefix,
+		workPrefix: workPrefixes,
 		idOf: (name) => readUnit(name)?.id,
 		tipOf: (name) => shaOf.get(name),
 		integration,
@@ -578,7 +604,7 @@ const main = (): void => {
 	for (const verdict of result.retirable) {
 		const retiredRef = closedPublicationRetirement(
 			verdict.name,
-			branches,
+			branchesForRef(branches, verdict.name),
 			onForge,
 		);
 		const sha = shaOf.get(verdict.name);
@@ -607,15 +633,17 @@ const main = (): void => {
 		refs: observed
 			.filter(
 				(branch) =>
-					branch.name.startsWith(workPrefix) &&
-					!deleted.has(branch.name),
+					workPrefixes.some((prefix) =>
+						branch.name.startsWith(prefix),
+					) && !deleted.has(branch.name),
 			)
 			.map((branch) => {
+				const own = branchesForRef(branches, branch.name);
 				const plan = planRetirement({
 					branch: branch.name,
-					namespace: branches.namespacePrefix,
-					workRefPrefix: branches.workRefPrefix,
-					publicationRefPrefix: branches.publicationRefPrefix,
+					namespace: own.namespacePrefix,
+					workRefPrefix: own.workRefPrefix,
+					publicationRefPrefix: own.publicationRefPrefix,
 				});
 				return {
 					name: branch.name,
@@ -648,11 +676,12 @@ const main = (): void => {
 		},
 	});
 	for (const ref of silent) {
+		const own = branchesForRef(branches, ref.name);
 		const plan = planRetirement({
 			branch: ref.name,
-			namespace: branches.namespacePrefix,
-			workRefPrefix: branches.workRefPrefix,
-			publicationRefPrefix: branches.publicationRefPrefix,
+			namespace: own.namespacePrefix,
+			workRefPrefix: own.workRefPrefix,
+			publicationRefPrefix: own.publicationRefPrefix,
 		});
 		const sha = shaOf.get(ref.name);
 		if (plan === undefined || sha === undefined) continue;

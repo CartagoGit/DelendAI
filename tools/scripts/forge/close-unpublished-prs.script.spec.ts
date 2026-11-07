@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { declaredBranches } from '../lib/declared-branches';
-import { FORWARD_SYNC_REF_PREFIX } from './forward-sync-release.script';
+import { forwardSyncRefPrefixes } from './forward-sync-release.script';
 import { repoRoot } from '../lib/repo-root';
 
 import {
@@ -65,7 +65,7 @@ describe('unpublishedPullRequests', () => {
 				},
 				{
 					number: 686,
-					headRefName: `${FORWARD_SYNC_REF_PREFIX}abc123`,
+					headRefName: `${forwardSyncRefPrefixes()[0]}abc123`,
 					baseRefName: BRANCHES.integration,
 					isCrossRepository: false,
 					changedFiles: 0,
@@ -94,7 +94,7 @@ describe('unpublishedPullRequests', () => {
 				},
 				{
 					number: 642,
-					headRefName: `${FORWARD_SYNC_REF_PREFIX}abc123`,
+					headRefName: `${forwardSyncRefPrefixes()[0]}abc123`,
 					baseRefName: BRANCHES.integration,
 					isCrossRepository: false,
 				},

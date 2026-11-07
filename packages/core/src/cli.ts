@@ -86,6 +86,11 @@ export type {
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from './lib/development-policy/owned-ref-prefixes';
+export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
+export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,
 	WORK_KINDS,
