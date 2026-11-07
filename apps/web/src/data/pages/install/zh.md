@@ -1,0 +1,440 @@
+---
+title: 安装与运行
+description: 安装 delendai，把它接到你的 IDE，选择一个预设，并在开始工作前验证服务器。
+order: 1
+navLabel: 安装
+---
+
+# 安装与运行
+
+把 delendai 接入你的工作流，让 MCP 客户端指向对应二进制，并在第一次会话前先验证解析出的插件集合。
+
+## 选择你的包管理器
+
+下面所有包管理器执行的都是同一个已发布包。选择你的团队已经在用的那个，并按原样保留命令。
+
+### npm
+
+Node Package Manager 随 Node.js 一起提供，因此在你需要跨机器和 CI runner 获得最广兼容性时，它是最稳妥的通用默认选项。
+
+```bash
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
+```
+
+### pnpm
+
+pnpm 速度快、节省磁盘空间，而且依赖解析更严格，因此很适合 monorepo，或者已经把 pnpm 作为团队标准的环境。
+
+```bash
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
+```
+
+### yarn
+
+Yarn 在许多 JavaScript 代码库里依然是熟悉的替代方案，所以当你的工具链和团队习惯已经围绕 Yarn 建立时，这条路径会很顺手。
+
+```bash
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
+```
+
+### bun
+
+bun 把 runtime 和包管理器合在一个工具里，而 delendai 本身就是用 bun 构建的，所以如果机器上已经有 bun，这就是最直接的路径。
+
+```bash
+bunx @delendai/cli init
+bunx @delendai/cli validate
+```
+
+### deno
+
+Deno 可以直接执行 npm 包。如果你偏好默认更安全、对 TypeScript 一等支持且兼容 npm 的 runtime，这条路径就很合适。
+
+```bash
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
+```
+
+## 选择你的 IDE
+
+下面的片段使用的是基于 bun 的 solo 预设。把 JSON 原样贴进目标文件，然后让你的 IDE 注册这个 stdio 服务器。
+
+### VS Code
+
+文件：.vscode/mcp.json
+范围：项目
+
+```json
+{
+  "servers": {
+    "delendai": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Cursor
+
+文件：.cursor/mcp.json 或 ~/.cursor/mcp.json
+范围：项目 / 全局
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Windsurf
+
+文件：~/.codeium/windsurf/mcp_config.json
+范围：全局
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Claude Code
+
+文件：.mcp.json 或通过 claude mcp add
+范围：项目
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+文件：claude_desktop_config.json
+范围：全局
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Antigravity
+
+文件：~/.gemini/antigravity-ide/mcp_config.json
+范围：全局
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Zed
+
+文件：settings.json
+范围：全局
+
+```json
+{
+  "context_servers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+## 选择一个预设
+
+预设是可叠加的。先从最小集合开始，只有当工作流确实需要更多能力时再扩大插件表面。
+
+### minimal
+
+推荐用途：只读定位和 CI smoke test。
+大小：2个插件 · 42个工具 · ~11805 冷启动 token
+
+- git
+- search
+
+### solo
+
+推荐用途：一名开发者加一个 agent 的日常编码；是 `init` 的默认值。
+大小：10个插件 · 79个工具 · ~19037 冷启动 token
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+推荐用途：通过 pull request 协作的团队，带有 commit 与测试约定。
+大小：18个插件 · 116个工具 · ~25446 冷启动 token
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
+
+### swarm
+
+推荐用途：多个 agent 共用一个 checkout，带有提案、日志和收尾标记。
+大小：19个插件 · 125个工具 · ~26802 冷启动 token
+
+- git
+- search
+- memory
+- docs
+- quality
+- test-policy
+- proposals
+- error-reporting
+- logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
+- status-marker
+- forge
+- commit-policy
+- conventions
+- test-convention
+- usage-tracking
+
+### audit
+
+推荐用途：只读的评审与审计。
+大小：15个插件 · 89个工具 · ~21955 冷启动 token
+
+- git
+- search
+- docs
+- audit
+- security
+- web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+推荐用途：文档与网站。
+大小：8个插件 · 61个工具 · ~15696 冷启动 token
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+推荐用途：包含所有已发布插件（含使用网络或凭据的插件）的诊断。
+大小：58个插件 · 236个工具 · ~59122 冷启动 token
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
+- issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
+
+## 验证
+
+配置写好后，用安装时同一个包管理器跑一次自检。如果你不用 bun，请把 `bunx` 换成 `npx`、`pnpm dlx`、`yarn dlx` 或 `deno run -A npm:`。
+
+```bash
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
+```
+
+当你想在不 fork 预设的前提下从预设里减掉某个插件时，就用 `--exclude-plugins=`。例如保留 swarm 基线，但在单智能体会话里去掉 notification。
+
+## FAQ
+
+### 为什么 `deno run -A npm:@delendai/cli` 启动很慢？
+
+Deno 在第一次运行时会解析并验证 npm 包。后续执行会复用 `~/.cache/deno` 里的缓存，但如果你频繁在本地启动，bun 或 npx 仍然更快。
+
+### 我的 IDE 不在列表里。怎么办？
+
+任何接受 stdio MCP 服务器的 IDE 都能运行同一个服务器。从 VS Code 的 JSON 开始，把文件路径改成你的 IDE 期望的位置，并保持相同的命令与参数。
+
+### 我可以同时运行多个预设吗？
+
+不可以。一个服务器实例一次只解析一个预设。如果不同项目需要不同的插件集合，就在每个项目里放一个专用的 delendai.config.json，让 loader 按 workspace 分别解析。
