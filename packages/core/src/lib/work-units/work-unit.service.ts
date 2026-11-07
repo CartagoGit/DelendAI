@@ -25,6 +25,7 @@ import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
 import { rescued } from './shared-checkout-rescue.service';
 import { looseSharedCheckoutRefusal } from './shared-checkout-clean.service';
+import { withGitInvocationMemo } from '../shared/git-invocation-memo.helper';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
 /**
@@ -93,7 +94,16 @@ const MUTATING = new Set(['enter', 'checkpoint', 'prove', 'publish']);
  * `checkpoint`, `prove`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
  */
-export const runWorkUnit = async (
+export const runWorkUnit = (
+	given: readonly string[],
+	ctx: IWorkUnitContext,
+): Promise<IWorkUnitResult> =>
+	// One memo of git reads per invocation: the common dir, the remotes and
+	// the worktree list do not change between the many services one command
+	// asks, and a write forgets them.
+	withGitInvocationMemo(() => runWorkUnitOnce(given, ctx));
+
+const runWorkUnitOnce = async (
 	given: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {

@@ -10,12 +10,12 @@
  * A push the forge refuses (the branch moved elsewhere) is reported with
  * the command that reconciles it; nothing is ever forced.
  */
-import { execFileSync } from 'node:child_process';
 
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IUnitPush } from '../contracts/interfaces/unit-push.interface';
 import { integrationRemote } from './work-unit-shared.service';
+import { execGitFileSync } from '../shared/git-read.helper';
 
 const workBranchPrefix = (policy: IResolvedDevelopmentPolicy): string =>
 	policy.branches.workRefPrefix
@@ -74,7 +74,7 @@ export const pushUnitTip = (input: {
 		};
 	const remote = integrationRemote(cwd, policy);
 	try {
-		execFileSync(
+		execGitFileSync(
 			'git',
 			[
 				'push',

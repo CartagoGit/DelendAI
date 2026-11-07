@@ -27,7 +27,7 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../contracts/interfaces/git-runner.interface';
-import { noteGitSpawn } from '../shared/git-read.helper';
+import { noteGitSettled, noteGitSpawn } from '../shared/git-read.helper';
 import { stripAnsi } from '../shared/git-write';
 
 import type { IScopedGitRunner } from './git-command.interface';
@@ -89,6 +89,7 @@ export const createScopedGitRunner =
 					),
 				},
 				(error, stdout, stderr) => {
+					noteGitSettled(cwd, args);
 					if (error === null) {
 						resolve({ ok: true, output: stdout });
 						return;

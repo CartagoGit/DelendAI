@@ -9,7 +9,7 @@
  * command runs elsewhere, and answers `undefined` on any failure.
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 
 import type {
 	IGitSpawnObserver,
@@ -49,6 +49,56 @@ export const noteGitSpawn = (cwd: string, args: readonly string[]): void => {
 	readCache.getStore()?.ran(spawn);
 	for (const observer of observers) observer(spawn);
 };
+
+/**
+ * A git command started without waiting has finished: what it wrote is
+ * now visible, so the read cache forgets again what a read taken while
+ * it ran may have remembered. Observers are not told twice.
+ */
+export const noteGitSettled = (cwd: string, args: readonly string[]): void => {
+	readCache.getStore()?.ran({ cwd, args });
+};
+
+/**
+ * A process that is not git ran (a proof, an install, a shell command):
+ * it may have run git itself, so the read cache forgets what it holds.
+ */
+export const forgetGitReads = (): void => {
+	readCache.getStore()?.ran({ cwd: '', args: [] });
+};
+
+/**
+ * `execFileSync` for a module that runs git itself (its own environment,
+ * its own error handling): the spawn is reported like every other.
+ */
+export const execGitFileSync: typeof execFileSync = ((
+	file: string,
+	args: readonly string[],
+	options: { readonly cwd?: string | URL | undefined },
+) => {
+	const cwd = options?.cwd === undefined ? '' : String(options.cwd);
+	noteGitSpawn(cwd, args);
+	try {
+		return execFileSync(file, args, options);
+	} finally {
+		noteGitSettled(cwd, args);
+	}
+}) as typeof execFileSync;
+
+/** `execFile` (callback form) for a module that runs git itself. */
+export const execGitFile: typeof execFile = ((
+	file: string,
+	args: readonly string[],
+	options: { readonly cwd?: string | URL | undefined },
+	callback: (...result: unknown[]) => void,
+) => {
+	const cwd = options?.cwd === undefined ? '' : String(options.cwd);
+	noteGitSpawn(cwd, args);
+	return execFile(file, args, options, (...result: unknown[]) => {
+		noteGitSettled(cwd, args);
+		callback(...result);
+	});
+}) as typeof execFile;
 
 const spawnRead = (
 	cwd: string,
