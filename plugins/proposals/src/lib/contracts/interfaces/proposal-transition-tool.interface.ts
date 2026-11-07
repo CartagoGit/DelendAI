@@ -1,3 +1,4 @@
+import type { IWorkRefShape } from './review-attribution.interface';
 import type { IProposalTransitionArgs } from '../proposal-transition-input.contract';
 import type { ILocatedProposal } from '../../proposals/locate';
 import type { IReviewIndependence } from './review-independence.interface';
@@ -56,6 +57,11 @@ export interface IProposalTransitionToolOptions {
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
+	/**
+	 * The project's work-ref shape: a manual transition from a review unit,
+	 * or by an agent holding a verdict on the proposal, is refused.
+	 */
+	readonly workRefShape?: IWorkRefShape;
 	/**
 	 * Move files without staging them (x00651): set when the project's
 	 * work reaches integration through work refs, where the checkout's

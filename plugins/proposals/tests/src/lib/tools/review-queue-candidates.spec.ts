@@ -59,8 +59,10 @@ afterEach(() => {
 
 describe('review_queue candidates and states', () => {
 	it('leaves a slice whose changes were requested to its implementer', async () => {
+		// Another slice still waits for its verdict, so the proposal stays
+		// on the queue; sent back whole, it would leave it.
 		repo.proposalInReview(
-			`${SLICE_S1('in-progress')}- review-state: changes_requested\n- review-implementer: agent-a\n- review-log: requested_changes by agent-b — broken\n`,
+			`${SLICE_S1('in-progress')}- review-state: changes_requested\n- review-implementer: agent-a\n- review-log: requested_changes by agent-b — broken\n\n### S2 — more work\n- **Status**: review\n- **Files**: \`src/b.ts\`\n- review-state: in_review\n- review-implementer: agent-a\n`,
 		);
 
 		const slice = await firstSlice();
