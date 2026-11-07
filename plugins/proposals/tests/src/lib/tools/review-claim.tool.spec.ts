@@ -115,6 +115,34 @@ describe('review_claim', () => {
 		).toBe('chore(review): claim x00001');
 	});
 
+	it('refuses a claim outside a review unit, naming the review entry and writing nothing (x01032)', async () => {
+		const parent = realpathSync(mkdtempSync(join(tmpdir(), 'claim-impl-')));
+		dirs.push(parent);
+		const path = join(parent, 'wt');
+		repo.git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'delendai/wip/glm-5/implement/batch-all-g1/work',
+			path,
+			'develop',
+		);
+		const claim = await claimTool();
+
+		const refused = await claim({
+			proposalId: 'x00001',
+			agent: 'glm-5',
+			checkout: path,
+		});
+
+		expect(refused.isError).toBe(true);
+		expect(JSON.stringify(refused.structuredContent)).toContain(
+			'delendai review next --agent=glm-5',
+		);
+		expect(claimsIn(path)).toEqual([]);
+	});
+
 	it('commits the claim alone, leaving what was staged staged', async () => {
 		const mine = unit('glm-5');
 		writeFileSync(join(mine, 'notes.md'), 'draft\n');

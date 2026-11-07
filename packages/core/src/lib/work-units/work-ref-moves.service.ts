@@ -11,7 +11,6 @@
  * committed), and the doctor and `work status` name a ref undone and
  * redone more than twice in a day, with the components on each side.
  */
-import { execFileSync } from 'node:child_process';
 import { mkdir, open, readFile, rename, writeFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -23,6 +22,7 @@ import type {
 	IWorkRefMove,
 } from '../contracts/interfaces/work-ref-moves.interface';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
+import { execGitFileSync } from '../shared/git-read.helper';
 
 const DAY_MS = 86_400_000;
 /** More cycles than this in a day is a loop, not a slice landing. */
@@ -39,7 +39,7 @@ export const workRefMovesPath = (gitCommonDir: string): string =>
 export const workRefMovesPathAt = (root: string): string | undefined => {
 	try {
 		return workRefMovesPath(
-			execFileSync(
+			execGitFileSync(
 				'git',
 				['rev-parse', '--path-format=absolute', '--git-common-dir'],
 				{
