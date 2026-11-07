@@ -24,7 +24,11 @@ import {
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
-import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
+import {
+	applyGitOptionalLocksDefault,
+	backgroundEnv,
+	lowPriority,
+} from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
@@ -278,6 +282,9 @@ export const createStopHandler =
 	};
 
 const run = async (): Promise<void> => {
+	// Every git this host (and the server it supervises) starts reads
+	// without rewriting what it reads.
+	applyGitOptionalLocksDefault();
 	const forwarded = process.argv.slice(2);
 	if (hasHelpFlag(forwarded)) {
 		process.stdout.write(

@@ -85,6 +85,9 @@ export type {
 } from './lib/contracts/interfaces/policy-identity.interface';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
+// Every namespace delendai owns, current first: the queue's trains are read
+// under a former one too.
+export { ownedNamespaces } from './lib/development-policy/owned-ref-prefixes';
 export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,

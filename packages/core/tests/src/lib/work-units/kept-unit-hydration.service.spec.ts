@@ -3,46 +3,32 @@
  * of its own starts from where the integration branch is now.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { fakePartial } from '@delendai/test-kit';
+import { createGitRepoTemplate, fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 
 describe('work enter on a unit kept from before', () => {
-	const roots: string[] = [];
-	afterEach(() => {
-		for (const root of roots.splice(0)) {
-			rmSync(root, { recursive: true, force: true });
-		}
-	});
-
-	const repository = () => {
-		const root = mkdtempSync(join(tmpdir(), 'kept-unit-'));
-		roots.push(root);
-		const git = (...args: string[]) =>
-			execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-		git('init', '-q', '-b', 'develop');
-		git('config', 'user.email', 'work@example.com');
-		git('config', 'user.name', 'Work');
-		git('config', 'commit.gpgsign', 'false');
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			JSON.stringify({
+	const template = createGitRepoTemplate({
+		trunk: 'develop',
+		files: {
+			'delendai.config.json': JSON.stringify({
 				development: {
 					profile: 'shared-checkout-pr',
 					branches: { namespacePrefix: 'delendai' },
 				},
 			}),
-		);
-		writeFileSync(join(root, '.gitignore'), '.cache/\n');
-		git('add', '-A');
-		git('commit', '-q', '-m', 'base');
+			'.gitignore': '.cache/\n',
+		},
+	});
+
+	const repository = () => {
+		const { root, git } = template.copy();
 		return { root, git };
 	};
 
@@ -75,41 +61,33 @@ describe('work enter on a unit kept from before', () => {
 		return git('rev-parse', 'HEAD');
 	};
 
-	it('brings an empty unit forward, and says so', async () => {
+	it('brings an empty unit forward, and says so; leaves one with changes or a commit of its own where it is', async () => {
+		// One unit walks all three states: enter is the costly step, so it
+		// is entered the fewest times that still shows each.
 		const { root, git } = repository();
 		const first = (await enter(root, 's1')).data as { path: string };
+		const inUnit = (...args: string[]) =>
+			execFileSync('git', args, {
+				cwd: first.path,
+				encoding: 'utf8',
+			}).trim();
 		const tip = moveDevelop(root, git, 'a.txt');
 
 		const again = (await enter(root, 's1')).data as {
 			path: string;
 			hydrated?: boolean;
 		};
-
 		expect(again.path).toBe(first.path);
 		expect(again.hydrated).toBe(true);
-		expect(
-			execFileSync('git', ['rev-parse', 'HEAD'], {
-				cwd: again.path,
-				encoding: 'utf8',
-			}).trim(),
-		).toBe(tip);
-	});
-
-	it('leaves a unit with a commit of its own, or with changes, where it is', async () => {
-		const { root, git } = repository();
-		const unit = (await enter(root, 's1')).data as { path: string };
-		const inUnit = (...args: string[]) =>
-			execFileSync('git', args, {
-				cwd: unit.path,
-				encoding: 'utf8',
-			}).trim();
-		writeFileSync(join(unit.path, 'work.txt'), 'in progress\n');
-		moveDevelop(root, git, 'a.txt');
+		expect(inUnit('rev-parse', 'HEAD')).toBe(tip);
 
 		// Uncommitted changes: the tree is its agent's.
+		writeFileSync(join(first.path, 'work.txt'), 'in progress\n');
+		moveDevelop(root, git, 'b.txt');
 		const dirty = (await enter(root, 's1')).data as { hydrated?: boolean };
 		expect(dirty.hydrated).toBeUndefined();
 
+		// A commit of its own.
 		inUnit('add', '-A');
 		inUnit('commit', '-q', '-m', 'work');
 		const head = inUnit('rev-parse', 'HEAD');
