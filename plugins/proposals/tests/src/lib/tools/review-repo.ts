@@ -206,28 +206,31 @@ ${slices}`,
 			const entering =
 				verdict &&
 				git('rev-parse', '--abbrev-ref', 'HEAD') === 'develop';
+			let switched = false;
 			if (entering) {
 				const unit = `delendai/wip/${String(args.agent)}/review/batch-all-g1/backlog`;
 				if (git('branch', '--list', unit).trim().length === 0) {
 					git('switch', '-q', '-c', unit);
+					switched = true;
 				} else if (
 					!git('worktree', 'list', '--porcelain').includes(unit)
 				) {
 					git('switch', '-q', unit);
+					switched = true;
 				}
 			}
 			// A verdict names what its pack has claimed: this reviewer took
 			// the proposal first, as review_claim does (x01032).
-			if (entering) {
+			if (switched) {
 				git(
 					'commit',
 					'--allow-empty',
 					'-q',
 					'--no-verify',
 					'-m',
-					'chore(review): claim x00001',
+					`chore(review): claim ${String(args.proposalId ?? 'x00001')}`,
 					'--trailer',
-					'Claims: x00001',
+					`Claims: ${String(args.proposalId ?? 'x00001')}`,
 				);
 			}
 			return handler({ proposalId: 'x00001', sliceId: 'S1', ...args });
