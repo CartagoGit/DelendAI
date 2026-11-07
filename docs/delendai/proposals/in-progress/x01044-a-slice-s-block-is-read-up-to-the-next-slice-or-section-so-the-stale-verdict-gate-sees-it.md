@@ -2,10 +2,14 @@
 id: x01044
 title: "A slice's block is read up to the next slice or section, so the stale-verdict gate sees it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-07
+last-transition-id: 47dff4af-0190-4777-8448-3c9e60694079
+last-correlation-id: 47dff4af-0190-4777-8448-3c9e60694079
+last-transition-from: ready
+last-transition-at: 2026-11-07T15:10:37.691Z
 ---
 
 # x01044 — A slice's block is read up to the next slice or section, so the stale-verdict gate sees it
