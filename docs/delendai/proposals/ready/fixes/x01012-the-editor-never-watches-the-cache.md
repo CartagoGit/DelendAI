@@ -2,14 +2,14 @@
 id: x01012
 title: "The editor never watches the cache"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: f2933e86-cbce-4bda-828e-91cae822b19e
-last-correlation-id: f2933e86-cbce-4bda-828e-91cae822b19e
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T14:13:38.495Z
+last-transition-id: 4b662ca5-55de-48cf-a2e0-0b0fc5cd2b06
+last-correlation-id: 4b662ca5-55de-48cf-a2e0-0b0fc5cd2b06
+last-transition-from: review
+last-transition-at: 2026-11-04T20:38:15.555Z
 ---
 
 # x01012 — The editor never watches the cache
@@ -34,14 +34,16 @@ VS Code watches a consumer project's `.cache`. Every worktree delendai adds or r
 - global_gate: none
 
 ### S1 — The cache is never watched
-- **Status**: review
+- **Status**: pending
 - **Files**: `.vscode/settings.json`, `packages/core/src/lib/workspace-migration/migrators/vscode-cache-exclude.ts`, `packages/core/src/lib/workspace-migration/migrators/vscode-cache-exclude.constant.ts`, `packages/core/src/lib/workspace-migration/migrators/vscode-cache-exclude.migrator.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/init/init-vscode-settings.ts`, `packages/cli/src/lib/init/init-vscode-settings.spec.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/vscode-cache-exclude.migrator.spec.ts`
 - **Gate**: none
 - acceptance:
   - "init writes files.watcherExclude and search.exclude for the cache (.cache/** under .cache, the cacheDir otherwise) into a new settings file and merges them into an existing one; a value the user set for the pattern stays; a migrator applies the same merge to projects that already have a settings file; specs cover a new file, a merge and a kept value."
 - shipped-in: `2261aa0a1965`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 2261aa0a1965 is stale for this slice. `git log 2261aa0a1965..develop -- <S1 files>` shows multiple post-shipped changes touching listed files (e.g. cccb59b3c, 2a962a1b3, 9740e9514, 599ba2c48), so acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ## acceptance
 

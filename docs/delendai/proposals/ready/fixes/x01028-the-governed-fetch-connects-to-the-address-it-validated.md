@@ -2,14 +2,14 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: e05b5e36-b3ba-40f4-a4ec-0cb091dad0cf
-last-correlation-id: e05b5e36-b3ba-40f4-a4ec-0cb091dad0cf
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:21:05.606Z
+last-transition-id: 188589ce-3201-46e1-b7b3-c4ffd0fea663
+last-correlation-id: 188589ce-3201-46e1-b7b3-c4ffd0fea663
+last-transition-from: review
+last-transition-at: 2026-11-04T20:30:47.785Z
 ---
 
 # x01028 — The governed fetch connects to the address it validated
@@ -31,7 +31,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The connection uses the validated address
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/pinned-connection.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/README.md`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`, `plugins/web-fetch/tests/src/lib/services/pinned-connection.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +39,10 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A resolver that answers a public address first and a private one second cannot reach the private one (spec)."
   - "The comment that admits the second resolution is removed because it is no longer true."
 - shipped-in: `7f77000da636`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: while I do not see post-shipped drift in listed files from 7f77000da636, this submission does not include current-run empirical evidence proving all three acceptance criteria on develop (pinned IP connect path, rebinding-block spec behavior, and removed stale comment). Please attach reproducible evidence and resubmit.
 
 ## acceptance
 
