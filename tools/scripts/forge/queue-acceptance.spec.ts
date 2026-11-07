@@ -10,7 +10,11 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { testedInstant } from './candidate-tested-base';
-import { branchesLandingAsTheyAre, queueAcceptance } from './queue-acceptance';
+import {
+	branchesLandingAsTheyAre,
+	queueAcceptance,
+	trainRiders,
+} from './queue-acceptance';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -73,7 +77,7 @@ describe('branchesLandingAsTheyAre', () => {
 		expect([...landing(owner.root)]).toEqual([CANDIDATE]);
 	});
 
-	it('does not, once the integration branch moved in the same file, although this machine had not fetched', () => {
+	it('leaves a candidate behind in its own file to the train, judged against the tip this machine had not fetched', () => {
 		const { owner, other } = project();
 		writeFileSync(join(other.root, 'shared.ts'), 'export const a = 3;\n');
 		other.git('commit', '-qam', 'fix: something else in the same file');
@@ -83,10 +87,28 @@ describe('branchesLandingAsTheyAre', () => {
 			other.git('rev-parse', 'HEAD'),
 		);
 
-		expect([...landing(owner.root)]).toEqual([]);
-		expect(owner.git('rev-parse', 'origin/develop')).toBe(
-			other.git('rev-parse', 'HEAD'),
-		);
+		// It does not land as it is, but it rides a train, which proves it
+		// against the tip: it is not brought forward here.
+		expect([...landing(owner.root)]).toEqual([CANDIDATE]);
+		const tip = other.git('rev-parse', 'HEAD');
+		expect(owner.git('rev-parse', 'origin/develop')).toBe(tip);
+		const candidates = [
+			{
+				number: 7,
+				headRef: CANDIDATE,
+				headSha: owner.git('rev-parse', `origin/${CANDIDATE}`),
+			},
+		];
+		const input = {
+			root: owner.root,
+			remote: 'origin',
+			integration: 'develop',
+			integrationSha: tip,
+			candidates,
+			testedFrom: () => undefined,
+		};
+		expect(queueAcceptance(input)[0]?.accepted).toBe(false);
+		expect(trainRiders(input)[0]?.accepted).toBe(true);
 	});
 });
 

@@ -4,7 +4,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { acceptIndependent, overlapBetween } from './independent-candidates';
+import {
+	acceptIndependent,
+	acceptRiders,
+	overlapBetween,
+} from './independent-candidates';
 import type {
 	IChangeFootprint,
 	IQueueCandidateChange,
@@ -204,5 +208,36 @@ describe('acceptIndependent', () => {
 			candidate(11, touch(['apps'], ['apps/a.ts']), touch([])),
 		]);
 		expect(verdicts.map((v) => v.accepted)).toEqual([false, true, false]);
+	});
+});
+
+describe('acceptRiders: who rides the next train', () => {
+	it('takes a candidate behind on a change that can reach every zone', () => {
+		const verdicts = acceptRiders([
+			candidate(3, touch(['core'], ['a.ts']), touch('everything')),
+			candidate(5, touch(['tools'], ['b.ts']), touch('everything')),
+		]);
+		expect(verdicts.map((v) => v.accepted)).toEqual([true, true]);
+		expect(verdicts[0]?.why).toContain('the train proves it');
+		// The queue's own verdict still brings it forward: the train does not.
+		expect(
+			acceptIndependent([
+				candidate(3, touch(['core'], ['a.ts']), touch('everything')),
+			])[0]?.accepted,
+		).toBe(false);
+	});
+
+	it('leaves out only a candidate that overlaps an earlier rider', () => {
+		const verdicts = acceptRiders([
+			candidate(3, touch(['core'], ['a.ts']), touch('everything')),
+			candidate(4, touch(['core'], ['c.ts']), touch([])),
+			candidate(5, touch(['apps'], ['d.ts']), touch(['apps'], ['d.ts'])),
+		]);
+		expect(verdicts.map((v) => [v.number, v.accepted])).toEqual([
+			[3, true],
+			[4, false],
+			[5, true],
+		]);
+		expect(verdicts[1]?.why).toContain('#3, which rides first');
 	});
 });
