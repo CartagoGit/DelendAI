@@ -9,11 +9,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
-	hasIndependentPeerApproval,
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
 } from '@delendai/proposals/lib/tools/proposal-transition.tool';
-import { hasPeerApprovedReview } from '@delendai/proposals/lib/swarm/proposal-review';
 
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),
@@ -64,43 +62,6 @@ const FAKE_GIT: IGitRunner = async (args) => {
 	}
 	return { ok: true, output: '' };
 };
-
-describe('hasIndependentPeerApproval (a00069 S7)', () => {
-	it('rejects empty / self-only approve', () => {
-		expect(hasIndependentPeerApproval(DOC(''))).toBe(false);
-		expect(
-			hasIndependentPeerApproval(
-				DOC(
-					'- review-implementer: alice\n- review-log: approved by alice\n',
-				),
-			),
-		).toBe(false);
-	});
-
-	it('accepts peer approve', () => {
-		expect(
-			hasIndependentPeerApproval(
-				DOC(
-					'- review-implementer: alice\n- review-log: approved by bob\n',
-				),
-			),
-		).toBe(true);
-	});
-
-	it('accepts approve when no implementer recorded', () => {
-		expect(
-			hasIndependentPeerApproval(DOC('- review-log: approved by bob\n')),
-		).toBe(true);
-	});
-});
-
-describe('hasPeerApprovedReview (a00069 S7)', () => {
-	it('requires done + distinct reviewer + approved round', () => {
-		expect(hasPeerApprovedReview(DOC(PEER_OK))).toBe(true);
-		expect(hasPeerApprovedReview(DOC(SELF_APPROVE))).toBe(false);
-		expect(hasPeerApprovedReview(DOC(''))).toBe(false);
-	});
-});
 
 describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 	let root = '';
@@ -351,5 +312,86 @@ describe('runProposalTransition peer-review gate (a00069 S7)', () => {
 			),
 		);
 		expect(body.ok).toBe(true);
+	});
+
+	it('refuses a close on an approval a newer delivery superseded', async () => {
+		// The gate reads the slice's whole block: read as "#", it never saw
+		// the approval it checks.
+		writeFileSync(
+			docPath,
+			doc(
+				'- review-state: done\n- review-implementer: alice\n- review-reviewer: bob\n- review-log: approved by bob — verified at aaaaaaa\n',
+			),
+			'utf8',
+		);
+		const JUDGED = 'a'.repeat(40);
+		const NEWER = 'b'.repeat(40);
+		const history: IGitRunner = async (args) => {
+			if (args[0] === 'ls-files') {
+				return { ok: false, output: '', reason: 'untracked' };
+			}
+			if (args[0] === 'rev-parse' && args.at(-1) === 'aaaaaaa^{commit}') {
+				return { ok: true, output: JUDGED };
+			}
+			if (args[0] === 'log') return { ok: true, output: NEWER };
+			// Nothing after the judged commit on the chain: its own landing.
+			if (args[0] === 'rev-list') return { ok: true, output: '' };
+			return { ok: true, output: '' };
+		};
+		const body = parse(
+			await runProposalTransition(
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'ship it',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				{ ...opts, gitRunner: history },
+			),
+		);
+		expect(body.ok).toBe(false);
+		expect(JSON.stringify(body)).toContain(
+			'S1 was approved at aaaaaaa and delivered again by bbbbbbbbbbbb',
+		);
+	});
+
+	it('refuses a close while a proposal blocked by it is open', async () => {
+		writeFileSync(docPath, doc(PEER_OK), 'utf8');
+		mkdirSync(join(root, 'docs/delendai/proposals/ready/feats'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(root, 'docs/delendai/proposals/ready/feats/f00889-next.md'),
+			'---\nid: f00889\ntitle: next\nkind: feat\nstatus: ready\ntype: proposal\nblocked-by: [f00888]\n---\n\n# f00889\n',
+			'utf8',
+		);
+		const body = parse(
+			await runProposalTransition(
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'ship it',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				opts,
+			),
+		);
+		expect(JSON.stringify(body)).toContain('f00889 (ready)');
+	});
+
+	it('reads the approval from the document when the journal knows nothing of it', async () => {
+		writeFileSync(docPath, doc(PEER_OK), 'utf8');
+		const body = parse(
+			await runProposalTransition(
+				{
+					id: 'f00888',
+					to: 'done',
+					reason: 'ship it',
+					validateEvidence: RECENT_VALIDATE,
+				},
+				opts,
+			),
+		);
+		expect(JSON.stringify(body)).not.toContain('peer-review-missing');
 	});
 });
