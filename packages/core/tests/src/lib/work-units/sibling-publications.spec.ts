@@ -3,11 +3,12 @@
  * open publication of itself (x01032). Real repository, real bare remote.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
 import { publishWorkUnit } from '@delendai/core/lib/work-units/work-publish.service';
 import {
@@ -17,7 +18,6 @@ import {
 	siblingRefs,
 } from '@delendai/core/lib/work-units/sibling-publications.service';
 
-const roots: string[] = [];
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
@@ -25,21 +25,15 @@ const WIP = 'refs/heads/delendai/wip/gpt-5.3-codex/implement/batch-all-g1/work';
 const PACK = 'delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts';
 const NEW = 'refs/heads/delendai/pr/gpt-5.3-codex/implement/batch-all-g1/work';
 
+const template = createGitRepoTemplate({
+	trunk: 'develop',
+	remote: true,
+	files: { f: '0' },
+});
+
 /** develop at `base`, the pack on the remote one commit ahead of it. */
 const repo = (): { root: string; base: string; pack: string } => {
-	const root = mkdtempSync(join(tmpdir(), 'sibling-'));
-	const remote = mkdtempSync(join(tmpdir(), 'sibling-remote-'));
-	roots.push(root, remote);
-	git(remote, 'init', '-q', '--bare');
-	git(root, 'init', '-q', '-b', 'develop');
-	git(root, 'config', 'user.email', 'a@example.com');
-	git(root, 'config', 'user.name', 'A');
-	git(root, 'config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'f'), '0');
-	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', 'base');
-	git(root, 'remote', 'add', 'origin', remote);
-	git(root, 'push', '-q', 'origin', 'develop');
+	const { root } = template.copy();
 	const base = git(root, 'rev-parse', 'HEAD');
 	git(root, 'switch', '-q', '-c', 'pack');
 	writeFileSync(join(root, 'f'), 'verdict');
@@ -60,12 +54,6 @@ const publish = (root: string) =>
 		remote: 'origin',
 		keepWorkRef: true,
 	});
-
-afterEach(() => {
-	for (const root of roots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-});
 
 describe('siblingRefs', () => {
 	it('names the other publications of the same agent and unit, whatever the kind', () => {

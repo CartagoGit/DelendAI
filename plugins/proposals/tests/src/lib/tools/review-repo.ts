@@ -203,10 +203,10 @@ ${slices}`,
 			// on the integration branch enters one, as `review next` does.
 			const verdict =
 				args.action === 'approve' || args.action === 'request_changes';
-			if (
+			const entering =
 				verdict &&
-				git('rev-parse', '--abbrev-ref', 'HEAD') === 'develop'
-			) {
+				git('rev-parse', '--abbrev-ref', 'HEAD') === 'develop';
+			if (entering) {
 				const unit = `delendai/wip/${String(args.agent)}/review/batch-all-g1/backlog`;
 				if (git('branch', '--list', unit).trim().length === 0) {
 					git('switch', '-q', '-c', unit);
@@ -215,6 +215,20 @@ ${slices}`,
 				) {
 					git('switch', '-q', unit);
 				}
+			}
+			// A verdict names what its pack has claimed: this reviewer took
+			// the proposal first, as review_claim does (x01032).
+			if (entering) {
+				git(
+					'commit',
+					'--allow-empty',
+					'-q',
+					'--no-verify',
+					'-m',
+					'chore(review): claim x00001',
+					'--trailer',
+					'Claims: x00001',
+				);
 			}
 			return handler({ proposalId: 'x00001', sliceId: 'S1', ...args });
 		},
