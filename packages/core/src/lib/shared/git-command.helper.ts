@@ -16,6 +16,7 @@ import {
 	gitEnvironmentFor,
 	hookFreeEnvironment,
 } from './hook-free-environment.helper';
+import { noteGitSpawn } from './git-read.helper';
 
 const DEFAULT_MAX_BUFFER = 64 * 1024 * 1024;
 
@@ -29,6 +30,7 @@ export const runGitCommand = (
 	args: readonly string[],
 	options: IGitCommandOptions = {},
 ): IGitCommandResult => {
+	noteGitSpawn(cwd, args);
 	try {
 		return {
 			ok: true,

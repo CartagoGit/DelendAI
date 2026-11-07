@@ -18,13 +18,16 @@ import { execFileSync } from 'node:child_process';
 
 import type { IRefRename } from '../contracts/interfaces/unit-ref-rename.interface';
 import type { IWorkClaimRefusal } from '../contracts/interfaces/work-claim.interface';
+import { noteGitSpawn } from '../shared/git-read.helper';
 
-const git = (cwd: string, args: readonly string[]): string =>
-	execFileSync('git', args, {
+const git = (cwd: string, args: readonly string[]): string => {
+	noteGitSpawn(cwd, args);
+	return execFileSync('git', args, {
 		cwd,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
 	}).trim();
+};
 
 /** The worktree standing on `ref` (`refs/heads/…`), when there is one. */
 const worktreeOn = (root: string, ref: string): string | undefined =>
