@@ -2,14 +2,14 @@
 id: f00803
 title: "The presets are packs of today's plugins, by purpose"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
-last-correlation-id: 6be1cf6c-aff2-45bb-aa36-7a77cad501b0
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T05:20:59.496Z
+last-transition-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
+last-correlation-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
+last-transition-from: review
+last-transition-at: 2026-11-04T21:35:42.810Z
 ---
 
 # f00803 — The presets are packs of today's plugins, by purpose
@@ -180,7 +180,7 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
 - global_gate: none
 
 ### S1 — The new catalogue
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/contracts/constants/preset-roles.constant.ts`, `packages/core/src/lib/plugins/pack-defaults-overlay.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts`, `packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/src/lib/contracts/constants/config-schema-docs.constant.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/registry/plugin-add.tool.ts`, `packages/core/src/lib/registry/plugin-search.tool.ts`, `packages/core/src/lib/adopt/adoption-assessment.service.ts`, `packages/core/src/public/index.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/plugins/pack-defaults-overlay.spec.ts`, `packages/core/tests/src/lib/plugins/preset-metadata.spec.ts`, `packages/core/tests/src/lib/plugins/parse-cli-args.spec.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `packages/core/tests/src/lib/adopt/adopt-project.spec.ts`, `packages/core/tests/src/lib/adopt/declared-adoptions.spec.ts`, `packages/cli/package.json`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-human-summary.service.ts`, `packages/cli/src/lib/init/init-prompts.service.spec.ts`, `packages/cli/src/lib/init/init-answers.schema.spec.ts`, `packages/cli/src/lib/init/init-config-comments.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-integration.spec.ts`, `packages/cli/src/lib/init/init-render.service.spec.ts`, `plugins/api/src/index.ts`, `plugins/api/README.md`, `plugins/issues/plugin.manifest.ts`, `tools/scripts/lint/manifest-vs-presets.script.ts`, `tools/scripts/lint/manifest-vs-presets.spec.ts`, `tools/scripts/lint/preset-drift.script.ts`, `tools/scripts/smoke/pack.script.spec.ts`, `apps/web/scripts/__tests__/preset-table.spec.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
 - acceptance:
@@ -189,11 +189,13 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "preset-metadata.generated.ts is regenerated and every pack's measured cost is written into the proposal notes or docs"
   - "the stack packs are overlays on a purpose pack"
 - shipped-in: `301fa9650deb`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 301fa9650deb is stale for this slice. `git log 301fa9650deb..develop -- <S1 files>` shows many post-shipped changes in listed files (e.g. d43290f9b, cccb59b3c, be1e796df), so acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ### S2 — Migration of existing configurations
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/plugins/preset-migration.ts`, `packages/core/tests/src/lib/plugins/preset-migration.spec.ts`, `packages/core/src/lib/contracts/constants/preset-migration.constant.ts`, `packages/core/src/lib/contracts/interfaces/preset-migration.interface.ts`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/cli/run-cli.spec.ts`, `packages/core/tests/src/lib/plugins/load-config-file.spec.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/doctor/checks/preset.check.ts`, `packages/cli/src/lib/doctor/checks/preset.check.spec.ts`, `packages/cli/src/lib/doctor/checks/index.ts`, `packages/cli/src/lib/doctor/runner.ts`, `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/inspect/core-proposals-boundary.script.ts`, `docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md`
 - **Gate**: none
@@ -202,11 +204,13 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "a start-up migration is journalled and never edits a plugin map the user changed"
   - "doctor reports configs whose plugin map equals a retired preset and names the matching pack"
 - shipped-in: `5cabc0b16a93`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 5cabc0b16a93 is stale for this slice. `git log 5cabc0b16a93..develop -- <S2 files>` shows post-shipped changes touching listed files (e.g. 599ba2c48, cccb59b3c, 48f318425), so migration acceptance must be re-validated on current develop with fresh evidence.
 
 ### S3 — init default and docs
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/init/init-answers.schema.ts`, `packages/cli/src/lib/init/init-prompts.service.ts`, `packages/cli/src/lib/init/init-default-help.service.ts`, `docs/delendai/CROSS-PROJECT-SETUP.md`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
@@ -214,8 +218,10 @@ Removing presets breaks scripts that pass the old ids; the alias window and noti
   - "init defaults to solo and its prompt labels are generated from the catalog"
   - "docs and the web presets table match the new catalogue"
 - shipped-in: `7ab2055e9f30`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 7ab2055e9f30 is stale for this slice. `git log 7ab2055e9f30..develop -- <S3 files>` shows post-shipped changes in listed files (e.g. 7b759f0b0, 7d528c27f, 8a8715c6e, be1e796df), so init/docs acceptance must be re-validated on current develop with fresh reproducible evidence.
 
 ## acceptance
 

@@ -2,14 +2,14 @@
 id: x01025
 title: "An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
-last-correlation-id: 3fcf04a9-9b47-47c0-a7c4-633f15abf7a6
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:20:11.021Z
+last-transition-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
+last-correlation-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
+last-transition-from: review
+last-transition-at: 2026-11-04T21:32:13.899Z
 ---
 
 # x01025 — An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words
@@ -31,7 +31,7 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 - global_gate: type
 
 ### S1 — Permission is decided by the structured operation
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/acp-invoker.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/constants/acp-permission.constant.ts`, `packages/core/src/lib/contracts/interfaces/acp.interface.ts`, `packages/core/src/lib/shared/acp-session.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/acp-invoker.service.spec.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/fixtures/fake-acp-coder.ts`
 - **Gate**: type
 - acceptance:
@@ -39,19 +39,23 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
   - "A request with no structured identity is refused and the refusal says why (deny by default)."
   - "A spec pins a title that holds both an allowed and a forbidden tool name."
 - shipped-in: `d43290f9b1c0`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the structured-identity permission checks (title spoof refusal, missing structured identity default-deny, mixed-title case). Please re-run and attach fresh empirical proof.
 
 ### S2 — Starting a package that is not installed needs the project to allow it
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/contracts/constants/trusted-agent-packages.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent that needs npx or uvx to fetch its package starts only when the project allows fetching it; otherwise the refusal names the setting that allows it."
   - "The version run is the one the registry pins, and the run says it came from the network."
 - shipped-in: `d43290f9b1c0`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in d43290f9b1c0 is stale for this slice. `git log d43290f9b1c0..develop -- <S2 files>` shows post-shipped changes touching listed files (e.g. 047d74500), so the package-fetch policy acceptance must be re-validated on current develop with fresh empirical evidence.
 
 ## acceptance
 
