@@ -258,3 +258,32 @@ describe('orphaned candidates', () => {
 		).toEqual([[1, 'refresh-for-verdict']]);
 	});
 });
+
+describe('candidates under both prefixes in a namespace transition (f00808)', () => {
+	it('disposes of a former-prefix candidate beside a current one', () => {
+		const both = [
+			candidate(1, { headRef: 'delendai/pr/agent/x1-S1-g1/t' }),
+			candidate(2, { headRef: 'pr/agent/x2-S1-g1/t' }),
+			candidate(3, { headRef: 'feature/x3' }),
+		];
+		expect(
+			candidateDispositions(both, ['pr/', 'delendai/pr/']).map(
+				(each) => each.number,
+			),
+		).toEqual([1, 2]);
+		expect(
+			authorsOwn(
+				[
+					{
+						number: 2,
+						headRef: 'pr/agent/x2-S1-g1/t',
+						disposition: 'author',
+						why: '',
+					},
+				],
+				['pr/', 'delendai/pr/'],
+				'agent',
+			),
+		).toEqual(['pr/agent/x2-S1-g1/t']);
+	});
+});

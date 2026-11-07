@@ -25,6 +25,7 @@ import type {
 	ITrainPorts,
 	ITrainStep,
 } from './queue-order.interface';
+import { underPublication } from './publication-prefixes';
 
 export type {
 	IQueueCandidateFacts,
@@ -42,12 +43,12 @@ export type {
  */
 export const queueOrder = (
 	candidates: readonly IQueueCandidateFacts[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): readonly IQueueCandidateFacts[] =>
 	[...candidates]
 		.filter(
 			(candidate) =>
-				candidate.headRef.startsWith(publicationPrefix) &&
+				underPublication(candidate.headRef, publicationPrefix) &&
 				!candidate.draft &&
 				!candidate.red,
 		)
@@ -60,7 +61,7 @@ export const queueOrder = (
  */
 export const queueHead = (
 	candidates: readonly IQueueCandidateFacts[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): IQueueCandidateFacts | undefined =>
 	queueOrder(candidates, publicationPrefix).find(
 		(candidate) => !candidate.conflicting,
@@ -86,7 +87,7 @@ export const queueHead = (
  */
 export const repairStep = (
 	candidates: readonly IQueueCandidateFacts[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 	isLevel: (candidate: IQueueCandidateFacts) => boolean,
 	fullRunOf: (candidate: IQueueCandidateFacts) => IIntegrationCertification,
 ): IRepairStep => {
