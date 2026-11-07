@@ -2,14 +2,14 @@
 id: c00535
 title: "Actions are pinned by SHA, packages by exact version, and provenance reaches npm"
 kind: chore
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 3b0e0aaa-92cc-4ba0-aa72-dbbcfa061e9e
-last-correlation-id: 3b0e0aaa-92cc-4ba0-aa72-dbbcfa061e9e
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T02:20:53.535Z
+last-transition-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
+last-correlation-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
+last-transition-from: review
+last-transition-at: 2026-11-04T19:44:15.949Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
@@ -31,35 +31,41 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - global_gate: type
 
 ### S1 — Actions by SHA
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/dependabot.yml`, `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.github/workflows/setup-bun.yml`, `tools/scripts/lint/workflow-yaml.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every `uses:` names a 40-hex SHA with the tag in a comment; a lint fails on a tag reference; Dependabot updates github-actions weekly (G130)."
 - shipped-in: `51fbac099a82`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 51fbac099a82 is stale: S1 workflow/lint files changed afterward (e.g. 434c4c8c9, 07672aeb0, a631c551c, 5b0b2b860). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ### S2 — Exact external servers and npm provenance
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/external-mcps/src/lib/options-schema.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/skills/external-mcps/SKILL.md`, `tools/scripts/release/publish-tarballs.ts`, `tools/scripts/release/release.script.ts`
 - **Gate**: type
 - acceptance:
   - "A server entry with a version runs `pkg@<version>` exactly (EXT-02)."
   - "--provenance reaches npm publish when requested; a spec on the argv proves it (ORCH-04)."
 - shipped-in: `6a9105675c79`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 6a9105675c79 is stale: S2 files changed afterward (e.g. b731cdf73, aebe3b62e). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + exact-version/provenance evidence.
 
 ### S3 — One zod range
-- **Status**: review
-- **Files**: `docs/delendai/proposals/review/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
+- **Status**: pending
+- **Files**: `docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
 - **Gate**: type
 - acceptance:
   - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45). Already true at c00535: both declare ^4.6.6, and the lint governs zod; no manifest change was needed."
 - shipped-in: `00dc0104b1f5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 00dc0104b1f5 is stale: proposal file changed afterward (e.g. b54722a88). Redeliver S3 on current HEAD and resubmit with fresh shipped-in.
 
 ## acceptance
 

@@ -2,14 +2,14 @@
 id: x00993
 title: "The already-implemented lint reads git once, so lint-governance finishes inside its time limit"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 92d19160-6858-488f-928b-c95a1312179c
-last-correlation-id: 92d19160-6858-488f-928b-c95a1312179c
-last-transition-from: in-progress
-last-transition-at: 2026-10-28T17:27:39.480Z
+last-transition-id: 98a2c510-e5f9-41b1-95a7-7bf127572282
+last-correlation-id: 98a2c510-e5f9-41b1-95a7-7bf127572282
+last-transition-from: review
+last-transition-at: 2026-11-04T18:40:42.545Z
 ---
 
 # x00993 — The already-implemented lint reads git once, so lint-governance finishes inside its time limit
@@ -32,15 +32,17 @@ On 2026-10-28 all twelve open pull requests were BLOCKED and none was armed. Eve
 - global_gate: type
 
 ### S1 — One `git ls-files` and one history walk
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lib/git-file-origin.ts`, `tools/scripts/lint/proposal-already-implemented.script.ts`, `tools/tests/lib/git-file-origin.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`gitFileOrigins` reads the whole history once (`git log --reverse --diff-filter=AR -M --name-status`) and dates a renamed path by its old name's origin, as `--follow` does (git-file-origin.spec.ts)."
   - "On the repository at develop the lint runs in under 10 seconds (it took 4 min 10 s) and prints the same report as before."
 - shipped-in: `52b03daa0da2`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 52b03daa0da2 is stale: slice files changed afterward (e.g. b3948a035). Redeliver S1 from current HEAD and resubmit with fresh shipped-in plus scoped evidence for parity and runtime target.
 
 ## acceptance
 

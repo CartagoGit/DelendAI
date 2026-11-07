@@ -96,7 +96,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | docs-web | docs-web | adaptive | managed | dynamic-client | 8 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,253 | n/a | within hard | n/a | none |
 | everything | everything | native | managed | tokens-gate | 58 | 236 | 296,645 | 74162 | 237,381 | 21,727 | 69,667 | 167,714 | 36,062 | 8,012 | n/a | within hard | within hard | none |
 | everything | everything | adaptive | managed | dynamic-client | 58 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 2,138 | n/a | within hard | n/a | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 325,193 | 81299 | 264,353 | 22,691 | 74,940 | 189,413 | 79,943 | 7,296 | 151 | over warning (320,000B) | over warning (70,000B) | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 325,215 | 81304 | 264,328 | 22,738 | 74,922 | 189,406 | 79,965 | 7,296 | 151 | over warning (320,000B) | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,835 | n/a | within hard | n/a | none |
 
 ## Plugin marginal dashboard — component breakdown by owner
@@ -269,7 +269,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | orchestrator-runner | 13 | 36,062 | 1,252 | 11,088 | 21,488 | 0 | 650 | 1,001 | 11.1% |
 | dogfood | native | managed | tokens-gate | agent-orchestrator | 5 | 10,998 | 554 | 1,967 | 7,658 | 0 | 250 | 385 | 3.4% |
 | dogfood | native | managed | tokens-gate | perf | 3 | 3,668 | 301 | 969 | 1,952 | 0 | 150 | 215 | 1.1% |
-| dogfood | native | managed | tokens-gate | proposals | 50 | 79,943 | 4,605 | 15,549 | 51,428 | 0 | 2,620 | 3,850 | 24.6% |
+| dogfood | native | managed | tokens-gate | proposals | 50 | 79,965 | 4,652 | 15,531 | 51,421 | 0 | 2,620 | 3,850 | 24.6% |
 | dogfood | native | managed | tokens-gate | project-kpis | 1 | 4,093 | 118 | 996 | 2,816 | 0 | 50 | 77 | 1.3% |
 | dogfood | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.1% |
 | dogfood | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 1.7% |
@@ -330,7 +330,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | docs-web | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | everything | native | managed | tokens-gate | 296,645 | 69743 | 69803 | 74162 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | everything | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 325,193 | 76714 | 76766 | 81299 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 325,215 | 76722 | 76773 | 81304 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 
 ## Documented deficits (kept, not auto-bumped)
@@ -350,7 +350,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | audit | 6,336 | ok | — | 110,821 | ok | — |
 | docs-web | 6,336 | ok | — | 78,410 | ok | — |
 | everything | 6,336 | ok | — | 296,645 | ok | — |
-| dogfood | 6,336 | ok | — | 325,193 | warning | — |
+| dogfood | 6,336 | ok | — | 325,215 | warning | — |
 
 Metrics for plugin lifecycle transitions (c00134). Counters are 
 process-local aggregates; the router emits them on each transition 
