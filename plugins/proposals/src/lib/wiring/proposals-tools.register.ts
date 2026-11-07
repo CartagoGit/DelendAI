@@ -328,6 +328,9 @@ export const buildProposalsTools = (wiring: IProposalsToolsWiring) => {
 				peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 				folderPolicy,
 				indexFreeMoves: movesStayOutOfTheIndex(ctx.developmentPolicy),
+				...(ctx.developmentPolicy === undefined
+					? {}
+					: { workRefShape: ctx.developmentPolicy.branches }),
 				// peer-review gate on review→done (default on).
 				...reviewPolicy,
 				// The evidence gate the authoring and auto_work tools
@@ -422,6 +425,9 @@ export const buildProposalsTools = (wiring: IProposalsToolsWiring) => {
 				lockPathAbs: abs(layout.lockFile),
 				agentRegistryPathAbs: abs(layout.agentRegistryFile),
 				workspaceRoot: ctx.workspace.root,
+				...(ctx.developmentPolicy === undefined
+					? {}
+					: { workRefShape: ctx.developmentPolicy.branches }),
 				// same peer-review default as proposal_transition.
 				...reviewPolicy,
 			}),

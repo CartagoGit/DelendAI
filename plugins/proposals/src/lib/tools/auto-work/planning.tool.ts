@@ -6,6 +6,7 @@ import { runContinueProposal } from '../continue-proposal.tool';
 import type { IAutoWorkPersistMode } from '../auto-work-persist';
 import { createGitRunner } from '../../shared/git-runner';
 import { hasPeerApprovedReview } from '../../swarm/proposal-review';
+import { isSentBack } from '../../swarm/proposal-stage';
 import { readProposalIndex } from '../../proposals/index-reader';
 import type {
 	IAutoWorkToolOptions,
@@ -57,6 +58,29 @@ export const createIdleStreak = (): IIdleStreak => {
 	};
 };
 
+/**
+ * Whether a proposal in review is a reviewer's to take: not yet approved
+ * by a peer, and not sent back (then its next step is its implementer's).
+ */
+export const awaitsPeerReview = (markdown: string): boolean =>
+	!isSentBack(markdown) && !hasPeerApprovedReview(markdown);
+
+/** Whether the proposal at `file` is in review with changes requested. */
+export const sentBackAt = async (
+	proposalsDirAbs: string | undefined,
+	file: string,
+): Promise<boolean> => {
+	if (proposalsDirAbs === undefined) return false;
+	try {
+		return isSentBack(
+			(await new SafeWorkspaceReader(proposalsDirAbs).readText(file))
+				.content,
+		);
+	} catch {
+		return false;
+	}
+};
+
 const lacksPeerApproval = async (
 	proposalsDirAbs: string,
 	file: string,
@@ -65,7 +89,7 @@ const lacksPeerApproval = async (
 		const raw = (
 			await new SafeWorkspaceReader(proposalsDirAbs).readText(file)
 		).content;
-		return !hasPeerApprovedReview(raw);
+		return awaitsPeerReview(raw);
 	} catch {
 		// A review file that cannot be read is no candidate for this check.
 		return false;

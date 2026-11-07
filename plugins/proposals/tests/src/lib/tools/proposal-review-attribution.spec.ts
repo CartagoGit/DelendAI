@@ -242,8 +242,9 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(rejected.body).toMatchObject({
 			status: 'changes_requested',
 			implementer: 'unrecorded',
-			proposalReopened: true,
+			nextAction: expect.stringContaining('stays in review/'),
 		});
+		expect(rejected.body.proposalReopened).toBeUndefined();
 	});
 
 	it('still refuses an approval without a commit', async () => {
@@ -301,7 +302,7 @@ describe('a verdict on a slice no round was opened for', () => {
 		});
 	});
 
-	it('sends a hand-marked done slice back to work, and the proposal to ready with it', async () => {
+	it('sends a hand-marked done slice back to work, and keeps the proposal in review', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/agent-a/x00001-S1-g1/the-work',
@@ -318,11 +319,11 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(rejected.body).toMatchObject({
 			status: 'changes_requested',
 			attributedTo: 'agent-a',
-			proposalReopened: true,
 		});
-		// Its review is over: the proposal is ready, the slice to do again.
+		// Its review is over and sent it back: it stays in review/, the
+		// slice to do again with review-state changes_requested.
 		const reopened = repo.documentOf();
-		expect(reopened).toMatch(/proposals\/ready\//u);
+		expect(reopened).toMatch(/proposals\/review\//u);
 		const markdown = readFileSync(reopened, 'utf8');
 		expect(markdown).toContain('- **Status**: pending');
 		expect(markdown).toContain(

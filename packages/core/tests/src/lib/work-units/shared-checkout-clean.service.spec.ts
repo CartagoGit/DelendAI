@@ -4,19 +4,12 @@
  * (x01003). Real git.
  */
 import { execFileSync } from 'node:child_process';
-import {
-	mkdirSync,
-	mkdtempSync,
-	realpathSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { fakePartial } from '@delendai/test-kit';
+import { createGitRepoTemplate, fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
@@ -26,8 +19,6 @@ import {
 	sharedCheckoutCheckpointRefusal,
 } from '@delendai/core/lib/work-units/shared-checkout-clean.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
-
-const roots: string[] = [];
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -41,24 +32,29 @@ const contextFor = (root: string): IWorkUnitContext =>
 		>({ workspace: root, json: true, remote: undefined }),
 	});
 
-const repoOn = (profile: string): string => {
-	const root = realpathSync(mkdtempSync(join(tmpdir(), 'shared-clean-')));
-	roots.push(root);
-	git(root, 'init', '-q', '-b', 'develop');
-	git(root, 'config', 'user.email', 'work@example.com');
-	git(root, 'config', 'user.name', 'Work');
-	git(root, 'config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'README.md'), '# repo\n');
-	writeFileSync(
-		join(root, 'delendai.config.json'),
-		JSON.stringify({
-			development: { profile, branches: { namespacePrefix: 'delendai' } },
-		}),
-	);
-	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', 'base');
-	return root;
+const templateOn = (profile: string) =>
+	createGitRepoTemplate({
+		trunk: 'develop',
+		files: {
+			'README.md': '# repo\n',
+			'delendai.config.json': JSON.stringify({
+				development: {
+					profile,
+					branches: { namespacePrefix: 'delendai' },
+				},
+			}),
+		},
+	});
+
+/** One repository per profile, built once and copied per case. */
+const templates = {
+	'shared-checkout-pr': templateOn('shared-checkout-pr'),
+	'worktree-pr': templateOn('worktree-pr'),
+	'shared-direct': templateOn('shared-direct'),
 };
+
+const repoOn = (profile: keyof typeof templates): string =>
+	templates[profile].copy().root;
 
 const UNIT = [
 	'--proposal=x1',
@@ -66,12 +62,6 @@ const UNIT = [
 	'--agent=claude-sonnet-5-5',
 	'--topic=probe',
 ] as const;
-
-afterEach(() => {
-	for (const root of roots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-});
 
 describe('the shared checkout stays clean (x01003)', () => {
 	it.each([
