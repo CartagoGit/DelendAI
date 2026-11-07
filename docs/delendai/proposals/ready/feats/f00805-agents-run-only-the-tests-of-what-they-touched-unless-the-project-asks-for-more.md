@@ -2,14 +2,14 @@
 id: f00805
 title: "Agents run only the tests of what they touched, unless the project asks for more"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 74ee566b-0a49-4070-b362-740cbc9bc5de
-last-correlation-id: 74ee566b-0a49-4070-b362-740cbc9bc5de
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:30:01.815Z
+last-transition-id: 599b4a1a-3327-4bef-a137-f6dfdfea0cb8
+last-correlation-id: 599b4a1a-3327-4bef-a137-f6dfdfea0cb8
+last-transition-from: review
+last-transition-at: 2026-11-04T19:26:28.020Z
 ---
 
 # f00805 — Agents run only the tests of what they touched, unless the project asks for more
@@ -32,24 +32,28 @@ The owner's rule, product-wide: by default delendai runs only the tests of what 
 - global_gate: none
 
 ### S1 — The setting and the proof follow it
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `packages/core/tests/src/lib/plugins/config-file-schema.spec.ts`
 - **Gate**: none
 - acceptance:
   - "testing.scope is touched, reach or all and defaults to touched; work prove and work deliver (prove-plan --fast, near-specs) run the changed specs, the mirror spec and the direct importers only, and a spec that reaches the change through another module does not run unless the scope is reach or all, shown on a fixture diff."
 - shipped-in: `fae717645a14`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in fae717645a14 is stale: S1 files changed afterward (e.g. 047d74500, d43290f9b). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and fixture evidence.
 
 ### S2 — The advisory tests-for-change tool follows the setting
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`
 - **Gate**: none
 - acceptance:
   - "impact-analysis tests_for_change recommends the touched specs by default and the symbol-reached ones only when testing.scope is reach or all."
 - shipped-in: `615abe74d1d9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with an explicit empirical evidence bundle for testing.scope behavior in impact-analysis (default touched vs reach/all), including committed test/run output references in the review round payload.
 
 ## acceptance
 

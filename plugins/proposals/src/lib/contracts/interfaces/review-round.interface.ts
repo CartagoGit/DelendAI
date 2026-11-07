@@ -20,7 +20,6 @@ export interface IReviewRoundOutcome {
 	nextReviewer: string | null;
 	nextRounds: readonly IReviewRound[];
 	autoTransitionRequested: boolean;
-	reopenRequested: boolean;
 	handOverRequested: boolean;
 	attribution: IReviewAttribution | undefined;
 	approvalOutcome: IApprovalOutcome | undefined;
