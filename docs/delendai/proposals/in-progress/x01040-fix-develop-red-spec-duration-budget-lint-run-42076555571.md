@@ -22,6 +22,10 @@ Develop is red at 1f8f5acee (CI run 42076555571): spec-duration-budget fails kep
 
 CI run 42076555571 left develop red at 1f8f5acee: the spec-duration-budget lint (q00045 S1) failed two specs over 5 s that are not in its baseline, so the queue arms no pull request. A wall clock on shared runners must not turn develop red from noise, so the gate also needs a margin, a median, and a report-only mode on the integration branch.
 
+## notes
+
+- Root cause of the reclaim-worktrees flake in #1812 (run 42364090265): the dry run's plain `git status` rewrote the spent worktree's index, the very file whose mtime dates its activity, so the applying run judged it busy and kept it. Fixed in the product with `git --no-optional-locks status`, and pinned by a spec that checks the index mtime is unchanged.
+
 ## non-goals
 
 - Optimising `work enter` itself (about 115 git calls per enter).
