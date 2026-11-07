@@ -65,8 +65,9 @@ export interface ITrainPorts {
 	readonly fullRunAt: (sha: string) => IIntegrationCertification;
 	/**
 	 * Merge the members, in order, onto the integration tip and push the
-	 * result to `ref`. Pushes nothing when any member conflicts, and returns
-	 * the conflicting ones.
+	 * result to `ref`, regenerating once the derived files a member
+	 * conflicted in. Pushes nothing when any member conflicts in another
+	 * file, and returns the conflicting ones.
 	 */
 	readonly assemble: (
 		ref: string,

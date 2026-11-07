@@ -29,12 +29,12 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 
 ### S1 — Behind candidates ride trains; derived conflicts are regenerated on the train
 - **Status**: pending
-- **Files**: `tools/scripts/forge/independent-candidates.ts`, `tools/scripts/forge/independent-candidates.spec.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
+- **Files**: `tools/scripts/forge/independent-candidates.ts`, `tools/scripts/forge/independent-candidates.spec.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: type
 - acceptance:
-  - "A candidate behind on a change that can reach every zone rides a train with the others and lands with it; it leaves the train only when it overlaps an earlier member or does not merge onto the tip plus the earlier members (independent-candidates.spec.ts, queue-order.spec.ts)."
-  - "A member whose merge conflicts only in derived files is merged with the integration side of those files, the generators run once on the train, and the train is pushed with the regeneration commit; a conflict in any other file leaves the member out (queue-order.spec.ts)."
-  - "The bring-forward machine skips every candidate that rides a train."
+  - "A candidate behind on a change that can reach every zone rides a train with the others and lands with it; it leaves the train only when it overlaps an earlier member or does not merge onto the tip plus the earlier members (independent-candidates.spec.ts, queue-acceptance.spec.ts)."
+  - "A member whose merge conflicts only in derived files is merged with the integration side of those files, the generators run once on the train, and the train is pushed with the regeneration commit; a conflict in any other file leaves the member out (train-assembly.spec.ts)."
+  - "The bring-forward machine skips every candidate that rides a train (queue-acceptance.spec.ts)."
 
 ### S2 — Orphaned review packs are rescued with their verdicts byte-identical
 - **Status**: pending
@@ -47,7 +47,7 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 ## acceptance
 
 - A candidate behind on a change that can reach every zone rides a train with the others and lands with it; it leaves the train only when it overlaps an earlier member or does not merge onto the tip plus the earlier members (independent-candidates.spec.ts, queue-order.spec.ts).
-- A member whose merge conflicts only in derived files is merged with the integration side of those files, the generators run once on the train, and the train is pushed with the regeneration commit; a conflict in any other file leaves the member out (queue-order.spec.ts).
+- A member whose merge conflicts only in derived files is merged with the integration side of those files, the generators run once on the train, and the train is pushed with the regeneration commit; a conflict in any other file leaves the member out (train-assembly.spec.ts).
 - The bring-forward machine skips every candidate that rides a train.
 - A review pack that conflicts with the integration branch in a proposal document is merged with the pack's verdict, claim and transition lines kept over the integration branch's and the integration branch's text elsewhere; the verdict lines of every slice it judged are byte-identical to the pack's (stale-verdict-conflicts.spec.ts).
 - A verdict on a proposal closed on the integration branch, or on a slice whose files, gate, acceptance or shipped-in changed there since the pack left, is dropped with a note in the merge message, and the document is the integration branch's (stale-verdict-conflicts.spec.ts).
