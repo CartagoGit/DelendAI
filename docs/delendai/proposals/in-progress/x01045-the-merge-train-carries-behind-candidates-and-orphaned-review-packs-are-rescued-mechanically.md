@@ -38,11 +38,12 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 
 ### S2 — Orphaned review packs are rescued with their verdicts byte-identical
 - **Status**: pending
-- **Files**: `tools/scripts/git/stale-verdict-conflicts.ts`, `tools/scripts/git/stale-verdict-conflicts.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Files**: `tools/scripts/git/stale-verdict-conflicts.ts`, `tools/scripts/git/stale-verdict-conflicts.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/lint/biome-baseline.script.ts`
 - **Gate**: type
 - acceptance:
   - "A review pack that conflicts with the integration branch in a proposal document is merged with the pack's verdict, claim and transition lines kept over the integration branch's and the integration branch's text elsewhere; the verdict lines of every slice it judged are byte-identical to the pack's (stale-verdict-conflicts.spec.ts)."
   - "A verdict on a proposal closed on the integration branch, or on a slice whose files, gate, acceptance or shipped-in changed there since the pack left, is dropped with a note in the merge message, and the document is the integration branch's (stale-verdict-conflicts.spec.ts)."
+  - "`biome-baseline` refuses a tree without its scan roots before its changed-file path, so `no-silent-gates` no longer fails every change confined to tools/ whose files carry no Biome diagnostic (found while proving this slice)."
 
 ## acceptance
 

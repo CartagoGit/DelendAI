@@ -53,6 +53,7 @@ import { join } from 'node:path';
 
 import { changedFilesScope } from '../lib/changed-files-scope';
 import { repoRoot } from '../lib/monorepo-paths';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 import { compareCodeUnits } from '@delendai/state';
 
 /** Tree scanned — mirrors `biome.json`'s `files.includes` root. */
@@ -314,6 +315,9 @@ const judgeTheChange = (root: string): number | undefined => {
 const main = (): number => {
 	const root = repoRoot();
 	const args = new Set(process.argv.slice(2));
+	// Before the changed-file path too: a change whose files carry no
+	// diagnostic passed over a tree with none of the roots it judges.
+	if (refuseMissingScanRoots('biome-baseline', root, SCAN_DIRS)) return 1;
 	if (!args.has('--update') && !args.has('--report')) {
 		const verdict = judgeTheChange(root);
 		if (verdict !== undefined) return verdict;
