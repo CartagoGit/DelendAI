@@ -18,14 +18,17 @@ import {
 	branchHostScript,
 	withoutBranchFlag,
 } from './branch-runtime.helper';
-import { applyGitOptionalLocksDefault } from '@delendai/core/lib/shared/git-optional-locks.helper';
 import {
 	assembleCliConfig,
 	createMcpProject,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
-import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
+import {
+	applyGitOptionalLocksDefault,
+	backgroundEnv,
+	lowPriority,
+} from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
