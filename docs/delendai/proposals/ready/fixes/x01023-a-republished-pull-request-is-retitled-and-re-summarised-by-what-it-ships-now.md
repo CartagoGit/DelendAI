@@ -2,14 +2,14 @@
 id: x01023
 title: "A republished pull request is retitled and re-summarised by what it ships now"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 60a48f91-c7d0-4525-9810-a388a99c7755
-last-correlation-id: 60a48f91-c7d0-4525-9810-a388a99c7755
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T14:53:43.047Z
+last-transition-id: aebff1af-5843-42ce-99df-3433bd1e3891
+last-correlation-id: aebff1af-5843-42ce-99df-3433bd1e3891
+last-transition-from: review
+last-transition-at: 2026-11-04T22:25:31.703Z
 ---
 
 # x01023 — A republished pull request is retitled and re-summarised by what it ships now
@@ -32,14 +32,16 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 4. Clai
 - global_gate: none
 
 ### S1 — Publish updates the text of an open pull request
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`
 - **Gate**: type
 - acceptance:
   - "When the publication's pull request is already open, work publish rewrites its title and summary from the final diff and the slices the unit now ships, through the REST API, and reports the change; a spec covers a unit whose scope shrank between two publishes."
 - shipped-in: `978be919a1b3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
