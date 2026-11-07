@@ -24,6 +24,7 @@ import {
 	resolveClaimReady,
 	buildPeerReviewPlan,
 	buildAutoWorkOrchestrationPolicy,
+	sentBackAt,
 } from './auto-work/planning.tool';
 import {
 	readCurrentBranchForWorktreeGate,
@@ -249,11 +250,18 @@ export const runAutoWork = async (
 		pickedFromPaused?: boolean;
 	};
 	const requirePeer = options.requirePeerReview !== false;
+	const nextInReview =
+		typeof next.file === 'string' &&
+		(next.file.startsWith('review/') || next.file.includes('/review/'));
+	// A proposal in review with changes requested is its implementer's.
+	const nextSentBack =
+		nextInReview &&
+		typeof next.file === 'string' &&
+		(await sentBackAt(options.proposalsDirAbs, next.file));
 	const nextIsExecutable =
 		next.kind === 'next-proposal' &&
 		typeof next.file === 'string' &&
-		!next.file.startsWith('review/') &&
-		!next.file.includes('/review/');
+		(!nextInReview || nextSentBack);
 	if (requirePeer && !nextIsExecutable) {
 		const pendingReview = await findReviewPendingPeerApproval(options);
 		if (pendingReview !== null) {
@@ -320,12 +328,10 @@ export const runAutoWork = async (
 
 	// a00069 S7 short-circuit: proposal sitting in review/ without an
 	// independent peer approve must not get an implement/claim plan.
-	const inReviewFolder =
-		typeof next.file === 'string' &&
-		(next.file.startsWith('review/') || next.file.includes('/review/'));
 	if (
 		requirePeer &&
-		inReviewFolder &&
+		nextInReview &&
+		!nextSentBack &&
 		next.proposalId &&
 		next.file &&
 		options.proposalsDirAbs

@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.3.0",
-		"generatedAt": "2026-11-02T05:50:20.617Z"
+		"generatedAt": "2026-11-07T11:29:24.648Z"
 	},
 	"tools": [
 		{
@@ -1132,8 +1132,8 @@
 					"proposalCloseBlocker": {
 						"type": "string"
 					},
-					"proposalReopened": {
-						"type": "boolean"
+					"nextAction": {
+						"type": "string"
 					},
 					"proposalHandedOver": {
 						"type": "boolean"
