@@ -45,6 +45,10 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 				moduleResolution: typescript.ModuleResolutionKind.Bundler,
 				strict: true,
 				noEmit: true,
+				// Only the deprecation of one symbol is read, so no ambient
+				// type packages and no declaration checking are needed.
+				types: [] as string[],
+				skipLibCheck: true,
 				baseUrl: REPO_ROOT,
 				paths: {
 					'@delendai/core': ['packages/core/src/index.ts'],
@@ -64,26 +68,29 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 				"import { nodeDynamicImport } from '@delendai/core/node';\nnodeDynamicImport;\n",
 			);
 
+			// One language service for both files: the program (the whole
+			// core package) is parsed once instead of once per surface.
+			const fileNames = Object.values(files);
+			const compilerHost = typescript.createCompilerHost(options);
+			const host = {
+				...compilerHost,
+				getScriptFileNames: () => fileNames,
+				getScriptVersion: () => '1',
+				getScriptSnapshot: (name: string) =>
+					fileNames.includes(name)
+						? typescript.ScriptSnapshot.fromString(
+								readFileSync(name, 'utf8'),
+							)
+						: typescript.ScriptSnapshot.fromString(
+								compilerHost.readFile(name) ?? '',
+							),
+				getCurrentDirectory: () => REPO_ROOT,
+				getCompilationSettings: () => options,
+			};
+			const service = typescript.createLanguageService(host);
+
 			for (const [surface, fileName] of Object.entries(files)) {
-				const compilerHost = typescript.createCompilerHost(options);
-				const host = {
-					...compilerHost,
-					getScriptFileNames: () => [fileName],
-					getScriptVersion: () => '1',
-					getScriptSnapshot: (name: string) =>
-						name === fileName
-							? typescript.ScriptSnapshot.fromString(
-									readFileSync(name, 'utf8'),
-								)
-							: typescript.ScriptSnapshot.fromString(
-									compilerHost.readFile(name) ?? '',
-								),
-					getCurrentDirectory: () => REPO_ROOT,
-					getCompilationSettings: () => options,
-				};
-				const diagnostics = typescript
-					.createLanguageService(host)
-					.getSuggestionDiagnostics(fileName);
+				const diagnostics = service.getSuggestionDiagnostics(fileName);
 				const deprecationDiagnostics = diagnostics.filter(
 					(diagnostic) => diagnostic.code === 6385,
 				);

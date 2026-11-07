@@ -13,7 +13,8 @@ import { staleApprovals } from '../../services/review-verdict-evidence';
 import { unapprovedSlices } from '../../shared/independent-approval';
 import { STALE_HASH_LENGTH } from '../../contracts/constants/proposal-transition-schema.constant';
 import { hasIndependentPeerApproval } from './validate-evidence.tool';
-import { sliceBlockOf, buildCodeError } from './delivery-evidence.tool';
+import { buildCodeError } from './delivery-evidence.tool';
+import { sliceBlockById } from '../../swarm/proposal-stage';
 
 import type { IPeerReviewGateInput } from '../../contracts/interfaces/proposal-transition-tool.interface';
 
@@ -108,7 +109,7 @@ export const runPeerReviewGate = async ({
 					collectSliceStatuses(raw).map((slice) => ({
 						id: slice.id,
 						files: slice.files,
-						block: sliceBlockOf(raw, slice.id),
+						block: sliceBlockById(raw, slice.id),
 					})),
 				)
 			: [];

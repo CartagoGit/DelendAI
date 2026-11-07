@@ -9,7 +9,7 @@
  * package.json's test/typecheck/lint scripts actually use.
  */
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -85,6 +85,7 @@ describe('with-compute-lock.script.ts', () => {
 					env: {
 						...process.env,
 						DELENDAI_TEST_COMPUTE_LOCK_PATH: lockPath,
+						DELENDAI_TEST_COMPUTE_WAIT_NOTICE_MS: '50',
 					},
 				});
 				let stderr = '';
@@ -96,22 +97,22 @@ describe('with-compute-lock.script.ts', () => {
 				);
 			});
 
+		// The first invocation reports (in a file) that it holds the lock,
+		// then keeps it past the waiter's notice threshold. Both are short
+		// here: the threshold is set by the script's test-only variable.
+		const heldFile = join(lockDir, 'held.txt');
 		const first = spawnAsync([
 			'first',
 			'--',
-			// The first invocation must hold the lock long enough for the
-			// wrapper's 1s wait-notice threshold (line ~78 of the script) to
-			// fire inside the second invocation. Under heavy CPU contention
-			// (multiple parallel vitest workers / a peer agent), bun may take
-			// 200-500ms just to spawn and reach `withFileMutex`, so 5s is
-			// a comfortable margin that still completes well under the
-			// test's own 10s timeout.
-			`sleep 5 && echo first >> ${outFile}`,
+			`echo held > ${heldFile} && sleep 0.6 && echo first >> ${outFile}`,
 		]);
-		// Give the first invocation a head start so it reliably wins the
-		// race for the lock before the second one starts. 250ms is enough
-		// for `bun` to fork, exec, and reach `withFileMutex` even under load.
-		await new Promise((r) => setTimeout(r, 250));
+		// The second starts only once the first provably holds the lock, so
+		// it cannot win the race for it.
+		const deadline = Date.now() + 30_000;
+		while (!existsSync(heldFile) && Date.now() < deadline) {
+			await new Promise((r) => setTimeout(r, 10));
+		}
+		expect(existsSync(heldFile)).toBe(true);
 		const second = spawnAsync([
 			'second',
 			'--',

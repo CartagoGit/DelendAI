@@ -4,10 +4,12 @@
  *
  * The last approval used to rewrite the frontmatter to `done` and leave
  * the file in `review/`, then log an "auto-transition repair" for
- * somebody else to finish. A change request left the proposal in
- * `review/` while its slice was open work again. Both now run the one
+ * somebody else to finish. The close now runs the one
  * transition every other caller uses, so the folder, the frontmatter
- * and the index move together and under the same gates.
+ * and the index move together and under the same gates. A change
+ * request moves nothing: the proposal stays in review/, its slices'
+ * review-state says changes_requested, and the next step is its
+ * implementer's.
  *
  * A refused close does not undo the approval: the verdict is a fact
  * about the code, the close is a separate step, and its refusal is
@@ -15,6 +17,9 @@
  */
 import type { IReviewVerdictLifecycle } from '../contracts/interfaces/review-verdict-lifecycle.interface';
 
+import { readTextOrNull } from '../proposals/index-reader';
+import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { isSentBack, sentBackNextAction } from '../swarm/proposal-stage';
 import {
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
@@ -78,7 +83,6 @@ export const verdictGatePolicy = (
 
 export const moveProposalAfterVerdict = async (input: {
 	readonly close: boolean;
-	readonly reopen: boolean;
 	/** The submission left no slice to do: the proposal goes to review. */
 	readonly handOver?: boolean;
 	readonly proposalId: string;
@@ -100,23 +104,6 @@ export const moveProposalAfterVerdict = async (input: {
 			? { proposalClosed: false, proposalCloseBlocker: refusalOf(result) }
 			: { proposalClosed: true };
 	}
-	if (input.reopen) {
-		const result = await runProposalTransition(
-			{
-				id: input.proposalId,
-				to: 'ready',
-				reason: `its review is over and sent slices back (the last verdict was on ${input.sliceId}): ready for the next implementer, with the findings on each slice`,
-				agent: input.agent,
-			},
-			input.options,
-		);
-		return refused(result)
-			? {
-					proposalReopened: false,
-					proposalCloseBlocker: refusalOf(result),
-				}
-			: { proposalReopened: true };
-	}
 	if (input.handOver === true) {
 		const result = await runProposalTransition(
 			{
@@ -135,6 +122,22 @@ export const moveProposalAfterVerdict = async (input: {
 			: { proposalHandedOver: true };
 	}
 	return {};
+};
+
+/**
+ * What follows a verdict that left the proposal in review/ sent back,
+ * read back from the document it wrote; nothing otherwise.
+ */
+export const verdictNextAction = async (
+	docPath: string,
+	proposalId: string,
+): Promise<Pick<IReviewVerdictLifecycle, 'nextAction'>> => {
+	const markdown = await readTextOrNull(docPath);
+	return markdown !== null &&
+		readFrontmatterField(markdown, 'status')?.toLowerCase() === 'review' &&
+		isSentBack(markdown)
+		? { nextAction: sentBackNextAction(proposalId) }
+		: {};
 };
 
 const HANDED_OVER = new Set(['review', 'done', 'retired']);

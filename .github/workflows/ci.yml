@@ -719,13 +719,24 @@ jobs:
                     ${CHANGED}
 
             - name: Upload this zone's blob report
-              if: matrix.zone.run
+              # `always()` so a shard that failed still uploads what it
+              # measured. Without it the merge judges the coverage of the
+              # whole run from the shards that happened to pass, and every
+              # file the red shard covered reads as never executed: on
+              # 2026-11-05 one red spec made `lint:no-dead-modules` call
+              # `tools/scripts/lib/monorepo-paths.ts` a module whose every
+              # function had run, because its blob never left the shard.
+              # The zone's own verdict is the shard's exit code; this step
+              # only carries the evidence.
+              if: always() && matrix.zone.run
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
               with:
                   name: vitest-blob-${{ env.BLOB_SLUG }}
                   path: .vitest-reports/
                   retention-days: 1
-                  if-no-files-found: error
+                  # A shard that failed before writing its report has no
+                  # blob to upload; the merge says which zone is missing.
+                  if-no-files-found: warn
                   # `.vitest-reports` starts with a dot, and this action
                   # treats every dot-path as hidden and skips it — so the
                   # first sharded run uploaded nothing and failed with
@@ -741,6 +752,8 @@ jobs:
             contents: read
             # Deleting this run's own shard blobs once they are merged.
             actions: write
+            # Opening or refreshing the spec-duration issue.
+            issues: write
         needs: [plan-tests, tests-zone]
         # `always()` so a failed shard still reaches the merge: the
         # coverage verdict is worth having even when a spec is red, and
@@ -843,7 +856,8 @@ jobs:
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     export VITEST_COVERAGE_FILES="$(git diff --name-only \
                       "${DELENDAI_COVERAGE_BASE}...HEAD")"
-                    bun run test:merged:changed
+                    mkdir -p .cache/spec-timings
+                    VITEST_TIMINGS_OUT=.cache/spec-timings/report.json bun run test:merged:changed
                   else
                     # The full run times every spec, for the planner.
                     mkdir -p .cache/spec-timings
@@ -851,7 +865,7 @@ jobs:
                   fi
 
             - name: Record how long each spec took
-              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true'
               # An optimisation of the next pull requests' split: it never
               # fails the run it measures.
               continue-on-error: true
@@ -860,6 +874,49 @@ jobs:
                   bun tools/scripts/ci/spec-timings.script.ts \
                     --from=.cache/spec-timings/report.json \
                     --out=.cache/spec-timings/spec-timings.json
+
+            - name: Hold every spec to its time budget
+              if: steps.planned.outputs.none != 'true'
+              # q00045 S1. A wall clock on a shared runner is noisy, so a
+              # pull request fails only for a spec clearly over 5 s (by a
+              # margin), and the integration branch's certification never
+              # fails here: it reports the new offenders for the issue step.
+              env:
+                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
+              run: |
+                  set -euo pipefail
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    # A change that touches no spec records no timings.
+                    if [ -f .cache/spec-timings/spec-timings.json ]; then
+                      git diff --name-only "${DELENDAI_COVERAGE_BASE}...HEAD" \
+                        > .cache/spec-timings/changed-files.txt
+                      bun run lint:spec-duration-budget -- \
+                        --mode=pull-request \
+                        --changed-files=.cache/spec-timings/changed-files.txt \
+                        --timings=.cache/spec-timings/spec-timings.json
+                    fi
+                  else
+                    bun run lint:spec-duration-budget -- \
+                      --mode=integration \
+                      --timings=.cache/spec-timings/spec-timings.json \
+                      --report-out=.cache/spec-timings/offenders.md
+                  fi
+
+            - name: Open or refresh the slow-spec issue
+              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
+              continue-on-error: true
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -euo pipefail
+                  title="Slow specs: spec-duration-budget offenders"
+                  body="$(cat .cache/spec-timings/offenders.md)"$'\n'"Found by run ${{ github.run_id }} at ${{ github.sha }}."
+                  number="$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
+                  if [ -n "$number" ]; then
+                    gh issue edit "$number" --body "$body"
+                  else
+                    gh issue create --title "$title" --body "$body"
+                  fi
 
             - name: Upload the spec timings
               if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'

@@ -1,6 +1,8 @@
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { toolError } from '@delendai/core/public';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
+import { reviewerMoveRefusalFor } from '../services/reviewer-move-guard.service';
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import {
 	PROPOSAL_TRANSITION_INPUT_SCHEMA,
 	type IProposalTransitionArgs,
@@ -46,14 +48,32 @@ export const buildProposalTransitionRegistration = (
 					'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
 				inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			},
-			async (args: IProposalTransitionArgs) =>
-				runProposalTransitionCompat(args, options).then((result) =>
-					result.ok
-						? result.payload
-						: toolError(
-								`invalid input: ${JSON.stringify(result.error.issues)}`,
-							),
-				),
+			async (args: IProposalTransitionArgs) => {
+				// A verdict is the move: the reviewer that recorded one does
+				// not move the proposal by hand afterwards.
+				const scoped = scopeToCaller(options);
+				const refusal = await reviewerMoveRefusalFor({
+					id: args.id,
+					to: args.to,
+					agent: args.agent,
+					workspaceRoot: scoped.workspaceRoot,
+					proposalsDirAbs: scoped.proposalsDirAbs,
+					indexPathAbs: scoped.indexPathAbs,
+					shape: options.workRefShape,
+					run: options.gitRunner,
+				});
+				if (refusal !== undefined) {
+					return toolError(refusal.reason, refusal.nextAction);
+				}
+				return runProposalTransitionCompat(args, options).then(
+					(result) =>
+						result.ok
+							? result.payload
+							: toolError(
+									`invalid input: ${JSON.stringify(result.error.issues)}`,
+								),
+				);
+			},
 		);
 	},
 });

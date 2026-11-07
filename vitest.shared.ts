@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 /**
  * `Alias` moved from `vitest/config` to `vite` in vitest 4.x, and
@@ -13,6 +13,19 @@ export interface Alias {
 	readonly find: string | RegExp;
 	readonly replacement: string;
 }
+
+/**
+ * Drop the trailing slashes of a path.
+ *
+ * A regex would do it in one line, but `/\/+$/` is the shape CodeQL
+ * reports as `js/polynomial-redos` — it already flagged it once in
+ * this repository (x01012) — so the slashes are counted instead.
+ */
+export const trimTrailingSlashes = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value.charAt(end - 1) === '/') end -= 1;
+	return value.slice(0, end);
+};
 
 /**
  * Path to the global console-silencing vitest setup. Wired into every
@@ -70,7 +83,7 @@ export const BUN_OWNED_SPECS: readonly string[] = [
  * to it, as vitest `exclude` globs.
  */
 export const bunOwnedExcludes = (projectDir: string): string[] => {
-	const prefix = `${projectDir.replace(/\/+$/u, '')}/`;
+	const prefix = `${trimTrailingSlashes(projectDir)}/`;
 	return BUN_OWNED_SPECS.filter((entry) => entry.startsWith(prefix)).map(
 		(entry) => {
 			const relative = entry.slice(prefix.length);
@@ -91,6 +104,87 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
 export const sharedTestOptions = {
 	fsModuleCache: true,
 } as const;
+
+/**
+ * What makes a spec file unsafe to share a worker with other files: it
+ * replaces a module, a global, a timer or `process.exit`, or it assigns to
+ * `process.env`. With `isolate: false` those replacements outlive the file
+ * and break whichever file runs next in the same worker.
+ *
+ * A file that boots real plugins through dynamic imports (the token budget
+ * measurement) opts in with the `@delendai-isolate` pragma: a module a
+ * previous file left in the shared graph keeps its lazy `import()` bound to
+ * that file's torn-down environment, so a plugin silently failed to load and
+ * the measured catalog lost its tools.
+ */
+const NEEDS_ISOLATION =
+	/@delendai-isolate|\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+
+/**
+ * The run order of the projects that share a worker. Vitest refuses two
+ * projects with different `maxWorkers` in the same order, and a project with
+ * `fileParallelism: false` runs on one worker, so it has an order of its own.
+ */
+export const SHARED_GRAPH_GROUP_ORDER = { parallel: 1, serial: 2 } as const;
+
+/** The name of a project's isolated half: the project's name and this. */
+export const ISOLATED_PROJECT_SUFFIX = '-isolated';
+
+const listSpecFiles = (dir: string): string[] =>
+	readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+		if (entry.name === 'node_modules' || entry.name === 'dist') return [];
+		const path = join(dir, entry.name);
+		if (entry.isDirectory()) return listSpecFiles(path);
+		return entry.isFile() && entry.name.endsWith('.spec.ts') ? [path] : [];
+	});
+
+/**
+ * The spec files under `projectRoot` (relative to it, `/`-separated) that
+ * need a worker of their own. Read from the files' own text at config load,
+ * so a new spec that mocks something is isolated without anyone listing it.
+ */
+export const isolatedSpecs = (projectRoot: string): string[] =>
+	listSpecFiles(projectRoot)
+		.filter((file) => NEEDS_ISOLATION.test(readFileSync(file, 'utf8')))
+		.map((file) => relative(projectRoot, file).split(sep).join('/'))
+		.sort();
+
+/**
+ * A project that shares one module graph per worker (`isolate: false`) for
+ * the specs that replace nothing, and keeps a worker per file for the ones
+ * `isolatedSpecs` names. Vitest cannot isolate per file, so each such
+ * project is two: the config file exports the shared half and
+ * `vitest.isolated.config.ts` the other, listed in the root `projects`.
+ * Measured on a 30-spec sample (`--maxWorkers=2`): 24.9s to 18.4s.
+ */
+export const isolationSplit = (
+	projectRoot: string,
+	scanDir: string,
+	half: 'shared' | 'isolated',
+	projectName: string,
+) => {
+	const isolated = isolatedSpecs(join(projectRoot, scanDir)).map((file) =>
+		scanDir === '' ? file : `${scanDir}/${file}`,
+	);
+	return half === 'shared'
+		? {
+				options: {
+					...sharedTestOptions,
+					isolate: false,
+					sequence: { groupOrder: SHARED_GRAPH_GROUP_ORDER.parallel },
+				},
+				include: undefined,
+				exclude: isolated,
+			}
+		: {
+				options: {
+					...sharedTestOptions,
+					name: `${projectName}${ISOLATED_PROJECT_SUFFIX}`,
+				},
+				include: isolated,
+				exclude: [] as string[],
+			};
+};
 
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
