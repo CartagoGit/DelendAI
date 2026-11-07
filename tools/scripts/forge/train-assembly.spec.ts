@@ -2,48 +2,34 @@
  * train-assembly.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { createGitRepoTemplate } from '@delendai/test-kit';
+import { describe, expect, it } from 'vitest';
 
 import { assembleTrain, TRAIN_REGENERATION_SUBJECT } from './train-assembly';
-
-const roots: string[] = [];
-afterEach(() => {
-	for (const root of roots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-});
 
 const DERIVED = 'catalog.generated.md';
 const TRAIN = 'delendai/train/aaaa/3-5';
 
+/** A forge and a clone of it, built once for the file. */
+const template = createGitRepoTemplate({
+	trunk: 'develop',
+	remote: true,
+	files: {
+		'authored.ts': 'export const a = 1;\n',
+		[DERIVED]: 'catalog: base\n',
+	},
+});
+
 /**
- * A forge and a clone: two candidates that each add a source file and
- * rewrite the derived catalog from it, so their catalogs conflict, and a
- * third that conflicts with the first in an authored file.
+ * Candidates on the forge, each from the tip: two that add a source file
+ * and rewrite the derived catalog from it, so their catalogs conflict, or
+ * two that conflict in an authored file.
  */
 const project = () => {
-	const base = mkdtempSync(join(tmpdir(), 'train-assembly-'));
-	roots.push(base);
-	const forge = join(base, 'origin.git');
-	execFileSync('git', ['init', '-q', '--bare', '-b', 'develop', forge]);
-	const root = join(base, 'clone');
-	execFileSync('git', ['init', '-q', '-b', 'develop', root]);
-	const git = (...args: string[]) =>
-		execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-	git('remote', 'add', 'origin', forge);
-	git('config', 'user.email', 'a@example.com');
-	git('config', 'user.name', 'a');
-	git('config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'authored.ts'), 'export const a = 1;\n');
-	writeFileSync(join(root, DERIVED), 'catalog: base\n');
-	git('add', '-A');
-	git('commit', '-q', '-m', 'base');
-	git('push', '-q', 'origin', 'develop');
+	const { root, git } = template.copy();
 	const tip = git('rev-parse', 'HEAD');
 	const candidate = (
 		number: number,
