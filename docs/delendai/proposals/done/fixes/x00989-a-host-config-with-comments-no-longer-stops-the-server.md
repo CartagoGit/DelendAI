@@ -2,14 +2,14 @@
 id: x00989
 title: "A host config with comments no longer stops the server"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-10-28
-last-transition-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
-last-correlation-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
-last-transition-from: in-progress
-last-transition-at: 2026-11-02T09:54:24.414Z
+last-transition-id: 20dc8c44-d70a-4a8c-afe2-b0f11f621e77
+last-correlation-id: 20dc8c44-d70a-4a8c-afe2-b0f11f621e77
+last-transition-from: review
+last-transition-at: 2026-11-07T12:12:06.359Z
 shipped-in:
   - "8a64228535a5"
 ---
