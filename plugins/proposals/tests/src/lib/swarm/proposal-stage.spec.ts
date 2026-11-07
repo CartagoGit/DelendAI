@@ -9,6 +9,7 @@ import {
 	proposalReviewState,
 	sentBackNextAction,
 	sentBackSliceIds,
+	sliceBlockById,
 } from '@delendai/proposals/lib/swarm/proposal-stage';
 
 const doc = (...slices: readonly string[]): string =>
@@ -80,5 +81,37 @@ describe('proposalReviewState', () => {
 		expect(sentBackNextAction('x00001')).toContain(
 			'nothing is moved by hand',
 		);
+	});
+});
+
+describe('sliceBlockById', () => {
+	const markdown = doc(
+		slice(
+			'S1',
+			'- **Status**: done\n- review-log: approved by agent-b — ok',
+		),
+		slice('S2', '- **Status**: review\n- review-state: in_review'),
+		'## acceptance\n\n- review-state: changes_requested\n',
+	);
+
+	it('reads a slice whole, up to the slice that follows it', () => {
+		// Read to its own heading only, it was "#", and the stale-verdict
+		// gate on close never saw an approval.
+		const first = sliceBlockById(markdown, 's1');
+		expect(first).toContain('S1 — work');
+		expect(first).toContain('approved by agent-b');
+		expect(first).not.toContain('S2');
+	});
+
+	it('stops the last slice at the next section', () => {
+		const last = sliceBlockById(markdown, 'S2');
+		expect(last).toContain('review-state: in_review');
+		expect(last).not.toContain('acceptance');
+		expect(last).not.toContain('changes_requested');
+		expect(proposalReviewState(markdown)).toBe('in_review');
+	});
+
+	it('answers nothing for a slice the document lacks', () => {
+		expect(sliceBlockById(markdown, 'S9')).toBe('');
 	});
 });

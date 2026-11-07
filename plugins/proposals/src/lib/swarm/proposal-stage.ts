@@ -13,12 +13,17 @@
  */
 import { parseReviewState, type IReviewStatus } from './proposal-review';
 
-/** The slice blocks of `markdown`, frontmatter excluded so it cannot spoof one. */
+/**
+ * The slice blocks of `markdown`, frontmatter excluded so it cannot spoof
+ * one: each from its `### ` heading (without it) to the next slice or the
+ * next `## ` section.
+ */
 const sliceBlocks = (markdown: string): readonly string[] =>
 	markdown
 		.replace(/^---[\s\S]*?---\s*/u, '')
 		.split(/^### /mu)
-		.slice(1);
+		.slice(1)
+		.map((block) => block.split(/^## /mu)[0] ?? '');
 
 /** Each slice's block, by the id its heading spells. */
 export const sliceBlocksById = (
@@ -72,3 +77,11 @@ export const sentBackSliceIds = (markdown: string): ReadonlySet<string> =>
 /** What happens next for a proposal sent back, said once for every reader. */
 export const sentBackNextAction = (proposalId: string): string =>
 	`${proposalId} stays in review/ with review-state changes_requested: the verdict is the move, and nothing is moved by hand. Its implementer (or whoever takes it) fixes each slice sent back and hands it in again with \`delendai work deliver --proposal=${proposalId}\`; a reviewer other than the last one verifies the fix.`;
+
+/** The block of slice `sliceId`, whatever case its id is spelt in; `''` when it has none. */
+export const sliceBlockById = (markdown: string, sliceId: string): string =>
+	sliceBlocks(markdown).find(
+		(block) =>
+			(block.split(/\s/u)[0] ?? '').toLowerCase() ===
+			sliceId.toLowerCase(),
+	) ?? '';

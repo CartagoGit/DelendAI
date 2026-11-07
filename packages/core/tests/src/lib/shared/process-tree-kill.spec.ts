@@ -68,8 +68,8 @@ describeUnixOnly(
 		// then failed on `Number.isFinite(NaN)` while the reaping under
 		// test was working perfectly. Unlike the abort spec this one
 		// cannot wait-then-trigger (the timeout is what does the killing),
-		// so the precondition is bought with headroom instead: 5s is
-		// ~50x a warm spawn and still well inside the project ceiling.
+		// so the precondition is bought with headroom instead: 2s is
+		// ~20x a warm spawn and well inside the project ceiling.
 		it('reaps a long-lived descendant, not only the direct child', async () => {
 			const dir = mkdtempSync(join(tmpdir(), 'process-tree-kill-'));
 			const pidFile = join(dir, 'descendant-pid.txt');
@@ -82,7 +82,7 @@ describeUnixOnly(
 			].join('');
 			try {
 				const result = await runArgv([process.execPath, '-e', script], {
-					timeoutMs: 5_000,
+					timeoutMs: 2_000,
 					maxOutputBytes: 64,
 				});
 				expect(result.code).toBe(124);

@@ -19,6 +19,7 @@ import { resolveUnitsDirectory } from './units-directory.service';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
 import { createUnitRef } from './unit-start-point.service';
+import { withReviewKind } from './review-kind.service';
 import { closedForImplementing } from './closed-proposal.service';
 import {
 	reviewedByEntrant,
@@ -164,10 +165,12 @@ export const enteredHeld = async (
 	given: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
-	let args = given;
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy } = opened;
+	const kinded = await withReviewKind(root, policy, given);
+	if (kinded.refusal !== undefined) return kinded.refusal;
+	let { args } = kinded;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
 	const agent = agentFor(args, root, policy.identity);
@@ -193,7 +196,6 @@ export const enteredHeld = async (
 		live: [...swarm.units, ...swarm.published].map((unit) => unit.agent),
 	});
 	if (unnamed !== undefined) return refused(unnamed.what, unnamed.how);
-	// Implementing is for open work, by an agent that does not review it.
 	const notToImplement =
 		(await reviewedByEntrant(root, policy, args, agent, proposal)) ??
 		(await closedForImplementing(root, policy, args, proposal));
@@ -317,7 +319,6 @@ export const enteredHeld = async (
 		(scalarArg(args, 'kind') ?? 'implement') === 'implement' &&
 		!args.includes('--alongside')
 	) {
-		// The refs this clone has may be a minute old: the forge decides.
 		const reservedElsewhere = sliceHeldOnForge({
 			root,
 			policy,

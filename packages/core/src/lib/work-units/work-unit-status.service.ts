@@ -35,6 +35,7 @@ import {
 	readUnitStandings,
 	summarizeStandings,
 } from './unit-standings.service';
+import { divergedReviewPacks } from './diverged-review-pack.service';
 import { waitingOnAuthor } from './publication-dispositions.service';
 import { reportDirtyPaths } from './work-dirty-paths.service';
 import { renderInvariantReport } from './workflow-invariants.service';
@@ -58,6 +59,23 @@ import { namespacedRef } from './namespaced-ref.helper';
 const RETIRED_LINES = 3;
 
 const MAX_AHEAD_LINES = 3;
+
+/** Every branch tip, local or on origin, by its plain name (x01032). */
+const branchTips = (root: string): ReadonlyMap<string, string> => {
+	const tips = new Map<string, string>();
+	const listed = readGit(root, [
+		'for-each-ref',
+		'--format=%(refname) %(objectname)',
+		'refs/remotes/origin/',
+		'refs/heads/',
+	]);
+	for (const line of (listed ?? '').split('\n')) {
+		const [ref, sha] = line.split(' ');
+		if (ref === undefined || sha === undefined) continue;
+		tips.set(ref.replace(/^refs\/(?:heads|remotes\/origin)\//u, ''), sha);
+	}
+	return tips;
+};
 
 const anchoredLine = (payload: {
 	readonly anchorRequired: boolean;
@@ -175,6 +193,12 @@ export const statusOf = async (
 		)
 			.split('\n')
 			.filter((ref) => ref.length > 0),
+		divergedPacks: divergedReviewPacks({
+			refs: branchTips(root),
+			isAncestor: (sha, of) =>
+				readGit(root, ['merge-base', '--is-ancestor', sha, of]) !==
+				undefined,
+		}).slice(0, MAX_AHEAD_LINES),
 		publicationsAhead: standings
 			.filter((unit) => unit.publicationAhead)
 			.map((unit) => ({
@@ -204,6 +228,10 @@ export const statusOf = async (
 					(unit) =>
 						`publication ahead  ${unit.ref}: its publication moved on (the queue refreshed it); merge \`${unit.publication ?? 'the publication ref'}\` into the unit before republishing`,
 				),
+			...payload.divergedPacks.map(
+				(pack) =>
+					`pack diverged   ${pack.pack} holds commits its wip ${pack.wip} lacks: from that wip run \`${pack.merge}\` before publishing`,
+			),
 			...(payload.computeSlot.holder === null &&
 			payload.computeSlot.urgent.length === 0
 				? []
