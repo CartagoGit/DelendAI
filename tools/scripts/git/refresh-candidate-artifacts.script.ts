@@ -35,7 +35,7 @@ import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { dropConflictingVerdicts } from './stale-verdict-conflicts';
+import { resolveVerdictConflicts } from './stale-verdict-conflicts';
 
 import {
 	hookFreeEnvironment,
@@ -337,22 +337,24 @@ export const refreshCandidate = (input: {
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
 		]);
-		// A pack of verdicts gives up the ones on documents that changed
-		// under it; anything else that conflicts is still its author's.
-		const dropped =
+		// A pack of verdicts keeps its verdicts over the integration
+		// branch's verdict lines, and gives up only the ones that no longer
+		// apply; anything else that conflicts is still its author's.
+		const verdicts =
 			merged === undefined && isReviewPack(policy, candidate)
-				? dropConflictingVerdicts({
+				? resolveVerdictConflicts({
 						dir,
 						proposalsDir: input.proposalsDir ?? PROPOSALS_DIR,
 						git,
 					})
-				: [];
+				: { kept: [], dropped: [] };
+		const dropped = verdicts.dropped.map((entry) => entry.id);
 		if (
 			merged === undefined &&
 			!takeRegeneratedSide(
 				dir,
 				input.regenerated ?? REGENERATED_PROJECTIONS,
-				dropped.length > 0,
+				verdicts.kept.length + dropped.length > 0,
 			)
 		) {
 			return {
@@ -406,10 +408,19 @@ export const refreshCandidate = (input: {
 			: {
 					candidate,
 					state: 'refreshed',
-					detail:
-						dropped.length === 0
-							? 'merged and regenerated'
-							: `merged and regenerated; dropped the verdicts on ${dropped.join(', ')}, whose documents changed under them`,
+					detail: [
+						'merged and regenerated',
+						...(verdicts.kept.length === 0
+							? []
+							: [
+									`kept the pack's verdicts on ${verdicts.kept.join(', ')}`,
+								]),
+						...(dropped.length === 0
+							? []
+							: [
+									`dropped the verdicts on ${dropped.join(', ')}, which no longer apply`,
+								]),
+					].join('; '),
 				};
 	} finally {
 		git(root, ['worktree', 'remove', '--force', dir]);
@@ -434,6 +445,19 @@ export const shouldAskQueueToRun = (input: {
 	input.apply &&
 	input.head !== undefined &&
 	(input.refreshed || !input.headArmed);
+
+/** The candidates the forge reports conflicting; none when it cannot say. */
+const conflictingBranches = (): ReadonlySet<string> => {
+	try {
+		return new Set(
+			currentQueueFacts()
+				.facts.filter((facts) => facts.conflicting)
+				.map((facts) => facts.headRef),
+		);
+	} catch {
+		return new Set();
+	}
+};
 
 const main = async (): Promise<void> => {
 	const root = repoRoot();
@@ -473,18 +497,30 @@ const main = async (): Promise<void> => {
 	// A candidate the queue lands as it is (nothing the integration branch
 	// gained reaches it, f00755) is not brought forward: a merge commit
 	// would only send it back through its checks.
+	// A review pack the forge reports conflicting cannot ride a train (its
+	// conflict is in proposal documents, not derived files): it is rescued
+	// here.
+	const conflicting = conflictingBranches();
 	const landing = branchesLandingAsTheyAre({
 		root,
 		remote,
 		integration: policy.branches.integration,
-		queue: queue.map((entry) => ({
-			number: entry.number,
-			branch: entry.branch,
-		})),
+		queue: queue
+			.filter(
+				(entry) =>
+					!(
+						conflicting.has(entry.branch) &&
+						isReviewPack(policy, entry.branch)
+					),
+			)
+			.map((entry) => ({
+				number: entry.number,
+				branch: entry.branch,
+			})),
 	});
 	for (const branch of landing) {
 		console.log(
-			`refresh-candidate-artifacts: ${branch} lands as it is; not brought forward.`,
+			`refresh-candidate-artifacts: ${branch} lands as it is or rides a train; not brought forward.`,
 		);
 	}
 	const behind = new Set(
