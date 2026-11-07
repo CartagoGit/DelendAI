@@ -26,7 +26,7 @@ export type {
 };
 import { execFile } from 'node:child_process';
 import { executionRootOr } from './execution-root';
-import { noteGitSpawn } from './git-read.helper';
+import { noteGitSettled, noteGitSpawn } from './git-read.helper';
 import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
@@ -146,6 +146,7 @@ export const createGitRunner =
 					maxBuffer: 8 * 1024 * 1024,
 				},
 				(error, stdout, stderr) => {
+					noteGitSettled(executionRootOr(cwd), args);
 					if (!error) {
 						resolve({ ok: true, output: stdout });
 						return;
