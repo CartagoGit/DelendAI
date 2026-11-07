@@ -2,10 +2,14 @@
 id: x01043
 title: "Git reads must not rewrite the index: GIT_OPTIONAL_LOCKS=0 at the git seam"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-07
+last-transition-id: 9d4b7510-5ba5-4ff3-8fa1-9744f1edad46
+last-correlation-id: 9d4b7510-5ba5-4ff3-8fa1-9744f1edad46
+last-transition-from: ready
+last-transition-at: 2026-11-07T11:12:23.271Z
 ---
 
 # x01043 — Git reads must not rewrite the index: GIT_OPTIONAL_LOCKS=0 at the git seam
