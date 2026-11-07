@@ -2,14 +2,14 @@
 id: f00804
 title: "The proof slot has an urgent lane"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 3e1ebf3a-0d45-4eef-8967-b3700478adfc
-last-correlation-id: 3e1ebf3a-0d45-4eef-8967-b3700478adfc
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T18:41:52.940Z
+last-transition-id: da8dacc6-26c7-40a0-b518-a3dd43cc89b9
+last-correlation-id: da8dacc6-26c7-40a0-b518-a3dd43cc89b9
+last-transition-from: review
+last-transition-at: 2026-11-04T19:02:35.584Z
 ---
 
 # f00804 — The proof slot has an urgent lane
@@ -35,7 +35,7 @@ The change is an urgent lane: a unit is urgent when its proposal is a fix and th
 - global_gate: none
 
 ### S1 — Urgent lane in the compute slot
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/shared/compute-slot-lane.service.ts`, `packages/core/src/lib/contracts/interfaces/urgent-turn.interface.ts`, `packages/core/src/lib/contracts/interfaces/compute-slot.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/urgent-turn.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`, `packages/core/tests/src/lib/work-units/urgent-turn.service.spec.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`
 - **Gate**: none
 - acceptance:
@@ -45,8 +45,10 @@ The change is an urgent lane: a unit is urgent when its proposal is a fix and th
   - "The urgent turn is recorded with its reason in the slot owner file and an urgent log; a spec shows it."
   - "A unit is urgent when its proposal is a fix and the integration branch latest certification is red, or when --urgent=<reason> is passed to prove, deliver or publish; work status and the waiting message show the urgent lane."
 - shipped-in: `597ee7998029`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 597ee7998029 is stale: core work-unit/compute-slot files changed afterward (e.g. 720d958c9, 4feb256ab, f4b76a89b, aa75627c5). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ## acceptance
 
