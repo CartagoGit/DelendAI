@@ -2,14 +2,14 @@
 id: x01017
 title: "Shipped slices of q00038 and r00644 say so"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: c806c679-1718-4408-bd90-28b1544166bb
-last-correlation-id: c806c679-1718-4408-bd90-28b1544166bb
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T19:12:19.006Z
+last-transition-id: bf0370be-8f2b-4d51-968e-3e530d1d545c
+last-correlation-id: bf0370be-8f2b-4d51-968e-3e530d1d545c
+last-transition-from: review
+last-transition-at: 2026-11-04T18:35:08.189Z
 ---
 
 # x01017 — Shipped slices of q00038 and r00644 say so
@@ -44,14 +44,16 @@ None of them was recorded, because q00038 is moving to blocked (its S2 and S3 wa
 - global_gate: none
 
 ### S1 — Record what shipped
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/proposals/in-progress/q00038-plan-every-check-runs-only-for-what-the-change-can-affect.md`, `docs/delendai/proposals/ready/refactors/r00644-the-proposals-plugin-is-split-along-its-engines-and-each-engine-is-covered.md`
 - **Gate**: none
 - acceptance:
   - "q00038 S1, S4, S5, S6 and S7 and r00644 S5 are done with their shipping commits, and lint:job:governance passes on develop."
 - shipped-in: `ac9e64856f22`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in ac9e64856f22 is stale: the referenced proposal docs changed in newer commits (e.g. 6a174b421, ede4578bc, 39803e172, df793374a). Redeliver S1 from current HEAD and resubmit with fresh shipped-in and evidence that governance still passes on develop.
 
 ## acceptance
 
