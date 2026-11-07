@@ -2,14 +2,14 @@
 id: x01043
 title: "Git reads must not rewrite the index: GIT_OPTIONAL_LOCKS=0 at the git seam"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-07
-last-transition-id: 9d4b7510-5ba5-4ff3-8fa1-9744f1edad46
-last-correlation-id: 9d4b7510-5ba5-4ff3-8fa1-9744f1edad46
-last-transition-from: ready
-last-transition-at: 2026-11-07T11:12:23.271Z
+last-transition-id: 53c1e388-52e5-44e6-ad34-a140a2280183
+last-correlation-id: 53c1e388-52e5-44e6-ad34-a140a2280183
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T11:20:51.058Z
 ---
 
 # x01043 — Git reads must not rewrite the index: GIT_OPTIONAL_LOCKS=0 at the git seam
@@ -31,9 +31,12 @@ PR #1812's full run (42364090265) failed `reclaim-worktrees` because the dry run
 - global_gate: none
 
 ### S1 — Seam environment, process default, lint and spec
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/git-optional-locks.helper.ts`, `packages/core/src/lib/shared/hook-free-environment.helper.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/cli/run-cli.ts`, `tools/scripts/host/host-server.script.ts`, `tools/scripts/lint/git-optional-locks.script.ts`, `tools/scripts/lint/git-optional-locks.helper.ts`, `tools/scripts/lint/git-optional-locks.helper.spec.ts`, `packages/core/tests/src/lib/shared/git-optional-locks.helper.spec.ts`, `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`, `package.json`
 - **Gate**: none
+- shipped-in: `c45ee9011796`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
