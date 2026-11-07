@@ -2,14 +2,14 @@
 id: x01044
 title: "A slice's block is read up to the next slice or section, so the stale-verdict gate sees it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-07
-last-transition-id: 47dff4af-0190-4777-8448-3c9e60694079
-last-correlation-id: 47dff4af-0190-4777-8448-3c9e60694079
-last-transition-from: ready
-last-transition-at: 2026-11-07T15:10:37.691Z
+last-transition-id: 79072a64-5ed5-47ed-a123-ba7d6510c098
+last-correlation-id: 79072a64-5ed5-47ed-a123-ba7d6510c098
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T15:36:27.470Z
 ---
 
 # x01044 — A slice's block is read up to the next slice or section, so the stale-verdict gate sees it
@@ -31,13 +31,16 @@ Found while delivering f00806 (S4): `sliceBlockOf` in `plugins/proposals/src/lib
 - global_gate: none
 
 ### S1 — One slice reader, ending at the next slice or section
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-stage.ts`, `plugins/proposals/src/lib/tools/transition/delivery-evidence.tool.ts`, `plugins/proposals/src/lib/tools/transition/peer-review-gate.tool.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-stage.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/peer-review-gate.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/delivery-evidence.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/validate-evidence.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`sliceBlockById` returns a slice's block from its heading up to the next `### ` slice or `## ` section, in any case of its id, and `''` for a slice the document lacks; a spec reads a slice and the slice that follows it, and a last slice before `## acceptance`."
   - "With the block read whole, `review -> done` refuses a close on an approval a newer delivery superseded (spec with the delivery history faked); the gate's spec moves to its mirror path, and the delivery-evidence helpers get one."
   - "`sliceBlockOf` is removed; the stale-verdict gate reads blocks through `sliceBlockById`, the reader f00806's review-state derivation already uses, which now also stops at the next `## ` section."
+- shipped-in: `1445cb73cbe5`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
