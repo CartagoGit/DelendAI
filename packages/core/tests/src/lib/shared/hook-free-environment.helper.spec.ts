@@ -82,7 +82,10 @@ describe('gitEnvironmentFor', () => {
 		const other = repo();
 		expect(gitEnvironmentFor(other, hookOf(hooks)).GIT_DIR).toBeUndefined();
 		const plain = { PATH: process.env.PATH };
-		expect(gitEnvironmentFor(other, plain)).toBe(plain);
+		expect(gitEnvironmentFor(other, plain)).toEqual({
+			...plain,
+			GIT_OPTIONAL_LOCKS: '0',
+		});
 	});
 
 	it("takes a linked worktree's hook to be the worktree its gitdir file names", () => {

@@ -18,6 +18,7 @@
  * this directory consumes. Nothing here knows about WIP refs.
  */
 
+import { withoutOptionalLocks } from '../shared/git-optional-locks.helper';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -81,10 +82,11 @@ export const createScopedGitRunner =
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,
-					env:
+					env: withoutOptionalLocks(
 						env === undefined
 							? process.env
 							: { ...process.env, ...env },
+					),
 				},
 				(error, stdout, stderr) => {
 					if (error === null) {
