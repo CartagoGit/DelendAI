@@ -35,7 +35,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
 import { isBranchModelMove } from '../lint/pr-head-shape.script';
-import { FORWARD_SYNC_REF_PREFIX } from './forward-sync-release.script';
+import { isForwardSyncRef } from './forward-sync-release.script';
 import {
 	CERTIFYING_WORKFLOW,
 	certificationOf,
@@ -62,6 +62,10 @@ import {
 	type ITrainCandidate,
 	type ITrainPorts,
 } from './queue-order';
+import {
+	publicationPrefixesOf,
+	underPublication,
+} from './publication-prefixes';
 
 /**
  * The merge method as the policy states it. Read off the resolved policy
@@ -374,18 +378,18 @@ const releaseWaitingRuns = (
  */
 export const armable = (
 	open: readonly IPullRequest[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): readonly IPullRequest[] =>
 	open.filter(
 		(pull) =>
 			pull.auto_merge === null &&
 			pull.draft !== true &&
-			pull.head.ref.startsWith(publicationPrefix),
+			underPublication(pull.head.ref, publicationPrefix),
 	);
 
 export const armCandidates = (
 	open: readonly IPullRequest[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 	mergeMethod: IDeclaredMergeMethod,
 	// Injected so a test can ask which flag was passed, without a forge.
 	run: (args: readonly string[]) => string = gh,
@@ -430,20 +434,20 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
  */
 export const currentQueueFacts = (): {
 	readonly facts: readonly IQueueCandidateFacts[];
-	readonly publicationPrefix: string;
+	readonly publicationPrefix: readonly string[];
 	readonly armed: ReadonlySet<string>;
 } => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
-	const publicationPrefix = policy.branches.publicationRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+	const publicationPrefix = publicationPrefixesOf(policy.branches);
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
 	recoverReleaseBranch(policy.branches, opened);
 	return {
 		facts: opened
-			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+			.filter((pull) =>
+				underPublication(pull.head.ref, publicationPrefix),
+			)
 			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
 		armed: new Set(
@@ -624,9 +628,7 @@ const recoverReleaseBranch = (
 			answer(`repos/${REPOSITORY_SLUG}/git/ref/tags/v${version}`) !==
 				undefined,
 		aheadOfIntegration: compare?.ahead_by ?? 0,
-		forwardSyncOpen: open.some((pull) =>
-			pull.head.ref.startsWith(FORWARD_SYNC_REF_PREFIX),
-		),
+		forwardSyncOpen: open.some((pull) => isForwardSyncRef(pull.head.ref)),
 	});
 	for (const step of steps) {
 		gh([
@@ -823,9 +825,7 @@ const trainPorts = (input: {
 
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
-	const publicationPrefix = policy.branches.publicationRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+	const publicationPrefix = publicationPrefixesOf(policy.branches);
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
@@ -836,7 +836,7 @@ const main = (): void => {
 	// be one candidate at a time, each brought forward and re-tested after
 	// every merge, twenty minutes a candidate.
 	const candidates = opened
-		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+		.filter((pull) => underPublication(pull.head.ref, publicationPrefix))
 		.map((pull) => candidateFacts(pull));
 	const integration = policy.branches.integration;
 	const trainPrefixes = trainPrefixesOf(policy.branches);
@@ -974,7 +974,7 @@ const main = (): void => {
 		if (
 			pull.auto_merge === null ||
 			landing.has(pull.number) ||
-			!pull.head.ref.startsWith(publicationPrefix)
+			!underPublication(pull.head.ref, publicationPrefix)
 		) {
 			continue;
 		}

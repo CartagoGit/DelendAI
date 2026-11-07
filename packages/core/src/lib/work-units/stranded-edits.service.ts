@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { UNATTRIBUTED_AGENT } from '../contracts/constants/stranded-edits.constant';
 import type { IStrandedEdits } from '../contracts/interfaces/stranded-edits.interface';
-import { namespacedRef } from './namespaced-ref.helper';
+import { namespacedRef, ownedRootsOf } from './namespaced-ref.helper';
 import { readSwarm } from './work-swarm.service';
 import { readGit } from './work-unit-shared.service';
 import { execGitFileSync } from '../shared/git-read.helper';
@@ -205,16 +205,13 @@ export const listStrandedEdits = (input: {
 	/** When the edits were kept: how long they have waited for their owner. */
 	readonly keptAt: string;
 }[] => {
-	const prefix = namespacedRef(
-		input.policy.branches.namespacePrefix,
-		'stranded',
-	);
+	const roots = ownedRootsOf(input.policy.branches, 'stranded');
 	return (
 		readGit(input.root, [
 			'for-each-ref',
 			'--sort=committerdate',
 			'--format=%(refname) %(committerdate:iso-strict)',
-			`${prefix}/`,
+			...roots.map((root) => `${root}/`),
 		]) ?? ''
 	)
 		.split('\n')
@@ -223,7 +220,7 @@ export const listStrandedEdits = (input: {
 			const [ref = '', keptAt = ''] = line.split(' ');
 			return {
 				ref,
-				agent: ref.slice(prefix.length + 1).split('/')[0] ?? '',
+				agent: ref.split('/stranded/')[1]?.split('/')[0] ?? '',
 				keptAt,
 			};
 		});
@@ -316,7 +313,9 @@ export const dropLandedStrandedEdits = (input: {
 		readGit(input.root, [
 			'for-each-ref',
 			'--format=%(refname)',
-			`refs/remotes/origin/${input.policy.branches.namespacePrefix}`,
+			...ownedRootsOf(input.policy.branches).map((root) =>
+				root.replace(/^refs/u, 'refs/remotes/origin'),
+			),
 		]) ?? ''
 	)
 		.split('\n')
@@ -325,7 +324,9 @@ export const dropLandedStrandedEdits = (input: {
 		readGit(input.root, [
 			'for-each-ref',
 			'--format=%(refname)',
-			`${namespacedRef(input.policy.branches.namespacePrefix, 'stranded')}/`,
+			...ownedRootsOf(input.policy.branches, 'stranded').map(
+				(root) => `${root}/`,
+			),
 		]) ?? ''
 	)
 		.split('\n')
