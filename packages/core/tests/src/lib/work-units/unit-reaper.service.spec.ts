@@ -7,6 +7,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import {
+	computeSlotPath,
+	withComputeSlot,
+} from '@delendai/core/lib/shared/compute-slot.service';
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
 import { reapDeliveredUnits } from '@delendai/core/lib/work-units/unit-reaper.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
@@ -75,6 +79,48 @@ describe('reapDeliveredUnits', () => {
 		expect(reaped?.outcome).toBe('removed');
 		expect(existsSync(worktree)).toBe(false);
 		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+	});
+
+	it('never reaps a delivered unit whose lease beat a minute ago', async () => {
+		const { repo, ref, worktree, start } = await deliveredUnit('beating');
+		await recordUnitEntered({
+			cwd: repo.root,
+			ref,
+			owner: { agent: 'beating', session: 's' },
+			worktree,
+			now: start - MINUTE,
+		});
+		const reaped = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped).toEqual([]);
+		expect(existsSync(worktree)).toBe(true);
+		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
+	});
+
+	it('never reaps a delivered unit in the middle of its proof', async () => {
+		const { repo, ref, worktree, start } = await deliveredUnit('proving');
+		const tip = git(repo.root, 'rev-parse', ref);
+		const reaped = await withComputeSlot({
+			lockPath: computeSlotPath(repo.root) as string,
+			label: 'proof in flight',
+			unit: worktree,
+			tip,
+			notify: () => undefined,
+			run: () =>
+				reapDeliveredUnits({
+					root: repo.root,
+					policy: unitPolicy,
+					apply: true,
+					now: start,
+				}),
+		});
+		expect(reaped.every((unit) => unit.outcome !== 'removed')).toBe(true);
+		expect(existsSync(worktree)).toBe(true);
+		expect(git(repo.root, 'rev-parse', ref)).toBe(tip);
 	});
 
 	it('removes a unit that only regenerable files keep dirty', async () => {
