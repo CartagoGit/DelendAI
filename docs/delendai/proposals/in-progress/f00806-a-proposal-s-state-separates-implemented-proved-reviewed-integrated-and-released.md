@@ -2,10 +2,14 @@
 id: f00806
 title: "A proposal's state separates implemented, proved, reviewed, integrated and released"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
+last-transition-id: 55e7d4cc-8c14-47ed-8343-435df3327971
+last-correlation-id: 55e7d4cc-8c14-47ed-8343-435df3327971
+last-transition-from: ready
+last-transition-at: 2026-11-07T12:22:45.497Z
 ---
 
 # f00806 — A proposal's state separates implemented, proved, reviewed, integrated and released
