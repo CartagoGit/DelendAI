@@ -2,10 +2,14 @@
 id: x01046
 title: "A spec sees the runner's session and agent variables: clear them before every spec file"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
+last-transition-id: fe9d1d36-aa9f-4803-a827-b84333b1c4da
+last-correlation-id: fe9d1d36-aa9f-4803-a827-b84333b1c4da
+last-transition-from: ready
+last-transition-at: 2026-11-07T20:48:53.949Z
 ---
 
 # x01046 — A spec sees the runner's session and agent variables: clear them before every spec file
