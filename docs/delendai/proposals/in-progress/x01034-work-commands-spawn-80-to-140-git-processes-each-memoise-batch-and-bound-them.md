@@ -100,9 +100,9 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation.
 - The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them.
 
-## delivery
+## notes
 
-Spawns per subcommand on the budget spec's fixture (one commit, bare
+Delivery. Spawns per subcommand on the budget spec's fixture (one commit, bare
 origin), counted by the spawn observer, before S5 (x01034 S4) -> after,
 with in-process wall time:
 
