@@ -845,9 +845,6 @@ export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 // derivation grow in `tools/` and disagree with this one.
 export { callerCheckout, sharedCheckout } from '../lib/shared/shared-checkout';
 export { projectBranches } from '../lib/development-policy/project-branches';
-// Every namespace delendai owns in a project, current first, so a tool that
-// reads refs it wrote (the queue's trains) finds those under a former one.
-export { ownedNamespaces } from '../lib/development-policy/owned-ref-prefixes';
 /**
  * Whether a branch provably delivered its work, by the ref-lifecycle verdict.
  * The branch reaper in the proposals plugin removes only what this says is

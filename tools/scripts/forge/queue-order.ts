@@ -15,7 +15,7 @@
  * that brings candidates forward, so the two can never pick different
  * candidates.
  */
-import { ownedNamespaces } from '@delendai/core/public';
+import { ownedNamespaces } from '@delendai/core/cli';
 
 import type { IIntegrationCertification } from './certify-integration.interface';
 import type {
