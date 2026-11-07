@@ -20,11 +20,11 @@ No spec depends on the environment of the shell that runs it. The shared test se
 
 ## why
 
-TODO: why this work matters now.
+A green run on the owner's machine should mean what a green run in CI means. Agents run the suite from shells that export their own session and identity, and a spec that reads them fails for the runner, not for the code: three work e2e specs failed that way during a reconcile, and the setup that should have prevented it named the wrong session variable.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Variables outside delendai's own family and the agent markers (HOME, PATH, git's own) are left as they are; hermetic-git-setup already handles git's configuration. Specs that test identity or sessions keep setting the variables they need.
 
 ## slices
 
