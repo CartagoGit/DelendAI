@@ -20,6 +20,17 @@ const sliceBlocks = (markdown: string): readonly string[] =>
 		.split(/^### /mu)
 		.slice(1);
 
+/** Each slice's block, by the id its heading spells. */
+export const sliceBlocksById = (
+	markdown: string,
+): ReadonlyMap<string, string> =>
+	new Map(
+		sliceBlocks(markdown).map((block) => [
+			block.split(/\s/u)[0] ?? '',
+			block,
+		]),
+	);
+
 const HANDED_IN = /^[-*]\s*(?:\*\*Status\*\*|status):\s*review\b/imu;
 
 /**

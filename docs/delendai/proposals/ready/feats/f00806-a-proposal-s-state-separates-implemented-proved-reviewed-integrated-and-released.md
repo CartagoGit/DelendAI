@@ -54,18 +54,18 @@ Owner-reported defect, 2026-11-05: the gpt-5.3-codex reviewer recorded `request_
 ### S3 — The stage of a slice is derived from recorded facts
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/proposals/src/lib/swarm/slice-stage.ts`, `plugins/proposals/tests/src/lib/swarm/slice-stage.spec.ts`
+- **Files**: `plugins/proposals/src/lib/swarm/slice-stage.ts`, `plugins/proposals/src/lib/contracts/interfaces/slice-stage.interface.ts`, `plugins/proposals/tests/src/lib/swarm/slice-stage.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A pure function maps a slice to implemented, proved, reviewed, integrated or released from its recorded facts (`Status`, `review-state`, `shipped-in`, merge into the integration branch, presence on the release branch); specs cover one slice per stage and a slice awaiting review."
+  - "A pure function maps a slice to pending, in-progress, implemented, proved, in_review, changes_requested, reviewed, integrated, released or retired from its recorded facts (`Status`, `review-state`, `shipped-in`, a passed proof, the delivering commit on the integration and on the release branch); specs cover one slice per stage and a slice awaiting review."
 
 ### S4 — Boards and status show the stage
 - **Status**: pending
 - **DependsOn**: [S3]
-- **Files**: `plugins/proposals/src/lib/tools/proposal-board.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-board-stage.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/proposal-board.tool.ts`, `plugins/proposals/src/lib/services/slice-stage-facts.service.ts`, `plugins/proposals/src/lib/swarm/proposal-stage.ts`, `plugins/proposals/tests/src/lib/tools/proposal-board-stage.spec.ts`, `plugins/proposals/tests/src/lib/services/slice-stage-facts.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "proposals board shows each slice's stage instead of pending when it only awaits review or was sent back, and counts per stage."
+  - "`proposal_board`, whenever it shows slices (proposalId, detail or progress), shows each pending slice's stage in its `status` (in_review, changes_requested, implemented…) and the proposal's `stages` counts; git is asked once per delivering commit and branch, and never for the brief board. No proof record is read yet: `proved` stays false until a unit's proof verdict is recorded where the board can read it."
 
 ## acceptance
 
