@@ -38,6 +38,7 @@ import { listUnitLeases } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
 import { ownActivityAt } from './unit-activity.helper';
 import { leaseWindowSeconds } from './unit-verdict.service';
+import { unitLifeReader } from './unit-liveness.service';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 import { integrationBase, readGit } from './work-unit-shared.service';
 
@@ -174,6 +175,8 @@ export const publicationPresence = async (input: {
 	const windowSeconds = leaseWindowSeconds(
 		policy.coordination.leaseTtlMinutes,
 	);
+	// An author still on the unit is no orphan, whatever its lease says.
+	const lifeOf = unitLifeReader({ root, policy, now });
 	const presence = new Map<
 		string,
 		IAuthorPresence & { readonly agent: string }
@@ -193,14 +196,20 @@ export const publicationPresence = async (input: {
 						sha,
 						integration,
 					);
+		const judged = judgeAuthor({
+			lease,
+			tipAt,
+			unitEnded: sha === undefined && adopter === undefined,
+			now,
+			windowSeconds,
+		});
+		const life = judged.orphaned
+			? await lifeOf({ ref: lease?.ref ?? workRef, lease })
+			: undefined;
 		presence.set(name, {
-			...judgeAuthor({
-				lease,
-				tipAt,
-				unitEnded: sha === undefined && adopter === undefined,
-				now,
-				windowSeconds,
-			}),
+			...(life?.alive === true
+				? { ...judged, orphaned: false, reason: null, why: life.why }
+				: judged),
 			agent:
 				lease?.owner.agent ??
 				identityOf(name, policy, policy.branches.publicationRefPrefix)
