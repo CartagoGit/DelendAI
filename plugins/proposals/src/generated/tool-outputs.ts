@@ -524,6 +524,7 @@ export interface DelendaiProposalsProposalBoardOutput {
 		sliceCount?: number;
 		claimableSliceIds?: string[];
 		unreadable?: string;
+		stages?: string;
 	}>;
 	next?: string;
 }
