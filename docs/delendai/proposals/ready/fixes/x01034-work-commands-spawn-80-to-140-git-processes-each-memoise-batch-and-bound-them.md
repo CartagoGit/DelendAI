@@ -41,23 +41,23 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 ### S2 — Memoise what does not change within one invocation
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/tools/work-unit.tool.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`
+- **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`
 - **Gate**: type
 - acceptance:
   - "One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`."
   - "`merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable)."
-  - "Any write through `runGitCommand` (update-ref, worktree add/remove, commit, push, fetch, config set) clears the memo entries it can change; the memo spec proves a read after a write spawns again."
-  - "The memo lives in one invocation scope opened and closed by the work tool; nothing persists across invocations."
+  - "Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`."
+  - "The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one."
 
-### S3 — One ref snapshot instead of a rev-parse per ref
+### S3 — Ref reads once per invocation, and every spawner reports
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/work-units/ref-snapshot.service.ts`, `packages/core/tests/src/lib/work-units/ref-snapshot.service.spec.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-land.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/work-units/unit-edits-kept.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/shared-checkout-rescue.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/units-on-forge.service.ts`
+- **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/shared/run-command.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/unit-push.service.ts`, `packages/core/src/lib/work-units/work-ref-moves.service.ts`, `packages/core/src/lib/work-units/worktree-agent.service.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`, `packages/core/src/lib/development-policy/loose-edits-advisory.ts`
 - **Gate**: type
 - acceptance:
-  - "`rev-parse -q --verify <ref>` call sites read one `for-each-ref --format=%(refname)%09%(objectname)` snapshot per invocation, refreshed after a ref write; lookups of several objects use one `cat-file --batch-check`."
-  - "stranded-edits.service.ts spawns git only through the seam."
-  - "ref-snapshot.service.spec.ts proves a snapshot answers like rev-parse for present, absent and just-written refs."
+  - "Within one invocation `rev-parse [-q] [--verify] <name>`, `for-each-ref`, `show-ref` and the read forms of `symbolic-ref` are answered once per cwd until a git command that is not a known read starts or settles (`noteGitSettled` for the asynchronous runners), or a process that is not git runs (`forgetGitReads` around `runCommand`, `runArgv` and the certification command). No call site is rewritten: the memo is the snapshot."
+  - "Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory)."
+  - "git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`."
 
 ### S4 — One status and one fetch per invocation
 - **Status**: pending
@@ -71,7 +71,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 ### S5 — Validate arguments first, and pin the spawn budget
 - **Status**: pending
 - **DependsOn**: [S2, S3, S4]
-- **Files**: `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82)."
@@ -85,11 +85,11 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing.
 - One work invocation answers each of these at most once per cwd: `--git-common-dir`, `--git-dir`, `--show-toplevel`, `--git-path hooks`, `remote`, `remote get-url`, `config --get`, `worktree list --porcelain`.
 - `merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable).
-- Any write through `runGitCommand` (update-ref, worktree add/remove, commit, push, fetch, config set) clears the memo entries it can change; the memo spec proves a read after a write spawns again.
-- The memo lives in one invocation scope opened and closed by the work tool; nothing persists across invocations.
-- `rev-parse -q --verify <ref>` call sites read one `for-each-ref --format=%(refname)%09%(objectname)` snapshot per invocation, refreshed after a ref write; lookups of several objects use one `cat-file --batch-check`.
-- stranded-edits.service.ts spawns git only through the seam.
-- ref-snapshot.service.spec.ts proves a snapshot answers like rev-parse for present, absent and just-written refs.
+- Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`.
+- The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one.
+- Within one invocation `rev-parse [-q] [--verify] <name>`, `for-each-ref`, `show-ref` and the read forms of `symbolic-ref` are answered once per cwd until a git command that is not a known read starts or settles (`noteGitSettled` for the asynchronous runners), or a process that is not git runs (`forgetGitReads` around `runCommand`, `runArgv` and the certification command). No call site is rewritten: the memo is the snapshot.
+- Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory).
+- git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`.
 - The dirty-state readers share one `status --porcelain=v2 --branch` per worktree per invocation, refreshed after a write.
 - No work invocation runs `fetch` of the same remote and refspec twice, nor `ls-remote` of the same remote twice.
 - A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82).
