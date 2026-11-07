@@ -2,14 +2,14 @@
 id: x01034
 title: "Work commands spawn 80 to 140 git processes each: memoise, batch and bound them"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 6e300e90-7fc2-46e1-af13-781e4c9a9ebc
-last-correlation-id: 6e300e90-7fc2-46e1-af13-781e4c9a9ebc
-last-transition-from: ready
-last-transition-at: 2026-11-07T21:13:20.897Z
+last-transition-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
+last-correlation-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T21:28:06.347Z
 ---
 
 # x01034 — Work commands spawn 80 to 140 git processes each: memoise, batch and bound them
@@ -34,16 +34,19 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - global_gate: type
 
 ### S1 — Count every git spawn through the seam
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`, `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`readGit`, `gitVerbatim`, `runGitCommand` and the two asynchronous runners (`createGitRunner`, `createScopedGitRunner`) report each spawn (cwd, args) through `noteGitSpawn` to the observers of `observeGitSpawns`; `readGit` and `gitVerbatim` consult the optional per-invocation `IGitReadCache` that `withGitReadCache` scopes to one call (AsyncLocalStorage, so concurrent invocations never share one), and every spawn is reported to its `ran`. With neither installed they behave exactly as today."
   - "unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`."
   - "git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing."
+- shipped-in: `d4cd9f4825cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Memoise what does not change within one invocation
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`
 - **Gate**: type
@@ -52,9 +55,12 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "`merge-base --is-ancestor` and `rev-list` over two full object ids are memoised for the invocation (object ids are immutable)."
   - "Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`."
   - "The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one."
+- shipped-in: `d4cd9f4825cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Ref reads once per invocation, and every spawner reports
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/shared/run-command.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/unit-push.service.ts`, `packages/core/src/lib/work-units/work-ref-moves.service.ts`, `packages/core/src/lib/work-units/worktree-agent.service.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`, `packages/core/src/lib/development-policy/loose-edits-advisory.ts`
 - **Gate**: type
@@ -62,18 +68,24 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "Within one invocation `rev-parse [-q] [--verify] <name>`, `for-each-ref`, `show-ref` and the read forms of `symbolic-ref` are answered once per cwd until a git command that is not a known read starts or settles (`noteGitSettled` for the asynchronous runners), or a process that is not git runs (`forgetGitReads` around `runCommand`, `runArgv` and the certification command). No call site is rewritten: the memo is the snapshot."
   - "Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory)."
   - "git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`."
+- shipped-in: `d4cd9f4825cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — One status and one fetch per invocation
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/shared/worktree-status.helper.ts`, `packages/core/src/lib/contracts/interfaces/worktree-status.interface.ts`, `packages/core/src/lib/contracts/constants/worktree-status.constant.ts`, `packages/core/tests/src/lib/shared/worktree-status.helper.spec.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/work-units/unit-worktree-state.service.ts`, `packages/core/src/lib/work-units/work-dirty-paths.service.ts`, `packages/core/tests/src/lib/work-units/work-dirty-paths.service.spec.ts`, `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/shared-checkout-rescue.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/units-on-forge.service.ts`, `packages/core/src/lib/work-units/hidden-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "The dirty-state readers share one `status --porcelain=v2 --branch` per worktree per invocation, refreshed after a write."
   - "No work invocation runs `fetch` of the same remote and refspec twice, nor `ls-remote` of the same remote twice."
+- shipped-in: `d4cd9f4825cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Validate arguments first, and pin the spawn budget
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2, S3, S4]
 - **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`, `packages/core/src/lib/work-units/work-arguments.helper.ts`, `packages/core/src/lib/contracts/constants/work-arguments.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-arguments.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/work-units/integration-merges.helper.ts`, `packages/core/src/lib/work-units/agents-seen.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/committed-file-reader.helper.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
@@ -81,6 +93,9 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82)."
   - "work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation."
   - "The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them."
+- shipped-in: `d4cd9f4825cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
