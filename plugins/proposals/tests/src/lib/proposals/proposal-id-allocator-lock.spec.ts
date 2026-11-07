@@ -23,12 +23,19 @@ describe('allocateNextProposalId holds the mutex only to allocate', () => {
 		const longClaim = new Promise<void>((resolve) => {
 			finishLongClaim = resolve;
 		});
+		let claimStarted: () => void = () => undefined;
+		const inClaim = new Promise<void>((resolve) => {
+			claimStarted = resolve;
+		});
 		const counter = join(root, 'git-common', 'proposal-id-counters.json');
 		const sources = (slow: boolean) => ({
 			sharedCounterPath: async () => counter,
 			elsewhere: async () => ({}),
 			reserve: async () => {
-				if (slow) await longClaim;
+				if (slow) {
+					claimStarted();
+					await longClaim;
+				}
 				return 'reserved' as const;
 			},
 		});
@@ -39,6 +46,7 @@ describe('allocateNextProposalId holds the mutex only to allocate', () => {
 		});
 
 		const slow = allocateNextProposalId('x', options('slow', true));
+		await inClaim;
 		// Held across the claim, the mutex kept this one waiting until it failed.
 		const quick = await allocateNextProposalId(
 			'x',
