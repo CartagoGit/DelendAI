@@ -12,6 +12,7 @@
  * not work. These three checks name what is neither.
  */
 import { readGit } from '../shared/git-read.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -43,8 +44,8 @@ const unitWorktrees = (
 
 /** The paths a worktree changed that no generator rebuilds. */
 const realEdits = (path: string): readonly string[] =>
-	lines(git(path, ['status', '--porcelain=v1', '--untracked-files=all']))
-		.map((line) => line.slice(3))
+	(readWorktreeStatus(path)?.entries ?? [])
+		.map((entry) => entry.path)
 		.filter(
 			(file) =>
 				!REGENERABLE_PATH_PATTERNS.some((pattern) =>

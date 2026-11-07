@@ -7,13 +7,16 @@
  * those answers change only when git itself changes them, so this cache
  * answers the repeats and forgets on any git command that is not a known
  * read. Questions about two full object ids (`merge-base --is-ancestor`)
- * never change and are kept for the whole invocation.
+ * never change and are kept for the whole invocation. The shared worktree
+ * status and `ls-remote` are repository reads too: a write here (a commit,
+ * a push) is what changes their answer within one invocation.
  */
 import type {
 	IGitReadCache,
 	IGitSpawn,
 } from '../contracts/interfaces/git-read.interface';
 import { withGitReadCache } from './git-read.helper';
+import { WORKTREE_STATUS_ARGS } from '../contracts/constants/worktree-status.constant';
 
 const OBJECT_ID = /^[0-9a-f]{40}([0-9a-f]{24})?$/u;
 
@@ -63,15 +66,31 @@ const isRefResolve = (args: readonly string[]): boolean =>
 		.slice(1)
 		.some((arg) => arg.startsWith('-') && !RESOLVING_FLAGS.has(arg));
 
+const SYMBOLIC_REF_READ_FLAGS = new Set(['-q', '--quiet', '--short']);
+
+/**
+ * `symbolic-ref [-q] [--short] <name>`: one name and read flags only. Two
+ * names (`symbolic-ref <name> <target>`) or `-d` write.
+ */
 const isSymbolicRefRead = (args: readonly string[]): boolean =>
 	args[0] === 'symbolic-ref' &&
+	args.slice(1).filter((arg) => !arg.startsWith('-')).length === 1 &&
 	args
 		.slice(1)
-		.every((arg) => ['-q', '--quiet', '--short', 'HEAD'].includes(arg));
+		.every(
+			(arg) => !arg.startsWith('-') || SYMBOLIC_REF_READ_FLAGS.has(arg),
+		);
+
+/** The status every dirty-state reader shares (worktree-status.helper). */
+const isWorktreeStatus = (args: readonly string[]): boolean =>
+	args.length === WORKTREE_STATUS_ARGS.length &&
+	args.every((arg, index) => arg === WORKTREE_STATUS_ARGS[index]);
 
 /** Reads whose answer holds until a git write. */
 const isRepositoryRead = (args: readonly string[]): boolean =>
 	isLocatingRevParse(args) ||
+	isWorktreeStatus(args) ||
+	args[0] === 'ls-remote' ||
 	isRefResolve(args) ||
 	isSymbolicRefRead(args) ||
 	args[0] === 'for-each-ref' ||
@@ -121,14 +140,6 @@ const changesNothing = (args: readonly string[]): boolean => {
 	if (command === 'hash-object') return !args.includes('-w');
 	if (command === 'merge-tree') return !args.includes('--write-tree');
 	if (command === 'stash') return args[1] === 'list';
-	if (command === 'symbolic-ref')
-		return (
-			args
-				.slice(1)
-				.every((arg) => arg.startsWith('-') || arg === 'HEAD') &&
-			!args.includes('-d') &&
-			!args.includes('--delete')
-		);
 	return READ_ONLY.has(command);
 };
 

@@ -25,6 +25,7 @@
  * repairs cannot be run to find out whether repair was needed.
  */
 import { readGit } from '../shared/git-read.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 import {
 	hangingForgeWorkRefs,
@@ -95,7 +96,9 @@ export const checkWorkflowInvariants = (input: {
 	};
 
 	// 1. The shared checkout carries nothing.
-	const dirty = lines(git(root, ['status', '--porcelain=v1']));
+	const dirty = (readWorktreeStatus(root)?.entries ?? []).map(
+		(entry) => `${entry.code} ${entry.path}`,
+	);
 	add({
 		scope: 'checkout',
 		id: 'checkout-clean',

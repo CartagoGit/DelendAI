@@ -16,6 +16,7 @@
  * work recoverable, never tidy.
  */
 import { runGitCommand } from '../shared/git-command.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 
 import { holdWorkRef } from '../wip-engine/work-ref-lock';
@@ -242,8 +243,8 @@ export const endWorkRef = (request: {
 		// checkpointed and kept working would lose whatever it had not
 		// checkpointed yet. So the tree is inspected first, and a dirty
 		// one keeps its worktree and its ref.
-		const dirty = git(root, ['-C', worktree, 'status', '--porcelain=v1']);
-		if (!dirty.ok) {
+		const dirty = readWorktreeStatus(worktree);
+		if (dirty === undefined) {
 			step(
 				'remove-worktree',
 				false,
@@ -251,8 +252,8 @@ export const endWorkRef = (request: {
 			);
 			return { removed: false, steps };
 		}
-		if (dirty.out.length > 0) {
-			const count = dirty.out.split('\n').length;
+		if (dirty.entries.length > 0) {
+			const count = dirty.entries.length;
 			step(
 				'remove-worktree',
 				false,
