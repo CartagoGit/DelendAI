@@ -2,10 +2,14 @@
 id: x01034
 title: "Work commands spawn 80 to 140 git processes each: memoise, batch and bound them"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
+last-transition-id: 6e300e90-7fc2-46e1-af13-781e4c9a9ebc
+last-correlation-id: 6e300e90-7fc2-46e1-af13-781e4c9a9ebc
+last-transition-from: ready
+last-transition-at: 2026-11-07T21:13:20.897Z
 ---
 
 # x01034 — Work commands spawn 80 to 140 git processes each: memoise, batch and bound them
