@@ -9,10 +9,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-	parsePorcelainZ,
-	reportDirtyPaths,
-} from '@delendai/core/lib/work-units/work-dirty-paths.service';
+import { reportDirtyPaths } from '@delendai/core/lib/work-units/work-dirty-paths.service';
 
 const roots: string[] = [];
 
@@ -69,25 +66,6 @@ afterEach(() => {
 	for (const root of roots.splice(0)) {
 		rmSync(root, { recursive: true, force: true });
 	}
-});
-
-describe('parsePorcelainZ', () => {
-	it('keeps both paths of a rename intact', () => {
-		expect(
-			parsePorcelainZ(
-				'R  docs/new.md\0docs/old.md\0 M src/a.ts\0?? tmp/x.ts\0',
-			),
-		).toEqual(['docs/new.md', 'docs/old.md', 'src/a.ts', 'tmp/x.ts']);
-	});
-
-	it('keeps both paths of a copy and of a rename staged then modified', () => {
-		expect(parsePorcelainZ('C  b.ts\0a.ts\0RM d.md\0c.md\0')).toEqual([
-			'b.ts',
-			'a.ts',
-			'd.md',
-			'c.md',
-		]);
-	});
 });
 
 describe('reportDirtyPaths', () => {

@@ -10,20 +10,13 @@
  */
 import { REGENERABLE_PATH_PATTERNS } from './unit-lease.constant';
 import type { IWorktreeState } from './unit-lease.interface';
-import { parsePorcelainZ } from './work-dirty-paths.service';
-import { gitVerbatim } from './work-unit-shared.service';
+import { readWorktreeChanges } from '../shared/worktree-status.helper';
 
 export const isRegenerablePath = (path: string): boolean =>
 	REGENERABLE_PATH_PATTERNS.some((pattern) => pattern.test(path));
 
 export const inspectWorktree = (path: string): IWorktreeState => {
-	const output = gitVerbatim(path, [
-		'status',
-		'--porcelain=v1',
-		'-z',
-		'--untracked-files=all',
-	]);
-	const paths = parsePorcelainZ(output ?? '');
+	const paths = readWorktreeChanges(path) ?? [];
 	return {
 		edited: paths.filter((entry) => !isRegenerablePath(entry)),
 		regenerable: paths.filter(isRegenerablePath),

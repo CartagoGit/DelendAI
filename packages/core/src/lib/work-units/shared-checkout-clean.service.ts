@@ -11,9 +11,8 @@ import {
 	sharedCheckoutStaysClean,
 	unitsHaveWorktrees,
 } from '../development-policy/shared-checkout-clean';
-import { gitVerbatim } from '../shared/git-read.helper';
+import { readWorktreeChanges } from '../shared/worktree-status.helper';
 import { worktreeOfRef } from './unit-removal.service';
-import { parsePorcelainZ } from './work-dirty-paths.service';
 import { mainWorktreeOf } from './work-unit-shared.service';
 
 /**
@@ -22,15 +21,10 @@ import { mainWorktreeOf } from './work-unit-shared.service';
  * until it has written that file a unit's worktree there is still its.
  */
 export const looseEditsOf = (root: string): readonly string[] =>
-	parsePorcelainZ(
-		gitVerbatim(root, [
-			'status',
-			'--porcelain=v1',
-			'-z',
-			'--',
-			'.',
-			`:(exclude)${DEFAULT_CACHE_DIR}`,
-		]) ?? '',
+	(readWorktreeChanges(root) ?? []).filter(
+		(path) =>
+			path !== DEFAULT_CACHE_DIR &&
+			!path.startsWith(`${DEFAULT_CACHE_DIR}/`),
 	);
 
 /** The shared checkout of `cwd`'s repository, and the loose edits it holds. */

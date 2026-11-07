@@ -2,6 +2,9 @@
  * git-invocation-memo.helper.spec.ts — one invocation asks git a repeated
  * question once, and asks again after anything git may have changed.
  */
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { runGitCommand } from '@delendai/core/lib/shared/git-command.helper';
@@ -12,11 +15,21 @@ import {
 	readGit,
 } from '@delendai/core/lib/shared/git-read.helper';
 import { createGitRunner } from '@delendai/core/lib/shared/git-write';
+import {
+	readWorktreeChanges,
+	WORKTREE_STATUS_ARGS,
+} from '@delendai/core/lib/shared/worktree-status.helper';
 import { createGitRepoTemplate } from '@delendai/test-kit';
 
 const template = createGitRepoTemplate({
 	trunk: 'main',
 	files: { 'a.txt': 'x\n' },
+});
+
+const remoteTemplate = createGitRepoTemplate({
+	trunk: 'main',
+	files: { 'a.txt': 'x\n' },
+	remote: true,
 });
 
 const repo = (): string => template.copy().root;
@@ -71,6 +84,51 @@ describe('withGitInvocationMemo', () => {
 			'status --porcelain',
 			'config user.email z@y.x',
 			'config --get user.email',
+		]);
+	});
+
+	it('lists a worktree once until git writes, and asks ls-remote once', () => {
+		const { root, remote } = remoteTemplate.copy();
+		const { value, spawns } = counting(() =>
+			withGitInvocationMemo(() => {
+				const first = readWorktreeChanges(root);
+				readWorktreeChanges(root);
+				readGit(root, ['ls-remote', '--', 'origin', 'refs/heads/*']);
+				readGit(root, ['ls-remote', '--', 'origin', 'refs/heads/*']);
+				writeFileSync(join(root, 'a.txt'), 'changed\n');
+				runGitCommand(root, ['add', 'a.txt']);
+				return [first, readWorktreeChanges(root)];
+			}),
+		);
+		expect(remote).toBeDefined();
+		expect(value).toEqual([[], ['a.txt']]);
+		expect(spawns).toEqual([
+			WORKTREE_STATUS_ARGS.join(' '),
+			'ls-remote -- origin refs/heads/*',
+			'add a.txt',
+			WORKTREE_STATUS_ARGS.join(' '),
+		]);
+	});
+
+	it('reads one symbolic ref once, and a symbolic-ref write forgets', () => {
+		const root = repo();
+		const read = ['symbolic-ref', '--quiet', '--short', 'HEAD'];
+		const { spawns } = counting(() =>
+			withGitInvocationMemo(() => {
+				readGit(root, read);
+				readGit(root, read);
+				runGitCommand(root, [
+					'symbolic-ref',
+					'refs/heads/alias',
+					'refs/heads/main',
+				]);
+				readGit(root, read);
+			}),
+		);
+		expect(spawns).toEqual([
+			read.join(' '),
+			'symbolic-ref refs/heads/alias refs/heads/main',
+			read.join(' '),
 		]);
 	});
 
