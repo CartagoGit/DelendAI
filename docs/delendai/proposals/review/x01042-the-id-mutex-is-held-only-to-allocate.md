@@ -2,14 +2,14 @@
 id: x01042
 title: "The id mutex is held only to allocate"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: d3a04991-1953-42a3-b44e-f7502239998b
-last-correlation-id: d3a04991-1953-42a3-b44e-f7502239998b
-last-transition-from: ready
-last-transition-at: 2026-11-07T10:29:13.503Z
+last-transition-id: 0233dfb2-62ec-4d01-8d00-75140b8c703e
+last-correlation-id: 0233dfb2-62ec-4d01-8d00-75140b8c703e
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T10:49:28.229Z
 ---
 
 # x01042 — The id mutex is held only to allocate
@@ -31,13 +31,16 @@ On 2026-11-07 create_proposal failed twice with `lock contention: proposal-id-co
 - global_gate: none
 
 ### S1 — The critical section is the counter alone
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator-lock.spec.ts`
 - **Gate**: none
 - acceptance:
   - "allocateNextProposalId holds the counter mutex only to read the counters, take the next number and write it back; the disk scan, sources.elsewhere() and sources.reserve() run outside it."
   - "A spec keeps one allocation's remote claim pending and shows that a concurrent allocation finishes with a different id instead of failing on lock contention; on the old allocator the same spec fails with LockContentionError."
   - "A taken reservation still moves on to the next id, and 50 taken ids still end in a refusal."
+- shipped-in: `31e71822c524`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
