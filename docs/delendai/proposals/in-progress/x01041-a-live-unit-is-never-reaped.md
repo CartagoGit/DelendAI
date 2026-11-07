@@ -2,10 +2,14 @@
 id: x01041
 title: "A live unit is never reaped"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
+last-transition-id: 8c275f54-e3e7-41fc-a2f5-a35d2524eabe
+last-correlation-id: 8c275f54-e3e7-41fc-a2f5-a35d2524eabe
+last-transition-from: ready
+last-transition-at: 2026-11-07T10:15:16.675Z
 ---
 
 # x01041 — A live unit is never reaped
