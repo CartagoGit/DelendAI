@@ -13,11 +13,12 @@ import { readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import { HOOK_GIT_ENVIRONMENT } from '../contracts/constants/hook-git-environment.constant';
+import { withoutOptionalLocks } from './git-optional-locks.helper';
 
 export const hookFreeEnvironment = (
 	env: NodeJS.ProcessEnv = process.env,
 ): NodeJS.ProcessEnv => {
-	const clean: NodeJS.ProcessEnv = { ...env };
+	const clean: NodeJS.ProcessEnv = withoutOptionalLocks(env);
 	for (const name of HOOK_GIT_ENVIRONMENT) delete clean[name];
 	return clean;
 };
@@ -55,8 +56,8 @@ export const gitEnvironmentFor = (
 	env: NodeJS.ProcessEnv = process.env,
 ): NodeJS.ProcessEnv => {
 	const gitDir = env.GIT_DIR;
-	if (gitDir === undefined) return env;
+	if (gitDir === undefined) return withoutOptionalLocks(env);
 	return resolve(cwd) === hookWorktree(env, gitDir)
-		? env
+		? withoutOptionalLocks(env)
 		: hookFreeEnvironment(env);
 };

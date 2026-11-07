@@ -317,6 +317,27 @@ describe('pullRequestText', () => {
 		).toBe('review batch');
 	});
 
+	it('names a review unit by what it claimed and judged, never implement batch (x01032)', () => {
+		const branch = 'delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts';
+		expect(
+			pullRequestText(
+				['chore(review): claim d00418', 'chore(review): claim x01016'],
+				branch,
+				'implement batch',
+			).title,
+		).toBe('review: claim(s) on x01016, d00418');
+		expect(
+			pullRequestText(
+				[
+					'chore(review): claim x01016',
+					'chore(delendai): delendai_proposals_proposal_review x01004 S1 submit',
+				],
+				branch,
+				'implement batch',
+			).title,
+		).toBe('review: 1 verdict(s) on x01004');
+	});
+
 	it('titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
 		// Newest first, as git lists them: the pack that went out as
 		// "chore(review): release r00040" carried approvals of f00643.

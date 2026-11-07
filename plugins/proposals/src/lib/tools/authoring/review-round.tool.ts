@@ -31,7 +31,6 @@ import {
 	attributeDelivery,
 	checkAttributedApprover,
 	everySliceReviewed,
-	reviewStanding,
 	needsAttributedRound,
 	openAttributedRound,
 	renderAttributionLine,
@@ -63,7 +62,6 @@ export const newReviewRoundOutcome = (): IReviewRoundOutcome => ({
 	nextReviewer: null,
 	nextRounds: [],
 	autoTransitionRequested: false,
-	reopenRequested: false,
 	handOverRequested: false,
 	attribution: undefined,
 	approvalOutcome: undefined,
@@ -398,9 +396,9 @@ export const runReviewRound = async (
 			// out of the review queue until somebody moved it.
 			block = flipSliceStatusReview(block);
 		} else if (next.status === 'changes_requested') {
-			// The slice is work to do again, with its finding;
-			// the proposal stays in review while its review
-			// goes on, and moves once it is over (below).
+			// The slice is work to do again (pending), its
+			// review-state changes_requested beside its finding;
+			// the proposal stays in review/ and is not moved.
 			block = flipSliceStatusPending(block);
 		}
 		let updated = md.replace(blockRe, () => `${m[1]}${block}`);
@@ -427,17 +425,8 @@ export const runReviewRound = async (
 			inReview &&
 			shouldAutoTransitionOnReviewState(next) &&
 			everySliceReviewed(entry.id, updated);
-		// The review is over once no slice waits for a
-		// verdict: with any slice sent back, the proposal is
-		// ready for its next implementer, findings and all.
-		const standing = reviewStanding(updated);
-		outcome.reopenRequested =
-			(args.action === 'approve' || args.action === 'request_changes') &&
-			inReview &&
-			standing.waiting === 0 &&
-			standing.sentBack > 0;
-		// The mirror of the reopening: the submission that leaves
-		// no slice to do hands the proposal back to review.
+		// The submission that leaves no slice to do hands the
+		// proposal back to review.
 		outcome.handOverRequested =
 			args.action === 'submit' &&
 			readFrontmatterField(md, 'status')?.toLowerCase() ===
