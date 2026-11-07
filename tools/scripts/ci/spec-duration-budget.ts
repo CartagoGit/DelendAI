@@ -109,3 +109,16 @@ export const judgeSpecDurations = (
 		.sort();
 	return { slow, offenders, failures, stale };
 };
+
+/**
+ * The failures a change answers for: a pull request's run times the specs
+ * nearest its change, neighbours it did not touch included, so only a spec
+ * the change adds or edits can fail it. `undefined` touched means all.
+ */
+export const failuresOfChange = (
+	failures: ISpecDurationVerdict['failures'],
+	touched: ReadonlySet<string> | undefined,
+): ISpecDurationVerdict['failures'] =>
+	touched === undefined
+		? failures
+		: failures.filter(({ path }) => touched.has(path));

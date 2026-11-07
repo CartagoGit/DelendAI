@@ -15,7 +15,10 @@ import {
 	runTrain,
 	TRAIN_CAPACITY,
 	trainMembers,
-	trainPrefixOf,
+	culpritsAmong,
+	isCulpritMarker,
+	trainPrefixesOf,
+	trainsToPrune,
 	trainRefName,
 	trainStep,
 	type IQueueCandidateFacts,
@@ -432,9 +435,84 @@ describe('train members', () => {
 });
 
 describe('train names', () => {
-	it('lives beside the publication namespace', () => {
-		expect(trainPrefixOf('delendai/pr/')).toBe('delendai/train/');
-		expect(trainPrefixOf('pr')).toBe('train/');
+	const branchesOf = (
+		namespacePrefix: string,
+		formerNamespacePrefixes: readonly string[] = [],
+	) =>
+		({
+			namespacePrefix,
+			formerNamespacePrefixes,
+			workRefPrefix: '',
+			workRefVisibility: 'visible',
+			publicationRefPrefix: '',
+		}) as Parameters<typeof trainPrefixesOf>[0];
+
+	it('lives under the policy namespace, and at the root with none', () => {
+		expect(trainPrefixesOf(branchesOf('acme'))).toEqual(['acme/train/']);
+		expect(trainPrefixesOf(branchesOf(''))).toEqual(['train/']);
+	});
+
+	it('reads trains under a former namespace too, the current one first', () => {
+		expect(trainPrefixesOf(branchesOf('', ['delendai']))).toEqual([
+			'train/',
+			'delendai/train/',
+		]);
+	});
+
+	it('names an empty-namespace train and culprit at the root', () => {
+		const [prefix = ''] = trainPrefixesOf(branchesOf(''));
+		expect(trainRefName(prefix, TIP, [3, 5])).toBe(
+			`train/${'a'.repeat(12)}/3-5`,
+		);
+		expect(culpritRefName(prefix, 7)).toBe('train/culprit/7');
+	});
+
+	it('finds culprits under every owned namespace', () => {
+		const prefixes = trainPrefixesOf(branchesOf('', ['delendai']));
+		const branches = new Map([
+			['train/culprit/7', 'h7'],
+			['delendai/train/culprit/9', 'h9'],
+			['train/culprit/not-a-number', 'hx'],
+			[`train/${'a'.repeat(12)}/3-5`, 't35'],
+		]);
+		expect([...culpritsAmong(prefixes, branches)]).toEqual([
+			[7, 'h7'],
+			[9, 'h9'],
+		]);
+		expect(isCulpritMarker(prefixes, 'train/culprit/7')).toBe(true);
+		expect(isCulpritMarker(prefixes, 'train/abc/1')).toBe(false);
+	});
+
+	it('prunes trains of another tip and former namespaces, keeping markers and the proving tree', () => {
+		const prefixes = trainPrefixesOf(branchesOf('acme', ['delendai']));
+		const current = trainRefName('acme/train/', TIP, [1, 2]);
+		const branches = new Map([
+			[current, 'c'],
+			['acme/train/bbbbbbbbbbbb/1-2', 'old'],
+			['acme/train/cccccccccccc/3-4', 'proving'],
+			['delendai/train/bbbbbbbbbbbb/5-6', 'former'],
+			['acme/train/culprit/7', 'h7'],
+			['delendai/train/culprit/8', 'h8'],
+		]);
+		expect(
+			trainsToPrune({
+				prefixes,
+				tipSha: TIP,
+				branches,
+				keep: (sha) => sha === 'proving',
+			}),
+		).toEqual([
+			'acme/train/bbbbbbbbbbbb/1-2',
+			'delendai/train/bbbbbbbbbbbb/5-6',
+		]);
+		expect(
+			trainsToPrune({
+				prefixes: [],
+				tipSha: TIP,
+				branches: new Map(),
+				keep: () => false,
+			}),
+		).toEqual([]);
 	});
 
 	it('names the tip and the members, and the culprit by number', () => {
