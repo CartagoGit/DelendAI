@@ -25,7 +25,9 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -43,11 +45,19 @@ import {
 import { queueAcceptance } from './queue-acceptance';
 import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
 import {
+	certifiedByTrain,
+	culpritRefName,
 	queueHead,
 	queueOrder,
 	repairStep,
+	runTrain,
+	TRAIN_CAPACITY,
+	trainMembers,
+	trainPrefixOf,
 	type IQueueCandidateFacts,
 	type IRepairStep,
+	type ITrainCandidate,
+	type ITrainPorts,
 } from './queue-order';
 
 /**
@@ -629,6 +639,222 @@ const recoverReleaseBranch = (
 	}
 };
 
+/** Git in the checkout this job runs in; `undefined` when it refuses. */
+const git = (
+	args: readonly string[],
+	cwd = process.cwd(),
+): string | undefined => {
+	try {
+		return execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		return undefined;
+	}
+};
+
+/** Every remote branch under `prefix`, by name, at its commit. */
+const remoteBranches = (prefix: string): ReadonlyMap<string, string> =>
+	new Map(
+		(git(['ls-remote', '--', 'origin', `refs/heads/${prefix}*`]) ?? '')
+			.split('\n')
+			.flatMap((line) => {
+				const [sha, ref] = line.split('\t');
+				return sha && ref
+					? [[ref.replace(/^refs\/heads\//u, ''), sha] as const]
+					: [];
+			}),
+	);
+
+/** The candidates whose current head was isolated as a culprit. */
+const culpritsOf = (
+	trainPrefix: string,
+	branches: ReadonlyMap<string, string>,
+): ReadonlyMap<number, string> =>
+	new Map(
+		[...branches].flatMap(([branch, sha]) => {
+			const marker = `${trainPrefix}culprit/`;
+			const number = Number(branch.slice(marker.length));
+			return branch.startsWith(marker) && Number.isInteger(number)
+				? [[number, sha] as const]
+				: [];
+		}),
+	);
+
+/** The tree of a commit, fetching it when the checkout lacks it. */
+const treeOf = (sha: string): string | undefined =>
+	git(['rev-parse', '--verify', '--quiet', `${sha}^{tree}`]) ??
+	(git(['fetch', '-q', '--', 'origin', sha]) === undefined
+		? undefined
+		: git(['rev-parse', '--verify', '--quiet', `${sha}^{tree}`]));
+
+/**
+ * The forge and git behind a train. A train is assembled in a throwaway
+ * worktree, never in the checkout, and pushed to its own branch; landing
+ * tries the fast-forward first (every merge in the train is a pull
+ * request's merge) and falls back to each pull request's own merge, which
+ * branch protection and the required checks still judge.
+ */
+const trainPorts = (input: {
+	readonly integration: string;
+	readonly tipSha: string;
+	readonly trainPrefix: string;
+	readonly mergeMethod: IDeclaredMergeMethod;
+	readonly branches: ReadonlyMap<string, string>;
+}): ITrainPorts => ({
+	trainAt: (ref) => input.branches.get(ref),
+	fullRunAt,
+	assemble: (ref, members) => {
+		const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
+		const conflicting: number[] = [];
+		try {
+			if (
+				git(['worktree', 'add', '--detach', scratch, input.tipSha]) ===
+				undefined
+			) {
+				return { conflicting: members.map((member) => member.number) };
+			}
+			for (const member of members) {
+				const merged =
+					git(
+						['fetch', '-q', '--', 'origin', member.headSha],
+						scratch,
+					) !== undefined &&
+					git(
+						[
+							'-c',
+							'user.name=delendai-queue',
+							'-c',
+							'user.email=delendai-queue@users.noreply.github.com',
+							'merge',
+							'--no-ff',
+							'-m',
+							`Merge pull request #${String(member.number)} from ${member.headRef}`,
+							member.headSha,
+						],
+						scratch,
+					) !== undefined;
+				if (!merged) {
+					git(['merge', '--abort'], scratch);
+					conflicting.push(member.number);
+				}
+			}
+			if (conflicting.length === 0) {
+				git(
+					[
+						'push',
+						'-q',
+						'--force',
+						'origin',
+						`HEAD:refs/heads/${ref}`,
+					],
+					scratch,
+				);
+			}
+			return { conflicting };
+		} finally {
+			git(['worktree', 'remove', '--force', scratch]);
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	},
+	dispatch: (ref) => {
+		try {
+			gh([
+				'workflow',
+				'run',
+				CERTIFYING_WORKFLOW,
+				'--ref',
+				ref,
+				'--repo',
+				REPOSITORY_SLUG,
+			]);
+			return true;
+		} catch {
+			return false;
+		}
+	},
+	land: (sha, members) => {
+		try {
+			gh([
+				'api',
+				'-X',
+				'PATCH',
+				`repos/${REPOSITORY_SLUG}/git/refs/heads/${input.integration}`,
+				'-f',
+				`sha=${sha}`,
+				'-F',
+				'force=false',
+			]);
+			return members.map((member) => member.number);
+		} catch {
+			// Branch protection refused the fast-forward: each pull request
+			// lands through its own merge, in train order, and stops at the
+			// first the forge refuses. The tip then has the train's tree only
+			// when every one landed, and only then is it proved by the train.
+		}
+		const landed: number[] = [];
+		for (const member of members) {
+			try {
+				gh([
+					'pr',
+					'merge',
+					String(member.number),
+					mergeFlagFor(input.mergeMethod),
+				]);
+				landed.push(member.number);
+			} catch {
+				break;
+			}
+		}
+		return landed;
+	},
+	blame: (member) => {
+		git([
+			'push',
+			'-q',
+			'--force',
+			'origin',
+			`${member.headSha}:refs/heads/${culpritRefName(input.trainPrefix, member.number)}`,
+		]);
+		try {
+			gh([
+				'pr',
+				'comment',
+				String(member.number),
+				'--body',
+				`The merge train isolated this pull request: ${input.integration} with it alone fails its full run. It rides no train until its head moves.`,
+			]);
+		} catch {
+			// The culprit branch still keeps it out; the comment is the courtesy.
+		}
+	},
+	say: (line) => console.log(line),
+});
+
+/**
+ * Old trains go: every train branch that starts from another tip, except
+ * one whose tree is the tip's, which is what proves a tip its pull
+ * requests landed one by one.
+ */
+const pruneTrains = (
+	trainPrefix: string,
+	tipSha: string,
+	branches: ReadonlyMap<string, string>,
+	keep: (sha: string) => boolean,
+): void => {
+	for (const [branch, sha] of branches) {
+		if (branch.startsWith(`${trainPrefix}culprit/`)) continue;
+		if (
+			branch.startsWith(`${trainPrefix}${tipSha.slice(0, 12)}/`) ||
+			keep(sha)
+		)
+			continue;
+		git(['push', '-q', 'origin', '--delete', branch]);
+	}
+};
+
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -647,7 +873,27 @@ const main = (): void => {
 		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
 		.map((pull) => candidateFacts(pull));
 	const integration = policy.branches.integration;
-	const certification = integrationCertification(integration);
+	const trainPrefix = trainPrefixOf(publicationPrefix);
+	const trains = remoteBranches(trainPrefix);
+	const asked = integrationCertification(integration);
+	const tipTree = treeOf(asked.sha);
+	const builtTrains = [...trains]
+		.filter(([branch]) => !branch.startsWith(`${trainPrefix}culprit/`))
+		.map(([, sha]) => ({ sha, tree: treeOf(sha) ?? '' }));
+	// A tip whose pull requests landed one by one from a green train carries
+	// the train's tree, and the train's full run already proved it.
+	const certification =
+		asked.state !== 'certified' &&
+		tipTree !== undefined &&
+		certifiedByTrain(tipTree, builtTrains, fullRunAt)
+			? { ...asked, state: 'certified' as const }
+			: asked;
+	pruneTrains(
+		trainPrefix,
+		certification.sha,
+		trains,
+		(sha) => tipTree !== undefined && treeOf(sha) === tipTree,
+	);
 	const red = certification.state === 'red';
 	const shaOf = (number: number): string =>
 		opened.find((pull) => pull.number === number)?.head.sha ?? '';
@@ -668,21 +914,22 @@ const main = (): void => {
 		);
 		reportRepair(repair, integration);
 	}
-	const acceptance = red
-		? []
-		: queueAcceptance({
-				root: process.cwd(),
-				remote: 'origin',
-				integration,
-				integrationSha: certification.sha,
-				candidates: queueOrder(candidates, publicationPrefix)
-					.filter((candidate) => !candidate.conflicting)
-					.map((candidate) => ({
-						number: candidate.number,
-						headRef: candidate.headRef,
-						headSha: shaOf(candidate.number),
-					})),
-			});
+	const acceptance =
+		red && repairing === undefined
+			? []
+			: queueAcceptance({
+					root: process.cwd(),
+					remote: 'origin',
+					integration,
+					integrationSha: certification.sha,
+					candidates: queueOrder(candidates, publicationPrefix)
+						.filter((candidate) => !candidate.conflicting)
+						.map((candidate) => ({
+							number: candidate.number,
+							headRef: candidate.headRef,
+							headSha: shaOf(candidate.number),
+						})),
+				});
 	for (const verdict of acceptance) {
 		console.log(
 			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
@@ -701,24 +948,56 @@ const main = (): void => {
 			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, and the commit before it is not certified; nothing is armed until a full run is green.`,
 		);
 	}
-	const landing = new Set(
-		acceptance
-			.filter((verdict) => {
-				if (!verdict.accepted || !certified) return false;
-				const checks = requiredChecksVerdict(
-					checksOf(shaOf(verdict.number)),
-					policy.integration.requiredChecks,
+	const ready = acceptance
+		.filter((verdict) => {
+			if (!verdict.accepted || verdict.number === repairing) return false;
+			const checks = requiredChecksVerdict(
+				checksOf(shaOf(verdict.number)),
+				policy.integration.requiredChecks,
+			);
+			if (!checks.passed) {
+				console.log(
+					`keep-the-queue-moving: #${String(verdict.number)} is not armed: required checks ${[...checks.pending.map((name) => `${name} pending`), ...checks.missing.map((name) => `${name} missing`), ...checks.failed.map((name) => `${name} failed`)].join(', ')} on its current head.`,
 				);
-				if (!checks.passed) {
-					console.log(
-						`keep-the-queue-moving: #${String(verdict.number)} is not armed: required checks ${[...checks.pending.map((name) => `${name} pending`), ...checks.missing.map((name) => `${name} missing`), ...checks.failed.map((name) => `${name} failed`)].join(', ')} on its current head.`,
-					);
-				}
-				return checks.passed;
-			})
-			.map((verdict) => verdict.number),
-	);
+			}
+			return checks.passed;
+		})
+		.map((verdict) => verdict.number);
+	const landing = new Set(certified ? ready : []);
 	if (repairing !== undefined) landing.add(repairing);
+	// Two or more that can land together ride one train: one full run proves
+	// them all, instead of one certification of the integration branch after
+	// each. A repair leads it, so a red tip still lands nothing without it.
+	const riderOf = (number: number): ITrainCandidate => ({
+		number,
+		headRef: opened.find((pull) => pull.number === number)?.head.ref ?? '',
+		headSha: shaOf(number),
+	});
+	const anchor = repairing === undefined ? undefined : riderOf(repairing);
+	const riders = trainMembers(
+		ready.map(riderOf),
+		culpritsOf(trainPrefix, trains),
+		TRAIN_CAPACITY - (anchor === undefined ? 0 : 1),
+	);
+	if (
+		(certified || anchor !== undefined) &&
+		riders.length + (anchor === undefined ? 0 : 1) >= 2
+	) {
+		runTrain({
+			trainPrefix,
+			tipSha: certification.sha,
+			members: riders,
+			...(anchor === undefined ? {} : { anchor }),
+			ports: trainPorts({
+				integration,
+				tipSha: certification.sha,
+				trainPrefix,
+				mergeMethod: policy.integration.mergeMethod,
+				branches: trains,
+			}),
+		});
+		landing.clear();
+	}
 	for (const pull of opened) {
 		if (
 			pull.auto_merge === null ||

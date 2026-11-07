@@ -10,6 +10,8 @@ last-transition-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
 last-correlation-id: 93ed69bb-6d6b-4f8e-aff3-4906ba981bd9
 last-transition-from: in-progress
 last-transition-at: 2026-11-02T09:54:24.414Z
+shipped-in:
+  - "8a64228535a5"
 ---
 
 # x00989 — A host config with comments no longer stops the server
@@ -40,7 +42,7 @@ A third shape showed up in the same workspace once the comments were gone (2026-
 - global_gate: lint
 
 ### S1 — The editor's MCP config is read as JSONC and rewritten with its comments intact
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -50,11 +52,13 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "A commented `.vscode/mcp.json` that names the old identity is rewritten, and the file keeps its comments outside the rewritten member, its key order and its own formatting."
   - "A commented `.vscode/mcp.json` that names nothing old is not written at all — byte-identical before and after."
 - shipped-in: `724cbf9f8`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 5/5: (1) host-config.migrator.spec.ts passed in local run; commit 8a64228535a5 includes host-config.migrator.ts and associated JSONC parsing/rewrite support. (2) host-config.migrator.spec.ts passed, and commit 8a64228535a5 includes host-config-parse.error.ts + migrator updates for tolerant parse and strict failure cases. (3) host-config.migrator.spec.ts passed formatting-preservation assertions on plain JSON rewrite path. (4) host-config.migrator.spec.ts passed JSONC rewrite assertions with comment/order/format retention. (5) host-config.migrator.spec.ts passed no-op JSONC scenario confirming unchanged file bytes.
 
 ### S2 — A migration that cannot plan is a failed migration, not a dead server
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -63,11 +67,13 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The boot path survives it: `ensureWorkspaceMigrated` resolves with the failed outcome instead of rejecting, so the host server goes on to start and to report `migration failed: <id> — <reason>` on stderr."
   - "A migration that fails to plan is not recorded in the journal, exactly like one that fails to apply: the next boot retries it."
 - shipped-in: `e705aa7c4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 4/4: (1) legacy-migration.service.spec.ts passed; commit 8a64228535a5 includes legacy-migration.service.ts and the matching spec with failure-path coverage. (2) legacy-migration.service.spec.ts passed stop-on-failure scenarios in local run. (3) legacy-migration.service.spec.ts passed boot-survival scenarios for failed planning migration outcomes. (4) legacy-migration.service.spec.ts passed journal/recording behavior for failed migration planning.
 
 ### S3 — The push target the profile refuses is removed, not just reported
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/push-target-contradiction.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/workspace-migration/migrators/policy-alignment.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/policy-alignment.migrator.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -77,8 +83,10 @@ A third shape showed up in the same workspace once the comments were gone (2026-
   - "The refusal itself is unchanged: a policy that cannot be honoured still stops the start, with the same message and the same remedy."
   - "The migration is idempotent: a second run finds nothing to remove and changes no byte."
 - shipped-in: `9767d0086`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: approved by gpt-5.3-codex — verified at 8a64228535a5, validate exit 0 and tests 54/54 claimed, no recorded run cited; acceptance 5/5: (1) commit 8a64228535a5 updates both validate.ts and policy-alignment.migrator.ts to align on the shared contradiction rule surface; policy-alignment.migrator.spec… (2) commit 8a64228535a5 includes policy-alignment.migrator.ts and policy-alignment.migrator.spec.ts updates validating selective removal while preserving surroundi… (3) policy-alignment.migrator.spec.ts passed keep-branch scenarios where non-integration branch values remain untouched. (4) development-policy validate path remained enforced via validate.ts and contradiction helper changes; x00989 test run passed with existing refusal behavior cove… (5) policy-alignment.migrator.spec.ts passed idempotence/no-op rerun scenarios in the 54/54 local run.
 
 ## acceptance
 

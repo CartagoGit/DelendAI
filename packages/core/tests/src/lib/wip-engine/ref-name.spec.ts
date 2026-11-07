@@ -56,6 +56,9 @@ describe('resolveWorkRef', () => {
 		);
 		expect(sanitizeRefComponent('..leading')).toBe('leading');
 		expect(sanitizeRefComponent('   ')).toBe('unnamed');
+		expect(sanitizeRefComponent('_.-mid._-')).toBe('mid');
+		expect(sanitizeRefComponent('-._-')).toBe('unnamed');
+		expect(sanitizeRefComponent(`${'-._'.repeat(50_000)}x`)).toBe('x');
 		expect(
 			resolveWorkRef(DEFAULT_TEMPLATE, {
 				agent: 'agent one',
