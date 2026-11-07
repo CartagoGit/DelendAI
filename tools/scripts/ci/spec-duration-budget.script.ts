@@ -10,6 +10,10 @@
  *   ... --mode=pull-request   (default) exit 1 on a clearly slow spec
  *   ... --mode=integration    never fail: print the new offenders, write them
  *                             to --report-out=<file> for the issue step
+ *   ... --changed-files=<file>   with pull-request: fail only a spec the change
+ *                             adds or edits (one path per line): the run
+ *                             also times neighbours it did not touch, and a
+ *                             pull request does not answer for those
  *   ... --history=a.json,b.json  earlier runs' timings; the median is judged
  *
  * The baseline (spec-duration-budget.baseline.json) lists the offenders the
@@ -22,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 import {
 	CLEAR_MS,
 	FAIL_MS,
+	failuresOfChange,
 	judgeSpecDurations,
 	REPORT_MS,
 } from './spec-duration-budget';
@@ -106,12 +111,18 @@ const main = (): number => {
 		}
 		return 0;
 	}
-	for (const { path, ms } of verdict.failures) {
+	const changedFile = arg('changed-files');
+	const touched =
+		changedFile === undefined
+			? undefined
+			: new Set(readFileSync(changedFile, 'utf8').split('\n'));
+	const failures = failuresOfChange(verdict.failures, touched);
+	for (const { path, ms } of failures) {
 		console.error(
 			`✖ ${path}: ${String(ms)} ms is over ${String(CLEAR_MS)} ms. Make it fast (in-memory fakes, fake timers, one shared repo) or name it *.e2e.spec.ts.`,
 		);
 	}
-	return verdict.failures.length === 0 ? 0 : 1;
+	return failures.length === 0 ? 0 : 1;
 };
 
 if (import.meta.main) process.exit(main());
