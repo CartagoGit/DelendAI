@@ -81,6 +81,11 @@ export const checkWorkflowInvariants = (input: {
 	readonly scopes?: readonly IInvariantScope[];
 	/** Seconds since the epoch; the clock, unless a test says otherwise. */
 	readonly now?: number | undefined;
+	/**
+	 * The work refs whose unit is alive (`unit-liveness.service`): one
+	 * that lost its worktree is still somebody's, never abandoned.
+	 */
+	readonly liveRefs?: ReadonlySet<string> | undefined;
 }): IInvariantReport => {
 	const { root, policy } = input;
 	const remote = input.remote ?? 'origin';
@@ -147,7 +152,10 @@ export const checkWorkflowInvariants = (input: {
 			`refs/heads/${workPrefix}**`,
 		]),
 	);
-	const abandoned = localWork.filter((ref) => !worktreeBranches.has(ref));
+	const abandoned = localWork.filter(
+		(ref) =>
+			!worktreeBranches.has(ref) && input.liveRefs?.has(ref) !== true,
+	);
 	add({
 		scope: 'checkout',
 		id: 'no-abandoned-work-refs',

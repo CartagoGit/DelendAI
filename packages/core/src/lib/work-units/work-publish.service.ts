@@ -15,6 +15,11 @@
  * work ref untouched. A publication that half happened must leave the
  * work recoverable, never tidy.
  */
+import {
+	judgeSiblings,
+	lackingDetail,
+	retireContained,
+} from './sibling-publications.service';
 import { runGitCommand } from '../shared/git-command.helper';
 import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
@@ -131,6 +136,22 @@ export const publishWorkUnit = (
 	}
 	step('resolve-work-ref', true, `${workRef} is at ${tip.out}.`);
 
+	// Another open publication of this unit with commits we lack comes first.
+	const siblings = judgeSiblings(
+		(args) => git(root, args),
+		remote,
+		publicationRef,
+		tip.out,
+	);
+	if (siblings.lacking.length > 0) {
+		step(
+			'sibling-publication',
+			false,
+			lackingDetail(siblings.lacking, workRef, remote),
+		);
+		return { published: false, workRefRemoved: false, steps, tip: tip.out };
+	}
+
 	// Push from the unit's own worktree when it has one. The pre-push hook
 	// checks the tree it runs in, and the shared checkout's tree is not
 	// what is being published: a file somebody left loose there, a
@@ -162,8 +183,7 @@ export const publishWorkUnit = (
 		`${publicationRef} on ${remote} now carries ${tip.out}.`,
 	);
 
-	// The proof. Without it, "deleted the work ref" rests on a push whose
-	// success was reported by the same command that did it.
+	// The proof: a push's success is not reported by the push alone.
 	const remoteTip = git(root, ['ls-remote', '--', remote, publicationRef]);
 	const carried = remoteTip.ok && remoteTip.out.startsWith(tip.out);
 	if (!carried) {
@@ -175,6 +195,9 @@ export const publishWorkUnit = (
 		return { published: true, workRefRemoved: false, steps, tip: tip.out };
 	}
 	step('prove-publication', true, `${remote} reports it at ${tip.out}.`);
+	steps.push(
+		...retireContained(root, siblings.contained, remote, publicationRef),
+	);
 
 	if (request.keepWorkRef) {
 		// A step of its own, and one that succeeded: reported as a failed

@@ -16,6 +16,7 @@ import { attestImplementer } from '../../services/attested-implementer.service';
 import { createGitRunner } from '../../shared/git-runner';
 import {
 	reviewUnitAgent,
+	inReviewUnit,
 	verdictClaimRefusal,
 } from '../../services/review-claim.service';
 import { canonicalRoleOf } from '../../shared/agent-conventions';
@@ -280,6 +281,7 @@ export const buildReviewRegistration = (
 						branches?.integration ?? 'HEAD',
 						options.namespacePrefix,
 						{
+							mustHold: true,
 							claim: !(await verdictWouldBeRefused(
 								docPath,
 								{
@@ -293,6 +295,30 @@ export const buildReviewRegistration = (
 					);
 					if (refusal !== undefined) {
 						return toolError(refusal.reason, refusal.nextAction);
+					}
+				}
+
+				if (args.action === 'submit') {
+					// A submission in a review unit is a verdict of its pack
+					// all the same: it names a proposal the pack must claim.
+					const unitRun =
+						scoped.run ?? createGitRunner(scoped.workspaceRoot);
+					const unitBranches = scoped.developmentPolicy?.branches;
+					if (await inReviewUnit(unitRun, unitBranches)) {
+						const unclaimed = await verdictClaimRefusal(
+							unitRun,
+							unitBranches,
+							entry.id,
+							unitBranches?.integration ?? 'HEAD',
+							options.namespacePrefix,
+							{ mustHold: true },
+						);
+						if (unclaimed !== undefined) {
+							return toolError(
+								unclaimed.reason,
+								unclaimed.nextAction,
+							);
+						}
 					}
 				}
 
