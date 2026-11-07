@@ -26,6 +26,7 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../contracts/interfaces/git-runner.interface';
+import { noteGitSpawn } from '../shared/git-read.helper';
 import { stripAnsi } from '../shared/git-write';
 
 import type { IScopedGitRunner } from './git-command.interface';
@@ -71,6 +72,7 @@ export const createScopedGitRunner =
 	(cwd: string, timeoutMs = 60_000): IScopedGitRunner =>
 	(args, env) =>
 		new Promise<IGitRunResult>((resolve) => {
+			noteGitSpawn(cwd, args);
 			execFile(
 				'git',
 				[...args],
