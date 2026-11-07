@@ -26,6 +26,7 @@ export type {
 };
 import { execFile } from 'node:child_process';
 import { executionRootOr } from './execution-root';
+import { noteGitSpawn } from './git-read.helper';
 import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
@@ -133,6 +134,7 @@ export const createGitRunner =
 	): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
+			noteGitSpawn(executionRootOr(cwd), args);
 			execFile(
 				'git',
 				[...args],

@@ -86,6 +86,24 @@ describe('proposal-slice-completeness lint', () => {
 			).toEqual([['pending-slice', 'S2']]);
 		});
 
+		it('takes a slice sent back with review-state changes_requested as part of the review', () => {
+			// A change request leaves the proposal in review/: the slice is
+			// its implementer's to fix there, not one left behind.
+			write(
+				'docs/delendai/proposals/review/f00005-thing.md',
+				'---\nid: f00005\nstatus: review\n---\n\n' +
+					'### S1 — sent back\n' +
+					'- **Status**: pending\n' +
+					'- review-state: changes_requested\n' +
+					'- review-log: requested_changes by agent-b — fix it\n\n' +
+					'### S2 — never handed in\n' +
+					'- **Status**: pending\n',
+			);
+			expect(
+				findIssues(root).map((issue) => issue.detail.split(' ')[0]),
+			).toEqual(['S2']);
+		});
+
 		it('flags a done proposal with a non-done slice', () => {
 			write(
 				'docs/delendai/proposals/done/feats/f00001-thing.md',

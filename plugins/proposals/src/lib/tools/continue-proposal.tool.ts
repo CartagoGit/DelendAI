@@ -36,6 +36,7 @@ import {
 	readTextOrNull,
 } from '../proposals/index-reader';
 import { locateProposal } from '../proposals/locate';
+import { isSentBack } from '../swarm/proposal-stage';
 import type {
 	ICascadePriorityResolver,
 	IProposalSummary,
@@ -643,11 +644,25 @@ export const runContinueProposal = async (
 	}
 	// Dependent work must continue while a primary proposal waits for peer
 	// review. Review is still actionable, but it is a lower-priority lane:
-	// only select it when no ready/in-progress proposal remains.
-	const executableFree = free.filter((entry) => {
+	// only select it when no ready/in-progress proposal remains. A proposal
+	// in review with changes requested is its implementer's work, in the
+	// same lane as one in progress.
+	const executableFree: IProposalIndexEntry[] = [];
+	for (const entry of free) {
 		const folderState = folderStateOf(entry.file, options.proposalsDirAbs);
-		return folderState !== 'review';
-	});
+		if (folderState !== 'review') {
+			executableFree.push(entry);
+			continue;
+		}
+		const markdown = await readTextOrNull(
+			join(
+				options.proposalsDirAbs ?? dirname(options.indexPathAbs),
+				entry.file,
+			),
+		);
+		if (markdown !== null && isSentBack(markdown))
+			executableFree.push(entry);
+	}
 	const selectableFree = executableFree.length > 0 ? executableFree : free;
 	// Kind-based cascade (+ frontmatter override/boost) — the host
 	// may inject a custom resolver (DIP, for tests), otherwise the full
