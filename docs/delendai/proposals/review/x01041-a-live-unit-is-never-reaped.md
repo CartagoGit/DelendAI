@@ -2,14 +2,14 @@
 id: x01041
 title: "A live unit is never reaped"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: 8c275f54-e3e7-41fc-a2f5-a35d2524eabe
-last-correlation-id: 8c275f54-e3e7-41fc-a2f5-a35d2524eabe
-last-transition-from: ready
-last-transition-at: 2026-11-07T10:15:16.675Z
+last-transition-id: 2de06a61-70f5-486d-81e8-a2192cbb5b5a
+last-correlation-id: 2de06a61-70f5-486d-81e8-a2192cbb5b5a
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T10:23:02.210Z
 ---
 
 # x01041 — A live unit is never reaped
@@ -32,7 +32,7 @@ On 2026-11-05 the worktree of a live unit (f00808-S8) was removed while its proo
 - global_gate: none
 
 ### S1 — One liveness judgement; the branch goes before the worktree
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-liveness.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/work-units/unit-removal.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/work-units/unit-liveness.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-removal.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -41,6 +41,9 @@ On 2026-11-05 the worktree of a live unit (f00808-S8) was removed while its proo
   - "removeUnitCheckout deletes the branch by compare-and-swap at the judged tip before it removes the worktree; a ref that moved between judgement and removal aborts the removal with the worktree in place."
   - "Liveness is re-checked immediately before the branch deletion and before the worktree removal; a unit that came alive in between gets its branch back at the judged tip and keeps its worktree."
   - "A worktree holding edits that are not kept elsewhere, or a live process, is never removed with --force."
+- shipped-in: `d62b6d6e1f79`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
