@@ -2,10 +2,14 @@
 id: x01040
 title: "Fix develop red: spec-duration-budget lint (run 42076555571)"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-07
+last-transition-id: 9a8d832c-c7a7-4ece-9960-e38e7cb3988f
+last-correlation-id: 9a8d832c-c7a7-4ece-9960-e38e7cb3988f
+last-transition-from: ready
+last-transition-at: 2026-11-07T10:12:25.326Z
 ---
 
 # x01040 — Fix develop red: spec-duration-budget lint (run 42076555571)
