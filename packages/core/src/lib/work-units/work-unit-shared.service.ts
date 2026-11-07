@@ -5,6 +5,7 @@ import type { IWorkAgentIdentity } from '../work-identity/resolve-work-agent.int
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
+import { UNIT_SESSION_VARIABLE } from '../contracts/constants/agent-environment.constant';
 import { readGit } from '../shared/git-read.helper';
 
 export { gitVerbatim, readGit } from '../shared/git-read.helper';
@@ -301,7 +302,8 @@ export const kindInAgent = (agent: string): IWorkUnitResult | undefined => {
  * the model, and nothing named the instance. The session does (x00699).
  */
 export const sessionFor = (args: readonly string[]): string | undefined => {
-	const given = scalarArg(args, 'session') ?? process.env.DELENDAI_SESSION_ID;
+	const given =
+		scalarArg(args, 'session') ?? process.env[UNIT_SESSION_VARIABLE];
 	return given !== undefined && given.trim().length > 0
 		? given.trim()
 		: undefined;

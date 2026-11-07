@@ -32,12 +32,12 @@ import type {
 	IUnitLifeEvidence,
 	IUnitLifeSign,
 } from './unit-lease.interface';
+import { UNIT_SESSION_VARIABLE as SESSION_VARIABLE } from '../contracts/constants/agent-environment.constant';
 import { gitCommonDirOf } from './unit-lease.service';
 import { readUnitLease } from './unit-lease.store';
 import { leaseWindowSeconds } from './unit-verdict.service';
 
 const PROC = '/proc';
-const SESSION_VARIABLE = 'DELENDAI_SESSION_ID';
 
 const nowSeconds = (): number => Math.floor(Date.now() / 1000);
 

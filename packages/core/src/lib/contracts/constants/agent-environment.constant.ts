@@ -29,6 +29,9 @@ export const AGENT_IDENTITY_VARIABLE = 'DELENDAI_AGENT_ID';
  */
 export const DELENDAI_SESSION_VARIABLE = 'DELENDAI_SESSION';
 
+/** The unit session an agent names instead of passing `--session`. */
+export const UNIT_SESSION_VARIABLE = 'DELENDAI_SESSION_ID';
+
 /**
  * A cross-runtime convention, e.g. `claude-code_<version>_agent`: it says
  * an agent is running, not which host runs it.

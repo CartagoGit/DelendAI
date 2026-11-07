@@ -195,6 +195,12 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
  * remembering to wire them.
  */
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
+	// First: no spec reads the environment of the shell that runs it. The
+	// setups after this one set their own delendai variables.
+	resolve(
+		workspaceRoot,
+		'tools/scripts/test/hermetic-agent-identity-setup.ts',
+	),
 	silenceConsoleSetupFile(workspaceRoot),
 	resolve(workspaceRoot, 'tools/scripts/lib/record-reads-setup.ts'),
 	// No git a test spawns runs detached maintenance that outlives it.
@@ -205,11 +211,6 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-agent-bridge-setup.ts'),
 	// Every spec runs from the repository root, wherever the run started.
 	resolve(workspaceRoot, 'tools/scripts/test/hermetic-cwd-setup.ts'),
-	// No test reads the identity of the agent running it.
-	resolve(
-		workspaceRoot,
-		'tools/scripts/test/hermetic-agent-identity-setup.ts',
-	),
 ];
 
 /**
