@@ -2,12 +2,7 @@
  * git-invocation-memo.helper.spec.ts — one invocation asks git a repeated
  * question once, and asks again after anything git may have changed.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { runGitCommand } from '@delendai/core/lib/shared/git-command.helper';
 import { withGitInvocationMemo } from '@delendai/core/lib/shared/git-invocation-memo.helper';
@@ -17,26 +12,14 @@ import {
 	readGit,
 } from '@delendai/core/lib/shared/git-read.helper';
 import { createGitRunner } from '@delendai/core/lib/shared/git-write';
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
-const roots: string[] = [];
-afterEach(() => {
-	for (const root of roots.splice(0))
-		rmSync(root, { recursive: true, force: true });
+const template = createGitRepoTemplate({
+	trunk: 'main',
+	files: { 'a.txt': 'x\n' },
 });
 
-const repo = (): string => {
-	const root = mkdtempSync(join(tmpdir(), 'git-memo-'));
-	roots.push(root);
-	const git = (...args: string[]) =>
-		execFileSync('git', args, { cwd: root, stdio: 'ignore' });
-	git('init', '-q', '-b', 'main');
-	git('config', 'user.email', 'a@b.c');
-	git('config', 'user.name', 'a');
-	writeFileSync(join(root, 'a.txt'), 'x\n');
-	git('add', 'a.txt');
-	git('commit', '-qm', 'one');
-	return root;
-};
+const repo = (): string => template.copy().root;
 
 const counting = <T>(body: () => T): { value: T; spawns: string[] } => {
 	const spawns: string[] = [];
@@ -66,7 +49,7 @@ describe('withGitInvocationMemo', () => {
 			]),
 		);
 		expect(value[0]).toBe(value[1]);
-		expect(value[4]).toBe('a@b.c');
+		expect(value[4]).toBe('spec@example.test');
 		expect(spawns).toHaveLength(4);
 	});
 
@@ -82,7 +65,7 @@ describe('withGitInvocationMemo', () => {
 				return { before, after };
 			}),
 		);
-		expect(value).toEqual({ before: 'a@b.c', after: 'z@y.x' });
+		expect(value).toEqual({ before: 'spec@example.test', after: 'z@y.x' });
 		expect(spawns).toEqual([
 			'config --get user.email',
 			'status --porcelain',
