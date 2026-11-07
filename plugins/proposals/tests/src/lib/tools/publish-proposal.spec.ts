@@ -270,9 +270,8 @@ describe('publishProposalOnRef', () => {
 		// and is pinned directly by the `protectedPushTarget` cases above;
 		// no reachable policy makes a publication ref collide with a
 		// branch, which is why there is no integration case for it here.
-		expect(outcome.ref).toBe(
-			'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
-		);
+		// The default policy's prefix, never a spelled namespace (f00808).
+		expect(outcome.ref).toBe('pr/agent-a/create/f00551-all-g1/a-proposal');
 		expect(outcome.published).toBe(true);
 	});
 
@@ -282,5 +281,15 @@ describe('publishProposalOnRef', () => {
 		await publishProposalOnRef(request({ git: run, remote: 'upstream' }));
 
 		expect(calls.at(-1)?.[2]).toBe('upstream');
+	});
+});
+
+describe('publicationRefFor with no prefix (f00808)', () => {
+	it('falls back to the default policy prefix, never a spelled namespace', () => {
+		const ref = publicationRefFor('', 'f00551', {
+			agent: 'agent-a',
+			title: 'A proposal',
+		});
+		expect(ref.startsWith('pr/agent-a/')).toBe(true);
 	});
 });

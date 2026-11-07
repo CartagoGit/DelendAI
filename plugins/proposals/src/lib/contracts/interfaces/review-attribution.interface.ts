@@ -64,6 +64,10 @@ export interface IWorkRefShape {
 	readonly workRefTemplate: string;
 	readonly workRefPrefix: string;
 	readonly publicationRefPrefix: string;
+	/** delendai's ref namespace; absent reads as none. */
+	readonly namespacePrefix?: string;
+	/** Namespaces used before it, still read during a transition. */
+	readonly formerNamespacePrefixes?: readonly string[];
 }
 
 /** A unit of work named in some text, decoded with the project's template. */
