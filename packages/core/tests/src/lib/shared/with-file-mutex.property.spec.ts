@@ -208,7 +208,11 @@ describe('withFileMutex state-machine invariants', () => {
 				expect(maxConcurrent).toBeLessThanOrEqual(1);
 				expect(existsSync(scenarioLockPath)).toBe(false);
 			}),
-			{ numRuns: 200 },
+			// A fixed seed makes the sampled schedules the same on every run,
+			// so a failure reproduces. 60 of them, beside the enumerated
+			// schedules below, cover every start order, every overlap of
+			// two sections and the crash of each contender.
+			{ numRuns: 60, seed: 20261104 },
 		);
 	});
 

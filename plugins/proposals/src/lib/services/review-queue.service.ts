@@ -50,6 +50,7 @@ import {
 	type IIntegrationRecord,
 } from './delivery-history.service';
 import { settleSlice } from './review-queue-slice.service';
+import { isSentBack, sentBackSliceIds } from '../swarm/proposal-stage';
 
 export type {
 	IBuildReviewQueueInput,
@@ -85,9 +86,16 @@ const reviewProposal = async (
 	entry: IReviewBacklogEntry,
 	deliveries: ReadonlyMap<string, readonly IDeliveryCandidate[]>,
 	history: readonly IIntegrationRecord[],
-): Promise<IReviewQueueProposal | undefined> => {
+): Promise<
+	IReviewQueueProposal | { readonly sentBack: number } | undefined
+> => {
 	const markdown = await readText(join(input.proposalsDirAbs, entry.file));
 	if (markdown === undefined) return undefined;
+	// Sent back, it waits on its implementer: no slice is a reviewer's,
+	// and the verdict that sent it back took it off the queue.
+	if (isSentBack(markdown)) {
+		return { sentBack: sentBackSliceIds(markdown).size };
+	}
 	const plan = parseProposalSlicePlan(entry.id, markdown);
 	const blocks = new Map<string, { title: string; block: string }>();
 	for (const match of markdown.matchAll(SLICE_BLOCK_RE)) {
@@ -212,6 +220,7 @@ export const buildReviewQueue = async (
 			? new Map<string, readonly IDeliveryCandidate[]>()
 			: indexDeliveries(history, input.refShape);
 	const reviewed: IReviewQueueProposal[] = [];
+	let sentBack = 0;
 	for (const entry of entries) {
 		const proposal = await reviewProposal(
 			input,
@@ -220,6 +229,10 @@ export const buildReviewQueue = async (
 			history,
 		);
 		if (proposal === undefined) continue;
+		if ('sentBack' in proposal) {
+			sentBack += proposal.sentBack;
+			continue;
+		}
 		const others = heldByOthers(proposal.id);
 		reviewed.push(
 			others.length > 0
@@ -244,7 +257,8 @@ export const buildReviewQueue = async (
 			slices: slices.length,
 			needsVerdict: count('needs-verdict'),
 			blocked: count('blocked'),
-			waitingOnImplementer: count('waiting-on-implementer'),
+			// A proposal sent back is off the queue; its slices still wait.
+			waitingOnImplementer: count('waiting-on-implementer') + sentBack,
 			readyToClose: reviewed.filter(
 				(proposal) => proposal.close !== undefined,
 			).length,
