@@ -2,10 +2,14 @@
 id: x01042
 title: "The id mutex is held only to allocate"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
+last-transition-id: d3a04991-1953-42a3-b44e-f7502239998b
+last-correlation-id: d3a04991-1953-42a3-b44e-f7502239998b
+last-transition-from: ready
+last-transition-at: 2026-11-07T10:29:13.503Z
 ---
 
 # x01042 — The id mutex is held only to allocate
