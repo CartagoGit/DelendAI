@@ -881,13 +881,18 @@ jobs:
               # pull request fails only for a spec clearly over 5 s (by a
               # margin), and the integration branch's certification never
               # fails here: it reports the new offenders for the issue step.
+              env:
+                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
               run: |
                   set -euo pipefail
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     # A change that touches no spec records no timings.
                     if [ -f .cache/spec-timings/spec-timings.json ]; then
+                      git diff --name-only "${DELENDAI_COVERAGE_BASE}...HEAD" \
+                        > .cache/spec-timings/changed-files.txt
                       bun run lint:spec-duration-budget -- \
                         --mode=pull-request \
+                        --changed-files=.cache/spec-timings/changed-files.txt \
                         --timings=.cache/spec-timings/spec-timings.json
                     fi
                   else

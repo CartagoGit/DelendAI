@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	CLEAR_MS,
 	FAIL_MS,
+	failuresOfChange,
 	isE2eSpec,
 	judgedDuration,
 	judgeSpecDurations,
@@ -87,5 +88,22 @@ describe('judgeSpecDurations', () => {
 			'a/gone.spec.ts',
 			'a/heavy.e2e.spec.ts',
 		]);
+	});
+});
+
+describe('failuresOfChange', () => {
+	const failures = [
+		{ path: 'a/touched.spec.ts', ms: CLEAR_MS + 1 },
+		{ path: 'a/neighbour.spec.ts', ms: CLEAR_MS + 1 },
+	];
+
+	it('keeps only the specs the change adds or edits', () => {
+		expect(
+			failuresOfChange(failures, new Set(['a/touched.spec.ts'])),
+		).toEqual([failures[0]]);
+	});
+
+	it('keeps all of them when no change list is given', () => {
+		expect(failuresOfChange(failures, undefined)).toEqual(failures);
 	});
 });

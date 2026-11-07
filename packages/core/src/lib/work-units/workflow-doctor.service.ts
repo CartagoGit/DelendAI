@@ -15,6 +15,8 @@ import type { IInvariantReport } from '../contracts/interfaces/workflow-invarian
 import { readWorkspacePolicy } from './development-policy.service';
 import { hiddenWorkInvariants } from './hidden-work.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
+import { liveUnitRefs } from './unit-liveness.service';
+import { listWorkRefs } from './work-swarm.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 import { workRefLoopsInvariant } from './work-ref-moves.service';
 import { huskDirectories, husksInvariant } from './worktree-husks.service';
@@ -69,6 +71,11 @@ export const runWorkflowDoctor = async (input: {
 	const report = checkWorkflowInvariants({
 		root,
 		policy,
+		liveRefs: await liveUnitRefs({
+			root,
+			policy,
+			refs: listWorkRefs(root, policy).keys(),
+		}),
 		...(input.scopes === undefined ? {} : { scopes: input.scopes }),
 	});
 	if (input.scopes !== undefined && !input.scopes.includes('checkout')) {

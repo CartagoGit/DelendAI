@@ -4,6 +4,7 @@
  * blueprint hook (r00009: extracted verbatim from `assemble.ts`, which
  * now owns ONLY the config-assembly concern).
  */
+import { applyGitOptionalLocksDefault } from '../shared/git-optional-locks.helper';
 import type { IAccountLayersReport } from '../contracts/interfaces/account-layers.interface';
 import { join } from 'node:path';
 
@@ -245,6 +246,8 @@ export const runCli = async (
 	argv: readonly string[],
 	cwd: string,
 ): Promise<void> => {
+	// Every git this process starts reads without rewriting what it reads.
+	applyGitOptionalLocksDefault();
 	// `init`: merge the delendai server into the detected IDE configs and exit.
 	if (argv[0] === 'init') {
 		const { runInit } = await import('./run-init');

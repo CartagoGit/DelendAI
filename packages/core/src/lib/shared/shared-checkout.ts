@@ -20,7 +20,6 @@
  * ordinary case. A question with one answer should have one
  * implementation.
  */
-import { execFileSync } from 'node:child_process';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import {
@@ -31,6 +30,7 @@ import type { ICheckoutForRequest } from '../contracts/interfaces/shared-checkou
 import type { IToolWriteRoot } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import { executionRootOr } from './execution-root';
+import { readGit } from './git-read.helper';
 
 /**
  * The git directory shared by a checkout and all of its worktrees, or
@@ -40,20 +40,12 @@ import { executionRootOr } from './execution-root';
  * published export is a compatibility commitment nobody has asked for.
  */
 const commonGitDir = (from: string): string | undefined => {
-	try {
-		const answer = execFileSync(
-			'git',
-			['rev-parse', '--path-format=absolute', '--git-common-dir'],
-			{
-				cwd: from,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'ignore'],
-			},
-		).trim();
-		return answer.length === 0 ? undefined : answer;
-	} catch {
-		return undefined;
-	}
+	const answer = readGit(from, [
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
+	return answer === undefined || answer.length === 0 ? undefined : answer;
 };
 
 /**

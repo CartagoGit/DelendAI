@@ -15,7 +15,9 @@
  *   is held by the integration branch: by ancestry, or — when its
  *   publication was rewritten before it merged — by a merge that names
  *   the publication AND content the integration branch already has;
- * - no live owner holds it;
+ * - nobody is on it: no live owner holds it, and no fresh heartbeat,
+ *   running session, proof in flight or process inside its worktree says
+ *   otherwise (read with its standing, and again before each removal);
  * - its worktree holds no edit of its own, and it is not the shared
  *   checkout.
  *
@@ -317,14 +319,19 @@ export const endFinishedUnits = async (
 			results.push(kept('refused'));
 			continue;
 		}
+		// The local branch is the first copy: one found alive when it was
+		// to go keeps every other copy too.
 		let removedAll = true;
 		for (const copy of copies) {
+			if (!removedAll) break;
 			const removed = copy.remote
 				? dropForgeCopy(root, remote, copy.branch, copy.sha)
 				: copy.branch === workBranch
 					? (
 							await removeUnitCheckout(root, copy.branch, {
+								policy,
 								tip: copy.sha,
+								now: input.now,
 							})
 						).deletedBranch
 					: readGit(root, [

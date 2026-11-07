@@ -40,6 +40,7 @@ import {
 import { basename, dirname, extname, isAbsolute, join } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
+import { sentBackSliceIds } from '../../../plugins/proposals/src/lib/swarm/proposal-stage';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const BASELINE_REL =
@@ -197,12 +198,16 @@ export const findIssues = (root: string): readonly IIssue[] => {
 		if ((frontmatter(content).status ?? '').toLowerCase() !== 'review') {
 			continue;
 		}
+		// A slice a reviewer sent back stays in review/, pending with
+		// `review-state: changes_requested`: its implementer's to fix there.
+		const sentBack = sentBackSliceIds(content);
 		for (const slice of collectSliceStatuses(asIfApproved(content))) {
+			if (sentBack.has(slice.id)) continue;
 			if (!CLOSED_SLICE_STATUSES.has(slice.status)) {
 				out.push({
 					proposal: basename(file),
 					kind: 'pending-slice',
-					detail: `${slice.id} status=${slice.status} title='${slice.title}' (in review/: a slice handed over is review, done or retired)`,
+					detail: `${slice.id} status=${slice.status} title='${slice.title}' (in review/: a slice handed over is review, done, retired, or sent back with review-state changes_requested)`,
 				});
 			}
 		}

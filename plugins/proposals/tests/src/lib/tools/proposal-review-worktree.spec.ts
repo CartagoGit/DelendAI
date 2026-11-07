@@ -3,6 +3,7 @@
  * reviewer's own worktree is journalled in the repository, not in the
  * worktree.
  */
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -45,6 +46,20 @@ describe("a verdict recorded from a reviewer's own worktree", () => {
 			'-b',
 			'delendai/wip/agent-b/review/batch-all-g1/backlog',
 			worktree,
+		);
+		execFileSync(
+			'git',
+			[
+				'commit',
+				'--allow-empty',
+				'-q',
+				'--no-verify',
+				'-m',
+				'chore(review): claim x00001',
+				'--trailer',
+				'Claims: x00001',
+			],
+			{ cwd: worktree },
 		);
 		mkdirSync(join(worktree, '.cache/delendai/proposals'), {
 			recursive: true,
