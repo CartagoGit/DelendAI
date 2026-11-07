@@ -14,7 +14,6 @@
  * Tool calls never wait on git: the reading is refreshed in the
  * background, at most once per interval.
  */
-import { execFile } from 'node:child_process';
 
 import type {
 	CheckpointAdvisoryProvider,
@@ -25,6 +24,7 @@ import type {
 	IStaleRuntimeReading,
 	IStaleRuntimeWatch,
 } from './stale-runtime-advisory.interface';
+import { execGitFile } from '../shared/git-read.helper';
 
 const REFRESH_INTERVAL_MS = 60_000;
 /** Where the code a server runs lives: sources, not specs or docs. */
@@ -36,7 +36,7 @@ const git = (
 	args: readonly string[],
 ): Promise<string | undefined> =>
 	new Promise((resolveOutput) => {
-		execFile(
+		execGitFile(
 			'git',
 			[...args],
 			{ cwd: root, encoding: 'utf8' },
