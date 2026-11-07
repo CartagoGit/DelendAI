@@ -2,14 +2,14 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
-last-correlation-id: 84addce0-c40a-4c39-8594-6ab99cef45e0
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T14:23:23.450Z
+last-transition-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
+last-correlation-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
+last-transition-from: review
+last-transition-at: 2026-11-04T18:28:10.694Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
@@ -35,54 +35,64 @@ Three things stood in the way besides the trigger. Every promotion is a release:
 - global_gate: type
 
 ### S1 — The queue opens the promotion when it is ready
-- **Status**: review
+- **Status**: pending
 - **Files**: `delendai.config.json`, `tools/scripts/governance/promotion-workflow.lib.ts`, `tools/scripts/governance/promotion-workflow.lib.spec.ts`, `.github/workflows/open-promotion.yml`, `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: type
 - acceptance:
   - "`plugins.roadmap.options.promotion.schedule` is `on-ready`, and the `open-promotion` workflow projected from it asks every hour (a push comes before the checks its head needs, and a token merge starts none; promotion-workflow.lib.spec.ts), fetching the release branch, and runs `open-promotion --apply`, which opens the develop → main pull request only when develop's required checks are green (a code scanning tool's check counting as reported when that tool has an analysis on the head, open-promotion.script.spec.ts), no code scanning alert is open and the next horizon's blocking gates pass, and says which condition holds it otherwise."
 - shipped-in: `a9b8f5f5371b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in a9b8f5f5371b is stale: slice files changed in newer commits (e.g. 6d3edff4b, 3eedd5a48, 51fbac099). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S2 — The release gate's dispatched run judges what its pull-request run does
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/release-pr-gate.yml`
 - **Gate**: type
 - acceptance:
   - "`release-pr-gate`'s dispatched run checks what its pull-request run checks: the version and changelog of the branch it runs on against main, and the alerts open on that branch."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: target files changed in newer commits (e.g. 6d3edff4b, 51fbac099). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
 
 ### S4 — A promotion that is not a release yet is held back and says how to prepare it
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`, `tools/scripts/release/release-pr-check.script.ts`
 - **Gate**: type
 - acceptance:
   - "`open-promotion` holds the promotion back while develop carries no version above main's or no CHANGELOG section for it (the gaps `release:check` reports, from one `releaseGaps`), naming each gap and `bun run release:prepare --write` as the fix, so it never opens a promotion the release gate refuses (open-promotion.script.spec.ts)."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: open-promotion/release-check files changed in newer commits (e.g. cada9abdf). Redeliver S4 on current HEAD and resubmit with fresh shipped-in + gate evidence.
 
 ### S3 — The roadmap names the next milestone
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/ROADMAP.md`
 - **Gate**: type
 - acceptance:
   - "The roadmap holds the 0.3.0 horizon the owner committed on 2026-10-29 (a fast flow, every host held to the workflow, plugins that connect, Batuta working), each entry gated on its proposals being done."
 - shipped-in: `f09248dce4a4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in f09248dce4a4 is stale: roadmap changed after delivery (e.g. 2e72fc901). Redeliver S3 from current HEAD and resubmit with fresh shipped-in.
 
 ### S5 — The promotion is asked for when its last evidence lands
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/open-promotion.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When code scanning of the integration branch succeeds, `codeql.yml` dispatches `open-promotion` (`ask-for-the-promotion`; open-promotion.script.spec.ts), so a ready promotion opens within minutes of its last evidence landing, with the hourly run as the fallback."
 - shipped-in: `cada9abdf843`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in cada9abdf843 is stale: relevant CI files changed afterward (e.g. 51fbac099, 3eedd5a48). Redeliver S5 on current HEAD and resubmit with fresh shipped-in + evidence.
 
 ## acceptance
 

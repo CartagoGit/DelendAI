@@ -1,4 +1,7 @@
 import { scopeToCaller } from '../services/scope-to-caller.service';
+import { reviewerMoveRefusalFor } from '../services/reviewer-move-guard.service';
+import { runProposalReviewRestore } from './review-restore';
+import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IReviewIndependence } from '../contracts/interfaces/review-independence.interface';
 import { mkdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
@@ -109,6 +112,8 @@ export interface IRecoveryToolOptions {
 	readonly workspaceRoot: string;
 	readonly eventBuffer?: IRecoveryEventBuffer;
 	readonly gitRunner?: IGitRunner;
+	/** The project's work-ref shape: a reviewer's force on a proposal it judged is refused. */
+	readonly workRefShape?: IWorkRefShape;
 	/** a00069 S7: peer-review gate default on for force review→done. */
 	readonly requirePeerReview?: boolean;
 	/** What makes a reviewer independent (x00718); `model` by default. */
@@ -556,6 +561,21 @@ export const runProposalForceTransition = async (
 			`Close it with ${options.namespacePrefix}_proposal_transition { id: "${args.id}", to: "done", reason }; its refusal names what is missing. Closing without a review is the owner's decision, made by merging by hand.`,
 		);
 	}
+	// A verdict is the move: the reviewer that recorded one does not
+	// force the proposal anywhere afterwards.
+	const reviewerRefusal = await reviewerMoveRefusalFor({
+		id: args.id,
+		to: args.to,
+		agent: args.agent,
+		workspaceRoot: options.workspaceRoot,
+		proposalsDirAbs: options.proposalsDirAbs,
+		indexPathAbs: options.indexPathAbs,
+		shape: options.workRefShape,
+		run: options.gitRunner,
+	});
+	if (reviewerRefusal !== undefined) {
+		return toolError(reviewerRefusal.reason, reviewerRefusal.nextAction);
+	}
 	if (options.forceTransitions === 'people') {
 		return toolError(
 			`This project reserves force to people: no tool call moves ${args.id} past its gates.`,
@@ -602,6 +622,18 @@ export const runProposalForceTransition = async (
 		...moved,
 	});
 };
+
+/** Every proposal a reviewer moved out of review by hand, back to `review`. */
+export const restoreReviewMoves = (
+	args: { readonly dryRun?: boolean | undefined },
+	options: IRecoveryToolOptions,
+) =>
+	runProposalReviewRestore(args, options.proposalsDirAbs, async (id) => {
+		const found = await locateProposal(options, id);
+		if (found === null || found.status !== 'in-progress') return false;
+		await moveProposal(found, 'review', 'review', options);
+		return true;
+	});
 
 export const runProposalReconcileFolder = async (
 	args: {
@@ -852,20 +884,25 @@ export const buildRecoveryToolRegistrations = (
 					`${options.namespacePrefix}_proposal_reconcile_folder`,
 					{
 						description:
-							'Move one proposal file to the folder that matches its frontmatter status.',
+							'Move one proposal file to the folder that matches its frontmatter status. No id: back to review/ what was moved out by hand.',
 						outputSchema: RECONCILE_FOLDER_OUTPUT_SCHEMA,
 						inputSchema: z.object({
-							id: z.string().min(1),
+							id: z.string().min(1).optional(),
 							dryRun: z.boolean().optional(),
 							force: z.boolean().optional(),
 							reason: z.string().optional(),
 						}),
 					},
-					async (args) =>
-						runProposalReconcileFolder(
-							args,
-							scopeToCaller(withBuffer),
-						),
+					async ({ id, ...rest }) =>
+						id === undefined
+							? restoreReviewMoves(
+									rest,
+									scopeToCaller(withBuffer),
+								)
+							: runProposalReconcileFolder(
+									{ id, ...rest },
+									scopeToCaller(withBuffer),
+								),
 				);
 			},
 		},
