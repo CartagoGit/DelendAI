@@ -101,8 +101,8 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	proposalClosed: z.boolean().optional(),
 	/** Why that transition was refused, when it was. */
 	proposalCloseBlocker: z.string().optional(),
-	/** A change request sent the proposal back to `in-progress`. */
-	proposalReopened: z.boolean().optional(),
+	/** What happens next when the verdict left the proposal in review/ sent back. */
+	nextAction: z.string().optional(),
 	/** The submission left no slice to do and the proposal went to `review`. */
 	proposalHandedOver: z.boolean().optional(),
 });

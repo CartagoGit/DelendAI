@@ -45,6 +45,9 @@ const LOCK_PATH =
 	computeSlotPath(REPO_ROOT) ??
 	resolve(REPO_ROOT, '.cache/delendai/state/heavy-compute.lock');
 
+// Test-only, like the lock path: how long a waiter waits before it says so.
+const testNoticeMs = Number(process.env.DELENDAI_TEST_COMPUTE_WAIT_NOTICE_MS);
+
 const args = process.argv.slice(2);
 const sepIndex = args.indexOf('--');
 if (sepIndex === -1 || sepIndex === args.length - 1) {
@@ -78,6 +81,9 @@ const main = async (): Promise<number> => {
 		return await withComputeSlot({
 			lockPath: LOCK_PATH,
 			label: lockName,
+			...(Number.isFinite(testNoticeMs) && testNoticeMs > 0
+				? { waitNoticeMs: testNoticeMs }
+				: {}),
 			run: runChild,
 		});
 	} catch (error) {
