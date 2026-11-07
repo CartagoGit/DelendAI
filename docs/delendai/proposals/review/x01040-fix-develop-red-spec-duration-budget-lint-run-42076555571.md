@@ -2,14 +2,14 @@
 id: x01040
 title: "Fix develop red: spec-duration-budget lint (run 42076555571)"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-07
-last-transition-id: 9a8d832c-c7a7-4ece-9960-e38e7cb3988f
-last-correlation-id: 9a8d832c-c7a7-4ece-9960-e38e7cb3988f
-last-transition-from: ready
-last-transition-at: 2026-11-07T10:12:25.326Z
+last-transition-id: fc34f393-d50c-414b-ac6c-b68cb96ce170
+last-correlation-id: fc34f393-d50c-414b-ac6c-b68cb96ce170
+last-transition-from: in-progress
+last-transition-at: 2026-11-07T10:20:41.757Z
 ---
 
 # x01040 — Fix develop red: spec-duration-budget lint (run 42076555571)
@@ -32,9 +32,12 @@ CI run 42076555571 left develop red at 1f8f5acee: the spec-duration-budget lint 
 - global_gate: none
 
 ### S1 — Fast specs and a noise-robust duration gate
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`, `packages/core/tests/src/lib/work-units/shared-checkout-clean.service.spec.ts`, `tools/scripts/ci/spec-duration-budget.ts`, `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/spec-duration-budget.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
+- shipped-in: `bcb929bbe885`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
