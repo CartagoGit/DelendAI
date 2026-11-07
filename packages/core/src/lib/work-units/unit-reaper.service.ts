@@ -20,7 +20,12 @@
  * branch and worktree hold nothing. A swarm left one such unit per agent
  * it started, each a full copy of the repository, and none was ever
  * delivered for this reaper to see.
+ *
+ * A unit anybody is on is never spent, whatever its standing says: its
+ * standing already reads its life, and the removal reads it again before
+ * each step it takes.
  */
+import { ownedRootsOf } from './namespaced-ref.helper';
 import { keepUncommittedEdits } from './unit-edits-kept.service';
 import type { IReapedUnit } from './unit-lease.interface';
 import {
@@ -30,6 +35,7 @@ import {
 } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
 import { inspectWorktree } from './unit-worktree-state.service';
+import { unitLifeReader } from './unit-liveness.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { carriesNothingBeyond } from './landed-work.service';
 import {
@@ -69,7 +75,7 @@ export const reapDeliveredUnits = async (input: {
 				'ls-remote',
 				'--',
 				remote,
-				`refs/${policy.branches.namespacePrefix}/retired/*`,
+				...ownedRootsOf(policy.branches, 'retired', '*'),
 			]) ?? ''
 		)
 			.split('\n')
@@ -85,6 +91,7 @@ export const reapDeliveredUnits = async (input: {
 		]);
 		return tip !== undefined && retiredTips.has(tip);
 	};
+	const lifeOf = unitLifeReader({ root, policy, now: input.now });
 	const reaped: IReapedUnit[] = [];
 	for (const unit of standings) {
 		if (!hasLocalBranch(root, unit.ref)) continue;
@@ -95,6 +102,7 @@ export const reapDeliveredUnits = async (input: {
 			'--verify',
 			`refs/heads/${unit.ref}`,
 		]);
+		if (judgedTip === undefined) continue;
 		const spent =
 			unit.standing === 'delivered' ||
 			(unit.standing === 'abandoned' &&
@@ -121,6 +129,11 @@ export const reapDeliveredUnits = async (input: {
 				reaped.push({ ...base, outcome: 'would-retire' });
 				continue;
 			}
+			// Kept on the forge only for a unit still nobody is on.
+			if ((await lifeOf({ ref: unit.ref, worktree })).alive) {
+				reaped.push({ ...base, outcome: 'kept' });
+				continue;
+			}
 			const keptAt = keepUncommittedEdits({
 				root,
 				policy,
@@ -133,8 +146,10 @@ export const reapDeliveredUnits = async (input: {
 				keptAt !== undefined &&
 				(
 					await removeUnitCheckout(root, unit.ref, {
+						policy,
+						tip: judgedTip,
 						editsKept: true,
-						...(judgedTip === undefined ? {} : { tip: judgedTip }),
+						now: input.now,
 					})
 				).deletedBranch;
 			reaped.push(
@@ -148,12 +163,12 @@ export const reapDeliveredUnits = async (input: {
 			reaped.push({ ...base, outcome: 'would-remove' });
 			continue;
 		}
-		const removal = await removeUnitCheckout(
-			root,
-			unit.ref,
-			judgedTip === undefined ? {} : { tip: judgedTip },
-		);
-		if (removal.deletedBranch && judgedTip !== undefined)
+		const removal = await removeUnitCheckout(root, unit.ref, {
+			policy,
+			tip: judgedTip,
+			now: input.now,
+		});
+		if (removal.deletedBranch)
 			dropForgeCopy(root, remote, unit.ref, judgedTip);
 		reaped.push({
 			...base,

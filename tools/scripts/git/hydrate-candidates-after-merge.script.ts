@@ -127,10 +127,34 @@ export const QUICK_STEPS: readonly string[] = [
 	'tools/scripts/forge/advance-queue.script.ts',
 ];
 
+/**
+ * How long a step may run: its own timeout, cut to what is left of the
+ * pass's budget; `undefined` when nothing is left and the step is skipped.
+ */
+export const stepTimeout = (
+	timeout: number,
+	deadline: number,
+	now: number,
+): number | undefined => {
+	const left = deadline - now;
+	return left <= 0 ? undefined : Math.min(timeout, left);
+};
+
 /** Run the listed steps in order; a step that fails is reported, never thrown. */
-const runSteps = (root: string, names: ReadonlySet<string>): void => {
-	for (const [script, timeout] of HYDRATION_STEPS) {
+const runSteps = (
+	root: string,
+	names: ReadonlySet<string>,
+	deadline: number = Number.POSITIVE_INFINITY,
+): void => {
+	for (const [script, ownTimeout] of HYDRATION_STEPS) {
 		if (!names.has(script)) continue;
+		const timeout = stepTimeout(ownTimeout, deadline, Date.now());
+		if (timeout === undefined) {
+			console.log(
+				`hydrate-candidates: ${script} skipped; this pass spent its budget and the next one runs it.`,
+			);
+			continue;
+		}
 		try {
 			// Background maintenance is the owner's machine's guest: lowest
 			// priority, half the cores.
@@ -213,7 +237,7 @@ const main = (): void => {
 	};
 	const [certify, advance] = QUICK_STEPS;
 	quick(certify as string);
-	const outcome = runExclusively(lockDir, () => {
+	const outcome = runExclusively(lockDir, (deadline) => {
 		runSteps(
 			root,
 			new Set(
@@ -221,6 +245,7 @@ const main = (): void => {
 					(script) => !QUICK_STEPS.includes(script),
 				),
 			),
+			deadline,
 		);
 	});
 	quick(advance as string);

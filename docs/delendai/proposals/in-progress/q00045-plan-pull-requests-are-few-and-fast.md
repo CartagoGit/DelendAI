@@ -74,6 +74,13 @@ This follows the product principles (bootstrap section 0): efficient, fast and t
 - acceptance:
   - "Each skipped job names the reason (zone untouched, platform) in the run summary, and an unconditional test skip fails a lint unless it carries a reason and an owner."
 
+### S6 — A batch of independent pull requests is certified once
+- **Status**: pending
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/git/hydration-lock.ts`, `tools/scripts/git/hydration-lock.spec.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Pull requests that do not overlap each other or what the integration branch gained since they left are assembled into one train: the integration branch plus all of them. One full run proves the train, and when it is green all of them land together. A red train is split in half until the culprit is isolated, so N independent pull requests cost one or two full runs, not N certifications in series. The integration branch never receives a combination that was not proved."
+
 ## acceptance
 
 - No spec file outside the declared e2e tier takes over 1 s in CI; the 41 files measured over 5 s on 2026-11-04 are rewritten with in-memory fakes or moved to the e2e tier; a lint reads CI durations and reports any file over 1 s and fails any over 5 s that is not tagged e2e.
@@ -81,3 +88,4 @@ This follows the product principles (bootstrap section 0): efficient, fast and t
 - The number of test jobs follows the selected work: a small selection runs in one job; dependencies and builds are restored from cache; a typical pull request finishes in under 5 minutes wall and 10 runner-minutes.
 - The publisher groups small publications into one pull request by what they change: docs-only proposal work, and fixes under the size limit in disjoint zones, across proposals; slices of one proposal keep the existing size rule; the grouping is decided from the diff, never by hand.
 - Each skipped job names the reason (zone untouched, platform) in the run summary, and an unconditional test skip fails a lint unless it carries a reason and an owner.
+- Pull requests that do not overlap each other or what the integration branch gained since they left are assembled into one train: the integration branch plus all of them. One full run proves the train, and when it is green all of them land together. A red train is split in half until the culprit is isolated, so N independent pull requests cost one or two full runs, not N certifications in series. The integration branch never receives a combination that was not proved.

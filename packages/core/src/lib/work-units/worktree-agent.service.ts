@@ -14,15 +14,15 @@
  * Whatever runtime drives git there is that agent. The shared checkout is
  * never stamped: it is where a person works.
  */
-import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { WORKTREE_AGENT_FILE } from '../contracts/constants/worktree-agent.constant';
+import { execGitFileSync } from '../shared/git-read.helper';
 
 const gitPath = (dir: string, flag: string): string | undefined => {
 	try {
-		return execFileSync(
+		return execGitFileSync(
 			'git',
 			['rev-parse', '--path-format=absolute', flag],
 			{

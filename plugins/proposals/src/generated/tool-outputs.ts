@@ -524,6 +524,7 @@ export interface DelendaiProposalsProposalBoardOutput {
 		sliceCount?: number;
 		claimableSliceIds?: string[];
 		unreadable?: string;
+		stages?: string;
 	}>;
 	next?: string;
 }
@@ -671,7 +672,7 @@ export interface DelendaiProposalsProposalReviewOutput {
 	attributedTo?: string;
 	proposalClosed?: boolean;
 	proposalCloseBlocker?: string;
-	proposalReopened?: boolean;
+	nextAction?: string;
 	proposalHandedOver?: boolean;
 }
 

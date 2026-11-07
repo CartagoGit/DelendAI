@@ -144,6 +144,27 @@ describe('keepStrandedEdits', () => {
 	});
 });
 
+describe('listStrandedEdits in a namespace transition (f00808)', () => {
+	it('lists edits kept under the former namespace beside the current one', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'a.ts'), 'export const a = 3;\n');
+		const kept = await keepStrandedEdits({ root, policy });
+		if (kept.outcome !== 'kept') throw new Error('not kept');
+		const moved = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: {
+					namespacePrefix: '',
+					formerNamespacePrefixes: ['delendai'],
+				},
+			},
+		});
+		expect(listStrandedEdits({ root, policy: moved })).toEqual([
+			{ ref: kept.ref, agent: 'agent-a', keptAt: expect.any(String) },
+		]);
+	});
+});
+
 describe('dropLandedStrandedEdits', () => {
 	it('drops a stranded ref whose every file is on a branch or in a newer one, and keeps one with a file found nowhere else', async () => {
 		const root = repo();

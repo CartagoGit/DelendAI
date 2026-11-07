@@ -18,42 +18,17 @@ import type {
 	IDurabilityRef,
 	IReadGit,
 } from '../contracts/interfaces/work-dirty-paths.interface';
+import {
+	parseWorktreeStatus,
+	WORKTREE_STATUS_ARGS,
+	worktreeStatusPaths,
+} from '../shared/worktree-status.helper';
 
 export type {
 	IDirtyPathsReport,
 	IDurabilityRef,
 	IReadGit,
 } from '../contracts/interfaces/work-dirty-paths.interface';
-
-/** Status letters whose entry is followed by a second, source path. */
-const PATH_PAIR_STATUSES = new Set(['R', 'C']);
-
-/**
- * Every repository path in `git status --porcelain=v1 -z` output.
- *
- * A rename or copy is `XY <target>\0<source>\0`: the source stands in
- * its own NUL field, without the two status letters and the space.
- * Slicing three characters off every field cut the first three letters
- * off every rename source.
- */
-export const parsePorcelainZ = (output: string): readonly string[] => {
-	const fields = output.split('\0');
-	const paths: string[] = [];
-	for (let index = 0; index < fields.length; index += 1) {
-		const entry = fields[index] ?? '';
-		if (entry.length <= 3) continue;
-		paths.push(entry.slice(3));
-		const pairs =
-			PATH_PAIR_STATUSES.has(entry[0] ?? '') ||
-			PATH_PAIR_STATUSES.has(entry[1] ?? '');
-		if (pairs) {
-			const source = fields[index + 1];
-			if (source !== undefined && source.length > 0) paths.push(source);
-			index += 1;
-		}
-	}
-	return [...new Set(paths)];
-};
 
 /** The blob a path has in the working tree, or `null` when it is gone. */
 const workingTreeBlob = (git: IReadGit, path: string): string | null =>
@@ -72,13 +47,8 @@ export const reportDirtyPaths = (input: {
 	readonly git: IReadGit;
 	readonly refs: readonly IDurabilityRef[];
 }): IDirtyPathsReport => {
-	const dirty = parsePorcelainZ(
-		input.git([
-			'status',
-			'--porcelain=v1',
-			'-z',
-			'--untracked-files=all',
-		]) ?? '',
+	const dirty = worktreeStatusPaths(
+		parseWorktreeStatus(input.git(WORKTREE_STATUS_ARGS) ?? ''),
 	);
 	const undurable = dirty.filter(
 		(path) => !input.refs.some((ref) => heldBy(input.git, path, ref)),

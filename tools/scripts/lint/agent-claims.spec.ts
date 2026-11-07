@@ -3,6 +3,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	checkAgentClaims,
 	collectStaleClaims,
@@ -288,7 +290,12 @@ describe('changes outside their unit', () => {
 			'feature/other',
 			join(mkdtempSync(join(tmpdir(), 'claims-wt-')), 'other'),
 		]);
-		const units = unitCheckouts(root);
+		const units = unitCheckouts(
+			root,
+			resolveDevelopmentPolicy({
+				development: { branches: { namespacePrefix: 'delendai' } },
+			}).branches,
+		);
 		expect(units).toHaveLength(1);
 		expect(units[0]).toMatchObject({
 			branch: 'delendai/wip/a/implement/x00001-all-g1/t',
