@@ -2,14 +2,14 @@
 id: x01000
 title: "every client of a server reaches the tools the surface hides"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: extension
 date: 2026-11-01
-last-transition-id: ecd3ef63-6596-42b6-9da9-50e484e3eeb1
-last-correlation-id: ecd3ef63-6596-42b6-9da9-50e484e3eeb1
-last-transition-from: in-progress
-last-transition-at: 2026-11-01T22:34:17.313Z
+last-transition-id: 011466eb-8768-4dd1-b610-4dded3be6ee6
+last-correlation-id: 011466eb-8768-4dd1-b610-4dded3be6ee6
+last-transition-from: review
+last-transition-at: 2026-11-04T18:38:56.747Z
 ---
 
 # x01000 — every client of a server reaches the tools the surface hides
@@ -34,7 +34,7 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
 - global_gate: type
 
 ### S1 — The shared client reaches hidden tools
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `extensions/vscode/src/providers/kpi-dashboard-provider.ts`, `extensions/vscode/src/test/kpi-dashboard-provider.spec.ts`, `extensions/vscode/src/test/tool-names.spec.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry.spec.ts`, `plugins/proposals/tests/src/lib/state-tools.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `extensions/vscode/scripts/build.ts`, `extensions/vscode/src/test/build-smoke.spec.ts`, `extensions/vscode/package.json`
 - **Gate**: type
 - acceptance:
@@ -43,8 +43,10 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
   - "`state_health` shows the newest 20 quarantine rows and the total; a README is not quarantined and one finding is one entry."
   - "A spec holds every tool name the extension calls against the generated catalog."
 - shipped-in: `9507ac8d5240`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — shipped-in 9507ac8d5240 is stale: many slice files changed afterward (e.g. 549fd6576, 410558f6e, 9b9588197, 19be55632, be1e796df). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence for all acceptance points.
 
 ## acceptance
 
