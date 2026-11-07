@@ -18,6 +18,7 @@ import {
 	branchHostScript,
 	withoutBranchFlag,
 } from './branch-runtime.helper';
+import { applyGitOptionalLocksDefault } from '@delendai/core/lib/shared/git-optional-locks.helper';
 import {
 	assembleCliConfig,
 	createMcpProject,
@@ -278,6 +279,9 @@ export const createStopHandler =
 	};
 
 const run = async (): Promise<void> => {
+	// Every git this host (and the server it supervises) starts reads
+	// without rewriting what it reads.
+	applyGitOptionalLocksDefault();
 	const forwarded = process.argv.slice(2);
 	if (hasHelpFlag(forwarded)) {
 		process.stdout.write(
