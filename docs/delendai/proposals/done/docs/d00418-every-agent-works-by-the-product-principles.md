@@ -2,14 +2,14 @@
 id: d00418
 title: "Every agent works by the product principles"
 kind: docs
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: f725bd6c-236e-40c6-85a2-f0b87d2e7978
-last-correlation-id: f725bd6c-236e-40c6-85a2-f0b87d2e7978
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T04:57:34.252Z
+last-transition-id: 96fe17fa-8264-4244-85da-ff2e935392da
+last-correlation-id: 96fe17fa-8264-4244-85da-ff2e935392da
+last-transition-from: review
+last-transition-at: 2026-11-07T12:11:20.038Z
 shipped-in:
   - "8d323ec13038"
 ---
