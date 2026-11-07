@@ -4,21 +4,15 @@
  * (f00808).
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
 import { releasedElsewhere } from './review-releases.service';
-
-const roots: string[] = [];
-afterEach(() => {
-	for (const root of roots.splice(0))
-		rmSync(root, { recursive: true, force: true });
-});
 
 const git = (cwd: string, ...args: string[]): string =>
 	execFileSync(
@@ -32,14 +26,14 @@ const git = (cwd: string, ...args: string[]): string =>
 	).trim();
 
 /** develop holds x00001's document; a review unit released it after. */
+const template = createGitRepoTemplate({ trunk: 'develop' });
+
 const repo = (unit: string): string => {
-	const root = mkdtempSync(join(tmpdir(), 'releases-'));
-	roots.push(root);
-	git(root, 'init', '-q', '-b', 'develop');
+	const { root } = template.copy();
 	mkdirSync(join(root, 'docs'), { recursive: true });
 	writeFileSync(join(root, 'docs', 'x00001-a.md'), '# x00001\n');
 	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', 'base', '--date=2026-01-01T00:00:00Z');
+	git(root, 'commit', '-q', '-m', 'docs', '--date=2026-01-01T00:00:00Z');
 	git(root, 'switch', '-q', '-c', unit);
 	git(
 		root,
