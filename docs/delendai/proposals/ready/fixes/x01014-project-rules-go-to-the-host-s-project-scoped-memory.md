@@ -2,14 +2,14 @@
 id: x01014
 title: "Project rules go to the host's project-scoped memory"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: a2d73716-1c27-4167-9f12-0ba9a6b841e0
-last-correlation-id: a2d73716-1c27-4167-9f12-0ba9a6b841e0
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T15:00:38.093Z
+last-transition-id: d99ba717-9d05-41c0-b8b7-2d1b7a72a389
+last-correlation-id: d99ba717-9d05-41c0-b8b7-2d1b7a72a389
+last-transition-from: review
+last-transition-at: 2026-11-04T20:18:09.727Z
 ---
 
 # x01014 — Project rules go to the host's project-scoped memory
@@ -34,14 +34,16 @@ GitHub Copilot's memory tool has a user scope, shared by every workspace (~/.vsc
 - global_gate: none
 
 ### S1 — Teach the scope rule where consumers receive it
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/host-appendices/copilot-chat.md`, `docs/delendai/host-appendices/generic-hosts.md`, `packages/cli/src/lib/init/init-hosts.helper.ts`, `packages/cli/src/lib/init/init-hosts.helper.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The Copilot appendix and the Copilot block init writes say that project facts go to /memories/repo/ and never to the user scope, and the generic appendix says it in one line; every appendix stays within its system-prompt-size budget."
 - shipped-in: `6e3d5921baca`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6e3d5921baca is stale for this slice. `git log 6e3d5921baca..develop -- <S1 files>` shows post-shipped changes (e.g. a190479ea), so acceptance must be re-validated on current develop and re-submitted with fresh evidence.
 
 ## acceptance
 

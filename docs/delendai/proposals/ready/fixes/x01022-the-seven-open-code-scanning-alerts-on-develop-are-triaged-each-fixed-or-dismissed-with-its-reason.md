@@ -2,14 +2,14 @@
 id: x01022
 title: "The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason"
 kind: fix
-status: review
+status: ready
 type: proposal
 track: ci
 date: 2026-11-04
-last-transition-id: 4a941319-be31-4761-b382-16f949a4b022
-last-correlation-id: 4a941319-be31-4761-b382-16f949a4b022
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T11:22:34.594Z
+last-transition-id: fb61499c-4c68-4b13-8bdd-c4ab92eaaaf4
+last-correlation-id: fb61499c-4c68-4b13-8bdd-c4ab92eaaaf4
+last-transition-from: review
+last-transition-at: 2026-11-04T20:23:43.063Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
@@ -32,34 +32,40 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - global_gate: none
 
 ### S1 — The lease scratch file alerts
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`
 - **Gate**: type
 - acceptance:
   - "#477 and #478 are each fixed or dismissed on GitHub with the reason that the scratch name is inside the owned workspace cache; the decision is recorded in this proposal."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 2c5e46fc983e is stale for this slice. `git log 2c5e46fc983e..develop -- <S1 files>` shows later changes (e.g. 1921c42fa), so the code-scanning acceptance for alerts #477/#478 must be re-validated on current develop with fresh evidence.
 
 ### S2 — The markdown parser expressions
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/markdown-parser.ts`
 - **Gate**: type
 - acceptance:
   - "#471, #472 and #473 are fixed by bounding the line length matched, with a spec of a 100000-space line that finishes quickly, or dismissed with a reason."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: no current-run empirical evidence is attached here to prove the pathological-line acceptance on current develop (100000-space behavior for #471/#472/#473). Please re-run and include reproducible evidence tied to this slice before re-submitting.
 
 ### S3 — The dockerfile and scaffolder expressions
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/container/src/lib/lint/parse-dockerfile.ts`, `plugins/audit/src/lib/services/proposal-scaffolder.service.ts`
 - **Gate**: type
 - acceptance:
   - "#474 and #475 are fixed with a spec of a pathological line, or dismissed with a reason."
 - shipped-in: `2c5e46fc983e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Rework required: no current-run empirical evidence is attached to demonstrate the pathological-line acceptance on current develop for alerts #474/#475. Please re-run and attach reproducible proof (including the pathological-line spec behavior) before re-submitting.
 
 ## acceptance
 
