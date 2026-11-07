@@ -276,11 +276,10 @@ export const endWorkRef = (request: {
 			return { removed: false, steps };
 		}
 		if (dirty.entries.length > 0) {
-			const count = dirty.entries.length;
 			step(
 				'remove-worktree',
 				false,
-				`${worktree} has ${String(count)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
+				`${worktree} has ${String(dirty.entries.length)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
 			);
 			return { removed: false, steps };
 		}
