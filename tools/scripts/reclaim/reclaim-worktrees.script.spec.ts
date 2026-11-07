@@ -12,6 +12,7 @@ import {
 	mkdtempSync,
 	realpathSync,
 	rmSync,
+	statSync,
 	utimesSync,
 	writeFileSync,
 } from 'node:fs';
@@ -309,6 +310,17 @@ describe('observe and main over a real repository', () => {
 		expect(byPath.get(spent)?.role).toBe('spent');
 		expect(byPath.get(dirty)?.role).toBe('dirty');
 		expect(byPath.get(broken)?.role).toBe('unknown');
+	});
+
+	it('reads a status without touching the index that dates the activity', () => {
+		// Root cause of the CI flake (run 42364090265): a plain `git status`
+		// rewrites an old index, so the dry run made the spent worktree look
+		// busy to the run that applies.
+		age(spent);
+		const gitDir = git(spent, 'rev-parse', '--absolute-git-dir').trim();
+		const before = statSync(join(gitDir, 'index')).mtimeMs;
+		readDirtyPaths(spent);
+		expect(statSync(join(gitDir, 'index')).mtimeMs).toBe(before);
 	});
 
 	it('main only reports without apply, and with apply removes just the spent one', () => {

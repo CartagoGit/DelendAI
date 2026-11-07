@@ -238,7 +238,7 @@ describe('a swarm of reviewers', () => {
 		).toBe(true);
 	});
 
-	it('reads the queue from the reviewer’s own unit, where its verdicts are', async () => {
+	it('reads the queue from the reviewer’s own unit, where its verdicts are, named or not', async () => {
 		const unit = 'refs/heads/delendai/wip/qwen/review/batch-all-g1/sweep';
 		const worktree = join(repo.root, '.cache', 'unit');
 		repo.git('add', '-A');
@@ -273,9 +273,31 @@ describe('a swarm of reviewers', () => {
 				.find((proposal) => proposal.id === 'x00002')
 				?.slices.map((slice) => slice.verdict);
 
-		expect(seen(await queue({ agent: 'qwen' }))).not.toEqual(['approved']);
+		// Named or not, the reviewer's only unit is where the queue reads:
+		// the verdict alone takes the slice off it.
 		expect(seen(await queue({ agent: 'qwen', unit }))).toEqual([
 			'approved',
 		]);
+		expect(seen(await queue({ agent: 'qwen' }))).toEqual(['approved']);
+		// Another reviewer reads the shared checkout, where it still waits.
+		expect(seen(await queue({ agent: 'glm-x' }))).not.toEqual(['approved']);
+	});
+
+	it('takes a proposal sent back off the queue on the verdict alone, and counts its slice', async () => {
+		await repo.review({
+			proposalId: 'x00002',
+			action: 'request_changes',
+			agent: 'qwen',
+			note: 'S1 misses its acceptance',
+		});
+
+		const answer = await queue({ agent: 'glm-x' });
+		expect(
+			proposalsOf(answer).map((proposal) => proposal.id),
+		).not.toContain('x00002');
+		// Its slice sent back still waits on its implementer.
+		expect(answer.body.totals).toMatchObject({ waitingOnImplementer: 1 });
+		// Still in review/, with its slice's review-state changes_requested.
+		expect(repo.documentOf('x00002')).toMatch(/proposals\/review\//u);
 	});
 });

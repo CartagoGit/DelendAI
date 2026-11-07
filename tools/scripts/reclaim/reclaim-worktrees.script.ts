@@ -94,7 +94,13 @@ const gitRead = (args: readonly string[], cwd: string): string | undefined => {
 
 /** Uncommitted work in a worktree, or `null` when git could not say. */
 export const readDirtyPaths = (worktreePath: string): number | null => {
-	const status = gitRead(['status', '--porcelain'], worktreePath);
+	// `--no-optional-locks`: a read must not refresh the index whose mtime
+	// says when git last worked here, or the dry run leaves the worktree
+	// looking busy to the run that applies.
+	const status = gitRead(
+		['--no-optional-locks', 'status', '--porcelain'],
+		worktreePath,
+	);
 	if (status === undefined) return null;
 	return worksomebodyOwns(
 		status.split('\n').filter((line) => line.trim().length > 0),
