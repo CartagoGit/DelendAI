@@ -71,7 +71,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 ### S5 — Validate arguments first, and pin the spawn budget
 - **Status**: pending
 - **DependsOn**: [S2, S3, S4]
-- **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`, `packages/core/src/lib/work-units/work-arguments.helper.ts`, `packages/core/src/lib/contracts/constants/work-arguments.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-arguments.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/work-units/integration-merges.helper.ts`, `packages/core/src/lib/work-units/agents-seen.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/committed-file-reader.helper.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
 - acceptance:
   - "A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82)."
@@ -95,3 +95,26 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - A work subcommand missing its required arguments prints its usage having spawned at most 2 git processes (today 82).
 - work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation.
 - The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them.
+
+## delivery
+
+Spawns per subcommand on the budget spec's fixture (one commit, bare
+origin), counted by the spawn observer, before S5 (x01034 S4) -> after,
+with in-process wall time:
+
+| step | before | after | budget | ms before -> after |
+| --- | --- | --- | --- | --- |
+| argument refusal (enter, checkpoint, prove, publish, retire) | 13-15 | 0 | 2 | 44-68 -> 0-1 |
+| status | 30 | 20 | 25 | 132 -> 96 |
+| enter | 58 | 40 | 40 | 307 -> 230 |
+| checkpoint (refused in its own worktree) | 27 | 16 | 30 | 131 -> 75 |
+| swarm | 34 | 26 | 35 | 119 -> 111 |
+| prove | 42 | 23 | 30 | 316 -> 268 |
+| publish | 65 | 36 | 40 | 243 -> 199 |
+| retire | 35 | 28 | 40 | 166 -> 178 |
+
+fetch runs at most once per invocation (retire's one). Before S4 the
+same commands started 36 to 79 on this fixture, and 80 to 140 on this
+repository. Under strace (`-f -e trace=execve`) the whole budget spec,
+fixture included, executed git 9,597 times before and 5,307 after.
+

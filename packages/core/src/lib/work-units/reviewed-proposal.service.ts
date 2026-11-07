@@ -91,21 +91,20 @@ export const integratedDocumentPathOf = (input: {
 	readonly base: string;
 	readonly docsDir: string;
 	readonly proposal: string;
-}): string | undefined =>
-	(
-		readGit(input.root, [
-			'ls-tree',
-			'-r',
-			'--name-only',
-			input.base,
-			'--',
-			input.docsDir,
-		]) ?? ''
+}): string | undefined => {
+	// The whole tree, filtered here: entering a unit lists the base's
+	// tree again later, and one listing answers both.
+	const under = `${input.docsDir.replace(/\/+$/u, '')}/`;
+	return (
+		readGit(input.root, ['ls-tree', '-r', '--name-only', input.base]) ?? ''
 	)
 		.split('\n')
-		.find((file) =>
-			(file.split('/').at(-1) ?? '').startsWith(`${input.proposal}-`),
+		.find(
+			(file) =>
+				file.startsWith(under) &&
+				(file.split('/').at(-1) ?? '').startsWith(`${input.proposal}-`),
 		);
+};
 
 /**
  * The proposal's document as the integration branch has it, or `undefined`

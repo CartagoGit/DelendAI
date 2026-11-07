@@ -132,7 +132,8 @@ const changedPaths = (
 	sha: string,
 ): readonly string[] => {
 	const base = git(root, ['merge-base', integration, sha]);
-	if (base.length === 0) return [];
+	// A unit standing where it branched changed nothing: no diff to ask.
+	if (base.length === 0 || base === sha) return [];
 	const paths = git(root, ['diff', '--name-only', `${base}..${sha}`])
 		.split('\n')
 		.filter((path) => path.length > 0);

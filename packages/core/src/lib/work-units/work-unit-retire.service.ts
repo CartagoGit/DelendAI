@@ -1,4 +1,5 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { argumentsRefused } from './work-arguments.helper';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
@@ -75,10 +76,7 @@ export const retired = async (
 	const named = scalarArg(args, 'ref');
 	const reason = scalarArg(args, 'reason');
 	if (named === undefined || reason === undefined) {
-		return refused(
-			'Retiring a unit needs the unit and why it will not land.',
-			'work retire --ref=<its work or publication branch> --reason="<why>" [--unowned]. `work swarm` lists the units there are.',
-		);
+		return argumentsRefused('retire');
 	}
 	const plan = planRetirement({
 		branch: named,

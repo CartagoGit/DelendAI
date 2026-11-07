@@ -10,6 +10,7 @@
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { execFile, execFileSync } from 'node:child_process';
+import type { ExecFileSyncOptions } from 'node:child_process';
 
 import type {
 	IGitSpawnObserver,
@@ -68,18 +69,45 @@ export const forgetGitReads = (): void => {
 };
 
 /**
+ * What the invocation's cache already knows of a successful read, for a
+ * runner other than `readGit` (`runGitCommand`, `execGitFileSync`). A
+ * failure is never answered from here: those runners report git's error
+ * text, which the cache does not keep.
+ */
+export const recallGitRead = (
+	cwd: string,
+	args: readonly string[],
+): string | undefined => readCache.getStore()?.recall({ cwd, args })?.output;
+
+/** Remember a successful read made by a runner other than `readGit`. */
+export const rememberGitRead = (
+	cwd: string,
+	args: readonly string[],
+	output: string,
+): void => {
+	readCache.getStore()?.remember({ cwd, args }, output);
+};
+
+/**
  * `execFileSync` for a module that runs git itself (its own environment,
- * its own error handling): the spawn is reported like every other.
+ * its own error handling): the spawn is reported like every other, and a
+ * text read the invocation already made is answered without one.
  */
 export const execGitFileSync: typeof execFileSync = ((
 	file: string,
 	args: readonly string[],
-	options: { readonly cwd?: string | URL | undefined },
+	options: ExecFileSyncOptions,
 ) => {
 	const cwd = options?.cwd === undefined ? '' : String(options.cwd);
+	const text = options?.encoding === 'utf8' && options.input === undefined;
+	const remembered = text ? recallGitRead(cwd, args) : undefined;
+	if (remembered !== undefined) return remembered;
 	noteGitSpawn(cwd, args);
 	try {
-		return execFileSync(file, args, options);
+		const output = execFileSync(file, args, options);
+		if (text && typeof output === 'string')
+			rememberGitRead(cwd, args, output);
+		return output;
 	} finally {
 		noteGitSettled(cwd, args);
 	}
