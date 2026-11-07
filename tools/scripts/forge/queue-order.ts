@@ -15,6 +15,8 @@
  * that brings candidates forward, so the two can never pick different
  * candidates.
  */
+import { ownedNamespaces } from '@delendai/core/cli';
+
 import type { IIntegrationCertification } from './certify-integration.interface';
 import type {
 	IQueueCandidateFacts,
@@ -115,14 +117,74 @@ export const repairStep = (
  */
 export const TRAIN_CAPACITY = 8;
 
+/** The branches of the project as delendai owns them, for its prefixes. */
+type IOwnedBranches = Parameters<typeof ownedNamespaces>[0];
+
 /**
- * Where trains live: beside the publication namespace, never inside it,
- * so nothing that opens or reaps publications mistakes a train for one.
- * `delendai/pr/` gives `delendai/train/`.
+ * Where trains live: `<namespace>/train/` under each namespace the project
+ * owns, the current one first (writers use it alone; readers take every
+ * one, so a train or culprit marker left under a former namespace is still
+ * found). An empty namespace gives `train/`. Beside the publication
+ * namespace, never inside it, so nothing that opens or reaps publications
+ * mistakes a train for one.
  */
-export const trainPrefixOf = (publicationPrefix: string): string => {
-	const segments = publicationPrefix.replace(/\/+$/u, '').split('/');
-	return `${[...segments.slice(0, -1), 'train'].join('/')}/`;
+export const trainPrefixesOf = (branches: IOwnedBranches): readonly string[] =>
+	ownedNamespaces(branches).map((namespace) =>
+		namespace === '' ? 'train/' : `${namespace}/train/`,
+	);
+
+/** Whether `branch` is a culprit marker under one of the train prefixes. */
+const culpritMarkerOf = (
+	prefixes: readonly string[],
+	branch: string,
+): number | undefined => {
+	for (const prefix of prefixes) {
+		const marker = `${prefix}culprit/`;
+		if (!branch.startsWith(marker)) continue;
+		const number = Number(branch.slice(marker.length));
+		return Number.isInteger(number) && number > 0 ? number : undefined;
+	}
+	return undefined;
+};
+
+/** The candidates whose current head was isolated, read off the markers. */
+export const culpritsAmong = (
+	prefixes: readonly string[],
+	branches: ReadonlyMap<string, string>,
+): ReadonlyMap<number, string> =>
+	new Map(
+		[...branches].flatMap(([branch, sha]) => {
+			const number = culpritMarkerOf(prefixes, branch);
+			return number === undefined ? [] : [[number, sha] as const];
+		}),
+	);
+
+/** Whether `branch` is a culprit marker rather than a train. */
+export const isCulpritMarker = (
+	prefixes: readonly string[],
+	branch: string,
+): boolean => prefixes.some((prefix) => branch.startsWith(`${prefix}culprit/`));
+
+/**
+ * The train branches to delete: every one that starts from another tip or
+ * lives under a former namespace, except one `keep` holds (a train whose
+ * tree is the tip's, which proves a tip whose pull requests landed one by
+ * one). Culprit markers stay until their pull request moves.
+ */
+export const trainsToPrune = (input: {
+	readonly prefixes: readonly string[];
+	readonly tipSha: string;
+	readonly branches: ReadonlyMap<string, string>;
+	readonly keep: (sha: string) => boolean;
+}): readonly string[] => {
+	const current = `${input.prefixes[0] ?? 'train/'}${input.tipSha.slice(0, 12)}/`;
+	return [...input.branches].flatMap(([branch, sha]) =>
+		isCulpritMarker(input.prefixes, branch) ||
+		branch.startsWith(current) ||
+		input.keep(sha)
+			? []
+			: [branch],
+	);
 };
 
 /**

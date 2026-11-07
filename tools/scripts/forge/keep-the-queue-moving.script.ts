@@ -53,7 +53,10 @@ import {
 	runTrain,
 	TRAIN_CAPACITY,
 	trainMembers,
-	trainPrefixOf,
+	culpritsAmong,
+	isCulpritMarker,
+	trainPrefixesOf,
+	trainsToPrune,
 	type IQueueCandidateFacts,
 	type IRepairStep,
 	type ITrainCandidate,
@@ -668,21 +671,6 @@ const remoteBranches = (prefix: string): ReadonlyMap<string, string> =>
 			}),
 	);
 
-/** The candidates whose current head was isolated as a culprit. */
-const culpritsOf = (
-	trainPrefix: string,
-	branches: ReadonlyMap<string, string>,
-): ReadonlyMap<number, string> =>
-	new Map(
-		[...branches].flatMap(([branch, sha]) => {
-			const marker = `${trainPrefix}culprit/`;
-			const number = Number(branch.slice(marker.length));
-			return branch.startsWith(marker) && Number.isInteger(number)
-				? [[number, sha] as const]
-				: [];
-		}),
-	);
-
 /** The tree of a commit, fetching it when the checkout lacks it. */
 const treeOf = (sha: string): string | undefined =>
 	git(['rev-parse', '--verify', '--quiet', `${sha}^{tree}`]) ??
@@ -725,9 +713,9 @@ const trainPorts = (input: {
 					git(
 						[
 							'-c',
-							'user.name=delendai-queue',
+							'user.name=merge-train',
 							'-c',
-							'user.email=delendai-queue@users.noreply.github.com',
+							'user.email=merge-train@invalid',
 							'merge',
 							'--no-ff',
 							'-m',
@@ -833,28 +821,6 @@ const trainPorts = (input: {
 	say: (line) => console.log(line),
 });
 
-/**
- * Old trains go: every train branch that starts from another tip, except
- * one whose tree is the tip's, which is what proves a tip its pull
- * requests landed one by one.
- */
-const pruneTrains = (
-	trainPrefix: string,
-	tipSha: string,
-	branches: ReadonlyMap<string, string>,
-	keep: (sha: string) => boolean,
-): void => {
-	for (const [branch, sha] of branches) {
-		if (branch.startsWith(`${trainPrefix}culprit/`)) continue;
-		if (
-			branch.startsWith(`${trainPrefix}${tipSha.slice(0, 12)}/`) ||
-			keep(sha)
-		)
-			continue;
-		git(['push', '-q', 'origin', '--delete', branch]);
-	}
-};
-
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -873,12 +839,15 @@ const main = (): void => {
 		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
 		.map((pull) => candidateFacts(pull));
 	const integration = policy.branches.integration;
-	const trainPrefix = trainPrefixOf(publicationPrefix);
-	const trains = remoteBranches(trainPrefix);
+	const trainPrefixes = trainPrefixesOf(policy.branches);
+	const trainPrefix = trainPrefixes[0] ?? 'train/';
+	const trains = new Map(
+		trainPrefixes.flatMap((prefix) => [...remoteBranches(prefix)]),
+	);
 	const asked = integrationCertification(integration);
 	const tipTree = treeOf(asked.sha);
 	const builtTrains = [...trains]
-		.filter(([branch]) => !branch.startsWith(`${trainPrefix}culprit/`))
+		.filter(([branch]) => !isCulpritMarker(trainPrefixes, branch))
 		.map(([, sha]) => ({ sha, tree: treeOf(sha) ?? '' }));
 	// A tip whose pull requests landed one by one from a green train carries
 	// the train's tree, and the train's full run already proved it.
@@ -888,12 +857,15 @@ const main = (): void => {
 		certifiedByTrain(tipTree, builtTrains, fullRunAt)
 			? { ...asked, state: 'certified' as const }
 			: asked;
-	pruneTrains(
-		trainPrefix,
-		certification.sha,
-		trains,
-		(sha) => tipTree !== undefined && treeOf(sha) === tipTree,
-	);
+	// Old trains go, and with them every train under a former namespace.
+	for (const branch of trainsToPrune({
+		prefixes: trainPrefixes,
+		tipSha: certification.sha,
+		branches: trains,
+		keep: (sha) => tipTree !== undefined && treeOf(sha) === tipTree,
+	})) {
+		git(['push', '-q', 'origin', '--delete', branch]);
+	}
 	const red = certification.state === 'red';
 	const shaOf = (number: number): string =>
 		opened.find((pull) => pull.number === number)?.head.sha ?? '';
@@ -976,7 +948,7 @@ const main = (): void => {
 	const anchor = repairing === undefined ? undefined : riderOf(repairing);
 	const riders = trainMembers(
 		ready.map(riderOf),
-		culpritsOf(trainPrefix, trains),
+		culpritsAmong(trainPrefixes, trains),
 		TRAIN_CAPACITY - (anchor === undefined ? 0 : 1),
 	);
 	if (
