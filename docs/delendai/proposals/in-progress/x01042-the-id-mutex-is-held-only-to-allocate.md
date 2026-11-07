@@ -32,7 +32,7 @@ On 2026-11-07 create_proposal failed twice with `lock contention: proposal-id-co
 
 ### S1 — The critical section is the counter alone
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator-lock.spec.ts`
 - **Gate**: none
 - acceptance:
   - "allocateNextProposalId holds the counter mutex only to read the counters, take the next number and write it back; the disk scan, sources.elsewhere() and sources.reserve() run outside it."
