@@ -17,6 +17,10 @@ import {
 	type IAuthoringToolOptions,
 	readActiveLocks,
 } from './authoring-options';
+import { createGitRunner } from '../shared/git-runner';
+import { createSliceStageReader } from '../services/slice-stage-facts.service';
+import { stageCounts } from '../swarm/slice-stage';
+import { sliceBlocksById } from '../swarm/proposal-stage';
 
 const BOARD_SLICE = z.object({
 	sliceId: z.string(),
@@ -47,6 +51,8 @@ const BOARD_PROPOSAL = z.object({
 	 * orchestrator would report "actionable, nothing to claim" and stall.
 	 */
 	unreadable: z.string().optional(),
+	/** With slices shown: how many stand at each stage (`in_review 2, pending 1`). */
+	stages: z.string().optional(),
 });
 
 /**
@@ -138,6 +144,24 @@ export const buildProposalBoardRegistration = (
 					p.status === 'review'
 						? reviewStateOf(p.id, atWork)
 						: (p.status ?? 'unknown');
+				// A slice waiting for its reviewer, or sent back, reads its
+				// stage instead of `pending`; git is asked only when the
+				// slices are shown.
+				const showsSlices =
+					args.proposalId !== undefined ||
+					args.detail === true ||
+					args.progress === true;
+				const stageOf = createSliceStageReader(
+					showsSlices
+						? (options.run ??
+								createGitRunner(options.workspaceRoot))
+						: undefined,
+					{
+						integration:
+							options.developmentPolicy?.branches.integration,
+						release: options.developmentPolicy?.branches.release,
+					},
+				);
 				const actionable = proposals.filter(
 					(p) =>
 						wanted.includes(p.status ?? '') &&
@@ -177,15 +201,30 @@ export const buildProposalBoardRegistration = (
 							};
 						}
 						const plan = deriveSliceStatuses(parsed, locks);
+						const blocks = sliceBlocksById(md);
+						const stages = await Promise.all(
+							plan.slices.map((s) =>
+								stageOf(
+									s.documentStatus ?? s.status,
+									blocks.get(s.sliceId) ?? '',
+								),
+							),
+						);
 						return {
 							id: p.id,
 							status: shown(p),
 							...(args.progress === true && p.title !== undefined
 								? { title: p.title }
 								: {}),
-							slices: plan.slices.map((s) => ({
+							...(showsSlices
+								? { stages: stageCounts(stages) }
+								: {}),
+							slices: plan.slices.map((s, index) => ({
 								sliceId: s.sliceId,
-								status: s.status,
+								status:
+									s.status === 'pending'
+										? (stages[index] ?? s.status)
+										: s.status,
 								owner: s.owner,
 								...(args.progress === true
 									? {
