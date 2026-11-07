@@ -1,0 +1,146 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+	scanMissingFiles,
+	shippedInCommits,
+} from './proposal-files-exist.script';
+
+describe('proposal-files-exist lint', () => {
+	let root = '';
+
+	const write = (rel: string, body: string): void => {
+		const abs = join(root, rel);
+		mkdirSync(dirname(abs), { recursive: true });
+		writeFileSync(abs, body, 'utf8');
+	};
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'proposal-files-exist-'));
+	});
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	it('flags a Files: path that does not exist on disk', () => {
+		write(
+			'docs/delendai/proposals/done/feats/f00001-thing.md',
+			'---\nid: f00001\nstatus: done\n---\n\n' +
+				'### S1 — thing\n' +
+				'- **Status**: done\n' +
+				'- **Files**: `packages/core/src/lib/ghost.ts`\n' +
+				'- **Gate**: e2e\n',
+		);
+		const result = scanMissingFiles(root);
+		expect(
+			result['docs/delendai/proposals/done/feats/f00001-thing.md'],
+		).toEqual(['packages/core/src/lib/ghost.ts']);
+	});
+
+	it('passes when every Files: path exists, including multi-line lists', () => {
+		write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
+		write('packages/core/src/lib/real2.ts', 'export const y = 2;\n');
+		write(
+			'docs/delendai/proposals/done/feats/f00002-thing.md',
+			'---\nid: f00002\nstatus: done\n---\n\n' +
+				'### S1 — thing\n' +
+				'- **Status**: done\n' +
+				'- **Files**: `packages/core/src/lib/real.ts`,\n' +
+				'  `packages/core/src/lib/real2.ts`\n' +
+				'- **Gate**: e2e\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('ignores ready/ and paused/ proposals (planned, not yet built)', () => {
+		write(
+			'docs/delendai/proposals/ready/f00003-thing.md',
+			'- **Files**: `packages/core/src/lib/not-yet.ts`\n',
+		);
+		write(
+			'docs/delendai/proposals/paused/f00004-thing.md',
+			'- **Files**: `packages/core/src/lib/not-yet-either.ts`\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('ignores JSX-like tags and none/n-a placeholders', () => {
+		write(
+			'docs/delendai/proposals/done/feats/f00005-thing.md',
+			'- **Files**: `<PageHeader>`, none\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('refuses a pattern in a slice that ran: it names none of the files that shipped', () => {
+		write(
+			'docs/delendai/proposals/done/feats/f00006-thing.md',
+			'- **Files**: `plugins/*/src/index.ts`\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({
+			'docs/delendai/proposals/done/feats/f00006-thing.md': [
+				'plugins/*/src/index.ts (a pattern, not the files that shipped)',
+			],
+		});
+	});
+
+	it('does not flag a proposal self-referencing its own pre-transition ready/ path', () => {
+		write(
+			'docs/delendai/proposals/done/plans/q00099-thing.md',
+			'- **Files**: `docs/delendai/proposals/ready/q00099-thing.md`\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('strips trailing line-number references before checking existence', () => {
+		write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
+		write(
+			'docs/delendai/proposals/done/audits/a00099-thing.md',
+			'- **Files**: `packages/core/src/lib/real.ts:12,45-60`\n',
+		);
+		expect(scanMissingFiles(root)).toEqual({});
+	});
+
+	it('accepts a file a later change deleted, when a shipped-in commit held it', () => {
+		const git = (...args: string[]): string =>
+			execFileSync('git', args, {
+				cwd: root,
+				encoding: 'utf8',
+				env: {
+					...process.env,
+					GIT_AUTHOR_NAME: 't',
+					GIT_AUTHOR_EMAIL: 't@t',
+					GIT_COMMITTER_NAME: 't',
+					GIT_COMMITTER_EMAIL: 't@t',
+				},
+			}).trim();
+		git('init', '--quiet');
+		write('packages/gone/src/store.ts', 'export {};');
+		git('add', '.');
+		git('commit', '--quiet', '-m', 'ship it');
+		const shipped = git('rev-parse', '--short', 'HEAD');
+		git('rm', '--quiet', '-r', 'packages/gone');
+		git('commit', '--quiet', '-m', 'retire the package');
+		write(
+			'docs/delendai/proposals/review/x00001-thing.md',
+			`---\nid: x00001\nshipped-in:\n  - "${shipped}"\n---\n\n` +
+				'### S1 — thing\n' +
+				'- **Status**: done\n' +
+				'- **Files**: `packages/gone/src/store.ts`, `packages/never/x.ts`\n',
+		);
+		expect(
+			shippedInCommits(
+				`shipped-in:\n  - "${shipped}"\n- shipped-in: \`abc1234\``,
+			),
+		).toEqual([shipped, 'abc1234']);
+		expect(
+			scanMissingFiles(root)[
+				'docs/delendai/proposals/review/x00001-thing.md'
+			],
+		).toEqual(['packages/never/x.ts']);
+	});
+});
