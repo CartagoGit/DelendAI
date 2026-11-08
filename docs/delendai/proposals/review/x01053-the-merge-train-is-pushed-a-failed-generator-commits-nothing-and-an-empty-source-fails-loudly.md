@@ -2,14 +2,14 @@
 id: x01053
 title: "The merge train is pushed: a failed generator commits nothing and an empty source fails loudly"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 20a8192c-75f1-41a6-a4bd-5ab6ced42b3a
-last-correlation-id: 20a8192c-75f1-41a6-a4bd-5ab6ced42b3a
-last-transition-from: ready
-last-transition-at: 2026-11-08T13:45:31.136Z
+last-transition-id: ab9b10f9-8f41-4460-9610-c9dff3d220d7
+last-correlation-id: ab9b10f9-8f41-4460-9610-c9dff3d220d7
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T14:05:55.177Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -31,33 +31,45 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - global_gate: none
 
 ### S1 — A refresh in which a generator failed commits nothing
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts)."
+- shipped-in: `a6660aac29c5`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A generator with nothing to generate from fails loudly
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/generate/managed-lazy-catalog.script.ts`, `tools/scripts/generate/managed-lazy-catalog.script.spec.ts`, `tools/scripts/generate/from-manifests.script.ts`, `tools/scripts/generate/from-manifests.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The managed-lazy catalog generator throws when no plugin loaded in a repository whose first-party index has plugins, and writes no file (managed-lazy-catalog.script.spec.ts)."
   - "The manifests generator throws when plugin packages exist and no manifest loaded (from-manifests.script.spec.ts)."
+- shipped-in: `a6660aac29c5`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The train's scratch worktree has the shared dependencies
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/link-train-dependencies.script.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - "Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts)."
+- shipped-in: `a6660aac29c5`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — A train that cannot run leaves its riders to the individual path
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
   - "When no pushed train carries a behind rider and the integration tip has stood past the grace, the rider is not left to the train: it is brought forward by the individual path (queue order, urgent first, capped per pass), re-runs its own checks and lands by its own merge once green; while a train carries it, or within the grace, it is left to the train (queue-acceptance.spec.ts)."
+- shipped-in: `a3263946a749`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
