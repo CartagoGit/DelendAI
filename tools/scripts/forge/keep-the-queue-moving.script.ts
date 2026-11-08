@@ -28,6 +28,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 
 import { parseJsonc } from '@delendai/core/cli';
+import { urgentReasonOfBody } from '@delendai/core/runtime';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -140,6 +141,8 @@ export interface IPullRequest {
 	readonly head: { readonly sha: string; readonly ref: string };
 	readonly base?: { readonly ref: string };
 	readonly draft?: boolean;
+	/** The list endpoint returns it: the queue reads the urgent mark from it. */
+	readonly body?: string | null;
 }
 
 /**
@@ -429,6 +432,7 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
 		red: failing.length > 0,
 		failing,
 		conflicting: mergeState(pull.number) === 'dirty',
+		urgent: urgentReasonOfBody(pull.body),
 	};
 };
 

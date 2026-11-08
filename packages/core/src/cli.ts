@@ -170,6 +170,7 @@ export type {
 	IAdoption,
 } from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
+export { noteUnitUrgency } from './lib/work-units/pull-request-urgency.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
 export type {
