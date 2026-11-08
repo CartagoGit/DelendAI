@@ -104,6 +104,31 @@ Returns `{ mode, modeGuidance, supported, areas, conventions }` — read
 `mode` before calling `apply_rules`, then confirm the returned `steps` match
 the table above for that mode.
 
+## Running checks
+
+- Run only what the change touched: the changed specs, the mirror spec of a changed file, specs that import it directly. Reach through a barrel is not "touched". Lints take the changed files; the typecheck covers the touched packages and their dependents. The full suite belongs to promotion, not to a pull request.
+- Keep the machine usable: `nice -n 19`, `vitest --maxWorkers=2` on named spec files, never whole directories or projects, one proof at the end.
+- A failure that appears "sometimes" has a cause (a race, an unawaited operation, an open handle, ordering, environment). Find it, fix the product or the spec, and state the cause; repeating the run proves nothing.
+- A spec must give the same result for any runner: stub the agent markers it asserts on (`vi.stubEnv`) and use the test-kit clock instead of real timers. A spec declares its time budget in its name and is never made to pass by raising it.
+- A spec that opens real `bun:sqlite` databases is skipped by `vitest run`; after touching a SQLite store or reader, run the project's `test:sqlite`.
+- A file you edit is judged by the changed-file coverage thresholds, including paths that were untested before you came: add their tests in the same change.
+- Before saying a client or extension works, load the built artefact and exercise its own path; a fake client answers any name.
+
+## Checks that only fail in CI
+
+Run the matching one before you publish; the local chain does not.
+
+- New CLI command: add its help summary, then `lint:cli:i18n` and `lint:cli-coverage`.
+- Spec fixture in another language: `lint:i18n-english-prose` lists exclusions; add the file next to its closest sibling.
+- Fixture spelling a retired product name: it needs the legacy-path exemption of the rebrand check.
+- Edited `outputSchema` of a tool: `types:generate`, then `gen:all`, and commit the generated files.
+- Source comments: describe behaviour and reason, never a proposal id (`lint:no-proposal-id-comments-in-source`).
+- Spec that checks a file's mode and then reads it by path: open once, use `fstat` and `readFile` on the descriptor (CodeQL).
+- A package that starts importing a runtime value from another workspace package: alias it to source in both vitest configs; a local `dist` hides the gap CI will show.
+- A CI job that `needs` scoped jobs starts its `if:` with `!cancelled() &&`, else it silently skips.
+- A `.baseline.json` written by a lint must already be in the formatter's shape (tab-indented); write it through the lint's `--update`, never `JSON.stringify` with spaces.
+- Shortening a tool description or a skill to save tokens never weakens a contract: the ceiling is judged on the compact form, not by deleting required fields.
+
 ## Rebaseline with `--update`
 
 When a lint fails because a **baselined historical value** drifted (for example,

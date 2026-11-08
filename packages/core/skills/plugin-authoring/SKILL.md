@@ -73,6 +73,13 @@ To support a new language in the rules plugin under the SOLID architecture, you 
 6. **Online Preset Mapping** (`plugins/rules/src/lib/frameworks/online-preset.ts`):
    Register the new language preset and packages for freshness checks.
 
+## Tools, modules and packages
+
+- Every public tool declares an `outputSchema`; a tool with `effects` must also be callable by the verifier without input, or it reports `needs input`. Run `verify:tools`.
+- Register every tool unconditionally. A tool registered only when the workspace has some file is missing from the generated catalogs; decide "passive" per call and refuse with the reason. After touching `register`, run `gen:all` and check the catalog still lists the plugin's tools.
+- A new module under a plugin's `src` takes its role from its basename or folder segment (service, tool, helper, constant, interface); an unmatched file fails the file-conventions ratchet, and types go in contracts.
+- A new plugin or package also needs its brand logo, a `PUBLISH_ORDER` entry, and every workspace package it imports declared in its manifest.
+
 ## Checklist before you commit
 
 1. Tests next to the code (`*.spec.ts`); protocol behaviour → e2e with a real
