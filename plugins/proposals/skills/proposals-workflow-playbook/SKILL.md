@@ -71,6 +71,13 @@ delendai work enter --kind=create --proposal=new --slice=all --agent=<you> --top
   unit, re-author it there through `create_proposal` and let it allocate
   the ids; then remove the hand-written copies from the shared checkout.
 
+### Authoring rules
+
+- One source of truth per fact: before proposing a setting, read the development policy and its profiles for a field that already says it. If it exists and nothing happens, the missing act is the defect, not the missing setting.
+- A change to an existing path, file name, config key or record format ships its migration in the same proposal: it runs at server start, detects the old form, rewrites once, is journalled, and the acceptance lists it.
+- Host support goes through the host registry (hosts are chosen or detected per project), never a new list of hosts.
+- Refactor only inside the proposal's scope; anything else found becomes its own proposal. Never another agent's work, never a weaker gate.
+
 ## Persist Modes
 
 `auto_work` can plan persistence, but the default is still manual review:
