@@ -41,6 +41,8 @@ const bootAgainst = async (
 	options?: {
 		readonly allowCreate?: boolean;
 		readonly waitMs?: number;
+		/** Called each time the boot polls a held mutex. */
+		readonly onWait?: () => void;
 	},
 ) => {
 	const clock = testClock();
@@ -48,7 +50,10 @@ const bootAgainst = async (
 		mutexWait: {
 			timeoutMs: options?.waitMs ?? 0,
 			pollMs: 5,
-			sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+			sleep: () => {
+				options?.onWait?.();
+				return new Promise((resolve) => setImmediate(resolve));
+			},
 		},
 		policy: testPolicy(),
 		environmentSeam: environmentSeam({
@@ -240,9 +245,11 @@ describe('startup refuses to improvise', () => {
 		});
 		const held = await holder.acquire();
 		if (held.kind !== 'acquired') throw new Error('expected to hold it');
-		setTimeout(() => void held.release(), 30);
-
-		const report = await bootAgainst(office, database, { waitMs: 2_000 });
+		// The concurrent start finishes the moment the boot is seen waiting.
+		const report = await bootAgainst(office, database, {
+			waitMs: 2_000,
+			onWait: () => void held.release(),
+		});
 
 		expect(report.mode).not.toBe('skipped');
 		expect(report.blockers.map((item) => item.code)).not.toContain(

@@ -91,6 +91,7 @@ describe('the spawn seam', () => {
 			ran: (spawn: IGitSpawn) => {
 				ran.push(spawn.args.join(' '));
 			},
+			forgetUnit: () => undefined,
 		};
 		const [first, again, verbatim] = withGitReadCache(cache, () => {
 			const answers = [

@@ -272,6 +272,30 @@ describe('lintCommitBranch', () => {
 			).toBe(false);
 		});
 
+		it('admits the CI checkout of a merge train, under every train namespace', () => {
+			for (const branch of [
+				'delendai/train/091f009583c2/1861',
+				'train/091f009583c2/1861-1830',
+			]) {
+				expect(
+					lintCommitBranch({
+						...baseInput,
+						currentBranch: branch,
+						trainRefPrefixes: ['delendai/train/', 'train/'],
+						ciCheckout: true,
+					}).ok,
+				).toBe(true);
+			}
+			expect(
+				lintCommitBranch({
+					...baseInput,
+					currentBranch: 'trains/x',
+					trainRefPrefixes: ['delendai/train/', 'train/'],
+					ciCheckout: true,
+				}).ok,
+			).toBe(false);
+		});
+
 		it('keeps develop as the default when no policy was read', () => {
 			const result = lintCommitBranch({
 				...baseInput,

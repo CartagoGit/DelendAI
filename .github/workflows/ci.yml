@@ -46,7 +46,24 @@ on:
     # a token may start. The forge resolves a dispatch against the default
     # branch's copy of this file, so it takes effect from the next
     # promotion.
+    #
+    # A train (keep-the-queue-moving) dispatches this with `base`, the
+    # integration tip it starts from: it is judged since that commit, so it
+    # runs the union of its members' scopes and not the whole suite.
     workflow_dispatch:
+        inputs:
+            base:
+                description: The commit this run is judged since; empty runs everything.
+                required: false
+                default: ''
+
+# The commit a run is judged since: the jobs and tests it runs are what the
+# change touches after it (job-scope, test-zones). A pull request into
+# develop is judged since its base, and a train since the integration tip it
+# starts from. The promotion into main, a push and a dispatch without a base
+# run everything: the full suite runs only on the promotion.
+env:
+    SCOPE_BASE: ${{ (github.event_name == 'pull_request' && github.base_ref != 'main') && github.event.pull_request.base.sha || inputs.base || '' }}
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
 # a cancelled required job is not evidence of a green branch.
@@ -55,83 +72,68 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-    lint-biome:
-        name: lint-biome
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
+    # One runner and one setup for the static checks, instead of one each. Every
+    # step keeps the plan entry of the job it used to be (job-scope.constant.ts),
+    # and `static-checks` runs when any of them does.
+    static-checks:
+        name: static-checks
         needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-biome']
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks'] }}
         runs-on: ubuntu-latest
         # The lints that judge files one by one judge these, not the
         # repository; empty on a push, where every lint judges everything.
         env:
             DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
+        timeout-minutes: 30
         steps:
-            # A `uses: ./path` step can only be resolved once the repo holding
-            # that path is on disk, and setup-bun-repo's own first internal step
-            # IS the checkout — so it can never bootstrap itself as a job's very
-            # first step. Every job in this file failed here, with every later
-            # step reported as `skipped`, from 2026-08-31 until this was added.
-            # The composite action then re-checks out at whatever fetch-depth it
-            # needs, so this bare one costs a shallow clone and nothing else.
+            # Bootstraps the local composite action - see the first job.
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
 
             - name: Run biome and style-entry lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-biome'] }}
               run: |
                   set -euo pipefail
                   bun run lint
                   bun run lint:scss
 
-    lint-architecture:
-        name: lint-architecture
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-architecture']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
+            - name: Validate manifest metadata and generated manifest outputs
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['manifests-check'] }}
+              run: |
+                  set -euo pipefail
+                  bun run lint:plugin-manifest
+                  bun run lint:manifest-vs-package
+                  bun run lint:manifest-vs-presets
+                  bun run generate:from-manifests --check
+
 
             # One list, two consumers: `lint:architecture` is what the
             # local pre-flight runs too, so a candidate cannot pass on
             # this machine and fail here over a lint the two lists had
             # drifted apart on.
             - name: Run architecture lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-architecture'] }}
               run: bun tools/scripts/lint/run-together.script.ts lint:architecture
 
-    lint-presets:
-        name: lint-presets
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-presets']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
+            - name: Run docs, content and web lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-docs'] }}
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/lint/run-together.script.ts lint:job:docs
+
 
             - name: Rebuild the proposal registry cache
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-presets'] }}
               # A fresh checkout has no `.cache/delendai/proposals/index.json`
               # (gitignored — it's a derived cache, see r00010). `catalog:check`
               # below needs it to exist to resolve at all. This mirrors what the
@@ -142,6 +144,7 @@ jobs:
               run: bun run sync:proposals || true
 
             - name: Run preset and release-surface checks
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-presets'] }}
               run: |
                   set -euo pipefail
                   bun tools/scripts/lint/run-together.script.ts lint:job:presets
@@ -165,56 +168,9 @@ jobs:
                   bun run catalog:check
                   bun run catalog:hints:check
 
-    lint-docs:
-        name: lint-docs
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-docs']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Run docs, content and web lints
-              run: |
-                  set -euo pipefail
-                  bun tools/scripts/lint/run-together.script.ts lint:job:docs
-
-    lint-security:
-        name: lint-security
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-security']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  # `candidate-delivers` runs `git diff base...head`, which
-                  # needs a common ancestor. The default depth-1 clone has
-                  # none, so the gate answered on a diff it could not
-                  # compute. Found by `lint:workflow-history-depth`.
-                  fetch-depth: '0'
 
             - name: Run security and hygiene lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-security'] }}
               # `lint:candidate-delivers` asks the FORGE how many files
               # the pull request changes, because a depth-1 checkout does
               # not have the base object to diff against. Without a token
@@ -228,7 +184,7 @@ jobs:
                   # scan reads its diff, and the generator-determinism and IDE
                   # suites run only when what they judge changed. A push to
                   # develop runs all of them over the whole tree.
-                  PR_BASE="${{ github.event.pull_request.base.sha || '' }}"
+                  PR_BASE="${{ env.SCOPE_BASE }}"
                   CHANGED=""
                   if [ -n "$PR_BASE" ]; then CHANGED="$(git diff --name-only "$PR_BASE"...HEAD)"; fi
                   touches() { [ -z "$PR_BASE" ] || printf '%s\n' "$CHANGED" | grep -qE "$1"; }
@@ -316,31 +272,9 @@ jobs:
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
 
-    lint-governance:
-        name: lint-governance
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-governance']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Full history: this job verifies that commits cited by proposals
-            # actually exist. The default shallow checkout has none of them, so
-            # every citation reads as dangling and the gate could never pass.
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  fetch-depth: '0'
 
             - name: Run governance and proposal lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-governance'] }}
               # The job's own read token: `closed-with-independent-approval`
               # reads the pull request's labels as they are now, so the
               # owner's reconcile label counts on a re-run (x00743).
@@ -372,6 +306,17 @@ jobs:
                   # lets a proposal edit skip `sqlite-cutover-ready`.
                   bun run test:sqlite:real-tree
 
+
+            - name: Verify generated artifacts stay in sync
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check'] }}
+              run: bun run check:generated
+
+
+
+
+
+
+
     typecheck:
         name: typecheck
         needs: plan-scope
@@ -393,7 +338,7 @@ jobs:
             # On a pull request, the workspaces the change touches and those
             # that depend on them; on a push, every project. The run names them.
             - name: Typecheck
-              run: bun run typecheck -- --base=${{ github.event.pull_request.base.sha || '' }}
+              run: bun run typecheck -- --base="${{ env.SCOPE_BASE }}"
 
     # The suite used to run TWICE in one job: `bun run test` and then
     # `bun run test:coverage`, which is the same specs with coverage
@@ -456,8 +401,8 @@ jobs:
               run: |
                   set -euo pipefail
                   BASE=""
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
-                    BASE="--base=${{ github.event.pull_request.base.sha }}"
+                  if [ -n "${{ env.SCOPE_BASE }}" ]; then
+                    BASE="--base=${{ env.SCOPE_BASE }}"
                   fi
                   bun tools/scripts/ci/job-scope.script.ts ${BASE} --outputs \
                     | tee /tmp/job-scope.txt
@@ -542,12 +487,12 @@ jobs:
                   # The report is for the same base as the matrix, so the log
                   # says what was selected and why.
                   bun tools/scripts/ci/test-zones.script.ts ${TIMINGS} \
-                    --base=${{ github.event.pull_request.base.sha || '' }}
+                    --base="${{ env.SCOPE_BASE }}"
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix ${TIMINGS} \
                       --files-out=.cache/spec-timings/zone-files.json \
-                      --base=${{ github.event.pull_request.base.sha || '' }}
+                      --base="${{ env.SCOPE_BASE }}"
                   } >> "$GITHUB_OUTPUT"
 
             # Each shard's spec list, too large for the matrix: its jobs read
@@ -676,9 +621,9 @@ jobs:
                   fi
                   # A pull request is judged on the coverage of the files it
                   # touched, so only those are instrumented (vitest.config.ts).
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                  if [ -n "${{ env.SCOPE_BASE }}" ]; then
                     export VITEST_COVERAGE_FILES="$(git diff --name-only \
-                      "${{ github.event.pull_request.base.sha }}...HEAD")"
+                      "${{ env.SCOPE_BASE }}...HEAD")"
                   fi
                   # The planner says what this job runs (v00143): `readers`,
                   # the specs that read a file the change touched outside the
@@ -697,8 +642,8 @@ jobs:
                   # A listed job already holds the exact specs the change
                   # reaches (affected-specs.service); `--changed` on top
                   # would walk the whole import graph again for nothing.
-                  if [ "${{ github.event_name }}" = "pull_request" ] && [ "${ZONE_FILTER:-}" != "all" ] && [ -z "${ZONE_FILES:-}" ]; then
-                    CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                  if [ -n "${{ env.SCOPE_BASE }}" ] && [ "${ZONE_FILTER:-}" != "all" ] && [ -z "${ZONE_FILES:-}" ]; then
+                    CHANGED="--changed ${{ env.SCOPE_BASE }}"
                     # A spec that READS a changed workflow or root file
                     # is not reached by `--changed`, which follows imports;
                     # the planner sends it to the `readers` job (from the
@@ -794,9 +739,19 @@ jobs:
                   else
                     echo "none=false" >> "$GITHUB_OUTPUT"
                   fi
+                  # A shard that failed is the report: its own `tests: <zone>`
+                  # job names it, and `delendai-validate` requires that job.
+                  # Merging after it said the same failure twice, as a
+                  # "missing blob" or a coverage shortfall of the red shard.
+                  if [ "$ZONES_RESULT" = failure ]; then
+                    echo "tests: a zone failed; its own job is the report, so nothing is merged or judged here."
+                    echo "red=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "red=false" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Collect every shard's blob report
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
               with:
                   pattern: vitest-blob-*
@@ -812,7 +767,7 @@ jobs:
             # remedy; on a first attempt a zone that selected no spec may
             # have written none, and is only listed.
             - name: Check that every zone that ran left its blob
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               env:
                   ZONES: ${{ needs.plan-tests.outputs.zones }}
                   ATTEMPT: ${{ github.run_attempt }}
@@ -848,12 +803,12 @@ jobs:
             # keeps the verdict the integration branch's full run gave
             # it, because it did not change.
             - name: Merge the shards and enforce the coverage gate
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               env:
-                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
+                  DELENDAI_COVERAGE_BASE: ${{ env.SCOPE_BASE }}
               run: |
                   set -euo pipefail
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                  if [ -n "${DELENDAI_COVERAGE_BASE}" ]; then
                     export VITEST_COVERAGE_FILES="$(git diff --name-only \
                       "${DELENDAI_COVERAGE_BASE}...HEAD")"
                     mkdir -p .cache/spec-timings
@@ -865,7 +820,7 @@ jobs:
                   fi
 
             - name: Record how long each spec took
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # An optimisation of the next pull requests' split: it never
               # fails the run it measures.
               continue-on-error: true
@@ -876,16 +831,16 @@ jobs:
                     --out=.cache/spec-timings/spec-timings.json
 
             - name: Hold every spec to its time budget
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # q00045 S1. A wall clock on a shared runner is noisy, so a
               # pull request fails only for a spec clearly over 5 s (by a
               # margin), and the integration branch's certification never
               # fails here: it reports the new offenders for the issue step.
               env:
-                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
+                  DELENDAI_COVERAGE_BASE: ${{ env.SCOPE_BASE }}
               run: |
                   set -euo pipefail
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                  if [ -n "${DELENDAI_COVERAGE_BASE}" ]; then
                     # A change that touches no spec records no timings.
                     if [ -f .cache/spec-timings/spec-timings.json ]; then
                       git diff --name-only "${DELENDAI_COVERAGE_BASE}...HEAD" \
@@ -903,7 +858,7 @@ jobs:
                   fi
 
             - name: Open or refresh the slow-spec issue
-              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
+              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
               continue-on-error: true
               env:
                   GH_TOKEN: ${{ github.token }}
@@ -919,7 +874,7 @@ jobs:
                   fi
 
             - name: Upload the spec timings
-              if: github.event_name != 'pull_request' && steps.planned.outputs.none != 'true'
+              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # An optimisation of the next pull requests' split: it never
               # fails the run it measures.
               continue-on-error: true
@@ -1018,8 +973,8 @@ jobs:
               run: |
                   set -euo pipefail
                   SINCE=""
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
-                    SINCE="--affected-since=${{ github.event.pull_request.base.sha }}"
+                  if [ -n "${{ env.SCOPE_BASE }}" ]; then
+                    SINCE="--affected-since=${{ env.SCOPE_BASE }}"
                   fi
                   bun run verify:tools -- ${SINCE}
                   bun run verify:plugin-wiring
@@ -1053,54 +1008,7 @@ jobs:
                   bun run tokens:gate
                   bun run tokens:dashboard:check
 
-    manifests-check:
-        name: manifests-check
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['manifests-check']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Validate manifest metadata and generated manifest outputs
-              run: |
-                  set -euo pipefail
-                  bun run lint:plugin-manifest
-                  bun run lint:manifest-vs-package
-                  bun run lint:manifest-vs-presets
-                  bun run generate:from-manifests --check
-
-    generated-artifacts-check:
-        name: generated-artifacts-check
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Verify generated artifacts stay in sync
-              run: bun run check:generated
 
     site:
         # c00088: astro-check (lint:web) provably misses build-only
@@ -1340,12 +1248,7 @@ jobs:
         name: delendai-validate
         if: always()
         needs:
-            - lint-biome
-            - lint-architecture
-            - lint-presets
-            - lint-docs
-            - lint-security
-            - lint-governance
+            - static-checks
             - typecheck
             - plan-scope
             - plan-tests
@@ -1357,8 +1260,6 @@ jobs:
             - sqlite-cutover-ready
             - build-clean
             - tokens-budget-real
-            - manifests-check
-            - generated-artifacts-check
             - site
             - pack-smoke
             - metrics-gate
@@ -1432,6 +1333,9 @@ jobs:
     # this repository prefers mechanism to documentation.
     ref-lifecycle:
         name: ref-lifecycle
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['ref-lifecycle']
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1465,6 +1369,9 @@ jobs:
 
     develop-protection-live:
         name: develop-protection-live
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['develop-protection-live']
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1551,7 +1458,7 @@ jobs:
     release-the-queue:
         name: release-the-queue
         needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/delendai/pr/'))) }}
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/delendai/pr/') || startsWith(github.ref, 'refs/heads/delendai/train/')))) }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:

@@ -3,8 +3,9 @@
  *
  * `vitest --changed` walks the whole import graph, and a change to core
  * reached nearly every spec through its barrels: 656 s on average. The
- * proof runs the specs the change touched (`test-scope`) and nothing else,
- * unless `testing.scope` in `delendai.config.json` asks for more: `reach`
+ * proof runs the specs the change touched (`test-scope`) and the specs on
+ * record reading a changed file, and nothing else, unless `testing.scope`
+ * in `delendai.config.json` asks for more: `reach`
  * is the analysis of the forge's test plan, followed by symbol
  * (`affected-specs.service`), plus the specs that read a changed file.
  */
@@ -96,6 +97,27 @@ export const changedSince = (root: string, base: string): readonly string[] =>
 		git(root, ['diff', '--name-only', '--diff-filter=d', `${base}...HEAD`]),
 	);
 
+/** A file's text where the branch left `base`; `undefined` when it was not there. */
+const baseTextAt = (
+	root: string,
+	base: string,
+): ((file: string) => string | undefined) => {
+	let mergeBase: string | undefined;
+	return (file) => {
+		try {
+			mergeBase ??= git(root, ['merge-base', base, 'HEAD']);
+			return execFileSync('git', ['show', `${mergeBase}:${file}`], {
+				cwd: root,
+				encoding: 'utf8',
+				maxBuffer: 64 * 1024 * 1024,
+				stdio: ['ignore', 'pipe', 'ignore'],
+			});
+		} catch {
+			return undefined;
+		}
+	};
+};
+
 const readMapAt = (root: string): IZoneReadMap | undefined => {
 	try {
 		return parseZoneReadMap(
@@ -149,5 +171,18 @@ export const nearSpecsSince = (
 		return files
 			.filter((file) => /\.(?:spec|test)\.tsx?$/u.test(file))
 			.sort();
-	return touchedSpecsOf(root, changed, files, paths);
+	// A file no spec imports, a proposal say, is reached by the specs on
+	// record reading it, and only by them: a review batch runs those.
+	return [
+		...new Set([
+			...touchedSpecsOf(
+				root,
+				changed,
+				files,
+				paths,
+				baseTextAt(root, base),
+			),
+			...readerSpecs(changed, readMapAt(root)),
+		]),
+	].sort();
 };

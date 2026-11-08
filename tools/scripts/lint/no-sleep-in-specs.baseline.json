@@ -34,7 +34,6 @@
 		"plugins/quality/tests/src/lib/run-all.spec.ts",
 		"plugins/quality/tests/src/lib/runner.spec.ts",
 		"plugins/usage-tracking/tests/session-surface-bytes.spec.ts",
-		"plugins/usage-tracking/tests/src/lib/record-buffer.spec.ts",
 		"tools/scripts/lib/with-compute-lock.spec.ts"
 	]
 }

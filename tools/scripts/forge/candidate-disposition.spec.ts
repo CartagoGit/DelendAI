@@ -35,6 +35,15 @@ const fates = (candidates: readonly ICandidateState[]) =>
 	]);
 
 describe('candidateDispositions', () => {
+	it('moves an urgent candidate first whatever its age (x01051 S6)', () => {
+		expect(
+			fates([candidate(3), candidate(9, { urgent: 'repair' })]),
+		).toEqual([
+			[9, 'moves-next'],
+			[3, 'queued'],
+		]);
+	});
+
 	it('moves the oldest green candidate and queues the rest', () => {
 		expect(fates([candidate(8), candidate(3), candidate(5)])).toEqual([
 			[3, 'moves-next'],

@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 4c466a0d-c21d-4682-b2e0-360b1de83cc9
-last-correlation-id: 4c466a0d-c21d-4682-b2e0-360b1de83cc9
+last-transition-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
+last-correlation-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
 last-transition-from: review
-last-transition-at: 2026-11-04T20:34:09.966Z
+last-transition-at: 2026-11-04T22:20:10.943Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
@@ -41,7 +41,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached empirical evidence from a reproducible current-develop run for both acceptance checks (unreadable tracked file fails lint and spec expecting exit 1). Please re-run and attach evidence before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — A failed secrets listing is reported unknown, not empty
 - **Status**: pending
@@ -54,7 +54,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for the unknown/failed state behavior when git listing fails, including the spec expectation. Please re-run and resubmit with fresh empirical proof.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — A probe that did not exit is not an accepted run
 - **Status**: pending
@@ -67,7 +67,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached empirical evidence from a reproducible current-develop run proving status=null is treated as failure with cause (including the spec case). Please re-run and include fresh evidence before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

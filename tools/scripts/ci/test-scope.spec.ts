@@ -53,6 +53,38 @@ describe('touchedSpecs', () => {
 	});
 });
 
+describe('touchedSpecs of a changed barrel', () => {
+	// #1838: one export added to a barrel selected the specs behind all of it.
+	const BARREL = 'pkg/src/cli.ts';
+	const IMPORTED: Readonly<Record<string, readonly string[] | '*'>> = {
+		'pkg/tests/a.spec.ts': ['assembleCliConfig'],
+		'pkg/tests/fresh.spec.ts': ['assembleCliConfig', 'fresh'],
+		'pkg/tests/all.spec.ts': '*',
+	};
+	const specs = Object.keys(IMPORTED);
+	const run = (delta: ReadonlySet<string> | '*' | undefined) =>
+		touchedSpecs([BARREL], specs, () => [BARREL], {
+			deltaOf: () => delta,
+			namesOf: (spec) => IMPORTED[spec] ?? [],
+		});
+
+	it('selects only the importers of the export that was added', () => {
+		expect(run(new Set(['fresh']))).toEqual([
+			'pkg/tests/all.spec.ts',
+			'pkg/tests/fresh.spec.ts',
+		]);
+	});
+
+	it('selects every direct importer when the file is no barrel or the delta is unbounded', () => {
+		expect(run(undefined)).toEqual([...specs].sort());
+		expect(run('*')).toEqual([...specs].sort());
+	});
+
+	it('selects no importer when no export moved', () => {
+		expect(run(new Set())).toEqual(['pkg/tests/all.spec.ts']);
+	});
+});
+
 describe('testScopeOf', () => {
 	it('is touched unless the config names another scope', () => {
 		expect(testScopeOf({})).toBe('touched');

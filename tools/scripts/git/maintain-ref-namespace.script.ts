@@ -45,6 +45,8 @@ import {
 	recordWorkRefMove,
 	runGitCommand,
 	workRefFate,
+	workRefIntegrationRef,
+	workRefLanded,
 	workRefMover,
 	workRefMovesPathAt,
 	workRefOpenness,
@@ -183,30 +185,24 @@ export const isSpent = (
 ): boolean => {
 	const integrationSha = git(root, ['rev-parse', integration]);
 	if (integrationSha === undefined) return false;
-	if (integrationSha === sha) return false;
+	const atIntegrationTip = integrationSha === sha;
 	// A forward sync carries the release branch's HISTORY back, usually with
-	// no file changed at all. Judged by content it looks spent the moment it
-	// is opened, and reaping its branch closed its pull request (#656,
-	// #675). It is spent only once the integration branch contains it.
-	if (isForwardSyncRef(ref)) {
-		return (
-			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
-			undefined
-		);
-	}
-	// A commit that changes no file carries its meaning in itself: a review
-	// pack's claims and releases are empty commits with trailers. Judged by
-	// content such a ref is spent the moment it is pushed, and reaping it
-	// closed a review pack seven minutes after it was opened. It is spent
-	// only once the integration branch contains it.
-	if (carriesEmptyCommits(root, integration, sha)) {
-		return (
-			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
-			undefined
-		);
-	}
+	// no file changed at all, and a review pack's claims and releases are
+	// empty commits with trailers. Judged by content such a ref looks spent
+	// the moment it is opened, and reaping it closed their pull requests
+	// (#656, #675). They are spent only once the integration branch
+	// contains them: workRefLanded reads `meaningInCommits` for that.
 	const diff = git(root, ['diff', '--name-only', `${integration}...${sha}`]);
-	return diff !== undefined && diff.trim().length === 0;
+	return workRefLanded({
+		atIntegrationTip,
+		contained:
+			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
+			undefined,
+		changesNothing: diff !== undefined && diff.trim().length === 0,
+		meaningInCommits:
+			isForwardSyncRef(ref) ||
+			carriesEmptyCommits(root, integration, sha),
+	});
 };
 
 /** Whether `sha` holds a commit the integration branch lacks that changes no file. */
@@ -353,7 +349,16 @@ export const maintainRefNamespace = (input: {
 	readonly apply: boolean;
 }): IRefNamespaceReport => {
 	const { root, policy, remote, apply } = input;
-	const integration = `refs/remotes/${remote}/${policy.branches.integration}`;
+	const integration = workRefIntegrationRef(
+		remote,
+		policy.branches.integration,
+		git(root, [
+			'rev-parse',
+			'--verify',
+			'--quiet',
+			`refs/remotes/${remote}/${policy.branches.integration}`,
+		]) !== undefined,
+	);
 	const actions: IRefAction[] = [];
 	// Every owned namespace: refs under a former one are still delendai's
 	// to reap once spent, never to rename (f00808).

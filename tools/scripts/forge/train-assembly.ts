@@ -14,7 +14,8 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { ITrainCandidate } from './queue-order.interface';
 
@@ -31,6 +32,36 @@ const IDENTITY = [
 	'core.hooksPath=/dev/null',
 ] as const;
 
+/**
+ * Link the shared checkout's dependencies into `dir` with the same service
+ * a unit worktree uses. A scratch worktree has no `node_modules`, and
+ * generators run there cannot load the code: one wrote an empty catalog.
+ * The service is async and a train is assembled synchronously, so a child
+ * runs it; true when `dir` now has the dependencies.
+ *
+ * WHY link and not skip the per-merge hook: the merges already run with
+ * `core.hooksPath` off, so no hook fires per merge. The one run that needs
+ * the code is the single regeneration after all merges.
+ */
+const linkSharedDependenciesInto = (dir: string): boolean => {
+	try {
+		execFileSync(
+			'bun',
+			[
+				join(
+					dirname(fileURLToPath(import.meta.url)),
+					'link-train-dependencies.script.ts',
+				),
+				dir,
+			],
+			{ stdio: ['ignore', 'ignore', 'pipe'] },
+		);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 const run = (cwd: string, args: readonly string[]): string | undefined => {
 	try {
 		return execFileSync('git', [...args], {
@@ -40,6 +71,28 @@ const run = (cwd: string, args: readonly string[]): string | undefined => {
 		}).trim();
 	} catch {
 		return undefined;
+	}
+};
+
+/** `undefined` when git succeeded, else its stderr (or the error text). */
+const failureOf = (
+	cwd: string,
+	args: readonly string[],
+): string | undefined => {
+	try {
+		execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		return undefined;
+	} catch (error) {
+		const stderr = (error as { stderr?: unknown }).stderr;
+		const text =
+			typeof stderr === 'string' || Buffer.isBuffer(stderr)
+				? String(stderr).trim()
+				: '';
+		return text.length > 0 ? text : String(error);
 	}
 };
 
@@ -109,27 +162,32 @@ export const assembleTrain = (input: {
 	readonly derived: ReadonlySet<string>;
 	/** Run the generators in `dir`; false when one failed. */
 	readonly regenerate: (dir: string) => boolean;
+	/** Give `dir` the shared dependencies; false when it could not. */
+	readonly linkDependencies?: (dir: string) => boolean;
 }): {
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
+	/** Git's stderr when the push was declined: nothing is on the forge. */
+	readonly pushFailure?: string;
 } => {
 	const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
 	const conflicting: number[] = [];
 	const regenerated: number[] = [];
 	try {
-		if (
-			run(input.root, [
-				'worktree',
-				'add',
-				'--quiet',
-				'--detach',
-				scratch,
-				input.tipSha,
-			]) === undefined
-		) {
+		const worktreeFailure = failureOf(input.root, [
+			'worktree',
+			'add',
+			'--quiet',
+			'--detach',
+			scratch,
+			input.tipSha,
+		]);
+		if (worktreeFailure !== undefined) {
+			// Not the members' fault: they stay in the pool.
 			return {
-				conflicting: input.members.map((member) => member.number),
+				conflicting,
 				regenerated,
+				pushFailure: `git worktree add failed: ${worktreeFailure}`,
 			};
 		}
 		for (const member of input.members) {
@@ -143,31 +201,57 @@ export const assembleTrain = (input: {
 			if (outcome === 'derived') regenerated.push(member.number);
 		}
 		if (conflicting.length > 0) return { conflicting, regenerated };
-		if (regenerated.length > 0) {
+		{
 			// Once, after every member is in: a generator run on half a train
-			// computes the file from half a tree.
-			if (!input.regenerate(scratch)) {
-				return { conflicting: [...regenerated], regenerated: [] };
+			// computes the file from half a tree. ALWAYS, not only after a
+			// derived conflict: a member that left the integration branch
+			// long ago merges cleanly and still leaves derived files (the
+			// skill copies under .github/.claude/.agents) stale against the
+			// tip, and the push's drift check then declined every train.
+			const linked = (
+				input.linkDependencies ?? linkSharedDependenciesInto
+			)(scratch);
+			if (!linked || !input.regenerate(scratch)) {
+				if (regenerated.length > 0) {
+					return { conflicting: [...regenerated], regenerated: [] };
+				}
+				return {
+					conflicting,
+					regenerated,
+					pushFailure: linked
+						? 'regenerating the derived files on the train failed'
+						: 'linking the shared dependencies into the train failed',
+				};
 			}
 			if ((run(scratch, ['status', '--porcelain']) ?? '').length > 0) {
-				run(scratch, ['add', '-A']);
-				run(scratch, [
-					...IDENTITY,
-					'commit',
-					'-q',
-					'-m',
-					TRAIN_REGENERATION_SUBJECT,
-				]);
+				const committed =
+					failureOf(scratch, ['add', '-A']) ??
+					failureOf(scratch, [
+						...IDENTITY,
+						'commit',
+						'-q',
+						'-m',
+						TRAIN_REGENERATION_SUBJECT,
+					]);
+				if (committed !== undefined) {
+					return {
+						conflicting,
+						regenerated,
+						pushFailure: `committing the regeneration failed: ${committed}`,
+					};
+				}
 			}
 		}
-		run(scratch, [
+		const pushFailure = failureOf(scratch, [
 			'push',
 			'-q',
 			'--force',
 			input.remote,
 			`HEAD:refs/heads/${input.ref}`,
 		]);
-		return { conflicting, regenerated };
+		return pushFailure === undefined
+			? { conflicting, regenerated }
+			: { conflicting, regenerated, pushFailure };
 	} finally {
 		run(input.root, ['worktree', 'remove', '--force', scratch]);
 		rmSync(scratch, { recursive: true, force: true });
