@@ -2,14 +2,14 @@
 id: x01049
 title: "The forge ruleset admits the train namespace"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: be051b32-2a72-4c49-bcab-eab04ce7bc04
-last-correlation-id: be051b32-2a72-4c49-bcab-eab04ce7bc04
-last-transition-from: ready
-last-transition-at: 2026-11-08T03:00:01.510Z
+last-transition-id: 804d7f90-9dbd-4cbe-a00a-44aae3c0e156
+last-correlation-id: 804d7f90-9dbd-4cbe-a00a-44aae3c0e156
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T03:07:10.832Z
 ---
 
 # x01049 — The forge ruleset admits the train namespace
@@ -31,9 +31,12 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - global_gate: none
 
 ### S1 — Allow the train namespace and report a declined push
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/publication-prefixes.ts`
 - **Gate**: none
+- shipped-in: `9fd05bfa54c1`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
