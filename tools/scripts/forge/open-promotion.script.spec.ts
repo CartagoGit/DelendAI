@@ -84,6 +84,7 @@ const forgeWith = (answers: {
 	readonly analyses?: string;
 	readonly alerts?: string | { readonly error: string };
 	readonly openPullRequest?: string;
+	readonly knownRepair?: string;
 	readonly create?: string | { readonly error: string };
 }) => {
 	const asked: string[][] = [];
@@ -117,6 +118,9 @@ const forgeWith = (answers: {
 			return typeof alerts === 'string'
 				? { ok: true, out: alerts }
 				: { ok: false, error: alerts.error };
+		}
+		if (call.startsWith('issue list')) {
+			return { ok: true, out: answers.knownRepair ?? '' };
 		}
 		if (call.startsWith('pr list')) {
 			return { ok: true, out: answers.openPullRequest ?? '' };
@@ -179,8 +183,8 @@ describe('openPromotion', () => {
 		// It asks, lists and creates — and nothing else: no merge, no tag.
 		expect(asked.map((args) => args.slice(0, 2).join(' '))).toEqual([
 			`api repos/{owner}/{repo}/commits/trunk/check-runs?per_page=100`,
-			'api --paginate',
 			'pr list',
+			'api --paginate',
 			'pr create',
 		]);
 	});
@@ -236,9 +240,19 @@ describe('openPromotion', () => {
 		expect(said).toContain('release:prepare --write');
 	});
 
-	it('is held back by a check that never reported and by a forge that cannot be asked', async () => {
+	it('is not held back by a check that never reported, since the promotion runs the full suite', async () => {
+		const { forge } = forgeWith({ checks: '[]' });
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: true,
+		});
+		expect(result.outcome).toBe('opened');
+	});
+
+	it('is held back by a forge that cannot be asked', async () => {
 		const { forge } = forgeWith({
-			checks: '[]',
 			alerts: { error: 'HTTP 502: Bad Gateway' },
 		});
 		const result = await openPromotion({
@@ -248,7 +262,6 @@ describe('openPromotion', () => {
 			apply: true,
 		});
 		expect(result.outcome).toBe('held-back');
-		expect(result.lines.join('\n')).toContain('has not reported');
 		expect(result.lines.join('\n')).toContain('could not be asked');
 	});
 
@@ -285,15 +298,15 @@ describe('openPromotion', () => {
 				args.join(' ').includes('select(.commit_sha == "abc")'),
 			),
 		).toBe(true);
+		// Not yet analysed holds nothing: the promotion runs it itself.
 		const unscanned = forgeWith({ checks: checks('abc') });
-		const held = await openPromotion({
+		const open = await openPromotion({
 			root: project('delivered'),
 			configText: JSON.stringify(config),
 			forge: unscanned.forge,
 			apply: false,
 		});
-		expect(held.outcome).toBe('held-back');
-		expect(held.lines.join('\n')).toContain('CodeQL has not reported');
+		expect(open.outcome).toBe('would-open');
 	});
 
 	it('is not held back by a project that has no code scanning', async () => {
@@ -320,6 +333,68 @@ describe('openPromotion', () => {
 		expect(result.outcome).toBe('already-open');
 		expect(result.lines[0]).toContain('#41');
 		expect(created(asked)).toBeUndefined();
+	});
+
+	it('runs everything and opens one urgent repair for the range when it is red', async () => {
+		const sha = 'f'.repeat(40);
+		const { forge, asked } = forgeWith({
+			openPullRequest: '41\n',
+			checks: JSON.stringify([
+				{
+					name: 'validate',
+					conclusion: 'failure',
+					completed_at: '2026-11-08T00:00:00Z',
+					head_sha: sha,
+				},
+				{
+					name: 'tests: core 2/3',
+					conclusion: 'failure',
+					completed_at: '2026-11-08T00:00:00Z',
+					head_sha: sha,
+				},
+			]),
+			create: 'https://forge.example/issues/9\n',
+		});
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: true,
+		});
+		expect(result.outcome).toBe('repair-filed');
+		expect(result.lines[0]).toContain('stays blocked');
+		const issue = asked.find(
+			(args) => args[0] === 'issue' && args[1] === 'create',
+		);
+		expect(issue?.join(' ')).toContain(`...${sha}`);
+		expect(issue?.join(' ')).toContain('red zones: core');
+		expect(created(asked)).toBeUndefined();
+	});
+
+	it('files the repair of one red head once', async () => {
+		const { forge, asked } = forgeWith({
+			openPullRequest: '41\n',
+			knownRepair: '9\n',
+			checks: JSON.stringify([
+				{
+					name: 'validate',
+					conclusion: 'failure',
+					completed_at: '2026-11-08T00:00:00Z',
+					head_sha: 'e'.repeat(40),
+				},
+			]),
+		});
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: true,
+		});
+		expect(result.outcome).toBe('repair-filed');
+		expect(result.lines[0]).toContain('#9');
+		expect(
+			asked.some((args) => args[0] === 'issue' && args[1] === 'create'),
+		).toBe(false);
 	});
 
 	it('says so when the pull request could not be opened', async () => {

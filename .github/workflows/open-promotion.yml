@@ -17,6 +17,7 @@ permissions:
     checks: read
     security-events: read
     pull-requests: write
+    issues: write
 jobs:
     open-promotion:
         name: open the promotion of develop into main when it is ready
