@@ -13,10 +13,16 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
+import { EXIT_CODE } from '@delendai/core/lib/contracts/constants/exit-code.constant';
+import type {
+	IWorkUnitContext,
+	IWorkUnitResult,
+} from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { fakePartial } from '@delendai/test-kit';
 import {
 	handedFromOf,
+	workRefOfPublicationRef,
+	withSupersededRetired,
 	retireSupersededByPublish,
 	pullRequestNumberOf,
 	retireSupersededPublications,
@@ -241,5 +247,20 @@ describe('retireSupersededPublications', () => {
 			pullRequest: { status: 'skipped', reason: 'no forge' },
 		});
 		expect(skipped?.reason).toContain('no pull request number');
+	});
+
+	it('[<100ms] turns a publication back into its work ref', () => {
+		expect(workRefOfPublicationRef(policy, OLD_PUBLICATION)).toBe(OLD_WORK);
+	});
+
+	it('[<100ms] hands back a publish that published nothing untouched', async () => {
+		const ctx = fakePartial<IWorkUnitContext>({});
+		const nothing: IWorkUnitResult = {
+			code: EXIT_CODE.OK,
+			data: { published: false },
+		};
+		expect(await withSupersededRetired(nothing, [], ctx)).toBe(nothing);
+		const bare: IWorkUnitResult = { code: EXIT_CODE.OK };
+		expect(await withSupersededRetired(bare, [], ctx)).toBe(bare);
 	});
 });

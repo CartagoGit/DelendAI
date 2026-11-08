@@ -26,7 +26,15 @@ import type { IUnitHandover } from './unit-lease.interface';
 import { gitCommonDirOf } from './unit-lease.service';
 import { readUnitLease } from './unit-lease.store';
 import { retired } from './work-unit-retire.service';
-import { readGit } from './work-unit-shared.service';
+import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
+import { scalarArg } from './command-args.helper';
+import {
+	agentFor,
+	integrationRemote,
+	mainWorktreeOf,
+	openWork,
+	readGit,
+} from './work-unit-shared.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 
 const short = (ref: string): string =>
@@ -191,4 +199,62 @@ const retireByCommand = async (
 	return result.code === EXIT_CODE.OK
 		? undefined
 		: (result.error ?? 'retire was refused');
+};
+
+/** The work ref a publication was made from: the prefixes swapped. */
+export const workRefOfPublicationRef = (
+	policy: IResolvedDevelopmentPolicy,
+	publication: string,
+): string => {
+	const bare = (prefix: string): string =>
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const name = bare(publication);
+	const from = bare(policy.branches.publicationRefPrefix);
+	return `${bare(policy.branches.workRefPrefix)}${name.slice(from.length)}`;
+};
+
+/**
+ * After `work publish` ended a unit that took over somebody's
+ * publication: retire that one if the new one carries its tip, and add
+ * what happened to the result as `superseded`. The result of a publish
+ * that published nothing is returned as it is.
+ */
+export const withSupersededRetired = async (
+	result: IWorkUnitResult,
+	args: readonly string[],
+	ctx: IWorkUnitContext,
+): Promise<IWorkUnitResult> => {
+	const data = result.data as
+		| {
+				readonly published?: boolean;
+				readonly tip?: string | null;
+				readonly publication?: { readonly ref?: string };
+				readonly pullRequest?: IPublicationPullRequest;
+		  }
+		| undefined;
+	const publication = data?.publication?.ref;
+	if (data?.published !== true || publication === undefined) return result;
+	const opened = await openWork(ctx);
+	if (!('engine' in opened)) return result;
+	const root = mainWorktreeOf(opened.root);
+	const superseded = await retireSupersededByPublish({
+		root,
+		ctx,
+		policy: opened.policy,
+		remote: ctx.globals.remote ?? integrationRemote(root, opened.policy),
+		agent:
+			scalarArg(args, 'agent') ??
+			agentFor(args, root, opened.policy.identity),
+		handedFrom: await handedFromOf(
+			root,
+			workRefOfPublicationRef(opened.policy, publication),
+		),
+		published: true,
+		newPublication: publication,
+		newTip: data.tip ?? null,
+		pullRequest: data.pullRequest,
+	});
+	return superseded.length === 0
+		? result
+		: { ...result, data: { ...data, superseded } };
 };
