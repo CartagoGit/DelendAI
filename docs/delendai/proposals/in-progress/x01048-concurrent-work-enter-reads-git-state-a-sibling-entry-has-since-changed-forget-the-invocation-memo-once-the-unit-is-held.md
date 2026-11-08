@@ -2,10 +2,14 @@
 id: x01048
 title: "Concurrent work enter reads git state a sibling entry has since changed: forget the invocation memo once the unit is held"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: 55e4933d-6a64-4562-8552-5eb0c9505e33
+last-correlation-id: 55e4933d-6a64-4562-8552-5eb0c9505e33
+last-transition-from: ready
+last-transition-at: 2026-11-08T01:56:43.792Z
 ---
 
 # x01048 — Concurrent work enter reads git state a sibling entry has since changed: forget the invocation memo once the unit is held
