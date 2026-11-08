@@ -85,7 +85,7 @@ export const landingAfterTrain = (input: {
 		landing: new Set(input.own),
 		said:
 			input.own.size === 0
-				? `keep-the-queue-moving: ${why}; no accepted candidate lands as it is either, so nothing lands this pass.`
+				? `keep-the-queue-moving: ${why}; no accepted candidate lands as it is either, so nothing lands this pass; the candidates behind are brought forward one by one (refresh-candidate-artifacts) and land by their own merge once green.`
 				: `keep-the-queue-moving: ${why}; the accepted candidate(s) ${[...input.own].map((n) => `#${String(n)}`).join(', ')} land by their own merge, judged by their own required checks.`,
 	};
 };
