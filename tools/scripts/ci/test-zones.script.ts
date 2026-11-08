@@ -35,7 +35,6 @@ import { pathImportersOf } from './path-importers';
 import { balanceByTime } from './spec-timings';
 import {
 	TARGET_SPECS_PER_JOB,
-	TEST_WORKFLOW,
 	ZONE_READ_MAP_PATH,
 	ZONE_RULES,
 } from './test-zones.constant';
@@ -50,10 +49,8 @@ import {
 	onlyScriptsChanged,
 	parseZoneReadMap,
 	readersOf,
-	isWorkflowFile,
 	ROOT_MANIFEST,
 	runsEverything,
-	testRunnerChanged,
 	zonesReadingRootFiles,
 } from './zone-reads';
 
@@ -285,28 +282,7 @@ export const zoneReach = (
 											deps.contentAt('head', change.path),
 										),
 						}
-					: !isWorkflowFile(change.path)
-						? change
-						: {
-								...change,
-								// Only the test workflow runs the zones; another workflow's
-								// edit reaches the zones that read it, like any root file.
-								runnerChanged:
-									change.path !== TEST_WORKFLOW
-										? false
-										: deps.contentAt === undefined
-											? undefined
-											: testRunnerChanged(
-													deps.contentAt(
-														'base',
-														change.path,
-													),
-													deps.contentAt(
-														'head',
-														change.path,
-													),
-												),
-							},
+					: change,
 		);
 	const rootReached =
 		roots.size === 0

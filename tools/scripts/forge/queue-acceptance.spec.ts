@@ -77,7 +77,7 @@ describe('branchesLandingAsTheyAre', () => {
 		expect([...landing(owner.root)]).toEqual([CANDIDATE]);
 	});
 
-	it('leaves a candidate behind in its own file to the train, judged against the tip this machine had not fetched', () => {
+	it('brings forward a lone candidate behind in its own file, judged against the tip this machine had not fetched', () => {
 		const { owner, other } = project();
 		writeFileSync(join(other.root, 'shared.ts'), 'export const a = 3;\n');
 		other.git('commit', '-qam', 'fix: something else in the same file');
@@ -87,9 +87,9 @@ describe('branchesLandingAsTheyAre', () => {
 			other.git('rev-parse', 'HEAD'),
 		);
 
-		// It does not land as it is, but it rides a train, which proves it
-		// against the tip: it is not brought forward here.
-		expect([...landing(owner.root)]).toEqual([CANDIDATE]);
+		// It does not land as it is, and alone it rides no train of one:
+		// it is brought forward here and runs its own checks.
+		expect([...landing(owner.root)]).toEqual([]);
 		const tip = other.git('rev-parse', 'HEAD');
 		expect(owner.git('rev-parse', 'origin/develop')).toBe(tip);
 		const candidates = [
