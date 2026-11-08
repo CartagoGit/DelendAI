@@ -14,6 +14,21 @@ import type {
  * and only of those; a command that refuses its arguments or answers from
  * git pays nothing.
  */
+/**
+ * How a context opens its server: the stdio client is imported here, at
+ * the first tool call, so a command that never calls one never loads it.
+ */
+export const serverOpener =
+	(
+		cwd: string,
+		globals: ICliGlobalOptions,
+		extraPlugins: readonly string[],
+	): ICliContextOpener =>
+	async () => {
+		const { createStdioContext } = await import('./stdio-context.factory');
+		return createStdioContext(cwd, globals, extraPlugins);
+	};
+
 export const createLazyContext = (
 	cwd: string,
 	globals: ICliGlobalOptions,

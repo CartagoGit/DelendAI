@@ -20,11 +20,11 @@ Measured on a fixture repo, delendai work status takes 3.3 s against 0.5 s for -
 
 ## why
 
-TODO: why this work matters now.
+Every CLI command pays for what only some use. On a fixture repo `work status` took 1.4 to 3.3 s against 0.5 s for `--version`, and the CPU profile (bun --cpu-prof) shows 3.7 s of it idle waiting for an MCP server the command never called; `guard` was already offline at 0.57 s, and loading the registry of every command adds 0.28 s over the 0.27 s the core costs. Hooks and agents run these commands all day, so the cost is paid thousands of times.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- `proposals` commands still call tools, so they still start the server at their first call; running those tools in this process is a larger change and is left alone. Wall time is not asserted in a spec (noise on a shared machine): the budget is the import graph and the absence of the server client.
 
 ## slices
 

@@ -16,7 +16,6 @@ import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
 	ICliCommandContext,
-	ICliGlobalOptions,
 } from './contracts/interfaces/cli-command.interface';
 import type { IStaleBuild } from './contracts/interfaces/stale-build.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
@@ -37,7 +36,7 @@ import { parseCliInvocation } from './lib/parser.service';
 import { cliLanguage } from './lib/cli-language.service';
 import { createNoopContext } from './lib/noop-context.factory';
 import { loadCommandsFor } from './lib/command-loader.service';
-import { createLazyContext } from './lib/lazy-context.factory';
+import { createLazyContext, serverOpener } from './lib/lazy-context.factory';
 import { leaveNoTrace } from './lib/leave-no-trace.service';
 import { formatJson } from './lib/stable-json.service';
 
@@ -71,16 +70,6 @@ export type {
 	IInvariantScope,
 } from '@delendai/core/cli';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
-
-/** The server client loads with the server, not with every command. */
-const startServerContext = async (
-	cwd: string,
-	globals: ICliGlobalOptions,
-	extraPlugins: readonly string[],
-): Promise<ICliCommandContext> => {
-	const { createStdioContext } = await import('./lib/stdio-context.factory');
-	return createStdioContext(cwd, globals, extraPlugins);
-};
 
 const commandMatches = (
 	command: ICliCommand,
@@ -191,8 +180,10 @@ export const runHumanCli = async (
 		// override case.
 		ctx = isOffline
 			? createNoopContext(parsed.globals.workspace, parsed.globals)
-			: createLazyContext(cwd, parsed.globals, () =>
-					startServerContext(cwd, parsed.globals, extraPlugins),
+			: createLazyContext(
+					cwd,
+					parsed.globals,
+					serverOpener(cwd, parsed.globals, extraPlugins),
 				);
 		const result = await command.run(commandArgs, ctx);
 		if (result.error !== undefined)

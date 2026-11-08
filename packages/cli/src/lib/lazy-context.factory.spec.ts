@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('./stdio-context.factory', () => ({
+	createStdioContext: async (cwd: string) => ({ cwd, opened: true }),
+}));
+
 import type {
 	ICliCommandContext,
 	ICliGlobalOptions,
 } from '../contracts/interfaces/cli-command.interface';
 import { parseCliInvocation } from './parser.service';
-import { createLazyContext } from './lazy-context.factory';
+import { createLazyContext, serverOpener } from './lazy-context.factory';
 
 const GLOBALS: ICliGlobalOptions = parseCliInvocation(
 	[],
@@ -57,5 +61,10 @@ describe('createLazyContext', () => {
 		});
 		await expect(lazy.request('a', {})).rejects.toThrow('no server');
 		await expect(lazy.close()).resolves.toBeUndefined();
+	});
+
+	it('opens the stdio client only when the opener is called', async () => {
+		const opener = serverOpener('/w', GLOBALS, ['docs']);
+		await expect(opener()).resolves.toMatchObject({ cwd: '/w' });
 	});
 });
