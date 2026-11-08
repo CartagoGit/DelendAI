@@ -47,6 +47,7 @@ import {
 } from '../git/refresh-candidate-artifacts.constant';
 import { queueAcceptance, trainRiders } from './queue-acceptance';
 import { assembleTrain } from './train-assembly';
+import { landingAfterTrain, watchTrainPorts } from './train-fallback';
 import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
 import {
 	certifiedByTrain,
@@ -967,20 +968,35 @@ const main = (): void => {
 		(certified || anchor !== undefined) &&
 		(riders.length + (anchor === undefined ? 0 : 1) >= 2 || needsProof)
 	) {
-		runTrain({
-			trainPrefix,
-			tipSha: certification.sha,
-			members: riders,
-			...(anchor === undefined ? {} : { anchor }),
-			ports: trainPorts({
+		// A train that cannot run lands nothing by itself, and the fix to the
+		// train would wait with the rest: then each accepted candidate lands
+		// by its own merge instead (train-fallback).
+		const watch = watchTrainPorts(
+			trainPorts({
 				integration,
 				tipSha: certification.sha,
 				trainPrefix,
 				mergeMethod: policy.integration.mergeMethod,
 				branches: trains,
 			}),
+		);
+		const own = new Set(landing);
+		const after = landingAfterTrain({
+			watch,
+			own,
+			run: () => {
+				runTrain({
+					trainPrefix,
+					tipSha: certification.sha,
+					members: riders,
+					...(anchor === undefined ? {} : { anchor }),
+					ports: watch.ports,
+				});
+			},
 		});
 		landing.clear();
+		for (const number of after.landing) landing.add(number);
+		if (after.said !== undefined) console.log(after.said);
 	}
 	for (const pull of opened) {
 		if (
