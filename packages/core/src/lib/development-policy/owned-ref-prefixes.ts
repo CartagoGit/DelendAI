@@ -59,3 +59,18 @@ export const ownedPublicationRefPrefixes = (
 		branches.publicationRefPrefix,
 		...formerOf(branches).map((former) => `${withSlash(former)}pr/`),
 	]);
+
+/**
+ * Merge-train prefixes, current first: `<namespace>/train/` beside the
+ * publication namespace (never inside it, so nothing that opens or reaps
+ * publications mistakes a train for one); an empty namespace gives
+ * `train/`. Writers use the first; readers, the guard and the forge
+ * ruleset take every one, so the queue's own train refs are admitted
+ * wherever the policy admits its work and publication refs.
+ */
+export const ownedTrainPrefixes = (
+	branches: IOwnedBranches,
+): readonly string[] =>
+	ownedNamespaces(branches).map(
+		(namespace) => `${withSlash(namespace)}train/`,
+	);
