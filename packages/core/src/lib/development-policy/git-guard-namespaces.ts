@@ -6,6 +6,7 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 
 import {
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
 } from './owned-ref-prefixes';
 import { protectedBranchNames } from './release-branch';
@@ -22,6 +23,9 @@ export const policyNamespaces = (
 	prefixes: [
 		...ownedWorkRefPrefixes(policy.branches),
 		...ownedPublicationRefPrefixes(policy.branches),
+		// The queue pushes its trains here; a guard that refused them
+		// declined every train push the forge itself admitted.
+		...ownedTrainPrefixes(policy.branches),
 		...policy.branches.foreignRefPrefixes,
 	]
 		.map(shortName)
