@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { budgetFailure, budgetInName } from '../../../src/public/index';
+import {
+	budgetFailure,
+	budgetInName,
+	mayGoUnbudgeted,
+} from '../../../src/public/index';
 
 describe('time budget', () => {
 	it('[<50ms] reads the maximum from the front of the name', () => {
@@ -31,5 +35,17 @@ describe('time budget', () => {
 		expect(
 			budgetFailure({ ...seven, migrating: false, tookMs: 10 }),
 		).toContain('10.0 ms');
+	});
+
+	it('[<20ms] lets a file go unbudgeted when it is listed or the change leaves it alone, never when the change is unknown', () => {
+		const listed = new Set(['old.spec.ts']);
+		const changed = new Set(['mine.spec.ts', 'old.spec.ts']);
+		expect(mayGoUnbudgeted('old.spec.ts', listed, changed)).toBe(true);
+		expect(mayGoUnbudgeted('theirs.spec.ts', listed, changed)).toBe(true);
+		expect(mayGoUnbudgeted('mine.spec.ts', listed, changed)).toBe(false);
+		expect(mayGoUnbudgeted('theirs.spec.ts', listed, undefined)).toBe(
+			false,
+		);
+		expect(mayGoUnbudgeted('old.spec.ts', listed, undefined)).toBe(true);
 	});
 });

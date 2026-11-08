@@ -9,6 +9,8 @@
  * must drop it, so it cannot slide back.
  */
 
+import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/time-budget.helper';
+
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
 const PLAIN_CALL =
 	/\b(?:it|test)((?:\.(?:only|skip|fails|concurrent|sequential))*)\s*\(/gu;
@@ -96,17 +98,24 @@ export interface IDeclaredBudgetVerdict {
 export const judgeDeclaredBudgets = (
 	files: ReadonlyMap<string, number>,
 	listed: ReadonlySet<string>,
-	changed: ReadonlySet<string> = new Set(),
+	changed?: ReadonlySet<string>,
 ): IDeclaredBudgetVerdict => ({
+	// A budget is asked of the files a change writes (the run holds the same
+	// rule): with no change known, every file off the list is asked.
 	missing: [...files]
-		.filter(([path, tests]) => tests > 0 && !listed.has(path))
+		.filter(
+			([path, tests]) =>
+				tests > 0 && !mayGoUnbudgeted(path, listed, changed),
+		)
 		.map(([path, tests]) => ({ path, tests }))
 		.sort((a, b) => a.path.localeCompare(b.path)),
 	stale: [...listed]
 		.filter((path) => (files.get(path) ?? 0) === 0)
 		.sort((a, b) => a.localeCompare(b)),
 	touched: [...listed]
-		.filter((path) => changed.has(path) && (files.get(path) ?? 0) > 0)
+		.filter(
+			(path) => changed?.has(path) === true && (files.get(path) ?? 0) > 0,
+		)
 		.sort((a, b) => a.localeCompare(b)),
 });
 
@@ -125,6 +134,29 @@ export const defaultChangeBase = (
 	try {
 		const base = git(['merge-base', INTEGRATION_REF, 'HEAD']).trim();
 		return base === '' ? undefined : base;
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * The files a change touches: committed since the merge-base with the
+ * integration branch, edited, staged or new in the working tree. `undefined`
+ * when the base is unknown, so nothing is let off for want of a diff.
+ */
+export const changedFiles = (
+	git: (args: readonly string[]) => string,
+): ReadonlySet<string> | undefined => {
+	const base = defaultChangeBase(git);
+	if (base === undefined) return undefined;
+	try {
+		return new Set(
+			[
+				['diff', '--name-only', `${base}...HEAD`],
+				['diff', '--name-only', 'HEAD'],
+				['ls-files', '--others', '--exclude-standard'],
+			].flatMap((args) => git(args).split('\n')),
+		);
 	} catch {
 		return undefined;
 	}

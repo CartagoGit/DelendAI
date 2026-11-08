@@ -1,8 +1,11 @@
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { changedFiles } from './tools/scripts/ci/declared-test-budget.ts';
 import {
+	CHANGED_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
@@ -126,6 +129,21 @@ export const TIME_BUDGET_MIGRATION_LIST = resolve(
 // The workers inherit this: the runner reads the list once per worker.
 process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
 process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
+
+// A budget is asked of the files the change touches, so a test an older
+// branch lands cannot turn another change red. Unknown, nothing is let off.
+if (process.env[CHANGED_ENV] === undefined) {
+	const changed = changedFiles((args) =>
+		execFileSync('git', [...args], {
+			cwd: dirname(fileURLToPath(import.meta.url)),
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}),
+	);
+	if (changed !== undefined) {
+		process.env[CHANGED_ENV] = [...changed].join('\n');
+	}
+}
 
 /**
  * What makes a spec file unsafe to share a worker with other files: it

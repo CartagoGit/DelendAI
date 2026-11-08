@@ -11,3 +11,9 @@ export const MIGRATION_ENV = 'DELENDAI_TEST_BUDGET_MIGRATION';
 
 /** The directory the migration list's paths are relative to. */
 export const MIGRATION_ROOT_ENV = 'DELENDAI_TEST_BUDGET_ROOT';
+
+/**
+ * Holds the files the change touches, one path a line (the workers inherit
+ * it). Absent, the change is unknown and every file is held to its budget.
+ */
+export const CHANGED_ENV = 'DELENDAI_TEST_BUDGET_CHANGED';

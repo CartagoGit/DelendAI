@@ -33,3 +33,15 @@ export const budgetFailure = (test: ITimeBudgetCase): string | undefined => {
 		? `took ${test.tookMs.toFixed(1)} ms, over its declared budget of ${String(budget)} ms. Make the test faster; do not raise the number to fit.`
 		: undefined;
 };
+
+/**
+ * Whether a spec file may hold tests with no budget: it is on the migration
+ * list, or the change does not touch it. A budget is asked of the files a
+ * change writes, so a test merged by an older branch cannot turn another
+ * change red. With no change known (`undefined`), no file is let off.
+ */
+export const mayGoUnbudgeted = (
+	path: string,
+	listed: ReadonlySet<string>,
+	changed: ReadonlySet<string> | undefined,
+): boolean => listed.has(path) || (changed !== undefined && !changed.has(path));

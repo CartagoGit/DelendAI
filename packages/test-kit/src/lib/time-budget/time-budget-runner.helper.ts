@@ -12,11 +12,12 @@ import { relative } from 'node:path';
 import { type RunnerTestCase, TestRunner } from 'vitest';
 
 import {
+	CHANGED_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
-import { budgetFailure } from './time-budget.helper';
+import { budgetFailure, mayGoUnbudgeted } from './time-budget.helper';
 
 let migrating: ReadonlySet<string> | undefined;
 
@@ -33,11 +34,25 @@ const migrationList = (): ReadonlySet<string> => {
 	return migrating;
 };
 
+let changed: ReadonlySet<string> | undefined;
+let changedRead = false;
+
+/** The spec files the change touches, read once a worker; none known is `undefined`. */
+const changedList = (): ReadonlySet<string> | undefined => {
+	if (changedRead) return changed;
+	changedRead = true;
+	const paths = process.env[CHANGED_ENV];
+	changed = paths === undefined ? undefined : new Set(paths.split('\n'));
+	return changed;
+};
+
 const isMigrating = (test: RunnerTestCase): boolean => {
 	const root = process.env[MIGRATION_ROOT_ENV];
 	if (root === undefined) return false;
-	return migrationList().has(
+	return mayGoUnbudgeted(
 		relative(root, test.file.filepath).split('\\').join('/'),
+		migrationList(),
+		changedList(),
 	);
 };
 

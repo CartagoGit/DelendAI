@@ -29,7 +29,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-	defaultChangeBase,
+	changedFiles,
 	judgeDeclaredBudgets,
 	unbudgetedTests,
 } from './declared-test-budget';
@@ -112,28 +112,22 @@ const declaredMain = (): number => {
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
 		});
-	// No base given (the architecture step passes none): the merge-base with
-	// the integration branch, so an edited spec is caught wherever it runs.
-	const base =
-		arg('base') ??
-		(envBase === undefined || envBase === ''
-			? defaultChangeBase(gitOut)
-			: envBase);
 	const changedList = arg('changed-files');
-	const changed = new Set(
+	const given = arg('base') ?? (envBase === '' ? undefined : envBase);
+	// A list file or a given base names the change; otherwise the change is
+	// what differs from the integration branch, and unknown when that is.
+	const changed =
 		changedList !== undefined
-			? readFileSync(changedList, 'utf8').split('\n')
-			: base === undefined || base === ''
-				? []
-				: execFileSync(
-						'git',
-						['diff', '--name-only', `${base}...HEAD`],
-						{
-							cwd: root,
-							encoding: 'utf8',
-						},
-					).split('\n'),
-	);
+			? new Set(readFileSync(changedList, 'utf8').split('\n'))
+			: given === undefined
+				? changedFiles(gitOut)
+				: new Set(
+						gitOut([
+							'diff',
+							'--name-only',
+							`${given}...HEAD`,
+						]).split('\n'),
+					);
 	const verdict = judgeDeclaredBudgets(files, listed, changed);
 	if (process.argv.includes('--update')) {
 		const stale = new Set(verdict.stale);

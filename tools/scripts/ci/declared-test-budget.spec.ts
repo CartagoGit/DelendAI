@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	changedFiles,
 	defaultChangeBase,
 	INTEGRATION_REF,
 	judgeDeclaredBudgets,
@@ -37,7 +38,7 @@ describe('declared test budgets', () => {
 		const verdict = judgeDeclaredBudgets(
 			files,
 			new Set(['old.spec.ts', 'fixed.spec.ts', 'gone.spec.ts']),
-			new Set(['old.spec.ts', 'fixed.spec.ts']),
+			new Set(['old.spec.ts', 'fixed.spec.ts', 'new.spec.ts']),
 		);
 		expect(verdict.missing).toEqual([{ path: 'new.spec.ts', tests: 2 }]);
 		expect(verdict.stale).toEqual(['fixed.spec.ts', 'gone.spec.ts']);
@@ -63,5 +64,38 @@ describe('declared test budgets', () => {
 			}),
 		).toBeUndefined();
 		expect(defaultChangeBase(() => '\n')).toBeUndefined();
+	});
+
+	it('[<50ms] asks a budget only of a spec the change touches, and of every spec when the change is unknown', () => {
+		const files = new Map([
+			['theirs.spec.ts', 2],
+			['mine.spec.ts', 1],
+		]);
+		const paths = (changed?: ReadonlySet<string>) =>
+			judgeDeclaredBudgets(files, new Set(), changed).missing.map(
+				(entry) => entry.path,
+			);
+		expect(paths(new Set(['mine.spec.ts']))).toEqual(['mine.spec.ts']);
+		expect(paths(new Set())).toEqual([]);
+		expect(paths(undefined)).toEqual(['mine.spec.ts', 'theirs.spec.ts']);
+	});
+
+	it('[<50ms] reads the change as committed, edited and new files, and as unknown without a base', () => {
+		const git = (args: readonly string[]): string =>
+			args[0] === 'merge-base'
+				? 'abc\n'
+				: args[0] === 'ls-files'
+					? 'new.spec.ts\n'
+					: args.includes('HEAD')
+						? 'edited.spec.ts\n'
+						: 'committed.spec.ts\n';
+		expect(changedFiles(git)).toEqual(
+			new Set(['committed.spec.ts', 'edited.spec.ts', 'new.spec.ts', '']),
+		);
+		expect(
+			changedFiles(() => {
+				throw new Error('no base');
+			}),
+		).toBeUndefined();
 	});
 });
