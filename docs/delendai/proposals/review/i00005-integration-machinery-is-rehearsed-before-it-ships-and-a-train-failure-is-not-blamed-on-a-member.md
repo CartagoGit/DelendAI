@@ -2,14 +2,14 @@
 id: i00005
 title: "Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member"
 kind: infra
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: a8c19e0d-4f6d-4d98-a0a0-c5037d9207b9
-last-correlation-id: a8c19e0d-4f6d-4d98-a0a0-c5037d9207b9
-last-transition-from: ready
-last-transition-at: 2026-11-08T19:13:03.797Z
+last-transition-id: 4148b636-01b6-4be5-8978-52ead995a6bc
+last-correlation-id: 4148b636-01b6-4be5-8978-52ead995a6bc
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T19:54:54.613Z
 ---
 
 # i00005 — Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member
@@ -31,30 +31,39 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - global_gate: none
 
 ### S1 — Train rehearsal
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/train-rehearsal.ts`, `tools/scripts/forge/train-rehearsal.interface.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
   - "A script builds a train as assembleTrain does (scratch worktree, linked dependencies, merges, one regeneration), runs the installed pre-push hooks with the train ref on stdin plus the static and governance lint jobs the plan selects, and reports every failure in one pass"
   - "A change under tools/scripts/forge, tools/scripts/ci, the guard, .github/workflows or lefthook.yml runs the rehearsal in the fast proof"
   - "The measured cost of a rehearsal is recorded in the slice hand-over and bounded by a timeout"
+- shipped-in: `0a634255e983`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Honest bisection
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/forge/train-fallback.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: none
 - acceptance:
   - "A one-member train that fails while the member's own required checks are green writes no culprit marker and reports 'the train's own checks are red: <jobs>'"
   - "One issue for it is opened or refreshed, and the members take the individual landing path"
   - "Specs cover the exonerated member and the still-blamed member"
+- shipped-in: `9bddbd7dfcc6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — CI detection is agnostic
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/cli.ts`
 - **Gate**: none
 - acceptance:
   - "One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set"
   - "The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up"
+- shipped-in: `9bddbd7dfcc6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
