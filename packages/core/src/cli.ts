@@ -110,6 +110,10 @@ export {
 	agentEnvironmentMarker,
 	isAgentEnvironmentVariable,
 } from './lib/work-identity/agent-environment.helper';
+export {
+	ciEnvironmentMarker,
+	isRunningInProjectCi,
+} from './lib/work-identity/ci-environment.helper';
 export { gitActorMarker } from './lib/work-identity/git-actor.helper';
 export {
 	AGENT_ENVIRONMENT_MARKERS,

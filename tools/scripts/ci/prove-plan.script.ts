@@ -41,6 +41,7 @@ import {
 	planInputSince,
 } from './job-scope.script';
 
+import { touchesIntegrationMachinery } from '../forge/train-rehearsal';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
 
@@ -396,6 +397,16 @@ export const fastSteps = (
 					],
 				],
 			] as const)),
+	// The machinery that builds, pushes and judges a train is rehearsed on
+	// one, so the layer that fails the live queue fails here first.
+	...(touchesIntegrationMachinery(changed)
+		? ([
+				[
+					'train rehearsal',
+					['bun', 'tools/scripts/forge/train-rehearsal.script.ts'],
+				],
+			] as const)
+		: []),
 	...(changed.some((path) => BUN_SUITE.test(path))
 		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
 		: []),

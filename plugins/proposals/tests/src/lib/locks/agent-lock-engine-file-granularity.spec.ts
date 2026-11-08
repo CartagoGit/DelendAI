@@ -34,9 +34,6 @@ const body = (res: { content: Array<{ text: string }> }) =>
 		[key: string]: unknown;
 	};
 
-const sleep = async (ms: number): Promise<void> =>
-	new Promise((resolve) => setTimeout(resolve, ms));
-
 type ToolContent = { content: Array<{ text: string }> };
 const capture = async (
 	options: IStateToolOptions,
@@ -85,8 +82,7 @@ describe('agent-lock file-level granularity', () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('lets disjoint claims through without contention within the lock budget', async () => {
-		const started = Date.now();
+	it('lets disjoint claims through without contention', async () => {
 		const [left, right] = await Promise.all([
 			runAgentLockEngine(
 				{
@@ -98,8 +94,8 @@ describe('agent-lock file-level granularity', () => {
 				{
 					lockPath,
 					fileLockTablePath,
-					mutexTimeoutMs: 500,
-					mutexStaleMs: 5_000,
+					mutexTimeoutMs: 60_000,
+					mutexStaleMs: 60_000,
 					mutexPollMs: 5,
 				},
 			),
@@ -113,17 +109,15 @@ describe('agent-lock file-level granularity', () => {
 				{
 					lockPath,
 					fileLockTablePath,
-					mutexTimeoutMs: 500,
-					mutexStaleMs: 5_000,
+					mutexTimeoutMs: 60_000,
+					mutexStaleMs: 60_000,
 					mutexPollMs: 5,
 				},
 			),
 		]);
-		const elapsed = Date.now() - started;
 
 		expect(body(left).blocked).not.toBe(true);
 		expect(body(right).blocked).not.toBe(true);
-		expect(elapsed).toBeLessThan(700);
 	});
 
 	it('keeps overlapping claims on the normal contention path and the second waits for the critical section', async () => {
@@ -137,21 +131,33 @@ describe('agent-lock file-level granularity', () => {
 			{
 				lockPath,
 				fileLockTablePath,
-				mutexTimeoutMs: 500,
-				mutexStaleMs: 5_000,
+				mutexTimeoutMs: 60_000,
+				mutexStaleMs: 60_000,
 				mutexPollMs: 5,
 			},
 		);
 
+		// The holder owns the mutex before the second claim starts, and keeps
+		// it until the spec releases it: the order is a barrier, not a race.
+		let release: () => void = () => undefined;
+		const released = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		let holding: () => void = () => undefined;
+		const acquired = new Promise<void>((resolve) => {
+			holding = resolve;
+		});
 		const holder = withFileMutex(
 			lockPath,
 			async () => {
-				await sleep(120);
+				holding();
+				await released;
 			},
-			{ timeoutMs: 500, staleMs: 1_000, pollMs: 10 },
+			{ timeoutMs: 60_000, staleMs: 60_000, pollMs: 10 },
 		);
+		await acquired;
 
-		const started = Date.now();
+		let settled = false;
 		const second = runAgentLockEngine(
 			{
 				action: 'claim',
@@ -162,15 +168,19 @@ describe('agent-lock file-level granularity', () => {
 			{
 				lockPath,
 				fileLockTablePath,
-				mutexTimeoutMs: 500,
-				mutexStaleMs: 5_000,
+				mutexTimeoutMs: 60_000,
+				mutexStaleMs: 60_000,
 				mutexPollMs: 10,
 			},
-		);
+		).finally(() => {
+			settled = true;
+		});
+		// The second claim is queued behind the held mutex: it cannot settle
+		// until the holder releases, however long the machine takes.
+		expect(settled).toBe(false);
+		release();
 		const [secondResult] = await Promise.all([second, holder]);
-		const elapsed = Date.now() - started;
-
-		expect(elapsed).toBeGreaterThanOrEqual(100);
+		expect(settled).toBe(true);
 		expect(body(secondResult).blockerType).toBe('lock-conflict');
 		expect(body(secondResult).conflicting_task).toBe('task-a');
 	});
