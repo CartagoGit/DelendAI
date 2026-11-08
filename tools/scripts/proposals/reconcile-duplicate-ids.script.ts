@@ -3,7 +3,7 @@
  * reconcile-duplicate-ids — keep one copy of each duplicated proposal id
  * in a checkout, the one furthest along the state machine.
  *
- * Usage: bun tools/scripts/proposals/reconcile-duplicate-ids.script.ts --root <checkout>
+ * Usage: bun tools/scripts/proposals/reconcile-duplicate-ids.script.ts --root <checkout> (the checkout is the last argument)
  * Prints `{"removed":[...]}` as JSON; exits 0 whether or not it removed
  * anything. The repair itself lives in the proposals plugin.
  */
@@ -13,13 +13,8 @@ import { reconcileDuplicateProposalIds } from '../../../plugins/proposals/src/li
 
 const PROPOSALS_DIR = 'docs/delendai/proposals';
 
-const main = async (): Promise<void> => {
-	const flag = process.argv.indexOf('--root');
-	const root = resolve(process.argv[flag + 1] ?? '.');
-	const { removed } = await reconcileDuplicateProposalIds(
-		join(root, PROPOSALS_DIR),
-	);
-	console.log(JSON.stringify({ removed }));
-};
-
-if (import.meta.main) await main();
+const root = resolve(process.argv.at(-1) ?? '.');
+const { removed } = await reconcileDuplicateProposalIds(
+	join(root, PROPOSALS_DIR),
+);
+console.log(JSON.stringify({ removed }));
