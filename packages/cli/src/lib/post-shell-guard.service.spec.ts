@@ -46,7 +46,7 @@ const call = (tool: string, cwd: string): string =>
 	JSON.stringify({ tool_name: tool, tool_input: { command: 'x' }, cwd });
 
 describe('delendai guard post-shell', () => {
-	it('[<5000ms] rescues a shell write into the shared checkout and names the unit worktree', async () => {
+	it('[<207ms] rescues a shell write into the shared checkout and names the unit worktree', async () => {
 		const { root, unit } = project();
 		process.env.DELENDAI_AGENT_ID = AGENT;
 		writeFileSync(join(root, 'stray.ts'), 'export const x = 1;\n');
@@ -66,7 +66,7 @@ describe('delendai guard post-shell', () => {
 		expect(() => readFileSync(join(root, 'stray.ts'))).toThrow();
 	});
 
-	it('[<5000ms] does nothing for a clean checkout, a non-shell tool, an unreadable call or an agent with no unit', async () => {
+	it('[<156ms] does nothing for a clean checkout, a non-shell tool, an unreadable call or an agent with no unit', async () => {
 		const { root } = project();
 		process.env.DELENDAI_AGENT_ID = AGENT;
 		const judged = (stdin: string) =>

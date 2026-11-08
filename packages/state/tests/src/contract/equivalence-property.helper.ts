@@ -205,7 +205,7 @@ export const equivalenceProperty = (
 	runs: number = NUM_RUNS,
 ): void => {
 	describe(`${driver}: Property: incremental ≡ clean rebuild from final snapshot (q00018 S3)`, () => {
-		it(`[<10000ms] matches over ${runs} random op sequences`, () => {
+		it(`[<7114ms] matches over ${runs} random op sequences`, () => {
 			fc.assert(
 				fc.property(
 					fc.array(opArb, { minLength: 1, maxLength: 30 }),

@@ -39,7 +39,7 @@ const assembleAndDispatch = (watched: ITrainPorts): void => {
 };
 
 describe('landingAfterTrain', () => {
-	it('[<5000ms] lands the accepted candidates by their own merge when the train was not pushed', () => {
+	it('[<10ms] lands the accepted candidates by their own merge when the train was not pushed', () => {
 		const outcome = attempt(
 			{
 				assemble: () => ({
@@ -56,13 +56,13 @@ describe('landingAfterTrain', () => {
 		expect(outcome.said).toContain('#7, #9');
 	});
 
-	it('[<5000ms] lands them by their own merge when the train could not be dispatched', () => {
+	it('[<5ms] lands them by their own merge when the train could not be dispatched', () => {
 		const outcome = attempt({ dispatch: () => false }, assembleAndDispatch);
 		expect([...outcome.landing]).toEqual([7, 9]);
 		expect(outcome.said).toContain('could not be dispatched');
 	});
 
-	it('[<5000ms] lands them by their own merge when assembling the train throws', () => {
+	it('[<5ms] lands them by their own merge when assembling the train throws', () => {
 		const outcome = attempt(
 			{
 				assemble: () => {
@@ -77,7 +77,7 @@ describe('landingAfterTrain', () => {
 		);
 	});
 
-	it('[<5000ms] lands them by their own merge when the train throws elsewhere', () => {
+	it('[<5ms] lands them by their own merge when the train throws elsewhere', () => {
 		const outcome = attempt({}, () => {
 			throw new Error('forge unreachable');
 		});
@@ -85,7 +85,7 @@ describe('landingAfterTrain', () => {
 		expect(outcome.said).toContain('the train threw: forge unreachable');
 	});
 
-	it('[<5000ms] says so when nothing is left to land either', () => {
+	it('[<5ms] says so when nothing is left to land either', () => {
 		const watch = watchTrainPorts(ports({ dispatch: () => false }));
 		const outcome = landingAfterTrain({
 			watch,
@@ -98,17 +98,17 @@ describe('landingAfterTrain', () => {
 		expect(outcome.said).toContain('nothing lands this pass');
 	});
 
-	it('[<5000ms] changes nothing when the train is pushed and dispatched', () => {
+	it('[<5ms] changes nothing when the train is pushed and dispatched', () => {
 		const outcome = attempt({}, assembleAndDispatch);
 		expect(outcome.landing.size).toBe(0);
 		expect(outcome.said).toBeUndefined();
 	});
 
-	it('[<5000ms] changes nothing when the train only waits on its full run', () => {
+	it('[<5ms] changes nothing when the train only waits on its full run', () => {
 		expect(attempt({}, () => undefined).landing.size).toBe(0);
 	});
 
-	it('[<5000ms] leaves a conflict inside the train to the train', () => {
+	it('[<5ms] leaves a conflict inside the train to the train', () => {
 		const outcome = attempt(
 			{ assemble: () => ({ conflicting: [9] }) },
 			assembleAndDispatch,

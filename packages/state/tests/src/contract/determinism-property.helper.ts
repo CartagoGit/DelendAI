@@ -137,7 +137,7 @@ export const determinismProperty = (
 	runs: number = NUM_RUNS,
 ): void => {
 	describe(`${driver}: Property: determinism (q00018 S3 acceptance #2)`, () => {
-		it(`[<10000ms] two fresh registries produce identical hash over ${runs} sequences`, () => {
+		it(`[<9530ms] two fresh registries produce identical hash over ${runs} sequences`, () => {
 			fc.assert(
 				fc.property(
 					fc.array(opArb, { minLength: 1, maxLength: 50 }),
@@ -174,7 +174,7 @@ export const determinismProperty = (
 			);
 		}, 60_000);
 
-		it('[<10000ms] S3 regression: a NON-deterministic producer yields DIFFERENT canonical hashes across runs', () => {
+		it('[<8ms] S3 regression: a NON-deterministic producer yields DIFFERENT canonical hashes across runs', () => {
 			// The lint forbids Date.now inside the package; this test
 			// is the dynamic counterpart. We construct a producer whose
 			// `rebuild` reads a captured counter that the test
