@@ -15,9 +15,14 @@ import {
 	CHANGED_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
+	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
-import { budgetFailure, mayGoUnbudgeted } from './time-budget.helper';
+import {
+	budgetFailure,
+	budgetOverrun,
+	mayGoUnbudgeted,
+} from './time-budget.helper';
 
 let migrating: ReadonlySet<string> | undefined;
 
@@ -56,16 +61,34 @@ const isMigrating = (test: RunnerTestCase): boolean => {
 	);
 };
 
+const overruns: string[] = [];
+
 export default class TimeBudgetRunner extends TestRunner {
+	onAfterRunFiles(): void {
+		if (overruns.length === 0) return;
+		console.warn(
+			`time budget: ${String(overruns.length)} test(s) over their budget in a whole-suite local run (the machine is saturated, so this is a warning; CI and bounded runs fail it):\n${overruns.join('\n')}`,
+		);
+		overruns.length = 0;
+	}
+
 	async runTask(test: RunnerTestCase): Promise<void> {
 		const body = TestRunner.getTestFn(test);
 		const start = performance.now();
 		await body();
-		const failure = budgetFailure({
+		const measured = {
 			name: test.name,
 			migrating: isMigrating(test),
 			tookMs: performance.now() - start,
-		});
+			softOverrun: process.env[SOFT_OVERRUN_ENV] === '1',
+		};
+		const failure = budgetFailure(measured);
+		if (measured.softOverrun) {
+			const over = budgetOverrun(measured);
+			if (over !== undefined) {
+				overruns.push(`  ${test.file.name} > ${test.name}: ${over}`);
+			}
+		}
 		if (failure !== undefined) throw new Error(failure);
 	}
 }

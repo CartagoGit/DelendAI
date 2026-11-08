@@ -3,6 +3,8 @@
  * shell that runs it: none of delendai's variables but the runner's own,
  * and nothing that names an agent.
  */
+import { readdirSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import { clearAmbientEnvironment } from '@delendai/test-kit';
@@ -22,6 +24,10 @@ describe('clearAmbientEnvironment', () => {
 			DELENDAI_RECORD_READS: '/tmp/reads',
 			DELENDAI_TEST_COMPUTE_LOCK_PATH: '/tmp/lock',
 			PATH: '/usr/bin',
+			GH_TOKEN: 'a',
+			GITHUB_TOKEN: 'b',
+			GH_ENTERPRISE_TOKEN: 'c',
+			GH_CONFIG_DIR: '/home/me/.config/gh',
 		};
 		const removed = clearAmbientEnvironment(markers, env);
 		expect([...removed].sort()).toEqual([
@@ -32,12 +38,19 @@ describe('clearAmbientEnvironment', () => {
 			'DELENDAI_ANYTHING_NEW',
 			'DELENDAI_SESSION',
 			'DELENDAI_SESSION_ID',
+			'GH_ENTERPRISE_TOKEN',
+			'GH_TOKEN',
+			'GITHUB_TOKEN',
 		]);
-		expect(env).toEqual({
+		const { GH_CONFIG_DIR: configDir, ...rest } = env;
+		expect(rest).toEqual({
 			DELENDAI_RECORD_READS: '/tmp/reads',
 			DELENDAI_TEST_COMPUTE_LOCK_PATH: '/tmp/lock',
 			PATH: '/usr/bin',
 		});
+		// `gh` looks for its login in an empty directory, not the user's.
+		expect(configDir).not.toBe('/home/me/.config/gh');
+		expect(readdirSync(configDir ?? '')).toEqual([]);
 	});
 
 	it('acts on the process environment by default', () => {

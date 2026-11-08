@@ -8,7 +8,9 @@ import {
 	CHANGED_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
+	SOFT_OVERRUN_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import { isWholeSuiteRun } from './packages/test-kit/src/lib/time-budget/whole-suite-run.helper.ts';
 import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
@@ -129,6 +131,16 @@ export const TIME_BUDGET_MIGRATION_LIST = resolve(
 // The workers inherit this: the runner reads the list once per worker.
 process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
 process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
+
+// Wall time on a machine the run itself saturates measures the machine: a
+// local run of the whole suite reports an over-budget test, a CI shard or a
+// bounded run fails it.
+if (process.env[SOFT_OVERRUN_ENV] === undefined) {
+	process.env[SOFT_OVERRUN_ENV] =
+		process.env['CI'] === undefined && isWholeSuiteRun(process.argv)
+			? '1'
+			: '0';
+}
 
 // A budget is asked of the files the change touches, so a test an older
 // branch lands cannot turn another change red. Unknown, nothing is let off.

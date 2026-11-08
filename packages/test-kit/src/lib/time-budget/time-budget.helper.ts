@@ -29,7 +29,13 @@ export const budgetFailure = (test: ITimeBudgetCase): string | undefined => {
 			? 'malformed time budget: write it at the front of the name as "[<7ms] does X" (a number, then ms, then a space).'
 			: 'no time budget: start the name with its maximum, "[<7ms] does X". Every test has one.';
 	}
-	return test.tookMs > budget
+	return test.softOverrun === true ? undefined : budgetOverrun(test);
+};
+
+/** How a test is over its budget, or nothing when it keeps it. */
+export const budgetOverrun = (test: ITimeBudgetCase): string | undefined => {
+	const budget = budgetInName(test.name);
+	return budget !== undefined && test.tookMs > budget
 		? `took ${test.tookMs.toFixed(1)} ms, over its declared budget of ${String(budget)} ms. Make the test faster; do not raise the number to fit.`
 		: undefined;
 };

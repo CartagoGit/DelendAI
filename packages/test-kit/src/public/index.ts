@@ -53,11 +53,15 @@ export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermeti
 export {
 	budgetFailure,
 	budgetInName,
+	budgetOverrun,
 	mayGoUnbudgeted,
 } from '../lib/time-budget/time-budget.helper';
+export { isWholeSuiteRun } from '../lib/time-budget/whole-suite-run.helper';
 export { timeBudgetRunnerPath } from '../lib/time-budget/time-budget-runner-path.helper';
 export {
 	CHANGED_ENV,
+	SOFT_OVERRUN_ENV,
+	WHOLE_SUITE_SPECS,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from '../contracts/constants/time-budget.constant';

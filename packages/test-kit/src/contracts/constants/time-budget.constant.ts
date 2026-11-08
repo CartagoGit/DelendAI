@@ -17,3 +17,9 @@ export const MIGRATION_ROOT_ENV = 'DELENDAI_TEST_BUDGET_ROOT';
  * it). Absent, the change is unknown and every file is held to its budget.
  */
 export const CHANGED_ENV = 'DELENDAI_TEST_BUDGET_CHANGED';
+
+/** Set to `1` for a run whose time overruns are reported, not failed. */
+export const SOFT_OVERRUN_ENV = 'DELENDAI_TEST_BUDGET_SOFT';
+
+/** A run naming this many spec files or more is the whole suite. */
+export const WHOLE_SUITE_SPECS = 200;
