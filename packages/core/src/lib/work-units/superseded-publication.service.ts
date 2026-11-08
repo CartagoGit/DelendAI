@@ -23,7 +23,9 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IWorkUnitContext } from '../contracts/interfaces/work-unit-context.interface';
 import type { IPublicationPullRequest } from '../contracts/interfaces/publication-pull-request.interface';
 import type { IUnitHandover } from './unit-lease.interface';
-import { gitCommonDirOf } from './unit-lease.service';
+import { readFile, stat } from 'node:fs/promises';
+import { dirname, join, resolve, sep } from 'node:path';
+import { readWorkspacePolicy } from './development-policy.service';
 import { readUnitLease } from './unit-lease.store';
 import { retired } from './work-unit-retire.service';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
@@ -31,9 +33,8 @@ import { scalarArg } from './command-args.helper';
 import {
 	agentFor,
 	integrationRemote,
-	mainWorktreeOf,
-	openWork,
 	readGit,
+	workspaceOf,
 } from './work-unit-shared.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 
@@ -120,21 +121,40 @@ export const retireSupersededPublications = async (input: {
 };
 
 /**
- * The hands a unit passed through, read BEFORE publishing: ending the
- * unit may end its lease, and the lease is what remembers them.
+ * The git directory shared by every worktree of `workspace`, read from the
+ * files and not by asking git: publish has a budget of git processes, and
+ * a unit that took nothing over must not spend any of it here.
  */
-export const handedFromOf = async (
-	root: string,
-	workRef: string,
-): Promise<readonly IUnitHandover[]> => {
-	const common = gitCommonDirOf(root);
-	if (common === undefined) return [];
-	const lease = await readUnitLease(
-		common,
-		workRef.replace(/^refs\/heads\//u, ''),
-	);
-	return lease?.handedFrom ?? [];
+export const commonDirFromFiles = async (
+	workspace: string,
+): Promise<string | undefined> => {
+	for (
+		let dir = resolve(workspace);
+		dir !== dirname(dir);
+		dir = dirname(dir)
+	) {
+		const dot = join(dir, '.git');
+		const found = await stat(dot).catch(() => undefined);
+		if (found === undefined) continue;
+		if (found.isDirectory()) return dot;
+		const pointer = /^gitdir:\s*(.+)$/mu.exec(
+			await readFile(dot, 'utf8'),
+		)?.[1];
+		const at = pointer?.lastIndexOf(`${sep}worktrees${sep}`) ?? -1;
+		return pointer === undefined || at < 0
+			? undefined
+			: pointer.slice(0, at);
+	}
+	return undefined;
 };
+
+/** The hands a unit passed through, from its lease (read BEFORE it is pruned). */
+export const handedFromOf = async (
+	common: string,
+	workRef: string,
+): Promise<readonly IUnitHandover[]> =>
+	(await readUnitLease(common, workRef.replace(/^refs\/heads\//u, '')))
+		?.handedFrom ?? [];
 
 /** Publish's step: retire what the new publication superseded, for real. */
 export const retireSupersededByPublish = async (input: {
@@ -214,16 +234,27 @@ export const workRefOfPublicationRef = (
 };
 
 /**
- * After `work publish` ended a unit that took over somebody's
- * publication: retire that one if the new one carries its tip, and add
- * what happened to the result as `superseded`. The result of a publish
- * that published nothing is returned as it is.
+ * Run `publish`; when it published a unit that took over somebody's
+ * publication, retire that one if the new one carries its tip, and add
+ * what happened to the result as `superseded`. A unit that took nothing
+ * over costs no git process.
  */
-export const withSupersededRetired = async (
-	result: IWorkUnitResult,
+export const publishedSupersedingOld = async (
 	args: readonly string[],
 	ctx: IWorkUnitContext,
+	publish: (
+		args: readonly string[],
+		ctx: IWorkUnitContext,
+	) => Promise<IWorkUnitResult>,
 ): Promise<IWorkUnitResult> => {
+	// Before: publishing removes the unit's worktree, where all this is read.
+	const workspace = workspaceOf(ctx);
+	const common = await commonDirFromFiles(workspace);
+	const policy =
+		common === undefined
+			? undefined
+			: await readWorkspacePolicy(workspace).catch(() => undefined);
+	const result = await publish(args, ctx);
 	const data = result.data as
 		| {
 				readonly published?: boolean;
@@ -233,22 +264,28 @@ export const withSupersededRetired = async (
 		  }
 		| undefined;
 	const publication = data?.publication?.ref;
-	if (data?.published !== true || publication === undefined) return result;
-	const opened = await openWork(ctx);
-	if (!('engine' in opened)) return result;
-	const root = mainWorktreeOf(opened.root);
+	if (
+		common === undefined ||
+		policy === undefined ||
+		data?.published !== true ||
+		publication === undefined
+	) {
+		return result;
+	}
+	const handedFrom = await handedFromOf(
+		common,
+		workRefOfPublicationRef(policy, publication),
+	);
+	if (handedFrom.length === 0) return result;
+	const root = dirname(common);
 	const superseded = await retireSupersededByPublish({
 		root,
 		ctx,
-		policy: opened.policy,
-		remote: ctx.globals.remote ?? integrationRemote(root, opened.policy),
+		policy,
+		remote: ctx.globals.remote ?? integrationRemote(root, policy),
 		agent:
-			scalarArg(args, 'agent') ??
-			agentFor(args, root, opened.policy.identity),
-		handedFrom: await handedFromOf(
-			root,
-			workRefOfPublicationRef(opened.policy, publication),
-		),
+			scalarArg(args, 'agent') ?? agentFor(args, root, policy.identity),
+		handedFrom,
 		published: true,
 		newPublication: publication,
 		newTip: data.tip ?? null,

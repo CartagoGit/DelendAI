@@ -12,7 +12,7 @@ import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.in
 import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
-import { withSupersededRetired } from './superseded-publication.service';
+import { publishedSupersedingOld } from './superseded-publication.service';
 import { proved } from './work-unit-prove.service';
 import { claimed } from './work-unit-claim.service';
 import { retiredDropped } from './work-retired-drop.service';
@@ -162,11 +162,7 @@ const runWorkUnitOnce = async (
 	if (sub === 'reap') return reaped(args, ctx);
 	if (sub === 'rescue') return rescued(args, ctx);
 	if (sub === 'publish') {
-		const result = await withSupersededRetired(
-			await published(args, ctx),
-			args,
-			ctx,
-		);
+		const result = await publishedSupersedingOld(args, ctx, published);
 		await pruneEndedLeases(ctx);
 		return result;
 	}

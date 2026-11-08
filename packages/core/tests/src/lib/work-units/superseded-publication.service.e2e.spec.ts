@@ -20,9 +20,10 @@ import type {
 } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { fakePartial } from '@delendai/test-kit';
 import {
+	commonDirFromFiles,
 	handedFromOf,
 	workRefOfPublicationRef,
-	withSupersededRetired,
+	publishedSupersedingOld,
 	retireSupersededByPublish,
 	pullRequestNumberOf,
 	retireSupersededPublications,
@@ -187,28 +188,6 @@ describe('retireSupersededPublications', () => {
 		expect(refused?.reason).toBe('kept: it is live');
 	});
 
-	it('[<500ms] does nothing for a unit that took nothing over', async () => {
-		const { git } = repo();
-		expect(
-			await handedFromOf('/nonexistent-dir-for-spec', OLD_WORK),
-		).toEqual([]);
-		expect(
-			await retireSupersededByPublish({
-				root: '.',
-				ctx: fakePartial<IWorkUnitContext>({}),
-				policy,
-				remote: 'origin',
-				agent: 'me',
-				handedFrom: [],
-				published: true,
-				newPublication: 'x',
-				newTip: 'abc',
-				pullRequest: undefined,
-			}),
-		).toEqual([]);
-		void git;
-	});
-
 	it('[<500ms] names the pull request from its URL and reports what was retired', async () => {
 		const { git, commit } = repo();
 		git('switch', '-q', '-c', OLD_PUBLICATION);
@@ -253,14 +232,47 @@ describe('retireSupersededPublications', () => {
 		expect(workRefOfPublicationRef(policy, OLD_PUBLICATION)).toBe(OLD_WORK);
 	});
 
-	it('[<100ms] hands back a publish that published nothing untouched', async () => {
-		const ctx = fakePartial<IWorkUnitContext>({});
+	it('[<100ms] hands back a publish that published nothing, untouched', async () => {
+		const ctx = fakePartial<IWorkUnitContext>({
+			cwd: '/nonexistent-for-spec',
+			globals: fakePartial<IWorkUnitContext['globals']>({
+				workspace: '',
+			}),
+		});
 		const nothing: IWorkUnitResult = {
 			code: EXIT_CODE.OK,
 			data: { published: false },
 		};
-		expect(await withSupersededRetired(nothing, [], ctx)).toBe(nothing);
-		const bare: IWorkUnitResult = { code: EXIT_CODE.OK };
-		expect(await withSupersededRetired(bare, [], ctx)).toBe(bare);
+		expect(
+			await publishedSupersedingOld([], ctx, async () => nothing),
+		).toBe(nothing);
+	});
+
+	it('[<500ms] finds the shared git directory from files, in a clone and in a worktree', async () => {
+		const { git } = repo();
+		const top = git('rev-parse', '--show-toplevel');
+		git(
+			'worktree',
+			'add',
+			'-q',
+			'-b',
+			'wt',
+			join(top, '..', `${top.split('/').pop()}-wt`),
+		);
+		roots.push(`${top}-wt`);
+		const common = join(top, '.git');
+		expect(await commonDirFromFiles(top)).toBe(common);
+		expect(
+			await commonDirFromFiles(
+				join(top, '..', `${top.split('/').pop()}-wt`),
+			),
+		).toBe(common);
+		expect(await commonDirFromFiles('/')).toBeUndefined();
+	});
+
+	it('[<500ms] says nothing is handed over by a unit without a lease', async () => {
+		const { git } = repo();
+		const common = join(git('rev-parse', '--show-toplevel'), '.git');
+		expect(await handedFromOf(common, OLD_WORK)).toEqual([]);
 	});
 });
