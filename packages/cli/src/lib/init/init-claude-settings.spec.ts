@@ -42,6 +42,10 @@ describe('the Claude Code pre-edit hook', () => {
 		expect(settings.hooks.PreToolUse[0].hooks[0].command).toContain(
 			'guard pre-edit',
 		);
+		expect(settings.hooks.PostToolUse[0].matcher).toBe('Bash');
+		expect(settings.hooks.PostToolUse[0].hooks[0].command).toContain(
+			'guard post-shell',
+		);
 	});
 
 	it("adds it beside the person's own keys, comments and hooks, once", async () => {
@@ -60,6 +64,7 @@ describe('the Claude Code pre-edit hook', () => {
 		expect(text).toContain('"model": "x"');
 		expect(text).toContain('"matcher": "Bash"');
 		expect(text).toContain('guard pre-edit');
+		expect(text).toContain('guard post-shell');
 		expect(mergePreEditHook(text)).toBeUndefined();
 		expect((await ensurePreEditHook(root)).kind).toBe('merged');
 	});
@@ -69,5 +74,24 @@ describe('the Claude Code pre-edit hook', () => {
 		expect(
 			mergePreEditHook('{ "hooks": { "PreToolUse": {} } }'),
 		).toBeUndefined();
+		expect(
+			mergePreEditHook('{ "hooks": { "PostToolUse": {} } }'),
+		).toBeUndefined();
+	});
+
+	it('adds the post-shell hook to a file that already has the pre-edit one', () => {
+		const text = JSON.stringify({
+			hooks: {
+				PreToolUse: [
+					{
+						matcher: 'Edit',
+						hooks: [{ command: 'x guard pre-edit' }],
+					},
+				],
+			},
+		});
+		const merged = mergePreEditHook(text);
+		expect(merged).toContain('guard post-shell');
+		expect((merged?.match(/guard pre-edit/gu) ?? []).length).toBe(1);
 	});
 });
