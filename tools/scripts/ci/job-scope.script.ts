@@ -98,6 +98,17 @@ const decide = (
 	const scope = (input.scopes ?? JOB_SCOPES).find((each) => each.job === job);
 	if (scope === undefined)
 		return { runs: true, why: 'undeclared: an unknown job always runs' };
+	const members = scope.group;
+	if (members !== undefined) {
+		const decisions = members.map((member) => ({
+			member,
+			...decide(input, member),
+		}));
+		const running = decisions.find((each) => each.runs);
+		return running === undefined
+			? { runs: false, why: 'none of its checks can be affected' }
+			: { runs: true, why: `${running.member}: ${running.why}` };
+	}
 	// A change with no files is not evidence that nothing is affected —
 	// it is evidence that the diff could not be read.
 	if (input.changed.length === 0)

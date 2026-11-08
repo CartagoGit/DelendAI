@@ -66,6 +66,30 @@ const localExpression = (
 };
 
 /**
+ * The steps of one static check: a job of its own, or the steps a grouped
+ * job gates with that check's plan entry (`plan)['lint-docs']`).
+ */
+const stepsOf = (
+	jobs: Record<string, YamlValue>,
+	job: string,
+): readonly YamlValue[] | undefined => {
+	if (job in jobs) {
+		const own = asRecord(jobs[job]).steps;
+		return Array.isArray(own) ? own : [];
+	}
+	const gated = Object.values(jobs)
+		.flatMap((each) => {
+			const steps = asRecord(each).steps;
+			return Array.isArray(steps) ? steps : [];
+		})
+		.filter((step) => {
+			const gate = asRecord(step).if;
+			return typeof gate === 'string' && gate.includes(`['${job}']`);
+		});
+	return gated.length > 0 ? gated : undefined;
+};
+
+/**
  * The static checks of a workflow, with their expressions resolved for a
  * local run against `base` (a commit) and `baseRef` (the branch name).
  * Throws when a job is missing or a step uses an expression it cannot
@@ -78,13 +102,13 @@ export const staticChecksOf = (
 ): readonly IStaticCheck[] => {
 	const jobs = asRecord(parseWorkflowYaml(workflowText).jobs);
 	return STATIC_CHECK_JOBS.map((job) => {
-		if (!(job in jobs)) {
+		const steps = stepsOf(jobs, job);
+		if (steps === undefined) {
 			throw new Error(
 				`ci.yml has no \`${job}\` job to read the checks of`,
 			);
 		}
-		const steps = asRecord(jobs[job]).steps;
-		const runs = (Array.isArray(steps) ? steps : [])
+		const runs = steps
 			.map((step) => asRecord(step).run)
 			.filter((run): run is string => typeof run === 'string');
 		const script = runs
