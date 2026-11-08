@@ -40,6 +40,12 @@ export const declaredBranches = (
 	root: string = repoRoot(),
 ): IDeclaredPolicy['branches'] => declaredPolicy(root).branches;
 
+/** The remote-tracking ref of the integration branch the policy declares. */
+export const declaredIntegrationRef = (
+	root: string = repoRoot(),
+	remote = 'origin',
+): string => `${remote}/${declaredBranches(root).integration}`;
+
 /**
  * How this project lands a pull request: squash, merge or rebase.
  *

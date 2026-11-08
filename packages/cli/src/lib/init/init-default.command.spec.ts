@@ -133,6 +133,22 @@ describe('init:default (f00103)', () => {
 		expect(flags.force).toBe(false);
 	});
 
+	it('writes --version or --branch into the entry, and refuses both', async () => {
+		const pinned = await initDefaultCommand.run(
+			[`--delendai-root=${fakeHostEntry}`, '--version=0.3.0'],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		expect(pinned.code).toBe(EXIT_CODE.OK);
+		const mcp = await readFile(join(tmp, '.vscode/mcp.json'), 'utf8');
+		expect(mcp).toContain('--version=0.3.0');
+		expect(mcp).not.toContain('--branch=');
+		const both = await initDefaultCommand.run(
+			['--branch=main', '--version=0.3.0'],
+			noopCtx(tmp, minimalGlobals()),
+		);
+		expect(both.code).not.toBe(EXIT_CODE.OK);
+	});
+
 	it('prints its help and bootstraps nothing', async () => {
 		const write = vi
 			.spyOn(process.stderr, 'write')

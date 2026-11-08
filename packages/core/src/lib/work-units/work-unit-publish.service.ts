@@ -20,8 +20,8 @@ import {
 	choosePublicationTarget,
 	proposalInProgress,
 } from './publication-target.service';
-import { pullRequestPorts } from './change-request-forges.service';
-import { openPublicationPullRequest } from './publication-pull-request.service';
+import { openUnitPullRequest } from './publication-pull-request.service';
+import { urgencyOfUnit } from './pull-request-urgency.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
 import { readWorkspaceDocsDir } from './development-policy.service';
@@ -46,7 +46,6 @@ import {
 	unknownKind,
 } from './work-unit-shared.service';
 import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
-import { landsByPullRequest } from '../development-policy/branch-rules';
 import { readSupersedingUnit } from './unit-fence.service';
 import { worktreeOfRef } from './unit-removal.service';
 import {
@@ -293,6 +292,7 @@ export const published = async (
 			'Fix what failed, commit it in the unit, and publish again. `delendai work prove` runs the same proof without publishing.',
 		);
 	}
+	const urgent = await urgencyOfUnit(args, root, workRef);
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -330,25 +330,18 @@ export const published = async (
 	};
 	// The publication becomes a pull request here, by the machine that
 	// holds the forge credential (x00677), when the branch takes PRs.
-	const ports =
-		outcome.published &&
-		landsByPullRequest(policy) &&
-		!args.includes('--no-pull-request')
-			? await pullRequestPorts(root)
-			: undefined;
 	const pullRequest =
-		ports !== undefined && outcome.tip !== null
-			? openPublicationPullRequest({
+		outcome.published && outcome.tip !== null
+			? await openUnitPullRequest({
+					root,
+					policy,
+					args,
 					remote,
-					base: policy.branches.integration,
-					branch: target.publicationRef.replace(
-						/^refs\/heads\//u,
-						'',
-					),
+					publicationRef: target.publicationRef,
 					tip: outcome.tip,
 					integrationBase: base,
 					fallbackTitle: `${kindFor(args, slice)} ${proposal}`,
-					ports,
+					urgent,
 				})
 			: undefined;
 	// Published but not cleaned up is not a success: the namespace is

@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 
 import {
 	compileWorkRefParser,
+	noteUnitUrgency,
 	readWorkspacePolicy,
 	runWorkUnit,
 } from '@delendai/core/cli';
@@ -160,8 +161,14 @@ export const createWorkCommand = (): ICliCommand => ({
 				locate: () =>
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
 				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
-				transition: (to, checkout) =>
-					answerOf(
+				transition: async (to, checkout) => {
+					// The transition to review publishes the unit, apart
+					// from this command: the reason is noted for it.
+					const urgent = scalarArg(unit, 'urgent');
+					if (to === 'review' && urgent !== undefined) {
+						await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
+					}
+					return answerOf(
 						request(ctx, 'delendai_proposals_proposal_transition', {
 							id,
 							to,
@@ -169,7 +176,8 @@ export const createWorkCommand = (): ICliCommand => ({
 							...(agent === undefined ? {} : { agent }),
 							checkout: checkout ?? ctx.cwd,
 						}),
-					),
+					);
+				},
 			});
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {

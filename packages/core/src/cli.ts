@@ -65,6 +65,7 @@ export {
 } from './lib/work-units/shared-checkout-clean.service';
 // The editor-side barrier: a host's pre-edit hook asks it before a write.
 export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
+export { rescueAfterShell } from './lib/work-units/shared-checkout-shell-rescue.service';
 export { agentFor } from './lib/work-units/work-unit-shared.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
@@ -90,6 +91,7 @@ export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export { ownedNamespaces } from './lib/development-policy/owned-ref-prefixes';
 export {
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
 } from './lib/development-policy/owned-ref-prefixes';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
@@ -112,10 +114,12 @@ export { gitActorMarker } from './lib/work-identity/git-actor.helper';
 export {
 	AGENT_ENVIRONMENT_MARKERS,
 	DELENDAI_SESSION_VARIABLE,
+	UNIT_SESSION_VARIABLE,
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
 export { pushUnitTip } from './lib/work-units/unit-push.service';
+export { linkSharedDependencies } from './lib/work-units/unit-shared-dependencies.service';
 export { hookFreeEnvironment } from './lib/shared/hook-free-environment.helper';
 export { publicationOnLeavingProgress } from './lib/work-units/unit-leaves-progress.service';
 export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
@@ -166,6 +170,7 @@ export type {
 	IAdoption,
 } from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
+export { noteUnitUrgency } from './lib/work-units/pull-request-urgency.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
 export type {
