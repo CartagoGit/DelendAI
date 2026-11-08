@@ -376,7 +376,10 @@ export const fastSteps = (
 				[
 					'tests: the specs nearest the change',
 					[
-						'npx',
+						// Not npx: it hands the command to `sh -c` as one string,
+						// and a change that reaches every spec (the shared test
+						// config) names more than the 128 KB one argument allows.
+						'bunx',
 						'vitest',
 						'run',
 						'--coverage',
