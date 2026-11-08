@@ -2,7 +2,14 @@
  * train-assembly.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
-import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import { createGitRepoTemplate } from '@delendai/test-kit';
@@ -68,6 +75,7 @@ describe('assembleTrain', () => {
 			ref: TRAIN,
 			members: [three, five],
 			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
 			regenerate: (dir) => {
 				runs.push(dir);
 				writeFileSync(join(dir, DERIVED), 'catalog: 3, 5\n');
@@ -95,6 +103,78 @@ describe('assembleTrain', () => {
 		expect(readFileSync(join(root, DERIVED), 'utf8')).toBe(
 			'catalog: base\n',
 		);
+	});
+
+	it('links the dependencies before the generators run, and pushes a tree equal to a fresh regeneration', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, {
+			'three.ts': '3\n',
+			[DERIVED]: 'catalog: 3\n',
+		});
+		const five = candidate(5, {
+			'five.ts': '5\n',
+			[DERIVED]: 'catalog: 5\n',
+		});
+		// The generator is a function of the sources, and cannot run without
+		// the dependencies: the failure that wrote an empty catalog.
+		const generate = (dir: string): boolean => {
+			if (!existsSync(join(dir, 'node_modules'))) return false;
+			const sources = readdirSync(dir)
+				.filter(
+					(name) =>
+						/^\d?[a-z]+\.ts$/u.test(name) && name !== 'authored.ts',
+				)
+				.sort();
+			writeFileSync(
+				join(dir, DERIVED),
+				`catalog: ${sources.join(',')}\n`,
+			);
+			return true;
+		};
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three, five],
+			derived: new Set([DERIVED]),
+			linkDependencies: (dir) => {
+				mkdirSync(join(dir, 'node_modules'));
+				return true;
+			},
+			regenerate: generate,
+		});
+		expect(outcome.pushFailure).toBeUndefined();
+		git('fetch', '-q', 'origin', TRAIN);
+		git('worktree', 'add', '-q', '--detach', `${root}-fresh`, 'FETCH_HEAD');
+		try {
+			const fresh = `${root}-fresh`;
+			const pushed = readFileSync(join(fresh, DERIVED), 'utf8');
+			mkdirSync(join(fresh, 'node_modules'));
+			expect(generate(fresh)).toBe(true);
+			expect(pushed).toBe(readFileSync(join(fresh, DERIVED), 'utf8'));
+			expect(pushed).toBe('catalog: five.ts,three.ts\n');
+		} finally {
+			git('worktree', 'remove', '--force', `${root}-fresh`);
+		}
+	});
+
+	it('pushes nothing when the dependencies cannot be linked', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, { [DERIVED]: 'catalog: 3\n' });
+		const five = candidate(5, { [DERIVED]: 'catalog: 5\n' });
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three, five],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => false,
+			regenerate: () => true,
+		});
+		expect(outcome).toEqual({ conflicting: [5], regenerated: [] });
+		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
 	it('returns the reason when the forge declines the push, and the ref stays absent', () => {
