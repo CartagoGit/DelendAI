@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 188589ce-3201-46e1-b7b3-c4ffd0fea663
-last-correlation-id: 188589ce-3201-46e1-b7b3-c4ffd0fea663
+last-transition-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
+last-correlation-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
 last-transition-from: review
-last-transition-at: 2026-11-04T20:30:47.785Z
+last-transition-at: 2026-11-04T22:17:32.891Z
 ---
 
 # x01028 — The governed fetch connects to the address it validated
@@ -42,7 +42,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: while I do not see post-shipped drift in listed files from 7f77000da636, this submission does not include current-run empirical evidence proving all three acceptance criteria on develop (pinned IP connect path, rebinding-block spec behavior, and removed stale comment). Please attach reproducible evidence and resubmit.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

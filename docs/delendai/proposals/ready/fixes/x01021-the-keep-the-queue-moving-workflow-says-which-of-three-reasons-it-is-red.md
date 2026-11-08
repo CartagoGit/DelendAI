@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: b01b35ef-2a83-442b-b032-9629f8a2b1b1
-last-correlation-id: b01b35ef-2a83-442b-b032-9629f8a2b1b1
+last-transition-id: 4fcbf08d-5785-47ba-be60-56fd72831897
+last-correlation-id: 4fcbf08d-5785-47ba-be60-56fd72831897
 last-transition-from: review
-last-transition-at: 2026-11-04T21:45:52.610Z
+last-transition-at: 2026-11-04T22:24:34.272Z
 ---
 
 # x01021 — The keep-the-queue-moving workflow says which of three reasons it is red
@@ -41,7 +41,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: no post-shipped drift was observed for this slice, but this submission currently lacks attached reproducible current-develop evidence proving all three terminal state outputs (internal-error, queue-blocked, ok) including the claimed specs. Please re-run and attach fresh empirical proof before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The workflow summary names the state of each step
 - **Status**: pending
@@ -53,7 +53,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: no post-shipped drift was observed for this slice, but this submission currently lacks attached reproducible current-develop evidence that workflow summary lines separately report internal-error, queue-blocked, and open-security-alert states while preserving failing behavior. Please attach fresh empirical proof before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 
