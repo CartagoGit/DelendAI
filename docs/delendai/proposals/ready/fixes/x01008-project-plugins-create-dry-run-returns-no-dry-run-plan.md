@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: 528f8361-dc7c-4de9-8c10-21b085cf5ee4
-last-correlation-id: 528f8361-dc7c-4de9-8c10-21b085cf5ee4
+last-transition-id: fd10108e-d4fa-4df7-828c-cd8e5847cd21
+last-correlation-id: fd10108e-d4fa-4df7-828c-cd8e5847cd21
 last-transition-from: review
-last-transition-at: 2026-11-04T20:20:00.074Z
+last-transition-at: 2026-11-04T22:14:10.145Z
 ---
 
 # x01008 — project_plugins_create dry run returns no dry-run plan
@@ -38,7 +38,7 @@ A consumer reported that the dry run of project-plugin create writes files. The 
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6747b9bb94c5 is stale for this slice. `git log 6747b9bb94c5..develop -- <S1 files>` shows post-shipped changes touching listed files (e.g. d8937b2c3, e7fdcd9df), so the dry-run acceptance must be re-validated on current develop with fresh evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

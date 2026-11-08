@@ -41,6 +41,15 @@ export const workflowJobIds = (source: string): readonly string[] => {
 	return ids;
 };
 
+/** The plan entries a workflow gates its steps with (`plan)['lint-docs']`). */
+export const planKeysOf = (source: string): readonly string[] => [
+	...new Set(
+		[...source.matchAll(/outputs\.plan\)\['([a-z][a-z0-9-]*)'\]/gu)].map(
+			(match) => match[1] ?? '',
+		),
+	),
+];
+
 /** The two ways the table and the workflow can disagree. */
 export const scopeDrift = (input: {
 	readonly jobs: readonly string[];
@@ -58,10 +67,17 @@ const main = (): number => {
 		join(repoRoot(), '.github/workflows/ci.yml'),
 		'utf8',
 	);
-	const drift = scopeDrift({
-		jobs: workflowJobIds(source),
+	const jobs = workflowJobIds(source);
+	const found = scopeDrift({
+		jobs,
 		declared: JOB_SCOPES.map((scope) => scope.job),
 	});
+	// An entry that gates steps of a grouped job is not stale.
+	const gated = new Set(planKeysOf(source));
+	const drift = {
+		...found,
+		stale: found.stale.filter((job) => !gated.has(job)),
+	};
 
 	if (drift.undeclared.length === 0 && drift.stale.length === 0) {
 		console.log(

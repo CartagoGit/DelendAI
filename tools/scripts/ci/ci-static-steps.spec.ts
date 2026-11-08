@@ -88,3 +88,25 @@ describe('staticChecksOf', () => {
 		).toBe(true);
 	});
 });
+
+describe('a static check that is steps of a grouped job', () => {
+	it('reads the steps gated by its plan entry', () => {
+		const text = [
+			'jobs:',
+			...STATIC_CHECK_JOBS.filter((job) => job !== 'lint-docs').map(
+				(job) =>
+					`    ${job}:\n        steps:\n            - run: echo ${job}`,
+			),
+			'    grouped:',
+			'        steps:',
+			'            - name: docs',
+			"              if: ${{ fromJSON(needs.plan-scope.outputs.plan)['lint-docs'] }}",
+			'              run: echo grouped-docs',
+		].join('\n');
+		expect(
+			staticChecksOf(text, 'b', 'develop').find(
+				(check) => check.job === 'lint-docs',
+			)?.script,
+		).toBe('echo grouped-docs');
+	});
+});

@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 12085c2c-cdf2-4cde-809d-9cc22e65579e
-last-correlation-id: 12085c2c-cdf2-4cde-809d-9cc22e65579e
+last-transition-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
+last-correlation-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
 last-transition-from: review
-last-transition-at: 2026-11-04T20:28:52.607Z
+last-transition-at: 2026-11-04T22:12:13.800Z
 ---
 
 # x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
@@ -41,7 +41,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached empirical evidence from a reproducible run on current develop for both acceptance criteria (folder resolution and cwd propagation on re-run). Please re-run and attach fresh evidence before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale due to drift after shipped-in commit; rebase and re-validate on current develop before approval.
 
 ### S2 — Edits and choices
 - **Status**: pending
@@ -53,7 +53,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible evidence on current develop for the three UI acceptance points (save ack granularity, discard restores last-saved, cancel leaves provider state unchanged). Please re-run and resubmit with fresh empirical proof.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — Routing, dashboard and polling
 - **Status**: pending
@@ -67,7 +67,7 @@ Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFol
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 99169458ee61 is stale for this slice. `git log 99169458ee61..develop -- <S3 files>` shows later commits in listed files (e.g. d8f054d49, bd8a13152), and current submission also lacks reproducible acceptance evidence for routing + dashboard/polling behaviors on develop. Please re-validate and resubmit with fresh proof.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

@@ -37,7 +37,9 @@ const boot = (
 		mutexWait: {
 			timeoutMs: 0,
 			pollMs: 5,
-			sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+			// The mutex is never contended here (timeoutMs 0): a poll
+			// yields the loop instead of waiting a duration.
+			sleep: () => new Promise((resolve) => setImmediate(resolve)),
 		},
 		policy: testPolicy(),
 		environmentSeam: environmentSeam({

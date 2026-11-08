@@ -35,6 +35,7 @@ import { join } from 'node:path';
 
 import {
 	BASELINE_PATH,
+	DETERMINISTIC_ALTERNATIVES,
 	SELF_SPEC,
 	SLEEP_PATTERNS,
 	WAIVER_MARKER,
@@ -46,21 +47,38 @@ export const sleepsIn = (
 	text: string,
 ): readonly { readonly line: number; readonly match: string }[] => {
 	const lines = text.split('\n');
-	const found: { line: number; match: string }[] = [];
-	lines.forEach((line, index) => {
-		if (line.includes(WAIVER_MARKER)) return;
-		// A waiver on the line above covers the sleep below it, which is
-		// where a reader naturally writes the reason.
-		if ((lines[index - 1] ?? '').includes(WAIVER_MARKER)) return;
-		for (const pattern of SLEEP_PATTERNS) {
-			const hit = new RegExp(pattern.source, pattern.flags).exec(line);
-			if (hit !== null) {
-				found.push({ line: index + 1, match: hit[0].trim() });
-				break;
-			}
+	const lineStarts: number[] = [];
+	let offset = 0;
+	for (const line of lines) {
+		lineStarts.push(offset);
+		offset += line.length + 1;
+	}
+	const lineOf = (index: number): number => {
+		let low = 0;
+		let high = lineStarts.length - 1;
+		while (low < high) {
+			const mid = Math.ceil((low + high) / 2);
+			if ((lineStarts[mid] ?? 0) <= index) low = mid;
+			else high = mid - 1;
 		}
-	});
-	return found;
+		return low;
+	};
+	const found = new Map<number, string>();
+	for (const pattern of SLEEP_PATTERNS) {
+		const all = new RegExp(pattern.source, `${pattern.flags}g`);
+		for (const hit of text.matchAll(all)) {
+			const index = lineOf(hit.index ?? 0);
+			if (found.has(index)) continue;
+			// A waiver on the line above covers the sleep below it, which
+			// is where a reader naturally writes the reason.
+			if ((lines[index] ?? '').includes(WAIVER_MARKER)) continue;
+			if ((lines[index - 1] ?? '').includes(WAIVER_MARKER)) continue;
+			found.set(index, hit[0].replace(/\s+/gu, ' ').trim());
+		}
+	}
+	return [...found.entries()]
+		.sort(([left], [right]) => left - right)
+		.map(([index, match]) => ({ line: index + 1, match }));
 };
 
 /** Scan the spec files a caller hands over. */
@@ -123,9 +141,8 @@ if (import.meta.main) {
 			'',
 			'  A sleep tests whether the machine was fast enough, not the code.',
 			'',
-			'  1. fake timers — `vi.useFakeTimers()`, for anything clock-driven',
-			'  2. await the promise — when the code is ours, hand it back',
-			'  3. `waitUntil` from `@delendai/test-kit` — for real I/O',
+			...DETERMINISTIC_ALTERNATIVES.map((way) => `  - ${way}`),
+			'  - await the promise — when the code is ours, hand it back',
 			'',
 			`  A spec that genuinely tests timing writes \`${WAIVER_MARKER}\` and why.`,
 		].join('\n'),

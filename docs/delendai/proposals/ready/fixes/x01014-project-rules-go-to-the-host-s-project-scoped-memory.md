@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: d99ba717-9d05-41c0-b8b7-2d1b7a72a389
-last-correlation-id: d99ba717-9d05-41c0-b8b7-2d1b7a72a389
+last-transition-id: 6be6905d-0193-424f-af6b-b14bbd56a9ea
+last-correlation-id: 6be6905d-0193-424f-af6b-b14bbd56a9ea
 last-transition-from: review
-last-transition-at: 2026-11-04T20:18:09.727Z
+last-transition-at: 2026-11-04T22:13:12.606Z
 ---
 
 # x01014 — Project rules go to the host's project-scoped memory
@@ -43,7 +43,7 @@ GitHub Copilot's memory tool has a user scope, shared by every workspace (~/.vsc
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 6e3d5921baca is stale for this slice. `git log 6e3d5921baca..develop -- <S1 files>` shows post-shipped changes (e.g. a190479ea), so acceptance must be re-validated on current develop and re-submitted with fresh evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

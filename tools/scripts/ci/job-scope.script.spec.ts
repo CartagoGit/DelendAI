@@ -193,7 +193,8 @@ describe('the declarations themselves', () => {
 
 	it('never declares an empty bound, which would skip the job forever', () => {
 		for (const scope of JOB_SCOPES) {
-			if (scope.touches === 'always') continue;
+			if (scope.touches === 'always' || scope.group !== undefined)
+				continue;
 			expect(scope.touches.length).toBeGreaterThan(0);
 		}
 	});
@@ -537,6 +538,7 @@ describe('the jobs the real scopes run, by kind of change', () => {
 			'lint-docs',
 			'lint-security',
 			'lint-governance',
+			'static-checks',
 			'plan-scope',
 			'quality-gate',
 			'delendai-validate',
@@ -669,5 +671,62 @@ describe('the packaging jobs judge a published surface by the names it exports',
 			(each) => each !== 'delendai-rebuild-digest',
 		))
 			expect(plan[job]).toBe(true);
+	});
+});
+
+describe('the static checks share one job', () => {
+	const STATIC = JOB_SCOPES.find((scope) => scope.job === 'static-checks');
+	const plan = (
+		changed: readonly string[],
+	): Readonly<Record<string, boolean>> =>
+		planJobs({
+			changed,
+			scopes: JOB_SCOPES,
+			structural: [],
+			reached: new Set<string>(),
+		});
+
+	it('is made of checks that each keep their own entry', () => {
+		const names = JOB_SCOPES.map((scope) => scope.job);
+		expect(STATIC?.group?.length).toBe(8);
+		for (const member of STATIC?.group ?? [])
+			expect(names).toContain(member);
+	});
+
+	it('runs when any of its checks can be affected, and says which', () => {
+		expect(
+			plan(['docs/delendai/proposals/ready/perfs/x.md'])['static-checks'],
+		).toBe(true);
+		const [line] = explainJobs({
+			changed: ['plugins/proposals/src/a.ts'],
+			scopes: JOB_SCOPES.filter(
+				(scope) =>
+					scope.job === 'static-checks' ||
+					STATIC?.group?.includes(scope.job),
+			),
+			structural: [],
+			reached: new Set<string>(),
+		}).filter((each) => each.job === 'static-checks');
+		expect(line?.runs).toBe(true);
+		expect(line?.why).toMatch(/^[a-z-]+: /u);
+	});
+
+	it('does not run when none of its checks can be affected', () => {
+		const scopes: readonly IJobScope[] = [
+			{ job: 'one', touches: ['a/'], because: 'fixture' },
+			{ job: 'two', touches: ['b/'], because: 'fixture' },
+			{
+				job: 'both',
+				touches: [],
+				group: ['one', 'two'],
+				because: 'fixture',
+			},
+		];
+		expect(
+			planJobs({ changed: ['c/x.ts'], scopes, structural: [] }).both,
+		).toBe(false);
+		expect(
+			planJobs({ changed: ['b/x.ts'], scopes, structural: [] }).both,
+		).toBe(true);
 	});
 });

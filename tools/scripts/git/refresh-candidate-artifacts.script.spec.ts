@@ -408,6 +408,28 @@ describe('pushRefusalReason', () => {
 		);
 	});
 
+	it('keeps every failing line in full, however many and however long', () => {
+		const cause = `✖ preset-metadata: ${'a reason '.repeat(80)}`;
+		const output = [
+			'$ bun one',
+			'✖ typecheck: first',
+			'$ bun two',
+			'✖ lint: second',
+			'✖ lint: third',
+			cause,
+			'error: failed to push some refs',
+		].join('\n');
+		expect(pushRefusalReason(output)).toBe(
+			[
+				'✖ typecheck: first',
+				'✖ lint: second',
+				'✖ lint: third',
+				cause.trim(),
+				'error: failed to push some refs',
+			].join(' | '),
+		);
+	});
+
 	it('falls back to the last lines, and says so when there is nothing', () => {
 		expect(pushRefusalReason('one\ntwo\nthree\nfour')).toBe(
 			'two | three | four',

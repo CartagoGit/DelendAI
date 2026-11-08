@@ -25,6 +25,7 @@ import {
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
 } from '@delendai/proposals/lib/tools/proposal-transition.tool';
+import { waitUntil } from '@delendai/test-kit';
 
 const FAKE_GIT_MV: IGitRunner = async (args) => {
 	if (args[0] === 'mv') {
@@ -37,7 +38,8 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 const STARTED_AT = Date.parse('2026-10-07T10:00:00.000Z');
 const FINISHED_AT = STARTED_AT + 90 * 60_000;
 
-const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+/** A turn of the loop, for the cases that assert nothing was recorded. */
+const settle = (): Promise<void> => new Promise((r) => setImmediate(r));
 
 const BODY = [
 	'## Slices',
@@ -116,7 +118,7 @@ describe('transition duration history (f00511 S2)', () => {
 		expect(JSON.parse(result.content[0]?.text ?? '{}')).toMatchObject({
 			ok: true,
 		});
-		await settle();
+		await waitUntil('the sample is recorded', () => samples.length === 1);
 		expect(samples).toHaveLength(1);
 		expect(samples[0]).toMatchObject({
 			to: 'review',

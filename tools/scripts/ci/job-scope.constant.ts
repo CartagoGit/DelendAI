@@ -202,6 +202,25 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'measured: its proposal, branch and agent lints read every top-level entry and judge refs that change without a file changing.',
 	},
 	{
+		// One runner and one setup for the static checks that used to be a job
+		// each. Every member keeps its entry above and gates its own steps in
+		// ci.yml; the job runs when any of them does.
+		job: 'static-checks',
+		touches: [],
+		group: [
+			'lint-biome',
+			'manifests-check',
+			'lint-architecture',
+			'lint-docs',
+			'lint-presets',
+			'lint-security',
+			'lint-governance',
+			'generated-artifacts-check',
+		],
+		because:
+			'it is the runner of the eight static checks that used to run one per job; its verdict is theirs, so it runs when any of them can be affected.',
+	},
+	{
 		job: 'typecheck',
 		touches: SOURCE_PREFIXES,
 		because:

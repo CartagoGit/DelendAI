@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
-last-correlation-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
+last-transition-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
+last-correlation-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
 last-transition-from: in-progress
-last-transition-at: 2026-11-08T14:35:51.391Z
+last-transition-at: 2026-11-08T19:29:24.508Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -81,6 +81,26 @@ With S1–S4 on develop the train was still declined: a member that left the int
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S6 — A train's CI run passes the commit-branch lint
+- **Status**: review
+- **Files**: `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
+- **Gate**: none
+
+Once trains were pushed, every train run went red, even a train of one green pull request: `commit-branch-discipline` judged the CI checkout `delendai/train/…` as outside every namespace the policy declares. It was a third copy of the namespace list (after the guard and the ruleset), and the queue's bisection then blamed innocent members as culprits. The lint now reads the train namespaces from core's `ownedTrainPrefixes`, the source the guard and the ruleset read.
+- shipped-in: `bd78b3e79e8b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
+### S7 — The refresher judges riders as the queue does
+- **Status**: review
+- **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
+- **Gate**: none
+
+With trains running, two green pull requests sat for over 40 minutes: the queue said "#1861 is brought forward first" while the refresher said "lands as it is or rides a train; not brought forward", so neither acted. The refresher counted a failed train left from an OLDER tip as carrying the rider, and it ignored the culprit marker the queue keeps such a candidate off its trains by. It now counts only trains built from the current tip and leaves no culprit to a train.
+- shipped-in: `c97c3ea9d3d3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts).
@@ -89,3 +109,5 @@ With S1–S4 on develop the train was still declined: a member that left the int
 - Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts).
 - When the train cannot run and every candidate is behind, the candidates are brought forward one by one and none waits forever (queue-acceptance.spec.ts).
 - A train whose members merged cleanly is regenerated once before it is pushed, and a failed regeneration pushes nothing.
+- The CI checkout of a train passes commit-branch-discipline under every train namespace, and a branch outside them is still refused.
+- A rider carried only by a train from an older tip, or isolated as a culprit, is brought forward by the refresher.
