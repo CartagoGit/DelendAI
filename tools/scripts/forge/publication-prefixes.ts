@@ -7,8 +7,8 @@
  * until they end (f00808).
  */
 import {
-	ownedNamespaces,
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 } from '@delendai/core/cli';
 
 /** Whether `ref` lives under one of `prefixes`, followed by `rest`. */
@@ -29,18 +29,9 @@ export const publicationPrefixesOf = (
 		prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
 	);
 
-/** The branches of the project as delendai owns them, for its prefixes. */
-type IOwnedBranches = Parameters<typeof ownedNamespaces>[0];
-
 /**
- * Where trains live: `<namespace>/train/` under each namespace the project
- * owns, the current one first (writers use it alone; readers take every
- * one, so a train or culprit marker left under a former namespace is still
- * found). An empty namespace gives `train/`. Beside the publication
- * namespace, never inside it, so nothing that opens or reaps publications
- * mistakes a train for one.
+ * Where trains live, every namespace the project owns, current first. The
+ * guard and the forge ruleset read the same prefixes from core, so a train
+ * the queue pushes is one both admit.
  */
-export const trainPrefixesOf = (branches: IOwnedBranches): readonly string[] =>
-	ownedNamespaces(branches).map((namespace) =>
-		namespace === '' ? 'train/' : `${namespace}/train/`,
-	);
+export const trainPrefixesOf = ownedTrainPrefixes;
