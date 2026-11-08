@@ -68,6 +68,38 @@ export const workRefProposalOpen = (
 	(facts.openOnIntegration && !(facts.landed && abandoned(facts))) ||
 	(!facts.landed && facts.openAtTip);
 
+/**
+ * The integration branch the rule reads, wherever the caller stands: the
+ * forge's copy when the clone has it, else the local branch. The checkout
+ * publisher read the local branch and the ref maintenance the forge's, so
+ * one lagging behind the other gave them two readings of one ref.
+ */
+export const workRefIntegrationRef = (
+	remote: string,
+	integration: string,
+	remoteKnown: boolean,
+): string =>
+	remoteKnown
+		? `refs/remotes/${remote}/${integration}`
+		: `refs/heads/${integration}`;
+
+/**
+ * Whether a ref's work has landed: the one reading every caller of the
+ * rule uses for `landed`. A ref sitting exactly at the integration tip
+ * has nothing of its own yet (an agent just entered), so it has not
+ * landed; a ref the integration branch contains has; and one that adds no
+ * file counts as landed only when it carries no meaning of its own (a
+ * forward sync, empty-commit claims), which only containment settles.
+ */
+export const workRefLanded = (facts: {
+	readonly atIntegrationTip: boolean;
+	readonly contained: boolean;
+	readonly changesNothing: boolean;
+	readonly meaningInCommits: boolean;
+}): boolean =>
+	!facts.atIntegrationTip &&
+	(facts.contained || (!facts.meaningInCommits && facts.changesNothing));
+
 /** Whether the verdict puts the ref back on the forge. */
 export const putsBack = (
 	verdict: IWorkRefVerdict,

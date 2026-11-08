@@ -20,6 +20,8 @@ import {
 	landedForgeRefKept,
 	silenceSince,
 	workRefFate,
+	workRefIntegrationRef,
+	workRefLanded,
 	workRefOpenness,
 	workRefProposalOpen,
 } from '@delendai/core/lib/work-units/work-ref-lifecycle.service';
@@ -275,5 +277,40 @@ describe('silenceSince', () => {
 		expect(silenceSince('200', 100_000)).toBe(0);
 		expect(silenceSince(undefined)).toBeUndefined();
 		expect(silenceSince('not a time')).toBeUndefined();
+	});
+});
+
+describe('workRefLanded', () => {
+	const base = {
+		atIntegrationTip: false,
+		contained: false,
+		changesNothing: false,
+		meaningInCommits: false,
+	};
+	it('never counts a ref at the integration tip', () => {
+		expect(
+			workRefLanded({ ...base, atIntegrationTip: true, contained: true }),
+		).toBe(false);
+	});
+	it('counts a contained ref and one that adds no file', () => {
+		expect(workRefLanded({ ...base, contained: true })).toBe(true);
+		expect(workRefLanded({ ...base, changesNothing: true })).toBe(true);
+	});
+	it('settles a ref whose commits carry meaning only by containment', () => {
+		expect(
+			workRefLanded({
+				...base,
+				changesNothing: true,
+				meaningInCommits: true,
+			}),
+		).toBe(false);
+	});
+	it('reads the forge integration branch when the clone has it', () => {
+		expect(workRefIntegrationRef('origin', 'develop', true)).toBe(
+			'refs/remotes/origin/develop',
+		);
+		expect(workRefIntegrationRef('origin', 'develop', false)).toBe(
+			'refs/heads/develop',
+		);
 	});
 });
