@@ -2,14 +2,14 @@
 id: x01053
 title: "The merge train is pushed: a failed generator commits nothing and an empty source fails loudly"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: aec7601f-8df6-42e7-a30a-29ad6999dcab
-last-correlation-id: aec7601f-8df6-42e7-a30a-29ad6999dcab
-last-transition-from: review
-last-transition-at: 2026-11-08T18:02:22.230Z
+last-transition-id: 79dfbbd1-d637-4c68-be73-9a5ba7de9de5
+last-correlation-id: 79dfbbd1-d637-4c68-be73-9a5ba7de9de5
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T18:05:30.714Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -82,11 +82,14 @@ With S1–S4 on develop the train was still declined: a member that left the int
 - review-implementer: claude-opus-5-5
 
 ### S6 — A train's CI run passes the commit-branch lint
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
 
 Once trains were pushed, every train run went red, even a train of one green pull request: `commit-branch-discipline` judged the CI checkout `delendai/train/…` as outside every namespace the policy declares. It was a third copy of the namespace list (after the guard and the ruleset), and the queue's bisection then blamed innocent members as culprits. The lint now reads the train namespaces from core's `ownedTrainPrefixes`, the source the guard and the ruleset read.
+- shipped-in: `bd78b3e79e8b`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
