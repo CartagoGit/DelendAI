@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IChangeRequestForge } from '@delendai/core/lib/contracts/interfaces/change-request-forge.interface';
 import type { IPullRequestPorts } from '@delendai/core/lib/contracts/interfaces/publication-pull-request.interface';
+import { urgentReasonOfBody } from '@delendai/core/lib/work-units/pull-request-urgency.service';
 import {
 	openPublicationPullRequest,
 	pullRequestText,
@@ -424,5 +425,29 @@ describe('pullRequestText', () => {
 				'unit',
 			).title,
 		).toBe('chore(deps): bump zod');
+	});
+});
+
+describe('the urgent mark on a pull request (x01051)', () => {
+	it('puts one Urgent line in the body and reads it back', () => {
+		const text = pullRequestText(
+			['fix: a thing'],
+			'delendai/pr/a/implement/x1-all-g1/t',
+			'fallback',
+			'integration machinery   loops\nand self-blocks',
+		);
+		expect(text.body).toContain(
+			'Urgent: integration machinery loops and self-blocks',
+		);
+		expect(urgentReasonOfBody(text.body)).toBe(
+			'integration machinery loops and self-blocks',
+		);
+	});
+
+	it('carries no mark when nobody said it was urgent', () => {
+		const text = pullRequestText(['fix: a thing'], 'b', 'fallback');
+		expect(text.body).not.toContain('Urgent:');
+		expect(urgentReasonOfBody(text.body)).toBeUndefined();
+		expect(urgentReasonOfBody(null)).toBeUndefined();
 	});
 });
