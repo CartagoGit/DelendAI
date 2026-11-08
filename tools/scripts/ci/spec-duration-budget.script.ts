@@ -101,7 +101,8 @@ const declaredMain = (): number => {
 	);
 	// The changed files come from the input the other gates use: a list
 	// file, or the base the change is measured against.
-	const base = arg('base') ?? process.env['DELENDAI_COVERAGE_BASE'];
+	const { DELENDAI_COVERAGE_BASE: envBase } = process.env;
+	const base = arg('base') ?? envBase;
 	const changedList = arg('changed-files');
 	const changed = new Set(
 		changedList !== undefined
