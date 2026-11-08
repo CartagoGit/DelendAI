@@ -30,7 +30,7 @@ import {
 	budgetChanges,
 	longestDurations,
 	measuredTestsOfBlob,
-	type TestDurations,
+	type ITestDurations,
 	withCalibratedBudget,
 } from './test-budget-calibration';
 
@@ -45,7 +45,7 @@ const jsonFiles = (dir: string): string[] =>
 		.map((name) => join(dir, name));
 
 const digest = (blobs: string, out: string): number => {
-	let durations: TestDurations = {};
+	let durations: ITestDurations = {};
 	for (const file of jsonFiles(blobs)) {
 		durations = longestDurations(
 			measuredTestsOfBlob(readFileSync(file, 'utf8'), repoRoot()),
@@ -88,9 +88,9 @@ const main = (): number => {
 		);
 		return 2;
 	}
-	let durations: TestDurations = {};
+	let durations: ITestDurations = {};
 	for (const file of jsonFiles(dir)) {
-		const part = JSON.parse(readFileSync(file, 'utf8')) as TestDurations;
+		const part = JSON.parse(readFileSync(file, 'utf8')) as ITestDurations;
 		durations = longestDurations(
 			Object.entries(part).flatMap(([f, tests]) =>
 				Object.entries(tests).map(([name, tookMs]) => ({

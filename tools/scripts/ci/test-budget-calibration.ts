@@ -15,7 +15,7 @@ export interface IMeasuredTest {
 }
 
 /** Per spec file, per full test name, the longest time any run measured. */
-export type TestDurations = Readonly<
+export type ITestDurations = Readonly<
 	Record<string, Readonly<Record<string, number>>>
 >;
 
@@ -89,8 +89,8 @@ export const measuredTestsOfBlob = (
 /** The longest time per test over every run given (`previous` is one more run). */
 export const longestDurations = (
 	measured: readonly IMeasuredTest[],
-	previous: TestDurations = {},
-): TestDurations => {
+	previous: ITestDurations = {},
+): ITestDurations => {
 	const out: Record<string, Record<string, number>> = {};
 	for (const [file, tests] of Object.entries(previous)) {
 		out[file] = { ...tests };
@@ -114,7 +114,7 @@ export interface IBudgetChange {
 
 /** The tests that would fail (declared below the measured time) with their calibrated budgets. */
 export const budgetChanges = (
-	durations: TestDurations,
+	durations: ITestDurations,
 ): readonly IBudgetChange[] =>
 	Object.entries(durations).flatMap(([file, tests]) =>
 		Object.entries(tests).flatMap(([name, maxMs]) => {
@@ -140,7 +140,8 @@ export const withCalibratedBudget = (
 ): string | undefined => {
 	const rest = change.name.replace(BUDGET_PREFIX, '');
 	const before = `[<${String(change.declared)}ms] ${rest}`;
-	return source.split(before).length === 2
-		? source.replace(before, `[<${String(change.calibrated)}ms] ${rest}`)
+	const parts = source.split(before);
+	return parts.length === 2
+		? parts.join(`[<${String(change.calibrated)}ms] ${rest}`)
 		: undefined;
 };
