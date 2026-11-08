@@ -137,7 +137,8 @@ process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
 // bounded run fails it.
 if (process.env[SOFT_OVERRUN_ENV] === undefined) {
 	process.env[SOFT_OVERRUN_ENV] =
-		process.env['CI'] === undefined && isWholeSuiteRun(process.argv)
+		process.env['GITHUB_ACTIONS'] === undefined &&
+		isWholeSuiteRun(process.argv)
 			? '1'
 			: '0';
 }

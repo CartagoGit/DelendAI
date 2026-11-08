@@ -26,7 +26,7 @@ changed-files input the lint uses), so a test an older branch lands cannot turn
 develop or another change red. With the change unknown, every file is held to
 it.
 
-An over-budget test fails in CI and in a bounded run. In a local run whose
+An over-budget test fails on GitHub Actions and in a bounded run. In a local run whose
 selection is the whole suite (no filter, or 200 spec files or more) the machine
 is saturated by the run itself, so wall time measures the machine: the overruns
 are reported as one summary of warnings and do not fail. A missing or malformed

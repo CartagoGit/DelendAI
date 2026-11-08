@@ -27,7 +27,7 @@ describe('clearAmbientEnvironment', () => {
 			GH_TOKEN: 'a',
 			GITHUB_TOKEN: 'b',
 			GH_ENTERPRISE_TOKEN: 'c',
-			GH_CONFIG_DIR: '/home/me/.config/gh',
+			GH_CONFIG_DIR: '/srv/me/gh',
 		};
 		const removed = clearAmbientEnvironment(markers, env);
 		expect([...removed].sort()).toEqual([
@@ -49,7 +49,7 @@ describe('clearAmbientEnvironment', () => {
 			PATH: '/usr/bin',
 		});
 		// `gh` looks for its login in an empty directory, not the user's.
-		expect(configDir).not.toBe('/home/me/.config/gh');
+		expect(configDir).not.toBe('/srv/me/gh');
 		expect(readdirSync(configDir ?? '')).toEqual([]);
 	});
 
