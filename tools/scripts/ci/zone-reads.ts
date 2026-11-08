@@ -41,10 +41,6 @@ import { dirname } from 'node:path';
 import { parseWorkflowYaml, type YamlValue } from './workflow-yaml';
 import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 
-/** A workflow definition, as opposed to anything else under `.github/`. */
-export const isWorkflowFile = (path: string): boolean =>
-	/^\.github\/workflows\/[^/]+\.ya?ml$/u.test(path);
-
 /**
  * A root file nothing can say the reach of. A workflow or a composite
  * action is not one: an edit of it proves itself by running the jobs whose
