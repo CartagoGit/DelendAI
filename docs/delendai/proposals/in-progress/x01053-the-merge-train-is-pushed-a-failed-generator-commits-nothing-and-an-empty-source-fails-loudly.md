@@ -47,10 +47,17 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 
 ### S3 — The train's scratch worktree has the shared dependencies
 - **Status**: pending
-- **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
+- **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/link-train-dependencies.script.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - "Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts)."
+
+### S4 — A train that cannot run leaves its riders to the individual path
+- **Status**: pending
+- **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Gate**: type
+- acceptance:
+  - "When no pushed train carries a behind rider and the integration tip has stood past the grace, the rider is not left to the train: it is brought forward by the individual path (queue order, urgent first, capped per pass), re-runs its own checks and lands by its own merge once green; while a train carries it, or within the grace, it is left to the train (queue-acceptance.spec.ts)."
 
 ## acceptance
 
@@ -58,3 +65,4 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - The managed-lazy catalog generator throws when no plugin loaded in a repository whose first-party index has plugins, and writes no file (managed-lazy-catalog.script.spec.ts).
 - The manifests generator throws when plugin packages exist and no manifest loaded (from-manifests.script.spec.ts).
 - Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts).
+- When the train cannot run and every candidate is behind, the candidates are brought forward one by one and none waits forever (queue-acceptance.spec.ts).
