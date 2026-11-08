@@ -116,7 +116,7 @@ describe('landingAfterTrain', () => {
 		expect(outcome.landing.size).toBe(0);
 	});
 
-	it('lands the members one by one when the train is red on its own checks', () => {
+	it('[<12ms] lands the members one by one when the train is red on its own checks', () => {
 		const reported: string[] = [];
 		const outcome = attempt(
 			{
