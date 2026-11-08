@@ -17,6 +17,7 @@ import {
 	describeOffRoster,
 	firstSpelling,
 } from './agent-alias.service';
+import { integrationMergeSubjects } from './integration-merges.helper';
 import { readGit } from './work-unit-shared.service';
 
 /** How far back the integration branch's merges are read. */
@@ -62,17 +63,9 @@ export const agentsSeen = (input: {
 		]) === undefined
 			? integration
 			: `refs/remotes/origin/${integration}`;
-	const merges = (
-		readGit(root, [
-			'log',
-			'--first-parent',
-			'--merges',
-			'--reverse',
-			`--max-count=${String(MERGES_READ)}`,
-			'--format=%s',
-			tip,
-		]) ?? ''
-	).split('\n');
+	const merges = integrationMergeSubjects(root, tip)
+		.slice(0, MERGES_READ)
+		.reverse();
 	return [
 		...new Set([
 			...agentsOfMerges(merges, policy.branches.publicationRefPrefix),

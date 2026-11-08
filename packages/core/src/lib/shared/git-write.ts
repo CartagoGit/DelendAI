@@ -26,7 +26,12 @@ export type {
 };
 import { execFile } from 'node:child_process';
 import { executionRootOr } from './execution-root';
-import { noteGitSettled, noteGitSpawn } from './git-read.helper';
+import {
+	noteGitSettled,
+	noteGitSpawn,
+	recallGitRead,
+	rememberGitRead,
+} from './git-read.helper';
 import { gitEnvironmentFor } from './hook-free-environment.helper';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
@@ -134,6 +139,14 @@ export const createGitRunner =
 	): IGitRunner =>
 	(args) =>
 		new Promise<IGitRunResult>((resolve) => {
+			const remembered =
+				env === undefined
+					? recallGitRead(executionRootOr(cwd), args)
+					: undefined;
+			if (remembered !== undefined) {
+				resolve({ ok: true, output: remembered });
+				return;
+			}
 			noteGitSpawn(executionRootOr(cwd), args);
 			execFile(
 				'git',
@@ -148,6 +161,8 @@ export const createGitRunner =
 				(error, stdout, stderr) => {
 					noteGitSettled(executionRootOr(cwd), args);
 					if (!error) {
+						if (env === undefined)
+							rememberGitRead(executionRootOr(cwd), args, stdout);
 						resolve({ ok: true, output: stdout });
 						return;
 					}

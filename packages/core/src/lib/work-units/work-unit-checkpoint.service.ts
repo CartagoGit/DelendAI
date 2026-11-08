@@ -3,6 +3,7 @@ import {
 	anchorRefusal,
 	observeAnchor,
 } from '../wip-engine/index';
+import { argumentsRefused } from './work-arguments.helper';
 import { shortName } from '../development-policy/git-guard-namespaces';
 import { checkedOutHereReason } from '../wip-engine/checkpoint';
 import { validateScopePaths } from '../../plugin';
@@ -52,10 +53,7 @@ export const checkpointed = async (
 		paths.length === 0 ||
 		agent.length === 0
 	) {
-		return refused(
-			'A checkpoint needs an identity, a scope and a message.',
-			'work checkpoint --proposal=<id> --slice=<id> --paths=<a,b> --message="..." [--agent=<who>] [--generation=<n>] [--topic=<text>]; --agent defaults to DELENDAI_AGENT_ID.',
-		);
+		return argumentsRefused('checkpoint');
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
 		return refused(
