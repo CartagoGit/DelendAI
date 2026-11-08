@@ -19,6 +19,7 @@ import {
 
 import {
 	conflictDetail,
+	discardScratch,
 	GENERATED_REFRESH_COMMANDS,
 	identityArgs,
 	pushRefusalReason,
@@ -124,6 +125,40 @@ describe('refreshCandidate (x00565)', () => {
 		expect(
 			git(root, 'show', 'origin/delendai/pr/candidate:authored.ts'),
 		).toContain('a = 2');
+	});
+
+	it('[<2000ms] leaves no scratch worktree behind when the run throws, and keeps a sibling registered', () => {
+		const { root } = repoWithCandidate();
+		const sibling = join(mkdtempSync(join(tmpdir(), 'sibling-')), 'wt');
+		roots.push(sibling);
+		git(root, 'worktree', 'add', '-q', '--detach', sibling, 'HEAD');
+		// The sibling's directory vanishes: a stale registration a global
+		// `worktree prune` would drop, and only the reclaimer may.
+		rmSync(sibling, { recursive: true, force: true });
+		expect(() =>
+			refreshCandidate({
+				root,
+				policy,
+				remote: 'origin',
+				candidate: 'delendai/pr/candidate',
+				run: () => {
+					throw new Error('generator died');
+				},
+			}),
+		).toThrow('generator died');
+		const listed = git(root, 'worktree', 'list', '--porcelain');
+		expect(listed).not.toContain('candidate-refresh-');
+		expect(listed).toContain(sibling);
+	});
+
+	it('[<2000ms] discardScratch removes the worktree and its directory, only that one', () => {
+		const { root } = repoWithCandidate();
+		const holder = mkdtempSync(join(tmpdir(), 'scratch-'));
+		roots.push(holder);
+		const dir = join(holder, 'a');
+		git(root, 'worktree', 'add', '-q', '--detach', dir, 'HEAD');
+		discardScratch(root, dir);
+		expect(git(root, 'worktree', 'list', '--porcelain')).not.toContain(dir);
 	});
 
 	it('leaves a candidate that does not merge trivially to its author', () => {

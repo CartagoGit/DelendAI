@@ -364,7 +364,7 @@ describe('isolation', () => {
 		// A leaked worktree is how `.worktrees/` filled up in the first
 		// place, and a thrown error is exactly when nobody is watching.
 		expect(code).toMatch(/finally\s*\{[\s\S]*?'worktree',\s*'remove'/u);
-		expect(code).toContain("'worktree', 'prune'");
+		expect(code).not.toContain("'worktree', 'prune'");
 	});
 });
 
@@ -607,5 +607,16 @@ describe('proveCommit in a repository of its own', () => {
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('the isolated pre-flight cleanup', () => {
+	it('[<50ms] removes only its own worktree and never runs a global prune', () => {
+		const source = readFileSync(
+			join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
+			'utf8',
+		);
+		expect(source).toContain("git(['worktree', 'remove', '--force', dir])");
+		expect(source).not.toContain("'prune'");
 	});
 });

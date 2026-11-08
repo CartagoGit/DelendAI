@@ -24,6 +24,28 @@ export interface IWorktree {
 	readonly delivered: boolean;
 	/** True when git has marked it locked. */
 	readonly locked: boolean;
+	/** True when HEAD is detached (no branch carries its commits). */
+	readonly detached: boolean;
+	/**
+	 * True when a remote-tracking ref contains its head: the work is on the
+	 * forge, whatever the integration branch has done with it.
+	 */
+	readonly headOnRemote: boolean;
+	/**
+	 * Its `MERGE_HEAD` when a merge is in progress, else `undefined`; and
+	 * whether a remote ref contains that commit too.
+	 */
+	readonly mergeHead?: { readonly onRemote: boolean };
+	/**
+	 * True for the `--branch` / `--version` runtime trees other projects'
+	 * servers run from (`.cache/delendai/branch-runtime/*`).
+	 */
+	readonly runtime: boolean;
+	/**
+	 * For `.git/delendai-prove/*`: whether the process that made it is
+	 * still alive. `null` for every other worktree.
+	 */
+	readonly proofHolder: 'live' | 'dead' | null;
 	/**
 	 * When git last did anything in this worktree (epoch ms), or 0 when
 	 * that cannot be told.
@@ -60,6 +82,10 @@ export const WORKTREE_ROLES = [
 	'unknown',
 	/** Its head is not in the integration branch: unpublished work. */
 	'undelivered',
+	/** A runtime tree other projects' servers run from: never reclaimed. */
+	'runtime',
+	/** A proof worktree whose process is still alive. */
+	'proving',
 	/** Git did something here recently: somebody is probably sitting at it. */
 	'active',
 	/** Clean, and everything it holds is already in the integration branch. */

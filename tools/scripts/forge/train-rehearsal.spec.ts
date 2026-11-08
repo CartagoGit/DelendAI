@@ -2,6 +2,9 @@
  * train-rehearsal.spec.ts — the gates a train meets are rehearsed, and
  * every failure is reported in one pass.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -106,5 +109,16 @@ describe('rehearseGates', () => {
 				't',
 			).at(-1),
 		).toContain('passes every gate');
+	});
+});
+
+describe('the rehearsal script', () => {
+	it('[<50ms] creates no branch in the clone: its scratch worktree stays detached', () => {
+		const source = readFileSync(
+			join(import.meta.dirname, 'train-rehearsal.script.ts'),
+			'utf8',
+		);
+		expect(source).not.toMatch(/'checkout',\s*'-q',\s*'-[bB]'/u);
+		expect(source).not.toMatch(/'(branch|switch)'/u);
 	});
 });

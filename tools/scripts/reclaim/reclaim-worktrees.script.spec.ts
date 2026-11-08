@@ -23,7 +23,9 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import {
 	formatReport,
+	isRuntimeTree,
 	judgeWorktrees,
+	proofPidOf,
 	parseWorktreeList,
 	pathOfStatusLine,
 	main,
@@ -41,6 +43,10 @@ const tree = (over: Partial<IWorktree> = {}): IWorktree => ({
 	dirtyPaths: 0,
 	delivered: true,
 	locked: false,
+	detached: false,
+	headOnRemote: false,
+	runtime: false,
+	proofHolder: null,
 	lastActivityMs: 0,
 	...over,
 });
@@ -51,6 +57,66 @@ const JUDGEMENT = { now: NOW, activeWindowMs: 2 * HOUR } as const;
 
 const roleOf = (over: Partial<IWorktree>): string =>
 	judgeWorktrees([tree(over)], JUDGEMENT).verdicts[0]?.role ?? '';
+
+describe('judgeWorktrees: what is not a desk', () => {
+	it('[<50ms] never reclaims a runtime tree, however clean and delivered', () => {
+		expect(roleOf({ runtime: true })).toBe('runtime');
+	});
+
+	it('[<50ms] keeps a proof while its process lives, clears it once it is gone', () => {
+		expect(roleOf({ proofHolder: 'live' })).toBe('proving');
+		expect(roleOf({ proofHolder: 'dead', delivered: false })).toBe('spent');
+		expect(roleOf({ proofHolder: 'dead', dirtyPaths: 2 })).toBe('dirty');
+	});
+
+	it('[<50ms] clears a clean detached worktree whose head a remote ref contains', () => {
+		expect(
+			roleOf({ delivered: false, detached: true, headOnRemote: true }),
+		).toBe('spent');
+	});
+
+	it('[<50ms] keeps a detached head no remote has, and a branch-attached one', () => {
+		expect(roleOf({ delivered: false, detached: true })).toBe(
+			'undelivered',
+		);
+		expect(roleOf({ delivered: false, headOnRemote: true })).toBe(
+			'undelivered',
+		);
+	});
+
+	it('[<50ms] clears an abandoned merge only when both sides are on the remote', () => {
+		const merging = {
+			delivered: false,
+			detached: true,
+			dirtyPaths: 3,
+			headOnRemote: true,
+		};
+		expect(roleOf({ ...merging, mergeHead: { onRemote: true } })).toBe(
+			'spent',
+		);
+		expect(roleOf({ ...merging, mergeHead: { onRemote: false } })).toBe(
+			'dirty',
+		);
+		expect(
+			roleOf({
+				...merging,
+				headOnRemote: false,
+				mergeHead: { onRemote: true },
+			}),
+		).toBe('dirty');
+	});
+
+	it('[<50ms] recognises runtime trees and proof pids by path', () => {
+		expect(isRuntimeTree('/r/.cache/delendai/branch-runtime/develop')).toBe(
+			true,
+		);
+		expect(isRuntimeTree('/r/.cache/delendai/.worktrees/x')).toBe(false);
+		expect(
+			proofPidOf('/r/.git/delendai-prove/e543d6521698-331629-17941'),
+		).toBe(331629);
+		expect(proofPidOf('/tmp/candidate-refresh-abc')).toBeNull();
+	});
+});
 
 describe('judgeWorktrees', () => {
 	it('clears a clean worktree the integration branch already contains', () => {
@@ -183,11 +249,17 @@ describe('parseWorktreeList', () => {
 		);
 
 		expect(parsed).toEqual([
-			{ path: '/repo', head: 'a'.repeat(40), locked: false },
+			{
+				path: '/repo',
+				head: 'a'.repeat(40),
+				locked: false,
+				detached: false,
+			},
 			{
 				path: '/repo/.worktrees/w',
 				head: 'b'.repeat(40),
 				locked: true,
+				detached: true,
 			},
 		]);
 	});

@@ -152,6 +152,23 @@ describe('proveUnit', () => {
 		expect(report).toEqual({ declared: false, passed: true, steps: [] });
 	});
 
+	it('[<3000ms] removes only its temporary worktree: another unit\u2019s registration survives', async () => {
+		const root = repoWith(PROVING);
+		const tip = git(root, 'rev-parse', 'HEAD');
+		const other = join(mkdtempSync(join(tmpdir(), 'prove-other-')), 'wt');
+		roots.push(other);
+		git(root, 'worktree', 'add', '-q', '--detach', other, tip);
+		rmSync(other, { recursive: true, force: true });
+		await proveUnit({
+			root,
+			worktree: undefined,
+			tipSha: tip,
+			integrationSha: tip,
+			run: () => ({ code: 0, output: '' }),
+		});
+		expect(git(root, 'worktree', 'list', '--porcelain')).toContain(other);
+	});
+
 	it('proves a unit with no worktree in a temporary one, installed first', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');

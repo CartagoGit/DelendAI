@@ -62,6 +62,30 @@ describe('validationGateSteps', () => {
 });
 
 describe('certifyCandidate', () => {
+	it('[<3000ms] removes only its own worktree: another unit\u2019s registration survives', async () => {
+		const root = repoWith({
+			'delendai.config.json': JSON.stringify({
+				validationMatrix: { scopes: { a: [{ command: 'only' }] } },
+			}),
+		});
+		const head = git(root, 'rev-parse', 'HEAD');
+		const other = join(mkdtempSync(join(tmpdir(), 'certify-other-')), 'wt');
+		roots.push(other);
+		git(root, 'worktree', 'add', '-q', '--detach', other, head);
+		// A directory gone but still registered: what a global
+		// `git worktree prune` would drop mid-operation.
+		rmSync(other, { recursive: true, force: true });
+
+		await certifyCandidate({
+			root,
+			candidateSha: head,
+			integrationSha: head,
+			run: () => ({ code: 0, output: '' }),
+		});
+
+		expect(git(root, 'worktree', 'list', '--porcelain')).toContain(other);
+	});
+
 	it('runs every step in a worktree of the candidate, and removes it', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
