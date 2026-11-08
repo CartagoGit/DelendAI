@@ -25,10 +25,14 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 
 import { parseJsonc } from '@delendai/core/cli';
-import { urgentReasonOfBody } from '@delendai/core/runtime';
+import {
+	bodyWithUrgentLine,
+	urgencyNotePathOfPublication,
+	urgentReasonOfBody,
+} from '@delendai/core/runtime';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -428,8 +432,43 @@ export const armCandidates = (
 	return armed;
 };
 
+/**
+ * The urgency of a pull request: its body's line, else what its unit
+ * recorded (a delivery from a CLI older than the mark left no line), which
+ * is then written to the body so every later reader finds it there.
+ */
+const urgentOfPull = (pull: IPullRequest): string | undefined => {
+	const stated = urgentReasonOfBody(pull.body);
+	if (stated !== undefined) return stated;
+	const note = urgencyNotePathOfPublication(
+		execFileSync('git', ['rev-parse', '--show-toplevel'], {
+			encoding: 'utf8',
+		}).trim(),
+		pull.head.ref,
+	);
+	const recorded =
+		note === undefined || !existsSync(note)
+			? undefined
+			: urgentReasonOfBody(readFileSync(note, 'utf8'));
+	if (recorded === undefined) return undefined;
+	try {
+		gh([
+			'api',
+			'-X',
+			'PATCH',
+			`repos/${REPOSITORY_SLUG}/pulls/${String(pull.number)}`,
+			'-f',
+			`body=${bodyWithUrgentLine(pull.body, recorded) ?? ''}`,
+		]);
+	} catch {
+		// The mark still orders this pass; the next pass writes it.
+	}
+	return recorded;
+};
+
 /** What ordering the queue needs to know, asked of the forge. */
 const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
+	const urgent = urgentOfPull(pull);
 	const failing = failuresOf(checksOf(pull.head.sha));
 	return {
 		number: pull.number,
@@ -438,7 +477,7 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
 		red: failing.length > 0,
 		failing,
 		conflicting: mergeState(pull.number) === 'dirty',
-		urgent: urgentReasonOfBody(pull.body),
+		urgent,
 	};
 };
 

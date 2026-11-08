@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	culpritRefName,
 	queueHead,
+	byQueuePosition,
 	queueOrder,
 	runTrain,
 	TRAIN_CAPACITY,
@@ -452,5 +453,21 @@ describe('train names', () => {
 			`delendai/train/${'a'.repeat(12)}/3-5`,
 		);
 		expect(culpritRefName(TRAINS, 7)).toBe('delendai/train/culprit/7');
+	});
+});
+
+describe('byQueuePosition: one rule for every ordering (x01051 S6)', () => {
+	it('puts urgent first, then oldest, and queueOrder uses it', () => {
+		const list = [
+			candidate(3),
+			candidate(8, { urgent: 'red' }),
+			candidate(5),
+		];
+		expect([...list].sort(byQueuePosition).map((c) => c.number)).toEqual([
+			8, 3, 5,
+		]);
+		expect(queueOrder(list, PREFIX).map((c) => c.number)).toEqual([
+			8, 3, 5,
+		]);
 	});
 });
