@@ -48,6 +48,15 @@ import { queueAcceptance, trainRiders } from './queue-acceptance';
 import { assembleTrain } from './train-assembly';
 import { armingPlan, requiredChecksVerdict } from './queue-arming';
 import {
+	passedZonesOf,
+	REPAIR_TITLE_PREFIX,
+	redZonesOf,
+	sectionHold,
+	withRedZones,
+	zonesStillRed,
+} from './section-health';
+import { zoneReach } from '../ci/test-zones.script';
+import {
 	culpritRefName,
 	queueHead,
 	queueOrder,
@@ -595,6 +604,84 @@ const remoteBranches = (prefix: string): ReadonlyMap<string, string> =>
 			}),
 	);
 
+/** An open urgent repair of a red promotion, as the forge lists it. */
+interface IRepairIssue {
+	readonly number: number;
+	readonly title: string;
+	readonly body: string | null;
+	readonly created_at: string;
+	readonly pull_request?: unknown;
+}
+
+/** The open urgent repairs: each names the zones the promotion found red. */
+const openRepairs = (): readonly IRepairIssue[] =>
+	api<readonly IRepairIssue[]>(
+		`repos/${REPOSITORY_SLUG}/issues?state=open&per_page=100`,
+	).filter(
+		(issue) =>
+			issue.pull_request === undefined &&
+			issue.title.startsWith(REPAIR_TITLE_PREFIX),
+	);
+
+/** The zones each pull request merged into `integration` since `since` ran green. */
+const landedSince = (
+	integration: string,
+	since: string,
+): readonly ReadonlySet<string>[] =>
+	api<
+		readonly {
+			readonly merged_at: string | null;
+			readonly head: { readonly sha: string };
+		}[]
+	>(
+		`repos/${REPOSITORY_SLUG}/pulls?state=closed&base=${integration}&sort=updated&direction=desc&per_page=50`,
+	)
+		.filter((pull) => pull.merged_at !== null && pull.merged_at > since)
+		.map((pull) => passedZonesOf(checksOf(pull.head.sha)));
+
+/**
+ * The zones still red, after clearing from each repair those a landed pull
+ * request ran green; a repair with none left is closed.
+ */
+const redSections = (integration: string): ReadonlySet<string> => {
+	const red = new Set<string>();
+	for (const repair of openRepairs()) {
+		const body = repair.body ?? '';
+		const named = redZonesOf(body);
+		const still = zonesStillRed(
+			named,
+			named.length === 0
+				? []
+				: landedSince(integration, repair.created_at),
+		);
+		try {
+			if (named.length > 0 && still.length === 0) {
+				gh([
+					'issue',
+					'close',
+					String(repair.number),
+					'--comment',
+					`Every red zone ran green on a pull request that landed since: ${named.join(', ')}.`,
+				]);
+				continue;
+			}
+			if (still.length < named.length) {
+				gh([
+					'issue',
+					'edit',
+					String(repair.number),
+					'--body',
+					withRedZones(body, still),
+				]);
+			}
+		} catch {
+			// The repair keeps its zones; the next run tries again.
+		}
+		for (const zone of still) red.add(zone);
+	}
+	return red;
+};
+
 /**
  * The forge and git behind a train. A train is assembled in a throwaway
  * worktree, never in the checkout, with a conflict confined to derived
@@ -752,6 +839,31 @@ const main = (): void => {
 	const shaOf = (number: number): string =>
 		opened.find((pull) => pull.number === number)?.head.sha ?? '';
 	const ordered = queueOrder(candidates, publicationPrefix);
+	// A red section holds only the candidates whose change reaches it and
+	// that did not run it green themselves (its repair); the rest land.
+	const red = redSections(integration);
+	const heldBy = (number: number): readonly string[] =>
+		red.size === 0
+			? []
+			: sectionHold({
+					red,
+					zones: zoneReach({
+						base: tipSha,
+						head: shaOf(number),
+						rootDir: process.cwd(),
+					})?.zones,
+					passed: passedZonesOf(checksOf(shaOf(number))),
+				});
+	const held = new Map(
+		ordered.flatMap((candidate) => {
+			const zones = heldBy(candidate.number);
+			if (zones.length === 0) return [];
+			console.log(
+				`keep-the-queue-moving: #${String(candidate.number)} waits for the repair of ${zones.join(', ')}, red on ${integration}, which its change reaches.`,
+			);
+			return [[candidate.number, zones] as const];
+		}),
+	);
 	const acceptance = queueAcceptance({
 		root: process.cwd(),
 		remote: 'origin',
@@ -774,7 +886,7 @@ const main = (): void => {
 	// candidate's own current head, its sectioned run.
 	const ready = acceptance
 		.filter((verdict) => {
-			if (!verdict.accepted) return false;
+			if (!verdict.accepted || held.has(verdict.number)) return false;
 			const checks = requiredChecksVerdict(
 				checksOf(shaOf(verdict.number)),
 				policy.integration.requiredChecks,
@@ -803,7 +915,9 @@ const main = (): void => {
 		remote: 'origin',
 		integration,
 		integrationSha: tipSha,
-		candidates: ordered.map((candidate) => riderOf(candidate.number)),
+		candidates: ordered
+			.filter((candidate) => !held.has(candidate.number))
+			.map((candidate) => riderOf(candidate.number)),
 	}).filter((verdict) => {
 		if (!verdict.accepted) {
 			console.log(

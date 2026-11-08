@@ -811,9 +811,19 @@ jobs:
                   else
                     echo "none=false" >> "$GITHUB_OUTPUT"
                   fi
+                  # A shard that failed is the report: its own `tests: <zone>`
+                  # job names it, and `delendai-validate` requires that job.
+                  # Merging after it said the same failure twice, as a
+                  # "missing blob" or a coverage shortfall of the red shard.
+                  if [ "$ZONES_RESULT" = failure ]; then
+                    echo "tests: a zone failed; its own job is the report, so nothing is merged or judged here."
+                    echo "red=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "red=false" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Collect every shard's blob report
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
               with:
                   pattern: vitest-blob-*
@@ -829,7 +839,7 @@ jobs:
             # remedy; on a first attempt a zone that selected no spec may
             # have written none, and is only listed.
             - name: Check that every zone that ran left its blob
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               env:
                   ZONES: ${{ needs.plan-tests.outputs.zones }}
                   ATTEMPT: ${{ github.run_attempt }}
@@ -865,7 +875,7 @@ jobs:
             # keeps the verdict the integration branch's full run gave
             # it, because it did not change.
             - name: Merge the shards and enforce the coverage gate
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               env:
                   DELENDAI_COVERAGE_BASE: ${{ env.SCOPE_BASE }}
               run: |
@@ -882,7 +892,7 @@ jobs:
                   fi
 
             - name: Record how long each spec took
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # An optimisation of the next pull requests' split: it never
               # fails the run it measures.
               continue-on-error: true
@@ -893,7 +903,7 @@ jobs:
                     --out=.cache/spec-timings/spec-timings.json
 
             - name: Hold every spec to its time budget
-              if: steps.planned.outputs.none != 'true'
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # q00045 S1. A wall clock on a shared runner is noisy, so a
               # pull request fails only for a spec clearly over 5 s (by a
               # margin), and the integration branch's certification never
@@ -920,7 +930,7 @@ jobs:
                   fi
 
             - name: Open or refresh the slow-spec issue
-              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
+              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
               continue-on-error: true
               env:
                   GH_TOKEN: ${{ github.token }}
@@ -936,7 +946,7 @@ jobs:
                   fi
 
             - name: Upload the spec timings
-              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true'
+              if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # An optimisation of the next pull requests' split: it never
               # fails the run it measures.
               continue-on-error: true
