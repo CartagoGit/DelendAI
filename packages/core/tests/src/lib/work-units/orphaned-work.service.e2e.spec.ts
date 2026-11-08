@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { publicationPresence } from '@delendai/core/lib/work-units/orphaned-work.service';
+import { readOrphans } from '@delendai/core/lib/work-units/publication-standings.service';
 
 describe('publicationPresence on a just-delivered publication (x01051)', () => {
 	const dirs: string[] = [];
@@ -55,5 +56,23 @@ describe('publicationPresence on a just-delivered publication (x01051)', () => {
 			publications: [publication],
 		});
 		expect(without.get(publication)?.orphaned).toBe(true);
+		const read = await readOrphans({
+			root,
+			policy,
+			published: [
+				{
+					ref: publication,
+					agent: 'claude-opus-5-5',
+					subject: 'guard',
+					tip,
+					ahead: 1,
+					behind: 0,
+					paths: ['b.txt'],
+				},
+			],
+			standings: [],
+		});
+		expect(read.orphans).toEqual([]);
+		expect(read.presence.get(publication)?.orphaned).toBe(false);
 	});
 });
