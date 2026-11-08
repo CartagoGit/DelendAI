@@ -21,6 +21,7 @@ import { createHash } from 'node:crypto';
 import { hostname } from 'node:os';
 import { join } from 'node:path';
 
+import { forgetGitReads } from '../shared/git-read.helper';
 import { createStartupMutex } from '../startup-reconciler/startup-mutex';
 import {
 	WORK_REF_LOCK_DIRECTORY,
@@ -68,4 +69,11 @@ export const holdWorkRef = (
 		// A push lock is held for one push: one older than its TTL was
 		// left behind, even by a process that is still running.
 		ttlExpiresLiveHolders: true,
-	}).acquire();
+	})
+		.acquire()
+		.then((outcome) => {
+			// Holding the ref means a writer before us has finished: what
+			// this invocation remembered of git may predate its writes.
+			if (outcome.kind === 'acquired') forgetGitReads();
+			return outcome;
+		});
