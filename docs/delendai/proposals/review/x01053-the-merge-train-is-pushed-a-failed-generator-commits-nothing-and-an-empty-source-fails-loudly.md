@@ -2,14 +2,14 @@
 id: x01053
 title: "The merge train is pushed: a failed generator commits nothing and an empty source fails loudly"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: ea6f6fed-7b23-42b9-91ad-bada51411c92
-last-correlation-id: ea6f6fed-7b23-42b9-91ad-bada51411c92
-last-transition-from: review
-last-transition-at: 2026-11-08T14:28:48.043Z
+last-transition-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
+last-correlation-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T14:35:51.391Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -72,11 +72,14 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-implementer: claude-sonnet-5-5
 
 ### S5 — Every train regenerates its derived files once, conflict or not
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`
 - **Gate**: none
 
 With S1–S4 on develop the train was still declined: a member that left the integration branch long ago merges cleanly, yet leaves derived files (the skill copies under .github, .claude, .agents) stale against the tip, and the push's drift check refused the train. The regeneration ran only after a derived conflict. It now runs once on every train after all its members are in; a failed link or regeneration pushes nothing and says why.
+- shipped-in: `20f1648e8c51`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
