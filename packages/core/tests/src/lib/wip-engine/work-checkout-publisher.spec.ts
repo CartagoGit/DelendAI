@@ -170,6 +170,8 @@ describe('publishing agents work checkouts', () => {
 			'merge work',
 			WORK_BRANCH,
 		);
+		// Landed means the forge's integration branch holds it.
+		await repo.git('push', '-q', 'origin', 'develop');
 		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
 			cwd: dir,
 		});
@@ -214,6 +216,7 @@ describe('publishing agents work checkouts', () => {
 			'merge slice',
 			WORK_BRANCH,
 		);
+		await repo.git('push', '-q', 'origin', 'develop');
 		await execFileAsync('git', ['merge', '-q', '--ff-only', 'develop'], {
 			cwd: dir,
 		});
@@ -239,6 +242,7 @@ describe('publishing agents work checkouts', () => {
 			'docs/delendai/proposals/review/x00001-open.md',
 		);
 		await repo.git('commit', '-q', '-m', 'docs: the proposal moves on');
+		await repo.git('push', '-q', 'origin', 'develop');
 		const [ended] = await publishWorkCheckouts(run, POLICY);
 		expect(ended?.outcome).toBe('withdrawn');
 		expect(await remoteHas(WORK_BRANCH)).toBe('');

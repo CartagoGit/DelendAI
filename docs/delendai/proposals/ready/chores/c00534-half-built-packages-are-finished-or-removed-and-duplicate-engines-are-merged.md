@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 55a8e158-10b5-4c16-8f6d-a5a111e9435f
-last-correlation-id: 55a8e158-10b5-4c16-8f6d-a5a111e9435f
+last-transition-id: 376fdb4a-bf3c-4d77-a3d1-0afa71aab5c8
+last-correlation-id: 376fdb4a-bf3c-4d77-a3d1-0afa71aab5c8
 last-transition-from: review
-last-transition-at: 2026-11-04T19:37:41.351Z
+last-transition-at: 2026-11-05T00:45:31.791Z
 ---
 
 # c00534 — Half-built packages are finished or removed, and duplicate engines are merged
@@ -42,7 +42,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 1eba86877d7f is stale: S1 files changed in many later commits (e.g. f44c79120, da3d5a486, 5f76c7077, 8fe0646db). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + scoped evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S2 — Shim, prompts and bootstrap
 - **Status**: pending
@@ -56,7 +56,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 524f03fe0f84 is stale: S2 files changed afterward (e.g. ef203ed1f, a9ba21a1e, 502cf5a86). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and gate evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S3 — Duplicate engines
 - **Status**: pending
@@ -71,7 +71,7 @@ Joint audit a00095. G6: half-done or undocumented packages (roadmap-sqlite, pack
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 9d8977782060 is stale: S3 files changed afterward (e.g. 52a949892, 6aa11ad84, 0b0c4aaa1). Redeliver S3 on current HEAD and resubmit with fresh shipped-in + resolver/forge evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ## acceptance
 

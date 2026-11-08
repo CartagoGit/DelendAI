@@ -3,7 +3,7 @@
  * units in step with the forge, and overwrites nothing.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -117,6 +117,70 @@ describe('syncUnitsWithForge', () => {
 		expect(git(remote, 'show', `${BRANCH}:draft.txt`)).toBe('unfinished');
 	});
 
+	/** A unit with a merge begun, conflicts resolved, not committed. */
+	const mergeInProgress = () => {
+		const made = machines();
+		const unit = join(made.top, 'home-unit');
+		git(made.home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		git(unit, 'config', 'user.name', 'spec');
+		git(unit, 'config', 'user.email', 'spec@example.invalid');
+		writeFileSync(join(unit, 'a.txt'), 'mine\n');
+		git(unit, 'commit', '-q', '-am', 'mine');
+		git(made.home, 'checkout', '-q', '-b', 'other');
+		writeFileSync(join(made.home, 'a.txt'), 'theirs\n');
+		git(made.home, 'commit', '-q', '-am', 'theirs');
+		git(made.home, 'checkout', '-q', 'develop');
+		try {
+			git(unit, 'merge', '--no-commit', 'other');
+		} catch {
+			// the conflict is the point
+		}
+		writeFileSync(join(unit, 'a.txt'), 'resolved\n');
+		git(unit, 'add', 'a.txt');
+		return {
+			...made,
+			unit,
+			head: git(unit, 'rev-parse', '--short', 'MERGE_HEAD'),
+		};
+	};
+
+	it('leaves a merge in progress alone while its unit is live (x01051)', async () => {
+		const { unit, home } = mergeInProgress();
+		const before = git(unit, 'rev-parse', 'HEAD');
+		await sync(home, () => true);
+		expect(git(unit, 'rev-parse', 'HEAD')).toBe(before);
+		expect(git(unit, 'rev-parse', '--verify', 'MERGE_HEAD')).not.toBe('');
+		expect(git(unit, 'log', '-1', '--format=%s')).toBe('mine');
+	});
+
+	it('keeps a merge in progress of a unit nobody works in, under a message that names it (x01051)', async () => {
+		const { unit, home, head } = mergeInProgress();
+		const kept = await sync(home);
+		expect(kept[0]).toEqual({
+			branch: BRANCH,
+			outcome: 'kept-uncommitted',
+		});
+		expect(git(unit, 'log', '-1', '--format=%s')).toBe(
+			`chore(wip): keep the merge of ${head} found at start`,
+		);
+		expect(
+			git(unit, 'rev-list', '--parents', '-1', 'HEAD').split(' '),
+		).toHaveLength(3);
+	});
+
+	it('leaves a rebase or cherry-pick of a unit nobody works in as it is (x01051)', async () => {
+		const { unit, home } = mergeInProgress();
+		git(unit, 'merge', '--abort');
+		try {
+			git(unit, 'cherry-pick', 'other');
+		} catch {
+			// it stops on the conflict, with CHERRY_PICK_HEAD set
+		}
+		const result = await sync(home);
+		expect(result[0]).toMatchObject({ outcome: 'failed' });
+		expect(result[0]?.detail).toContain('left as it is');
+	});
+
 	it('does not keep a lost checkout: an emptied tree is neither committed nor pushed', async () => {
 		const { top, remote, home } = machines();
 		const unit = join(top, 'home-unit');
@@ -192,6 +256,52 @@ describe('syncUnitsWithForge', () => {
 		expect(
 			await syncUnitsAtStart({ root: lonely, policy, env: {} }),
 		).toEqual([]);
+	});
+
+	it('publishes at start a unit whose proposal left in-progress and that holds work the forge lacks', async () => {
+		const { top, home } = machines();
+		const unit = join(top, 'home-unit');
+		git(home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		const docs = join(unit, 'docs/delendai/proposals');
+		mkdirSync(join(docs, 'in-progress'), { recursive: true });
+		mkdirSync(join(docs, 'review'), { recursive: true });
+		writeFileSync(join(docs, 'in-progress/x1-topic.md'), '# x1\n');
+		writeFileSync(join(unit, 'work.txt'), 'work\n');
+		git(unit, 'add', '-A');
+		const longAgo = {
+			GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
+			GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+		};
+		const old = (...args: string[]): string =>
+			execFileSync('git', args, {
+				cwd: unit,
+				encoding: 'utf8',
+				env: { ...process.env, ...longAgo },
+			}).trim();
+		old('commit', '-q', '-m', 'work while in progress');
+		git(
+			unit,
+			'mv',
+			'docs/delendai/proposals/in-progress/x1-topic.md',
+			'docs/delendai/proposals/review/x1-topic.md',
+		);
+		old('commit', '-q', '-m', 'the proposal moves to review');
+
+		const written: string[] = [];
+		const done = await syncUnitsAtStart({
+			root: home,
+			policy,
+			env: {},
+			write: (line) => written.push(line),
+		});
+		const outOfProgress = done.filter(
+			(each) =>
+				each.branch === BRANCH &&
+				(each.outcome === 'published' || each.outcome === 'failed') &&
+				(each.detail ?? '').includes('out of progress') !==
+					(each.outcome === 'published'),
+		);
+		expect(outOfProgress).not.toEqual([]);
 	});
 
 	it('tells the doctor which units hold work the forge lacks', async () => {
