@@ -5,61 +5,41 @@
  * unit passes in silence (x01052). Real git.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { createGitRepoTemplate } from '@delendai/test-kit';
+
 import { judgePostShell } from './post-shell-guard.service';
 
-const roots: string[] = [];
 const AGENT = 'claude-opus-5-5';
 const before = process.env.DELENDAI_AGENT_ID;
 
 afterEach(() => {
-	for (const root of roots.splice(0))
-		rmSync(root, { recursive: true, force: true });
 	if (before === undefined) delete process.env.DELENDAI_AGENT_ID;
 	else process.env.DELENDAI_AGENT_ID = before;
 });
 
-const git = (cwd: string, ...args: string[]): void => {
-	execFileSync('git', args, { cwd, stdio: 'ignore' });
-};
-
-/** A shared-checkout-pr project where `AGENT` holds one unit, and no remote. */
-const project = (): { readonly root: string; readonly unit: string } => {
-	const parent = mkdtempSync(join(tmpdir(), 'post-shell-'));
-	roots.push(parent);
-	const root = join(parent, 'repo');
-	execFileSync('git', ['init', '-q', '-b', 'develop', root]);
-	git(root, 'config', 'user.email', 'post@example.com');
-	git(root, 'config', 'user.name', 'Post');
-	git(root, 'config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'a.ts'), 'export {};\n');
-	writeFileSync(
-		join(root, 'delendai.config.json'),
-		JSON.stringify({
+const template = createGitRepoTemplate({
+	trunk: 'develop',
+	files: {
+		'a.ts': 'export {};\n',
+		'delendai.config.json': JSON.stringify({
 			development: {
 				profile: 'shared-checkout-pr',
 				branches: { namespacePrefix: 'delendai' },
 			},
 		}),
-	);
-	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', 'base');
-	const unit = join(parent, 'unit');
-	git(
-		root,
-		'worktree',
-		'add',
-		'-q',
-		'-b',
-		`delendai/wip/${AGENT}/implement/x1-S1-g1/probe`,
-		unit,
-	);
-	return { root, unit };
+	},
+	worktrees: { unit: `delendai/wip/${AGENT}/implement/x1-S1-g1/probe` },
+});
+
+/** A shared-checkout-pr project where `AGENT` holds one unit, and no remote. */
+const project = (): { readonly root: string; readonly unit: string } => {
+	const copy = template.copy();
+	return { root: copy.root, unit: copy.worktrees.unit ?? '' };
 };
 
 const call = (tool: string, cwd: string): string =>
