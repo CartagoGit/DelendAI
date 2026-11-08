@@ -29,7 +29,7 @@ A subagent wrote files into the shared checkout with Bash heredocs and python op
 
 ### S1 — A host hook after every shell command rescues loose edits in the shared checkout
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/shared-checkout-shell-rescue.service.ts`, `packages/core/src/lib/work-units/shared-checkout-shell-rescue.service.spec.ts`, `packages/core/src/lib/work-units/unit-edit-fence.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/post-shell-guard.service.ts`, `packages/cli/src/lib/post-shell-guard.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/constants/pre-edit-guard.constant.ts`, `packages/cli/src/lib/init/init-claude-settings.ts`, `packages/cli/src/lib/init/init-claude-settings.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/shared-checkout-shell-rescue.service.ts`, `packages/core/src/lib/work-units/shared-checkout-shell-rescue.interface.ts`, `packages/core/tests/src/lib/work-units/shared-checkout-shell-rescue.service.spec.ts`, `packages/core/src/lib/work-units/unit-edit-fence.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/post-shell-guard.service.ts`, `packages/cli/src/lib/post-shell-guard.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/constants/pre-edit-guard.constant.ts`, `packages/cli/src/lib/init/init-claude-settings.ts`, `packages/cli/src/lib/init/init-claude-settings.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Decision: when an agent that holds a unit finishes a Bash call and the shared checkout is dirty, delendai guard post-shell runs the work rescue at once and tells the agent which unit worktree to write in; a clean checkout, an agent holding no unit, or a policy without unit worktrees does nothing and prints nothing."
@@ -39,7 +39,7 @@ A subagent wrote files into the shared checkout with Bash heredocs and python op
 
 ### S2 — Gates read the integration branch from the development policy
 - **Status**: pending
-- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
+- **Files**: `tools/scripts/lib/declared-branches.ts`, `tools/scripts/lib/declared-branches.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/forge/release-checkout.script.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/candidate-delivers.script.ts`, `tools/scripts/lint/no-secrets.script.ts`, `tools/scripts/lint/publication-scope.script.ts`, `tools/scripts/reclaim/reclaim-orphans.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`
 - **Gate**: none
 - acceptance:
   - "prove-plan takes its default base from policy.branches.integration, not the literal origin/develop; a policy whose integration branch is trunk proves against origin/trunk."
