@@ -65,6 +65,8 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - project-branches uses it
 - The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up
 
-## Follow-ups
+## Notes
 
 - S3: the c00537 S7 time-budget runner (PR #1841, still open when this landed) detects CI with `GITHUB_ACTIONS`; it adopts `isRunningInProjectCi` from `@delendai/core/cli` once #1841 lands. `plugins/proposals/src/lib/services/proposal-state.ts` (`isCiEnvironment`) still reads the two variables itself.
+- S1 cost, measured once on this unit (`bun run forge:rehearse-train`, nice 19): 9 gates in 173 s wall, 440 s CPU, 1.1 GB peak RSS; the slowest gate is lint-security (101 s), the pre-push hooks take 51 s. Excluded on purpose: quality-gate and tokens-budget-real (they build the repository; the train's own run proves them). Each gate has a timeout (default 900 s, `--timeout=`), concurrency is half the cores (`PROVE_PARALLEL`).
+- S2: a red leaf train whose member's own required checks are green is reported as "the train's own checks are red", writes no culprit marker, opens or refreshes one issue ("merge train red on its own checks"), and the accepted members land by their own merge. A member inferred red from a green first half is still blamed.
