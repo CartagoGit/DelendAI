@@ -29,6 +29,7 @@ import {
 	protectedBranchNames,
 } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { trainPrefixesOf } from '../forge/publication-prefixes';
 import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
 
 /** One branch's protection, in the shape the committed files already use. */
@@ -310,6 +311,15 @@ export const namespaceRuleset = (
 		...(policy.branches.publicationRefPrefix === ''
 			? []
 			: [`refs/heads/${policy.branches.publicationRefPrefix}**/*`]),
+		// The merge-train namespace sits beside the publication one, and the
+		// queue pushes a ref there for every train
+		// (`{ns}/train/{sha12}/{members}`, `{ns}/train/culprit/{n}`). Left
+		// out of this list, the forge declined the push, the dispatch found
+		// no ref, and the queue landed nothing. It shares its derivation
+		// with the queue, so the two cannot name different namespaces.
+		...trainPrefixesOf(policy.branches).map(
+			(prefix) => `refs/heads/${prefix}**/*`,
+		),
 		...policy.branches.foreignRefPrefixes.map(
 			(prefix) => `refs/heads/${prefix}**`,
 		),

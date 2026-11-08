@@ -2,7 +2,7 @@
  * train-assembly.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { createGitRepoTemplate } from '@delendai/test-kit';
@@ -95,6 +95,33 @@ describe('assembleTrain', () => {
 		expect(readFileSync(join(root, DERIVED), 'utf8')).toBe(
 			'catalog: base\n',
 		);
+	});
+
+	it('returns the reason when the forge declines the push, and the ref stays absent', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, { 'three.ts': '3\n' });
+		const hook = join(
+			git('remote', 'get-url', 'origin'),
+			'hooks',
+			'pre-receive',
+		);
+		writeFileSync(
+			hook,
+			'#!/bin/sh\necho "creations being restricted" >&2\nexit 1\n',
+		);
+		chmodSync(hook, 0o755);
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three],
+			derived: new Set([DERIVED]),
+			regenerate: () => true,
+		});
+		expect(outcome.conflicting).toEqual([]);
+		expect(outcome.pushFailure).toContain('creations being restricted');
+		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
 	it('leaves out a member that conflicts in an authored file, and pushes nothing', () => {
