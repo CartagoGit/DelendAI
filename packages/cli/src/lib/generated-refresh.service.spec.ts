@@ -167,6 +167,34 @@ describe('refreshGeneratedAfterMerge (x00559)', () => {
 		expect(outcome.committed).toBe(false);
 	});
 
+	it('restores every bounded path and commits nothing when one generator failed after another wrote', () => {
+		const root = repo();
+		const head = git(root, 'rev-parse', 'HEAD');
+		let calls = 0;
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				calls += 1;
+				// The first writes an empty file and succeeds; the second fails.
+				if (calls === 1) {
+					writeFileSync(join(cwd, GENERATED), '');
+					return true;
+				}
+				return false;
+			},
+			commands: ['writes-empty', 'fails'],
+		});
+		expect(outcome).toMatchObject({
+			committed: false,
+			failed: ['fails'],
+			paths: [],
+		});
+		expect(git(root, 'rev-parse', 'HEAD')).toBe(head);
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe('count: 1\n');
+		expect(git(root, 'status', '--porcelain')).toBe('');
+	});
+
 	it('resolves the whole path, not one character short', () => {
 		// The first real run staged `ocs/delendai/…` and reported nothing
 		// to commit while the file sat dirty: the porcelain status was
