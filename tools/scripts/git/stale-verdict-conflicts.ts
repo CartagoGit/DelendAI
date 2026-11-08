@@ -298,3 +298,151 @@ export const resolveVerdictConflicts = (input: {
 	}
 	return { kept, dropped };
 };
+
+/** What the claims step did for a pack. */
+export interface IClaimRescue {
+	/** The proposals whose claim was brought, with the commit it came from. */
+	readonly brought: readonly { readonly id: string; readonly from: string }[];
+	/** The proposals no claim by the reviewer exists for: their verdicts went. */
+	readonly dropped: readonly string[];
+}
+
+const CLAIMS = '--format=%(trailers:key=Claims,valueonly,separator=%x2C)';
+
+const claimsIn = (text: string | undefined): readonly string[] =>
+	(text ?? '')
+		.split(/[\n,]/u)
+		.map((id) => id.trim().toLowerCase())
+		.filter((id) => id.length > 0);
+
+/**
+ * Every claim the reviewer made, wherever it made it, by proposal: the
+ * commits its maker notes name (its own, and the forge's copy of them)
+ * whose `Claims:` trailer names the proposal. A reviewer that ran two units
+ * at once claimed on one and recorded verdicts on the other; the notes name
+ * the commit whichever unit it is on, and whether that unit is gone.
+ */
+const claimsByReviewer = (
+	git: IGit,
+	dir: string,
+	reviewer: string,
+): ReadonlyMap<string, string> => {
+	const found = new Map<string, string>();
+	for (const ref of [
+		`refs/notes/delendai/${reviewer}`,
+		`refs/notes/delendai-remote/${reviewer}`,
+	]) {
+		for (const line of lines(git(dir, ['notes', `--ref=${ref}`, 'list']))) {
+			const commit = line.split(' ')[1];
+			if (commit === undefined) continue;
+			for (const id of claimsIn(
+				git(dir, ['log', '-1', CLAIMS, commit]),
+			)) {
+				if (!found.has(id)) found.set(id, commit);
+			}
+		}
+	}
+	return found;
+};
+
+/**
+ * Make a pack carry the claim of every proposal it changes. A pack changes
+ * the proposals its own commits claim; when the reviewer claimed a proposal
+ * on another of its units, that claim commit is brought into the pack as it
+ * is (cherry-picked, author unchanged, its origin recorded). A proposal the
+ * reviewer never claimed anywhere is put back as `integration` has it, and
+ * the drop is committed with a note: a verdict nobody claimed does not land.
+ */
+export const bringReviewerClaims = (input: {
+	readonly dir: string;
+	readonly proposalsDir: string;
+	readonly integration: string;
+	readonly reviewer: string;
+	readonly remote: string;
+	readonly git: IGit;
+	/** `-c` settings naming the committer of what this step commits. */
+	readonly committer: readonly string[];
+}): IClaimRescue => {
+	const { dir, proposalsDir, integration, reviewer, git } = input;
+	const base = git(dir, ['merge-base', 'HEAD', integration]) ?? integration;
+	const changed = [
+		...new Set(
+			lines(
+				git(dir, [
+					'diff',
+					'--name-only',
+					'--no-renames',
+					integration,
+					'HEAD',
+					'--',
+					proposalsDir,
+				]),
+			).flatMap((path) => proposalOfPath(path, proposalsDir) ?? []),
+		),
+	];
+	const claimed = new Set(
+		claimsIn(git(dir, ['log', CLAIMS, `${base}..HEAD`])),
+	);
+	const missing = changed.filter((id) => !claimed.has(id));
+	if (missing.length === 0) return { brought: [], dropped: [] };
+	const elsewhere = claimsByReviewer(git, dir, reviewer);
+	const brought: { id: string; from: string }[] = [];
+	const dropped: string[] = [];
+	for (const id of missing) {
+		// One claim commit brought for an earlier proposal may name this one.
+		if (claimed.has(id)) continue;
+		const from = elsewhere.get(id);
+		// A claim made on a unit this clone never fetched is on the forge.
+		if (
+			from !== undefined &&
+			git(dir, ['cat-file', '-e', `${from}^{commit}`]) === undefined
+		) {
+			git(dir, ['fetch', '-q', '--', input.remote, from]);
+		}
+		const picked =
+			from !== undefined &&
+			git(dir, [
+				...input.committer,
+				'-c',
+				'core.hooksPath=/dev/null',
+				'cherry-pick',
+				'-x',
+				'--allow-empty',
+				'--keep-redundant-commits',
+				from,
+			]) !== undefined;
+		if (picked && from !== undefined) {
+			// One claim commit may name several proposals.
+			for (const named of claimsIn(
+				git(dir, ['log', '-1', CLAIMS, 'HEAD']),
+			)) {
+				claimed.add(named);
+			}
+			brought.push({ id, from });
+			continue;
+		}
+		if (from !== undefined) git(dir, ['cherry-pick', '--abort']);
+		const at = lines(git(dir, ['ls-files', '--', proposalsDir])).filter(
+			(path) => proposalOfPath(path, proposalsDir) === id,
+		);
+		for (const path of at) git(dir, ['rm', '-q', '-f', '--', path]);
+		const theirs = pathIn(git, dir, integration, proposalsDir, id);
+		if (theirs !== undefined)
+			git(dir, ['checkout', integration, '--', theirs]);
+		dropped.push(id);
+	}
+	if (dropped.length > 0) {
+		git(dir, [
+			...input.committer,
+			'-c',
+			'core.hooksPath=/dev/null',
+			'commit',
+			'-q',
+			'-m',
+			`chore(review): drop the unclaimed verdicts on ${dropped.join(', ')}`,
+			'-m',
+			`${reviewer} claimed none of them on any of its units, and a pack changes only the proposals its reviewer claimed. They return to the review queue.`,
+		]);
+	}
+	return { brought, dropped };
+};

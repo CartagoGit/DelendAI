@@ -41,7 +41,21 @@ type IFiles = Readonly<Record<string, string>>;
 interface ISide {
 	readonly write?: IFiles;
 	readonly move?: Readonly<Record<string, string>>;
+	/**
+	 * Where the reviewer claimed what the pack judges: in the pack (the
+	 * default), on another of its units, or nowhere.
+	 */
+	readonly claim?: 'here' | 'elsewhere' | 'nowhere';
 }
+
+/** The proposals a side's edits change. */
+const idsOf = (side: ISide): readonly string[] => [
+	...new Set(
+		[...Object.keys(side.write ?? {}), ...Object.values(side.move ?? {})]
+			.map((path) => /(x\d{5})-/u.exec(path)?.[1])
+			.filter((id): id is string => id !== undefined),
+	),
+];
 
 /**
  * A forge with `base` on its integration branch, a pack branch from it
@@ -81,7 +95,40 @@ const repoWith = (
 	apply({ write: base }, 'base');
 	git(root, 'remote', 'add', 'origin', remote);
 	git(root, 'push', '-q', 'origin', 'develop');
-	git(root, 'checkout', '-q', '-b', branch);
+	const claimOn = (where: string): string => {
+		git(root, 'checkout', '-q', '-b', where, 'develop');
+		const ids = idsOf(pack).join(', ');
+		git(
+			root,
+			'commit',
+			'-q',
+			'--allow-empty',
+			'-m',
+			`chore(review): claim ${ids}`,
+			'-m',
+			`Claims: ${ids}`,
+		);
+		const sha = git(root, 'rev-parse', 'HEAD');
+		// Its maker note, as every unit commit has.
+		git(
+			root,
+			'notes',
+			'--ref=delendai/reviewer',
+			'add',
+			'-m',
+			`maker: reviewer\nunit: ${where}`,
+			sha,
+		);
+		return sha;
+	};
+	if (pack.claim === 'elsewhere') {
+		claimOn('delendai/wip/reviewer/implement/x00009-S1-g1/the-other-unit');
+		git(root, 'checkout', '-q', '-b', branch, 'develop');
+	} else if (pack.claim === 'nowhere') {
+		git(root, 'checkout', '-q', '-b', branch);
+	} else {
+		claimOn(branch);
+	}
 	apply(pack, 'verdicts');
 	git(root, 'push', '-q', 'origin', branch);
 	git(root, 'checkout', '-q', 'develop');
@@ -331,6 +378,82 @@ describe('an orphaned review pack in conflict', () => {
 		);
 
 		expect(refresh(root, implement).state).toBe('conflicted');
+	});
+});
+
+describe("the reviewer's claims", () => {
+	const third = {
+		'review/x00003-third.md': doc({ status: 'review', verdict: IN_REVIEW }),
+	};
+	const judged = {
+		write: {
+			'review/x00003-third.md': doc({
+				status: 'review',
+				verdict: PACK_VERDICT,
+			}),
+		},
+	};
+	const moved = { write: { 'other.md': 'the integration branch moves\n' } };
+
+	it('brings a claim the reviewer made on another unit into the pack, author unchanged', () => {
+		const root = repoWith(
+			PACK,
+			third,
+			{ ...judged, claim: 'elsewhere' },
+			moved,
+		);
+
+		const outcome = refresh(root);
+
+		expect(outcome.state).toBe('refreshed');
+		expect(outcome.detail).toContain(
+			"brought the reviewer's claims of x00003",
+		);
+		git(root, 'fetch', '-q', 'origin');
+		const range = `origin/develop..origin/${PACK}`;
+		expect(
+			git(
+				root,
+				'log',
+				'--format=%(trailers:key=Claims,valueonly)',
+				range,
+			),
+		).toContain('x00003');
+		const claim = git(root, 'log', '--format=%H', '--grep=^Claims:', range);
+		expect(git(root, 'log', '-1', '--format=%an <%ae>', claim)).toBe(
+			'C <c@example.com>',
+		);
+		expect(git(root, 'log', '-1', '--format=%B', claim)).toContain(
+			'cherry picked from commit',
+		);
+		expect(tipOf(root, 'review/x00003-third.md')).toContain(
+			'the evidence is missing',
+		);
+	});
+
+	it('drops a verdict the reviewer claimed nowhere, with a note', () => {
+		const root = repoWith(
+			PACK,
+			third,
+			{ ...judged, claim: 'nowhere' },
+			moved,
+		);
+
+		const outcome = refresh(root);
+
+		expect(outcome.detail).toContain(
+			'dropped the unclaimed verdicts on x00003',
+		);
+		expect(tipOf(root, 'review/x00003-third.md')).toBe(
+			git(
+				root,
+				'show',
+				`origin/develop:${PROPOSALS}/review/x00003-third.md`,
+			),
+		);
+		expect(
+			git(root, 'log', '-1', '--format=%B', `origin/${PACK}`),
+		).toContain('claimed none of them on any of its units');
 	});
 });
 

@@ -35,7 +35,10 @@ import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { resolveVerdictConflicts } from './stale-verdict-conflicts';
+import {
+	bringReviewerClaims,
+	resolveVerdictConflicts,
+} from './stale-verdict-conflicts';
 
 import {
 	hookFreeEnvironment,
@@ -155,8 +158,11 @@ export const pushRefusalReason = (output: string): string => {
 	const marked = lines.filter((line) =>
 		/✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu.test(line),
 	);
-	const chosen = (marked.length > 0 ? marked : lines).slice(-3).join(' | ');
-	return chosen.length > 0 ? chosen.slice(0, 500) : 'no output';
+	// Every marked line, in full: the cause is the gate's own ✖ line, and
+	// cutting to the last three lines and 500 characters reported the
+	// commands a hook ran instead of the one that failed (#1808).
+	const chosen = (marked.length > 0 ? marked : lines.slice(-3)).join(' | ');
+	return chosen.length > 0 ? chosen : 'no output';
 };
 
 /** Push the candidate; the refusal reason, or undefined once pushed. */
@@ -186,6 +192,20 @@ const pushCandidate = (
 };
 
 const PROPOSALS_DIR = 'docs/delendai/proposals';
+
+/** The agent a publication belongs to: the segment after the prefix. */
+const reviewerOf = (
+	policy: IResolvedDevelopmentPolicy,
+	candidate: string,
+): string =>
+	candidate
+		.slice(
+			policy.branches.publicationRefPrefix.replace(
+				/^(refs\/)?(heads\/)?/u,
+				'',
+			).length,
+		)
+		.split('/')[0] ?? '';
 
 /** Whether a publication is a unit that records verdicts. */
 const isReviewPack = (
@@ -382,6 +402,32 @@ export const refreshCandidate = (input: {
 				}),
 			};
 		}
+		// A pack changes only what its reviewer claimed: a claim made on
+		// another of the reviewer's units is brought in, and a verdict no
+		// claim covers anywhere is dropped.
+		const claims = isReviewPack(policy, candidate)
+			? (() => {
+					git(root, [
+						'fetch',
+						'-q',
+						'--',
+						remote,
+						'+refs/notes/delendai/*:refs/notes/delendai-remote/*',
+					]);
+					return bringReviewerClaims({
+						dir,
+						proposalsDir: input.proposalsDir ?? PROPOSALS_DIR,
+						integration: `${remote}/${policy.branches.integration}`,
+						reviewer: reviewerOf(policy, candidate),
+						remote,
+						git,
+						committer: identityArgs({
+							name: git(dir, ['config', '--get', 'user.name']),
+							email: git(dir, ['config', '--get', 'user.email']),
+						}),
+					});
+				})()
+			: { brought: [], dropped: [] };
 		const failed = GENERATED_REFRESH_COMMANDS.filter(
 			(command) => !run(command, dir),
 		);
@@ -419,6 +465,16 @@ export const refreshCandidate = (input: {
 							? []
 							: [
 									`dropped the verdicts on ${dropped.join(', ')}, which no longer apply`,
+								]),
+						...(claims.brought.length === 0
+							? []
+							: [
+									`brought the reviewer's claims of ${claims.brought.map((claim) => `${claim.id} (${claim.from.slice(0, 9)})`).join(', ')}`,
+								]),
+						...(claims.dropped.length === 0
+							? []
+							: [
+									`dropped the unclaimed verdicts on ${claims.dropped.join(', ')}`,
 								]),
 					].join('; '),
 				};

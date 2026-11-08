@@ -51,6 +51,8 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
   - "A review pack that conflicts with the integration branch in a proposal document is merged with the pack's verdict, claim and transition lines kept over the integration branch's and the integration branch's text elsewhere; the verdict lines of every slice it judged are byte-identical to the pack's (stale-verdict-conflicts.spec.ts)."
   - "A verdict on a proposal closed on the integration branch, or on a slice whose files, gate, acceptance or shipped-in changed there since the pack left, is dropped with a note in the merge message, and the document is the integration branch's (stale-verdict-conflicts.spec.ts)."
   - "`biome-baseline` refuses a tree without its scan roots before its changed-file path, so `no-silent-gates` no longer fails every change confined to tools/ whose files carry no Biome diagnostic (found while proving this slice)."
+  - "A pack that changes a proposal its own commits do not claim gets the reviewer's own `Claims:` commit for it from any of its units, found through its maker notes and cherry-picked with its author unchanged; a verdict the reviewer claimed nowhere is dropped with a note (stale-verdict-conflicts.spec.ts)."
+  - "A refused push reports every failing line of the gate in full, with no cap on how many lines or how long they are (refresh-candidate-artifacts.script.spec.ts)."
 - shipped-in: `f5568e77084e`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
