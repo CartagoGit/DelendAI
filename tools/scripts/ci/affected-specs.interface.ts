@@ -27,4 +27,6 @@ export interface IAffectedSpecsInput {
 	readonly read: (file: string) => string;
 	/** `compilerOptions.paths` of the base tsconfig. */
 	readonly paths: Readonly<Record<string, readonly string[]>>;
+	/** The setup files every spec loads; none when omitted. */
+	readonly setupFiles?: readonly string[];
 }

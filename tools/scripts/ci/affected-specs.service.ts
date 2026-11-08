@@ -23,6 +23,12 @@ import type {
 	IAffectedSpecsInput,
 	IModuleFacts,
 } from './affected-specs.interface';
+import {
+	isTestKitSource,
+	SHARED_VITEST_CONFIG,
+	setupFilesOf,
+	testInfrastructureSpecs,
+} from './test-infrastructure';
 
 const SPEC = /\.(spec|test)\.tsx?$/u;
 const NAMESPACE = '*';
@@ -312,9 +318,83 @@ export const affectedFiles = (
 	return [...hit].sort();
 };
 
+/**
+ * The setup files and every module they import, transitively, followed
+ * module by module: a setup runs before every spec, so all it loads is
+ * loaded by every spec.
+ */
+export const setupClosureOf = (
+	input: IAffectedSpecsInput,
+): ReadonlySet<string> => {
+	const known = new Set(input.files.filter((file) => /\.tsx?$/u.test(file)));
+	const resolve = createResolver(known, input.paths);
+	const seen = new Set<string>();
+	const queue = (input.setupFiles ?? []).filter((file) => known.has(file));
+	for (let next = queue.pop(); next !== undefined; next = queue.pop()) {
+		if (seen.has(next)) continue;
+		seen.add(next);
+		const module = factsOf(input.read(next), (specifier) =>
+			resolve(next, specifier),
+		);
+		for (const target of [
+			...module.imports.map((each) => each.target),
+			...module.reexports.map((each) => each.from),
+		])
+			if (!seen.has(target)) queue.push(target);
+	}
+	return seen;
+};
+
+/**
+ * The specs the change reaches through the shared test setup
+ * (`test-infrastructure`), test-kit changes followed by symbol.
+ */
+export const testInfrastructureSpecsOf = (
+	input: IAffectedSpecsInput,
+	kitReached?: ReadonlySet<string>,
+): readonly string[] => {
+	const kit = input.changed.filter(isTestKitSource);
+	return testInfrastructureSpecs({
+		changed: input.changed,
+		specs: input.files,
+		setupClosure: setupClosureOf(input),
+		kitReached:
+			kitReached ??
+			(kit.length === 0
+				? new Set<string>()
+				: new Set(affectedFiles({ ...input, changed: kit }))),
+	});
+};
+
 /** The specs `changed` can affect, from the tracked files and their text. */
-export const affectedSpecs = (input: IAffectedSpecsInput): readonly string[] =>
-	affectedFiles(input).filter((file) => SPEC.test(file));
+export const affectedSpecs = (
+	input: IAffectedSpecsInput,
+): readonly string[] => {
+	const reached = affectedFiles(input);
+	return [
+		...new Set([
+			...reached.filter((file) => SPEC.test(file)),
+			// What the module graph reaches already holds the test kit's reach.
+			...testInfrastructureSpecsOf(input, new Set(reached)),
+		]),
+	].sort();
+};
+
+/** The setup files the shared vitest config of `root` names. */
+export const setupFilesAt = (
+	root: string,
+	files: readonly string[],
+): readonly string[] => {
+	try {
+		return setupFilesOf(
+			readFileSync(join(root, SHARED_VITEST_CONFIG), 'utf8'),
+			files,
+		);
+	} catch {
+		// No shared config: no setup file every spec loads.
+		return [];
+	}
+};
 
 /** The repository as git has it, and the branch's change since `base`. */
 export const repositorySince = (
@@ -332,11 +412,13 @@ export const repositorySince = (
 	const config = JSON.parse(
 		readFileSync(join(root, 'tsconfig.base.json'), 'utf8'),
 	) as { compilerOptions?: { paths?: Record<string, readonly string[]> } };
+	const files = git(['ls-files']);
 	return {
-		files: git(['ls-files']),
+		files,
 		changed: git(['diff', '--name-only', `${base}...HEAD`]),
 		read: (file) => readFileSync(join(root, file), 'utf8'),
 		paths: config.compilerOptions?.paths ?? {},
+		setupFiles: setupFilesAt(root, files),
 	};
 };
 
