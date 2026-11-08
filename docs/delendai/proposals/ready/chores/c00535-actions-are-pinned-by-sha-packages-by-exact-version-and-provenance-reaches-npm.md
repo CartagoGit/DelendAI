@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
-last-correlation-id: 35aa4f92-4aaa-43cd-b0eb-1e4bf188f897
+last-transition-id: 255e690e-657c-4adb-92bd-b32a4ac68be7
+last-correlation-id: 255e690e-657c-4adb-92bd-b32a4ac68be7
 last-transition-from: review
-last-transition-at: 2026-11-04T19:44:15.949Z
+last-transition-at: 2026-11-05T00:47:52.783Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
@@ -40,7 +40,7 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 51fbac099a82 is stale: S1 workflow/lint files changed afterward (e.g. 434c4c8c9, 07672aeb0, a631c551c, 5b0b2b860). Redeliver S1 on current HEAD and resubmit with fresh shipped-in + evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S2 — Exact external servers and npm provenance
 - **Status**: pending
@@ -53,7 +53,7 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 6a9105675c79 is stale: S2 files changed afterward (e.g. b731cdf73, aebe3b62e). Redeliver S2 on current HEAD and resubmit with fresh shipped-in + exact-version/provenance evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S3 — One zod range
 - **Status**: pending
@@ -65,7 +65,7 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — shipped-in 00dc0104b1f5 is stale: proposal file changed afterward (e.g. b54722a88). Redeliver S3 on current HEAD and resubmit with fresh shipped-in.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ## acceptance
 

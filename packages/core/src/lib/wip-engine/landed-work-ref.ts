@@ -9,6 +9,8 @@ import {
 	putsBack,
 	takesOff,
 	workRefFate,
+	workRefIntegrationRef,
+	workRefLanded,
 } from '../work-units/work-ref-lifecycle.service';
 import {
 	recordWorkRefMove,
@@ -20,6 +22,31 @@ import type { IWorkCheckoutPublication } from './work-checkout-publisher.interfa
 
 const firstField = (output: string): string | undefined =>
 	output.trim().split(/\s+/u)[0] || undefined;
+
+/** `landed`, from what git says of `sha` against `integration`. */
+const landedOn = async (
+	run: IGitRunner,
+	integration: string,
+	sha: string,
+): Promise<boolean> => {
+	const range = `${integration}..${sha}`;
+	const count = (output: string): number =>
+		output.split('\n').filter((line) => line.trim().length > 0).length;
+	const [tip, contained, diff, own, changing] = [
+		await run(['rev-parse', integration]),
+		await run(['merge-base', '--is-ancestor', sha, integration]),
+		await run(['diff', '--name-only', `${integration}...${sha}`]),
+		await run(['rev-list', '--no-merges', range]),
+		await run(['log', '--no-merges', '--format=%H', range, '--', '.']),
+	];
+	return workRefLanded({
+		atIntegrationTip: tip.ok && firstField(tip.output) === sha,
+		contained: contained.ok,
+		changesNothing: diff.ok && diff.output.trim().length === 0,
+		meaningInCommits:
+			own.ok && changing.ok && count(own.output) > count(changing.output),
+	});
+};
 
 /**
  * Settle a work ref whose checkout has nothing of its own: the work-ref
@@ -42,20 +69,24 @@ export const settleLanded = async (
 ): Promise<IWorkCheckoutPublication> => {
 	const listed = await run(['ls-remote', '--', remote, ref]);
 	const remoteSha = listed.ok ? firstField(listed.output) : undefined;
-	const landed =
-		remoteSha === undefined ||
+	const integration = workRefIntegrationRef(
+		remote,
+		policy.branches.integration,
 		(
 			await run([
-				'merge-base',
-				'--is-ancestor',
-				remoteSha,
-				`refs/heads/${policy.branches.integration}`,
+				'rev-parse',
+				'--verify',
+				'--quiet',
+				`refs/remotes/${remote}/${policy.branches.integration}`,
 			])
-		).ok;
+		).ok,
+	);
+	const sha = remoteSha ?? firstField((await run(['rev-parse', ref])).output);
+	const landed = sha === undefined || (await landedOn(run, integration, sha));
 	const verdict = workRefFate({
 		landed,
 		onForge: remoteSha !== undefined,
-		...(await workRefOpennessOf(run, policy, ref)),
+		...(await workRefOpennessOf(run, policy, ref, { integration })),
 		worktree: 'in-use',
 	});
 	const record = async (move: IWorkRefMove): Promise<void> => {

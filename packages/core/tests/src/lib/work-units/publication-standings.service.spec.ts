@@ -1,35 +1,37 @@
 /**
- * publication-standings.service.spec.ts — `work status` weighs each open
- * publication: behind, overlap, age and whether its owner is there.
+ * publication-standings.service.spec.ts — what `work status` says of open
+ * publications and of their owners (x01024, x01051).
  */
 import { describe, expect, it } from 'vitest';
 
+import type { ISwarmUnit } from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
+import {
+	describeOrphan,
+	describePublicationStanding,
+	publicationStandings,
+} from '@delendai/core/lib/work-units/publication-standings.service';
+
+const unit = (ref: string, over: Partial<ISwarmUnit> = {}): ISwarmUnit => ({
+	ref,
+	agent: 'a',
+	subject: 's',
+	tip: `tip-${ref}`,
+	ahead: 1,
+	behind: 0,
+	paths: [],
+	...over,
+});
+
 describe('publicationStandings', () => {
-	it('a publication behind by 3 with one overlapping file prints those numbers', async () => {
-		const { describePublicationStanding, publicationStandings } =
-			await import(
-				'@delendai/core/lib/work-units/publication-standings.service'
-			);
-		const unit = (ref: string, behind: number, paths: string[]) => ({
-			ref,
-			agent: 'a',
-			subject: ref,
-			tip: `${ref}-tip`,
-			ahead: 1,
-			behind,
-			paths,
-		});
-		const [first] = publicationStandings({
+	it('counts what publications share, dates them and reads their owner', () => {
+		const standings = publicationStandings({
 			published: [
-				unit('delendai/pr/a/implement/x1-S1-g1/one', 3, [
-					'src/a.ts',
-					'src/b.ts',
-				]),
-				unit('delendai/pr/b/implement/x2-S1-g1/two', 0, ['src/a.ts']),
+				unit('p1', { behind: 3, paths: ['a.ts', 'b.ts'] }),
+				unit('p2', { paths: ['b.ts'] }),
 			],
 			presence: new Map([
 				[
-					'delendai/pr/a/implement/x1-S1-g1/one',
+					'p1',
 					{
 						orphaned: true,
 						reason: 'finished',
@@ -38,20 +40,64 @@ describe('publicationStandings', () => {
 					},
 				],
 			]),
-			tipAt: () => 1000,
-			now: 1000 + 7200,
+			tipAt: (sha) => (sha === 'tip-p1' ? 900 : undefined),
+			now: 1000,
 		});
-		expect(first).toEqual({
-			ref: 'delendai/pr/a/implement/x1-S1-g1/one',
-			behind: 3,
-			overlapping: 1,
-			ageSeconds: 7200,
-			ownerAlive: false,
-		});
+		expect(standings).toEqual([
+			{
+				ref: 'p1',
+				behind: 3,
+				overlapping: 1,
+				ageSeconds: 100,
+				ownerAlive: false,
+			},
+			{
+				ref: 'p2',
+				behind: 0,
+				overlapping: 1,
+				ageSeconds: null,
+				ownerAlive: true,
+			},
+		]);
+	});
+
+	it('says each in a line', () => {
 		expect(
-			describePublicationStanding(first as NonNullable<typeof first>),
+			describePublicationStanding({
+				ref: 'p1',
+				behind: 3,
+				overlapping: 1,
+				ageSeconds: 7200,
+				ownerAlive: true,
+			}),
 		).toBe(
-			'publication      delendai/pr/a/implement/x1-S1-g1/one: 3 behind, 1 overlapping file(s), age 2h, owner gone',
+			'publication      p1: 3 behind, 1 overlapping file(s), age 2h, owner alive',
 		);
+		expect(
+			describePublicationStanding({
+				ref: 'p2',
+				behind: 0,
+				overlapping: 0,
+				ageSeconds: null,
+				ownerAlive: false,
+			}),
+		).toContain('age ?, owner gone');
+	});
+});
+
+describe('describeOrphan', () => {
+	it('names the way in and the last beat', () => {
+		const base = {
+			ref: 'p1',
+			agent: 'a',
+			reason: 'finished' as const,
+			why: '',
+		};
+		expect(
+			describeOrphan({ ...base, orphaned: true, silentSeconds: null }),
+		).toContain('last beat never');
+		expect(
+			describeOrphan({ ...base, orphaned: true, silentSeconds: 3600 }),
+		).toContain('last beat 1h ago');
 	});
 });
