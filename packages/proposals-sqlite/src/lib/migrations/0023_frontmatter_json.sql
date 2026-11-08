@@ -1,0 +1,12 @@
+-- 0023 — the proposals table keeps the frontmatter it was projected from.
+--
+-- The registry lists, besides id/file/status/kind/track/type/date, the
+-- frontmatter extras a proposal declares (`ownership`, `reservedFiles`,
+-- `budget`, …). To export the registry from the database (q00022 S4,
+-- phase 1) the database has to hold them; storing the parsed frontmatter
+-- (as the one frontmatter parser reads it, r00643) lets the registry's
+-- own entry builder derive them instead of a second list of columns.
+--
+-- Nullable: filled by the next reconcile, whose unchanged-row check
+-- compares it.
+ALTER TABLE proposals ADD COLUMN frontmatter_json TEXT;
