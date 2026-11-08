@@ -11,10 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownedWorkRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
 
-import {
-	declaredBranches,
-	declaredIntegrationRef,
-} from '../lib/declared-branches';
+import { declaredBranches } from '../lib/declared-branches';
 import { cacheRoot, repoRoot } from '../lib/monorepo-paths';
 
 export interface ILockEntry {
