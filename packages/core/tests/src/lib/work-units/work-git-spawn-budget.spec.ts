@@ -26,9 +26,7 @@ import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 const BUDGET = {
 	refusal: 2,
 	status: 25,
-	// 46: holding the unit's enter lock forgets the memoised reads (x01048),
-	// so the policy and the checkout are read again once under the lock.
-	enter: 46,
+	enter: 40,
 	checkpoint: 30,
 	swarm: 35,
 	prove: 30,

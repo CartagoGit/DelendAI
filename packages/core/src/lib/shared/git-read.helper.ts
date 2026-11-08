@@ -69,6 +69,14 @@ export const forgetGitReads = (): void => {
 };
 
 /**
+ * A writer of `unit` has finished (its lock is now ours): the read cache
+ * forgets the reads that can show it, and keeps the rest.
+ */
+export const forgetUnitGitReads = (unit: string): void => {
+	readCache.getStore()?.forgetUnit(unit);
+};
+
+/**
  * What the invocation's cache already knows of a successful read, for a
  * runner other than `readGit` (`runGitCommand`, `execGitFileSync`). A
  * failure is never answered from here: those runners report git's error

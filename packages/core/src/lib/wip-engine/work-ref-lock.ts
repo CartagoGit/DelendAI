@@ -21,7 +21,7 @@ import { createHash } from 'node:crypto';
 import { hostname } from 'node:os';
 import { join } from 'node:path';
 
-import { forgetGitReads } from '../shared/git-read.helper';
+import { forgetUnitGitReads } from '../shared/git-read.helper';
 import { createStartupMutex } from '../startup-reconciler/startup-mutex';
 import {
 	WORK_REF_LOCK_DIRECTORY,
@@ -74,6 +74,9 @@ export const holdWorkRef = (
 		.then((outcome) => {
 			// Holding the ref means a writer before us has finished: what
 			// this invocation remembered of git may predate its writes.
-			if (outcome.kind === 'acquired') forgetGitReads();
+			if (outcome.kind === 'acquired')
+				forgetUnitGitReads(
+					options.ref.replace(/^refs\/heads\/(?:enter\/)?/u, ''),
+				);
 			return outcome;
 		});

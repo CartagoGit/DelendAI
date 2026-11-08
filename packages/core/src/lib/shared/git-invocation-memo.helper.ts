@@ -225,6 +225,40 @@ const readsWorktrees = (args: readonly string[]): boolean =>
 	isWorktreeStatus(args) ||
 	args.some((arg) => arg.includes('worktreepath'));
 
+/**
+ * Whether a remembered read can show a unit: a listing or lookup of refs
+ * with a wildcard, a trailing slash or the unit's name, a worktree
+ * listing. Exact refs of other names cannot.
+ */
+const canShowUnit = (args: readonly string[], unit: string): boolean => {
+	if (
+		args[0] === 'worktree' ||
+		args.some((arg) => arg.includes('worktreepath'))
+	)
+		return true;
+	const listsRefs =
+		args[0] === 'for-each-ref' ||
+		args[0] === 'show-ref' ||
+		isRefResolve(args);
+	if (!listsRefs) return false;
+	return args
+		.slice(1)
+		.filter((arg) => !arg.startsWith('-') && arg.includes('/'))
+		.some(
+			(arg) =>
+				arg.includes('*') || arg.endsWith('/') || arg.includes(unit),
+		);
+};
+
+/** `update-ref refs/heads/<name> <sha>`: the one local branch it moves. */
+const movedBranch = (args: readonly string[]): string | undefined =>
+	args.length === 3 &&
+	args[0] === 'update-ref' &&
+	(args[1] ?? '').startsWith('refs/heads/') &&
+	OBJECT_ID.test(args[2] ?? '')
+		? args[1]
+		: undefined;
+
 export const createGitInvocationMemo = (): IGitReadCache => {
 	const repository = new Map<string, string | undefined>();
 	const asked = new Map<string, IGitSpawn>();
@@ -252,7 +286,33 @@ export const createGitInvocationMemo = (): IGitReadCache => {
 				asked.set(keyOf(spawn), spawn);
 			}
 		},
+		forgetUnit: (unit) => {
+			for (const [key, read] of asked) {
+				if (canShowUnit(read.args, unit)) {
+					repository.delete(key);
+					asked.delete(key);
+				}
+			}
+		},
 		ran: (spawn) => {
+			// Moving one local branch changes the reads that can show it,
+			// the status of a checkout and nothing else asked so far.
+			const moved = movedBranch(spawn.args);
+			if (moved !== undefined) {
+				for (const [key, read] of asked) {
+					if (
+						canShowUnit(read.args, moved) ||
+						isWorktreeStatus(read.args) ||
+						(isHistoryRead(read.args) &&
+							!namesObjectsOnly(read.args)) ||
+						read.args.some((arg) => arg.includes(moved))
+					) {
+						repository.delete(key);
+						asked.delete(key);
+					}
+				}
+				return;
+			}
 			if (isRepositoryRead(spawn.args) || changesNothing(spawn.args))
 				return;
 			// `send-pack` moves refs on the remote only: what the remote
