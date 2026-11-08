@@ -46,17 +46,8 @@ const basePushPolicy = (
 	...overrides,
 });
 
-const waitForPushCount = async (
-	getCount: () => number,
-	wanted: number,
-): Promise<void> => {
-	const deadline = Date.now() + 2_000;
-	while (getCount() < wanted) {
-		if (Date.now() >= deadline)
-			throw new Error(`timed out waiting for ${wanted} push attempt(s)`);
-		await new Promise<void>((resolve) => setTimeout(resolve, 1));
-	}
-};
+/** The interval policy below, in fake milliseconds: 0.0001 minutes. */
+const TICK_MS = 6;
 
 describe('push scheduler (x00266)', () => {
 	beforeEach(() => {
@@ -262,7 +253,6 @@ describe('push scheduler (x00266)', () => {
 	});
 
 	it('pushes once on everyNMinutes and stop() prevents later ticks', async () => {
-		vi.useRealTimers();
 		const pushCount = { n: 0 };
 		const scheduler = createPushScheduler({
 			run: buildRunner('feature/x', ok('pushed\n')),
@@ -275,18 +265,17 @@ describe('push scheduler (x00266)', () => {
 		scheduler.start();
 		expect(await scheduler.onCommitSucceeded()).toBeNull();
 
-		await waitForPushCount(() => pushCount.n, 1);
+		await vi.advanceTimersByTimeAsync(TICK_MS);
 		scheduler.stop();
 		await scheduler.flush();
 		expect(pushCount.n).toBe(1);
 
-		await new Promise<void>((resolve) => setTimeout(resolve, 10));
+		await vi.advanceTimersByTimeAsync(TICK_MS * 10);
 		await scheduler.flush();
 		expect(pushCount.n).toBe(1);
 	});
 
 	it('pushes existing unpushed commits after scheduler restart', async () => {
-		vi.useRealTimers();
 		const pushCount = { n: 0 };
 		const run: IGitRunner = (async (args: readonly string[]) => {
 			if (args[0] === 'rev-parse' && args.includes('--abbrev-ref'))
@@ -304,7 +293,7 @@ describe('push scheduler (x00266)', () => {
 			policy: basePushPolicy({ everyNMinutes: 0.0001 }),
 		});
 		scheduler.start();
-		await waitForPushCount(() => pushCount.n, 1);
+		await vi.advanceTimersByTimeAsync(TICK_MS);
 		scheduler.stop();
 		await scheduler.flush();
 
