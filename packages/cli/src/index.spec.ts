@@ -446,7 +446,7 @@ describe('runEntry — a refusal the host cannot take', () => {
 	it('survives a handshake that fails after the server could not start', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'entry-refuse-fails-'));
 		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
+
 		const previousExitCode = process.exitCode;
 		let refused = 0;
 		try {
