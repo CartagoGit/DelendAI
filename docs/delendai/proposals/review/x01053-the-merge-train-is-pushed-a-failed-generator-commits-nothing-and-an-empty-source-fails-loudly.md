@@ -91,6 +91,13 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S7 — The refresher judges riders as the queue does
+- **Status**: in-progress
+- **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
+- **Gate**: none
+
+With trains running, two green pull requests sat for over 40 minutes: the queue said "#1861 is brought forward first" while the refresher said "lands as it is or rides a train; not brought forward", so neither acted. The refresher counted a failed train left from an OLDER tip as carrying the rider, and it ignored the culprit marker the queue keeps such a candidate off its trains by. It now counts only trains built from the current tip and leaves no culprit to a train.
+
 ## acceptance
 
 - When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts).
@@ -100,3 +107,4 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - When the train cannot run and every candidate is behind, the candidates are brought forward one by one and none waits forever (queue-acceptance.spec.ts).
 - A train whose members merged cleanly is regenerated once before it is pushed, and a failed regeneration pushes nothing.
 - The CI checkout of a train passes commit-branch-discipline under every train namespace, and a branch outside them is still refused.
+- A rider carried only by a train from an older tip, or isolated as a culprit, is brought forward by the refresher.
