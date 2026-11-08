@@ -20,7 +20,7 @@ import {
 	createWriteGitRunner,
 	resolveDevelopmentPolicy,
 } from '@delendai/core/public';
-import { settleLanded } from '@delendai/core/lib/wip-engine/landed-work-ref';
+import { settleLanded } from '@delendai/core/runtime';
 
 import { maintainRefNamespace } from './maintain-ref-namespace.script';
 
