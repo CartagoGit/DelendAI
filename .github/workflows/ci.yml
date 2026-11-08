@@ -1459,6 +1459,9 @@ jobs:
     # this repository prefers mechanism to documentation.
     ref-lifecycle:
         name: ref-lifecycle
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['ref-lifecycle']
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -1492,6 +1495,9 @@ jobs:
 
     develop-protection-live:
         name: develop-protection-live
+        # Runs only when the change touches what it reads (job-scope.constant.ts).
+        needs: plan-scope
+        if: fromJSON(needs.plan-scope.outputs.plan)['develop-protection-live']
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:

@@ -513,3 +513,84 @@ describe('an edit of the test workflow runs the jobs whose block changed', () =>
 		);
 	});
 });
+
+describe('the jobs the real scopes run, by kind of change', () => {
+	const real = (changed: readonly string[]): readonly string[] =>
+		Object.entries(
+			planJobs({
+				changed,
+				scopes: JOB_SCOPES,
+				structural: [],
+				reached: new Set<string>(),
+			}),
+		)
+			.filter(([, runs]) => runs)
+			.map(([job]) => job);
+
+	// #1838 carried a proposal document, and it ran 31 jobs.
+	it('runs the whole-repository checks and the bookkeeping for a proposal edit', () => {
+		expect(
+			real(['docs/delendai/proposals/ready/perfs/v00155-x.md']),
+		).toEqual([
+			'lint-architecture',
+			'lint-presets',
+			'lint-docs',
+			'lint-security',
+			'lint-governance',
+			'plan-scope',
+			'quality-gate',
+			'delendai-validate',
+			'release-the-queue',
+			'wake-the-queue',
+			'generated-artifacts-check',
+		]);
+	});
+
+	it('runs no live-forge, build, site or packaging job for a change under tools/', () => {
+		const run = real([
+			'tools/scripts/ci/test-scope.ts',
+			'tools/scripts/ci/test-scope.spec.ts',
+		]);
+		for (const job of [
+			'ref-lifecycle',
+			'develop-protection-live',
+			'metrics-gate',
+			'pack-smoke',
+			'build-clean',
+			'delendai-rebuild-digest',
+			'tokens-budget-real',
+		])
+			expect(run).not.toContain(job);
+		expect(run).toContain('typecheck');
+	});
+
+	it('runs the forge guards when the policy they resolve changes', () => {
+		expect(
+			real(['tools/scripts/governance/forge-settings.lib.ts']),
+		).toEqual(
+			expect.arrayContaining([
+				'ref-lifecycle',
+				'develop-protection-live',
+			]),
+		);
+	});
+
+	it('declares a one-line reason for every job that reads the whole repository', () => {
+		const always = JOB_SCOPES.filter((scope) => scope.touches === 'always');
+		expect(always.map((scope) => scope.job).sort()).toEqual([
+			'delendai-validate',
+			'generated-artifacts-check',
+			'lint-architecture',
+			'lint-governance',
+			'lint-security',
+			'plan-scope',
+			'quality-gate',
+			'release-the-queue',
+			'wake-the-queue',
+		]);
+		for (const scope of always) {
+			expect(scope.because).not.toContain('\n');
+			expect(scope.because.length).toBeLessThanOrEqual(160);
+		}
+	});
+});

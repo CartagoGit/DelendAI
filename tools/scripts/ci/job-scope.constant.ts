@@ -87,7 +87,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: its 47 lints together read files under every tracked top-level entry, and several list the whole tree with git ls-files. The ones that judge files one by one judge the changed files.',
+			'measured: its 47 lints read every top-level entry and several list the tree with git ls-files.',
 	},
 	{
 		job: 'lint-presets',
@@ -180,14 +180,14 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: the secret, privacy and hygiene lints read files under every tracked top-level entry and list the whole tree; a cleartext secret can arrive in any file. On a pull request the secret scan reads the diff, and the per-file lints judge the changed files.',
+			'measured: the secret and privacy lints read every top-level entry; a cleartext secret can arrive in any file, Markdown included.',
 	},
 	{
 		job: 'lint-governance',
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: the proposal, branch and agent lints read files under every tracked top-level entry, and they judge refs and commits that change without a file changing.',
+			'measured: its proposal, branch and agent lints read every top-level entry and judge refs that change without a file changing.',
 	},
 	{
 		job: 'typecheck',
@@ -199,7 +199,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'plan-scope',
 		touches: 'always',
 		because:
-			'it is the job that decides what everything else may skip; skipping IT would leave every gate excused by an empty plan.',
+			'bookkeeping: it decides what every other job may skip, so skipping it would excuse every gate with an empty plan.',
 	},
 	{
 		job: 'plan-tests',
@@ -223,43 +223,63 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'quality-gate',
 		touches: 'always',
 		because:
-			'it runs the configured quality scopes over the repository; the 2026-11-04 trace of its run did not complete, so what it reads is not measured and nothing is skipped.',
+			'unmeasured: it runs the lint steps no other job runs over the whole tree, and a trace of its reads did not complete.',
 	},
 	{
 		job: 'delendai-validate',
 		touches: 'always',
 		because:
-			'it IS the required check; a skipped aggregate is an unmergeable pull request with nothing red on it.',
+			'bookkeeping: it IS the required check, and a skipped aggregate is an unmergeable pull request with nothing red on it.',
 	},
 	{
 		job: 'ref-lifecycle',
-		touches: 'always',
+		touches: [
+			'.github/',
+			'tools/scripts/lint/ref-lifecycle-guard.script.ts',
+			'tools/scripts/lint/namespace-ruleset-guard.script.ts',
+			'tools/scripts/governance/',
+			'tools/scripts/git/',
+			'tools/scripts/forge/',
+			'packages/core/src/lib/development-policy/',
+			'packages/core/src/lib/startup-reconciler/',
+			'packages/core/src/lib/work-units/',
+			'packages/core/src/lib/contracts/constants/repository-identity.constant.ts',
+			'delendai.config.json',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it judges the refs on the forge, which change without any file changing.',
+			'it classifies the refs on the forge and checks its namespace ruleset, which no pull request changes; only the guards, the policy they resolve and the workflow that runs them can change its verdict, and every push still runs it.',
 	},
 	{
 		job: 'release-the-queue',
 		touches: 'always',
 		because:
-			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
+			'bookkeeping: it only runs on a push to develop, where it wakes the queue after a green certification.',
 	},
 	{
 		job: 'wake-the-queue',
 		touches: 'always',
 		because:
-			'it wakes the queue when a publication goes green, which no file change describes.',
+			'bookkeeping: it wakes the queue when a publication goes green, which no file change describes.',
 	},
 	{
 		job: 'develop-protection-live',
-		touches: 'always',
+		touches: [
+			'.github/',
+			'tools/scripts/lint/branch-protection-guard.script.ts',
+			'tools/scripts/lib/repo-root.ts',
+			'tools/scripts/governance/',
+			'delendai.config.json',
+		],
 		because:
-			'it reads the live branch rule, which drifts without a commit.',
+			'it reads the live branch rule, which belongs to the repository and not to a candidate (it reports not-applicable on a pull request); only the guard, the policy it compares with and its workflow can change it, and every push to develop still runs it.',
 	},
 	{
 		job: 'generated-artifacts-check',
 		touches: 'always',
 		because:
-			'measured: the generators read files under every tracked top-level entry; a generated artifact goes stale because of its inputs, spread across proposals, plugins and packages.',
+			'whole repository: the generators read every top-level entry, and an artifact goes stale because of any of its inputs.',
 	},
 	{
 		job: 'manifests-check',
@@ -282,9 +302,20 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'metrics-gate',
 		docs: 'skip', // no Markdown reaches the build it measures.
-		touches: 'always',
+		touches: [
+			'packages/',
+			'plugins/',
+			'apps/',
+			'extensions/',
+			'tools/scripts/compile/',
+			'tools/scripts/metrics/',
+			'tsconfig',
+			'bunfig.toml',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it compares a snapshot of the whole build against a baseline; a subset snapshot is not comparable to it.',
+			'it compares a snapshot of the build with a baseline, so it reads what the build reads (the source trees, the build and metrics scripts, the compiler configuration); tests, docs and the other scripts are not in the snapshot.',
 	},
 
 	// The bounded ones. Each is a single build or suite whose command
@@ -383,10 +414,19 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: [
 			'packages/core/',
 			'plugins/',
-			'docs/delendai/',
+			// The text a preset loads and the budget file it is compared with;
+			// not the proposals, which no preset serves.
+			'docs/delendai/AGENT-BOOTSTRAP.md',
+			'docs/delendai/TOKEN-BUDGETS.md',
+			'docs/delendai/skills/',
+			'docs/delendai/host-appendices/',
+			'docs/delendai/host-hints/',
+			'docs/delendai/generated/',
+			'docs/delendai/plugins/',
+			'docs/delendai/surface/',
 			'package.json',
 		],
 		because:
-			'preset token budgets are computed from the prompts, skills and catalog text those trees hold.',
+			'preset token budgets are computed from the prompts, skills and catalog text those trees hold; a proposal under docs/delendai/proposals/ is served to no preset.',
 	},
 ];
