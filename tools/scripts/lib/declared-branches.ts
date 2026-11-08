@@ -8,7 +8,7 @@
  * a job that runs one of its callers needs `bun install` —
  * `lint:workflow-runner-bootstrap` enforces that.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { parseJsonc } from '@delendai/core/cli';
@@ -19,11 +19,8 @@ import { repoRoot } from './repo-root';
 type IDeclaredPolicy = ReturnType<typeof resolveDevelopmentPolicy>;
 
 const declaredPolicy = (root: string): IDeclaredPolicy => {
-	const file = join(root, 'delendai.config.json');
-	// No config file declares nothing: the policy defaults answer, as they
-	// do for every other reader of the policy.
 	const { value, errors } = parseJsonc(
-		existsSync(file) ? readFileSync(file, 'utf8') : '{}',
+		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
 	);
 	const [first] = errors;
 	if (first !== undefined) {

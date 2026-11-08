@@ -349,8 +349,9 @@ export const formatReport = (
 export const main = (
 	root: string = repoRoot(),
 	apply: boolean = APPLY,
+	/** The ref a worktree must be merged into; the policy's integration branch. */
+	integrationRef: string = declaredIntegrationRef(root),
 ): number => {
-	const integrationRef = declaredIntegrationRef(root);
 	const reclamation = judgeWorktrees(observe(integrationRef, root, root));
 	if (apply) {
 		for (const verdict of reclamation.spent) {
