@@ -2,10 +2,14 @@
 id: f00810
 title: "A project pins the delendai release it runs with --version"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: 302714b0-7e4f-4951-aa1b-4e2148f3e311
+last-correlation-id: 302714b0-7e4f-4951-aa1b-4e2148f3e311
+last-transition-from: ready
+last-transition-at: 2026-11-08T13:30:39.832Z
 ---
 
 # f00810 — A project pins the delendai release it runs with --version
