@@ -9,7 +9,6 @@ import { landingAfterTrain, watchTrainPorts } from './train-fallback';
 
 const ports = (over: Partial<ITrainPorts> = {}): ITrainPorts => ({
 	trainAt: () => undefined,
-	fullRunAt: () => 'uncertified',
 	assemble: () => ({ conflicting: [] }),
 	dispatch: () => true,
 	land: (_sha, members) => members.map((member) => member.number),
