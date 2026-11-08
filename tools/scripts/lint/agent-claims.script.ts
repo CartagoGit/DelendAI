@@ -215,12 +215,12 @@ const git = (root: string, args: readonly string[]): string => {
 	return result.status === 0 ? result.stdout : '';
 };
 
-/** Every worktree on a unit branch, with what that unit changes against develop. */
+/** Every worktree on a unit branch, with what that unit changes against the integration branch. */
 export const unitCheckouts = (
 	root: string,
-	branches: Parameters<typeof ownedWorkRefPrefixes>[0] = declaredBranches(
-		root,
-	),
+	branches: Parameters<typeof ownedWorkRefPrefixes>[0] & {
+		readonly integration?: string;
+	} = declaredBranches(root),
 ): readonly IUnitCheckout[] => {
 	const units: IUnitCheckout[] = [];
 	// Every owned work namespace, read from the policy (f00808).
@@ -241,7 +241,7 @@ export const unitCheckouts = (
 		const paths = git(root, [
 			'diff',
 			'--name-only',
-			`origin/develop...${branch}`,
+			`origin/${branches.integration ?? declaredBranches(root).integration}...${branch}`,
 		])
 			.split('\n')
 			.filter((path) => path.length > 0);

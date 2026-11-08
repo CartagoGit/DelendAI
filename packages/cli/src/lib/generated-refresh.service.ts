@@ -228,6 +228,8 @@ const restore = (
 export const refreshGeneratedAfterMerge = (input: {
 	readonly root: string;
 	readonly paths: readonly string[];
+	/** The generators to run; `gen:all` unless a caller names others. */
+	readonly commands?: readonly string[];
 	readonly run?: (command: string, cwd: string) => boolean;
 }): IGeneratedRefreshReport => {
 	const run =
@@ -262,8 +264,21 @@ export const refreshGeneratedAfterMerge = (input: {
 	// of the bootstrap. Such a path stays exactly as its owner left it.
 	const alreadyEdited = new Set(changedAgainstHead(input.root, input.paths));
 	const failed: string[] = [];
-	for (const command of GENERATED_REFRESH_COMMANDS) {
+	for (const command of input.commands ?? GENERATED_REFRESH_COMMANDS) {
 		if (!run(command, input.root)) failed.push(command);
+	}
+	// A generator that failed may still have written: one that cannot load
+	// the code in a tree without its modules has exited 0 over an EMPTY
+	// catalog before. Output of a run in which any generator failed is
+	// not the tree's truth, so nothing of it is committed: every bounded
+	// path goes back exactly as found, and the report names the failures.
+	if (failed.length > 0) {
+		restore(
+			input.root,
+			before,
+			before.map((entry) => entry.path),
+		);
+		return { refreshed: true, committed: false, failed, paths: [] };
 	}
 	// Whatever a generator wrote over somebody's edit is discarded: the
 	// edit is theirs, and the next refresh after they commit recomputes.
