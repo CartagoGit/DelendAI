@@ -8,6 +8,7 @@ import {
 	insideNamespaces,
 	policyNamespaces,
 } from '@delendai/core/lib/development-policy/git-guard-namespaces';
+import { judgeGitOperation } from '@delendai/core/lib/development-policy/git-guard';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	refuseUnshapedPublication,
@@ -77,5 +78,34 @@ describe('guard namespaces in a transition', () => {
 		expect(
 			refuseUnshapedPublication(policy, 'pr/proposal-f00643')?.refused,
 		).toBe(true);
+	});
+});
+
+describe("the merge queue's train refs", () => {
+	const AGENT = { agentMarker: 'GITHUB_ACTIONS' } as const;
+	const push = (branch: string) => ({
+		kind: 'push' as const,
+		remoteRef: `refs/heads/${branch}`,
+		deleting: false,
+	});
+
+	it('admits a train and a culprit marker under either namespace', () => {
+		for (const branch of [
+			'train/3328521623df/1778-1808',
+			'train/culprit/1802',
+			'delendai/train/3328521623df/1778-1808',
+			'delendai/train/culprit/1802',
+		]) {
+			expect(insideNamespaces(policy, branch)).toBe(true);
+			expect(judgeGitOperation(policy, push(branch), AGENT).refused).toBe(
+				false,
+			);
+		}
+	});
+
+	it('still refuses a branch outside every namespace', () => {
+		expect(judgeGitOperation(policy, push('trains/x'), AGENT).refused).toBe(
+			true,
+		);
 	});
 });
