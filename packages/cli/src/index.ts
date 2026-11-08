@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url';
 
 import { runCli as runServerCli, serveRefusal } from '@delendai/core/cli';
 
-import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { resolveWorkAgentId } from '@delendai/core/public';
 import {
@@ -14,7 +13,11 @@ import {
 import { applyIdentityPolicy, readWorkspacePolicy } from '@delendai/core/cli';
 
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
-import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
+import type {
+	ICliCommand,
+	ICliCommandContext,
+	ICliGlobalOptions,
+} from './contracts/interfaces/cli-command.interface';
 import type { IStaleBuild } from './contracts/interfaces/stale-build.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
 import {
@@ -32,8 +35,9 @@ import { markDelendaiSession } from './lib/delendai-session.service';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { cliLanguage } from './lib/cli-language.service';
-import { createStdioContext } from './lib/stdio-context.factory';
 import { createNoopContext } from './lib/noop-context.factory';
+import { loadCommandsFor } from './lib/command-loader.service';
+import { createLazyContext } from './lib/lazy-context.factory';
 import { leaveNoTrace } from './lib/leave-no-trace.service';
 import { formatJson } from './lib/stable-json.service';
 
@@ -68,6 +72,16 @@ export type {
 } from '@delendai/core/cli';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
+/** The server client loads with the server, not with every command. */
+const startServerContext = async (
+	cwd: string,
+	globals: ICliGlobalOptions,
+	extraPlugins: readonly string[],
+): Promise<ICliCommandContext> => {
+	const { createStdioContext } = await import('./lib/stdio-context.factory');
+	return createStdioContext(cwd, globals, extraPlugins);
+};
+
 const commandMatches = (
 	command: ICliCommand,
 	path: readonly string[],
@@ -98,7 +112,7 @@ export const runHumanCli = async (
 	argv: readonly string[],
 	cwd = process.cwd(),
 ): Promise<number> => {
-	const commands = await registerAllCommands();
+	const commands = await loadCommandsFor(argv);
 	const parsed = parseCliInvocation(
 		argv,
 		cwd,
@@ -158,7 +172,7 @@ export const runHumanCli = async (
 		command.name === 'init:default' ||
 		command.name === 'guard' ||
 		command.name === 'migrate';
-	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
+	let ctx: ICliCommandContext | undefined;
 	const tidy =
 		command.readsOnly?.(commandArgs) === true
 			? leaveNoTrace(parsed.globals.workspace, parsed.globals.cacheDir)
@@ -177,7 +191,9 @@ export const runHumanCli = async (
 		// override case.
 		ctx = isOffline
 			? createNoopContext(parsed.globals.workspace, parsed.globals)
-			: await createStdioContext(cwd, parsed.globals, extraPlugins);
+			: createLazyContext(cwd, parsed.globals, () =>
+					startServerContext(cwd, parsed.globals, extraPlugins),
+				);
 		const result = await command.run(commandArgs, ctx);
 		if (result.error !== undefined)
 			process.stderr.write(`${result.error}\n`);

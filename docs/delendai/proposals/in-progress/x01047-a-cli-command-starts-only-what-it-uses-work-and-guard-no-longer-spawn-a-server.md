@@ -32,7 +32,7 @@ TODO: why this work matters now.
 
 ### S1 — Lazy server context, per-command loading and a startup budget spec
 - **Status**: pending
-- **Files**: `packages/cli/src/index.ts`, `packages/cli/src/lib/lazy-context.factory.ts`, `packages/cli/src/lib/lazy-context.factory.spec.ts`, `packages/cli/src/lib/command-loader.service.ts`, `packages/cli/src/lib/command-loader.service.spec.ts`, `packages/cli/src/lib/startup-budget.spec.ts`
+- **Files**: `packages/cli/src/index.ts`, `packages/cli/src/lib/lazy-context.factory.ts`, `packages/cli/src/contracts/interfaces/lazy-context.interface.ts`, `packages/cli/src/lib/lazy-context.factory.spec.ts`, `packages/cli/src/lib/command-loader.service.ts`, `packages/cli/src/lib/command-loader.service.spec.ts`, `packages/cli/src/lib/startup-budget.spec.ts`
 - **Gate**: type
 - acceptance:
   - "delendai work status never spawns the MCP server: the server starts at the first tool call, not at command start"
