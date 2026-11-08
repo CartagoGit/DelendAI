@@ -93,6 +93,20 @@ describe('queueOrder', () => {
 		).toEqual([3, 5]);
 	});
 
+	it('leads with an urgent candidate, then keeps the oldest first (x01051)', () => {
+		expect(
+			queueOrder(
+				[
+					candidate(3),
+					candidate(8, { urgent: 'integration is red' }),
+					candidate(5),
+					candidate(9, { urgent: 'a fix' }),
+				],
+				PREFIX,
+			).map((facts) => facts.number),
+		).toEqual([8, 9, 3, 5]);
+	});
+
 	it('has the head as its first candidate that does not conflict', () => {
 		const candidates = [
 			candidate(3, { conflicting: true }),
