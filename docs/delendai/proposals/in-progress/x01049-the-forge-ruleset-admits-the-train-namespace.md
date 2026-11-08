@@ -20,21 +20,22 @@ The merge-train queue lands what it certifies: the branch-namespace ruleset allo
 
 ## why
 
-TODO: why this work matters now.
+The merge-train queue has never pushed a train: the branch-namespace ruleset does not exclude the train namespace, so the forge declines the push, run() swallows it, and the dispatch fails with HTTP 422 No ref found. Every queue run lands nothing.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Applying the live ruleset: the owner runs the namespace-ruleset-guard sync.
 
 ## slices
 
 - global_gate: none
 
-### S1 — TODO
+### S1 — Allow the train namespace and report a declined push
 - **Status**: pending
-- **Files**: `TODO`
+- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/publication-prefixes.ts`
 - **Gate**: none
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The ruleset admits a train ref and a culprit ref under every owned namespace.
+- A declined train push is reported with git's reason and nothing is dispatched.
