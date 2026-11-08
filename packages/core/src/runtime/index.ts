@@ -89,8 +89,12 @@ export { splitCommandLine } from '../lib/shared/command-line.helper';
 export type { IWorkRefVerdict } from '../lib/contracts/interfaces/work-ref-lifecycle.interface';
 export {
 	workRefFate,
+	workRefIntegrationRef,
+	workRefLanded,
 	workRefOpenness,
 } from '../lib/work-units/work-ref-lifecycle.service';
+export { settleLanded } from '../lib/wip-engine/landed-work-ref';
+export { urgentReasonOfBody } from '../lib/work-units/pull-request-urgency.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
 export { hookFreeEnvironment } from '../lib/shared/hook-free-environment.helper';
 export { gitVerbatim, readGit } from '../lib/shared/git-read.helper';

@@ -11,6 +11,10 @@
  * credential, so it opens the pull request, or finds the one already
  * open. It never arms auto-merge: arming is the queue's job.
  */
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { landsByPullRequest } from '../development-policy/branch-rules';
+import { pullRequestPorts } from './change-request-forges.service';
+import { urgentLine, urgentReasonOfBody } from './pull-request-urgency.service';
 import type { IChangeRequestRef } from '../contracts/interfaces/change-request-forge.interface';
 import type {
 	IPublicationPullRequest,
@@ -100,6 +104,7 @@ export const pullRequestText = (
 	subjects: readonly string[],
 	branch: string,
 	fallback: string,
+	urgent?: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
 	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
@@ -127,7 +132,7 @@ export const pullRequestText = (
 		.join('\n');
 	return {
 		title,
-		body: `Opened by \`delendai work publish\` for \`${branch}\`.\n\n${listed}`,
+		body: `Opened by \`delendai work publish\` for \`${branch}\`.${urgent === undefined ? '' : `\n\n${urgentLine(urgent)}`}\n\n${listed}`,
 	};
 };
 
@@ -170,7 +175,15 @@ const refreshOpenPullRequest = (
 		};
 	}
 	const subjects = subjectsOf(input);
-	const text = pullRequestText(subjects, input.branch, input.fallbackTitle);
+	const current = forge.read(ports.run, ref);
+	// A republish keeps the mark the pull request already carries.
+	const urgent = input.urgent ?? urgentReasonOfBody(current?.body);
+	const text = pullRequestText(
+		subjects,
+		input.branch,
+		input.fallbackTitle,
+		urgent,
+	);
 	const files = (
 		ports.git([
 			'diff',
@@ -190,7 +203,6 @@ const refreshOpenPullRequest = (
 			: []),
 	].join('\n');
 	const next = { title: text.title, body: `${text.body}\n\n${shipped}` };
-	const current = forge.read(ports.run, ref);
 	if (current?.title === next.title && current.body === next.body) {
 		return { status: 'existing', url: ref.url };
 	}
@@ -229,6 +241,8 @@ export const openPublicationPullRequest = (input: {
 	readonly tip: string;
 	readonly integrationBase: string;
 	readonly fallbackTitle: string;
+	/** Why the delivery is urgent, carried onto the pull request's body. */
+	readonly urgent?: string | undefined;
 	readonly ports: IPullRequestPorts;
 }): IPublicationPullRequest => {
 	const { ports } = input;
@@ -285,6 +299,7 @@ export const openPublicationPullRequest = (input: {
 		subjectsOf(input),
 		input.branch,
 		input.fallbackTitle,
+		input.urgent,
 	);
 	const created = ports.gh([
 		'pr',
@@ -328,4 +343,37 @@ export const openPublicationPullRequest = (input: {
 				reason: `\`gh pr create\` did not open it; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 			}
 		: { status: 'opened', url: opened };
+};
+
+/**
+ * The publication of a unit as a pull request, when its branch takes them
+ * and the caller did not say otherwise (`--no-pull-request`).
+ */
+export const openUnitPullRequest = async (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly args: readonly string[];
+	readonly remote: string;
+	readonly publicationRef: string;
+	readonly tip: string;
+	readonly integrationBase: string;
+	readonly fallbackTitle: string;
+	readonly urgent?: string | undefined;
+}): Promise<IPublicationPullRequest | undefined> => {
+	if (
+		!landsByPullRequest(input.policy) ||
+		input.args.includes('--no-pull-request')
+	) {
+		return undefined;
+	}
+	return openPublicationPullRequest({
+		remote: input.remote,
+		base: input.policy.branches.integration,
+		branch: input.publicationRef.replace(/^refs\/heads\//u, ''),
+		tip: input.tip,
+		integrationBase: input.integrationBase,
+		fallbackTitle: input.fallbackTitle,
+		urgent: input.urgent,
+		ports: await pullRequestPorts(input.root),
+	});
 };

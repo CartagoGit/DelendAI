@@ -35,7 +35,8 @@ export type {
 
 /**
  * The queue itself: the pull requests this model produced that are ready
- * (not drafts) and not red (they would never merge), oldest first.
+ * (not drafts) and not red (they would never merge), urgent ones first
+ * (`work deliver --urgent`), then oldest first.
  * Conflicting ones keep their place: a conflict confined to derived
  * files is resolved by the machine that brings candidates forward.
  */
@@ -50,7 +51,11 @@ export const queueOrder = (
 				!candidate.draft &&
 				!candidate.red,
 		)
-		.sort((a, b) => a.number - b.number);
+		.sort(
+			(a, b) =>
+				Number(b.urgent !== undefined) -
+					Number(a.urgent !== undefined) || a.number - b.number,
+		);
 
 /**
  * The candidate that moves next: the oldest one in the queue that is not

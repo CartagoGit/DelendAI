@@ -153,6 +153,7 @@ export const buildReclaimReport = (input: IReclaimInput): IReclaimReport => {
 
 // ---------- CLI shell ----------
 
+/** Always kept; the policy's integration and release branches join them. */
 const DEFAULT_PROTECTED_BRANCHES: readonly string[] = [
 	'develop',
 	'main',
@@ -299,13 +300,14 @@ export const deleteBranch = (cwd: string, branch: IOrphanBranch): boolean =>
 
 interface ICliArgs {
 	readonly cwd: string;
-	readonly base: string;
+	/** `--base`; the policy's integration branch when not given. */
+	readonly base: string | undefined;
 	readonly apply: boolean;
 }
 
 const parseArgs = (argv: readonly string[]): ICliArgs => {
 	let cwd = process.cwd();
-	let base = 'develop';
+	let base: string | undefined;
 	let apply = false;
 	for (let i = 0; i < argv.length; i += 1) {
 		const arg = argv[i];
@@ -498,9 +500,16 @@ const readPolicy = async (
 const main = async (): Promise<number> => {
 	const args = parseArgs(process.argv.slice(2));
 	const currentBranch = readCurrentBranch(args.cwd);
-	const branches = readBranches(args.cwd, args.base);
-	const stashes = readStashes(args.cwd);
 	const policy = await readPolicy(args.cwd);
+	const base = args.base ?? policy?.branches.integration;
+	if (base === undefined) {
+		console.error(
+			'reclaim-orphans: pass --base=<branch>; no development policy could be read to name the integration branch.',
+		);
+		return 1;
+	}
+	const branches = readBranches(args.cwd, base);
+	const stashes = readStashes(args.cwd);
 	const units =
 		policy === undefined
 			? []
@@ -510,11 +519,17 @@ const main = async (): Promise<number> => {
 		stashes,
 		units,
 		currentBranch,
-		protectedBranches: DEFAULT_PROTECTED_BRANCHES,
+		protectedBranches: [
+			...new Set([
+				...DEFAULT_PROTECTED_BRANCHES,
+				base,
+				...(policy === undefined ? [] : [policy.branches.release]),
+			]),
+		],
 	});
 
 	if (!args.apply) {
-		process.stdout.write(`${renderReport(report, args.base, policy)}\n`);
+		process.stdout.write(`${renderReport(report, base, policy)}\n`);
 		return 0;
 	}
 

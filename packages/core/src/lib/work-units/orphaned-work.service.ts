@@ -52,6 +52,22 @@ const minutes = (seconds: number): string =>
  */
 export const judgeAuthor = (evidence: IAuthorEvidence): IAuthorPresence => {
 	const { lease, now, windowSeconds } = evidence;
+	// A unit that ended by delivering its work is not abandoned: the work is
+	// in a publication waiting for its pull request, which nobody needs the
+	// author for until the pull request is red. Past the recovery window
+	// nothing waits any longer, and the usual judgement follows.
+	if (evidence.unitEnded && evidence.deliveredAt !== undefined) {
+		const waiting = Math.max(0, now - evidence.deliveredAt);
+		const recoverySeconds = windowSeconds * ABANDONED_AFTER_LEASE_WINDOWS;
+		if (waiting <= recoverySeconds) {
+			return {
+				orphaned: false,
+				reason: null,
+				silentSeconds: waiting,
+				why: `delivered ${minutes(waiting)} ago and waiting for its pull request, inside the ${minutes(recoverySeconds)} recovery window`,
+			};
+		}
+	}
 	// An ended unit has no commit of its own to come: only a lease says
 	// somebody is on it again.
 	const beat =
@@ -158,6 +174,11 @@ export const publicationPresence = async (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly publications: readonly string[];
+	/**
+	 * The tip of each publication by short name. Given, a publication whose
+	 * unit ended by delivering it is dated from its own tip.
+	 */
+	readonly tips?: ReadonlyMap<string, string> | undefined;
 	readonly now?: number | undefined;
 }): Promise<
 	ReadonlyMap<string, IAuthorPresence & { readonly agent: string }>
@@ -196,10 +217,21 @@ export const publicationPresence = async (input: {
 						sha,
 						integration,
 					);
+		const unitEnded = sha === undefined && adopter === undefined;
+		const published = input.tips?.get(name);
+		const deliveredAt =
+			unitEnded && published !== undefined
+				? ownActivityAt(
+						(args) => readGit(root, args) ?? '',
+						published,
+						integration,
+					)
+				: undefined;
 		const judged = judgeAuthor({
 			lease,
 			tipAt,
-			unitEnded: sha === undefined && adopter === undefined,
+			...(deliveredAt === undefined ? {} : { deliveredAt }),
+			unitEnded,
 			now,
 			windowSeconds,
 		});
