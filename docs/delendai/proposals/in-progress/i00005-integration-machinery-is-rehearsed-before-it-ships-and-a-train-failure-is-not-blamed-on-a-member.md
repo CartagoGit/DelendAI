@@ -2,10 +2,14 @@
 id: i00005
 title: "Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member"
 kind: infra
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: a8c19e0d-4f6d-4d98-a0a0-c5037d9207b9
+last-correlation-id: a8c19e0d-4f6d-4d98-a0a0-c5037d9207b9
+last-transition-from: ready
+last-transition-at: 2026-11-08T19:13:03.797Z
 ---
 
 # i00005 — Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member
