@@ -77,14 +77,14 @@ export const withoutRuntimeFlags = (
 		(arg) => !arg.startsWith(BRANCH_FLAG) && !arg.startsWith(VERSION_FLAG),
 	);
 
-export type TRuntimePin =
+export type IRuntimePin =
 	| { readonly kind: 'checkout' }
 	| { readonly kind: 'branch'; readonly branch: string }
 	| { readonly kind: 'version'; readonly version: string }
 	| { readonly kind: 'refused'; readonly reason: string };
 
 /** Which runtime the arguments ask for; both flags, or a malformed version, are refused. */
-export const runtimePin = (argv: readonly string[]): TRuntimePin => {
+export const runtimePin = (argv: readonly string[]): IRuntimePin => {
 	const branch = branchFlag(argv);
 	const version = versionFlag(argv);
 	if (branch !== undefined && version !== undefined)
@@ -140,7 +140,7 @@ export const nearestReleaseTags = (
 	].map((k) => k.tag);
 };
 
-export type TRuntimeResolution =
+export type IRuntimeResolution =
 	| { readonly ok: true; readonly script: string; readonly label: string }
 	| { readonly ok: false; readonly reason: string };
 
@@ -175,7 +175,7 @@ export const npmVersionHostScript = (
 	root: string,
 	version: string,
 	hostScript: string,
-): TRuntimeResolution => {
+): IRuntimeResolution => {
 	let installed: string | undefined;
 	try {
 		const manifest = JSON.parse(
@@ -206,7 +206,7 @@ export const versionHostScript = async (
 	root: string,
 	version: string,
 	run: TRun = runQuietly,
-): Promise<TRuntimeResolution> => {
+): Promise<IRuntimeResolution> => {
 	const tag = releaseTag(version);
 	if (!existsSync(join(root, '.git'))) {
 		return npmVersionHostScript(root, version, join(root, HOST_SCRIPT));
