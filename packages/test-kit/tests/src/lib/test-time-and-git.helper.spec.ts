@@ -43,6 +43,7 @@ describe('skipLockPauses', () => {
 		skipLockPauses(pauseMs, () => {
 			paused += 1;
 		});
+		// delendai:timing-is-the-subject — the pause under test is stubbed to run at once.
 		await new Promise<void>((done) => setTimeout(done, pauseMs));
 		expect(paused).toBe(1);
 	});

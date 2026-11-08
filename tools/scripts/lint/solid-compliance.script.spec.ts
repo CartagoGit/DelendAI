@@ -71,11 +71,13 @@ describe('solid-compliance.script — pure engine', () => {
 	it('magic-number-in-plugin: literal flagged in plugins/* but not in core', async () => {
 		const pluginBody = [
 			'export const wait = (ms: number): Promise<void> =>',
+			// delendai:timing-is-the-subject — fixture text for the scanner, never run.
 			'  new Promise((r) => setTimeout(r, 12345));',
 			'};',
 		].join('\n');
 		const coreBody = [
 			'export const wait = (ms: number): Promise<void> =>',
+			// delendai:timing-is-the-subject — fixture text for the scanner, never run.
 			'  new Promise((r) => setTimeout(r, 12345));',
 			'};',
 		].join('\n');

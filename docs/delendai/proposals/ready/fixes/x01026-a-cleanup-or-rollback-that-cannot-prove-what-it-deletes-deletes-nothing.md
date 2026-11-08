@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 96e91ff3-ed53-4a9c-8d50-defad3f76756
-last-correlation-id: 96e91ff3-ed53-4a9c-8d50-defad3f76756
+last-transition-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
+last-correlation-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
 last-transition-from: review
-last-transition-at: 2026-11-04T21:42:38.876Z
+last-transition-at: 2026-11-04T22:22:52.936Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -43,7 +43,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence for the unknown-state handling when git status fails/timeouts and the guarded use of `git worktree remove --force`. Please re-run and attach fresh empirical proof (including the failing-status spec case).
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The rollback reverts only what the transaction wrote
 - **Status**: pending
@@ -57,7 +57,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: this slice currently lacks attached reproducible current-develop evidence proving rollback touches exactly transaction-recorded writes and preserves external files created after backup. Please re-run and attach fresh proof (including the spec that creates an external file between backup and rollback).
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

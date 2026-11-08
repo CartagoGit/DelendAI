@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 8cb45771-b652-45b1-aa9f-7e41de0a1f31
-last-correlation-id: 8cb45771-b652-45b1-aa9f-7e41de0a1f31
+last-transition-id: aebff1af-5843-42ce-99df-3433bd1e3891
+last-correlation-id: aebff1af-5843-42ce-99df-3433bd1e3891
 last-transition-from: review
-last-transition-at: 2026-11-04T21:47:35.604Z
+last-transition-at: 2026-11-04T22:25:31.703Z
 ---
 
 # x01023 — A republished pull request is retitled and re-summarised by what it ships now
@@ -41,7 +41,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 4. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 978be919a1b3 is stale for this slice. `git log 978be919a1b3..develop -- <S1 files>` shows post-shipped change(s) in listed files (e.g. aa75627c5), so acceptance must be re-validated on current develop with fresh reproducible evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

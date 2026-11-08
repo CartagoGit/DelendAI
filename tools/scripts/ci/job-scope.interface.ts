@@ -51,6 +51,12 @@ export interface IJobScope {
 	 * what it reads as data.
 	 */
 	readonly code?: 'scripts' | undefined;
+	/**
+	 * The plan entries this job is made of. A workflow job that runs several
+	 * checks on one runner (one setup, not one each) runs when any of them
+	 * does; each check keeps its own entry and gates its own steps.
+	 */
+	readonly group?: readonly string[] | undefined;
 	/** Why this bound is correct — read by whoever widens or narrows it. */
 	readonly because: string;
 }

@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 95a028fd-bfb5-417d-b2c5-a95fd58bdbf6
-last-correlation-id: 95a028fd-bfb5-417d-b2c5-a95fd58bdbf6
+last-transition-id: 6c809bc2-5058-4e37-9fe3-b9c378cf94ae
+last-correlation-id: 6c809bc2-5058-4e37-9fe3-b9c378cf94ae
 last-transition-from: review
-last-transition-at: 2026-11-04T20:36:27.673Z
+last-transition-at: 2026-11-04T22:21:09.691Z
 ---
 
 # x01003 — A slice commit takes only what its own unit wrote
@@ -61,7 +61,7 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in ef203ed1fd27 is stale for this slice. `git log ef203ed1fd27..develop -- <S1 files>` shows post-shipped changes touching listed files (e.g. 767270991, 599ba2c48, 502cf5a86), so acceptance must be re-validated on current develop with fresh empirical evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

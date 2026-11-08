@@ -6,10 +6,10 @@ status: ready
 type: proposal
 track: ci
 date: 2026-11-04
-last-transition-id: fb61499c-4c68-4b13-8bdd-c4ab92eaaaf4
-last-correlation-id: fb61499c-4c68-4b13-8bdd-c4ab92eaaaf4
+last-transition-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
+last-correlation-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
 last-transition-from: review
-last-transition-at: 2026-11-04T20:23:43.063Z
+last-transition-at: 2026-11-04T22:16:34.991Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
@@ -41,7 +41,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 2c5e46fc983e is stale for this slice. `git log 2c5e46fc983e..develop -- <S1 files>` shows later changes (e.g. 1921c42fa), so the code-scanning acceptance for alerts #477/#478 must be re-validated on current develop with fresh evidence.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The markdown parser expressions
 - **Status**: pending
@@ -53,7 +53,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: no current-run empirical evidence is attached here to prove the pathological-line acceptance on current develop (100000-space behavior for #471/#472/#473). Please re-run and include reproducible evidence tied to this slice before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — The dockerfile and scaffolder expressions
 - **Status**: pending
@@ -65,7 +65,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 3. Clai
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Rework required: no current-run empirical evidence is attached to demonstrate the pathological-line acceptance on current develop for alerts #474/#475. Please re-run and attach reproducible proof (including the pathological-line spec behavior) before re-submitting.
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
 

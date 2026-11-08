@@ -72,83 +72,68 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-    lint-biome:
-        name: lint-biome
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
+    # One runner and one setup for the static checks, instead of one each. Every
+    # step keeps the plan entry of the job it used to be (job-scope.constant.ts),
+    # and `static-checks` runs when any of them does.
+    static-checks:
+        name: static-checks
         needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-biome']
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks'] }}
         runs-on: ubuntu-latest
         # The lints that judge files one by one judge these, not the
         # repository; empty on a push, where every lint judges everything.
         env:
             DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
+        timeout-minutes: 30
         steps:
-            # A `uses: ./path` step can only be resolved once the repo holding
-            # that path is on disk, and setup-bun-repo's own first internal step
-            # IS the checkout — so it can never bootstrap itself as a job's very
-            # first step. Every job in this file failed here, with every later
-            # step reported as `skipped`, from 2026-08-31 until this was added.
-            # The composite action then re-checks out at whatever fetch-depth it
-            # needs, so this bare one costs a shallow clone and nothing else.
+            # Bootstraps the local composite action - see the first job.
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
 
             - name: Run biome and style-entry lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-biome'] }}
               run: |
                   set -euo pipefail
                   bun run lint
                   bun run lint:scss
 
-    lint-architecture:
-        name: lint-architecture
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-architecture']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
+            - name: Validate manifest metadata and generated manifest outputs
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['manifests-check'] }}
+              run: |
+                  set -euo pipefail
+                  bun run lint:plugin-manifest
+                  bun run lint:manifest-vs-package
+                  bun run lint:manifest-vs-presets
+                  bun run generate:from-manifests --check
+
 
             # One list, two consumers: `lint:architecture` is what the
             # local pre-flight runs too, so a candidate cannot pass on
             # this machine and fail here over a lint the two lists had
             # drifted apart on.
             - name: Run architecture lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-architecture'] }}
               run: bun tools/scripts/lint/run-together.script.ts lint:architecture
 
-    lint-presets:
-        name: lint-presets
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-presets']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
+            - name: Run docs, content and web lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-docs'] }}
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/lint/run-together.script.ts lint:job:docs
+
 
             - name: Rebuild the proposal registry cache
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-presets'] }}
               # A fresh checkout has no `.cache/delendai/proposals/index.json`
               # (gitignored — it's a derived cache, see r00010). `catalog:check`
               # below needs it to exist to resolve at all. This mirrors what the
@@ -159,6 +144,7 @@ jobs:
               run: bun run sync:proposals || true
 
             - name: Run preset and release-surface checks
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-presets'] }}
               run: |
                   set -euo pipefail
                   bun tools/scripts/lint/run-together.script.ts lint:job:presets
@@ -182,56 +168,9 @@ jobs:
                   bun run catalog:check
                   bun run catalog:hints:check
 
-    lint-docs:
-        name: lint-docs
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-docs']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Run docs, content and web lints
-              run: |
-                  set -euo pipefail
-                  bun tools/scripts/lint/run-together.script.ts lint:job:docs
-
-    lint-security:
-        name: lint-security
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-security']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  # `candidate-delivers` runs `git diff base...head`, which
-                  # needs a common ancestor. The default depth-1 clone has
-                  # none, so the gate answered on a diff it could not
-                  # compute. Found by `lint:workflow-history-depth`.
-                  fetch-depth: '0'
 
             - name: Run security and hygiene lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-security'] }}
               # `lint:candidate-delivers` asks the FORGE how many files
               # the pull request changes, because a depth-1 checkout does
               # not have the base object to diff against. Without a token
@@ -333,31 +272,9 @@ jobs:
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
 
-    lint-governance:
-        name: lint-governance
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['lint-governance']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Full history: this job verifies that commits cited by proposals
-            # actually exist. The default shallow checkout has none of them, so
-            # every citation reads as dangling and the gate could never pass.
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  fetch-depth: '0'
 
             - name: Run governance and proposal lints
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-governance'] }}
               # The job's own read token: `closed-with-independent-approval`
               # reads the pull request's labels as they are now, so the
               # owner's reconcile label counts on a re-run (x00743).
@@ -388,6 +305,17 @@ jobs:
                   # break, and it takes seconds; running it here is what
                   # lets a proposal edit skip `sqlite-cutover-ready`.
                   bun run test:sqlite:real-tree
+
+
+            - name: Verify generated artifacts stay in sync
+              if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check'] }}
+              run: bun run check:generated
+
+
+
+
+
+
 
     typecheck:
         name: typecheck
@@ -1080,54 +1008,7 @@ jobs:
                   bun run tokens:gate
                   bun run tokens:dashboard:check
 
-    manifests-check:
-        name: manifests-check
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['manifests-check']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Validate manifest metadata and generated manifest outputs
-              run: |
-                  set -euo pipefail
-                  bun run lint:plugin-manifest
-                  bun run lint:manifest-vs-package
-                  bun run lint:manifest-vs-presets
-                  bun run generate:from-manifests --check
-
-    generated-artifacts-check:
-        name: generated-artifacts-check
-        # Runs only when the change touches what it reads (job-scope.constant.ts).
-        needs: plan-scope
-        if: fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check']
-        runs-on: ubuntu-latest
-        # The lints that judge files one by one judge these, not the
-        # repository; empty on a push, where every lint judges everything.
-        env:
-            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
-        timeout-minutes: 15
-        steps:
-            # Bootstraps the local composite action — see the first job.
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-
-            - name: Verify generated artifacts stay in sync
-              run: bun run check:generated
 
     site:
         # c00088: astro-check (lint:web) provably misses build-only
@@ -1367,12 +1248,7 @@ jobs:
         name: delendai-validate
         if: always()
         needs:
-            - lint-biome
-            - lint-architecture
-            - lint-presets
-            - lint-docs
-            - lint-security
-            - lint-governance
+            - static-checks
             - typecheck
             - plan-scope
             - plan-tests
@@ -1384,8 +1260,6 @@ jobs:
             - sqlite-cutover-ready
             - build-clean
             - tokens-budget-real
-            - manifests-check
-            - generated-artifacts-check
             - site
             - pack-smoke
             - metrics-gate
