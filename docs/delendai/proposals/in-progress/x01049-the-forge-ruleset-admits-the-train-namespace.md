@@ -2,14 +2,14 @@
 id: x01049
 title: "The forge ruleset admits the train namespace"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 804d7f90-9dbd-4cbe-a00a-44aae3c0e156
-last-correlation-id: 804d7f90-9dbd-4cbe-a00a-44aae3c0e156
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T03:07:10.832Z
+last-transition-id: 056997d7-53da-4717-a97d-76942d9fca8c
+last-correlation-id: 056997d7-53da-4717-a97d-76942d9fca8c
+last-transition-from: review
+last-transition-at: 2026-11-08T06:05:43.339Z
 ---
 
 # x01049 — The forge ruleset admits the train namespace
