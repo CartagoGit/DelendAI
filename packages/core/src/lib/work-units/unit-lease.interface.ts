@@ -161,6 +161,10 @@ export interface IUnitRemoval {
 	readonly deletedBranch: boolean;
 	/** Real edits that kept the worktree and the branch in place. */
 	readonly keptBecauseEdited: readonly string[];
+	/** Why the unit was found alive and kept whole, if it was. */
+	readonly keptBecauseAlive?: string | undefined;
+	/** The branch had moved off the judged tip: nothing was removed. */
+	readonly keptBecauseMoved?: boolean | undefined;
 }
 
 export interface IReadUnitStandings {
@@ -174,4 +178,43 @@ export interface IWorktreeState {
 	readonly edited: readonly string[];
 	/** Files a generator or installer rewrites. */
 	readonly regenerable: readonly string[];
+}
+
+/** One kind of evidence that somebody is on a unit right now. */
+export type IUnitLifeSign =
+	/** The lease beat inside the window, and no quota exhaustion since. */
+	| 'heartbeat'
+	/** A live process carries the owner's session in its environment. */
+	| 'owner-session'
+	/** A live process waits for, or holds, the compute slot to prove it. */
+	| 'proof'
+	/** A live process works inside its worktree. */
+	| 'process';
+
+/** Whether a unit is alive, and the evidence for it. */
+export interface IUnitLife {
+	readonly alive: boolean;
+	readonly signs: readonly IUnitLifeSign[];
+	/** One sentence naming the evidence, for reasons and refusals. */
+	readonly why: string;
+}
+
+/** What the machine shows of the processes alive at one instant. */
+export interface IMachineLife {
+	/** Working directories of the live processes, other than this one. */
+	readonly cwds: readonly string[];
+	/** Host sessions named in a live process's environment. */
+	readonly sessions: ReadonlySet<string>;
+}
+
+/** What one unit's life is judged from. Times are epoch seconds. */
+export interface IUnitLifeEvidence {
+	readonly lease: IUnitLease | undefined;
+	/** Every path the unit's worktree is known by (the lease's, git's). */
+	readonly worktrees: readonly string[];
+	/** Whether a live process claims a proof turn of the unit. */
+	readonly proving: boolean;
+	readonly machine: IMachineLife;
+	readonly now: number;
+	readonly windowSeconds: number;
 }

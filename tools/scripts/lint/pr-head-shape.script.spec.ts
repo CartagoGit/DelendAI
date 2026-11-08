@@ -3,6 +3,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
+
 import { prHeadProblem } from './pr-head-shape.script';
 
 const BRANCHES = {
@@ -62,5 +64,29 @@ describe('prHeadProblem', () => {
 		expect(prHeadProblem('feature/whatever', BRANCHES)).toContain(
 			'outside',
 		);
+	});
+});
+
+describe('prHeadProblem in a namespace transition (f00808)', () => {
+	const moved = resolveDevelopmentPolicy({
+		development: {
+			branches: {
+				namespacePrefix: '',
+				formerNamespacePrefixes: ['delendai'],
+			},
+		},
+	}).branches;
+
+	it('accepts a publication of either prefix, and nothing outside them', () => {
+		expect(
+			prHeadProblem('pr/claude-opus-5-5/implement/x00642-S2-g1/t', moved),
+		).toBeUndefined();
+		expect(
+			prHeadProblem(
+				'delendai/pr/claude-opus-5-5/implement/x00642-S2-g1/t',
+				moved,
+			),
+		).toBeUndefined();
+		expect(prHeadProblem('feature/mine', moved)).toContain('outside');
 	});
 });

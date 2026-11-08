@@ -17,7 +17,8 @@ import {
 	kindsInAgentId,
 } from '@delendai/core/lib/development-policy/work-ref-placeholders';
 
-import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
+import { isForwardSyncRef } from '../forge/forward-sync-release.script';
+import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -40,8 +41,7 @@ export const isBranchModelMove = (
 	((head === branches.integration &&
 		base === branches.release &&
 		branches.release !== branches.integration) ||
-		(base === branches.integration &&
-			head.startsWith(FORWARD_SYNC_REF_PREFIX)));
+		(base === branches.integration && isForwardSyncRef(head)));
 
 /** Why `head` is not a well-shaped publication ref, or `undefined`. */
 export const prHeadProblem = (
@@ -52,10 +52,37 @@ export const prHeadProblem = (
 		readonly publicationRefPrefix: string;
 		readonly integration?: string;
 		readonly release?: string;
+		readonly namespacePrefix?: string;
+		readonly formerNamespacePrefixes?: readonly string[];
+		readonly workRefVisibility?: 'visible' | 'hidden';
 	},
 	base?: string,
 ): string | undefined => {
 	if (isBranchModelMove(head, base, branches)) return undefined;
+	return headProblemIn(head, ownBranchesOf(branches, head));
+};
+
+/**
+ * The settings of the namespace `head` lives under: a publication opened
+ * before a namespace change is judged by its own namespace (f00808).
+ */
+export const ownBranchesOf = <T extends Parameters<typeof prHeadProblem>[1]>(
+	branches: T,
+	head: string,
+): T => {
+	const { namespacePrefix, workRefVisibility } = branches;
+	if (namespacePrefix === undefined || workRefVisibility === undefined)
+		return branches;
+	return branchesForRef(
+		{ ...branches, namespacePrefix, workRefVisibility },
+		head,
+	);
+};
+
+const headProblemIn = (
+	head: string,
+	branches: Parameters<typeof prHeadProblem>[1],
+): string | undefined => {
 	const publication = shortRef(branches.publicationRefPrefix);
 	const work = shortRef(branches.workRefPrefix);
 	if (publication === '' || branches.workRefTemplate === '') return undefined;

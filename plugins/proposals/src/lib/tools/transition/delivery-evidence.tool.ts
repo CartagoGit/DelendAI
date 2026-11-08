@@ -14,22 +14,6 @@ import {
 	unknownOutcome,
 } from '../../services/lifecycle-outcome';
 
-/** The text of one slice: from its heading to the next heading. */
-export const sliceBlockOf = (markdown: string, sliceId: string): string => {
-	const start = markdown.search(
-		new RegExp(
-			`^### ${sliceId.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\s+—`,
-			'mu',
-		),
-	);
-	if (start === -1) return '';
-	const rest = markdown.slice(start + 1);
-	const end = rest.search(/^#{2,3} /mu);
-	return end === -1
-		? markdown.slice(start)
-		: markdown.slice(start, start + 1 + end);
-};
-
 export const buildCodeError = (
 	code: string,
 	reason: string,

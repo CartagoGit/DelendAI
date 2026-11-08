@@ -16,7 +16,7 @@
  * the same script) run inside the turn instead of waiting for themselves.
  */
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
@@ -100,18 +100,44 @@ type TurnResult =
 /** The newest tip each unit asked for in this process; one entry per unit. */
 const localCurrent = new Map<string, string>();
 
+/** Where the turns of one unit (its worktree, or a bare tip) are kept. */
+const unitTurnDirectory = (lockPath: string, unit: string): string =>
+	`${lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
+
+const CLAIM_SUFFIX = '.claim';
+
+/**
+ * Whether a live process claims a turn of `unit`: a proof of it waits for
+ * the slot, or holds it. The claim is written before the wait begins and
+ * removed when the result is, so it spans the whole proof.
+ */
+export const unitTurnInFlight = async (
+	lockPath: string,
+	unit: string,
+): Promise<boolean> => {
+	const dir = unitTurnDirectory(lockPath, unit);
+	const names = await readdir(dir).catch(() => [] as string[]);
+	for (const name of names) {
+		if (!name.endsWith(CLAIM_SUFFIX)) continue;
+		const claim = await readSlotJson<ITurnClaim>(join(dir, name));
+		if (claim !== undefined && alive(claim.pid)) return true;
+	}
+	return false;
+};
+
 const withUnitTurn = async <T>(
 	request: IComputeSlotRequest<T>,
 	unit: string,
 	tip: string,
 ): Promise<T> => {
-	const dir = `${request.lockPath}.units/${createHash('sha1').update(unit).digest('hex').slice(0, 16)}`;
+	const dir = unitTurnDirectory(request.lockPath, unit);
 	// On record at once in this process, so a newer tip is known before any
 	// older tip can take the slot; the file tells other processes.
 	localCurrent.set(dir, tip);
 	await mkdir(dir, { recursive: true });
 	const currentPath = join(dir, 'current');
-	const claimPath = (name: string): string => join(dir, `${name}.claim`);
+	const claimPath = (name: string): string =>
+		join(dir, `${name}${CLAIM_SUFFIX}`);
 	const donePath = (name: string): string => join(dir, `${name}.done`);
 	const resultPath = (name: string, id: string): string =>
 		join(dir, `${name}.${id}.result`);

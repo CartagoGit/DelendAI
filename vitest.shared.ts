@@ -15,6 +15,19 @@ export interface Alias {
 }
 
 /**
+ * Drop the trailing slashes of a path.
+ *
+ * A regex would do it in one line, but `/\/+$/` is the shape CodeQL
+ * reports as `js/polynomial-redos` — it already flagged it once in
+ * this repository (x01012) — so the slashes are counted instead.
+ */
+export const trimTrailingSlashes = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value.charAt(end - 1) === '/') end -= 1;
+	return value.slice(0, end);
+};
+
+/**
  * Path to the global console-silencing vitest setup. Wired into every
  * project via `sharedSetupFiles` so production `console.log`/`warn`/
  * `error` calls made from tested code don't drown the validate stream.
@@ -70,7 +83,7 @@ export const BUN_OWNED_SPECS: readonly string[] = [
  * to it, as vitest `exclude` globs.
  */
 export const bunOwnedExcludes = (projectDir: string): string[] => {
-	const prefix = `${projectDir.replace(/\/+$/u, '')}/`;
+	const prefix = `${trimTrailingSlashes(projectDir)}/`;
 	return BUN_OWNED_SPECS.filter((entry) => entry.startsWith(prefix)).map(
 		(entry) => {
 			const relative = entry.slice(prefix.length);
@@ -97,9 +110,22 @@ export const sharedTestOptions = {
  * replaces a module, a global, a timer or `process.exit`, or it assigns to
  * `process.env`. With `isolate: false` those replacements outlive the file
  * and break whichever file runs next in the same worker.
+ *
+ * A file that boots real plugins through dynamic imports (the token budget
+ * measurement) opts in with the `@delendai-isolate` pragma: a module a
+ * previous file left in the shared graph keeps its lazy `import()` bound to
+ * that file's torn-down environment, so a plugin silently failed to load and
+ * the measured catalog lost its tools.
  */
 const NEEDS_ISOLATION =
-	/\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+	/@delendai-isolate|\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+
+/**
+ * The run order of the projects that share a worker. Vitest refuses two
+ * projects with different `maxWorkers` in the same order, and a project with
+ * `fileParallelism: false` runs on one worker, so it has an order of its own.
+ */
+export const SHARED_GRAPH_GROUP_ORDER = { parallel: 1, serial: 2 } as const;
 
 /** The name of a project's isolated half: the project's name and this. */
 export const ISOLATED_PROJECT_SUFFIX = '-isolated';
@@ -142,13 +168,10 @@ export const isolationSplit = (
 	);
 	return half === 'shared'
 		? {
-				// The same group as the other projects that share a worker:
-				// vitest refuses two groups with different workers but the
-				// same order.
 				options: {
 					...sharedTestOptions,
 					isolate: false,
-					sequence: { groupOrder: 1 },
+					sequence: { groupOrder: SHARED_GRAPH_GROUP_ORDER.parallel },
 				},
 				include: undefined,
 				exclude: isolated,
@@ -172,6 +195,12 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
  * remembering to wire them.
  */
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
+	// First: no spec reads the environment of the shell that runs it. The
+	// setups after this one set their own delendai variables.
+	resolve(
+		workspaceRoot,
+		'tools/scripts/test/hermetic-agent-identity-setup.ts',
+	),
 	silenceConsoleSetupFile(workspaceRoot),
 	resolve(workspaceRoot, 'tools/scripts/lib/record-reads-setup.ts'),
 	// No git a test spawns runs detached maintenance that outlives it.
@@ -182,11 +211,6 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-agent-bridge-setup.ts'),
 	// Every spec runs from the repository root, wherever the run started.
 	resolve(workspaceRoot, 'tools/scripts/test/hermetic-cwd-setup.ts'),
-	// No test reads the identity of the agent running it.
-	resolve(
-		workspaceRoot,
-		'tools/scripts/test/hermetic-agent-identity-setup.ts',
-	),
 ];
 
 /**

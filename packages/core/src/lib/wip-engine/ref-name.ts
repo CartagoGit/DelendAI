@@ -29,13 +29,29 @@ export type { IWorkRefVariables } from './ref-name.interface';
  * to a single `-`, and leading/trailing separators are trimmed so no
  * component can start with `.` or end with `.lock`.
  */
+const isEdgeSeparator = (char: string): boolean =>
+	char === '-' || char === '.' || char === '_';
+
+/**
+ * Trim leading and trailing separators by index, not by an anchored
+ * `[-._]+$` pattern: that pattern backtracks quadratically over a long
+ * run of separators followed by anything else.
+ */
+const trimEdgeSeparators = (value: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && isEdgeSeparator(value.charAt(start))) start += 1;
+	while (end > start && isEdgeSeparator(value.charAt(end - 1))) end -= 1;
+	return value.slice(start, end);
+};
+
 export const sanitizeRefComponent = (value: string): string => {
-	const cleaned = value
-		.trim()
-		.replaceAll(/[^A-Za-z0-9._-]+/gu, '-')
-		.replaceAll(/-{2,}/gu, '-')
-		.replace(/^[-._]+/u, '')
-		.replace(/[-._]+$/u, '');
+	const cleaned = trimEdgeSeparators(
+		value
+			.trim()
+			.replaceAll(/[^A-Za-z0-9._-]+/gu, '-')
+			.replaceAll(/-{2,}/gu, '-'),
+	);
 	return cleaned.length > 0 ? cleaned : 'unnamed';
 };
 

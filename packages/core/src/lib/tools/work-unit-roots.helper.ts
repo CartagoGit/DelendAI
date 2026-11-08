@@ -15,11 +15,11 @@
  * A client that declares no roots, or does not answer in time, is not
  * judged: nothing is known, so nothing changes.
  */
-import { execFileSync } from 'node:child_process';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { readGit } from '../shared/git-read.helper';
 
 /** The actions that write into the repository the server serves. */
 const WRITING_ACTIONS: ReadonlySet<string> = new Set([
@@ -40,21 +40,12 @@ const within = (outer: string, inner: string): boolean => {
 };
 
 /** The repository a directory belongs to, as its git common directory. */
-const repositoryOf = (directory: string): string | undefined => {
-	try {
-		return execFileSync(
-			'git',
-			['rev-parse', '--path-format=absolute', '--git-common-dir'],
-			{
-				cwd: directory,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'ignore'],
-			},
-		).trim();
-	} catch {
-		return undefined;
-	}
-};
+const repositoryOf = (directory: string): string | undefined =>
+	readGit(directory, [
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
 
 /** Whether this action writes into the served repository. */
 export const writesToRepository = (action: string): boolean =>

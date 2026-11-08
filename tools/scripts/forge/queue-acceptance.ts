@@ -7,7 +7,7 @@ import { readGit } from '@delendai/core/runtime';
 
 import { footprintBetween, mergeBaseOf } from './candidate-footprint';
 import { testedAgainst } from './candidate-tested-base';
-import { acceptIndependent } from './independent-candidates';
+import { acceptIndependent, acceptRiders } from './independent-candidates';
 import type {
 	ICandidateAcceptance,
 	IQueueCandidateChange,
@@ -31,12 +31,7 @@ const fetched = (root: string, remote: string, ref: string): boolean => {
 	}
 };
 
-/**
- * The verdict for each candidate, in the order given. A candidate whose
- * commits cannot be read is not accepted: it is brought forward, as every
- * candidate was before.
- */
-export const queueAcceptance = (input: {
+interface IQueueAcceptanceInput {
 	readonly root: string;
 	readonly remote: string;
 	readonly integration: string;
@@ -44,7 +39,19 @@ export const queueAcceptance = (input: {
 	readonly candidates: readonly IQueuedCandidate[];
 	/** The integration commit a candidate's run saw; see candidate-tested-base. */
 	readonly testedFrom?: (headSha: string, base: string) => string | undefined;
-}): readonly ICandidateAcceptance[] => {
+}
+
+/**
+ * What each candidate changed and what the integration branch changed
+ * under it, read once for both verdicts; and the candidates whose commits
+ * cannot be read here, which are accepted by neither.
+ */
+const changesOf = (
+	input: IQueueAcceptanceInput,
+): {
+	readonly changes: readonly IQueueCandidateChange[];
+	readonly unreadable: readonly ICandidateAcceptance[];
+} => {
 	const testedFrom =
 		input.testedFrom ??
 		((headSha: string, base: string) =>
@@ -85,7 +92,31 @@ export const queueAcceptance = (input: {
 				: footprintBetween(input.root, seen, input.integrationSha),
 		});
 	}
+	return { changes, unreadable };
+};
+
+/**
+ * The verdict for each candidate, in the order given. A candidate whose
+ * commits cannot be read is not accepted: it is brought forward, as every
+ * candidate was before.
+ */
+export const queueAcceptance = (
+	input: IQueueAcceptanceInput,
+): readonly ICandidateAcceptance[] => {
+	const { changes, unreadable } = changesOf(input);
 	return [...acceptIndependent(changes), ...unreadable];
+};
+
+/**
+ * Which candidates ride the next train, in the order given: every one
+ * that touches nothing an earlier rider touches, behind or not (see
+ * `acceptRiders`).
+ */
+export const trainRiders = (
+	input: IQueueAcceptanceInput,
+): readonly ICandidateAcceptance[] => {
+	const { changes, unreadable } = changesOf(input);
+	return [...acceptRiders(changes), ...unreadable];
 };
 
 const revParse = (root: string, ref: string): string | undefined => {
@@ -93,10 +124,11 @@ const revParse = (root: string, ref: string): string | undefined => {
 };
 
 /**
- * The queued branches that land as they are, from the machine that brings
- * candidates forward: the same verdicts the queue job arms by, so that
- * machine does not bring forward (and send back to its checks) a
- * candidate the queue is about to land.
+ * The queued branches that land as they are or ride a train, from the
+ * machine that brings candidates forward: the same verdicts the queue job
+ * arms and assembles trains by, so that machine does not bring forward
+ * (and send back to its checks) a candidate the queue is about to land.
+ * What is left for it is the candidate that cannot ride a train.
  */
 export const branchesLandingAsTheyAre = (input: {
 	readonly root: string;
@@ -124,8 +156,12 @@ export const branchesLandingAsTheyAre = (input: {
 			? []
 			: [{ number: entry.number, headRef: entry.branch, headSha }];
 	});
+	// A candidate that rides a train is proved and landed by it: bringing
+	// it forward here as well would spend a local proof on what the
+	// train's one full run proves.
+	const { changes } = changesOf({ ...input, integrationSha, candidates });
 	return new Set(
-		queueAcceptance({ ...input, integrationSha, candidates })
+		[...acceptIndependent(changes), ...acceptRiders(changes)]
 			.filter((verdict) => verdict.accepted)
 			.map((verdict) => verdict.headRef),
 	);

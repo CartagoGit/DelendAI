@@ -9,7 +9,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
+
 import {
+	ownedUnitReader,
 	blockingRefs,
 	closedPublicationRetirement,
 	containedInGit,
@@ -405,5 +408,35 @@ describe('deleteForgeBranch', () => {
 				() => true,
 			),
 		).toBe('deleted');
+	});
+});
+
+describe('ownedUnitReader in a namespace transition (f00808)', () => {
+	it('reads a unit under the former namespace and the current one alike', () => {
+		const read = ownedUnitReader(
+			resolveDevelopmentPolicy({
+				development: {
+					branches: {
+						namespacePrefix: '',
+						formerNamespacePrefixes: ['delendai'],
+					},
+				},
+			}).branches,
+		);
+		const old = read(
+			'delendai/wip/claude-opus-5-5/implement/x00642-S2-g1/t',
+		);
+		expect(old).toEqual({
+			model: 'claude-opus-5-5',
+			id: 'x00642',
+			slice: 'S2',
+			generation: '1',
+		});
+		expect(read('pr/claude-opus-5-5/implement/x00642-S2-g1/t')).toEqual(
+			old,
+		);
+		expect(
+			read('delendai/pr/claude-opus-5-5/implement/x00642-S2-g1/t'),
+		).toEqual(old);
 	});
 });

@@ -155,6 +155,7 @@ describe('the storm of 2026-10-03, replayed', () => {
 		const implementing = await work(
 			root,
 			'enter',
+			'--kind=implement',
 			'--proposal=x00001',
 			'--slice=S1',
 			'--agent=gpt-5.4',

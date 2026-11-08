@@ -91,7 +91,8 @@ export interface IProposalIdAllocatorOptions {
 
 /**
  * Returns the next id for `prefix` (e.g. `'f'` → `'f00014'`), atomically
- * incrementing the shared counter file under `withFileMutex`. Never
+ * incrementing the shared counter file under `withFileMutex`, held only
+ * for that read-increment-write. Never
  * returns a number lower than what's already on disk for that prefix:
  * the counter file and the directory listing are **both** consulted on
  * every call and the higher of the two wins.
@@ -120,57 +121,75 @@ export const allocateNextProposalId = async (
 	// let agents in two worktrees allocate the same id at the same moment.
 	const shared = await sources.sharedCounterPath();
 	const lockPath = shared ?? options.counterPathAbs;
-	return withFileMutex(lockPath, async () => {
-		// Disk always participates, not only when the counter file is missing.
-		// A present-but-stale counter (hand-written proposal, merge, other
-		// agent) used to reissue an id that was already on disk — reproduced
-		// as two `r00005` files, and again as `create_proposal` reissuing
-		// `a00084` during a00085. Other worktrees and remote refs participate
-		// for the same reason: that is where another agent's new proposal is
-		// before it reaches this tree.
-		const counters: ICounters = {
-			...(await seedFromDisk(options.proposalsDirAbs)),
-		};
-		const known = [
-			await readCounters(options.counterPathAbs),
+	// Disk always participates, not only when the counter file is missing.
+	// A present-but-stale counter (hand-written proposal, merge, other
+	// agent) used to reissue an id that was already on disk — reproduced
+	// as two `r00005` files, and again as `create_proposal` reissuing
+	// `a00084` during a00085. Other worktrees and remote refs participate
+	// for the same reason: that is where another agent's new proposal is
+	// before it reaches this tree. Read before the mutex: the scans and
+	// the remote can take minutes, and the counter alone decides between
+	// two sessions of this clone.
+	const seen: ICounters = {
+		...(await seedFromDisk(options.proposalsDirAbs)),
+	};
+	for (const [key, value] of Object.entries(await sources.elsewhere())) {
+		seen[key] = Math.max(seen[key] ?? 0, value);
+	}
+	// Claim the id on the remote before handing it out: two sessions
+	// (two clones, two machines) otherwise get the same one, as x00811
+	// was. A taken id is skipped, and the search goes on above it. The
+	// claim runs outside the mutex: a send-pack held it for minutes and
+	// every other allocation of the clone failed behind it.
+	let floor = 0;
+	for (let attempt = 0; attempt < MAX_RESERVATION_ATTEMPTS; attempt += 1) {
+		const next = await takeNextFromCounter(
+			lockPath,
+			prefix,
+			options.counterPathAbs,
+			shared,
+			{ ...seen, [prefix]: Math.max(seen[prefix] ?? 0, floor) },
+		);
+		const id = `${prefix}${String(next).padStart(5, '0')}`;
+		if ((await sources.reserve(id)) !== 'taken') return id;
+		floor = next;
+	}
+	throw new Error(
+		`could not claim a free ${prefix} proposal id after ${String(MAX_RESERVATION_ATTEMPTS)} attempts: every id from ${prefix}${String(floor - MAX_RESERVATION_ATTEMPTS + 1).padStart(5, '0')} up is held by another session`,
+	);
+};
+
+/**
+ * The critical section, and nothing more: read the counters, take the
+ * next number above everything known, write it back. No git, no network,
+ * no directory scan happens while the mutex is held.
+ */
+const takeNextFromCounter = (
+	lockPath: string,
+	prefix: string,
+	counterPathAbs: string,
+	shared: string | null,
+	seen: ICounters,
+): Promise<number> =>
+	withFileMutex(lockPath, async () => {
+		const counters: ICounters = { ...seen };
+		for (const source of [
+			await readCounters(counterPathAbs),
 			shared === null ? null : await readCounters(shared),
-			await sources.elsewhere(),
-		];
-		for (const source of known) {
+		]) {
 			for (const [key, value] of Object.entries(source ?? {})) {
 				counters[key] = Math.max(counters[key] ?? 0, value);
 			}
 		}
-		// Claim the id on the remote before handing it out: two sessions
-		// (two clones, two machines) otherwise get the same one, as x00811
-		// was. A taken id is skipped, and the search goes on above it.
-		let next = (counters[prefix] ?? 0) + 1;
-		let claimed = false;
-		for (
-			let attempt = 0;
-			attempt < MAX_RESERVATION_ATTEMPTS && !claimed;
-			attempt += 1
-		) {
-			const reservation = await sources.reserve(
-				`${prefix}${String(next).padStart(5, '0')}`,
-			);
-			if (reservation === 'taken') next += 1;
-			else claimed = true;
-		}
-		if (!claimed) {
-			throw new Error(
-				`could not claim a free ${prefix} proposal id after ${String(MAX_RESERVATION_ATTEMPTS)} attempts: every id from ${prefix}${String(next - MAX_RESERVATION_ATTEMPTS + 1).padStart(5, '0')} up is held by another session`,
-			);
-		}
+		const next = (counters[prefix] ?? 0) + 1;
 		counters[prefix] = next;
 		const serialised = JSON.stringify(counters);
 		// The checkout-local file stays current for `lint:proposal-id-drift`
 		// and `sync:counters`, which read it.
-		await writeFileAtomic(options.counterPathAbs, serialised);
+		await writeFileAtomic(counterPathAbs, serialised);
 		if (shared !== null) await writeFileAtomic(shared, serialised);
-		return `${prefix}${String(next).padStart(5, '0')}`;
+		return next;
 	});
-};
 
 /** Resolves a kind name (`'feat'`, `'fix'`, …) to its single-letter prefix, or `null` if unknown. */
 export const prefixForKind = (kind: string): string | null =>

@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { truncateIfTooLarge, toolJsonBounded } from '@delendai/core/public';
+import { configureToolOutputArtifacts } from '@delendai/core/lib/context-budget/elide-tool-result.service';
 import {
 	DEFAULT_COMPACT_RESPONSE_BYTES,
 	DEFAULT_MAX_RESPONSE_BYTES,
@@ -18,6 +19,16 @@ import {
  *   - the truncation path (marker shape, originalBytes/finalBytes)
  *   - toolJsonBounded (the convenience wrapper around toolJson)
  */
+// The artifacts directory is process-wide state in
+// `elide-tool-result.service.ts`, and production code sets it when the
+// tool surface boots (`assemble-core-tools.ts`). On a worker whose module
+// graph is shared (`isolate: false`), a surface-booting spec earlier in
+// the shard leaves it set and every `toolJsonBounded` call below would
+// grow an `artifact` path into its envelope: core 2/3 of PR #1811 failed
+// that way, deterministically, on 260 bytes against a 256 budget. This
+// spec pins the budget, so it pins its own precondition too.
+beforeEach(() => configureToolOutputArtifacts(undefined));
+
 describe('truncateIfTooLarge', async () => {
 	it('passes through a value that fits under the byte budget', async () => {
 		const value = { ok: true, count: 42 };

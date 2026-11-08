@@ -17,6 +17,7 @@ import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencie
 import { enteredDependencies } from './unit-dependencies.service';
 import type { IHydratedUnit } from './unit-lease.interface';
 import { readGit } from './work-unit-shared.service';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 /**
  * Fast-forward the unit at `path` to `base` when it holds nothing of its
@@ -32,7 +33,7 @@ export const hydratedIdleUnit = (
 	const ahead = readGit(root, ['rev-list', '--count', `${base}..${ref}`]);
 	const behind = readGit(root, ['rev-list', '--count', `${ref}..${base}`]);
 	if (ahead !== '0' || behind === undefined || behind === '0') return {};
-	if ((readGit(path, ['status', '--porcelain']) ?? 'dirty').length > 0) {
+	if ((readWorktreeStatus(path)?.entries.length ?? 1) > 0) {
 		return {};
 	}
 	// No hook: nothing was merged that the integration branch did not

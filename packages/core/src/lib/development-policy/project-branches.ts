@@ -15,13 +15,12 @@
  * project's own configuration rather than this repository's habits.
  */
 import { parseJsonc } from '../config/jsonc-document';
-import { gitVerbatim } from '../shared/git-read.helper';
+import { execGitFileSync, gitVerbatim } from '../shared/git-read.helper';
 import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
 import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
 import { worktreeSession } from '../work-units/worktree-agent.service';
-import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -83,7 +82,7 @@ const readPolicyOrNone = async (
 
 export const checkedOutBranch = (workspaceRoot: string): string | undefined => {
 	try {
-		const branch = execFileSync(
+		const branch = execGitFileSync(
 			'git',
 			['symbolic-ref', '--short', 'HEAD'],
 			{

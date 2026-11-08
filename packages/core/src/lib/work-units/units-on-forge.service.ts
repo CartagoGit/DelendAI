@@ -8,6 +8,7 @@
  */
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import { readGit } from './work-unit-shared.service';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 const lines = (text: string | undefined): readonly string[] =>
 	(text ?? '').split('\n').filter((line) => line.length > 0);
@@ -40,7 +41,7 @@ export const unitsOnForgeInvariant = (input: {
 			'--count',
 			`${known ? mirror : `refs/remotes/${remote}/${integration}`}..refs/heads/${branch}`,
 		]);
-		const dirty = lines(readGit(path, ['status', '--porcelain'])).length;
+		const dirty = readWorktreeStatus(path)?.entries.length ?? 0;
 		const why = [
 			...(only !== undefined && only !== '0'
 				? [`${only} commit(s) only here`]

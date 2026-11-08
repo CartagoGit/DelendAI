@@ -9,6 +9,9 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { ownedWorkRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+
+import { declaredBranches } from '../lib/declared-branches';
 import { cacheRoot, repoRoot } from '../lib/monorepo-paths';
 
 export interface ILockEntry {
@@ -213,8 +216,17 @@ const git = (root: string, args: readonly string[]): string => {
 };
 
 /** Every worktree on a unit branch, with what that unit changes against develop. */
-export const unitCheckouts = (root: string): readonly IUnitCheckout[] => {
+export const unitCheckouts = (
+	root: string,
+	branches: Parameters<typeof ownedWorkRefPrefixes>[0] = declaredBranches(
+		root,
+	),
+): readonly IUnitCheckout[] => {
 	const units: IUnitCheckout[] = [];
+	// Every owned work namespace, read from the policy (f00808).
+	const workPrefixes = ownedWorkRefPrefixes(branches).map((prefix) =>
+		prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
+	);
 	let worktree: string | undefined;
 	for (const line of git(root, ['worktree', 'list', '--porcelain']).split(
 		'\n',
@@ -225,7 +237,7 @@ export const unitCheckouts = (root: string): readonly IUnitCheckout[] => {
 			? line.slice('branch refs/heads/'.length)
 			: undefined;
 		if (worktree === undefined || branch === undefined) continue;
-		if (!branch.startsWith('delendai/wip/')) continue;
+		if (!workPrefixes.some((prefix) => branch.startsWith(prefix))) continue;
 		const paths = git(root, [
 			'diff',
 			'--name-only',

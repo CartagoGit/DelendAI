@@ -14,7 +14,6 @@
  * at most once per interval, and the provider answers from the last
  * reading.
  */
-import { execFile } from 'node:child_process';
 
 import type {
 	CheckpointAdvisoryProvider,
@@ -25,6 +24,7 @@ import type {
 	ILooseEditsReading,
 } from './loose-edits-advisory.interface';
 import { integrationCheckoutRefusal } from './project-branches';
+import { execGitFile } from '../shared/git-read.helper';
 
 const REFRESH_INTERVAL_MS = 30_000;
 const LISTED_PATHS = 5;
@@ -32,7 +32,7 @@ const PORCELAIN_PATH_OFFSET = 3;
 
 const porcelainPaths = (root: string): Promise<readonly string[]> =>
 	new Promise((resolvePaths) => {
-		execFile(
+		execGitFile(
 			'git',
 			['status', '--porcelain'],
 			{ cwd: root, encoding: 'utf8' },

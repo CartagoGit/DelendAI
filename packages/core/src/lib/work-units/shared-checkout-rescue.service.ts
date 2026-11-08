@@ -12,6 +12,7 @@
  * nothing and says where it put it.
  */
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { readWorktreeChanges } from '../shared/worktree-status.helper';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
@@ -48,16 +49,7 @@ export const rescueSharedCheckout = (input: {
 			reason: `the shared checkout is on \`${branch ?? '(nothing)'}\`, not on \`${integration}\`: return with \`git switch ${integration}\` (your edits stay) and run this again`,
 		};
 	}
-	const paths = (readGit(root, ['status', '--porcelain']) ?? '')
-		.split('\n')
-		.filter((line) => line.length > 0)
-		// `XY path`; the reader trims the output, so the first line may
-		// have lost the blank of its status. The path follows the first
-		// run of blanks after the status either way.
-		.map((line) => {
-			const entry = line.trimStart();
-			return entry.slice(entry.indexOf(' ') + 1).trim();
-		});
+	const paths = readWorktreeChanges(root) ?? [];
 	if (paths.length === 0) return { outcome: 'clean', paths: [] };
 	// The whole tree as it stands — staged, unstaged and untracked, never
 	// what git ignores — as one commit on top of the branch tip.

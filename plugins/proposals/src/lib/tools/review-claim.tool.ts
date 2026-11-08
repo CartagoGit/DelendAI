@@ -23,6 +23,7 @@ import {
 	publishPackStep,
 	releaseClaim,
 	unjudgedStep,
+	inReviewUnit,
 } from '../services/review-claim.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
@@ -164,6 +165,19 @@ export const buildReviewClaimRegistration = (
 							? `Your review unit does not hold ${args.proposalId}: there is nothing to give back.`
 							: `Could not release ${args.proposalId}: ${released.reason}.`,
 						'Call this from the review unit that claimed it (pass its worktree as `checkout`).',
+					);
+				}
+				// A claim belongs in the reviewer's review unit and nowhere
+				// else (x01032): a claim in an `implement` unit is how a pack
+				// ended up with a verdict and no claim.
+				if (
+					shape !== undefined &&
+					shape.workRefTemplate.length > 0 &&
+					!(await inReviewUnit(run, shape))
+				) {
+					return toolError(
+						`${args.proposalId} is claimed in your review unit, and this checkout is not one.`,
+						`Enter it, without choosing a kind: \`delendai review next --agent=${args.agent}\` (or the \`work\` tool { action: "enter", kind: "review", proposal: "batch", slice: "all", agent: "${args.agent}" }), and pass the worktree it gives you as \`checkout\`. Nothing was written.`,
 					);
 				}
 				const outcome = await claimForReview(
