@@ -55,6 +55,7 @@ describe('promotionWorkflowDocument', () => {
 			checks: 'read',
 			'security-events': 'read',
 			'pull-requests': 'write',
+			issues: 'write',
 		});
 	});
 

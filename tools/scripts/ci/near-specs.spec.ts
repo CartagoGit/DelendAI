@@ -114,4 +114,41 @@ describe('readerSpecs', () => {
 		]);
 		expect(readerSpecs(['docs/BUDGETS.md'], undefined)).toEqual([]);
 	});
+
+	it('selects for a pure review batch only the specs that read its proposals, in no zone wholesale', () => {
+		const reads = (
+			read: readonly string[],
+			listed: readonly string[] = [],
+		) => ({
+			read: [...read],
+			listed: [...listed],
+		});
+		const proposal = 'docs/delendai/proposals/review/x01001-a.md';
+		const map = {
+			zones: {
+				core: {
+					...reads([proposal]),
+					specs: {
+						'packages/core/a.spec.ts': reads([proposal]),
+						'packages/core/b.spec.ts': reads([]),
+					},
+				},
+				proposals: {
+					...reads([proposal]),
+					specs: {
+						'plugins/proposals/lint.spec.ts': reads([proposal]),
+						'plugins/proposals/c.spec.ts': reads(['src/c.ts']),
+					},
+				},
+				tools: {
+					...reads([]),
+					specs: { 'tools/t.spec.ts': reads([]) },
+				},
+			},
+		};
+		expect(readerSpecs([proposal], map)).toEqual([
+			'packages/core/a.spec.ts',
+			'plugins/proposals/lint.spec.ts',
+		]);
+	});
 });

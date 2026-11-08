@@ -17,22 +17,6 @@ export interface IQueueCandidateFacts {
 }
 
 /**
- * What the queue does about a red integration branch: arm the candidate
- * whose own full run proved it repairs the branch, dispatch that full run
- * for the next candidate that has none, wait for one that is running, or
- * nothing when no candidate can.
- */
-export type IRepairStep =
-	| { readonly kind: 'arm'; readonly number: number }
-	| {
-			readonly kind: 'dispatch';
-			readonly number: number;
-			readonly headRef: string;
-	  }
-	| { readonly kind: 'wait'; readonly number: number }
-	| { readonly kind: 'none' };
-
-/**
  * What the queue does with a train: land the members whose train passed
  * (naming a culprit when bisection isolated one beside them), dispatch the
  * full run of a train that has none, wait for one that is running, report
@@ -63,8 +47,8 @@ export interface ITrainCandidate {
 export interface ITrainPorts {
 	/** The commit an existing train ref points at, or `undefined`. */
 	readonly trainAt: (ref: string) => string | undefined;
-	/** The full runs of the certifying workflow at a commit, judged. */
-	readonly fullRunAt: (sha: string) => IIntegrationCertification;
+	/** The runs of the certifying workflow at a train's commit, judged. */
+	readonly runAt: (sha: string) => IIntegrationCertification;
 	/**
 	 * Merge the members, in order, onto the integration tip and push the
 	 * result to `ref`, regenerating once the derived files a member
@@ -79,7 +63,10 @@ export interface ITrainPorts {
 		/** Git's reason, when the push of the assembled train was declined. */
 		readonly pushFailure?: string;
 	};
-	/** Start one full run of the certifying workflow on `ref`. */
+	/**
+	 * Start one run of the certifying workflow on `ref`, judged since the
+	 * integration tip: the union of the members' scopes, not the full suite.
+	 */
 	readonly dispatch: (ref: string) => boolean;
 	/**
 	 * Land a proved train: fast-forward the integration branch to `sha`,

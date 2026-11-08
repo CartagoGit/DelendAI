@@ -51,6 +51,13 @@ export const footprintBetween = (
 				zones: reach.zones,
 				files,
 				readOnly: reach.readOnly,
+				// What a change that only feeds a zone reaches there: the
+				// specs that read its files, never the whole zone.
+				readers: new Set(
+					[...reach.readOnly].flatMap(
+						(zone) => reach.readers?.get(zone) ?? [],
+					),
+				),
 				creates: createsFiles(root, from, to),
 			};
 };

@@ -66,14 +66,16 @@ export const promotionWorkflowDocument = (
 		on: triggerOf(schedule.trim()),
 		// One promotion is considered at a time; a second trigger waits.
 		concurrency: { group: 'open-promotion', 'cancel-in-progress': false },
-		// It reads the checks and the alerts and opens a pull request.
-		// It holds no permission to push: it cannot merge, bump or tag.
+		// It reads the checks and the alerts, opens a pull request, and
+		// files the urgent repair of a promotion that is red. It holds no
+		// permission to push: it cannot merge, bump or tag.
 		permissions: {
 			contents: 'read',
 			actions: 'read',
 			checks: 'read',
 			'security-events': 'read',
 			'pull-requests': 'write',
+			issues: 'write',
 		},
 		jobs: {
 			'open-promotion': {
