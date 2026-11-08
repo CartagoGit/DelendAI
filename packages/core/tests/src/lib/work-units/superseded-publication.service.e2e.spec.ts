@@ -13,8 +13,11 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
 import { fakePartial } from '@delendai/test-kit';
 import {
+	handedFromOf,
+	retireSupersededByPublish,
 	pullRequestNumberOf,
 	retireSupersededPublications,
 } from '@delendai/core/lib/work-units/superseded-publication.service';
@@ -142,5 +145,61 @@ describe('retireSupersededPublications', () => {
 			1860,
 		);
 		expect(pullRequestNumberOf('not a url')).toBeUndefined();
+	});
+
+	it('[<500ms] keeps the old publication when the pull request has no number or the retire is refused', async () => {
+		const { git, commit } = repo();
+		git('switch', '-q', '-c', OLD_PUBLICATION);
+		const newTip = commit('old-work');
+		const hands = [
+			{ agent: 'gpt-6', ref: OLD_WORK, at: 1 },
+			{ agent: 'x', ref: 'elsewhere/not-a-work-ref', at: 2 },
+			{ agent: 'y', ref: 'delendai/wip/y/implement/x2-S1-g1/t', at: 3 },
+		];
+		const base = {
+			handedFrom: hands,
+			policy,
+			remote: 'origin',
+			newPublication: 'delendai/pr/me/implement/x00001-S1-g2/t',
+			newTip,
+			ports: ports(git).ports,
+		};
+		const [unnumbered] = await retireSupersededPublications({
+			...base,
+			number: undefined,
+		});
+		expect(unnumbered?.reason).toContain('no pull request number');
+		const [refused] = await retireSupersededPublications({
+			...base,
+			number: 7,
+			ports: {
+				...base.ports,
+				retire: async () => 'it is live',
+			},
+		});
+		expect(refused).toMatchObject({ retired: false });
+		expect(refused?.reason).toBe('kept: it is live');
+	});
+
+	it('[<500ms] does nothing for a unit that took nothing over', async () => {
+		const { git } = repo();
+		expect(
+			await handedFromOf('/nonexistent-dir-for-spec', OLD_WORK),
+		).toEqual([]);
+		expect(
+			await retireSupersededByPublish({
+				root: '.',
+				ctx: fakePartial<IWorkUnitContext>({}),
+				policy,
+				remote: 'origin',
+				agent: 'me',
+				handedFrom: [],
+				published: true,
+				newPublication: 'x',
+				newTip: 'abc',
+				pullRequest: undefined,
+			}),
+		).toEqual([]);
+		void git;
 	});
 });

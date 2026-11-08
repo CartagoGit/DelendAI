@@ -15,9 +15,11 @@
  * survivor is put where its status belongs by the folder reconciler
  * (`proposal_reconcile_folder`'s repair), not by a second mover.
  */
-import { readFile, rm } from 'node:fs/promises';
+// effect-boundary-authorized: removes a stale proposal copy inside the checkout
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { SafeWorkspaceReader } from '@delendai/core/runtime';
 import { compareCodeUnits } from '@delendai/state';
 
 import { LAST_TRANSITION_AT_FIELD } from '../contracts/constants/transition-duration.constant';
@@ -56,7 +58,9 @@ const readCopy = async (
 	proposalsDirAbs: string,
 	path: string,
 ): Promise<IProposalCopy> => {
-	const raw = await readFile(join(proposalsDirAbs, path), 'utf8');
+	const raw = await new SafeWorkspaceReader(proposalsDirAbs)
+		.readText(path)
+		.then((read) => read.content);
 	const block = extractYamlBlock(raw);
 	const fm = block === null ? {} : parseFrontmatterBlock(block);
 	const field = (name: string): string => {
