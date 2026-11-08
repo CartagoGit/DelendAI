@@ -31,7 +31,7 @@ import type {
 	ICandidateVerdict,
 } from './candidate-disposition.interface';
 import { REGENERATION_FIXES_CHECKS } from './candidate-disposition.constant';
-import { queueHead } from './queue-order';
+import { byQueuePosition, queueHead } from './queue-order';
 import { underPublication } from './publication-prefixes';
 
 export type {
@@ -60,7 +60,7 @@ const regenerationFixes = (candidate: ICandidateState): boolean => {
 	);
 };
 
-/** Every candidate under the publication prefix, oldest first, with what happens to it. */
+/** Every candidate under the publication prefix, urgent first, then oldest, with what happens to it. */
 export const candidateDispositions = (
 	candidates: readonly ICandidateState[],
 	publicationPrefix: string | readonly string[],
@@ -70,7 +70,7 @@ export const candidateDispositions = (
 		.filter((candidate) =>
 			underPublication(candidate.headRef, publicationPrefix),
 		)
-		.sort((a, b) => a.number - b.number)
+		.sort(byQueuePosition)
 		.map((candidate): ICandidateVerdict => {
 			const base = {
 				number: candidate.number,

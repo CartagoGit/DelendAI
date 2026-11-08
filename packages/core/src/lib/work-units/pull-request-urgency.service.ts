@@ -90,3 +90,34 @@ export const urgencyOfUnit = async (
 	);
 	return worktree === undefined ? undefined : unitUrgencyNote(worktree);
 };
+
+/**
+ * The body with the urgent line added, or `undefined` when it already
+ * carries one: a delivery from a CLI older than the mark left none.
+ */
+export const bodyWithUrgentLine = (
+	body: string | null | undefined,
+	reason: string,
+): string | undefined =>
+	urgentReasonOfBody(body) === undefined
+		? `${(body ?? '').trimEnd()}\n\n${urgentLine(reason)}\n`.replace(
+				/^\n+/u,
+				'',
+			)
+		: undefined;
+
+/**
+ * Where the unit that published `publicationRef` noted its urgency while its
+ * worktree lives: `delendai/pr/<…>` is published from `delendai/wip/<…>`.
+ */
+export const urgencyNotePathOfPublication = (
+	root: string,
+	publicationRef: string,
+): string | undefined => {
+	const worktree = worktreeOfRef(
+		root,
+		publicationRef.replace(/^([^/]+)\/pr\//u, '$1/wip/'),
+	);
+	const dir = worktree === undefined ? undefined : gitDirOf(worktree);
+	return dir === undefined ? undefined : join(dir, NOTE);
+};

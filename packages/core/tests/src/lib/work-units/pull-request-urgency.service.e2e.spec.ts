@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+	bodyWithUrgentLine,
 	noteUnitUrgency,
 	unitUrgencyNote,
 	urgencyOfUnit,
@@ -68,5 +69,17 @@ describe('the urgent note of a unit', () => {
 		expect(await noteUnitUrgency(worktree, '   ')).toBe(false);
 		expect(await noteUnitUrgency(join(top, 'nowhere'), 'x')).toBe(false);
 		expect(await unitUrgencyNote(join(top, 'nowhere'))).toBeUndefined();
+	});
+});
+
+describe('bodyWithUrgentLine (x01051 S6)', () => {
+	it('adds the line to a body that lacks it and leaves one that has it', () => {
+		expect(bodyWithUrgentLine('Opened.', 'repair')).toBe(
+			'Opened.\n\nUrgent: repair\n',
+		);
+		expect(bodyWithUrgentLine('Opened.\n\nUrgent: x', 'repair')).toBe(
+			undefined,
+		);
+		expect(bodyWithUrgentLine(null, 'repair')).toBe('Urgent: repair\n');
 	});
 });
