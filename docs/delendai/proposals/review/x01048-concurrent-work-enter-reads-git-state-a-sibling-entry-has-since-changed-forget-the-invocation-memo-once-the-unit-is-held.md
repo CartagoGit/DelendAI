@@ -2,14 +2,14 @@
 id: x01048
 title: "Concurrent work enter reads git state a sibling entry has since changed: forget the invocation memo once the unit is held"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 55e4933d-6a64-4562-8552-5eb0c9505e33
-last-correlation-id: 55e4933d-6a64-4562-8552-5eb0c9505e33
-last-transition-from: ready
-last-transition-at: 2026-11-08T01:56:43.792Z
+last-transition-id: c565a576-0556-483f-92a6-3fc404f8191c
+last-correlation-id: c565a576-0556-483f-92a6-3fc404f8191c
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T02:12:56.119Z
 ---
 
 # x01048 — Concurrent work enter reads git state a sibling entry has since changed: forget the invocation memo once the unit is held
@@ -31,12 +31,15 @@ Cause: the per-invocation git read memo (x01034 S4) answered the second concurre
 - global_gate: none
 
 ### S1 — Entry forgets memoised git reads once it holds the unit
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/wip-engine/work-ref-lock.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "After acquiring the unit, holdWorkRef calls forgetGitReads on acquiring so the generation is chosen from the repository as the previous entry left it."
   - "A spec proves a memoised ref list taken before the wait is not used after it."
+- shipped-in: `258f873b0d16`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
