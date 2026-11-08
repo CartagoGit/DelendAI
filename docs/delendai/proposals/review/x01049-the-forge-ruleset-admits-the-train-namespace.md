@@ -2,14 +2,14 @@
 id: x01049
 title: "The forge ruleset admits the train namespace"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 056997d7-53da-4717-a97d-76942d9fca8c
-last-correlation-id: 056997d7-53da-4717-a97d-76942d9fca8c
-last-transition-from: review
-last-transition-at: 2026-11-08T06:05:43.339Z
+last-transition-id: 57f718e6-dec7-4bf8-a380-dfbf9e9ca965
+last-correlation-id: 57f718e6-dec7-4bf8-a380-dfbf9e9ca965
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T06:13:05.897Z
 ---
 
 # x01049 — The forge ruleset admits the train namespace
@@ -39,11 +39,14 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — The pre-push guard admits the train namespace, from one source
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/cli.ts`, `tools/scripts/forge/publication-prefixes.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
 - **Gate**: none
 
 With the ruleset synced, the train push was still declined: the queue pushes through the installed pre-push hook, and the guard refused `delendai/train/…` as "outside the branches the shared-checkout-pr development profile uses". The guard's namespaces and the ruleset's were two copies of one fact. `ownedTrainPrefixes` now lives in core beside the work and publication prefixes; the guard's `policyNamespaces`, the forge ruleset and the queue's `trainPrefixesOf` all read it.
+- shipped-in: `4092abaaa09f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
