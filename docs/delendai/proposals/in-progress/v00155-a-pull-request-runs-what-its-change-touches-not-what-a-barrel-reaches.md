@@ -79,7 +79,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - The lint jobs that run together are one job with one setup; a separate check name remains only where branch protection requires it.
 - The proposal states the runner-minutes of a PR 1838-like change before and after.
 
-## measured
+## ledger
 
 PR #1838 as it ran (`bun run ci:cost -- 1838`): 31 jobs, 1,890 runner-seconds (31.5 min), 292 s wall. Its seven test jobs alone took 842 s.
 
