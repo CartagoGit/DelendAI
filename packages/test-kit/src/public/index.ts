@@ -44,3 +44,7 @@ export type {
 	IGitAnswers,
 	IInMemoryGit,
 } from '../contracts/interfaces/in-memory-git.interface';
+
+// A spec sees no variable of the shell that runs it.
+export { clearAmbientEnvironment } from '../lib/hermetic-environment.helper';
+export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermetic-environment.interface';

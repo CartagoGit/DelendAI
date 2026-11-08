@@ -36,7 +36,7 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
-import { readWorkspacePolicy } from '@delendai/core/cli';
+import { readWorkspacePolicy, UNIT_SESSION_VARIABLE } from '@delendai/core/cli';
 import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
 import type {
 	IQueue,
@@ -73,7 +73,7 @@ const agentOf = (args: readonly string[]): string | undefined =>
 	scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID;
 
 const sessionOf = (args: readonly string[]): string | undefined =>
-	scalarArg(args, 'session') ?? process.env.DELENDAI_SESSION_ID;
+	scalarArg(args, 'session') ?? process.env[UNIT_SESSION_VARIABLE];
 
 const quiet = (ctx: ICliCommandContext): ICliCommandContext => ({
 	...ctx,

@@ -112,6 +112,7 @@ export { gitActorMarker } from './lib/work-identity/git-actor.helper';
 export {
 	AGENT_ENVIRONMENT_MARKERS,
 	DELENDAI_SESSION_VARIABLE,
+	UNIT_SESSION_VARIABLE,
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
