@@ -320,6 +320,13 @@ the focused validation pass before committing. The read-only guard is
   file, agent answer, or generated fragment.** The server is the only
   source. If you find yourself wanting to list them, **stop** and call
   `delendai_agent_catalog` instead.
+- **Every test declares a maximum time, and the run fails one that exceeds
+  it.** Write `it('does X', { meta: { budgetMs: 7 } }, fn)`; the
+  `@delendai/test-kit` runner (in every project's `sharedTestOptions`)
+  measures the body alone and fails a test with no budget or over it. Make a
+  slow test fast; never raise its number. Specs on
+  `tools/scripts/test/test-time-budget.migration.json` are the only exception
+  and the list only shrinks. Details: `packages/test-kit/README.md`.
 - **Code quality is a non-negotiable default.** In this project and in
   any project that uses `delendai`, every design, code change, file
   or folder name, proposal, slice and answer must reflect, by default

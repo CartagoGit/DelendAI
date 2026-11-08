@@ -48,3 +48,20 @@ export type {
 // A spec sees no variable of the shell that runs it.
 export { clearAmbientEnvironment } from '../lib/hermetic-environment.helper';
 export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermetic-environment.interface';
+
+// Every test declares a maximum time, and the run fails one that exceeds it.
+export {
+	budgetFailure,
+	budgetInName,
+	budgetOf,
+	labelled,
+} from '../lib/time-budget/time-budget.helper';
+export { timeBudgetRunnerPath } from '../lib/time-budget/time-budget-runner-path.helper';
+export {
+	MIGRATION_ENV,
+	MIGRATION_ROOT_ENV,
+} from '../contracts/constants/time-budget.constant';
+export type {
+	ITimeBudgetCase,
+	ITimeBudgetMigration,
+} from '../contracts/interfaces/time-budget.interface';

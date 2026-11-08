@@ -1,0 +1,69 @@
+/**
+ * time-budget-runner.helper.ts — the vitest runner every project loads, so no
+ * test goes without a time budget and no spec can opt out.
+ *
+ * It measures the test body only (`runTask`): shared hooks and the import
+ * of the file are not counted, and nothing is added per test beyond one
+ * clock read before and one after.
+ */
+import { readFileSync } from 'node:fs';
+import { relative } from 'node:path';
+
+import { type RunnerTestCase, type RunnerTestFile, TestRunner } from 'vitest';
+
+import {
+	MIGRATION_ENV,
+	MIGRATION_ROOT_ENV,
+} from '../../contracts/constants/time-budget.constant';
+import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
+import { budgetFailure, labelled } from './time-budget.helper';
+
+let migrating: ReadonlySet<string> | undefined;
+
+/** The spec files still allowed tests with no budget, read once a worker. */
+const migrationList = (): ReadonlySet<string> => {
+	if (migrating !== undefined) return migrating;
+	const path = process.env[MIGRATION_ENV];
+	migrating = new Set(
+		path === undefined
+			? []
+			: (JSON.parse(readFileSync(path, 'utf8')) as ITimeBudgetMigration)
+					.unbudgeted,
+	);
+	return migrating;
+};
+
+const isMigrating = (test: RunnerTestCase): boolean => {
+	const root = process.env[MIGRATION_ROOT_ENV];
+	if (root === undefined) return false;
+	return migrationList().has(
+		relative(root, test.file.filepath).split('\\').join('/'),
+	);
+};
+
+export default class TimeBudgetRunner extends TestRunner {
+	onCollected(files: RunnerTestFile[]): void {
+		const label = (tasks: RunnerTestFile['tasks']): void => {
+			for (const task of tasks) {
+				if (task.type === 'suite') label(task.tasks);
+				else if (task.meta.budgetMs !== undefined) {
+					task.name = labelled(task.name, task.meta.budgetMs);
+				}
+			}
+		};
+		for (const file of files) label(file.tasks);
+	}
+
+	async runTask(test: RunnerTestCase): Promise<void> {
+		const body = TestRunner.getTestFn(test);
+		const start = performance.now();
+		await body();
+		const failure = budgetFailure({
+			name: test.name,
+			meta: test.meta,
+			migrating: isMigrating(test),
+			tookMs: performance.now() - start,
+		});
+		if (failure !== undefined) throw new Error(failure);
+	}
+}

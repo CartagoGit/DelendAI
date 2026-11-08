@@ -1,5 +1,12 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+	MIGRATION_ENV,
+	MIGRATION_ROOT_ENV,
+} from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
  * `Alias` moved from `vitest/config` to `vite` in vitest 4.x, and
@@ -103,7 +110,22 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
+	// Every test declares its maximum time and the run fails one that
+	// exceeds it. It lives in the options every project spreads, so no
+	// project and no spec opts out (`lint:test-time-budget` and the shared
+	// config's spec prove each project loads it).
+	runner: timeBudgetRunnerPath(),
 } as const;
+
+/** The spec files still allowed tests with no budget. It only shrinks. */
+export const TIME_BUDGET_MIGRATION_LIST = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	'tools/scripts/test/test-time-budget.migration.json',
+);
+
+// The workers inherit this: the runner reads the list once per worker.
+process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
+process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
 
 /**
  * What makes a spec file unsafe to share a worker with other files: it

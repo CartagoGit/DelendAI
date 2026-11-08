@@ -79,16 +79,18 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
   - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
   - "The over-budget list of S7 shrinks with each fix; no budget is raised to make a test pass"
 
-### S7 — Every test declares a maximum time, enforced by the run itself
+### S7 — Every test declares a maximum time, enforced by code
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/test-kit/src/lib/test-time-budget.helper.ts`, `packages/test-kit/README.md`, `tools/scripts/ci/spec-duration-budget.script.ts`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Files**: `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/README.md`, `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/test/test-time-budget.migration.json`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
-  - "Every test name starts with its maximum as [<Nms], and a test that exceeds it fails; a missing or malformed prefix fails too. A global vitest mechanism reads the prefix from the name, with zero added runtime per test"
-  - "Only the test body is measured, not hooks or the file import. CI and local machines share the same declared number with no hidden multiplier: a budget is a property of the test, so it is set from the slower of the two and the same run is used everywhere"
-  - "tools/scripts/ci/spec-duration-budget.script.ts is refactored into this rule (no second lint); the list of tests over budget today may only shrink"
-  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, and shipped to projects that consume delendai"
+  - "Every test carries its maximum as [<Nms] at the front of its name, written by the runner from the test's meta.budgetMs (a prefix typed by hand is read the same way); no test may go without one"
+  - "A test that exceeds its budget fails, and so does one with no budget; the test-kit runner is loaded for every project from sharedTestOptions in vitest.shared.ts with no opt-out, and adds one clock read before and after each test"
+  - "Only the test body is measured, not hooks or the file import. The number is absolute, so CI and local machines judge the same test against the same figure with no hidden multiplier; set it from the slower of the two"
+  - "tools/scripts/ci/spec-duration-budget.script.ts gains the declared-budget check (no second lint); a lint and a spec of the shared config prove every vitest project loads the runner"
+  - "Spec files still holding tests with no budget are on tools/scripts/test/test-time-budget.migration.json, which may only shrink; renaming them follows in batches"
+  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, with the config line a consuming project adds"
 
 ## acceptance
 
@@ -101,4 +103,4 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - The report prints these numbers per week
 - Coverage instruments only changed source files and shard time is measured before and after
 - The slowest specs are made fast and the over-budget list shrinks
-- Every test declares a maximum and exceeding it fails the run
+- Every test declares a maximum, written by code, and exceeding it fails the run; the list of tests without one only shrinks
