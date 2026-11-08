@@ -16,6 +16,8 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
+
 /** Where the decisions live; the only place they may be defined. */
 export const DECISIONS_MODULE = 'packages/core/src/lib/integration/decisions/';
 
@@ -124,6 +126,16 @@ const trackedSources = (): readonly string[] =>
 		);
 
 if (import.meta.main) {
+	const scanRoots = ['packages', 'tools', 'plugins', 'apps'];
+	if (
+		refuseMissingScanRoots(
+			'integration-decisions',
+			lintRepoRoot(import.meta.url),
+			scanRoots,
+		)
+	) {
+		process.exit(1);
+	}
 	const offenders = trackedSources().flatMap((path) => {
 		try {
 			return findReimplementations(path, readFileSync(path, 'utf8'));
