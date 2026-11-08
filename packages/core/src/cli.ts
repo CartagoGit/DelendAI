@@ -90,6 +90,7 @@ export { briefWorkModel } from './lib/development-policy/declare-workflow';
 export { ownedNamespaces } from './lib/development-policy/owned-ref-prefixes';
 export {
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
 } from './lib/development-policy/owned-ref-prefixes';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';

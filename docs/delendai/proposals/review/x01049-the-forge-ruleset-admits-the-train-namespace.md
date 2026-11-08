@@ -38,7 +38,15 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S2 — The pre-push guard admits the train namespace, from one source
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/cli.ts`, `tools/scripts/forge/publication-prefixes.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Gate**: none
+
+With the ruleset synced, the train push was still declined: the queue pushes through the installed pre-push hook, and the guard refused `delendai/train/…` as "outside the branches the shared-checkout-pr development profile uses". The guard's namespaces and the ruleset's were two copies of one fact. `ownedTrainPrefixes` now lives in core beside the work and publication prefixes; the guard's `policyNamespaces`, the forge ruleset and the queue's `trainPrefixesOf` all read it.
+
 ## acceptance
 
 - The ruleset admits a train ref and a culprit ref under every owned namespace.
 - A declined train push is reported with git's reason and nothing is dispatched.
+- The pre-push guard admits a train ref and a culprit ref under every owned namespace, and still refuses a branch outside them.
