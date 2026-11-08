@@ -29,7 +29,7 @@ An inventory of the shared clone found worktrees and refs that belong to nobody.
 
 ### S1 — No global prune, honest reclaim, no leaks
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/forge/train-rehearsal.script.ts`
+- **Files**: `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/publish-candidate.script.spec.ts`, `packages/core/tests/src/lib/work-units/local-certification.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`
 - **Gate**: none
 
 ## acceptance
