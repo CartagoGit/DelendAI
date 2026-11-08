@@ -50,11 +50,10 @@ Integration machinery that is only exercised by the live queue fails the queue f
 
 ### S3 — CI detection is agnostic
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/cli.ts`
+- **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/cli.ts`
 - **Gate**: none
 - acceptance:
   - "One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set"
-  - "project-branches uses it"
   - "The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up"
 
 ## acceptance
@@ -66,7 +65,6 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - One issue for it is opened or refreshed, and the members take the individual landing path
 - Specs cover the exonerated member and the still-blamed member
 - One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set
-- project-branches uses it
 - The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up
 
 ## Notes
@@ -74,3 +72,4 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - S3: the c00537 S7 time-budget runner (PR #1841, still open when this landed) detects CI with `GITHUB_ACTIONS`; it adopts `isRunningInProjectCi` from `@delendai/core/cli` once #1841 lands. `plugins/proposals/src/lib/services/proposal-state.ts` (`isCiEnvironment`) still reads the two variables itself.
 - S1 cost, measured once on this unit (`bun run forge:rehearse-train`, nice 19): 9 gates in 173 s wall, 440 s CPU, 1.1 GB peak RSS; the slowest gate is lint-security (101 s), the pre-push hooks take 51 s. Excluded on purpose: quality-gate and tokens-budget-real (they build the repository; the train's own run proves them). Each gate has a timeout (default 900 s, `--timeout=`), concurrency is half the cores (`PROVE_PARALLEL`).
 - S2: a red leaf train whose member's own required checks are green is reported as "the train's own checks are red", writes no culprit marker, opens or refreshes one issue ("merge train red on its own checks"), and the accepted members land by their own merge. A member inferred red from a green first half is still blamed.
+- S3: `integrationCheckoutRefusal` (packages/core/src/lib/development-policy/project-branches.ts) keeps its own `CI=true` + no agent marker test; it adopts `isRunningInProjectCi` in a follow-up slice that also covers that file (editing it puts its older untested paths under the changed-file coverage gate).

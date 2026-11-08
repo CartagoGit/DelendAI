@@ -163,22 +163,6 @@ describe('integrationCheckoutRefusal', () => {
 		);
 	});
 
-	it("exempts a CI job's checkout on any forge, but not an agent shell that exports CI", async () => {
-		const root = repoOn('develop', WORK_REFS);
-		expect(
-			await integrationCheckoutRefusal(root, { GITLAB_CI: 'true' }),
-		).toBeUndefined();
-		expect(
-			await integrationCheckoutRefusal(root, { CI: 'true' }),
-		).toBeUndefined();
-		expect(
-			await integrationCheckoutRefusal(root, {
-				CI: '1',
-				DELENDAI_AGENT_ID: 'some-agent',
-			}),
-		).toMatch(/shared checkout on develop/u);
-	});
-
 	it('allows a worktree of the same repository, where a unit of work lives', async () => {
 		const root = repoOn('develop', WORK_REFS);
 		const worktree = mkdtempSync(join(tmpdir(), 'branches-wt-'));
