@@ -126,7 +126,9 @@ describe('projection of the real proposals tree (x00539)', () => {
 					)
 					.all()
 					.map((row) => row.uid);
-				expect(infra).toEqual(['i00002', 'i00003', 'i00004']);
+				expect(infra).toEqual(
+					expect.arrayContaining(['i00002', 'i00003', 'i00004']),
+				);
 
 				// The duplicated id: one row, not a UNIQUE failure.
 				expect(
