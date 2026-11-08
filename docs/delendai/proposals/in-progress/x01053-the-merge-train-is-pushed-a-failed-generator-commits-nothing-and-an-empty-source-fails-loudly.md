@@ -24,7 +24,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing which generators gen:all runs, or how the train picks its members.
 
 ## slices
 
