@@ -28,6 +28,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 
 import { parseJsonc } from '@delendai/core/cli';
+import { urgentReasonOfBody } from '@delendai/core/runtime';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -57,6 +58,7 @@ import {
 	zonesStillRed,
 } from './section-health';
 import { zoneReach } from '../ci/test-zones.script';
+import { landingAfterTrain, watchTrainPorts } from './train-fallback';
 import {
 	culpritRefName,
 	queueHead,
@@ -145,6 +147,8 @@ export interface IPullRequest {
 	readonly head: { readonly sha: string; readonly ref: string };
 	readonly base?: { readonly ref: string };
 	readonly draft?: boolean;
+	/** The list endpoint returns it: the queue reads the urgent mark from it. */
+	readonly body?: string | null;
 }
 
 /**
@@ -434,6 +438,7 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
 		red: failing.length > 0,
 		failing,
 		conflicting: mergeState(pull.number) === 'dirty',
+		urgent: urgentReasonOfBody(pull.body),
 	};
 };
 
@@ -956,18 +961,38 @@ const main = (): void => {
 	});
 	const landing = new Set(plan.arm);
 	if (plan.train) {
-		runTrain({
-			trainPrefix,
-			tipSha,
-			members: riders,
-			ports: trainPorts({
+		// A train that cannot run lands nothing by itself, and the fix to the
+		// train would wait with the rest: then each accepted candidate whose
+		// own required checks passed lands by its own merge (train-fallback).
+		const watch = watchTrainPorts(
+			trainPorts({
 				integration,
 				tipSha,
 				trainPrefix,
 				mergeMethod: policy.integration.mergeMethod,
 				branches: trains,
 			}),
+		);
+		const own = new Set(
+			riders
+				.map((rider) => rider.number)
+				.filter((number) => ready.includes(number)),
+		);
+		const after = landingAfterTrain({
+			watch,
+			own,
+			run: () => {
+				runTrain({
+					trainPrefix,
+					tipSha,
+					members: riders,
+					ports: watch.ports,
+				});
+			},
 		});
+		landing.clear();
+		for (const number of after.landing) landing.add(number);
+		if (after.said !== undefined) console.log(after.said);
 	}
 	for (const pull of opened) {
 		if (
