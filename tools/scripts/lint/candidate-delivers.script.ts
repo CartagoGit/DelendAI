@@ -42,7 +42,10 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-import { declaredBranches } from '../lib/declared-branches';
+import {
+	declaredBranches,
+	declaredIntegrationRef,
+} from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import type { IDeliveryVerdict } from './candidate-delivers.interface';
 
@@ -318,7 +321,7 @@ const main = (): number => {
 			process.env.GITHUB_BASE_SHA ?? '',
 			`origin/${process.env.GITHUB_BASE_REF ?? ''}`,
 			process.env.GITHUB_BASE_REF ?? '',
-			'origin/develop',
+			declaredIntegrationRef(),
 		],
 		resolves,
 	);
@@ -327,7 +330,7 @@ const main = (): number => {
 			[
 				'✗ candidate-delivers: NOT EXECUTABLE — no base ref this clone can resolve.',
 				'',
-				'  Tried --base, GITHUB_BASE_SHA, GITHUB_BASE_REF and origin/develop.',
+				'  Tried --base, GITHUB_BASE_SHA, GITHUB_BASE_REF and the integration branch the policy declares.',
 				'  A shallow checkout has none of them unless the job asks for',
 				'  them, and a check that cannot run must not report success.',
 				'',

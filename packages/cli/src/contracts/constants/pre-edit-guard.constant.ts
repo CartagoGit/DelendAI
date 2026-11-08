@@ -17,3 +17,9 @@ export const PRE_EDIT_MATCHER = 'Edit|MultiEdit|Write|NotebookEdit';
 
 /** The host id `init` gives Claude Code. */
 export const CLAUDE_HOST_ID = 'claude';
+
+/** The shell tools whose finished calls `delendai guard post-shell` judges. */
+export const SHELL_TOOLS: readonly string[] = ['Bash'];
+
+/** The tools Claude Code's PostToolUse matcher sends to the post-shell guard. */
+export const POST_SHELL_MATCHER = 'Bash';

@@ -65,6 +65,7 @@ export {
 } from './lib/work-units/shared-checkout-clean.service';
 // The editor-side barrier: a host's pre-edit hook asks it before a write.
 export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
+export { rescueAfterShell } from './lib/work-units/shared-checkout-shell-rescue.service';
 export { agentFor } from './lib/work-units/work-unit-shared.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
