@@ -72,7 +72,11 @@ export interface ITrainPorts {
 	readonly assemble: (
 		ref: string,
 		members: readonly ITrainCandidate[],
-	) => { readonly conflicting: readonly number[] };
+	) => {
+		readonly conflicting: readonly number[];
+		/** Git's reason, when the push of the assembled train was declined. */
+		readonly pushFailure?: string;
+	};
 	/** Start one full run of the certifying workflow on `ref`. */
 	readonly dispatch: (ref: string) => boolean;
 	/**

@@ -43,6 +43,28 @@ const run = (cwd: string, args: readonly string[]): string | undefined => {
 	}
 };
 
+/** `undefined` when git succeeded, else its stderr (or the error text). */
+const failureOf = (
+	cwd: string,
+	args: readonly string[],
+): string | undefined => {
+	try {
+		execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		return undefined;
+	} catch (error) {
+		const stderr = (error as { stderr?: unknown }).stderr;
+		const text =
+			typeof stderr === 'string' || Buffer.isBuffer(stderr)
+				? String(stderr).trim()
+				: '';
+		return text.length > 0 ? text : String(error);
+	}
+};
+
 const conflictedPaths = (dir: string): readonly string[] =>
 	(run(dir, ['diff', '--name-only', '--diff-filter=U']) ?? '')
 		.split('\n')
@@ -112,24 +134,27 @@ export const assembleTrain = (input: {
 }): {
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
+	/** Git's stderr when the push was declined: nothing is on the forge. */
+	readonly pushFailure?: string;
 } => {
 	const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
 	const conflicting: number[] = [];
 	const regenerated: number[] = [];
 	try {
-		if (
-			run(input.root, [
-				'worktree',
-				'add',
-				'--quiet',
-				'--detach',
-				scratch,
-				input.tipSha,
-			]) === undefined
-		) {
+		const worktreeFailure = failureOf(input.root, [
+			'worktree',
+			'add',
+			'--quiet',
+			'--detach',
+			scratch,
+			input.tipSha,
+		]);
+		if (worktreeFailure !== undefined) {
+			// Not the members' fault: they stay in the pool.
 			return {
-				conflicting: input.members.map((member) => member.number),
+				conflicting,
 				regenerated,
+				pushFailure: `git worktree add failed: ${worktreeFailure}`,
 			};
 		}
 		for (const member of input.members) {
@@ -150,24 +175,34 @@ export const assembleTrain = (input: {
 				return { conflicting: [...regenerated], regenerated: [] };
 			}
 			if ((run(scratch, ['status', '--porcelain']) ?? '').length > 0) {
-				run(scratch, ['add', '-A']);
-				run(scratch, [
-					...IDENTITY,
-					'commit',
-					'-q',
-					'-m',
-					TRAIN_REGENERATION_SUBJECT,
-				]);
+				const committed =
+					failureOf(scratch, ['add', '-A']) ??
+					failureOf(scratch, [
+						...IDENTITY,
+						'commit',
+						'-q',
+						'-m',
+						TRAIN_REGENERATION_SUBJECT,
+					]);
+				if (committed !== undefined) {
+					return {
+						conflicting,
+						regenerated,
+						pushFailure: `committing the regeneration failed: ${committed}`,
+					};
+				}
 			}
 		}
-		run(scratch, [
+		const pushFailure = failureOf(scratch, [
 			'push',
 			'-q',
 			'--force',
 			input.remote,
 			`HEAD:refs/heads/${input.ref}`,
 		]);
-		return { conflicting, regenerated };
+		return pushFailure === undefined
+			? { conflicting, regenerated }
+			: { conflicting, regenerated, pushFailure };
 	} finally {
 		run(input.root, ['worktree', 'remove', '--force', scratch]);
 		rmSync(scratch, { recursive: true, force: true });
