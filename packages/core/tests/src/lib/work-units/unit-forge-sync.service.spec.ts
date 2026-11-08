@@ -117,6 +117,70 @@ describe('syncUnitsWithForge', () => {
 		expect(git(remote, 'show', `${BRANCH}:draft.txt`)).toBe('unfinished');
 	});
 
+	/** A unit with a merge begun, conflicts resolved, not committed. */
+	const mergeInProgress = () => {
+		const made = machines();
+		const unit = join(made.top, 'home-unit');
+		git(made.home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		git(unit, 'config', 'user.name', 'spec');
+		git(unit, 'config', 'user.email', 'spec@example.invalid');
+		writeFileSync(join(unit, 'a.txt'), 'mine\n');
+		git(unit, 'commit', '-q', '-am', 'mine');
+		git(made.home, 'checkout', '-q', '-b', 'other');
+		writeFileSync(join(made.home, 'a.txt'), 'theirs\n');
+		git(made.home, 'commit', '-q', '-am', 'theirs');
+		git(made.home, 'checkout', '-q', 'develop');
+		try {
+			git(unit, 'merge', '--no-commit', 'other');
+		} catch {
+			// the conflict is the point
+		}
+		writeFileSync(join(unit, 'a.txt'), 'resolved\n');
+		git(unit, 'add', 'a.txt');
+		return {
+			...made,
+			unit,
+			head: git(unit, 'rev-parse', '--short', 'MERGE_HEAD'),
+		};
+	};
+
+	it('leaves a merge in progress alone while its unit is live (x01051)', async () => {
+		const { unit, home } = mergeInProgress();
+		const before = git(unit, 'rev-parse', 'HEAD');
+		await sync(home, () => true);
+		expect(git(unit, 'rev-parse', 'HEAD')).toBe(before);
+		expect(git(unit, 'rev-parse', '--verify', 'MERGE_HEAD')).not.toBe('');
+		expect(git(unit, 'log', '-1', '--format=%s')).toBe('mine');
+	});
+
+	it('keeps a merge in progress of a unit nobody works in, under a message that names it (x01051)', async () => {
+		const { unit, home, head } = mergeInProgress();
+		const kept = await sync(home);
+		expect(kept[0]).toEqual({
+			branch: BRANCH,
+			outcome: 'kept-uncommitted',
+		});
+		expect(git(unit, 'log', '-1', '--format=%s')).toBe(
+			`chore(wip): keep the merge of ${head} found at start`,
+		);
+		expect(
+			git(unit, 'rev-list', '--parents', '-1', 'HEAD').split(' '),
+		).toHaveLength(3);
+	});
+
+	it('leaves a rebase or cherry-pick of a unit nobody works in as it is (x01051)', async () => {
+		const { unit, home } = mergeInProgress();
+		git(unit, 'merge', '--abort');
+		try {
+			git(unit, 'cherry-pick', 'other');
+		} catch {
+			// it stops on the conflict, with CHERRY_PICK_HEAD set
+		}
+		const result = await sync(home);
+		expect(result[0]).toMatchObject({ outcome: 'failed' });
+		expect(result[0]?.detail).toContain('left as it is');
+	});
+
 	it('does not keep a lost checkout: an emptied tree is neither committed nor pushed', async () => {
 		const { top, remote, home } = machines();
 		const unit = join(top, 'home-unit');
