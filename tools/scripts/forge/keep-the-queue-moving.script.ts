@@ -27,7 +27,22 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 
-import { parseJsonc } from '@delendai/core/cli';
+import {
+	TRAIN_CAPACITY,
+	culpritRefName,
+	culpritsAmong,
+	isReviewBatch,
+	ownedTrainPrefixes,
+	parseJsonc,
+	publicationPrefixesOf,
+	queueHead,
+	queueOrder,
+	trainMembers,
+	trainsToPrune,
+	type IQueueCandidateFacts,
+	type ITrainCandidate,
+	underPublication,
+} from '@delendai/core/cli';
 import {
 	bodyWithUrgentLine,
 	urgencyNotePathOfPublication,
@@ -49,7 +64,6 @@ import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
 } from '../git/refresh-candidate-artifacts.constant';
-import { isReviewBatch } from './independent-candidates';
 import { queueAcceptance, trainRiders } from './queue-acceptance';
 import { assembleTrain, regenerateWith } from './train-assembly';
 import { armingPlan, requiredChecksVerdict } from './queue-arming';
@@ -63,24 +77,7 @@ import {
 } from './section-health';
 import { zoneReach } from '../ci/test-zones.script';
 import { landingAfterTrain, watchTrainPorts } from './train-fallback';
-import {
-	culpritRefName,
-	queueHead,
-	queueOrder,
-	runTrain,
-	TRAIN_CAPACITY,
-	trainMembers,
-	culpritsAmong,
-	trainPrefixesOf,
-	trainsToPrune,
-	type IQueueCandidateFacts,
-	type ITrainCandidate,
-	type ITrainPorts,
-} from './queue-order';
-import {
-	publicationPrefixesOf,
-	underPublication,
-} from './publication-prefixes';
+import { runTrain, type ITrainPorts } from './queue-order';
 
 /**
  * The merge method as the policy states it. Read off the resolved policy
@@ -889,7 +886,7 @@ const main = (): void => {
 		.filter((pull) => underPublication(pull.head.ref, publicationPrefix))
 		.map((pull) => candidateFacts(pull));
 	const integration = policy.branches.integration;
-	const trainPrefixes = trainPrefixesOf(policy.branches);
+	const trainPrefixes = ownedTrainPrefixes(policy.branches);
 	const trainPrefix = trainPrefixes[0] ?? 'train/';
 	const trains = new Map(
 		trainPrefixes.flatMap((prefix) => [...remoteBranches(prefix)]),

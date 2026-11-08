@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { parentsOutsideMerges } from '@delendai/core/lib/work-units/landed-work.service';
+import { parentsOutsideMerges } from '@delendai/core/lib/integration/decisions/landed.helper';
 
 describe('parentsOutsideMerges', () => {
 	it('names the parents outside the merges, for the caller to check against the base', () => {
@@ -21,5 +21,22 @@ describe('parentsOutsideMerges', () => {
 
 	it('has nothing to check for a tip at the base', () => {
 		expect(parentsOutsideMerges('')).toEqual([]);
+	});
+});
+
+describe('pullRequestLanded', () => {
+	it('[<20ms] landed when the forge merged it or its head is contained', async () => {
+		const { pullRequestLanded } = await import(
+			'@delendai/core/lib/integration/decisions/landed.helper'
+		);
+		expect(pullRequestLanded({ merged: true, headContained: false })).toBe(
+			true,
+		);
+		expect(pullRequestLanded({ merged: false, headContained: true })).toBe(
+			true,
+		);
+		expect(pullRequestLanded({ merged: false, headContained: false })).toBe(
+			false,
+		);
 	});
 });

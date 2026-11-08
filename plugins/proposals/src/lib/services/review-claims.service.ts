@@ -22,6 +22,7 @@ import {
 import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-holder.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
+import { shortName } from '@delendai/core/cli';
 
 /** `value` without slashes at either end; a loop, not a backtracking regex. */
 const trimSlashes = (value: string): string => {
@@ -33,9 +34,7 @@ const trimSlashes = (value: string): string => {
 };
 
 const bare = (prefix: string): string => {
-	const trimmed = trimSlashes(
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
-	);
+	const trimmed = trimSlashes(shortName(prefix));
 	return trimmed.length === 0 ? '' : `${trimmed}/`;
 };
 

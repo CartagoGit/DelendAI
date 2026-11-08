@@ -38,6 +38,7 @@ import type {
 	IWorkPublishStep,
 	IWorkRefHoldOptions,
 } from '../contracts/interfaces/work-publish.interface';
+import { shortName as barePrefix } from '../integration/decisions/namespaces.helper';
 
 export type {
 	IWorkRefHoldOptions,
@@ -48,10 +49,6 @@ export type {
 
 const git = (cwd: string, args: readonly string[]): IGitCommandResult =>
 	runGitCommand(cwd, args);
-
-/** A ref prefix as it appears after `refs/heads/`. */
-const barePrefix = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** The fully-qualified publication ref for a name, from the policy. */
 export const publicationRefFor = (

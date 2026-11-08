@@ -13,9 +13,7 @@ import type { ISpentReservation } from '../contracts/interfaces/slice-reservatio
 import { abandonedAfterSeconds } from './forge-work-refs.service';
 import { readGit } from './work-unit-shared.service';
 import { namespacedRef } from './namespaced-ref.helper';
-
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /**
  * The slice reservations of `remote` whose unit has no branch there and

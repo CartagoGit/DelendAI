@@ -25,11 +25,10 @@
  */
 
 import {
+	allowedRefPatterns,
 	hasSeparateReleaseBranch,
-	protectedBranchNames,
 } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { trainPrefixesOf } from '../forge/publication-prefixes';
 import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
 
 /** One branch's protection, in the shape the committed files already use. */
@@ -288,42 +287,7 @@ export const branchProtectionModule = (
 export const namespaceRuleset = (
 	policy: IResolvedDevelopmentPolicy,
 ): Readonly<Record<string, unknown>> => {
-	const allowed = [
-		...protectedBranchNames(policy.branches).map(
-			(branch) => `refs/heads/${branch}`,
-		),
-		...(policy.branches.workRefVisibility === 'visible' &&
-		policy.branches.workRefPrefix.length > 0
-			? [
-					`${policy.branches.workRefPrefix.startsWith('refs/') ? policy.branches.workRefPrefix : `refs/${policy.branches.workRefPrefix}`}**/*`,
-				]
-			: []),
-		// The publication namespace is as DEEP as the work namespace,
-		// because a publication carries the name of the work it publishes
-		// (x00568): `{ns}/pr/{agent}/{proposal}-{slice}-g{n}/{topic}`.
-		// This pattern read `**` while the work ref read `**/*`, and
-		// `**` matches ONE segment — so the forge declined every
-		// canonical publication ref with "creations being restricted",
-		// and the only names it would accept were flat ones. That is why
-		// every `pr/` ref in this namespace had no agent, no slice and no
-		// generation in it. The two namespaces share a shape; they now
-		// share a depth.
-		...(policy.branches.publicationRefPrefix === ''
-			? []
-			: [`refs/heads/${policy.branches.publicationRefPrefix}**/*`]),
-		// The merge-train namespace sits beside the publication one, and the
-		// queue pushes a ref there for every train
-		// (`{ns}/train/{sha12}/{members}`, `{ns}/train/culprit/{n}`). Left
-		// out of this list, the forge declined the push, the dispatch found
-		// no ref, and the queue landed nothing. It shares its derivation
-		// with the queue, so the two cannot name different namespaces.
-		...trainPrefixesOf(policy.branches).map(
-			(prefix) => `refs/heads/${prefix}**/*`,
-		),
-		...policy.branches.foreignRefPrefixes.map(
-			(prefix) => `refs/heads/${prefix}**`,
-		),
-	];
+	const allowed = allowedRefPatterns(policy);
 	return {
 		name: 'branch-namespace',
 		target: 'branch',

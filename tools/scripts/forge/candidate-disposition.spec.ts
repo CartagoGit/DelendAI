@@ -2,15 +2,14 @@
  * candidate-disposition.spec.ts — every open candidate has a stated fate,
  * and a red one is never left red only because nobody ran it again.
  */
-import { describe, expect, it } from 'vitest';
-
 import {
 	authorsOwn,
 	candidateDispositions,
 	orphanedCandidates,
 	toBringForward,
 	type ICandidateState,
-} from './candidate-disposition';
+} from '@delendai/core/cli';
+import { describe, expect, it } from 'vitest';
 
 const PREFIX = 'delendai/pr/';
 const candidate = (

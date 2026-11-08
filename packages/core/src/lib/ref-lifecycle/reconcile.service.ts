@@ -51,6 +51,7 @@ import type {
 	IRefVerdict,
 	IRefRole,
 } from './reconcile.interface';
+import { shortName as shortenRef } from '../integration/decisions/namespaces.helper';
 
 export type {
 	IObservedPullRequest,
@@ -87,20 +88,6 @@ const byHeadRef = (
 	}
 	return index;
 };
-
-/**
- * Compare a forge-reported branch name against a configured prefix.
- *
- * The forge reports short names (`delendai/wip/agent/slice-g1`), while a
- * prefix may be declared fully qualified (`heads/delendai/wip/`) because
- * the same value also expands a work-ref template that `update-ref` has
- * to accept. Two spellings of one namespace made the work prefix
- * unmatchable, so every work ref fell through to `unmanaged`. Strip the
- * qualification from both sides and the two spellings mean the same
- * thing.
- */
-const shortenRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 const inNamespace = (name: string, prefix: string): boolean =>
 	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));

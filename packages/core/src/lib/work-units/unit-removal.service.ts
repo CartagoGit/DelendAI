@@ -3,7 +3,7 @@
  * leave a clone, shared by the reaper and the end of finished units so
  * neither can remove more than the other would, nor a unit still alive.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import type { IUnitRemoval } from './unit-lease.interface';
 import { removeUnitLease } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';

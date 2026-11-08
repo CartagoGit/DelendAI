@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { briefWorkModel } from '@delendai/core/lib/development-policy/declare-workflow';
 import { servedWorkModelLines } from '@delendai/core/lib/development-policy/served-work-model';
 import { judgeGitOperation } from '@delendai/core/lib/development-policy/git-guard';
-import { policyNamespaces } from '@delendai/core/lib/development-policy/git-guard-namespaces';
+import { policyNamespaces } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import {
 	hasSeparateReleaseBranch,
 	protectedBranchNames,

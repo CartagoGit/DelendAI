@@ -28,7 +28,7 @@
  * are never seen. Everything is plain git, so a GitLab project or one
  * with no forge CLI ends its units the same way.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { mergeSubjectsReader } from '../startup-reconciler/merge-subjects.service';
 import { mergedPublicationPredicate } from '../startup-reconciler/phases/merged-publications.helper';
 import type {
