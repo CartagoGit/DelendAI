@@ -478,3 +478,38 @@ describe('changedOutputOf', () => {
 		).toBe('');
 	});
 });
+
+describe('an edit of the test workflow runs the jobs whose block changed', () => {
+	const scopes: readonly IJobScope[] = [
+		...SCOPES,
+		{ job: 'reads-github', touches: ['.github/'], because: 'test fixture' },
+	];
+	const ci = '.github/workflows/ci.yml';
+	const runs = (job: string, changed: readonly string[]): boolean =>
+		jobMustRun({
+			job,
+			changed,
+			scopes,
+			workflowJobs: new Set(['web']),
+		});
+
+	it('runs a job whose block changed, though nothing it reads did', () => {
+		expect(runs('web', [ci])).toBe(true);
+	});
+
+	it('runs no other job for the workflow alone, save one declared always', () => {
+		expect(runs('reads-github', [ci])).toBe(false);
+		expect(runs('packaging', [ci])).toBe(false);
+		expect(runs('always-job', [ci])).toBe(true);
+	});
+
+	it('still runs what the rest of the change reaches', () => {
+		expect(runs('packaging', [ci, 'packages/core/a.ts'])).toBe(true);
+	});
+
+	it('counts the workflow as a read when its blocks are unknown', () => {
+		expect(jobMustRun({ job: 'reads-github', changed: [ci], scopes })).toBe(
+			true,
+		);
+	});
+});

@@ -10,7 +10,7 @@ import {
 	readersOf,
 	onlyScriptsChanged,
 	runsEverything,
-	testRunnerChanged,
+	changedWorkflowJobs,
 	zonesReadingRootFiles,
 } from './zone-reads';
 
@@ -41,13 +41,13 @@ describe('zonesReadingRootFiles', () => {
 		).toBeUndefined();
 	});
 
-	it('runs everything for a file at the repository root or under .github', () => {
+	it('runs everything for a file at the repository root, and not for a workflow', () => {
 		expect(
 			zonesReadingRootFiles([edited('package.json')], MAP),
 		).toBeUndefined();
 		expect(
 			zonesReadingRootFiles([edited('.github/workflows/ci.yml')], MAP),
-		).toBeUndefined();
+		).toEqual(new Set());
 	});
 
 	it('sends an edited file to the zones that read it', () => {
@@ -137,40 +137,42 @@ describe('a workflow edit', () => {
 			'',
 		].join('\n');
 
-	it('leaves the test runner as it was when only a lint step changed', () => {
+	it('names the jobs whose block changed, and no other', () => {
 		expect(
-			testRunnerChanged(
+			changedWorkflowJobs(
 				workflow('bun run lint:brand', 'bun run test'),
 				workflow('bun run lint:privacy', 'bun run test'),
 			),
-		).toBe(false);
-	});
-
-	it('changes the test runner when the zone job changed', () => {
+		).toEqual(new Set(['lint-security']));
 		expect(
-			testRunnerChanged(
+			changedWorkflowJobs(
 				workflow('bun run lint:brand', 'bun run test'),
 				workflow('bun run lint:brand', 'bun run test --shard'),
 			),
-		).toBe(true);
+		).toEqual(new Set(['tests-zone']));
 	});
 
-	it('counts a side that is missing as a change', () => {
-		expect(testRunnerChanged(undefined, workflow('a', 'b'))).toBe(true);
+	it('names every job when what they inherit changed', () => {
+		expect(
+			changedWorkflowJobs(
+				workflow('a', 'b'),
+				`env:\n    X: '1'\n${workflow('a', 'b')}`,
+			),
+		).toEqual(new Set(['lint-security', 'tests-zone']));
 	});
 
-	it('reaches only the zones that read it when it leaves the runner alone', () => {
+	it('counts a side that is missing as all of it', () => {
+		expect(
+			changedWorkflowJobs(undefined, workflow('a', 'b')),
+		).toBeUndefined();
+	});
+
+	it('reaches only the zones that read it, never every spec, even the test workflow', () => {
 		// #912: one trigger of ci.yml and a lint script ran all eleven shards.
-		const change = {
-			...edited('.github/workflows/release.yml'),
-			runnerChanged: false,
-		};
+		expect(runsEverything(edited('.github/workflows/ci.yml'))).toBe(false);
+		const change = edited('.github/workflows/release.yml');
 		expect(runsEverything(change)).toBe(false);
 		expect(zonesReadingRootFiles([change], MAP)).toEqual(new Set(['core']));
-	});
-
-	it('still runs everything when it is unknown whether the runner changed', () => {
-		expect(runsEverything(edited('.github/workflows/ci.yml'))).toBe(true);
 	});
 
 	it('lets prose reach only the zones that read it, and not configuration', () => {
@@ -194,13 +196,10 @@ describe('a workflow edit', () => {
 			expect(runsEverything(edited(path))).toBe(true);
 	});
 
-	it('still runs everything for a composite action, which every job uses', () => {
+	it('reaches the readers of a composite action, which every job that runs proves', () => {
 		expect(
-			runsEverything({
-				...edited('.github/actions/setup-bun-repo/action.yml'),
-				runnerChanged: false,
-			}),
-		).toBe(true);
+			runsEverything(edited('.github/actions/setup-bun-repo/action.yml')),
+		).toBe(false);
 	});
 });
 

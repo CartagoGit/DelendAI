@@ -28,6 +28,9 @@ import { execFileSync } from 'node:child_process';
 
 import { repoRoot } from '../lib/repo-root';
 
+import { TEST_WORKFLOW } from './test-zones.constant';
+import { changedWorkflowJobs } from './zone-reads';
+
 import { jobsReachedSince, structuralSince } from './job-reach.helper';
 import { JOB_SCOPES } from './job-scope.constant';
 import type { IJobScope } from './job-scope.interface';
@@ -63,6 +66,14 @@ export interface IPlanInput {
 	 * job that declares `code: 'scripts'` counts as reached by any change.
 	 */
 	readonly reached?: ReadonlySet<string> | undefined;
+	/**
+	 * The jobs whose block in the test workflow the change edited. Present,
+	 * an edit of the workflow runs those jobs and reaches no other: the
+	 * definition is proved by running it, with the selection the rest of
+	 * the change makes. Absent, the workflow counts as a file every job
+	 * that reads `.github/` reads.
+	 */
+	readonly workflowJobs?: ReadonlySet<string> | undefined;
 }
 
 const under = (file: string, prefixes: readonly string[]): boolean =>
@@ -86,6 +97,32 @@ const decide = (
 			runs: true,
 			why: 'no change list (a push, a dispatch or an unreadable diff): nothing is skipped',
 		};
+	if (input.workflowJobs?.has(job) === true)
+		return {
+			runs: true,
+			why: `its block in ${TEST_WORKFLOW} changed`,
+		};
+	const changed =
+		input.workflowJobs === undefined
+			? input.changed
+			: input.changed.filter((file) => file !== TEST_WORKFLOW);
+	if (changed.length === 0 && scope.touches !== 'always')
+		return {
+			runs: false,
+			why: `only ${TEST_WORKFLOW} changed, and not this job's block`,
+		};
+	return decideFor(
+		{ ...input, changed: changed.length === 0 ? input.changed : changed },
+		scope,
+	);
+};
+
+/** The decision for a declared job over the changed files that count. */
+const decideFor = (
+	input: IPlanInput,
+	scope: IJobScope,
+): { readonly runs: boolean; readonly why: string } => {
+	const { job } = scope;
 	if (scope.docs === 'skip' && input.changed.every(isProse))
 		return {
 			runs: false,
@@ -196,6 +233,37 @@ export const changedSince = (base: string): readonly string[] => {
 	}
 };
 
+/** Where the change left `base`: what its diff is taken from. */
+const mergeBaseOf = (root: string, base: string): string => {
+	try {
+		return execFileSync('git', ['merge-base', base, 'HEAD'], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		return base;
+	}
+};
+
+/** A file's content at a commit; `undefined` when absent or unreadable. */
+const showAt = (
+	root: string,
+	ref: string,
+	path: string,
+): string | undefined => {
+	try {
+		return execFileSync('git', ['show', `${ref}:${path}`], {
+			cwd: root,
+			encoding: 'utf8',
+			maxBuffer: 64 * 1024 * 1024,
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return undefined;
+	}
+};
+
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));
 	return hit?.slice(name.length + 3);
@@ -206,10 +274,17 @@ export const planInputSince = (base: string | undefined): IPlanInput => {
 	if (base === undefined) return { changed: [] };
 	const changed = changedSince(base);
 	const root = repoRoot();
+	const workflowJobs = changed.includes(TEST_WORKFLOW)
+		? changedWorkflowJobs(
+				showAt(root, mergeBaseOf(root, base), TEST_WORKFLOW),
+				showAt(root, 'HEAD', TEST_WORKFLOW),
+			)
+		: undefined;
 	return {
 		changed,
 		structural: structuralSince(root, base),
 		reached: jobsReachedSince(root, base, changed),
+		...(workflowJobs === undefined ? {} : { workflowJobs }),
 	};
 };
 
