@@ -32,6 +32,7 @@ import type {
 } from './candidate-disposition.interface';
 import { REGENERATION_FIXES_CHECKS } from './candidate-disposition.constant';
 import { queueHead } from './queue-order';
+import { underPublication } from './publication-prefixes';
 
 export type {
 	ICandidateDisposition,
@@ -62,11 +63,13 @@ const regenerationFixes = (candidate: ICandidateState): boolean => {
 /** Every candidate under the publication prefix, oldest first, with what happens to it. */
 export const candidateDispositions = (
 	candidates: readonly ICandidateState[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): readonly ICandidateVerdict[] => {
 	const head = queueHead(candidates, publicationPrefix);
 	return [...candidates]
-		.filter((candidate) => candidate.headRef.startsWith(publicationPrefix))
+		.filter((candidate) =>
+			underPublication(candidate.headRef, publicationPrefix),
+		)
 		.sort((a, b) => a.number - b.number)
 		.map((candidate): ICandidateVerdict => {
 			const base = {
@@ -148,14 +151,18 @@ export const orphanedCandidates = (
  */
 export const authorsOwn = (
 	verdicts: readonly ICandidateVerdict[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 	agent: string,
 ): readonly string[] =>
 	verdicts
 		.filter(
 			(verdict) =>
 				verdict.disposition === 'author' &&
-				verdict.headRef.startsWith(`${publicationPrefix}${agent}/`),
+				underPublication(
+					verdict.headRef,
+					publicationPrefix,
+					`${agent}/`,
+				),
 		)
 		.map((verdict) => verdict.headRef);
 

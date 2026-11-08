@@ -25,9 +25,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { appendFileSync, readFileSync } from 'node:fs';
 
 import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -35,14 +33,19 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
 import { isBranchModelMove } from '../lint/pr-head-shape.script';
-import { FORWARD_SYNC_REF_PREFIX } from './forward-sync-release.script';
+import { isForwardSyncRef } from './forward-sync-release.script';
 import {
 	CERTIFYING_WORKFLOW,
 	certificationOf,
 	type ICertificationRun,
 	type IIntegrationCertification,
 } from './certify-integration.script';
-import { queueAcceptance } from './queue-acceptance';
+import {
+	GENERATED_REFRESH_COMMANDS,
+	REGENERATED_PROJECTIONS,
+} from '../git/refresh-candidate-artifacts.constant';
+import { queueAcceptance, trainRiders } from './queue-acceptance';
+import { assembleTrain } from './train-assembly';
 import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
 import {
 	certifiedByTrain,
@@ -62,6 +65,10 @@ import {
 	type ITrainCandidate,
 	type ITrainPorts,
 } from './queue-order';
+import {
+	publicationPrefixesOf,
+	underPublication,
+} from './publication-prefixes';
 
 /**
  * The merge method as the policy states it. Read off the resolved policy
@@ -374,18 +381,18 @@ const releaseWaitingRuns = (
  */
 export const armable = (
 	open: readonly IPullRequest[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): readonly IPullRequest[] =>
 	open.filter(
 		(pull) =>
 			pull.auto_merge === null &&
 			pull.draft !== true &&
-			pull.head.ref.startsWith(publicationPrefix),
+			underPublication(pull.head.ref, publicationPrefix),
 	);
 
 export const armCandidates = (
 	open: readonly IPullRequest[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 	mergeMethod: IDeclaredMergeMethod,
 	// Injected so a test can ask which flag was passed, without a forge.
 	run: (args: readonly string[]) => string = gh,
@@ -430,20 +437,20 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
  */
 export const currentQueueFacts = (): {
 	readonly facts: readonly IQueueCandidateFacts[];
-	readonly publicationPrefix: string;
+	readonly publicationPrefix: readonly string[];
 	readonly armed: ReadonlySet<string>;
 } => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
-	const publicationPrefix = policy.branches.publicationRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+	const publicationPrefix = publicationPrefixesOf(policy.branches);
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
 	recoverReleaseBranch(policy.branches, opened);
 	return {
 		facts: opened
-			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+			.filter((pull) =>
+				underPublication(pull.head.ref, publicationPrefix),
+			)
 			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
 		armed: new Set(
@@ -624,9 +631,7 @@ const recoverReleaseBranch = (
 			answer(`repos/${REPOSITORY_SLUG}/git/ref/tags/v${version}`) !==
 				undefined,
 		aheadOfIntegration: compare?.ahead_by ?? 0,
-		forwardSyncOpen: open.some((pull) =>
-			pull.head.ref.startsWith(FORWARD_SYNC_REF_PREFIX),
-		),
+		forwardSyncOpen: open.some((pull) => isForwardSyncRef(pull.head.ref)),
 	});
 	for (const step of steps) {
 		gh([
@@ -680,7 +685,9 @@ const treeOf = (sha: string): string | undefined =>
 
 /**
  * The forge and git behind a train. A train is assembled in a throwaway
- * worktree, never in the checkout, and pushed to its own branch; landing
+ * worktree, never in the checkout, with a conflict confined to derived
+ * files regenerated once on it (train-assembly), and pushed to its own
+ * branch; landing
  * tries the fast-forward first (every merge in the train is a pull
  * request's merge) and falls back to each pull request's own merge, which
  * branch protection and the required checks still judge.
@@ -694,59 +701,28 @@ const trainPorts = (input: {
 }): ITrainPorts => ({
 	trainAt: (ref) => input.branches.get(ref),
 	fullRunAt,
-	assemble: (ref, members) => {
-		const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
-		const conflicting: number[] = [];
-		try {
-			if (
-				git(['worktree', 'add', '--detach', scratch, input.tipSha]) ===
-				undefined
-			) {
-				return { conflicting: members.map((member) => member.number) };
-			}
-			for (const member of members) {
-				const merged =
-					git(
-						['fetch', '-q', '--', 'origin', member.headSha],
-						scratch,
-					) !== undefined &&
-					git(
-						[
-							'-c',
-							'user.name=merge-train',
-							'-c',
-							'user.email=merge-train@invalid',
-							'merge',
-							'--no-ff',
-							'-m',
-							`Merge pull request #${String(member.number)} from ${member.headRef}`,
-							member.headSha,
-						],
-						scratch,
-					) !== undefined;
-				if (!merged) {
-					git(['merge', '--abort'], scratch);
-					conflicting.push(member.number);
-				}
-			}
-			if (conflicting.length === 0) {
-				git(
-					[
-						'push',
-						'-q',
-						'--force',
-						'origin',
-						`HEAD:refs/heads/${ref}`,
-					],
-					scratch,
-				);
-			}
-			return { conflicting };
-		} finally {
-			git(['worktree', 'remove', '--force', scratch]);
-			rmSync(scratch, { recursive: true, force: true });
-		}
-	},
+	assemble: (ref, members) =>
+		assembleTrain({
+			root: process.cwd(),
+			remote: 'origin',
+			tipSha: input.tipSha,
+			ref,
+			members,
+			derived: REGENERATED_PROJECTIONS,
+			regenerate: (dir) =>
+				GENERATED_REFRESH_COMMANDS.every((command) => {
+					try {
+						execFileSync('bun', command.split(' '), {
+							cwd: dir,
+							stdio: ['ignore', 'ignore', 'pipe'],
+							timeout: 600_000,
+						});
+						return true;
+					} catch {
+						return false;
+					}
+				}),
+		}),
 	dispatch: (ref) => {
 		try {
 			gh([
@@ -823,9 +799,7 @@ const trainPorts = (input: {
 
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
-	const publicationPrefix = policy.branches.publicationRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+	const publicationPrefix = publicationPrefixesOf(policy.branches);
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
@@ -836,7 +810,7 @@ const main = (): void => {
 	// be one candidate at a time, each brought forward and re-tested after
 	// every merge, twenty minutes a candidate.
 	const candidates = opened
-		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+		.filter((pull) => underPublication(pull.head.ref, publicationPrefix))
 		.map((pull) => candidateFacts(pull));
 	const integration = policy.branches.integration;
 	const trainPrefixes = trainPrefixesOf(policy.branches);
@@ -937,23 +911,57 @@ const main = (): void => {
 		.map((verdict) => verdict.number);
 	const landing = new Set(certified ? ready : []);
 	if (repairing !== undefined) landing.add(repairing);
-	// Two or more that can land together ride one train: one full run proves
-	// them all, instead of one certification of the integration branch after
-	// each. A repair leads it, so a red tip still lands nothing without it.
+	// The train is the integration tip with each rider merged onto it, so
+	// its one full run proves every rider against the tip as it is now:
+	// behind, or conflicting only in derived files (regenerated on the
+	// train), a candidate rides. It stays off only when it overlaps an
+	// earlier rider, or does not merge onto the tip and the riders before
+	// it. Two or more ride one train instead of one certification of the
+	// integration branch after each; one that cannot land as it is rides a
+	// train of its own. A repair leads it, so a red tip still lands
+	// nothing without it.
 	const riderOf = (number: number): ITrainCandidate => ({
 		number,
 		headRef: opened.find((pull) => pull.number === number)?.head.ref ?? '',
 		headSha: shaOf(number),
 	});
 	const anchor = repairing === undefined ? undefined : riderOf(repairing);
+	const riding =
+		red && repairing === undefined
+			? []
+			: trainRiders({
+					root: process.cwd(),
+					remote: 'origin',
+					integration,
+					integrationSha: certification.sha,
+					candidates: queueOrder(candidates, publicationPrefix)
+						.filter((candidate) => candidate.number !== repairing)
+						.map((candidate) => riderOf(candidate.number)),
+				}).filter((verdict) => {
+					if (!verdict.accepted) {
+						console.log(
+							`keep-the-queue-moving: #${String(verdict.number)} waits for the next train — ${verdict.why}.`,
+						);
+						return false;
+					}
+					// The train's full run proves it; a check that already
+					// failed on its own head says it would not.
+					return (
+						requiredChecksVerdict(
+							checksOf(shaOf(verdict.number)),
+							policy.integration.requiredChecks,
+						).failed.length === 0
+					);
+				});
 	const riders = trainMembers(
-		ready.map(riderOf),
+		riding.map((verdict) => riderOf(verdict.number)),
 		culpritsAmong(trainPrefixes, trains),
 		TRAIN_CAPACITY - (anchor === undefined ? 0 : 1),
 	);
+	const needsProof = riders.some((rider) => !ready.includes(rider.number));
 	if (
 		(certified || anchor !== undefined) &&
-		riders.length + (anchor === undefined ? 0 : 1) >= 2
+		(riders.length + (anchor === undefined ? 0 : 1) >= 2 || needsProof)
 	) {
 		runTrain({
 			trainPrefix,
@@ -974,7 +982,7 @@ const main = (): void => {
 		if (
 			pull.auto_merge === null ||
 			landing.has(pull.number) ||
-			!pull.head.ref.startsWith(publicationPrefix)
+			!underPublication(pull.head.ref, publicationPrefix)
 		) {
 			continue;
 		}

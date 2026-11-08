@@ -25,7 +25,7 @@ export const keepInProgressWorkRefs = <
 >(input: {
 	readonly reapable: readonly TVerdict[];
 	/** The work-ref prefix as it appears in a branch name. */
-	readonly workPrefix: string;
+	readonly workPrefix: string | readonly string[];
 	/** The proposal id a work ref names. */
 	readonly idOf: (name: string) => string | undefined;
 	readonly tipOf: (name: string) => string | undefined;
@@ -42,7 +42,11 @@ export const keepInProgressWorkRefs = <
 	const reapable: TVerdict[] = [];
 	const kept: TVerdict[] = [];
 	for (const verdict of input.reapable) {
-		const id = verdict.name.startsWith(input.workPrefix)
+		const prefixes =
+			typeof input.workPrefix === 'string'
+				? [input.workPrefix]
+				: input.workPrefix;
+		const id = prefixes.some((prefix) => verdict.name.startsWith(prefix))
 			? input.idOf(verdict.name)
 			: undefined;
 		const tip = id === undefined ? undefined : input.tipOf(verdict.name);
