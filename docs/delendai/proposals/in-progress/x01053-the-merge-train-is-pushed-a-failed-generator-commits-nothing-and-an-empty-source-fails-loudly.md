@@ -2,10 +2,14 @@
 id: x01053
 title: "The merge train is pushed: a failed generator commits nothing and an empty source fails loudly"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: 20a8192c-75f1-41a6-a4bd-5ab6ced42b3a
+last-correlation-id: 20a8192c-75f1-41a6-a4bd-5ab6ced42b3a
+last-transition-from: ready
+last-transition-at: 2026-11-08T13:45:31.136Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
