@@ -3,11 +3,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IChangeRequestForge } from '@delendai/core/lib/contracts/interfaces/change-request-forge.interface';
 import type { IPullRequestPorts } from '@delendai/core/lib/contracts/interfaces/publication-pull-request.interface';
 import { urgentReasonOfBody } from '@delendai/core/lib/work-units/pull-request-urgency.service';
 import {
 	openPublicationPullRequest,
+	openUnitPullRequest,
 	pullRequestText,
 } from '@delendai/core/lib/work-units/publication-pull-request.service';
 
@@ -449,5 +451,38 @@ describe('the urgent mark on a pull request (x01051)', () => {
 		expect(text.body).not.toContain('Urgent:');
 		expect(urgentReasonOfBody(text.body)).toBeUndefined();
 		expect(urgentReasonOfBody(null)).toBeUndefined();
+	});
+});
+
+describe('openUnitPullRequest (x01051)', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: { profile: 'shared-checkout-pr' },
+	});
+	const input = {
+		root: '/nonexistent-root-for-spec',
+		policy,
+		remote: 'origin',
+		publicationRef: 'refs/heads/delendai/pr/a/implement/x1-all-g1/t',
+		tip: 'tip',
+		integrationBase: 'base',
+		fallbackTitle: 'fix x1',
+	};
+
+	it('opens nothing when the caller asked for none', async () => {
+		expect(
+			await openUnitPullRequest({
+				...input,
+				args: ['--no-pull-request'],
+			}),
+		).toBeUndefined();
+	});
+
+	it('reports a remote it does not recognise rather than opening a pull request', async () => {
+		const opened = await openUnitPullRequest({
+			...input,
+			args: [],
+			urgent: 'integration is red',
+		});
+		expect(opened?.status).toBe('skipped');
 	});
 });
