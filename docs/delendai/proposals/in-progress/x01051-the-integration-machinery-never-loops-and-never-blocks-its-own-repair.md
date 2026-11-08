@@ -2,14 +2,14 @@
 id: x01051
 title: "The integration machinery never loops and never blocks its own repair"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 1ca5431c-eadc-417f-a8fe-aa028f881011
-last-correlation-id: 1ca5431c-eadc-417f-a8fe-aa028f881011
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T07:28:40.093Z
+last-transition-id: 07c4e90a-6e4c-468f-9369-76263244d739
+last-correlation-id: 07c4e90a-6e4c-468f-9369-76263244d739
+last-transition-from: review
+last-transition-at: 2026-11-08T17:14:05.638Z
 ---
 
 # x01051 — The integration machinery never loops and never blocks its own repair
