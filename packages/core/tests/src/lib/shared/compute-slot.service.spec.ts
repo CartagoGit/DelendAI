@@ -2,7 +2,6 @@
  * compute-slot.service.spec.ts — heavy compute on one machine takes turns:
  * a second caller waits (and says for whom), and a dead holder frees the slot.
  */
-// delendai:timing-is-the-subject — a slot holder must still be running when a second process asks for its turn.
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
@@ -17,6 +16,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
+
+import { waitUntil } from '@delendai/test-kit';
 
 import { COMPUTE_SLOT_ENV } from '@delendai/core/lib/contracts/constants/compute-slot.constant';
 import {
@@ -125,7 +126,8 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 		);
 		holder.kill('SIGKILL');
 		await new Promise((resolve) => holder.once('exit', resolve));
-		const started = Date.now();
+		// No wall-clock bound: the reclaim is awaited, and the runner's own
+		// case timeout turns a slot that never frees into a failure.
 		await expect(
 			withComputeSlot({
 				lockPath,
@@ -134,7 +136,6 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 				run: () => 'got it',
 			}),
 		).resolves.toBe('got it');
-		expect(Date.now() - started).toBeLessThan(10_000);
 	});
 });
 
@@ -208,47 +209,69 @@ describe('withComputeSlot across processes', () => {
 		'../../../../src/lib/shared/compute-slot.service.ts',
 		import.meta.url,
 	).href;
-	const child = (lockPath: string, tip: string, marker: string) => {
+	/**
+	 * A child process asking for the slot on one tip. The holder keeps the
+	 * turn until `releaseFile` exists, so it outlasts the second asker by
+	 * construction, not by a sleep. A joiner raises no notice, so the asker
+	 * says ASKING as it calls; the holder is released only after that, and
+	 * the joiner's one read of the claim comes before the holder can have
+	 * finished (it still has the release, its result and its claim to
+	 * write). That ordering is the one thing here not enforced by a flag.
+	 */
+	const child = (
+		lockPath: string,
+		tip: string,
+		marker: string,
+		releaseFile: string,
+	) => {
 		const script = `
-			import { appendFileSync } from 'node:fs';
+			import { appendFileSync, existsSync } from 'node:fs';
 			const { withComputeSlot } = await import(${JSON.stringify(moduleUrl)});
+			console.log('ASKING');
 			const value = await withComputeSlot({
 				lockPath: ${JSON.stringify(lockPath)}, label: 'child', unit: 'u1',
 				tip: ${JSON.stringify(tip)}, notify: () => undefined,
 				run: async () => {
 					appendFileSync(${JSON.stringify(marker)}, ${JSON.stringify(tip)} + '\\n');
-					// delendai:timing-is-the-subject — the holder outlasts the second asker.
-					await new Promise((r) => setTimeout(r, 1500));
+					console.log('HELD');
+					while (!existsSync(${JSON.stringify(releaseFile)})) {
+						await new Promise((r) => setImmediate(r));
+					}
 					return 'proof-of-' + ${JSON.stringify(tip)};
 				},
 			});
 			console.log('ANSWER ' + value);
 		`;
-		return new Promise<string>((resolve, reject) => {
-			const proc = spawn('bun', ['-e', script], {
-				stdio: ['ignore', 'pipe', 'inherit'],
-			});
-			let out = '';
-			proc.stdout.on('data', (c: Buffer) => (out += c.toString()));
+		const proc = spawn('bun', ['-e', script], {
+			stdio: ['ignore', 'pipe', 'inherit'],
+		});
+		let out = '';
+		proc.stdout.on('data', (c: Buffer) => (out += c.toString()));
+		const done = new Promise<string>((resolve, reject) => {
 			proc.on('error', reject);
 			proc.on('close', () => resolve(out));
 		});
+		return {
+			done,
+			said: (word: string) =>
+				waitUntil(`the child said ${word}`, () => out.includes(word), {
+					timeoutMs: 60_000,
+				}),
+		};
 	};
 
 	it('joins two processes on one tip and proves it once', async () => {
 		const lockPath = lockIn();
 		const marker = `${lockPath}.ran`;
-		const [one, two] = await Promise.all([
-			child(lockPath, 'aaa', marker),
-			(async () => {
-				// delendai:timing-is-the-subject — the second process must ask while the first holds the turn.
-				await new Promise((r) => setTimeout(r, 600));
-				return child(lockPath, 'aaa', marker);
-			})(),
-		]);
+		const releaseFile = `${lockPath}.release`;
+		const first = child(lockPath, 'aaa', marker, releaseFile);
+		await first.said('HELD');
+		const second = child(lockPath, 'aaa', marker, releaseFile);
+		await second.said('ASKING');
+		writeFileSync(releaseFile, '');
+		const [one, two] = await Promise.all([first.done, second.done]);
 		expect(one).toContain('ANSWER proof-of-aaa');
 		expect(two).toContain('ANSWER proof-of-aaa');
-		const { readFileSync } = await import('node:fs');
 		expect(readFileSync(marker, 'utf8').trim().split('\n')).toEqual([
 			'aaa',
 		]);
@@ -340,6 +363,10 @@ describe('withComputeSlot superseded turns', () => {
 			join(dir, 'fff.gave-way.result'),
 			JSON.stringify({ superseded: true }),
 		);
+		// A follower raises no notice and the claim's reads are not
+		// observable from here, so the claim is dropped on the asker's own
+		// poll clock: any moment after the first pass proves the same path.
+		// delendai:timing-is-the-subject
 		setTimeout(() => rmSync(join(dir, 'fff.claim'), { force: true }), 80);
 		await expect(
 			withComputeSlot({
@@ -367,9 +394,6 @@ describe('computeSlotPath', () => {
 });
 
 describe('withComputeSlot urgent lane', () => {
-	const pause = (ms: number) =>
-		new Promise((resolve) => setTimeout(resolve, ms));
-
 	it('runs urgent callers ahead of waiting normals, in order, without interrupting the running proof', async () => {
 		const lockPath = lockIn();
 		const events: string[] = [];
@@ -395,12 +419,22 @@ describe('withComputeSlot urgent lane', () => {
 					events.push(`${name}:end`);
 				},
 			});
+		const waitingFor = (name: string) =>
+			waitUntil(`proof ${name} is waiting`, () =>
+				notices.some((notice) => notice.includes(`"proof ${name}"`)),
+			);
 		const all = [job('running', undefined, held)];
-		await pause(150);
-		all.push(job('n1'), job('n2'));
-		await pause(150);
-		all.push(job('u1', 'develop is red'), job('u2', 'owner asked'));
-		await pause(400);
+		await waitUntil('the running proof holds the slot', () =>
+			events.includes('running:start'),
+		);
+		all.push(job('n1'));
+		await waitingFor('n1');
+		all.push(job('n2'));
+		await waitingFor('n2');
+		all.push(job('u1', 'develop is red'));
+		await waitingFor('u1');
+		all.push(job('u2', 'owner asked'));
+		await waitingFor('u2');
 		const lane = await readComputeSlotLane(lockPath);
 		expect(lane.holder).toMatch(/proof running/u);
 		expect(lane.urgent.map((ticket) => ticket.reason)).toEqual([
