@@ -91,6 +91,7 @@ export {
 	workRefFate,
 	workRefOpenness,
 } from '../lib/work-units/work-ref-lifecycle.service';
+export { urgentReasonOfBody } from '../lib/work-units/pull-request-urgency.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
 export { hookFreeEnvironment } from '../lib/shared/hook-free-environment.helper';
 export { gitVerbatim, readGit } from '../lib/shared/git-read.helper';

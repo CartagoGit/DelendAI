@@ -314,6 +314,13 @@ export const loadPluginManifests = async (
 			plugin: pluginFromModule(pluginMod ?? {}),
 		});
 	}
+	// Packages without one manifest is a failed discovery, not a project
+	// with no plugins: writing every derived file from it empties them.
+	if (loaded.length === 0 && packages.length > 0) {
+		throw new Error(
+			`no plugin manifest found for ${String(packages.length)} plugin packages under ${root}`,
+		);
+	}
 	return loaded.sort((left, right) => compareCodeUnits(left.id, right.id));
 };
 

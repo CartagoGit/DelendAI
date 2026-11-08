@@ -60,6 +60,8 @@ import { promisify } from 'node:util';
 
 import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@delendai/core/cli';
 
+import { declaredIntegrationRef } from '../lib/declared-branches';
+
 const exec = promisify(execFile);
 
 const ALLOW_MARKER = 'delendai-allow-secret';
@@ -253,7 +255,11 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 			// `--all` is the gate for history.
 			try {
 				base = (
-					await gitOut(['merge-base', 'HEAD', 'origin/develop'])
+					await gitOut([
+						'merge-base',
+						'HEAD',
+						declaredIntegrationRef(),
+					])
 				).trim();
 			} catch {
 				console.log(

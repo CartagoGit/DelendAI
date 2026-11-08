@@ -12,7 +12,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	branchFlag,
 	branchHostScript,
+	branchLabel,
+	nearestReleaseTags,
+	npmVersionHostScript,
+	releaseTag,
+	runtimePin,
+	runtimeReport,
+	versionFlag,
+	versionHostScript,
 	withoutBranchFlag,
+	withoutRuntimeFlags,
 } from './branch-runtime.helper';
 
 const roots: string[] = [];
@@ -120,5 +129,95 @@ describe('branchHostScript', () => {
 		expect(
 			await branchHostScript(repo(), '--upload-pack=x', noInstall),
 		).toBeUndefined();
+	});
+});
+
+describe('a pinned release', () => {
+	it('runs the tag from its own tree, whatever the checkout holds', async () => {
+		const root = repo();
+		git(root, 'tag', releaseTag('0.3.0'));
+		writeFileSync(join(root, 'later.txt'), 'x');
+		git(root, 'add', 'later.txt');
+		git(root, 'commit', '-qm', 'later');
+		const resolved = await versionHostScript(root, '0.3.0', noInstall);
+		expect(resolved.ok).toBe(true);
+		if (!resolved.ok) return;
+		expect(resolved.script).toContain('branch-runtime/release@v0.3.0/');
+		const tree = resolved.script.replace(
+			'/tools/scripts/host/host-server.script.ts',
+			'',
+		);
+		expect(git(tree, 'rev-parse', 'HEAD')).toBe(
+			git(root, 'rev-parse', 'v0.3.0^{commit}'),
+		);
+		expect(git(root, 'branch', '--show-current')).toBe('develop');
+		expect(resolved.label).toContain('release v0.3.0');
+	});
+
+	it('refuses a version with no tag, naming the nearest tags', async () => {
+		const root = repo();
+		for (const v of ['0.1.0', '0.2.0', '0.3.0', '0.4.0'])
+			git(root, 'tag', releaseTag(v));
+		const resolved = await versionHostScript(root, '0.2.5', noInstall);
+		expect(resolved).toMatchObject({ ok: false });
+		const reason = resolved.ok ? '' : resolved.reason;
+		expect(reason).toContain('0.2.5');
+		expect(reason).toContain('v0.2.0, v0.3.0');
+		expect(
+			nearestReleaseTags('0.2.5', [
+				'v0.1.0',
+				'v0.2.0',
+				'v0.3.0',
+				'v0.4.0',
+				'x',
+			]),
+		).toEqual(['v0.1.0', 'v0.2.0', 'v0.3.0', 'v0.4.0']);
+	});
+
+	it('refuses both flags together, and a malformed version', () => {
+		const both = runtimePin(['--branch=main', '--version=0.3.0']);
+		expect(both.kind).toBe('refused');
+		expect(both.kind === 'refused' && both.reason).toContain('together');
+		for (const bad of ['', '0.3', 'v0.3.0', 'latest', '0.3.0; rm'])
+			expect(runtimePin([`--version=${bad}`]).kind).toBe('refused');
+		expect(runtimePin(['--version=0.3.0'])).toEqual({
+			kind: 'version',
+			version: '0.3.0',
+		});
+		expect(runtimePin(['--branch=main'])).toEqual({
+			kind: 'branch',
+			branch: 'main',
+		});
+		expect(runtimePin(['--workspace=.'])).toEqual({ kind: 'checkout' });
+	});
+
+	it('reads the flag and keeps it from the host', () => {
+		expect(versionFlag(['--version="0.3.0"'])).toBe('0.3.0');
+		expect(
+			withoutRuntimeFlags([
+				'--workspace=.',
+				'--version=0.3.0',
+				'--branch=x',
+			]),
+		).toEqual(['--workspace=.']);
+	});
+
+	it('reports what it runs at startup', async () => {
+		const root = repo();
+		const script = (await branchHostScript(root, 'main', noInstall)) ?? '';
+		expect(branchLabel('main', script)).toMatch(
+			/^branch main \([0-9a-f]{9}\)$/u,
+		);
+		expect(runtimeReport('release v0.3.0 (abc)')).toBe(
+			'[delendai] running release v0.3.0 (abc)\n',
+		);
+	});
+
+	it('from npm runs only the installed version, and says what is not wired', () => {
+		const root = repo();
+		writeFileSync(join(root, 'package.json'), '{"version":"0.3.0"}');
+		expect(npmVersionHostScript(root, '0.3.0', '/h').ok).toBe(true);
+		const other = npmVersionHostScript(root, '0.2.0', '/h');
+		expect(other.ok ? '' : other.reason).toContain('not wired yet');
 	});
 });

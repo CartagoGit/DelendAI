@@ -96,6 +96,20 @@ describe('queueOrder', () => {
 		).toEqual([3, 5]);
 	});
 
+	it('leads with an urgent candidate, then keeps the oldest first (x01051)', () => {
+		expect(
+			queueOrder(
+				[
+					candidate(3),
+					candidate(8, { urgent: 'integration is red' }),
+					candidate(5),
+					candidate(9, { urgent: 'a fix' }),
+				],
+				PREFIX,
+			).map((facts) => facts.number),
+		).toEqual([8, 9, 3, 5]);
+	});
+
 	it('has the head as its first candidate that does not conflict', () => {
 		const candidates = [
 			candidate(3, { conflicting: true }),
@@ -202,12 +216,14 @@ const fakeForge = (
 		readonly culprits?: readonly number[];
 		readonly conflicts?: readonly number[];
 		readonly fastForward?: boolean;
+		readonly pushFailure?: string;
 	} = {},
 ) => {
 	const built = new Map<string, readonly number[]>();
 	const finished = new Set<string>();
 	const runs: string[] = [];
 	const blamed: number[] = [];
+	const said: string[] = [];
 	const landings: { sha: string; members: readonly number[] }[] = [];
 	const ports: ITrainPorts = {
 		trainAt: (ref) => (built.has(ref) ? `sha:${ref}` : undefined),
@@ -224,6 +240,9 @@ const fakeForge = (
 			const conflicting = members
 				.map((m) => m.number)
 				.filter((n) => options.conflicts?.includes(n) === true);
+			if (options.pushFailure !== undefined) {
+				return { conflicting: [], pushFailure: options.pushFailure };
+			}
 			if (conflicting.length === 0) {
 				built.set(
 					ref,
@@ -245,12 +264,14 @@ const fakeForge = (
 		blame: (member) => {
 			blamed.push(member.number);
 		},
-		say: () => undefined,
+		say: (line) => {
+			said.push(line);
+		},
 	};
 	const finish = (): void => {
 		for (const ref of runs) finished.add(ref);
 	};
-	return { ports, runs, blamed, landings, finish };
+	return { ports, runs, blamed, said, landings, finish };
 };
 
 /** Run the queue until it lands something or stops moving. */
@@ -317,6 +338,14 @@ describe('the merge train', () => {
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 8]);
 		expect(forge.runs).toEqual([trainRefName(TRAINS, TIP, [3, 8])]);
+	});
+
+	it('reports a declined push with its reason and dispatches nothing', () => {
+		const reason = 'remote: Cannot create ref: creations restricted';
+		const forge = fakeForge({ pushFailure: reason });
+		expect(drive(forge, [rider(3), rider(5)])).toEqual([]);
+		expect(forge.runs).toEqual([]);
+		expect(forge.said.some((line) => line.includes(reason))).toBe(true);
 	});
 
 	it('lets a repair lead the train, in every half', () => {

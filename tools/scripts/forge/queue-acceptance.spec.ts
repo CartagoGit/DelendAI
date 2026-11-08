@@ -112,6 +112,50 @@ describe('branchesLandingAsTheyAre', () => {
 	});
 });
 
+describe('a train that cannot run (x01053 S4)', () => {
+	const stalled = () => {
+		const { owner, other } = project();
+		writeFileSync(join(other.root, 'shared.ts'), 'export const a = 3;\n');
+		other.git('commit', '-qam', 'fix: something else in the same file');
+		other.git('push', '-q', 'origin', 'develop');
+		return { owner, other };
+	};
+	const landingWith = (root: string, now: number) =>
+		branchesLandingAsTheyAre({
+			root,
+			remote: 'origin',
+			integration: 'develop',
+			queue: [{ number: 7, branch: CANDIDATE }],
+			trainPrefixes: ['delendai/train/'],
+			now,
+		});
+	const AFTER = Math.floor(Date.now() / 1000) + 3600;
+
+	it('brings a behind rider forward when no train carries it, so it does not wait forever', () => {
+		const { owner } = stalled();
+		expect([...landingWith(owner.root, AFTER)]).toEqual([]);
+	});
+
+	it('leaves the rider to the train while the tip is within the grace', () => {
+		const { owner } = stalled();
+		expect([
+			...landingWith(owner.root, Math.floor(Date.now() / 1000)),
+		]).toEqual([CANDIDATE]);
+	});
+
+	it('leaves a rider to the train that carries it, however long the tip has stood', () => {
+		const { owner } = stalled();
+		owner.git('fetch', '-q', 'origin');
+		owner.git(
+			'push',
+			'-q',
+			'origin',
+			`${owner.git('rev-parse', `origin/${CANDIDATE}`)}:refs/heads/delendai/train/aaaa/7`,
+		);
+		expect([...landingWith(owner.root, AFTER)]).toEqual([CANDIDATE]);
+	});
+});
+
 describe('a candidate whose checks already saw the integration branch', () => {
 	const moved = () => {
 		const { owner, other } = project();
