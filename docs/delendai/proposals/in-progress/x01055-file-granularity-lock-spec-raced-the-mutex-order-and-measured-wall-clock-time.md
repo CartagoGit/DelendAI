@@ -20,21 +20,22 @@ The spec asserted elapsed wall-clock bounds and assumed the holder won the mutex
 
 ## why
 
-TODO: why this work matters now.
+An intermittent failure is a defect. The spec measured wall-clock time and assumed the mutex holder won the race, so it failed under load.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Changing the lock engine: it behaved correctly.
 
 ## slices
 
 - global_gate: none
 
-### S1 — TODO
+### S1 — Make the file-granularity lock spec deterministic
 - **Status**: pending
-- **Files**: `TODO`
+- **Files**: `plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts`, `tools/scripts/lint/no-sleep-in-specs.baseline.json`
 - **Gate**: none
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The spec has no wall-clock assertion and no sleep, and passes under load.
+- The spec is out of the no-sleep-in-specs baseline.
