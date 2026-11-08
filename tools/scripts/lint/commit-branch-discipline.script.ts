@@ -33,6 +33,8 @@
  */
 import { spawnSync } from 'node:child_process';
 
+import { ownedTrainPrefixes } from '@delendai/core/cli';
+
 import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
@@ -61,6 +63,13 @@ export interface ICommitBranchInput {
 	readonly workRefTemplate?: string;
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
+	/**
+	 * The merge queue's train namespaces (`ownedTrainPrefixes`, from core,
+	 * the source the guard and the forge ruleset read). A train's CI run
+	 * checks out `<ns>/train/…`; left out here, every train went red on
+	 * this lint and the queue's bisection blamed innocent members.
+	 */
+	readonly trainRefPrefixes?: readonly string[];
 	/** Policy release branch (`branches.release`). */
 	readonly releaseBranch?: string;
 	/**
@@ -167,7 +176,10 @@ export const lintCommitBranch = (
 	// to committing on the integration branch.
 	if (
 		inNamespace(currentBranch, workRefPrefix) ||
-		inNamespace(currentBranch, publicationRefPrefix)
+		inNamespace(currentBranch, publicationRefPrefix) ||
+		(input.trainRefPrefixes ?? []).some((prefix) =>
+			inNamespace(currentBranch, prefix),
+		)
 	) {
 		return { ok: true };
 	}
@@ -319,6 +331,7 @@ const main = async (): Promise<number> => {
 		workRefPrefix?: string;
 		workRefTemplate?: string;
 		publicationRefPrefix?: string;
+		trainRefPrefixes?: readonly string[];
 	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
@@ -327,6 +340,7 @@ const main = async (): Promise<number> => {
 			workRefPrefix: branches.workRefPrefix,
 			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
+			trainRefPrefixes: ownedTrainPrefixes(branches),
 			releaseBranch: branches.release,
 		};
 	} catch {
