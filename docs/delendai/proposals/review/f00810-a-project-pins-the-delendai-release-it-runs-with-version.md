@@ -2,14 +2,14 @@
 id: f00810
 title: "A project pins the delendai release it runs with --version"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 302714b0-7e4f-4951-aa1b-4e2148f3e311
-last-correlation-id: 302714b0-7e4f-4951-aa1b-4e2148f3e311
-last-transition-from: ready
-last-transition-at: 2026-11-08T13:30:39.832Z
+last-transition-id: 6cec2efa-51fc-4681-86bb-928124912a99
+last-correlation-id: 6cec2efa-51fc-4681-86bb-928124912a99
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T13:55:08.214Z
 ---
 
 # f00810 — A project pins the delendai release it runs with --version
@@ -31,7 +31,7 @@ Owner request: pin the release a project runs, so landing work in the delendai c
 - global_gate: none
 
 ### S1 — Pin a release with --version
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `tools/scripts/host/host-server.script.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: none
 - acceptance:
@@ -40,6 +40,9 @@ Owner request: pin the release a project runs, so landing work in the delendai c
   - "a missing or malformed version refuses to start naming the nearest tags, with no fallback"
   - "the startup report names the version or branch"
   - "init writes either flag"
+- shipped-in: `0641f33ded4e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
