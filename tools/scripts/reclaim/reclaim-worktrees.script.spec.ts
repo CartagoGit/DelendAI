@@ -331,9 +331,9 @@ describe('observe and main over a real repository', () => {
 			.spyOn(console, 'log')
 			.mockImplementation(() => undefined);
 		try {
-			expect(main(root, false)).toBe(0);
+			expect(main(root, false, 'origin/develop')).toBe(0);
 			expect(existsSync(spent)).toBe(true);
-			expect(main(root, true)).toBe(0);
+			expect(main(root, true, 'origin/develop')).toBe(0);
 		} finally {
 			log.mockRestore();
 		}
