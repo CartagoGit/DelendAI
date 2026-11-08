@@ -202,4 +202,44 @@ describe('retireSupersededPublications', () => {
 		).toEqual([]);
 		void git;
 	});
+
+	it('[<500ms] names the pull request from its URL and reports what was retired', async () => {
+		const { git, commit } = repo();
+		git('switch', '-q', '-c', OLD_PUBLICATION);
+		const newTip = commit('old-work');
+		const asked: string[] = [];
+		const input = {
+			root: git('rev-parse', '--show-toplevel'),
+			ctx: fakePartial<IWorkUnitContext>({}),
+			policy,
+			remote: 'origin',
+			agent: 'me',
+			handedFrom: [{ agent: 'gpt-6', ref: OLD_WORK, at: 1 }],
+			published: true,
+			newPublication: 'delendai/pr/me/implement/x00001-S1-g2/t',
+			newTip,
+			pullRequest: {
+				status: 'opened' as const,
+				url: 'https://github.com/o/r/pull/1860',
+			},
+			retire: async (publication: string, reason: string) => {
+				asked.push(`${publication} ${reason}`);
+				return undefined;
+			},
+		};
+		const [done] = await retireSupersededByPublish(input);
+		expect(done?.retired).toBe(true);
+		expect(asked).toEqual([`${OLD_PUBLICATION} superseded by #1860`]);
+		expect(
+			await retireSupersededByPublish({ ...input, published: false }),
+		).toEqual([]);
+		expect(
+			await retireSupersededByPublish({ ...input, newTip: null }),
+		).toEqual([]);
+		const [skipped] = await retireSupersededByPublish({
+			...input,
+			pullRequest: { status: 'skipped', reason: 'no forge' },
+		});
+		expect(skipped?.reason).toContain('no pull request number');
+	});
 });

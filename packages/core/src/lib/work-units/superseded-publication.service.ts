@@ -140,6 +140,8 @@ export const retireSupersededByPublish = async (input: {
 	readonly newPublication: string;
 	readonly newTip: string | null;
 	readonly pullRequest: IPublicationPullRequest | undefined;
+	/** How a publication is retired; `work retire` by default. */
+	readonly retire?: ISupersessionPorts['retire'];
 }): Promise<readonly ISupersession[]> => {
 	if (
 		input.handedFrom.length === 0 ||
@@ -161,20 +163,32 @@ export const retireSupersededByPublish = async (input: {
 				: undefined,
 		ports: {
 			git: (args) => readGit(input.root, args),
-			retire: async (publication, reason) => {
-				const result = await retired(
-					[
-						`--ref=${publication}`,
-						`--reason=${reason}`,
-						`--agent=${input.agent}`,
-						'--unowned',
-					],
-					input.ctx,
-				);
-				return result.code === EXIT_CODE.OK
-					? undefined
-					: (result.error ?? 'retire was refused');
-			},
+			retire:
+				input.retire ??
+				((publication, reason) =>
+					retireByCommand(input, publication, reason)),
 		},
 	});
+};
+
+const retireByCommand = async (
+	input: {
+		readonly ctx: IWorkUnitContext;
+		readonly agent: string;
+	},
+	publication: string,
+	reason: string,
+): Promise<string | undefined> => {
+	const result = await retired(
+		[
+			`--ref=${publication}`,
+			`--reason=${reason}`,
+			`--agent=${input.agent}`,
+			'--unowned',
+		],
+		input.ctx,
+	);
+	return result.code === EXIT_CODE.OK
+		? undefined
+		: (result.error ?? 'retire was refused');
 };
