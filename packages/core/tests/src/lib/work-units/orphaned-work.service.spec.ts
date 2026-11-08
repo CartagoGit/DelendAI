@@ -2,7 +2,14 @@
  * orphaned-work.service.spec.ts — work whose author is gone is said to be
  * so, from heartbeats and the lease, and kept moving within a bound.
  */
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { shortName } from '@delendai/core/lib/development-policy/git-guard-namespaces';
 
 import type {
 	IUnitLease,
@@ -12,6 +19,10 @@ import {
 	judgeAuthor,
 	orphanedUnits,
 	planOrphanRescues,
+	readOrphanRescues,
+	reportedOrphans,
+	workRefOfPublication,
+	writeOrphanRescues,
 } from '@delendai/core/lib/work-units/orphaned-work.service';
 import { handedOver } from '@delendai/core/lib/work-units/unit-adoption.service';
 import { leaseWindowSeconds } from '@delendai/core/lib/work-units/unit-verdict.service';
@@ -178,5 +189,64 @@ describe('planOrphanRescues', () => {
 		});
 		expect(plan.steps.size).toBe(0);
 		expect(plan.next.rescues).toEqual({});
+	});
+});
+
+describe('a delivered publication waiting for its pull request (x01051)', () => {
+	const recovery = WINDOW * ABANDONED_AFTER_LEASE_WINDOWS;
+
+	it('is not orphaned inside the recovery window, and says why', () => {
+		const presence = judged({
+			unitEnded: true,
+			deliveredAt: NOW - 60,
+		});
+		expect(presence).toMatchObject({ orphaned: false, reason: null });
+		expect(presence.why).toContain('waiting for its pull request');
+	});
+
+	it('is orphaned once it has waited past the recovery window', () => {
+		expect(
+			judged({ unitEnded: true, deliveredAt: NOW - recovery - 1 }),
+		).toMatchObject({ orphaned: true, reason: 'finished' });
+	});
+
+	it('is orphaned when nothing says it was delivered', () => {
+		expect(judged({ unitEnded: true })).toMatchObject({
+			orphaned: true,
+			reason: 'finished',
+		});
+	});
+});
+
+describe('the publication a work ref was published as (x01051)', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: { profile: 'shared-checkout-pr' },
+	});
+	it('maps a publication back to its work ref, and nothing else', () => {
+		const published = `${shortName(policy.branches.publicationRefPrefix)}a/implement/x1-S1-g1/t`;
+		expect(workRefOfPublication(policy, published)).toBe(
+			`${shortName(policy.branches.workRefPrefix)}a/implement/x1-S1-g1/t`,
+		);
+		expect(workRefOfPublication(policy, 'feature/other')).toBeUndefined();
+	});
+});
+
+describe('the rescues the hydrator keeps (x01051)', () => {
+	it('survive a write and tell the owner what it gave up on', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'rescues-'));
+		try {
+			expect(await readOrphanRescues(root)).toEqual({ rescues: {} });
+			await writeOrphanRescues(root, {
+				rescues: {
+					'delendai/pr/a/t': { attempts: 3, reportedAt: 'now' },
+					'delendai/pr/b/t': { attempts: 1 },
+				},
+			});
+			expect(await reportedOrphans(root)).toEqual([
+				{ headRef: 'delendai/pr/a/t', attempts: 3, reportedAt: 'now' },
+			]);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
 	});
 });
