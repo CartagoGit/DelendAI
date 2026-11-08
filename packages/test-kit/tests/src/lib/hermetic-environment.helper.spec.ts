@@ -12,7 +12,7 @@ import { clearAmbientEnvironment } from '@delendai/test-kit';
 const markers = { names: ['CLAUDECODE', 'AI_AGENT'], prefixes: ['CODEX_'] };
 
 describe('clearAmbientEnvironment', () => {
-	it('removes every delendai variable and every marker, and keeps the rest', () => {
+	it('[<11ms] removes every delendai variable and every marker, and keeps the rest', () => {
 		const env: NodeJS.ProcessEnv = {
 			DELENDAI_SESSION_ID: 's1',
 			DELENDAI_SESSION: '1',
@@ -53,7 +53,7 @@ describe('clearAmbientEnvironment', () => {
 		expect(readdirSync(configDir ?? '')).toEqual([]);
 	});
 
-	it('acts on the process environment by default', () => {
+	it('[<6ms] acts on the process environment by default', () => {
 		process.env.DELENDAI_SESSION_ID = 'late';
 		expect(clearAmbientEnvironment(markers)).toContain(
 			'DELENDAI_SESSION_ID',

@@ -64,7 +64,7 @@ const isMigrating = (test: RunnerTestCase): boolean => {
 const overruns: string[] = [];
 
 export default class TimeBudgetRunner extends TestRunner {
-	onAfterRunFiles(): void {
+	override onAfterRunFiles(): void {
 		if (overruns.length === 0) return;
 		console.warn(
 			`time budget: ${String(overruns.length)} test(s) over their budget in a whole-suite local run (the machine is saturated, so this is a warning; CI and bounded runs fail it):\n${overruns.join('\n')}`,
