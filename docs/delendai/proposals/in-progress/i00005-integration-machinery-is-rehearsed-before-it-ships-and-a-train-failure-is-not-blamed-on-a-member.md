@@ -24,7 +24,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The rehearsal does not replace the train's own full run: quality-gate and the token measurement stay with it. It does not change how the forge ruleset is configured, and it does not rewrite the blame of a member inferred red from a green first half.
 
 ## slices
 

@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	NULL_OID,
+	causesOf,
 	prePushStdin,
 	rehearseGates,
 	reportOf,
@@ -92,12 +93,18 @@ describe('rehearseGates', () => {
 		expect(slow?.causes[0]).toContain('killed by');
 	});
 
+	it('names the cause lines of a failed gate once', () => {
+		expect(
+			causesOf('ok\nerror: a\nerror: a\n\u001b[31mFAIL b\u001b[0m\n'),
+		).toEqual(['error: a', 'FAIL b']);
+	});
+
 	it('says a train passes when every gate does', () => {
 		expect(
 			reportOf(
 				[{ label: 'a', ok: true, seconds: 1, causes: [] }],
 				't',
-			).pop(),
+			).at(-1),
 		).toContain('passes every gate');
 	});
 });

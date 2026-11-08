@@ -15,7 +15,12 @@ import { join } from 'node:path';
 import { createGitRepoTemplate } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
-import { assembleTrain, TRAIN_REGENERATION_SUBJECT } from './train-assembly';
+import {
+	assembleTrain,
+	discardTrain,
+	regenerateWith,
+	TRAIN_REGENERATION_SUBJECT,
+} from './train-assembly';
 
 const DERIVED = 'catalog.generated.md';
 const TRAIN = 'delendai/train/aaaa/3-5';
@@ -57,6 +62,30 @@ const project = () => {
 };
 
 describe('assembleTrain', () => {
+	it('keeps the scratch worktree of a rehearsal and pushes nothing', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, { 'three.ts': '3\n' });
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
+			regenerate: () => true,
+			rehearsal: true,
+		});
+		const { scratch } = outcome;
+		expect(scratch).toBeDefined();
+		expect(existsSync(join(scratch ?? '', 'three.ts'))).toBe(true);
+		expect(() =>
+			git('ls-remote', '--exit-code', 'origin', TRAIN),
+		).toThrow();
+		discardTrain(root, scratch ?? '');
+		expect(existsSync(scratch ?? '')).toBe(false);
+	});
+
 	it('regenerates a conflicting derived file on the train, once, and pushes it', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, {
@@ -277,5 +306,15 @@ describe('assembleTrain', () => {
 				regenerate: () => false,
 			}),
 		).toEqual({ conflicting: [5], regenerated: [] });
+	});
+});
+
+describe('regenerateWith', () => {
+	it('runs each command in the directory and stops at the first failure', () => {
+		const { root } = project();
+		expect(regenerateWith(['--version'])(root)).toBe(true);
+		expect(
+			regenerateWith(['--version', 'no-such-subcommand-x'])(root),
+		).toBe(false);
 	});
 });
