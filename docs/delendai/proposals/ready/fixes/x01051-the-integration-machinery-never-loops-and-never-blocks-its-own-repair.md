@@ -66,6 +66,15 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "queueOrder sorts urgent candidates first, then by number; the train composition in queue-order.ts is untouched"
   - "A spec shows an urgent later pull request ahead of an earlier plain one"
 
+### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
+- **Status**: pending
+- **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
+- **Gate**: none
+- acceptance:
+  - "A worktree with MERGE_HEAD, REBASE_HEAD or CHERRY_PICK_HEAD whose unit is live is left exactly as it is: no commit, no staging"
+  - "The same merge in a unit that is not live is kept with a message that names the merge (the commit it merges); a rebase or cherry-pick in progress is reported and left alone, because committing in the middle of one corrupts it"
+  - "A spec covers both cases on a real repository"
+
 ## acceptance
 
 - work-ref-lifecycle.service.ts exports workRefLanded and workRefIntegrationRef; landed-work-ref.ts and maintain-ref-namespace.script.ts both call them and neither computes landed or picks the integration ref itself
