@@ -379,6 +379,31 @@ describe('from-manifests generator', () => {
 		});
 	});
 
+	it('fails and writes nothing when plugin packages exist but no manifest does', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'manifest-generator-'));
+		try {
+			await mkdir(join(root, 'plugins/search'), { recursive: true });
+			await writeFile(
+				join(root, 'plugins/search/package.json'),
+				'{"name":"@delendai/search","version":"0.1.1"}\n',
+			);
+			const written: string[] = [];
+			const outcome = await runFromManifestsGenerator(
+				[`--root=${root}`],
+				{
+					...testIo(),
+					writeText: async (absPath: string) => {
+						written.push(absPath);
+					},
+				},
+			);
+			expect(outcome.exitCode).toBe(2);
+			expect(written).toEqual([]);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+
 	describe('quote', () => {
 		it('escapes the quote', () => {
 			expect(quote("it's")).toBe("'it\\'s'");

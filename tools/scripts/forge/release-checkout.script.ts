@@ -23,6 +23,7 @@ import { spawnSync } from 'node:child_process';
 import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { declaredIntegrationRef } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -86,7 +87,7 @@ const main = (): void => {
 	const refArg = args.find((arg) => arg.startsWith('--ref='));
 	const integration =
 		args.find((arg) => arg.startsWith('--integration='))?.slice(14) ??
-		'origin/develop';
+		declaredIntegrationRef();
 	const dryRun = args.includes('--dry-run');
 
 	if (refArg === undefined) {

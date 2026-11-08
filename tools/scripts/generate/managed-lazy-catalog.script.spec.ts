@@ -8,6 +8,7 @@ import z from 'zod';
 import {
 	needsStartupCheck,
 	observesOtherPlugins,
+	requireLoadedPlugins,
 } from './managed-lazy-catalog.script';
 
 describe('observesOtherPlugins', () => {
@@ -43,5 +44,16 @@ describe('needsStartupCheck', () => {
 		expect(needsStartupCheck({ validateConfiguration: () => [] })).toBe(
 			true,
 		);
+	});
+});
+
+describe('requireLoadedPlugins', () => {
+	it('fails when the repository has plugins and none loaded', () => {
+		expect(() => requireLoadedPlugins(0, 37)).toThrow(/0 of 37/u);
+	});
+
+	it('accepts a load, and a repository that has no plugins', () => {
+		expect(() => requireLoadedPlugins(37, 37)).not.toThrow();
+		expect(() => requireLoadedPlugins(0, 0)).not.toThrow();
 	});
 });

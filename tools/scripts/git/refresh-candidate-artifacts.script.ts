@@ -57,6 +57,7 @@ import {
 	currentQueueOrder,
 } from '../forge/keep-the-queue-moving.script';
 import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
+import { trainPrefixesOf } from '../forge/publication-prefixes';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -561,6 +562,7 @@ const main = async (): Promise<void> => {
 		root,
 		remote,
 		integration: policy.branches.integration,
+		trainPrefixes: trainPrefixesOf(policy.branches),
 		queue: queue
 			.filter(
 				(entry) =>
