@@ -44,6 +44,10 @@ export interface IInitFlags {
 	readonly force: boolean;
 	readonly delendaiRoot?: string;
 	readonly pluginPathsRoot?: string;
+	/** `--branch=<name>`: the entry runs that delendai branch. */
+	readonly branch?: string;
+	/** `--version=<semver>`: the entry runs that delendai release. */
+	readonly version?: string;
 	/** `--hosts=a,b`: the editor and agent hosts the project uses. */
 	readonly hosts?: readonly string[];
 }
