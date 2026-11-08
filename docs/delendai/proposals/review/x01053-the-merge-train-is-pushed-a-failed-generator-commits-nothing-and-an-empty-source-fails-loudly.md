@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: ab9b10f9-8f41-4460-9610-c9dff3d220d7
-last-correlation-id: ab9b10f9-8f41-4460-9610-c9dff3d220d7
+last-transition-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
+last-correlation-id: 31bc4fb4-9f16-49f4-b0dd-89e400c90558
 last-transition-from: in-progress
-last-transition-at: 2026-11-08T14:05:55.177Z
+last-transition-at: 2026-11-08T14:35:51.391Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -71,6 +71,16 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S5 — Every train regenerates its derived files once, conflict or not
+- **Status**: review
+- **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`
+- **Gate**: none
+
+With S1–S4 on develop the train was still declined: a member that left the integration branch long ago merges cleanly, yet leaves derived files (the skill copies under .github, .claude, .agents) stale against the tip, and the push's drift check refused the train. The regeneration ran only after a derived conflict. It now runs once on every train after all its members are in; a failed link or regeneration pushes nothing and says why.
+- shipped-in: `20f1648e8c51`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts).
@@ -78,3 +88,4 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - The manifests generator throws when plugin packages exist and no manifest loaded (from-manifests.script.spec.ts).
 - Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts).
 - When the train cannot run and every candidate is behind, the candidates are brought forward one by one and none waits forever (queue-acceptance.spec.ts).
+- A train whose members merged cleanly is regenerated once before it is pushed, and a failed regeneration pushes nothing.
