@@ -16,6 +16,10 @@ const PLAIN_CALL =
 /** `it.each(table)(` and its kin, whose name sits after a second `(`. */
 const EACH_CALL = /\b(?:it|test)(?:\.[a-z]+)*\.each\b/gu;
 
+/** A call written inside a string (a fixture) is not a test. */
+const inString = (text: string, at: number): boolean =>
+	/["'`]/u.test(text.charAt(at - 1));
+
 /** How far past a name its options object is looked for. */
 const OPTIONS_WINDOW = 200;
 
@@ -57,10 +61,13 @@ export const unbudgetedTests = (text: string): number => {
 	let missing = 0;
 	for (const call of text.matchAll(PLAIN_CALL)) {
 		const modifiers = call[1] ?? '';
-		if (modifiers.includes('.skip')) continue;
+		if (modifiers.includes('.skip') || inString(text, call.index ?? 0)) {
+			continue;
+		}
 		if (!declares(text, (call.index ?? 0) + call[0].length)) missing += 1;
 	}
 	for (const call of text.matchAll(EACH_CALL)) {
+		if (inString(text, call.index ?? 0)) continue;
 		const from = (call.index ?? 0) + call[0].length;
 		// Lenient on purpose: the budget sits after a second call's name.
 		// The run still fails the test that has none.
