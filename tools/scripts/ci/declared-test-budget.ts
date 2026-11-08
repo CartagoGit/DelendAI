@@ -9,7 +9,7 @@
  * must drop it, so it cannot slide back.
  */
 
-import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/time-budget.helper';
+import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts';
 
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
 const PLAIN_CALL =
