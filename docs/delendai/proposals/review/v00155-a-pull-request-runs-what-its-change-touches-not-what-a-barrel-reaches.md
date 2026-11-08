@@ -2,14 +2,14 @@
 id: v00155
 title: "A pull request runs what its change touches, not what a barrel reaches"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 5aa701d8-ccf8-4737-aa0c-a1af7b8c237c
-last-correlation-id: 5aa701d8-ccf8-4737-aa0c-a1af7b8c237c
-last-transition-from: ready
-last-transition-at: 2026-11-08T13:54:19.293Z
+last-transition-id: 902f5b2f-f508-4202-9baa-3569bdb79692
+last-correlation-id: 902f5b2f-f508-4202-9baa-3569bdb79692
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T14:08:03.785Z
 ---
 
 # v00155 — A pull request runs what its change touches, not what a barrel reaches
@@ -32,40 +32,52 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - global_gate: none
 
 ### S1 — Tests, symbol-level: CI uses testing.scope and a barrel selects the importers of the exports that changed
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/export-delta.ts`, `tools/scripts/ci/export-delta.spec.ts`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: none
 - acceptance:
   - "A changed barrel or entry file that declares nothing itself selects only the specs that import a name whose export was added, removed or re-pointed, plus mirror specs and the direct specs of a changed spec."
   - "Adding one export to a cli.ts-shaped barrel selects only that export's importers' specs, not the specs of the other names."
   - "The forge test plan (test-zones) reads testing.scope from delendai.config.json: touched by default, reach for the symbol-reach analysis, all for every spec."
+- shipped-in: `b97d4e5a0009`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — No declared-always job without a reason in code
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
 - acceptance:
   - "Each job that declared always declares the paths it reads, or carries a one-line reason why it truly needs the whole repository; wake-the-queue and delendai-validate may stay always as bookkeeping."
   - "A spec records which jobs run for a docs-only change and for a tools-only change."
+- shipped-in: `6fcc4940a048`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Packaging jobs run on a change of a published surface or build input
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: none
 - acceptance:
   - "site, pack-smoke, build-clean, verify-runtime and delendai-rebuild-digest run only when a published package's public surface or a build input changes, judged at symbol level for a barrel."
   - "Adding one export to a barrel runs the packaging jobs; a body change inside a module behind the barrel does not."
+- shipped-in: `6fcc4940a048`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Fewer jobs: the lint jobs that run together share one setup
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/ci-static-steps.ts`, `tools/scripts/ci/ci-static-steps.spec.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/lint/job-scope-coverage.script.ts`
 - **Gate**: none
 - acceptance:
   - "The lint jobs that run together are one job with one setup; a separate check name remains only where branch protection requires it."
   - "The proposal states the runner-minutes of a PR 1838-like change before and after."
+- shipped-in: `9de3ef6d07f0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
