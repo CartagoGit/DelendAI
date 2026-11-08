@@ -664,9 +664,7 @@ describe('the workflow plans zones from a pull request base only', () => {
 			0,
 			planner.indexOf('\n', planner.indexOf('--base=')),
 		);
-		expect(base).toContain(
-			"--base=${{ github.event.pull_request.base.sha || '' }}",
-		);
+		expect(base).toContain('--base="${{ env.SCOPE_BASE }}"');
 		expect(base).not.toContain('github.event.before');
 	});
 });

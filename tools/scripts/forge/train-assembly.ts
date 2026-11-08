@@ -201,14 +201,27 @@ export const assembleTrain = (input: {
 			if (outcome === 'derived') regenerated.push(member.number);
 		}
 		if (conflicting.length > 0) return { conflicting, regenerated };
-		if (regenerated.length > 0) {
+		{
 			// Once, after every member is in: a generator run on half a train
-			// computes the file from half a tree.
+			// computes the file from half a tree. ALWAYS, not only after a
+			// derived conflict: a member that left the integration branch
+			// long ago merges cleanly and still leaves derived files (the
+			// skill copies under .github/.claude/.agents) stale against the
+			// tip, and the push's drift check then declined every train.
 			const linked = (
 				input.linkDependencies ?? linkSharedDependenciesInto
 			)(scratch);
 			if (!linked || !input.regenerate(scratch)) {
-				return { conflicting: [...regenerated], regenerated: [] };
+				if (regenerated.length > 0) {
+					return { conflicting: [...regenerated], regenerated: [] };
+				}
+				return {
+					conflicting,
+					regenerated,
+					pushFailure: linked
+						? 'regenerating the derived files on the train failed'
+						: 'linking the shared dependencies into the train failed',
+				};
 			}
 			if ((run(scratch, ['status', '--porcelain']) ?? '').length > 0) {
 				const committed =

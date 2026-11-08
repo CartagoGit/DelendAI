@@ -197,10 +197,51 @@ describe('assembleTrain', () => {
 			ref: TRAIN,
 			members: [three],
 			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
 			regenerate: () => true,
 		});
 		expect(outcome.conflicting).toEqual([]);
 		expect(outcome.pushFailure).toContain('creations being restricted');
+		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
+	});
+
+	it('regenerates the derived files of a train whose members merged cleanly', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, { 'three.ts': '3\n' });
+		let ran = 0;
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
+			regenerate: (dir) => {
+				ran += 1;
+				writeFileSync(join(dir, DERIVED), 'fresh\n');
+				return true;
+			},
+		});
+		expect(ran).toBe(1);
+		expect(outcome.pushFailure).toBeUndefined();
+		expect(git('show', `origin/${TRAIN}:${DERIVED}`)).toBe('fresh');
+	});
+
+	it('pushes nothing when the regeneration of a clean train fails', () => {
+		const { root, git, tip, candidate } = project();
+		const three = candidate(3, { 'three.ts': '3\n' });
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [three],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
+			regenerate: () => false,
+		});
+		expect(outcome.pushFailure).toContain('regenerating');
 		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 

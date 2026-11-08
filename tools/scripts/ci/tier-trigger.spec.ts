@@ -56,17 +56,15 @@ describe('c00139 — tier triggers', () => {
 	// request is allowed to run a subset ONLY because the integration
 	// branch still runs everything. Dropping the second half turns a
 	// filter into a hole.
-	it('ci scopes a pull request to what the change can reach', async () => {
+	it('ci scopes a pull request and a train to what the change can reach', async () => {
 		const source = await workflowSource('ci.yml');
-		expect(source).toContain(
-			'--changed ${{ github.event.pull_request.base.sha }}',
-		);
+		expect(source).toContain('--changed ${{ env.SCOPE_BASE }}');
+		expect(source).toContain('inputs.base');
 	});
 
-	it('ci still runs the full suite when it is not a pull request', async () => {
+	it('ci runs the full suite with no base: the promotion, a push', async () => {
 		const source = await workflowSource('ci.yml');
-		expect(source).toMatch(
-			/if \[ "\$\{\{ github\.event_name \}\}" = "pull_request" \]/u,
-		);
+		expect(source).toContain("github.base_ref != 'main'");
+		expect(source).toMatch(/if \[ -n "\$\{\{ env\.SCOPE_BASE \}\}" \]/u);
 	});
 });

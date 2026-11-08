@@ -16,7 +16,8 @@
  * is. Candidates are taken in queue order, and each is also checked
  * against the ones already taken, because they land on top of each other.
  * A candidate that overlaps is brought forward and tested again, as
- * before. The integration branch still runs every check after each merge.
+ * before. Zone overlap decides only this, landing WITHOUT a run: a train
+ * runs the combination, so its riders are never split by it.
  *
  * A zone in common is not always an overlap. Its specs may read files of
  * the repository from disk (the proposals, a generated catalog), and a
@@ -56,7 +57,22 @@ export const overlapBetween = (
 	// one, which is how two documents come to carry one number.
 	const read = (zone: string): boolean =>
 		a.readOnly?.has(zone) === true && b.readOnly?.has(zone) === true;
-	const zones = shared.filter((zone) => !read(zone));
+	// A zone one side only feeds with files (a review batch's proposals)
+	// is reached there by the specs that read them, not by the zone: the
+	// two meet only where the other side edits one of those specs. Unknown
+	// readers keep the answer by zone.
+	const fedApart = (zone: string): boolean => {
+		const feeder =
+			a.readOnly?.has(zone) === true
+				? a
+				: b.readOnly?.has(zone) === true
+					? b
+					: undefined;
+		if (feeder?.readers === undefined) return false;
+		const other = feeder === a ? b : a;
+		return ![...feeder.readers].some((spec) => other.files.has(spec));
+	};
+	const zones = shared.filter((zone) => !read(zone) && !fedApart(zone));
 	if (zones.length > 0) return `the ${zones.join(', ')} zone(s)`;
 	const files = [...a.files].filter((file) => b.files.has(file));
 	if (files.length > 0) {
@@ -115,39 +131,52 @@ export const acceptIndependent = (
 	});
 };
 
+/** Where a candidate stands in a train: an urgent repair first, review batches last. */
+export type ITrainPriority = 'urgent' | 'normal' | 'review';
+
+const RANK: Readonly<Record<ITrainPriority, number>> = {
+	urgent: 0,
+	normal: 1,
+	review: 2,
+};
+
+/** A review batch, read off its publication's kind: `<prefix><agent>/review/…`. */
+export const isReviewBatch = (headRef: string): boolean =>
+	headRef.split('/').includes('review');
+
 /**
- * The candidates that ride the next train, in queue order: every one that
- * touches nothing an earlier rider touches. Being behind is no reason to
- * stay off: the train is the integration tip with each rider merged onto
- * it, so its one full run proves each rider against the tip as it is now,
- * which is what bringing it forward and testing it again proved, one
- * candidate at a time, on the owner's machine. Whether a rider merges onto
- * the tip is learned when the train is assembled.
+ * The candidates that ride the next train: every one, in train order. A
+ * zone or a file two riders share is no reason to split them: the train
+ * runs the combination, the union of their sections once, so it proves
+ * exactly what the overlap put in doubt. Only a textual conflict outside
+ * the derived files keeps a rider off, and that is learned when the train
+ * is assembled. Being behind is no reason either: the train is the
+ * integration tip with each rider merged onto it. An urgent repair leads,
+ * ahead of review batches; the rest keep queue order.
  */
 export const acceptRiders = (
 	candidates: readonly IQueueCandidateChange[],
-): readonly ICandidateAcceptance[] => {
-	const taken: IQueueCandidateChange[] = [];
-	return candidates.map((candidate) => {
-		const earlier = taken.find(
-			(rider) => overlapBetween(candidate.own, rider.own) !== undefined,
-		);
-		if (earlier !== undefined) {
-			return {
-				number: candidate.number,
-				headRef: candidate.headRef,
-				accepted: false,
-				why: `it and #${String(earlier.number)}, which rides first, both touch ${overlapBetween(candidate.own, earlier.own) ?? ''}`,
-			};
-		}
-		taken.push(candidate);
-		return {
+	priorityOf: (candidate: IQueueCandidateChange) => ITrainPriority = (
+		candidate,
+	) => (isReviewBatch(candidate.headRef) ? 'review' : 'normal'),
+): readonly ICandidateAcceptance[] =>
+	candidates
+		.map((candidate, index) => ({
+			candidate,
+			index,
+			priority: priorityOf(candidate),
+		}))
+		.sort(
+			(a, b) => RANK[a.priority] - RANK[b.priority] || a.index - b.index,
+		)
+		.map(({ candidate, priority }) => ({
 			number: candidate.number,
 			headRef: candidate.headRef,
 			accepted: true,
-			why: candidate.level
-				? 'level with the integration branch'
-				: 'behind; the train proves it against the integration tip',
-		};
-	});
-};
+			why:
+				priority === 'urgent'
+					? 'an urgent repair: it leads the train'
+					: candidate.level
+						? 'level with the integration branch; the train runs it with the others'
+						: 'behind; the train proves it against the integration tip, with the others',
+		}));

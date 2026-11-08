@@ -18,7 +18,6 @@
 import type { IIntegrationCertification } from './certify-integration.interface';
 import type {
 	IQueueCandidateFacts,
-	IRepairStep,
 	ITrainCandidate,
 	ITrainPorts,
 	ITrainStep,
@@ -27,7 +26,6 @@ import { trainPrefixesOf, underPublication } from './publication-prefixes';
 
 export type {
 	IQueueCandidateFacts,
-	IRepairStep,
 	ITrainCandidate,
 	ITrainPorts,
 	ITrainStep,
@@ -71,52 +69,8 @@ export const queueHead = (
 	);
 
 /**
- * The candidate that can repair a red integration branch, and what to do
- * about it.
- *
- * The queue arms nothing on a red integration branch, which is right for
- * a candidate that merely lands on top of it and wrong for the one that
- * fixes it: the fix waited for a person to merge it, and every candidate
- * behind it waited too. What makes a candidate safe to land on a red
- * branch is proof that the branch it produces is green. A candidate level
- * with the integration branch produces exactly its own tree, and a full
- * run on its head (a dispatched run is full, not a changed-only
- * selection) is that proof.
- *
- * Candidates are tried in queue order. A level one with a green full run
- * is armed; one with a full run in progress is waited for; the first
- * without one gets one dispatched, one at a time; one whose full run is
- * red cannot repair the branch and is passed over.
- */
-export const repairStep = (
-	candidates: readonly IQueueCandidateFacts[],
-	publicationPrefix: string | readonly string[],
-	isLevel: (candidate: IQueueCandidateFacts) => boolean,
-	fullRunOf: (candidate: IQueueCandidateFacts) => IIntegrationCertification,
-): IRepairStep => {
-	for (const candidate of queueOrder(candidates, publicationPrefix)) {
-		if (candidate.conflicting || !isLevel(candidate)) continue;
-		const state = fullRunOf(candidate);
-		if (state === 'certified') {
-			return { kind: 'arm', number: candidate.number };
-		}
-		if (state === 'pending') {
-			return { kind: 'wait', number: candidate.number };
-		}
-		if (state === 'uncertified') {
-			return {
-				kind: 'dispatch',
-				number: candidate.number,
-				headRef: candidate.headRef,
-			};
-		}
-	}
-	return { kind: 'none' };
-};
-
-/**
  * The most pull requests one train carries. Bisecting a red train of
- * eight costs at most three more full runs; a longer train saves less
+ * eight costs at most three more runs; a longer train saves less
  * than a red one costs.
  */
 export const TRAIN_CAPACITY = 8;
@@ -157,30 +111,26 @@ export const isCulpritMarker = (
 
 /**
  * The train branches to delete: every one that starts from another tip or
- * lives under a former namespace, except one `keep` holds (a train whose
- * tree is the tip's, which proves a tip whose pull requests landed one by
- * one). Culprit markers stay until their pull request moves.
+ * lives under a former namespace. Culprit markers stay until their pull
+ * request moves.
  */
 export const trainsToPrune = (input: {
 	readonly prefixes: readonly string[];
 	readonly tipSha: string;
 	readonly branches: ReadonlyMap<string, string>;
-	readonly keep: (sha: string) => boolean;
 }): readonly string[] => {
 	const current = `${input.prefixes[0] ?? 'train/'}${input.tipSha.slice(0, 12)}/`;
-	return [...input.branches].flatMap(([branch, sha]) =>
-		isCulpritMarker(input.prefixes, branch) ||
-		branch.startsWith(current) ||
-		input.keep(sha)
-			? []
-			: [branch],
+	return [...input.branches.keys()].filter(
+		(branch) =>
+			!isCulpritMarker(input.prefixes, branch) &&
+			!branch.startsWith(current),
 	);
 };
 
 /**
  * The branch of one train: the integration tip it starts from and its
  * members in order. The name is the train's identity, so a later run of
- * the queue finds the train an earlier run built and reads its full run.
+ * the queue finds the train an earlier run built and reads its run.
  */
 export const trainRefName = (
 	trainPrefix: string,
@@ -195,9 +145,9 @@ export const culpritRefName = (trainPrefix: string, number: number): string =>
 /**
  * The candidates that ride the next train: in queue order, none whose
  * current head was already isolated as a culprit, at most `capacity`.
- * The candidates come from the riders' verdicts (`acceptRiders`), so each
- * is disjoint from the others; behind ones ride too, because the train's
- * full run proves each against the integration tip.
+ * The candidates come from the riders' verdicts (`acceptRiders`), in
+ * train order; overlapping and behind ones ride too, because the train's
+ * one run proves the combination against the integration tip.
  */
 export const trainMembers = (
 	candidates: readonly ITrainCandidate[],
@@ -240,55 +190,31 @@ export const trainStep = (
 };
 
 /**
- * Whether the integration tip is proved by a train: a train with the same
- * tree whose full run is green. When a train lands through its pull
- * requests rather than by fast-forward, the tip is a different commit with
- * the train's tree, and the train's run already proved that tree.
- */
-export const certifiedByTrain = (
-	tipTree: string,
-	trains: readonly { readonly sha: string; readonly tree: string }[],
-	fullRunAt: (sha: string) => IIntegrationCertification,
-): boolean =>
-	trains.some(
-		(train) =>
-			train.tree === tipTree && fullRunAt(train.sha) === 'certified',
-	);
-
-/**
  * Move one train forward and return the members that landed.
  *
  * The train is the integration tip with each member merged in order, so
- * one full run proves them all together. An `anchor` (the candidate proved
- * to repair a red integration branch) leads every train, bisected halves
- * included: on a red tip nothing lands without it. A member that conflicts
- * leaves the train; a culprit is blamed and leaves it; the rest go on.
+ * one run of the union of their scopes, judged since the tip, proves them
+ * all together. A member that conflicts leaves the train; a culprit is
+ * blamed and leaves it; the rest go on.
  */
 export const runTrain = (input: {
 	readonly trainPrefix: string;
 	readonly tipSha: string;
 	readonly members: readonly ITrainCandidate[];
-	readonly anchor?: ITrainCandidate;
 	readonly ports: ITrainPorts;
 }): readonly number[] => {
 	const { ports } = input;
-	const lead = input.anchor === undefined ? [] : [input.anchor];
 	let pool = [...input.members];
 	const byNumber = (numbers: readonly number[]): readonly ITrainCandidate[] =>
 		numbers.flatMap((n) => pool.filter((c) => c.number === n));
 	const refOf = (numbers: readonly number[]): string =>
-		trainRefName(input.trainPrefix, input.tipSha, [
-			...lead.map((c) => c.number),
-			...numbers,
-		]);
+		trainRefName(input.trainPrefix, input.tipSha, numbers);
 	const stateOf = (numbers: readonly number[]): IIntegrationCertification => {
 		const sha = ports.trainAt(refOf(numbers));
-		return sha === undefined ? 'uncertified' : ports.fullRunAt(sha);
+		return sha === undefined ? 'uncertified' : ports.runAt(sha);
 	};
 	const label = (numbers: readonly number[]): string =>
-		[...lead.map((c) => c.number), ...numbers]
-			.map((n) => `#${String(n)}`)
-			.join(', ');
+		numbers.map((n) => `#${String(n)}`).join(', ');
 	// Each pass either acts and returns, or takes one member out.
 	while (pool.length > 0) {
 		const step = trainStep(
@@ -308,15 +234,15 @@ export const runTrain = (input: {
 		const ref = refOf(step.members);
 		if (step.kind === 'wait') {
 			ports.say(
-				`keep-the-queue-moving: the train ${ref} (${label(step.members)}) is running its full run.`,
+				`keep-the-queue-moving: the train ${ref} (${label(step.members)}) is running its run.`,
 			);
 			return [];
 		}
 		if (step.kind === 'dispatch') {
-			const { conflicting, pushFailure } = ports.assemble(ref, [
-				...lead,
-				...byNumber(step.members),
-			]);
+			const { conflicting, pushFailure } = ports.assemble(
+				ref,
+				byNumber(step.members),
+			);
 			if (pushFailure !== undefined) {
 				ports.say(
 					`keep-the-queue-moving: the train ${ref} was not pushed, so nothing is dispatched: ${pushFailure}`,
@@ -329,18 +255,12 @@ export const runTrain = (input: {
 				);
 				const out = new Set(conflicting);
 				pool = pool.filter((c) => !out.has(c.number));
-				if (
-					input.anchor !== undefined &&
-					out.has(input.anchor.number)
-				) {
-					return [];
-				}
 				continue;
 			}
 			const started = ports.dispatch(ref);
 			ports.say(
 				started
-					? `keep-the-queue-moving: dispatched one full run on the train ${ref} (${label(step.members)}).`
+					? `keep-the-queue-moving: dispatched one run of the union of its members' scopes on the train ${ref} (${label(step.members)}).`
 					: `keep-the-queue-moving: could not dispatch the train ${ref}; the next run tries again.`,
 			);
 			return [];
@@ -350,7 +270,7 @@ export const runTrain = (input: {
 			const culprit = byNumber([step.culprit])[0];
 			if (culprit !== undefined) ports.blame(culprit);
 		}
-		const landed = ports.land(sha, [...lead, ...byNumber(step.members)]);
+		const landed = ports.land(sha, byNumber(step.members));
 		ports.say(
 			`keep-the-queue-moving: the train ${ref} is green; landed ${landed.map((n) => `#${String(n)}`).join(', ') || 'nothing'} of ${label(step.members)}.`,
 		);

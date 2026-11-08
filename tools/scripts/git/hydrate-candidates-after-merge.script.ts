@@ -100,8 +100,8 @@ const sizeOf = (path: string): number | undefined => {
  * the refresh just finished moving.
  */
 export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
-	// First: the commit that just landed gets its full CI run, which the
-	// workflow token's own merge never starts.
+	// First: record what the tip's full runs concluded. None is
+	// dispatched per merge: the full suite runs on the promotion.
 	['tools/scripts/forge/certify-integration.script.ts', 60_000],
 	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
@@ -115,9 +115,8 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	// a unit and a pull request of their own (x00700), before the queue
 	// runs so the pull request is a candidate in the same pass.
 	['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
-	// Last: once the tip's certification has finished, the queue moves
-	// (x00680); nothing else starts it after a merge. One read, no wait
-	// (x00683): the next pass picks up a certification still running.
+	// Last: the queue moves once per tip; nothing else starts it after a
+	// merge, and it waits for no full run.
 	['tools/scripts/forge/advance-queue.script.ts', 60_000],
 ];
 
