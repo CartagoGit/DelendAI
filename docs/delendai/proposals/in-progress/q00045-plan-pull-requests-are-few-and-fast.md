@@ -62,7 +62,7 @@ This follows the product principles (bootstrap section 0): efficient, fast and t
 
 ### S4 — Small work ships together
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/publication-grouping.service.ts`
+- **Files**: `packages/core/src/lib/development-policy/publication-unit.ts`
 - **Gate**: none
 - acceptance:
   - "The publisher groups small publications into one pull request by what they change: docs-only proposal work, and fixes under the size limit in disjoint zones, across proposals; slices of one proposal keep the existing size rule; the grouping is decided from the diff, never by hand."
