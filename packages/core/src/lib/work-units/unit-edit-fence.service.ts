@@ -38,6 +38,20 @@ const worktreesOf = (
 		})
 		.filter((tree) => tree.path.length > 0);
 
+/** The worktrees of the units `agent` holds, in the repository `cwd` is in. */
+export const unitWorktreesOf = (
+	cwd: string,
+	agent: string,
+	policy: IResolvedDevelopmentPolicy,
+): readonly string[] =>
+	worktreesOf(cwd)
+		.filter(
+			(tree) =>
+				tree.branch !== undefined &&
+				workUnitIdentityOf(policy, tree.branch)?.agent === agent,
+		)
+		.map((tree) => tree.path);
+
 /**
  * Why `agent` may not write `path`: it holds a unit, and `path` is in the
  * repository but outside every worktree of its units. `undefined` when the

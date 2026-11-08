@@ -139,12 +139,55 @@ const revParse = (root: string, ref: string): string | undefined => {
 	return readGit(root, ['rev-parse', '--verify', '--quiet', ref]);
 };
 
+/** How long a rider waits for a train before it is brought forward on its own. */
+export const TRAIN_GRACE_SECONDS = 900;
+
+/**
+ * Whether a pushed train under `prefixes` carries `headSha`: the train is
+ * built from the tip with every rider merged, so a rider it carries is
+ * proved and landed by it.
+ */
+const carriedByATrain = (
+	root: string,
+	remote: string,
+	prefixes: readonly string[],
+	headSha: string,
+): boolean => {
+	for (const prefix of prefixes) {
+		const listed =
+			readGit(root, ['ls-remote', '--heads', remote, `${prefix}*`]) ?? '';
+		for (const line of listed.split('\n')) {
+			const name = line.split('\t')[1]?.replace(/^refs\/heads\//u, '');
+			if (name === undefined || !fetched(root, remote, name)) continue;
+			if (
+				readGit(root, [
+					'merge-base',
+					'--is-ancestor',
+					headSha,
+					`${remote}/${name}`,
+				]) !== undefined
+			) {
+				return true;
+			}
+		}
+	}
+	return false;
+};
+
 /**
  * The queued branches that land as they are or ride a train, from the
  * machine that brings candidates forward: the same verdicts the queue job
  * arms and assembles trains by, so that machine does not bring forward
  * (and send back to its checks) a candidate the queue is about to land.
  * What is left for it is the candidate that cannot ride a train.
+ *
+ * A rider is left to the train only while a train can carry it. With
+ * `trainPrefixes`, a rider that no pushed train carries, once the tip is
+ * older than the grace, is NOT in the set: the train failed (it could not
+ * be assembled, pushed or dispatched), the queue lands only what lands as
+ * it is, and a rider left to a train that never comes waits forever. It is
+ * then brought forward by the individual path, in queue order, and lands
+ * by its own merge once green.
  */
 export const branchesLandingAsTheyAre = (input: {
 	readonly root: string;
@@ -154,6 +197,11 @@ export const branchesLandingAsTheyAre = (input: {
 		readonly number: number;
 		readonly branch: string;
 	}[];
+	readonly trainPrefixes?: readonly string[];
+	/** Seconds the integration tip must have stood for a train to be missed. */
+	readonly trainGraceSeconds?: number;
+	/** The clock, in epoch seconds. */
+	readonly now?: number;
 }): ReadonlySet<string> => {
 	// Fetched BEFORE it is read: the queue job decides with the integration
 	// branch as it is now, and a remote-tracking ref this machine last
@@ -177,10 +225,36 @@ export const branchesLandingAsTheyAre = (input: {
 	// train's one run proves. A train runs only for two riders or more; a
 	// lone one is brought forward and runs its own checks.
 	const { changes } = changesOf({ ...input, integrationSha, candidates });
-	const riders = acceptRiders(changes).filter((verdict) => verdict.accepted);
-	return new Set(
-		[...acceptIndependent(changes), ...(riders.length >= 2 ? riders : [])]
-			.filter((verdict) => verdict.accepted)
-			.map((verdict) => verdict.headRef),
+	const alone = acceptIndependent(changes)
+		.filter((verdict) => verdict.accepted)
+		.map((verdict) => verdict.headRef);
+	const accepted = acceptRiders(changes)
+		.filter((verdict) => verdict.accepted)
+		.filter((verdict) => !alone.includes(verdict.headRef));
+	const riding = accepted.length >= 2 ? accepted : [];
+	const tipTime = Number(
+		readGit(input.root, ['log', '-1', '--format=%ct', integrationSha]) ??
+			'0',
 	);
+	const missed =
+		input.trainPrefixes !== undefined &&
+		(input.now ?? Math.floor(Date.now() / 1000)) - tipTime >=
+			(input.trainGraceSeconds ?? TRAIN_GRACE_SECONDS);
+	return new Set([
+		...alone,
+		...riding
+			.filter(
+				(verdict) =>
+					!missed ||
+					carriedByATrain(
+						input.root,
+						input.remote,
+						input.trainPrefixes ?? [],
+						candidates.find(
+							(each) => each.headRef === verdict.headRef,
+						)?.headSha ?? '',
+					),
+			)
+			.map((verdict) => verdict.headRef),
+	]);
 };

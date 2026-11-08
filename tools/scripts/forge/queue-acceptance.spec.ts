@@ -24,6 +24,7 @@ afterEach(() => {
 });
 
 const CANDIDATE = 'delendai/pr/agent-a/implement/x00001-S1-g1/the-work';
+const COMPANION = 'delendai/pr/agent-b/implement/x00002-S1-g1/the-other';
 
 /**
  * A forge, the owner machine's clone of it, and a second clone through
@@ -109,6 +110,76 @@ describe('branchesLandingAsTheyAre', () => {
 		};
 		expect(queueAcceptance(input)[0]?.accepted).toBe(false);
 		expect(trainRiders(input)[0]?.accepted).toBe(true);
+	});
+});
+
+describe('a train that cannot run (x01053 S4)', () => {
+	const stalled = () => {
+		const { owner, other } = project();
+		writeFileSync(join(other.root, 'shared.ts'), 'export const a = 3;\n');
+		other.git('commit', '-qam', 'fix: something else in the same file');
+		other.git('push', '-q', 'origin', 'develop');
+		return { owner, other };
+	};
+	// A train runs for two riders or more, so a second rider keeps the first
+	// one on the train's side; a rider alone is brought forward whatever the
+	// grace.
+	const withCompanion = (owner: ReturnType<typeof project>['owner']) => {
+		owner.git('switch', '-q', '-c', COMPANION, 'origin/develop~0');
+		owner.git(
+			'reset',
+			'-q',
+			'--hard',
+			owner.git('merge-base', 'origin/develop', `origin/${CANDIDATE}`),
+		);
+		writeFileSync(
+			join(owner.root, 'companion.ts'),
+			'export const b = 1;\n',
+		);
+		owner.git('add', '-A');
+		owner.git('commit', '-qm', 'feat: the other work');
+		owner.git('push', '-q', 'origin', COMPANION);
+		owner.git('switch', '-q', 'develop');
+	};
+	const landingWith = (root: string, now: number) =>
+		branchesLandingAsTheyAre({
+			root,
+			remote: 'origin',
+			integration: 'develop',
+			queue: [
+				{ number: 7, branch: CANDIDATE },
+				{ number: 8, branch: COMPANION },
+			],
+			trainPrefixes: ['delendai/train/'],
+			now,
+		});
+	const AFTER = Math.floor(Date.now() / 1000) + 3600;
+
+	it('brings a behind rider forward when no train carries it, so it does not wait forever', () => {
+		const { owner } = stalled();
+		withCompanion(owner);
+		expect([...landingWith(owner.root, AFTER)]).toEqual([]);
+	});
+
+	it('leaves the rider to the train while the tip is within the grace', () => {
+		const { owner } = stalled();
+		withCompanion(owner);
+		expect([
+			...landingWith(owner.root, Math.floor(Date.now() / 1000)),
+		]).toContain(CANDIDATE);
+	});
+
+	it('leaves a rider to the train that carries it, however long the tip has stood', () => {
+		const { owner } = stalled();
+		withCompanion(owner);
+		owner.git('fetch', '-q', 'origin');
+		owner.git(
+			'push',
+			'-q',
+			'origin',
+			`${owner.git('rev-parse', `origin/${CANDIDATE}`)}:refs/heads/delendai/train/aaaa/7`,
+		);
+		expect([...landingWith(owner.root, AFTER)]).toContain(CANDIDATE);
 	});
 });
 
