@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+	HYDRATION_PASS_BUDGET_MS,
 	acquireHydrationLock,
 	releaseHydrationLock,
 	runExclusively,
@@ -97,5 +98,47 @@ describe('runExclusively never leaves a rerun request behind', () => {
 			}),
 		).toThrow('boom');
 		expect(acquireHydrationLock(at)).toBe('acquired');
+	});
+});
+
+describe('a hydration pass has a time budget', () => {
+	it('stops going round once its budget is spent, and leaves the note for the next pass', () => {
+		const at = dir();
+		let clock = 0;
+		let rounds = 0;
+		const outcome = runExclusively(
+			at,
+			() => {
+				rounds += 1;
+				// Every round another pass arrives and asks for one more.
+				expect(acquireHydrationLock(at, 999_999)).toBe('busy');
+				clock += 40;
+			},
+			process.pid,
+			{ ms: 100, now: () => clock },
+		);
+		expect(outcome).toBe('ran');
+		expect(rounds).toBe(3);
+		// The lock is free and the request waits for whoever comes next.
+		expect(takeRerunRequest(at)).toBe(true);
+		expect(acquireHydrationLock(at)).toBe('acquired');
+	});
+
+	it('gives the work the moment its budget ends', () => {
+		const at = dir();
+		let seen: number | undefined;
+		runExclusively(
+			at,
+			(deadline) => {
+				seen = deadline;
+			},
+			process.pid,
+			{ ms: 250, now: () => 1_000 },
+		);
+		expect(seen).toBe(1_250);
+	});
+
+	it('fits the longest step in one budget', () => {
+		expect(HYDRATION_PASS_BUDGET_MS).toBeGreaterThan(3_600_000);
 	});
 });

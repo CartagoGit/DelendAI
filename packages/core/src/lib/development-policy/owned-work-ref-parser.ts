@@ -13,6 +13,7 @@ import {
 	type IWorkRefParser,
 } from '../startup-reconciler/work-ref-identity';
 import {
+	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
 } from './owned-ref-prefixes';
@@ -118,4 +119,36 @@ export const compileOwnedWorkRefParser = (
 			return undefined;
 		},
 	};
+};
+
+/**
+ * The branch settings as the namespace `ref` lives under has them: a unit
+ * under a former namespace is read, retired and published in its own
+ * namespace, never moved into the current one (f00808). The settings as
+ * they are for a ref under the current namespace, or under none.
+ */
+export const branchesForRef = <T extends IShapeBranches>(
+	branches: T,
+	ref: string,
+): T => {
+	const name = bare(ref);
+	const namespaces = ownedNamespaces(branches);
+	const shapes = ownedWorkRefShapes(branches);
+	const publications = ownedPublicationRefPrefixes(branches);
+	for (let index = 1; index < namespaces.length; index += 1) {
+		const shape = shapes[index];
+		const publication = publications[index] ?? '';
+		const under = [shape?.prefix ?? '', publication]
+			.map(bare)
+			.some((prefix) => prefix.length > 0 && name.startsWith(prefix));
+		if (!under) continue;
+		return {
+			...branches,
+			namespacePrefix: namespaces[index] ?? '',
+			workRefPrefix: shape?.prefix ?? branches.workRefPrefix,
+			workRefTemplate: shape?.template ?? branches.workRefTemplate,
+			publicationRefPrefix: publication,
+		};
+	}
+	return branches;
 };

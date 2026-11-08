@@ -114,3 +114,40 @@ export const acceptIndependent = (
 				);
 	});
 };
+
+/**
+ * The candidates that ride the next train, in queue order: every one that
+ * touches nothing an earlier rider touches. Being behind is no reason to
+ * stay off: the train is the integration tip with each rider merged onto
+ * it, so its one full run proves each rider against the tip as it is now,
+ * which is what bringing it forward and testing it again proved, one
+ * candidate at a time, on the owner's machine. Whether a rider merges onto
+ * the tip is learned when the train is assembled.
+ */
+export const acceptRiders = (
+	candidates: readonly IQueueCandidateChange[],
+): readonly ICandidateAcceptance[] => {
+	const taken: IQueueCandidateChange[] = [];
+	return candidates.map((candidate) => {
+		const earlier = taken.find(
+			(rider) => overlapBetween(candidate.own, rider.own) !== undefined,
+		);
+		if (earlier !== undefined) {
+			return {
+				number: candidate.number,
+				headRef: candidate.headRef,
+				accepted: false,
+				why: `it and #${String(earlier.number)}, which rides first, both touch ${overlapBetween(candidate.own, earlier.own) ?? ''}`,
+			};
+		}
+		taken.push(candidate);
+		return {
+			number: candidate.number,
+			headRef: candidate.headRef,
+			accepted: true,
+			why: candidate.level
+				? 'level with the integration branch'
+				: 'behind; the train proves it against the integration tip',
+		};
+	});
+};

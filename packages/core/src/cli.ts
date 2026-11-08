@@ -85,6 +85,14 @@ export type {
 } from './lib/contracts/interfaces/policy-identity.interface';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
+// Every namespace delendai owns, current first: the queue's trains are read
+// under a former one too.
+export { ownedNamespaces } from './lib/development-policy/owned-ref-prefixes';
+export {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from './lib/development-policy/owned-ref-prefixes';
+export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,
@@ -104,6 +112,7 @@ export { gitActorMarker } from './lib/work-identity/git-actor.helper';
 export {
 	AGENT_ENVIRONMENT_MARKERS,
 	DELENDAI_SESSION_VARIABLE,
+	UNIT_SESSION_VARIABLE,
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';

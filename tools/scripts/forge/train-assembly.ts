@@ -1,0 +1,175 @@
+/**
+ * train-assembly.ts — a train is built in a throwaway worktree: the
+ * integration tip, then each member merged in order, then the derived
+ * files regenerated once when a member conflicted only in them.
+ *
+ * A conflict in a derived file (a generated catalog, an index, a budget
+ * table) is not a decision: the generator is the function from the merged
+ * tree to the file, so either side is thrown away by it. Resolving those
+ * on each pull request meant bringing it forward on the owner's machine,
+ * one at a time, with a local proof each. On the train they are resolved
+ * once for all its members, and the train's own full run judges the
+ * result. A conflict in any other file still leaves the member out.
+ */
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import type { ITrainCandidate } from './queue-order.interface';
+
+/** The subject of the commit a train adds when regeneration moved a file. */
+export const TRAIN_REGENERATION_SUBJECT =
+	'chore(generated): recompute on the merge train';
+
+const IDENTITY = [
+	'-c',
+	'user.name=merge-train',
+	'-c',
+	'user.email=merge-train@invalid',
+	'-c',
+	'core.hooksPath=/dev/null',
+] as const;
+
+const run = (cwd: string, args: readonly string[]): string | undefined => {
+	try {
+		return execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+		}).trim();
+	} catch {
+		return undefined;
+	}
+};
+
+const conflictedPaths = (dir: string): readonly string[] =>
+	(run(dir, ['diff', '--name-only', '--diff-filter=U']) ?? '')
+		.split('\n')
+		.filter((path) => path.length > 0);
+
+/**
+ * Merge one member onto the train. A conflict confined to derived files
+ * keeps the train's side of them (the generator rewrites them next) and
+ * returns `derived`; any other conflict aborts and returns `conflict`.
+ */
+const mergeMember = (
+	dir: string,
+	remote: string,
+	member: ITrainCandidate,
+	derived: ReadonlySet<string>,
+): 'clean' | 'derived' | 'conflict' => {
+	if (run(dir, ['fetch', '-q', '--', remote, member.headSha]) === undefined) {
+		return 'conflict';
+	}
+	const message = `Merge pull request #${String(member.number)} from ${member.headRef}`;
+	if (
+		run(dir, [
+			...IDENTITY,
+			'merge',
+			'--no-ff',
+			'-m',
+			message,
+			member.headSha,
+		]) !== undefined
+	) {
+		return 'clean';
+	}
+	const conflicted = conflictedPaths(dir);
+	if (
+		conflicted.length === 0 ||
+		conflicted.some((path) => !derived.has(path))
+	) {
+		run(dir, ['merge', '--abort']);
+		return 'conflict';
+	}
+	run(dir, ['checkout', '--ours', '--', ...conflicted]);
+	run(dir, ['add', '--', ...conflicted]);
+	if (run(dir, [...IDENTITY, 'commit', '--no-edit']) === undefined) {
+		run(dir, ['merge', '--abort']);
+		return 'conflict';
+	}
+	return 'derived';
+};
+
+/**
+ * Build the train `ref` from `tipSha` and `members`, in order, and push it.
+ * Pushes nothing when any member conflicts outside the derived files, or
+ * when the regeneration a derived conflict needs fails; returns the members
+ * that kept it from being pushed, and the ones whose derived files the
+ * train regenerated.
+ */
+export const assembleTrain = (input: {
+	readonly root: string;
+	readonly remote: string;
+	readonly tipSha: string;
+	readonly ref: string;
+	readonly members: readonly ITrainCandidate[];
+	/** The files a regeneration rebuilds: a conflict in them is resolved. */
+	readonly derived: ReadonlySet<string>;
+	/** Run the generators in `dir`; false when one failed. */
+	readonly regenerate: (dir: string) => boolean;
+}): {
+	readonly conflicting: readonly number[];
+	readonly regenerated: readonly number[];
+} => {
+	const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
+	const conflicting: number[] = [];
+	const regenerated: number[] = [];
+	try {
+		if (
+			run(input.root, [
+				'worktree',
+				'add',
+				'--quiet',
+				'--detach',
+				scratch,
+				input.tipSha,
+			]) === undefined
+		) {
+			return {
+				conflicting: input.members.map((member) => member.number),
+				regenerated,
+			};
+		}
+		for (const member of input.members) {
+			const outcome = mergeMember(
+				scratch,
+				input.remote,
+				member,
+				input.derived,
+			);
+			if (outcome === 'conflict') conflicting.push(member.number);
+			if (outcome === 'derived') regenerated.push(member.number);
+		}
+		if (conflicting.length > 0) return { conflicting, regenerated };
+		if (regenerated.length > 0) {
+			// Once, after every member is in: a generator run on half a train
+			// computes the file from half a tree.
+			if (!input.regenerate(scratch)) {
+				return { conflicting: [...regenerated], regenerated: [] };
+			}
+			if ((run(scratch, ['status', '--porcelain']) ?? '').length > 0) {
+				run(scratch, ['add', '-A']);
+				run(scratch, [
+					...IDENTITY,
+					'commit',
+					'-q',
+					'-m',
+					TRAIN_REGENERATION_SUBJECT,
+				]);
+			}
+		}
+		run(scratch, [
+			'push',
+			'-q',
+			'--force',
+			input.remote,
+			`HEAD:refs/heads/${input.ref}`,
+		]);
+		return { conflicting, regenerated };
+	} finally {
+		run(input.root, ['worktree', 'remove', '--force', scratch]);
+		rmSync(scratch, { recursive: true, force: true });
+	}
+};

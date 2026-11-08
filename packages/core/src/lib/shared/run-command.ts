@@ -7,6 +7,7 @@ import type {
 } from '../contracts/interfaces/run-command.interface';
 import { truncateUtf8Buffer } from './truncate-utf8';
 import { withFileMutex } from './with-file-mutex';
+import { forgetGitReads } from './git-read.helper';
 
 export type {
 	IRunArgvOptions,
@@ -271,9 +272,12 @@ export const runCommand = async (
 			maxOutputBytes,
 			options.signal,
 		);
-	return options.lockPath !== undefined
+	forgetGitReads();
+	const outcome = await (options.lockPath !== undefined
 		? withFileMutex(options.lockPath, run)
-		: run();
+		: run());
+	forgetGitReads();
+	return outcome;
 };
 
 /**
@@ -284,9 +288,19 @@ export const runCommand = async (
  * this). Missing binary resolves `{code: 127}`, mirroring the shell
  * convention callers already branch on.
  */
-export const runArgv = (
+export const runArgv = async (
 	argv: readonly string[],
 	options: IRunArgvOptions = {},
+): Promise<IRunArgvOutcome> => {
+	forgetGitReads();
+	const outcome = await spawnArgv(argv, options);
+	forgetGitReads();
+	return outcome;
+};
+
+const spawnArgv = (
+	argv: readonly string[],
+	options: IRunArgvOptions,
 ): Promise<IRunArgvOutcome> =>
 	new Promise<IRunArgvOutcome>((resolve) => {
 		if (options.signal?.aborted === true) {

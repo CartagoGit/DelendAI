@@ -52,7 +52,12 @@ import {
 import type { IWorkRefVerdict } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { FORWARD_SYNC_REF_PREFIX } from '../forge/forward-sync-release.script';
+import { isForwardSyncRef } from '../forge/forward-sync-release.script';
+import {
+	compileOwnedWorkRefParser,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/cli';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -183,7 +188,7 @@ export const isSpent = (
 	// no file changed at all. Judged by content it looks spent the moment it
 	// is opened, and reaping its branch closed its pull request (#656,
 	// #675). It is spent only once the integration branch contains it.
-	if (ref.startsWith(FORWARD_SYNC_REF_PREFIX)) {
+	if (isForwardSyncRef(ref)) {
 		return (
 			git(root, ['merge-base', '--is-ancestor', sha, integration]) !==
 			undefined
@@ -295,10 +300,9 @@ const verdictFor = (
 	const identity =
 		template.length === 0
 			? undefined
-			: compileWorkRefParser(
-					template,
-					policy.branches.workRefPrefix,
-				)?.parse(`refs/heads/${name}`);
+			: compileOwnedWorkRefParser(policy.branches)?.parse(
+					`refs/heads/${name}`,
+				);
 	return workRefFate({
 		...facts,
 		onForge:
@@ -351,10 +355,14 @@ export const maintainRefNamespace = (input: {
 	const { root, policy, remote, apply } = input;
 	const integration = `refs/remotes/${remote}/${policy.branches.integration}`;
 	const actions: IRefAction[] = [];
+	// Every owned namespace: refs under a former one are still delendai's
+	// to reap once spent, never to rename (f00808).
 	const namespaces = [
-		shortName(policy.branches.workRefPrefix),
-		shortName(policy.branches.publicationRefPrefix),
-	].filter((prefix) => prefix.length > 0);
+		...ownedWorkRefPrefixes(policy.branches),
+		...ownedPublicationRefPrefixes(policy.branches),
+	]
+		.map(shortName)
+		.filter((prefix) => prefix.length > 0);
 
 	// A ref somebody is standing in is never touched — not renamed, not
 	// reaped — however spent it looks from the outside.

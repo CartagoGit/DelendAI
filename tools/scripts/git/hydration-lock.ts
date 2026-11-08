@@ -75,26 +75,49 @@ export const releaseHydrationLock = (dir: string): void => {
 };
 
 /**
+ * How long one hydration pass may hold the long lock, all its rounds
+ * together. The rerun request had no bound: a pass started every ten
+ * minutes, each one found the lock held and left a note, and the holder
+ * went round for every note. One pass held the lock for 39 hours (178
+ * rounds, 278 passes deferred to it), and nothing else could bring a
+ * candidate forward in the meantime. Past the budget the holder leaves the
+ * note where it is and exits; the next pass to arrive finds the lock free
+ * and runs, with a budget of its own. Longer than the longest step (the
+ * refresh, an hour), so one round always fits.
+ */
+export const HYDRATION_PASS_BUDGET_MS = 90 * 60_000;
+
+/**
  * Run `work` while holding the lock, and never leave a rerun request
- * behind. The request is checked AFTER the lock is released, then the
+ * unanswered. The request is checked AFTER the lock is released, then the
  * lock is taken again for the rerun: a run that arrived while the lock
  * was held left the note and is seen here; one that arrived after the
  * release found no lock and ran itself. Checking before the release, as
  * the first version did, left a window in which a note could be written
  * after the last check and read by nobody.
+ *
+ * `work` is given the moment the pass's budget ends, so its steps can stop
+ * in time; once that moment has passed no further round starts, and a
+ * pending request is left for the next pass rather than taken.
  */
 export const runExclusively = (
 	dir: string,
-	work: () => void,
+	work: (deadline: number) => void,
 	pid: number = process.pid,
+	budget: {
+		readonly ms: number;
+		readonly now: () => number;
+	} = { ms: HYDRATION_PASS_BUDGET_MS, now: Date.now },
 ): 'ran' | 'deferred' => {
 	if (acquireHydrationLock(dir, pid) === 'busy') return 'deferred';
+	const deadline = budget.now() + budget.ms;
 	for (;;) {
 		try {
-			work();
+			work(deadline);
 		} finally {
 			releaseHydrationLock(dir);
 		}
+		if (budget.now() >= deadline) return 'ran';
 		if (!takeRerunRequest(dir)) return 'ran';
 		if (acquireHydrationLock(dir, pid) === 'busy') return 'ran';
 	}

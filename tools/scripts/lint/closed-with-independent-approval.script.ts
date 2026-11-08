@@ -27,6 +27,10 @@ import { join } from 'node:path';
 
 import { parseJsonc } from '@delendai/core/cli';
 import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+import {
 	approvalsAdded,
 	approvalsNotBy,
 	type IReviewIndependence,
@@ -308,8 +312,8 @@ const main = async (): Promise<number> => {
 		git(root, ['rev-parse', '--abbrev-ref', 'HEAD']);
 	const branches = declaredBranches(root);
 	const author = agentOfRef(head, [
-		branches.publicationRefPrefix,
-		branches.workRefPrefix,
+		...ownedPublicationRefPrefixes(branches),
+		...ownedWorkRefPrefixes(branches),
 	]);
 	const addedHere = linesAddedPerProposal(
 		git(root, [
@@ -337,8 +341,8 @@ const main = async (): Promise<number> => {
 	// approving itself, whatever the names say, and under
 	// `reviewIndependence: instance` the names cannot say (x00729).
 	const kind = kindOfRef(head, [
-		branches.publicationRefPrefix,
-		branches.workRefPrefix,
+		...ownedPublicationRefPrefixes(branches),
+		...ownedWorkRefPrefixes(branches),
 	]);
 	const approvals = approvalsAdded(addedHere);
 	// A reconciliation carries other reviewers' approvals, and only the
