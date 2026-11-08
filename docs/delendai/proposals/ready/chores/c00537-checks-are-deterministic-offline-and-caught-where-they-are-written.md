@@ -61,6 +61,35 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - acceptance:
   - "The report prints these numbers per week"
 
+### S5 — Coverage instruments only the changed source files
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `vitest.shared.ts`, `tools/scripts/ci/changed-file-coverage.script.ts`
+- **Gate**: none
+- acceptance:
+  - "Every shard collects v8 coverage only over the source files the change touches (coverage.include from the change), since the gate is changed-file coverage"
+  - "Shard time is measured before and after and both numbers are in the commit body"
+
+### S6 — The slowest specs become near-instant with test-kit
+- **Status**: pending
+- **DependsOn**: [S7]
+- **Files**: `packages/core/tests/src/lib/development-policy/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/lib/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`
+- **Gate**: none
+- acceptance:
+  - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
+  - "The over-budget list of S7 shrinks with each fix; no budget is raised to make a test pass"
+
+### S7 — Every test declares a maximum time, enforced by the run itself
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `packages/test-kit/src/lib/test-time-budget.helper.ts`, `packages/test-kit/README.md`, `tools/scripts/ci/spec-duration-budget.script.ts`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Gate**: none
+- acceptance:
+  - "Every test name starts with its maximum as [<Nms], and a test that exceeds it fails; a missing or malformed prefix fails too. A global vitest mechanism reads the prefix from the name, with zero added runtime per test"
+  - "Only the test body is measured, not hooks or the file import. CI and local machines share the same declared number with no hidden multiplier: a budget is a property of the test, so it is set from the slower of the two and the same run is used everywhere"
+  - "tools/scripts/ci/spec-duration-budget.script.ts is refactored into this rule (no second lint); the list of tests over budget today may only shrink"
+  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, and shipped to projects that consume delendai"
+
 ## acceptance
 
 - The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier
@@ -70,3 +99,6 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - They run at the develop to main promotion and on a schedule
 - Scaffold TODOs and the other hygiene findings are refused at write time, so they never reach CI
 - The report prints these numbers per week
+- Coverage instruments only changed source files and shard time is measured before and after
+- The slowest specs are made fast and the over-budget list shrinks
+- Every test declares a maximum and exceeding it fails the run
