@@ -11,7 +11,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownedWorkRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
 
-import { declaredBranches } from '../lib/declared-branches';
+import {
+	declaredBranches,
+	declaredIntegrationRef,
+} from '../lib/declared-branches';
 import { cacheRoot, repoRoot } from '../lib/monorepo-paths';
 
 export interface ILockEntry {
@@ -241,7 +244,7 @@ export const unitCheckouts = (
 		const paths = git(root, [
 			'diff',
 			'--name-only',
-			`origin/${branches.integration}...${branch}`,
+			`${declaredIntegrationRef(root)}...${branch}`,
 		])
 			.split('\n')
 			.filter((path) => path.length > 0);
