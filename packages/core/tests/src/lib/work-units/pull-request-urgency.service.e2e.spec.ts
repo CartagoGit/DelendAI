@@ -45,7 +45,7 @@ const unit = () => {
 };
 
 describe('the urgent note of a unit', () => {
-	it('is written once and read back by the publication', async () => {
+	it('[<10000ms] is written once and read back by the publication', async () => {
 		const { root, worktree } = unit();
 		expect(await unitUrgencyNote(worktree)).toBeUndefined();
 		expect(await urgencyOfUnit([], root, REF)).toBeUndefined();
@@ -57,13 +57,13 @@ describe('the urgent note of a unit', () => {
 		);
 	});
 
-	it('gives way to what the publishing command was told', async () => {
+	it('[<10000ms] gives way to what the publishing command was told', async () => {
 		const { root, worktree } = unit();
 		await noteUnitUrgency(worktree, 'noted');
 		expect(await urgencyOfUnit(['--urgent=said'], root, REF)).toBe('said');
 	});
 
-	it('notes nothing for an empty reason or a place that is no worktree', async () => {
+	it('[<10000ms] notes nothing for an empty reason or a place that is no worktree', async () => {
 		const { top, worktree } = unit();
 		expect(await noteUnitUrgency(worktree, '   ')).toBe(false);
 		expect(await noteUnitUrgency(join(top, 'nowhere'), 'x')).toBe(false);

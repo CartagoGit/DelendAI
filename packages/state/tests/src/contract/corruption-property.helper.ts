@@ -125,7 +125,7 @@ export const corruptionProperty = (
 	runs: number = NUM_RUNS,
 ): void => {
 	describe(`${driver}: Property: corruption recovery WITHOUT replay (q00018 S3)`, () => {
-		it(`rebuilds from final snapshot over ${runs} sequences`, () => {
+		it(`[<10000ms] rebuilds from final snapshot over ${runs} sequences`, () => {
 			fc.assert(
 				fc.property(
 					fc.array(

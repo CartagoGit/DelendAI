@@ -119,7 +119,7 @@ export const phaseTwoContract = (
 	define: IDefineRegistry,
 ): void => {
 	describe(`${driver}: Phase 0.2 — validateSnapshot (S2)`, () => {
-		it('accepts a well-formed snapshot', () => {
+		it('[<1000ms] accepts a well-formed snapshot', () => {
 			const r = define({ clock: () => 0 });
 			const spec: IProducerInputSpec = { kind: 'file', locator: 'a.txt' };
 			const p: IStateProducer = {
@@ -149,7 +149,7 @@ export const phaseTwoContract = (
 			expect(issues).toEqual([]);
 		});
 
-		it('flags producer_missing_inputs when a producer has inputs but none resolved', () => {
+		it('[<1000ms] flags producer_missing_inputs when a producer has inputs but none resolved', () => {
 			const r = define({ clock: () => 0 });
 			const p = mkProducer([{ kind: 'file', locator: 'a.txt' }]);
 			r.defineProducer(p);
@@ -162,7 +162,7 @@ export const phaseTwoContract = (
 			).toBe(true);
 		});
 
-		it('flags fingerprint_mismatch when fingerprint references an input without content', () => {
+		it('[<1000ms] flags fingerprint_mismatch when fingerprint references an input without content', () => {
 			const r = define({ clock: () => 0 });
 			const p = mkProducer();
 			r.defineProducer(p);
@@ -189,7 +189,7 @@ export const phaseTwoContract = (
 			);
 		});
 
-		it('hydrate fails with snapshot_invalid reason', () => {
+		it('[<1000ms] hydrate fails with snapshot_invalid reason', () => {
 			const r = define({ clock: () => 0 });
 			const p = mkProducer([{ kind: 'file', locator: 'a.txt' }]);
 			r.defineProducer(p);
@@ -226,14 +226,14 @@ export const phaseTwoContract = (
 			return r;
 		}
 
-		it('returns a token strictly greater than the original', () => {
+		it('[<1000ms] returns a token strictly greater than the original', () => {
 			const r = setup();
 			const claim = r.acquireSwarmClaim({ scope, slot: 'slot-A' });
 			const renewed = claim.renew();
 			expect(renewed).toBeGreaterThan(claim.token);
 		});
 
-		it('updates currentToken but preserves the original token', () => {
+		it('[<1000ms] updates currentToken but preserves the original token', () => {
 			const r = setup();
 			const claim = r.acquireSwarmClaim({ scope, slot: 'slot-A' });
 			const original = claim.token;
@@ -242,7 +242,7 @@ export const phaseTwoContract = (
 			expect(claim.currentToken).toBe(renewed);
 		});
 
-		it('release() after renew() matches the registry token', () => {
+		it('[<1000ms] release() after renew() matches the registry token', () => {
 			const r = setup();
 			const claim = r.acquireSwarmClaim({ scope, slot: 'slot-A' });
 			claim.renew();
@@ -273,7 +273,7 @@ export const phaseTwoContract = (
 			};
 		}
 
-		it('two consecutive leases with the same token produce different lease ids', () => {
+		it('[<1000ms] two consecutive leases with the same token produce different lease ids', () => {
 			const { r, gen, token } = setup();
 			const a = r.acquireProjectLease({
 				scope,
@@ -304,7 +304,7 @@ export const phaseTwoContract = (
 			expect(afterB?.holderCount).toBe(0);
 		});
 
-		it('rejects a stale token with IFenceRejected', () => {
+		it('[<1000ms] rejects a stale token with IFenceRejected', () => {
 			const { r, gen } = setup();
 			const outcome = r.acquireProjectLease({
 				scope,
@@ -320,7 +320,7 @@ export const phaseTwoContract = (
 	});
 
 	describe(`${driver}: Phase 0.2 — holderCount derived from holders map (S5)`, () => {
-		it('diagnose returns the live holder count, not a stale one', () => {
+		it('[<1000ms] diagnose returns the live holder count, not a stale one', () => {
 			const r = define({ clock: () => 0 });
 			const p = mkProducer();
 			r.defineProducer(p);
