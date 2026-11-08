@@ -26,6 +26,9 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
+import { withGitInvocationMemo } from '@delendai/core/lib/shared/git-invocation-memo.helper';
+import { readGit } from '@delendai/core/lib/shared/git-read.helper';
+import { entered } from '@delendai/core/lib/work-units/work-unit-enter.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 import { syncUnitsAtStart } from '@delendai/core/lib/work-units/unit-forge-sync.service';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -1448,5 +1451,44 @@ describe('instances entering at once each get a unit (x00731)', () => {
 				.map((result) => (result.data as { path: string }).path)
 				.sort(),
 		).toEqual([join(root, 'wt-aaaa'), join(root, 'wt-bbbb')]);
+	});
+
+	it('chooses the generation from the refs the previous entry left, not from reads taken before it waited', async () => {
+		const root = repoWith(PINNED);
+		const enter = (session: string) =>
+			command.run(
+				[
+					'enter',
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					`--session=${session}`,
+					`--dir=${join(root, `wt-${session}`)}`,
+				],
+				contextFor(root),
+			);
+
+		// An invocation that remembered the repository before a sibling
+		// entered: its worktree list and refs predate g1.
+		const second = await withGitInvocationMemo(async () => {
+			readGit(root, ['worktree', 'list', '--porcelain']);
+			readGit(root, ['for-each-ref', 'refs/heads']);
+			expect((await enter('aaaa')).code).toBe(0);
+			return entered(
+				[
+					'--kind=review',
+					'--proposal=batch',
+					'--slice=all',
+					'--agent=minimax-m3',
+					'--session=bbbb',
+					`--dir=${join(root, 'wt-bbbb')}`,
+				],
+				contextFor(root),
+			);
+		});
+
+		expect(second.code).toBe(0);
+		expect((second.data as { ref: string }).ref).toMatch(/-g2\//u);
 	});
 });
