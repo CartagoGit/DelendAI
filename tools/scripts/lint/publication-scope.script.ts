@@ -27,6 +27,7 @@
 
 import { readGit } from '@delendai/core/runtime';
 
+import { declaredIntegrationRef } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 import type { IScopeViolation } from './publication-scope.interface';
@@ -96,7 +97,7 @@ const arg = (name: string): string | undefined => {
 };
 
 const main = (): number => {
-	const base = arg('base') ?? 'origin/develop';
+	const base = arg('base') ?? declaredIntegrationRef();
 	const head = arg('head') ?? 'HEAD';
 	// ADDED and MODIFIED only. A deleted path has no content to judge
 	// and cannot carry anything into the candidate — asking git for it

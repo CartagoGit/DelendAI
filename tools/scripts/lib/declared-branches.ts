@@ -8,7 +8,7 @@
  * a job that runs one of its callers needs `bun install` —
  * `lint:workflow-runner-bootstrap` enforces that.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { parseJsonc } from '@delendai/core/cli';
@@ -19,8 +19,11 @@ import { repoRoot } from './repo-root';
 type IDeclaredPolicy = ReturnType<typeof resolveDevelopmentPolicy>;
 
 const declaredPolicy = (root: string): IDeclaredPolicy => {
+	const file = join(root, 'delendai.config.json');
+	// No config file declares nothing: the policy defaults answer, as they
+	// do for every other reader of the policy.
 	const { value, errors } = parseJsonc(
-		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
+		existsSync(file) ? readFileSync(file, 'utf8') : '{}',
 	);
 	const [first] = errors;
 	if (first !== undefined) {
@@ -39,6 +42,12 @@ const declaredPolicy = (root: string): IDeclaredPolicy => {
 export const declaredBranches = (
 	root: string = repoRoot(),
 ): IDeclaredPolicy['branches'] => declaredPolicy(root).branches;
+
+/** The remote-tracking ref of the integration branch the policy declares. */
+export const declaredIntegrationRef = (
+	root: string = repoRoot(),
+	remote = 'origin',
+): string => `${remote}/${declaredBranches(root).integration}`;
 
 /**
  * How this project lands a pull request: squash, merge or rebase.

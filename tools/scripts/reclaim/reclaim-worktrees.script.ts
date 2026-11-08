@@ -43,6 +43,7 @@
 import { execFileSync } from 'node:child_process';
 import { statSync } from 'node:fs';
 
+import { declaredIntegrationRef } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -349,7 +350,7 @@ export const main = (
 	root: string = repoRoot(),
 	apply: boolean = APPLY,
 ): number => {
-	const integrationRef = 'origin/develop';
+	const integrationRef = declaredIntegrationRef(root);
 	const reclamation = judgeWorktrees(observe(integrationRef, root, root));
 	if (apply) {
 		for (const verdict of reclamation.spent) {
