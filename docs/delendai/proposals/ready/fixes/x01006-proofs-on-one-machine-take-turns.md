@@ -2,14 +2,14 @@
 id: x01006
 title: "Proofs on one machine take turns"
 kind: fix
-status: in-progress
+status: ready
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 5102b610-c1e8-44bf-9c8d-068d045d3376
-last-correlation-id: 5102b610-c1e8-44bf-9c8d-068d045d3376
+last-transition-id: 60c4a814-1adf-48ff-ad54-fab300f40745
+last-correlation-id: 60c4a814-1adf-48ff-ad54-fab300f40745
 last-transition-from: review
-last-transition-at: 2026-11-04T23:01:01.445Z
+last-transition-at: 2026-11-04T15:38:19.105Z
 ---
 
 # x01006 — Proofs on one machine take turns
@@ -42,7 +42,7 @@ On 2026-11-03 several agents proved units at once on one machine (load 20-30): e
 - review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
+- review-log: requested_changes by gpt-5.3-codex — The shipped-in commit a00512b96772 changes only the test file `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`. It does not include the runtime/service/contract/lock-script files declared in S1, so the delivery does not satisfy the declared implementation scope for the compute-slot proof serialization behavior. Repro: `git show --name-only a00512b96772` and compare with the S1 Files + acceptance section in x01006.
 
 ## acceptance
 

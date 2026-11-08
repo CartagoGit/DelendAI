@@ -49,6 +49,21 @@ export const observesOtherPlugins = (registrations: {
 	registrations.onToolCancel !== undefined ||
 	registrations.logsSink !== undefined;
 
+/**
+ * A catalog of nothing is not a catalog. In a tree whose code cannot be
+ * loaded (a scratch worktree with no modules) the assembly can finish with
+ * no plugin and no error; writing that would replace a 1,800-line file with
+ * an empty list that every importer then crashes on. The first-party index
+ * says the repository has plugins, so none loaded means the load failed.
+ */
+export const requireLoadedPlugins = (loaded: number, indexed: number): void => {
+	if (loaded === 0 && indexed > 0) {
+		throw new Error(
+			`cannot generate managed lazy catalog: 0 of ${String(indexed)} first-party plugins loaded (are the dependencies installed?)`,
+		);
+	}
+};
+
 const quote = (value: string): string => `'${value.replaceAll("'", "\\'")}'`;
 
 const readOrUndefined = async (path: string): Promise<string | undefined> => {
@@ -133,6 +148,10 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		);
 	}
 
+	requireLoadedPlugins(
+		assembled.loadResult.loaded.length,
+		FIRST_PARTY_PLUGIN_INDEX.entries.length,
+	);
 	const packageById = new Map(
 		FIRST_PARTY_PLUGIN_INDEX.entries.map((entry) => [entry.id, entry]),
 	);

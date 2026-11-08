@@ -6,10 +6,10 @@ status: in-progress
 type: proposal
 track: workflow
 date: 2026-10-29
-last-transition-id: 9971235e-cc80-48a3-9275-62fdfde66736
-last-correlation-id: 9971235e-cc80-48a3-9275-62fdfde66736
+last-transition-id: f78b3b4e-967b-4391-b19a-d45bcbfcbf9e
+last-correlation-id: f78b3b4e-967b-4391-b19a-d45bcbfcbf9e
 last-transition-from: review
-last-transition-at: 2026-11-04T23:00:04.051Z
+last-transition-at: 2026-11-08T15:23:18.554Z
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -36,7 +36,7 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - global_gate: type
 
 ### S1 — The nearest specs are the product's
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -45,55 +45,47 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
+- review-log: requested_changes by gpt-5.3-codex — The shipped-in commit for S1 is 4bd7c10993ec, but it does not include the declared S1 evidence surface (`tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`). The acceptance for S1 explicitly depends on those artifacts. Repro: `git show --name-only 4bd7c10993ec` and compare with the S1 Files + acceptance section in f00796.
 
 ### S2 — This repository declares its proof
-- **Status**: pending
+- **Status**: review
 - **Files**: `package.json`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "This repository's `prove` script is the fast proof (`prove-plan.script.ts --fast`) and `prove:plan` is the full plan, so the proof publishing runs is declared in the repository and nothing in a home directory is part of the flow."
 - shipped-in: `4bd7c10993ec`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "On the pull-request route with `requiresLocalCertification`, `work publish` runs the proof before pushing; so does the publication that `proposal_transition to=review` makes. The proof is read from the integration head: its `prove` script, else its declared gate. It runs in the unit's worktree on its committed tip, refused when the tree has uncommitted edits, or in a temporary worktree when the unit has none. Publishing refuses to push when a step fails and names the step, its output and the fix. A project that declares no proof publishes, with the declaration to add. The workflow sentence every agent receives says so (work-unit-publish-proof.spec.ts, work-unit-proof.service.spec.ts, work-unit-land.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S4 — A proved tree is not proved twice
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A green proof is recorded under the git directory, keyed by the tree it proved and the proof's commands. Proving or publishing the same tree with the same proof skips the run and says so (`remembered`); any change to either runs it again. `work prove` runs the proof alone, so a hand-over through a tool call finds it already proved, across the commits a product tool made on top of the proved tip that change only Markdown under the docs directory (a proposal's transition is one). Any other commit is proved again. The record is local and never sent to the forge (work-unit-proof.service.spec.ts, work-unit-publish-proof.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ### S5 — A proof installs only what it lacks
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit proved in its own worktree reuses the dependencies installed there. A unit with no worktree is proved in a temporary one, installed first by the lockfile's package manager and removed afterwards. A project with no package manifest installs nothing. A failed install is a refusal that shows its output, never a pass. Stale derived files stay the pre-push drift check's to refuse (work-unit-proof.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
 
 ## acceptance
 

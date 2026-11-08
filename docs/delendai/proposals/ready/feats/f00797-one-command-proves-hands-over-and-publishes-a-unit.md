@@ -2,14 +2,14 @@
 id: f00797
 title: "One command proves, hands over and publishes a unit"
 kind: feat
-status: in-progress
+status: ready
 type: proposal
 track: ci
 date: 2026-10-31
-last-transition-id: 20310e35-9f34-49a9-ba1f-1f8edecc44e5
-last-correlation-id: 20310e35-9f34-49a9-ba1f-1f8edecc44e5
+last-transition-id: 4b0521ad-b091-4517-a999-c7a31dc48183
+last-correlation-id: 4b0521ad-b091-4517-a999-c7a31dc48183
 last-transition-from: review
-last-transition-at: 2026-11-04T22:56:13.164Z
+last-transition-at: 2026-11-04T15:34:37.231Z
 ---
 
 # f00797 — One command proves, hands over and publishes a unit
@@ -41,7 +41,7 @@ Delivering took four commands in an order each agent had to remember: `work prov
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
-- review-log: requested_changes by gpt-5.3-codex — Stale review round: provide fresh proof on current develop and re-submit this slice with updated evidence.
+- review-log: requested_changes by gpt-5.3-codex — The shipped-in commit 6062f28705db is a narrow refactor that moves the deliver ports interface and updates imports. It does not deliver the S1 acceptance behavior (`work deliver` proving, transitioning proposal state, handing over to review from the unit worktree, failure-stop semantics, and publication naming) nor the listed file-scope changes in core/lint/workflow. Repro: `git show --name-only 6062f28705db` and compare with the S1 Files + acceptance section in f00797.
 
 ## acceptance
 

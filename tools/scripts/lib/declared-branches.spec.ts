@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	declaredBranches,
+	declaredIntegrationRef,
 	declaredMergeMethod,
 	mergeFlagFor,
 } from './declared-branches';
@@ -73,5 +74,20 @@ describe('mergeFlagFor', () => {
 		expect(mergeFlagFor('squash')).toBe('--squash');
 		expect(mergeFlagFor('merge')).toBe('--merge');
 		expect(mergeFlagFor('rebase')).toBe('--rebase');
+	});
+});
+
+describe('declaredIntegrationRef', () => {
+	it('names the remote-tracking ref of this repository’s integration branch', () => {
+		expect(declaredIntegrationRef(repoRoot())).toBe('origin/develop');
+	});
+
+	it('follows a policy whose integration branch is trunk', () => {
+		const root = workspaceWith({
+			development: { branches: { integration: 'trunk' } },
+		});
+		expect(declaredBranches(root).integration).toBe('trunk');
+		expect(declaredIntegrationRef(root)).toBe('origin/trunk');
+		expect(declaredIntegrationRef(root, 'upstream')).toBe('upstream/trunk');
 	});
 });
