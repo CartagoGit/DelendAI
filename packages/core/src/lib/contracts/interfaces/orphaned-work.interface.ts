@@ -22,6 +22,12 @@ export interface IAuthorEvidence {
 	readonly tipAt?: number | undefined;
 	/** The unit's work ref is gone: only a live lease brings it back. */
 	readonly unitEnded: boolean;
+	/**
+	 * When the unit's publication last moved, for a unit that ended by
+	 * delivering it. A delivery waits for its pull request; it is no
+	 * orphan until it has waited past the recovery window.
+	 */
+	readonly deliveredAt?: number | undefined;
 	readonly now: number;
 	/** The lease window in seconds. */
 	readonly windowSeconds: number;

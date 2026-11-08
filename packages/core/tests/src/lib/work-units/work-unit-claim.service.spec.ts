@@ -98,7 +98,17 @@ describe('work claim of an orphaned publication', () => {
 		git(root, 'switch', '-q', '-c', PUBLICATION);
 		writeFileSync(join(root, 'work.txt'), 'work\n');
 		git(root, 'add', '-A');
-		git(root, 'commit', '-q', '-m', 'work');
+		// Dated a month back: a delivery inside the recovery window waits for
+		// its pull request and is not orphaned, so the unit is long gone.
+		const longAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+		execFileSync('git', ['commit', '-q', '-m', 'work'], {
+			cwd: root,
+			env: {
+				...process.env,
+				GIT_AUTHOR_DATE: longAgo,
+				GIT_COMMITTER_DATE: longAgo,
+			},
+		});
 		const tip = git(root, 'rev-parse', 'HEAD');
 		git(root, 'switch', '-q', 'develop');
 		const before = await printed(() =>
