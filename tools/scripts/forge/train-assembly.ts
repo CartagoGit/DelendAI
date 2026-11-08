@@ -62,6 +62,27 @@ const linkSharedDependenciesInto = (dir: string): boolean => {
 	}
 };
 
+/**
+ * The regeneration a train runs once: each of `commands` through `bun` in
+ * `dir`, stopping at the first failure. The queue and the rehearsal share
+ * it, so the rehearsal regenerates exactly as the live train does.
+ */
+export const regenerateWith =
+	(commands: readonly string[]) =>
+	(dir: string): boolean =>
+		commands.every((command) => {
+			try {
+				execFileSync('bun', command.split(' '), {
+					cwd: dir,
+					stdio: ['ignore', 'ignore', 'pipe'],
+					timeout: 600_000,
+				});
+				return true;
+			} catch {
+				return false;
+			}
+		});
+
 const run = (cwd: string, args: readonly string[]): string | undefined => {
 	try {
 		return execFileSync('git', [...args], {
@@ -164,7 +185,15 @@ export const assembleTrain = (input: {
 	readonly regenerate: (dir: string) => boolean;
 	/** Give `dir` the shared dependencies; false when it could not. */
 	readonly linkDependencies?: (dir: string) => boolean;
+	/**
+	 * A rehearsal: the assembled train is not pushed and its scratch
+	 * worktree is kept, returned as `scratch`; the caller judges it and
+	 * calls `discardTrain`. Nothing reaches the remote.
+	 */
+	readonly rehearsal?: boolean;
 }): {
+	/** The kept worktree of a rehearsal. */
+	readonly scratch?: string;
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
 	/** Git's stderr when the push was declined: nothing is on the forge. */
@@ -173,6 +202,7 @@ export const assembleTrain = (input: {
 	const scratch = mkdtempSync(join(tmpdir(), 'delendai-train-'));
 	const conflicting: number[] = [];
 	const regenerated: number[] = [];
+	let kept = false;
 	try {
 		const worktreeFailure = failureOf(input.root, [
 			'worktree',
@@ -242,6 +272,10 @@ export const assembleTrain = (input: {
 				}
 			}
 		}
+		if (input.rehearsal === true) {
+			kept = true;
+			return { conflicting, regenerated, scratch };
+		}
 		const pushFailure = failureOf(scratch, [
 			'push',
 			'-q',
@@ -253,7 +287,12 @@ export const assembleTrain = (input: {
 			? { conflicting, regenerated }
 			: { conflicting, regenerated, pushFailure };
 	} finally {
-		run(input.root, ['worktree', 'remove', '--force', scratch]);
-		rmSync(scratch, { recursive: true, force: true });
+		if (!kept) discardTrain(input.root, scratch);
 	}
+};
+
+/** Remove a train's scratch worktree. */
+export const discardTrain = (root: string, scratch: string): void => {
+	run(root, ['worktree', 'remove', '--force', scratch]);
+	rmSync(scratch, { recursive: true, force: true });
 };

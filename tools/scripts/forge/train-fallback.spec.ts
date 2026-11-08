@@ -115,4 +115,27 @@ describe('landingAfterTrain', () => {
 		);
 		expect(outcome.landing.size).toBe(0);
 	});
+
+	it('lands the members one by one when the train is red on its own checks', () => {
+		const reported: string[] = [];
+		const outcome = attempt(
+			{
+				reportTrainRed: (_ref, _member, jobs) => {
+					reported.push(jobs.join(','));
+				},
+			},
+			(watched) => {
+				watched.reportTrainRed?.(
+					'train/x',
+					{ number: 7, headRef: 'b', headSha: 's' },
+					['lint-governance'],
+				);
+			},
+		);
+		expect(reported).toEqual(['lint-governance']);
+		expect([...outcome.landing]).toEqual([7, 9]);
+		expect(outcome.said).toContain(
+			"the train's own checks are red: lint-governance",
+		);
+	});
 });

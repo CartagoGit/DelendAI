@@ -79,5 +79,21 @@ export interface ITrainPorts {
 	) => readonly number[];
 	/** Tell the culprit's author, and keep it out until its head moves. */
 	readonly blame: (candidate: ITrainCandidate) => void;
+	/**
+	 * The jobs that are red on the train `ref` when `candidate`'s own
+	 * required checks are green on its head: then the train, not the
+	 * member, is at fault. `undefined` when the member's checks are not
+	 * green (it stays the culprit) or the port is not given.
+	 */
+	readonly trainFault?: (
+		candidate: ITrainCandidate,
+		ref: string,
+	) => readonly string[] | undefined;
+	/** Open or refresh the one issue for a train red on its own. */
+	readonly reportTrainRed?: (
+		ref: string,
+		candidate: ITrainCandidate,
+		jobs: readonly string[],
+	) => void;
 	readonly say: (line: string) => void;
 }

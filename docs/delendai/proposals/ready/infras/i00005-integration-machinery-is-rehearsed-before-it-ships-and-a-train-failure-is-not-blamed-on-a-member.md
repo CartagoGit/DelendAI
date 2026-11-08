@@ -46,7 +46,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 
 ### S3 — CI detection is agnostic
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/src/lib/work-identity/ci-environment.spec.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/cli.ts`
+- **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/cli.ts`
 - **Gate**: none
 - acceptance:
   - "One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set"
@@ -64,3 +64,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set
 - project-branches uses it
 - The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up
+
+## Follow-ups
+
+- S3: the c00537 S7 time-budget runner (PR #1841, still open when this landed) detects CI with `GITHUB_ACTIONS`; it adopts `isRunningInProjectCi` from `@delendai/core/cli` once #1841 lands. `plugins/proposals/src/lib/services/proposal-state.ts` (`isCiEnvironment`) still reads the two variables itself.

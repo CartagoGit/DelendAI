@@ -33,7 +33,7 @@
  */
 import { spawnSync } from 'node:child_process';
 
-import { ownedTrainPrefixes } from '@delendai/core/cli';
+import { isRunningInProjectCi, ownedTrainPrefixes } from '@delendai/core/cli';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
@@ -352,7 +352,7 @@ const main = async (): Promise<number> => {
 		currentBranch: branch,
 		agentWorktreeEnabled,
 		...namespaces,
-		ciCheckout: process.env.CI === 'true' && staged.length === 0,
+		ciCheckout: isRunningInProjectCi() && staged.length === 0,
 	});
 	const report = formatReport(result);
 	if (result.ok) {

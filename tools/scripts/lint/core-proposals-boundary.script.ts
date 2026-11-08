@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
 
-import { walkTsFiles } from '@delendai/core/cli';
+import { isRunningInProjectCi, walkTsFiles } from '@delendai/core/cli';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
@@ -627,7 +627,7 @@ export const main = async (): Promise<number> => {
 	const result = await scanCoreProposalsBoundaryLint();
 	for (const line of formatExpiryWarnings(
 		expiringSoon(result.allowed, new Date()),
-		process.env.GITHUB_ACTIONS === 'true',
+		isRunningInProjectCi(),
 	)) {
 		process.stdout.write(`${line}\n`);
 	}

@@ -25,7 +25,7 @@ import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { sharedCheckout } from '../shared/shared-checkout';
-import { agentEnvironmentMarker } from '../work-identity/agent-environment.helper';
+import { isRunningInProjectCi } from '../work-identity/ci-environment.helper';
 
 import { workModelNextStep } from './declare-workflow';
 import { resolveDevelopmentPolicy } from './resolve';
@@ -186,7 +186,7 @@ export const integrationCheckoutRefusal = async (
 	// switch off interactive prompts, and an agent driving the shared
 	// checkout with it set would pass. A process an agent drives is never
 	// the throwaway copy, whatever else its environment says.
-	if (env.CI === 'true' && agentEnvironmentMarker(env) === undefined) {
+	if (isRunningInProjectCi(env)) {
 		return undefined;
 	}
 	const policy = await readPolicyOrNone(root);

@@ -47,7 +47,7 @@ import {
 } from '../git/refresh-candidate-artifacts.constant';
 import { isReviewBatch } from './independent-candidates';
 import { queueAcceptance, trainRiders } from './queue-acceptance';
-import { assembleTrain } from './train-assembly';
+import { assembleTrain, regenerateWith } from './train-assembly';
 import { armingPlan, requiredChecksVerdict } from './queue-arming';
 import {
 	passedZonesOf,
@@ -120,7 +120,7 @@ const REPOSITORY_SLUG = repositorySlug();
  * and a queue that armed `delendai/pr/**` on a project that renamed it
  * would arm nothing at all and say it armed everything.
  */
-const readDevelopmentConfig = (): {
+export const readDevelopmentConfig = (): {
 	readonly development?: Record<string, unknown>;
 } => {
 	try {
@@ -688,6 +688,9 @@ const redSections = (integration: string): ReadonlySet<string> => {
 	return red;
 };
 
+/** The one open issue that says the merge train is red on its own checks. */
+const TRAIN_RED_TITLE = 'merge train red on its own checks';
+
 /**
  * The forge and git behind a train. A train is assembled in a throwaway
  * worktree, never in the checkout, with a conflict confined to derived
@@ -703,6 +706,7 @@ const trainPorts = (input: {
 	readonly trainPrefix: string;
 	readonly mergeMethod: IDeclaredMergeMethod;
 	readonly branches: ReadonlyMap<string, string>;
+	readonly requiredChecks: readonly string[];
 }): ITrainPorts => ({
 	trainAt: (ref) => input.branches.get(ref),
 	runAt,
@@ -714,19 +718,7 @@ const trainPorts = (input: {
 			ref,
 			members,
 			derived: REGENERATED_PROJECTIONS,
-			regenerate: (dir) =>
-				GENERATED_REFRESH_COMMANDS.every((command) => {
-					try {
-						execFileSync('bun', command.split(' '), {
-							cwd: dir,
-							stdio: ['ignore', 'ignore', 'pipe'],
-							timeout: 600_000,
-						});
-						return true;
-					} catch {
-						return false;
-					}
-				}),
+			regenerate: regenerateWith(GENERATED_REFRESH_COMMANDS),
 		}),
 	// Judged since the tip it starts from, the run plans its jobs and tests
 	// with the job scope and test scope a pull request uses: the union of
@@ -802,6 +794,41 @@ const trainPorts = (input: {
 			]);
 		} catch {
 			// The culprit branch still keeps it out; the comment is the courtesy.
+		}
+	},
+	trainFault: (member, ref) => {
+		const sha = input.branches.get(ref);
+		if (sha === undefined) return undefined;
+		const own = requiredChecksVerdict(
+			checksOf(member.headSha),
+			input.requiredChecks,
+		);
+		return own.passed ? failuresOf(checksOf(sha)) : undefined;
+	},
+	reportTrainRed: (ref, member, jobs) => {
+		const body = `The train \`${ref}\` (#${String(member.number)} alone on ${input.integration}) is red on its own checks: ${jobs.join(', ') || 'no job named'}.\n\n#${String(member.number)}'s own required checks are green, so it is not blamed and no culprit marker is written; the members land one by one until the train is repaired.`;
+		try {
+			const open = api<readonly IRepairIssue[]>(
+				`repos/${REPOSITORY_SLUG}/issues?state=open&per_page=100`,
+			).find(
+				(issue) =>
+					issue.pull_request === undefined &&
+					issue.title.startsWith(TRAIN_RED_TITLE),
+			);
+			if (open === undefined) {
+				gh([
+					'issue',
+					'create',
+					'--title',
+					TRAIN_RED_TITLE,
+					'--body',
+					body,
+				]);
+			} else {
+				gh(['issue', 'edit', String(open.number), '--body', body]);
+			}
+		} catch {
+			// The line the queue prints is the report; the issue is the memory.
 		}
 	},
 	say: (line) => console.log(line),
@@ -971,6 +998,7 @@ const main = (): void => {
 				trainPrefix,
 				mergeMethod: policy.integration.mergeMethod,
 				branches: trains,
+				requiredChecks: policy.integration.requiredChecks,
 			}),
 		);
 		const own = new Set(
