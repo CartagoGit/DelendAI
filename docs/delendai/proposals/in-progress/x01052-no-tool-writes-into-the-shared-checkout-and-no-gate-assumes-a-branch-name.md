@@ -2,10 +2,14 @@
 id: x01052
 title: "No tool writes into the shared checkout, and no gate assumes a branch name"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
+last-transition-id: d7a8ddb0-398f-4ce2-a21b-be176e255eab
+last-correlation-id: d7a8ddb0-398f-4ce2-a21b-be176e255eab
+last-transition-from: ready
+last-transition-at: 2026-11-08T07:43:51.008Z
 ---
 
 # x01052 — No tool writes into the shared checkout, and no gate assumes a branch name
