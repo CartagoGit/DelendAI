@@ -2,14 +2,14 @@
 id: x01045
 title: "The merge train carries behind candidates and orphaned review packs are rescued mechanically"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: e6eb19f1-e5a0-4fb5-b707-953fea650546
-last-correlation-id: e6eb19f1-e5a0-4fb5-b707-953fea650546
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T21:26:08.003Z
+last-transition-id: 6217d9a9-89c8-40af-ac4d-8230988e85d3
+last-correlation-id: 6217d9a9-89c8-40af-ac4d-8230988e85d3
+last-transition-from: review
+last-transition-at: 2026-11-08T01:29:00.740Z
 ---
 
 # x01045 — The merge train carries behind candidates and orphaned review packs are rescued mechanically
