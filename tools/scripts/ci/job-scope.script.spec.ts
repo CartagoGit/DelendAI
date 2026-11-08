@@ -327,7 +327,7 @@ describe('a change made only of prose', () => {
 describe('pack smoke', () => {
 	it('runs when a tarball can change, and not for an edit inside a module', () => {
 		const runs = (file: string) =>
-			jobMustRun({ job: 'pack-smoke', changed: [file] });
+			jobMustRun({ job: 'pack-smoke', changed: [file], structural: [] });
 		expect(
 			runs('packages/core/src/lib/cache/cache-layout-bootstrap.ts'),
 		).toBe(false);
@@ -592,5 +592,82 @@ describe('the jobs the real scopes run, by kind of change', () => {
 			expect(scope.because).not.toContain('\n');
 			expect(scope.because.length).toBeLessThanOrEqual(160);
 		}
+	});
+});
+
+describe('the packaging jobs judge a published surface by the names it exports', () => {
+	const PACKAGING = [
+		'site',
+		'pack-smoke',
+		'build-clean',
+		'verify-runtime',
+		'delendai-rebuild-digest',
+	] as const;
+	const ran = (input: {
+		readonly changed: readonly string[];
+		readonly moved?: readonly string[];
+		readonly structural?: readonly string[];
+	}): readonly string[] => {
+		const plan = planJobs({
+			changed: input.changed,
+			scopes: JOB_SCOPES,
+			structural: input.structural ?? [],
+			reached: new Set<string>(),
+			surfaceMoved: new Set(input.moved ?? []),
+		});
+		return PACKAGING.filter((job) => plan[job] === true);
+	};
+	const BARREL = 'packages/core/src/cli.ts';
+
+	it('runs none of them when a barrel changed and no name it exports moved', () => {
+		expect(ran({ changed: [BARREL] })).toEqual([]);
+	});
+
+	it('runs the four that read a public surface when the barrel gained an export (#1838)', () => {
+		expect(ran({ changed: [BARREL], moved: [BARREL] })).toEqual([
+			'site',
+			'pack-smoke',
+			'build-clean',
+			'verify-runtime',
+		]);
+	});
+
+	it('runs none of them for a change inside a module behind the barrel', () => {
+		expect(
+			ran({
+				changed: [
+					'packages/core/src/lib/shared/model-catalogue.service.ts',
+				],
+			}),
+		).toEqual([]);
+	});
+
+	it('runs them for a file added or removed in a package, and for a manifest', () => {
+		expect(
+			ran({
+				changed: ['packages/core/src/lib/new.ts'],
+				structural: ['packages/core/src/lib/new.ts'],
+			}),
+		).toEqual(['site', 'pack-smoke', 'build-clean', 'verify-runtime']);
+		expect(ran({ changed: ['packages/core/package.json'] })).toEqual([
+			'site',
+			'pack-smoke',
+			'build-clean',
+			'verify-runtime',
+			'delendai-rebuild-digest',
+		]);
+	});
+
+	it('runs every one of them when the analysis is absent: the cautious reading', () => {
+		const plan = planJobs({
+			changed: [BARREL],
+			scopes: JOB_SCOPES,
+			structural: [],
+			reached: new Set<string>(),
+		});
+		for (const job of PACKAGING.filter(
+			(each) => each !== 'delendai-rebuild-digest',
+		))
+			expect(plan[job]).toBe(true);
 	});
 });

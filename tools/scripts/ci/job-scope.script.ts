@@ -25,8 +25,11 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { posix } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
+
+import { exportDelta } from './export-delta';
 
 import { TEST_WORKFLOW } from './test-zones.constant';
 import { changedWorkflowJobs } from './zone-reads';
@@ -74,6 +77,11 @@ export interface IPlanInput {
 	 * that reads `.github/` reads.
 	 */
 	readonly workflowJobs?: ReadonlySet<string> | undefined;
+	/**
+	 * The changed entry files whose exported names moved. Absent, every
+	 * changed entry counts as moved: the cautious reading.
+	 */
+	readonly surfaceMoved?: ReadonlySet<string> | undefined;
 }
 
 const under = (file: string, prefixes: readonly string[]): boolean =>
@@ -123,30 +131,36 @@ const decideFor = (
 	scope: IJobScope,
 ): { readonly runs: boolean; readonly why: string } => {
 	const { job } = scope;
-	if (scope.docs === 'skip' && input.changed.every(isProse))
+	const isEntry = (file: string): boolean =>
+		scope.surface?.test(file) === true;
+	// A published entry file counts only when the names it exports moved.
+	const moved = input.changed.find(
+		(file) =>
+			isEntry(file) &&
+			(input.surfaceMoved === undefined || input.surfaceMoved.has(file)),
+	);
+	if (moved !== undefined)
+		return { runs: true, why: `${moved} changed the names it exports` };
+	const changed =
+		scope.surface === undefined
+			? input.changed
+			: input.changed.filter((file) => !isEntry(file));
+	if (scope.docs === 'skip' && changed.every(isProse))
 		return {
 			runs: false,
 			why: 'the change is prose only, which this job does not read',
 		};
-	if (scope.matches !== undefined) {
-		const hit = input.changed.find(
-			(file) => scope.matches?.test(file) === true,
-		);
-		return hit === undefined
-			? {
-					runs: false,
-					why: `no changed file matches ${String(scope.matches)}`,
-				}
-			: { runs: true, why: `${hit} changed` };
-	}
 	if (scope.touches === 'always')
 		return {
 			runs: true,
 			why: 'declared always: its verdict depends on the whole repository',
 		};
-	const read = input.changed.find((file) =>
-		under(file, scope.touches as readonly string[]),
-	);
+	const read =
+		scope.matches !== undefined
+			? changed.find((file) => scope.matches?.test(file) === true)
+			: changed.find((file) =>
+					under(file, scope.touches as readonly string[]),
+				);
 	if (read !== undefined) return { runs: true, why: `${read} changed` };
 	const listed = (input.structural ?? input.changed).find(
 		(file) => scope.lists !== undefined && under(file, scope.lists),
@@ -168,9 +182,14 @@ const decideFor = (
 				why: 'the change reaches its scripts by symbol',
 			};
 	}
+	if (scope.matches !== undefined)
+		return {
+			runs: false,
+			why: `no changed file matches ${String(scope.matches)}`,
+		};
 	return {
 		runs: false,
-		why: `no changed file is under what it reads (${scope.touches.join(', ')})${scope.code === 'scripts' ? ', and the change reaches none of its scripts' : ''}`,
+		why: `no changed file is under what it reads (${scope.touches.join(', ')})${scope.code === 'scripts' ? ', and the change reaches none of its scripts' : ''}${scope.surface === undefined ? '' : ', and no entry file moved the names it exports'}`,
 	};
 };
 
@@ -269,6 +288,43 @@ const arg = (name: string): string | undefined => {
 	return hit?.slice(name.length + 3);
 };
 
+/** A module specifier as the path it names, enough to tell two versions apart. */
+const specifierPath = (file: string, specifier: string): string | undefined =>
+	specifier.startsWith('.')
+		? posix.normalize(posix.join(posix.dirname(file), specifier))
+		: undefined;
+
+/**
+ * The changed entry files whose exported names moved. An entry added or
+ * removed, one that declares something itself, or one whose delta cannot be
+ * bounded counts as moved.
+ */
+export const surfaceMovedSince = (
+	root: string,
+	base: string,
+	changed: readonly string[],
+): ReadonlySet<string> => {
+	const entries = JOB_SCOPES.flatMap((scope) =>
+		scope.surface === undefined ? [] : [scope.surface],
+	);
+	const moved = new Set<string>();
+	const at = mergeBaseOf(root, base);
+	for (const file of changed) {
+		if (!entries.some((entry) => entry.test(file))) continue;
+		const before = showAt(root, at, file);
+		const after = showAt(root, 'HEAD', file);
+		const delta =
+			after === undefined
+				? undefined
+				: exportDelta(before, after, (specifier) =>
+						specifierPath(file, specifier),
+					);
+		if (delta === undefined || delta === '*' || delta.size > 0)
+			moved.add(file);
+	}
+	return moved;
+};
+
 /** What the plan of a change since `base` is decided from, read from git. */
 export const planInputSince = (base: string | undefined): IPlanInput => {
 	if (base === undefined) return { changed: [] };
@@ -282,6 +338,7 @@ export const planInputSince = (base: string | undefined): IPlanInput => {
 		: undefined;
 	return {
 		changed,
+		surfaceMoved: surfaceMovedSince(root, base, changed),
 		structural: structuralSince(root, base),
 		reached: jobsReachedSince(root, base, changed),
 		...(workflowJobs === undefined ? {} : { workflowJobs }),

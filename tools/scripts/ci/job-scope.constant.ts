@@ -36,6 +36,18 @@ export const SOURCE_PREFIXES = [
 ] as const;
 
 /**
+ * The entry files a published package exposes: what a consumer imports.
+ * The packaging jobs run for a change to one only when the names it exports
+ * moved (`IJobScope.surface`); the modules behind it are judged by the
+ * typecheck and the tests.
+ */
+export const PUBLIC_ENTRY_FILES =
+	/^(packages|plugins|extensions)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u;
+
+/** A manifest anywhere, the lockfile and the compiler configuration. */
+const BUILD_INPUTS = /(^|\/)package\.json$|^bun\.lock$|^tsconfig/u;
+
+/**
  * Which files each CI job's verdict can depend on.
  *
  * THE ASYMMETRY THAT GOVERNS THIS FILE: a job that runs when it did not
@@ -322,17 +334,24 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	// line names what it reads.
 	{
 		job: 'site',
+		surface: PUBLIC_ENTRY_FILES,
 		touches: [
 			'apps/web/',
-			'packages/',
-			'plugins/',
-			'extensions/',
-			'tools/scripts/',
+			'tools/docs-api/',
+			'tools/scripts/compile/',
+			'tools/scripts/astro/',
+			'tools/scripts/verify/site-pages-verify.script.ts',
+			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^apps/web/|^tools/(scripts/(compile|astro)/|docs-api/)|^tools/scripts/verify/site-pages-verify\\.script\\.ts$`,
+			'u',
+		),
+		lists: ['packages/', 'plugins/', 'extensions/'],
 		because:
-			'it runs `bun run site`, an astro build of apps/web that BUNDLES source from outside it: `@delendai/cli` (its command registry, and through it every plugin), `@delendai/core`, `@delendai/proposals`, the UI extension and tools/scripts. A change there can break the build without touching apps/web — x00712 did, and develop stayed red (x00726). The data the site embeds is checked in under apps/web/src/data; `generated-artifacts-check`, which always runs, catches it going stale.',
+			'it runs `bun run site`, an astro build of apps/web that bundles `@delendai/cli`, `@delendai/core`, `@delendai/proposals` and the UI extension through their entry files: a change that moves the names an entry exports, a file added or removed in them, a manifest or the build scripts can break it; a change inside a module behind an entry is judged by the typecheck and the tests, and `generated-artifacts-check` catches the embedded data going stale.',
 	},
 	{
 		job: 'sqlite-cutover-ready',
@@ -352,62 +371,75 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'delendai-rebuild-digest',
-		touches: ['package.json', 'bun.lock', 'packages/', 'plugins/'],
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/ci/rebuild-digest\\.script\\.ts$`,
+			'u',
+		),
+		touches: ['package.json', 'bun.lock'],
 		because:
-			'it verifies install parity, which only a manifest or a lockfile can change.',
+			'it verifies install parity, which only a manifest, the lockfile or its own script can change; no source file reaches it.',
 	},
 	{
 		job: 'pack-smoke',
+		surface: PUBLIC_ENTRY_FILES,
 		// What can change what a tarball holds or whether it installs: a
-		// manifest, the lockfile, the build configuration and scripts, and
-		// the entry files that are the export surface. A change inside an
-		// existing module cannot, and typecheck compiles it.
-		matches:
-			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$|verify\/external-install-smoke\.script\.ts$|publish\/workspace-deps\.ts$)|^packages\/cli\/src\/(lib|commands)\/init\/|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
+		// manifest, the lockfile, the build configuration and scripts and
+		// init. The entry files that are the export surface count when the
+		// names they export moved; a change inside an existing module cannot
+		// change a tarball, and typecheck compiles it.
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(compile/|smoke/|verify/external-install-smoke\\.script\\.ts$|publish/workspace-deps\\.ts$)|^packages/cli/src/(lib|commands)/init/|^apps/shared/`,
+			'u',
+		),
 		touches: [
-			// The scripts it runs: a change to how dist is built or packed
-			// is a change to what the tarball holds.
 			'tools/scripts/compile/',
-			'tools/scripts/smoke/pack.script.ts',
+			'tools/scripts/smoke/',
 			'tools/scripts/verify/external-install-smoke.script.ts',
 			'tools/scripts/publish/workspace-deps.ts',
-			'packages/',
-			'plugins/',
 			'apps/shared/',
 			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/'],
 		because:
-			'it builds dist, installs the tarballs and drives an external project through install, init and the MCP handshake; nothing outside the publishable source, its build configuration and init can change that.',
+			'it builds dist, installs the tarballs and drives an external project through install, init and the MCP handshake; only a moved export surface, a file added or removed in a package, its build configuration and init can change that.',
 	},
 	{
 		job: 'build-clean',
+		surface: PUBLIC_ENTRY_FILES,
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(compile|build)/`,
+			'u',
+		),
 		touches: [
-			// The scripts it runs, build and build-clean among them.
 			'tools/scripts/compile/',
-			'packages/',
-			'plugins/',
-			'apps/',
-			'extensions/',
+			'tools/scripts/build/',
 			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/', 'apps/', 'extensions/'],
 		because:
-			'it builds from an empty output tree; only source and build configuration reach it.',
+			'it builds from an empty output tree; the build configuration, the build scripts, a file added or removed under a source tree and a moved export surface reach it, and a change inside a module is compiled by the typecheck.',
 	},
 	{
 		job: 'verify-runtime',
+		surface: PUBLIC_ENTRY_FILES,
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(verify|scaffold|host)/|^plugins/[^/]+/(plugin|manifest)[^/]*$`,
+			'u',
+		),
 		touches: [
-			'packages/',
-			'plugins/',
-			'tools/scripts/',
+			'tools/scripts/verify/',
+			'tools/scripts/scaffold/',
+			'tools/scripts/host/',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/'],
 		because:
-			'it verifies tools, plugin wiring, caches, scaffolds and host capability packs — all of which live in the runtime source and the scripts that check it.',
+			'it verifies tools, plugin wiring, caches, scaffolds and host capability packs; the moved export surface of a package, a plugin or manifest file, a file added or removed and the scripts that check them reach it, and the tests cover a change inside a module.',
 	},
 	{
 		job: 'tokens-budget-real',
