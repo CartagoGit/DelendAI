@@ -14,7 +14,8 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { ITrainCandidate } from './queue-order.interface';
 
@@ -30,6 +31,36 @@ const IDENTITY = [
 	'-c',
 	'core.hooksPath=/dev/null',
 ] as const;
+
+/**
+ * Link the shared checkout's dependencies into `dir` with the same service
+ * a unit worktree uses. A scratch worktree has no `node_modules`, and
+ * generators run there cannot load the code: one wrote an empty catalog.
+ * The service is async and a train is assembled synchronously, so a child
+ * runs it; true when `dir` now has the dependencies.
+ *
+ * WHY link and not skip the per-merge hook: the merges already run with
+ * `core.hooksPath` off, so no hook fires per merge. The one run that needs
+ * the code is the single regeneration after all merges.
+ */
+const linkSharedDependenciesInto = (dir: string): boolean => {
+	try {
+		execFileSync(
+			'bun',
+			[
+				join(
+					dirname(fileURLToPath(import.meta.url)),
+					'link-train-dependencies.script.ts',
+				),
+				dir,
+			],
+			{ stdio: ['ignore', 'ignore', 'pipe'] },
+		);
+		return true;
+	} catch {
+		return false;
+	}
+};
 
 const run = (cwd: string, args: readonly string[]): string | undefined => {
 	try {
@@ -131,6 +162,8 @@ export const assembleTrain = (input: {
 	readonly derived: ReadonlySet<string>;
 	/** Run the generators in `dir`; false when one failed. */
 	readonly regenerate: (dir: string) => boolean;
+	/** Give `dir` the shared dependencies; false when it could not. */
+	readonly linkDependencies?: (dir: string) => boolean;
 }): {
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
@@ -171,7 +204,10 @@ export const assembleTrain = (input: {
 		if (regenerated.length > 0) {
 			// Once, after every member is in: a generator run on half a train
 			// computes the file from half a tree.
-			if (!input.regenerate(scratch)) {
+			const linked = (
+				input.linkDependencies ?? linkSharedDependenciesInto
+			)(scratch);
+			if (!linked || !input.regenerate(scratch)) {
 				return { conflicting: [...regenerated], regenerated: [] };
 			}
 			if ((run(scratch, ['status', '--porcelain']) ?? '').length > 0) {
