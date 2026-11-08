@@ -2,10 +2,14 @@
 id: x01047
 title: "A CLI command starts only what it uses: work and guard no longer spawn a server"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: 9f4a4dcf-4d2a-4771-8c2a-5a0de14294cb
+last-correlation-id: 9f4a4dcf-4d2a-4771-8c2a-5a0de14294cb
+last-transition-from: ready
+last-transition-at: 2026-11-08T01:07:34.155Z
 ---
 
 # x01047 — A CLI command starts only what it uses: work and guard no longer spawn a server
