@@ -22,7 +22,14 @@ Integration has one actor, `land`, one decisions module in core that every reade
 
 Measured on 2026-11-08: the integration code (tools/scripts/forge and tools/scripts/git) is about 18,800 lines in 61 files. 117 of develop's 210 commits that day (56%) were bookkeeping. 9 integration failures were found only in production that day: the forge ruleset, the pre-push guard, an empty generated catalog, derived-file drift, the commit-branch lint, the refresher disagreeing with the queue, a ref loop between the checkout publisher and ref maintenance, a proposal duplicated across folders, and claim leaving old PRs open. GitHub's native merge queue is unavailable for user-owned repositories. The cause is the same each time: several actors decide one fact with separate logic, the machinery blocks its own repair, nothing is rehearsed, and a stale process on the owner's machine keeps acting after the rules changed.
 
-## design
+## non-goals
+
+- Do not change code in this proposal's planning; each slice is its own change.
+- Do not depend on a forge feature a project may lack: only the four adapter calls above.
+
+## architecture
+
+### design
 
 **One actor.** One workflow `land`, concurrency 1, runs on: a PR's CI finishing, a PR marked ready, every push to the integration branch, and every 15 minutes. It keeps no state of its own and reads the forge on every pass. No LLM is involved; an agent only runs `work deliver`.
 
@@ -43,7 +50,7 @@ Measured on 2026-11-08: the integration code (tools/scripts/forge and tools/scri
 
 **The forge adapter needs** check status, merge pinned to a SHA, update-branch and label. It is agnostic: GitLab has all four.
 
-## single source of truth
+### single source of truth
 
 No partial migration and no second way. Four rules bind every slice:
 
@@ -52,11 +59,11 @@ No partial migration and no second way. Four rules bind every slice:
 3. A process older than the cutover cannot act: `land` records an integration-protocol version in the repo; a process with an older protocol refuses to move refs or PRs and says to restart.
 4. Nothing is deleted before the rehearsal (an end-to-end spec against a fake forge plus the adapted i00005 `forge:rehearse-train`) passes.
 
-## inventory
+### inventory
 
 Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on any actor missing from this table). Verdicts: KEEP (named owner), REPLACED (its decision moves into `land` or the decisions module and the old module is deleted), DELETED (no successor needed). Counts at the end.
 
-### Workflows (.github/workflows, 18 files)
+#### Workflows (.github/workflows, 18 files)
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -73,7 +80,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | release.yml, pages.yml, rotate-npm-token.yml | release, site, token reminder | KEEP (owner: release) |
 | setup-bun.yml | shared setup | KEEP (owner: ci) |
 
-### tools/scripts/forge (27 modules)
+#### tools/scripts/forge (27 modules)
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -95,7 +102,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | sync-with-integration | local fetch and fast-forward | KEEP (owner: host, the one local follower) |
 | link-train-dependencies | give a batch worktree its modules | KEEP (owner: land) |
 
-### tools/scripts/git (14 modules)
+#### tools/scripts/git (14 modules)
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -109,7 +116,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | check-workflow-invariants, clone-hygiene, harden-git-hooks, prepare-clone | clone and hook hygiene | KEEP (owner: git hygiene) |
 | ended-reservations, rewrite-llm-attribution | reservations, history rewrite | KEEP (owner: reviews, history) |
 
-### Host cadences on the owner's machine
+#### Host cadences on the owner's machine
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -122,7 +129,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | kept-unit-hydration | hydrate kept units | DELETED |
 | host-server, host-supervisor(-process), branch-runtime, forge-seam.service, record-lifecycle, workspace-forge-slug | host plumbing | KEEP (owner: host); host-server loses the two timers above |
 
-### Core readers of the same facts
+#### Core readers of the same facts
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -132,7 +139,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | work-publish, work-claim, work-retire | publish, claim, retire a unit | KEEP (owner: work-units); publish and claim lose their pr/ ref and extra-PR paths in S5 |
 | create-mcp-project cadence wiring | starts the host cadences | KEEP (owner: host), edited to start none of the deleted ones |
 
-### Guard, ruleset, lints, extension
+#### Guard, ruleset, lints, extension
 
 | Actor | Decides | Verdict |
 |---|---|---|
@@ -145,11 +152,6 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | package.json scripts forge:rehearse-train, forge:forward-sync, forge:promotion-alerts | rehearsal and promotion phases | KEEP (owner: rehearsal, land) |
 
 Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publication path). S1 recounts and the cutover spec compares against the recount.
-
-## non-goals
-
-- Do not change code in this proposal's planning; each slice is its own change.
-- Do not depend on a forge feature a project may lack: only the four adapter calls above.
 
 ## slices
 
