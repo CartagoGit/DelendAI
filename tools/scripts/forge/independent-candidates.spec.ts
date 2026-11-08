@@ -2,18 +2,15 @@
  * independent-candidates.spec.ts — candidates that touch nothing in
  * common land without being brought forward (f00755).
  */
-import { describe, expect, it } from 'vitest';
-
 import {
 	acceptIndependent,
 	acceptRiders,
 	isReviewBatch,
 	overlapBetween,
-} from './independent-candidates';
-import type {
-	IChangeFootprint,
-	IQueueCandidateChange,
-} from './independent-candidates.interface';
+	type IChangeFootprint,
+	type IQueueCandidateChange,
+} from '@delendai/core/cli';
+import { describe, expect, it } from 'vitest';
 
 const touch = (
 	zones: readonly string[] | 'everything',

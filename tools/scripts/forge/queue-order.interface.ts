@@ -1,44 +1,7 @@
-import type { IIntegrationCertification } from './certify-integration.interface';
-
-/** What the queue needs to know about one candidate to order it. */
-export interface IQueueCandidateFacts {
-	readonly number: number;
-	/** The candidate's branch, without `refs/heads/`. */
-	readonly headRef: string;
-	readonly draft: boolean;
-	/** A required or other check concluded badly on its head. */
-	readonly red: boolean;
-	/** The checks that concluded badly, by name; empty when not red. */
-	readonly failing?: readonly string[];
-	/** The forge reports conflicts with the integration branch. */
-	readonly conflicting: boolean;
-	/** Why the delivery is urgent, from the pull request's body; the queue leads with it. */
-	readonly urgent?: string | undefined;
-}
-
-/**
- * What the queue does with a train: land the members whose train passed
- * (naming a culprit when bisection isolated one beside them), dispatch the
- * full run of a train that has none, wait for one that is running, report
- * the member whose train of one is red, or nothing when there is no train.
- */
-export type ITrainStep =
-	| {
-			readonly kind: 'land';
-			readonly members: readonly number[];
-			readonly culprit?: number;
-	  }
-	| { readonly kind: 'dispatch'; readonly members: readonly number[] }
-	| { readonly kind: 'wait'; readonly members: readonly number[] }
-	| { readonly kind: 'culprit'; readonly number: number }
-	| { readonly kind: 'none' };
-
-/** A train candidate: its number, branch and current head. */
-export interface ITrainCandidate {
-	readonly number: number;
-	readonly headRef: string;
-	readonly headSha: string;
-}
+import type {
+	IIntegrationCertification,
+	ITrainCandidate,
+} from '@delendai/core/cli';
 
 /**
  * How a train touches the forge and git, injected so the train itself

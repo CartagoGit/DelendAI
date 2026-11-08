@@ -6,9 +6,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	ownedNamespaces,
+	publicationPrefixesOf,
+	underPublication,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+} from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 const branchesOf = (branches: Record<string, unknown>) =>
@@ -73,5 +75,56 @@ describe('owned ref prefixes', () => {
 		expect(
 			ownedWorkRefPrefixes({ ...branches, workRefPrefix: '' }),
 		).toEqual([]);
+	});
+});
+
+const moved = resolveDevelopmentPolicy({
+	development: {
+		branches: {
+			namespacePrefix: '',
+			formerNamespacePrefixes: ['delendai'],
+		},
+	},
+}).branches;
+
+describe('publication prefixes', () => {
+	it('reads the prefix from the policy, current first', () => {
+		expect(publicationPrefixesOf(moved)).toEqual(['pr/', 'delendai/pr/']);
+	});
+
+	it('recognises both prefixes in the transition', () => {
+		const prefixes = publicationPrefixesOf(moved);
+		expect(underPublication('pr/a/implement/x-S1-g1/t', prefixes)).toBe(
+			true,
+		);
+		expect(
+			underPublication('delendai/pr/a/implement/x-S1-g1/t', prefixes),
+		).toBe(true);
+		expect(underPublication('feature/mine', prefixes)).toBe(false);
+	});
+
+	it('takes one prefix as it is, and a rest after it', () => {
+		expect(underPublication('delendai/pr/a/x', 'delendai/pr/', 'a/')).toBe(
+			true,
+		);
+		expect(underPublication('delendai/pr/b/x', 'delendai/pr/', 'a/')).toBe(
+			false,
+		);
+		expect(underPublication('anything', '')).toBe(false);
+	});
+});
+
+describe('allowedRefPatterns and underNamespace', () => {
+	it('[<20ms] the forge ruleset patterns cover the same namespaces as the guard', async () => {
+		const { allowedRefPatterns, underNamespace } = await import(
+			'@delendai/core/lib/integration/decisions/namespaces.helper'
+		);
+		const patterns = allowedRefPatterns({ branches: moved });
+		expect(patterns).toContain('refs/heads/pr/**/*');
+		expect(patterns).toContain('refs/heads/train/**/*');
+		expect(patterns).toContain('refs/heads/delendai/train/**/*');
+		expect(underNamespace('wip/a/x', 'refs/heads/wip/')).toBe(true);
+		expect(underNamespace('wip/a/x', '')).toBe(false);
+		expect(underNamespace('wip/a/x', undefined)).toBe(false);
 	});
 });

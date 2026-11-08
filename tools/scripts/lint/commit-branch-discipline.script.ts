@@ -33,7 +33,12 @@
  */
 import { spawnSync } from 'node:child_process';
 
-import { isRunningInProjectCi, ownedTrainPrefixes } from '@delendai/core/cli';
+import {
+	isRunningInProjectCi,
+	ownedTrainPrefixes,
+	shortName as shortRef,
+	underNamespace as inNamespace,
+} from '@delendai/core/cli';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
@@ -79,10 +84,6 @@ export interface ICommitBranchInput {
 	readonly ciCheckout?: boolean;
 }
 
-/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
-
 /**
  * The work-ref shape in words, rendered from the template the policy
  * resolved.
@@ -102,11 +103,6 @@ const shapeInWords = (template: string | undefined, prefix: string): string =>
 					/\$\{([a-z]+)\}/gu,
 					(_match, name: string) => `<${name}>`,
 				)}`;
-
-const inNamespace = (branch: string, prefix: string | undefined): boolean =>
-	prefix !== undefined &&
-	prefix !== '' &&
-	branch.startsWith(shortRef(prefix));
 
 export type CommitBranchResult =
 	| { readonly ok: true; readonly note?: string }

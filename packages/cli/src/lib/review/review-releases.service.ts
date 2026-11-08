@@ -17,6 +17,7 @@ import {
 import { gitVerbatim } from '@delendai/core/runtime';
 
 import { RELEASE_TRAILER } from '../../contracts/constants/review-command.constant';
+import { shortName as branchPath } from '@delendai/core/cli';
 
 interface IReviewBranches {
 	readonly integration: string;
@@ -53,10 +54,6 @@ const prefixesOf = (
 /** The output of a read-only git command, or nothing when it failed. */
 const read = (cwd: string, args: readonly string[]): string =>
 	gitVerbatim(cwd, args) ?? '';
-
-/** `refs/heads/<ns>/wip/` and `<ns>/wip/` name the same branches. */
-const branchPath = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** Each release in `range`, with the time it was recorded. */
 const releasesIn = (

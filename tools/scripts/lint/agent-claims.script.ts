@@ -9,10 +9,11 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ownedWorkRefPrefixes } from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+import { ownedWorkRefPrefixes } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { cacheRoot, repoRoot } from '../lib/monorepo-paths';
+import { shortName } from '@delendai/core/cli';
 
 export interface ILockEntry {
 	readonly task_id: string;
@@ -224,9 +225,7 @@ export const unitCheckouts = (
 ): readonly IUnitCheckout[] => {
 	const units: IUnitCheckout[] = [];
 	// Every owned work namespace, read from the policy (f00808).
-	const workPrefixes = ownedWorkRefPrefixes(branches).map((prefix) =>
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
-	);
+	const workPrefixes = ownedWorkRefPrefixes(branches).map(shortName);
 	let worktree: string | undefined;
 	for (const line of git(root, ['worktree', 'list', '--porcelain']).split(
 		'\n',

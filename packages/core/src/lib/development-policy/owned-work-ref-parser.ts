@@ -16,7 +16,8 @@ import {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from './owned-ref-prefixes';
+} from '../integration/decisions/namespaces.helper';
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 type IShapeBranches = Pick<
 	IPolicyBranches,
@@ -44,10 +45,6 @@ export const ownedWorkRefShapes = (
 		current: index === 0,
 	}));
 };
-
-/** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
-const bare = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** The owned work shape a branch (short or qualified) lives under. */
 export const ownedWorkRefShapeOf = (

@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { shortName } from '@delendai/core/lib/development-policy/git-guard-namespaces';
+import { shortName } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 
 import type {
 	IUnitLease,

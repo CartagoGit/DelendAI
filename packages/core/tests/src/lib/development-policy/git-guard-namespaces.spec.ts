@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	insideNamespaces,
 	policyNamespaces,
-} from '@delendai/core/lib/development-policy/git-guard-namespaces';
+} from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { judgeGitOperation } from '@delendai/core/lib/development-policy/git-guard';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {

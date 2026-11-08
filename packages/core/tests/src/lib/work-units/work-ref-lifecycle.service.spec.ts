@@ -17,13 +17,15 @@ import type {
 } from '@delendai/core/lib/contracts/interfaces/work-ref-lifecycle.interface';
 import { ABANDONED_UNIT_SILENCE_SECONDS } from '@delendai/core/lib/work-units/unit-lease.constant';
 import {
+	workRefFate,
+	workRefLanded,
+	workRefProposalOpen,
+} from '@delendai/core/lib/integration/decisions/landed.helper';
+import {
 	landedForgeRefKept,
 	silenceSince,
-	workRefFate,
 	workRefIntegrationRef,
-	workRefLanded,
 	workRefOpenness,
-	workRefProposalOpen,
 } from '@delendai/core/lib/work-units/work-ref-lifecycle.service';
 
 const facts = (over: Partial<IWorkRefFacts>): IWorkRefFacts => ({

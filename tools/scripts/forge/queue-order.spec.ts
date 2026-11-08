@@ -3,26 +3,25 @@
  * that arms and the machine that brings candidates forward pick the same
  * one.
  */
-import { describe, expect, it } from 'vitest';
-
 import {
-	culpritRefName,
-	queueHead,
-	byQueuePosition,
-	queueOrder,
-	runTrain,
 	TRAIN_CAPACITY,
-	trainMembers,
+	byQueuePosition,
+	culpritRefName,
 	culpritsAmong,
 	isCulpritMarker,
-	trainPrefixesOf,
-	trainsToPrune,
+	ownedTrainPrefixes,
+	queueHead,
+	queueOrder,
+	trainMembers,
 	trainRefName,
 	trainStep,
+	trainsToPrune,
 	type IQueueCandidateFacts,
 	type ITrainCandidate,
-	type ITrainPorts,
-} from './queue-order';
+} from '@delendai/core/cli';
+import { describe, expect, it } from 'vitest';
+
+import { runTrain, type ITrainPorts } from './queue-order';
 
 const PREFIX = 'delendai/pr/';
 const candidate = (
@@ -435,22 +434,22 @@ describe('train names', () => {
 			workRefPrefix: '',
 			workRefVisibility: 'visible',
 			publicationRefPrefix: '',
-		}) as Parameters<typeof trainPrefixesOf>[0];
+		}) as Parameters<typeof ownedTrainPrefixes>[0];
 
 	it('lives under the policy namespace, and at the root with none', () => {
-		expect(trainPrefixesOf(branchesOf('acme'))).toEqual(['acme/train/']);
-		expect(trainPrefixesOf(branchesOf(''))).toEqual(['train/']);
+		expect(ownedTrainPrefixes(branchesOf('acme'))).toEqual(['acme/train/']);
+		expect(ownedTrainPrefixes(branchesOf(''))).toEqual(['train/']);
 	});
 
 	it('reads trains under a former namespace too, the current one first', () => {
-		expect(trainPrefixesOf(branchesOf('', ['delendai']))).toEqual([
+		expect(ownedTrainPrefixes(branchesOf('', ['delendai']))).toEqual([
 			'train/',
 			'delendai/train/',
 		]);
 	});
 
 	it('names an empty-namespace train and culprit at the root', () => {
-		const [prefix = ''] = trainPrefixesOf(branchesOf(''));
+		const [prefix = ''] = ownedTrainPrefixes(branchesOf(''));
 		expect(trainRefName(prefix, TIP, [3, 5])).toBe(
 			`train/${'a'.repeat(12)}/3-5`,
 		);
@@ -458,7 +457,7 @@ describe('train names', () => {
 	});
 
 	it('finds culprits under every owned namespace', () => {
-		const prefixes = trainPrefixesOf(branchesOf('', ['delendai']));
+		const prefixes = ownedTrainPrefixes(branchesOf('', ['delendai']));
 		const branches = new Map([
 			['train/culprit/7', 'h7'],
 			['delendai/train/culprit/9', 'h9'],
@@ -474,7 +473,7 @@ describe('train names', () => {
 	});
 
 	it('prunes trains of another tip and former namespaces, keeping markers', () => {
-		const prefixes = trainPrefixesOf(branchesOf('acme', ['delendai']));
+		const prefixes = ownedTrainPrefixes(branchesOf('acme', ['delendai']));
 		const current = trainRefName('acme/train/', TIP, [1, 2]);
 		const branches = new Map([
 			[current, 'c'],
