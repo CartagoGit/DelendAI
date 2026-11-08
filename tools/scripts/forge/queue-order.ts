@@ -156,9 +156,9 @@ export const culpritRefName = (trainPrefix: string, number: number): string =>
 /**
  * The candidates that ride the next train: in queue order, none whose
  * current head was already isolated as a culprit, at most `capacity`.
- * The candidates come from the riders' verdicts (`acceptRiders`), so each
- * is disjoint from the others; behind ones ride too, because the train's
- * run proves each against the integration tip.
+ * The candidates come from the riders' verdicts (`acceptRiders`), in
+ * train order; overlapping and behind ones ride too, because the train's
+ * one run proves the combination against the integration tip.
  */
 export const trainMembers = (
 	candidates: readonly ITrainCandidate[],

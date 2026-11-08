@@ -232,7 +232,7 @@ describe('the merge train', () => {
 		expect(forge.blamed).toEqual([2]);
 	});
 
-	it('excludes a candidate that conflicts with the train', () => {
+	it('splits only a textual conflict outside the derived files off the train', () => {
 		const forge = fakeForge({ conflicts: [5] });
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 8]);

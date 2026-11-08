@@ -44,6 +44,7 @@ import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
 } from '../git/refresh-candidate-artifacts.constant';
+import { isReviewBatch } from './independent-candidates';
 import { queueAcceptance, trainRiders } from './queue-acceptance';
 import { assembleTrain } from './train-assembly';
 import { armingPlan, requiredChecksVerdict } from './queue-arming';
@@ -918,6 +919,16 @@ const main = (): void => {
 		candidates: ordered
 			.filter((candidate) => !held.has(candidate.number))
 			.map((candidate) => riderOf(candidate.number)),
+		// A candidate that runs a red section green is its urgent repair.
+		priorityOf: (number, headRef) =>
+			red.size > 0 &&
+			[...passedZonesOf(checksOf(shaOf(number)))].some((zone) =>
+				red.has(zone),
+			)
+				? 'urgent'
+				: isReviewBatch(headRef)
+					? 'review'
+					: 'normal',
 	}).filter((verdict) => {
 		if (!verdict.accepted) {
 			console.log(
