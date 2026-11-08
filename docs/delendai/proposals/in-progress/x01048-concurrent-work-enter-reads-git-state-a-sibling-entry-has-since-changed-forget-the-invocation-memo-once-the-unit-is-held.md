@@ -24,7 +24,7 @@ Cause: the per-invocation git read memo (x01034 S4) answered the second concurre
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Nothing else about the git read memo changes: it still answers repeats within an invocation; it only forgets when the invocation takes a work-ref lock.
 
 ## slices
 
@@ -32,13 +32,13 @@ Cause: the per-invocation git read memo (x01034 S4) answered the second concurre
 
 ### S1 — Entry forgets memoised git reads once it holds the unit
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts`
+- **Files**: `packages/core/src/lib/wip-engine/work-ref-lock.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "After acquiring the unit, enteredLocked calls forgetGitReads so the generation is chosen from the repository as the previous entry left it."
+  - "After acquiring the unit, holdWorkRef calls forgetGitReads on acquiring so the generation is chosen from the repository as the previous entry left it."
   - "A spec proves a memoised ref list taken before the wait is not used after it."
 
 ## acceptance
 
-- After acquiring the unit, enteredLocked calls forgetGitReads so the generation is chosen from the repository as the previous entry left it.
+- After acquiring the unit, holdWorkRef calls forgetGitReads on acquiring so the generation is chosen from the repository as the previous entry left it.
 - A spec proves a memoised ref list taken before the wait is not used after it.
