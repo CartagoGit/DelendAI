@@ -2,14 +2,14 @@
 id: f00796
 title: "Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: workflow
 date: 2026-10-29
-last-transition-id: 792e76ba-27b7-45d5-b1f1-2ecb129e02bf
-last-correlation-id: 792e76ba-27b7-45d5-b1f1-2ecb129e02bf
-last-transition-from: in-progress
-last-transition-at: 2026-10-29T19:37:22.202Z
+last-transition-id: f78b3b4e-967b-4391-b19a-d45bcbfcbf9e
+last-correlation-id: f78b3b4e-967b-4391-b19a-d45bcbfcbf9e
+last-transition-from: review
+last-transition-at: 2026-11-08T15:23:18.554Z
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -36,7 +36,7 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - global_gate: type
 
 ### S1 — The nearest specs are the product's
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
