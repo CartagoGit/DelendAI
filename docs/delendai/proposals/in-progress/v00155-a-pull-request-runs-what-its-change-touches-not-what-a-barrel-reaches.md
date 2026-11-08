@@ -2,14 +2,14 @@
 id: v00155
 title: "A pull request runs what its change touches, not what a barrel reaches"
 kind: perf
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 902f5b2f-f508-4202-9baa-3569bdb79692
-last-correlation-id: 902f5b2f-f508-4202-9baa-3569bdb79692
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T14:08:03.785Z
+last-transition-id: bdea6b54-0f68-49bf-9c49-fa8b20aa72fe
+last-correlation-id: bdea6b54-0f68-49bf-9c49-fa8b20aa72fe
+last-transition-from: review
+last-transition-at: 2026-11-08T16:23:40.672Z
 ---
 
 # v00155 — A pull request runs what its change touches, not what a barrel reaches
