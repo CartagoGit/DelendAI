@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 79dfbbd1-d637-4c68-be73-9a5ba7de9de5
-last-correlation-id: 79dfbbd1-d637-4c68-be73-9a5ba7de9de5
+last-transition-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
+last-correlation-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
 last-transition-from: in-progress
-last-transition-at: 2026-11-08T18:05:30.714Z
+last-transition-at: 2026-11-08T19:29:24.508Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -91,6 +91,16 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S7 — The refresher judges riders as the queue does
+- **Status**: review
+- **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
+- **Gate**: none
+
+With trains running, two green pull requests sat for over 40 minutes: the queue said "#1861 is brought forward first" while the refresher said "lands as it is or rides a train; not brought forward", so neither acted. The refresher counted a failed train left from an OLDER tip as carrying the rider, and it ignored the culprit marker the queue keeps such a candidate off its trains by. It now counts only trains built from the current tip and leaves no culprit to a train.
+- shipped-in: `c97c3ea9d3d3`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+
 ## acceptance
 
 - When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts).
@@ -100,3 +110,4 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - When the train cannot run and every candidate is behind, the candidates are brought forward one by one and none waits forever (queue-acceptance.spec.ts).
 - A train whose members merged cleanly is regenerated once before it is pushed, and a failed regeneration pushes nothing.
 - The CI checkout of a train passes commit-branch-discipline under every train namespace, and a branch outside them is still refused.
+- A rider carried only by a train from an older tip, or isolated as a culprit, is brought forward by the refresher.
