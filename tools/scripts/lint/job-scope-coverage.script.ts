@@ -68,14 +68,16 @@ const main = (): number => {
 		'utf8',
 	);
 	const jobs = workflowJobIds(source);
-	const drift = scopeDrift({
+	const found = scopeDrift({
 		jobs,
 		declared: JOB_SCOPES.map((scope) => scope.job),
 	});
 	// An entry that gates steps of a grouped job is not stale.
 	const gated = new Set(planKeysOf(source));
-	const stale = drift.stale.filter((job) => !gated.has(job));
-	drift.stale = stale;
+	const drift = {
+		...found,
+		stale: found.stale.filter((job) => !gated.has(job)),
+	};
 
 	if (drift.undeclared.length === 0 && drift.stale.length === 0) {
 		console.log(
