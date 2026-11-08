@@ -33,7 +33,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 
 ### S1 — One predicate for a work ref's landed reading: publisher and ref-maintenance cannot disagree
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `tools/scripts/git/work-ref-fate-agreement.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`, `tools/scripts/git/work-ref-fate-agreement.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "work-ref-lifecycle.service.ts exports workRefLanded and workRefIntegrationRef; landed-work-ref.ts and maintain-ref-namespace.script.ts both call them and neither computes landed or picks the integration ref itself"
@@ -42,7 +42,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 
 ### S2 — A delivered publication waiting for its pull request is not orphaned
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/publication-standings.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/publication-standings.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "judgeAuthor given an ended unit whose publication tip is younger than the recovery window answers not orphaned and says it is delivered and waiting for its pull request"
@@ -62,17 +62,17 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 ### S4 — --urgent travels onto the pull request and the queue leads with it
 - **Status**: pending
 - **DependsOn**: [S3]
-- **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-urgency.ts`, `tools/scripts/forge/queue-urgency.spec.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/work.command.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "pullRequestText puts an `Urgent: <reason>` line in the body when given a reason, and a republish keeps it"
-  - "queue-urgency.ts parses that line from a pull request body (the list endpoint already returns it, so the queue pays no extra call)"
+  - "pull-request-urgency.service.ts parses that line from a pull request body (the list endpoint already returns it, so the queue pays no extra call); a delivery notes the reason in the unit's git directory so the transition that publishes carries it"
   - "queueOrder sorts urgent candidates first, then by number; the train composition in queue-order.ts is untouched"
-  - "A spec shows an urgent later pull request ahead of an earlier plain one"
+  - "A spec shows an urgent later pull request ahead of an earlier plain one, and the note is read back by the publication"
 
 ### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/src/lib/work-units/unit-operation-in-progress.service.ts`, `packages/core/src/lib/work-units/unit-uncommitted-work.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "A worktree with MERGE_HEAD, REBASE_HEAD or CHERRY_PICK_HEAD whose unit is live is left exactly as it is: no commit, no staging"
@@ -92,6 +92,6 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - When the train ran or is running, nothing changes: landing is cleared as before
 - A spec covers pushFailure, dispatch false, a throwing assemble, a healthy train and a train waiting on its run
 - pullRequestText puts an `Urgent: <reason>` line in the body when given a reason, and a republish keeps it
-- queue-urgency.ts parses that line from a pull request body (the list endpoint already returns it, so the queue pays no extra call)
+- pull-request-urgency.service.ts parses that line from a pull request body (the list endpoint already returns it, so the queue pays no extra call); a delivery notes the reason in the unit's git directory so the transition that publishes carries it
 - queueOrder sorts urgent candidates first, then by number; the train composition in queue-order.ts is untouched
-- A spec shows an urgent later pull request ahead of an earlier plain one
+- A spec shows an urgent later pull request ahead of an earlier plain one, and the note is read back by the publication
