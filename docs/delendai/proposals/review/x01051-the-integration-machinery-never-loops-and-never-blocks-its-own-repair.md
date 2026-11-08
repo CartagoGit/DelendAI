@@ -2,14 +2,14 @@
 id: x01051
 title: "The integration machinery never loops and never blocks its own repair"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 07c4e90a-6e4c-468f-9369-76263244d739
-last-correlation-id: 07c4e90a-6e4c-468f-9369-76263244d739
-last-transition-from: review
-last-transition-at: 2026-11-08T17:14:05.638Z
+last-transition-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
+last-correlation-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
+last-transition-from: in-progress
+last-transition-at: 2026-11-08T17:18:29.103Z
 ---
 
 # x01051 — The integration machinery never loops and never blocks its own repair
@@ -103,6 +103,9 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "queue-order.ts exports one byQueuePosition (urgent first, then oldest) that queueOrder and candidateDispositions both use, so the refresher brings an urgent candidate forward first"
   - "A pull request whose body lacks the Urgent line but whose unit noted urgency gets the line added when the queue reads it (bodyWithUrgentLine, urgencyNotePathOfPublication)"
   - "Specs cover the shared order, the disposition order and the body line"
+- shipped-in: `5c9a30da9c2b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
