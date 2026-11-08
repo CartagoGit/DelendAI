@@ -1,11 +1,10 @@
 /**
  * queue-arming.ts — a candidate is armed on positive evidence only.
  *
- * The queue armed every candidate it accepted unless the integration
- * branch was red: one whose full run had not finished, or never ran, was
- * armed all the same, and so was a candidate whose own required checks
- * were still running or missing. Arming is now the answer to "is
- * everything that decides this green", not "is anything red yet".
+ * The queue armed every candidate it accepted, and a candidate whose own
+ * required checks were still running or missing was armed all the same.
+ * Arming is now the answer to "is everything that decides this green",
+ * not "is anything red yet".
  */
 import type {
 	IArmingCheckRun,
@@ -61,16 +60,19 @@ export const requiredChecksVerdict = (
 };
 
 /**
- * Whether the integration branch lets the queue arm: once its full run is
- * green, or while that run is still going on a commit whose parent was
- * certified. Waiting for every merge's own full run (nine minutes) before
- * arming the next made the queue land one change a run; a red verdict
- * still stops everything and arms only the repair, so at most one merge
- * goes in on a base that is not proven yet.
+ * What the queue does now: arm the accepted candidates whose own required
+ * checks passed, or, when two or more ride together, run them as one train
+ * instead. Nothing here asks the integration branch for a full run: a pull
+ * request's sectioned run, or a train's run of the union of its members'
+ * scopes, is enough to land; the full suite runs on the promotion. A lone
+ * pull request rides no train of one: its own sectioned checks decide.
  */
-export const integrationAllowsArming = (
-	state: string,
-	parentState?: string,
-): boolean =>
-	state === 'certified' ||
-	(state === 'pending' && parentState === 'certified');
+export const armingPlan = (input: {
+	/** Accepted candidates whose required checks passed on their head. */
+	readonly ready: readonly number[];
+	/** The candidates that would ride the next train. */
+	readonly riders: readonly number[];
+}): { readonly arm: readonly number[]; readonly train: boolean } =>
+	input.riders.length >= 2
+		? { arm: [], train: true }
+		: { arm: input.ready, train: false };

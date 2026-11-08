@@ -1,13 +1,12 @@
 /**
- * certify-integration.script.spec.ts — the integration branch's tip is
- * certified once, by a run that runs everything.
+ * certify-integration.script.spec.ts — what the full runs of the
+ * integration branch's tip concluded, the promotion's included.
  */
 import { describe, expect, it } from 'vitest';
 
 import {
 	MAX_CANCELLED_FULL_RUNS,
 	certificationOf,
-	needsCertification,
 	type ICertificationRun,
 	certificationRecord,
 } from './certify-integration.script';
@@ -21,58 +20,19 @@ const run = (over: Partial<ICertificationRun>): ICertificationRun => ({
 	...over,
 });
 
-describe('needsCertification', () => {
-	it('is needed for a tip with no run at all, as after a bot merge', () => {
-		expect(needsCertification([], SHA)).toBe(true);
-	});
-
-	it('is satisfied by a push or a dispatched run, finished or running', () => {
-		expect(needsCertification([run({})], SHA)).toBe(false);
-		expect(
-			needsCertification(
-				[
-					run({
-						event: 'workflow_dispatch',
-						conclusion: null,
-						status: 'in_progress',
-					}),
-				],
-				SHA,
-			),
-		).toBe(false);
-	});
-
-	it('is not satisfied by a pull-request run, which may have run only part', () => {
-		expect(needsCertification([run({ event: 'pull_request' })], SHA)).toBe(
-			true,
-		);
-	});
-
-	it('is not satisfied by a cancelled run or a run of another commit', () => {
-		expect(
-			needsCertification([run({ conclusion: 'cancelled' })], SHA),
-		).toBe(true);
-		expect(needsCertification([run({ head_sha: 'other' })], SHA)).toBe(
-			true,
-		);
-	});
-});
-
 describe('a run whose job timed out (x00641 S2)', () => {
 	// What the forge reported for a job over its `timeout-minutes`
 	// (run 36590926775): the job and the run both end `cancelled`.
 	const timedOut = (): ICertificationRun =>
 		run({ event: 'workflow_dispatch', conclusion: 'cancelled' });
 
-	it('is run again, not read as red', () => {
-		expect(needsCertification([timedOut()], SHA)).toBe(true);
+	it('is not read as red', () => {
 		expect(certificationOf([timedOut()], SHA)).toBe('uncertified');
 	});
 
-	it('stops being started once the commit was cancelled the bounded number of times', () => {
+	it('reads red once the commit was cancelled the bounded number of times', () => {
 		const runs = Array.from({ length: MAX_CANCELLED_FULL_RUNS }, timedOut);
-		expect(needsCertification(runs.slice(1), SHA)).toBe(true);
-		expect(needsCertification(runs, SHA)).toBe(false);
+		expect(certificationOf(runs.slice(1), SHA)).toBe('uncertified');
 		expect(certificationOf(runs, SHA)).toBe('red');
 	});
 
@@ -91,11 +51,29 @@ describe('a run whose job timed out (x00641 S2)', () => {
 				SHA,
 			),
 		).toBe('pending');
-		expect(needsCertification([timedOut(), run({})], SHA)).toBe(false);
 	});
 });
 
-describe('certificationOf — what the queue waits for', () => {
+describe('certificationOf — the promotion runs everything', () => {
+	it("counts the promotion's own run, whose head is the integration branch", () => {
+		const promotion = run({
+			event: 'pull_request',
+			head_branch: 'develop',
+			conclusion: 'failure',
+		});
+		expect(certificationOf([promotion], SHA, 'develop')).toBe('red');
+		expect(certificationOf([promotion], SHA)).toBe('uncertified');
+		expect(
+			certificationOf(
+				[run({ event: 'pull_request', head_branch: 'feature' })],
+				SHA,
+				'develop',
+			),
+		).toBe('uncertified');
+	});
+});
+
+describe('certificationOf', () => {
 	it('is uncertified with no full run, as right after a bot merge', () => {
 		expect(certificationOf([], SHA)).toBe('uncertified');
 		expect(certificationOf([run({ event: 'pull_request' })], SHA)).toBe(

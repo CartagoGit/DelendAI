@@ -46,22 +46,18 @@ import {
 } from '../git/refresh-candidate-artifacts.constant';
 import { queueAcceptance, trainRiders } from './queue-acceptance';
 import { assembleTrain } from './train-assembly';
-import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
+import { armingPlan, requiredChecksVerdict } from './queue-arming';
 import {
-	certifiedByTrain,
 	culpritRefName,
 	queueHead,
 	queueOrder,
-	repairStep,
 	runTrain,
 	TRAIN_CAPACITY,
 	trainMembers,
 	culpritsAmong,
-	isCulpritMarker,
 	trainPrefixesOf,
 	trainsToPrune,
 	type IQueueCandidateFacts,
-	type IRepairStep,
 	type ITrainCandidate,
 	type ITrainPorts,
 } from './queue-order';
@@ -483,91 +479,14 @@ export const currentQueueOrder = (): readonly {
 	}));
 };
 
-/**
- * Where the integration branch's tip stands, asked of the forge.
- *
- * The next candidate lands on top of this commit, so it may only be
- * armed once this commit has passed its own full run. Otherwise a red
- * integration branch collects more merges before anyone sees it is red —
- * and once pull requests run only what their change reaches, the full
- * run on the integration branch is the only thing that sees the rest.
- */
-const integrationCertification = (
-	integration: string,
-): { readonly sha: string; readonly state: IIntegrationCertification } => {
-	const sha = api<{ readonly sha: string }>(
-		`repos/${REPOSITORY_SLUG}/commits/${integration}`,
-	).sha;
-	const runs = api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
-		`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
-	).workflow_runs;
-	return { sha, state: certificationOf(runs, sha) };
-};
-
-/** The commit the integration branch was at before `sha` landed. */
-const firstParentOf = (sha: string): string =>
-	api<{ readonly parents: readonly { readonly sha: string }[] }>(
-		`repos/${REPOSITORY_SLUG}/commits/${sha}`,
-	).parents[0]?.sha ?? sha;
-
-/** Every full run of the certifying workflow at one commit, judged. */
-const fullRunAt = (sha: string): IIntegrationCertification =>
+/** Every run of the certifying workflow at one commit, judged. */
+const runAt = (sha: string): IIntegrationCertification =>
 	certificationOf(
 		api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
 			`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
 		).workflow_runs,
 		sha,
 	);
-
-/**
- * Whether a candidate carries the integration branch's tip. Asked of the
- * commits, not of `mergeable_state`: with up-to-date not required, the
- * forge never reports `behind`.
- */
-const levelWith = (integration: string, sha: string): boolean =>
-	api<{ readonly behind_by: number }>(
-		`repos/${REPOSITORY_SLUG}/compare/${integration}...${sha}`,
-	).behind_by === 0;
-
-/** Act on the repair step: dispatch a full run, or report. */
-const reportRepair = (step: IRepairStep, integration: string): void => {
-	if (step.kind === 'none') {
-		console.log(
-			`keep-the-queue-moving: ${integration} is red and no level candidate has a green full run that would repair it.`,
-		);
-		return;
-	}
-	if (step.kind === 'wait') {
-		console.log(
-			`keep-the-queue-moving: #${String(step.number)}'s full run is in progress; it is armed if it proves ${integration} green.`,
-		);
-		return;
-	}
-	if (step.kind === 'arm') {
-		console.log(
-			`keep-the-queue-moving: #${String(step.number)} is level and its full run is green, so landing it repairs ${integration}; it is armed.`,
-		);
-		return;
-	}
-	try {
-		gh([
-			'workflow',
-			'run',
-			CERTIFYING_WORKFLOW,
-			'--ref',
-			step.headRef,
-			'--repo',
-			REPOSITORY_SLUG,
-		]);
-		console.log(
-			`keep-the-queue-moving: dispatched a full run on #${String(step.number)}; if it is green, landing it repairs ${integration}.`,
-		);
-	} catch {
-		console.log(
-			`keep-the-queue-moving: could not dispatch a full run on #${String(step.number)}; the next run tries again.`,
-		);
-	}
-};
 
 /**
  * What a push of the release branch left undone when the forge never
@@ -676,13 +595,6 @@ const remoteBranches = (prefix: string): ReadonlyMap<string, string> =>
 			}),
 	);
 
-/** The tree of a commit, fetching it when the checkout lacks it. */
-const treeOf = (sha: string): string | undefined =>
-	git(['rev-parse', '--verify', '--quiet', `${sha}^{tree}`]) ??
-	(git(['fetch', '-q', '--', 'origin', sha]) === undefined
-		? undefined
-		: git(['rev-parse', '--verify', '--quiet', `${sha}^{tree}`]));
-
 /**
  * The forge and git behind a train. A train is assembled in a throwaway
  * worktree, never in the checkout, with a conflict confined to derived
@@ -700,7 +612,7 @@ const trainPorts = (input: {
 	readonly branches: ReadonlyMap<string, string>;
 }): ITrainPorts => ({
 	trainAt: (ref) => input.branches.get(ref),
-	fullRunAt,
+	runAt,
 	assemble: (ref, members) =>
 		assembleTrain({
 			root: process.cwd(),
@@ -723,6 +635,9 @@ const trainPorts = (input: {
 					}
 				}),
 		}),
+	// Judged since the tip it starts from, the run plans its jobs and tests
+	// with the job scope and test scope a pull request uses: the union of
+	// the members' scopes, never the full suite.
 	dispatch: (ref) => {
 		try {
 			gh([
@@ -731,6 +646,8 @@ const trainPorts = (input: {
 				CERTIFYING_WORKFLOW,
 				'--ref',
 				ref,
+				'-f',
+				`base=${input.tipSha}`,
 				'--repo',
 				REPOSITORY_SLUG,
 			]);
@@ -788,7 +705,7 @@ const trainPorts = (input: {
 				'comment',
 				String(member.number),
 				'--body',
-				`The merge train isolated this pull request: ${input.integration} with it alone fails its full run. It rides no train until its head moves.`,
+				`The merge train isolated this pull request: ${input.integration} with it alone fails its run. It rides no train until its head moves.`,
 			]);
 		} catch {
 			// The culprit branch still keeps it out; the comment is the courtesy.
@@ -818,85 +735,46 @@ const main = (): void => {
 	const trains = new Map(
 		trainPrefixes.flatMap((prefix) => [...remoteBranches(prefix)]),
 	);
-	const asked = integrationCertification(integration);
-	const tipTree = treeOf(asked.sha);
-	const builtTrains = [...trains]
-		.filter(([branch]) => !isCulpritMarker(trainPrefixes, branch))
-		.map(([, sha]) => ({ sha, tree: treeOf(sha) ?? '' }));
-	// A tip whose pull requests landed one by one from a green train carries
-	// the train's tree, and the train's full run already proved it.
-	const certification =
-		asked.state !== 'certified' &&
-		tipTree !== undefined &&
-		certifiedByTrain(tipTree, builtTrains, fullRunAt)
-			? { ...asked, state: 'certified' as const }
-			: asked;
+	// The tip the next landing goes onto. Its own full run is not asked:
+	// what landed was proved by its sectioned run, and the full suite runs
+	// on the promotion, whose failure opens a repair without stopping this.
+	const tipSha = api<{ readonly sha: string }>(
+		`repos/${REPOSITORY_SLUG}/commits/${integration}`,
+	).sha;
 	// Old trains go, and with them every train under a former namespace.
 	for (const branch of trainsToPrune({
 		prefixes: trainPrefixes,
-		tipSha: certification.sha,
+		tipSha,
 		branches: trains,
-		keep: (sha) => tipTree !== undefined && treeOf(sha) === tipTree,
 	})) {
 		git(['push', '-q', 'origin', '--delete', branch]);
 	}
-	const red = certification.state === 'red';
 	const shaOf = (number: number): string =>
 		opened.find((pull) => pull.number === number)?.head.sha ?? '';
-	// A red integration branch arms nothing, except the candidate proven
-	// to repair it.
-	const repair: IRepairStep = red
-		? repairStep(
-				candidates,
-				publicationPrefix,
-				(candidate) => levelWith(integration, shaOf(candidate.number)),
-				(candidate) => fullRunAt(shaOf(candidate.number)),
-			)
-		: { kind: 'none' };
-	const repairing = repair.kind === 'arm' ? repair.number : undefined;
-	if (red) {
-		console.log(
-			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is red; nothing is armed except a candidate proven to repair it.`,
-		);
-		reportRepair(repair, integration);
-	}
-	const acceptance =
-		red && repairing === undefined
-			? []
-			: queueAcceptance({
-					root: process.cwd(),
-					remote: 'origin',
-					integration,
-					integrationSha: certification.sha,
-					candidates: queueOrder(candidates, publicationPrefix)
-						.filter((candidate) => !candidate.conflicting)
-						.map((candidate) => ({
-							number: candidate.number,
-							headRef: candidate.headRef,
-							headSha: shaOf(candidate.number),
-						})),
-				});
+	const ordered = queueOrder(candidates, publicationPrefix);
+	const acceptance = queueAcceptance({
+		root: process.cwd(),
+		remote: 'origin',
+		integration,
+		integrationSha: tipSha,
+		candidates: ordered
+			.filter((candidate) => !candidate.conflicting)
+			.map((candidate) => ({
+				number: candidate.number,
+				headRef: candidate.headRef,
+				headSha: shaOf(candidate.number),
+			})),
+	});
 	for (const verdict of acceptance) {
 		console.log(
 			`keep-the-queue-moving: #${String(verdict.number)} ${verdict.accepted ? 'lands as it is' : 'is brought forward first'} — ${verdict.why}.`,
 		);
 	}
-	// Armed on positive evidence only: a certified integration branch, and
-	// every required check green on the candidate's own current head.
-	const certified = integrationAllowsArming(
-		certification.state,
-		certification.state === 'pending'
-			? fullRunAt(firstParentOf(certification.sha))
-			: undefined,
-	);
-	if (!red && !certified) {
-		console.log(
-			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, and the commit before it is not certified; nothing is armed until a full run is green.`,
-		);
-	}
+	// Armed on positive evidence only: every required check green on the
+	// candidate's own current head, its sectioned run.
 	const ready = acceptance
 		.filter((verdict) => {
-			if (!verdict.accepted || verdict.number === repairing) return false;
+			if (!verdict.accepted) return false;
 			const checks = requiredChecksVerdict(
 				checksOf(shaOf(verdict.number)),
 				policy.integration.requiredChecks,
@@ -909,74 +787,62 @@ const main = (): void => {
 			return checks.passed;
 		})
 		.map((verdict) => verdict.number);
-	const landing = new Set(certified ? ready : []);
-	if (repairing !== undefined) landing.add(repairing);
 	// The train is the integration tip with each rider merged onto it, so
-	// its one full run proves every rider against the tip as it is now:
-	// behind, or conflicting only in derived files (regenerated on the
-	// train), a candidate rides. It stays off only when it overlaps an
-	// earlier rider, or does not merge onto the tip and the riders before
-	// it. Two or more ride one train instead of one certification of the
-	// integration branch after each; one that cannot land as it is rides a
-	// train of its own. A repair leads it, so a red tip still lands
-	// nothing without it.
+	// its one run, judged since the tip, runs the union of the riders'
+	// scopes and proves every rider against the tip as it is now: behind,
+	// or conflicting only in derived files (regenerated on the train), a
+	// candidate rides. It stays off only when it overlaps an earlier rider,
+	// or does not merge onto the tip and the riders before it.
 	const riderOf = (number: number): ITrainCandidate => ({
 		number,
 		headRef: opened.find((pull) => pull.number === number)?.head.ref ?? '',
 		headSha: shaOf(number),
 	});
-	const anchor = repairing === undefined ? undefined : riderOf(repairing);
-	const riding =
-		red && repairing === undefined
-			? []
-			: trainRiders({
-					root: process.cwd(),
-					remote: 'origin',
-					integration,
-					integrationSha: certification.sha,
-					candidates: queueOrder(candidates, publicationPrefix)
-						.filter((candidate) => candidate.number !== repairing)
-						.map((candidate) => riderOf(candidate.number)),
-				}).filter((verdict) => {
-					if (!verdict.accepted) {
-						console.log(
-							`keep-the-queue-moving: #${String(verdict.number)} waits for the next train — ${verdict.why}.`,
-						);
-						return false;
-					}
-					// The train's full run proves it; a check that already
-					// failed on its own head says it would not.
-					return (
-						requiredChecksVerdict(
-							checksOf(shaOf(verdict.number)),
-							policy.integration.requiredChecks,
-						).failed.length === 0
-					);
-				});
+	const riding = trainRiders({
+		root: process.cwd(),
+		remote: 'origin',
+		integration,
+		integrationSha: tipSha,
+		candidates: ordered.map((candidate) => riderOf(candidate.number)),
+	}).filter((verdict) => {
+		if (!verdict.accepted) {
+			console.log(
+				`keep-the-queue-moving: #${String(verdict.number)} waits for the next train — ${verdict.why}.`,
+			);
+			return false;
+		}
+		// The train's run proves it; a check that already failed on its
+		// own head says it would not.
+		return (
+			requiredChecksVerdict(
+				checksOf(shaOf(verdict.number)),
+				policy.integration.requiredChecks,
+			).failed.length === 0
+		);
+	});
 	const riders = trainMembers(
 		riding.map((verdict) => riderOf(verdict.number)),
 		culpritsAmong(trainPrefixes, trains),
-		TRAIN_CAPACITY - (anchor === undefined ? 0 : 1),
+		TRAIN_CAPACITY,
 	);
-	const needsProof = riders.some((rider) => !ready.includes(rider.number));
-	if (
-		(certified || anchor !== undefined) &&
-		(riders.length + (anchor === undefined ? 0 : 1) >= 2 || needsProof)
-	) {
+	const plan = armingPlan({
+		ready,
+		riders: riders.map((rider) => rider.number),
+	});
+	const landing = new Set(plan.arm);
+	if (plan.train) {
 		runTrain({
 			trainPrefix,
-			tipSha: certification.sha,
+			tipSha,
 			members: riders,
-			...(anchor === undefined ? {} : { anchor }),
 			ports: trainPorts({
 				integration,
-				tipSha: certification.sha,
+				tipSha,
 				trainPrefix,
 				mergeMethod: policy.integration.mergeMethod,
 				branches: trains,
 			}),
 		});
-		landing.clear();
 	}
 	for (const pull of opened) {
 		if (
