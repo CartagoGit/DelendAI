@@ -3,7 +3,7 @@
  * units in step with the forge, and overwrites nothing.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -256,6 +256,52 @@ describe('syncUnitsWithForge', () => {
 		expect(
 			await syncUnitsAtStart({ root: lonely, policy, env: {} }),
 		).toEqual([]);
+	});
+
+	it('publishes at start a unit whose proposal left in-progress and that holds work the forge lacks', async () => {
+		const { top, home } = machines();
+		const unit = join(top, 'home-unit');
+		git(home, 'worktree', 'add', '-q', '-b', BRANCH, unit);
+		const docs = join(unit, 'docs/delendai/proposals');
+		mkdirSync(join(docs, 'in-progress'), { recursive: true });
+		mkdirSync(join(docs, 'review'), { recursive: true });
+		writeFileSync(join(docs, 'in-progress/x1-topic.md'), '# x1\n');
+		writeFileSync(join(unit, 'work.txt'), 'work\n');
+		git(unit, 'add', '-A');
+		const longAgo = {
+			GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
+			GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+		};
+		const old = (...args: string[]): string =>
+			execFileSync('git', args, {
+				cwd: unit,
+				encoding: 'utf8',
+				env: { ...process.env, ...longAgo },
+			}).trim();
+		old('commit', '-q', '-m', 'work while in progress');
+		git(
+			unit,
+			'mv',
+			'docs/delendai/proposals/in-progress/x1-topic.md',
+			'docs/delendai/proposals/review/x1-topic.md',
+		);
+		old('commit', '-q', '-m', 'the proposal moves to review');
+
+		const written: string[] = [];
+		const done = await syncUnitsAtStart({
+			root: home,
+			policy,
+			env: {},
+			write: (line) => written.push(line),
+		});
+		const outOfProgress = done.filter(
+			(each) =>
+				each.branch === BRANCH &&
+				(each.outcome === 'published' || each.outcome === 'failed') &&
+				(each.detail ?? '').includes('out of progress') !==
+					(each.outcome === 'published'),
+		);
+		expect(outOfProgress).not.toEqual([]);
 	});
 
 	it('tells the doctor which units hold work the forge lacks', async () => {
