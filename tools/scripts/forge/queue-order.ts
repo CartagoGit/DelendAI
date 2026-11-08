@@ -31,6 +31,14 @@ export type {
 	ITrainStep,
 } from './queue-order.interface';
 
+/** One position rule for every ordering of candidates: urgent first, then oldest. */
+export const byQueuePosition = (
+	a: Pick<IQueueCandidateFacts, 'number' | 'urgent'>,
+	b: Pick<IQueueCandidateFacts, 'number' | 'urgent'>,
+): number =>
+	Number(b.urgent !== undefined) - Number(a.urgent !== undefined) ||
+	a.number - b.number;
+
 /**
  * The queue itself: the pull requests this model produced that are ready
  * (not drafts) and not red (they would never merge), urgent ones first
@@ -49,11 +57,7 @@ export const queueOrder = (
 				!candidate.draft &&
 				!candidate.red,
 		)
-		.sort(
-			(a, b) =>
-				Number(b.urgent !== undefined) -
-					Number(a.urgent !== undefined) || a.number - b.number,
-		);
+		.sort(byQueuePosition);
 
 /**
  * The candidate that moves next: the oldest one in the queue that is not

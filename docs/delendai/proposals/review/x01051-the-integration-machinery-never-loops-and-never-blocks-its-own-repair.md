@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 1ca5431c-eadc-417f-a8fe-aa028f881011
-last-correlation-id: 1ca5431c-eadc-417f-a8fe-aa028f881011
+last-transition-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
+last-correlation-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
 last-transition-from: in-progress
-last-transition-at: 2026-11-08T07:28:40.093Z
+last-transition-at: 2026-11-08T17:18:29.103Z
 ---
 
 # x01051 — The integration machinery never loops and never blocks its own repair
@@ -91,6 +91,19 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "The same merge in a unit that is not live is kept with a message that names the merge (the commit it merges); a rebase or cherry-pick in progress is reported and left alone, because committing in the middle of one corrupts it"
   - "A spec covers both cases on a real repository"
 - shipped-in: `eb868435ddd6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S6 — Urgent repairs wait behind nothing in the one-by-one path, and a missing Urgent line is added
+- **Status**: review
+- **DependsOn**: [S4]
+- **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
+- **Gate**: none
+- acceptance:
+  - "queue-order.ts exports one byQueuePosition (urgent first, then oldest) that queueOrder and candidateDispositions both use, so the refresher brings an urgent candidate forward first"
+  - "A pull request whose body lacks the Urgent line but whose unit noted urgency gets the line added when the queue reads it (bodyWithUrgentLine, urgencyNotePathOfPublication)"
+  - "Specs cover the shared order, the disposition order and the body line"
+- shipped-in: `5c9a30da9c2b`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
