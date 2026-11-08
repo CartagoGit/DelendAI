@@ -12,6 +12,8 @@ export interface IQueueCandidateFacts {
 	readonly failing?: readonly string[];
 	/** The forge reports conflicts with the integration branch. */
 	readonly conflicting: boolean;
+	/** Why the delivery is urgent, from the pull request's body; the queue leads with it. */
+	readonly urgent?: string | undefined;
 }
 
 /**
@@ -72,7 +74,11 @@ export interface ITrainPorts {
 	readonly assemble: (
 		ref: string,
 		members: readonly ITrainCandidate[],
-	) => { readonly conflicting: readonly number[] };
+	) => {
+		readonly conflicting: readonly number[];
+		/** Git's reason, when the push of the assembled train was declined. */
+		readonly pushFailure?: string;
+	};
 	/** Start one full run of the certifying workflow on `ref`. */
 	readonly dispatch: (ref: string) => boolean;
 	/**
