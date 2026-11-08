@@ -3,8 +3,8 @@
  * time" (the run itself is the other half: the test-kit runner fails a
  * test with no budget, or over it).
  *
- * A spec file that is not on the migration list must declare a budget on
- * every `it`/`test`. A file on the list may still hold tests with none,
+ * A spec file that is not on the migration list must start the name of
+ * every `it`/`test` with its budget, `[<7ms] does X`. A file on the list may still hold tests with none,
  * and the list only ever shrinks: a file that no longer needs its entry
  * must drop it, so it cannot slide back.
  */
@@ -19,9 +19,6 @@ const EACH_CALL = /\b(?:it|test)(?:\.[a-z]+)*\.each\b/gu;
 /** A call written inside a string (a fixture) is not a test. */
 const inString = (text: string, at: number): boolean =>
 	/["'`]/u.test(text.charAt(at - 1));
-
-/** How far past a name its options object is looked for. */
-const OPTIONS_WINDOW = 200;
 
 const skipSpaces = (text: string, from: number): number => {
 	let index = from;
@@ -43,17 +40,21 @@ const endOfString = (text: string, from: number): number | undefined => {
 	return undefined;
 };
 
-/** Whether the call whose `(` ends at `afterParen` declares `budgetMs`. */
+/** What a budget looks like at the front of a test name's content. */
+const BUDGET_NAME = /^\[<\d+(?:\.\d+)?ms\] /u;
+
+/** The content of the string literal that starts at `from`, if one does. */
+const stringAt = (text: string, from: number): string | undefined => {
+	const end = endOfString(text, from);
+	return end === undefined ? undefined : text.slice(from + 1, end - 1);
+};
+
+/** Whether the call whose `(` ends at `afterParen` names itself with a budget. */
 const declares = (text: string, afterParen: number): boolean => {
-	const nameEnd = endOfString(text, skipSpaces(text, afterParen));
-	if (nameEnd === undefined) return true;
-	const comma = skipSpaces(text, nameEnd);
-	if (text.charAt(comma) !== ',') return false;
-	const options = text.slice(
-		skipSpaces(text, comma + 1),
-		skipSpaces(text, comma + 1) + OPTIONS_WINDOW,
-	);
-	return options.startsWith('{') && options.includes('budgetMs');
+	const start = skipSpaces(text, afterParen);
+	const name = stringAt(text, start);
+	// A name that is not a literal (a variable, a call) cannot be read.
+	return name === undefined || BUDGET_NAME.test(name);
 };
 
 /** How many tests in this text declare no budget. */
@@ -69,9 +70,9 @@ export const unbudgetedTests = (text: string): number => {
 	for (const call of text.matchAll(EACH_CALL)) {
 		if (inString(text, call.index ?? 0)) continue;
 		const from = (call.index ?? 0) + call[0].length;
-		// Lenient on purpose: the budget sits after a second call's name.
-		// The run still fails the test that has none.
-		if (!text.slice(from, from + 400).includes('budgetMs')) missing += 1;
+		// Lenient on purpose: the name sits after a second call's `(`. The run
+		// still fails the test that has no budget.
+		if (!text.slice(from, from + 400).includes('[<')) missing += 1;
 	}
 	return missing;
 };
@@ -85,11 +86,17 @@ export interface IDeclaredBudgetVerdict {
 	}[];
 	/** List entries that no longer need to be there (kept or fixed). */
 	readonly stale: readonly string[];
+	/**
+	 * Spec files the change touches that are still on the list: an edited
+	 * spec complies in full and leaves it.
+	 */
+	readonly touched: readonly string[];
 }
 
 export const judgeDeclaredBudgets = (
 	files: ReadonlyMap<string, number>,
 	listed: ReadonlySet<string>,
+	changed: ReadonlySet<string> = new Set(),
 ): IDeclaredBudgetVerdict => ({
 	missing: [...files]
 		.filter(([path, tests]) => tests > 0 && !listed.has(path))
@@ -97,5 +104,8 @@ export const judgeDeclaredBudgets = (
 		.sort((a, b) => a.path.localeCompare(b.path)),
 	stale: [...listed]
 		.filter((path) => (files.get(path) ?? 0) === 0)
+		.sort((a, b) => a.localeCompare(b)),
+	touched: [...listed]
+		.filter((path) => changed.has(path) && (files.get(path) ?? 0) > 0)
 		.sort((a, b) => a.localeCompare(b)),
 });

@@ -53,8 +53,6 @@ export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermeti
 export {
 	budgetFailure,
 	budgetInName,
-	budgetOf,
-	labelled,
 } from '../lib/time-budget/time-budget.helper';
 export { timeBudgetRunnerPath } from '../lib/time-budget/time-budget-runner-path.helper';
 export {

@@ -3,33 +3,27 @@ import { describe, expect, it } from 'vitest';
 import { judgeDeclaredBudgets, unbudgetedTests } from './declared-test-budget';
 
 describe('declared test budgets', () => {
-	it('counts a test with no options and passes one that declares a budget', {
-		meta: { budgetMs: 50 },
-	}, () => {
+	it('[<50ms] counts a test whose name has no budget at the front, or a malformed one', () => {
 		const text = [
 			"it('a', () => {});",
-			"it('b', { meta: { budgetMs: 5 } }, () => {});",
-			'test.only(`c`, { meta: { budgetMs: 5 } }, () => {});',
-			"it('d', { timeout: 10 }, () => {});",
+			"it('[<5ms] b', () => {});",
+			'test.only(`[<5ms] c`, () => {});',
+			"it('d [<5ms] late', { timeout: 10 }, () => {});",
+			"it('[<ms] malformed', () => {});",
 		].join('\n');
-		expect(unbudgetedTests(text)).toBe(2);
+		expect(unbudgetedTests(text)).toBe(3);
 	});
 
-	it('ignores skipped tests and reads an each table leniently', {
-		meta: { budgetMs: 50 },
-	}, () => {
+	it('[<50ms] ignores skipped tests and a fixture inside a string, and reads an each table leniently', () => {
 		expect(unbudgetedTests("it.skip('a', () => {});")).toBe(0);
-		expect(
-			unbudgetedTests(
-				"it.each([1])('x %i', { meta: { budgetMs: 4 } }, () => {});",
-			),
-		).toBe(0);
+		expect(unbudgetedTests('const f = "it(\'a\', () => {})";')).toBe(0);
+		expect(unbudgetedTests("it.each([1])('[<4ms] x %i', () => {});")).toBe(
+			0,
+		);
 		expect(unbudgetedTests("it.each([1])('x %i', () => {});")).toBe(1);
 	});
 
-	it('asks for budgets off the list and for the list to shrink', {
-		meta: { budgetMs: 100 },
-	}, () => {
+	it('[<100ms] asks for budgets off the list, for the list to shrink and for an edited spec to leave it', () => {
 		const files = new Map([
 			['new.spec.ts', 2],
 			['old.spec.ts', 3],
@@ -38,8 +32,10 @@ describe('declared test budgets', () => {
 		const verdict = judgeDeclaredBudgets(
 			files,
 			new Set(['old.spec.ts', 'fixed.spec.ts', 'gone.spec.ts']),
+			new Set(['old.spec.ts', 'fixed.spec.ts']),
 		);
 		expect(verdict.missing).toEqual([{ path: 'new.spec.ts', tests: 2 }]);
 		expect(verdict.stale).toEqual(['fixed.spec.ts', 'gone.spec.ts']);
+		expect(verdict.touched).toEqual(['old.spec.ts']);
 	});
 });

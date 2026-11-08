@@ -85,11 +85,11 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - **Files**: `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/README.md`, `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/test/test-time-budget.migration.json`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
-  - "Every test carries its maximum as [<Nms] at the front of its name, written by the runner from the test's meta.budgetMs (a prefix typed by hand is read the same way); no test may go without one"
-  - "A test that exceeds its budget fails, and so does one with no budget; the test-kit runner is loaded for every project from sharedTestOptions in vitest.shared.ts with no opt-out, and adds one clock read before and after each test"
+  - "Every test carries its maximum at the front of its name, "[<7ms] does X"; the runner reads it from the name, so reporters show it with nothing injected. A missing or malformed prefix fails the test"
+  - "A test that exceeds its budget fails; the test-kit runner is loaded for every project from sharedTestOptions in vitest.shared.ts with no opt-out, and adds one clock read before and after each test"
   - "Only the test body is measured, not hooks or the file import. The number is absolute, so CI and local machines judge the same test against the same figure with no hidden multiplier; set it from the slower of the two"
   - "tools/scripts/ci/spec-duration-budget.script.ts gains the declared-budget check (no second lint); a lint and a spec of the shared config prove every vitest project loads the runner"
-  - "Spec files still holding tests with no budget are on tools/scripts/test/test-time-budget.migration.json, which may only shrink; renaming them follows in batches"
+  - "Spec files still holding tests with no budget are on tools/scripts/test/test-time-budget.migration.json, which may only shrink; a spec file the change edits must leave it and comply in full (checked with the changed-files input of the other gates); renaming the rest follows in batches"
   - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, with the config line a consuming project adds"
 
 ## acceptance
@@ -103,4 +103,4 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - The report prints these numbers per week
 - Coverage instruments only changed source files and shard time is measured before and after
 - The slowest specs are made fast and the over-budget list shrinks
-- Every test declares a maximum, written by code, and exceeding it fails the run; the list of tests without one only shrinks
+- Every test names its maximum at the front, and exceeding it fails the run; the list of tests without one only shrinks

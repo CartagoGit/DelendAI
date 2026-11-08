@@ -8,20 +8,20 @@ Workspace-internal (`private`): it is consumed by other workspaces in this repos
 
 ## Every test declares a maximum time
 
-A test is written `it('does X', { meta: { budgetMs: 7 } }, fn)`. The runner
-(`timeBudgetRunnerPath()`, set in `test.runner` of every project through
-`sharedTestOptions`) measures the test body only, not shared hooks or the
-import of the file, and **fails** a test that takes longer than it declared
-or that declares nothing. The number is absolute: a laptop and CI judge it
-against the same figure, with no hidden multiplier, so set it from the slower
-of the two and fix a slow test instead of raising its number. The runner also
-writes the `[<7ms]` prefix on the task name; a prefix typed by hand is read
-the same way. It adds one clock read before and one after each test.
+A test starts its name with its maximum, `it('[<7ms] does X', fn)`. The
+runner (`timeBudgetRunnerPath()`, set in `test.runner` of every project
+through `sharedTestOptions`) reads the number from the name, measures the test
+body only, not shared hooks or the import of the file, and **fails** a test
+that takes longer, has no prefix, or has a malformed one. The number is
+absolute: a laptop and CI judge it against the same figure, with no hidden
+multiplier, so set it from the slower of the two and fix a slow test instead
+of raising its number. It adds one clock read before and one after each test.
 
 Existing spec files that still hold tests with no budget are listed in
 `tools/scripts/test/test-time-budget.migration.json`. The list only shrinks
 (`bun run lint:test-time-budget`; `--declared --update` drops a file that is
-done). A file off the list must budget every test.
+done), a spec file the change edits must leave it and budget every test, and
+a file off the list must budget every test.
 
 A project that consumes delendai adds the same to each vitest config:
 

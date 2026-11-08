@@ -9,14 +9,14 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 
-import { type RunnerTestCase, type RunnerTestFile, TestRunner } from 'vitest';
+import { type RunnerTestCase, TestRunner } from 'vitest';
 
 import {
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
-import { budgetFailure, labelled } from './time-budget.helper';
+import { budgetFailure } from './time-budget.helper';
 
 let migrating: ReadonlySet<string> | undefined;
 
@@ -42,25 +42,12 @@ const isMigrating = (test: RunnerTestCase): boolean => {
 };
 
 export default class TimeBudgetRunner extends TestRunner {
-	onCollected(files: RunnerTestFile[]): void {
-		const label = (tasks: RunnerTestFile['tasks']): void => {
-			for (const task of tasks) {
-				if (task.type === 'suite') label(task.tasks);
-				else if (task.meta.budgetMs !== undefined) {
-					task.name = labelled(task.name, task.meta.budgetMs);
-				}
-			}
-		};
-		for (const file of files) label(file.tasks);
-	}
-
 	async runTask(test: RunnerTestCase): Promise<void> {
 		const body = TestRunner.getTestFn(test);
 		const start = performance.now();
 		await body();
 		const failure = budgetFailure({
 			name: test.name,
-			meta: test.meta,
 			migrating: isMigrating(test),
 			tookMs: performance.now() - start,
 		});

@@ -5,7 +5,7 @@
  * by a margin (q00045 S1). Files over 1 s are reported.
  *
  *   bun tools/scripts/ci/spec-duration-budget.script.ts --declared [--update|--init]
- *       every test declares its maximum time (the other half of the rule the
+ *       every test names its maximum time, "[<7ms] does X" (the other half of the rule the
  *       test-kit runner enforces in the run): a spec file off the migration
  *       list must budget every test, and the list only shrinks
  *   bun tools/scripts/ci/spec-duration-budget.script.ts --timings=<spec-timings.json>
@@ -65,14 +65,12 @@ const declaredMain = (): number => {
 	})
 		.split('\0')
 		.filter((file) => /\.(?:spec|test)\.ts$/u.test(file))) {
-		try {
-			files.set(
-				path,
-				unbudgetedTests(readFileSync(join(root, path), 'utf8')),
-			);
-		} catch {
-			// A tracked path that is gone from the working tree has no tests.
-		}
+		// A tracked path gone from the working tree has no tests.
+		if (!existsSync(join(root, path))) continue;
+		files.set(
+			path,
+			unbudgetedTests(readFileSync(join(root, path), 'utf8')),
+		);
 	}
 	const write = (unbudgeted: readonly string[]): void =>
 		writeFileSync(
@@ -101,7 +99,25 @@ const declaredMain = (): number => {
 			}
 		).unbudgeted,
 	);
-	const verdict = judgeDeclaredBudgets(files, listed);
+	// The changed files come from the input the other gates use: a list
+	// file, or the base the change is measured against.
+	const base = arg('base') ?? process.env['DELENDAI_COVERAGE_BASE'];
+	const changedList = arg('changed-files');
+	const changed = new Set(
+		changedList !== undefined
+			? readFileSync(changedList, 'utf8').split('\n')
+			: base === undefined || base === ''
+				? []
+				: execFileSync(
+						'git',
+						['diff', '--name-only', `${base}...HEAD`],
+						{
+							cwd: root,
+							encoding: 'utf8',
+						},
+					).split('\n'),
+	);
+	const verdict = judgeDeclaredBudgets(files, listed, changed);
 	if (process.argv.includes('--update')) {
 		const stale = new Set(verdict.stale);
 		write([...listed].filter((path) => !stale.has(path)).sort());
@@ -110,7 +126,12 @@ const declaredMain = (): number => {
 	}
 	for (const { path, tests } of verdict.missing) {
 		console.error(
-			`✖ ${path}: ${String(tests)} test(s) declare no time budget. Write it('…', { meta: { budgetMs: <ms> } }, fn) — the run fails a test with none, or over it.`,
+			`✖ ${path}: ${String(tests)} test(s) declare no time budget. Start each name with its budget, "[<7ms] does X" — the run fails a test with none, or over it.`,
+		);
+	}
+	for (const path of verdict.touched) {
+		console.error(
+			`✖ ${path}: this change edits it, so every test in it names its budget ("[<7ms] does X") and the file leaves the migration list.`,
 		);
 	}
 	for (const path of verdict.stale) {
@@ -118,12 +139,22 @@ const declaredMain = (): number => {
 			`✖ ${path}: no longer needs its migration entry (run --declared --update); the list only shrinks.`,
 		);
 	}
-	if (verdict.missing.length + verdict.stale.length === 0) {
+	if (
+		verdict.missing.length +
+			verdict.stale.length +
+			verdict.touched.length ===
+		0
+	) {
 		console.log(
 			`✓ test-time-budget: every test off the ${String(listed.size)}-file migration list declares a maximum time.`,
 		);
 	}
-	return verdict.missing.length + verdict.stale.length === 0 ? 0 : 1;
+	return verdict.missing.length +
+		verdict.stale.length +
+		verdict.touched.length ===
+		0
+		? 0
+		: 1;
 };
 
 const main = (): number => {

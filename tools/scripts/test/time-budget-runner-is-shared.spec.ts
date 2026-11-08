@@ -22,22 +22,18 @@ const projectConfigs = (): string[] => {
 };
 
 describe('the time-budget runner is loaded by every vitest project', () => {
-	it('sits in the options every project spreads, and exists', {
-		meta: { budgetMs: 100 },
-	}, () => {
+	it('[<100ms] sits in the options every project spreads, and exists', () => {
 		expect(sharedTestOptions.runner).toBe(timeBudgetRunnerPath());
 		expect(existsSync(sharedTestOptions.runner)).toBe(true);
 	});
 
-	it('is reached by every project config, through the shared options or the isolation split', {
-		meta: { budgetMs: 500 },
-	}, () => {
+	it('[<500ms] is reached by every project config, through the shared options or the isolation split', () => {
 		const root = repoRoot();
 		const bypassing = projectConfigs().filter((file) => {
-			const text = readFileSync(join(root, file), 'utf8');
 			// The root config only lists projects; none of them inherits its
 			// `test` block, so it needs none of its own.
 			if (file === 'vitest.config.ts') return false;
+			const text = readFileSync(join(root, file), 'utf8');
 			return !/sharedTestOptions|isolationSplit|coreConfig|toolsConfig/u.test(
 				text,
 			);
@@ -45,9 +41,7 @@ describe('the time-budget runner is loaded by every vitest project', () => {
 		expect(bypassing).toEqual([]);
 	});
 
-	it('is not overridden by a project that sets its own runner', {
-		meta: { budgetMs: 500 },
-	}, () => {
+	it('[<500ms] is not overridden by a project that sets its own runner', () => {
 		const root = repoRoot();
 		const overriding = projectConfigs().filter((file) =>
 			/\brunner\s*:/u.test(readFileSync(join(root, file), 'utf8')),
