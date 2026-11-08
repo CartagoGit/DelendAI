@@ -97,6 +97,27 @@ export const changedSince = (root: string, base: string): readonly string[] =>
 		git(root, ['diff', '--name-only', '--diff-filter=d', `${base}...HEAD`]),
 	);
 
+/** A file's text where the branch left `base`; `undefined` when it was not there. */
+const baseTextAt = (
+	root: string,
+	base: string,
+): ((file: string) => string | undefined) => {
+	let mergeBase: string | undefined;
+	return (file) => {
+		try {
+			mergeBase ??= git(root, ['merge-base', base, 'HEAD']);
+			return execFileSync('git', ['show', `${mergeBase}:${file}`], {
+				cwd: root,
+				encoding: 'utf8',
+				maxBuffer: 64 * 1024 * 1024,
+				stdio: ['ignore', 'pipe', 'ignore'],
+			});
+		} catch {
+			return undefined;
+		}
+	};
+};
+
 const readMapAt = (root: string): IZoneReadMap | undefined => {
 	try {
 		return parseZoneReadMap(
@@ -154,7 +175,13 @@ export const nearSpecsSince = (
 	// record reading it, and only by them: a review batch runs those.
 	return [
 		...new Set([
-			...touchedSpecsOf(root, changed, files, paths),
+			...touchedSpecsOf(
+				root,
+				changed,
+				files,
+				paths,
+				baseTextAt(root, base),
+			),
 			...readerSpecs(changed, readMapAt(root)),
 		]),
 	].sort();
