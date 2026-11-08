@@ -38,3 +38,7 @@ An inventory of the shared clone found worktrees and refs that belong to nobody.
 - The reclaimer classifies branch-runtime worktrees as runtime (never reclaimed), detached clean worktrees contained in a remote ref as spent, `.git/delendai-prove/*` by whether a live process holds it, and a merge in progress whose HEAD and MERGE_HEAD are both on the remote as spent.
 - `refresh-candidate-artifacts` removes its `/tmp/candidate-refresh-*` worktree in a `finally`; the train rehearsal creates no local branch.
 - Work refs with no unique commits are retired with `delendai work retire`.
+
+## follow-up
+
+- The work ref `delendai/wip/claude-sonnet-5-5/implement/f00799-S4-g2/orchestrator-cost` is gaining commits with no lease, so its writer must be found. It is left as it is: it was not retired.
