@@ -89,6 +89,8 @@ export { splitCommandLine } from '../lib/shared/command-line.helper';
 export type { IWorkRefVerdict } from '../lib/contracts/interfaces/work-ref-lifecycle.interface';
 export {
 	workRefFate,
+	workRefIntegrationRef,
+	workRefLanded,
 	workRefOpenness,
 } from '../lib/work-units/work-ref-lifecycle.service';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
