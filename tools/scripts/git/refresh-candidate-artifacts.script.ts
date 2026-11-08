@@ -58,6 +58,7 @@ import {
 } from '../forge/keep-the-queue-moving.script';
 import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
 import { trainPrefixesOf } from '../forge/publication-prefixes';
+import { keepOneProposalCopy } from '../proposals/keep-one-proposal-copy';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -429,6 +430,18 @@ export const refreshCandidate = (input: {
 					});
 				})()
 			: { brought: [], dropped: [] };
+		// The integration branch may hold a proposal in another folder than
+		// the candidate does; keep the copy furthest along (x01054).
+		keepOneProposalCopy(dir, (subject) => {
+			git(dir, ['add', '-A']);
+			gitAsCommitter(dir, [
+				'-c',
+				'core.hooksPath=/dev/null',
+				'commit',
+				'-m',
+				subject,
+			]);
+		});
 		const failed = GENERATED_REFRESH_COMMANDS.filter(
 			(command) => !run(command, dir),
 		);

@@ -2,6 +2,7 @@
  * train-assembly.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
+import { execFileSync } from 'node:child_process';
 import {
 	chmodSync,
 	existsSync,
@@ -15,6 +16,7 @@ import { join } from 'node:path';
 import { createGitRepoTemplate } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
+import { KEEP_ONE_COPY_SUBJECT } from '../proposals/keep-one-proposal-copy';
 import {
 	assembleTrain,
 	discardTrain,
@@ -62,6 +64,51 @@ const project = () => {
 };
 
 describe('assembleTrain', () => {
+	// ROOT CAUSE (x01054): a create pull request and the slices that moved
+	// the proposal merge cleanly as two paths, and the train carried both.
+	it('keeps the copy furthest along when two members moved one proposal', () => {
+		const { root, git, tip, candidate } = project();
+		const dir = 'docs/delendai/proposals';
+		const file = 'f00155-example.md';
+		const text = (status: string, stamp: string) =>
+			`---\nid: f00155\nkind: feat\nstatus: ${status}\n${stamp}---\n\n# f00155\n`;
+		mkdirSync(join(root, dir, 'ready', 'feats'), { recursive: true });
+		mkdirSync(join(root, dir, 'review'), { recursive: true });
+		const create = candidate(3, {
+			[`${dir}/ready/feats/${file}`]: text('ready', ''),
+		});
+		const slices = candidate(5, {
+			[`${dir}/review/${file}`]: text(
+				'review',
+				'last-transition-at: 2026-11-08T10:00:00.000Z\n',
+			),
+		});
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [create, slices],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
+			regenerate: () => true,
+			rehearsal: true,
+		});
+		const scratch = outcome.scratch ?? '';
+		expect(existsSync(join(scratch, dir, 'ready', 'feats', file))).toBe(
+			false,
+		);
+		expect(existsSync(join(scratch, dir, 'review', file))).toBe(true);
+		expect(
+			execFileSync('git', ['log', '-1', '--format=%s'], {
+				cwd: scratch,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe(KEEP_ONE_COPY_SUBJECT);
+		discardTrain(root, scratch);
+		expect(git('rev-parse', 'HEAD')).toBe(tip);
+	});
+
 	it('keeps the scratch worktree of a rehearsal and pushes nothing', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'three.ts': '3\n' });

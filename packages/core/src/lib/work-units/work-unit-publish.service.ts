@@ -1,12 +1,6 @@
 import { carriesNothingBeyond } from './landed-work.service';
 import { argumentsRefused } from './work-arguments.helper';
-import { deletedDocuments } from './review-pack-deletions.service';
-import {
-	describeCarriedPacks,
-	otherReviewPacks,
-	packsCarried,
-} from './review-pack-scope.service';
-import { readSwarm } from './work-swarm.service';
+import { reviewUnitRefusal } from './review-unit-publish-check.service';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -24,14 +18,14 @@ import { openUnitPullRequest } from './publication-pull-request.service';
 import { urgencyOfUnit } from './pull-request-urgency.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
-import { readWorkspaceDocsDir } from './development-policy.service';
-import {
-	isReviewUnitBranch,
-	outsideReviewScope,
-} from '../development-policy/git-guard-review-scope';
+import { isReviewUnitBranch } from '../development-policy/git-guard-review-scope';
 import { journalWorkEvent } from './work-event-journal.service';
 import { unitDepartures } from './unit-departures.service';
 import { endCarriedUnits } from './carried-units.service';
+import {
+	handedFromOf,
+	retireSupersededByPublish,
+} from './superseded-publication.service';
 
 import {
 	agentFor,
@@ -134,77 +128,14 @@ export const published = async (
 	// A review records verdicts. What it changes beyond the project's
 	// documents is not a review's to publish, however it was committed.
 	if (isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))) {
-		const outside = outsideReviewScope(
-			(
-				readGit(root, [
-					'diff',
-					'--name-only',
-					'--no-renames',
-					`${base}...${workRef}`,
-				]) ?? ''
-			)
-				.split('\n')
-				.filter((path) => path.length > 0),
-			await readWorkspaceDocsDir(root),
-		);
-		if (outside.length > 0) {
-			return refused(
-				`\`${workRef}\` is a unit that records verdicts, and it changes ${outside.join(', ')}: verdicts do not change the product.`,
-				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
-			);
-		}
-		const deleted = deletedDocuments(
-			(
-				readGit(root, [
-					'diff',
-					'--name-status',
-					'--no-renames',
-					`${base}...${workRef}`,
-				]) ?? ''
-			)
-				.split('\n')
-				.filter((line) => line.length > 0),
-			await readWorkspaceDocsDir(root),
-		);
-		if (deleted.length > 0) {
-			return refused(
-				`\`${workRef}\` is a unit that records verdicts, and it deletes ${deleted.join(', ')}: a review moves a document, it never removes one.`,
-				`Restore them from the integration branch (\`git checkout ${policy.branches.integration} -- ${deleted.join(' ')}\`), commit, and publish again.`,
-			);
-		}
-		const commitsOver = (tip: string): readonly string[] =>
-			(
-				readGit(root, ['rev-list', '--no-merges', `${base}..${tip}`]) ??
-				''
-			)
-				.split('\n')
-				.filter((commit) => commit.length > 0);
-		const own = commitsOver(workRef);
-		// Judged by what it changes, not by its commits: a claim is a commit
-		// with no change, and a unit holding only a claim was published as a
-		// pull request that delivered nothing and sat red in the queue.
-		const changes =
-			readGit(root, ['diff', '--name-only', `${base}...${workRef}`]) ??
-			'';
-		if (own.length === 0 || changes.trim().length === 0) {
-			return refused(
-				`\`${workRef}\` records no verdict of its own: it changes nothing over \`${policy.branches.integration}\`.`,
-				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
-			);
-		}
-		const swarm = readSwarm({ root, policy });
-		const carried = packsCarried(
-			own,
-			otherReviewPacks([...swarm.units, ...swarm.published], agent).map(
-				(pack) => ({ ref: pack.ref, commits: commitsOver(pack.tip) }),
-			),
-		);
-		if (carried.length > 0) {
-			return refused(
-				`\`${workRef}\` carries another reviewer's pack: one verdict in two pull requests conflicts with itself when the first one lands.`,
-				describeCarriedPacks(carried, policy.branches.integration),
-			);
-		}
+		const refusal = await reviewUnitRefusal({
+			root,
+			policy,
+			workRef,
+			base,
+			agent,
+		});
+		if (refusal !== undefined) return refusal;
 	}
 	// A proposal's one wip branch outlives every publication while the
 	// proposal is in progress: its next work is committed on it.
@@ -293,6 +224,9 @@ export const published = async (
 		);
 	}
 	const urgent = await urgencyOfUnit(args, root, workRef);
+	// Read before publishing: ending the unit may end its lease, and the
+	// lease is what remembers the publications this unit took over.
+	const handedFrom = await handedFromOf(root, workRef);
 	const outcome = await publishWorkUnitExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -344,6 +278,20 @@ export const published = async (
 					urgent,
 				})
 			: undefined;
+	// A claim opened this pull request beside the one it took over: the old
+	// publication is retired once this one carries its tip (x01054).
+	const superseded = await retireSupersededByPublish({
+		root,
+		ctx,
+		policy,
+		remote,
+		agent,
+		handedFrom,
+		published: outcome.published,
+		newPublication: target.publicationRef,
+		newTip: outcome.tip,
+		pullRequest,
+	});
 	// Published but not cleaned up is not a success: the namespace is
 	// left carrying a ref that looks like live work.
 	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
@@ -384,6 +332,7 @@ export const published = async (
 			...(departures.length === 0 ? {} : { departures }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
+			...(superseded.length === 0 ? {} : { superseded }),
 			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
 		},
 	};

@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { keepOneProposalCopy } from '../proposals/keep-one-proposal-copy';
 import type { ITrainCandidate } from './queue-order.interface';
 
 /** The subject of the commit a train adds when regeneration moved a file. */
@@ -231,6 +232,12 @@ export const assembleTrain = (input: {
 			if (outcome === 'derived') regenerated.push(member.number);
 		}
 		if (conflicting.length > 0) return { conflicting, regenerated };
+		// Two members that moved one proposal leave it in two folders; keep
+		// the copy furthest along before the generators read the registry.
+		keepOneProposalCopy(scratch, (subject) => {
+			run(scratch, ['add', '-A']);
+			run(scratch, [...IDENTITY, 'commit', '-q', '-m', subject]);
+		});
 		{
 			// Once, after every member is in: a generator run on half a train
 			// computes the file from half a tree. ALWAYS, not only after a
