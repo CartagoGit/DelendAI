@@ -28,7 +28,11 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { judgeDeclaredBudgets, unbudgetedTests } from './declared-test-budget';
+import {
+	defaultChangeBase,
+	judgeDeclaredBudgets,
+	unbudgetedTests,
+} from './declared-test-budget';
 import {
 	CLEAR_MS,
 	FAIL_MS,
@@ -102,7 +106,19 @@ const declaredMain = (): number => {
 	// The changed files come from the input the other gates use: a list
 	// file, or the base the change is measured against.
 	const { DELENDAI_COVERAGE_BASE: envBase } = process.env;
-	const base = arg('base') ?? envBase;
+	const gitOut = (args: readonly string[]): string =>
+		execFileSync('git', [...args], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	// No base given (the architecture step passes none): the merge-base with
+	// the integration branch, so an edited spec is caught wherever it runs.
+	const base =
+		arg('base') ??
+		(envBase === undefined || envBase === ''
+			? defaultChangeBase(gitOut)
+			: envBase);
 	const changedList = arg('changed-files');
 	const changed = new Set(
 		changedList !== undefined

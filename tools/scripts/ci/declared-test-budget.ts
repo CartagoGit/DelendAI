@@ -109,3 +109,23 @@ export const judgeDeclaredBudgets = (
 		.filter((path) => changed.has(path) && (files.get(path) ?? 0) > 0)
 		.sort((a, b) => a.localeCompare(b)),
 });
+
+/** The integration branch the prove plan measures a change against. */
+export const INTEGRATION_REF = 'origin/develop';
+
+/**
+ * The base a change is measured against when none is given: the merge-base
+ * of HEAD with the integration branch, or nothing when that ref is absent
+ * (a shallow clone, a fresh repository). `git` answers one command's stdout
+ * and throws when it fails.
+ */
+export const defaultChangeBase = (
+	git: (args: readonly string[]) => string,
+): string | undefined => {
+	try {
+		const base = git(['merge-base', INTEGRATION_REF, 'HEAD']).trim();
+		return base === '' ? undefined : base;
+	} catch {
+		return undefined;
+	}
+};

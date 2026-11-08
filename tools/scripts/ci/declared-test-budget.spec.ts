@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { judgeDeclaredBudgets, unbudgetedTests } from './declared-test-budget';
+import {
+	defaultChangeBase,
+	INTEGRATION_REF,
+	judgeDeclaredBudgets,
+	unbudgetedTests,
+} from './declared-test-budget';
 
 describe('declared test budgets', () => {
 	it('[<50ms] counts a test whose name has no budget at the front, or a malformed one', () => {
@@ -37,5 +42,26 @@ describe('declared test budgets', () => {
 		expect(verdict.missing).toEqual([{ path: 'new.spec.ts', tests: 2 }]);
 		expect(verdict.stale).toEqual(['fixed.spec.ts', 'gone.spec.ts']);
 		expect(verdict.touched).toEqual(['old.spec.ts']);
+	});
+
+	it('[<50ms] measures an unspecified change against the merge-base with the integration branch', () => {
+		const asked: string[][] = [];
+		const base = defaultChangeBase((args) => {
+			asked.push([...args]);
+			return 'abc123\n';
+		});
+		expect(base).toBe('abc123');
+		expect(asked).toEqual([['merge-base', INTEGRATION_REF, 'HEAD']]);
+	});
+
+	it('[<50ms] falls back to no base only when the integration ref is missing', () => {
+		expect(
+			defaultChangeBase(() => {
+				throw new Error(
+					'fatal: Not a valid object name origin/develop',
+				);
+			}),
+		).toBeUndefined();
+		expect(defaultChangeBase(() => '\n')).toBeUndefined();
 	});
 });
