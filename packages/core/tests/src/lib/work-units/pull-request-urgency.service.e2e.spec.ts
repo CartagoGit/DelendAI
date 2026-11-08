@@ -46,7 +46,7 @@ const unit = () => {
 };
 
 describe('the urgent note of a unit', () => {
-	it('[<148ms] is written once and read back by the publication', async () => {
+	it('[<291ms] is written once and read back by the publication', async () => {
 		const { root, worktree } = unit();
 		expect(await unitUrgencyNote(worktree)).toBeUndefined();
 		expect(await urgencyOfUnit([], root, REF)).toBeUndefined();
@@ -58,13 +58,13 @@ describe('the urgent note of a unit', () => {
 		);
 	});
 
-	it('[<96ms] gives way to what the publishing command was told', async () => {
+	it('[<175ms] gives way to what the publishing command was told', async () => {
 		const { root, worktree } = unit();
 		await noteUnitUrgency(worktree, 'noted');
 		expect(await urgencyOfUnit(['--urgent=said'], root, REF)).toBe('said');
 	});
 
-	it('[<100ms] notes nothing for an empty reason or a place that is no worktree', async () => {
+	it('[<193ms] notes nothing for an empty reason or a place that is no worktree', async () => {
 		const { top, worktree } = unit();
 		expect(await noteUnitUrgency(worktree, '   ')).toBe(false);
 		expect(await noteUnitUrgency(join(top, 'nowhere'), 'x')).toBe(false);
@@ -73,7 +73,7 @@ describe('the urgent note of a unit', () => {
 });
 
 describe('bodyWithUrgentLine (x01051 S6)', () => {
-	it('adds the line to a body that lacks it and leaves one that has it', () => {
+	it('[<30ms] adds the line to a body that lacks it and leaves one that has it', () => {
 		expect(bodyWithUrgentLine('Opened.', 'repair')).toBe(
 			'Opened.\n\nUrgent: repair\n',
 		);

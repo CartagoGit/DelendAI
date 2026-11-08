@@ -21,5 +21,9 @@ export const CHANGED_ENV = 'DELENDAI_TEST_BUDGET_CHANGED';
 /** Set to `1` for a run whose time overruns are reported, not failed. */
 export const SOFT_OVERRUN_ENV = 'DELENDAI_TEST_BUDGET_SOFT';
 
-/** A run naming this many spec files or more is the whole suite. */
-export const WHOLE_SUITE_SPECS = 200;
+/**
+ * The key under which the runner leaves the measured body time (ms) in a
+ * test's `meta`, so a CI report carries what the runner judged and
+ * `test:budgets:calibrate` reads it back.
+ */
+export const MEASURED_META_KEY = 'budgetTookMs';

@@ -5,8 +5,9 @@
  * The budget sits at the front of the test name, `[<7ms] does X`, so a
  * reader, a reporter and a failure all see it with nothing injected. The
  * number is absolute: CI and a laptop judge the same test against the same
- * figure, so there is no hidden multiplier to forget about. Set it from the
- * slower of the two.
+ * figure, so there is no hidden multiplier to forget about. It is enforced
+ * on CI and calibrated from CI's own measurements (`bun run
+ * test:budgets:calibrate`); anywhere else an overrun is only reported.
  */
 import {
 	BUDGET_INTENT,

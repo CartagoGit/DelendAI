@@ -46,7 +46,7 @@ const call = (tool: string, cwd: string): string =>
 	JSON.stringify({ tool_name: tool, tool_input: { command: 'x' }, cwd });
 
 describe('delendai guard post-shell', () => {
-	it('[<207ms] rescues a shell write into the shared checkout and names the unit worktree', async () => {
+	it('[<377ms] rescues a shell write into the shared checkout and names the unit worktree', async () => {
 		const { root, unit } = project();
 		process.env.DELENDAI_AGENT_ID = AGENT;
 		writeFileSync(join(root, 'stray.ts'), 'export const x = 1;\n');

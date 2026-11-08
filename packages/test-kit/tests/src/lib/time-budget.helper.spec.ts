@@ -4,7 +4,6 @@ import {
 	budgetFailure,
 	budgetInName,
 	budgetOverrun,
-	isWholeSuiteRun,
 	mayGoUnbudgeted,
 } from '../../../src/public/index';
 
@@ -66,23 +65,5 @@ describe('time budget', () => {
 				softOverrun: true,
 			}),
 		).toContain('no time budget');
-	});
-
-	it('[<20ms] takes a command line with no filter or 200 specs as the whole suite, and a named few as bounded', () => {
-		const many = Array.from(
-			{ length: 200 },
-			(_, i) => `a${String(i)}.spec.ts`,
-		);
-		expect(isWholeSuiteRun(['node', 'vitest', 'run'])).toBe(true);
-		expect(isWholeSuiteRun(['node', 'vitest', 'run', '--coverage'])).toBe(
-			true,
-		);
-		expect(isWholeSuiteRun(['node', 'vitest', 'run', ...many])).toBe(true);
-		expect(isWholeSuiteRun(['node', 'vitest', 'run', 'a.spec.ts'])).toBe(
-			false,
-		);
-		expect(
-			isWholeSuiteRun(['node', 'vitest', 'run', 'tools/scripts']),
-		).toBe(false);
 	});
 });

@@ -46,7 +46,7 @@ describe('rescueAfterShell', () => {
 		});
 	});
 
-	it('[<162ms] rescues loose edits and names the unit worktree', () => {
+	it('[<312ms] rescues loose edits and names the unit worktree', () => {
 		const { root, unit } = project();
 		writeFileSync(join(root, 'a.txt'), 'edited by a heredoc\n');
 		const verdict = rescueAfterShell({ cwd: root, agent: AGENT, policy });
@@ -55,7 +55,7 @@ describe('rescueAfterShell', () => {
 		expect(git(root, 'status', '--porcelain')).toBe('');
 	});
 
-	it('[<56ms] leaves the edits of an agent that holds no unit, and of an unidentified one', () => {
+	it('[<96ms] leaves the edits of an agent that holds no unit, and of an unidentified one', () => {
 		const { root } = project();
 		writeFileSync(join(root, 'a.txt'), 'a person edits\n');
 		for (const agent of ['claude-opus-5-6', '']) {

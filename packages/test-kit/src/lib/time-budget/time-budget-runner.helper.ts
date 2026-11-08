@@ -14,6 +14,7 @@ import { type RunnerTestCase, TestRunner } from 'vitest';
 import {
 	CHANGED_ENV,
 	MIGRATION_ENV,
+	MEASURED_META_KEY,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
@@ -67,7 +68,7 @@ export default class TimeBudgetRunner extends TestRunner {
 	override onAfterRunFiles(): void {
 		if (overruns.length === 0) return;
 		console.warn(
-			`time budget: ${String(overruns.length)} test(s) over their budget in a whole-suite local run (the machine is saturated, so this is a warning; GitHub Actions and bounded runs fail it):\n${overruns.join('\n')}`,
+			`time budget: ${String(overruns.length)} test(s) over their budget in a local run (budgets are enforced and calibrated in CI, so a local run only warns; CI fails it):\n${overruns.join('\n')}`,
 		);
 		overruns.length = 0;
 	}
@@ -76,10 +77,12 @@ export default class TimeBudgetRunner extends TestRunner {
 		const body = TestRunner.getTestFn(test);
 		const start = performance.now();
 		await body();
+		const tookMs = performance.now() - start;
+		Object.assign(test.meta, { [MEASURED_META_KEY]: tookMs });
 		const measured = {
 			name: test.name,
 			migrating: isMigrating(test),
-			tookMs: performance.now() - start,
+			tookMs,
 			softOverrun: process.env[SOFT_OVERRUN_ENV] === '1',
 		};
 		const failure = budgetFailure(measured);

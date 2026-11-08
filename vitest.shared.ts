@@ -10,7 +10,6 @@ import {
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
-import { isWholeSuiteRun } from './packages/test-kit/src/lib/time-budget/whole-suite-run.helper.ts';
 import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
@@ -132,15 +131,13 @@ export const TIME_BUDGET_MIGRATION_LIST = resolve(
 process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
 process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
 
-// Wall time on a machine the run itself saturates measures the machine: a
-// local run of the whole suite reports an over-budget test, a CI shard or a
-// bounded run fails it.
+// A budget is enforced where it is calibrated: on CI. Anywhere else the
+// wall time measures that machine, so an over-budget test is only reported
+// (a missing or malformed budget still fails). Follow-up: read this from the
+// shared `isRunningInProjectCi` once i00005 lands.
 if (process.env[SOFT_OVERRUN_ENV] === undefined) {
 	process.env[SOFT_OVERRUN_ENV] =
-		process.env['GITHUB_ACTIONS'] === undefined &&
-		isWholeSuiteRun(process.argv)
-			? '1'
-			: '0';
+		process.env['GITHUB_ACTIONS'] === undefined ? '1' : '0';
 }
 
 // A budget is asked of the files the change touches, so a test an older

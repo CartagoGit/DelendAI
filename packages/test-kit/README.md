@@ -13,9 +13,9 @@ runner (`timeBudgetRunnerPath()`, set in `test.runner` of every project
 through `sharedTestOptions`) reads the number from the name, measures the test
 body only, not shared hooks or the import of the file, and **fails** a test
 that takes longer, has no prefix, or has a malformed one. The number is
-absolute: a laptop and CI judge it against the same figure, with no hidden
-multiplier, so set it from the slower of the two and fix a slow test instead
-of raising its number. It adds one clock read before and one after each test.
+absolute, with no hidden multiplier, and CI is where it is enforced and where
+it is calibrated: a budget is `ceil(1.5 x the longest time CI measured for that
+test)`, at least 4 ms above it. Fix a slow test instead of raising its number. It adds one clock read before and one after each test.
 
 Existing spec files that still hold tests with no budget are listed in
 `tools/scripts/test/test-time-budget.migration.json`. The list only shrinks
@@ -26,11 +26,18 @@ changed-files input the lint uses), so a test an older branch lands cannot turn
 develop or another change red. With the change unknown, every file is held to
 it.
 
-An over-budget test fails on GitHub Actions and in a bounded run. In a local run whose
-selection is the whole suite (no filter, or 200 spec files or more) the machine
-is saturated by the run itself, so wall time measures the machine: the overruns
-are reported as one summary of warnings and do not fail. A missing or malformed
-budget fails in every run.
+An over-budget test fails on CI (`GITHUB_ACTIONS`). Anywhere else, wall time
+measures that machine, so the overruns are reported as one summary of warnings
+and never fail. A missing or malformed budget fails everywhere.
+
+The runner leaves each test's measured body time in its `meta`, and every CI
+shard uploads the longest per test as a `test-durations-*` artifact (14 days).
+Set budgets from them:
+
+```sh
+bun run test:budgets:calibrate --from-ci=<run-id>           # list tests declaring less than CI measured
+bun run test:budgets:calibrate --from-ci=<run-id> --update  # rewrite those numbers in the specs
+```
 
 A project that consumes delendai adds the same to each vitest config:
 

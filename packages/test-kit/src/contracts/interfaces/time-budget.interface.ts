@@ -13,8 +13,8 @@ export interface ITimeBudgetCase {
 	/** How long the body took. */
 	readonly tookMs: number;
 	/**
-	 * Report an overrun instead of failing it: the run is the whole suite on
-	 * a machine it saturates, so wall time measures the machine.
+	 * Report an overrun instead of failing it: budgets are enforced and
+	 * calibrated in CI, so a run anywhere else only warns.
 	 */
 	readonly softOverrun?: boolean;
 }
