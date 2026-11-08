@@ -152,10 +152,18 @@ const carriedByATrain = (
 	remote: string,
 	prefixes: readonly string[],
 	headSha: string,
+	tipSha: string,
 ): boolean => {
 	for (const prefix of prefixes) {
+		// Only a train built from the CURRENT tip carries anything: the
+		// queue names a train after its tip and prunes the others, and a
+		// failed train left from an older tip made this machine wait for
+		// a train that would never run, while the queue waited for this
+		// machine to bring the rider forward.
+		const current = `${prefix}${tipSha.slice(0, 12)}/`;
 		const listed =
-			readGit(root, ['ls-remote', '--heads', remote, `${prefix}*`]) ?? '';
+			readGit(root, ['ls-remote', '--heads', remote, `${current}*`]) ??
+			'';
 		for (const line of listed.split('\n')) {
 			const name = line.split('\t')[1]?.replace(/^refs\/heads\//u, '');
 			if (name === undefined || !fetched(root, remote, name)) continue;
@@ -172,6 +180,34 @@ const carriedByATrain = (
 		}
 	}
 	return false;
+};
+
+/**
+ * The candidates the queue isolated as culprits, by number, with the head
+ * each was isolated at: the queue keeps such a candidate off its trains
+ * until its head moves, so this machine must not leave it to one.
+ */
+const culpritHeads = (
+	root: string,
+	remote: string,
+	prefixes: readonly string[],
+): ReadonlyMap<number, string> => {
+	const heads = new Map<number, string>();
+	for (const prefix of prefixes) {
+		const marker = `${prefix}culprit/`;
+		const listed =
+			readGit(root, ['ls-remote', '--heads', remote, `${marker}*`]) ?? '';
+		for (const line of listed.split('\n')) {
+			const [sha, ref] = line.split('\t');
+			const number = Number(
+				ref?.replace(/^refs\/heads\//u, '').slice(marker.length),
+			);
+			if (sha !== undefined && Number.isInteger(number) && number > 0) {
+				heads.set(number, sha);
+			}
+		}
+	}
+	return heads;
 };
 
 /**
@@ -228,9 +264,23 @@ export const branchesLandingAsTheyAre = (input: {
 	const alone = acceptIndependent(changes)
 		.filter((verdict) => verdict.accepted)
 		.map((verdict) => verdict.headRef);
+	const culprits = culpritHeads(
+		input.root,
+		input.remote,
+		input.trainPrefixes ?? [],
+	);
 	const accepted = acceptRiders(changes)
 		.filter((verdict) => verdict.accepted)
-		.filter((verdict) => !alone.includes(verdict.headRef));
+		.filter((verdict) => !alone.includes(verdict.headRef))
+		.filter((verdict) => {
+			const isolated = culprits.get(verdict.number);
+			return (
+				isolated === undefined ||
+				isolated !==
+					candidates.find((each) => each.headRef === verdict.headRef)
+						?.headSha
+			);
+		});
 	const riding = accepted.length >= 2 ? accepted : [];
 	const tipTime = Number(
 		readGit(input.root, ['log', '-1', '--format=%ct', integrationSha]) ??
@@ -253,6 +303,7 @@ export const branchesLandingAsTheyAre = (input: {
 						candidates.find(
 							(each) => each.headRef === verdict.headRef,
 						)?.headSha ?? '',
+						integrationSha,
 					),
 			)
 			.map((verdict) => verdict.headRef),

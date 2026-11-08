@@ -169,17 +169,49 @@ describe('a train that cannot run (x01053 S4)', () => {
 		]).toContain(CANDIDATE);
 	});
 
+	const tipPrefix = (owner: ReturnType<typeof project>['owner']) =>
+		owner.git('rev-parse', 'origin/develop').slice(0, 12);
+	const pushRef = (
+		owner: ReturnType<typeof project>['owner'],
+		sha: string,
+		name: string,
+	) => owner.git('push', '-q', 'origin', `${sha}:refs/heads/${name}`);
+
 	it('leaves a rider to the train that carries it, however long the tip has stood', () => {
 		const { owner } = stalled();
 		withCompanion(owner);
 		owner.git('fetch', '-q', 'origin');
-		owner.git(
-			'push',
-			'-q',
-			'origin',
-			`${owner.git('rev-parse', `origin/${CANDIDATE}`)}:refs/heads/delendai/train/aaaa/7`,
+		pushRef(
+			owner,
+			owner.git('rev-parse', `origin/${CANDIDATE}`),
+			`delendai/train/${tipPrefix(owner)}/7-8`,
 		);
 		expect([...landingWith(owner.root, AFTER)]).toContain(CANDIDATE);
+	});
+
+	it('does not count a train left from an older tip as carrying the rider', () => {
+		const { owner } = stalled();
+		withCompanion(owner);
+		owner.git('fetch', '-q', 'origin');
+		pushRef(
+			owner,
+			owner.git('rev-parse', `origin/${CANDIDATE}`),
+			'delendai/train/000000000000/7-8',
+		);
+		expect([...landingWith(owner.root, AFTER)]).not.toContain(CANDIDATE);
+	});
+
+	it('does not leave a rider the queue isolated as a culprit to a train', () => {
+		const { owner } = stalled();
+		withCompanion(owner);
+		owner.git('fetch', '-q', 'origin');
+		const head = owner.git('rev-parse', `origin/${CANDIDATE}`);
+		pushRef(owner, head, `delendai/train/${tipPrefix(owner)}/7-8`);
+		pushRef(owner, head, 'delendai/train/culprit/7');
+		const left = [
+			...landingWith(owner.root, Math.floor(Date.now() / 1000)),
+		];
+		expect(left).not.toContain(CANDIDATE);
 	});
 });
 
