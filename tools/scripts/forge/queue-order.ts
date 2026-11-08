@@ -228,6 +228,21 @@ export const runTrain = (input: {
 		if (step.kind === 'none') return [];
 		if (step.kind === 'culprit') {
 			const culprit = byNumber([step.number])[0];
+			const fault =
+				culprit === undefined
+					? undefined
+					: ports.trainFault?.(culprit, refOf([step.number]));
+			if (culprit !== undefined && fault !== undefined) {
+				// The member's own checks are green on its own head: the
+				// train is red by itself. No marker; the train says so, one
+				// issue carries it, and the members land one by one.
+				const jobs = fault.length > 0 ? fault.join(', ') : 'unknown';
+				ports.reportTrainRed?.(refOf([step.number]), culprit, fault);
+				ports.say(
+					`keep-the-queue-moving: the train's own checks are red: ${jobs}; #${String(step.number)} is not blamed, its own required checks are green.`,
+				);
+				return [];
+			}
 			if (culprit !== undefined) ports.blame(culprit);
 			ports.say(
 				`keep-the-queue-moving: #${String(step.number)} alone turns the train red; it leaves the train until its head moves.`,

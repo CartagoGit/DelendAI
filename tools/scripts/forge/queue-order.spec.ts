@@ -254,6 +254,60 @@ describe('the merge train', () => {
 		expect(forge.blamed).toEqual([2]);
 	});
 
+	it('does not blame a member whose own checks are green for a train red by itself', () => {
+		const forge = fakeForge({ culprits: [4] });
+		const reported: string[] = [];
+		const ports: ITrainPorts = {
+			...forge.ports,
+			trainFault: () => ['lint-governance'],
+			reportTrainRed: (ref, member, jobs) => {
+				reported.push(
+					`${ref}|${String(member.number)}|${jobs.join(',')}`,
+				);
+			},
+		};
+		const landed = [0, 1, 2].flatMap(() => {
+			const out = runTrain({
+				trainPrefix: TRAINS,
+				tipSha: TIP,
+				members: [rider(4)],
+				ports,
+			});
+			forge.finish();
+			return out;
+		});
+		expect(landed).toEqual([]);
+		expect(forge.blamed).toEqual([]);
+		// Every pass refreshes the same issue; it never opens a second.
+		expect([...new Set(reported)]).toEqual([
+			`${trainRefName(TRAINS, TIP, [4])}|4|lint-governance`,
+		]);
+		expect(forge.said.join('\n')).toContain(
+			"the train's own checks are red: lint-governance",
+		);
+	});
+
+	it('still blames a member whose own checks are not green', () => {
+		const forge = fakeForge({ culprits: [4] });
+		const ports: ITrainPorts = {
+			...forge.ports,
+			trainFault: () => undefined,
+			reportTrainRed: () => {
+				throw new Error('no issue for a member at fault');
+			},
+		};
+		for (let pass = 0; pass < 3; pass += 1) {
+			runTrain({
+				trainPrefix: TRAINS,
+				tipSha: TIP,
+				members: [rider(4)],
+				ports,
+			});
+			forge.finish();
+		}
+		expect([...new Set(forge.blamed)]).toEqual([4]);
+	});
+
 	it('splits only a textual conflict outside the derived files off the train', () => {
 		const forge = fakeForge({ conflicts: [5] });
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);

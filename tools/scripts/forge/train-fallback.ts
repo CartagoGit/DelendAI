@@ -54,6 +54,14 @@ export const watchTrainPorts = (ports: ITrainPorts): IWatchedTrain => {
 					throw error;
 				}
 			},
+			reportTrainRed: (ref, candidate, jobs) => {
+				// The members take the individual landing path: the train is
+				// the thing that cannot run.
+				fail(
+					`the train's own checks are red: ${jobs.length > 0 ? jobs.join(', ') : 'unknown'}`,
+				);
+				ports.reportTrainRed?.(ref, candidate, jobs);
+			},
 			dispatch: (ref) => {
 				const started = ports.dispatch(ref);
 				if (!started) fail(`the train ${ref} could not be dispatched`);

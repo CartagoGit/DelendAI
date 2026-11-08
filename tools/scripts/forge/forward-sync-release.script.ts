@@ -39,7 +39,10 @@ import {
 	declaredMergeMethod,
 	mergeFlagFor,
 } from '../lib/declared-branches';
-import { hasSeparateReleaseBranch } from '@delendai/core/cli';
+import {
+	hasSeparateReleaseBranch,
+	isRunningInProjectCi,
+} from '@delendai/core/cli';
 import { ownedPublicationRefPrefixes } from '@delendai/core/cli';
 
 import { repoRoot } from '../lib/repo-root';
@@ -246,7 +249,7 @@ export const openCandidate = (
 		log: (line) => {
 			console.log(line);
 		},
-		inActions: () => process.env.GITHUB_ACTIONS === 'true',
+		inActions: () => isRunningInProjectCi(),
 		mergeMethod: () => declaredMergeMethod(),
 	},
 ): number => {
