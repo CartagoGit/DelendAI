@@ -39,23 +39,18 @@
 import { dirname } from 'node:path';
 
 import { parseWorkflowYaml, type YamlValue } from './workflow-yaml';
-import { TEST_RUNNER_KEYS } from './test-zones.constant';
 import type { IRootChange, IZoneReadMap } from './test-zones.interface';
 
-/** A workflow definition, as opposed to anything else under `.github/`. */
-export const isWorkflowFile = (path: string): boolean =>
-	/^\.github\/workflows\/[^/]+\.ya?ml$/u.test(path);
-
 /**
- * A root file, or something under `.github/` that may change how specs
- * run: nothing can say which zones it reaches.
+ * A root file nothing can say the reach of. A workflow or a composite
+ * action is not one: an edit of it proves itself by running the jobs whose
+ * block changed (job-scope), with the specs the rest of the change selects,
+ * and reaches the zones whose specs read it, never every spec.
  */
 export const runsEverything = (change: IRootChange): boolean =>
 	!isProse(change.path) &&
 	!(change.path === ROOT_MANIFEST && change.scriptsOnly === true) &&
-	(!change.path.includes('/') ||
-		(change.path.startsWith('.github/') &&
-			!(isWorkflowFile(change.path) && change.runnerChanged === false)));
+	!change.path.includes('/');
 
 /** The root package manifest, whose scripts-only edits reach their readers. */
 export const ROOT_MANIFEST = 'package.json';
@@ -115,27 +110,38 @@ const asRecord = (value: YamlValue | undefined): Record<string, YamlValue> =>
 		: {};
 
 /**
- * Whether an edit of the test workflow changes how the test zones run:
- * the jobs that plan, run and merge them, or what every job inherits.
- * A side that is missing or does not parse counts as a change.
+ * The jobs whose block an edit of a workflow changed: every job when what
+ * they inherit (its triggers, environment, defaults) changed; `undefined`
+ * when a side is missing or does not parse, which counts as all of it.
  */
-export const testRunnerChanged = (
+export const changedWorkflowJobs = (
 	before: string | undefined,
 	after: string | undefined,
-): boolean => {
-	if (before === undefined || after === undefined) return true;
-	const runner = (raw: string): string => {
-		const workflow = parseWorkflowYaml(raw);
-		const jobs = asRecord(workflow.jobs);
-		return JSON.stringify([
-			TEST_RUNNER_KEYS.topLevel.map((key) => workflow[key] ?? null),
-			TEST_RUNNER_KEYS.jobs.map((key) => jobs[key] ?? null),
-		]);
-	};
+): ReadonlySet<string> | undefined => {
+	if (before === undefined || after === undefined) return undefined;
 	try {
-		return runner(before) !== runner(after);
+		const old = parseWorkflowYaml(before);
+		const next = parseWorkflowYaml(after);
+		const oldJobs = asRecord(old.jobs);
+		const nextJobs = asRecord(next.jobs);
+		const names = [
+			...new Set([...Object.keys(oldJobs), ...Object.keys(nextJobs)]),
+		];
+		const inherited = (workflow: Record<string, YamlValue>): string => {
+			const { jobs: _jobs, ...rest } = workflow;
+			return JSON.stringify(rest);
+		};
+		if (inherited(asRecord(old)) !== inherited(asRecord(next)))
+			return new Set(names);
+		return new Set(
+			names.filter(
+				(name) =>
+					JSON.stringify(oldJobs[name] ?? null) !==
+					JSON.stringify(nextJobs[name] ?? null),
+			),
+		);
 	} catch {
-		return true;
+		return undefined;
 	}
 };
 

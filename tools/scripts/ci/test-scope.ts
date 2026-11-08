@@ -7,6 +7,9 @@
  *
  *   "testing": { "scope": "touched" | "reach" | "all" }
  *
+ * Each scope adds what a change to the shared test setup reaches
+ * (`test-infrastructure`): no spec imports a setup file or a config.
+ *
  * `reach` adds what the symbol analysis reaches (`affected-specs.service`)
  * and the specs that read a changed file; `all` runs every tracked spec.
  */
@@ -15,7 +18,12 @@ import { dirname, join } from 'node:path';
 
 import { parseJsonc } from '@delendai/core/cli';
 
-import { createResolver, factsOf } from './affected-specs.service';
+import {
+	createResolver,
+	factsOf,
+	setupFilesAt,
+	testInfrastructureSpecsOf,
+} from './affected-specs.service';
 
 export const TEST_SCOPES = ['touched', 'reach', 'all'] as const;
 export type ITestScope = (typeof TEST_SCOPES)[number];
@@ -89,7 +97,10 @@ export const touchedSpecs = (
 	return [...out].sort();
 };
 
-/** The touched specs of a repository as git has it. */
+/**
+ * The touched specs of a repository as git has it, with the specs a change
+ * to the shared test setup reaches.
+ */
 export const touchedSpecsOf = (
 	root: string,
 	changed: readonly string[],
@@ -98,12 +109,25 @@ export const touchedSpecsOf = (
 ): readonly string[] => {
 	const files = new Set(tracked.filter((file) => /\.tsx?$/u.test(file)));
 	const resolve = createResolver(files, paths);
-	return touchedSpecs(
-		changed,
-		[...files].filter((file) => SPEC.test(file)),
-		(spec) =>
-			factsOf(readFileSync(join(root, spec), 'utf8'), (specifier) =>
-				resolve(spec, specifier),
-			).imports.map(({ target }) => target),
-	);
+	const read = (file: string): string =>
+		readFileSync(join(root, file), 'utf8');
+	return [
+		...new Set([
+			...touchedSpecs(
+				changed,
+				[...files].filter((file) => SPEC.test(file)),
+				(spec) =>
+					factsOf(read(spec), (specifier) =>
+						resolve(spec, specifier),
+					).imports.map(({ target }) => target),
+			),
+			...testInfrastructureSpecsOf({
+				files: tracked,
+				changed,
+				read,
+				paths,
+				setupFiles: setupFilesAt(root, tracked),
+			}),
+		]),
+	].sort();
 };

@@ -7,7 +7,11 @@ import { readGit } from '@delendai/core/runtime';
 
 import { footprintBetween, mergeBaseOf } from './candidate-footprint';
 import { testedAgainst } from './candidate-tested-base';
-import { acceptIndependent, acceptRiders } from './independent-candidates';
+import {
+	acceptIndependent,
+	acceptRiders,
+	type ITrainPriority,
+} from './independent-candidates';
 import type {
 	ICandidateAcceptance,
 	IQueueCandidateChange,
@@ -108,15 +112,27 @@ export const queueAcceptance = (
 };
 
 /**
- * Which candidates ride the next train, in the order given: every one
- * that touches nothing an earlier rider touches, behind or not (see
- * `acceptRiders`).
+ * Which candidates ride the next train, in train order: every one whose
+ * commits can be read, an urgent repair first (see `acceptRiders`).
  */
 export const trainRiders = (
-	input: IQueueAcceptanceInput,
+	input: IQueueAcceptanceInput & {
+		readonly priorityOf?: (
+			number: number,
+			headRef: string,
+		) => ITrainPriority;
+	},
 ): readonly ICandidateAcceptance[] => {
 	const { changes, unreadable } = changesOf(input);
-	return [...acceptRiders(changes), ...unreadable];
+	const priorityOf = input.priorityOf;
+	return [
+		...(priorityOf === undefined
+			? acceptRiders(changes)
+			: acceptRiders(changes, (change) =>
+					priorityOf(change.number, change.headRef),
+				)),
+		...unreadable,
+	];
 };
 
 const revParse = (root: string, ref: string): string | undefined => {
@@ -158,10 +174,12 @@ export const branchesLandingAsTheyAre = (input: {
 	});
 	// A candidate that rides a train is proved and landed by it: bringing
 	// it forward here as well would spend a local proof on what the
-	// train's one full run proves.
+	// train's one run proves. A train runs only for two riders or more; a
+	// lone one is brought forward and runs its own checks.
 	const { changes } = changesOf({ ...input, integrationSha, candidates });
+	const riders = acceptRiders(changes).filter((verdict) => verdict.accepted);
 	return new Set(
-		[...acceptIndependent(changes), ...acceptRiders(changes)]
+		[...acceptIndependent(changes), ...(riders.length >= 2 ? riders : [])]
 			.filter((verdict) => verdict.accepted)
 			.map((verdict) => verdict.headRef),
 	);

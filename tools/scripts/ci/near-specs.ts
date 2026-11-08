@@ -3,8 +3,9 @@
  *
  * `vitest --changed` walks the whole import graph, and a change to core
  * reached nearly every spec through its barrels: 656 s on average. The
- * proof runs the specs the change touched (`test-scope`) and nothing else,
- * unless `testing.scope` in `delendai.config.json` asks for more: `reach`
+ * proof runs the specs the change touched (`test-scope`) and the specs on
+ * record reading a changed file, and nothing else, unless `testing.scope`
+ * in `delendai.config.json` asks for more: `reach`
  * is the analysis of the forge's test plan, followed by symbol
  * (`affected-specs.service`), plus the specs that read a changed file.
  */
@@ -149,5 +150,12 @@ export const nearSpecsSince = (
 		return files
 			.filter((file) => /\.(?:spec|test)\.tsx?$/u.test(file))
 			.sort();
-	return touchedSpecsOf(root, changed, files, paths);
+	// A file no spec imports, a proposal say, is reached by the specs on
+	// record reading it, and only by them: a review batch runs those.
+	return [
+		...new Set([
+			...touchedSpecsOf(root, changed, files, paths),
+			...readerSpecs(changed, readMapAt(root)),
+		]),
+	].sort();
 };
