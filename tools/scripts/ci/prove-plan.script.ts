@@ -3,7 +3,7 @@
  * prove-plan.script.ts — prove a change before it is pushed, by the plan
  * CI will follow for it.
  *
- *   bun run prove [-- --base=<ref>]       the fast proof (default base: origin/develop)
+ *   bun run prove [-- --base=<ref>]       the fast proof (default base: the policy's integration branch)
  *   bun run prove:plan [-- --base=<ref>]  the plan CI will follow, in full
  *
  * The local proof used to be a second, bigger CI: every zone, every lint
@@ -29,6 +29,10 @@ import {
 	STATIC_CHECK_JOBS as STATIC_CHECK_FAMILIES,
 	staticChecksOf,
 } from './ci-static-steps';
+import {
+	declaredBranches,
+	declaredIntegrationRef,
+} from '../lib/declared-branches';
 import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
 import {
 	explainJobs,
@@ -246,7 +250,7 @@ const runChecks = async (base: string): Promise<boolean> => {
 	const checks = staticChecksOf(
 		readFileSync('.github/workflows/ci.yml', 'utf8'),
 		base,
-		'develop',
+		declaredBranches().integration,
 	).filter(
 		(check) =>
 			jobMustRun({ ...plan, job: check.job }) &&
@@ -428,7 +432,7 @@ const earlyStepsOfCode = (
 const main = async (): Promise<number> => {
 	const base = execFileSync(
 		'git',
-		['merge-base', arg('base') ?? 'origin/develop', 'HEAD'],
+		['merge-base', arg('base') ?? declaredIntegrationRef(), 'HEAD'],
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();

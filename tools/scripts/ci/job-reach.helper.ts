@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 
+import { declaredBranches } from '../lib/declared-branches';
 import { affectedFiles, repositorySince } from './affected-specs.service';
 import { STATIC_CHECK_JOBS, staticChecksOf } from './ci-static-steps';
 
@@ -96,7 +97,7 @@ export const jobScriptFiles = (
 	const checks = staticChecksOf(
 		readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8'),
 		'HEAD',
-		'develop',
+		declaredBranches(root).integration,
 	);
 	return new Map(
 		STATIC_CHECK_JOBS.map((job) => {

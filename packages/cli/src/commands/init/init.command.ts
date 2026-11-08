@@ -431,6 +431,8 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 		force: boolean;
 		delendaiRoot?: string;
 		pluginPathsRoot?: string;
+		branch?: string;
+		version?: string;
 		hosts?: readonly string[];
 	} = { dryRun: false, force: false };
 	for (const arg of args) {
@@ -438,6 +440,10 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 		else if (arg === '--force') out.force = true;
 		else if (arg.startsWith('--delendai-root='))
 			out.delendaiRoot = arg.slice('--delendai-root='.length);
+		else if (arg.startsWith('--branch='))
+			out.branch = arg.slice('--branch='.length);
+		else if (arg.startsWith('--version='))
+			out.version = arg.slice('--version='.length);
 		else if (arg.startsWith('--plugin-paths-root='))
 			out.pluginPathsRoot = arg.slice('--plugin-paths-root='.length);
 		else if (arg.startsWith('--hosts='))
@@ -576,10 +582,30 @@ export const runInitWithAnswers = async (
 		workspace: '${workspaceFolder}',
 		serverName: answers.serverName,
 	});
-	if (flags.delendaiRoot !== undefined) {
+	if (flags.branch !== undefined && flags.version !== undefined) {
+		return {
+			code: EXIT_CODE.USAGE,
+			data: {
+				ok: false,
+				error: {
+					reason: '--branch and --version together: the server would refuse to start. Pass one.',
+					nextAction: 'retry',
+				},
+			},
+		};
+	}
+	const pin =
+		flags.version !== undefined
+			? [`--version=${flags.version}`]
+			: flags.branch !== undefined
+				? [`--branch=${flags.branch}`]
+				: [];
+	if (flags.delendaiRoot !== undefined || pin.length > 0) {
 		try {
 			const resolved = resolveHostEntryPath(ctx.cwd, {
-				explicitRoot: flags.delendaiRoot,
+				...(flags.delendaiRoot === undefined
+					? {}
+					: { explicitRoot: flags.delendaiRoot }),
 			});
 			launch = {
 				command: 'bun',
@@ -587,6 +613,7 @@ export const runInitWithAnswers = async (
 					entryFromWorkspace(ctx.cwd, resolved.path),
 					'--workspace=${workspaceFolder}',
 					'--config=${workspaceFolder}/delendai.config.json',
+					...pin,
 				],
 			};
 		} catch (error) {
@@ -865,7 +892,7 @@ export const runInitWithAnswers = async (
 export const initCommand: ICliCommand = {
 	name: 'init',
 	summary: 'Interactive workspace bootstrap for delendai.',
-	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
+	usage: 'init [--dry-run] [--force] [--delendai-root=<path>] [--branch=<name>|--version=<semver>] [--plugin-paths-root=<path>] [--hosts=<id,id>]',
 	run: async (args, ctx): Promise<ICliCommandResult> => {
 		const flags = parseFlags(args);
 		// Detect first so the prompts can show the operator what was

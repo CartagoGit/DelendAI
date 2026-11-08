@@ -12,6 +12,8 @@ export interface IQueueCandidateFacts {
 	readonly failing?: readonly string[];
 	/** The forge reports conflicts with the integration branch. */
 	readonly conflicting: boolean;
+	/** Why the delivery is urgent, from the pull request's body; the queue leads with it. */
+	readonly urgent?: string | undefined;
 }
 
 /**
