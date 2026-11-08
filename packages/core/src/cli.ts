@@ -470,3 +470,4 @@ export {
 	readDiscoveryConsent,
 	recordDiscoveryConsent,
 } from './lib/shared/discovery-consent-record.service';
+export { runClientCommand as runClientCommandAgain } from './lib/shared/client-command-runner.service';
