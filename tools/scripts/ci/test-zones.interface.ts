@@ -103,12 +103,6 @@ export interface IRootChange {
 	/** Added or deleted (a rename is both): the directory now lists differently. */
 	readonly listing: boolean;
 	/**
-	 * For a workflow file: whether the change touches what runs the test
-	 * zones. Absent means unknown, and an unknown workflow change still
-	 * runs every zone.
-	 */
-	readonly runnerChanged?: boolean | undefined;
-	/**
 	 * For the root package manifest: whether only scripts no test run or
 	 * install uses changed. Absent means unknown, and runs every zone.
 	 */

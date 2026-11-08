@@ -6,6 +6,7 @@
  * that follows — `work publish`, or the hand-over a proposal transition
  * makes over a tool call — does not run it again.
  */
+import { argumentsRefused } from './work-arguments.helper';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -37,10 +38,7 @@ export const proved = async (
 	const slice = scalarArg(args, 'slice');
 	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
-		return refused(
-			'Proving needs the unit of work it proves.',
-			'work prove --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>].',
-		);
+		return argumentsRefused('prove');
 	}
 	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
 	const tip = readGit(root, ['rev-parse', '-q', '--verify', workRef]);

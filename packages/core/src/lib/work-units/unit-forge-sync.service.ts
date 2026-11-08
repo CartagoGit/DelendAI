@@ -21,7 +21,6 @@ import type {
 import { COMMIT_TIMEOUT_MS } from '../contracts/constants/call-writes.constant';
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import { UNIT_FORGE_SYNC_VARIABLE } from '../contracts/constants/unit-forge-sync.constant';
-import { commitPendingCallWrites } from '../shared/commit-call-writes';
 import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
 import { resolveWorkRef } from '../wip-engine/ref-name';
@@ -29,6 +28,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
+import { keepUnitWork } from './unit-uncommitted-work.service';
 import { keepStrandedEditsAtStart } from './stranded-edits.service';
 import { readUnitStandings } from './unit-standings.service';
 import { listWorkRefs } from './work-swarm.service';
@@ -55,33 +55,6 @@ const refsUnder = async (
 		refs.set(name.slice(prefix.length), sha);
 	}
 	return refs;
-};
-
-/**
- * A worktree whose pending change deletes more than half of what its unit
- * tracks lost its files; it was not edited. Kept as "uncommitted work",
- * that deletion was committed and pushed as the whole repository's
- * removal (4,928 files, 2026-10-22). The unit's work is its ref.
- */
-const lostCheckout = async (
-	inTree: (
-		args: readonly string[],
-	) => Promise<{ readonly ok: boolean; readonly output: string }>,
-	porcelain: string,
-): Promise<
-	{ readonly deleted: number; readonly tracked: number } | undefined
-> => {
-	const deleted = porcelain
-		.split('\n')
-		.filter((line) => /^(?: D|D |DD)/u.test(line)).length;
-	if (deleted === 0) return undefined;
-	const listed = await inTree(['ls-tree', '-r', '--name-only', 'HEAD']);
-	const tracked = listed.ok
-		? listed.output.split('\n').filter((line) => line.length > 0).length
-		: 0;
-	return tracked > 0 && deleted * 2 > tracked
-		? { deleted, tracked }
-		: undefined;
 };
 
 /** The worktree each branch is checked out in. */
@@ -150,44 +123,10 @@ export const syncUnitsWithForge = async (
 		let tip = sha;
 		// Edits nobody is making any more are work too: kept, then pushed.
 		if (worktree !== undefined && !input.isLive(branch)) {
-			const inTree = runIn(worktree);
-			// A tool's writes its own commit missed go in under its subject.
-			await commitPendingCallWrites(worktree, inTree);
-			const dirty = await inTree(['status', '--porcelain']);
-			const lost =
-				dirty.ok && dirty.output.trim().length > 0
-					? await lostCheckout(inTree, dirty.output)
-					: undefined;
-			if (lost !== undefined) {
-				synced.push({
-					branch,
-					outcome: 'failed',
-					detail: `${worktree} lost ${String(lost.deleted)} of the ${String(lost.tracked)} files its unit tracks: a lost checkout, not edits, so nothing was committed and the unit's ref keeps its tip; recreate it with \`delendai work enter\``,
-				});
-				continue;
-			}
-			if (dirty.ok && dirty.output.trim().length > 0) {
-				const committed =
-					(await inTree(['add', '-A'])).ok &&
-					(
-						await inTree([
-							'commit',
-							'--quiet',
-							'-m',
-							'chore(wip): keep the uncommitted work found at start',
-						])
-					).ok;
-				if (!committed) {
-					synced.push({
-						branch,
-						outcome: 'failed',
-						detail: `${worktree} has uncommitted edits that could not be committed; they are still only on this machine`,
-					});
-					continue;
-				}
-				tip = (await inTree(['rev-parse', 'HEAD'])).output.trim();
-				synced.push({ branch, outcome: 'kept-uncommitted' });
-			}
+			const kept = await keepUnitWork(runIn(worktree), worktree, branch);
+			synced.push(...kept.synced);
+			if (kept.stop) continue;
+			tip = kept.tip ?? tip;
 		}
 		const remoteTip = theirs.get(name);
 		if (remoteTip === tip) continue;

@@ -57,6 +57,7 @@ const localExpression = (
 		"github.event.pull_request.base.sha || ''": base,
 		"github.event.pull_request.base.sha || 'origin/develop'": base,
 		'github.event.pull_request.base.sha': base,
+		'env.SCOPE_BASE': base,
 		"github.base_ref || 'develop'": baseRef,
 		'github.base_ref': baseRef,
 		'github.token': '${GH_TOKEN:-}',

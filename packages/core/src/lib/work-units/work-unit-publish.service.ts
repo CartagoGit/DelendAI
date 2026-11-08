@@ -1,4 +1,5 @@
 import { carriesNothingBeyond } from './landed-work.service';
+import { argumentsRefused } from './work-arguments.helper';
 import { deletedDocuments } from './review-pack-deletions.service';
 import {
 	describeCarriedPacks,
@@ -81,10 +82,7 @@ export const published = async (
 	const slice = scalarArg(args, 'slice');
 	const agent = agentFor(args, root, policy.identity);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
-		return refused(
-			'Publishing needs the unit of work it is publishing.',
-			'work publish --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
-		);
+		return argumentsRefused('publish');
 	}
 	if (scalarArg(args, 'as') !== undefined) {
 		return refused(

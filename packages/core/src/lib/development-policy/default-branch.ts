@@ -43,9 +43,20 @@ import { CONVENTIONAL_TRUNKS } from './default-branch.constant';
 const git = (root: string, args: readonly string[]): string =>
 	readGit(root, args) ?? '';
 
-const exists = (root: string, branch: string): boolean =>
-	git(root, ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`])
-		.length > 0;
+/** Which of `names` are local branches, asked of git once. */
+const localBranches = (
+	root: string,
+	names: readonly string[],
+): ReadonlySet<string> => {
+	const wanted = new Set(names.map((name) => `refs/heads/${name}`));
+	return new Set(
+		git(root, ['for-each-ref', '--format=%(refname)', ...wanted])
+			.split('\n')
+			// A pattern also matches the refs under it: keep exact names.
+			.filter((ref) => wanted.has(ref))
+			.map((ref) => ref.slice('refs/heads/'.length)),
+	);
+};
 
 /**
  * The project's default branch, or `undefined` when nothing stable says.
@@ -61,9 +72,11 @@ export const defaultBranchOf = (root: string): string | undefined => {
 		return published.slice('origin/'.length);
 	}
 	const configured = git(root, ['config', '--get', 'init.defaultBranch']);
-	if (configured.length > 0 && exists(root, configured)) return configured;
-	const present = CONVENTIONAL_TRUNKS.filter((branch) =>
-		exists(root, branch),
-	);
+	const local = localBranches(root, [
+		...(configured.length > 0 ? [configured] : []),
+		...CONVENTIONAL_TRUNKS,
+	]);
+	if (configured.length > 0 && local.has(configured)) return configured;
+	const present = CONVENTIONAL_TRUNKS.filter((branch) => local.has(branch));
 	return present.length === 1 ? present[0] : undefined;
 };

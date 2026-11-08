@@ -30,12 +30,11 @@ import { join } from 'node:path';
 import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffChanges } from './affected.script';
-import { affectedSpecsSince } from './affected-specs.service';
+import { nearSpecsSince } from './near-specs';
 import { pathImportersOf } from './path-importers';
 import { balanceByTime } from './spec-timings';
 import {
 	TARGET_SPECS_PER_JOB,
-	TEST_WORKFLOW,
 	ZONE_READ_MAP_PATH,
 	ZONE_RULES,
 } from './test-zones.constant';
@@ -50,10 +49,8 @@ import {
 	onlyScriptsChanged,
 	parseZoneReadMap,
 	readersOf,
-	isWorkflowFile,
 	ROOT_MANIFEST,
 	runsEverything,
-	testRunnerChanged,
 	zonesReadingRootFiles,
 } from './zone-reads';
 
@@ -285,28 +282,7 @@ export const zoneReach = (
 											deps.contentAt('head', change.path),
 										),
 						}
-					: !isWorkflowFile(change.path)
-						? change
-						: {
-								...change,
-								// Only the test workflow runs the zones; another workflow's
-								// edit reaches the zones that read it, like any root file.
-								runnerChanged:
-									change.path !== TEST_WORKFLOW
-										? false
-										: deps.contentAt === undefined
-											? undefined
-											: testRunnerChanged(
-													deps.contentAt(
-														'base',
-														change.path,
-													),
-													deps.contentAt(
-														'head',
-														change.path,
-													),
-												),
-							},
+					: change,
 		);
 	const rootReached =
 		roots.size === 0
@@ -615,15 +591,16 @@ const main = (): number => {
 			: { filter: 'readers', readers };
 	};
 
-	// The zones that run what the change reaches get the exact specs it
-	// reaches, followed by symbol (affected-specs.service), instead of
-	// `--changed`: by module, one change in core reached 1,362 of 2,407.
+	// The zones that run what the change reaches get the exact specs the
+	// project's `testing.scope` selects (near-specs): the touched ones by
+	// default, so a barrel selects the importers of the names it moved and
+	// not the 862 specs behind it; `reach` is the symbol analysis.
 	const byChange = (zone: string): boolean =>
 		planFor({ ...jobs[0]!, zone, shard: 1 }).filter === 'changed';
 	const affected =
 		full === undefined
 			? undefined
-			: new Set(affectedSpecsSince(rootDir, base ?? ''));
+			: new Set(nearSpecsSince(rootDir, base ?? ''));
 	if (affected !== undefined) {
 		const allSpecs = files.filter((file) => file.endsWith('.spec.ts'));
 		jobs = planZones({
@@ -713,7 +690,7 @@ const main = (): number => {
 			reach === undefined
 				? 'runs (every zone, see above)'
 				: plan.filter === 'changed'
-					? 'runs the specs its imports reach'
+					? 'runs the specs the change touches (testing.scope)'
 					: plan.filter === 'readers'
 						? `runs the ${String(plan.readers.length)} spec(s) that read the change: ${plan.readers.join(', ')}`
 						: plan.filter === 'all'

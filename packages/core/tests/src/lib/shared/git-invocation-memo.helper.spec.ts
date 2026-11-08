@@ -10,11 +10,13 @@ import { describe, expect, it } from 'vitest';
 import { runGitCommand } from '@delendai/core/lib/shared/git-command.helper';
 import { withGitInvocationMemo } from '@delendai/core/lib/shared/git-invocation-memo.helper';
 import {
+	execGitFileSync,
 	forgetGitReads,
 	observeGitSpawns,
 	readGit,
 } from '@delendai/core/lib/shared/git-read.helper';
 import { createGitRunner } from '@delendai/core/lib/shared/git-write';
+import { createScopedGitRunner } from '@delendai/core/lib/wip-engine/git-command';
 import {
 	readWorktreeChanges,
 	WORKTREE_STATUS_ARGS,
@@ -134,8 +136,10 @@ describe('withGitInvocationMemo', () => {
 
 	it('keeps a question about two object ids across writes', () => {
 		const root = repo();
+		const base = readGit(root, ['rev-parse', 'HEAD']) ?? '';
+		runGitCommand(root, ['commit', '-q', '--allow-empty', '-m', 'two']);
 		const head = readGit(root, ['rev-parse', 'HEAD']) ?? '';
-		const ask = ['merge-base', '--is-ancestor', head, head];
+		const ask = ['merge-base', '--is-ancestor', base, head];
 		const { spawns } = counting(() =>
 			withGitInvocationMemo(() => {
 				readGit(root, ask);
@@ -147,6 +151,120 @@ describe('withGitInvocationMemo', () => {
 			ask.join(' '),
 			`update-ref refs/heads/x ${head}`,
 		]);
+	});
+
+	it('answers that a commit is its own ancestor without asking', () => {
+		const root = repo();
+		const head = readGit(root, ['rev-parse', 'HEAD']) ?? '';
+		const { value, spawns } = counting(() =>
+			withGitInvocationMemo(() =>
+				readGit(root, ['merge-base', '--is-ancestor', head, head]),
+			),
+		);
+		expect(value).toBe('');
+		expect(spawns).toEqual([]);
+	});
+
+	it('keeps history read by object id across writes, and by ref until one', () => {
+		const root = repo();
+		const head = readGit(root, ['rev-parse', 'HEAD']) ?? '';
+		const byId = ['ls-tree', '-r', '--name-only', head];
+		const byRef = ['log', '-1', '--format=%s', 'main'];
+		const wide = ['log', '--all', '-1', '--format=%s', head];
+		const { spawns } = counting(() =>
+			withGitInvocationMemo(() => {
+				readGit(root, byId);
+				readGit(root, byRef);
+				readGit(root, wide);
+				runGitCommand(root, [
+					'-c',
+					'user.name=x',
+					'commit-tree',
+					`${head}^{tree}`,
+					'-m',
+					'object only',
+				]);
+				readGit(root, byRef);
+				runGitCommand(root, ['update-ref', 'refs/heads/other', head]);
+				readGit(root, byId);
+				readGit(root, byRef);
+				readGit(root, wide);
+			}),
+		);
+		expect(spawns).toEqual([
+			byId.join(' '),
+			byRef.join(' '),
+			wide.join(' '),
+			`-c user.name=x commit-tree ${head}^{tree} -m object only`,
+			`update-ref refs/heads/other ${head}`,
+			byRef.join(' '),
+			wide.join(' '),
+		]);
+	});
+
+	it('forgets only the worktree listings when a worktree is added or removed', async () => {
+		const root = repo();
+		const list = ['worktree', 'list', '--porcelain'];
+		const refs = ['for-each-ref', '--format=%(refname)'];
+		const dir = `${root}-wt`;
+		const { spawns } = await (async () => {
+			const seen: string[] = [];
+			const stop = observeGitSpawns(({ args }) =>
+				seen.push(args.join(' ')),
+			);
+			await withGitInvocationMemo(async () => {
+				readGit(root, list);
+				readGit(root, refs);
+				runGitCommand(root, ['branch', 'side']);
+				readGit(root, refs);
+				runGitCommand(root, ['worktree', 'add', '-q', dir, 'side']);
+				readGit(root, list);
+				readGit(root, refs);
+				runGitCommand(root, ['worktree', 'remove', dir]);
+				readGit(root, list);
+				readGit(root, refs);
+				await createGitRunner(root)(refs);
+			});
+			stop();
+			return { spawns: seen };
+		})();
+		expect(spawns).toEqual([
+			list.join(' '),
+			refs.join(' '),
+			'branch side',
+			refs.join(' '),
+			`worktree add -q ${dir} side`,
+			list.join(' '),
+			`worktree remove ${dir}`,
+			list.join(' '),
+		]);
+	});
+
+	it('answers a read made through any runner from what another asked', async () => {
+		const root = repo();
+		const top = ['rev-parse', '--show-toplevel'];
+		const { spawns } = await (async () => {
+			const seen: string[] = [];
+			const stop = observeGitSpawns(({ args }) =>
+				seen.push(args.join(' ')),
+			);
+			const answers = await withGitInvocationMemo(async () => [
+				runGitCommand(root, top).out,
+				readGit(root, top),
+				String(
+					execGitFileSync('git', top, {
+						cwd: root,
+						encoding: 'utf8',
+					}),
+				).trim(),
+				(await createScopedGitRunner(root)(top)).output.trim(),
+				(await createGitRunner(root)(top)).output.trim(),
+			]);
+			stop();
+			expect(new Set(answers).size).toBe(1);
+			return { spawns: seen };
+		})();
+		expect(spawns).toEqual([top.join(' ')]);
 	});
 
 	it('remembers nothing outside its invocation, nor between two', async () => {

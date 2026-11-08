@@ -70,7 +70,7 @@ describe('skipReason (x00554 S2)', () => {
 });
 
 describe('what bringing the candidates forward runs', () => {
-	it('certifies what landed first, then has one writer that merges and regenerates', () => {
+	it('records what landed first, then has one writer that merges and regenerates', () => {
 		// A second refresher used to run first. It merged every
 		// candidate textually, so the regenerating step found nothing
 		// behind and never ran.

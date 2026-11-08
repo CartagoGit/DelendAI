@@ -12,6 +12,11 @@ export interface IChangeFootprint {
 	 * none when unknown, which reads as "by its code".
 	 */
 	readonly readOnly?: ReadonlySet<string>;
+	/**
+	 * The specs that read its files, in the zones it only reads: all it
+	 * reaches there. Absent when unknown, which keeps the answer by zone.
+	 */
+	readonly readers?: ReadonlySet<string>;
 	/** It adds a file that existed nowhere before (a move adds none). */
 	readonly creates?: boolean;
 }

@@ -1,20 +1,17 @@
 #!/usr/bin/env bun
 /**
- * certify-integration.script.ts — every commit that lands on the
- * integration branch gets the full CI run it is declared to get.
+ * certify-integration.script.ts — record what the full runs of the
+ * integration branch's tip concluded.
  *
- * `ci.yml` calls the integration branch the full validation boundary: a
- * pull request may run only what its change can reach, because the push
- * to the integration branch runs everything. But the queue merges with
- * the workflow token, and the forge starts no workflow for an event that
- * token caused. Measured on 2026-09-24: the six latest merges into
- * `develop` were made by github-actions[bot] and none had a CI run.
+ * A pull request, or a train of them, lands on the run of the sections it
+ * touches; the full suite runs on the promotion into the release branch,
+ * whose head is the integration branch's tip. Nothing dispatches a full
+ * run after each merge any more, and nothing waits for one before arming:
+ * this only records the verdict of the full runs that exist (a push, a
+ * dispatch without a base, or the promotion's own run) for
+ * `proposal_transition` to read.
  *
- * The owner machine runs this after each merge it pulls. When the
- * integration branch's tip has no full run yet, it dispatches one, with
- * the owner's credential, which the forge does start.
- *
- *   bun tools/scripts/forge/certify-integration.script.ts [--apply]
+ *   bun tools/scripts/forge/certify-integration.script.ts
  */
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
@@ -40,42 +37,38 @@ export type {
 export const CERTIFYING_WORKFLOW = 'ci.yml';
 
 /**
- * How many full runs of one commit may end cancelled before a pass stops
- * starting another. A job over its `timeout-minutes` ends its run
- * `cancelled` (measured on 2026-09-29: job and run both report
- * `cancelled`, and only the annotation "The job has exceeded the maximum
- * execution time" tells it from a person's cancel), so a cancelled run is
- * run again. One that is cancelled every time would otherwise be started
- * on every pass for ever; after this many it is a failure a person reads.
+ * How many full runs of one commit may end cancelled before the commit
+ * reads red. A job over its `timeout-minutes` ends its run `cancelled`
+ * (measured on 2026-09-29: job and run both report `cancelled`, and only
+ * the annotation "The job has exceeded the maximum execution time" tells it
+ * from a person's cancel), so one cancelled run says nothing; a commit
+ * cancelled this often does not finish, a failure a person reads.
  */
 export const MAX_CANCELLED_FULL_RUNS = 3;
 
-/** Runs that validate `sha` in full: a push or a dispatch run everything. */
+/**
+ * Runs that validate `sha` in full: a push or a dispatch run everything,
+ * and so does the promotion, the one pull request whose head is the
+ * integration branch. A train's dispatch runs on its own commit, never on
+ * the tip's.
+ */
 const fullRunsOf = (
 	runs: readonly ICertificationRun[],
 	sha: string,
+	integration?: string,
 ): readonly ICertificationRun[] =>
 	runs.filter(
 		(run) =>
 			run.head_sha === sha &&
-			(run.event === 'push' || run.event === 'workflow_dispatch'),
+			(run.event === 'push' ||
+				run.event === 'workflow_dispatch' ||
+				(run.event === 'pull_request' &&
+					integration !== undefined &&
+					run.head_branch === integration)),
 	);
 
 const isCancelled = (run: ICertificationRun): boolean =>
 	run.conclusion === 'cancelled';
-
-/**
- * Whether `sha` still needs a full run: none that was started by a push
- * or a dispatch is running or finished for it, other than cancelled ones,
- * and fewer than {@link MAX_CANCELLED_FULL_RUNS} were cancelled.
- */
-export const needsCertification = (
-	runs: readonly ICertificationRun[],
-	sha: string,
-): boolean => {
-	const full = fullRunsOf(runs, sha);
-	return full.every(isCancelled) && full.length < MAX_CANCELLED_FULL_RUNS;
-};
 
 /**
  * Whether `sha` has passed its full validation. Only a push or a
@@ -86,8 +79,9 @@ export const needsCertification = (
 export const certificationOf = (
 	runs: readonly ICertificationRun[],
 	sha: string,
+	integration?: string,
 ): IIntegrationCertification => {
-	const all = fullRunsOf(runs, sha);
+	const all = fullRunsOf(runs, sha, integration);
 	const full = all.filter((run) => !isCancelled(run));
 	if (full.some((run) => run.conclusion === 'success')) return 'certified';
 	if (full.some((run) => run.status !== 'completed')) return 'pending';
@@ -165,30 +159,10 @@ const main = (): void => {
 			{ cwd: root, encoding: 'utf8' },
 		),
 	) as readonly ICertificationRun[];
-	recordCertification(root, sha, certificationOf(runs, sha));
-	if (!needsCertification(runs, sha)) {
-		const cancelled = fullRunsOf(runs, sha).filter(isCancelled).length;
-		console.log(
-			cancelled >= MAX_CANCELLED_FULL_RUNS &&
-				fullRunsOf(runs, sha).every(isCancelled)
-				? `certify-integration: ${integration} at ${sha.slice(0, 9)} had ${cancelled} full runs cancelled (a job over its timeout, or by hand); not starting another — read the runs.`
-				: `certify-integration: ${integration} at ${sha.slice(0, 9)} already has its full run.`,
-		);
-		return;
-	}
-	if (!process.argv.includes('--apply')) {
-		console.log(
-			`certify-integration: ${integration} at ${sha.slice(0, 9)} has no full run (read-only; pass --apply).`,
-		);
-		return;
-	}
-	execFileSync(
-		'gh',
-		['workflow', 'run', CERTIFYING_WORKFLOW, '--ref', integration],
-		{ cwd: root, stdio: 'ignore' },
-	);
+	const state = certificationOf(runs, sha, integration);
+	recordCertification(root, sha, state);
 	console.log(
-		`certify-integration: dispatched the full run for ${integration} at ${sha.slice(0, 9)}.`,
+		`certify-integration: ${integration} at ${sha.slice(0, 9)} is ${state}; no full run is dispatched for it, the promotion runs one.`,
 	);
 };
 

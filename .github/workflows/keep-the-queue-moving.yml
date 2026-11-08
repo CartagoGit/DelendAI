@@ -46,6 +46,9 @@ concurrency:
 permissions:
     contents: write
     pull-requests: write
+    # The urgent repairs of a red promotion name the red zones; the queue
+    # holds only what reaches them and clears a zone once it ran green.
+    issues: write
     # The open code scanning alerts of the integration branch are read below.
     security-events: read
     # `update-branch` writes its commit as a bot, and the forge will not

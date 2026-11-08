@@ -327,7 +327,7 @@ describe('a change made only of prose', () => {
 describe('pack smoke', () => {
 	it('runs when a tarball can change, and not for an edit inside a module', () => {
 		const runs = (file: string) =>
-			jobMustRun({ job: 'pack-smoke', changed: [file] });
+			jobMustRun({ job: 'pack-smoke', changed: [file], structural: [] });
 		expect(
 			runs('packages/core/src/lib/cache/cache-layout-bootstrap.ts'),
 		).toBe(false);
@@ -476,5 +476,198 @@ describe('changedOutputOf', () => {
 				),
 			),
 		).toBe('');
+	});
+});
+
+describe('an edit of the test workflow runs the jobs whose block changed', () => {
+	const scopes: readonly IJobScope[] = [
+		...SCOPES,
+		{ job: 'reads-github', touches: ['.github/'], because: 'test fixture' },
+	];
+	const ci = '.github/workflows/ci.yml';
+	const runs = (job: string, changed: readonly string[]): boolean =>
+		jobMustRun({
+			job,
+			changed,
+			scopes,
+			workflowJobs: new Set(['web']),
+		});
+
+	it('runs a job whose block changed, though nothing it reads did', () => {
+		expect(runs('web', [ci])).toBe(true);
+	});
+
+	it('runs no other job for the workflow alone, save one declared always', () => {
+		expect(runs('reads-github', [ci])).toBe(false);
+		expect(runs('packaging', [ci])).toBe(false);
+		expect(runs('always-job', [ci])).toBe(true);
+	});
+
+	it('still runs what the rest of the change reaches', () => {
+		expect(runs('packaging', [ci, 'packages/core/a.ts'])).toBe(true);
+	});
+
+	it('counts the workflow as a read when its blocks are unknown', () => {
+		expect(jobMustRun({ job: 'reads-github', changed: [ci], scopes })).toBe(
+			true,
+		);
+	});
+});
+
+describe('the jobs the real scopes run, by kind of change', () => {
+	const real = (changed: readonly string[]): readonly string[] =>
+		Object.entries(
+			planJobs({
+				changed,
+				scopes: JOB_SCOPES,
+				structural: [],
+				reached: new Set<string>(),
+			}),
+		)
+			.filter(([, runs]) => runs)
+			.map(([job]) => job);
+
+	// #1838 carried a proposal document, and it ran 31 jobs.
+	it('runs the whole-repository checks and the bookkeeping for a proposal edit', () => {
+		expect(
+			real(['docs/delendai/proposals/ready/perfs/v00155-x.md']),
+		).toEqual([
+			'lint-architecture',
+			'lint-presets',
+			'lint-docs',
+			'lint-security',
+			'lint-governance',
+			'plan-scope',
+			'quality-gate',
+			'delendai-validate',
+			'release-the-queue',
+			'wake-the-queue',
+			'generated-artifacts-check',
+		]);
+	});
+
+	it('runs no live-forge, build, site or packaging job for a change under tools/', () => {
+		const run = real([
+			'tools/scripts/ci/test-scope.ts',
+			'tools/scripts/ci/test-scope.spec.ts',
+		]);
+		for (const job of [
+			'ref-lifecycle',
+			'develop-protection-live',
+			'metrics-gate',
+			'pack-smoke',
+			'build-clean',
+			'delendai-rebuild-digest',
+			'tokens-budget-real',
+		])
+			expect(run).not.toContain(job);
+		expect(run).toContain('typecheck');
+	});
+
+	it('runs the forge guards when the policy they resolve changes', () => {
+		expect(
+			real(['tools/scripts/governance/forge-settings.lib.ts']),
+		).toEqual(
+			expect.arrayContaining([
+				'ref-lifecycle',
+				'develop-protection-live',
+			]),
+		);
+	});
+
+	it('declares a one-line reason for every job that reads the whole repository', () => {
+		const always = JOB_SCOPES.filter((scope) => scope.touches === 'always');
+		expect(always.map((scope) => scope.job).sort()).toEqual([
+			'delendai-validate',
+			'generated-artifacts-check',
+			'lint-architecture',
+			'lint-governance',
+			'lint-security',
+			'plan-scope',
+			'quality-gate',
+			'release-the-queue',
+			'wake-the-queue',
+		]);
+		for (const scope of always) {
+			expect(scope.because).not.toContain('\n');
+			expect(scope.because.length).toBeLessThanOrEqual(160);
+		}
+	});
+});
+
+describe('the packaging jobs judge a published surface by the names it exports', () => {
+	const PACKAGING = [
+		'site',
+		'pack-smoke',
+		'build-clean',
+		'verify-runtime',
+		'delendai-rebuild-digest',
+	] as const;
+	const ran = (input: {
+		readonly changed: readonly string[];
+		readonly moved?: readonly string[];
+		readonly structural?: readonly string[];
+	}): readonly string[] => {
+		const plan = planJobs({
+			changed: input.changed,
+			scopes: JOB_SCOPES,
+			structural: input.structural ?? [],
+			reached: new Set<string>(),
+			surfaceMoved: new Set(input.moved ?? []),
+		});
+		return PACKAGING.filter((job) => plan[job] === true);
+	};
+	const BARREL = 'packages/core/src/cli.ts';
+
+	it('runs none of them when a barrel changed and no name it exports moved', () => {
+		expect(ran({ changed: [BARREL] })).toEqual([]);
+	});
+
+	it('runs the four that read a public surface when the barrel gained an export (#1838)', () => {
+		expect(ran({ changed: [BARREL], moved: [BARREL] })).toEqual([
+			'site',
+			'pack-smoke',
+			'build-clean',
+			'verify-runtime',
+		]);
+	});
+
+	it('runs none of them for a change inside a module behind the barrel', () => {
+		expect(
+			ran({
+				changed: [
+					'packages/core/src/lib/shared/model-catalogue.service.ts',
+				],
+			}),
+		).toEqual([]);
+	});
+
+	it('runs them for a file added or removed in a package, and for a manifest', () => {
+		expect(
+			ran({
+				changed: ['packages/core/src/lib/new.ts'],
+				structural: ['packages/core/src/lib/new.ts'],
+			}),
+		).toEqual(['site', 'pack-smoke', 'build-clean', 'verify-runtime']);
+		expect(ran({ changed: ['packages/core/package.json'] })).toEqual([
+			'site',
+			'pack-smoke',
+			'build-clean',
+			'verify-runtime',
+			'delendai-rebuild-digest',
+		]);
+	});
+
+	it('runs every one of them when the analysis is absent: the cautious reading', () => {
+		const plan = planJobs({
+			changed: [BARREL],
+			scopes: JOB_SCOPES,
+			structural: [],
+			reached: new Set<string>(),
+		});
+		for (const job of PACKAGING.filter(
+			(each) => each !== 'delendai-rebuild-digest',
+		))
+			expect(plan[job]).toBe(true);
 	});
 });

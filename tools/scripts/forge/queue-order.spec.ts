@@ -5,14 +5,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IIntegrationCertification } from './certify-integration.interface';
 import {
-	certifiedByTrain,
 	culpritRefName,
 	queueHead,
 	byQueuePosition,
 	queueOrder,
-	repairStep,
 	runTrain,
 	TRAIN_CAPACITY,
 	trainMembers,
@@ -123,81 +120,6 @@ describe('queueOrder', () => {
 	});
 });
 
-describe('repairStep: the candidate that repairs a red integration branch', () => {
-	const runs =
-		(states: Record<number, IIntegrationCertification>) =>
-		(candidate: IQueueCandidateFacts): IIntegrationCertification =>
-			states[candidate.number] ?? 'uncertified';
-	const level = () => true;
-
-	it('arms the oldest level candidate whose full run is green', () => {
-		expect(
-			repairStep(
-				[candidate(9), candidate(4)],
-				PREFIX,
-				level,
-				runs({ 4: 'certified', 9: 'certified' }),
-			),
-		).toEqual({ kind: 'arm', number: 4 });
-	});
-
-	it('passes over a candidate whose full run is red, and dispatches one for the next', () => {
-		expect(
-			repairStep(
-				[candidate(4), candidate(6)],
-				PREFIX,
-				level,
-				runs({ 4: 'red' }),
-			),
-		).toEqual({
-			kind: 'dispatch',
-			number: 6,
-			headRef: candidate(6).headRef,
-		});
-	});
-
-	it('waits for a full run in progress instead of dispatching another', () => {
-		expect(
-			repairStep(
-				[candidate(4), candidate(6)],
-				PREFIX,
-				level,
-				runs({ 4: 'pending' }),
-			),
-		).toEqual({ kind: 'wait', number: 4 });
-	});
-
-	it('never proposes a candidate that is behind, conflicting, red or a draft', () => {
-		expect(
-			repairStep(
-				[
-					candidate(1),
-					candidate(2, { conflicting: true }),
-					candidate(3, { red: true }),
-					candidate(5, { draft: true }),
-				],
-				PREFIX,
-				(each) => each.number !== 1,
-				runs({
-					1: 'certified',
-					2: 'certified',
-					3: 'certified',
-					5: 'certified',
-				}),
-			),
-		).toEqual({ kind: 'none' });
-	});
-
-	it('asks nothing of a candidate after the one it chose', () => {
-		const asked: number[] = [];
-		repairStep([candidate(4), candidate(6)], PREFIX, level, (each) => {
-			asked.push(each.number);
-			return 'certified';
-		});
-		expect(asked).toEqual([4]);
-	});
-});
-
 const rider = (number: number): ITrainCandidate => ({
 	number,
 	headRef: `delendai/pr/agent/x${String(number)}-S1-g1/t`,
@@ -228,7 +150,7 @@ const fakeForge = (
 	const landings: { sha: string; members: readonly number[] }[] = [];
 	const ports: ITrainPorts = {
 		trainAt: (ref) => (built.has(ref) ? `sha:${ref}` : undefined),
-		fullRunAt: (sha) => {
+		runAt: (sha) => {
 			const ref = sha.slice('sha:'.length);
 			if (!runs.includes(ref)) return 'uncertified';
 			if (!finished.has(ref)) return 'pending';
@@ -279,7 +201,6 @@ const fakeForge = (
 const drive = (
 	forge: ReturnType<typeof fakeForge>,
 	members: readonly ITrainCandidate[],
-	anchor?: ITrainCandidate,
 ): readonly number[] => {
 	for (let pass = 0; pass < 20; pass += 1) {
 		const landed = runTrain({
@@ -287,7 +208,6 @@ const drive = (
 			tipSha: TIP,
 			// The culprit branch keeps a blamed head out of later trains.
 			members: members.filter((m) => !forge.blamed.includes(m.number)),
-			...(anchor === undefined ? {} : { anchor }),
 			ports: forge.ports,
 		});
 		if (landed.length > 0) return landed;
@@ -297,7 +217,7 @@ const drive = (
 };
 
 describe('the merge train', () => {
-	it('lands a disjoint batch with one full run', () => {
+	it('lands a disjoint batch with one run of the union of their scopes', () => {
 		const forge = fakeForge();
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 5, 8]);
@@ -334,7 +254,7 @@ describe('the merge train', () => {
 		expect(forge.blamed).toEqual([2]);
 	});
 
-	it('excludes a candidate that conflicts with the train', () => {
+	it('splits only a textual conflict outside the derived files off the train', () => {
 		const forge = fakeForge({ conflicts: [5] });
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 8]);
@@ -347,20 +267,6 @@ describe('the merge train', () => {
 		expect(drive(forge, [rider(3), rider(5)])).toEqual([]);
 		expect(forge.runs).toEqual([]);
 		expect(forge.said.some((line) => line.includes(reason))).toBe(true);
-	});
-
-	it('lets a repair lead the train, in every half', () => {
-		const forge = fakeForge({ culprits: [6] });
-		const landed = drive(forge, [rider(5), rider(6)], rider(2));
-		expect(landed).toEqual([2, 5]);
-		expect(forge.runs.every((ref) => ref.includes(`/${'2'}-`))).toBe(true);
-		expect(forge.blamed).toEqual([6]);
-	});
-
-	it('lands nothing when the repair itself conflicts', () => {
-		const forge = fakeForge({ conflicts: [2] });
-		expect(drive(forge, [rider(5)], rider(2))).toEqual([]);
-		expect(forge.runs).toEqual([]);
 	});
 
 	it('says how many landed when the forge stops a merge part way', () => {
@@ -395,7 +301,7 @@ describe('the merge train', () => {
 		expect(forge.runs).toHaveLength(1);
 	});
 
-	it('tries again next time when the full run cannot be dispatched', () => {
+	it('tries again next time when the train run cannot be dispatched', () => {
 		const forge = fakeForge();
 		const ports: ITrainPorts = { ...forge.ports, dispatch: () => false };
 		expect(
@@ -513,13 +419,12 @@ describe('train names', () => {
 		expect(isCulpritMarker(prefixes, 'train/abc/1')).toBe(false);
 	});
 
-	it('prunes trains of another tip and former namespaces, keeping markers and the proving tree', () => {
+	it('prunes trains of another tip and former namespaces, keeping markers', () => {
 		const prefixes = trainPrefixesOf(branchesOf('acme', ['delendai']));
 		const current = trainRefName('acme/train/', TIP, [1, 2]);
 		const branches = new Map([
 			[current, 'c'],
 			['acme/train/bbbbbbbbbbbb/1-2', 'old'],
-			['acme/train/cccccccccccc/3-4', 'proving'],
 			['delendai/train/bbbbbbbbbbbb/5-6', 'former'],
 			['acme/train/culprit/7', 'h7'],
 			['delendai/train/culprit/8', 'h8'],
@@ -529,7 +434,6 @@ describe('train names', () => {
 				prefixes,
 				tipSha: TIP,
 				branches,
-				keep: (sha) => sha === 'proving',
 			}),
 		).toEqual([
 			'acme/train/bbbbbbbbbbbb/1-2',
@@ -540,7 +444,6 @@ describe('train names', () => {
 				prefixes: [],
 				tipSha: TIP,
 				branches: new Map(),
-				keep: () => false,
 			}),
 		).toEqual([]);
 	});
@@ -550,20 +453,6 @@ describe('train names', () => {
 			`delendai/train/${'a'.repeat(12)}/3-5`,
 		);
 		expect(culpritRefName(TRAINS, 7)).toBe('delendai/train/culprit/7');
-	});
-});
-
-describe('certifiedByTrain', () => {
-	it('proves a tip with the tree of a green train', () => {
-		const trains = [
-			{ sha: 's1', tree: 't1' },
-			{ sha: 's2', tree: 't2' },
-		];
-		const runs = (sha: string): IIntegrationCertification =>
-			sha === 's2' ? 'certified' : 'red';
-		expect(certifiedByTrain('t2', trains, runs)).toBe(true);
-		expect(certifiedByTrain('t1', trains, runs)).toBe(false);
-		expect(certifiedByTrain('t3', trains, runs)).toBe(false);
 	});
 });
 

@@ -72,6 +72,7 @@ export const readOrphans = async (input: {
 		root: input.root,
 		policy: input.policy,
 		publications: input.published.map((unit) => unit.ref),
+		tips: new Map(input.published.map((unit) => [unit.ref, unit.tip])),
 	});
 	const published = [...presence.entries()].flatMap(
 		([ref, judged]): IOrphanedWork[] =>

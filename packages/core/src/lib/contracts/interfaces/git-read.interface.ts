@@ -35,4 +35,9 @@ export interface IGitReadCache {
 	): { readonly output: string | undefined } | undefined;
 	remember(spawn: IGitSpawn, output: string | undefined): void;
 	ran(spawn: IGitSpawn): void;
+	/**
+	 * Forget only the reads a writer of `unit` may have changed: ref
+	 * listings and lookups that can name it, and the worktree listings.
+	 */
+	forgetUnit(unit: string): void;
 }

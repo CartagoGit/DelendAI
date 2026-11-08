@@ -30,6 +30,7 @@
  * be put on disk, and a step that failed all yield a report that does not
  * pass. Nothing here can turn "could not check" into "checked".
  */
+import { committedFileReader } from './committed-file-reader.helper';
 import { runGitCommand } from '../shared/git-command.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 import { spawnSync } from 'node:child_process';
@@ -94,10 +95,9 @@ export const certifyCandidate = async (
 		againstIntegrationSha: integrationSha,
 		candidateSha,
 	};
-	const steps = validationGateSteps((path) => {
-		const shown = git(root, ['show', `${integrationSha}:${path}`]);
-		return shown.ok ? shown.out : undefined;
-	});
+	const steps = validationGateSteps(
+		committedFileReader(root, integrationSha),
+	);
 	if (steps.length === 0) {
 		return { ...base, declared: false, passed: false, steps: [] };
 	}

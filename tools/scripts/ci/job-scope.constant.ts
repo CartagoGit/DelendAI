@@ -36,6 +36,18 @@ export const SOURCE_PREFIXES = [
 ] as const;
 
 /**
+ * The entry files a published package exposes: what a consumer imports.
+ * The packaging jobs run for a change to one only when the names it exports
+ * moved (`IJobScope.surface`); the modules behind it are judged by the
+ * typecheck and the tests.
+ */
+export const PUBLIC_ENTRY_FILES =
+	/^(packages|plugins|extensions)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u;
+
+/** A manifest anywhere, the lockfile and the compiler configuration. */
+const BUILD_INPUTS = /(^|\/)package\.json$|^bun\.lock$|^tsconfig/u;
+
+/**
  * Which files each CI job's verdict can depend on.
  *
  * THE ASYMMETRY THAT GOVERNS THIS FILE: a job that runs when it did not
@@ -87,7 +99,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: its 47 lints together read files under every tracked top-level entry, and several list the whole tree with git ls-files. The ones that judge files one by one judge the changed files.',
+			'measured: its 47 lints read every top-level entry and several list the tree with git ls-files.',
 	},
 	{
 		job: 'lint-presets',
@@ -180,14 +192,14 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: the secret, privacy and hygiene lints read files under every tracked top-level entry and list the whole tree; a cleartext secret can arrive in any file. On a pull request the secret scan reads the diff, and the per-file lints judge the changed files.',
+			'measured: the secret and privacy lints read every top-level entry; a cleartext secret can arrive in any file, Markdown included.',
 	},
 	{
 		job: 'lint-governance',
 		touches: 'always',
 		code: 'scripts',
 		because:
-			'measured: the proposal, branch and agent lints read files under every tracked top-level entry, and they judge refs and commits that change without a file changing.',
+			'measured: its proposal, branch and agent lints read every top-level entry and judge refs that change without a file changing.',
 	},
 	{
 		job: 'typecheck',
@@ -199,7 +211,7 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'plan-scope',
 		touches: 'always',
 		because:
-			'it is the job that decides what everything else may skip; skipping IT would leave every gate excused by an empty plan.',
+			'bookkeeping: it decides what every other job may skip, so skipping it would excuse every gate with an empty plan.',
 	},
 	{
 		job: 'plan-tests',
@@ -223,43 +235,63 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 		job: 'quality-gate',
 		touches: 'always',
 		because:
-			'it runs the configured quality scopes over the repository; the 2026-11-04 trace of its run did not complete, so what it reads is not measured and nothing is skipped.',
+			'unmeasured: it runs the lint steps no other job runs over the whole tree, and a trace of its reads did not complete.',
 	},
 	{
 		job: 'delendai-validate',
 		touches: 'always',
 		because:
-			'it IS the required check; a skipped aggregate is an unmergeable pull request with nothing red on it.',
+			'bookkeeping: it IS the required check, and a skipped aggregate is an unmergeable pull request with nothing red on it.',
 	},
 	{
 		job: 'ref-lifecycle',
-		touches: 'always',
+		touches: [
+			'.github/',
+			'tools/scripts/lint/ref-lifecycle-guard.script.ts',
+			'tools/scripts/lint/namespace-ruleset-guard.script.ts',
+			'tools/scripts/governance/',
+			'tools/scripts/git/',
+			'tools/scripts/forge/',
+			'packages/core/src/lib/development-policy/',
+			'packages/core/src/lib/startup-reconciler/',
+			'packages/core/src/lib/work-units/',
+			'packages/core/src/lib/contracts/constants/repository-identity.constant.ts',
+			'delendai.config.json',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it judges the refs on the forge, which change without any file changing.',
+			'it classifies the refs on the forge and checks its namespace ruleset, which no pull request changes; only the guards, the policy they resolve and the workflow that runs them can change its verdict, and every push still runs it.',
 	},
 	{
 		job: 'release-the-queue',
 		touches: 'always',
 		because:
-			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
+			'bookkeeping: it only runs on a push to develop, where it wakes the queue after a green certification.',
 	},
 	{
 		job: 'wake-the-queue',
 		touches: 'always',
 		because:
-			'it wakes the queue when a publication goes green, which no file change describes.',
+			'bookkeeping: it wakes the queue when a publication goes green, which no file change describes.',
 	},
 	{
 		job: 'develop-protection-live',
-		touches: 'always',
+		touches: [
+			'.github/',
+			'tools/scripts/lint/branch-protection-guard.script.ts',
+			'tools/scripts/lib/repo-root.ts',
+			'tools/scripts/governance/',
+			'delendai.config.json',
+		],
 		because:
-			'it reads the live branch rule, which drifts without a commit.',
+			'it reads the live branch rule, which belongs to the repository and not to a candidate (it reports not-applicable on a pull request); only the guard, the policy it compares with and its workflow can change it, and every push to develop still runs it.',
 	},
 	{
 		job: 'generated-artifacts-check',
 		touches: 'always',
 		because:
-			'measured: the generators read files under every tracked top-level entry; a generated artifact goes stale because of its inputs, spread across proposals, plugins and packages.',
+			'whole repository: the generators read every top-level entry, and an artifact goes stale because of any of its inputs.',
 	},
 	{
 		job: 'manifests-check',
@@ -282,26 +314,44 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	{
 		job: 'metrics-gate',
 		docs: 'skip', // no Markdown reaches the build it measures.
-		touches: 'always',
+		touches: [
+			'packages/',
+			'plugins/',
+			'apps/',
+			'extensions/',
+			'tools/scripts/compile/',
+			'tools/scripts/metrics/',
+			'tsconfig',
+			'bunfig.toml',
+			'package.json',
+			'bun.lock',
+		],
 		because:
-			'it compares a snapshot of the whole build against a baseline; a subset snapshot is not comparable to it.',
+			'it compares a snapshot of the build with a baseline, so it reads what the build reads (the source trees, the build and metrics scripts, the compiler configuration); tests, docs and the other scripts are not in the snapshot.',
 	},
 
 	// The bounded ones. Each is a single build or suite whose command
 	// line names what it reads.
 	{
 		job: 'site',
+		surface: PUBLIC_ENTRY_FILES,
 		touches: [
 			'apps/web/',
-			'packages/',
-			'plugins/',
-			'extensions/',
-			'tools/scripts/',
+			'tools/docs-api/',
+			'tools/scripts/compile/',
+			'tools/scripts/astro/',
+			'tools/scripts/verify/site-pages-verify.script.ts',
+			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^apps/web/|^tools/(scripts/(compile|astro)/|docs-api/)|^tools/scripts/verify/site-pages-verify\\.script\\.ts$`,
+			'u',
+		),
+		lists: ['packages/', 'plugins/', 'extensions/'],
 		because:
-			'it runs `bun run site`, an astro build of apps/web that BUNDLES source from outside it: `@delendai/cli` (its command registry, and through it every plugin), `@delendai/core`, `@delendai/proposals`, the UI extension and tools/scripts. A change there can break the build without touching apps/web — x00712 did, and develop stayed red (x00726). The data the site embeds is checked in under apps/web/src/data; `generated-artifacts-check`, which always runs, catches it going stale.',
+			'it runs `bun run site`, an astro build of apps/web that bundles `@delendai/cli`, `@delendai/core`, `@delendai/proposals` and the UI extension through their entry files: a change that moves the names an entry exports, a file added or removed in them, a manifest or the build scripts can break it; a change inside a module behind an entry is judged by the typecheck and the tests, and `generated-artifacts-check` catches the embedded data going stale.',
 	},
 	{
 		job: 'sqlite-cutover-ready',
@@ -321,72 +371,94 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 	},
 	{
 		job: 'delendai-rebuild-digest',
-		touches: ['package.json', 'bun.lock', 'packages/', 'plugins/'],
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/ci/rebuild-digest\\.script\\.ts$`,
+			'u',
+		),
+		touches: ['package.json', 'bun.lock'],
 		because:
-			'it verifies install parity, which only a manifest or a lockfile can change.',
+			'it verifies install parity, which only a manifest, the lockfile or its own script can change; no source file reaches it.',
 	},
 	{
 		job: 'pack-smoke',
+		surface: PUBLIC_ENTRY_FILES,
 		// What can change what a tarball holds or whether it installs: a
-		// manifest, the lockfile, the build configuration and scripts, and
-		// the entry files that are the export surface. A change inside an
-		// existing module cannot, and typecheck compiles it.
-		matches:
-			/(^|\/)package\.json$|^bun\.lock$|^tsconfig|^tools\/scripts\/(compile\/|smoke\/pack\.script\.ts$|verify\/external-install-smoke\.script\.ts$|publish\/workspace-deps\.ts$)|^packages\/cli\/src\/(lib|commands)\/init\/|^apps\/shared\/|^(packages|plugins)\/[^/]+\/src\/(index|cli|public\/index|runtime\/index|contracts\/index|plugin\/index)\.ts$/u,
+		// manifest, the lockfile, the build configuration and scripts and
+		// init. The entry files that are the export surface count when the
+		// names they export moved; a change inside an existing module cannot
+		// change a tarball, and typecheck compiles it.
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(compile/|smoke/|verify/external-install-smoke\\.script\\.ts$|publish/workspace-deps\\.ts$)|^packages/cli/src/(lib|commands)/init/|^apps/shared/`,
+			'u',
+		),
 		touches: [
-			// The scripts it runs: a change to how dist is built or packed
-			// is a change to what the tarball holds.
 			'tools/scripts/compile/',
-			'tools/scripts/smoke/pack.script.ts',
+			'tools/scripts/smoke/',
 			'tools/scripts/verify/external-install-smoke.script.ts',
 			'tools/scripts/publish/workspace-deps.ts',
-			'packages/',
-			'plugins/',
 			'apps/shared/',
 			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/'],
 		because:
-			'it builds dist, installs the tarballs and drives an external project through install, init and the MCP handshake; nothing outside the publishable source, its build configuration and init can change that.',
+			'it builds dist, installs the tarballs and drives an external project through install, init and the MCP handshake; only a moved export surface, a file added or removed in a package, its build configuration and init can change that.',
 	},
 	{
 		job: 'build-clean',
+		surface: PUBLIC_ENTRY_FILES,
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(compile|build)/`,
+			'u',
+		),
 		touches: [
-			// The scripts it runs, build and build-clean among them.
 			'tools/scripts/compile/',
-			'packages/',
-			'plugins/',
-			'apps/',
-			'extensions/',
+			'tools/scripts/build/',
 			'tsconfig.base.json',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/', 'apps/', 'extensions/'],
 		because:
-			'it builds from an empty output tree; only source and build configuration reach it.',
+			'it builds from an empty output tree; the build configuration, the build scripts, a file added or removed under a source tree and a moved export surface reach it, and a change inside a module is compiled by the typecheck.',
 	},
 	{
 		job: 'verify-runtime',
+		surface: PUBLIC_ENTRY_FILES,
+		matches: new RegExp(
+			`${BUILD_INPUTS.source}|^tools/scripts/(verify|scaffold|host)/|^plugins/[^/]+/(plugin|manifest)[^/]*$`,
+			'u',
+		),
 		touches: [
-			'packages/',
-			'plugins/',
-			'tools/scripts/',
+			'tools/scripts/verify/',
+			'tools/scripts/scaffold/',
+			'tools/scripts/host/',
 			'package.json',
 			'bun.lock',
 		],
+		lists: ['packages/', 'plugins/'],
 		because:
-			'it verifies tools, plugin wiring, caches, scaffolds and host capability packs — all of which live in the runtime source and the scripts that check it.',
+			'it verifies tools, plugin wiring, caches, scaffolds and host capability packs; the moved export surface of a package, a plugin or manifest file, a file added or removed and the scripts that check them reach it, and the tests cover a change inside a module.',
 	},
 	{
 		job: 'tokens-budget-real',
 		touches: [
 			'packages/core/',
 			'plugins/',
-			'docs/delendai/',
+			// The text a preset loads and the budget file it is compared with;
+			// not the proposals, which no preset serves.
+			'docs/delendai/AGENT-BOOTSTRAP.md',
+			'docs/delendai/TOKEN-BUDGETS.md',
+			'docs/delendai/skills/',
+			'docs/delendai/host-appendices/',
+			'docs/delendai/host-hints/',
+			'docs/delendai/generated/',
+			'docs/delendai/plugins/',
+			'docs/delendai/surface/',
 			'package.json',
 		],
 		because:
-			'preset token budgets are computed from the prompts, skills and catalog text those trees hold.',
+			'preset token budgets are computed from the prompts, skills and catalog text those trees hold; a proposal under docs/delendai/proposals/ is served to no preset.',
 	},
 ];
