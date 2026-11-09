@@ -12,7 +12,7 @@ date: 2026-11-09
 
 ## goal
 
-Everything built in delendai's own development (dogfooding) is adoptable by ANY project that runs delendai as its MCP server, optionally and configurably, with that project's own validations. Nothing delendai-specific is required or leaks. Example project: api-source-tanit (/home/cartago/_projects/api-source-tanit), which already runs delendai with --branch=main. Features covered: land, the single integrator with overlap batches (q00046); sectioned checks per PR with the full suite at promotion (q00045, v00155); the [<Nms] test time budgets (c00537 S7); deterministic-spec lints (c00537); the integration rehearsal (i00005); one branch per unit with draft PRs (q00046 S5); the proposal-issue mirror (the proposal file is the source, the forge issue a generated projection with labels, PRs carry Refs/Closes, a human issue can be adopted); the PR and issue text format (f00809). Pinned releases (f00810) drive upgrades. Ordered after q00046 S4: start S1 only once the q00046 cutover to land has landed, because the options describe that engine.
+Everything built in delendai's own development (dogfooding) is adoptable by ANY project that runs delendai as its MCP server, optionally and configurably, with that project's own validations. Nothing delendai-specific is required or leaks. Example project: api-source-tanit, which already runs delendai with --branch=main. Features covered: land, the single integrator with overlap batches (q00046); sectioned checks per PR with the full suite at promotion (q00045, v00155); the [<Nms] test time budgets (c00537 S7); deterministic-spec lints (c00537); the integration rehearsal (i00005); one branch per unit with draft PRs (q00046 S5); the proposal-issue mirror (the proposal file is the source, the forge issue a generated projection with labels, PRs carry Refs/Closes, a human issue can be adopted); the PR and issue text format (f00809). Pinned releases (f00810) drive upgrades. Ordered after q00046 S4: start S1 only once the q00046 cutover to land has landed, because the options describe that engine.
 
 ## why
 
@@ -43,7 +43,7 @@ Today these features are wired to this repository: its workflows, its scripts, i
 ### S2 — Generated workflows from templates
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/init/integration-workflow-templates.ts`
+- **Files**: `packages/core/src/lib/init/integration-workflow-templates.service.ts`
 - **Gate**: none
 - acceptance:
   - "delendai init and adopt emit the CI, land and promotion workflows for the project's forge from templates, reading the enabled features from the policy"
@@ -64,7 +64,7 @@ Today these features are wired to this repository: its workflows, its scripts, i
 ### S4 — The section function is pluggable per project
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/sections/project-section-function.ts`
+- **Files**: `packages/core/src/lib/sections/project-section-function.service.ts`
 - **Gate**: none
 - acceptance:
   - "By default the section function (v00155, q00045) uses the project's own test runner and import graph; no delendai test layout is assumed"
