@@ -54,7 +54,7 @@ const setup = (
 };
 
 describe('land', () => {
-	it('[<200ms] merges a lone pull request with no overlap, pinned to its head', async () => {
+	it('[<15ms] merges a lone pull request with no overlap, pinned to its head', async () => {
 		const { world, pass, lone } = setup();
 		const n = world.addPull({ 'a/x.ts': '1' });
 		world.ci();
@@ -64,7 +64,7 @@ describe('land', () => {
 		expect(world.tree()['a/x.ts']).toBe('1');
 	});
 
-	it('[<200ms] waits for the required checks and skips drafts', async () => {
+	it('[<8ms] waits for the required checks and skips drafts', async () => {
 		const { world, pass } = setup();
 		world.addPull({ 'a/x.ts': '1' });
 		world.addPull({ 'b/y.ts': '1' }, { draft: true });
@@ -74,7 +74,7 @@ describe('land', () => {
 		expect(world.mergeCalls).toHaveLength(1);
 	});
 
-	it('[<200ms] refuses a head that moves mid-pass and retries it next pass', async () => {
+	it('[<7ms] refuses a head that moves mid-pass and retries it next pass', async () => {
 		const { world, pass, lone } = setup();
 		const n = world.addPull({ 'a/x.ts': '1' });
 		world.ci();
@@ -96,7 +96,7 @@ describe('land', () => {
 		expect(lone(n).merged).toBe(true);
 	});
 
-	it('[<200ms] batches two overlapping pull requests and verifies the landed tree', async () => {
+	it('[<24ms] batches two overlapping pull requests and verifies the landed tree', async () => {
 		const { world, pass, open, batches, lone, git, forge } = setup();
 		const one = world.addPull({ 'a/one.ts': '1' });
 		const two = world.addPull({ 'a/two.ts': '2' });
@@ -123,7 +123,7 @@ describe('land', () => {
 		);
 	});
 
-	it('[<200ms] labels the culprit of a red batch and batches the rest once', async () => {
+	it('[<9ms] labels the culprit of a red batch and batches the rest once', async () => {
 		const { world, pass, open, batches, lone } = setup();
 		world.requiredNames = ['tests: a', 'tests: b', 'tests: c'];
 		const one = world.addPull({ 'a/1.ts': '1', 'b/s.ts': '1' });
@@ -154,7 +154,7 @@ describe('land', () => {
 		).toHaveLength(1);
 	});
 
-	it('[<200ms] sends only the suspects alone when nobody owns the failure, and never repeats the set', async () => {
+	it('[<7ms] sends only the suspects alone when nobody owns the failure, and never repeats the set', async () => {
 		const { world, pass, open, batches, lone } = setup();
 		const one = world.addPull({ 'a/1.ts': '1' });
 		const two = world.addPull({ 'a/2.ts': '2' });
@@ -177,7 +177,7 @@ describe('land', () => {
 		expect(lone(one).merged).toBe(true);
 	});
 
-	it('[<200ms] lets groups with no overlap proceed in the same pass', async () => {
+	it('[<6ms] lets groups with no overlap proceed in the same pass', async () => {
 		const { world, pass, open, lone } = setup();
 		world.addPull({ 'a/1.ts': '1' });
 		world.addPull({ 'a/2.ts': '2' });
@@ -194,7 +194,7 @@ describe('land', () => {
 		expect(lone(solo).merged).toBe(true);
 	});
 
-	it('[<200ms] regenerates a derived conflict and labels an authored one', async () => {
+	it('[<7ms] regenerates a derived conflict and labels an authored one', async () => {
 		const { world, pass, open, lone, git, forge } = setup({
 			'a/y.ts': '0',
 		});
@@ -220,7 +220,7 @@ describe('land', () => {
 		);
 	});
 
-	it('[<200ms] recovers on the next pass from a pass that died midway', async () => {
+	it('[<9ms] recovers on the next pass from a pass that died midway', async () => {
 		const { world, pass, lone, open } = setup();
 		const ns = [
 			world.addPull({ 'a/1.ts': '1' }),
@@ -257,7 +257,7 @@ describe('land in a project that is not this one', () => {
 	const other = () =>
 		setup({}, { sectionOf: () => 'all', derived: undefined }, config);
 
-	it('[<200ms] reads branch, namespace, merge method and checks from the policy', () => {
+	it('[<7ms] reads branch, namespace, merge method and checks from the policy', () => {
 		expect(config).toMatchObject({
 			integrationBranch: 'trunk',
 			batchPrefix: 'queue/',
@@ -267,7 +267,7 @@ describe('land in a project that is not this one', () => {
 		});
 	});
 
-	it('[<200ms] merges a lone pull request and batches an overlapping pair under its own prefix', async () => {
+	it('[<6ms] merges a lone pull request and batches an overlapping pair under its own prefix', async () => {
 		const { world, pass, open, lone } = other();
 		world.requiredNames = ['ci'];
 		const solo = world.addPull({ 'x.ts': '1' });
@@ -286,7 +286,7 @@ describe('land in a project that is not this one', () => {
 		expect(lone(a).merged && lone(b).merged).toBe(true);
 	});
 
-	it('[<200ms] caps the batch at the project capacity and finds no owner without sections', async () => {
+	it('[<6ms] caps the batch at the project capacity and finds no owner without sections', async () => {
 		const { world, pass, open, batches, lone } = other();
 		world.requiredNames = ['ci'];
 		const ids = [1, 2, 3].map((n) =>
@@ -308,13 +308,13 @@ describe('land in a project that is not this one', () => {
 });
 
 describe('the land workflow template', () => {
-	it("[<200ms] renders this repository's committed instance", () => {
+	it("[<5ms] renders this repository's committed instance", () => {
 		expect(renderLandWorkflow(REPO_LAND_WORKFLOW)).toBe(
 			readFileSync(LAND_WORKFLOW_PATH, 'utf8'),
 		);
 	});
 
-	it("[<200ms] renders another project's branch, switch and follow-up", () => {
+	it("[<5ms] renders another project's branch, switch and follow-up", () => {
 		const text = renderLandWorkflow({
 			...REPO_LAND_WORKFLOW,
 			integrationBranch: 'trunk',
