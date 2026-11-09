@@ -137,7 +137,7 @@ export const createFakeWorld = (
 					? world.failBatch(
 							(
 								JSON.parse(
-									/<!-- land (\{.*\}) -->/u.exec(
+									/^land-record: (\{.*\})$/mu.exec(
 										pr.body,
 									)?.[1] ?? '{"members":[]}',
 								) as {
@@ -287,7 +287,7 @@ export const createFakeWorld = (
 					base: ref.base,
 					members: (
 						JSON.parse(
-							/<!-- land (\{.*\}) -->/u.exec(body)?.[1] ??
+							/^land-record: (\{.*\})$/mu.exec(body)?.[1] ??
 								'{"members":[]}',
 						) as {
 							members: { number: number; sha: string }[];

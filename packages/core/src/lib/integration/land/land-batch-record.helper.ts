@@ -3,17 +3,10 @@
  * forge for the next pass: its body (members, verdict, a machine record),
  * its branch name, and what the red ones already settled.
  */
-import {
-	LAND_BATCH_BRANCH,
-	LAND_RECORD_CLOSE,
-	LAND_RECORD_OPEN,
-} from './land.constant';
+import { LAND_BATCH_BRANCH, LAND_RECORD_PREFIX } from './land.constant';
 import type { ILandBatchRecord } from './land.interface';
 
-const RECORD = new RegExp(
-	`${LAND_RECORD_OPEN} (\\{.*\\}) ${LAND_RECORD_CLOSE}`,
-	'u',
-);
+const RECORD = new RegExp(`^${LAND_RECORD_PREFIX}(\\{.*\\})$`, 'mu');
 
 /** The record a batch body carries, or `undefined` when it has none. */
 export const readBatchRecord = (body: string): ILandBatchRecord | undefined => {
@@ -53,7 +46,7 @@ export const batchBody = (
 					'',
 				]),
 		'Opened and landed by `land`; do not push to this branch.',
-		`${LAND_RECORD_OPEN} ${JSON.stringify(record)} ${LAND_RECORD_CLOSE}`,
+		`${LAND_RECORD_PREFIX}${JSON.stringify(record)}`,
 	].join('\n');
 
 export const refOf = (prefix: string, members: readonly number[]): string =>
