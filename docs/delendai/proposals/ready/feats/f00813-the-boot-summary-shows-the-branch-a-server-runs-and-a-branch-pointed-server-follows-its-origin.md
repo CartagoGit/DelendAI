@@ -64,3 +64,9 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
 - A checkout with local commits or that cannot fast-forward is never reset or rebased; the boot summary says so loudly with the ahead and behind counts.
 - With no network the server serves what it has and says the fetch failed.
 - The status-bar tooltip of f00800 S7 shows the version or branch state read from the status tool, with no formatting of its own.
+
+## notes
+
+- Related: f00810 (pins a release with `--version`). This proposal reuses `tools/scripts/host/branch-runtime.helper.ts` and its tag prefix and nearest-tags logic; it adds no second git reader.
+- The follow step is fetch then fast-forward only. A checkout with local commits is a loud report, never a reset or rebase.
+- Generic: nothing names this repository; any project that points its MCP entry at a delendai branch gets it.

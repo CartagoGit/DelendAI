@@ -73,3 +73,9 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - A child exits when its parent dies or its /tmp/compute-slot-* directory disappears.
 - A child waits for the release with fs.watch or an fd/IPC message from the parent, not a setImmediate loop; it uses no CPU while waiting.
 - afterEach kills every child the spec spawned and the spec ends with none left.
+
+## notes
+
+- (a) The lease code is `packages/core/src/lib/development-policy/maintenance-lease.service.ts`; the message came from `createMaintenanceGate` and `observeMaintenance`.
+- (b) Both `work-unit-prove.service.ts` and `work-unit-publish.service.ts` resolve the agent with `agentFor` but call the proof service, which labels the slot from the environment variable alone; a caller that passed `--agent` without the variable was labelled unidentified.
+- (c) The spec is `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`; the children were `bun -e` scripts looping on `setImmediate` until a release file appeared.

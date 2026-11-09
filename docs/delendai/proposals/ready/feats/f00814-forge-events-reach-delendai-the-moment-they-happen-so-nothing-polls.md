@@ -40,7 +40,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 ### S2 — GitHub webhooks feed the port
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/github/src/lib/webhook-events.ts`, `plugins/github/tests/webhook-events.spec.ts`
+- **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/tests/webhook-events.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "GitHub pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
@@ -88,3 +88,18 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - No credential appears in a notification, a log line or the config.
 - An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted.
 - With events flowing, no product code path polls the forge, and a lint fails if one is added.
+
+## architecture
+
+Options for receiving events on a machine with no public address:
+
+- **Relay service**: the forge posts to a hosted endpoint and the machine connects out to it. Works anywhere, but adds a service to run and trust.
+- **`gh webhook forward`**: the forge CLI opens an outbound connection and delivers events to a local port. No service of ours, GitHub only, needs the CLI and a login.
+- **CI step pushing to a channel**: a workflow forwards events to a channel the machine subscribes to. Needs no tunnel, but waits for a CI job and is slower.
+
+Recommendation: the outbound-connection receiver behind the port, with `gh webhook forward` as the first transport. It needs no inbound port, public IP or relay of ours, and the session's CLI login supplies the credential. A relay or channel transport is added later behind the same port, for forges whose CLI has no equivalent such as GitLab.
+
+## notes
+
+- Existing pieces to build on: the forge adapter and its seam in `plugins/forge`, the `plugins/github` and `plugins/gitlab` clients, and the notification plugin that already delivers MCP notifications such as lock release.
+- The integrator `land` is already triggered by events in CI and stays as it is.
