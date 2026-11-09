@@ -1,0 +1,90 @@
+---
+id: f00814
+title: "Forge events reach delendai the moment they happen, so nothing polls"
+kind: feat
+status: ready
+type: proposal
+track: general
+date: 2026-11-09
+---
+
+# f00814 — Forge events reach delendai the moment they happen, so nothing polls
+
+## goal
+
+The forge tells delendai when issues, pull requests, checks or reviews change, and subscribed sessions and agents receive it as an MCP notification at once. No agent and no product watcher polls the forge.
+
+## why
+
+The owner wants it to work like a websocket subscription: GitHub says instantly what changed. Today agents and watchers ask the forge again and again, which burns tokens and API quota and still lags. The integrator `land` is already triggered by events in CI; this proposal is about local sessions and agents. It builds on the forge adapter (plugins/forge), the github and gitlab plugins, the issues plugin and the notification plugin, and adds no second adapter.
+
+## non-goals
+
+- Changing the CI-triggered integrator: it already reacts to events.
+- Storing forge credentials: none goes in config or logs; secrets come from the environment or the forge CLI session.
+- Events for forges other than GitHub in the first slices: GitLab hooks come later through the same port.
+
+## slices
+
+- global_gate: type
+
+### S1 — A forge-agnostic event port and normalised events
+- **Status**: pending
+- **Files**: `plugins/forge/src/lib/contracts/interfaces/forge-event-port.interface.ts`, `plugins/forge/src/lib/services/forge-event-normaliser.ts`, `plugins/forge/tests/forge-event-normaliser.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed."
+  - "An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field."
+  - "A payload that fits no event is dropped with a counted reason, not thrown."
+
+### S2 — GitHub webhooks feed the port
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `plugins/github/src/lib/webhook-events.ts`, `plugins/github/tests/webhook-events.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "GitHub pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
+  - "A delivery whose signature does not verify is refused; the secret is read from the environment, never from config, and never logged."
+
+### S3 — Events reach a dev machine with no public address
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `plugins/forge/src/lib/services/forge-event-receiver.ts`, `plugins/forge/tests/forge-event-receiver.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed."
+  - "A dropped connection reconnects and asks the forge once for what was missed; it does not poll."
+
+### S4 — Sessions subscribe and are notified
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `plugins/notification/src/lib/services/forge-event-bridge.ts`, `plugins/notification/tests/forge-event-bridge.spec.ts`, `plugins/notification/src/lib/tools/tools.ts`
+- **Gate**: type
+- acceptance:
+  - "A session subscribes to events by repository, pull request or issue; only subscribed sessions receive the MCP notification."
+  - "A policy toggle turns the feature on per project and it is off until a project opts in."
+  - "No credential appears in a notification, a log line or the config."
+
+### S5 — The remaining polling watchers are removed
+- **Status**: pending
+- **DependsOn**: [S3, S4]
+- **Files**: `plugins/notification/src/lib/services/watcher.ts`, `plugins/notification/src/lib/services/handoff-watcher.ts`
+- **Gate**: type
+- acceptance:
+  - "An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted."
+  - "With events flowing, no product code path polls the forge, and a lint fails if one is added."
+
+## acceptance
+
+- The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed.
+- An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field.
+- A payload that fits no event is dropped with a counted reason, not thrown.
+- GitHub pull_request, check_run, pull_request_review and issues payloads map to the normalised events.
+- A delivery whose signature does not verify is refused; the secret is read from the environment, never from config, and never logged.
+- The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed.
+- A dropped connection reconnects and asks the forge once for what was missed; it does not poll.
+- A session subscribes to events by repository, pull request or issue; only subscribed sessions receive the MCP notification.
+- A policy toggle turns the feature on per project and it is off until a project opts in.
+- No credential appears in a notification, a log line or the config.
+- An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted.
+- With events flowing, no product code path polls the forge, and a lint fails if one is added.
