@@ -4,7 +4,8 @@
  * every call: pipelines, merge with `sha`, rebase, labels, notes, merge
  * requests); GitHub is the first implementation (`./land-forge.github`).
  */
-import type { IChangeFootprint, ITrainCandidate } from '@delendai/core/cli';
+import type { ITrainCandidate } from '../decisions/culprit.interface';
+import type { IChangeFootprint } from '../decisions/overlap.interface';
 
 /** One check on a commit: no conclusion yet means it is still running. */
 export interface ILandCheck {
@@ -93,12 +94,43 @@ export interface ILandGit {
 	treeOf(sha: string): string;
 }
 
+/**
+ * Everything project-specific a pass reads. `landConfigFromPolicy` fills
+ * the branch, namespace, merge method and required checks from the
+ * development policy; the rest is how the project selects, regenerates and
+ * names its checks, supplied by whoever wires `land` in.
+ */
+export interface ILandConfig {
+	readonly integrationBranch: string;
+	readonly releaseBranch: string;
+	/** Where batch branches live, `<ns>/queue/`. */
+	readonly batchPrefix: string;
+	readonly mergeMethod: 'merge' | 'squash' | 'rebase';
+	/** The checks that must be green; empty reads them from the forge. */
+	readonly requiredChecks: readonly string[];
+	/** Most pull requests in one batch. */
+	readonly batchCapacity: number;
+	/**
+	 * The section (test zone, package, job group) a check name reports, or
+	 * `undefined` for a check that names none. Projects without sections
+	 * return `undefined` always: a failure then has no single owner.
+	 */
+	readonly sectionOfCheck: (name: string) => string | undefined;
+}
+
 export interface ILandDeps {
 	readonly forge: ILandForge;
 	readonly git: ILandGit;
-	/** Where batch branches live, `<ns>/queue/`. */
-	readonly batchPrefix: string;
+	readonly config: ILandConfig;
 }
+
+/** Runs the forge CLI with these arguments (the forge seam's shape). */
+export type ILandCommandRunner = (args: readonly string[]) => Promise<{
+	readonly exitCode?: number | undefined;
+	readonly stdout: string;
+	readonly stderr: string;
+	readonly spawnError?: string | undefined;
+}>;
 
 /** What one pass did, in order; the next pass reads the forge, not this. */
 export interface ILandReport {
@@ -117,4 +149,20 @@ export interface ILandBatchRecord {
 		readonly culprit?: number;
 		readonly suspects: readonly number[];
 	};
+}
+
+/** The values the land workflow template takes from a project. */
+export interface ILandWorkflowInput {
+	readonly integrationBranch: string;
+	/** The workflow whose finishing starts a pass (the project's CI). */
+	readonly ciWorkflowName: string;
+	/** Workflow files run on the new tip after a merge. */
+	readonly afterMergeWorkflows: readonly string[];
+	/** The repository variable that switches the engine to `land`. */
+	readonly engineVariable: string;
+	/** Steps that prepare a runner (checkout and toolchain), as YAML lines. */
+	readonly setupSteps: readonly string[];
+	/** The command that runs one pass. */
+	readonly passCommand: string;
+	readonly cron: string;
 }

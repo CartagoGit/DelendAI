@@ -6,3 +6,7 @@ export const LAND_BATCH_BRANCH = 'batch-';
 /** The state `land` keeps in a batch pull request's body, read back each pass. */
 export const LAND_RECORD_OPEN = '<!-- land';
 export const LAND_RECORD_CLOSE = '-->';
+/** The folder, under the project's namespace, batch branches live in. */
+export const LAND_QUEUE_SEGMENT = 'queue';
+/** Most pull requests one batch carries unless the project says otherwise. */
+export const LAND_BATCH_CAPACITY = 8;

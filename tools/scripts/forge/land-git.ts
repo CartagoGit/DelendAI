@@ -13,7 +13,7 @@ import {
 	REGENERATED_PROJECTIONS,
 } from '../git/refresh-candidate-artifacts.constant';
 import { footprintBetween } from './candidate-footprint';
-import type { ILandConflict, ILandGit } from './land.interface';
+import type { ILandConflict, ILandGit } from '@delendai/core/cli';
 import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
 
 const git = (root: string, args: readonly string[]): string =>

@@ -1,5 +1,5 @@
 /**
- * land-forge.github.ts — `ILandForge` on GitHub, through the `gh` CLI the
+ * github-land-forge.service.ts — `ILandForge` on GitHub, through the `gh` CLI the
  * forge seam already runs. Each method is one REST call; a refusal that
  * the contract names (409 head moved, 405/422 not mergeable) is an answer,
  * any other failure throws so the pass ends and the next one reads again.
@@ -7,9 +7,9 @@
  * GitLab maps the same calls: pipelines for checks, `PUT .../merge` with
  * `sha`, `PUT .../rebase`, labels, notes and merge requests.
  */
-import type { IForgeCommandRunner } from '../host/forge-seam.interface';
 import type {
 	ILandCheck,
+	ILandCommandRunner,
 	ILandForge,
 	ILandMerge,
 	ILandPullRequest,
@@ -29,7 +29,8 @@ interface IRawPull {
 export const createGithubLandForge = (input: {
 	readonly slug: string;
 	readonly integration: string;
-	readonly run: IForgeCommandRunner;
+	readonly run: ILandCommandRunner;
+	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
 }): ILandForge => {
 	const { slug, integration, run } = input;
 	const call = async (
@@ -141,7 +142,7 @@ export const createGithubLandForge = (input: {
 				`pulls/${String(number)}/merge`,
 				{
 					sha,
-					merge_method: 'merge',
+					merge_method: input.mergeMethod ?? 'merge',
 				},
 			);
 			return status === 200

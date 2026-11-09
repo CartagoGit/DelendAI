@@ -3,18 +3,45 @@
  * request, a head that moves, a batch green and red, groups apart, derived
  * and authored conflicts, and a pass that dies midway.
  */
+import {
+	LAND_LABEL_CULPRIT,
+	LAND_LABEL_NEEDS_UPDATE,
+	landConfigFromPolicy,
+	landPass,
+	readBatchRecord,
+	renderLandWorkflow,
+} from '@delendai/core/cli';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
+import { LAND_WORKFLOW_PATH, REPO_LAND_WORKFLOW } from './land-workflow.script';
+
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
-import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
-import { landPass, readBatchRecord } from './land';
 
-const PREFIX = 'delendai/queue/';
+const REPO_POLICY = resolveDevelopmentPolicy({
+	development: {
+		branches: {
+			integration: 'develop',
+			release: 'main',
+			namespacePrefix: 'delendai',
+		},
+		integration: { requiredChecks: ['tests: a'] },
+	},
+});
+const REPO_CONFIG = landConfigFromPolicy(REPO_POLICY, {
+	sectionOfCheck: (name) =>
+		name.startsWith('tests: ') ? name.slice(7) : undefined,
+});
+const PREFIX = REPO_CONFIG.batchPrefix;
 
-const setup = (initial: Record<string, string> = {}) => {
-	const fake = createFakeWorld(initial);
-	const pass = () =>
-		landPass({ forge: fake.forge, git: fake.git, batchPrefix: PREFIX });
+const setup = (
+	initial: Record<string, string> = {},
+	options: Parameters<typeof createFakeWorld>[1] = {},
+	config = REPO_CONFIG,
+) => {
+	const fake = createFakeWorld(initial, options);
+	const pass = () => landPass({ forge: fake.forge, git: fake.git, config });
 	const batches = () =>
 		[...fake.world.pulls.values()].filter((pr) => pr.batch !== undefined);
 	const open = () => batches().filter((pr) => pr.state === 'open');
@@ -210,5 +237,96 @@ describe('land', () => {
 		await pass();
 		expect(ns.every((n) => lone(n).merged)).toBe(true);
 		expect(open()).toHaveLength(0);
+	});
+});
+
+describe('land in a project that is not this one', () => {
+	// A different branch, no namespace, no regeneration, one section for
+	// every path and checks that name no section.
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			branches: {
+				integration: 'trunk',
+				release: 'trunk',
+				namespacePrefix: '',
+			},
+			integration: { requiredChecks: ['ci'], mergeMethod: 'squash' },
+		},
+	});
+	const config = landConfigFromPolicy(policy, { batchCapacity: 2 });
+	const other = () =>
+		setup({}, { sectionOf: () => 'all', derived: undefined }, config);
+
+	it('[<200ms] reads branch, namespace, merge method and checks from the policy', () => {
+		expect(config).toMatchObject({
+			integrationBranch: 'trunk',
+			batchPrefix: 'queue/',
+			mergeMethod: 'squash',
+			requiredChecks: ['ci'],
+			batchCapacity: 2,
+		});
+	});
+
+	it('[<200ms] merges a lone pull request and batches an overlapping pair under its own prefix', async () => {
+		const { world, pass, open, lone } = other();
+		world.requiredNames = ['ci'];
+		const solo = world.addPull({ 'x.ts': '1' });
+		world.ci();
+		await pass();
+		expect(lone(solo).merged).toBe(true);
+		const a = world.addPull({ 'y.ts': '1' });
+		const b = world.addPull({ 'z.ts': '1' });
+		world.ci();
+		await pass();
+		expect(open().map((p) => p.headRef)).toEqual([
+			`queue/batch-${String(a)}+${String(b)}`,
+		]);
+		world.ci();
+		await pass();
+		expect(lone(a).merged && lone(b).merged).toBe(true);
+	});
+
+	it('[<200ms] caps the batch at the project capacity and finds no owner without sections', async () => {
+		const { world, pass, open, batches, lone } = other();
+		world.requiredNames = ['ci'];
+		const ids = [1, 2, 3].map((n) =>
+			world.addPull({ [`f${String(n)}.ts`]: '1' }),
+		);
+		world.failBatch = (members) => (members.length > 1 ? ['ci'] : []);
+		world.ci();
+		await pass();
+		expect(open()[0]?.headRef).toBe('queue/batch-1+2');
+		world.ci();
+		await pass();
+		const record = readBatchRecord(batches()[0]?.body ?? '');
+		expect(record?.red?.culprit).toBeUndefined();
+		expect(record?.red?.suspects).toEqual([1, 2]);
+		expect(
+			ids.every((n) => !lone(n).labels.includes(LAND_LABEL_CULPRIT)),
+		).toBe(true);
+	});
+});
+
+describe('the land workflow template', () => {
+	it("[<200ms] renders this repository's committed instance", () => {
+		expect(renderLandWorkflow(REPO_LAND_WORKFLOW)).toBe(
+			readFileSync(LAND_WORKFLOW_PATH, 'utf8'),
+		);
+	});
+
+	it("[<200ms] renders another project's branch, switch and follow-up", () => {
+		const text = renderLandWorkflow({
+			...REPO_LAND_WORKFLOW,
+			integrationBranch: 'trunk',
+			engineVariable: 'MY_ENGINE',
+			afterMergeWorkflows: ['build.yml'],
+			passCommand: 'npx tool land',
+		});
+		expect(text).toContain('branches: [trunk]');
+		expect(text).toContain("vars.MY_ENGINE == 'land'");
+		expect(text).toContain(
+			'gh workflow run build.yml --repo "$GITHUB_REPOSITORY" --ref trunk',
+		);
+		expect(text).not.toContain('develop');
 	});
 });

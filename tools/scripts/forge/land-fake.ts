@@ -19,7 +19,7 @@ import type {
 	ILandMerge,
 	ILandPullRequest,
 	ILandUpdate,
-} from './land.interface';
+} from '@delendai/core/cli';
 
 export const FAKE_DERIVED = 'catalog.generated.md';
 
@@ -47,12 +47,23 @@ interface IFakePullRequest {
 const treeKey = (tree: Readonly<Record<string, string>>): string =>
 	JSON.stringify(Object.entries(tree).sort(([a], [b]) => a.localeCompare(b)));
 
-const regenerate = (tree: Record<string, string>): void => {
-	const authored = Object.keys(tree).filter((p) => p !== FAKE_DERIVED);
-	tree[FAKE_DERIVED] = `gen:${authored.sort().join(',')}`;
+const regenerate = (tree: Record<string, string>, path: string): void => {
+	const authored = Object.keys(tree).filter((p) => p !== path);
+	tree[path] = `gen:${authored.sort().join(',')}`;
 };
 
-export const createFakeWorld = (initial: Record<string, string> = {}) => {
+export const createFakeWorld = (
+	initial: Record<string, string> = {},
+	options: {
+		/** The project's section function: the section a path belongs to. */
+		readonly sectionOf?: (path: string) => string;
+		/** The derived file the project regenerates; none when it has none. */
+		readonly derived?: string | undefined;
+	} = {},
+) => {
+	const sectionOf =
+		options.sectionOf ?? ((path: string) => path.split('/')[0] ?? path);
+	const derivedPath = 'derived' in options ? options.derived : FAKE_DERIVED;
 	let counter = 0;
 	const sha = (): string => `c${String(++counter).padStart(11, '0')}`;
 	const trees = new Map<string, Record<string, string>>();
@@ -299,7 +310,7 @@ export const createFakeWorld = (initial: Record<string, string> = {}) => {
 		footprintFromReach({
 			files: new Set(files),
 			reach: {
-				zones: new Set(files.map((f) => f.split('/')[0] ?? f)),
+				zones: new Set(files.map(sectionOf)),
 				readOnly: new Set(),
 			},
 			creates: false,
@@ -313,7 +324,7 @@ export const createFakeWorld = (initial: Record<string, string> = {}) => {
 		);
 		const hit = Object.keys(change).filter((p) => landed.has(p));
 		if (hit.length === 0) return 'none';
-		return hit.every((p) => p === FAKE_DERIVED) ? 'derived' : 'authored';
+		return hit.every((p) => p === derivedPath) ? 'derived' : 'authored';
 	};
 	const git: ILandGit = {
 		footprint: (pr) => footprintOf(Object.keys(get(pr.number).change)),
@@ -340,7 +351,7 @@ export const createFakeWorld = (initial: Record<string, string> = {}) => {
 				const pr = get(member.number);
 				const kind = conflictAgainst(pr.change, pr.testedBase);
 				const clash = Object.keys(pr.change).some(
-					(p) => p !== FAKE_DERIVED && touched.has(p),
+					(p) => p !== derivedPath && touched.has(p),
 				);
 				if (kind === 'authored' || clash) {
 					conflicting.push(member.number);
@@ -350,12 +361,16 @@ export const createFakeWorld = (initial: Record<string, string> = {}) => {
 					tree[path] = content;
 					touched.add(path);
 				}
-				if (kind === 'derived' || FAKE_DERIVED in pr.change)
+				if (
+					kind === 'derived' ||
+					(derivedPath !== undefined && derivedPath in pr.change)
+				)
 					regenerated = true;
 			}
 			if (conflicting.length > 0)
 				return { conflicting, regenerated: false };
-			if (regenerated) regenerate(tree);
+			if (regenerated && derivedPath !== undefined)
+				regenerate(tree, derivedPath);
 			const head = sha();
 			trees.set(head, tree);
 			refs.set(ref, { sha: head, tree, base: at });

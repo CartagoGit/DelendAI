@@ -10,13 +10,17 @@
  */
 import { appendFileSync, readFileSync } from 'node:fs';
 
-import { ownedNamespaces, parseJsonc } from '@delendai/core/cli';
+import {
+	createGithubLandForge,
+	landConfigFromPolicy,
+	landPass,
+	parseJsonc,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
-import { createGithubLandForge } from './land-forge.github';
 import { createLandGit } from './land-git';
-import { landPass } from './land';
+import { zoneOfCheck } from './section-health';
 
 /** The project's `development` block, `{}` when the config is absent or invalid. */
 const readDevelopmentConfig = (): {
@@ -51,15 +55,19 @@ const main = async (): Promise<number> => {
 	}
 	const root = process.cwd();
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
-	const namespace = ownedNamespaces(policy.branches)[0] ?? '';
+	// This repository's wiring: its CI sections name the checks `tests: <zone>`.
+	const config = landConfigFromPolicy(policy, {
+		sectionOfCheck: zoneOfCheck,
+	});
 	const report = await landPass({
 		forge: createGithubLandForge({
 			slug,
-			integration: policy.branches.integration,
+			integration: config.integrationBranch,
+			mergeMethod: config.mergeMethod,
 			run: createForgeCliRunner(root),
 		}),
 		git: createLandGit({ root, remote: 'origin' }),
-		batchPrefix: namespace === '' ? 'queue/' : `${namespace}/queue/`,
+		config,
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
 	const output = process.env.GITHUB_OUTPUT;

@@ -19,24 +19,21 @@
  * - Derived files that conflict are regenerated on the batch; authored
  *   code labels the pull request for its author.
  */
-import {
-	attributeCulprit,
-	groupByOverlap,
-	overlapBetween,
-	pullRequestReady,
-	TRAIN_CAPACITY,
-	trainMembers,
-	type IChangeFootprint,
-	type ITrainCandidate,
-} from '@delendai/core/cli';
+import { attributeCulprit, trainMembers } from '../decisions/culprit.helper';
+import { groupByOverlap, overlapBetween } from '../decisions/overlap.helper';
+import type { IChangeFootprint } from '../decisions/overlap.interface';
+import type { ITrainCandidate } from '../decisions/culprit.interface';
+import { pullRequestReady } from '../decisions/readiness.helper';
 
 import {
-	LAND_BATCH_BRANCH,
-	LAND_LABEL_CULPRIT,
-	LAND_LABEL_NEEDS_UPDATE,
-	LAND_RECORD_CLOSE,
-	LAND_RECORD_OPEN,
-} from './land.constant';
+	BatchMemory,
+	batchBody,
+	readBatchRecord,
+	refOf,
+	setKey,
+} from './land-batch-record.helper';
+import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
+import { closeRedBatch, labelNeedsUpdate } from './land-verdict.helper';
 import type {
 	ILandBatchRecord,
 	ILandCheck,
@@ -45,60 +42,8 @@ import type {
 	ILandPullRequest,
 	ILandReport,
 } from './land.interface';
-import { zoneOfCheck } from './section-health';
 
 const FAILED = new Set(['failure', 'timed_out']);
-const RECORD = new RegExp(
-	`${LAND_RECORD_OPEN} (\\{.*\\}) ${LAND_RECORD_CLOSE}`,
-	'u',
-);
-
-/** The record a batch body carries, or `undefined` when it has none. */
-export const readBatchRecord = (body: string): ILandBatchRecord | undefined => {
-	const raw = RECORD.exec(body)?.[1];
-	if (raw === undefined) return undefined;
-	try {
-		return JSON.parse(raw) as ILandBatchRecord;
-	} catch {
-		return undefined;
-	}
-};
-
-/** A batch body in the product's PR format: what it is, its members, the record. */
-export const batchBody = (
-	record: ILandBatchRecord,
-	titles: ReadonlyMap<number, string>,
-): string =>
-	[
-		'## What',
-		'',
-		`One batch over \`${record.tip.slice(0, 12)}\`: the ready pull requests below overlap, so they are tested together once.`,
-		'',
-		'## Members',
-		'',
-		...record.members.map((member) =>
-			`- #${String(member.number)} ${titles.get(member.number) ?? ''} (\`${member.sha.slice(0, 12)}\`)`.trimEnd(),
-		),
-		'',
-		...(record.red === undefined
-			? []
-			: [
-					'## Verdict',
-					'',
-					record.red.culprit === undefined
-						? `Red with no single owner; suspects: ${record.red.suspects.map((n) => `#${String(n)}`).join(', ')}.`
-						: `Red; the culprit is #${String(record.red.culprit)}.`,
-					'',
-				]),
-		'Opened and landed by `land`; do not push to this branch.',
-		`${LAND_RECORD_OPEN} ${JSON.stringify(record)} ${LAND_RECORD_CLOSE}`,
-	].join('\n');
-
-const refOf = (prefix: string, members: readonly number[]): string =>
-	`${prefix}${LAND_BATCH_BRANCH}${members.join('+')}`;
-
-const setKey = (members: readonly number[]): string =>
-	[...members].sort((a, b) => a - b).join(',');
 
 /** One pass. Never throws on a forge refusal: it reports and leaves it to the next. */
 export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
@@ -108,8 +53,11 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		actions.push(line);
 	};
 	const tip = await forge.integrationTip();
-	const required = await forge.requiredChecks();
-	const batches = await forge.batchPullRequests(deps.batchPrefix);
+	const required =
+		deps.config.requiredChecks.length > 0
+			? deps.config.requiredChecks
+			: await forge.requiredChecks();
+	const batches = await forge.batchPullRequests(deps.config.batchPrefix);
 	const recordOf = (pr: ILandPullRequest): ILandBatchRecord | undefined =>
 		readBatchRecord(pr.body);
 
@@ -125,41 +73,17 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 			blockingLabels: [],
 		});
 
-	// What the forge remembers of red batches: heads isolated as culprits,
-	// and the member sets already judged red on the current tip.
-	const culpritHeads = new Map<number, string>();
-	const redSets = new Set<string>();
-	const aloneOnTip = new Set<number>();
-	const remember = (record: ILandBatchRecord): void => {
-		if (record.red === undefined) return;
-		const { culprit } = record.red;
-		if (culprit !== undefined) {
-			const head = record.members.find((m) => m.number === culprit);
-			if (head !== undefined) culpritHeads.set(culprit, head.sha);
-		}
-		if (record.tip !== tip) return;
-		redSets.add(setKey(record.members.map((m) => m.number)));
-		if (culprit === undefined) {
-			for (const n of record.red.suspects) aloneOnTip.add(n);
-		}
-	};
+	const memory = new BatchMemory(tip);
 	for (const batch of batches) {
 		const record = recordOf(batch);
-		if (record !== undefined) remember(record);
+		if (record !== undefined) memory.remember(record);
 	}
+	const { culpritHeads, redSets, aloneOnTip } = memory;
+	const remember = (record: ILandBatchRecord): void =>
+		memory.remember(record);
 
-	const needsUpdate = async (
-		pr: ILandPullRequest,
-		why: string,
-	): Promise<void> => {
-		if (pr.labels.includes(LAND_LABEL_NEEDS_UPDATE)) return;
-		await forge.addLabel(pr.number, LAND_LABEL_NEEDS_UPDATE);
-		await forge.comment(
-			pr.number,
-			`land: this pull request conflicts with the integration branch in authored code (${why}). Update it on your side and push; land picks it up on the next pass.`,
-		);
-		note(`#${String(pr.number)} needs update: ${why}`);
-	};
+	const needsUpdate = (pr: ILandPullRequest, why: string): Promise<void> =>
+		labelNeedsUpdate(forge, pr, why, note);
 
 	const markRed = async (
 		batch: ILandPullRequest,
@@ -177,7 +101,9 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 				? { culprit: open[0]?.number, suspects: [open[0]?.number ?? 0] }
 				: attributeCulprit({
 						failingZones: new Set(
-							failing.flatMap((c) => zoneOfCheck(c.name) ?? []),
+							failing.flatMap(
+								(c) => deps.config.sectionOfCheck(c.name) ?? [],
+							),
 						),
 						failingSpecs: new Set(
 							failing.flatMap((c) => c.failingSpecs ?? []),
@@ -187,43 +113,34 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 							own: git.footprint(pr),
 						})),
 					});
+		// A failure no check section or spec ties to anyone is every member's.
+		const suspects =
+			attribution.suspects.length > 0
+				? attribution.suspects
+				: open.map((pr) => pr.number);
 		const red: ILandBatchRecord = {
 			...record,
 			red: {
 				...(attribution.culprit === undefined
 					? {}
 					: { culprit: attribution.culprit }),
-				suspects: attribution.suspects,
+				suspects,
 			},
 		};
 		// The verdict is written first: a pass that dies after it finishes
 		// the labelling and the closing from this record.
 		await forge.updatePullRequest(batch.number, batchBody(red, new Map()));
 		note(
-			`batch #${String(batch.number)} is red: ${attribution.culprit === undefined ? `no single owner, suspects ${attribution.suspects.join(',')}` : `culprit #${String(attribution.culprit)}`}`,
+			`batch #${String(batch.number)} is red: ${attribution.culprit === undefined ? `no single owner, suspects ${suspects.join(',')}` : `culprit #${String(attribution.culprit)}`}`,
 		);
 		return red;
 	};
 
-	const finishRed = async (
+	const finishRed = (
 		batch: ILandPullRequest,
 		record: ILandBatchRecord,
 		checks: readonly ILandCheck[],
-	): Promise<void> => {
-		const culprit = record.red?.culprit;
-		if (culprit !== undefined) {
-			const pr = await forge.pullRequest(culprit);
-			if (!pr.labels.includes(LAND_LABEL_CULPRIT)) {
-				const run = checks.find((c) => FAILED.has(c.conclusion ?? ''));
-				await forge.addLabel(culprit, LAND_LABEL_CULPRIT);
-				await forge.comment(
-					culprit,
-					`land: batch #${String(batch.number)} went red and this pull request owns the failure (${run?.name ?? 'a failing check'}). Run: ${run?.url ?? batch.headRef}. Push a fix; it is batched again on a new head.`,
-				);
-			}
-		}
-		await forge.closePullRequest(batch.number);
-	};
+	): Promise<void> => closeRedBatch(forge, batch, record, checks);
 
 	/** Settle one open batch; true when it is still in flight (its members wait). */
 	const settleBatch = async (batch: ILandPullRequest): Promise<boolean> => {
@@ -370,7 +287,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 			headSha: pr.headSha,
 		}));
 		const numbers = candidatesOf.map((c) => c.number);
-		const ref = refOf(deps.batchPrefix, numbers);
+		const ref = refOf(deps.config.batchPrefix, numbers);
 		const built = git.buildBatch({ ref, tip, members: candidatesOf });
 		if (built.conflicting.length > 0) {
 			// Members that clash inside the batch go back to their authors; the
@@ -462,7 +379,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 				headSha: pr.headSha,
 			})),
 			new Map(),
-			TRAIN_CAPACITY,
+			deps.config.batchCapacity,
 		);
 		const members = rest
 			.map(({ pr }) => pr)
