@@ -649,7 +649,6 @@
 		"packages/core/tests/src/lib/shared/commit-author-claim.spec.ts",
 		"packages/core/tests/src/lib/shared/commit-author.spec.ts",
 		"packages/core/tests/src/lib/shared/commit-call-writes.spec.ts",
-		"packages/core/tests/src/lib/shared/compute-slot.service.spec.ts",
 		"packages/core/tests/src/lib/shared/contain-path.spec.ts",
 		"packages/core/tests/src/lib/shared/contain-realpath-read.spec.ts",
 		"packages/core/tests/src/lib/shared/contain-realpath-sync.spec.ts",
