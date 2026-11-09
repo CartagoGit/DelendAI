@@ -1,0 +1,83 @@
+name: land
+
+# The one integrator (q00046). One stateless pass over the ready pull
+# requests: merge what does not overlap, batch what does, label the
+# culprit of a red batch. It keeps nothing; every pass reads the forge.
+#
+# DISABLED until the cutover (S4): the old queue runs beside it otherwise.
+# The switch is the repository variable DELENDAI_INTEGRATION_ENGINE
+# (`queue` by default, `land` after the cutover). Both jobs check it, and
+# the script checks it again.
+
+on:
+    # A pull request's CI finishing.
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+    check_suite:
+        types: [completed]
+    # A pull request marked ready.
+    pull_request_target:
+        types: [ready_for_review]
+        branches: [develop]
+    # A push to the integration branch.
+    push:
+        branches: [develop]
+    # The clock: a pass is cheap and idempotent.
+    schedule:
+        - cron: '*/15 * * * *'
+    workflow_dispatch:
+
+# Concurrency 1, and a waiting pass is kept: the pass that follows reads
+# whatever the cancelled one would have.
+concurrency:
+    group: land
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+    checks: read
+    actions: write
+
+jobs:
+    land:
+        name: land
+        if: ${{ vars.DELENDAI_INTEGRATION_ENGINE == 'land' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        outputs:
+            merged: ${{ steps.pass.outputs.merged }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # Full history: a batch merges members onto the tip.
+                  fetch-depth: '0'
+
+            - name: One pass
+              id: pass
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  DELENDAI_INTEGRATION_ENGINE: ${{ vars.DELENDAI_INTEGRATION_ENGINE }}
+              run: bun tools/scripts/forge/land.script.ts
+
+    # A merge made with the workflow token starts no workflow of its own,
+    # so the integration CI and the promotion follow land by dispatch.
+    after-merge:
+        name: after-merge
+        needs: land
+        if: ${{ !cancelled() && needs.land.outputs.merged == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: Run the integration CI and the promotion on the new tip
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref develop
+                  gh workflow run open-promotion.yml --repo "$GITHUB_REPOSITORY" --ref develop
