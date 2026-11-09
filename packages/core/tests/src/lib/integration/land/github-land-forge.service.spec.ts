@@ -86,7 +86,7 @@ describe('the GitHub land forge', () => {
 
 	it('[<12ms] reads the tip, the required checks and a head’s check runs', async () => {
 		const { forge } = harness((call) => {
-			if (call.includes('/branches/develop')) {
+			if (call.includes('repos/o/r/branches/develop')) {
 				return json({ commit: { sha: 'tip1' } });
 			}
 			if (call.includes('/rules/branches/')) {
