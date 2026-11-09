@@ -122,7 +122,7 @@ afterEach(() => {
 
 describe('what the publisher and the maintenance do with one work ref', () => {
 	for (const [name, arrange] of Object.entries(STATES)) {
-		it(`agree when the ref is ${name}`, async () => {
+		it(`[<574ms] agree when the ref is ${name}`, async () => {
 			const root = repo();
 			arrange(root);
 			const maintenance = maintainRefNamespace({

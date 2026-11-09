@@ -79,16 +79,20 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
   - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
   - "The over-budget list of S7 shrinks with each fix; no budget is raised to make a test pass"
 
-### S7 — Every test declares a maximum time, enforced by the run itself
+### S7 — Every test declares a maximum time, enforced by code
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/test-kit/src/lib/test-time-budget.helper.ts`, `packages/test-kit/README.md`, `tools/scripts/ci/spec-duration-budget.script.ts`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Files**: `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/README.md`, `packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `.github/workflows/ci.yml`, `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/test/test-time-budget.migration.json`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
-  - "Every test name starts with its maximum as [<Nms], and a test that exceeds it fails; a missing or malformed prefix fails too. A global vitest mechanism reads the prefix from the name, with zero added runtime per test"
-  - "Only the test body is measured, not hooks or the file import. CI and local machines share the same declared number with no hidden multiplier: a budget is a property of the test, so it is set from the slower of the two and the same run is used everywhere"
-  - "tools/scripts/ci/spec-duration-budget.script.ts is refactored into this rule (no second lint); the list of tests over budget today may only shrink"
-  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, and shipped to projects that consume delendai"
+  - "Every test carries its maximum at the front of its name, "[<7ms] does X"; the runner reads it from the name, so reporters show it with nothing injected. A missing or malformed prefix fails the test"
+  - "A test that exceeds its budget fails; the test-kit runner is loaded for every project from sharedTestOptions in vitest.shared.ts with no opt-out, and adds one clock read before and after each test"
+  - "Only the test body is measured, not hooks or the file import. The number is absolute, with no hidden multiplier. CI is where it is enforced and where it is calibrated: a budget is ceil(1.5 x the longest time CI measured for that test), at least 4 ms above it, read from the per-test times every shard uploads (`bun run test:budgets:calibrate --from-ci=<run-id>`)"
+  - "tools/scripts/ci/spec-duration-budget.script.ts gains the declared-budget check (no second lint); a lint and a spec of the shared config prove every vitest project loads the runner"
+  - "Spec files still holding tests with no budget are on tools/scripts/test/test-time-budget.migration.json, which may only shrink; a spec file the change edits must leave it and comply in full (checked with the changed-files input of the other gates); renaming the rest follows in batches"
+  - "A test without a budget fails only in a spec file the change touches (the changed-files input the declared check uses), so a test an older branch lands cannot turn develop or another change red; with the change unknown every file is held to it"
+  - "An over-budget test fails on CI. A run anywhere else reports over-budget tests as one summary of warnings and never fails on them (wall time there measures that machine); a missing or malformed budget fails everywhere. Local detection is GITHUB_ACTIONS until the shared isRunningInProjectCi reader (i00005) lands"
+  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, with the config line a consuming project adds"
 
 ## acceptance
 
@@ -101,4 +105,4 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - The report prints these numbers per week
 - Coverage instruments only changed source files and shard time is measured before and after
 - The slowest specs are made fast and the over-budget list shrinks
-- Every test declares a maximum and exceeding it fails the run
+- Every test names its maximum at the front, and exceeding it fails the run; the list of tests without one only shrinks
