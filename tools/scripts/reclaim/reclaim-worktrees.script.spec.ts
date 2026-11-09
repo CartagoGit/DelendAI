@@ -119,13 +119,13 @@ describe('judgeWorktrees: what is not a desk', () => {
 });
 
 describe('judgeWorktrees', () => {
-	it('clears a clean worktree the integration branch already contains', () => {
+	it('[<50ms] clears a clean worktree the integration branch already contains', () => {
 		expect(roleOf({})).toBe('spent');
 		expect(judgeWorktrees([tree()], JUDGEMENT).spent).toHaveLength(1);
 	});
 
 	describe('what it refuses', () => {
-		it('never the main checkout, whatever else is true of it', () => {
+		it('[<50ms] never the main checkout, whatever else is true of it', () => {
 			expect(roleOf({ isMain: true })).toBe('main');
 			// Even clean and delivered — it is what the human is looking at.
 			expect(
@@ -133,19 +133,19 @@ describe('judgeWorktrees', () => {
 			).toHaveLength(0);
 		});
 
-		it('never the worktree it is running from', () => {
+		it('[<50ms] never the worktree it is running from', () => {
 			expect(roleOf({ isCurrent: true })).toBe('current');
 		});
 
-		it('never one git has locked', () => {
+		it('[<50ms] never one git has locked', () => {
 			expect(roleOf({ locked: true })).toBe('locked');
 		});
 
-		it('never one with uncommitted work', () => {
+		it('[<50ms] never one with uncommitted work', () => {
 			expect(roleOf({ dirtyPaths: 1 })).toBe('dirty');
 		});
 
-		it('never one whose uncommitted state git could not read', () => {
+		it('[<50ms] never one whose uncommitted state git could not read', () => {
 			const verdicts = judgeWorktrees(
 				[tree({ dirtyPaths: null })],
 				JUDGEMENT,
@@ -154,11 +154,11 @@ describe('judgeWorktrees', () => {
 			expect(verdicts.spent).toHaveLength(0);
 		});
 
-		it('never one whose head the integration branch does not contain', () => {
+		it('[<50ms] never one whose head the integration branch does not contain', () => {
 			expect(roleOf({ delivered: false })).toBe('undelivered');
 		});
 
-		it('never one git touched inside the window, clean though it is', () => {
+		it('[<50ms] never one git touched inside the window, clean though it is', () => {
 			// The swarm case: agent pushed, desk is clean, everything is
 			// delivered — and they are still sitting at it.
 			expect(roleOf({ lastActivityMs: NOW - 5 * 60 * 1000 })).toBe(
@@ -166,11 +166,11 @@ describe('judgeWorktrees', () => {
 			);
 		});
 
-		it('clears one whose last git activity is older than the window', () => {
+		it('[<50ms] clears one whose last git activity is older than the window', () => {
 			expect(roleOf({ lastActivityMs: NOW - 3 * HOUR })).toBe('spent');
 		});
 
-		it('treats an unreadable timestamp as no evidence, not as activity', () => {
+		it('[<50ms] treats an unreadable timestamp as no evidence, not as activity', () => {
 			// 0 means "cannot tell". Reading it as "active now" would
 			// make the reaper a no-op on any worktree whose gitdir it
 			// cannot stat; reading it as a real date leaves the content
@@ -178,7 +178,7 @@ describe('judgeWorktrees', () => {
 			expect(roleOf({ lastActivityMs: 0 })).toBe('spent');
 		});
 
-		it('refuses on the FIRST reason, so a locked dirty tree reads as locked', () => {
+		it('[<50ms] refuses on the FIRST reason, so a locked dirty tree reads as locked', () => {
 			// The order is the safety argument: the strongest refusal
 			// wins, and none of them can be reached past.
 			expect(roleOf({ locked: true, dirtyPaths: 3 })).toBe('locked');
@@ -187,11 +187,11 @@ describe('judgeWorktrees', () => {
 });
 
 describe('worksomebodyOwns', () => {
-	it('counts an edited source file', () => {
+	it('[<50ms] counts an edited source file', () => {
 		expect(worksomebodyOwns([' M packages/core/src/a.ts'])).toBe(1);
 	});
 
-	it('does not count a generated artifact', () => {
+	it('[<50ms] does not count a generated artifact', () => {
 		// A file this repository regenerates can be rewritten by any
 		// command that happens to run. Counting it as work keeps a spent
 		// desk forever over a timestamp.
@@ -203,7 +203,7 @@ describe('worksomebodyOwns', () => {
 		).toBe(0);
 	});
 
-	it('counts the source file and not the generated one beside it', () => {
+	it('[<50ms] counts the source file and not the generated one beside it', () => {
 		expect(
 			worksomebodyOwns([
 				' M packages/core/src/generated/x.generated.ts',
@@ -212,7 +212,7 @@ describe('worksomebodyOwns', () => {
 		).toBe(1);
 	});
 
-	it('counts an edit to the hand-written bootstrap as work', () => {
+	it('[<50ms] counts an edit to the hand-written bootstrap as work', () => {
 		expect(worksomebodyOwns([' M docs/delendai/AGENT-BOOTSTRAP.md'])).toBe(
 			1,
 		);
@@ -220,12 +220,12 @@ describe('worksomebodyOwns', () => {
 });
 
 describe('pathOfStatusLine', () => {
-	it('drops the two status columns', () => {
+	it('[<50ms] drops the two status columns', () => {
 		expect(pathOfStatusLine(' M src/a.ts')).toBe('src/a.ts');
 		expect(pathOfStatusLine('?? src/b.ts')).toBe('src/b.ts');
 	});
 
-	it('takes the destination of a rename', () => {
+	it('[<50ms] takes the destination of a rename', () => {
 		expect(pathOfStatusLine('R  src/old.ts -> src/new.ts')).toBe(
 			'src/new.ts',
 		);
@@ -233,7 +233,7 @@ describe('pathOfStatusLine', () => {
 });
 
 describe('parseWorktreeList', () => {
-	it('reads path, head and the lock flag', () => {
+	it('[<50ms] reads path, head and the lock flag', () => {
 		const parsed = parseWorktreeList(
 			[
 				'worktree /repo',
@@ -264,7 +264,7 @@ describe('parseWorktreeList', () => {
 		]);
 	});
 
-	it('reads a lock that carries a reason', () => {
+	it('[<50ms] reads a lock that carries a reason', () => {
 		const parsed = parseWorktreeList(
 			['worktree /repo/w', 'locked somebody is using it', ''].join('\n'),
 		);
@@ -274,19 +274,19 @@ describe('parseWorktreeList', () => {
 });
 
 describe('formatReport', () => {
-	it('tells a dry run how to act', () => {
+	it('[<50ms] tells a dry run how to act', () => {
 		const report = formatReport(judgeWorktrees([tree()], JUDGEMENT), false);
 
 		expect(report).toContain('--apply');
 	});
 
-	it('says what it removed after acting', () => {
+	it('[<50ms] says what it removed after acting', () => {
 		expect(
 			formatReport(judgeWorktrees([tree()], JUDGEMENT), true),
 		).toContain('removed 1 spent worktree(s)');
 	});
 
-	it('says plainly when there is nothing to do', () => {
+	it('[<50ms] says plainly when there is nothing to do', () => {
 		expect(
 			formatReport(
 				judgeWorktrees([tree({ isMain: true })], JUDGEMENT),
@@ -297,7 +297,7 @@ describe('formatReport', () => {
 });
 
 describe('readDirtyPaths', () => {
-	it('is null, not zero, when git status cannot run', () => {
+	it('[<50ms] is null, not zero, when git status cannot run', () => {
 		expect(
 			readDirtyPaths('/nonexistent/delendai-no-such-worktree'),
 		).toBeNull();
@@ -346,7 +346,7 @@ describe('observe and main over a real repository', () => {
 	const broken = addTree('broken');
 	writeFileSync(join(broken, '.git'), 'gitdir: /nonexistent/nowhere\n');
 
-	it('observe reads dirt, delivery and an unreadable status as unknown', () => {
+	it('[<1000ms] observe reads dirt, delivery and an unreadable status as unknown', () => {
 		// Every case starts from a freshly aged worktree: `git status`
 		// refreshes the index whose mtime says when git last worked there,
 		// so an earlier `observe` in this file leaves the next one reading
@@ -365,7 +365,7 @@ describe('observe and main over a real repository', () => {
 		expect(byPath.get(broken)?.dirtyPaths).toBeNull();
 	});
 
-	it('judges a worktree spent even though it read its status', () => {
+	it('[<1000ms] judges a worktree spent even though it read its status', () => {
 		// The reaper reads the status of every worktree, and `git status`
 		// refreshes the index whose mtime says when git last worked there.
 		// A worktree nobody has touched for longer than the window is
@@ -384,7 +384,7 @@ describe('observe and main over a real repository', () => {
 		expect(byPath.get(broken)?.role).toBe('unknown');
 	});
 
-	it('reads a status without touching the index that dates the activity', () => {
+	it('[<200ms] reads a status without touching the index that dates the activity', () => {
 		// Root cause of the CI flake (run 42364090265): a plain `git status`
 		// rewrites an old index, so the dry run made the spent worktree look
 		// busy to the run that applies.
@@ -395,7 +395,7 @@ describe('observe and main over a real repository', () => {
 		expect(statSync(join(gitDir, 'index')).mtimeMs).toBe(before);
 	});
 
-	it('main only reports without apply, and with apply removes just the spent one', () => {
+	it('[<3000ms] main only reports without apply, and with apply removes just the spent one', () => {
 		// The worktree is aged here, not in the setup above: the case
 		// before this one read its status, which refreshed the index.
 		age(spent);

@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('validationGateSteps', () => {
-	it('reads the matrix first, then the validate script under the lockfile’s manager', () => {
+	it('[<1000ms] reads the matrix first, then the validate script under the lockfile’s manager', () => {
 		const files: Record<string, string> = {
 			'package.json': JSON.stringify({ scripts: { validate: 'x' } }),
 			'pnpm-lock.yaml': '',
@@ -56,7 +56,7 @@ describe('validationGateSteps', () => {
 		]);
 	});
 
-	it('declares nothing when the project declares nothing', () => {
+	it('[<1000ms] declares nothing when the project declares nothing', () => {
 		expect(validationGateSteps(() => undefined)).toEqual([]);
 	});
 });
@@ -86,7 +86,7 @@ describe('certifyCandidate', () => {
 		expect(git(root, 'worktree', 'list', '--porcelain')).toContain(other);
 	});
 
-	it('runs every step in a worktree of the candidate, and removes it', async () => {
+	it('[<1000ms] runs every step in a worktree of the candidate, and removes it', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: {
@@ -127,7 +127,7 @@ describe('certifyCandidate', () => {
 		);
 	});
 
-	it('puts the worktree inside the repository but outside any .git directory', async () => {
+	it('[<1000ms] puts the worktree inside the repository but outside any .git directory', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: { scopes: { a: [{ command: 'first' }] } },
@@ -157,7 +157,7 @@ describe('certifyCandidate', () => {
 		expect(cwd.split('/').includes('.git')).toBe(false);
 	});
 
-	it('certifies nothing when the integration head declares no gate', async () => {
+	it('[<1000ms] certifies nothing when the integration head declares no gate', async () => {
 		const root = repoWith({ 'README.md': '# none\n' });
 		const head = git(root, 'rev-parse', 'HEAD');
 		const report = await certifyCandidate({
@@ -169,7 +169,7 @@ describe('certifyCandidate', () => {
 		expect(report).toMatchObject({ declared: false, passed: false });
 	});
 
-	it('runs the gate with the default runner when the caller names none', async () => {
+	it('[<1000ms] runs the gate with the default runner when the caller names none', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: { scopes: { a: [{ command: 'true' }] } },
@@ -190,7 +190,7 @@ describe('certifyCandidate', () => {
 		expect(report.steps[0]?.passed).toBe(true);
 	});
 
-	it('keeps the failure detail of a step that produced no output', async () => {
+	it('[<1000ms] keeps the failure detail of a step that produced no output', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: { scopes: { a: [{ command: 'first' }] } },
@@ -211,7 +211,7 @@ describe('certifyCandidate', () => {
 		expect(report.steps[0]?.outputTail).toBeUndefined();
 	});
 
-	it('fails closed when the root is not a git working tree', async () => {
+	it('[<1000ms] fails closed when the root is not a git working tree', async () => {
 		// A bare repository has no working tree: `rev-parse --show-toplevel`
 		// refuses. The gate can read the declaration (the objects are
 		// there) but cannot put the candidate anywhere, so it must report
@@ -241,7 +241,7 @@ describe('certifyCandidate', () => {
 		);
 	});
 
-	it('fails closed when the candidate cannot be put on disk', async () => {
+	it('[<1000ms] fails closed when the candidate cannot be put on disk', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: { scopes: { a: [{ command: 'true' }] } },
