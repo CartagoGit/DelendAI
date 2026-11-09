@@ -13,6 +13,7 @@ import {
 	branchFlag,
 	branchHostScript,
 	branchLabel,
+	malformedVersionReason,
 	nearestReleaseTags,
 	npmVersionHostScript,
 	releaseTag,
@@ -174,12 +175,15 @@ describe('a pinned release', () => {
 		).toEqual(['v0.1.0', 'v0.2.0', 'v0.3.0', 'v0.4.0']);
 	});
 
-	it('refuses both flags together, and a malformed version', () => {
+	it('[<50ms] refuses both flags together, and a malformed version', () => {
 		const both = runtimePin(['--branch=main', '--version=0.3.0']);
 		expect(both.kind).toBe('refused');
 		expect(both.kind === 'refused' && both.reason).toContain('together');
 		for (const bad of ['', '0.3', 'v0.3.0', 'latest', '0.3.0; rm'])
-			expect(runtimePin([`--version=${bad}`]).kind).toBe('refused');
+			expect(runtimePin([`--version=${bad}`])).toEqual({
+				kind: 'malformed-version',
+				version: bad,
+			});
 		expect(runtimePin(['--version=0.3.0'])).toEqual({
 			kind: 'version',
 			version: '0.3.0',
@@ -189,6 +193,16 @@ describe('a pinned release', () => {
 			branch: 'main',
 		});
 		expect(runtimePin(['--workspace=.'])).toEqual({ kind: 'checkout' });
+	});
+
+	it('[<1000ms] refuses a malformed version, naming the newest tags that exist', () => {
+		const root = repo();
+		for (const v of ['0.1.0', '0.2.0', '0.3.0', '0.4.0', '0.5.0'])
+			git(root, 'tag', releaseTag(v));
+		const reason = malformedVersionReason(root, 'latest', noInstall);
+		expect(reason).toContain('"latest"');
+		expect(reason).toContain('v0.2.0, v0.3.0, v0.4.0, v0.5.0');
+		expect(reason).not.toContain('v0.1.0');
 	});
 
 	it('reads the flag and keeps it from the host', () => {

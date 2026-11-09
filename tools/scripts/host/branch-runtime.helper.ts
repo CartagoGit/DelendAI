@@ -81,6 +81,7 @@ export type IRuntimePin =
 	| { readonly kind: 'checkout' }
 	| { readonly kind: 'branch'; readonly branch: string }
 	| { readonly kind: 'version'; readonly version: string }
+	| { readonly kind: 'malformed-version'; readonly version: string }
 	| { readonly kind: 'refused'; readonly reason: string };
 
 /** Which runtime the arguments ask for; both flags, or a malformed version, are refused. */
@@ -94,10 +95,7 @@ export const runtimePin = (argv: readonly string[]): IRuntimePin => {
 		};
 	if (version !== undefined) {
 		if (!SEMVER.test(version))
-			return {
-				kind: 'refused',
-				reason: `--version="${version}" is not a semantic version. Write it as MAJOR.MINOR.PATCH, for example --version=0.3.0.`,
-			};
+			return { kind: 'malformed-version', version };
 		return { kind: 'version', version };
 	}
 	return branch === undefined
@@ -118,6 +116,16 @@ const versionParts = (version: string): readonly number[] | undefined => {
 const compareVersions = (a: readonly number[], b: readonly number[]): number =>
 	a[0]! - b[0]! || a[1]! - b[1]! || a[2]! - b[2]!;
 
+/** The release tags among `tags`, lowest version first. */
+const sortedReleases = (tags: readonly string[]) =>
+	tags
+		.filter((tag) => tag.startsWith(RELEASE_TAG_PREFIX))
+		.flatMap((tag) => {
+			const parts = versionParts(tag.slice(RELEASE_TAG_PREFIX.length));
+			return parts === undefined ? [] : [{ tag, parts }];
+		})
+		.sort((a, b) => compareVersions(a.parts, b.parts));
+
 /** The tags just below and just above `version`, for a refusal that says what exists. */
 export const nearestReleaseTags = (
 	version: string,
@@ -125,13 +133,7 @@ export const nearestReleaseTags = (
 ): readonly string[] => {
 	const wanted = versionParts(version);
 	if (wanted === undefined) return [];
-	const known = tags
-		.filter((tag) => tag.startsWith(RELEASE_TAG_PREFIX))
-		.flatMap((tag) => {
-			const parts = versionParts(tag.slice(RELEASE_TAG_PREFIX.length));
-			return parts === undefined ? [] : [{ tag, parts }];
-		})
-		.sort((a, b) => compareVersions(a.parts, b.parts));
+	const known = sortedReleases(tags);
 	const below = known.filter((k) => compareVersions(k.parts, wanted) < 0);
 	const above = known.filter((k) => compareVersions(k.parts, wanted) > 0);
 	return [
@@ -139,6 +141,33 @@ export const nearestReleaseTags = (
 		...above.slice(0, NEAREST_TAGS_EACH_SIDE),
 	].map((k) => k.tag);
 };
+
+/** A malformed version has no neighbours, so the newest releases stand in for them. */
+export const newestReleaseTags = (tags: readonly string[]): readonly string[] =>
+	sortedReleases(tags)
+		.slice(-NEAREST_TAGS_EACH_SIDE * 2)
+		.map((k) => k.tag);
+
+const tagsNear = (near: readonly string[], lead: string): string =>
+	near.length === 0
+		? 'This clone has no release tags.'
+		: `${lead} ${near.join(', ')}.`;
+
+const releaseTagNames = (root: string, run: TRun): readonly string[] =>
+	(run('git', ['tag', '--list', `${RELEASE_TAG_PREFIX}*`], root) ?? '')
+		.split('\n')
+		.filter((name) => name.length > 0);
+
+/** The refusal for a version that is not MAJOR.MINOR.PATCH: it names the newest tags that exist. */
+export const malformedVersionReason = (
+	root: string,
+	version: string,
+	run: TRun = runQuietly,
+): string =>
+	`--version="${version}" is not a semantic version. Write it as MAJOR.MINOR.PATCH, for example --version=0.3.0. ${tagsNear(
+		newestReleaseTags(releaseTagNames(root, run)),
+		'The newest release tags are',
+	)}`;
 
 export type IRuntimeResolution =
 	| { readonly ok: true; readonly script: string; readonly label: string }
@@ -223,19 +252,10 @@ export const versionHostScript = async (
 		root,
 	);
 	if (sha === undefined || sha.length === 0) {
-		const tags = (
-			run('git', ['tag', '--list', `${RELEASE_TAG_PREFIX}*`], root) ?? ''
-		)
-			.split('\n')
-			.filter((name) => name.length > 0);
-		const near = nearestReleaseTags(version, tags);
+		const near = nearestReleaseTags(version, releaseTagNames(root, run));
 		return {
 			ok: false,
-			reason: `--version=${version}: there is no tag ${tag}. ${
-				near.length === 0
-					? 'This clone has no release tags.'
-					: `The nearest tags are ${near.join(', ')}.`
-			}`,
+			reason: `--version=${version}: there is no tag ${tag}. ${tagsNear(near, 'The nearest tags are')}`,
 		};
 	}
 	mkdirSync(join(root, RUNTIME_DIR), { recursive: true });
