@@ -306,6 +306,40 @@ const unitStillOnForge = (
 	return listed === undefined || listed.trim().length > 0;
 };
 
+/** The scratch worktrees alive now: what a signal must still clear. */
+const scratchInUse = new Map<string, string>();
+
+/**
+ * Drop one scratch worktree: its registration, then its directory. Only
+ * this one — never a global `worktree prune`, which would drop other
+ * units' registrations.
+ */
+export const discardScratch = (root: string, dir: string): void => {
+	git(root, ['worktree', 'remove', '--force', '--force', dir]);
+	rmSync(dir, { recursive: true, force: true });
+	scratchInUse.delete(dir);
+};
+
+/**
+ * A killed run skips its `finally`, and left `/tmp/candidate-refresh-*`
+ * worktrees registered in the shared clone for ever. A signal clears
+ * what is in use, then ends as the signal would have.
+ */
+export const clearScratchOnSignals = (): void => {
+	for (const [signal, code] of [
+		['SIGINT', 130],
+		['SIGTERM', 143],
+		['SIGHUP', 129],
+	] as const) {
+		process.once(signal, () => {
+			for (const [dir, root] of [...scratchInUse]) {
+				discardScratch(root, dir);
+			}
+			process.exit(code);
+		});
+	}
+};
+
 /**
  * Merge, regenerate, push — in a throwaway worktree, so the shared
  * checkout never moves and a failure leaves nothing behind.
@@ -323,6 +357,7 @@ export const refreshCandidate = (input: {
 }): ICandidateRefresh => {
 	const { root, policy, remote, candidate } = input;
 	const dir = mkdtempSync(join(tmpdir(), 'candidate-refresh-'));
+	scratchInUse.set(dir, root);
 	const run =
 		input.run ??
 		((command: string, cwd: string): boolean => {
@@ -480,8 +515,7 @@ export const refreshCandidate = (input: {
 					].join('; '),
 				};
 	} finally {
-		git(root, ['worktree', 'remove', '--force', dir]);
-		rmSync(dir, { recursive: true, force: true });
+		discardScratch(root, dir);
 	}
 };
 
@@ -517,6 +551,7 @@ const conflictingBranches = (): ReadonlySet<string> => {
 };
 
 const main = async (): Promise<void> => {
+	clearScratchOnSignals();
 	const root = repoRoot();
 	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),

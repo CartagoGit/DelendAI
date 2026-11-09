@@ -19,6 +19,7 @@ import {
 
 import {
 	conflictDetail,
+	discardScratch,
 	GENERATED_REFRESH_COMMANDS,
 	identityArgs,
 	pushRefusalReason,
@@ -77,14 +78,14 @@ afterEach(() => {
 });
 
 describe('staleCandidates (x00565)', () => {
-	it('names the candidates the integration branch has moved past', () => {
+	it('[<3000ms] names the candidates the integration branch has moved past', () => {
 		const { root } = repoWithCandidate();
 		expect(staleCandidates(root, policy, 'origin')).toEqual([
 			'delendai/pr/candidate',
 		]);
 	});
 
-	it('names none once they are level', () => {
+	it('[<3000ms] names none once they are level', () => {
 		const { root } = repoWithCandidate();
 		git(root, 'push', '-q', 'origin', 'develop:delendai/pr/candidate');
 		git(root, 'fetch', '-q', 'origin', '--prune');
@@ -93,7 +94,7 @@ describe('staleCandidates (x00565)', () => {
 });
 
 describe('refreshCandidate (x00565)', () => {
-	it('merges, regenerates and pushes, without moving the shared checkout', () => {
+	it('[<3000ms] merges, regenerates and pushes, without moving the shared checkout', () => {
 		const { root } = repoWithCandidate();
 		const before = git(root, 'rev-parse', 'HEAD');
 		const outcome = refreshCandidate({
@@ -126,7 +127,41 @@ describe('refreshCandidate (x00565)', () => {
 		).toContain('a = 2');
 	});
 
-	it('leaves a candidate that does not merge trivially to its author', () => {
+	it('[<2000ms] leaves no scratch worktree behind when the run throws, and keeps a sibling registered', () => {
+		const { root } = repoWithCandidate();
+		const sibling = join(mkdtempSync(join(tmpdir(), 'sibling-')), 'wt');
+		roots.push(sibling);
+		git(root, 'worktree', 'add', '-q', '--detach', sibling, 'HEAD');
+		// The sibling's directory vanishes: a stale registration a global
+		// `worktree prune` would drop, and only the reclaimer may.
+		rmSync(sibling, { recursive: true, force: true });
+		expect(() =>
+			refreshCandidate({
+				root,
+				policy,
+				remote: 'origin',
+				candidate: 'delendai/pr/candidate',
+				run: () => {
+					throw new Error('generator died');
+				},
+			}),
+		).toThrow('generator died');
+		const listed = git(root, 'worktree', 'list', '--porcelain');
+		expect(listed).not.toContain('candidate-refresh-');
+		expect(listed).toContain(sibling);
+	});
+
+	it('[<2000ms] discardScratch removes the worktree and its directory, only that one', () => {
+		const { root } = repoWithCandidate();
+		const holder = mkdtempSync(join(tmpdir(), 'scratch-'));
+		roots.push(holder);
+		const dir = join(holder, 'a');
+		git(root, 'worktree', 'add', '-q', '--detach', dir, 'HEAD');
+		discardScratch(root, dir);
+		expect(git(root, 'worktree', 'list', '--porcelain')).not.toContain(dir);
+	});
+
+	it('[<3000ms] leaves a candidate that does not merge trivially to its author', () => {
 		const { root } = repoWithCandidate();
 		// The candidate edits the same line develop moved.
 		git(
@@ -186,7 +221,7 @@ describe('refreshCandidate (x00565)', () => {
 		git(root, 'fetch', '-q', 'origin');
 	};
 
-	it('resolves a conflict confined to regenerated files and regenerates them', () => {
+	it('[<3000ms] resolves a conflict confined to regenerated files and regenerates them', () => {
 		const { root } = repoWithCandidate();
 		conflictOn(root, ['derived.json']);
 
@@ -218,7 +253,7 @@ describe('refreshCandidate (x00565)', () => {
 		).toBe('');
 	});
 
-	it('leaves a conflict that reaches an authored file to its author, even beside a regenerated one', () => {
+	it('[<3000ms] leaves a conflict that reaches an authored file to its author, even beside a regenerated one', () => {
 		const { root } = repoWithCandidate();
 		conflictOn(root, ['derived.json', 'authored.ts']);
 		const before = git(root, 'rev-parse', 'origin/delendai/pr/candidate');
@@ -239,7 +274,7 @@ describe('refreshCandidate (x00565)', () => {
 		);
 	});
 
-	it('reports a generator that failed and pushes nothing', () => {
+	it('[<3000ms] reports a generator that failed and pushes nothing', () => {
 		const { root } = repoWithCandidate();
 		const before = git(root, 'rev-parse', 'origin/delendai/pr/candidate');
 		const outcome = refreshCandidate({
@@ -257,7 +292,7 @@ describe('refreshCandidate (x00565)', () => {
 		);
 	});
 
-	it('leaves no worktree behind, whatever happened', () => {
+	it('[<3000ms] leaves no worktree behind, whatever happened', () => {
 		const { root } = repoWithCandidate();
 		refreshCandidate({
 			root,
@@ -271,7 +306,7 @@ describe('refreshCandidate (x00565)', () => {
 		).toHaveLength(1);
 	});
 
-	it('does not read the derived file from the merge, but from the generator', () => {
+	it('[<3000ms] does not read the derived file from the merge, but from the generator', () => {
 		const { root } = repoWithCandidate();
 		refreshCandidate({
 			root,
@@ -299,7 +334,7 @@ describe('who the queue commits as', () => {
 		vi.unstubAllEnvs();
 	});
 
-	it('leaves a configured identity alone, and names itself where there is none', () => {
+	it('[<50ms] leaves a configured identity alone, and names itself where there is none', () => {
 		expect(identityArgs({ name: 'C', email: 'c@example.com' })).toEqual([]);
 		expect(identityArgs({ name: 'C' })).toContain(
 			'user.email=queue@delendai.invalid',
@@ -307,7 +342,7 @@ describe('who the queue commits as', () => {
 		expect(identityArgs({})).toContain('user.name=delendai queue');
 	});
 
-	it('refreshes a candidate on a machine whose git names nobody', () => {
+	it('[<3000ms] refreshes a candidate on a machine whose git names nobody', () => {
 		const { root } = repoWithCandidate();
 		git(root, 'config', '--unset', 'user.name');
 		git(root, 'config', '--unset', 'user.email');
@@ -341,7 +376,7 @@ describe('who the queue commits as', () => {
 });
 
 describe('what a refreshed candidate regenerates', () => {
-	it('installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
+	it('[<50ms] installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
 		expect(GENERATED_REFRESH_COMMANDS).toEqual([
 			'install --frozen-lockfile --ignore-scripts',
 			'run gen:all',
@@ -350,7 +385,7 @@ describe('what a refreshed candidate regenerates', () => {
 });
 
 describe('the checkout a hydration runs from (x00635)', () => {
-	it('keeps its uncommitted work exactly as found', () => {
+	it('[<3000ms] keeps its uncommitted work exactly as found', () => {
 		const { root } = repoWithCandidate();
 		writeFileSync(join(root, 'authored.ts'), 'export const a = 42;\n');
 		writeFileSync(join(root, 'scratch.txt'), 'untracked\n');
@@ -377,28 +412,28 @@ describe('shouldAskQueueToRun', () => {
 		headArmed: false,
 	} as const;
 
-	it('asks when the head is level but nothing armed it', () => {
+	it('[<50ms] asks when the head is level but nothing armed it', () => {
 		expect(shouldAskQueueToRun(base)).toBe(true);
 	});
 
-	it('asks after bringing the head forward, armed or not', () => {
+	it('[<50ms] asks after bringing the head forward, armed or not', () => {
 		expect(
 			shouldAskQueueToRun({ ...base, refreshed: true, headArmed: true }),
 		).toBe(true);
 	});
 
-	it('does not ask when the head is already armed and nothing moved', () => {
+	it('[<50ms] does not ask when the head is already armed and nothing moved', () => {
 		expect(shouldAskQueueToRun({ ...base, headArmed: true })).toBe(false);
 	});
 
-	it('does not ask with no head, or in a read-only pass', () => {
+	it('[<50ms] does not ask with no head, or in a read-only pass', () => {
 		expect(shouldAskQueueToRun({ ...base, head: undefined })).toBe(false);
 		expect(shouldAskQueueToRun({ ...base, apply: false })).toBe(false);
 	});
 });
 
 describe('pushRefusalReason', () => {
-	it('keeps the lines a hook marks as failing', () => {
+	it('[<50ms] keeps the lines a hook marks as failing', () => {
 		expect(
 			pushRefusalReason(
 				'┃  drift-check ❯\n✓ fine\n✖ biome-baseline: 1 new finding\nerror: failed to push some refs',
@@ -408,7 +443,7 @@ describe('pushRefusalReason', () => {
 		);
 	});
 
-	it('keeps every failing line in full, however many and however long', () => {
+	it('[<50ms] keeps every failing line in full, however many and however long', () => {
 		const cause = `✖ preset-metadata: ${'a reason '.repeat(80)}`;
 		const output = [
 			'$ bun one',
@@ -430,14 +465,14 @@ describe('pushRefusalReason', () => {
 		);
 	});
 
-	it('falls back to the last lines, and says so when there is nothing', () => {
+	it('[<50ms] falls back to the last lines, and says so when there is nothing', () => {
 		expect(pushRefusalReason('one\ntwo\nthree\nfour')).toBe(
 			'two | three | four',
 		);
 		expect(pushRefusalReason('\n\n')).toBe('no output');
 	});
 
-	it('skips informational banner lines and reports the refusal itself', () => {
+	it('[<50ms] skips informational banner lines and reports the refusal itself', () => {
 		expect(
 			pushRefusalReason(
 				'[delendai] error-reporting is ON: bugs are reported.\n[delendai] Only delendai-internal errors.\nremote: ! [remote rejected] x -> x (hook declined)',
@@ -457,7 +492,7 @@ describe('overlappingFiles', () => {
 		git(root, 'fetch', '-q', 'origin');
 	};
 
-	it('names a file both the candidate and the integration branch changed since they met', () => {
+	it('[<3000ms] names a file both the candidate and the integration branch changed since they met', () => {
 		const { root } = repoWithCandidate();
 		onCandidate(root, 'authored.ts', 'export const a = 3;\n');
 		expect(
@@ -470,7 +505,7 @@ describe('overlappingFiles', () => {
 		).toEqual(['authored.ts']);
 	});
 
-	it('is empty when the candidate changed only files the integration branch did not', () => {
+	it('[<3000ms] is empty when the candidate changed only files the integration branch did not', () => {
 		const { root } = repoWithCandidate();
 		onCandidate(root, 'other.ts', 'export const b = 1;\n');
 		expect(
@@ -488,7 +523,7 @@ describe('conflictDetail', () => {
 	const HOUR = 3600;
 	const pack = 'delendai/pr/minimax-3/review/batch-all-g2/verdicts';
 
-	it('leaves the conflict to an author who is still around', () => {
+	it('[<50ms] leaves the conflict to an author who is still around', () => {
 		for (const input of [
 			{ silentSeconds: 30 * HOUR, unitOnForge: true },
 			{ silentSeconds: 2 * HOUR, unitOnForge: false },
@@ -503,7 +538,7 @@ describe('conflictDetail', () => {
 		}
 	});
 
-	it('says how an orphaned conflict ends once its author is gone', () => {
+	it('[<50ms] says how an orphaned conflict ends once its author is gone', () => {
 		const detail = conflictDetail({
 			candidate: pack,
 			silentSeconds: 30 * HOUR,

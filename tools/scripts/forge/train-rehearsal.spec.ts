@@ -2,6 +2,9 @@
  * train-rehearsal.spec.ts — the gates a train meets are rehearsed, and
  * every failure is reported in one pass.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -14,7 +17,7 @@ import {
 } from './train-rehearsal';
 
 describe('touchesIntegrationMachinery', () => {
-	it('is true for the files that build, push and judge a train', () => {
+	it('[<50ms] is true for the files that build, push and judge a train', () => {
 		for (const path of [
 			'tools/scripts/forge/queue-order.ts',
 			'tools/scripts/ci/prove-plan.script.ts',
@@ -27,7 +30,7 @@ describe('touchesIntegrationMachinery', () => {
 		}
 	});
 
-	it('is false for anything else', () => {
+	it('[<50ms] is false for anything else', () => {
 		expect(touchesIntegrationMachinery([])).toBe(false);
 		expect(
 			touchesIntegrationMachinery([
@@ -39,7 +42,7 @@ describe('touchesIntegrationMachinery', () => {
 });
 
 describe('prePushStdin', () => {
-	it('writes the line git gives a hook for a new remote branch', () => {
+	it('[<1000ms] writes the line git gives a hook for a new remote branch', () => {
 		expect(prePushStdin('train/ab/1', 'c'.repeat(40))).toBe(
 			`refs/heads/train/ab/1 ${'c'.repeat(40)} refs/heads/train/ab/1 ${NULL_OID}\n`,
 		);
@@ -49,7 +52,7 @@ describe('prePushStdin', () => {
 describe('rehearseGates', () => {
 	const env = { PATH: process.env.PATH ?? '' };
 
-	it('runs every gate and reports all the failures, not the first', async () => {
+	it('[<1000ms] runs every gate and reports all the failures, not the first', async () => {
 		const results = await rehearseGates({
 			gates: [
 				{ label: 'a', script: 'echo "error: first" >&2; exit 1' },
@@ -72,7 +75,7 @@ describe('rehearseGates', () => {
 		expect(report).toContain('would fail: ');
 	});
 
-	it('hands a hook its stdin and bounds a gate by its timeout', async () => {
+	it('[<1000ms] hands a hook its stdin and bounds a gate by its timeout', async () => {
 		const results = await rehearseGates({
 			gates: [
 				{
@@ -93,18 +96,29 @@ describe('rehearseGates', () => {
 		expect(slow?.causes[0]).toContain('killed by');
 	});
 
-	it('names the cause lines of a failed gate once', () => {
+	it('[<50ms] names the cause lines of a failed gate once', () => {
 		expect(
 			causesOf('ok\nerror: a\nerror: a\n\u001b[31mFAIL b\u001b[0m\n'),
 		).toEqual(['error: a', 'FAIL b']);
 	});
 
-	it('says a train passes when every gate does', () => {
+	it('[<50ms] says a train passes when every gate does', () => {
 		expect(
 			reportOf(
 				[{ label: 'a', ok: true, seconds: 1, causes: [] }],
 				't',
 			).at(-1),
 		).toContain('passes every gate');
+	});
+});
+
+describe('the rehearsal script', () => {
+	it('[<50ms] creates no branch in the clone: its scratch worktree stays detached', () => {
+		const source = readFileSync(
+			join(import.meta.dirname, 'train-rehearsal.script.ts'),
+			'utf8',
+		);
+		expect(source).not.toMatch(/'checkout',\s*'-q',\s*'-[bB]'/u);
+		expect(source).not.toMatch(/'(branch|switch)'/u);
 	});
 });
