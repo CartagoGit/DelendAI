@@ -11,7 +11,7 @@ import {
 } from './integration-decisions-single-owner.script';
 
 describe('integration decisions have one owner', () => {
-	it('[<20ms] refuses a function that carries the name of a decision', () => {
+	it('[<8ms] refuses a function that carries the name of a decision', () => {
 		const found = findReimplementations(
 			'tools/scripts/forge/mine.ts',
 			'export const overlapBetween = (a: Set<string>) => a.size > 0;\n',
@@ -21,7 +21,7 @@ describe('integration decisions have one owner', () => {
 		]);
 	});
 
-	it('[<20ms] refuses the namespace strip written by hand, under any name', () => {
+	it('[<8ms] refuses the namespace strip written by hand, under any name', () => {
 		const found = findReimplementations(
 			'plugins/x/src/a.ts',
 			"const bare = (p: string) =>\n\tp.replace(/^refs\\//u, '').replace(/^heads\\//u, '');\n",
@@ -30,7 +30,7 @@ describe('integration decisions have one owner', () => {
 		expect(found[0]).toContain('computes a ref namespace');
 	});
 
-	it('[<20ms] refuses a culprit marker read off a branch', () => {
+	it('[<5ms] refuses a culprit marker read off a branch', () => {
 		const found = findReimplementations(
 			'tools/scripts/git/a.ts',
 			'if (branch.startsWith(`${prefix}culprit/`)) return 1;\n',
@@ -38,7 +38,7 @@ describe('integration decisions have one owner', () => {
 		expect(found[0]).toContain('culprit marker');
 	});
 
-	it('[<20ms] allows the module itself and ignores comments', () => {
+	it('[<5ms] allows the module itself and ignores comments', () => {
 		const text = 'export const overlapBetween = () => undefined;\n';
 		expect(
 			findReimplementations(`${DECISIONS_MODULE}overlap.ts`, text),
@@ -51,7 +51,7 @@ describe('integration decisions have one owner', () => {
 		).toEqual([]);
 	});
 
-	it('[<20ms] a file that only uses a decision is clean', () => {
+	it('[<5ms] a file that only uses a decision is clean', () => {
 		expect(
 			findReimplementations(
 				'tools/a.ts',

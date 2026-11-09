@@ -37,21 +37,21 @@ const candidate = (
 });
 
 describe('queueHead', () => {
-	it('is the oldest candidate, whatever order the forge listed them in', () => {
+	it('[<16ms] is the oldest candidate, whatever order the forge listed them in', () => {
 		expect(
 			queueHead([candidate(7), candidate(3), candidate(5)], PREFIX)
 				?.number,
 		).toBe(3);
 	});
 
-	it('passes over a red candidate, which would never merge', () => {
+	it('[<6ms] passes over a red candidate, which would never merge', () => {
 		expect(
 			queueHead([candidate(3, { red: true }), candidate(5)], PREFIX)
 				?.number,
 		).toBe(5);
 	});
 
-	it('passes over a conflicting candidate, which the forge cannot merge', () => {
+	it('[<6ms] passes over a conflicting candidate, which the forge cannot merge', () => {
 		expect(
 			queueHead(
 				[candidate(3, { conflicting: true }), candidate(5)],
@@ -60,26 +60,26 @@ describe('queueHead', () => {
 		).toBe(5);
 	});
 
-	it('passes over a draft', () => {
+	it('[<6ms] passes over a draft', () => {
 		expect(
 			queueHead([candidate(3, { draft: true }), candidate(5)], PREFIX)
 				?.number,
 		).toBe(5);
 	});
 
-	it('never picks a pull request from outside the publication namespace', () => {
+	it('[<5ms] never picks a pull request from outside the publication namespace', () => {
 		expect(
 			queueHead([candidate(1, { headRef: 'feature/theirs' })], PREFIX),
 		).toBeUndefined();
 	});
 
-	it('has no head when nothing is ready', () => {
+	it('[<5ms] has no head when nothing is ready', () => {
 		expect(queueHead([], PREFIX)).toBeUndefined();
 	});
 });
 
 describe('queueOrder', () => {
-	it('keeps a conflicting candidate in its place, so it can still be brought forward', () => {
+	it('[<7ms] keeps a conflicting candidate in its place, so it can still be brought forward', () => {
 		expect(
 			queueOrder(
 				[
@@ -93,7 +93,7 @@ describe('queueOrder', () => {
 		).toEqual([3, 5]);
 	});
 
-	it('leads with an urgent candidate, then keeps the oldest first (x01051)', () => {
+	it('[<6ms] leads with an urgent candidate, then keeps the oldest first (x01051)', () => {
 		expect(
 			queueOrder(
 				[
@@ -107,7 +107,7 @@ describe('queueOrder', () => {
 		).toEqual([8, 9, 3, 5]);
 	});
 
-	it('has the head as its first candidate that does not conflict', () => {
+	it('[<6ms] has the head as its first candidate that does not conflict', () => {
 		const candidates = [
 			candidate(3, { conflicting: true }),
 			candidate(4, { conflicting: true }),
@@ -216,7 +216,7 @@ const drive = (
 };
 
 describe('the merge train', () => {
-	it('lands a disjoint batch with one run of the union of their scopes', () => {
+	it('[<10ms] lands a disjoint batch with one run of the union of their scopes', () => {
 		const forge = fakeForge();
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 5, 8]);
@@ -229,7 +229,7 @@ describe('the merge train', () => {
 		]);
 	});
 
-	it('bisects a red train to its culprit and lands the rest', () => {
+	it('[<9ms] bisects a red train to its culprit and lands the rest', () => {
 		const forge = fakeForge({ culprits: [7] });
 		let pool = [1, 2, 3, 4, 5, 6, 7, 8].map(rider);
 		const batches: (readonly number[])[] = [];
@@ -246,14 +246,14 @@ describe('the merge train', () => {
 		expect(forge.runs).toHaveLength(7);
 	});
 
-	it('names the culprit when a green first half leaves one member', () => {
+	it('[<5ms] names the culprit when a green first half leaves one member', () => {
 		const forge = fakeForge({ culprits: [2] });
 		const landed = drive(forge, [rider(1), rider(2)]);
 		expect(landed).toEqual([1]);
 		expect(forge.blamed).toEqual([2]);
 	});
 
-	it('does not blame a member whose own checks are green for a train red by itself', () => {
+	it('[<14ms] does not blame a member whose own checks are green for a train red by itself', () => {
 		const forge = fakeForge({ culprits: [4] });
 		const reported: string[] = [];
 		const ports: ITrainPorts = {
@@ -286,7 +286,7 @@ describe('the merge train', () => {
 		);
 	});
 
-	it('still blames a member whose own checks are not green', () => {
+	it('[<6ms] still blames a member whose own checks are not green', () => {
 		const forge = fakeForge({ culprits: [4] });
 		const ports: ITrainPorts = {
 			...forge.ports,
@@ -307,14 +307,14 @@ describe('the merge train', () => {
 		expect([...new Set(forge.blamed)]).toEqual([4]);
 	});
 
-	it('splits only a textual conflict outside the derived files off the train', () => {
+	it('[<5ms] splits only a textual conflict outside the derived files off the train', () => {
 		const forge = fakeForge({ conflicts: [5] });
 		const landed = drive(forge, [rider(3), rider(5), rider(8)]);
 		expect(landed).toEqual([3, 8]);
 		expect(forge.runs).toEqual([trainRefName(TRAINS, TIP, [3, 8])]);
 	});
 
-	it('reports a declined push with its reason and dispatches nothing', () => {
+	it('[<11ms] reports a declined push with its reason and dispatches nothing', () => {
 		const reason = 'remote: Cannot create ref: creations restricted';
 		const forge = fakeForge({ pushFailure: reason });
 		expect(drive(forge, [rider(3), rider(5)])).toEqual([]);
@@ -322,12 +322,12 @@ describe('the merge train', () => {
 		expect(forge.said.some((line) => line.includes(reason))).toBe(true);
 	});
 
-	it('says how many landed when the forge stops a merge part way', () => {
+	it('[<5ms] says how many landed when the forge stops a merge part way', () => {
 		const forge = fakeForge({ fastForward: false });
 		expect(drive(forge, [rider(3), rider(5)])).toEqual([3]);
 	});
 
-	it('does nothing without members, and waits on a running train', () => {
+	it('[<5ms] does nothing without members, and waits on a running train', () => {
 		const forge = fakeForge();
 		expect(
 			runTrain({
@@ -354,7 +354,7 @@ describe('the merge train', () => {
 		expect(forge.runs).toHaveLength(1);
 	});
 
-	it('tries again next time when the train run cannot be dispatched', () => {
+	it('[<5ms] tries again next time when the train run cannot be dispatched', () => {
 		const forge = fakeForge();
 		const ports: ITrainPorts = { ...forge.ports, dispatch: () => false };
 		expect(
@@ -369,18 +369,18 @@ describe('the merge train', () => {
 });
 
 describe('trainStep', () => {
-	it('is none for an empty train', () => {
+	it('[<5ms] is none for an empty train', () => {
 		expect(trainStep([], () => 'certified')).toEqual({ kind: 'none' });
 	});
 
-	it('names a red train of one as the culprit', () => {
+	it('[<6ms] names a red train of one as the culprit', () => {
 		expect(trainStep([4], () => 'red')).toEqual({
 			kind: 'culprit',
 			number: 4,
 		});
 	});
 
-	it('waits on the first half while it runs', () => {
+	it('[<5ms] waits on the first half while it runs', () => {
 		expect(
 			trainStep([1, 2, 3], (members) =>
 				members.length === 3 ? 'red' : 'pending',
@@ -390,14 +390,14 @@ describe('trainStep', () => {
 });
 
 describe('train members', () => {
-	it('takes candidates in order, up to the capacity', () => {
+	it('[<7ms] takes candidates in order, up to the capacity', () => {
 		const many = Array.from({ length: 12 }, (_, i) => rider(i + 1));
 		expect(trainMembers(many, new Map()).map((m) => m.number)).toEqual(
 			Array.from({ length: TRAIN_CAPACITY }, (_, i) => i + 1),
 		);
 	});
 
-	it('leaves out a culprit until its head moves', () => {
+	it('[<5ms] leaves out a culprit until its head moves', () => {
 		const culprits = new Map([
 			[3, 'head3'],
 			[5, 'an older head'],
@@ -407,7 +407,7 @@ describe('train members', () => {
 		).toEqual([5]);
 	});
 
-	it('leaves out an overlapping candidate, which the overlap verdicts never accept', () => {
+	it('[<5ms] leaves out an overlapping candidate, which the overlap verdicts never accept', () => {
 		// The members are the accepted verdicts: an overlapping candidate is
 		// not among them, so it never reaches the train.
 		const accepted = [
@@ -436,19 +436,19 @@ describe('train names', () => {
 			publicationRefPrefix: '',
 		}) as Parameters<typeof ownedTrainPrefixes>[0];
 
-	it('lives under the policy namespace, and at the root with none', () => {
+	it('[<5ms] lives under the policy namespace, and at the root with none', () => {
 		expect(ownedTrainPrefixes(branchesOf('acme'))).toEqual(['acme/train/']);
 		expect(ownedTrainPrefixes(branchesOf(''))).toEqual(['train/']);
 	});
 
-	it('reads trains under a former namespace too, the current one first', () => {
+	it('[<6ms] reads trains under a former namespace too, the current one first', () => {
 		expect(ownedTrainPrefixes(branchesOf('', ['delendai']))).toEqual([
 			'train/',
 			'delendai/train/',
 		]);
 	});
 
-	it('names an empty-namespace train and culprit at the root', () => {
+	it('[<6ms] names an empty-namespace train and culprit at the root', () => {
 		const [prefix = ''] = ownedTrainPrefixes(branchesOf(''));
 		expect(trainRefName(prefix, TIP, [3, 5])).toBe(
 			`train/${'a'.repeat(12)}/3-5`,
@@ -456,7 +456,7 @@ describe('train names', () => {
 		expect(culpritRefName(prefix, 7)).toBe('train/culprit/7');
 	});
 
-	it('finds culprits under every owned namespace', () => {
+	it('[<7ms] finds culprits under every owned namespace', () => {
 		const prefixes = ownedTrainPrefixes(branchesOf('', ['delendai']));
 		const branches = new Map([
 			['train/culprit/7', 'h7'],
@@ -472,7 +472,7 @@ describe('train names', () => {
 		expect(isCulpritMarker(prefixes, 'train/abc/1')).toBe(false);
 	});
 
-	it('prunes trains of another tip and former namespaces, keeping markers', () => {
+	it('[<5ms] prunes trains of another tip and former namespaces, keeping markers', () => {
 		const prefixes = ownedTrainPrefixes(branchesOf('acme', ['delendai']));
 		const current = trainRefName('acme/train/', TIP, [1, 2]);
 		const branches = new Map([
@@ -501,7 +501,7 @@ describe('train names', () => {
 		).toEqual([]);
 	});
 
-	it('names the tip and the members, and the culprit by number', () => {
+	it('[<5ms] names the tip and the members, and the culprit by number', () => {
 		expect(trainRefName(TRAINS, TIP, [3, 5])).toBe(
 			`delendai/train/${'a'.repeat(12)}/3-5`,
 		);
@@ -510,7 +510,7 @@ describe('train names', () => {
 });
 
 describe('byQueuePosition: one rule for every ordering (x01051 S6)', () => {
-	it('puts urgent first, then oldest, and queueOrder uses it', () => {
+	it('[<5ms] puts urgent first, then oldest, and queueOrder uses it', () => {
 		const list = [
 			candidate(3),
 			candidate(8, { urgent: 'red' }),

@@ -19,15 +19,15 @@ const base: IPullRequestChecks = {
 };
 
 describe('pullRequestReady', () => {
-	it('[<20ms] is ready when every required check is green', () => {
+	it('[<5ms] is ready when every required check is green', () => {
 		expect(pullRequestReady(base)).toBe(true);
 	});
 
-	it('[<20ms] a draft is not ready', () => {
+	it('[<5ms] a draft is not ready', () => {
 		expect(pullRequestReady({ ...base, draft: true })).toBe(false);
 	});
 
-	it('[<20ms] a required check that is red, pending or missing is not green', () => {
+	it('[<5ms] a required check that is red, pending or missing is not green', () => {
 		expect(
 			pullRequestReady({
 				...base,
@@ -46,14 +46,14 @@ describe('pullRequestReady', () => {
 		expect(pullRequestReady({ ...base, checks: [] })).toBe(false);
 	});
 
-	it('[<20ms] a blocking label keeps it out; another label does not', () => {
+	it('[<5ms] a blocking label keeps it out; another label does not', () => {
 		expect(pullRequestReady({ ...base, labels: ['needs update'] })).toBe(
 			false,
 		);
 		expect(pullRequestReady({ ...base, labels: ['docs'] })).toBe(true);
 	});
 
-	it('[<20ms] is deterministic for the same facts', () => {
+	it('[<5ms] is deterministic for the same facts', () => {
 		expect(pullRequestReady(base)).toBe(pullRequestReady({ ...base }));
 	});
 });
