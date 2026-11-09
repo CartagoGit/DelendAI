@@ -120,7 +120,7 @@ describe('agent-lock file-level granularity', () => {
 		expect(body(right).blocked).not.toBe(true);
 	});
 
-	it('keeps overlapping claims on the normal contention path and the second waits for the critical section', async () => {
+	it('[<1000ms] keeps overlapping claims on the normal contention path and the second waits for the critical section', async () => {
 		await runAgentLockEngine(
 			{
 				action: 'claim',
@@ -175,8 +175,12 @@ describe('agent-lock file-level granularity', () => {
 		).finally(() => {
 			settled = true;
 		});
-		// The second claim is queued behind the held mutex: it cannot settle
-		// until the holder releases, however long the machine takes.
+		// Let the event loop turn (microtasks, then the I/O phase) so the
+		// `.finally()` would have run had the claim been able to finish: the
+		// second claim is queued behind the held mutex and cannot settle until
+		// the holder releases, however long the machine takes.
+		await Promise.resolve();
+		await new Promise<void>((turned) => setImmediate(turned));
 		expect(settled).toBe(false);
 		release();
 		const [secondResult] = await Promise.all([second, holder]);
