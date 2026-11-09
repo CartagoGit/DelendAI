@@ -1,5 +1,5 @@
 /**
- * Constants for `./candidate-disposition`.
+ * Constants for `./readiness`.
  *
  * The checks a regeneration of the derived files can turn green. `drift`
  * compares every generated file with what `gen:all` produces;

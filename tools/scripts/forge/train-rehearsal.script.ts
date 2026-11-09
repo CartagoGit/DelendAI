@@ -18,7 +18,11 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
-import { isAgentEnvironmentVariable } from '@delendai/core/cli';
+import {
+	isAgentEnvironmentVariable,
+	ownedTrainPrefixes,
+	trainRefName,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { STATIC_CHECK_JOBS, staticChecksOf } from '../ci/ci-static-steps';
@@ -28,7 +32,6 @@ import {
 	declaredIntegrationRef,
 } from '../lib/declared-branches';
 import { readDevelopmentConfig } from './keep-the-queue-moving.script';
-import { trainPrefixesOf, trainRefName } from './queue-order';
 import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -82,7 +85,7 @@ const main = async (): Promise<number> => {
 		headSha,
 	}));
 	const ref = trainRefName(
-		trainPrefixesOf(policy.branches)[0] ?? 'train/',
+		ownedTrainPrefixes(policy.branches)[0] ?? 'train/',
 		tipSha,
 		members.map((member) => member.number),
 	);

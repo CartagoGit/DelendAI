@@ -9,15 +9,13 @@
  * the same ones; this only applies them to the queue's verdicts. Nothing
  * here deletes: a candidate given up on keeps its tip for whoever adopts it.
  */
+import { orphanedCandidates, type ICandidateVerdict } from '@delendai/core/cli';
 import {
 	planOrphanRescues,
 	readOrphanRescues,
 	writeOrphanRescues,
 } from '@delendai/core/runtime';
 import type { IAuthorPresence } from '@delendai/core/runtime';
-
-import { orphanedCandidates } from '../forge/candidate-disposition';
-import type { ICandidateVerdict } from '../forge/candidate-disposition';
 
 /** Why the author is gone, for the candidate's facts; undefined when not. */
 export const authorGoneOf = (

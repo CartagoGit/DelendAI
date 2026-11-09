@@ -14,7 +14,7 @@
  * of a project that forbids it. Declaring it removes the guess.
  */
 
-import { shortName } from './git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { persistenceRouteKind } from './resolve';
 import { RESCUE_COMMAND } from '../contracts/constants/work-rescue.constant';
 import { sharedCheckoutStaysClean } from './shared-checkout-clean';

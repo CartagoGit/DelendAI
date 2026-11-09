@@ -11,10 +11,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
-
-/** The namespace prefix as it appears in a branch name, without `refs/`. */
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /**
  * The invariant, from the proposals in progress on the integration branch

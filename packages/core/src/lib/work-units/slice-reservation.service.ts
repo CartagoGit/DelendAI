@@ -26,6 +26,7 @@ import {
 	refused,
 } from './work-unit-shared.service';
 import { namespacedRef } from './namespaced-ref.helper';
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /** The slice that holds every other slice of its proposal. */
 const WHOLE_PROPOSAL = 'all';
@@ -214,10 +215,6 @@ export const releaseClaimedSlices = (
 				unit,
 			});
 };
-
-/** The namespace prefix as it appears in a branch name. */
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * The refusal a new implementation unit gets when another unit holds its

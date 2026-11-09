@@ -11,7 +11,7 @@
  * id in place of `new`. The name is rendered by the project's template,
  * never spelled here.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';

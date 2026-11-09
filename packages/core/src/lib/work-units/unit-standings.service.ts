@@ -6,7 +6,7 @@
  * `reclaim:orphans`, `work status`, the overview, `work retire` and the
  * reaper — reads this, so they cannot disagree about a unit.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { listUnitLeases, removeUnitLease } from './unit-lease.store';

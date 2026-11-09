@@ -5,6 +5,7 @@
 import type { ILiveProposalUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 
 import { parseWorkSubject } from './work-ref-shape.service';
+import { shortName as withoutRefsHeads } from '../integration/decisions/namespaces.helper';
 
 /** The agent and subject of `ref` under `template`, when it has that shape. */
 const partsOf = (template: string, ref: string) => {
@@ -18,10 +19,6 @@ const partsOf = (template: string, ref: string) => {
 		? undefined
 		: { agent: rest.slice(0, slash), ...parts };
 };
-
-/** A branch name however it is spelled: `refs/heads/x`, `heads/x` or `x`. */
-const withoutRefsHeads = (name: string): string =>
-	name.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** The kinds of unit that write a proposal's own document. */
 const PROPOSAL_WRITING_KINDS: ReadonlySet<string> = new Set([

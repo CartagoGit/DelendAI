@@ -16,7 +16,7 @@
  * does and a lock does not.
  */
 import { readGit } from '../shared/git-read.helper';
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 

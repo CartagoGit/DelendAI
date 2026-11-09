@@ -29,7 +29,7 @@ import { parseJsonc } from '@delendai/core/cli';
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+} from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import {
 	approvalsAdded,
 	approvalsNotBy,

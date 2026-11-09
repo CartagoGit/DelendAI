@@ -21,7 +21,7 @@ import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.in
 import { createGitRunner } from '../shared/git-write';
 
 import { resolveDurabilityRemote } from './durability-remote';
-import { workRefProposalOpen } from '../work-units/work-ref-lifecycle.service';
+import { workRefProposalOpen } from '../integration/decisions/landed.helper';
 import {
 	recordWorkRefMove,
 	workRefMover,

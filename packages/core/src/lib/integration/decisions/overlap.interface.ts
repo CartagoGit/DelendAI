@@ -1,5 +1,5 @@
 /**
- * Contract shapes for `./independent-candidates`.
+ * Contract shapes for `./overlap`.
  */
 
 /** What a change touches: the test zones it reaches, and its files. */
@@ -38,3 +38,6 @@ export interface ICandidateAcceptance {
 	readonly accepted: boolean;
 	readonly why: string;
 }
+
+/** Where a candidate stands in a train: an urgent repair first, review batches last. */
+export type ITrainPriority = 'urgent' | 'normal' | 'review';

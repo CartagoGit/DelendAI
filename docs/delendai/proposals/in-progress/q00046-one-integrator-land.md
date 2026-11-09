@@ -168,7 +168,7 @@ Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
 ### S2 — The decisions module
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`
+- **Files**: `packages/core/src/lib/integration/decisions/namespaces.helper.ts`
 - **Gate**: none
 - acceptance:
   - "One core module decides ready, overlap, grouping, culprit, landed and allowed namespaces; the overlap uses the CI selection's section function, not a copy"

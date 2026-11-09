@@ -19,6 +19,7 @@ import { openPublicationPullRequest } from '@delendai/cli';
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import { prHeadProblem } from '../lint/pr-head-shape.script';
+import { shortName as shortRef } from '@delendai/core/cli';
 
 const run = (command: string, args: readonly string[]): string | undefined => {
 	try {
@@ -31,9 +32,6 @@ const run = (command: string, args: readonly string[]): string | undefined => {
 		return undefined;
 	}
 };
-
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 const main = (): number => {
 	const branches = declaredBranches(repoRoot());

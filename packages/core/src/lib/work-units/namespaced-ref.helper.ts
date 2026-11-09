@@ -7,7 +7,7 @@
  * husk's files or reserving a slice failed there outright.
  */
 
-import { ownedNamespaces } from '../development-policy/owned-ref-prefixes';
+import { ownedNamespaces } from '../integration/decisions/namespaces.helper';
 
 /** `refs/<namespace>/<parts…>`, or `refs/<parts…>` with no namespace. */
 export const namespacedRef = (

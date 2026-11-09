@@ -8,7 +8,7 @@ import type {
 	IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { branchRuleFor, takeInStrictness } from './branch-rules';
-import { policyNamespaces } from './git-guard-namespaces';
+import { policyNamespaces } from '../integration/decisions/namespaces.helper';
 import { hasSeparateReleaseBranch } from './release-branch';
 
 const keyOf = (pattern: string): string => `branches.rules.${pattern}`;

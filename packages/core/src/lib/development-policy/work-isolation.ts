@@ -12,12 +12,10 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkIsolation } from '../contracts/interfaces/work-isolation.interface';
 import { briefWorkModel } from './declare-workflow';
+import { shortName as displayPrefix } from '../integration/decisions/namespaces.helper';
 
 const HOST_DISABLED_REFUSAL =
 	'agent_worktree is disabled by host configuration. Pass --agent-worktree=true (CLI) or set agentWorktree: true in delendai.config.json to enable.';
-
-const displayPrefix = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 export const describeWorkIsolation = (
 	policy: IResolvedDevelopmentPolicy | undefined,
