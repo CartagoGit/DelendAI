@@ -2,14 +2,14 @@
 id: x01056
 title: "The shared clone keeps only live work: no global prune, honest reclaim, no leaks"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 68c741b0-088d-4909-8b70-647fb9a8fef8
-last-correlation-id: 68c741b0-088d-4909-8b70-647fb9a8fef8
-last-transition-from: ready
-last-transition-at: 2026-11-08T22:12:36.451Z
+last-transition-id: 01d984ec-f732-4a47-860d-f02ae5d25514
+last-correlation-id: 01d984ec-f732-4a47-860d-f02ae5d25514
+last-transition-from: in-progress
+last-transition-at: 2026-11-09T01:01:38.921Z
 ---
 
 # x01056 — The shared clone keeps only live work: no global prune, honest reclaim, no leaks
@@ -32,9 +32,12 @@ An inventory of the shared clone found worktrees and refs that belong to nobody.
 - global_gate: none
 
 ### S1 — No global prune, honest reclaim, no leaks
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/publish-candidate.script.spec.ts`, `packages/core/tests/src/lib/work-units/local-certification.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`
 - **Gate**: none
+- shipped-in: `b6d59ac81a42`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
