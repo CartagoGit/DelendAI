@@ -30,7 +30,7 @@ export const registryMethodsContract = (
 			return { registry, producer, generation: result.generation };
 		};
 
-		it('releaseProjectLease drops the holder the lease added', () => {
+		it('[<57ms] releaseProjectLease drops the holder the lease added', () => {
 			const { registry, generation } = hydrated();
 			const lease = registry.acquireProjectLease({
 				scope: projectScope,
@@ -46,7 +46,7 @@ export const registryMethodsContract = (
 			expect(registry.diagnose()[0]?.holderCount).toBe(0);
 		});
 
-		it('gc keeps an active generation and counts what it reaped', () => {
+		it('[<27ms] gc keeps an active generation and counts what it reaped', () => {
 			const { registry, generation } = hydrated();
 			expect(registry.gc(projectScope)).toBe(0);
 			expect(registry.gc()).toBe(0);
@@ -55,21 +55,21 @@ export const registryMethodsContract = (
 			);
 		});
 
-		it('resetForTests forgets every generation', () => {
+		it('[<46ms] resetForTests forgets every generation', () => {
 			const { registry } = hydrated();
 			expect(registry.diagnose()).not.toHaveLength(0);
 			registry.resetForTests();
 			expect(registry.diagnose()).toHaveLength(0);
 		});
 
-		it('seedFingerprint names each defined producer', () => {
+		it('[<34ms] seedFingerprint names each defined producer', () => {
 			const { registry, producer } = hydrated();
 			expect(
 				registry.seedFingerprint().producers.map((each) => each.id),
 			).toContain(producer.id);
 		});
 
-		it('validates a snapshot for integrity and against the registry', () => {
+		it('[<36ms] validates a snapshot for integrity and against the registry', () => {
 			const { registry, producer } = hydrated();
 			const good = makeSnapshot(producer);
 			expect(registry.validateSnapshotIntegrity(good)).toEqual([]);

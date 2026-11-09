@@ -10,3 +10,13 @@ export const TEST_RUNNER_VARIABLE_PREFIXES: readonly string[] = [
 	'DELENDAI_RECORD_READS',
 	'DELENDAI_TEST_',
 ];
+
+/** The forge credentials a spec never inherits from the shell that runs it. */
+export const FORGE_TOKEN_VARIABLES: readonly string[] = [
+	'GH_TOKEN',
+	'GITHUB_TOKEN',
+	'GH_ENTERPRISE_TOKEN',
+];
+
+/** Where `gh` looks for the login it keeps on disk. */
+export const FORGE_CONFIG_DIR_VARIABLE = 'GH_CONFIG_DIR';

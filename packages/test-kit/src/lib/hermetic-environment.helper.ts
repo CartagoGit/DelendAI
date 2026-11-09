@@ -9,8 +9,14 @@
  * rule is now the whole family: every delendai variable goes, except the
  * few that configure the runner, together with whatever names an agent.
  */
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import {
 	DELENDAI_VARIABLE_PREFIX,
+	FORGE_CONFIG_DIR_VARIABLE,
+	FORGE_TOKEN_VARIABLES,
 	TEST_RUNNER_VARIABLE_PREFIXES,
 } from '../contracts/constants/hermetic-environment.constant';
 import type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermetic-environment.interface';
@@ -23,12 +29,23 @@ const isAmbient = (
 		!TEST_RUNNER_VARIABLE_PREFIXES.some((prefix) =>
 			name.startsWith(prefix),
 		)) ||
+	FORGE_TOKEN_VARIABLES.includes(name) ||
 	markers.names.includes(name) ||
 	markers.prefixes.some((prefix) => name.startsWith(prefix));
 
+let emptyForgeConfigDir: string | undefined;
+
+/** An empty directory for `gh`'s login, made once a process. */
+const forgeConfigDir = (): string => {
+	emptyForgeConfigDir ??= mkdtempSync(join(tmpdir(), 'delendai-gh-'));
+	return emptyForgeConfigDir;
+};
+
 /**
- * Remove from `env` every delendai variable but the runner's own, and
- * every variable `markers` names. Returns the names removed.
+ * Remove from `env` every delendai variable but the runner's own, every
+ * forge token and every variable `markers` names, and point `gh` at an
+ * empty config directory so `gh auth token` finds no login. Returns the
+ * names removed.
  */
 export const clearAmbientEnvironment = (
 	markers: IAmbientEnvironmentMarkers,
@@ -36,5 +53,6 @@ export const clearAmbientEnvironment = (
 ): readonly string[] => {
 	const removed = Object.keys(env).filter((name) => isAmbient(name, markers));
 	for (const name of removed) delete env[name];
+	env[FORGE_CONFIG_DIR_VARIABLE] = forgeConfigDir();
 	return removed;
 };

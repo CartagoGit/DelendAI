@@ -150,7 +150,7 @@ export const registryContract = (
 	define: IDefineRegistry,
 ): void => {
 	describe(`${driver}: the registry contract (q00018 S3 + 0.1 fixes)`, () => {
-		it('rejects ill-formed producers', () => {
+		it('[<33ms] rejects ill-formed producers', () => {
 			const r = define({ clock: () => 0 });
 			expect(() =>
 				r.defineProducer({
@@ -165,7 +165,7 @@ export const registryContract = (
 			).toThrow(/ill-formed producer/);
 		});
 
-		it('rejects duplicate (id, producerVersion) registrations', () => {
+		it('[<36ms] rejects duplicate (id, producerVersion) registrations', () => {
 			const r = define({ clock: () => 0 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -174,7 +174,7 @@ export const registryContract = (
 			);
 		});
 
-		it('S9 fix: defineProducer upgrade (same id, new producerVersion) does NOT throw', () => {
+		it('[<35ms] S9 fix: defineProducer upgrade (same id, new producerVersion) does NOT throw', () => {
 			const r = define({ clock: () => 0 });
 			r.defineProducer(countingProducer());
 			expect(() =>
@@ -182,7 +182,7 @@ export const registryContract = (
 			).not.toThrow();
 		});
 
-		it('hydrate produces an active generation with a stable canonical hash', () => {
+		it('[<30ms] hydrate produces an active generation with a stable canonical hash', () => {
 			const r = define({ clock: () => 100 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -194,7 +194,7 @@ export const registryContract = (
 			expect(result.generation.canonicalHash).toMatch(/^[0-9a-f]{64}$/);
 		});
 
-		it('incremental builds on the active generation', () => {
+		it('[<31ms] incremental builds on the active generation', () => {
 			const r = define({ clock: () => 0 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -213,7 +213,7 @@ export const registryContract = (
 			expect(diag.some((g) => g.status === 'draining')).toBe(true);
 		});
 
-		it('lookup returns the canonical projection of the active generation', () => {
+		it('[<39ms] lookup returns the canonical projection of the active generation', () => {
 			const r = define({ clock: () => 0 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -227,7 +227,7 @@ export const registryContract = (
 			expect(read.projection).toEqual({ count: 1, label: 'counter' });
 		});
 
-		it('lookup returns no_active_generation before hydrate', () => {
+		it('[<61ms] lookup returns no_active_generation before hydrate', () => {
 			const r = define({ clock: () => 0 });
 			const read = r.lookup({
 				scope: projectScope,
@@ -238,7 +238,7 @@ export const registryContract = (
 			expect(read.reason).toBe('no_active_generation');
 		});
 
-		it('S5 fix: acquring a stale project lease is rejected', () => {
+		it('[<54ms] S5 fix: acquring a stale project lease is rejected', () => {
 			const r = define({ clock: () => 0 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -263,7 +263,7 @@ export const registryContract = (
 			expect(result.currentGenerationId).toBe(g2.generation.id);
 		});
 
-		it('S5 fix: acquireProjectLease accepts current generation + token', () => {
+		it('[<37ms] S5 fix: acquireProjectLease accepts current generation + token', () => {
 			const r = define({ clock: () => 0 });
 			const p = countingProducer();
 			r.defineProducer(p);
@@ -285,7 +285,7 @@ export const registryContract = (
 			}
 		});
 
-		it('S10 fix: swarm claims and project leases are independent fences', () => {
+		it('[<53ms] S10 fix: swarm claims and project leases are independent fences', () => {
 			const r = define({ clock: () => 0 });
 			// The producer must SERVE the swarm scope so the snapshot
 			// fingerprint and the registry's scope-relevant producers
