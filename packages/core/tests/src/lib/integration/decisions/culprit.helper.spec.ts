@@ -20,7 +20,7 @@ const members = [
 ];
 
 describe('attributeCulprit', () => {
-	it('[<20ms] names the one member that meets the failing zone', () => {
+	it('[<6ms] names the one member that meets the failing zone', () => {
 		expect(
 			attributeCulprit({
 				failingZones: new Set(['core']),
@@ -30,7 +30,7 @@ describe('attributeCulprit', () => {
 		).toEqual({ culprit: 1, suspects: [1] });
 	});
 
-	it("[<20ms] a failing spec in one member's files names that member", () => {
+	it("[<5ms] a failing spec in one member's files names that member", () => {
 		expect(
 			attributeCulprit({
 				failingZones: new Set(['web']),
@@ -40,7 +40,7 @@ describe('attributeCulprit', () => {
 		).toEqual([2, 3]);
 	});
 
-	it('[<20ms] with several suspects there is no culprit', () => {
+	it('[<5ms] with several suspects there is no culprit', () => {
 		const verdict = attributeCulprit({
 			failingZones: new Set(['web']),
 			failingSpecs: new Set(),
@@ -50,7 +50,7 @@ describe('attributeCulprit', () => {
 		expect(verdict.suspects).toEqual([2, 3]);
 	});
 
-	it('[<20ms] a change that reaches everything is a suspect of any failure', () => {
+	it('[<5ms] a change that reaches everything is a suspect of any failure', () => {
 		expect(
 			attributeCulprit({
 				failingZones: new Set(['core']),
@@ -65,7 +65,7 @@ describe('attributeCulprit', () => {
 		).toEqual({ culprit: 9, suspects: [9] });
 	});
 
-	it('[<20ms] no failure meets no member', () => {
+	it('[<5ms] no failure meets no member', () => {
 		expect(
 			attributeCulprit({
 				failingZones: new Set(),

@@ -29,7 +29,7 @@ const OLD = 'delendai/wip/claude-opus-5-5/implement/f00808-S2-g1/guards';
 const NEW = 'wip/claude-opus-5-5/implement/f00808-S2-g1/guards';
 
 describe('guard namespaces in a transition', () => {
-	it('[<50ms] reads the prefix from the policy', () => {
+	it('[<5ms] reads the prefix from the policy', () => {
 		expect(policyNamespaces(policy).prefixes).toEqual(
 			expect.arrayContaining([
 				'wip/',
@@ -40,7 +40,7 @@ describe('guard namespaces in a transition', () => {
 		);
 	});
 
-	it('[<50ms] recognises both prefixes', () => {
+	it('[<5ms] recognises both prefixes', () => {
 		expect(insideNamespaces(policy, OLD)).toBe(true);
 		expect(insideNamespaces(policy, NEW)).toBe(true);
 		expect(insideNamespaces(policy, `delendai/pr/${NEW.slice(4)}`)).toBe(
@@ -49,7 +49,7 @@ describe('guard namespaces in a transition', () => {
 		expect(insideNamespaces(policy, 'feature/mine')).toBe(false);
 	});
 
-	it('[<50ms] keeps a live unit under the former prefix pushable', () => {
+	it('[<7ms] keeps a live unit under the former prefix pushable', () => {
 		expect(
 			refuseUnshapedWorkRef(policy, `refs/heads/${OLD}`, OLD, false),
 		).toBeUndefined();
@@ -58,7 +58,7 @@ describe('guard namespaces in a transition', () => {
 		).toBeUndefined();
 	});
 
-	it('[<50ms] still refuses a hand-typed name under the former prefix', () => {
+	it('[<5ms] still refuses a hand-typed name under the former prefix', () => {
 		const typed = 'delendai/wip/claude-opus-5-5/my-branch';
 		expect(
 			refuseUnshapedWorkRef(policy, `refs/heads/${typed}`, typed)
@@ -66,7 +66,7 @@ describe('guard namespaces in a transition', () => {
 		).toBe(true);
 	});
 
-	it('[<50ms] accepts a publication of either namespace', () => {
+	it('[<6ms] accepts a publication of either namespace', () => {
 		const oldPublication = OLD.replace('delendai/wip/', 'delendai/pr/');
 		const newPublication = NEW.replace('wip/', 'pr/');
 		expect(
@@ -89,7 +89,7 @@ describe("the merge queue's train refs", () => {
 		deleting: false,
 	});
 
-	it('[<50ms] admits a train and a culprit marker under either namespace', () => {
+	it('[<7ms] admits a train and a culprit marker under either namespace', () => {
 		for (const branch of [
 			'train/3328521623df/1778-1808',
 			'train/culprit/1802',
@@ -103,7 +103,7 @@ describe("the merge queue's train refs", () => {
 		}
 	});
 
-	it('[<50ms] still refuses a branch outside every namespace', () => {
+	it('[<6ms] still refuses a branch outside every namespace', () => {
 		expect(judgeGitOperation(policy, push('trains/x'), AGENT).refused).toBe(
 			true,
 		);

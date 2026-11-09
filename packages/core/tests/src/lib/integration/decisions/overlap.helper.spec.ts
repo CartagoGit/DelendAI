@@ -17,7 +17,7 @@ const zones = (names: string[], files: string[] = []): IChangeFootprint => ({
 });
 
 describe('footprintFromReach', () => {
-	it('[<50ms] an empty change reaches nothing', () => {
+	it('[<5ms] an empty change reaches nothing', () => {
 		const footprint = footprintFromReach({
 			files: new Set(),
 			reach: undefined,
@@ -26,7 +26,7 @@ describe('footprintFromReach', () => {
 		expect(footprint.zones).toEqual(new Set());
 	});
 
-	it('[<50ms] a change the selection cannot bound reaches everything', () => {
+	it('[<5ms] a change the selection cannot bound reaches everything', () => {
 		const footprint = footprintFromReach({
 			files: new Set(['a.ts']),
 			reach: undefined,
@@ -35,7 +35,7 @@ describe('footprintFromReach', () => {
 		expect(footprint.zones).toBe('everything');
 	});
 
-	it('[<50ms] a zone only read reaches the specs that read the file', () => {
+	it('[<5ms] a zone only read reaches the specs that read the file', () => {
 		const footprint = footprintFromReach({
 			files: new Set(['docs/a.md']),
 			reach: {
@@ -51,20 +51,20 @@ describe('footprintFromReach', () => {
 });
 
 describe('groupByOverlap', () => {
-	it('[<50ms] separates changes that touch different zones', () => {
+	it('[<6ms] separates changes that touch different zones', () => {
 		const a = { n: 1, own: zones(['core'], ['x']) };
 		const b = { n: 2, own: zones(['web'], ['y']) };
 		expect(groupByOverlap([a, b])).toEqual([[a], [b]]);
 	});
 
-	it('[<50ms] joins changes through a third one, keeping the order given', () => {
+	it('[<5ms] joins changes through a third one, keeping the order given', () => {
 		const a = { n: 1, own: zones(['core']) };
 		const b = { n: 2, own: zones(['web']) };
 		const c = { n: 3, own: zones(['core', 'web']) };
 		expect(groupByOverlap([a, b, c])).toEqual([[a, b, c]]);
 	});
 
-	it('[<50ms] one change that reaches everything meets every other', () => {
+	it('[<5ms] one change that reaches everything meets every other', () => {
 		const a = { n: 1, own: zones(['core']) };
 		const wide: { n: number; own: IChangeFootprint } = {
 			n: 2,
@@ -74,7 +74,7 @@ describe('groupByOverlap', () => {
 		expect(groupByOverlap([a, wide])).toEqual([[a, wide]]);
 	});
 
-	it('[<50ms] an empty list has no group', () => {
+	it('[<5ms] an empty list has no group', () => {
 		expect(groupByOverlap([])).toEqual([]);
 	});
 });

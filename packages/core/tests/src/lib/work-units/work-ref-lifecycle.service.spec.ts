@@ -115,7 +115,7 @@ describe('workRefFate', () => {
 		expect(verdict.reason.length).toBeGreaterThan(0);
 	});
 
-	it('[<50ms] reads a landed ref by the integration branch alone', () => {
+	it('[<5ms] reads a landed ref by the integration branch alone', () => {
 		expect(
 			workRefProposalOpen({
 				landed: true,
@@ -180,7 +180,7 @@ describe('reading a clone', () => {
 		return root;
 	};
 
-	it('[<50ms] takes both readings of the proposal', () => {
+	it('[<178ms] takes both readings of the proposal', () => {
 		const root = clone('ready/fixes', 'in-progress');
 		expect(
 			workRefOpenness(
@@ -192,7 +192,7 @@ describe('reading a clone', () => {
 		).toMatchObject({ openAtTip: true, openOnIntegration: false });
 	});
 
-	it('[<50ms] reads how long the tip has been silent', () => {
+	it('[<162ms] reads how long the tip has been silent', () => {
 		const root = clone('in-progress', 'in-progress');
 		const reading = workRefOpenness(
 			root,
@@ -206,7 +206,7 @@ describe('reading a clone', () => {
 		);
 	});
 
-	it('[<50ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
+	it('[<193ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
 		// a00095 kept every finished reviewer's ref for days: the audit
 		// stayed in progress while others were still at work.
 		const root = clone('in-progress', 'in-progress');
@@ -236,7 +236,7 @@ describe('reading a clone', () => {
 		);
 	});
 
-	it('[<50ms] keeps a landed forge ref while the integration branch holds its proposal in progress', () => {
+	it('[<149ms] keeps a landed forge ref while the integration branch holds its proposal in progress', () => {
 		expect(
 			landedForgeRefKept(
 				clone('in-progress', 'ready/fixes'),
@@ -248,7 +248,7 @@ describe('reading a clone', () => {
 		).toBe(true);
 	});
 
-	it('[<50ms] lets a landed forge ref go once the integration branch moved its proposal on', () => {
+	it('[<170ms] lets a landed forge ref go once the integration branch moved its proposal on', () => {
 		expect(
 			landedForgeRefKept(
 				clone('review', 'in-progress'),
@@ -260,7 +260,7 @@ describe('reading a clone', () => {
 		).toBe(false);
 	});
 
-	it('[<50ms] lets a ref that names no unit go', () => {
+	it('[<148ms] lets a ref that names no unit go', () => {
 		expect(
 			landedForgeRefKept(
 				clone('in-progress', 'in-progress'),
@@ -274,7 +274,7 @@ describe('reading a clone', () => {
 });
 
 describe('silenceSince', () => {
-	it('[<50ms] counts seconds from a commit time, and knows nothing from garbage', () => {
+	it('[<5ms] counts seconds from a commit time, and knows nothing from garbage', () => {
 		expect(silenceSince('100\n', 160_000)).toBe(60);
 		expect(silenceSince('200', 100_000)).toBe(0);
 		expect(silenceSince(undefined)).toBeUndefined();
@@ -289,16 +289,16 @@ describe('workRefLanded', () => {
 		changesNothing: false,
 		meaningInCommits: false,
 	};
-	it('[<50ms] never counts a ref at the integration tip', () => {
+	it('[<5ms] never counts a ref at the integration tip', () => {
 		expect(
 			workRefLanded({ ...base, atIntegrationTip: true, contained: true }),
 		).toBe(false);
 	});
-	it('[<50ms] counts a contained ref and one that adds no file', () => {
+	it('[<5ms] counts a contained ref and one that adds no file', () => {
 		expect(workRefLanded({ ...base, contained: true })).toBe(true);
 		expect(workRefLanded({ ...base, changesNothing: true })).toBe(true);
 	});
-	it('[<50ms] settles a ref whose commits carry meaning only by containment', () => {
+	it('[<5ms] settles a ref whose commits carry meaning only by containment', () => {
 		expect(
 			workRefLanded({
 				...base,
@@ -307,7 +307,7 @@ describe('workRefLanded', () => {
 			}),
 		).toBe(false);
 	});
-	it('[<50ms] reads the forge integration branch when the clone has it', () => {
+	it('[<6ms] reads the forge integration branch when the clone has it', () => {
 		expect(workRefIntegrationRef('origin', 'develop', true)).toBe(
 			'refs/remotes/origin/develop',
 		);

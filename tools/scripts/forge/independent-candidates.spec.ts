@@ -34,7 +34,7 @@ const candidate = (
 });
 
 describe('overlapBetween', () => {
-	it('[<50ms] finds a zone or a file in common, and anything against everything', () => {
+	it('[<31ms] finds a zone or a file in common, and anything against everything', () => {
 		expect(
 			overlapBetween(touch(['core']), touch(['core', 'tools'])),
 		).toContain('core');
@@ -49,7 +49,7 @@ describe('overlapBetween', () => {
 		);
 	});
 
-	it('[<50ms] finds none between disjoint changes, or against an empty one', () => {
+	it('[<26ms] finds none between disjoint changes, or against an empty one', () => {
 		expect(
 			overlapBetween(
 				touch(['core'], ['a.ts']),
@@ -77,11 +77,11 @@ describe('a zone two changes only feed with files', () => {
 	const packA = read(['proposals'], ['docs/proposals/review/x00001-a.md']);
 	const packB = read(['proposals'], ['docs/proposals/done/x00002-b.md']);
 
-	it('[<50ms] keeps two verdicts on two proposals apart', () => {
+	it('[<5ms] keeps two verdicts on two proposals apart', () => {
 		expect(overlapBetween(packA, packB)).toBeUndefined();
 	});
 
-	it('[<50ms] still joins them on one document', () => {
+	it('[<6ms] still joins them on one document', () => {
 		expect(
 			overlapBetween(
 				packA,
@@ -90,7 +90,7 @@ describe('a zone two changes only feed with files', () => {
 		).toContain('x00001-a.md');
 	});
 
-	it('[<50ms] still joins two changes that each add a new file there', () => {
+	it('[<13ms] still joins two changes that each add a new file there', () => {
 		// How two documents come to carry one number: nothing in either
 		// change alone says so.
 		expect(
@@ -101,7 +101,7 @@ describe('a zone two changes only feed with files', () => {
 		).toContain('new files read by the proposals zone');
 	});
 
-	it("[<50ms] still joins a change to the zone's code with one that feeds it", () => {
+	it("[<5ms] still joins a change to the zone's code with one that feeds it", () => {
 		expect(
 			overlapBetween(
 				packA,
@@ -110,7 +110,7 @@ describe('a zone two changes only feed with files', () => {
 		).toContain('proposals');
 	});
 
-	it('[<50ms] lets a verdict land beside a change of code that only edits its own document', () => {
+	it('[<18ms] lets a verdict land beside a change of code that only edits its own document', () => {
 		const implement = read(
 			['proposals'],
 			['packages/core/src/a.ts', 'docs/proposals/review/x00003-c.md'],
@@ -130,7 +130,7 @@ describe('a zone two changes only feed with files', () => {
 		]);
 	});
 
-	it('[<50ms] keeps a pure review batch off a code change in the zones it only feeds', () => {
+	it('[<6ms] keeps a pure review batch off a code change in the zones it only feeds', () => {
 		// The batch reaches core, plugins, proposals and tools only because
 		// a few specs there read proposals: those specs are all it reaches.
 		const batch: IChangeFootprint = {
@@ -166,7 +166,7 @@ describe('a zone two changes only feed with files', () => {
 		).toContain('proposals');
 	});
 
-	it('[<50ms] reads a footprint that does not say how it reaches a zone as code', () => {
+	it('[<17ms] reads a footprint that does not say how it reaches a zone as code', () => {
 		expect(
 			overlapBetween(packA, touch(['proposals'], ['docs/other.md'])),
 		).toContain('proposals');
@@ -174,7 +174,7 @@ describe('a zone two changes only feed with files', () => {
 });
 
 describe('acceptIndependent', () => {
-	it('[<50ms] lands four candidates that touch nothing in common, level or not', () => {
+	it('[<10ms] lands four candidates that touch nothing in common, level or not', () => {
 		const verdicts = acceptIndependent([
 			candidate(
 				1,
@@ -209,7 +209,7 @@ describe('acceptIndependent', () => {
 		);
 	});
 
-	it('[<50ms] brings forward a candidate the integration branch changed under it', () => {
+	it('[<10ms] brings forward a candidate the integration branch changed under it', () => {
 		const [verdict] = acceptIndependent([
 			candidate(
 				5,
@@ -221,7 +221,7 @@ describe('acceptIndependent', () => {
 		expect(verdict?.why).toContain('core');
 	});
 
-	it('[<50ms] holds a candidate that overlaps one accepted before it, even a level one', () => {
+	it('[<5ms] holds a candidate that overlaps one accepted before it, even a level one', () => {
 		const verdicts = acceptIndependent([
 			candidate(6, touch(['tools'], ['tools/a.ts']), touch([])),
 			candidate(7, touch(['tools'], ['tools/b.ts']), touch([]), true),
@@ -231,7 +231,7 @@ describe('acceptIndependent', () => {
 		expect(verdicts[1]?.why).toContain('#6');
 	});
 
-	it('[<50ms] never lands a change that can reach everything beside another', () => {
+	it('[<9ms] never lands a change that can reach everything beside another', () => {
 		const verdicts = acceptIndependent([
 			candidate(
 				9,
@@ -246,7 +246,7 @@ describe('acceptIndependent', () => {
 });
 
 describe('acceptRiders: who rides the next train', () => {
-	it('[<50ms] takes a candidate behind on a change that can reach every zone', () => {
+	it('[<8ms] takes a candidate behind on a change that can reach every zone', () => {
 		const verdicts = acceptRiders([
 			candidate(3, touch(['core'], ['a.ts']), touch('everything')),
 			candidate(5, touch(['tools'], ['b.ts']), touch('everything')),
@@ -261,7 +261,7 @@ describe('acceptRiders: who rides the next train', () => {
 		).toBe(false);
 	});
 
-	it('[<50ms] splits no riders for a zone or a file in common: the train runs the combination', () => {
+	it('[<5ms] splits no riders for a zone or a file in common: the train runs the combination', () => {
 		// #1832 waited for the next train because it and #1802 both
 		// touched the core, plugins, proposals and tools zones.
 		const verdicts = acceptRiders([
@@ -280,7 +280,7 @@ describe('acceptRiders: who rides the next train', () => {
 		]);
 	});
 
-	it('[<50ms] keeps zone overlap for a candidate that lands without a run', () => {
+	it('[<10ms] keeps zone overlap for a candidate that lands without a run', () => {
 		const verdicts = acceptIndependent([
 			candidate(1802, touch(['core'], ['a.ts']), touch([]), true),
 			candidate(1832, touch(['core'], ['b.ts']), touch([]), true),
@@ -289,7 +289,7 @@ describe('acceptRiders: who rides the next train', () => {
 		expect(verdicts[1]?.why).toContain('#1802, which lands first');
 	});
 
-	it('[<50ms] lets a review batch that only reads the reader zones ride beside a code pull request', () => {
+	it('[<8ms] lets a review batch that only reads the reader zones ride beside a code pull request', () => {
 		const batch: IQueueCandidateChange = {
 			...candidate(
 				9,
@@ -316,7 +316,7 @@ describe('acceptRiders: who rides the next train', () => {
 		expect(isReviewBatch(code.headRef)).toBe(false);
 	});
 
-	it('[<50ms] leads the train with an urgent repair, ahead of review batches', () => {
+	it('[<15ms] leads the train with an urgent repair, ahead of review batches', () => {
 		const verdicts = acceptRiders(
 			[
 				{

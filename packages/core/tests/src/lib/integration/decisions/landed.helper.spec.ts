@@ -7,25 +7,25 @@ import { describe, expect, it } from 'vitest';
 import { parentsOutsideMerges } from '@delendai/core/lib/integration/decisions/landed.helper';
 
 describe('parentsOutsideMerges', () => {
-	it('[<50ms] names the parents outside the merges, for the caller to check against the base', () => {
+	it('[<6ms] names the parents outside the merges, for the caller to check against the base', () => {
 		expect(
 			parentsOutsideMerges(['m2 m1 d2', 'm1 w1 d1'].join('\n')),
 		).toEqual(['d2', 'w1', 'd1']);
 	});
 
-	it('[<50ms] answers undefined as soon as one commit beyond the base is not a merge', () => {
+	it('[<5ms] answers undefined as soon as one commit beyond the base is not a merge', () => {
 		expect(
 			parentsOutsideMerges(['m1 w1 d1', 'w1 b0'].join('\n')),
 		).toBeUndefined();
 	});
 
-	it('[<50ms] has nothing to check for a tip at the base', () => {
+	it('[<5ms] has nothing to check for a tip at the base', () => {
 		expect(parentsOutsideMerges('')).toEqual([]);
 	});
 });
 
 describe('pullRequestLanded', () => {
-	it('[<20ms] landed when the forge merged it or its head is contained', async () => {
+	it('[<5ms] landed when the forge merged it or its head is contained', async () => {
 		const { pullRequestLanded } = await import(
 			'@delendai/core/lib/integration/decisions/landed.helper'
 		);
