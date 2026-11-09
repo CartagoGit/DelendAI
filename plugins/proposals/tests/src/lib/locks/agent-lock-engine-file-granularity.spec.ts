@@ -82,7 +82,7 @@ describe('agent-lock file-level granularity', () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('lets disjoint claims through without contention', async () => {
+	it('[<1000ms] lets disjoint claims through without contention', async () => {
 		const [left, right] = await Promise.all([
 			runAgentLockEngine(
 				{
@@ -189,7 +189,7 @@ describe('agent-lock file-level granularity', () => {
 		expect(body(secondResult).conflicting_task).toBe('task-a');
 	});
 
-	it('state_health reports livelock once disjoint contention exceeds the heartbeat × 2', async () => {
+	it('[<1000ms] state_health reports livelock once disjoint contention exceeds the heartbeat × 2', async () => {
 		// f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
 		// 5s, shorter than withFileMutex's default heartbeatMs (10s).
 		// Now the threshold is derived from `mutexStaleMs` so it scales
