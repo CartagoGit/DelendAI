@@ -9,7 +9,7 @@ import {
 const REMOVED = { id: 'f1', from: 'ready/f1.md', kept: 'review/f1.md' };
 
 describe('keepOneProposalCopy', () => {
-	it('commits with the derived-fix subject only when a copy was removed', () => {
+	it('[<100ms] commits with the derived-fix subject only when a copy was removed', () => {
 		const subjects: string[] = [];
 		expect(
 			keepOneProposalCopy(
@@ -29,7 +29,7 @@ describe('keepOneProposalCopy', () => {
 		expect(subjects).toHaveLength(1);
 	});
 
-	it('leaves the merge as it was when the script fails or prints nonsense', () => {
+	it('[<100ms] leaves the merge as it was when the script fails or prints nonsense', () => {
 		const subjects: string[] = [];
 		const commit = (subject: string) => subjects.push(subject);
 		expect(
