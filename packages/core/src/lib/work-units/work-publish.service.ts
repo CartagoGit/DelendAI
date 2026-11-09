@@ -16,7 +16,13 @@
  * work recoverable, never tidy.
  */
 import { branchesForRef } from '../development-policy/owned-work-ref-parser';
+import {
+	judgeSiblings,
+	lackingDetail,
+	retireContained,
+} from './sibling-publications.service';
 import { runGitCommand } from '../shared/git-command.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 
 import { holdWorkRef } from '../wip-engine/work-ref-lock';
@@ -33,6 +39,7 @@ import type {
 	IWorkPublishStep,
 	IWorkRefHoldOptions,
 } from '../contracts/interfaces/work-publish.interface';
+import { shortName as barePrefix } from '../integration/decisions/namespaces.helper';
 
 export type {
 	IWorkRefHoldOptions,
@@ -43,10 +50,6 @@ export type {
 
 const git = (cwd: string, args: readonly string[]): IGitCommandResult =>
 	runGitCommand(cwd, args);
-
-/** A ref prefix as it appears after `refs/heads/`. */
-const barePrefix = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** The fully-qualified publication ref for a name, from the policy. */
 export const publicationRefFor = (
@@ -133,6 +136,22 @@ export const publishWorkUnit = (
 	}
 	step('resolve-work-ref', true, `${workRef} is at ${tip.out}.`);
 
+	// Another open publication of this unit with commits we lack comes first.
+	const siblings = judgeSiblings(
+		(args) => git(root, args),
+		remote,
+		publicationRef,
+		tip.out,
+	);
+	if (siblings.lacking.length > 0) {
+		step(
+			'sibling-publication',
+			false,
+			lackingDetail(siblings.lacking, workRef, remote),
+		);
+		return { published: false, workRefRemoved: false, steps, tip: tip.out };
+	}
+
 	// Push from the unit's own worktree when it has one. The pre-push hook
 	// checks the tree it runs in, and the shared checkout's tree is not
 	// what is being published: a file somebody left loose there, a
@@ -164,8 +183,7 @@ export const publishWorkUnit = (
 		`${publicationRef} on ${remote} now carries ${tip.out}.`,
 	);
 
-	// The proof. Without it, "deleted the work ref" rests on a push whose
-	// success was reported by the same command that did it.
+	// The proof: a push's success is not reported by the push alone.
 	const remoteTip = git(root, ['ls-remote', '--', remote, publicationRef]);
 	const carried = remoteTip.ok && remoteTip.out.startsWith(tip.out);
 	if (!carried) {
@@ -177,6 +195,9 @@ export const publishWorkUnit = (
 		return { published: true, workRefRemoved: false, steps, tip: tip.out };
 	}
 	step('prove-publication', true, `${remote} reports it at ${tip.out}.`);
+	steps.push(
+		...retireContained(root, siblings.contained, remote, publicationRef),
+	);
 
 	if (request.keepWorkRef) {
 		// A step of its own, and one that succeeded: reported as a failed
@@ -245,8 +266,8 @@ export const endWorkRef = (request: {
 		// checkpointed and kept working would lose whatever it had not
 		// checkpointed yet. So the tree is inspected first, and a dirty
 		// one keeps its worktree and its ref.
-		const dirty = git(root, ['-C', worktree, 'status', '--porcelain=v1']);
-		if (!dirty.ok) {
+		const dirty = readWorktreeStatus(worktree);
+		if (dirty === undefined) {
 			step(
 				'remove-worktree',
 				false,
@@ -254,12 +275,11 @@ export const endWorkRef = (request: {
 			);
 			return { removed: false, steps };
 		}
-		if (dirty.out.length > 0) {
-			const count = dirty.out.split('\n').length;
+		if (dirty.entries.length > 0) {
 			step(
 				'remove-worktree',
 				false,
-				`${worktree} has ${String(count)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
+				`${worktree} has ${String(dirty.entries.length)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
 			);
 			return { removed: false, steps };
 		}

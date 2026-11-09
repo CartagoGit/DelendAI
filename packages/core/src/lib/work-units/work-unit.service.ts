@@ -1,5 +1,9 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { namespaceRenamed } from './work-unit-rename-namespace.service';
+import { access } from 'node:fs/promises';
+import { WORK_ARGUMENT_RULES } from '../contracts/constants/work-arguments.constant';
+import type { IWorkArgumentsRule } from '../contracts/interfaces/work-arguments.interface';
+import { scalarArg } from './command-args.helper';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
@@ -26,6 +30,7 @@ import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
 import { rescued } from './shared-checkout-rescue.service';
 import { looseSharedCheckoutRefusal } from './shared-checkout-clean.service';
+import { withGitInvocationMemo } from '../shared/git-invocation-memo.helper';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
 /**
@@ -45,6 +50,13 @@ const showLife = async (ctx: IWorkUnitContext): Promise<void> => {
 
 /** A published unit's ref is gone; so is the lease that named its owner. */
 const pruneEndedLeases = async (ctx: IWorkUnitContext): Promise<void> => {
+	// Publishing from inside the unit removed the directory it ran in:
+	// nothing there can be read, so nothing is asked of it.
+	try {
+		await access(workspaceOf(ctx));
+	} catch {
+		return;
+	}
 	try {
 		await pruneUnitLeases({
 			root: workspaceOf(ctx),
@@ -94,10 +106,39 @@ const MUTATING = new Set(['enter', 'checkpoint', 'prove', 'publish']);
  * `checkpoint`, `prove`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
  */
-export const runWorkUnit = async (
+export const runWorkUnit = (
+	given: readonly string[],
+	ctx: IWorkUnitContext,
+): Promise<IWorkUnitResult> =>
+	// One memo of git reads per invocation: the common dir, the remotes and
+	// the worktree list do not change between the many services one command
+	// asks, and a write forgets them.
+	withGitInvocationMemo(() => runWorkUnitOnce(given, ctx));
+
+/**
+ * The refusal of a call missing a flag no default fills, before anything
+ * is asked of git or read from the workspace.
+ */
+const missingArguments = (
+	args: readonly string[],
+): IWorkUnitResult | undefined => {
+	const rules: Readonly<Record<string, IWorkArgumentsRule | undefined>> =
+		WORK_ARGUMENT_RULES;
+	const rule = rules[args[0] ?? ''];
+	if (rule === undefined) return undefined;
+	return rule.required.every(
+		(flag) => (scalarArg(args, flag) ?? '').trim().length > 0,
+	)
+		? undefined
+		: refused(rule.reason, rule.usage);
+};
+
+const runWorkUnitOnce = async (
 	given: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
+	const missing = missingArguments(given);
+	if (missing !== undefined) return missing;
 	let args = given;
 	const sub = args[0];
 	// One policy read serves the whole operation: the session check and

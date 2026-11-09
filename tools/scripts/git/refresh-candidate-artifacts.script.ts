@@ -31,11 +31,20 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { parseJsonc } from '@delendai/core/cli';
+import {
+	authorsOwn,
+	candidateDispositions,
+	ownedTrainPrefixes,
+	parseJsonc,
+	toBringForward,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { dropConflictingVerdicts } from './stale-verdict-conflicts';
+import {
+	bringReviewerClaims,
+	resolveVerdictConflicts,
+} from './stale-verdict-conflicts';
 
 import {
 	hookFreeEnvironment,
@@ -43,11 +52,6 @@ import {
 	runGitCommand,
 	writePublicationDispositions,
 } from '@delendai/core/runtime';
-import {
-	candidateDispositions,
-	toBringForward,
-	authorsOwn,
-} from '../forge/candidate-disposition';
 import { authorGoneOf, rescueOrphans } from './orphan-rescue';
 import {
 	currentQueueFacts,
@@ -63,6 +67,7 @@ import {
 } from './refresh-candidate-artifacts.constant';
 
 import type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
+import { shortName } from '@delendai/core/cli';
 
 export type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
 export { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
@@ -155,8 +160,11 @@ export const pushRefusalReason = (output: string): string => {
 	const marked = lines.filter((line) =>
 		/✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu.test(line),
 	);
-	const chosen = (marked.length > 0 ? marked : lines).slice(-3).join(' | ');
-	return chosen.length > 0 ? chosen.slice(0, 500) : 'no output';
+	// Every marked line, in full: the cause is the gate's own ✖ line, and
+	// cutting to the last three lines and 500 characters reported the
+	// commands a hook ran instead of the one that failed (#1808).
+	const chosen = (marked.length > 0 ? marked : lines.slice(-3)).join(' | ');
+	return chosen.length > 0 ? chosen : 'no output';
 };
 
 /** Push the candidate; the refusal reason, or undefined once pushed. */
@@ -186,6 +194,20 @@ const pushCandidate = (
 };
 
 const PROPOSALS_DIR = 'docs/delendai/proposals';
+
+/** The agent a publication belongs to: the segment after the prefix. */
+const reviewerOf = (
+	policy: IResolvedDevelopmentPolicy,
+	candidate: string,
+): string =>
+	candidate
+		.slice(
+			policy.branches.publicationRefPrefix.replace(
+				/^(refs\/)?(heads\/)?/u,
+				'',
+			).length,
+		)
+		.split('/')[0] ?? '';
 
 /** Whether a publication is a unit that records verdicts. */
 const isReviewPack = (
@@ -273,8 +295,7 @@ const unitStillOnForge = (
 	policy: IResolvedDevelopmentPolicy,
 	candidate: string,
 ): boolean => {
-	const bare = (prefix: string): string =>
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const bare = shortName;
 	const publication = bare(policy.branches.publicationRefPrefix);
 	if (publication.length === 0 || !candidate.startsWith(publication)) {
 		return true;
@@ -283,6 +304,40 @@ const unitStillOnForge = (
 	// A forge that does not answer leaves the author to decide.
 	const listed = git(root, ['ls-remote', '--heads', '--', remote, work]);
 	return listed === undefined || listed.trim().length > 0;
+};
+
+/** The scratch worktrees alive now: what a signal must still clear. */
+const scratchInUse = new Map<string, string>();
+
+/**
+ * Drop one scratch worktree: its registration, then its directory. Only
+ * this one — never a global `worktree prune`, which would drop other
+ * units' registrations.
+ */
+export const discardScratch = (root: string, dir: string): void => {
+	git(root, ['worktree', 'remove', '--force', '--force', dir]);
+	rmSync(dir, { recursive: true, force: true });
+	scratchInUse.delete(dir);
+};
+
+/**
+ * A killed run skips its `finally`, and left `/tmp/candidate-refresh-*`
+ * worktrees registered in the shared clone for ever. A signal clears
+ * what is in use, then ends as the signal would have.
+ */
+export const clearScratchOnSignals = (): void => {
+	for (const [signal, code] of [
+		['SIGINT', 130],
+		['SIGTERM', 143],
+		['SIGHUP', 129],
+	] as const) {
+		process.once(signal, () => {
+			for (const [dir, root] of [...scratchInUse]) {
+				discardScratch(root, dir);
+			}
+			process.exit(code);
+		});
+	}
 };
 
 /**
@@ -302,6 +357,7 @@ export const refreshCandidate = (input: {
 }): ICandidateRefresh => {
 	const { root, policy, remote, candidate } = input;
 	const dir = mkdtempSync(join(tmpdir(), 'candidate-refresh-'));
+	scratchInUse.set(dir, root);
 	const run =
 		input.run ??
 		((command: string, cwd: string): boolean => {
@@ -337,22 +393,24 @@ export const refreshCandidate = (input: {
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
 		]);
-		// A pack of verdicts gives up the ones on documents that changed
-		// under it; anything else that conflicts is still its author's.
-		const dropped =
+		// A pack of verdicts keeps its verdicts over the integration
+		// branch's verdict lines, and gives up only the ones that no longer
+		// apply; anything else that conflicts is still its author's.
+		const verdicts =
 			merged === undefined && isReviewPack(policy, candidate)
-				? dropConflictingVerdicts({
+				? resolveVerdictConflicts({
 						dir,
 						proposalsDir: input.proposalsDir ?? PROPOSALS_DIR,
 						git,
 					})
-				: [];
+				: { kept: [], dropped: [] };
+		const dropped = verdicts.dropped.map((entry) => entry.id);
 		if (
 			merged === undefined &&
 			!takeRegeneratedSide(
 				dir,
 				input.regenerated ?? REGENERATED_PROJECTIONS,
-				dropped.length > 0,
+				verdicts.kept.length + dropped.length > 0,
 			)
 		) {
 			return {
@@ -380,6 +438,32 @@ export const refreshCandidate = (input: {
 				}),
 			};
 		}
+		// A pack changes only what its reviewer claimed: a claim made on
+		// another of the reviewer's units is brought in, and a verdict no
+		// claim covers anywhere is dropped.
+		const claims = isReviewPack(policy, candidate)
+			? (() => {
+					git(root, [
+						'fetch',
+						'-q',
+						'--',
+						remote,
+						'+refs/notes/delendai/*:refs/notes/delendai-remote/*',
+					]);
+					return bringReviewerClaims({
+						dir,
+						proposalsDir: input.proposalsDir ?? PROPOSALS_DIR,
+						integration: `${remote}/${policy.branches.integration}`,
+						reviewer: reviewerOf(policy, candidate),
+						remote,
+						git,
+						committer: identityArgs({
+							name: git(dir, ['config', '--get', 'user.name']),
+							email: git(dir, ['config', '--get', 'user.email']),
+						}),
+					});
+				})()
+			: { brought: [], dropped: [] };
 		const failed = GENERATED_REFRESH_COMMANDS.filter(
 			(command) => !run(command, dir),
 		);
@@ -406,14 +490,32 @@ export const refreshCandidate = (input: {
 			: {
 					candidate,
 					state: 'refreshed',
-					detail:
-						dropped.length === 0
-							? 'merged and regenerated'
-							: `merged and regenerated; dropped the verdicts on ${dropped.join(', ')}, whose documents changed under them`,
+					detail: [
+						'merged and regenerated',
+						...(verdicts.kept.length === 0
+							? []
+							: [
+									`kept the pack's verdicts on ${verdicts.kept.join(', ')}`,
+								]),
+						...(dropped.length === 0
+							? []
+							: [
+									`dropped the verdicts on ${dropped.join(', ')}, which no longer apply`,
+								]),
+						...(claims.brought.length === 0
+							? []
+							: [
+									`brought the reviewer's claims of ${claims.brought.map((claim) => `${claim.id} (${claim.from.slice(0, 9)})`).join(', ')}`,
+								]),
+						...(claims.dropped.length === 0
+							? []
+							: [
+									`dropped the unclaimed verdicts on ${claims.dropped.join(', ')}`,
+								]),
+					].join('; '),
 				};
 	} finally {
-		git(root, ['worktree', 'remove', '--force', dir]);
-		rmSync(dir, { recursive: true, force: true });
+		discardScratch(root, dir);
 	}
 };
 
@@ -435,7 +537,21 @@ export const shouldAskQueueToRun = (input: {
 	input.head !== undefined &&
 	(input.refreshed || !input.headArmed);
 
+/** The candidates the forge reports conflicting; none when it cannot say. */
+const conflictingBranches = (): ReadonlySet<string> => {
+	try {
+		return new Set(
+			currentQueueFacts()
+				.facts.filter((facts) => facts.conflicting)
+				.map((facts) => facts.headRef),
+		);
+	} catch {
+		return new Set();
+	}
+};
+
 const main = async (): Promise<void> => {
+	clearScratchOnSignals();
 	const root = repoRoot();
 	const { value, errors } = parseJsonc(
 		readFileSync(join(root, 'delendai.config.json'), 'utf8'),
@@ -473,18 +589,31 @@ const main = async (): Promise<void> => {
 	// A candidate the queue lands as it is (nothing the integration branch
 	// gained reaches it, f00755) is not brought forward: a merge commit
 	// would only send it back through its checks.
+	// A review pack the forge reports conflicting cannot ride a train (its
+	// conflict is in proposal documents, not derived files): it is rescued
+	// here.
+	const conflicting = conflictingBranches();
 	const landing = branchesLandingAsTheyAre({
 		root,
 		remote,
 		integration: policy.branches.integration,
-		queue: queue.map((entry) => ({
-			number: entry.number,
-			branch: entry.branch,
-		})),
+		trainPrefixes: ownedTrainPrefixes(policy.branches),
+		queue: queue
+			.filter(
+				(entry) =>
+					!(
+						conflicting.has(entry.branch) &&
+						isReviewPack(policy, entry.branch)
+					),
+			)
+			.map((entry) => ({
+				number: entry.number,
+				branch: entry.branch,
+			})),
 	});
 	for (const branch of landing) {
 		console.log(
-			`refresh-candidate-artifacts: ${branch} lands as it is; not brought forward.`,
+			`refresh-candidate-artifacts: ${branch} lands as it is or rides a train; not brought forward.`,
 		);
 	}
 	const behind = new Set(

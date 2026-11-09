@@ -43,6 +43,7 @@
 import { execFileSync } from 'node:child_process';
 import { statSync } from 'node:fs';
 
+import { declaredIntegrationRef } from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -94,7 +95,13 @@ const gitRead = (args: readonly string[], cwd: string): string | undefined => {
 
 /** Uncommitted work in a worktree, or `null` when git could not say. */
 export const readDirtyPaths = (worktreePath: string): number | null => {
-	const status = gitRead(['status', '--porcelain'], worktreePath);
+	// `--no-optional-locks`: a read must not refresh the index whose mtime
+	// says when git last worked here, or the dry run leaves the worktree
+	// looking busy to the run that applies.
+	const status = gitRead(
+		['--no-optional-locks', 'status', '--porcelain'],
+		worktreePath,
+	);
 	if (status === undefined) return null;
 	return worksomebodyOwns(
 		status.split('\n').filter((line) => line.trim().length > 0),
@@ -129,6 +136,20 @@ export const judgeWorktrees = (
 				reason: 'the worktree this process is running from',
 			};
 		}
+		if (tree.runtime) {
+			return {
+				path: tree.path,
+				role: 'runtime',
+				reason: 'a runtime tree other projects run their server from',
+			};
+		}
+		if (tree.proofHolder === 'live') {
+			return {
+				path: tree.path,
+				role: 'proving',
+				reason: 'a live process is proving a commit here',
+			};
+		}
 		if (tree.locked) {
 			return {
 				path: tree.path,
@@ -143,14 +164,35 @@ export const judgeWorktrees = (
 				reason: 'git could not say whether it holds uncommitted work; kept, not assumed clean',
 			};
 		}
-		if (tree.dirtyPaths > 0) {
+		if (tree.proofHolder === 'dead') {
+			// A proof checks out a commit that exists elsewhere and nobody
+			// edits it: once its process is gone, a clean one holds nothing.
+			return tree.dirtyPaths > 0
+				? {
+						path: tree.path,
+						role: 'dirty',
+						reason: `${String(tree.dirtyPaths)} uncommitted change(s) in a proof whose process is gone`,
+					}
+				: {
+						path: tree.path,
+						role: 'spent',
+						reason: 'a proof whose process is gone, and it is clean',
+					};
+		}
+		// An abandoned merge: its changes are only the merge's own, and both
+		// sides are already on the forge.
+		const abandonedMerge =
+			tree.mergeHead?.onRemote === true && tree.headOnRemote;
+		if (tree.dirtyPaths > 0 && !abandonedMerge) {
 			return {
 				path: tree.path,
 				role: 'dirty',
 				reason: `${String(tree.dirtyPaths)} uncommitted change(s) that may exist nowhere else`,
 			};
 		}
-		if (!tree.delivered) {
+		// Detached, so no branch of its own to lose, and on the forge.
+		const onRemoteOnly = tree.detached && tree.headOnRemote;
+		if (!tree.delivered && !onRemoteOnly && !abandonedMerge) {
 			return {
 				path: tree.path,
 				role: 'undelivered',
@@ -168,7 +210,11 @@ export const judgeWorktrees = (
 		return {
 			path: tree.path,
 			role: 'spent',
-			reason: 'clean, and the integration branch already contains its head',
+			reason: abandonedMerge
+				? 'an abandoned merge: its head and its MERGE_HEAD are both on the remote'
+				: tree.delivered
+					? 'clean, and the integration branch already contains its head'
+					: 'clean and detached, and a remote ref contains its head',
 		};
 	});
 	return {
@@ -184,9 +230,17 @@ export const parseWorktreeList = (
 	readonly path: string;
 	readonly head: string;
 	readonly locked: boolean;
+	readonly detached: boolean;
 }[] => {
-	const out: { path: string; head: string; locked: boolean }[] = [];
-	let current: { path: string; head: string; locked: boolean } | undefined;
+	const out: {
+		path: string;
+		head: string;
+		locked: boolean;
+		detached: boolean;
+	}[] = [];
+	let current:
+		| { path: string; head: string; locked: boolean; detached: boolean }
+		| undefined;
 	for (const line of raw.split('\n')) {
 		if (line.startsWith('worktree ')) {
 			if (current !== undefined) out.push(current);
@@ -194,11 +248,13 @@ export const parseWorktreeList = (
 				path: line.slice('worktree '.length).trim(),
 				head: '',
 				locked: false,
+				detached: false,
 			};
 			continue;
 		}
 		if (current === undefined) continue;
 		if (line.startsWith('HEAD ')) current.head = line.slice(5).trim();
+		if (line === 'detached') current.detached = true;
 		if (line === 'locked' || line.startsWith('locked ')) {
 			current.locked = true;
 		}
@@ -271,6 +327,23 @@ export const observe = (
 	const listed = parseWorktreeList(
 		git(['worktree', 'list', '--porcelain'], root),
 	);
+	// EVERY worktree's activity is read BEFORE ANY worktree's status.
+	//
+	// `git status` rewrites the index it read when the index looks older
+	// than the file it compared against. The activity is the mtime of that
+	// very index, so a status read refreshes it and the worktree reads as
+	// active -- "git worked here 0 minute(s) ago" -- however long ago it
+	// was really left alone. The reaper then never judges anything spent,
+	// so a finished unit's worktree, branch and disk pile up for ever.
+	//
+	// Reading one worktree's status before another worktree's activity is
+	// measured is the same defect one step to the side: the second
+	// worktree's index was already refreshed by the first one's status.
+	// So the two passes are separate, and the first one touches nothing
+	// but mtimes.
+	const activity = new Map(
+		listed.map((entry) => [entry.path, lastGitActivityMs(entry.path)]),
+	);
 	return listed.map((entry, index) => ({
 		path: entry.path,
 		head: entry.head,
@@ -281,12 +354,78 @@ export const observe = (
 		isMain: index === 0,
 		isCurrent: entry.path === currentPath,
 		locked: entry.locked,
+		detached: entry.detached,
+		headOnRemote: entry.head.length > 0 && onRemote(entry.head, root),
+		...mergeHeadOf(entry.path, root),
+		runtime: isRuntimeTree(entry.path),
+		proofHolder: proofHolderOf(entry.path),
 		dirtyPaths: readDirtyPaths(entry.path),
 		delivered:
 			entry.head.length > 0 &&
 			isAncestor(entry.head, integrationRef, root),
-		lastActivityMs: lastGitActivityMs(entry.path),
+		lastActivityMs: activity.get(entry.path) ?? 0,
 	}));
+};
+
+/** A remote-tracking ref contains `sha`: it is on the forge. */
+const onRemote = (sha: string, root: string): boolean =>
+	(
+		gitRead(
+			[
+				'for-each-ref',
+				'--count=1',
+				'--format=%(refname)',
+				'--contains',
+				sha,
+				'refs/remotes',
+			],
+			root,
+		) ?? ''
+	).trim().length > 0;
+
+/** The in-progress merge of a worktree, when it has one. */
+const mergeHeadOf = (
+	worktreePath: string,
+	root: string,
+): { readonly mergeHead?: { readonly onRemote: boolean } } => {
+	const sha = (
+		gitRead(['rev-parse', '-q', '--verify', 'MERGE_HEAD'], worktreePath) ??
+		''
+	).trim();
+	return sha.length === 0
+		? {}
+		: { mergeHead: { onRemote: onRemote(sha, root) } };
+};
+
+/** `<root>/.cache/delendai/branch-runtime/<label>`: a runtime tree. */
+export const isRuntimeTree = (worktreePath: string): boolean =>
+	/\/\.cache\/delendai\/branch-runtime\/[^/]+\/?$/u.test(worktreePath);
+
+/**
+ * The pid in a proof worktree's name (`<tip>-<pid>-<ms>` under
+ * `.git/delendai-prove/`), or `null` for any other path.
+ */
+export const proofPidOf = (worktreePath: string): number | null => {
+	const match = /\/\.git\/delendai-prove\/[0-9a-f]+-(\d+)-\d+\/?$/u.exec(
+		worktreePath,
+	);
+	return match?.[1] === undefined ? null : Number(match[1]);
+};
+
+const processAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		// EPERM: it exists and is somebody else's.
+		return (error as NodeJS.ErrnoException).code === 'EPERM';
+	}
+};
+
+const proofHolderOf = (worktreePath: string): 'live' | 'dead' | null => {
+	const pid = proofPidOf(worktreePath);
+	if (pid === null) return null;
+	return processAlive(pid) ? 'live' : 'dead';
 };
 
 const isAncestor = (sha: string, ref: string, root: string): boolean => {
@@ -325,8 +464,9 @@ export const formatReport = (
 export const main = (
 	root: string = repoRoot(),
 	apply: boolean = APPLY,
+	/** The ref a worktree must be merged into; the policy's integration branch. */
+	integrationRef: string = declaredIntegrationRef(root),
 ): number => {
-	const integrationRef = 'origin/develop';
 	const reclamation = judgeWorktrees(observe(integrationRef, root, root));
 	if (apply) {
 		for (const verdict of reclamation.spent) {

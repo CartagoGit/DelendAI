@@ -12,7 +12,6 @@
  * live unit covers the paths is named, and `work status` says how to
  * bring them into a unit.
  */
-import { execFileSync } from 'node:child_process';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -22,24 +21,15 @@ import type { IStrandedEdits } from '../contracts/interfaces/stranded-edits.inte
 import { namespacedRef, ownedRootsOf } from './namespaced-ref.helper';
 import { readSwarm } from './work-swarm.service';
 import { readGit } from './work-unit-shared.service';
+import { execGitFileSync } from '../shared/git-read.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 /** How much of the tree names the ref, so one state is kept once. */
 const SHORT_TREE_LENGTH = 12;
 
+/** What is there now: a rename's new name, never its source. */
 const changedPaths = (root: string): readonly string[] =>
-	(readGit(root, ['status', '--porcelain', '--untracked-files=all']) ?? '')
-		.split('\n')
-		.filter((line) => line.trim().length > 0)
-		// `XY path`; the reader trims the output, so the first line may
-		// have lost the blank of its status. The path follows the first
-		// run of blanks after the status either way.
-		.map((line) => {
-			const entry = line.trimStart();
-			const path = entry.slice(entry.indexOf(' ') + 1).trim();
-			// A rename lists `old -> new`; the new name is what is there.
-			const arrow = path.indexOf(' -> ');
-			return arrow === -1 ? path : path.slice(arrow + ' -> '.length);
-		});
+	(readWorktreeStatus(root)?.entries ?? []).map((entry) => entry.path);
 
 /** The one agent whose live units cover every path, if there is one. */
 /**
@@ -112,7 +102,7 @@ export const keepStrandedEdits = async (input: {
 		`delendai-stranded-index-${String(process.pid)}`,
 	);
 	const git = (args: readonly string[]): string =>
-		execFileSync('git', args, {
+		execGitFileSync('git', args, {
 			cwd: root,
 			encoding: 'utf8',
 			env: { ...process.env, GIT_INDEX_FILE: index },
@@ -251,7 +241,7 @@ const blobsOf = (
 	);
 	if (names.length === 0) return new Map();
 	try {
-		const answers = execFileSync(
+		const answers = execGitFileSync(
 			'git',
 			['cat-file', '--batch-check=%(objectname)'],
 			{
@@ -385,7 +375,7 @@ export const dropLandedStrandedEdits = (input: {
 		}
 		const tip = readGit(input.root, ['rev-parse', ref])?.trim();
 		try {
-			execFileSync('git', ['update-ref', '-d', ref], {
+			execGitFileSync('git', ['update-ref', '-d', ref], {
 				cwd: input.root,
 				stdio: 'ignore',
 			});

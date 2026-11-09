@@ -19,11 +19,10 @@ import {
 
 import { isForwardSyncRef } from '../forge/forward-sync-release.script';
 import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
+import { shortName as shortRef } from '@delendai/core/lib/integration/decisions/namespaces.helper';
+
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
-
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * The two pull requests the branch model opens itself, which are nobody's

@@ -100,8 +100,8 @@ const sizeOf = (path: string): number | undefined => {
  * the refresh just finished moving.
  */
 export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
-	// First: the commit that just landed gets its full CI run, which the
-	// workflow token's own merge never starts.
+	// First: record what the tip's full runs concluded. None is
+	// dispatched per merge: the full suite runs on the promotion.
 	['tools/scripts/forge/certify-integration.script.ts', 60_000],
 	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
@@ -115,9 +115,8 @@ export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
 	// a unit and a pull request of their own (x00700), before the queue
 	// runs so the pull request is a candidate in the same pass.
 	['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
-	// Last: once the tip's certification has finished, the queue moves
-	// (x00680); nothing else starts it after a merge. One read, no wait
-	// (x00683): the next pass picks up a certification still running.
+	// Last: the queue moves once per tip; nothing else starts it after a
+	// merge, and it waits for no full run.
 	['tools/scripts/forge/advance-queue.script.ts', 60_000],
 ];
 
@@ -127,10 +126,34 @@ export const QUICK_STEPS: readonly string[] = [
 	'tools/scripts/forge/advance-queue.script.ts',
 ];
 
+/**
+ * How long a step may run: its own timeout, cut to what is left of the
+ * pass's budget; `undefined` when nothing is left and the step is skipped.
+ */
+export const stepTimeout = (
+	timeout: number,
+	deadline: number,
+	now: number,
+): number | undefined => {
+	const left = deadline - now;
+	return left <= 0 ? undefined : Math.min(timeout, left);
+};
+
 /** Run the listed steps in order; a step that fails is reported, never thrown. */
-const runSteps = (root: string, names: ReadonlySet<string>): void => {
-	for (const [script, timeout] of HYDRATION_STEPS) {
+const runSteps = (
+	root: string,
+	names: ReadonlySet<string>,
+	deadline: number = Number.POSITIVE_INFINITY,
+): void => {
+	for (const [script, ownTimeout] of HYDRATION_STEPS) {
 		if (!names.has(script)) continue;
+		const timeout = stepTimeout(ownTimeout, deadline, Date.now());
+		if (timeout === undefined) {
+			console.log(
+				`hydrate-candidates: ${script} skipped; this pass spent its budget and the next one runs it.`,
+			);
+			continue;
+		}
 		try {
 			// Background maintenance is the owner's machine's guest: lowest
 			// priority, half the cores.
@@ -213,7 +236,7 @@ const main = (): void => {
 	};
 	const [certify, advance] = QUICK_STEPS;
 	quick(certify as string);
-	const outcome = runExclusively(lockDir, () => {
+	const outcome = runExclusively(lockDir, (deadline) => {
 		runSteps(
 			root,
 			new Set(
@@ -221,6 +244,7 @@ const main = (): void => {
 					(script) => !QUICK_STEPS.includes(script),
 				),
 			),
+			deadline,
 		);
 	});
 	quick(advance as string);

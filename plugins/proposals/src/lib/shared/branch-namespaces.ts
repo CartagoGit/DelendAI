@@ -15,9 +15,7 @@
 import { projectBranches } from '@delendai/core/public';
 
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
-
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+import { shortName as bare } from '@delendai/core/cli';
 
 const distinct = (prefixes: readonly string[]): readonly string[] => [
 	...new Set(prefixes.map(bare).filter((prefix) => prefix.length > 0)),

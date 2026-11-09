@@ -17,7 +17,8 @@ import {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from './owned-ref-prefixes';
+	shortName as bare,
+} from '../integration/decisions/namespaces.helper';
 
 type IShapeBranches = Pick<
 	IPolicyBranches,
@@ -28,10 +29,6 @@ type IShapeBranches = Pick<
 	| 'workRefVisibility'
 	| 'publicationRefPrefix'
 >;
-
-/** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
-const bare = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** One owned namespace: its prefixes and the shapes a unit there has. */
 interface INamespaceRow {

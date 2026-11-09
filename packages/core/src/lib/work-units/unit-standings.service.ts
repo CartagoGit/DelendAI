@@ -6,7 +6,7 @@
  * `reclaim:orphans`, `work status`, the overview, `work retire` and the
  * reaper — reads this, so they cannot disagree about a unit.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { listUnitLeases, removeUnitLease } from './unit-lease.store';
@@ -21,6 +21,8 @@ import { carriesNothingBeyond } from './landed-work.service';
 import { ownActivityAt, parkedReason } from './unit-activity.helper';
 import { judgeUnit, leaseWindowSeconds } from './unit-verdict.service';
 import { judgeAuthor } from './orphaned-work.service';
+import { unitLifeReader } from './unit-liveness.service';
+import { worktreeOfRef } from './unit-removal.service';
 import { listWorkRefs } from './work-swarm.service';
 import { proposalInProgress } from './publication-target.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
@@ -155,8 +157,9 @@ export const readUnitStandings = async (
 			workUnitIdentityOf(policy, name),
 		]),
 	);
-	return [...refs.entries()]
-		.map(([ref, sha]): IUnitStandingEntry => {
+	const lifeOf = unitLifeReader({ root, policy, now });
+	const entries = [...refs.entries()].map(
+		([ref, sha]): IUnitStandingEntry => {
 			const lease = leases.get(ref);
 			// Dated by its own work, not by merges of the integration branch.
 			const tipAt =
@@ -210,8 +213,38 @@ export const readUnitStandings = async (
 					windowSeconds: window,
 				}),
 			};
-		})
-		.sort((left, right) => (left.ref < right.ref ? -1 : 1));
+		},
+	);
+	// A unit anybody is on is live, whatever its refs say: read only for
+	// the units the verdict would give away, against one machine reading.
+	const judged = await Promise.all(
+		entries.map(async (entry) => {
+			if (entry.standing === 'live' && entry.author?.orphaned !== true)
+				return entry;
+			const life = await lifeOf({
+				ref: entry.ref,
+				lease: leases.get(entry.ref),
+				worktree: worktreeOfRef(root, entry.ref) ?? entry.worktree,
+			});
+			if (!life.alive) return entry;
+			return {
+				...entry,
+				standing: 'live' as const,
+				reason: life.why,
+				...(entry.author === undefined
+					? {}
+					: {
+							author: {
+								...entry.author,
+								orphaned: false,
+								reason: null,
+								why: life.why,
+							},
+						}),
+			};
+		}),
+	);
+	return judged.sort((left, right) => (left.ref < right.ref ? -1 : 1));
 };
 
 /** Counts per standing, for surfaces that pay per byte. */

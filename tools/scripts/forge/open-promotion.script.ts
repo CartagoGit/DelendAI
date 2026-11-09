@@ -3,8 +3,10 @@
  * open-promotion — open the release pull request when the promotion is
  * ready, or say which condition holds it back.
  *
- * Ready means four things, each read where it lives: the checks the
- * integration branch requires are green on its head; code scanning
+ * Ready means four things, each read where it lives: no check the
+ * integration branch requires has failed on its head (one that has not
+ * reported holds nothing: the full suite runs on the promotion itself,
+ * not on each merge); code scanning
  * reports no open alert on it; the roadmap's blocking gates for the
  * next version pass; and the integration branch carries the release —
  * a version above the release branch's and its changelog section —
@@ -13,6 +15,12 @@
  * branch into the release branch is opened with that evidence in its
  * body. It is only opened: this never merges, bumps or tags, and the
  * release branch's own gate still judges it.
+ *
+ * The promotion runs the full suite. When a required check fails on it,
+ * the promotion stays blocked and one urgent repair is filed for the
+ * commit range it promotes, naming the zones found red; the integration
+ * branch's queue carries on, held only where a red zone is reached
+ * (section-health).
  *
  * Branch names, the cadence and the blocking gates come from the
  * project's configuration. A project with one branch, or that declares
@@ -39,6 +47,11 @@ import {
 import { declaredRoadmap } from '../gen/roadmap-projection.lib';
 import { repoRoot } from '../lib/repo-root';
 import { RELEASE_FIX, releaseGaps } from '../release/release-pr-check.script';
+import {
+	failedZonesOf,
+	REPAIR_TITLE_PREFIX,
+	redZonesLine,
+} from './section-health';
 
 /** The forge's command line: its answer, or why it gave none. */
 export type IForge = (
@@ -60,7 +73,9 @@ export type IPromotionOutcome =
 	| 'already-open'
 	| 'would-open'
 	| 'opened'
-	| 'could-not-open';
+	| 'could-not-open'
+	| 'repair-filed'
+	| 'could-not-file-repair';
 
 /** What the forge says when a project has no code scanning at all. */
 const NO_CODE_SCANNING = /no analysis found|not enabled|\b404\b|Not Found/iu;
@@ -102,29 +117,38 @@ export const promotionPlanOf = (
  * on the head commit is that check's report; what it found is judged by
  * the open alert count, a condition of its own.
  */
-export const checkConclusions = (
+/** One check run on the integration branch's head, as the forge lists it. */
+interface IHeadCheckRun {
+	readonly name: string;
+	readonly conclusion: string | null;
+	readonly completed_at: string | null;
+	readonly head_sha?: string;
+}
+
+/** The check runs on the integration branch's head; none when unreadable. */
+const headCheckRuns = (
 	plan: IPromotionPlan,
 	forge: IForge,
-): IPromotionEvidence['checks'] => {
+): readonly IHeadCheckRun[] => {
 	const answer = forge([
 		'api',
 		`repos/{owner}/{repo}/commits/${plan.integration}/check-runs?per_page=100`,
 		'--jq',
 		'[.check_runs[] | {name, conclusion, completed_at, head_sha}]',
 	]);
-	let runs: readonly {
-		readonly name: string;
-		readonly conclusion: string | null;
-		readonly completed_at: string | null;
-		readonly head_sha?: string;
-	}[] = [];
-	if (answer.ok) {
-		try {
-			runs = JSON.parse(answer.out) as typeof runs;
-		} catch {
-			runs = [];
-		}
+	if (!answer.ok) return [];
+	try {
+		return JSON.parse(answer.out) as readonly IHeadCheckRun[];
+	} catch {
+		return [];
 	}
+};
+
+export const checkConclusions = (
+	plan: IPromotionPlan,
+	forge: IForge,
+	runs: readonly IHeadCheckRun[] = headCheckRuns(plan, forge),
+): IPromotionEvidence['checks'] => {
 	const reported = plan.requiredChecks.map((name) => {
 		const latest = runs
 			.filter((run) => run.name === name && run.completed_at !== null)
@@ -243,6 +267,74 @@ export const promotionPullRequest = (
 	].join('\n'),
 });
 
+const FAILED_CONCLUSIONS = new Set(['failure', 'timed_out', 'cancelled']);
+
+/** The urgent repair of a red promotion: its title and body. Pure. */
+export const promotionRepair = (input: {
+	readonly plan: IPromotionPlan;
+	readonly pullRequest: string;
+	readonly headSha: string;
+	readonly failedChecks: readonly string[];
+	readonly redZones: readonly string[];
+}): { readonly title: string; readonly body: string } => {
+	const range = `${input.plan.release}...${input.headSha}`;
+	return {
+		title: `${REPAIR_TITLE_PREFIX} ${input.plan.release}...${input.headSha.slice(0, 12)} fails its full run`,
+		body: [
+			`The promotion #${input.pullRequest} of ${input.plan.integration} into ${input.plan.release} ran the full suite and is red, so it stays blocked.`,
+			'',
+			`- commit range: \`${range}\``,
+			`- failed checks: ${input.failedChecks.join(', ')}`,
+			'',
+			`The ${input.plan.integration} queue carries on: a red zone holds only the pull requests whose change reaches it, and the one that runs it green repairs it.`,
+			'',
+			redZonesLine(input.redZones),
+		].join('\n'),
+	};
+};
+
+/** File the urgent repair of a red promotion, once per head. */
+const fileRepair = (
+	forge: IForge,
+	repair: { readonly title: string; readonly body: string },
+): { readonly outcome: IPromotionOutcome; readonly line: string } => {
+	const known = forge([
+		'issue',
+		'list',
+		'--state',
+		'open',
+		'--search',
+		`"${repair.title}" in:title`,
+		'--json',
+		'number',
+		'--jq',
+		'.[0].number // empty',
+	]);
+	if (known.ok && known.out.trim() !== '') {
+		return {
+			outcome: 'repair-filed',
+			line: `the urgent repair #${known.out.trim()} is already filed for it`,
+		};
+	}
+	const filed = forge([
+		'issue',
+		'create',
+		'--title',
+		repair.title,
+		'--body',
+		repair.body,
+	]);
+	return filed.ok
+		? {
+				outcome: 'repair-filed',
+				line: `filed the urgent repair ${filed.out.trim()}`,
+			}
+		: {
+				outcome: 'could-not-file-repair',
+				line: `the urgent repair could not be filed: ${filed.error}`,
+			};
+};
+
 export const openPromotion = async (input: {
 	readonly root: string;
 	readonly configText: string | undefined;
@@ -258,26 +350,9 @@ export const openPromotion = async (input: {
 	if (plan === undefined || input.configText === undefined) {
 		return { outcome: 'nothing-declared', lines: [] };
 	}
-	const readiness = promotionReadiness({
-		checks: checkConclusions(plan, input.forge),
-		openAlerts: openAlertCount(plan, input.forge),
-		roadmap: await roadmapVerdict(input.root, input.configText),
-	});
 	const route = `${plan.integration} into ${plan.release}`;
-	const notReleased = (input.releaseGaps?.(plan) ?? []).map(
-		(gap) => `${gap} — ${RELEASE_FIX}`,
-	);
-	if (!readiness.ready || notReleased.length > 0) {
-		return {
-			outcome: 'held-back',
-			lines: [
-				`open-promotion: ${route} is not ready, so nothing was opened:`,
-				...[...readiness.heldBackBy, ...notReleased].map(
-					(line) => `  - ${line}`,
-				),
-			],
-		};
-	}
+	const runs = headCheckRuns(plan, input.forge);
+	const checks = checkConclusions(plan, input.forge, runs);
 	const existing = input.forge([
 		'pr',
 		'list',
@@ -293,10 +368,56 @@ export const openPromotion = async (input: {
 		'.[0].number // empty',
 	]);
 	if (existing.ok && existing.out.trim() !== '') {
+		const number = existing.out.trim();
+		const failed = checks
+			.filter((check) => FAILED_CONCLUSIONS.has(check.conclusion ?? ''))
+			.map((check) => check.name);
+		const headSha = runs.find(
+			(run) => run.head_sha !== undefined,
+		)?.head_sha;
+		if (failed.length === 0 || headSha === undefined) {
+			return {
+				outcome: 'already-open',
+				lines: [
+					`open-promotion: ${route} is ready and pull request #${number} is already open for it.`,
+				],
+			};
+		}
+		const filed = fileRepair(
+			input.forge,
+			promotionRepair({
+				plan,
+				pullRequest: number,
+				headSha,
+				failedChecks: failed,
+				redZones: failedZonesOf(runs),
+			}),
+		);
 		return {
-			outcome: 'already-open',
+			outcome: filed.outcome,
 			lines: [
-				`open-promotion: ${route} is ready and pull request #${existing.out.trim()} is already open for it.`,
+				`open-promotion: #${number} (${route}) is red on its full run (${failed.join(', ')}); it stays blocked and ${filed.line}. The ${plan.integration} queue carries on.`,
+			],
+		};
+	}
+	const readiness = promotionReadiness({
+		// A check that has not reported holds nothing: the full suite runs
+		// on the promotion itself. One that failed still holds it back.
+		checks: checks.filter((check) => check.conclusion !== undefined),
+		openAlerts: openAlertCount(plan, input.forge),
+		roadmap: await roadmapVerdict(input.root, input.configText),
+	});
+	const notReleased = (input.releaseGaps?.(plan) ?? []).map(
+		(gap) => `${gap} — ${RELEASE_FIX}`,
+	);
+	if (!readiness.ready || notReleased.length > 0) {
+		return {
+			outcome: 'held-back',
+			lines: [
+				`open-promotion: ${route} is not ready, so nothing was opened:`,
+				...[...readiness.heldBackBy, ...notReleased].map(
+					(line) => `  - ${line}`,
+				),
 			],
 		};
 	}
@@ -378,8 +499,12 @@ const main = async (): Promise<number> => {
 	});
 	for (const line of result.lines) console.log(line);
 	// Held back is an answer, not a failure of the run; only a pull request
-	// that should have been opened and was not fails it.
-	return result.outcome === 'could-not-open' ? 1 : 0;
+	// that should have been opened, or a repair that should have been
+	// filed, and was not fails it.
+	return result.outcome === 'could-not-open' ||
+		result.outcome === 'could-not-file-repair'
+		? 1
+		: 0;
 };
 
 if (import.meta.main) process.exit(await main());

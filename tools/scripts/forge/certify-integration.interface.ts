@@ -2,19 +2,10 @@
 export interface ICertificationRun {
 	readonly event: string;
 	readonly head_sha: string;
+	/** The branch the run is for; a pull request's is its head branch. */
+	readonly head_branch?: string;
 	readonly conclusion: string | null;
 	readonly status: string;
 }
 
-/**
- * Where the integration branch's tip stands: `certified` only once a full
- * run finished green; `pending` while one runs; `red` when every full run
- * finished and none passed, or when the tip's full runs were cancelled as
- * often as `MAX_CANCELLED_FULL_RUNS` allows; `uncertified` when none was
- * started, or only fewer cancelled ones.
- */
-export type IIntegrationCertification =
-	| 'certified'
-	| 'pending'
-	| 'red'
-	| 'uncertified';
+export type { IIntegrationCertification } from '@delendai/core/cli';

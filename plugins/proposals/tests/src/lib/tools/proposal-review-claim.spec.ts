@@ -57,6 +57,20 @@ const otherUnit = (branch: string, claims: string): void => {
 	);
 };
 
+/** The claim `review_claim` commits in the unit the checkout is on. */
+const claimHere = (id: string): void => {
+	repo.git(
+		'commit',
+		'--allow-empty',
+		'-q',
+		'--no-verify',
+		'-m',
+		`chore(review): claim ${id}`,
+		'--trailer',
+		`Claims: ${id}`,
+	);
+};
+
 const claimsOnHead = (): readonly string[] =>
 	repo
 		.git(
@@ -69,7 +83,7 @@ const claimsOnHead = (): readonly string[] =>
 		.filter((line) => line.length > 0);
 
 describe('a verdict in a review unit', () => {
-	it('claims the proposal it judges when nobody holds it', async () => {
+	it('is refused until the pack has claimed the proposal it judges', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/agent-a/x00001-S1-g1/the-work',
@@ -77,6 +91,17 @@ describe('a verdict in a review unit', () => {
 		repo.proposalInReview(SLICE_S1('review'));
 		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
 
+		const unclaimed = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: commit.slice(0, 9) },
+		});
+		expect(unclaimed.isError).toBe(true);
+		expect(unclaimed.text).toContain('has not claimed x00001');
+		expect(unclaimed.text).toContain('review_claim');
+		expect(claimsOnHead()).toEqual([]);
+
+		claimHere('x00001');
 		const approved = await repo.review({
 			action: 'approve',
 			agent: 'agent-b',
@@ -103,7 +128,7 @@ describe('a verdict in a review unit', () => {
 		});
 
 		expect(refused.isError).toBe(true);
-		expect(refused.text).toContain('held by another review unit (agent-b)');
+		expect(refused.text).toContain('has not claimed x00001');
 		expect(claimsOnHead()).toEqual([]);
 		expect(
 			readFileSync(
@@ -154,6 +179,7 @@ describe('a verdict in a review unit', () => {
 		repo.proposalInReview(SLICE_S1('review'));
 		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
 
+		claimHere('x00001');
 		const approved = await repo.review({
 			action: 'approve',
 			agent: 'Agent-B',
@@ -214,6 +240,36 @@ describe('a verdict in a review unit', () => {
 	});
 });
 
+describe('a pack that claimed another proposal (x01032)', () => {
+	it('refuses a submit, an approval and a change request on one it never claimed, naming review_claim', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+		claimHere('x00002');
+		const head = repo.git('rev-parse', 'HEAD');
+
+		for (const call of [
+			{ action: 'submit' as const, agent: 'agent-b' },
+			{
+				action: 'request_changes' as const,
+				agent: 'agent-b',
+				note: 'the acceptance is not met',
+			},
+			{
+				action: 'approve' as const,
+				agent: 'agent-b',
+				evidence: { ...EVIDENCE, commitHash: 'abcdef123' },
+			},
+		]) {
+			const refused = await repo.review(call);
+			expect(refused.isError).toBe(true);
+			expect(refused.text).toContain('has not claimed x00001');
+			expect(refused.text).toContain('review_claim');
+		}
+		expect(repo.git('rev-parse', 'HEAD')).toBe(head);
+		expect(claimsOnHead()).toEqual(['x00002']);
+	});
+});
+
 describe('the language of a verdict', () => {
 	it('is the one the project declared, and a verdict in another writes nothing', async () => {
 		repo.proposalInReview(SLICE_S1('review'));
@@ -235,6 +291,7 @@ describe('the language of a verdict', () => {
 		expect(refused.text).toContain('English');
 		expect(readFileSync(file, 'utf8')).toBe(before);
 
+		claimHere('x00001');
 		const accepted = await repo.review(
 			{
 				action: 'request_changes',
@@ -272,6 +329,8 @@ describe('the review lines a verdict writes', () => {
 			`${SLICE_S1('review')}\n## acceptance\n\n- it works\n`,
 		);
 
+		repo.git('switch', '-q', '-c', REVIEW_UNIT('agent-b', 1));
+		claimHere('x00001');
 		const answered = await repo.review({
 			action: 'request_changes',
 			agent: 'agent-b',

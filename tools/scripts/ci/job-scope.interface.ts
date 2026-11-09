@@ -27,6 +27,14 @@ export interface IJobScope {
 	 */
 	readonly matches?: RegExp | undefined;
 	/**
+	 * The entry files a published package exposes (`src/index.ts`, `cli.ts`…).
+	 * A change to one counts for this job only when the names it exports moved
+	 * (added, removed or re-pointed); a change to a module behind it does not,
+	 * whatever `touches` or `matches` say. An entry that declares something
+	 * itself, or whose delta cannot be bounded, counts as moved.
+	 */
+	readonly surface?: RegExp | undefined;
+	/**
 	 * `skip`: a change made only of Markdown (under docs/ or at the root)
 	 * cannot change this job's verdict, whatever `touches` says.
 	 */
@@ -43,6 +51,12 @@ export interface IJobScope {
 	 * what it reads as data.
 	 */
 	readonly code?: 'scripts' | undefined;
+	/**
+	 * The plan entries this job is made of. A workflow job that runs several
+	 * checks on one runner (one setup, not one each) runs when any of them
+	 * does; each check keeps its own entry and gates its own steps.
+	 */
+	readonly group?: readonly string[] | undefined;
 	/** Why this bound is correct — read by whoever widens or narrows it. */
 	readonly because: string;
 }

@@ -119,6 +119,44 @@ describe('work status, printed', () => {
 		);
 	});
 
+	it("names a review pack its reviewer's wip lacks, with the merge to run (x01032)", async () => {
+		const root = repoWith(PR_MODEL);
+		const base = git(root, 'rev-parse', 'HEAD');
+		git(root, 'switch', '-q', '-c', 'pack');
+		git(root, 'commit', '-q', '--allow-empty', '-m', 'verdict');
+		git(root, 'switch', '-q', 'develop');
+		git(
+			root,
+			'branch',
+			'delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts',
+			'pack',
+		);
+		git(
+			root,
+			'branch',
+			'delendai/wip/gpt-5.3-codex/implement/batch-all-g1/work',
+			base,
+		);
+
+		const out = await printed(() =>
+			runWorkUnit(['status'], contextFor(root)),
+		);
+		expect(out).toContain(
+			'pack diverged   delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts holds commits its wip delendai/wip/gpt-5.3-codex/implement/batch-all-g1/work lacks',
+		);
+		expect(out).toContain(
+			'git merge delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts',
+		);
+
+		const data = await runWorkUnit(
+			['status'],
+			contextFor(root, { json: true }),
+		);
+		expect(
+			(data.data as { divergedPacks: unknown[] }).divergedPacks,
+		).toHaveLength(1);
+	});
+
 	it('names a detached checkout', async () => {
 		const root = repoWith(PR_MODEL);
 		git(root, 'switch', '-q', '--detach');

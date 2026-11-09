@@ -88,11 +88,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S5 — Forge rules and CI filters follow the policy
 - **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `tools/scripts/lint/ci-publication-filters.script.ts`, `tools/scripts/lint/ci-publication-filters.script.spec.ts`
+- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `tools/scripts/lint/ci-publication-filters.script.ts`, `tools/scripts/lint/ci-publication-filters.script.spec.ts`, `package.json`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `packages/core/tests/src/lib/integration/decisions/namespaces.helper.spec.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
 - **Gate**: type
 - acceptance:
-  - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix."
-  - "ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so branch-protection-guard fails when the prefixes ci.yml names differ from the resolved policy's owned publication prefixes."
+  - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix, through the decisions module's `allowedRefPatterns`."
+  - "ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so `lint:ci-publication-filters` fails when the publication or train prefixes ci.yml names differ from the resolved policy's owned ones (`ownedPublicationRefPrefixes`, `ownedTrainPrefixes`)."
 - shipped-in: `b193017aeeb9`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
@@ -100,7 +100,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
 - **Status**: review
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `packages/core/src/lib/work-units/work-unit-rename-namespace.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-rename-namespace.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/namespace-rename.interface.ts`
+- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `packages/core/src/lib/work-units/work-unit-rename-namespace.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-rename-namespace.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/namespace-rename.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary."
@@ -130,7 +130,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: review
 - **DependsOn**: [S2, S3, S4, S5, S9]
-- **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
+- **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
 - acceptance:
   - "delendai.config.json sets `namespacePrefix: ""` and `formerNamespacePrefixes: ["delendai"]`, and ci.yml's publication filters name both prefixes; only this repository's config changes, and no existing ref is renamed. The readable template of S9 is not switched on here yet: generation bookkeeping (`endedGenerations`) still reads `-g<n>` from names."
@@ -156,8 +156,8 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix.
 - maintain-ref-namespace, ref-lifecycle --reap and agent-claims treat refs under a former prefix as delendai's (reaped or kept by the same rules), and refs outside every owned prefix as foreign.
 - Spec per script: a fixture with one `delendai/pr/...` and one `pr/...` publication under `namespacePrefix: ""` + former `delendai` handles both.
-- Rendered rulesets and branch protection cover the work and publication refs of every owned prefix.
-- ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so branch-protection-guard fails when the prefixes ci.yml names differ from the resolved policy's owned publication prefixes.
+- Rendered rulesets and branch protection cover the work and publication refs of every owned prefix, through the decisions module's `allowedRefPatterns`.
+- ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so `lint:ci-publication-filters` fails when the publication or train prefixes ci.yml names differ from the resolved policy's owned ones (`ownedPublicationRefPrefixes`, `ownedTrainPrefixes`).
 - `delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary.
 - It refuses as a whole while any open pull request has its head under a former prefix, and when the forge cannot be read; it checks each ref again just before acting.
 - Each ref is renamed by pushing the new name at the same tip, verifying it, keeping the old tip under the retired root, then deleting the old name. The forge rename API is never called.

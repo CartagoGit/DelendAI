@@ -1,9 +1,11 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import { argumentsRefused } from './work-arguments.helper';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import { scalarArg } from './command-args.helper';
 import { releaseSlices } from './slice-reservation.service';
 import { retireStrayRef } from './stray-ref-retire.service';
@@ -74,10 +76,7 @@ export const retired = async (
 	const named = scalarArg(args, 'ref');
 	const reason = scalarArg(args, 'reason');
 	if (named === undefined || reason === undefined) {
-		return refused(
-			'Retiring a unit needs the unit and why it will not land.',
-			'work retire --ref=<its work or publication branch> --reason="<why>" [--unowned]. `work swarm` lists the units there are.',
-		);
+		return argumentsRefused('retire');
 	}
 	const plan = planRetirement({
 		branch: named,
@@ -162,12 +161,10 @@ export const retired = async (
 	const worktree = worktreeOn(root, plan.workBranch);
 	let uncommitted: string | undefined;
 	if (worktree !== undefined) {
-		const dirty = (readGit(worktree, ['status', '--porcelain']) ?? '')
-			.split('\n')
-			.filter((line) => line.length > 0);
+		const dirty = readWorktreeStatus(worktree)?.entries ?? [];
 		const untracked = dirty
-			.filter((line) => line.startsWith('??'))
-			.map((line) => line.slice(3));
+			.filter((entry) => entry.code === '??')
+			.map((entry) => entry.path);
 		if (untracked.length > 0) {
 			return refused(
 				`\`${plan.unit}\` has files git does not track in ${worktree}: ${untracked.slice(0, 5).join(', ')}.`,

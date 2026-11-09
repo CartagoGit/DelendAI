@@ -10,6 +10,7 @@ import {
 	QUICK_STEPS,
 	logIsFull,
 	skipReason,
+	stepTimeout,
 } from './hydrate-candidates-after-merge.script';
 
 describe('skipReason (x00554 S2)', () => {
@@ -69,7 +70,7 @@ describe('skipReason (x00554 S2)', () => {
 });
 
 describe('what bringing the candidates forward runs', () => {
-	it('certifies what landed first, then has one writer that merges and regenerates', () => {
+	it('records what landed first, then has one writer that merges and regenerates', () => {
 		// A second refresher used to run first. It merged every
 		// candidate textually, so the regenerating step found nothing
 		// behind and never ran.
@@ -108,5 +109,19 @@ describe('the hydration log', () => {
 	it('keeps being written while within it, or when it does not exist yet', () => {
 		expect(logIsFull(HYDRATION_LOG_MAX_BYTES)).toBe(false);
 		expect(logIsFull(undefined)).toBe(false);
+	});
+});
+
+describe('a step within the pass budget', () => {
+	it('keeps its own timeout while the budget lasts', () => {
+		expect(stepTimeout(60_000, 1_000_000, 0)).toBe(60_000);
+	});
+
+	it('is cut to what is left of the budget', () => {
+		expect(stepTimeout(3_600_000, 1_000, 400)).toBe(600);
+	});
+
+	it('is skipped once the budget is spent', () => {
+		expect(stepTimeout(60_000, 1_000, 1_000)).toBeUndefined();
 	});
 });

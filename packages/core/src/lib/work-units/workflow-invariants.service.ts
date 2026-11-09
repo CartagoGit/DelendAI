@@ -25,6 +25,7 @@
  * repairs cannot be run to find out whether repair was needed.
  */
 import { readGit } from '../shared/git-read.helper';
+import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 import {
 	hangingForgeWorkRefs,
@@ -46,6 +47,7 @@ import type {
 	IInvariantResult,
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 export type {
 	IInvariantReport,
@@ -62,10 +64,6 @@ const lines = (out: string): readonly string[] =>
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
 
-/** The namespace prefix as it appears in a ref name, without `refs/`. */
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
-
 /**
  * Every invariant, as a question asked of the repository.
  *
@@ -80,6 +78,11 @@ export const checkWorkflowInvariants = (input: {
 	readonly scopes?: readonly IInvariantScope[];
 	/** Seconds since the epoch; the clock, unless a test says otherwise. */
 	readonly now?: number | undefined;
+	/**
+	 * The work refs whose unit is alive (`unit-liveness.service`): one
+	 * that lost its worktree is still somebody's, never abandoned.
+	 */
+	readonly liveRefs?: ReadonlySet<string> | undefined;
 }): IInvariantReport => {
 	const { root, policy } = input;
 	const remote = input.remote ?? 'origin';
@@ -95,7 +98,9 @@ export const checkWorkflowInvariants = (input: {
 	};
 
 	// 1. The shared checkout carries nothing.
-	const dirty = lines(git(root, ['status', '--porcelain=v1']));
+	const dirty = (readWorktreeStatus(root)?.entries ?? []).map(
+		(entry) => `${entry.code} ${entry.path}`,
+	);
 	add({
 		scope: 'checkout',
 		id: 'checkout-clean',
@@ -144,7 +149,10 @@ export const checkWorkflowInvariants = (input: {
 			`refs/heads/${workPrefix}**`,
 		]),
 	);
-	const abandoned = localWork.filter((ref) => !worktreeBranches.has(ref));
+	const abandoned = localWork.filter(
+		(ref) =>
+			!worktreeBranches.has(ref) && input.liveRefs?.has(ref) !== true,
+	);
 	add({
 		scope: 'checkout',
 		id: 'no-abandoned-work-refs',

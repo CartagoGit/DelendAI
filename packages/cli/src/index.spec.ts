@@ -414,3 +414,55 @@ describe('runEntry reports a workflow the project is not following (x00598)', ()
 		}
 	});
 });
+
+describe('runEntry — a refusal the host cannot take', () => {
+	const stale = {
+		root: '/r',
+		sourceEntry: '/r/packages/cli/src/index.ts',
+		builtAt: 1,
+		sourcesAt: 2,
+	};
+
+	it('says a stale build on stderr by default and survives a handshake that fails', async () => {
+		const written: string[] = [];
+		const stderr = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk) => {
+				written.push(String(chunk));
+				return true;
+			});
+		try {
+			const code = await runEntry(['__serve'], tmpdir(), {
+				staleBuild: () => stale,
+				refuse: () => Promise.reject(new Error('closed')),
+			});
+			expect(code).toBe(EXIT_CODE.VALIDATION);
+			expect(written.join('')).toContain('[delendai]');
+		} finally {
+			stderr.mockRestore();
+		}
+	});
+
+	it('survives a handshake that fails after the server could not start', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'entry-refuse-fails-'));
+		roots.push(root);
+
+		const previousExitCode = process.exitCode;
+		let refused = 0;
+		try {
+			await runEntry(['__serve'], root, {
+				staleBuild: () => undefined,
+				serve: () => Promise.reject(new Error('no start')),
+				report: () => undefined,
+				refuse: () => {
+					refused += 1;
+					return Promise.reject(new Error('closed'));
+				},
+			});
+			for (let turn = 0; turn < 5; turn += 1) await Promise.resolve();
+			expect(refused).toBe(1);
+		} finally {
+			process.exitCode = previousExitCode;
+		}
+	});
+});

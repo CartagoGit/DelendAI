@@ -3,10 +3,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IChangeRequestForge } from '@delendai/core/lib/contracts/interfaces/change-request-forge.interface';
 import type { IPullRequestPorts } from '@delendai/core/lib/contracts/interfaces/publication-pull-request.interface';
+import { urgentReasonOfBody } from '@delendai/core/lib/work-units/pull-request-urgency.service';
 import {
 	openPublicationPullRequest,
+	openUnitPullRequest,
 	pullRequestText,
 } from '@delendai/core/lib/work-units/publication-pull-request.service';
 
@@ -317,6 +320,27 @@ describe('pullRequestText', () => {
 		).toBe('review batch');
 	});
 
+	it('names a review unit by what it claimed and judged, never implement batch (x01032)', () => {
+		const branch = 'delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts';
+		expect(
+			pullRequestText(
+				['chore(review): claim d00418', 'chore(review): claim x01016'],
+				branch,
+				'implement batch',
+			).title,
+		).toBe('review: claim(s) on x01016, d00418');
+		expect(
+			pullRequestText(
+				[
+					'chore(review): claim x01016',
+					'chore(delendai): delendai_proposals_proposal_review x01004 S1 submit',
+				],
+				branch,
+				'implement batch',
+			).title,
+		).toBe('review: 1 verdict(s) on x01004');
+	});
+
 	it('titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
 		// Newest first, as git lists them: the pack that went out as
 		// "chore(review): release r00040" carried approvals of f00643.
@@ -403,5 +427,62 @@ describe('pullRequestText', () => {
 				'unit',
 			).title,
 		).toBe('chore(deps): bump zod');
+	});
+});
+
+describe('the urgent mark on a pull request (x01051)', () => {
+	it('puts one Urgent line in the body and reads it back', () => {
+		const text = pullRequestText(
+			['fix: a thing'],
+			'delendai/pr/a/implement/x1-all-g1/t',
+			'fallback',
+			'integration machinery   loops\nand self-blocks',
+		);
+		expect(text.body).toContain(
+			'Urgent: integration machinery loops and self-blocks',
+		);
+		expect(urgentReasonOfBody(text.body)).toBe(
+			'integration machinery loops and self-blocks',
+		);
+	});
+
+	it('carries no mark when nobody said it was urgent', () => {
+		const text = pullRequestText(['fix: a thing'], 'b', 'fallback');
+		expect(text.body).not.toContain('Urgent:');
+		expect(urgentReasonOfBody(text.body)).toBeUndefined();
+		expect(urgentReasonOfBody(null)).toBeUndefined();
+	});
+});
+
+describe('openUnitPullRequest (x01051)', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: { profile: 'shared-checkout-pr' },
+	});
+	const input = {
+		root: '/nonexistent-root-for-spec',
+		policy,
+		remote: 'origin',
+		publicationRef: 'refs/heads/delendai/pr/a/implement/x1-all-g1/t',
+		tip: 'tip',
+		integrationBase: 'base',
+		fallbackTitle: 'fix x1',
+	};
+
+	it('opens nothing when the caller asked for none', async () => {
+		expect(
+			await openUnitPullRequest({
+				...input,
+				args: ['--no-pull-request'],
+			}),
+		).toBeUndefined();
+	});
+
+	it('reports a remote it does not recognise rather than opening a pull request', async () => {
+		const opened = await openUnitPullRequest({
+			...input,
+			args: [],
+			urgent: 'integration is red',
+		});
+		expect(opened?.status).toBe('skipped');
 	});
 });

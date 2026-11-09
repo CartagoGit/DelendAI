@@ -34,8 +34,12 @@
 import { spawnSync } from 'node:child_process';
 
 import {
+	isRunningInProjectCi,
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
+	shortName as shortRef,
+	underNamespace as inNamespace,
 } from '@delendai/core/cli';
 
 import { declaredBranches } from '../lib/declared-branches';
@@ -67,10 +71,18 @@ export interface ICommitBranchInput {
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
 	/**
+	/**
 	 * Work and publication namespaces of a former namespace: a unit entered
 	 * before the project changed it is still somebody's work (f00808).
 	 */
 	readonly formerPrefixes?: readonly string[];
+	/**
+	 * The merge queue's train namespaces (`ownedTrainPrefixes`, from core,
+	 * the source the guard and the forge ruleset read). A train's CI run
+	 * checks out `<ns>/train/…`; left out here, every train went red on
+	 * this lint and the queue's bisection blamed innocent members.
+	 */
+	readonly trainRefPrefixes?: readonly string[];
 	/** Policy release branch (`branches.release`). */
 	readonly releaseBranch?: string;
 	/**
@@ -79,10 +91,6 @@ export interface ICommitBranchInput {
 	 */
 	readonly ciCheckout?: boolean;
 }
-
-/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * The work-ref shape in words, rendered from the template the policy
@@ -103,11 +111,6 @@ const shapeInWords = (template: string | undefined, prefix: string): string =>
 					/\$\{([a-z]+)\}/gu,
 					(_match, name: string) => `<${name}>`,
 				)}`;
-
-const inNamespace = (branch: string, prefix: string | undefined): boolean =>
-	prefix !== undefined &&
-	prefix !== '' &&
-	branch.startsWith(shortRef(prefix));
 
 export type CommitBranchResult =
 	| { readonly ok: true; readonly note?: string }
@@ -178,9 +181,10 @@ export const lintCommitBranch = (
 	if (
 		inNamespace(currentBranch, workRefPrefix) ||
 		inNamespace(currentBranch, publicationRefPrefix) ||
-		(input.formerPrefixes ?? []).some((prefix) =>
-			inNamespace(currentBranch, prefix),
-		)
+		[
+			...(input.formerPrefixes ?? []),
+			...(input.trainRefPrefixes ?? []),
+		].some((prefix) => inNamespace(currentBranch, prefix))
 	) {
 		return { ok: true };
 	}
@@ -333,6 +337,7 @@ const main = async (): Promise<number> => {
 		workRefTemplate?: string;
 		publicationRefPrefix?: string;
 		formerPrefixes?: readonly string[];
+		trainRefPrefixes?: readonly string[];
 	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
@@ -345,6 +350,7 @@ const main = async (): Promise<number> => {
 				...ownedWorkRefPrefixes(branches).slice(1),
 				...ownedPublicationRefPrefixes(branches).slice(1),
 			],
+			trainRefPrefixes: ownedTrainPrefixes(branches),
 			releaseBranch: branches.release,
 		};
 	} catch {
@@ -356,7 +362,7 @@ const main = async (): Promise<number> => {
 		currentBranch: branch,
 		agentWorktreeEnabled,
 		...namespaces,
-		ciCheckout: process.env.CI === 'true' && staged.length === 0,
+		ciCheckout: isRunningInProjectCi() && staged.length === 0,
 	});
 	const report = formatReport(result);
 	if (result.ok) {

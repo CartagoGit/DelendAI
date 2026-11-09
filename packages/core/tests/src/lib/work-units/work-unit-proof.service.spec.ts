@@ -49,7 +49,7 @@ afterEach(() => {
 });
 
 describe('candidateProofSteps', () => {
-	it('is the prove script first, then the declared gate, else nothing', () => {
+	it('[<200ms] is the prove script first, then the declared gate, else nothing', () => {
 		const files: Record<string, string> = { ...PROVING };
 		expect(candidateProofSteps((path) => files[path])).toEqual([
 			{ scope: 'prove', command: 'bun run prove' },
@@ -64,7 +64,7 @@ describe('candidateProofSteps', () => {
 });
 
 describe('proveUnit', () => {
-	it('runs the proof in the unit worktree, remembers a pass, and does not run it twice', async () => {
+	it('[<1000ms] runs the proof in the unit worktree, remembers a pass, and does not run it twice', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const ran: string[] = [];
@@ -94,7 +94,7 @@ describe('proveUnit', () => {
 		expect(ran).toHaveLength(1);
 	});
 
-	it('fails with the failed step and its output, and remembers nothing', async () => {
+	it('[<3000ms] fails with the failed step and its output, and remembers nothing', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const failing = await proveUnit({
@@ -119,7 +119,7 @@ describe('proveUnit', () => {
 		expect(later.remembered).toBeUndefined();
 	});
 
-	it('refuses a worktree with uncommitted edits, which would not be published', async () => {
+	it('[<1000ms] refuses a worktree with uncommitted edits, which would not be published', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		writeFileSync(join(root, 'loose.ts'), 'export {};\n');
@@ -134,7 +134,7 @@ describe('proveUnit', () => {
 		expect(describeFailedProof(report)).toContain('clean tree');
 	});
 
-	it('reads the proof from the integration head, not the unit', async () => {
+	it('[<1000ms] reads the proof from the integration head, not the unit', async () => {
 		const root = repoWith({ 'package.json': '{}' });
 		const integration = git(root, 'rev-parse', 'HEAD');
 		writeFileSync(
@@ -152,7 +152,24 @@ describe('proveUnit', () => {
 		expect(report).toEqual({ declared: false, passed: true, steps: [] });
 	});
 
-	it('proves a unit with no worktree in a temporary one, installed first', async () => {
+	it('[<3000ms] removes only its temporary worktree: another unit\u2019s registration survives', async () => {
+		const root = repoWith(PROVING);
+		const tip = git(root, 'rev-parse', 'HEAD');
+		const other = join(mkdtempSync(join(tmpdir(), 'prove-other-')), 'wt');
+		roots.push(other);
+		git(root, 'worktree', 'add', '-q', '--detach', other, tip);
+		rmSync(other, { recursive: true, force: true });
+		await proveUnit({
+			root,
+			worktree: undefined,
+			tipSha: tip,
+			integrationSha: tip,
+			run: () => ({ code: 0, output: '' }),
+		});
+		expect(git(root, 'worktree', 'list', '--porcelain')).toContain(other);
+	});
+
+	it('[<1000ms] proves a unit with no worktree in a temporary one, installed first', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const ran: string[] = [];
@@ -171,7 +188,7 @@ describe('proveUnit', () => {
 		expect(git(root, 'worktree', 'list')).not.toContain('delendai-prove');
 	});
 
-	it('installs nothing for a project with no package manifest', async () => {
+	it('[<1000ms] installs nothing for a project with no package manifest', async () => {
 		const root = repoWith({
 			'delendai.config.json': JSON.stringify({
 				validationMatrix: {
@@ -195,7 +212,7 @@ describe('proveUnit', () => {
 		expect(ran).toEqual(['make test']);
 	});
 
-	it('says why it could not install, and passes nothing', async () => {
+	it('[<1000ms] says why it could not install, and passes nothing', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const report = await proveUnit({
@@ -229,7 +246,7 @@ describe('a proof across a proposal transition', () => {
 			run: () => ({ code: 0, output: '' }),
 		});
 
-	it('is remembered when only transitions of proposal documents came after it', async () => {
+	it('[<3000ms] is remembered when only transitions of proposal documents came after it', async () => {
 		const root = repoWith(PROVING);
 		await proved(root, git(root, 'rev-parse', 'HEAD'));
 		commitOn(
@@ -245,7 +262,7 @@ describe('a proof across a proposal transition', () => {
 		expect((await proved(root, tip)).remembered).toBe(true);
 	});
 
-	it('is proved again after any other commit, or a transition that touched more', async () => {
+	it('[<3000ms] is proved again after any other commit, or a transition that touched more', async () => {
 		const root = repoWith(PROVING);
 		await proved(root, git(root, 'rev-parse', 'HEAD'));
 		const edited = commitOn(
@@ -263,7 +280,7 @@ describe('a proof across a proposal transition', () => {
 });
 
 describe('proofKey', () => {
-	it('changes with the tree and with the proof', () => {
+	it('[<50ms] changes with the tree and with the proof', () => {
 		const a = proofKey('t1', [{ command: 'bun run prove' }]);
 		expect(proofKey('t1', [{ command: 'bun run prove' }])).toBe(a);
 		expect(proofKey('t2', [{ command: 'bun run prove' }])).not.toBe(a);

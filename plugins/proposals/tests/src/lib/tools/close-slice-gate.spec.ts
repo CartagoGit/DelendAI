@@ -85,7 +85,7 @@ const runsRecorded = (counter: string): number =>
 
 describe('runCloseSliceGate', () => {
 	it('answers pending with a handle when the gate outlives the wait, then passes on resume', async () => {
-		const fixture = checkoutWithGate('sleep 2 && echo ran >> $COUNTER');
+		const fixture = checkoutWithGate('sleep 0.6 && echo ran >> $COUNTER');
 
 		const first = await runCloseSliceGate(
 			depsFor(fixture, { waitMs: 100 }),
@@ -104,7 +104,7 @@ describe('runCloseSliceGate', () => {
 	});
 
 	it('never reports a still-running gate as a pass through the probe', async () => {
-		const fixture = checkoutWithGate('sleep 2');
+		const fixture = checkoutWithGate('sleep 0.6');
 
 		const probe = await runCloseSliceGateProbe(
 			depsFor(fixture, { waitMs: 100 }),

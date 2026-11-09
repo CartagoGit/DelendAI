@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 /**
- * ci-publication-filters — the publication prefixes ci.yml's head filters
- * name must be exactly the ones the development policy owns (f00808).
+ * ci-publication-filters — the publication and train prefixes ci.yml's
+ * ref filters name must be exactly the ones the development policy owns
+ * (f00808).
  *
  * YAML cannot read the policy, so `startsWith(github.head_ref, '…pr/')`
  * is spelled in the workflow. When the namespace changes, or a former one
@@ -11,21 +12,32 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { ownedPublicationRefPrefixes, parseJsonc } from '@delendai/core/cli';
+import {
+	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
+	parseJsonc,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
 
-/** The prefixes each line's `startsWith(github.head_ref|ref, '…pr/')` filters name. */
+/**
+ * The prefixes each line's `startsWith(github.head_ref|ref, '…<segment>')`
+ * filters name: `pr/` for publications, `train/` for the queue's trains.
+ */
 export const workflowPublicationFilters = (
 	workflow: string,
+	segment: 'pr/' | 'train/' = 'pr/',
 ): readonly (readonly string[])[] =>
 	workflow
 		.split('\n')
 		.map((line) =>
 			[
 				...line.matchAll(
-					/startsWith\(github\.(?:head_ref|ref), '([^']*pr\/)'\)/gu,
+					new RegExp(
+						`startsWith\\(github\\.(?:head_ref|ref), '([^']*${segment})'\\)`,
+						'gu',
+					),
 				),
 			].map((match) => (match[1] ?? '').replace(/^refs\/heads\//u, '')),
 		)
@@ -35,13 +47,14 @@ export const workflowPublicationFilters = (
 export const assertPublicationFilters = (
 	workflow: string,
 	owned: readonly string[],
+	segment: 'pr/' | 'train/' = 'pr/',
 ): void => {
 	const want = [...owned].sort().join(', ');
-	for (const named of workflowPublicationFilters(workflow)) {
+	for (const named of workflowPublicationFilters(workflow, segment)) {
 		const got = [...new Set(named)].sort().join(', ');
 		if (got !== want) {
 			throw new Error(
-				`ci.yml filters publications by ${got}, but the policy owns ${want}: name every owned publication prefix (development.branches.namespacePrefix and formerNamespacePrefixes).`,
+				`ci.yml filters ${segment} refs by ${got}, but the policy owns ${want}: name every owned ${segment} prefix (development.branches.namespacePrefix and formerNamespacePrefixes).`,
 			);
 		}
 	}
@@ -54,16 +67,18 @@ const main = (): number => {
 	);
 	const development = (value as { development?: Record<string, unknown> })
 		.development;
-	const owned = ownedPublicationRefPrefixes(
-		resolveDevelopmentPolicy(
-			development === undefined ? {} : { development },
-		).branches,
+	const { branches } = resolveDevelopmentPolicy(
+		development === undefined ? {} : { development },
 	);
+	const owned = ownedPublicationRefPrefixes(branches);
+	const trains = ownedTrainPrefixes(branches);
 	try {
-		assertPublicationFilters(
-			readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8'),
-			owned,
+		const workflow = readFileSync(
+			join(root, '.github/workflows/ci.yml'),
+			'utf8',
 		);
+		assertPublicationFilters(workflow, owned);
+		assertPublicationFilters(workflow, trains, 'train/');
 	} catch (error) {
 		console.error(
 			`✖ ci-publication-filters: ${error instanceof Error ? error.message : String(error)}`,
@@ -71,7 +86,7 @@ const main = (): number => {
 		return 1;
 	}
 	console.log(
-		`✓ ci-publication-filters: ci.yml names ${owned.join(', ')}, the publication prefixes the policy owns.`,
+		`✓ ci-publication-filters: ci.yml names ${[...owned, ...trains].join(', ')}, the publication and train prefixes the policy owns.`,
 	);
 	return 0;
 };

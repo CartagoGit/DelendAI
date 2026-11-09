@@ -65,6 +65,7 @@ export {
 } from './lib/work-units/shared-checkout-clean.service';
 // The editor-side barrier: a host's pre-edit hook asks it before a write.
 export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
+export { rescueAfterShell } from './lib/work-units/shared-checkout-shell-rescue.service';
 export { agentFor } from './lib/work-units/work-unit-shared.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
@@ -85,10 +86,77 @@ export type {
 } from './lib/contracts/interfaces/policy-identity.interface';
 // What a refusal says next: how work starts and lands in this profile.
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
+// Every namespace delendai owns, current first: the queue's trains are read
+// under a former one too.
 export {
+	allowedRefPatterns,
+	insideNamespaces,
+	ownedNamespaces,
 	ownedPublicationRefPrefixes,
+	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
-} from './lib/development-policy/owned-ref-prefixes';
+	policyNamespaces,
+	publicationPrefixesOf,
+	shortName,
+	underNamespace,
+	underPublication,
+} from './lib/integration/decisions/namespaces.helper';
+// The integration decisions: ready, overlap, grouping, culprit, landed.
+export {
+	acceptIndependent,
+	acceptRiders,
+	footprintFromReach,
+	groupByOverlap,
+	isReviewBatch,
+	overlapBetween,
+} from './lib/integration/decisions/overlap.helper';
+export type {
+	IChangeFootprint,
+	ICandidateAcceptance,
+	IQueueCandidateChange,
+	ITrainPriority,
+} from './lib/integration/decisions/overlap.interface';
+export {
+	authorsOwn,
+	byQueuePosition,
+	candidateDispositions,
+	orphanedCandidates,
+	pullRequestReady,
+	queueHead,
+	queueOrder,
+	toBringForward,
+} from './lib/integration/decisions/readiness.helper';
+export type {
+	ICandidateDisposition,
+	ICandidateState,
+	ICandidateVerdict,
+	IPullRequestChecks,
+	IQueueCandidateFacts,
+} from './lib/integration/decisions/readiness.interface';
+export { TRAIN_CAPACITY } from './lib/integration/decisions/culprit.constant';
+export {
+	attributeCulprit,
+	culpritRefName,
+	culpritsAmong,
+	isCulpritMarker,
+	trainMembers,
+	trainRefName,
+	trainStep,
+	trainsToPrune,
+} from './lib/integration/decisions/culprit.helper';
+export type {
+	IIntegrationCertification,
+	ITrainCandidate,
+	ITrainStep,
+} from './lib/integration/decisions/culprit.interface';
+export {
+	pullRequestLanded,
+	putsBack,
+	takesOff,
+	workRefFate,
+	workRefLanded,
+	workRefProposalOpen,
+} from './lib/integration/decisions/landed.helper';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,
@@ -105,14 +173,20 @@ export {
 	agentEnvironmentMarker,
 	isAgentEnvironmentVariable,
 } from './lib/work-identity/agent-environment.helper';
+export {
+	ciEnvironmentMarker,
+	isRunningInProjectCi,
+} from './lib/work-identity/ci-environment.helper';
 export { gitActorMarker } from './lib/work-identity/git-actor.helper';
 export {
 	AGENT_ENVIRONMENT_MARKERS,
 	DELENDAI_SESSION_VARIABLE,
+	UNIT_SESSION_VARIABLE,
 } from './lib/contracts/constants/agent-environment.constant';
 export { readUnitRefFacts } from './lib/work-units/unit-ref-facts.service';
 export { touchUnitOfCheckout } from './lib/work-units/unit-lease.service';
 export { pushUnitTip } from './lib/work-units/unit-push.service';
+export { linkSharedDependencies } from './lib/work-units/unit-shared-dependencies.service';
 export { hookFreeEnvironment } from './lib/shared/hook-free-environment.helper';
 export { publicationOnLeavingProgress } from './lib/work-units/unit-leaves-progress.service';
 export type { IUnitPush } from './lib/contracts/interfaces/unit-push.interface';
@@ -163,6 +237,7 @@ export type {
 	IAdoption,
 } from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
+export { noteUnitUrgency } from './lib/work-units/pull-request-urgency.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';
 export type {

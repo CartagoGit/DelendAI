@@ -19,11 +19,9 @@ import {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '../development-policy/owned-ref-prefixes';
+	shortName as bare,
+} from '../integration/decisions/namespaces.helper';
 import { namespacedRef } from './namespaced-ref.helper';
-
-const bare = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** Each former prefix with the current prefix it moves to, and its namespace. */
 const formerPairs = (

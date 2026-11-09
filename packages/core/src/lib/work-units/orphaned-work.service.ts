@@ -14,7 +14,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { DEFAULT_CACHE_DIR } from '../contracts/constants/delendai-records.constant';
 import {
 	ORPHAN_RESCUE_ATTEMPTS,
@@ -38,6 +38,7 @@ import { listUnitLeases } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
 import { ownActivityAt } from './unit-activity.helper';
 import { leaseWindowSeconds } from './unit-verdict.service';
+import { unitLifeReader } from './unit-liveness.service';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 import { integrationBase, readGit } from './work-unit-shared.service';
 
@@ -51,6 +52,22 @@ const minutes = (seconds: number): string =>
  */
 export const judgeAuthor = (evidence: IAuthorEvidence): IAuthorPresence => {
 	const { lease, now, windowSeconds } = evidence;
+	// A unit that ended by delivering its work is not abandoned: the work is
+	// in a publication waiting for its pull request, which nobody needs the
+	// author for until the pull request is red. Past the recovery window
+	// nothing waits any longer, and the usual judgement follows.
+	if (evidence.unitEnded && evidence.deliveredAt !== undefined) {
+		const waiting = Math.max(0, now - evidence.deliveredAt);
+		const recoverySeconds = windowSeconds * ABANDONED_AFTER_LEASE_WINDOWS;
+		if (waiting <= recoverySeconds) {
+			return {
+				orphaned: false,
+				reason: null,
+				silentSeconds: waiting,
+				why: `delivered ${minutes(waiting)} ago and waiting for its pull request, inside the ${minutes(recoverySeconds)} recovery window`,
+			};
+		}
+	}
 	// An ended unit has no commit of its own to come: only a lease says
 	// somebody is on it again.
 	const beat =
@@ -157,6 +174,11 @@ export const publicationPresence = async (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly publications: readonly string[];
+	/**
+	 * The tip of each publication by short name. Given, a publication whose
+	 * unit ended by delivering it is dated from its own tip.
+	 */
+	readonly tips?: ReadonlyMap<string, string> | undefined;
 	readonly now?: number | undefined;
 }): Promise<
 	ReadonlyMap<string, IAuthorPresence & { readonly agent: string }>
@@ -174,6 +196,8 @@ export const publicationPresence = async (input: {
 	const windowSeconds = leaseWindowSeconds(
 		policy.coordination.leaseTtlMinutes,
 	);
+	// An author still on the unit is no orphan, whatever its lease says.
+	const lifeOf = unitLifeReader({ root, policy, now });
 	const presence = new Map<
 		string,
 		IAuthorPresence & { readonly agent: string }
@@ -193,14 +217,31 @@ export const publicationPresence = async (input: {
 						sha,
 						integration,
 					);
+		const unitEnded = sha === undefined && adopter === undefined;
+		const published = input.tips?.get(name);
+		const deliveredAt =
+			unitEnded && published !== undefined
+				? ownActivityAt(
+						(args) => readGit(root, args) ?? '',
+						published,
+						integration,
+					)
+				: undefined;
+		const judged = judgeAuthor({
+			lease,
+			tipAt,
+			...(deliveredAt === undefined ? {} : { deliveredAt }),
+			unitEnded,
+			now,
+			windowSeconds,
+		});
+		const life = judged.orphaned
+			? await lifeOf({ ref: lease?.ref ?? workRef, lease })
+			: undefined;
 		presence.set(name, {
-			...judgeAuthor({
-				lease,
-				tipAt,
-				unitEnded: sha === undefined && adopter === undefined,
-				now,
-				windowSeconds,
-			}),
+			...(life?.alive === true
+				? { ...judged, orphaned: false, reason: null, why: life.why }
+				: judged),
 			agent:
 				lease?.owner.agent ??
 				identityOf(name, policy, policy.branches.publicationRefPrefix)

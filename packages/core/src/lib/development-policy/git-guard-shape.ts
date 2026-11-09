@@ -17,7 +17,7 @@ import {
 	insideNamespaces,
 	policyNamespaces,
 	shortName,
-} from './git-guard-namespaces';
+} from '../integration/decisions/namespaces.helper';
 import { refuseLiveUnitDeletion } from './git-guard-live-unit';
 import {
 	ownedWorkRefShapeOf,

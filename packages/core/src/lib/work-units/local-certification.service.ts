@@ -7,11 +7,20 @@
  * work ref alone would answer a question about a state the branch will
  * never be in.
  *
- * WHERE: a detached worktree of that commit, added inside the git
- * directory and removed afterwards. The shared checkout is where other
- * agents are editing; running a gate there would test their loose edits
- * and could rewrite their files. Inside the git directory the worktree
- * never shows as an untracked path and dies with the repository.
+ * WHERE: a detached worktree of that commit, added under the
+ * repository's ignored cache directory and removed afterwards. The shared
+ * checkout is where other agents are editing; running a gate there would
+ * test their loose edits and could rewrite their files. Under the cache
+ * directory the worktree never shows as an untracked path and dies with
+ * the repository.
+ *
+ * NOT under `.git/`: bundlers deny serving files that live inside a git
+ * directory (Vite's default `server.fs.deny` denies every path under a
+ * `.git` directory), so a gate that runs a test suite in a worktree
+ * placed there cannot load the project's own setup files — it fails with
+ * `Cannot find module '/tests/setup-vitest.ts'` before a single test
+ * runs. The tree has to be inside the repository (so `node_modules`
+ * still resolves by walking up) but outside any `.git` directory.
  *
  * WITH WHICH GATE: the one the integration head declares, read from that
  * commit — never the candidate's own declaration, or a unit could land by
@@ -21,6 +30,7 @@
  * be put on disk, and a step that failed all yield a report that does not
  * pass. Nothing here can turn "could not check" into "checked".
  */
+import { committedFileReader } from './committed-file-reader.helper';
 import { runGitCommand } from '../shared/git-command.helper';
 import type { IGitCommandResult } from '../contracts/interfaces/git-command.interface';
 import { spawnSync } from 'node:child_process';
@@ -38,6 +48,7 @@ import {
 	lowPriorityShell,
 } from '../platform/background-load.service';
 import { validationGateSteps } from './validation-gate-steps.service';
+import { forgetGitReads } from '../shared/git-read.helper';
 
 /** How many trailing lines of a failed step's output a report keeps. */
 const OUTPUT_TAIL_LINES = 20;
@@ -56,6 +67,7 @@ export const runCertificationCommand: ICertificationCommandRunner = (
 ) => {
 	// The machine is the owner's: a proof runs at the lowest priority and
 	// with half the cores unless the environment says otherwise.
+	forgetGitReads();
 	const result = spawnSync(lowPriorityShell(command), {
 		cwd,
 		env: backgroundEnv(),
@@ -64,6 +76,7 @@ export const runCertificationCommand: ICertificationCommandRunner = (
 		stdio: ['ignore', 'pipe', 'pipe'],
 		maxBuffer: 64 * 1024 * 1024,
 	});
+	forgetGitReads();
 	return {
 		code: result.status ?? 1,
 		output: `${result.stdout ?? ''}${result.stderr ?? ''}${result.error === undefined ? '' : String(result.error)}`,
@@ -82,29 +95,24 @@ export const certifyCandidate = async (
 		againstIntegrationSha: integrationSha,
 		candidateSha,
 	};
-	const steps = validationGateSteps((path) => {
-		const shown = git(root, ['show', `${integrationSha}:${path}`]);
-		return shown.ok ? shown.out : undefined;
-	});
+	const steps = validationGateSteps(
+		committedFileReader(root, integrationSha),
+	);
 	if (steps.length === 0) {
 		return { ...base, declared: false, passed: false, steps: [] };
 	}
 
-	const gitDir = git(root, [
-		'rev-parse',
-		'--path-format=absolute',
-		'--git-common-dir',
-	]);
-	if (!gitDir.ok || gitDir.out.length === 0) {
+	const topLevel = git(root, ['rev-parse', '--show-toplevel']);
+	if (!topLevel.ok || topLevel.out.length === 0) {
 		return {
 			...base,
 			declared: true,
 			passed: false,
 			steps: [],
-			setupFailure: `could not locate the git directory: ${gitDir.out}`,
+			setupFailure: `could not locate the git working tree: ${topLevel.out}`,
 		};
 	}
-	const parent = join(gitDir.out, 'delendai-certify');
+	const parent = join(topLevel.out, '.cache', 'delendai', 'certify');
 	const dir = join(
 		parent,
 		`${candidateSha.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
@@ -146,7 +154,9 @@ export const certifyCandidate = async (
 			steps: results,
 		};
 	} finally {
+		// Only the worktree this call made. A global `worktree prune` here
+		// dropped the registration of other units' worktrees mid-operation;
+		// a stale entry is the reclaimer's to prune.
 		git(root, ['worktree', 'remove', '--force', dir]);
-		git(root, ['worktree', 'prune']);
 	}
 };

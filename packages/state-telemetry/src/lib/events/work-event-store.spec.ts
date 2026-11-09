@@ -118,6 +118,7 @@ import { SqliteWorkEventStore } from ${JSON.stringify(storeModule)};
 
 const [dbFile, dir, name, peer, total] = process.argv.slice(2);
 writeFileSync(join(dir, name + '.ready'), '');
+// delendai:timing-is-the-subject — a rendezvous poll on a file: it ends when the peer is ready, never on a clock.
 while (!existsSync(join(dir, peer + '.ready'))) Bun.sleepSync(1);
 const store = new SqliteWorkEventStore({ path: dbFile });
 for (let index = 0; index < Number(total); index += 1) {
@@ -203,6 +204,7 @@ import { SqliteWorkEventStore } from ${JSON.stringify(storeModule)};
 const [dbFile, dir, name, total, warmup] = process.argv.slice(2);
 const store = new SqliteWorkEventStore({ path: dbFile });
 console.log('ready');
+// delendai:timing-is-the-subject — a start gate on a file: it ends when the parent writes it, never on a clock.
 while (!existsSync(join(dir, 'start'))) Bun.sleepSync(1);
 for (let index = 0; index < Number(total); index += 1) {
 	store.append({

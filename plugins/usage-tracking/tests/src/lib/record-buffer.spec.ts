@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { IPluginLogInput } from '@delendai/core/public';
+import { useFakeClock } from '@delendai/test-kit';
 import {
 	drainLiveBuffers,
 	RecordBuffer,
@@ -59,10 +60,16 @@ describe('RecordBuffer (CRITICAL C2 buffered append)', () => {
 	});
 
 	it('flushes on the time window when the batch is not filled', async () => {
+		const clock = useFakeClock({
+			toFake: ['setTimeout', 'clearTimeout'],
+		});
 		const buf = new RecordBuffer(logPath, { maxBatch: 64, maxDelayMs: 20 });
 		buf.push({ n: 1 });
 		buf.push({ n: 2 });
-		await new Promise((r) => setTimeout(r, 60));
+		// The window is moved, not waited for: the timer fires the flush,
+		// and `flush()` hands back that same in-flight write.
+		clock.advance(20);
+		await buf.flush();
 		expect(readLines(logPath)).toHaveLength(2);
 	});
 

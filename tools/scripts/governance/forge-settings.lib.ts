@@ -25,15 +25,11 @@
  */
 
 import {
+	allowedRefPatterns,
 	hasSeparateReleaseBranch,
-	protectedBranchNames,
 } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
-import {
-	ownedPublicationRefPrefixes,
-	ownedWorkRefPrefixes,
-} from '@delendai/core/cli';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {
@@ -291,35 +287,7 @@ export const branchProtectionModule = (
 export const namespaceRuleset = (
 	policy: IResolvedDevelopmentPolicy,
 ): Readonly<Record<string, unknown>> => {
-	const allowed = [
-		...protectedBranchNames(policy.branches).map(
-			(branch) => `refs/heads/${branch}`,
-		),
-		// Every owned namespace, the former ones included: a unit entered
-		// before a namespace change still publishes under its own (f00808).
-		...(policy.branches.workRefVisibility === 'visible'
-			? ownedWorkRefPrefixes(policy.branches).map(
-					(prefix) =>
-						`${prefix.startsWith('refs/') ? prefix : `refs/${prefix}`}**/*`,
-				)
-			: []),
-		// The publication namespace is as DEEP as the work namespace,
-		// because a publication carries the name of the work it publishes
-		// (x00568): `{ns}/pr/{agent}/{proposal}-{slice}-g{n}/{topic}`.
-		// This pattern read `**` while the work ref read `**/*`, and
-		// `**` matches ONE segment — so the forge declined every
-		// canonical publication ref with "creations being restricted",
-		// and the only names it would accept were flat ones. That is why
-		// every `pr/` ref in this namespace had no agent, no slice and no
-		// generation in it. The two namespaces share a shape; they now
-		// share a depth.
-		...ownedPublicationRefPrefixes(policy.branches)
-			.filter((prefix) => prefix !== '')
-			.map((prefix) => `refs/heads/${prefix}**/*`),
-		...policy.branches.foreignRefPrefixes.map(
-			(prefix) => `refs/heads/${prefix}**`,
-		),
-	];
+	const allowed = allowedRefPatterns(policy);
 	return {
 		name: 'branch-namespace',
 		target: 'branch',

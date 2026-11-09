@@ -18,6 +18,35 @@ describe('no-sleep-in-specs (x00590)', () => {
 		expect(sleepsIn('await Bun.sleep(10);')).toHaveLength(1);
 	});
 
+	it('finds a wrapped timer kept in a helper, on one line or across several', () => {
+		// A `pause` helper escaped the rule because only an awaited
+		// `new Promise` was matched.
+		expect(
+			sleepsIn(
+				'const pause = (ms: number) =>\n\tnew Promise((resolve) =>\n\t\tsetTimeout(resolve, ms));',
+			),
+		).toEqual([{ line: 2, match: expect.stringContaining('setTimeout') }]);
+		expect(
+			sleepsIn('const nap = new Promise<void>((r) => setTimeout(r, 5));'),
+		).toHaveLength(1);
+		expect(sleepsIn('Atomics.wait(cell, 0, 0, 50);')).toHaveLength(1);
+		expect(sleepsIn('sleepSync(20);')).toHaveLength(1);
+	});
+
+	it('lets a spec through the fake clock or a barrier', () => {
+		expect(
+			sleepsIn('const clock = useFakeClock();\nclock.advance(60);'),
+		).toEqual([]);
+		expect(
+			sleepsIn("await waitUntil('flushed', () => lines() === 2);"),
+		).toEqual([]);
+		expect(
+			sleepsIn(
+				'new Promise<void>((resolve) => child.once("exit", resolve));',
+			),
+		).toEqual([]);
+	});
+
 	it('says nothing about a setTimeout that merely schedules', () => {
 		// Scheduling is normal, and is often the subject of the test. What
 		// is refused is AWAITING a duration.

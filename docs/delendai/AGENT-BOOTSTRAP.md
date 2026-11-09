@@ -320,6 +320,7 @@ the focused validation pass before committing. The read-only guard is
   file, agent answer, or generated fragment.** The server is the only
   source. If you find yourself wanting to list them, **stop** and call
   `delendai_agent_catalog` instead.
+- **Every test names its max time**, `[<7ms] does X`; the run fails one with none or over. See the test-kit README.
 - **Code quality is a non-negotiable default.** In this project and in
   any project that uses `delendai`, every design, code change, file
   or folder name, proposal, slice and answer must reflect, by default

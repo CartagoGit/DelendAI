@@ -12,3 +12,32 @@ export interface IGitReadOptions {
 	/** Written to git's standard input (`hash-object --stdin`, …). */
 	readonly input?: string | undefined;
 }
+
+/** One git process about to run: where, and with which arguments. */
+export interface IGitSpawn {
+	readonly cwd: string;
+	readonly args: readonly string[];
+}
+
+/** Told of every git process the seam starts, before it starts. */
+export type IGitSpawnObserver = (spawn: IGitSpawn) => void;
+
+/**
+ * What one command invocation may remember of its git reads. The seam
+ * asks before a read spawns and tells after; every git command that runs,
+ * read or write, is reported to `ran` so the cache can forget what that
+ * command may have changed.
+ */
+export interface IGitReadCache {
+	/** The remembered raw output (`undefined` = git failed), or no entry. */
+	recall(
+		spawn: IGitSpawn,
+	): { readonly output: string | undefined } | undefined;
+	remember(spawn: IGitSpawn, output: string | undefined): void;
+	ran(spawn: IGitSpawn): void;
+	/**
+	 * Forget only the reads a writer of `unit` may have changed: ref
+	 * listings and lookups that can name it, and the worktree listings.
+	 */
+	forgetUnit(unit: string): void;
+}

@@ -23,6 +23,7 @@ describe('scan/magic-numbers — MAGIC_WHITELIST', () => {
 describe('scan/magic-numbers — detectMagicNumbers', () => {
 	it('flags a 5-digit numeric literal', () => {
 		const body =
+			// delendai:timing-is-the-subject — scanner fixture text, never run.
 			'export const wait = (ms: number) => new Promise((r) => setTimeout(r, 12345));';
 		const hits = detectMagicNumbers(body);
 		expect(hits).toHaveLength(1);

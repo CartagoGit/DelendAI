@@ -40,6 +40,25 @@ edited there.
 - Never leave a unit idle: every work command is its heartbeat, and 30 minutes of silence
   lists it for adoption.
 
+## Before you hand over
+
+- Finish the work while the proposal is still `in-progress`: leaving that state publishes the unit on its own, with none of your gates run.
+- End every proposal with an `## acceptance` section; a proposal without one fails the proposal lint.
+- Run each acceptance line against what you delivered. A line that is no longer true is rewritten with what was cut and why; reviewers judge the text, and a mismatch is a bounce.
+- Leave slices `pending` and add no `shipped-in` by hand: the review transition (`work deliver`) records both. Never move a finished proposal to `done` yourself; the author approving their own closure removes the only independent check.
+- On a resubmit, say in the note what answered the request.
+
+## Ending and recovering units
+
+- Every unit ends in `publish` or `retire`; a tip is never kept under a hand-made ref and a ref is never deleted with raw git. If the product cannot clean something, that is a missing command: file it, do not script around it.
+- `retire` refuses uncommitted changes; `work retired --drop` removes read, spent work; `reap` removes stale directories.
+- Before ending a batch of delegated units, list worktrees and your agents' wip refs: each is published, being resumed or abandoned on purpose. After a quota or rate-limit failure, resume the agent with its unit ref.
+- A different `--generation` is a deliberate second attempt; use it only after reading the refusal that names the existing unit.
+- A worktree that reports `Cannot find module` in files you did not touch needs its dependencies installed or linked before you judge the change.
+- In a script, take the path from `enter --print-path` and guard it (`[ -n "$W" ] && [ -d "$W" ] || exit 1`) before any git command: an empty path makes `cd` a no-op and the rest runs in the shared checkout.
+- A write that replaces a file destroys the existing one without a trace. List the path first; create only what is absent.
+- Anything that departs from this workflow (naming drift, a claim that did not exclude, a unit nobody ended) is evidence of a system defect: record it with its evidence in a proposal so it becomes a refusal, and do not just work around it.
+
 ## Waiting on long work
 
 `prove`, `deliver` and `publish` can wait their turn for the machine's proof slot. Wait

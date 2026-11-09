@@ -250,6 +250,30 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(exclude).not.toContain('refs/heads/delendai/pr/**');
 	});
 
+	it('admits a train ref and a culprit ref (the queue pushes both)', () => {
+		// `delendai/train/<sha12>/<members>` and `delendai/train/culprit/<n>`:
+		// without this the forge declined every train and the queue landed
+		// nothing.
+		expect(exclude).toContain('refs/heads/delendai/train/**/*');
+	});
+
+	it('admits the train namespace of every namespace the policy owns, old and new', () => {
+		const migrating = policyFor({
+			profile: 'shared-checkout-pr',
+			branches: {
+				namespacePrefix: '',
+				formerNamespacePrefixes: ['delendai'],
+			},
+		});
+		const both = (
+			namespaceRuleset(migrating) as {
+				conditions: { ref_name: { exclude: readonly string[] } };
+			}
+		).conditions.ref_name.exclude;
+		expect(both).toContain('refs/heads/train/**/*');
+		expect(both).toContain('refs/heads/delendai/train/**/*');
+	});
+
 	it('gives work and publication the same depth', () => {
 		const work = exclude.filter((p) => p.includes('/wip/'));
 		const publication = exclude.filter((p) => p.includes('/pr/'));

@@ -18,6 +18,7 @@
  * this directory consumes. Nothing here knows about WIP refs.
  */
 
+import { withoutOptionalLocks } from '../shared/git-optional-locks.helper';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -26,6 +27,12 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../contracts/interfaces/git-runner.interface';
+import {
+	noteGitSettled,
+	noteGitSpawn,
+	recallGitRead,
+	rememberGitRead,
+} from '../shared/git-read.helper';
 import { stripAnsi } from '../shared/git-write';
 
 import type { IScopedGitRunner } from './git-command.interface';
@@ -71,6 +78,15 @@ export const createScopedGitRunner =
 	(cwd: string, timeoutMs = 60_000): IScopedGitRunner =>
 	(args, env) =>
 		new Promise<IGitRunResult>((resolve) => {
+			// A read in the process's own environment may be one the
+			// invocation already made; one under a temporary index may not.
+			const remembered =
+				env === undefined ? recallGitRead(cwd, args) : undefined;
+			if (remembered !== undefined) {
+				resolve({ ok: true, output: remembered });
+				return;
+			}
+			noteGitSpawn(cwd, args);
 			execFile(
 				'git',
 				[...args],
@@ -79,13 +95,17 @@ export const createScopedGitRunner =
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,
-					env:
+					env: withoutOptionalLocks(
 						env === undefined
 							? process.env
 							: { ...process.env, ...env },
+					),
 				},
 				(error, stdout, stderr) => {
+					noteGitSettled(cwd, args);
 					if (error === null) {
+						if (env === undefined)
+							rememberGitRead(cwd, args, stdout);
 						resolve({ ok: true, output: stdout });
 						return;
 					}

@@ -20,6 +20,7 @@ import {
 	workRefFor,
 } from './work-unit-shared.service';
 import { undeclaredSlice } from './declared-slice.service';
+import { integrationMergeSubjects } from './integration-merges.helper';
 import { takenProposalId } from './taken-proposal-id.service';
 
 /** The session holding the worktree `ref` is checked out in, if any. */
@@ -85,18 +86,11 @@ export const endedGenerations = (
 	const integrationRemoteName = integrationRemote(root, policy);
 	const remote = `refs/remotes/${integrationRemoteName}/${integration}`;
 	const tip =
-		readGit(root, ['rev-parse', '-q', '--verify', remote]) === undefined
+		readGit(root, ['rev-parse', '-q', '--verify', `${remote}^{commit}`]) ===
+		undefined
 			? integration
 			: remote;
-	const merged =
-		readGit(root, [
-			'log',
-			'--first-parent',
-			'--merges',
-			'--max-count=5000',
-			'--format=%s',
-			tip,
-		]) ?? '';
+	const merged = integrationMergeSubjects(root, tip).join('\n');
 	const retired =
 		readGit(root, [
 			'ls-remote',

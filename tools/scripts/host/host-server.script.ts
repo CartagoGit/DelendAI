@@ -14,9 +14,12 @@ import { fileURLToPath } from 'node:url';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
-	branchFlag,
 	branchHostScript,
-	withoutBranchFlag,
+	branchLabel,
+	runtimePin,
+	runtimeReport,
+	versionHostScript,
+	withoutRuntimeFlags,
 } from './branch-runtime.helper';
 import {
 	assembleCliConfig,
@@ -24,7 +27,11 @@ import {
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
-import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
+import {
+	applyGitOptionalLocksDefault,
+	backgroundEnv,
+	lowPriority,
+} from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
@@ -278,6 +285,9 @@ export const createStopHandler =
 	};
 
 const run = async (): Promise<void> => {
+	// Every git this host (and the server it supervises) starts reads
+	// without rewriting what it reads.
+	applyGitOptionalLocksDefault();
 	const forwarded = process.argv.slice(2);
 	if (hasHelpFlag(forwarded)) {
 		process.stdout.write(
@@ -634,29 +644,43 @@ const startHost = (): void => {
 // Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
 // module (to unit-test the argv parsing) without also booting a real server.
 if (import.meta.main) {
-	// A project that names a branch runs that branch's own host, supervisor
-	// included, so this checkout moving restarts nothing there.
-	const branch = branchFlag(process.argv);
-	if (branch !== undefined) {
-		const repository = resolve(
-			dirname(fileURLToPath(import.meta.url)),
-			'../../..',
+	// A project that names a branch or a release runs that one's own host,
+	// supervisor included, so this checkout moving restarts nothing there.
+	const pin = runtimePin(process.argv);
+	const repository = resolve(
+		dirname(fileURLToPath(import.meta.url)),
+		'../../..',
+	);
+	const runChild = (script: string, label: string): void => {
+		process.stderr.write(runtimeReport(label));
+		const child = spawn(
+			process.execPath,
+			[script, ...withoutRuntimeFlags(process.argv.slice(2))],
+			{ stdio: 'inherit' },
 		);
-		const script = await branchHostScript(repository, branch);
+		for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
+			process.on(signal, () => child.kill(signal));
+		child.on('exit', (code) => process.exit(code ?? 1));
+	};
+	const refuse = (reason: string): never => {
+		process.stderr.write(`[delendai] refusing to start: ${reason}\n`);
+		process.exit(1);
+	};
+	if (pin.kind === 'refused') {
+		refuse(pin.reason);
+	} else if (pin.kind === 'version') {
+		const resolved = await versionHostScript(repository, pin.version);
+		if (resolved.ok) runChild(resolved.script, resolved.label);
+		else refuse(resolved.reason);
+	} else if (pin.kind === 'branch') {
+		const script = await branchHostScript(repository, pin.branch);
 		if (script !== undefined) {
-			const child = spawn(
-				process.execPath,
-				[script, ...withoutBranchFlag(process.argv.slice(2))],
-				{ stdio: 'inherit' },
-			);
-			for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
-				process.on(signal, () => child.kill(signal));
-			child.on('exit', (code) => process.exit(code ?? 1));
+			runChild(script, branchLabel(pin.branch, script));
 		} else {
 			process.stderr.write(
-				`[delendai] no branch "${branch}": running this checkout's code.\n`,
+				`[delendai] no branch "${pin.branch}": running this checkout's code.\n`,
 			);
-			process.argv = [...withoutBranchFlag(process.argv)];
+			process.argv = [...withoutRuntimeFlags(process.argv)];
 			startHost();
 		}
 	} else {

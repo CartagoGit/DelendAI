@@ -11,6 +11,10 @@
  * credential, so it opens the pull request, or finds the one already
  * open. It never arms auto-merge: arming is the queue's job.
  */
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { landsByPullRequest } from '../development-policy/branch-rules';
+import { pullRequestPorts } from './change-request-forges.service';
+import { urgentLine, urgentReasonOfBody } from './pull-request-urgency.service';
 import type { IChangeRequestRef } from '../contracts/interfaces/change-request-forge.interface';
 import type {
 	IPublicationPullRequest,
@@ -37,7 +41,9 @@ const DELIVERY =
 
 /** The commit a recorded verdict leaves: which proposal it was on. */
 const VERDICT =
-	/proposal_review (?<proposal>[a-z]\d{5,}) \S+ (?:approve|request_changes)\b/iu;
+	/proposal_review (?<proposal>[a-z]\d{5,}) \S+ (?:approve|request_changes|submit)\b/iu;
+
+const CLAIM = /^chore\(review\): claim (?<proposal>[a-z]\d{5,})\b/iu;
 
 /**
  * The title of a pack of verdicts, or `undefined` for anything else. A
@@ -45,13 +51,26 @@ const VERDICT =
  * its bookkeeping commits came first: approvals of one proposal went out
  * as "release" of another.
  */
-const verdictTitle = (subjects: readonly string[]): string | undefined => {
+const verdictTitle = (
+	subjects: readonly string[],
+	branch: string,
+): string | undefined => {
 	const judged = subjects.flatMap(
 		(subject) => VERDICT.exec(subject)?.groups?.proposal ?? [],
 	);
-	if (judged.length === 0) return undefined;
-	const ids = [...new Set(judged.map((id) => id.toLowerCase()))];
-	return `review: ${String(judged.length)} verdict(s) on ${ids.join(', ')}`;
+	const ids = (list: readonly string[]): string =>
+		[...new Set(list.map((id) => id.toLowerCase()))].join(', ');
+	if (judged.length > 0) {
+		return `review: ${String(judged.length)} verdict(s) on ${ids(judged)}`;
+	}
+	// A pack of a review unit is never "implement batch" (x01032): before
+	// its first verdict it is named for what it has claimed.
+	const claimed = subjects.flatMap(
+		(subject) => CLAIM.exec(subject)?.groups?.proposal ?? [],
+	);
+	return branch.includes('/review/') && claimed.length > 0
+		? `review: claim(s) on ${ids(claimed)}`
+		: undefined;
 };
 
 /**
@@ -85,6 +104,7 @@ export const pullRequestText = (
 	subjects: readonly string[],
 	branch: string,
 	fallback: string,
+	urgent?: string,
 ): { readonly title: string; readonly body: string } => {
 	const oldestFirst = [...subjects].reverse();
 	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
@@ -99,7 +119,7 @@ export const pullRequestText = (
 	// touched a document: "docs(…): x names y" titled a pack that closed
 	// three proposals.
 	const verdicts = deliveries.every((subject) => subject.startsWith('docs'))
-		? verdictTitle(oldestFirst)
+		? verdictTitle(oldestFirst, branch)
 		: undefined;
 	const first = verdicts ?? deliveries[0] ?? meaningful[0] ?? fallback;
 	const title =
@@ -112,7 +132,7 @@ export const pullRequestText = (
 		.join('\n');
 	return {
 		title,
-		body: `Opened by \`delendai work publish\` for \`${branch}\`.\n\n${listed}`,
+		body: `Opened by \`delendai work publish\` for \`${branch}\`.${urgent === undefined ? '' : `\n\n${urgentLine(urgent)}`}\n\n${listed}`,
 	};
 };
 
@@ -155,7 +175,15 @@ const refreshOpenPullRequest = (
 		};
 	}
 	const subjects = subjectsOf(input);
-	const text = pullRequestText(subjects, input.branch, input.fallbackTitle);
+	const current = forge.read(ports.run, ref);
+	// A republish keeps the mark the pull request already carries.
+	const urgent = input.urgent ?? urgentReasonOfBody(current?.body);
+	const text = pullRequestText(
+		subjects,
+		input.branch,
+		input.fallbackTitle,
+		urgent,
+	);
 	const files = (
 		ports.git([
 			'diff',
@@ -175,7 +203,6 @@ const refreshOpenPullRequest = (
 			: []),
 	].join('\n');
 	const next = { title: text.title, body: `${text.body}\n\n${shipped}` };
-	const current = forge.read(ports.run, ref);
 	if (current?.title === next.title && current.body === next.body) {
 		return { status: 'existing', url: ref.url };
 	}
@@ -214,6 +241,8 @@ export const openPublicationPullRequest = (input: {
 	readonly tip: string;
 	readonly integrationBase: string;
 	readonly fallbackTitle: string;
+	/** Why the delivery is urgent, carried onto the pull request's body. */
+	readonly urgent?: string | undefined;
 	readonly ports: IPullRequestPorts;
 }): IPublicationPullRequest => {
 	const { ports } = input;
@@ -270,6 +299,7 @@ export const openPublicationPullRequest = (input: {
 		subjectsOf(input),
 		input.branch,
 		input.fallbackTitle,
+		input.urgent,
 	);
 	const created = ports.gh([
 		'pr',
@@ -313,4 +343,37 @@ export const openPublicationPullRequest = (input: {
 				reason: `\`gh pr create\` did not open it; \`${input.branch}\` stays published, and the owner machine opens its pull request into \`${input.base}\` after the next merge.`,
 			}
 		: { status: 'opened', url: opened };
+};
+
+/**
+ * The publication of a unit as a pull request, when its branch takes them
+ * and the caller did not say otherwise (`--no-pull-request`).
+ */
+export const openUnitPullRequest = async (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly args: readonly string[];
+	readonly remote: string;
+	readonly publicationRef: string;
+	readonly tip: string;
+	readonly integrationBase: string;
+	readonly fallbackTitle: string;
+	readonly urgent?: string | undefined;
+}): Promise<IPublicationPullRequest | undefined> => {
+	if (
+		!landsByPullRequest(input.policy) ||
+		input.args.includes('--no-pull-request')
+	) {
+		return undefined;
+	}
+	return openPublicationPullRequest({
+		remote: input.remote,
+		base: input.policy.branches.integration,
+		branch: input.publicationRef.replace(/^refs\/heads\//u, ''),
+		tip: input.tip,
+		integrationBase: input.integrationBase,
+		fallbackTitle: input.fallbackTitle,
+		urgent: input.urgent,
+		ports: await pullRequestPorts(input.root),
+	});
 };

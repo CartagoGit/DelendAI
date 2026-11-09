@@ -3,7 +3,7 @@
  * prove-plan.script.ts — prove a change before it is pushed, by the plan
  * CI will follow for it.
  *
- *   bun run prove [-- --base=<ref>]       the fast proof (default base: origin/develop)
+ *   bun run prove [-- --base=<ref>]       the fast proof (default base: the policy's integration branch)
  *   bun run prove:plan [-- --base=<ref>]  the plan CI will follow, in full
  *
  * The local proof used to be a second, bigger CI: every zone, every lint
@@ -29,6 +29,10 @@ import {
 	STATIC_CHECK_JOBS as STATIC_CHECK_FAMILIES,
 	staticChecksOf,
 } from './ci-static-steps';
+import {
+	declaredBranches,
+	declaredIntegrationRef,
+} from '../lib/declared-branches';
 import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
 import {
 	explainJobs,
@@ -37,6 +41,7 @@ import {
 	planInputSince,
 } from './job-scope.script';
 
+import { touchesIntegrationMachinery } from '../forge/train-rehearsal';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
 
@@ -246,7 +251,7 @@ const runChecks = async (base: string): Promise<boolean> => {
 	const checks = staticChecksOf(
 		readFileSync('.github/workflows/ci.yml', 'utf8'),
 		base,
-		'develop',
+		declaredBranches().integration,
 	).filter(
 		(check) =>
 			jobMustRun({ ...plan, job: check.job }) &&
@@ -372,7 +377,10 @@ export const fastSteps = (
 				[
 					'tests: the specs nearest the change',
 					[
-						'npx',
+						// Not npx: it hands the command to `sh -c` as one string,
+						// and a change that reaches every spec (the shared test
+						// config) names more than the 128 KB one argument allows.
+						'bunx',
 						'vitest',
 						'run',
 						'--coverage',
@@ -389,6 +397,16 @@ export const fastSteps = (
 					],
 				],
 			] as const)),
+	// The machinery that builds, pushes and judges a train is rehearsed on
+	// one, so the layer that fails the live queue fails here first.
+	...(touchesIntegrationMachinery(changed)
+		? ([
+				[
+					'train rehearsal',
+					['bun', 'tools/scripts/forge/train-rehearsal.script.ts'],
+				],
+			] as const)
+		: []),
 	...(changed.some((path) => BUN_SUITE.test(path))
 		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
 		: []),
@@ -428,7 +446,7 @@ const earlyStepsOfCode = (
 const main = async (): Promise<number> => {
 	const base = execFileSync(
 		'git',
-		['merge-base', arg('base') ?? 'origin/develop', 'HEAD'],
+		['merge-base', arg('base') ?? declaredIntegrationRef(), 'HEAD'],
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();

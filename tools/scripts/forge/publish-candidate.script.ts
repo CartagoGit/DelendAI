@@ -77,6 +77,7 @@ import type {
 	ICleanupStep,
 } from './publish-candidate.interface';
 import { describeCleanup, runCleanupSteps } from './publish-cleanup';
+import { shortName as shortRef } from '@delendai/core/cli';
 
 export type {
 	ICandidateContent,
@@ -285,9 +286,9 @@ export const proveCommit = (
 			try {
 				git(['worktree', 'remove', '--force', dir]);
 			} catch {
-				// Already gone. `prune` settles it.
+				// Already gone; a stale entry is pruned by the reclaimer, never
+				// by a global prune that drops other units' worktrees.
 			}
-			git(['worktree', 'prune']);
 		}
 	}
 };
@@ -420,19 +421,6 @@ export const readTreeObjectId = (
 	}
 	return objectId;
 };
-
-/**
- * The `gh` calls that turn a published ref into a pull request that will
- * merge itself once its checks pass.
- *
- * Publishing a ref and stopping was the gap another agent fell through:
- * a candidate on a ref nobody opened a pull request for is work that
- * looks delivered and never lands. `--open-pr` finishes the job, and
- * reuses an open pull request rather than opening a second one.
- */
-/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * Decide whether a work branch can be published as a candidate, and

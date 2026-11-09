@@ -16,6 +16,11 @@ import {
 	gitEnvironmentFor,
 	hookFreeEnvironment,
 } from './hook-free-environment.helper';
+import {
+	noteGitSpawn,
+	recallGitRead,
+	rememberGitRead,
+} from './git-read.helper';
 
 const DEFAULT_MAX_BUFFER = 64 * 1024 * 1024;
 
@@ -29,22 +34,24 @@ export const runGitCommand = (
 	args: readonly string[],
 	options: IGitCommandOptions = {},
 ): IGitCommandResult => {
+	const remembered = recallGitRead(cwd, args);
+	if (remembered !== undefined) return { ok: true, out: remembered.trim() };
+	noteGitSpawn(cwd, args);
 	try {
-		return {
-			ok: true,
-			out: execFileSync('git', [...args], {
-				cwd,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'pipe'],
-				maxBuffer: options.maxBuffer ?? DEFAULT_MAX_BUFFER,
-				env: {
-					...(options.hookFree === true
-						? hookFreeEnvironment()
-						: gitEnvironmentFor(cwd)),
-					...options.env,
-				},
-			}).trim(),
-		};
+		const output = execFileSync('git', [...args], {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+			maxBuffer: options.maxBuffer ?? DEFAULT_MAX_BUFFER,
+			env: {
+				...(options.hookFree === true
+					? hookFreeEnvironment()
+					: gitEnvironmentFor(cwd)),
+				...options.env,
+			},
+		});
+		rememberGitRead(cwd, args, output);
+		return { ok: true, out: output.trim() };
 	} catch (error) {
 		return { ok: false, out: stderrOf(error) };
 	}

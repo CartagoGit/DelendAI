@@ -1,5 +1,16 @@
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { changedFiles } from './tools/scripts/ci/declared-test-budget.ts';
+import {
+	CHANGED_ENV,
+	MIGRATION_ENV,
+	MIGRATION_ROOT_ENV,
+	SOFT_OVERRUN_ENV,
+} from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
  * `Alias` moved from `vitest/config` to `vite` in vitest 4.x, and
@@ -13,6 +24,19 @@ export interface Alias {
 	readonly find: string | RegExp;
 	readonly replacement: string;
 }
+
+/**
+ * Drop the trailing slashes of a path.
+ *
+ * A regex would do it in one line, but `/\/+$/` is the shape CodeQL
+ * reports as `js/polynomial-redos` — it already flagged it once in
+ * this repository (x01012) — so the slashes are counted instead.
+ */
+export const trimTrailingSlashes = (value: string): string => {
+	let end = value.length;
+	while (end > 0 && value.charAt(end - 1) === '/') end -= 1;
+	return value.slice(0, end);
+};
 
 /**
  * Path to the global console-silencing vitest setup. Wired into every
@@ -70,7 +94,7 @@ export const BUN_OWNED_SPECS: readonly string[] = [
  * to it, as vitest `exclude` globs.
  */
 export const bunOwnedExcludes = (projectDir: string): string[] => {
-	const prefix = `${projectDir.replace(/\/+$/u, '')}/`;
+	const prefix = `${trimTrailingSlashes(projectDir)}/`;
 	return BUN_OWNED_SPECS.filter((entry) => entry.startsWith(prefix)).map(
 		(entry) => {
 			const relative = entry.slice(prefix.length);
@@ -90,16 +114,68 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
+	// Every test declares its maximum time and the run fails one that
+	// exceeds it. It lives in the options every project spreads, so no
+	// project and no spec opts out (`lint:test-time-budget` and the shared
+	// config's spec prove each project loads it).
+	runner: timeBudgetRunnerPath(),
 } as const;
+
+/** The spec files still allowed tests with no budget. It only shrinks. */
+export const TIME_BUDGET_MIGRATION_LIST = resolve(
+	dirname(fileURLToPath(import.meta.url)),
+	'tools/scripts/test/test-time-budget.migration.json',
+);
+
+// The workers inherit this: the runner reads the list once per worker.
+process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
+process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
+
+// A budget is enforced where it is calibrated: on CI. Anywhere else the
+// wall time measures that machine, so an over-budget test is only reported
+// (a missing or malformed budget still fails). Follow-up: read this from the
+// shared `isRunningInProjectCi` once i00005 lands.
+if (process.env[SOFT_OVERRUN_ENV] === undefined) {
+	process.env[SOFT_OVERRUN_ENV] =
+		process.env['GITHUB_ACTIONS'] === undefined ? '1' : '0';
+}
+
+// A budget is asked of the files the change touches, so a test an older
+// branch lands cannot turn another change red. Unknown, nothing is let off.
+if (process.env[CHANGED_ENV] === undefined) {
+	const changed = changedFiles((args) =>
+		execFileSync('git', [...args], {
+			cwd: dirname(fileURLToPath(import.meta.url)),
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}),
+	);
+	if (changed !== undefined) {
+		process.env[CHANGED_ENV] = [...changed].join('\n');
+	}
+}
 
 /**
  * What makes a spec file unsafe to share a worker with other files: it
  * replaces a module, a global, a timer or `process.exit`, or it assigns to
  * `process.env`. With `isolate: false` those replacements outlive the file
  * and break whichever file runs next in the same worker.
+ *
+ * A file that boots real plugins through dynamic imports (the token budget
+ * measurement) opts in with the `@delendai-isolate` pragma: a module a
+ * previous file left in the shared graph keeps its lazy `import()` bound to
+ * that file's torn-down environment, so a plugin silently failed to load and
+ * the measured catalog lost its tools.
  */
 const NEEDS_ISOLATION =
-	/\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+	/@delendai-isolate|\bvi\.(?:mock|doMock|hoisted|spyOn|stubGlobal|stubEnv|unstubAllGlobals|unstubAllEnvs|useFakeTimers|setSystemTime|resetModules|importActual)\b|process\.(?:exit|chdir|on|once|off|emit|kill|exitCode)\b|\bSIG(?:TERM|INT|HUP)\b|process\.env(?:\.\w+|\[[^\]]+\])\s*=[^=]|delete\s+process\.env|Object\.defineProperty\(\s*(?:process|globalThis)\b|\bglobalThis\.\w+\s*=[^=]/u;
+
+/**
+ * The run order of the projects that share a worker. Vitest refuses two
+ * projects with different `maxWorkers` in the same order, and a project with
+ * `fileParallelism: false` runs on one worker, so it has an order of its own.
+ */
+export const SHARED_GRAPH_GROUP_ORDER = { parallel: 1, serial: 2 } as const;
 
 /** The name of a project's isolated half: the project's name and this. */
 export const ISOLATED_PROJECT_SUFFIX = '-isolated';
@@ -142,13 +218,10 @@ export const isolationSplit = (
 	);
 	return half === 'shared'
 		? {
-				// The same group as the other projects that share a worker:
-				// vitest refuses two groups with different workers but the
-				// same order.
 				options: {
 					...sharedTestOptions,
 					isolate: false,
-					sequence: { groupOrder: 1 },
+					sequence: { groupOrder: SHARED_GRAPH_GROUP_ORDER.parallel },
 				},
 				include: undefined,
 				exclude: isolated,
@@ -172,6 +245,12 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
  * remembering to wire them.
  */
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
+	// First: no spec reads the environment of the shell that runs it. The
+	// setups after this one set their own delendai variables.
+	resolve(
+		workspaceRoot,
+		'tools/scripts/test/hermetic-agent-identity-setup.ts',
+	),
 	silenceConsoleSetupFile(workspaceRoot),
 	resolve(workspaceRoot, 'tools/scripts/lib/record-reads-setup.ts'),
 	// No git a test spawns runs detached maintenance that outlives it.
@@ -182,11 +261,6 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-agent-bridge-setup.ts'),
 	// Every spec runs from the repository root, wherever the run started.
 	resolve(workspaceRoot, 'tools/scripts/test/hermetic-cwd-setup.ts'),
-	// No test reads the identity of the agent running it.
-	resolve(
-		workspaceRoot,
-		'tools/scripts/test/hermetic-agent-identity-setup.ts',
-	),
 ];
 
 /**

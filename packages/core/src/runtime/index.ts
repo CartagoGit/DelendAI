@@ -89,8 +89,18 @@ export { splitCommandLine } from '../lib/shared/command-line.helper';
 export type { IWorkRefVerdict } from '../lib/contracts/interfaces/work-ref-lifecycle.interface';
 export {
 	workRefFate,
+	workRefLanded,
+} from '../lib/integration/decisions/landed.helper';
+export {
+	workRefIntegrationRef,
 	workRefOpenness,
 } from '../lib/work-units/work-ref-lifecycle.service';
+export {
+	bodyWithUrgentLine,
+	urgencyNotePathOfPublication,
+	urgentReasonOfBody,
+} from '../lib/work-units/pull-request-urgency.service';
+export { settleLanded } from '../lib/wip-engine/landed-work-ref';
 export { workRefOpennessOf } from '../lib/wip-engine/proposal-in-progress.helper';
 export { hookFreeEnvironment } from '../lib/shared/hook-free-environment.helper';
 export { gitVerbatim, readGit } from '../lib/shared/git-read.helper';
@@ -125,6 +135,7 @@ export {
 } from '../lib/consent/consent-token.service';
 export type { IConsentSigner } from '../lib/contracts/interfaces/consent-signer.interface';
 export { proposalOfCreateUnit } from '../lib/work-units/unit-adoption.service';
+export { applyGitOptionalLocksDefault } from '../lib/shared/git-optional-locks.helper';
 export {
 	backgroundEnv,
 	backgroundNice,

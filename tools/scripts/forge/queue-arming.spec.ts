@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { integrationAllowsArming, requiredChecksVerdict } from './queue-arming';
+import { armingPlan, requiredChecksVerdict } from './queue-arming';
 
 const REQUIRED = ['delendai-validate', 'CodeQL'];
 
@@ -73,20 +73,25 @@ describe('requiredChecksVerdict', () => {
 	});
 });
 
-describe('integrationAllowsArming', () => {
-	it('arms while the full run is going on a commit whose parent was certified', () => {
-		expect(integrationAllowsArming('pending', 'certified')).toBe(true);
-		for (const parent of ['pending', 'uncertified', 'red', undefined]) {
-			expect(integrationAllowsArming('pending', parent)).toBe(false);
-		}
-		expect(integrationAllowsArming('red', 'certified')).toBe(false);
-		expect(integrationAllowsArming('uncertified', 'certified')).toBe(false);
+describe('armingPlan', () => {
+	it('arms after a green sectioned run, with no full certification asked', () => {
+		expect(armingPlan({ ready: [4, 7], riders: [4] })).toEqual({
+			arm: [4, 7],
+			train: false,
+		});
 	});
 
-	it('allows arming only on a certified integration branch', () => {
-		expect(integrationAllowsArming('certified')).toBe(true);
-		for (const state of ['pending', 'uncertified', 'red']) {
-			expect(integrationAllowsArming(state)).toBe(false);
-		}
+	it('runs no train of one: a lone pull request lands on its own checks', () => {
+		expect(armingPlan({ ready: [], riders: [9] })).toEqual({
+			arm: [],
+			train: false,
+		});
+	});
+
+	it('runs two or more riders as one train, which lands them', () => {
+		expect(armingPlan({ ready: [4], riders: [4, 7] })).toEqual({
+			arm: [],
+			train: true,
+		});
 	});
 });

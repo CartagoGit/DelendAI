@@ -21,6 +21,7 @@
  * is not proved twice — which is also what lets an agent prove first
  * (`work prove`) and hand over through a tool call that returns at once.
  */
+import { committedFileReader } from './committed-file-reader.helper';
 import { createHash } from 'node:crypto';
 import { access, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -137,10 +138,9 @@ export const proveUnit = async (
 	request: IProveUnitRequest,
 ): Promise<IUnitProofReport> => {
 	const { root, tipSha, integrationSha } = request;
-	const steps = candidateProofSteps((path) => {
-		const shown = git(root, ['show', `${integrationSha}:${path}`]);
-		return shown.ok ? shown.out : undefined;
-	});
+	const steps = candidateProofSteps(
+		committedFileReader(root, integrationSha),
+	);
 	if (steps.length === 0) return { declared: false, passed: true, steps: [] };
 	const tree = git(root, ['rev-parse', `${tipSha}^{tree}`]);
 	const gitDir = git(root, [
@@ -268,8 +268,9 @@ export const proveUnit = async (
 			return { declared: true, passed, steps: results };
 		} finally {
 			if (temporary !== undefined) {
+				// Only this proof's worktree: a global prune would drop the
+				// registration of other units' worktrees mid-operation.
 				git(root, ['worktree', 'remove', '--force', temporary]);
-				git(root, ['worktree', 'prune']);
 			}
 		}
 	};

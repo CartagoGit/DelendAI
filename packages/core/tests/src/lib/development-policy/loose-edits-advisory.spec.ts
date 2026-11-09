@@ -22,9 +22,10 @@ afterAll(() => {
 	for (const root of roots) rmSync(root, { recursive: true, force: true });
 });
 
+/** Let the reading the provider started finish: a turn of the loop, not a duration. */
 const settle = (): Promise<void> =>
 	new Promise((resolveSettle) => {
-		setTimeout(resolveSettle, 0);
+		setImmediate(resolveSettle);
 	});
 
 describe('looseEditsAdvisoryFor', () => {
