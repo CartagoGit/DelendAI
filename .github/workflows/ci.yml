@@ -689,6 +689,28 @@ jobs:
                   # done all the work.
                   include-hidden-files: true
 
+            # What CI measured per test is where a budget is calibrated
+            # (`bun run test:budgets:calibrate --from-ci=<run-id>`). The
+            # blob is deleted with the run's shard blobs; this keeps the
+            # few KB of per-test times for two weeks.
+            - name: Digest this zone's per-test times
+              if: always() && matrix.zone.run
+              continue-on-error: true
+              run: |
+                  [ -d .vitest-reports ] || exit 0
+                  bun tools/scripts/ci/test-budget-calibrate.script.ts \
+                    --digest=.vitest-reports --out=.cache/test-durations/test-durations-${BLOB_SLUG}.json
+
+            - name: Upload this zone's per-test times
+              if: always() && matrix.zone.run
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+              with:
+                  name: test-durations-${{ env.BLOB_SLUG }}
+                  path: .cache/test-durations/
+                  retention-days: 14
+                  if-no-files-found: ignore
+                  include-hidden-files: true
+
     tests:
         name: tests
         runs-on: ubuntu-latest

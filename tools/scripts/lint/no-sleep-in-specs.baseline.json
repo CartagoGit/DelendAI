@@ -27,7 +27,6 @@
 		"plugins/orchestrator-runner/tests/src/lib/subprocess/stdio-transport.spec.ts",
 		"plugins/proposals/tests/src/lib/agents/worktree-sync-coordinator.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts",
-		"plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts",
 		"plugins/proposals/tests/src/lib/plugin-runtime-surface.spec.ts",
 		"plugins/proposals/tests/src/lib/proposals/acceptance-exec.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts",
