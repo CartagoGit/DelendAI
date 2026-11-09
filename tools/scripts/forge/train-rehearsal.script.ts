@@ -111,8 +111,9 @@ const main = async (): Promise<number> => {
 	}
 	try {
 		const trainSha = git(scratch, ['rev-parse', 'HEAD']);
-		// CI checks the train out by name, not detached.
-		git(scratch, ['checkout', '-q', '-B', ref]);
+		// Detached, and no branch: a rehearsal is a scratch, and the owner
+		// keeps machine refs out of local clones. The train's name still
+		// reaches the pre-push gate through its stdin below.
 		process.chdir(scratch);
 		const plan = planInputSince(tipSha);
 		const checks = staticChecksOf(

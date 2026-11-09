@@ -268,8 +268,9 @@ export const proveUnit = async (
 			return { declared: true, passed, steps: results };
 		} finally {
 			if (temporary !== undefined) {
+				// Only this proof's worktree: a global prune would drop the
+				// registration of other units' worktrees mid-operation.
 				git(root, ['worktree', 'remove', '--force', temporary]);
-				git(root, ['worktree', 'prune']);
 			}
 		}
 	};
