@@ -4,7 +4,7 @@ import {
 	observeAnchor,
 } from '../wip-engine/index';
 import { argumentsRefused } from './work-arguments.helper';
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { checkedOutHereReason } from '../wip-engine/checkpoint';
 import { validateScopePaths } from '../../plugin';
 

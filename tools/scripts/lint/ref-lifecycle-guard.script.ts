@@ -41,7 +41,8 @@ import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-} from '@delendai/core/lib/development-policy/owned-ref-prefixes';
+	shortName as shortRef,
+} from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { carriesNothingBeyond } from '@delendai/core/lib/work-units/landed-work.service';
 import { planRetirement } from '@delendai/core/lib/work-units/work-retire.service';
 
@@ -83,10 +84,6 @@ const gh = (path: string): unknown => {
 		.filter((line) => line.trim() !== '')
 		.map((line) => JSON.parse(line) as unknown);
 };
-
-/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
-const shortRef = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 export interface IBranchTip {
 	readonly name: string;

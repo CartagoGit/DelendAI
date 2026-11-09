@@ -1,6 +1,7 @@
 /**
- * independent-candidates.ts — which candidates can land without being
- * brought forward first (f00755).
+ * overlap.ts — the footprint of a change, where two footprints overlap, which
+ * candidates can land without being brought forward first (f00755), and the
+ * groups ready pull requests fall into by overlap.
  *
  * The queue used to land one candidate at a time: after each merge every
  * other candidate was behind, was brought forward (a merge commit), and
@@ -30,9 +31,10 @@
  */
 import type {
 	IChangeFootprint,
+	ITrainPriority,
 	ICandidateAcceptance,
 	IQueueCandidateChange,
-} from './independent-candidates.interface';
+} from './overlap.interface';
 
 const isEmpty = (footprint: IChangeFootprint): boolean =>
 	footprint.files.size === 0 &&
@@ -131,9 +133,6 @@ export const acceptIndependent = (
 	});
 };
 
-/** Where a candidate stands in a train: an urgent repair first, review batches last. */
-export type ITrainPriority = 'urgent' | 'normal' | 'review';
-
 const RANK: Readonly<Record<ITrainPriority, number>> = {
 	urgent: 0,
 	normal: 1,
@@ -180,3 +179,70 @@ export const acceptRiders = (
 						? 'level with the integration branch; the train runs it with the others'
 						: 'behind; the train proves it against the integration tip, with the others',
 		}));
+
+/** A change's footprint, from the files it touches and what the CI selection reaches. */
+export const footprintFromReach = (input: {
+	readonly files: ReadonlySet<string>;
+	/** What the CI selection (`zoneReach`) reaches; `undefined` when it cannot bound it. */
+	readonly reach?:
+		| {
+				readonly zones: ReadonlySet<string>;
+				readonly readOnly: ReadonlySet<string>;
+				readonly readers?: ReadonlyMap<string, readonly string[]>;
+		  }
+		| undefined;
+	/** The change adds a file that existed nowhere before. */
+	readonly creates: boolean;
+}): IChangeFootprint => {
+	const { files, reach } = input;
+	if (files.size === 0) return { zones: new Set(), files };
+	if (reach === undefined) return { zones: 'everything', files };
+	return {
+		zones: reach.zones,
+		files,
+		readOnly: reach.readOnly,
+		// What a change that only feeds a zone reaches there: the specs
+		// that read its files, never the whole zone.
+		readers: new Set(
+			[...reach.readOnly].flatMap(
+				(zone) => reach.readers?.get(zone) ?? [],
+			),
+		),
+		creates: input.creates,
+	};
+};
+
+/**
+ * The ready pull requests grouped by overlap: two members are in one
+ * group when their footprints overlap, directly or through a third.
+ * Groups that share nothing can proceed in parallel; members keep the
+ * order given, and groups are ordered by their first member.
+ */
+export const groupByOverlap = <T extends { readonly own: IChangeFootprint }>(
+	members: readonly T[],
+): readonly (readonly T[])[] => {
+	const root = members.map((_, index) => index);
+	const find = (index: number): number => {
+		let at = index;
+		while (root[at] !== at) at = root[at] ?? at;
+		return at;
+	};
+	for (let i = 0; i < members.length; i++) {
+		for (let j = i + 1; j < members.length; j++) {
+			const [a, b] = [members[i], members[j]];
+			if (
+				a !== undefined &&
+				b !== undefined &&
+				overlapBetween(a.own, b.own) !== undefined
+			) {
+				root[find(j)] = find(i);
+			}
+		}
+	}
+	const groups = new Map<number, T[]>();
+	members.forEach((member, index) => {
+		const key = find(index);
+		groups.set(key, [...(groups.get(key) ?? []), member]);
+	});
+	return [...groups.values()];
+};

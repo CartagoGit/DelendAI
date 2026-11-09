@@ -22,10 +22,8 @@
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
-import {
-	workRefOpenness,
-	workRefProposalOpen,
-} from '../work-units/work-ref-lifecycle.service';
+import { workRefProposalOpen } from '../integration/decisions/landed.helper';
+import { workRefOpenness } from '../work-units/work-ref-lifecycle.service';
 
 import { reconcileRefs } from './reconcile.service';
 import type { IBranchDeliveryVerdict } from './reconcile.interface';

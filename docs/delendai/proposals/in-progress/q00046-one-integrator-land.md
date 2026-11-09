@@ -168,7 +168,7 @@ Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
 ### S2 — The decisions module
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`
+- **Files**: `packages/core/src/lib/integration/decisions/namespaces.helper.ts`
 - **Gate**: none
 - acceptance:
   - "One core module decides ready, overlap, grouping, culprit, landed and allowed namespaces; the overlap uses the CI selection's section function, not a copy"
@@ -196,6 +196,7 @@ Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
   - "A spec asserts that no workflow, script or host module references the removed mechanism"
   - "land records an integration-protocol version in the repo; a process with an older protocol (a host server started before the cutover) refuses to move refs or PRs and says to restart"
   - "The rehearsal of S3 passes before the deletion lands"
+  - "The engine switch moves from the repository variable DELENDAI_INTEGRATION_ENGINE (S3's interim gate) to the policy, development.integration.engine as q00047 S1 defines it, and the after-merge dispatch job of land.yml becomes workflow_run triggers, so the policy stays the one source of truth"
   - "After a merge, the sectioned integration CI and the promotion run through workflow_run on land; a red develop opens one urgent repair and blocks nobody; the full suite runs only on the promotion"
 
 ### S5 — One branch per unit, draft PRs, with its migration

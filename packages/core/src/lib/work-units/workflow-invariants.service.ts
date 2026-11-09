@@ -47,6 +47,7 @@ import type {
 	IInvariantResult,
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 export type {
 	IInvariantReport,
@@ -62,10 +63,6 @@ const lines = (out: string): readonly string[] =>
 		.split('\n')
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
-
-/** The namespace prefix as it appears in a ref name, without `refs/`. */
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /**
  * Every invariant, as a question asked of the repository.

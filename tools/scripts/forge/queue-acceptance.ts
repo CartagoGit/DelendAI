@@ -2,20 +2,19 @@
  * queue-acceptance.ts — which queued candidates land as they are, read
  * from git in the checkout the queue runs in (f00755).
  */
+import {
+	acceptIndependent,
+	acceptRiders,
+	culpritsAmong,
+	type ICandidateAcceptance,
+	type IQueueCandidateChange,
+	type ITrainPriority,
+} from '@delendai/core/cli';
 import { execFileSync } from 'node:child_process';
 import { readGit } from '@delendai/core/runtime';
 
 import { footprintBetween, mergeBaseOf } from './candidate-footprint';
 import { testedAgainst } from './candidate-tested-base';
-import {
-	acceptIndependent,
-	acceptRiders,
-	type ITrainPriority,
-} from './independent-candidates';
-import type {
-	ICandidateAcceptance,
-	IQueueCandidateChange,
-} from './independent-candidates.interface';
 
 export interface IQueuedCandidate {
 	readonly number: number;
@@ -192,22 +191,23 @@ const culpritHeads = (
 	remote: string,
 	prefixes: readonly string[],
 ): ReadonlyMap<number, string> => {
-	const heads = new Map<number, string>();
+	const branches = new Map<string, string>();
 	for (const prefix of prefixes) {
-		const marker = `${prefix}culprit/`;
 		const listed =
-			readGit(root, ['ls-remote', '--heads', remote, `${marker}*`]) ?? '';
+			readGit(root, [
+				'ls-remote',
+				'--heads',
+				remote,
+				`${prefix}culprit/*`,
+			]) ?? '';
 		for (const line of listed.split('\n')) {
 			const [sha, ref] = line.split('\t');
-			const number = Number(
-				ref?.replace(/^refs\/heads\//u, '').slice(marker.length),
-			);
-			if (sha !== undefined && Number.isInteger(number) && number > 0) {
-				heads.set(number, sha);
+			if (sha !== undefined && ref !== undefined) {
+				branches.set(ref.replace(/^refs\/heads\//u, ''), sha);
 			}
 		}
 	}
-	return heads;
+	return culpritsAmong(prefixes, branches);
 };
 
 /**

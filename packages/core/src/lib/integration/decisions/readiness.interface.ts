@@ -1,4 +1,23 @@
-import type { IQueueCandidateFacts } from './queue-order.interface';
+/**
+ * Contract shapes for `./readiness`: what a pull request's readiness and
+ * its disposition are decided from.
+ */
+
+/** What the queue needs to know about one candidate to order it. */
+export interface IQueueCandidateFacts {
+	readonly number: number;
+	/** The candidate's branch, without `refs/heads/`. */
+	readonly headRef: string;
+	readonly draft: boolean;
+	/** A required or other check concluded badly on its head. */
+	readonly red: boolean;
+	/** The checks that concluded badly, by name; empty when not red. */
+	readonly failing?: readonly string[];
+	/** The forge reports conflicts with the integration branch. */
+	readonly conflicting: boolean;
+	/** Why the delivery is urgent, from the pull request's body; the queue leads with it. */
+	readonly urgent?: string | undefined;
+}
 
 /** What the queue needs to know about a candidate to say what happens to it. */
 export interface ICandidateState extends IQueueCandidateFacts {
@@ -60,4 +79,19 @@ export interface ICandidateVerdict {
 	readonly headRef: string;
 	readonly disposition: ICandidateDisposition;
 	readonly why: string;
+}
+
+/** What decides whether a pull request is ready, read off the forge for its head. */
+export interface IPullRequestChecks {
+	readonly draft: boolean;
+	/** The checks on the head commit, by name. */
+	readonly checks: readonly {
+		readonly name: string;
+		readonly conclusion: string | null;
+	}[];
+	/** The checks the integration branch requires. */
+	readonly required: readonly string[];
+	readonly labels: readonly string[];
+	/** The labels that keep a pull request out of the queue. */
+	readonly blockingLabels: readonly string[];
 }

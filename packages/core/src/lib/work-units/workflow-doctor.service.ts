@@ -20,6 +20,7 @@ import { listWorkRefs } from './work-swarm.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 import { workRefLoopsInvariant } from './work-ref-moves.service';
 import { huskDirectories, husksInvariant } from './worktree-husks.service';
+import { shortName } from '../integration/decisions/namespaces.helper';
 
 /**
  * The shared checkout, whichever worktree the caller is standing in.
@@ -83,8 +84,7 @@ export const runWorkflowDoctor = async (input: {
 	}
 	// Work nobody can see: stashed, never pushed, never committed. Read
 	// here, not with the others, because dating an edit reads the disk.
-	const bare = (prefix: string): string =>
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const bare = shortName;
 	const hidden = await hiddenWorkInvariants({
 		root,
 		remote: 'origin',

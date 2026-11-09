@@ -88,12 +88,104 @@ export type {
 export { briefWorkModel } from './lib/development-policy/declare-workflow';
 // Every namespace delendai owns, current first: the queue's trains are read
 // under a former one too.
-export { ownedNamespaces } from './lib/development-policy/owned-ref-prefixes';
 export {
+	allowedRefPatterns,
+	insideNamespaces,
+	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
-} from './lib/development-policy/owned-ref-prefixes';
+	policyNamespaces,
+	publicationPrefixesOf,
+	shortName,
+	underNamespace,
+	underPublication,
+} from './lib/integration/decisions/namespaces.helper';
+// The integration decisions: ready, overlap, grouping, culprit, landed.
+export {
+	acceptIndependent,
+	acceptRiders,
+	footprintFromReach,
+	groupByOverlap,
+	isReviewBatch,
+	overlapBetween,
+} from './lib/integration/decisions/overlap.helper';
+export type {
+	IChangeFootprint,
+	ICandidateAcceptance,
+	IQueueCandidateChange,
+	ITrainPriority,
+} from './lib/integration/decisions/overlap.interface';
+export {
+	authorsOwn,
+	byQueuePosition,
+	candidateDispositions,
+	orphanedCandidates,
+	pullRequestReady,
+	queueHead,
+	queueOrder,
+	toBringForward,
+} from './lib/integration/decisions/readiness.helper';
+export type {
+	ICandidateDisposition,
+	ICandidateState,
+	ICandidateVerdict,
+	IPullRequestChecks,
+	IQueueCandidateFacts,
+} from './lib/integration/decisions/readiness.interface';
+export { TRAIN_CAPACITY } from './lib/integration/decisions/culprit.constant';
+export {
+	attributeCulprit,
+	culpritRefName,
+	culpritsAmong,
+	isCulpritMarker,
+	trainMembers,
+	trainRefName,
+	trainStep,
+	trainsToPrune,
+} from './lib/integration/decisions/culprit.helper';
+export type {
+	IIntegrationCertification,
+	ITrainCandidate,
+	ITrainStep,
+} from './lib/integration/decisions/culprit.interface';
+export {
+	pullRequestLanded,
+	putsBack,
+	takesOff,
+	workRefFate,
+	workRefLanded,
+	workRefProposalOpen,
+} from './lib/integration/decisions/landed.helper';
+// land: the one integrator pass, its adapter contract and workflow template.
+export { landPass } from './lib/integration/land/land.helper';
+export {
+	batchBody,
+	readBatchRecord,
+} from './lib/integration/land/land-batch-record.helper';
+export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
+export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
+export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
+export {
+	LAND_LABEL_CULPRIT,
+	LAND_LABEL_NEEDS_UPDATE,
+} from './lib/integration/land/land.constant';
+export type {
+	ILandBatchBuild,
+	ILandBatchRecord,
+	ILandCheck,
+	ILandCommandRunner,
+	ILandConfig,
+	ILandConflict,
+	ILandDeps,
+	ILandForge,
+	ILandGit,
+	ILandMerge,
+	ILandPullRequest,
+	ILandReport,
+	ILandWorkflowInput,
+	ILandUpdate,
+} from './lib/integration/land/land.interface';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,

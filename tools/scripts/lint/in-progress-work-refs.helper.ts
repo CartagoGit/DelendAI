@@ -14,7 +14,7 @@
  * judged by the integration branch, so a landed tip that still says "in
  * progress" no longer keeps the ref of a proposal closed elsewhere.
  */
-import { workRefProposalOpen } from '@delendai/core/lib/work-units/work-ref-lifecycle.service';
+import { workRefProposalOpen } from '@delendai/core/lib/integration/decisions/landed.helper';
 
 /**
  * Splits `reapable` into what may go and the work refs kept because the

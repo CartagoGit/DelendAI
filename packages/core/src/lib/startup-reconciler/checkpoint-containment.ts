@@ -3,7 +3,7 @@
  * holds what a checkpoint carries, when ancestry alone says no.
  */
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { parentsOutsideMerges } from '../work-units/landed-work.service';
+import { parentsOutsideMerges } from '../integration/decisions/landed.helper';
 
 export const checkpointContainment = (
 	run: IGitRunner,

@@ -19,10 +19,7 @@
  */
 import type { IRetirementPlan } from '../contracts/interfaces/work-retire.interface';
 import { namespacedRef } from './namespaced-ref.helper';
-
-/** The namespace prefix as it appears in a branch name. */
-const bare = (prefix: string): string =>
-	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /**
  * The names of the unit `branch` belongs to, or `undefined` when the

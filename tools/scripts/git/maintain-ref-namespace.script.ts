@@ -70,6 +70,7 @@ import {
 	dropReservation,
 	endedReservations,
 } from './ended-reservations.service';
+import { shortName } from '@delendai/core/cli';
 
 export type {
 	IRefAction,
@@ -81,9 +82,6 @@ const git = (root: string, args: readonly string[]): string | undefined => {
 	const ran = runGitCommand(root, args, { hookFree: true });
 	return ran.ok ? ran.out : undefined;
 };
-
-const shortName = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
 
 /** Every ref under a namespace, local or on the remote, once each. */
 export const refsUnder = (
