@@ -151,18 +151,35 @@ export interface ILandBatchRecord {
 	};
 }
 
-/** The values the land workflow template takes from a project. */
+/** One upkeep step the land workflow runs on its schedule. */
+export interface ILandUpkeepStep {
+	readonly name: string;
+	readonly run: string;
+	readonly env?: Readonly<Record<string, string>>;
+}
+
+/**
+ * The values the land workflow template takes from a project. Whether the
+ * project integrates with `land` at all is its policy's
+ * `development.integration.engine`: the file exists only when it says so.
+ */
 export interface ILandWorkflowInput {
 	readonly integrationBranch: string;
+	readonly releaseBranch: string;
 	/** The workflow whose finishing starts a pass (the project's CI). */
 	readonly ciWorkflowName: string;
-	/** Workflow files run on the new tip after a merge. */
-	readonly afterMergeWorkflows: readonly string[];
-	/** The repository variable that switches the engine to `land`. */
-	readonly engineVariable: string;
 	/** Steps that prepare a runner (checkout and toolchain), as YAML lines. */
 	readonly setupSteps: readonly string[];
 	/** The command that runs one pass. */
 	readonly passCommand: string;
 	readonly cron: string;
+	/**
+	 * Run once the integration branch's CI finishes: opens the promotion
+	 * when the branch is green, files one urgent repair when it is red.
+	 */
+	readonly promotionCommand?: string;
+	/** Run when the release branch moves: carries it back into the integration branch. */
+	readonly forwardSyncCommand?: string;
+	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
+	readonly upkeep?: readonly ILandUpkeepStep[];
 }

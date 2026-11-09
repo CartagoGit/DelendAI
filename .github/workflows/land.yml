@@ -1,12 +1,12 @@
 name: land
 
 # GENERATED from the land workflow template (renderLandWorkflow); edit the
-# project values, not this file. One stateless pass over the ready pull
-# requests: merge what does not overlap, batch what does, label the culprit
-# of a red batch. It keeps nothing; every pass reads the forge.
-#
-# Off unless the repository variable DELENDAI_INTEGRATION_ENGINE is `land`: the old
-# queue must never run beside it.
+# project values, not this file. The one integration actor: a stateless
+# pass over the ready pull requests (merge what does not overlap, batch
+# what does, label the culprit of a red batch), the promotion after the
+# integration branch's CI, the forward sync after the release branch moves,
+# and the upkeep. It keeps nothing; every pass reads the forge. It exists
+# because the policy says `development.integration.engine: land`.
 
 on:
     workflow_run:
@@ -18,7 +18,7 @@ on:
         types: [ready_for_review]
         branches: [develop]
     push:
-        branches: [develop]
+        branches: [develop, main]
     schedule:
         - cron: '*/15 * * * *'
     workflow_dispatch:
@@ -32,17 +32,17 @@ concurrency:
 permissions:
     contents: write
     pull-requests: write
+    issues: write
     checks: read
     actions: write
+    security-events: read
 
 jobs:
     land:
         name: land
-        if: ${{ vars.DELENDAI_INTEGRATION_ENGINE == 'land' }}
+        if: ${{ (github.event_name != 'workflow_run' || github.event.workflow_run.event == 'pull_request') && !(github.event_name == 'push' && github.ref_name == 'main') }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        outputs:
-            merged: ${{ steps.pass.outputs.merged }}
         steps:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -50,29 +50,103 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
               with:
-                  # Full history: a batch merges members onto the tip.
+                  # Full history: a batch merges members onto the tip, and the
+                  # promotion and the forward sync ask ancestry questions.
                   fetch-depth: '0'
 
             - name: One pass
-              id: pass
               env:
                   GH_TOKEN: ${{ github.token }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
-                  DELENDAI_INTEGRATION_ENGINE: ${{ vars.DELENDAI_INTEGRATION_ENGINE }}
               run: bun tools/scripts/forge/land.script.ts
 
-    # A merge made with the workflow token starts no workflow of its own, so
-    # what follows a merge is started here.
-    after-merge:
-        name: after-merge
-        needs: land
-        if: ${{ !cancelled() && needs.land.outputs.merged == 'true' }}
+    # The integration branch's own CI finished: promote it when it is
+    # green, file one urgent repair when it is red. It blocks nobody.
+    promote:
+        name: promote
+        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event != 'pull_request' && github.event.workflow_run.head_branch == 'develop' && github.event.workflow_run.conclusion != 'skipped' }}
         runs-on: ubuntu-latest
-        timeout-minutes: 5
+        timeout-minutes: 10
         steps:
-            - name: Run what follows a merge on the new tip
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # Full history: a batch merges members onto the tip, and the
+                  # promotion and the forward sync ask ancestry questions.
+                  fetch-depth: '0'
+
+            - name: Open the promotion if it is ready, or file its urgent repair
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: |
-                  gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref develop
-                  gh workflow run open-promotion.yml --repo "$GITHUB_REPOSITORY" --ref develop
+              run: bun tools/scripts/forge/open-promotion.script.ts --apply
+
+    # The release branch moved: carry it back into the integration branch.
+    forward-sync:
+        name: forward-sync
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # Full history: a batch merges members onto the tip, and the
+                  # promotion and the forward sync ask ancestry questions.
+                  fetch-depth: '0'
+
+            - name: Carry the release branch back into the integration branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GIT_AUTHOR_NAME: github-actions[bot]
+                  GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+                  GIT_COMMITTER_NAME: github-actions[bot]
+                  GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+              run: bun run forge:forward-sync -- --apply
+
+    # Upkeep on the schedule: every step runs, whatever the one before concluded.
+    upkeep:
+        name: upkeep
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # Full history: a batch merges members onto the tip, and the
+                  # promotion and the forward sync ask ancestry questions.
+                  fetch-depth: '0'
+
+            - name: Reap the refs whose pull requests are finished
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REF_LIFECYCLE_SCOPE: repository
+              run: bun run lint:ref-lifecycle -- --reap
+
+            - name: Close the pull requests not opened from a publication
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun tools/scripts/forge/close-unpublished-prs.script.ts --apply
+
+            - name: Fail while something hangs on the forge
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run work:doctor -- --forge
+
+            - name: Fail while a code scanning alert is open on the integration branch
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run forge:promotion-alerts -- --branch=develop

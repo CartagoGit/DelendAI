@@ -11,7 +11,7 @@ import type { ITrainCandidate } from '@delendai/core/cli';
 import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
-} from '../git/refresh-candidate-artifacts.constant';
+} from './land-derived.constant';
 import { footprintBetween } from './candidate-footprint';
 import type { ILandConflict, ILandGit } from '@delendai/core/cli';
 import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';

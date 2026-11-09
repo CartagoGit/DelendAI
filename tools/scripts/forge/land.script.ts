@@ -3,51 +3,26 @@
  * land.script.ts — runs one `land` pass against GitHub from a checkout.
  *
  * Usage: bun tools/scripts/forge/land.script.ts
- * Env: GITHUB_REPOSITORY (`owner/name`), DELENDAI_INTEGRATION_ENGINE.
+ * Env: GITHUB_REPOSITORY (`owner/name`).
  *
- * Does nothing unless the project's engine is `land`: until the queue is
- * retired both must never run, and the workflow checks the same switch.
+ * Does nothing unless the policy's `development.integration.engine` is
+ * `land`, and refuses when the repository records a newer integration
+ * protocol than this code speaks.
  */
-import { appendFileSync, readFileSync } from 'node:fs';
-
 import {
 	createGithubLandForge,
+	integrationProtocolRefusal,
 	landConfigFromPolicy,
 	landPass,
-	parseJsonc,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
 import { createLandGit } from './land-git';
+import { readDevelopmentConfig } from './land-policy';
 import { zoneOfCheck } from './section-health';
 
-/** The project's `development` block, `{}` when the config is absent or invalid. */
-const readDevelopmentConfig = (): {
-	readonly development?: Record<string, unknown>;
-} => {
-	try {
-		const { value, errors } = parseJsonc(
-			readFileSync('delendai.config.json', 'utf8'),
-		);
-		const development = (value as Record<string, unknown>).development;
-		return errors.length > 0 ||
-			development === null ||
-			typeof development !== 'object'
-			? {}
-			: { development: development as Record<string, unknown> };
-	} catch {
-		return {};
-	}
-};
-
 const main = async (): Promise<number> => {
-	if (process.env.DELENDAI_INTEGRATION_ENGINE !== 'land') {
-		console.log(
-			'land: the integration engine is not `land`; nothing to do.',
-		);
-		return 0;
-	}
 	const slug = process.env.GITHUB_REPOSITORY;
 	if (slug === undefined) {
 		console.error('land: GITHUB_REPOSITORY is not set.');
@@ -55,6 +30,17 @@ const main = async (): Promise<number> => {
 	}
 	const root = process.cwd();
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	if (policy.integration.engine !== 'land') {
+		console.log(
+			"land: the policy's integration engine is not `land`; nothing to do.",
+		);
+		return 0;
+	}
+	const stale = integrationProtocolRefusal(policy.integration.protocol);
+	if (stale !== undefined) {
+		console.error(`land: ${stale.reason} ${stale.remedy}`);
+		return 2;
+	}
 	// This repository's wiring: its CI sections name the checks `tests: <zone>`.
 	const config = landConfigFromPolicy(policy, {
 		sectionOfCheck: zoneOfCheck,
@@ -70,11 +56,6 @@ const main = async (): Promise<number> => {
 		config,
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
-	const output = process.env.GITHUB_OUTPUT;
-	if (output !== undefined) {
-		const merged = report.actions.some((line) => / merged /u.test(line));
-		appendFileSync(output, `merged=${String(merged)}\n`);
-	}
 	return 0;
 };
 

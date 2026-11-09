@@ -165,6 +165,9 @@ export {
 } from './lib/integration/land/land-batch-record.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
 export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
+// Whether this process is older than the integration protocol the repository runs.
+export { integrationProtocolRefusal } from './lib/integration/protocol/integration-protocol.helper';
+export { INTEGRATION_PROTOCOL_VERSION } from './lib/contracts/constants/integration-protocol.constant';
 export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
 export {
 	LAND_LABEL_CULPRIT,

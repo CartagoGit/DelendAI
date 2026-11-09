@@ -80,6 +80,8 @@ export interface IDevelopmentConfigInput {
 				readonly releaseRequiredApprovals?: number | undefined;
 				readonly releaseRequiredChecks?: readonly string[] | undefined;
 				readonly mergeMethod?: string | undefined;
+				readonly engine?: string | undefined;
+				readonly protocol?: number | undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;
 				readonly allowForcePush?: boolean | undefined;

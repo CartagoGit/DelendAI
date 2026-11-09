@@ -15,7 +15,11 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-import { LAND_WORKFLOW_PATH, REPO_LAND_WORKFLOW } from './land-workflow.script';
+import {
+	expectedLandWorkflow,
+	LAND_WORKFLOW_PATH,
+	REPO_LAND_WORKFLOW,
+} from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
 
@@ -314,19 +318,47 @@ describe('the land workflow template', () => {
 		);
 	});
 
-	it("[<5ms] renders another project's branch, switch and follow-up", () => {
+	it("[<5ms] renders another project's branches, phases and upkeep", () => {
 		const text = renderLandWorkflow({
 			...REPO_LAND_WORKFLOW,
 			integrationBranch: 'trunk',
-			engineVariable: 'MY_ENGINE',
-			afterMergeWorkflows: ['build.yml'],
+			releaseBranch: 'stable',
 			passCommand: 'npx tool land',
+			promotionCommand: 'npx tool promote',
+			upkeep: [{ name: 'Tidy', run: 'npx tool tidy' }],
 		});
-		expect(text).toContain('branches: [trunk]');
-		expect(text).toContain("vars.MY_ENGINE == 'land'");
+		expect(text).toContain('branches: [trunk, stable]');
 		expect(text).toContain(
-			'gh workflow run build.yml --repo "$GITHUB_REPOSITORY" --ref trunk',
+			"github.event.workflow_run.head_branch == 'trunk'",
 		);
+		expect(text).toContain("github.ref_name == 'stable'");
+		expect(text).toContain('run: npx tool promote');
+		expect(text).toContain('run: npx tool tidy');
 		expect(text).not.toContain('develop');
+		expect(text).not.toContain('vars.');
+	});
+
+	it('[<5ms] leaves out the phases a project does not declare', () => {
+		const text = renderLandWorkflow({
+			...REPO_LAND_WORKFLOW,
+			promotionCommand: undefined,
+			forwardSyncCommand: undefined,
+			upkeep: [],
+		});
+		expect(text).toContain('    land:');
+		expect(text).not.toContain('    promote:');
+		expect(text).not.toContain('    forward-sync:');
+		expect(text).not.toContain('    upkeep:');
+	});
+
+	it('[<5ms] exists only while the policy names land the engine', () => {
+		const engine = (value: string) => ({
+			development: { integration: { engine: value } },
+		});
+		expect(expectedLandWorkflow(engine('land'))).toBe(
+			renderLandWorkflow(REPO_LAND_WORKFLOW),
+		);
+		expect(expectedLandWorkflow(engine('none'))).toBeUndefined();
+		expect(expectedLandWorkflow({})).toBeUndefined();
 	});
 });

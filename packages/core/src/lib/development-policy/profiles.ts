@@ -19,8 +19,13 @@ import {
 } from '../contracts/interfaces/development-policy.interface';
 
 import type { IDevelopmentProfile } from './profiles.interface';
-import { DEVELOPMENT_PROFILES, WORK_REF_SHAPE } from './profiles.constant';
+import {
+	DEFAULT_BRANCHES,
+	DEVELOPMENT_PROFILES,
+	WORK_REF_SHAPE,
+} from './profiles.constant';
 import { DEFAULT_PUBLICATION } from '../contracts/constants/publication-granularity.constant';
+import { INTEGRATION_PROTOCOL_VERSION } from '../contracts/constants/integration-protocol.constant';
 
 export type { IDevelopmentProfile } from './profiles.interface';
 export {
@@ -33,37 +38,6 @@ export const isDevelopmentProfile = (
 	value: string,
 ): value is IDevelopmentProfile =>
 	(DEVELOPMENT_PROFILES as readonly string[]).includes(value);
-
-/**
- * Branch identities are intentionally NOT part of a profile: they are
- * per-project facts, and inferring them from the forge's `default_branch`
- * is exactly the mistake this policy exists to prevent. The resolver
- * supplies them; a profile only describes the shape of the workflow.
- */
-const DEFAULT_BRANCHES = {
-	integration: 'develop',
-	release: 'main',
-	// Empty by default: a project adopting delendai should not inherit
-	// the tool's name in its refs. `delendai.config.json` sets it here.
-	namespacePrefix: '',
-	// The documented shape, component by component:
-	//
-	//   <ns>/wip/<model>/<proposal>-<slice>-g<generation>/<what it is>
-	//
-	// `${agent}` is the exact model (`claude-opus-5`), never the machine
-	// and never the editor. The unit of work and its generation form one
-	// component so a client groups them; the explanation is its OWN
-	// component, which is what makes a long description readable in a Git
-	// client instead of a 90-character dash-run (x00563).
-	workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
-	workRefPrefix: 'heads/wip/',
-	workRefVisibility: 'visible',
-	publicationRefPrefix: 'pr/',
-	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
-	// "not mine" from "abandoned" is a reaper nobody can safely enable.
-	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
-	rules: [], // defaults are added by `deriveCapabilities`
-} as const;
 
 /**
  * `shared-direct` — the model delendai supported before this contract.
@@ -148,6 +122,8 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		// whenever integration has not moved and the lineage is lost in
 		// exactly the case nobody inspects.
 		mergeMethod: 'merge',
+		engine: 'none',
+		protocol: INTEGRATION_PROTOCOL_VERSION,
 		// The forge must NOT delete the branch when a pull request
 		// merges. A work ref lives as long as the proposal it serves,
 		// and a proposal lands one pull request per slice: GitHub's
@@ -222,6 +198,8 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		releaseRequiredChecks: [],
 		requiresLocalCertification: false,
 		mergeMethod: 'squash',
+		engine: 'none',
+		protocol: INTEGRATION_PROTOCOL_VERSION,
 		deleteMergedWorkRef: false,
 		linearHistory: true,
 		allowForcePush: false,
@@ -309,6 +287,8 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		releaseRequiredChecks: [],
 		requiresLocalCertification: false,
 		mergeMethod: 'squash',
+		engine: 'none',
+		protocol: INTEGRATION_PROTOCOL_VERSION,
 		deleteMergedWorkRef: true,
 		linearHistory: true,
 		allowForcePush: false,
