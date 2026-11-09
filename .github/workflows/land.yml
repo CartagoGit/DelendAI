@@ -1,0 +1,78 @@
+name: land
+
+# GENERATED from the land workflow template (renderLandWorkflow); edit the
+# project values, not this file. One stateless pass over the ready pull
+# requests: merge what does not overlap, batch what does, label the culprit
+# of a red batch. It keeps nothing; every pass reads the forge.
+#
+# Off unless the repository variable DELENDAI_INTEGRATION_ENGINE is `land`: the old
+# queue must never run beside it.
+
+on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
+    check_suite:
+        types: [completed]
+    pull_request_target:
+        types: [ready_for_review]
+        branches: [develop]
+    push:
+        branches: [develop]
+    schedule:
+        - cron: '*/15 * * * *'
+    workflow_dispatch:
+
+# Concurrency 1; a waiting pass is kept, since the next reads what the
+# cancelled one would have.
+concurrency:
+    group: land
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+    checks: read
+    actions: write
+
+jobs:
+    land:
+        name: land
+        if: ${{ vars.DELENDAI_INTEGRATION_ENGINE == 'land' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        outputs:
+            merged: ${{ steps.pass.outputs.merged }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # Full history: a batch merges members onto the tip.
+                  fetch-depth: '0'
+
+            - name: One pass
+              id: pass
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  DELENDAI_INTEGRATION_ENGINE: ${{ vars.DELENDAI_INTEGRATION_ENGINE }}
+              run: bun tools/scripts/forge/land.script.ts
+
+    # A merge made with the workflow token starts no workflow of its own, so
+    # what follows a merge is started here.
+    after-merge:
+        name: after-merge
+        needs: land
+        if: ${{ !cancelled() && needs.land.outputs.merged == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: Run what follows a merge on the new tip
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref develop
+                  gh workflow run open-promotion.yml --repo "$GITHUB_REPOSITORY" --ref develop
