@@ -2,14 +2,14 @@
 id: x01054
 title: "A merge never leaves a proposal twice, and a claim never leaves its old pull request open"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 2fa3476b-07be-4d9b-a7ce-012554cedbfd
-last-correlation-id: 2fa3476b-07be-4d9b-a7ce-012554cedbfd
-last-transition-from: ready
-last-transition-at: 2026-11-08T20:51:46.384Z
+last-transition-id: 6df2eedc-405d-4fd1-bb7d-e35b886172c1
+last-correlation-id: 6df2eedc-405d-4fd1-bb7d-e35b886172c1
+last-transition-from: in-progress
+last-transition-at: 2026-11-09T21:40:15.047Z
 ---
 
 # x01054 — A merge never leaves a proposal twice, and a claim never leaves its old pull request open
@@ -35,22 +35,28 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - global_gate: none
 
 ### S1 — Merges keep one copy of each proposal id
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/src/lib/contracts/constants/status-progress.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-copy.interface.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.e2e.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/proposals/keep-one-proposal-copy.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: type
 - acceptance:
   - "root cause: two branches that move one proposal leave it at two paths; git merges them without a conflict and the registry refuses the duplicate id"
   - "the train and the candidate refresh (run as a refresh command; the post-merge hook runs the refresh) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
   - "the survivor is placed by the existing folder reconciler, and a spec with two branches that move one proposal proves it"
+- shipped-in: `3a7dfd098e7f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A claim retires the publication it superseded
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/contracts/interfaces/superseded-publication.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "root cause: claim adopted a publication and opened a new one, and nothing looked back at the old pull request"
   - "after the new publication is published the old one is retired with the reason superseded by #N, only when git merge-base --is-ancestor says the new publication contains the old tip"
   - "otherwise the old publication stays and the answer says why; both cases are specced"
+- shipped-in: `fb53bd97e7ac`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
