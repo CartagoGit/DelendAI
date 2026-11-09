@@ -2,14 +2,14 @@
 id: x01055
 title: "File-granularity lock spec raced the mutex order and measured wall-clock time"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: c2d2f1a6-5dcf-40ae-9954-88ac0c456714
-last-correlation-id: c2d2f1a6-5dcf-40ae-9954-88ac0c456714
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T21:42:35.127Z
+last-transition-id: 3cf25735-474f-4d44-90c1-9dd33d4b0282
+last-correlation-id: 3cf25735-474f-4d44-90c1-9dd33d4b0282
+last-transition-from: review
+last-transition-at: 2026-11-09T21:32:20.365Z
 ---
 
 # x01055 — File-granularity lock spec raced the mutex order and measured wall-clock time
@@ -31,7 +31,7 @@ An intermittent failure is a defect. The spec measured wall-clock time and assum
 - global_gate: none
 
 ### S1 — Make the file-granularity lock spec deterministic
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts`, `tools/scripts/lint/no-sleep-in-specs.baseline.json`
 - **Gate**: none
 - shipped-in: `4455447e2521`
