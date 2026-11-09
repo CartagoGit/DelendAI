@@ -154,7 +154,9 @@ export const certifyCandidate = async (
 			steps: results,
 		};
 	} finally {
+		// Only the worktree this call made. A global `worktree prune` here
+		// dropped the registration of other units' worktrees mid-operation;
+		// a stale entry is the reclaimer's to prune.
 		git(root, ['worktree', 'remove', '--force', dir]);
-		git(root, ['worktree', 'prune']);
 	}
 };

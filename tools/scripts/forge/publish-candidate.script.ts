@@ -285,9 +285,9 @@ export const proveCommit = (
 			try {
 				git(['worktree', 'remove', '--force', dir]);
 			} catch {
-				// Already gone. `prune` settles it.
+				// Already gone; a stale entry is pruned by the reclaimer, never
+				// by a global prune that drops other units' worktrees.
 			}
-			git(['worktree', 'prune']);
 		}
 	}
 };
