@@ -39,7 +39,7 @@ const PROFILES = [
 ] as const;
 
 describe('resolving a project with one branch', () => {
-	it('reads an omitted release as the integration branch', () => {
+	it('[<50ms] reads an omitted release as the integration branch', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'main' },
@@ -49,7 +49,7 @@ describe('resolving a project with one branch', () => {
 		expect(hasSeparateReleaseBranch(policy.branches)).toBe(false);
 	});
 
-	it('accepts the same branch named for both roles as the same thing', () => {
+	it('[<50ms] accepts the same branch named for both roles as the same thing', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'main', release: 'main' },
@@ -59,7 +59,7 @@ describe('resolving a project with one branch', () => {
 		expect(protectedBranchNames(policy.branches)).toEqual(['main']);
 	});
 
-	it('keeps a release branch the project names', () => {
+	it('[<50ms] keeps a release branch the project names', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'develop', release: 'stable' },
@@ -73,7 +73,7 @@ describe('resolving a project with one branch', () => {
 		]);
 	});
 
-	it('leaves the profile default pair alone when no branch is declared', () => {
+	it('[<50ms] leaves the profile default pair alone when no branch is declared', () => {
 		const policy = policyFor({ profile: 'shared-checkout-merge' });
 
 		expect(policy.branches.integration).toBe('develop');
@@ -83,7 +83,7 @@ describe('resolving a project with one branch', () => {
 });
 
 describe('validating a project with one branch', () => {
-	it('starts under every profile with integration and release both main', () => {
+	it('[<50ms] starts under every profile with integration and release both main', () => {
 		for (const profile of PROFILES) {
 			const branches = { integration: 'main', release: 'main' };
 			const development: Record<string, unknown> = {
@@ -97,7 +97,7 @@ describe('validating a project with one branch', () => {
 		}
 	});
 
-	it('starts under every profile with the release branch omitted', () => {
+	it('[<50ms] starts under every profile with the release branch omitted', () => {
 		for (const profile of PROFILES) {
 			const development: Record<string, unknown> = {
 				profile,
@@ -110,7 +110,7 @@ describe('validating a project with one branch', () => {
 		}
 	});
 
-	it('does not hold a branch to a release stricter than itself', () => {
+	it('[<50ms] does not hold a branch to a release stricter than itself', () => {
 		// Release approvals below integration approvals contradict each
 		// other only when there are two branches to compare.
 		const single = {
@@ -131,7 +131,7 @@ describe('validating a project with one branch', () => {
 		).toContain('release-approvals-not-weaker');
 	});
 
-	it('still requires an integration branch to be named', () => {
+	it('[<50ms] still requires an integration branch to be named', () => {
 		const policy = policyFor({ profile: 'shared-checkout-merge' });
 		const nameless = {
 			...policy,
@@ -155,7 +155,7 @@ describe('warnings for release settings nothing applies', () => {
 		},
 	});
 
-	it('surfaces a stricter-release concern as a warning, never a violation', () => {
+	it('[<50ms] surfaces a stricter-release concern as a warning, never a violation', () => {
 		expect(validateDevelopmentPolicy(stricter)).toEqual([]);
 		const warnings = singleBranchWarnings(stricter);
 		expect(warnings).toHaveLength(2);
@@ -163,7 +163,7 @@ describe('warnings for release settings nothing applies', () => {
 		expect(warnings.join('\n')).toContain('releaseRequiredChecks');
 	});
 
-	it('says nothing when the project has a release branch of its own', () => {
+	it('[<50ms] says nothing when the project has a release branch of its own', () => {
 		const separate = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { integration: 'develop', release: 'main' },
@@ -175,7 +175,7 @@ describe('warnings for release settings nothing applies', () => {
 		expect(singleBranchWarnings(separate)).toEqual([]);
 	});
 
-	it('reaches the instructions an agent is served', () => {
+	it('[<50ms] reaches the instructions an agent is served', () => {
 		const served = servedWorkModelLines(stricter);
 		expect(
 			served.filter((line) => line.startsWith('Warning:')),
@@ -189,7 +189,7 @@ describe('what the served instructions say', () => {
 		branches: { integration: 'main' },
 	});
 
-	it('names no release branch that does not exist', () => {
+	it('[<50ms] names no release branch that does not exist', () => {
 		const lines = servedWorkModelLines(single).join('\n');
 		expect(lines).toContain(
 			'main is both the integration and the release branch',
@@ -198,7 +198,7 @@ describe('what the served instructions say', () => {
 		expect(briefWorkModel(single).integrationBranch).toBe('main');
 	});
 
-	it('still names the release branch when there is one', () => {
+	it('[<50ms] still names the release branch when there is one', () => {
 		const both = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'develop', release: 'main' },
@@ -210,7 +210,7 @@ describe('what the served instructions say', () => {
 });
 
 describe('consumers of the release branch', () => {
-	it('lists the shared branch once in the namespaces the guard allows', () => {
+	it('[<50ms] lists the shared branch once in the namespaces the guard allows', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'main', release: 'main' },
@@ -218,7 +218,7 @@ describe('consumers of the release branch', () => {
 		expect(policyNamespaces(policy).exact).toEqual(['main']);
 	});
 
-	it('writes one protection rule for the shared branch', () => {
+	it('[<50ms] writes one protection rule for the shared branch', () => {
 		const desired = buildDesiredState(
 			policyFor({
 				profile: 'shared-checkout-pr',
@@ -230,7 +230,7 @@ describe('consumers of the release branch', () => {
 		expect(desired.branches[0]?.role).toBe('integration');
 	});
 
-	it('does not treat the integration branch as a forbidden release target', () => {
+	it('[<50ms] does not treat the integration branch as a forbidden release target', () => {
 		const merge = policyFor({
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'main' },
@@ -246,7 +246,7 @@ describe('consumers of the release branch', () => {
 		).toBe(false);
 	});
 
-	it('routes a pull-request project through main exactly as it would develop', () => {
+	it('[<50ms] routes a pull-request project through main exactly as it would develop', () => {
 		const pr = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { integration: 'main' },

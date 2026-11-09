@@ -34,7 +34,7 @@ const fates = (candidates: readonly ICandidateState[]) =>
 	]);
 
 describe('candidateDispositions', () => {
-	it('moves an urgent candidate first whatever its age (x01051 S6)', () => {
+	it('[<50ms] moves an urgent candidate first whatever its age (x01051 S6)', () => {
 		expect(
 			fates([candidate(3), candidate(9, { urgent: 'repair' })]),
 		).toEqual([
@@ -43,7 +43,7 @@ describe('candidateDispositions', () => {
 		]);
 	});
 
-	it('moves the oldest green candidate and queues the rest', () => {
+	it('[<50ms] moves the oldest green candidate and queues the rest', () => {
 		expect(fates([candidate(8), candidate(3), candidate(5)])).toEqual([
 			[3, 'moves-next'],
 			[5, 'queued'],
@@ -51,7 +51,7 @@ describe('candidateDispositions', () => {
 		]);
 	});
 
-	it('brings forward a red candidate judged against an older integration branch', () => {
+	it('[<50ms] brings forward a red candidate judged against an older integration branch', () => {
 		const verdicts = candidateDispositions(
 			[candidate(3), candidate(4, { red: true, behind: true })],
 			PREFIX,
@@ -63,7 +63,7 @@ describe('candidateDispositions', () => {
 		expect(toBringForward(verdicts)).toEqual([candidate(4).headRef]);
 	});
 
-	it('leaves a red candidate to its author once it was judged against the integration branch', () => {
+	it('[<50ms] leaves a red candidate to its author once it was judged against the integration branch', () => {
 		expect(
 			fates([
 				candidate(4, { red: true, behind: false }),
@@ -79,7 +79,7 @@ describe('candidateDispositions', () => {
 		]);
 	});
 
-	it('gives a red candidate a fresh verdict again after its author pushes', () => {
+	it('[<50ms] gives a red candidate a fresh verdict again after its author pushes', () => {
 		expect(
 			fates([
 				candidate(6, {
@@ -91,7 +91,7 @@ describe('candidateDispositions', () => {
 		).toEqual([[6, 'refresh-for-verdict']]);
 	});
 
-	it('names drafts, skips a conflicting head, and ignores refs outside the prefix', () => {
+	it('[<50ms] names drafts, skips a conflicting head, and ignores refs outside the prefix', () => {
 		expect(
 			fates([
 				candidate(1, { draft: true }),
@@ -106,7 +106,7 @@ describe('candidateDispositions', () => {
 		]);
 	});
 
-	it('says why for every candidate', () => {
+	it('[<50ms] says why for every candidate', () => {
 		for (const verdict of candidateDispositions(
 			[candidate(1), candidate(2, { red: true, behind: true })],
 			PREFIX,
@@ -115,7 +115,7 @@ describe('candidateDispositions', () => {
 		}
 	});
 
-	it('brings a queued candidate forward as soon as the integration branch changes a file it changes', () => {
+	it('[<50ms] brings a queued candidate forward as soon as the integration branch changes a file it changes', () => {
 		const verdicts = candidateDispositions(
 			[
 				candidate(3),
@@ -133,7 +133,7 @@ describe('candidateDispositions', () => {
 		expect(toBringForward(verdicts)).toEqual([candidate(5).headRef]);
 	});
 
-	it('leaves a level candidate queued whatever it overlaps', () => {
+	it('[<50ms] leaves a level candidate queued whatever it overlaps', () => {
 		expect(
 			fates([
 				candidate(3),
@@ -145,7 +145,7 @@ describe('candidateDispositions', () => {
 		]);
 	});
 
-	it('regenerates a level candidate red only because a derived file is stale', () => {
+	it('[<50ms] regenerates a level candidate red only because a derived file is stale', () => {
 		const verdicts = candidateDispositions(
 			[
 				candidate(3),
@@ -164,7 +164,7 @@ describe('candidateDispositions', () => {
 		expect(toBringForward(verdicts)).toEqual([candidate(466).headRef]);
 	});
 
-	it('leaves it to its author once regenerated, so nothing loops', () => {
+	it('[<50ms] leaves it to its author once regenerated, so nothing loops', () => {
 		expect(
 			fates([
 				candidate(466, {
@@ -176,7 +176,7 @@ describe('candidateDispositions', () => {
 		).toEqual([[466, 'author']]);
 	});
 
-	it('does not regenerate a candidate with any other failing check, or only the aggregate', () => {
+	it('[<50ms] does not regenerate a candidate with any other failing check, or only the aggregate', () => {
 		expect(
 			fates([
 				candidate(7, {
@@ -193,7 +193,7 @@ describe('candidateDispositions', () => {
 });
 
 describe('authorsOwn', () => {
-	it("names the agent's own publications handed back to their author, and no one else's", () => {
+	it("[<50ms] names the agent's own publications handed back to their author, and no one else's", () => {
 		const verdicts = [
 			{
 				number: 1,
@@ -221,11 +221,11 @@ describe('authorsOwn', () => {
 });
 
 describe('orphaned candidates', () => {
-	it("a red candidate whose author is there stays the author's", () => {
+	it("[<50ms] a red candidate whose author is there stays the author's", () => {
 		expect(fates([candidate(1, { red: true })])).toEqual([[1, 'author']]);
 	});
 
-	it("a red candidate whose author is gone is orphaned, not the author's", () => {
+	it("[<50ms] a red candidate whose author is gone is orphaned, not the author's", () => {
 		const verdicts = candidateDispositions(
 			[
 				candidate(1, {
@@ -254,7 +254,7 @@ describe('orphaned candidates', () => {
 		expect(verdicts[0]?.why).toContain('finished');
 	});
 
-	it('a red candidate owed a fresh verdict is brought forward whoever its author is', () => {
+	it('[<50ms] a red candidate owed a fresh verdict is brought forward whoever its author is', () => {
 		expect(
 			fates([
 				candidate(1, {
@@ -268,7 +268,7 @@ describe('orphaned candidates', () => {
 });
 
 describe('candidates under both prefixes in a namespace transition (f00808)', () => {
-	it('disposes of a former-prefix candidate beside a current one', () => {
+	it('[<50ms] disposes of a former-prefix candidate beside a current one', () => {
 		const both = [
 			candidate(1, { headRef: 'delendai/pr/agent/x1-S1-g1/t' }),
 			candidate(2, { headRef: 'pr/agent/x2-S1-g1/t' }),

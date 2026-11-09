@@ -7,19 +7,19 @@ import { describe, expect, it } from 'vitest';
 import { parentsOutsideMerges } from '@delendai/core/lib/integration/decisions/landed.helper';
 
 describe('parentsOutsideMerges', () => {
-	it('names the parents outside the merges, for the caller to check against the base', () => {
+	it('[<50ms] names the parents outside the merges, for the caller to check against the base', () => {
 		expect(
 			parentsOutsideMerges(['m2 m1 d2', 'm1 w1 d1'].join('\n')),
 		).toEqual(['d2', 'w1', 'd1']);
 	});
 
-	it('answers undefined as soon as one commit beyond the base is not a merge', () => {
+	it('[<50ms] answers undefined as soon as one commit beyond the base is not a merge', () => {
 		expect(
 			parentsOutsideMerges(['m1 w1 d1', 'w1 b0'].join('\n')),
 		).toBeUndefined();
 	});
 
-	it('has nothing to check for a tip at the base', () => {
+	it('[<50ms] has nothing to check for a tip at the base', () => {
 		expect(parentsOutsideMerges('')).toEqual([]);
 	});
 });
