@@ -61,6 +61,28 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
   - "A child waits for the release with fs.watch or an fd/IPC message from the parent, not a setImmediate loop; it uses no CPU while waiting."
   - "afterEach kills every child the spec spawned and the spec ends with none left."
 
+### S5 — The launcher reaches its fallback from a deleted directory
+- **Status**: pending
+- **Files**: `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/alias-manager.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "With an empty or relative PWD, as a hook started in a deleted directory sees it, the POSIX launcher walks from / and reaches its fallback instead of looping on dirname forever."
+  - "A spec runs the rendered launcher in bash with an empty PWD and sees it reach the fallback."
+
+### S6 — review next fits its queue request in the response budget
+- **Status**: pending
+- **Files**: `packages/cli/src/commands/review.command.ts`
+- **Gate**: type
+- acceptance:
+  - "With 25 proposals and 58 slices in review, review next hands out a pack instead of failing with response-too-large; it asks for the queue in pages or without detail."
+
+### S7 — A claim that times out reports what actually happened
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`
+- **Gate**: type
+- acceptance:
+  - "When a review claim's git call times out under load, the tool checks whether the claim commit landed and reports the claim as held when it did, instead of 'Could not claim'."
+
 ## acceptance
 
 - A server that finds the maintainer lease held by a pid that is dead on the same host takes it over and says so once.

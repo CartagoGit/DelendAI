@@ -169,7 +169,6 @@
 		"packages/cli/src/index.spec.ts",
 		"packages/cli/src/lib/alias/alias-command.integration.spec.ts",
 		"packages/cli/src/lib/alias/alias-launcher.integration.spec.ts",
-		"packages/cli/src/lib/alias/alias-manager.spec.ts",
 		"packages/cli/src/lib/alias/integration.spec.ts",
 		"packages/cli/src/lib/alias/shim.spec.ts",
 		"packages/cli/src/lib/bridge/bridge-installer.spec.ts",
