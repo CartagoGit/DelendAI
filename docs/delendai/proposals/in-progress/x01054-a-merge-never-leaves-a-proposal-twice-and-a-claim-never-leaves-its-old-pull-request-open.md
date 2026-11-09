@@ -36,16 +36,16 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 
 ### S1 — Merges keep one copy of each proposal id
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+- **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/src/lib/contracts/constants/status-progress.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-copy.interface.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.e2e.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/proposals/keep-one-proposal-copy.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.constant.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: type
 - acceptance:
   - "root cause: two branches that move one proposal leave it at two paths; git merges them without a conflict and the registry refuses the duplicate id"
-  - "the train and the candidate refresh (which the post-merge hook runs) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
+  - "the train and the candidate refresh (run as a refresh command; the post-merge hook runs the refresh) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
   - "the survivor is placed by the existing folder reconciler, and a spec with two branches that move one proposal proves it"
 
 ### S2 — A claim retires the publication it superseded
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/contracts/interfaces/superseded-publication.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "root cause: claim adopted a publication and opened a new one, and nothing looked back at the old pull request"
