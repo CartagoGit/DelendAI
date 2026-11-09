@@ -115,7 +115,7 @@ const withinBudget = (name: keyof typeof BUDGET, run: IRun, code = 0): void => {
 };
 
 describe('the git processes of one work invocation', () => {
-	it('refuses a call that names no unit before asking git anything', async () => {
+	it('[<160ms] refuses a call that names no unit before asking git anything', async () => {
 		const { root } = template.copy();
 		for (const sub of [
 			'enter',
@@ -128,7 +128,7 @@ describe('the git processes of one work invocation', () => {
 		}
 	});
 
-	it('keeps a whole unit, enter to retire, within the budget of each step', async () => {
+	it('[<7442ms] keeps a whole unit, enter to retire, within the budget of each step', async () => {
 		const { root, git } = template.copy();
 		withinBudget('status', await counted(['status'], root));
 		const entered = await counted(['enter', ...UNIT], root);

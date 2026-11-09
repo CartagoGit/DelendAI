@@ -17,7 +17,7 @@ const check = (name: string, conclusion: string | null) => ({
 });
 
 describe('the zones a run reports', () => {
-	it('reads the zone of a shard, a readers job and nothing else', () => {
+	it('[<14ms] reads the zone of a shard, a readers job and nothing else', () => {
 		expect(zoneOfCheck('tests: core 2/4')).toBe('core');
 		expect(zoneOfCheck('tests: plugins readers')).toBe('plugins');
 		expect(zoneOfCheck('tests: tools')).toBe('tools');
@@ -25,7 +25,7 @@ describe('the zones a run reports', () => {
 		expect(zoneOfCheck('typecheck')).toBeUndefined();
 	});
 
-	it('names a zone failed by one red shard, and passed only when every shard passed', () => {
+	it('[<6ms] names a zone failed by one red shard, and passed only when every shard passed', () => {
 		const checks = [
 			check('tests: core 1/2', 'success'),
 			check('tests: core 2/2', 'failure'),
@@ -37,7 +37,7 @@ describe('the zones a run reports', () => {
 		expect([...passedZonesOf(checks)]).toEqual(['tools']);
 	});
 
-	it('writes and reads the red zones of a repair', () => {
+	it('[<6ms] writes and reads the red zones of a repair', () => {
 		const body = `range\n\n${redZonesLine(['core', 'tools'])}`;
 		expect(redZonesOf(body)).toEqual(['core', 'tools']);
 		expect(redZonesOf(withRedZones(body, ['tools']))).toEqual(['tools']);
@@ -49,7 +49,7 @@ describe('the zones a run reports', () => {
 describe('a red zone holds only what reaches it, and not its repair', () => {
 	const red = new Set(['core']);
 
-	it('holds a candidate whose change reaches the red zone', () => {
+	it('[<5ms] holds a candidate whose change reaches the red zone', () => {
 		expect(
 			sectionHold({
 				red,
@@ -59,7 +59,7 @@ describe('a red zone holds only what reaches it, and not its repair', () => {
 		).toEqual(['core']);
 	});
 
-	it('lets every other candidate land', () => {
+	it('[<6ms] lets every other candidate land', () => {
 		expect(
 			sectionHold({ red, zones: new Set(['tools']), passed: new Set() }),
 		).toEqual([]);
@@ -72,7 +72,7 @@ describe('a red zone holds only what reaches it, and not its repair', () => {
 		).toEqual([]);
 	});
 
-	it('lets the repair land: its own run of the zone passed', () => {
+	it('[<6ms] lets the repair land: its own run of the zone passed', () => {
 		expect(
 			sectionHold({
 				red,
@@ -82,13 +82,13 @@ describe('a red zone holds only what reaches it, and not its repair', () => {
 		).toEqual([]);
 	});
 
-	it('holds a change that reaches every zone', () => {
+	it('[<5ms] holds a change that reaches every zone', () => {
 		expect(
 			sectionHold({ red, zones: undefined, passed: new Set() }),
 		).toEqual(['core']);
 	});
 
-	it('clears a zone once a landed pull request ran it green', () => {
+	it('[<5ms] clears a zone once a landed pull request ran it green', () => {
 		expect(
 			zonesStillRed(['core', 'tools'], [new Set(['tools']), new Set()]),
 		).toEqual(['core']);
