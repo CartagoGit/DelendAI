@@ -14,7 +14,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import { DEFAULT_CACHE_DIR } from '../contracts/constants/delendai-records.constant';
 import {
 	ORPHAN_RESCUE_ATTEMPTS,

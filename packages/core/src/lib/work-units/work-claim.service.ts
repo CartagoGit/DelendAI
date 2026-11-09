@@ -33,7 +33,7 @@
  * the deletion of the old one. If the proof fails, the old ref is still
  * there and nothing is lost — the ordering is the safety.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { resolveWorkRef } from '../wip-engine/ref-name';

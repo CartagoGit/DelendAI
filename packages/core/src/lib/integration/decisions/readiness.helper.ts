@@ -1,44 +1,82 @@
 /**
- * candidate-disposition.ts — what happens to every open candidate, in one
- * place.
+ * readiness.ts — whether a pull request is ready, in what order the ready
+ * ones move, and what happens to each open candidate.
  *
  * The queue moves one candidate at a time, and `queueOrder` leaves red
  * candidates out of it, which is right: a red candidate cannot merge. But
  * nothing else looked at them either, and a candidate can be red for a
- * reason that is not its own. On 2026-09-25 the integration branch carried
- * a test that expired with the calendar; four candidates went red on it,
- * the fix merged, and those four stayed red for hours: out of the queue,
- * so never brought forward, so never run again, so red for good. Nobody
- * had said what should happen to them.
- *
- * This says it, for every candidate. A queued candidate is brought
- * forward as soon as the integration branch changes a file it changes
- * too, so an overlap surfaces while it is fresh instead of on its turn,
- * and one nothing moved under is left alone: merging would change nothing
- * it touches. A red candidate judged against an
- * integration branch that has since moved gets brought forward once, for
- * a fresh verdict. If it is red again after that, it is its author's, and
- * nothing touches it until the author pushes. So a genuinely red
- * candidate costs at most one merge of the integration branch per push of
- * its author, which keeps away the merge-per-merge maze that one-at-a-time
- * removed. And an author who is gone (finished, idle past the recovery
- * window, out of quota) pushes nothing: that candidate is `orphaned`,
- * which the hydrator keeps moving a bounded number of times and anyone
- * may adopt, instead of `author` for good.
+ * reason that is not its own (on 2026-09-25 the integration branch
+ * carried a test that expired with the calendar, and four candidates
+ * stayed red for hours). `candidateDispositions` says, for every
+ * candidate, what happens to it: a queued one is brought forward as soon
+ * as the integration branch changes a file it changes too; a red one
+ * judged against a branch that has since moved is brought forward once for
+ * a fresh verdict; red again, it is its author's; an author who is gone
+ * leaves it `orphaned`, which anyone may adopt.
  */
+import { REGENERATION_FIXES_CHECKS } from './readiness.constant';
 import type {
 	ICandidateState,
 	ICandidateVerdict,
-} from './candidate-disposition.interface';
-import { REGENERATION_FIXES_CHECKS } from './candidate-disposition.constant';
-import { byQueuePosition, queueHead } from './queue-order';
-import { underPublication } from './publication-prefixes';
+	IPullRequestChecks,
+	IQueueCandidateFacts,
+} from './readiness.interface';
+import { underPublication } from './namespaces.helper';
 
-export type {
-	ICandidateDisposition,
-	ICandidateState,
-	ICandidateVerdict,
-} from './candidate-disposition.interface';
+/**
+ * Whether a pull request is ready to land: not a draft, every required
+ * check green on its head (a missing or pending one is not green), and no
+ * label that blocks it.
+ */
+export const pullRequestReady = (facts: IPullRequestChecks): boolean =>
+	!facts.draft &&
+	facts.required.every((name) =>
+		facts.checks.some(
+			(check) => check.name === name && check.conclusion === 'success',
+		),
+	) &&
+	!facts.labels.some((label) => facts.blockingLabels.includes(label));
+
+/** One position rule for every ordering of candidates: urgent first, then oldest. */
+export const byQueuePosition = (
+	a: Pick<IQueueCandidateFacts, 'number' | 'urgent'>,
+	b: Pick<IQueueCandidateFacts, 'number' | 'urgent'>,
+): number =>
+	Number(b.urgent !== undefined) - Number(a.urgent !== undefined) ||
+	a.number - b.number;
+
+/**
+ * The queue itself: the pull requests this model produced that are ready
+ * (not drafts) and not red (they would never merge), urgent ones first
+ * (`work deliver --urgent`), then oldest first.
+ * Conflicting ones keep their place: a conflict confined to derived
+ * files is resolved by the machine that brings candidates forward.
+ */
+export const queueOrder = (
+	candidates: readonly IQueueCandidateFacts[],
+	publicationPrefix: string | readonly string[],
+): readonly IQueueCandidateFacts[] =>
+	[...candidates]
+		.filter(
+			(candidate) =>
+				underPublication(candidate.headRef, publicationPrefix) &&
+				!candidate.draft &&
+				!candidate.red,
+		)
+		.sort(byQueuePosition);
+
+/**
+ * The candidate that moves next: the oldest one in the queue that is not
+ * conflicting — the forge cannot merge a conflicting one. `undefined`
+ * when none is.
+ */
+export const queueHead = (
+	candidates: readonly IQueueCandidateFacts[],
+	publicationPrefix: string | readonly string[],
+): IQueueCandidateFacts | undefined =>
+	queueOrder(candidates, publicationPrefix).find(
+		(candidate) => !candidate.conflicting,
+	);
 
 /**
  * Whether regenerating the derived files is what this red candidate

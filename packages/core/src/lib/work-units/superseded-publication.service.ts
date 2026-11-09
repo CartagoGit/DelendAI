@@ -23,7 +23,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IWorkUnitContext } from '../contracts/interfaces/work-unit-context.interface';
 import type { IPublicationPullRequest } from '../contracts/interfaces/publication-pull-request.interface';
 import type { IUnitHandover } from './unit-lease.interface';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { readWorkspacePolicy } from './development-policy.service';
 import { readUnitLease } from './unit-lease.store';
@@ -134,12 +134,18 @@ export const commonDirFromFiles = async (
 		dir = dirname(dir)
 	) {
 		const dot = join(dir, '.git');
-		const found = await stat(dot).catch(() => undefined);
-		if (found === undefined) continue;
-		if (found.isDirectory()) return dot;
-		const pointer = /^gitdir:\s*(.+)$/mu.exec(
-			await readFile(dot, 'utf8'),
-		)?.[1];
+		// Read, and let the read say what `.git` is: a directory (EISDIR) is
+		// the common directory itself, a missing path is one level too deep.
+		// No check before the read, so nothing can change between the two.
+		const text = await readFile(dot, 'utf8').then(
+			(content) => ({ content }),
+			(error: NodeJS.ErrnoException) => error,
+		);
+		if ('code' in text) {
+			if (text.code === 'EISDIR') return dot;
+			continue;
+		}
+		const pointer = /^gitdir:\s*(.+)$/mu.exec(text.content)?.[1];
 		const at = pointer?.lastIndexOf(`${sep}worktrees${sep}`) ?? -1;
 		return pointer === undefined || at < 0
 			? undefined

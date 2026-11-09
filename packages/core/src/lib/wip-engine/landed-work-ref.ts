@@ -9,9 +9,9 @@ import {
 	putsBack,
 	takesOff,
 	workRefFate,
-	workRefIntegrationRef,
 	workRefLanded,
-} from '../work-units/work-ref-lifecycle.service';
+} from '../integration/decisions/landed.helper';
+import { workRefIntegrationRef } from '../work-units/work-ref-lifecycle.service';
 import {
 	recordWorkRefMove,
 	workRefMover,

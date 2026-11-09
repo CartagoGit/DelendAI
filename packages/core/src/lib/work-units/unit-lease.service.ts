@@ -6,7 +6,7 @@
  * runs `delendai work …` lives for a few hundred milliseconds, so a pid
  * would make every unit look abandoned the moment its command returned.
  */
-import { shortName } from '../development-policy/git-guard-namespaces';
+import { shortName } from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readUnitLease, updateUnitLease } from './unit-lease.store';
 import type {

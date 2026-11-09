@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { shortName } from '@delendai/core/lib/development-policy/git-guard-namespaces';
+import { shortName } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 
 import type {
 	IUnitLease,
@@ -54,17 +54,17 @@ const judged = (evidence: Partial<Parameters<typeof judgeAuthor>[0]>) =>
 	});
 
 describe('judgeAuthor', () => {
-	it('an author with a heartbeat inside the window is there', () => {
+	it('[<9ms] an author with a heartbeat inside the window is there', () => {
 		const presence = judged({ lease: lease(60) });
 		expect(presence.orphaned).toBe(false);
 		expect(presence.reason).toBeNull();
 	});
 
-	it('an author quiet but inside the recovery window is not judged gone', () => {
+	it('[<5ms] an author quiet but inside the recovery window is not judged gone', () => {
 		expect(judged({ lease: lease(WINDOW * 2) }).orphaned).toBe(false);
 	});
 
-	it('an author idle past the recovery window is gone', () => {
+	it('[<6ms] an author idle past the recovery window is gone', () => {
 		const presence = judged({
 			lease: lease(WINDOW * ABANDONED_AFTER_LEASE_WINDOWS + 1),
 		});
@@ -74,18 +74,18 @@ describe('judgeAuthor', () => {
 		});
 	});
 
-	it('an author whose unit ended is gone, whatever its last commit says', () => {
+	it('[<5ms] an author whose unit ended is gone, whatever its last commit says', () => {
 		const presence = judged({ unitEnded: true, tipAt: NOW - 5 });
 		expect(presence).toMatchObject({ orphaned: true, reason: 'finished' });
 	});
 
-	it('a finished unit whose lease is live again is not orphaned', () => {
+	it('[<5ms] a finished unit whose lease is live again is not orphaned', () => {
 		expect(judged({ unitEnded: true, lease: lease(5) }).orphaned).toBe(
 			false,
 		);
 	});
 
-	it('an author out of quota is gone at once, until it beats again', () => {
+	it('[<5ms] an author out of quota is gone at once, until it beats again', () => {
 		expect(
 			judged({ lease: lease(60, { outOfQuotaAt: NOW - 30 }) }),
 		).toMatchObject({ orphaned: true, reason: 'out-of-quota' });
@@ -108,7 +108,7 @@ const entry = (ref: string, silentFor: number): IUnitStandingEntry => ({
 });
 
 describe('orphanedUnits', () => {
-	it('a roster with one live and one orphaned unit lists only the orphaned one', () => {
+	it('[<6ms] a roster with one live and one orphaned unit lists only the orphaned one', () => {
 		const live = 'delendai/wip/a/implement/x1-S1-g1/work';
 		const gone = 'delendai/wip/b/implement/x2-S1-g1/work';
 		const orphans = orphanedUnits([
@@ -123,7 +123,7 @@ describe('orphanedUnits', () => {
 });
 
 describe('handedOver', () => {
-	it('an adopted unit is no longer orphaned and its history names both agents', () => {
+	it('[<6ms] an adopted unit is no longer orphaned and its history names both agents', () => {
 		const old = lease(WINDOW * ABANDONED_AFTER_LEASE_WINDOWS + 60, {
 			outOfQuotaAt: NOW - 1,
 		});
@@ -143,7 +143,7 @@ describe('handedOver', () => {
 describe('planOrphanRescues', () => {
 	const HEAD = 'delendai/pr/b/implement/x2-S1-g1/work';
 
-	it('brings an orphan forward while its attempts are below the bound', () => {
+	it('[<6ms] brings an orphan forward while its attempts are below the bound', () => {
 		const plan = planOrphanRescues({
 			orphaned: [{ headRef: HEAD, behind: true }],
 			rescues: { rescues: { [HEAD]: { attempts: 1 } } },
@@ -153,7 +153,7 @@ describe('planOrphanRescues', () => {
 		expect(plan.next.rescues[HEAD]).toEqual({ attempts: 2 });
 	});
 
-	it('spends no attempt on an orphan nothing moved under', () => {
+	it('[<5ms] spends no attempt on an orphan nothing moved under', () => {
 		const plan = planOrphanRescues({
 			orphaned: [{ headRef: HEAD, behind: false }],
 			rescues: { rescues: {} },
@@ -163,7 +163,7 @@ describe('planOrphanRescues', () => {
 		expect(plan.next.rescues[HEAD]).toEqual({ attempts: 0 });
 	});
 
-	it('the Nth failure reports, once, and then the orphan is left with its tip', () => {
+	it('[<5ms] the Nth failure reports, once, and then the orphan is left with its tip', () => {
 		const now = new Date('2026-11-04T00:00:00Z');
 		const first = planOrphanRescues({
 			orphaned: [{ headRef: HEAD, behind: true }],
@@ -181,7 +181,7 @@ describe('planOrphanRescues', () => {
 		expect(second.steps.get(HEAD)).toBe('left');
 	});
 
-	it('an adopted candidate is no longer touched as an orphan', () => {
+	it('[<5ms] an adopted candidate is no longer touched as an orphan', () => {
 		const plan = planOrphanRescues({
 			orphaned: [],
 			rescues: { rescues: { [HEAD]: { attempts: 2 } } },
@@ -195,7 +195,7 @@ describe('planOrphanRescues', () => {
 describe('a delivered publication waiting for its pull request (x01051)', () => {
 	const recovery = WINDOW * ABANDONED_AFTER_LEASE_WINDOWS;
 
-	it('is not orphaned inside the recovery window, and says why', () => {
+	it('[<5ms] is not orphaned inside the recovery window, and says why', () => {
 		const presence = judged({
 			unitEnded: true,
 			deliveredAt: NOW - 60,
@@ -204,13 +204,13 @@ describe('a delivered publication waiting for its pull request (x01051)', () => 
 		expect(presence.why).toContain('waiting for its pull request');
 	});
 
-	it('is orphaned once it has waited past the recovery window', () => {
+	it('[<5ms] is orphaned once it has waited past the recovery window', () => {
 		expect(
 			judged({ unitEnded: true, deliveredAt: NOW - recovery - 1 }),
 		).toMatchObject({ orphaned: true, reason: 'finished' });
 	});
 
-	it('is orphaned when nothing says it was delivered', () => {
+	it('[<5ms] is orphaned when nothing says it was delivered', () => {
 		expect(judged({ unitEnded: true })).toMatchObject({
 			orphaned: true,
 			reason: 'finished',
@@ -222,7 +222,7 @@ describe('the publication a work ref was published as (x01051)', () => {
 	const policy = resolveDevelopmentPolicy({
 		development: { profile: 'shared-checkout-pr' },
 	});
-	it('maps a publication back to its work ref, and nothing else', () => {
+	it('[<5ms] maps a publication back to its work ref, and nothing else', () => {
 		const published = `${shortName(policy.branches.publicationRefPrefix)}a/implement/x1-S1-g1/t`;
 		expect(workRefOfPublication(policy, published)).toBe(
 			`${shortName(policy.branches.workRefPrefix)}a/implement/x1-S1-g1/t`,
@@ -232,7 +232,7 @@ describe('the publication a work ref was published as (x01051)', () => {
 });
 
 describe('the rescues the hydrator keeps (x01051)', () => {
-	it('survive a write and tell the owner what it gave up on', async () => {
+	it('[<250ms] survive a write and tell the owner what it gave up on', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'rescues-'));
 		try {
 			expect(await readOrphanRescues(root)).toEqual({ rescues: {} });

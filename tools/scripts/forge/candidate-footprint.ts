@@ -3,11 +3,11 @@
  * same planner that decides which test zones a pull request runs (f00755).
  */
 import { execFileSync } from 'node:child_process';
+import { footprintFromReach, type IChangeFootprint } from '@delendai/core/cli';
 import { readGit } from '@delendai/core/runtime';
 
 import { gitDiffChanges } from '../ci/affected.script';
 import { zoneReach } from '../ci/test-zones.script';
-import type { IChangeFootprint } from './independent-candidates.interface';
 
 /**
  * Whether `from...to` adds a file that existed nowhere before: an added
@@ -43,23 +43,14 @@ export const footprintBetween = (
 	const files = new Set(
 		gitDiffChanges(from, to, root).map((change) => change.path),
 	);
-	if (files.size === 0) return { zones: new Set(), files };
-	const reach = zoneReach({ base: from, head: to, rootDir: root });
-	return reach === undefined
-		? { zones: 'everything', files }
-		: {
-				zones: reach.zones,
-				files,
-				readOnly: reach.readOnly,
-				// What a change that only feeds a zone reaches there: the
-				// specs that read its files, never the whole zone.
-				readers: new Set(
-					[...reach.readOnly].flatMap(
-						(zone) => reach.readers?.get(zone) ?? [],
-					),
-				),
-				creates: createsFiles(root, from, to),
-			};
+	return footprintFromReach({
+		files,
+		reach:
+			files.size === 0
+				? undefined
+				: zoneReach({ base: from, head: to, rootDir: root }),
+		creates: files.size > 0 && createsFiles(root, from, to),
+	});
 };
 
 /** Where `a` and `b` last shared history, or `undefined`. */

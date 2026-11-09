@@ -74,6 +74,16 @@ The views ask once while the client is still connecting and nothing asks again w
   - "The extension has one view, the Dashboard, with sections for tools, proposals, memory, plugins, agents and KPIs; the separate panels are gone and every section loads its data."
   - "The language, the theme and the section chosen are remembered across reloads, in one store the sections all read."
 
+### S7 — The status-bar item names DelendAI and opens it
+- **Status**: pending
+- **Files**: `extensions/vscode/src/providers/status-bar.ts`, `extensions/vscode/src/host/vscode-host-adapter.ts`, `extensions/vscode/src/test/status-bar.spec.ts`, `extensions/vscode/src/test/status-bar-dispose.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The status-bar label reads `DelendAI`, exactly like the extension's display name."
+  - "The tooltip is a rich MarkdownString with live data: the running version and branch state (f00813), the connection state, which server maintains the workspace, the compute-slot holder, active units and open PRs."
+  - "A click opens the DelendAI view container or dashboard directly, with no quick-pick, and the quick-pick that listed unrelated non-DelendAI entries is gone from this item."
+  - "The tooltip updates on server notifications, not on a timer."
+
 ## acceptance
 
 - Every view refreshes when the client connects or reconnects, and a view never stays on a connecting message once the server answers.
@@ -83,7 +93,10 @@ The views ask once while the client is still connecting and nothing asks again w
 - The dashboard shows live units, publications and their checks, what the queue is doing, blocked mutations with their cause, and current token use, refreshed by events and not by polling every panel.
 - The Dashboard view shows its content at side-bar width: its navigation does not cover it.
 - A spec activates the built extension against a real server in a throwaway project and reads a populated view model.
+- The status-bar label reads `DelendAI`, and a click opens the DelendAI view directly with no quick-pick.
+- The status-bar tooltip is a rich MarkdownString with live version and branch state, connection, maintainer, compute-slot holder, active units and open PRs, updated on server notifications and not on a timer.
 
 ## notes
 - 2026-11-02: the panels failed because the extension routed every call through `delendai_vertex`, a router the server no longer exposes, in 70 lines that repeated the shared client. For a later slice: the `DelendAI Runtime` channel replays 77,611 history lines on every load.
 - 2026-11-02: the real bundle driven in Node against a real server found what fake clients could not: the launch lookup was case-sensitive and missed the `DelendAI` entry of `.mcp.json`, falling back to a command that is no server; the catalog was asked whole at 312 KB when a view needs one section; and a resolved tool's summary was read instead of its structured content. S2 fixes the three, and the tree views fill. The owner asked for S6: four panels look bad.
+- 2026-11-09: S7 added at the owner's request. Today `status-bar.ts` sets the text `$(delendai) delendai` and a plain-string tooltip; the class is wired in `extension.ts` and the item is created by `VscodeStatusBarItem` in `vscode-host-adapter.ts`. The quick-pick that lists unrelated entries must be found when S7 starts.

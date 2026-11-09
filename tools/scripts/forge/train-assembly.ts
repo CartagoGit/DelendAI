@@ -17,8 +17,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import type { ITrainCandidate } from '@delendai/core/cli';
+
 import { keepOneProposalCopy } from '../proposals/keep-one-proposal-copy';
-import type { ITrainCandidate } from './queue-order.interface';
 
 /** The subject of the commit a train adds when regeneration moved a file. */
 export const TRAIN_REGENERATION_SUBJECT =

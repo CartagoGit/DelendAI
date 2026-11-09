@@ -31,7 +31,13 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { parseJsonc } from '@delendai/core/cli';
+import {
+	authorsOwn,
+	candidateDispositions,
+	ownedTrainPrefixes,
+	parseJsonc,
+	toBringForward,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -46,18 +52,12 @@ import {
 	runGitCommand,
 	writePublicationDispositions,
 } from '@delendai/core/runtime';
-import {
-	candidateDispositions,
-	toBringForward,
-	authorsOwn,
-} from '../forge/candidate-disposition';
 import { authorGoneOf, rescueOrphans } from './orphan-rescue';
 import {
 	currentQueueFacts,
 	currentQueueOrder,
 } from '../forge/keep-the-queue-moving.script';
 import { branchesLandingAsTheyAre } from '../forge/queue-acceptance';
-import { trainPrefixesOf } from '../forge/publication-prefixes';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -67,6 +67,7 @@ import {
 } from './refresh-candidate-artifacts.constant';
 
 import type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
+import { shortName } from '@delendai/core/cli';
 
 export type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
 export { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
@@ -294,8 +295,7 @@ const unitStillOnForge = (
 	policy: IResolvedDevelopmentPolicy,
 	candidate: string,
 ): boolean => {
-	const bare = (prefix: string): string =>
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+	const bare = shortName;
 	const publication = bare(policy.branches.publicationRefPrefix);
 	if (publication.length === 0 || !candidate.startsWith(publication)) {
 		return true;
@@ -597,7 +597,7 @@ const main = async (): Promise<void> => {
 		root,
 		remote,
 		integration: policy.branches.integration,
-		trainPrefixes: trainPrefixesOf(policy.branches),
+		trainPrefixes: ownedTrainPrefixes(policy.branches),
 		queue: queue
 			.filter(
 				(entry) =>
