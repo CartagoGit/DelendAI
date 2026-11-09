@@ -158,7 +158,6 @@
 		"packages/cli/src/commands/registry-delegation.spec.ts",
 		"packages/cli/src/commands/registry.spec.ts",
 		"packages/cli/src/commands/repair.command.spec.ts",
-		"packages/cli/src/commands/review.command.e2e.spec.ts",
 		"packages/cli/src/commands/usage-host-sessions.command.spec.ts",
 		"packages/cli/src/commands/work-claim.command.spec.ts",
 		"packages/cli/src/commands/work-print-path.spec.ts",
