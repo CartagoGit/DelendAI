@@ -1,0 +1,204 @@
+/**
+ * github-land-forge.service.ts — `ILandForge` on GitHub, through the `gh` CLI the
+ * forge seam already runs. Each method is one REST call; a refusal that
+ * the contract names (409 head moved, 405/422 not mergeable) is an answer,
+ * any other failure throws so the pass ends and the next one reads again.
+ *
+ * GitLab maps the same calls: pipelines for checks, `PUT .../merge` with
+ * `sha`, `PUT .../rebase`, labels, notes and merge requests.
+ */
+import type {
+	ILandCheck,
+	ILandCommandRunner,
+	ILandForge,
+	ILandMerge,
+	ILandPullRequest,
+	ILandUpdate,
+} from './land.interface';
+
+interface IRawPull {
+	number: number;
+	state: string;
+	draft?: boolean;
+	merged?: boolean;
+	body?: string | null;
+	labels?: { name: string }[];
+	head: { ref: string; sha: string };
+}
+
+export const createGithubLandForge = (input: {
+	readonly slug: string;
+	readonly integration: string;
+	readonly run: ILandCommandRunner;
+	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
+}): ILandForge => {
+	const { slug, integration, run } = input;
+	const call = async (
+		method: string,
+		path: string,
+		fields: Readonly<Record<string, string>> = {},
+	): Promise<{ status: number; body: unknown }> => {
+		const result = await run([
+			'api',
+			'--method',
+			method,
+			`repos/${slug}/${path}`,
+			...Object.entries(fields).flatMap(([k, v]) => ['-f', `${k}=${v}`]),
+		]);
+		if (result.exitCode === 0) {
+			return {
+				status: 200,
+				body:
+					result.stdout.trim() === ''
+						? {}
+						: JSON.parse(result.stdout),
+			};
+		}
+		const status = Number(
+			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
+		);
+		if (Number.isInteger(status)) return { status, body: undefined };
+		throw new Error(
+			`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+		);
+	};
+	const ok = async <T>(path: string): Promise<T> => {
+		const { status, body } = await call('GET', path);
+		if (status !== 200)
+			throw new Error(`GET ${path} answered ${String(status)}`);
+		return body as T;
+	};
+	const baseOf = async (pr: IRawPull): Promise<string> =>
+		(
+			await ok<{ merge_base_commit: { sha: string } }>(
+				`compare/${integration}...${pr.head.sha}`,
+			)
+		).merge_base_commit.sha;
+	const view = async (pr: IRawPull): Promise<ILandPullRequest> => ({
+		number: pr.number,
+		headRef: pr.head.ref,
+		headSha: pr.head.sha,
+		draft: pr.draft === true,
+		state: pr.state === 'open' ? 'open' : 'closed',
+		merged: pr.merged === true,
+		labels: (pr.labels ?? []).map((l) => l.name),
+		body: pr.body ?? '',
+		testedBase: await baseOf(pr),
+	});
+	const pulls = (query: string): Promise<IRawPull[]> =>
+		ok<IRawPull[]>(`pulls?base=${integration}&per_page=100&${query}`);
+	return {
+		integrationTip: async () =>
+			(await ok<{ commit: { sha: string } }>(`branches/${integration}`))
+				.commit.sha,
+		requiredChecks: async () =>
+			(
+				await ok<
+					{
+						type: string;
+						parameters?: {
+							required_status_checks?: { context: string }[];
+						};
+					}[]
+				>(`rules/branches/${integration}`)
+			).flatMap((rule) =>
+				rule.type === 'required_status_checks'
+					? (rule.parameters?.required_status_checks ?? []).map(
+							(c) => c.context,
+						)
+					: [],
+			),
+		openPullRequests: async () =>
+			Promise.all(
+				(await pulls('state=open'))
+					.filter((pr) => !pr.head.ref.includes('/queue/batch-'))
+					.map(view),
+			),
+		batchPullRequests: async (prefix) =>
+			Promise.all(
+				(await pulls('state=all&sort=updated&direction=desc'))
+					.filter((pr) => pr.head.ref.startsWith(`${prefix}batch-`))
+					.map(view),
+			),
+		pullRequest: async (number) =>
+			view(await ok<IRawPull>(`pulls/${String(number)}`)),
+		checks: async (sha): Promise<readonly ILandCheck[]> =>
+			(
+				await ok<{
+					check_runs: {
+						name: string;
+						conclusion: string | null;
+						html_url?: string;
+					}[];
+				}>(`commits/${sha}/check-runs?per_page=100`)
+			).check_runs.map((c) => ({
+				name: c.name,
+				conclusion: c.conclusion,
+				url: c.html_url,
+			})),
+		merge: async (number, sha): Promise<ILandMerge> => {
+			const { status } = await call(
+				'PUT',
+				`pulls/${String(number)}/merge`,
+				{
+					sha,
+					merge_method: input.mergeMethod ?? 'merge',
+				},
+			);
+			return status === 200
+				? 'merged'
+				: status === 409
+					? 'head-moved'
+					: 'refused';
+		},
+		updateBranch: async (number, sha): Promise<ILandUpdate> => {
+			const { status } = await call(
+				'PUT',
+				`pulls/${String(number)}/update-branch`,
+				{
+					expected_head_sha: sha,
+				},
+			);
+			return status === 200 || status === 202
+				? 'updated'
+				: status === 409
+					? 'head-moved'
+					: 'conflict';
+		},
+		addLabel: async (number, label) => {
+			await call('POST', `issues/${String(number)}/labels`, {
+				'labels[]': label,
+			});
+		},
+		removeLabel: async (number, label) => {
+			await call(
+				'DELETE',
+				`issues/${String(number)}/labels/${encodeURIComponent(label)}`,
+			);
+		},
+		comment: async (number, text) => {
+			await call('POST', `issues/${String(number)}/comments`, {
+				body: text,
+			});
+		},
+		openPullRequest: async ({ head, title, body }) =>
+			(
+				(
+					await call('POST', 'pulls', {
+						head,
+						base: integration,
+						title,
+						body,
+					})
+				).body as {
+					number: number;
+				}
+			).number,
+		updatePullRequest: async (number, body) => {
+			await call('PATCH', `pulls/${String(number)}`, { body });
+		},
+		closePullRequest: async (number) => {
+			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
+		},
+	};
+};

@@ -157,6 +157,35 @@ export {
 	workRefLanded,
 	workRefProposalOpen,
 } from './lib/integration/decisions/landed.helper';
+// land: the one integrator pass, its adapter contract and workflow template.
+export { landPass } from './lib/integration/land/land.helper';
+export {
+	batchBody,
+	readBatchRecord,
+} from './lib/integration/land/land-batch-record.helper';
+export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
+export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
+export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
+export {
+	LAND_LABEL_CULPRIT,
+	LAND_LABEL_NEEDS_UPDATE,
+} from './lib/integration/land/land.constant';
+export type {
+	ILandBatchBuild,
+	ILandBatchRecord,
+	ILandCheck,
+	ILandCommandRunner,
+	ILandConfig,
+	ILandConflict,
+	ILandDeps,
+	ILandForge,
+	ILandGit,
+	ILandMerge,
+	ILandPullRequest,
+	ILandReport,
+	ILandWorkflowInput,
+	ILandUpdate,
+} from './lib/integration/land/land.interface';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,
