@@ -376,9 +376,10 @@ describe('who the queue commits as', () => {
 });
 
 describe('what a refreshed candidate regenerates', () => {
-	it('[<50ms] installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
+	it('[<50ms] installs from the merged lockfile, keeps one copy of each proposal, then runs gen:all, the one list of generators', () => {
 		expect(GENERATED_REFRESH_COMMANDS).toEqual([
 			'install --frozen-lockfile --ignore-scripts',
+			'tools/scripts/proposals/reconcile-duplicate-ids.script.ts --root .',
 			'run gen:all',
 		]);
 	});

@@ -14,6 +14,10 @@ import { REPO_AUTHORITIES } from '../gen/repo-authorities.constant';
  */
 export const GENERATED_REFRESH_COMMANDS: readonly string[] = [
 	'install --frozen-lockfile --ignore-scripts',
+	// The integration branch may hold a proposal in another folder than the
+	// candidate does; keep the copy furthest along before the generators read
+	// the registry (x01054). The regeneration commit carries the removal.
+	'tools/scripts/proposals/reconcile-duplicate-ids.script.ts --root .',
 	'run gen:all',
 ];
 
