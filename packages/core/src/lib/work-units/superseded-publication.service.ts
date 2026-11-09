@@ -14,6 +14,7 @@
  * a pull request open whose commits the new one lacks. When it does not
  * hold, the old publication stays and the answer says why.
  */
+import { shortName } from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type {
 	ISupersession,
@@ -38,9 +39,6 @@ import {
 } from './work-unit-shared.service';
 import { publicationRefFromWorkRef } from './work-publish.service';
 
-const short = (ref: string): string =>
-	ref.replace(/^refs\//u, '').replace(/^heads\//u, '');
-
 /** The number of a pull request from its URL, when it ends in one. */
 export const pullRequestNumberOf = (url: string): number | undefined => {
 	const found = /\/(\d+)\/?$/u.exec(url)?.[1];
@@ -62,11 +60,11 @@ export const retireSupersededPublications = async (input: {
 }): Promise<readonly ISupersession[]> => {
 	const { ports } = input;
 	const outcomes: ISupersession[] = [];
-	const seen = new Set<string>([short(input.newPublication)]);
+	const seen = new Set<string>([shortName(input.newPublication)]);
 	for (const hand of input.handedFrom) {
 		const full = publicationRefFromWorkRef(input.policy, hand.ref);
 		if (full === undefined) continue;
-		const publication = short(full);
+		const publication = shortName(full);
 		if (seen.has(publication)) continue;
 		seen.add(publication);
 		const tip =
@@ -141,7 +139,7 @@ export const commonDirFromFiles = async (
 			(content) => ({ content }),
 			(error: NodeJS.ErrnoException) => error,
 		);
-		if ('code' in text) {
+		if (text instanceof Error) {
 			if (text.code === 'EISDIR') return dot;
 			continue;
 		}
@@ -232,11 +230,9 @@ export const workRefOfPublicationRef = (
 	policy: IResolvedDevelopmentPolicy,
 	publication: string,
 ): string => {
-	const bare = (prefix: string): string =>
-		prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
-	const name = bare(publication);
-	const from = bare(policy.branches.publicationRefPrefix);
-	return `${bare(policy.branches.workRefPrefix)}${name.slice(from.length)}`;
+	const name = shortName(publication);
+	const from = shortName(policy.branches.publicationRefPrefix);
+	return `${shortName(policy.branches.workRefPrefix)}${name.slice(from.length)}`;
 };
 
 /**
