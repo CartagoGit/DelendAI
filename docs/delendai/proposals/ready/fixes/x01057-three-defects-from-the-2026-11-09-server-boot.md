@@ -98,6 +98,8 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 
 ## notes
 
+- 2026-11-09: S1 needed no code change. `createMaintenanceLease` already treats a lease held by a dead pid on this host as free (`live()` checks `isAlive`), and the spec "passes at once when the holder process on this machine is gone" proves it. So pid 1764375 was alive when the boot log named it: it was a second, real server. What remains is that two servers ran at all, which f00813 (branch-following runtime) and the extension's single launch address.
+
 - (a) The lease code is `packages/core/src/lib/development-policy/maintenance-lease.service.ts`; the message came from `createMaintenanceGate` and `observeMaintenance`.
 - (b) Both `work-unit-prove.service.ts` and `work-unit-publish.service.ts` resolve the agent with `agentFor` but call the proof service, which labels the slot from the environment variable alone; a caller that passed `--agent` without the variable was labelled unidentified.
 - (c) The spec is `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`; the children were `bun -e` scripts looping on `setImmediate` until a release file appeared.

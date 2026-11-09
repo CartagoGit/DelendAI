@@ -91,6 +91,61 @@ describe('withComputeSlot', () => {
 		expect(process.env[COMPUTE_SLOT_ENV]).toBeUndefined();
 	});
 
+	it('[<200ms] tells a waiter each new holder once, then that it got its turn', async () => {
+		const lockPath = lockIn();
+		const gate = () => {
+			let open: () => void = () => undefined;
+			const promise = new Promise<void>((resolve) => {
+				open = resolve;
+			});
+			return { promise, open };
+		};
+		const firstHolds = gate();
+		const secondHolds = gate();
+		const told: string[] = [];
+		const heard = new Map<string, () => void>();
+		const hear = (word: string) =>
+			new Promise<void>((resolve) => heard.set(word, resolve));
+		const toldOfFirst = hear('agent-a');
+		const toldOfSecond = hear('agent-b');
+		const quiet = () => undefined;
+		const first = withComputeSlot({
+			lockPath,
+			label: 'proof of aaa by agent-a',
+			notify: quiet,
+			run: () => firstHolds.promise,
+		});
+		const second = withComputeSlot({
+			lockPath,
+			label: 'proof of bbb by agent-b',
+			notify: quiet,
+			run: () => secondHolds.promise,
+		});
+		const waiter = withComputeSlot({
+			lockPath,
+			label: 'proof of ccc by agent-c',
+			waitNoticeMs: 0,
+			notify: (message) => {
+				told.push(message);
+				for (const [word, resolve] of heard)
+					if (message.includes(`by ${word}`)) resolve();
+			},
+			run: () => 'ran',
+		});
+		await toldOfFirst;
+		firstHolds.open();
+		await toldOfSecond;
+		secondHolds.open();
+		await Promise.all([first, second]);
+		expect(await waiter).toBe('ran');
+		const waits = told.filter((line) => line.includes('is waiting'));
+		expect(waits).toHaveLength(2);
+		expect(waits[0]).toMatch(/holds.*/u);
+		expect(waits[0]).toContain('agent-a (pid');
+		expect(waits[1]).toContain('agent-b (pid');
+		expect(told.at(-1)).toMatch(/got its turn/u);
+	});
+
 	it('[<25ms] releases the slot when the work throws', async () => {
 		const lockPath = lockIn();
 		await expect(

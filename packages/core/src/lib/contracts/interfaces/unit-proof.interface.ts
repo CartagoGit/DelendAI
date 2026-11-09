@@ -10,6 +10,11 @@ export interface IProveUnitRequest {
 	readonly root: string;
 	/** The unit's worktree, when it has one; else a temporary one is used. */
 	readonly worktree: string | undefined;
+	/**
+	 * The agent the work command resolved: the compute slot names it while
+	 * the proof waits or holds, so no proof reads as an unidentified one.
+	 */
+	readonly agent: string;
 	/** The unit's tip: what is proved. */
 	readonly tipSha: string;
 	/** The integration head, whose declaration names the proof. */
