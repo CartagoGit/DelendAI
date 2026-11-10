@@ -30,12 +30,12 @@ describe('integration decisions have one owner', () => {
 		expect(found[0]).toContain('computes a ref namespace');
 	});
 
-	it('[<5ms] refuses a culprit marker read off a branch', () => {
+	it('[<5ms] refuses a batch namespace derived by hand', () => {
 		const found = findReimplementations(
 			'tools/scripts/git/a.ts',
-			'if (branch.startsWith(`${prefix}culprit/`)) return 1;\n',
+			'const prefix = `${namespace}/queue/`;\n',
 		);
-		expect(found[0]).toContain('culprit marker');
+		expect(found[0]).toContain('batch namespaces');
 	});
 
 	it('[<5ms] allows the module itself and ignores comments', () => {

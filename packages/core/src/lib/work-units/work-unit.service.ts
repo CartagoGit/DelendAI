@@ -29,6 +29,7 @@ import { pruneUnitLeases } from './unit-standings.service';
 import { reaped } from './work-unit-reap.service';
 import { rescued } from './shared-checkout-rescue.service';
 import { looseSharedCheckoutRefusal } from './shared-checkout-clean.service';
+import { integrationProtocolRefusal } from '../integration/protocol/integration-protocol.helper';
 import { withGitInvocationMemo } from '../shared/git-invocation-memo.helper';
 import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 
@@ -101,6 +102,12 @@ const recordEntered = async (
 const MUTATING = new Set(['enter', 'checkpoint', 'prove', 'publish']);
 
 /**
+ * The operations that move refs or pull requests on the forge. A process
+ * older than the repository's integration protocol refuses them.
+ */
+const INTEGRATING = new Set(['publish', 'claim', 'retire', 'reap']);
+
+/**
  * A unit-of-work operation (`status`, `swarm`, `doctor`, `claim`, `enter`,
  * `checkpoint`, `prove`, `publish`, `retire`) from its flags: the one engine behind the CLI's
  * `work` command and the MCP `work` tool.
@@ -147,6 +154,10 @@ const runWorkUnitOnce = async (
 	const axis = policy.identity;
 	args = withSessionOfCwd(args, ctx.cwd, axis);
 	await showLife(ctx);
+	if (sub !== undefined && INTEGRATING.has(sub)) {
+		const stale = integrationProtocolRefusal(policy.integration.protocol);
+		if (stale !== undefined) return refused(stale.reason, stale.remedy);
+	}
 	if (sub !== undefined && MUTATING.has(sub)) {
 		const loose = looseSharedCheckoutRefusal(workspaceOf(ctx), policy);
 		if (loose !== undefined) return refused(loose.reason, loose.remedy);
