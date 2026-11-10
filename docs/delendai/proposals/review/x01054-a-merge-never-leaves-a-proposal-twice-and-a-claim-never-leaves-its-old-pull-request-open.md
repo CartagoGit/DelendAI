@@ -2,14 +2,14 @@
 id: x01054
 title: "A merge never leaves a proposal twice, and a claim never leaves its old pull request open"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 49ba6bf8-a7ff-4061-ae73-0eee260348d8
-last-correlation-id: 49ba6bf8-a7ff-4061-ae73-0eee260348d8
-last-transition-from: review
-last-transition-at: 2026-11-10T02:16:12.456Z
+last-transition-id: e3387340-4083-47d1-9d1a-c4bdf9c44f93
+last-correlation-id: e3387340-4083-47d1-9d1a-c4bdf9c44f93
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T19:14:53.411Z
 ---
 
 # x01054 — A merge never leaves a proposal twice, and a claim never leaves its old pull request open
@@ -59,13 +59,16 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — The land rehearsal's gates judge for the branch they rehearse
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lib/rehearsed-branch.ts`, `tools/scripts/lib/rehearsed-branch.spec.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/forge/land-rehearsal.script.ts`
 - **Gate**: type
 - acceptance:
   - "root cause: the land rehearsal runs the gates in a detached scratch clone, where the current branch is HEAD, so proposal-hygiene lost the exemption for the proposal its own unit reopened and judged differently from the unit's worktree"
   - "the rehearsal names the branch it stands in for in the environment of its gates (DELENDAI_REHEARSED_BRANCH, not an agent marker), and proposal-hygiene reads it when the checkout has no branch of its own"
   - "a spec proves the environment is set only for a real branch and that hygiene exempts the reopened proposal from a detached clone and flags it without the variable"
+- shipped-in: `62df6c0c6000`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
