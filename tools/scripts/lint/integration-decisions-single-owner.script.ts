@@ -38,6 +38,8 @@ export const DECISION_NAMES: readonly string[] = [
 	'ownedBatchPrefixes',
 	'retiredMachineryPrefixes',
 	'publicationPrefixesOf',
+	'retiredRefRoots',
+	'retiredRoots',
 	'underPublication',
 	'underNamespace',
 	'pullRequestReady',
@@ -61,6 +63,10 @@ export const DECISION_SIGNATURES: readonly {
 	{
 		name: 'a ref namespace stripped of refs/ and heads/ (shortName)',
 		pattern: /\.replace\(\/\^refs\\\/\/u, ''\)\s*\.replace\(\/\^heads\\\//u,
+	},
+	{
+		name: 'retired roots built from an owned namespace (retiredRefRoots)',
+		pattern: /`refs\/\$\{[^}]*\}\/?retired\/|'refs\/retired\/'/u,
 	},
 	{
 		name: 'batch namespaces derived by hand (ownedBatchPrefixes)',

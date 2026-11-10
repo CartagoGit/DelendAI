@@ -97,6 +97,7 @@ export {
 	ownedWorkRefPrefixes,
 	policyNamespaces,
 	publicationPrefixesOf,
+	retiredRefRoots,
 	shortName,
 	underNamespace,
 	underPublication,
