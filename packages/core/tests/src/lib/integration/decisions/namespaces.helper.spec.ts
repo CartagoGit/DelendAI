@@ -133,9 +133,9 @@ describe('allowedRefPatterns and underNamespace', () => {
 		expect(
 			retiredRefRoots({
 				namespacePrefix: 'delendai',
-				formerNamespacePrefixes: ['mcp-vertex', 'delendai'],
+				formerNamespacePrefixes: ['former-ns', 'delendai'],
 			}),
-		).toEqual(['refs/delendai/retired/', 'refs/mcp-vertex/retired/']);
+		).toEqual(['refs/delendai/retired/', 'refs/former-ns/retired/']);
 		expect(retiredRefRoots({})).toEqual([
 			['refs', 'retired', ''].join('/'),
 		]);
