@@ -194,6 +194,12 @@ const releasesOf = (unit: IUnit, integration: string): readonly string[] =>
 const needsVerdict = (proposal: IQueueProposal): boolean =>
 	proposal.slices.some((slice) => slice.verdict === 'needs-verdict');
 
+/**
+ * The queue as a list: each slice's state, which is all choosing needs.
+ * Asked with every slice's evidence, 25 proposals were 380 KB, over the
+ * response budget, and no reviewer got a proposal at all; the evidence is
+ * read for the one proposal chosen (`detailOf`).
+ */
 const queueOf = async (
 	ctx: ICliCommandContext,
 	agent: string,
@@ -202,9 +208,19 @@ const queueOf = async (
 	request<IQueue>(ctx, QUEUE_TOOL, {
 		agent,
 		limit: 50,
-		detail: true,
 		...extra,
 	});
+
+/** The chosen proposal with its evidence, which the brief is made from. */
+const detailOf = async (
+	ctx: ICliCommandContext,
+	agent: string,
+	unit: string,
+	chosen: IQueueProposal,
+): Promise<IQueueProposal> =>
+	(
+		await queueOf(ctx, agent, { unit, proposalId: chosen.id })
+	).proposals?.find((proposal) => proposal.id === chosen.id) ?? chosen;
 
 const next = async (
 	args: readonly string[],
@@ -297,9 +313,10 @@ const next = async (
 			checkout: unit.path,
 		});
 	}
+	const detailed = await detailOf(ctx, agent, unit.ref, chosen);
 	const markdown = await readProposalIn(
 		unit.path,
-		chosen.file,
+		detailed.file,
 		REVIEWED_PROPOSALS_DIR,
 	);
 	const sections =
@@ -307,11 +324,11 @@ const next = async (
 			? {}
 			: sliceSections(
 					markdown,
-					chosen.slices
+					detailed.slices
 						.filter((slice) => slice.verdict === 'needs-verdict')
 						.map((slice) => slice.sliceId),
 				);
-	return data({ ...session, ...briefFor(chosen, unit, agent, sections) });
+	return data({ ...session, ...briefFor(detailed, unit, agent, sections) });
 };
 
 const verdict = async (

@@ -4,11 +4,20 @@
  * what would be published, and a passing proof is not run twice.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
+
+import { ownerFile } from '@delendai/core/lib/shared/compute-slot-lane.service';
+import { computeSlotPath } from '@delendai/core/lib/shared/compute-slot.service';
 
 import {
 	candidateProofSteps,
@@ -74,6 +83,7 @@ describe('proveUnit', () => {
 		};
 		const first = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: tip,
@@ -85,6 +95,7 @@ describe('proveUnit', () => {
 
 		const again = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: tip,
@@ -94,11 +105,35 @@ describe('proveUnit', () => {
 		expect(ran).toHaveLength(1);
 	});
 
+	it('[<1000ms] names the agent the command resolved while it holds the compute slot', async () => {
+		const root = repoWith(PROVING);
+		const tip = git(root, 'rev-parse', 'HEAD');
+		const slot = computeSlotPath(root);
+		expect(slot).toBeDefined();
+		let held = '';
+		await proveUnit({
+			root,
+			agent: 'agent-from-the-command',
+			worktree: root,
+			tipSha: tip,
+			integrationSha: tip,
+			run: () => {
+				held = readFileSync(ownerFile(slot ?? ''), 'utf8');
+				return { code: 0, output: '' };
+			},
+		});
+		expect(held).toContain(
+			`proof of ${tip.slice(0, 12)} by agent-from-the-command`,
+		);
+		expect(held).not.toContain('unidentified');
+	});
+
 	it('[<3000ms] fails with the failed step and its output, and remembers nothing', async () => {
 		const root = repoWith(PROVING);
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const failing = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: tip,
@@ -111,6 +146,7 @@ describe('proveUnit', () => {
 		expect(said).toContain('typecheck: 2 errors');
 		const later = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: tip,
@@ -125,6 +161,7 @@ describe('proveUnit', () => {
 		writeFileSync(join(root, 'loose.ts'), 'export {};\n');
 		const report = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: tip,
@@ -144,6 +181,7 @@ describe('proveUnit', () => {
 		git(root, 'commit', '-q', '-am', 'the unit declares its own proof');
 		const report = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: git(root, 'rev-parse', 'HEAD'),
 			integrationSha: integration,
@@ -161,6 +199,7 @@ describe('proveUnit', () => {
 		rmSync(other, { recursive: true, force: true });
 		await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: undefined,
 			tipSha: tip,
 			integrationSha: tip,
@@ -175,6 +214,7 @@ describe('proveUnit', () => {
 		const ran: string[] = [];
 		const report = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: undefined,
 			tipSha: tip,
 			integrationSha: tip,
@@ -200,6 +240,7 @@ describe('proveUnit', () => {
 		const ran: string[] = [];
 		const report = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: undefined,
 			tipSha: tip,
 			integrationSha: tip,
@@ -217,6 +258,7 @@ describe('proveUnit', () => {
 		const tip = git(root, 'rev-parse', 'HEAD');
 		const report = await proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: undefined,
 			tipSha: tip,
 			integrationSha: tip,
@@ -240,6 +282,7 @@ describe('a proof across a proposal transition', () => {
 	const proved = async (root: string, tip: string) =>
 		proveUnit({
 			root,
+			agent: 'agent-a',
 			worktree: root,
 			tipSha: tip,
 			integrationSha: git(root, 'rev-list', '--max-parents=0', 'HEAD'),

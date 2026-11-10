@@ -235,7 +235,11 @@ export const claimForReview = async (
 		'--trailer',
 		`${REVIEW_CLAIM_TRAILER}: ${proposalId}`,
 	]);
-	if (!committed.ok) {
+	// A commit can be reported failed and still land: under load the
+	// runner's timeout fires while git, its hooks done, is finishing. What
+	// the unit carries decides, so a reviewer is never told it holds nothing
+	// while its claim is there.
+	if (!committed.ok && !(await holdsClaim(run, proposalId, integration))) {
 		return { kind: 'failed', reason: committed.reason ?? 'git refused' };
 	}
 	const head = await run(['rev-parse', 'HEAD']);

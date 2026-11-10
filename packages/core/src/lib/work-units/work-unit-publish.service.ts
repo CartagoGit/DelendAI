@@ -277,6 +277,7 @@ export const published = async (
 		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
 			? await proveUnit({
 					root,
+					agent,
 					worktree: worktreeOfRef(
 						root,
 						workRef.replace(/^refs\/heads\//u, ''),

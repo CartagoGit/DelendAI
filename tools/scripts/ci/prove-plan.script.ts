@@ -21,7 +21,13 @@
  * plan takes minutes; the forge still runs the plan, and is the authority.
  */
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import {
+	appendFileSync,
+	mkdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { availableParallelism } from 'node:os';
 
 import {
@@ -150,6 +156,29 @@ const printCauses = (): void => {
 /** How many lines of a failed check's output the proof prints. */
 const FAILED_TAIL_LINES = 30;
 
+/** Where each failed step's whole output is kept. */
+const FAILED_OUTPUT_DIR = '.cache/delendai/results/logs/prove-failed';
+
+/**
+ * The file a failed step's whole output goes to: a caller keeps only the
+ * tail of the proof, and the cause lines name a failing test without its
+ * assertion, so a failure seen once could not be read again. Pure.
+ */
+export const failedOutputPathOf = (label: string): string =>
+	`${FAILED_OUTPUT_DIR}/${label.replace(/[^\w.-]+/gu, '-')}.log`;
+
+/** Keep a failed step's whole output, and name the file as a cause. */
+const keepFailedOutput = (label: string, output: string): void => {
+	const path = failedOutputPathOf(label);
+	try {
+		mkdirSync(FAILED_OUTPUT_DIR, { recursive: true });
+		writeFileSync(path, output);
+		causes.push(`(output) ${label}: the whole output is in ${path}`);
+	} catch {
+		// A log that cannot be written proves nothing less.
+	}
+};
+
 /**
  * Run labelled bash scripts at once, at most `limit` together. Each is told
  * the changed files, so the lints that judge files one by one judge those.
@@ -211,6 +240,7 @@ const runTogether = async (
 			if (!passed) {
 				failed.push(label);
 				causes.push(...causeLinesOf(output));
+				keepFailedOutput(label, output);
 			}
 			console.log(
 				`prove: ${passed ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
@@ -298,9 +328,9 @@ const step = (label: string, command: readonly string[]): boolean => {
 	});
 	if (!ok) {
 		failed.push(label);
-		causes.push(
-			...causeLinesOf(`${result.stdout ?? ''}\n${result.stderr ?? ''}`),
-		);
+		const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+		causes.push(...causeLinesOf(output));
+		keepFailedOutput(label, output);
 	}
 	console.log(
 		`prove: ${ok ? 'ok  ' : 'FAIL'} ${label} (${String(Math.round((Date.now() - started) / 1000))}s)`,
