@@ -2,14 +2,14 @@
 id: i00005
 title: "Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member"
 kind: infra
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 4148b636-01b6-4be5-8978-52ead995a6bc
-last-correlation-id: 4148b636-01b6-4be5-8978-52ead995a6bc
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T19:54:54.613Z
+last-transition-id: f581176b-65e9-478f-afa9-5f7a6d4a3f02
+last-correlation-id: f581176b-65e9-478f-afa9-5f7a6d4a3f02
+last-transition-from: review
+last-transition-at: 2026-11-10T03:11:51.621Z
 shipped-in:
   - "6578eb7c5"
 ---
