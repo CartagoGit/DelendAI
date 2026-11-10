@@ -42,6 +42,9 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "root cause: two branches that move one proposal leave it at two paths; git merges them without a conflict and the registry refuses the duplicate id"
   - "the train and the candidate refresh (run as a refresh command; the post-merge hook runs the refresh) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
   - "the survivor is placed by the existing folder reconciler, and a spec with two branches that move one proposal proves it"
+- shipped-in: `3a7dfd098e7f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A claim retires the publication it superseded
 - **Status**: pending
@@ -51,6 +54,9 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "root cause: claim adopted a publication and opened a new one, and nothing looked back at the old pull request"
   - "after the new publication is published the old one is retired with the reason superseded by #N, only when git merge-base --is-ancestor says the new publication contains the old tip"
   - "otherwise the old publication stays and the answer says why; both cases are specced"
+- shipped-in: `fb53bd97e7ac`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
