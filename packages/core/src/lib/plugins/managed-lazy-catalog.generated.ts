@@ -1354,7 +1354,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					delegate:
 						'Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.',
 					proposal_transition:
-						'Move a proposal to a new status; validated, folder+frontmatter kept in sync.',
+						'Move a proposal to a new status; its folder follows.',
 					proposals_close_plan:
 						'Close a `type: plan` proposal; refuses with blockers until every child, sub-plan and own slice is done and peer-reviewed.',
 					create_proposal:
