@@ -51,7 +51,6 @@ describe('the real host boot with a journal remote', () => {
 						[SUPERVISED_ENV]: '1',
 						GIT_SSH_COMMAND: join(root, 'fakessh'),
 						DELENDAI_HYDRATION_INTERVAL_MS: '0',
-						DELENDAI_CANDIDATE_REFRESH_INTERVAL_MS: '0',
 						CLAUDECODE: '',
 						AI_AGENT: '',
 						DELENDAI_AGENT_ID: '',

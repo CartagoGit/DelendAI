@@ -1,5 +1,5 @@
 /**
- * train-rehearsal.spec.ts — the gates a train meets are rehearsed, and
+ * land-rehearsal.spec.ts — the gates a batch meets are rehearsed, and
  * every failure is reported in one pass.
  */
 import { readFileSync } from 'node:fs';
@@ -14,12 +14,12 @@ import {
 	rehearseGates,
 	reportOf,
 	touchesIntegrationMachinery,
-} from './train-rehearsal';
+} from './land-rehearsal';
 
 describe('touchesIntegrationMachinery', () => {
-	it('[<50ms] is true for the files that build, push and judge a train', () => {
+	it('[<50ms] is true for the files that build, push and judge a batch', () => {
 		for (const path of [
-			'tools/scripts/forge/queue-order.ts',
+			'tools/scripts/forge/land-git.ts',
 			'tools/scripts/ci/prove-plan.script.ts',
 			'.github/workflows/ci.yml',
 			'lefthook.yml',
@@ -43,8 +43,8 @@ describe('touchesIntegrationMachinery', () => {
 
 describe('prePushStdin', () => {
 	it('[<1000ms] writes the line git gives a hook for a new remote branch', () => {
-		expect(prePushStdin('train/ab/1', 'c'.repeat(40))).toBe(
-			`refs/heads/train/ab/1 ${'c'.repeat(40)} refs/heads/train/ab/1 ${NULL_OID}\n`,
+		expect(prePushStdin('delendai/queue/batch-1', 'c'.repeat(40))).toBe(
+			`refs/heads/delendai/queue/batch-1 ${'c'.repeat(40)} refs/heads/delendai/queue/batch-1 ${NULL_OID}\n`,
 		);
 	});
 });
@@ -70,7 +70,7 @@ describe('rehearseGates', () => {
 				.map((r) => r.label)
 				.sort(),
 		).toEqual(['a', 'c']);
-		const report = reportOf(results, 'train/x').join('\n');
+		const report = reportOf(results, 'delendai/queue/batch-1').join('\n');
 		expect(report).toContain('why a: error: first');
 		expect(report).toContain('would fail: ');
 	});
@@ -102,7 +102,7 @@ describe('rehearseGates', () => {
 		).toEqual(['error: a', 'FAIL b']);
 	});
 
-	it('[<50ms] says a train passes when every gate does', () => {
+	it('[<50ms] says a batch passes when every gate does', () => {
 		expect(
 			reportOf(
 				[{ label: 'a', ok: true, seconds: 1, causes: [] }],
@@ -115,7 +115,7 @@ describe('rehearseGates', () => {
 describe('the rehearsal script', () => {
 	it('[<50ms] creates no branch in the clone: its scratch worktree stays detached', () => {
 		const source = readFileSync(
-			join(import.meta.dirname, 'train-rehearsal.script.ts'),
+			join(import.meta.dirname, 'land-rehearsal.script.ts'),
 			'utf8',
 		);
 		expect(source).not.toMatch(/'checkout',\s*'-q',\s*'-[bB]'/u);

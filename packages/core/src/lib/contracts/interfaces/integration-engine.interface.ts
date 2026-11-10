@@ -15,4 +15,9 @@ export interface IPolicyIntegrationEngine {
 	 * refs or pull requests and says to restart.
 	 */
 	readonly protocol: number;
+	/**
+	 * True only when the project lands pull requests with no required
+	 * check. Off, an empty `requiredChecks` lands nothing: nothing was proved.
+	 */
+	readonly landWithoutChecks: boolean;
 }

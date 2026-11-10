@@ -124,6 +124,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		mergeMethod: 'merge',
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
+		landWithoutChecks: false,
 		// The forge must NOT delete the branch when a pull request
 		// merges. A work ref lives as long as the proposal it serves,
 		// and a proposal lands one pull request per slice: GitHub's
@@ -200,6 +201,7 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		mergeMethod: 'squash',
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
+		landWithoutChecks: false,
 		deleteMergedWorkRef: false,
 		linearHistory: true,
 		allowForcePush: false,
@@ -289,6 +291,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		mergeMethod: 'squash',
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
+		landWithoutChecks: false,
 		deleteMergedWorkRef: true,
 		linearHistory: true,
 		allowForcePush: false,

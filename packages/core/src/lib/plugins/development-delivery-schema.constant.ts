@@ -109,6 +109,12 @@ export const IntegrationAxis = z
 				'The integration protocol this repository runs. A process built for an older one refuses to move refs or pull requests until it is restarted. Written by the integration change that raises it; never lower it by hand.',
 			)
 			.optional(),
+		landWithoutChecks: z
+			.boolean()
+			.describe(
+				'Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands.',
+			)
+			.optional(),
 		mergeMethod: z
 			.string()
 			.min(1)

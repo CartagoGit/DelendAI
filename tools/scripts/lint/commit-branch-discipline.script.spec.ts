@@ -272,16 +272,16 @@ describe('lintCommitBranch', () => {
 			).toBe(false);
 		});
 
-		it('admits the CI checkout of a merge train, under every train namespace', () => {
+		it('admits the CI checkout of a land batch, under every batch namespace', () => {
 			for (const branch of [
-				'delendai/train/091f009583c2/1861',
-				'train/091f009583c2/1861-1830',
+				'delendai/queue/batch-1861',
+				'queue/batch-1861+1830',
 			]) {
 				expect(
 					lintCommitBranch({
 						...baseInput,
 						currentBranch: branch,
-						trainRefPrefixes: ['delendai/train/', 'train/'],
+						batchRefPrefixes: ['delendai/queue/', 'queue/'],
 						ciCheckout: true,
 					}).ok,
 				).toBe(true);
@@ -289,8 +289,8 @@ describe('lintCommitBranch', () => {
 			expect(
 				lintCommitBranch({
 					...baseInput,
-					currentBranch: 'trains/x',
-					trainRefPrefixes: ['delendai/train/', 'train/'],
+					currentBranch: 'queues/x',
+					batchRefPrefixes: ['delendai/queue/', 'queue/'],
 					ciCheckout: true,
 				}).ok,
 			).toBe(false);

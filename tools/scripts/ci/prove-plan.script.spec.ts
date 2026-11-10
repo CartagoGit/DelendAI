@@ -97,14 +97,14 @@ describe('timingTableOf', () => {
 });
 
 describe('fastSteps', () => {
-	it('rehearses a train when the integration machinery changed', () => {
+	it('rehearses a batch when the integration machinery changed', () => {
 		const labels = (changed: readonly string[]) =>
 			fastSteps(changed, [], 'b').map(([label]) => label);
 		expect(labels(['tools/scripts/forge/train-assembly.ts'])).toContain(
-			'train rehearsal',
+			'land rehearsal',
 		);
-		expect(labels(['lefthook.yml'])).toContain('train rehearsal');
-		expect(labels(['README.md'])).not.toContain('train rehearsal');
+		expect(labels(['lefthook.yml'])).toContain('land rehearsal');
+		expect(labels(['README.md'])).not.toContain('land rehearsal');
 	});
 
 	it('runs the nearest specs with the touched files covered, then judges that coverage', () => {

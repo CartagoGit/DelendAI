@@ -134,5 +134,30 @@ export const createLandGit = (input: {
 			have(sha);
 			return git(root, ['rev-parse', `${sha}^{tree}`]);
 		},
+		mergedTree: ({ tip, members }) => {
+			have(tip);
+			for (const member of members) have(member.headSha);
+			// The same assembly a batch is built with, never pushed and
+			// never regenerated: what merging the members would give.
+			const built = assembleTrain({
+				root,
+				remote,
+				tipSha: tip,
+				ref: 'land/trial',
+				members,
+				derived: new Set(),
+				regenerate: () => true,
+				linkDependencies: () => true,
+				rehearsal: true,
+			});
+			if (built.scratch === undefined) return undefined;
+			try {
+				return built.conflicting.length > 0
+					? undefined
+					: git(built.scratch, ['rev-parse', 'HEAD^{tree}']);
+			} finally {
+				discardTrain(root, built.scratch);
+			}
+		},
 	};
 };

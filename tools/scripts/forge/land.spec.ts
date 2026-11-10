@@ -68,6 +68,39 @@ describe('land', () => {
 		expect(world.tree()['a/x.ts']).toBe('1');
 	});
 
+	it('[<8ms] reports what merged as typed fields, and "not merged" as nothing', async () => {
+		const { world, pass, lone } = setup();
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.beforeMerge = () => {
+			lone(n).headSha = 'moved-head';
+			world.beforeMerge = undefined;
+		};
+		const refused = await pass();
+		expect(refused.actions.join('\n')).toContain('not merged');
+		expect(refused.mergedCount).toBe(0);
+		expect(refused.mergedPRs).toEqual([]);
+		world.ci();
+		const merged = await pass();
+		expect(merged.mergedCount).toBe(1);
+		expect(merged.mergedPRs).toEqual([n]);
+		expect(merged.tipSha).toBe(world.tip);
+	});
+
+	it('[<8ms] lands nothing with no required check unless the policy opts in', async () => {
+		const bare = { ...REPO_CONFIG, requiredChecks: [] };
+		const { world, pass } = setup({}, {}, bare);
+		world.requiredNames = [];
+		world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		expect((await pass()).mergedCount).toBe(0);
+		const opted = setup({}, {}, { ...bare, withoutChecks: true });
+		opted.world.requiredNames = [];
+		opted.world.addPull({ 'a/x.ts': '1' });
+		opted.world.ci();
+		expect((await opted.pass()).mergedCount).toBe(1);
+	});
+
 	it('[<8ms] waits for the required checks and skips drafts', async () => {
 		const { world, pass } = setup();
 		world.addPull({ 'a/x.ts': '1' });
@@ -125,6 +158,34 @@ describe('land', () => {
 		expect(git.treeOf(await forge.integrationTip())).toBe(
 			git.treeOf(batch?.headSha ?? ''),
 		);
+	});
+
+	it('[<24ms] merges nothing more when the tree would differ from the tested one', async () => {
+		const { world, pass, open, lone } = setup();
+		world.addPull({ 'a/one.ts': '1' });
+		const two = world.addPull({ 'a/two.ts': '2' });
+		world.ci();
+		await pass();
+		world.ci();
+		// The first member merges, the second is refused once ...
+		world.beforeMerge = (n) => {
+			if (n === two) {
+				lone(two).state = 'closed';
+				world.beforeMerge = undefined;
+			}
+		};
+		await pass();
+		lone(two).state = 'open';
+		// ... and the branch gains a commit the batch never tested.
+		world.push({ 'b/other.ts': 'x' });
+		const calls = world.mergeCalls.length;
+		const report = await pass();
+		expect(world.mergeCalls).toHaveLength(calls);
+		expect(report.mergedCount).toBe(0);
+		expect(report.actions.join('\n')).toContain(
+			'the tree would differ from the tested one',
+		);
+		expect(open()).toHaveLength(0);
 	});
 
 	it('[<9ms] labels the culprit of a red batch and batches the rest once', async () => {
@@ -334,17 +395,17 @@ describe('the land workflow template', () => {
 		expect(text).toContain("github.ref_name == 'stable'");
 		expect(text).toContain('run: npx tool promote');
 		expect(text).toContain('run: npx tool tidy');
-		expect(text).not.toContain('develop');
+		expect(text).not.toMatch(/\bdevelop\b/u);
 		expect(text).not.toContain('vars.');
 	});
 
 	it('[<5ms] leaves out the phases a project does not declare', () => {
-		const text = renderLandWorkflow({
-			...REPO_LAND_WORKFLOW,
-			promotionCommand: undefined,
-			forwardSyncCommand: undefined,
-			upkeep: [],
-		});
+		const {
+			promotionCommand: _promotion,
+			forwardSyncCommand: _forwardSync,
+			...bare
+		} = REPO_LAND_WORKFLOW;
+		const text = renderLandWorkflow({ ...bare, upkeep: [] });
 		expect(text).toContain('    land:');
 		expect(text).not.toContain('    promote:');
 		expect(text).not.toContain('    forward-sync:');

@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
 /**
- * train-rehearsal.script.ts — rehearse a merge train before it is live.
+ * land-rehearsal.script.ts — rehearse a land batch before it is live.
  *
- *   bun run forge:rehearse-train [-- --heads=<sha,sha> --timeout=<s> --keep-going]
+ *   bun run forge:rehearse-land [-- --heads=<sha,sha> --timeout=<s> --keep-going]
  *
- * Builds the train of `--heads` (default: HEAD) on the integration tip the
- * way `assembleTrain` does (scratch worktree, shared dependencies linked,
- * merges, one regeneration), without pushing, then runs on it:
+ * Builds the batch of `--heads` (default: HEAD) on the integration tip the
+ * way `land` does (scratch worktree, shared dependencies linked, merges,
+ * one regeneration), without pushing, then runs on it:
  *
- *   - the installed pre-push hooks, with the train ref on stdin as git
+ *   - the installed pre-push hooks, with the batch ref on stdin as git
  *     writes it, in a CI environment (no agent markers);
- *   - the static and governance lint jobs the plan selects for the train.
+ *   - the static and governance lint jobs the plan selects for the batch.
  *
  * Every failure is reported in one pass. Nothing reaches the remote.
  */
@@ -19,9 +19,9 @@ import { readFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
 import {
+	batchRefOf,
 	isAgentEnvironmentVariable,
-	ownedTrainPrefixes,
-	trainRefName,
+	landConfigFromPolicy,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
@@ -31,18 +31,18 @@ import {
 	declaredBranches,
 	declaredIntegrationRef,
 } from '../lib/declared-branches';
-import { readDevelopmentConfig } from './keep-the-queue-moving.script';
+import { readDevelopmentConfig } from './land-policy';
 import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
 import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
-} from '../git/refresh-candidate-artifacts.constant';
-import { prePushStdin, rehearseGates, reportOf } from './train-rehearsal';
-import type { IRehearsalGate } from './train-rehearsal.interface';
+} from './land-derived.constant';
+import { prePushStdin, rehearseGates, reportOf } from './land-rehearsal';
+import type { IRehearsalGate } from './land-rehearsal.interface';
 
 /**
  * The jobs rehearsed: the static and governance lints. `quality-gate` and
- * the token measurement build the whole repository (minutes); the train's
+ * the token measurement build the whole repository (minutes); the batch's
  * own run proves them, and a rehearsal that costs as much as the run is
  * not run.
  */
@@ -84,9 +84,8 @@ const main = async (): Promise<number> => {
 		headRef: `rehearsal/${String(index + 1)}`,
 		headSha,
 	}));
-	const ref = trainRefName(
-		ownedTrainPrefixes(policy.branches)[0] ?? 'train/',
-		tipSha,
+	const ref = batchRefOf(
+		landConfigFromPolicy(policy).batchPrefix,
 		members.map((member) => member.number),
 	);
 	const timeoutMs = (Number(arg('timeout')) || 900) * 1000;
@@ -108,14 +107,14 @@ const main = async (): Promise<number> => {
 		built.pushFailure !== undefined
 	) {
 		console.error(
-			`rehearse-train: the train could not be built: ${built.pushFailure ?? (built.conflicting.length > 0 ? `${built.conflicting.map((n) => `#${String(n)}`).join(', ')} conflict` : 'no worktree')}`,
+			`rehearse-land: the batch could not be built: ${built.pushFailure ?? (built.conflicting.length > 0 ? `${built.conflicting.map((n) => `#${String(n)}`).join(', ')} conflict` : 'no worktree')}`,
 		);
 		return 1;
 	}
 	try {
 		const trainSha = git(scratch, ['rev-parse', 'HEAD']);
 		// Detached, and no branch: a rehearsal is a scratch, and the owner
-		// keeps machine refs out of local clones. The train's name still
+		// keeps machine refs out of local clones. The batch's name still
 		// reaches the pre-push gate through its stdin below.
 		process.chdir(scratch);
 		const plan = planInputSince(tipSha);
@@ -158,7 +157,7 @@ const main = async (): Promise<number> => {
 		});
 		for (const line of reportOf(results, ref)) console.log(line);
 		console.log(
-			`rehearse-train: ${String(results.length)} gate(s) in ${String(Math.round((Date.now() - started) / 1000))}s`,
+			`rehearse-land: ${String(results.length)} gate(s) in ${String(Math.round((Date.now() - started) / 1000))}s`,
 		);
 		return results.every((result) => result.ok) ? 0 : 1;
 	} finally {

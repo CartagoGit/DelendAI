@@ -29,7 +29,16 @@ const main = async (): Promise<number> => {
 		return 2;
 	}
 	const root = process.cwd();
-	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	let development: ReturnType<typeof readDevelopmentConfig>;
+	try {
+		development = readDevelopmentConfig();
+	} catch (error) {
+		console.error(
+			`land: ${error instanceof Error ? error.message : String(error)}`,
+		);
+		return 2;
+	}
+	const policy = resolveDevelopmentPolicy(development);
 	if (policy.integration.engine !== 'land') {
 		console.log(
 			"land: the policy's integration engine is not `land`; nothing to do.",
@@ -56,6 +65,9 @@ const main = async (): Promise<number> => {
 		config,
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
+	console.log(
+		`land: ${String(report.mergedCount)} merged${report.mergedPRs.length > 0 ? ` (${report.mergedPRs.map((n) => `#${String(n)}`).join(', ')})` : ''}; tip ${report.tipSha.slice(0, 12)}`,
+	);
 	return 0;
 };
 

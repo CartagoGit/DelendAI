@@ -82,6 +82,7 @@ export interface IDevelopmentConfigInput {
 				readonly mergeMethod?: string | undefined;
 				readonly engine?: string | undefined;
 				readonly protocol?: number | undefined;
+				readonly landWithoutChecks?: boolean | undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;
 				readonly allowForcePush?: boolean | undefined;

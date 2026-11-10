@@ -92,6 +92,15 @@ export interface ILandGit {
 	}): ILandBatchBuild;
 	/** The tree a commit holds, comparable by equality. */
 	treeOf(sha: string): string;
+	/**
+	 * The tree `members` merged onto `tip` would hold, as `treeOf` writes
+	 * it, without regenerating or pushing anything; `undefined` when they
+	 * conflict. Read before a merge: nothing lands that was not tested.
+	 */
+	mergedTree(input: {
+		readonly tip: string;
+		readonly members: readonly ITrainCandidate[];
+	}): string | undefined;
 }
 
 /**
@@ -108,6 +117,8 @@ export interface ILandConfig {
 	readonly mergeMethod: 'merge' | 'squash' | 'rebase';
 	/** The checks that must be green; empty reads them from the forge. */
 	readonly requiredChecks: readonly string[];
+	/** True only where the policy opts in to landing with no required check. */
+	readonly withoutChecks: boolean;
 	/** Most pull requests in one batch. */
 	readonly batchCapacity: number;
 	/**
@@ -135,6 +146,12 @@ export type ILandCommandRunner = (args: readonly string[]) => Promise<{
 /** What one pass did, in order; the next pass reads the forge, not this. */
 export interface ILandReport {
 	readonly actions: readonly string[];
+	/** How many pull requests the forge merged in this pass. */
+	readonly mergedCount: number;
+	/** The pull requests the forge merged, a batch by its own number. */
+	readonly mergedPRs: readonly number[];
+	/** The integration tip when the pass ended. */
+	readonly tipSha: string;
 }
 
 /** What a batch pull request records in its body, read back by the next pass. */

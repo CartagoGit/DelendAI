@@ -14,6 +14,7 @@ import type {
 	IResolvedDevelopmentPolicy,
 } from '../../contracts/interfaces/development-policy.interface';
 import { protectedBranchNames } from '../../development-policy/release-branch';
+import { LAND_QUEUE_SEGMENT } from '../land/land.constant';
 
 type IOwnedBranches = Pick<
 	IPolicyBranches,
@@ -67,18 +68,18 @@ export const ownedPublicationRefPrefixes = (
 	]);
 
 /**
- * Merge-train prefixes, current first: `<namespace>/train/` beside the
+ * Batch prefixes, current first: `<namespace>/queue/` beside the
  * publication namespace (never inside it, so nothing that opens or reaps
- * publications mistakes a train for one); an empty namespace gives
- * `train/`. Writers use the first; readers, the guard and the forge
- * ruleset take every one, so the queue's own train refs are admitted
- * wherever the policy admits its work and publication refs.
+ * publications mistakes a batch for one); an empty namespace gives
+ * `queue/`. `land` writes under the first; the guard and the forge
+ * ruleset take every one, so land's batches are admitted wherever the
+ * policy admits its work and publication refs.
  */
-export const ownedTrainPrefixes = (
+export const ownedBatchPrefixes = (
 	branches: IOwnedBranches,
 ): readonly string[] =>
 	ownedNamespaces(branches).map(
-		(namespace) => `${withSlash(namespace)}train/`,
+		(namespace) => `${withSlash(namespace)}${LAND_QUEUE_SEGMENT}/`,
 	);
 
 /** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
@@ -93,9 +94,9 @@ export const policyNamespaces = (
 	prefixes: [
 		...ownedWorkRefPrefixes(policy.branches),
 		...ownedPublicationRefPrefixes(policy.branches),
-		// The queue pushes its trains here; a guard that refused them
-		// declined every train push the forge itself admitted.
-		...ownedTrainPrefixes(policy.branches),
+		// land pushes its batches here; a guard that refused them would
+		// decline every batch push the forge itself admits.
+		...ownedBatchPrefixes(policy.branches),
 		...policy.branches.foreignRefPrefixes,
 	]
 		.map(shortName)
@@ -160,7 +161,7 @@ export const allowedRefPatterns = (
 		...(branches.publicationRefPrefix === ''
 			? []
 			: [`refs/heads/${branches.publicationRefPrefix}**/*`]),
-		...ownedTrainPrefixes(branches).map(
+		...ownedBatchPrefixes(branches).map(
 			(prefix) => `refs/heads/${prefix}**/*`,
 		),
 		...branches.foreignRefPrefixes.map(
