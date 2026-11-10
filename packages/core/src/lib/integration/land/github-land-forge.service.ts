@@ -15,6 +15,7 @@ import type {
 	ILandPullRequest,
 	ILandUpdate,
 } from './land.interface';
+import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
 
 interface IRawPull {
 	number: number;
@@ -68,6 +69,30 @@ export const createGithubLandForge = (input: {
 			throw new Error(`GET ${path} answered ${String(status)}`);
 		return body as T;
 	};
+	/**
+	 * Every item of a listing, page after page: a pass that read only the
+	 * first hundred pull requests or check runs judged on part of the facts.
+	 * Bounded, so a runaway listing ends the pass instead of looping.
+	 */
+	const all = async <T>(
+		path: string,
+		itemsOf: (page: unknown) => readonly T[] = (page) =>
+			page as readonly T[],
+	): Promise<readonly T[]> => {
+		const items: T[] = [];
+		for (let page = 1; page <= LAND_MAX_PAGES; page += 1) {
+			const got = itemsOf(
+				await ok<unknown>(
+					`${path}${path.includes('?') ? '&' : '?'}per_page=${String(LAND_PAGE_SIZE)}&page=${String(page)}`,
+				),
+			);
+			items.push(...got);
+			if (got.length < LAND_PAGE_SIZE) return items;
+		}
+		throw new Error(
+			`GET ${path} has more than ${String(LAND_MAX_PAGES * LAND_PAGE_SIZE)} items; the pass ends rather than judge on part of them.`,
+		);
+	};
 	const baseOf = async (pr: IRawPull): Promise<string> =>
 		(
 			await ok<{ merge_base_commit: { sha: string } }>(
@@ -85,8 +110,8 @@ export const createGithubLandForge = (input: {
 		body: pr.body ?? '',
 		testedBase: await baseOf(pr),
 	});
-	const pulls = (query: string): Promise<IRawPull[]> =>
-		ok<IRawPull[]>(`pulls?base=${integration}&per_page=100&${query}`);
+	const pulls = (query: string): Promise<readonly IRawPull[]> =>
+		all<IRawPull>(`pulls?base=${integration}&${query}`);
 	return {
 		integrationTip: async () =>
 			(await ok<{ commit: { sha: string } }>(`branches/${integration}`))
@@ -114,24 +139,47 @@ export const createGithubLandForge = (input: {
 					.filter((pr) => !pr.head.ref.includes('/queue/batch-'))
 					.map(view),
 			),
+		// Every open batch, and the most recently closed ones: a red verdict
+		// matters on the tip it was given on, which a closed batch older than
+		// the last page of them no longer stands on.
 		batchPullRequests: async (prefix) =>
 			Promise.all(
-				(await pulls('state=all&sort=updated&direction=desc'))
-					.filter((pr) => pr.head.ref.startsWith(`${prefix}batch-`))
+				[
+					...(await pulls('state=open')),
+					...(await ok<IRawPull[]>(
+						`pulls?base=${integration}&state=closed&sort=updated&direction=desc&per_page=${String(LAND_PAGE_SIZE)}`,
+					)),
+				]
+					.filter(
+						(pr, index, list) =>
+							pr.head.ref.startsWith(`${prefix}batch-`) &&
+							list.findIndex((o) => o.number === pr.number) ===
+								index,
+					)
 					.map(view),
 			),
 		pullRequest: async (number) =>
 			view(await ok<IRawPull>(`pulls/${String(number)}`)),
 		checks: async (sha): Promise<readonly ILandCheck[]> =>
 			(
-				await ok<{
-					check_runs: {
-						name: string;
-						conclusion: string | null;
-						html_url?: string;
-					}[];
-				}>(`commits/${sha}/check-runs?per_page=100`)
-			).check_runs.map((c) => ({
+				await all<{
+					name: string;
+					conclusion: string | null;
+					html_url?: string;
+				}>(
+					`commits/${sha}/check-runs`,
+					(page) =>
+						(
+							page as {
+								check_runs: {
+									name: string;
+									conclusion: string | null;
+									html_url?: string;
+								}[];
+							}
+						).check_runs,
+				)
+			).map((c) => ({
 				name: c.name,
 				conclusion: c.conclusion,
 				url: c.html_url,

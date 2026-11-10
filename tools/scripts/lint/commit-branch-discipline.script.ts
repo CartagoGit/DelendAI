@@ -35,7 +35,7 @@ import { spawnSync } from 'node:child_process';
 
 import {
 	isRunningInProjectCi,
-	ownedTrainPrefixes,
+	ownedBatchPrefixes,
 	shortName as shortRef,
 	underNamespace as inNamespace,
 } from '@delendai/core/cli';
@@ -69,12 +69,12 @@ export interface ICommitBranchInput {
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
 	/**
-	 * The merge queue's train namespaces (`ownedTrainPrefixes`, from core,
-	 * the source the guard and the forge ruleset read). A train's CI run
-	 * checks out `<ns>/train/…`; left out here, every train went red on
-	 * this lint and the queue's bisection blamed innocent members.
+	 * land's batch namespaces (`ownedBatchPrefixes`, from core, the source
+	 * the guard and the forge ruleset read). A batch's CI run checks out
+	 * `<ns>/queue/batch-…`; left out here, every batch would go red on this
+	 * lint and its culprit attribution would blame innocent members.
 	 */
-	readonly trainRefPrefixes?: readonly string[];
+	readonly batchRefPrefixes?: readonly string[];
 	/** Policy release branch (`branches.release`). */
 	readonly releaseBranch?: string;
 	/**
@@ -173,7 +173,7 @@ export const lintCommitBranch = (
 	if (
 		inNamespace(currentBranch, workRefPrefix) ||
 		inNamespace(currentBranch, publicationRefPrefix) ||
-		(input.trainRefPrefixes ?? []).some((prefix) =>
+		(input.batchRefPrefixes ?? []).some((prefix) =>
 			inNamespace(currentBranch, prefix),
 		)
 	) {
@@ -327,7 +327,7 @@ const main = async (): Promise<number> => {
 		workRefPrefix?: string;
 		workRefTemplate?: string;
 		publicationRefPrefix?: string;
-		trainRefPrefixes?: readonly string[];
+		batchRefPrefixes?: readonly string[];
 	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
@@ -336,7 +336,7 @@ const main = async (): Promise<number> => {
 			workRefPrefix: branches.workRefPrefix,
 			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
-			trainRefPrefixes: ownedTrainPrefixes(branches),
+			batchRefPrefixes: ownedBatchPrefixes(branches),
 			releaseBranch: branches.release,
 		};
 	} catch {

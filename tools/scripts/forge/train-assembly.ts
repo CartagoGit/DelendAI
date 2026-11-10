@@ -45,24 +45,29 @@ const IDENTITY = [
  * `core.hooksPath` off, so no hook fires per merge. The one run that needs
  * the code is the single regeneration after all merges.
  */
-const linkSharedDependenciesInto = (dir: string): boolean => {
-	try {
-		execFileSync(
-			'bun',
-			[
-				join(
-					dirname(fileURLToPath(import.meta.url)),
-					'link-train-dependencies.script.ts',
-				),
-				dir,
-			],
-			{ stdio: ['ignore', 'ignore', 'pipe'] },
-		);
-		return true;
-	} catch {
-		return false;
-	}
-};
+export const linkDependenciesFrom =
+	(from?: string) =>
+	(dir: string): boolean => {
+		try {
+			execFileSync(
+				'bun',
+				[
+					join(
+						dirname(fileURLToPath(import.meta.url)),
+						'link-train-dependencies.script.ts',
+					),
+					dir,
+					...(from === undefined ? [] : [from]),
+				],
+				{ stdio: ['ignore', 'ignore', 'pipe'] },
+			);
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
+const linkSharedDependenciesInto = linkDependenciesFrom();
 
 /**
  * The regeneration a train runs once: each of `commands` through `bun` in
