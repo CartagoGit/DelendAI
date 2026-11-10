@@ -10,6 +10,8 @@ last-transition-id: 4148b636-01b6-4be5-8978-52ead995a6bc
 last-correlation-id: 4148b636-01b6-4be5-8978-52ead995a6bc
 last-transition-from: in-progress
 last-transition-at: 2026-11-08T19:54:54.613Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # i00005 — Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member
@@ -31,7 +33,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - global_gate: none
 
 ### S1 — Train rehearsal
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/train-rehearsal.ts`, `tools/scripts/forge/train-rehearsal.interface.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
@@ -39,8 +41,10 @@ Integration machinery that is only exercised by the live queue fails the queue f
   - "A change under tools/scripts/forge, tools/scripts/ci, the guard, .github/workflows or lefthook.yml runs the rehearsal in the fast proof"
   - "The measured cost of a rehearsal is recorded in the slice hand-over and bounded by a timeout"
 - shipped-in: `0a634255e983`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) train-rehearsal.script.ts main(): assembleTrain(rehearsal:true, regenerateWith(GENERATED_REFRESH_COMMANDS)), pre-push hook with prePushStdin(ref,sha), STATIC_C… (2) train-rehearsal.ts INTEGRATION_MACHINERY (forge/, ci/, hooks/, guard lints, development-policy/, .github/workflows/, lefthook.yml); prove-plan.script.ts:400-40… (3) Notes: 9 gates, 173 s wall, 440 s CPU, 1.1 GB; runGate spawn timeout default 900 s (--timeout=); spec 'bounds a gate by its timeout' green — Rehearsal builds the train like assembleTrain, runs pre-push + selected static/governance lints, reports all failures; wired into prove-plan; timeout-bounded; 5 specs/66 tests green on 6578eb7c5
 
 ### S2 — Honest bisection
 - **Status**: review
