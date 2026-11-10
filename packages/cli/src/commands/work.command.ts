@@ -172,6 +172,17 @@ export const createWorkCommand = (): ICliCommand => ({
 				publish: () => runWorkUnit(['publish', ...withSlice], ctx),
 				locate: () =>
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
+				preflight: (checkout) =>
+					answerOf(
+						request(ctx, TRANSITION_TOOL, {
+							id,
+							to: 'review',
+							reason,
+							preflight: true,
+							...(agent === undefined ? {} : { agent }),
+							checkout: checkout ?? ctx.cwd,
+						}),
+					),
 				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
 				transition: async (to, checkout) => {
 					// The transition to review publishes the unit, apart
