@@ -1708,7 +1708,6 @@
 		"plugins/proposals/tests/src/lib/e2e/sync-and-locks.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts",
 		"plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts",
-		"plugins/proposals/tests/src/lib/locks/agent-lock-engine-file-granularity.spec.ts",
 		"plugins/proposals/tests/src/lib/locks/agent-lock-engine.spec.ts",
 		"plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts",
 		"plugins/proposals/tests/src/lib/locks/concurrent-claims.spec.ts",
