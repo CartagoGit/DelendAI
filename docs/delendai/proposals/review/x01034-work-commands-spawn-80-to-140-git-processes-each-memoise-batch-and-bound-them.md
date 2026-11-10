@@ -81,7 +81,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 3/3: (1) spec :289 resolves a ref and for-each-ref once until a ref is written through any runner; :323 forgets after a non-git process; :115 symbolic-ref reads (2) stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches import execGitFileSync from git-read.helper (checked); stale-runtime and loose-edit… (3) spec :289 (once, again after write through async runner) and :323 (forgetGitReads) pass — Ref reads once per invocation; spawners report.
 
 ### S4 — One status and one fetch per invocation
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/shared/worktree-status.helper.ts`, `packages/core/src/lib/contracts/interfaces/worktree-status.interface.ts`, `packages/core/src/lib/contracts/constants/worktree-status.constant.ts`, `packages/core/tests/src/lib/shared/worktree-status.helper.spec.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/work-units/unit-worktree-state.service.ts`, `packages/core/src/lib/work-units/work-dirty-paths.service.ts`, `packages/core/tests/src/lib/work-units/work-dirty-paths.service.spec.ts`, `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/shared-checkout-rescue.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/units-on-forge.service.ts`, `packages/core/src/lib/work-units/hidden-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`
 - **Gate**: type
@@ -89,8 +89,10 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "The dirty-state readers share one `status --porcelain=v2 --branch` per worktree per invocation, refreshed after a write."
   - "No work invocation runs `fetch` of the same remote and refspec twice, nor `ls-remote` of the same remote twice."
 - shipped-in: `d4cd9f4825cd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 2/2: (1) worktree-status.helper.ts and WORKTREE_STATUS_ARGS (status --porcelain=v2 --branch) are the one status; git-invocation-memo.helper.ts:122-179 shares and refres… (2) memo answers ls-remote once (spec :92) and work-git-spawn-budget.spec.ts :114 fails above 1 fetch per invocation across enter..retire; passes — One status and one fetch per invocation, pinned by spec.
 
 ### S5 — Validate arguments first, and pin the spawn budget
 - **Status**: review
