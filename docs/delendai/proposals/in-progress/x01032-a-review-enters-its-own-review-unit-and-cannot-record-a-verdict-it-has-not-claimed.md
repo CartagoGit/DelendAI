@@ -2,14 +2,14 @@
 id: x01032
 title: "A review enters its own review unit and cannot record a verdict it has not claimed"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
-last-correlation-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T15:42:39.015Z
+last-transition-id: 570ad82a-5686-4542-a577-a0469829f5f2
+last-correlation-id: 570ad82a-5686-4542-a577-a0469829f5f2
+last-transition-from: review
+last-transition-at: 2026-11-10T02:38:41.222Z
 ---
 
 # x01032 — A review enters its own review unit and cannot record a verdict it has not claimed
