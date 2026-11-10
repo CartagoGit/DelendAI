@@ -2149,7 +2149,6 @@
 		"tools/scripts/ci/pack-smoke.spec.ts",
 		"tools/scripts/ci/path-importers.spec.ts",
 		"tools/scripts/ci/pr-ci-cost.script.spec.ts",
-		"tools/scripts/ci/prove-plan.script.spec.ts",
 		"tools/scripts/ci/quality-gate.spec.ts",
 		"tools/scripts/ci/required-run-freshness.script.spec.ts",
 		"tools/scripts/ci/script-dependencies.spec.ts",
