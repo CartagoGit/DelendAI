@@ -188,6 +188,7 @@ Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
 
 ### S4 — Atomic cutover and deletion
 - **Status**: pending
+- **Notes**: the engine switch is `development.integration.engine` (land|none) with `protocol` and `landWithoutChecks`, introduced here because q00047 S1 is ordered after this slice; q00047 S1 extends the same block. train-assembly is kept as land's batch builder and `forge:rehearse-train` became `forge:rehearse-land`, which builds in a throwaway clone. Left train refs and scratch worktrees are reaped by ref-lifecycle and work reap once they hold nothing of their own.
 - **DependsOn**: [S3]
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - **Gate**: none
@@ -209,6 +210,9 @@ Counts: KEEP 56, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
   - "A large proposal lands as sequential PRs, never stacked, and claim opens no new PRs"
   - "Units and refs in the old layout are migrated by a command shipped in the same change, and the same change deletes the publication path the inventory marks DELETED in S5"
   - "work status shows what is under test, what waits and why, and what landed"
+  - "One module in core owns the whole lifecycle of a work ref, its branch and its worktree: created at work enter, deleted when the work lands (its pull request merged) or is retired, on this machine and on the forge, run by the work commands and the land pass, never by an agent remembering. Today the same fact is acted on by work-unit-enter, endFinishedUnits on the host follower, work reap (unit-reaper, worktree-husks, stray refs, retired machinery), ref-lifecycle-guard --reap in land's upkeep, work retire and close-approved-proposals' own units; S5 folds them into that one module and deletes the rest"
+  - "kept-unit-hydration (work enter fast-forwards an idle unit) is deleted with the one-branch-per-unit model: a unit ends when its pull request merges, so no unit is entered again behind the integration branch"
+  - "The host follower's follow-ups (certify-integration, open-publication-prs, close-approved-proposals) are settled: open-publication-prs goes with the publication path; certification is read from the forge by the decisions module instead of a log the owner machine writes"
 
 ### S6 — Transition commits folded
 - **Status**: pending
