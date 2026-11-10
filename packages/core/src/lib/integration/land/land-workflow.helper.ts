@@ -82,7 +82,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 	];
 	if (input.promotionCommand !== undefined) {
 		jobs.push(
-			"    # The integration branch's own CI finished: promote it when it is",
+			'    # A check of the integration branch finished: promote it when it is',
 			'    # green, file one urgent repair when it is red. It blocks nobody.',
 			...job({
 				id: 'promote',
@@ -149,7 +149,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'',
 		'on:',
 		'    workflow_run:',
-		`        workflows: [${input.ciWorkflowName}]`,
+		`        workflows: [${input.checkWorkflows.join(', ')}]`,
 		'        types: [completed]',
 		'    check_suite:',
 		'        types: [completed]',

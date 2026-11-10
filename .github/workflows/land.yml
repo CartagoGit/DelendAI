@@ -10,7 +10,7 @@ name: land
 
 on:
     workflow_run:
-        workflows: [CI]
+        workflows: [CI, CodeQL]
         types: [completed]
     check_suite:
         types: [completed]
@@ -60,7 +60,7 @@ jobs:
                   GITHUB_REPOSITORY: ${{ github.repository }}
               run: bun tools/scripts/forge/land.script.ts
 
-    # The integration branch's own CI finished: promote it when it is
+    # A check of the integration branch finished: promote it when it is
     # green, file one urgent repair when it is red. It blocks nobody.
     promote:
         name: promote

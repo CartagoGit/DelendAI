@@ -7,7 +7,8 @@
  * branches a long-running server process never needs.
  */
 import { spawn } from 'node:child_process';
-import { dirname, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
@@ -26,7 +27,11 @@ import {
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
-import { applyGitOptionalLocksDefault } from '@delendai/core/runtime';
+import {
+	applyGitOptionalLocksDefault,
+	backgroundEnv,
+	lowPriority,
+} from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
 	DEFAULT_MIGRATIONS,
@@ -123,6 +128,42 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
  * laptop. The only long-lived local process is this one.
  */
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
+
+/**
+ * The script that records what the integration branch's full runs
+ * concluded, for `proposal_transition` to read as evidence. Only this
+ * repository ships it; a project without it records nothing.
+ */
+const INTEGRATION_CERTIFIER =
+	'tools/scripts/forge/certify-integration.script.ts';
+
+/**
+ * Record the certification of the tip the checkout just followed, without
+ * making the watch wait for the forge. Detached and never fatal: a record
+ * that cannot reach the forge is reported, and the next move records it.
+ */
+const certifyInBackground = async (root: string): Promise<void> => {
+	if (!existsSync(join(root, INTEGRATION_CERTIFIER))) return;
+	try {
+		const { execFile } = await import('node:child_process');
+		const certify = lowPriority('bun', [INTEGRATION_CERTIFIER]);
+		execFile(
+			certify.command,
+			[...certify.args],
+			{ cwd: root, timeout: 60_000, env: backgroundEnv() },
+			(error) => {
+				if (error !== null)
+					process.stderr.write(
+						`[delendai] integration certification did not complete: ${error.message}\n`,
+					);
+			},
+		);
+	} catch (error) {
+		process.stderr.write(
+			`[delendai] integration certification could not start: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
+};
 
 /** The interval, or 0 when the operator turned it off. */
 export const hydrationIntervalMs = (
@@ -468,6 +509,7 @@ const run = async (): Promise<void> => {
 					},
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
+						void certifyInBackground(config.workspace.root);
 					},
 				});
 

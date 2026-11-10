@@ -166,8 +166,11 @@ export interface ILandUpkeepStep {
 export interface ILandWorkflowInput {
 	readonly integrationBranch: string;
 	readonly releaseBranch: string;
-	/** The workflow whose finishing starts a pass (the project's CI). */
-	readonly ciWorkflowName: string;
+	/**
+	 * The workflows whose finishing starts a pass on a pull request, and
+	 * the promotion on the integration branch (the project's CI, its scan).
+	 */
+	readonly checkWorkflows: readonly string[];
 	/** Steps that prepare a runner (checkout and toolchain), as YAML lines. */
 	readonly setupSteps: readonly string[];
 	/** The command that runs one pass. */

@@ -36,7 +36,7 @@ const SETUP_STEPS = [
 export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 	integrationBranch: 'develop',
 	releaseBranch: 'main',
-	ciWorkflowName: 'CI',
+	checkWorkflows: ['CI', 'CodeQL'],
 	cron: '*/15 * * * *',
 	passCommand: 'bun tools/scripts/forge/land.script.ts',
 	promotionCommand:
