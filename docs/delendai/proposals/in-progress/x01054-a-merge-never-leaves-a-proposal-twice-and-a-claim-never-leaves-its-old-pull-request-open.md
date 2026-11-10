@@ -2,14 +2,14 @@
 id: x01054
 title: "A merge never leaves a proposal twice, and a claim never leaves its old pull request open"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: c97c6c88-f341-453f-8bcf-81008af9a668
-last-correlation-id: c97c6c88-f341-453f-8bcf-81008af9a668
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:14:21.142Z
+last-transition-id: 49ba6bf8-a7ff-4061-ae73-0eee260348d8
+last-correlation-id: 49ba6bf8-a7ff-4061-ae73-0eee260348d8
+last-transition-from: review
+last-transition-at: 2026-11-10T02:16:12.456Z
 ---
 
 # x01054 — A merge never leaves a proposal twice, and a claim never leaves its old pull request open
