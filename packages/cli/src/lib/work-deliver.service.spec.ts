@@ -14,9 +14,15 @@ import { answerOf, deliverUnit, unitFlagsOf } from './work-deliver.service';
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },
 	proveCode: IExitCode = EXIT_CODE.OK,
+	slice = 'all',
 ) => {
 	const calls: string[] = [];
 	const value: IWorkDeliverPorts = {
+		slice,
+		publish: async () => {
+			calls.push('publish');
+			return { code: EXIT_CODE.OK, data: 'pr/slice' };
+		},
 		locate: async () => ({
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
@@ -42,13 +48,13 @@ const illegal = (from: string, to: string) => ({
 });
 
 describe('deliverUnit', () => {
-	it('opens the proposal, proves the unit, then hands it to review', async () => {
+	it('[<20ms] opens the proposal, proves the unit, then hands it to review', async () => {
 		const { calls, value } = ports({});
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.OK);
 		expect(calls).toEqual(['in-progress', 'prove', 'review']);
 	});
 
-	it('hands nothing over when the proof fails', async () => {
+	it('[<20ms] hands nothing over when the proof fails', async () => {
 		const { calls, value } = ports({}, EXIT_CODE.VALIDATION);
 		expect(await deliverUnit(value)).toMatchObject({
 			error: 'its proof failed',
@@ -56,7 +62,7 @@ describe('deliverUnit', () => {
 		expect(calls).toEqual(['in-progress', 'prove']);
 	});
 
-	it('goes on from a proposal already in progress', async () => {
+	it('[<20ms] goes on from a proposal already in progress', async () => {
 		const { calls, value } = ports({
 			'in-progress': illegal('in-progress', 'in-progress'),
 		});
@@ -64,7 +70,7 @@ describe('deliverUnit', () => {
 		expect(calls).toEqual(['in-progress', 'prove', 'review']);
 	});
 
-	it('stops with the reason of any other refusal', async () => {
+	it('[<20ms] stops with the reason of any other refusal', async () => {
 		const reason = 'S1: nothing records which commit delivered it';
 		const late = ports({ review: { ok: false, reason } });
 		expect(await deliverUnit(late.value)).toMatchObject({ error: reason });
@@ -73,7 +79,7 @@ describe('deliverUnit', () => {
 		expect(early.calls).toEqual(['in-progress']);
 	});
 
-	it("says the tool's reason wherever it put it, and where the work went", async () => {
+	it("[<20ms] says the tool's reason wherever it put it, and where the work went", async () => {
 		const nested = ports({
 			'in-progress': { ok: false, error: { reason: 'no such proposal' } },
 		});
@@ -88,8 +94,47 @@ describe('deliverUnit', () => {
 	});
 });
 
+describe('deliverUnit, one slice of several', () => {
+	const undelivered = (slices: string) => ({
+		ok: false,
+		error: {
+			code: 'undelivered-slices',
+			reason: `${slices}: no commit on this branch changes the slice’s declared files`,
+		},
+	});
+
+	it('[<20ms] publishes only the slice it proved while others are undelivered', async () => {
+		const { calls, value } = ports(
+			{ review: undelivered('S3, S4, S6') },
+			EXIT_CODE.OK,
+			'S1',
+		);
+		expect(await deliverUnit(value)).toMatchObject({
+			code: EXIT_CODE.OK,
+			data: { delivered: 'slice', remaining: ['S3', 'S4', 'S6'] },
+		});
+		expect(calls).toEqual(['in-progress', 'prove', 'review', 'publish']);
+	});
+
+	it('[<20ms] refuses when the slice it proved is itself undelivered', async () => {
+		const { calls, value } = ports(
+			{ review: undelivered('S1, S4') },
+			EXIT_CODE.OK,
+			'S1',
+		);
+		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.VALIDATION);
+		expect(calls).not.toContain('publish');
+	});
+
+	it('[<20ms] keeps handing a whole proposal over, refusal included', async () => {
+		const { calls, value } = ports({ review: undelivered('S3') });
+		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.VALIDATION);
+		expect(calls).not.toContain('publish');
+	});
+});
+
 describe('answerOf', () => {
-	it('reads the refusal a failed call carries, and passes an answer through', async () => {
+	it('[<20ms] reads the refusal a failed call carries, and passes an answer through', async () => {
 		const refusal = {
 			ok: false,
 			reason: 'illegal transition: "in-progress" → "in-progress"',
@@ -108,7 +153,7 @@ describe('answerOf', () => {
 		});
 	});
 
-	it('keeps an error that carries no answer', async () => {
+	it('[<20ms] keeps an error that carries no answer', async () => {
 		const bare = new Error('Connection closed');
 		await expect(answerOf(Promise.reject(bare))).rejects.toBe(bare);
 		const prose = Object.assign(new Error('x'), {
@@ -124,7 +169,7 @@ describe('unitFlagsOf', () => {
 			? { proposal: 'x1', slice: 'S2', generation: 2, topic: 'the-fix' }
 			: undefined;
 
-	it('names the unit of the branch a delivery runs on', () => {
+	it('[<20ms] names the unit of the branch a delivery runs on', () => {
 		expect(
 			unitFlagsOf(
 				'delendai/wip/a/implement/x1-S2-g2/the-fix',
@@ -134,7 +179,7 @@ describe('unitFlagsOf', () => {
 		).toEqual(['--slice=S2', '--generation=2', '--topic=the-fix']);
 	});
 
-	it('names nothing off a unit, or on another proposal', () => {
+	it('[<20ms] names nothing off a unit, or on another proposal', () => {
 		expect(unitFlagsOf('develop', 'x1', parse)).toEqual([]);
 		expect(unitFlagsOf(undefined, 'x1', parse)).toEqual([]);
 		expect(
