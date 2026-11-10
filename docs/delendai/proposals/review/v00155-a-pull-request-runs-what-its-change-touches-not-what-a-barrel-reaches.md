@@ -48,7 +48,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 3/3: (1) tools/scripts/ci/export-delta.ts exportDelta/reexportSurface (undefined when the file declares locally); test-scope.ts touchedSpecs adds changed specs and mirr… (2) test-scope.spec.ts:57 (#1838 case) green (3) test-zones.script.ts:594-617 uses nearSpecsSince(rootDir, base) whose scope defaults to readTestScope(root); near-specs.ts:161-185 branches reach/all/touched; … — export-delta + touchedSpecs select only importers of moved names; test-zones reads testing.scope via nearSpecsSince
 
 ### S2 — No declared-always job without a reason in code
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
@@ -56,8 +56,10 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "Each job that declared always declares the paths it reads, or carries a one-line reason why it truly needs the whole repository; wake-the-queue and delendai-validate may stay always as bookkeeping."
   - "A spec records which jobs run for a docs-only change and for a tools-only change."
 - shipped-in: `6fcc4940a048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts: remaining always jobs (lint-architecture, lint-security, lint-governance, quality-gate, generated-artifacts-check, plan-scope, delendai-… (2) job-scope.script.spec.ts:371 (docs-only), :532 (proposal edit), :551 (change under tools/) green — every always job carries a because; spec records docs-only/proposal and tools-only job sets
 
 ### S3 — Packaging jobs run on a change of a published surface or build input
 - **Status**: review
