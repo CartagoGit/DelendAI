@@ -2,14 +2,14 @@
 id: x01057
 title: "Three defects from the 2026-11-09 server boot"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-09
-last-transition-id: e2843f76-14b2-493c-8f5e-8c3977bb5a71
-last-correlation-id: e2843f76-14b2-493c-8f5e-8c3977bb5a71
-last-transition-from: ready
-last-transition-at: 2026-11-09T23:03:06.050Z
+last-transition-id: 8f2f8381-9124-4e77-afac-78f29519fc92
+last-correlation-id: 8f2f8381-9124-4e77-afac-78f29519fc92
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T02:41:56.200Z
 ---
 
 # x01057 — Three defects from the 2026-11-09 server boot
@@ -32,67 +32,91 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - global_gate: type
 
 ### S1 — A lease held by a dead pid on this host is taken over
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A server that finds the maintainer lease held by a pid that is dead on the same host takes it over and says so once."
   - "A lease held by a live pid, or by another host, is never taken over."
   - "The refusal line never names a dead pid as the maintainer."
+- shipped-in: `d6d8d0b09b50`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every proof names its agent and the waiter follows the holder
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "The proof request carries the agent the work command already resolved (agentFor), which the proof label uses instead of reading DELENDAI_AGENT_ID; prove and publish both pass it, so no proof reads 'an unidentified agent' when the caller is identified."
   - "A proof with no agent at all fails the work command with the reason instead of being labelled unidentified."
+- shipped-in: `dfd2c2c9fb2e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The compute-slot waiter re-prints when the holder changes
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`
 - **Gate**: type
 - acceptance:
   - "While a proof waits, a notice is printed when the holder changes, once per holder, and not again for the same holder."
   - "The notice still ends with 'got its turn' when the wait ends."
+- shipped-in: `dfd2c2c9fb2e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The compute-slot spec leaves no child running and never busy-loops
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A child exits when its parent dies or its /tmp/compute-slot-* directory disappears."
   - "A child waits for the release with fs.watch or an fd/IPC message from the parent, not a setImmediate loop; it uses no CPU while waiting."
   - "afterEach kills every child the spec spawned and the spec ends with none left."
+- shipped-in: `dfd2c2c9fb2e`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The launcher reaches its fallback from a deleted directory
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/alias-manager.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With an empty or relative PWD, as a hook started in a deleted directory sees it, the POSIX launcher walks from / and reaches its fallback instead of looping on dirname forever."
   - "A spec runs the rendered launcher in bash with an empty PWD and sees it reach the fallback."
+- shipped-in: `c3f8c52e085c`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — review next fits its queue request in the response budget
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/review.command.ts`
 - **Gate**: type
 - acceptance:
   - "With 25 proposals and 58 slices in review, review next hands out a pack instead of failing with response-too-large; it asks for the queue in pages or without detail."
+- shipped-in: `fa8e4df71afe`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — A claim that times out reports what actually happened
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`
 - **Gate**: type
 - acceptance:
   - "When a review claim's git call times out under load, the tool checks whether the claim commit landed and reports the claim as held when it did, instead of 'Could not claim'."
+- shipped-in: `abc442fef686`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S8 — A failed proof step keeps its whole output
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every step a proof runs that fails writes its whole output to a file of its own under .cache/delendai/results/logs/prove-failed/, and the proof names that file among its causes, so a failure seen once can be read again: the cause lines name a failing test without its assertion, and a caller keeps only the tail of the proof."
+- shipped-in: `737a7d85e9da`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
