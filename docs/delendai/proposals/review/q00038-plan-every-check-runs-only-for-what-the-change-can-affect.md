@@ -2,14 +2,14 @@
 id: q00038
 title: "Plan: every check runs only for what the change can affect"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-02
-last-transition-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
-last-correlation-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
-last-transition-from: ready
-last-transition-at: 2026-11-02T08:27:41.982Z
+last-transition-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
+last-correlation-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T02:21:26.483Z
 shipped-in:
   - "07672aeb0"
   - "81bb8408a"
@@ -59,6 +59,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads."
   - "A zone the change reaches no spec of starts no job."
   - "The local proof runs the same specs the forge would, from the same analysis."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every lint runs only for the files it reads
 - **Status**: done
@@ -69,6 +72,8 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A lint that judges files one by one (biome, docs, proposal and naming lints) is given the changed files, not the repository. A repository-wide lint runs only when the change touches what it reads."
   - "A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not."
 - shipped-in: `a378e93c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Types are checked only where the change reaches
 - **Status**: done
@@ -78,6 +83,8 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "The typecheck checks the packages the change touches and the packages that depend on them, through project references or per-package runs with incremental state; a change in one plugin does not typecheck every other plugin."
   - "The local proof and the pull request check the same packages, and the run names them."
 - shipped-in: `a378e93c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The saving is measured
 - **Status**: done
@@ -85,6 +92,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
+- shipped-in: `99b81cec3806`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Tools are verified for the plugins the change reaches
 - **Status**: done
@@ -93,6 +103,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - acceptance:
   - "On a pull request, verify:tools verifies the plugins the change reaches by symbol, every plugin when it reaches the harness or a root manifest, and none for a change no plugin loads; a spec covers each case."
   - "A run without --affected-since, as on the integration branch, still verifies every plugin."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Each publishable package is packed once
 - **Status**: done
@@ -100,6 +113,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "pack smoke no longer runs npm pack --dry-run over the raw workspace directories: the tarball smoke packs every publishable package of the release order from its staged copy, a superset checked on 2026-11-02 (59 of 59 non-private packages)."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The external install runs where the packaging can change
 - **Status**: done
@@ -107,6 +123,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "verify:external-install runs in the pack-smoke job, whose scope now also names its script, the publish staging and init's code; verify-runtime no longer rebuilds and repacks for it."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — The repository-wide lints cost only what the change changes
 - **Status**: done
@@ -117,6 +136,8 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A lint that judges files one by one judges the changed files (`DELENDAI_CHANGED_FILES`); a lint whose verdict depends on repository-wide inputs keeps its last verdict under a hash of exactly what it reads, and reruns when that hash changes."
   - "CI and the local proof run the same code."
 - shipped-in: `7698da8c9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
