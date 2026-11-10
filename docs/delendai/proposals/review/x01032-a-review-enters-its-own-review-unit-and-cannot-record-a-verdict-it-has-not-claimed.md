@@ -58,14 +58,16 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: requested_changes by claude-opus-5-5 — Acceptance not met as written. (1) plugins/proposals/src/lib/tools/review-claim.tool.ts:170-182: review_claim called outside a review unit REFUSES and tells the agent to run 'delendai review next'; it does not enter or reuse the caller's review unit. (2) plugins/proposals/src/lib/tools/review-queue.tool.ts:70-78 only reads an existing unit via reviewUnitOfAgent; with no unit it enters nothing. (3) No spec shows an agent with no unit ending in kind review: plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts:118 asserts the refusal instead. Either make review_claim/review_queue enter-or-reuse the review unit (with that spec), or amend S2's acceptance to the refusal that shipped (commit 0fb7224c8 subject already says 'is refused') and hand it over again.
 
 ### S3 — proposal_review refuses a verdict on an unclaimed proposal
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/tools/authoring/proposal-review.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
 - **Gate**: type
 - acceptance:
   - "proposal_review submit, approve or request_changes on a proposal the pack has not claimed is refused at once with the review_claim command to run; a spec shows x01004 refused when only x01016 is claimed, and the lint is unchanged."
 - shipped-in: `d08f20884a0d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) proposal-review.tool.ts:277 and :308 call verdictClaimRefusal (review-claim.service.ts:253-285, nextAction names review_claim, 'Nothing was written'); proposal… — verdictClaimRefusal gates submit/approve/request_changes/attest; lint untouched
 
 ### S4 — A review pack is titled by its verdicts
 - **Status**: review
