@@ -88,6 +88,26 @@ const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&
 	!reason.includes(`"ready" → "${to}"`);
 
+/** The tool's code for a proposal whose other slices have no delivering commit. */
+const UNDELIVERED_CODE = 'undelivered-slices';
+
+/**
+ * The slices a refusal names as undelivered: the tool writes them first,
+ * `S3, S4: no commit on this branch changes …`. None when the refusal is
+ * another one.
+ */
+export const undeliveredSlicesOf = (
+	answer: unknown,
+): readonly string[] | undefined => {
+	if (!isRecord(answer) || answer.ok !== false) return undefined;
+	const detail = isRecord(answer.error) ? answer.error : answer;
+	if (detail.code !== UNDELIVERED_CODE && answer.code !== UNDELIVERED_CODE)
+		return undefined;
+	const reason = refusalOf(answer) ?? '';
+	const listed = /^((?:[A-Za-z]\w*)(?:, [A-Za-z]\w*)*):/u.exec(reason)?.[1];
+	return listed?.split(', ');
+};
+
 export const deliverUnit = async (
 	ports: IWorkDeliverPorts,
 ): Promise<ICliCommandResult> => {
@@ -103,7 +123,31 @@ export const deliverUnit = async (
 	}
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
-	const handed = refusalOf(await ports.transition('review', checkout));
+	const answer = await ports.transition('review', checkout);
+	const handed = refusalOf(answer);
+	// A slice proved and delivered while the proposal's others are not:
+	// the proposal is not for review yet, and a refusal after the proof
+	// would waste it. Only this slice's work is published; the slice that
+	// completes the proposal hands it over.
+	const remaining = undeliveredSlicesOf(answer);
+	if (
+		remaining !== undefined &&
+		ports.slice !== 'all' &&
+		!remaining.includes(ports.slice)
+	) {
+		const published = await ports.publish();
+		return published.code === 0
+			? {
+					code: EXIT_CODE.OK,
+					data: {
+						delivered: 'slice',
+						remaining,
+						publication: published.data,
+						proved: proved.data,
+					},
+				}
+			: published;
+	}
 	return handed === undefined
 		? {
 				code: EXIT_CODE.OK,

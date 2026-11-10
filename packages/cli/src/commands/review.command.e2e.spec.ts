@@ -71,29 +71,41 @@ const contextFor = (
 		request: async <T>(tool: string, args: object): Promise<T> => {
 			calls.push({ tool, args: args as Record<string, unknown> });
 			if (tool.endsWith('_review_queue')) {
+				// As the tool answers: the list carries each slice's state, and
+				// the evidence comes only for the one proposal asked for.
+				const { proposalId } = args as { proposalId?: string };
+				const evidence = proposalId !== undefined;
 				return {
 					...(pack === undefined ? {} : { pack }),
-					proposals: queue.map((entry) => ({
-						id: entry.id,
-						file: `docs/delendai/proposals/review/${entry.id}-a.md`,
-						...(entry.claimedBy === undefined
-							? {}
-							: { claimedBy: entry.claimedBy }),
-						slices: (entry.verdicts ?? ['needs-verdict']).map(
-							(verdict, index) => ({
-								sliceId: `S${String(index + 1)}`,
-								title: 'the slice',
-								verdict,
-								implementer: 'claude-opus-5-5',
-								gate: 'npx vitest run a.spec.ts',
-								acceptance: [
-									'the flag is read',
-									'a person is unaffected',
-								],
-								candidates: [{ commit: 'abc1234' }],
-							}),
-						),
-					})),
+					proposals: queue
+						.filter((entry) => !evidence || entry.id === proposalId)
+						.map((entry) => ({
+							id: entry.id,
+							file: `docs/delendai/proposals/review/${entry.id}-a.md`,
+							...(entry.claimedBy === undefined
+								? {}
+								: { claimedBy: entry.claimedBy }),
+							slices: (entry.verdicts ?? ['needs-verdict']).map(
+								(verdict, index) => ({
+									sliceId: `S${String(index + 1)}`,
+									title: 'the slice',
+									verdict,
+									...(evidence
+										? {
+												implementer: 'claude-opus-5-5',
+												gate: 'npx vitest run a.spec.ts',
+												acceptance: [
+													'the flag is read',
+													'a person is unaffected',
+												],
+												candidates: [
+													{ commit: 'abc1234' },
+												],
+											}
+										: {}),
+								}),
+							),
+						})),
 				} as T;
 			}
 			if (tool.endsWith('_review_claim')) {
@@ -150,7 +162,7 @@ const claimsIn = (worktree: string): string =>
 		.join('\n');
 
 describe('delendai review', () => {
-	it('brings the integration branch into the unit before reading the queue', async () => {
+	it('[<6000ms] brings the integration branch into the unit before reading the queue', async () => {
 		const root = repo();
 		git(root, 'remote', 'add', 'origin', root);
 		git(root, 'fetch', '-q', 'origin');
@@ -188,7 +200,7 @@ describe('delendai review', () => {
 		).toBe(true);
 	});
 
-	it('offers another proposal after one was released, not the same one again', async () => {
+	it('[<5000ms] offers another proposal after one was released, not the same one again', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
 		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
@@ -217,7 +229,7 @@ describe('delendai review', () => {
 		expect(second.proposal).toBe('x00002');
 	});
 
-	it('honours a release made in another unit, until the proposal changes', async () => {
+	it('[<6000ms] honours a release made in another unit, until the proposal changes', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
 		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
@@ -263,7 +275,7 @@ describe('delendai review', () => {
 		expect(again.proposal).toBe('x00001');
 	});
 
-	it('opens no unit for an agent that asks while nothing is waiting', async () => {
+	it('[<200ms] opens no unit for an agent that asks while nothing is waiting', async () => {
 		// One agent asking every few minutes, with no session, left an empty
 		// unit per question.
 		const root = repo();
@@ -284,14 +296,23 @@ describe('delendai review', () => {
 		expect(git(root, 'worktree', 'list').split('\n')).toHaveLength(1);
 	});
 
-	it('enters the unit, claims the first free proposal, and says how to answer', async () => {
+	it('[<1000ms] enters the unit, claims the first free proposal, and says how to answer', async () => {
 		const root = repo();
-		const { ctx } = contextFor(root, [
+		const { ctx, calls } = contextFor(root, [
 			{ id: 'x00001', claimedBy: ['glm-5'] },
 			{ id: 'x00002' },
 		]);
 
 		const result = await run(ctx, 'next', '--agent=minimax-m3');
+		// The list is asked for without evidence, which 25 proposals made
+		// too large to answer; the evidence comes for the chosen one only.
+		const queueCalls = calls.filter((call) =>
+			call.tool.endsWith('_review_queue'),
+		);
+		expect(queueCalls.every((call) => call.args.detail === undefined)).toBe(
+			true,
+		);
+		expect(queueCalls.at(-1)?.args.proposalId).toBe('x00002');
 
 		const answer = result.data as {
 			worktree: string;
@@ -321,7 +342,7 @@ describe('delendai review', () => {
 		);
 	});
 
-	it('finishes the proposal it claimed before taking another', async () => {
+	it('[<2000ms] finishes the proposal it claimed before taking another', async () => {
 		const root = repo();
 		const first = contextFor(root, [{ id: 'x00002' }, { id: 'x00003' }]);
 		const started = (await run(first.ctx, 'next', '--agent=minimax-m3'))
@@ -342,7 +363,7 @@ describe('delendai review', () => {
 		expect(claimsIn(started.worktree)).toBe('x00002');
 	});
 
-	it('takes the next one once its own claim has no slice left to judge', async () => {
+	it('[<2000ms] takes the next one once its own claim has no slice left to judge', async () => {
 		const root = repo();
 		const first = contextFor(root, [{ id: 'x00002' }, { id: 'x00003' }]);
 		const started = (await run(first.ctx, 'next', '--agent=minimax-m3'))
@@ -368,7 +389,7 @@ describe('delendai review', () => {
 		]);
 	});
 
-	it('records a verdict in the unit, with its evidence', async () => {
+	it('[<2500ms] records a verdict in the unit, with its evidence', async () => {
 		const root = repo();
 		const { ctx, calls } = contextFor(root, [{ id: 'x00002' }]);
 		const started = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
@@ -444,7 +465,7 @@ describe('delendai review', () => {
 		]);
 	});
 
-	it('says when nothing waits for a verdict, and how to publish', async () => {
+	it('[<150ms] says when nothing waits for a verdict, and how to publish', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [
 			{ id: 'x00001', claimedBy: ['glm-5'] },
@@ -459,7 +480,7 @@ describe('delendai review', () => {
 		expect(JSON.stringify(result.data)).not.toContain('published');
 	});
 
-	it('publishes a full pack and goes on in a new unit', async () => {
+	it('[<4500ms] publishes a full pack and goes on in a new unit', async () => {
 		const root = repo();
 		const remote = mkdtempSync(join(tmpdir(), 'review-remote-'));
 		roots.push(remote);
@@ -496,7 +517,7 @@ describe('delendai review', () => {
 		expect((next.data as { proposal?: string }).proposal).toBe('x00003');
 	});
 
-	it('publishes the unit through work publish', async () => {
+	it('[<1600ms] publishes the unit through work publish', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00002' }]);
 		const started = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
@@ -516,7 +537,7 @@ describe('delendai review', () => {
 		);
 	});
 
-	it("refuses to publish a pack that carries another reviewer's approval", async () => {
+	it("[<1500ms] refuses to publish a pack that carries another reviewer's approval", async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00002' }]);
 		const started = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
@@ -555,7 +576,7 @@ describe('delendai review', () => {
 		expect(String(finished.error)).toContain('approvals by gpt-5.4');
 	});
 
-	it('asks for what it needs before doing anything', async () => {
+	it('[<80ms] asks for what it needs before doing anything', async () => {
 		const root = repo();
 		const { ctx, calls } = contextFor(root, []);
 		const previous = process.env.DELENDAI_AGENT_ID;

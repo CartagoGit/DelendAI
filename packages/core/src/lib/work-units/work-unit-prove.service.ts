@@ -71,6 +71,7 @@ export const proved = async (
 	}
 	const proof = await proveUnit({
 		root,
+		agent,
 		worktree,
 		tipSha: tip,
 		integrationSha: base,

@@ -287,7 +287,7 @@ export const proveUnit = async (
 	try {
 		return await withComputeSlot({
 			lockPath: slot,
-			label: `proof of ${tipSha.slice(0, 12)} by ${process.env.DELENDAI_AGENT_ID ?? 'an unidentified agent'}`,
+			label: `proof of ${tipSha.slice(0, 12)} by ${request.agent}`,
 			run: onSlot,
 			unit: request.worktree ?? tipSha,
 			tip: tipSha,

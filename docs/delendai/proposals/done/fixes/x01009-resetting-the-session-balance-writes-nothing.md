@@ -2,14 +2,16 @@
 id: x01009
 title: "Resetting the session balance writes nothing"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 0286ffff-4409-42df-b248-74fbef88213f
-last-correlation-id: 0286ffff-4409-42df-b248-74fbef88213f
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T11:34:21.157Z
+last-transition-id: 9afb6943-e0ca-4124-bd96-6c21e3467771
+last-correlation-id: 9afb6943-e0ca-4124-bd96-6c21e3467771
+last-transition-from: review
+last-transition-at: 2026-11-10T02:40:52.577Z
+shipped-in:
+  - "9ea6e1583afa"
 ---
 
 # x01009 — Resetting the session balance writes nothing
@@ -31,14 +33,16 @@ PR #1706 failed CI on 2026-11-03 in `tests: proposals 1/3` with no failing test.
 - global_gate: none
 
 ### S1 — The reset forgets, the append creates
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/locks/agent-lock-session-store.ts`, `plugins/proposals/tests/src/lib/locks/agent-lock-session-store.spec.ts`
 - **Gate**: none
 - acceptance:
   - "resetSessionBalance makes no filesystem call; a spec resets after a balance read under an unwritable root and sees no rejection, and appendSessionEntry still creates its folder."
 - shipped-in: `c7406b8dfeb4`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 9ea6e1583afa, validate exit 0 and tests 9/9 claimed, no recorded run cited; acceptance 1/1: (1) agent-lock-session-store.ts:192-194 reset only sets _cachedBalance=null; the only mkdir is in append at :161; spec :143 reads '/ws', resets, resolves undefined… — Reset only nulls the cache; spec proves it.
 
 ## acceptance
 

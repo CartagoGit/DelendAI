@@ -2,14 +2,16 @@
 id: v00155
 title: "A pull request runs what its change touches, not what a barrel reaches"
 kind: perf
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 4acd74d8-70db-43c6-8f9d-28b009d0bc68
-last-correlation-id: 4acd74d8-70db-43c6-8f9d-28b009d0bc68
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T16:26:43.140Z
+last-transition-id: dd7af0e5-3f3e-48bc-94eb-a34c04ecdc3c
+last-correlation-id: dd7af0e5-3f3e-48bc-94eb-a34c04ecdc3c
+last-transition-from: review
+last-transition-at: 2026-11-10T03:12:05.079Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # v00155 — A pull request runs what its change touches, not what a barrel reaches
@@ -32,7 +34,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - global_gate: none
 
 ### S1 — Tests, symbol-level: CI uses testing.scope and a barrel selects the importers of the exports that changed
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/export-delta.ts`, `tools/scripts/ci/export-delta.spec.ts`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: none
 - acceptance:
@@ -40,11 +42,13 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "Adding one export to a cli.ts-shaped barrel selects only that export's importers' specs, not the specs of the other names."
   - "The forge test plan (test-zones) reads testing.scope from delendai.config.json: touched by default, reach for the symbol-reach analysis, all for every spec."
 - shipped-in: `b97d4e5a0009`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 3/3: (1) tools/scripts/ci/export-delta.ts exportDelta/reexportSurface (undefined when the file declares locally); test-scope.ts touchedSpecs adds changed specs and mirr… (2) test-scope.spec.ts:57 (#1838 case) green (3) test-zones.script.ts:594-617 uses nearSpecsSince(rootDir, base) whose scope defaults to readTestScope(root); near-specs.ts:161-185 branches reach/all/touched; … — export-delta + touchedSpecs select only importers of moved names; test-zones reads testing.scope via nearSpecsSince
 
 ### S2 — No declared-always job without a reason in code
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
@@ -52,11 +56,13 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "Each job that declared always declares the paths it reads, or carries a one-line reason why it truly needs the whole repository; wake-the-queue and delendai-validate may stay always as bookkeeping."
   - "A spec records which jobs run for a docs-only change and for a tools-only change."
 - shipped-in: `6fcc4940a048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts: remaining always jobs (lint-architecture, lint-security, lint-governance, quality-gate, generated-artifacts-check, plan-scope, delendai-… (2) job-scope.script.spec.ts:371 (docs-only), :532 (proposal edit), :551 (change under tools/) green — every always job carries a because; spec records docs-only/proposal and tools-only job sets
 
 ### S3 — Packaging jobs run on a change of a published surface or build input
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: none
@@ -64,11 +70,13 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "site, pack-smoke, build-clean, verify-runtime and delendai-rebuild-digest run only when a published package's public surface or a build input changes, judged at symbol level for a barrel."
   - "Adding one export to a barrel runs the packaging jobs; a body change inside a module behind the barrel does not."
 - shipped-in: `6fcc4940a048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts site/pack-smoke/build-clean/verify-runtime carry surface: PUBLIC_ENTRY_FILES plus BUILD_INPUTS matches; delendai-rebuild-digest matches o… (2) job-scope.script.spec.ts 'runs the four that read a public surface when the barrel gained an export (#1838)' and 'runs none of them for a change inside a modul… — packaging jobs gated by surface: PUBLIC_ENTRY_FILES + surfaceMovedSince
 
 ### S4 — Fewer jobs: the lint jobs that run together share one setup
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/ci-static-steps.ts`, `tools/scripts/ci/ci-static-steps.spec.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/lint/job-scope-coverage.script.ts`
 - **Gate**: none
@@ -76,8 +84,10 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "The lint jobs that run together are one job with one setup; a separate check name remains only where branch protection requires it."
   - "The proposal states the runner-minutes of a PR 1838-like change before and after."
 - shipped-in: `9de3ef6d07f0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) .github/workflows/ci.yml:78 static-checks job; job-scope.constant.ts:208 group of eight checks; required checks are only delendai-validate and CodeQL; ci-stati… (2) ledger section: 1,890 runner-seconds before, about 960 after, per-job table (estimate from measured durations, stated as such) — static-checks job groups eight lints with one setup; ledger states 1,890 -> ~960 runner-seconds
 
 ## acceptance
 

@@ -2,14 +2,14 @@
 id: q00038
 title: "Plan: every check runs only for what the change can affect"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-11-02
-last-transition-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
-last-correlation-id: d07bbe3f-f7e8-4d27-a170-4bb71f44eb27
-last-transition-from: ready
-last-transition-at: 2026-11-02T08:27:41.982Z
+last-transition-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
+last-correlation-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T02:21:26.483Z
 shipped-in:
   - "07672aeb0"
   - "81bb8408a"
@@ -59,23 +59,32 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A pull request's test jobs run the specs its change reaches, followed by symbol through barrels, and by module from a changed file that runs code when it loads."
   - "A zone the change reaches no spec of starts no job."
   - "The local proof runs the same specs the forge would, from the same analysis."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Every lint runs only for the files it reads
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/ci/job-reach.helper.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/lib/changed-files-scope.ts`, `tools/scripts/lib/changed-files-scope.spec.ts`, `tools/scripts/lint/biome-baseline.script.ts`, `tools/scripts/lint/file-conventions.script.ts`, `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/single-frontmatter.script.ts`, `tools/scripts/lint/type-naming.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "No lint job is declared `touches: 'always'` without a measured reason. Each lint family (biome, architecture, presets, docs, security, governance, quality-gate, manifests, generated artifacts) declares the paths it reads, and runs on a pull request and in the local proof only when the change touches them."
   - "A lint that judges files one by one (biome, docs, proposal and naming lints) is given the changed files, not the repository. A repository-wide lint runs only when the change touches what it reads."
   - "A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not."
+- shipped-in: `a378e93c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — Types are checked only where the change reaches
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/typecheck.script.ts`, `tools/scripts/ci/typecheck-scope.helper.ts`, `tools/scripts/ci/typecheck-scope.helper.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "The typecheck checks the packages the change touches and the packages that depend on them, through project references or per-package runs with incremental state; a change in one plugin does not typecheck every other plugin."
   - "The local proof and the pull request check the same packages, and the run names them."
+- shipped-in: `a378e93c0`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The saving is measured
 - **Status**: done
@@ -83,6 +92,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
+- shipped-in: `99b81cec3806`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — Tools are verified for the plugins the change reaches
 - **Status**: done
@@ -91,6 +103,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - acceptance:
   - "On a pull request, verify:tools verifies the plugins the change reaches by symbol, every plugin when it reaches the harness or a root manifest, and none for a change no plugin loads; a spec covers each case."
   - "A run without --affected-since, as on the integration branch, still verifies every plugin."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S6 — Each publishable package is packed once
 - **Status**: done
@@ -98,6 +113,9 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "pack smoke no longer runs npm pack --dry-run over the raw workspace directories: the tarball smoke packs every publishable package of the release order from its staged copy, a superset checked on 2026-11-02 (59 of 59 non-private packages)."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S7 — The external install runs where the packaging can change
 - **Status**: done
@@ -105,15 +123,21 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - **Gate**: type
 - acceptance:
   - "verify:external-install runs in the pack-smoke job, whose scope now also names its script, the publish staging and init's code; verify-runtime no longer rebuilds and repacks for it."
+- shipped-in: `3d7174504930`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S10 — The repository-wide lints cost only what the change changes
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lib/content-hash.ts`, `tools/scripts/lib/content-hash.spec.ts`, `tools/scripts/compile/build.script.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/lint/check-generated-artifacts.script.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-report-lib.ts`, `tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/generate/preset-metadata.script.ts`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/proposal-cited-commits.script.ts`, `tools/scripts/lint/proposal-cited-commits.script.spec.ts`, `tools/scripts/lint/json-entry-collision.script.ts`, `tools/scripts/lint/no-silent-gates.script.ts`, `tools/scripts/gen-all.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "For a one-file core change, each of lint-security, lint-presets, lint-docs, lint-governance, generated-artifacts-check, tokens-budget-real, quality-gate and the generated-files step of the local proof takes under 10 s, and no check they ran before is dropped."
   - "A lint that judges files one by one judges the changed files (`DELENDAI_CHANGED_FILES`); a lint whose verdict depends on repository-wide inputs keeps its last verdict under a hash of exactly what it reads, and reruns when that hash changes."
   - "CI and the local proof run the same code."
+- shipped-in: `7698da8c9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
