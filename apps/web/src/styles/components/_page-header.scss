@@ -1,0 +1,49 @@
+// _page-header.scss — minimal page header that replaces the old
+// `.subhero` block. Carries only the breadcrumb + the H1 (with
+// `transition:name="page-title"` so Astro View Transitions morph
+// the title between pages).
+//
+// BEM root: .page-header. Children:
+//   - .page-header__crumb (optional breadcrumb)
+//   - h1 (the page title; inherits Astro's transition:name from the
+//     consumer template).
+//
+// Lead / meta / CTAs are NOT rendered here — pages put those
+// inside their first <section class="section">.
+
+.page-header {
+	padding: clamp(2rem, 5vw, 3.4rem) 0 1.4rem;
+	border-bottom: 1px solid var(--line);
+	background: radial-gradient(80% 140% at 50% -20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+
+	& h1 {
+		font-size: clamp(1.85rem, 4.4vw, 2.7rem);
+		line-height: 1.08;
+		margin: 0;
+		letter-spacing: -0.025em;
+	}
+
+	& h1 code {
+		color: var(--accent);
+		font-size: 0.9em;
+	}
+}
+.page-header__crumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-bottom: 0.85rem;
+	color: var(--muted);
+	font-size: 0.85rem;
+	flex-wrap: wrap;
+
+	& a {
+		color: var(--muted);
+	}
+	& a:hover {
+		color: var(--fg);
+	}
+	& [aria-current='page'] {
+		color: var(--fg);
+	}
+}
