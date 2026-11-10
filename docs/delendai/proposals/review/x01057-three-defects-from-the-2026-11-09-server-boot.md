@@ -2,14 +2,14 @@
 id: x01057
 title: "Three defects from the 2026-11-09 server boot"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-09
-last-transition-id: 2ede19a7-bc8a-48b0-bbc6-28b7bf47967b
-last-correlation-id: 2ede19a7-bc8a-48b0-bbc6-28b7bf47967b
-last-transition-from: review
-last-transition-at: 2026-11-10T07:41:46.283Z
+last-transition-id: 4a32d867-fb7e-4c04-8aff-978626b5715d
+last-correlation-id: 4a32d867-fb7e-4c04-8aff-978626b5715d
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T08:03:08.619Z
 ---
 
 # x01057 — Three defects from the 2026-11-09 server boot
@@ -119,11 +119,14 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-implementer: claude-opus-5-5
 
 ### S9 — ref-lifecycle reads the pull requests it needs, not their bodies
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-pr-fields.spec.ts`
 - **Gate**: type
 - acceptance:
   - "lint:ref-lifecycle asks the forge for every pull request projected to the fields it reads (number, state, merged and closed dates, head ref and sha), so the list no longer outgrows the 32 MB it reads (ENOBUFS on every pull request, run 42749758353)."
+- shipped-in: `301af1ee59cd`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
