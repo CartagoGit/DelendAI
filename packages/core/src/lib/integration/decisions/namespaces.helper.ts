@@ -32,14 +32,36 @@ const distinct = (values: readonly string[]): readonly string[] => [
 	...new Set(values),
 ];
 
-const formerOf = (branches: IOwnedBranches): readonly string[] =>
+const formerOf = (branches: INamespaceBranches): readonly string[] =>
 	(branches.formerNamespacePrefixes ?? []).filter(
 		(former) => former !== branches.namespacePrefix,
 	);
 
+type INamespaceBranches = Pick<
+	IPolicyBranches,
+	'namespacePrefix' | 'formerNamespacePrefixes'
+>;
+
 /** The current namespace, then each former one, with no trailing slash. */
-export const ownedNamespaces = (branches: IOwnedBranches): readonly string[] =>
+export const ownedNamespaces = (
+	branches: INamespaceBranches,
+): readonly string[] =>
 	distinct([branches.namespacePrefix, ...formerOf(branches)]);
+
+/**
+ * Where retired tips are kept, under each owned namespace, current first:
+ * `refs/<namespace>/retired/`, or `refs/retired/` for a project with no
+ * namespace. Readers search all of them; writers use the first.
+ */
+export const retiredRefRoots = (
+	branches: Partial<INamespaceBranches>,
+): readonly string[] =>
+	distinct(
+		ownedNamespaces({
+			namespacePrefix: branches.namespacePrefix ?? '',
+			formerNamespacePrefixes: branches.formerNamespacePrefixes ?? [],
+		}).map((namespace) => `refs/${withSlash(namespace)}retired/`),
+	);
 
 /**
  * Work-ref prefixes, current first. Empty when the project writes no
