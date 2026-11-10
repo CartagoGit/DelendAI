@@ -10,6 +10,8 @@ last-transition-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
 last-correlation-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
 last-transition-from: in-progress
 last-transition-at: 2026-11-07T21:28:06.347Z
+shipped-in:
+  - "c1a3c73cccb7"
 ---
 
 # x01034 — Work commands spawn 80 to 140 git processes each: memoise, batch and bound them
@@ -34,7 +36,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - global_gate: type
 
 ### S1 — Count every git spawn through the seam
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/contracts/interfaces/git-read.interface.ts`, `packages/core/src/lib/work-units/unit-ref-rename.service.ts`, `packages/core/tests/src/lib/shared/git-read.helper.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,8 +44,10 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "unit-ref-rename.service.ts reports its spawns through `noteGitSpawn`."
   - "git-read.helper.spec.ts proves the observer sees every spawn and that an absent observer changes nothing."
 - shipped-in: `d4cd9f4825cd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 3/3: (1) git-read.helper.ts withGitReadCache is AsyncLocalStorage (:26); noteGitSpawn is called in git-command.helper.ts:39, git-write.ts:150, wip-engine/git-command.ts… (2) unit-ref-rename.service.ts:21,24 imports and calls noteGitSpawn (3) git-read.helper.spec.ts :65 and :77 pass, absent observer returns plain answers (:38) — Spawn seam and read cache verified.
 
 ### S2 — Memoise what does not change within one invocation
 - **Status**: review
