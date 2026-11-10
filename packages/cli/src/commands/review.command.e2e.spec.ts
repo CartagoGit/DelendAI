@@ -205,6 +205,7 @@ describe('delendai review', () => {
 		const { ctx } = contextFor(root, [{ id: 'x00001' }]);
 		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
 			worktree: string;
+			session: string;
 		};
 		const released = (
 			await run(
@@ -214,7 +215,8 @@ describe('delendai review', () => {
 				'--agent=minimax-m3',
 				'--note=cannot run its gate here',
 			)
-		).data as { unit: string };
+		).data as { unit: string; next: string };
+		expect(released.next).toContain(`--session=${first.session}`);
 		expect(released.unit).toContain('/review/batch-all-g1/');
 		const reviewUnits = git(root, 'worktree', 'list', '--porcelain')
 			.split('\n')
