@@ -158,6 +158,8 @@ export const createWorkCommand = (): ICliCommand => ({
 				? here
 				: [...here, '--slice=all'];
 			return deliverUnit({
+				slice: scalarArg(withSlice, 'slice') ?? 'all',
+				publish: () => runWorkUnit(['publish', ...withSlice], ctx),
 				locate: () =>
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
 				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
