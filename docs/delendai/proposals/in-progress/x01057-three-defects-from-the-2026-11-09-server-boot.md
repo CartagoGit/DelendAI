@@ -2,14 +2,14 @@
 id: x01057
 title: "Three defects from the 2026-11-09 server boot"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-09
-last-transition-id: 8f2f8381-9124-4e77-afac-78f29519fc92
-last-correlation-id: 8f2f8381-9124-4e77-afac-78f29519fc92
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:41:56.200Z
+last-transition-id: 2ede19a7-bc8a-48b0-bbc6-28b7bf47967b
+last-correlation-id: 2ede19a7-bc8a-48b0-bbc6-28b7bf47967b
+last-transition-from: review
+last-transition-at: 2026-11-10T07:41:46.283Z
 ---
 
 # x01057 — Three defects from the 2026-11-09 server boot
