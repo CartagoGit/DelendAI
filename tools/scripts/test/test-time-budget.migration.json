@@ -224,7 +224,6 @@
 		"packages/cli/src/lib/stale-build.service.spec.ts",
 		"packages/cli/src/lib/stdio-context.factory.spec.ts",
 		"packages/cli/src/lib/validate-run.service.spec.ts",
-		"packages/cli/src/lib/work-deliver.service.spec.ts",
 		"packages/cli/src/lib/work-progress.service.spec.ts",
 		"packages/client/src/tests/create-plugin-script.spec.ts",
 		"packages/client/src/tests/namespace-aware-services.spec.ts",
