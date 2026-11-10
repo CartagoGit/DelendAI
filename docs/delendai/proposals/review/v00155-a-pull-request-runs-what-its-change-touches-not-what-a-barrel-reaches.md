@@ -76,7 +76,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts site/pack-smoke/build-clean/verify-runtime carry surface: PUBLIC_ENTRY_FILES plus BUILD_INPUTS matches; delendai-rebuild-digest matches o… (2) job-scope.script.spec.ts 'runs the four that read a public surface when the barrel gained an export (#1838)' and 'runs none of them for a change inside a modul… — packaging jobs gated by surface: PUBLIC_ENTRY_FILES + surfaceMovedSince
 
 ### S4 — Fewer jobs: the lint jobs that run together share one setup
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/ci-static-steps.ts`, `tools/scripts/ci/ci-static-steps.spec.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/lint/job-scope-coverage.script.ts`
 - **Gate**: none
@@ -84,8 +84,10 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "The lint jobs that run together are one job with one setup; a separate check name remains only where branch protection requires it."
   - "The proposal states the runner-minutes of a PR 1838-like change before and after."
 - shipped-in: `9de3ef6d07f0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) .github/workflows/ci.yml:78 static-checks job; job-scope.constant.ts:208 group of eight checks; required checks are only delendai-validate and CodeQL; ci-stati… (2) ledger section: 1,890 runner-seconds before, about 960 after, per-job table (estimate from measured durations, stated as such) — static-checks job groups eight lints with one setup; ledger states 1,890 -> ~960 runner-seconds
 
 ## acceptance
 
