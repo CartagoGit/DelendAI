@@ -291,7 +291,7 @@ const dirtinessFindings = async (
 			phase: 'checkout',
 			kind: 'note',
 			subject: `${String(dirty.length)} path(s)`,
-			message: `The shared checkout has ${String(dirty.length)} uncommitted path(s): ${String(generated.length)} generated, ${String(authored.length)} authored. NOTHING was reverted — an authored path is somebody's unpublished work, and the generated ones are returned by \`forge:release\`, never by tidying the tree by hand.`,
+			message: `The shared checkout has ${String(dirty.length)} uncommitted path(s): ${String(generated.length)} generated, ${String(authored.length)} authored. NOTHING was reverted — an authored path is somebody's unpublished work, and \`delendai work rescue\` keeps every one under a ref before it restores the tree, never tidying it by hand.`,
 			detail: {
 				generated: generated.join(', '),
 				authored: authored.join(', '),

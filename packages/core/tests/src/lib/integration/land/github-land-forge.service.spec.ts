@@ -84,6 +84,34 @@ describe('the GitHub land forge', () => {
 		).toEqual([8]);
 	});
 
+	it('[<12ms] reads every page of pull requests and check runs', async () => {
+		const pullsOn = (page: number) =>
+			Array.from({ length: page === 1 ? 100 : 1 }, (_, i) => ({
+				...rawPull,
+				number: page * 1000 + i,
+			}));
+		const { forge, calls } = harness((call) => {
+			if (call.includes('compare/'))
+				return json({ merge_base_commit: { sha: 'b' } });
+			const page = Number(/[?&]page=(\d+)/u.exec(call)?.[1]);
+			if (call.includes('check-runs'))
+				return json({
+					check_runs: Array.from(
+						{ length: page === 1 ? 100 : 2 },
+						(_, i) => ({
+							name: `c${String(page)}-${String(i)}`,
+							conclusion: 'success',
+						}),
+					),
+				});
+			return json(pullsOn(page));
+		});
+		expect(await forge.openPullRequests()).toHaveLength(101);
+		expect(await forge.checks('abc')).toHaveLength(102);
+		expect(calls.some((call) => call.includes('page=2'))).toBe(true);
+		expect(calls.some((call) => call.includes('page=3'))).toBe(false);
+	});
+
 	it('[<12ms] reads the tip, the required checks and a head’s check runs', async () => {
 		const { forge } = harness((call) => {
 			if (call.includes('repos/o/r/branches/develop')) {

@@ -9,3 +9,7 @@ export const LAND_RECORD_PREFIX = 'land-record: ';
 export const LAND_QUEUE_SEGMENT = 'queue';
 /** Most pull requests one batch carries unless the project says otherwise. */
 export const LAND_BATCH_CAPACITY = 8;
+/** Items per page of a forge listing: the most GitHub serves. */
+export const LAND_PAGE_SIZE = 100;
+/** Pages read of one listing before the pass gives up rather than loop. */
+export const LAND_MAX_PAGES = 50;

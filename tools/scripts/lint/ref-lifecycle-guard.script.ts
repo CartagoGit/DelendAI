@@ -41,6 +41,7 @@ import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
+	retiredMachineryPrefixes,
 	shortName as shortRef,
 } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { carriesNothingBeyond } from '@delendai/core/lib/work-units/landed-work.service';
@@ -443,6 +444,27 @@ export const deleteForgeBranch = (
 	}
 };
 
+/**
+ * Whether every commit `sha` reaches is also reached by one of `holders`,
+ * read in this clone; false when it cannot tell (an object it lacks), so
+ * a ref that cannot be checked is kept and reported.
+ */
+export const holdsNothingOfItsOwn = (
+	sha: string,
+	holders: readonly string[],
+	run: (args: readonly string[]) => string = (args) =>
+		execFileSync('git', [...args], {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim(),
+): boolean => {
+	try {
+		return run(['rev-list', '--count', sha, '--not', ...holders]) === '0';
+	} catch {
+		return false;
+	}
+};
+
 const main = (): void => {
 	const branches = declaredBranches(repoRoot());
 	const observed = (
@@ -480,7 +502,27 @@ const main = (): void => {
 				return status === 'behind' || status === 'identical';
 			},
 		});
+	// What every commit of a retired ref must already be in: the
+	// integration branch and every work and publication ref.
+	const holders = observed
+		.filter(
+			(branch) =>
+				branch.name === branches.integration ||
+				workPrefixes.some((prefix) => branch.name.startsWith(prefix)) ||
+				publicationPrefixes.some((prefix) =>
+					branch.name.startsWith(prefix),
+				),
+		)
+		.map((branch) => branch.sha);
+	const retired = retiredMachineryPrefixes(branches);
 	const refs = observed.map((branch) => {
+		if (retired.some((prefix) => branch.name.startsWith(prefix))) {
+			return {
+				name: branch.name,
+				sha: branch.sha,
+				contained: holdsNothingOfItsOwn(branch.sha, holders),
+			};
+		}
 		if (!workPrefixes.some((prefix) => branch.name.startsWith(prefix))) {
 			return { name: branch.name, sha: branch.sha };
 		}

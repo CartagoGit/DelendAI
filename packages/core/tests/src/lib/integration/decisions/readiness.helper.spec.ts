@@ -14,6 +14,7 @@ const base: IPullRequestChecks = {
 		{ name: 'CodeQL', conclusion: 'success' },
 	],
 	required: ['delendai-validate', 'CodeQL'],
+	withoutChecks: false,
 	labels: [],
 	blockingLabels: ['needs update'],
 };
@@ -51,6 +52,13 @@ describe('pullRequestReady', () => {
 			false,
 		);
 		expect(pullRequestReady({ ...base, labels: ['docs'] })).toBe(true);
+	});
+
+	it('[<5ms] no required check is not green unless the policy opts in', () => {
+		expect(pullRequestReady({ ...base, required: [] })).toBe(false);
+		expect(
+			pullRequestReady({ ...base, required: [], withoutChecks: true }),
+		).toBe(true);
 	});
 
 	it('[<5ms] is deterministic for the same facts', () => {
