@@ -60,18 +60,18 @@ describe('workflow-history-depth (x00583)', () => {
 
 	it('follows one level into the script a job invokes', () => {
 		// The rule would not have caught its own motivating example
-		// otherwise: that merge ran inside `forge:refresh`, two levels
+		// otherwise: that merge ran inside the old candidate refresh, two levels
 		// from the workflow.
 		const source = workflow(
 			job(
 				'indirect',
-				'            - uses: actions/checkout@v7\n            - run: bun run forge:refresh',
+				'            - uses: actions/checkout@v7\n            - run: bun run forge:forward-sync',
 			),
 		);
 		const found = findShallowHistoryJobs(
 			[{ file: 'probe.yml', source }],
 			(name) =>
-				name === 'forge:refresh'
+				name === 'forge:forward-sync'
 					? // The argv form a real script uses.
 						"run(['-c', 'core.hooksPath=/dev/null', 'merge', ref])"
 					: undefined,
@@ -168,11 +168,11 @@ describe('workflow-history-depth (x00583)', () => {
 
 	it('resolves both spellings of an invocation', () => {
 		const seen = invokedSources(
-			'run: bun run forge:refresh\nrun: bun tools/scripts/git/x.script.ts',
+			'run: bun run forge:forward-sync\nrun: bun tools/scripts/git/x.script.ts',
 			(name) => `source-of:${name}`,
 		);
 		expect(seen).toEqual([
-			'source-of:forge:refresh',
+			'source-of:forge:forward-sync',
 			'source-of:tools/scripts/git/x.script.ts',
 		]);
 	});

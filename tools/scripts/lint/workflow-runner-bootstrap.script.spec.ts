@@ -199,7 +199,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 		// checkout + Bun, no install, and a reaper whose graph reaches
 		// `@modelcontextprotocol/sdk` through core.
 		const findings = analyseJobs(
-			'keep-the-queue-moving.yml',
+			'land.yml',
 			workflow([
 				...step(['uses: actions/checkout@v7']),
 				...step(['uses: oven-sh/setup-bun@v2']),
@@ -220,7 +220,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 	it('accepts the same step after the composite action that installs', () => {
 		expect(
 			analyseJobs(
-				'keep-the-queue-moving.yml',
+				'land.yml',
 				workflow([
 					...step(['uses: actions/checkout@v7']),
 					...step(['uses: ./.github/actions/setup-bun-repo']),
