@@ -29,7 +29,7 @@ const OLD_UNIT =
 	'refs/heads/delendai/wip/claude-opus-5-5/implement/f00808-S2-g1/guards';
 
 describe('owned work-ref parser', () => {
-	it('lists the current shape first, then each former one', () => {
+	it('[<20ms] lists the current shape first, then each former one', () => {
 		const shapes = ownedWorkRefShapes(transition);
 		expect(shapes.map((shape) => [shape.prefix, shape.current])).toEqual([
 			['heads/wip/', true],
@@ -40,7 +40,7 @@ describe('owned work-ref parser', () => {
 		);
 	});
 
-	it('recognises both prefixes in the transition, as one identity', () => {
+	it('[<20ms] recognises both prefixes in the transition, as one identity', () => {
 		const parser = compileOwnedWorkRefParser(transition);
 		const fresh = parser?.parse(NEW_UNIT);
 		const old = parser?.parse(OLD_UNIT);
@@ -55,7 +55,7 @@ describe('owned work-ref parser', () => {
 		]);
 	});
 
-	it('places a branch under its own namespace, and nothing foreign', () => {
+	it('[<20ms] places a branch under its own namespace, and nothing foreign', () => {
 		expect(ownedWorkRefShapeOf(transition, OLD_UNIT)?.current).toBe(false);
 		expect(
 			ownedWorkRefShapeOf(transition, 'wip/a/implement/x-S1-g1/t')
@@ -64,7 +64,7 @@ describe('owned work-ref parser', () => {
 		expect(ownedWorkRefShapeOf(transition, 'feature/mine')).toBeUndefined();
 	});
 
-	it('maps each publication prefix to the work shape of its namespace', () => {
+	it('[<20ms] maps each publication prefix to the work shape of its namespace', () => {
 		expect(
 			workShapeOfPublication(
 				transition,
@@ -78,7 +78,7 @@ describe('owned work-ref parser', () => {
 		expect(workShapeOfPublication(transition, 'main')).toBeUndefined();
 	});
 
-	it('reads only the current namespace when none was left', () => {
+	it('[<20ms] reads only the current namespace when none was left', () => {
 		const plain = resolveDevelopmentPolicy({
 			development: { branches: { namespacePrefix: 'delendai' } },
 		}).branches;
@@ -110,7 +110,7 @@ describe('a unit in its own namespace', () => {
 });
 
 describe('owned shapes at the edges', () => {
-	it('owns nothing without a template, and one shape for a template outside its prefix', () => {
+	it('[<20ms] owns nothing without a template, and one shape for a template outside its prefix', () => {
 		expect(
 			ownedWorkRefShapes({ ...transition, workRefTemplate: '' }),
 		).toEqual([]);
@@ -122,7 +122,7 @@ describe('owned shapes at the edges', () => {
 		).toHaveLength(1);
 	});
 
-	it('reads a former publication in its own namespace', () => {
+	it('[<20ms] reads a former publication in its own namespace', () => {
 		const own = branchesForRef(
 			transition,
 			'delendai/pr/claude-opus-5-5/implement/f00808-S2-g1/guards',
@@ -131,7 +131,7 @@ describe('owned shapes at the edges', () => {
 		expect(branchesForRef(transition, 'feature/mine')).toBe(transition);
 	});
 
-	it('finds no owned shape for a branch outside every namespace', () => {
+	it('[<20ms] finds no owned shape for a branch outside every namespace', () => {
 		expect(workShapeOfPublication(transition, 'feature/x')).toBeUndefined();
 		expect(ownedWorkRefShapeOf(transition, 'pr/x')).toBeUndefined();
 	});
