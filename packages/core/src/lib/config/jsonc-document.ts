@@ -148,27 +148,6 @@ const memberExists = (
 	return cursor !== undefined;
 };
 
-/**
- * The offset where `path`'s member starts, once it exists — the anchor
- * a leading comment is written above.
- *
- * Resolved through the parse tree rather than by searching the text for
- * the quoted key: the same key name legitimately appears under several
- * parents (every plugin has an `enabled`), so a textual search would
- * anchor the comment to whichever one happened to come last.
- */
-const findMemberOffset = (
-	text: string,
-	path: readonly (string | number)[],
-): number | undefined => {
-	const root = parseTree(text, [], { allowTrailingComma: true });
-	if (root === undefined) return undefined;
-	const node = findNodeAtLocation(root, [...path]);
-	if (node?.parent?.type !== 'property') return undefined;
-	// The property node spans `"key": value`; its start is the key.
-	return node.parent.offset;
-};
-
 /** The whitespace prefix of the line containing `offset`. */
 const indentAt = (text: string, offset: number): string => {
 	const lineStart = text.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
@@ -176,19 +155,48 @@ const indentAt = (text: string, offset: number): string => {
 	return match?.[0] ?? '';
 };
 
-const insertLeadingComment = (
+/**
+ * Write each comment block above its member, all from one parse: one
+ * parse per comment made a config with a commented block per plugin
+ * quadratic in its size. Inserted from the last offset to the first, so
+ * an insertion never moves an anchor still to come.
+ *
+ * Anchored through the parse tree rather than by searching the text for
+ * the quoted key: the same key legitimately appears under several parents
+ * (every plugin has an `enabled`).
+ */
+const insertLeadingComments = (
 	text: string,
-	path: readonly (string | number)[],
-	lines: readonly string[],
+	comments: readonly {
+		readonly path: readonly (string | number)[];
+		readonly lines: readonly string[];
+	}[],
 	eol: string,
 ): string => {
-	if (lines.length === 0) return text;
-	const offset = findMemberOffset(text, path);
-	if (offset === undefined) return text;
-	const lineStart = text.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
-	const indent = indentAt(text, offset);
-	const block = lines.map((line) => `${indent}// ${line}`).join(eol) + eol;
-	return text.slice(0, lineStart) + block + text.slice(lineStart);
+	const wanted = comments.filter((comment) => comment.lines.length > 0);
+	if (wanted.length === 0) return text;
+	const root = parseTree(text, [], { allowTrailingComma: true });
+	if (root === undefined) return text;
+	const anchored = wanted.flatMap((comment) => {
+		const node = findNodeAtLocation(root, [...comment.path]);
+		// The property node spans `"key": value`; its start is the key.
+		return node?.parent?.type === 'property'
+			? [{ offset: node.parent.offset, lines: comment.lines }]
+			: [];
+	});
+	let current = text;
+	for (const { offset, lines } of anchored.sort(
+		(a, b) => b.offset - a.offset,
+	)) {
+		const lineStart =
+			current.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
+		const indent = indentAt(current, offset);
+		const block =
+			lines.map((line) => `${indent}// ${line}`).join(eol) + eol;
+		current =
+			current.slice(0, lineStart) + block + current.slice(lineStart);
+	}
+	return current;
 };
 
 /**
@@ -203,6 +211,10 @@ export const applyJsoncEdits = (
 	const formattingOptions = toFormattingOptions(text);
 	const eol = detectEol(text);
 	let current = text;
+	const comments: {
+		readonly path: readonly (string | number)[];
+		readonly lines: readonly string[];
+	}[] = [];
 	for (const edit of edits) {
 		const isNewMember = !memberExists(current, edit.path);
 		current = applyEdits(
@@ -212,13 +224,8 @@ export const applyJsoncEdits = (
 			}),
 		);
 		if (isNewMember && edit.leadingComment !== undefined) {
-			current = insertLeadingComment(
-				current,
-				edit.path,
-				edit.leadingComment,
-				eol,
-			);
+			comments.push({ path: edit.path, lines: edit.leadingComment });
 		}
 	}
-	return current;
+	return insertLeadingComments(current, comments, eol);
 };
