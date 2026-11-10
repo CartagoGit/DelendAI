@@ -41,7 +41,7 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - **Gate**: type
 - acceptance:
   - "`near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source, the specs that import a changed file by path, and the specs the read map records reading one (near-specs.spec.ts), and `bun run prove` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts)."
-- shipped-in: `4bd7c10993ec`
+- shipped-in: `b8f7509b6`
 - review-state: changes_requested
 - review-implementer: claude-opus-5-5
 - review-reviewer: gpt-5.3-codex
