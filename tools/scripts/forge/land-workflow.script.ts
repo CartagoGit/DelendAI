@@ -7,7 +7,7 @@
  * `development.integration.engine` is `land`, and the protocol the policy
  * records is the one this code speaks.
  */
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 import {
 	INTEGRATION_PROTOCOL_VERSION,
@@ -72,6 +72,17 @@ export const expectedLandWorkflow = (
 		? renderLandWorkflow(REPO_LAND_WORKFLOW)
 		: undefined;
 
+/** The committed file, or `undefined` when there is none: one read, no check before it. */
+const readCommitted = (path: string): string | undefined => {
+	try {
+		return readFileSync(path, 'utf8');
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+			return undefined;
+		throw error;
+	}
+};
+
 if (import.meta.main) {
 	const development = readDevelopmentConfig();
 	const recorded = resolveDevelopmentPolicy(development).integration.protocol;
@@ -82,9 +93,7 @@ if (import.meta.main) {
 		process.exit(1);
 	}
 	const expected = expectedLandWorkflow(development);
-	const committed = existsSync(LAND_WORKFLOW_PATH)
-		? readFileSync(LAND_WORKFLOW_PATH, 'utf8')
-		: undefined;
+	const committed = readCommitted(LAND_WORKFLOW_PATH);
 	if (process.argv.includes('--check')) {
 		const same = committed === expected;
 		if (!same)

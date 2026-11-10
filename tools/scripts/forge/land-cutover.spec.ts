@@ -89,11 +89,23 @@ const tracked = (): readonly string[] =>
 		.split('\n')
 		.filter((path) => path !== '' && !UNSCANNED.has(path));
 
+/** A tracked file's text; `undefined` for one deleted in the working tree. */
+const readTracked = (path: string): string | undefined => {
+	try {
+		return readFileSync(join(ROOT, path), 'utf8');
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+			return undefined;
+		throw error;
+	}
+};
+
 describe('the cutover to land', () => {
 	it('[<1500ms] leaves no workflow, script or host module referencing the removed mechanism', () => {
 		const found = tracked().flatMap((path) => {
-			if (!existsSync(join(ROOT, path))) return [];
-			return readFileSync(join(ROOT, path), 'utf8')
+			const text = readTracked(path);
+			if (text === undefined) return [];
+			return text
 				.split('\n')
 				.flatMap((line, index) =>
 					REFERENCE.test(line)
