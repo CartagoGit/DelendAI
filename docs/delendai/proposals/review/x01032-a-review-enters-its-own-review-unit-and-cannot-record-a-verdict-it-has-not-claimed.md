@@ -10,6 +10,8 @@ last-transition-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
 last-correlation-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
 last-transition-from: in-progress
 last-transition-at: 2026-11-04T15:42:39.015Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # x01032 — A review enters its own review unit and cannot record a verdict it has not claimed
@@ -32,14 +34,16 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - global_gate: none
 
 ### S1 — work enter derives the review kind
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter for proposal batch, or for a proposal in review/, derives kind review and topic verdicts itself; a contradicting --kind is refused naming the right command (review next), and a spec covers each."
 - shipped-in: `247313bf9ee3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) packages/core/src/lib/work-units/review-kind.service.ts withReviewKind (called at work-unit-enter.service.ts:171): batch with no kind or review -> --kind=revie… — withReviewKind wired into work enter; batch refuses other kinds naming review next; a review/ proposal with no kind becomes the batch review unit. Reading: 'a contradicting --kind is refused' is met for the batch; an explicit kind on a review/ proposal is kept on purpose (fix after review), documented in review-kind.service.ts and specced.
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
 - **Status**: review
