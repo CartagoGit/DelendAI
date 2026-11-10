@@ -377,7 +377,6 @@
 		"packages/core/tests/src/lib/config/capability-graph.spec.ts",
 		"packages/core/tests/src/lib/config/detect-stack-polyglot.spec.ts",
 		"packages/core/tests/src/lib/config/detect-stack.spec.ts",
-		"packages/core/tests/src/lib/config/jsonc-document.spec.ts",
 		"packages/core/tests/src/lib/configuration-center/configuration-center.e2e.spec.ts",
 		"packages/core/tests/src/lib/configuration-center/configuration-center.tool.spec.ts",
 		"packages/core/tests/src/lib/configuration-center/first-party-metadata.spec.ts",
