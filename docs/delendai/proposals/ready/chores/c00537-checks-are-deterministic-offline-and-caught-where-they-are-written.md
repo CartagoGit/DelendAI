@@ -94,6 +94,16 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
   - "An over-budget test fails on CI. A run anywhere else reports over-budget tests as one summary of warnings and never fails on them (wall time there measures that machine); a missing or malformed budget fails everywhere. Local detection is GITHUB_ACTIONS until the shared isRunningInProjectCi reader (i00005) lands"
   - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, with the config line a consuming project adds"
 
+### S8 — init renders its config in linear time, once per process
+- **Status**: pending
+- **Files**: `packages/core/src/lib/config/jsonc-document.ts`, `packages/core/src/lib/plugins/config-block-docs.ts`, `packages/core/tests/src/lib/config/jsonc-document.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "applyJsoncEdits inserts every leading comment from one parse after the value edits, not one parse per comment, and each comment stays above its own member"
+  - "A comment queued for a member a later edit removed is not written"
+  - "The config-block comments are derived from the schema once per process"
+  - "Profiled over six init runs, renderInitBundle no longer appears among the costly frames; what remains of an init run is file I/O (atomic writes, fsync, file mutex), which is S6's"
+
 ## acceptance
 
 - The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier
