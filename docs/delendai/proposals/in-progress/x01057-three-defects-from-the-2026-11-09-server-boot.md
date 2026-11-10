@@ -87,6 +87,13 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - acceptance:
   - "When a review claim's git call times out under load, the tool checks whether the claim commit landed and reports the claim as held when it did, instead of 'Could not claim'."
 
+### S8 — A failed proof step keeps its whole output
+- **Status**: pending
+- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Every step a proof runs that fails writes its whole output to a file of its own under .cache/delendai/results/logs/prove-failed/, and the proof names that file among its causes, so a failure seen once can be read again: the cause lines name a failing test without its assertion, and a caller keeps only the tail of the proof."
+
 ## acceptance
 
 - A server that finds the maintainer lease held by a pid that is dead on the same host takes it over and says so once.
