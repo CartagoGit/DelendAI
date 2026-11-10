@@ -61,15 +61,17 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) queue-order.ts runTrain culprit branch returns before ports.blame when ports.trainFault (requiredChecksVerdict on member head, keep-the-queue-moving.script.ts)… (2) keep-the-queue-moving reportTrainRed creates or edits the single 'merge train red on its own checks' issue; train-fallback.ts reportTrainRed calls fail() so me… (3) queue-order.spec cases trainFault ['lint-governance'] (exonerated, line 261) and trainFault undefined (blamed, line 293), green — runTrain consults trainFault before blame; one issue; members land individually; both cases specced
 
 ### S3 — CI detection is agnostic
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/cli.ts`
 - **Gate**: none
 - acceptance:
   - "One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set"
   - "The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up"
 - shipped-in: `9bddbd7dfcc6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 2/2: (1) packages/core/src/lib/work-identity/ci-environment.helper.ts ciEnvironmentMarker/isRunningInProjectCi: provider vars + DELENDAI override first, CI=true/1 only … (2) recorded as a follow-up in the proposal Notes (S3 bullet) — ci-environment.helper.ts is the one reader, exported from cli.ts; PR 1841 adoption recorded as follow-up
 
 ## acceptance
 
