@@ -38,6 +38,7 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - **Status**: pending
 - **Files**: `vitest.shared.ts`, `tools/scripts/report/token-budget-dashboard.e2e.spec.ts`
 - **Gate**: none
+- shipped-in: `5a9224bac`
 - acceptance:
   - "A spec carrying the @delendai-isolate pragma is listed by isolatedSpecs and runs in the isolated project; the token budget e2e spec carries it and passes in the full tools 2/4 spec list with 125 swarm tools."
 
@@ -45,6 +46,7 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/blob-upload-on-failure.spec.ts`
 - **Gate**: none
+- shipped-in: `9b0900152`
 - acceptance:
   - "The step that uploads a zone's coverage blob runs even when the zone failed, so the merge judges the run from every zone that ran; a spec reads ci.yml and says so."
   - "A zone that produced no report at all does not fail the upload: the merge already names the zone that is missing."
