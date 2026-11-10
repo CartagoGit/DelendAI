@@ -1,5 +1,6 @@
 /**
- * Contract shapes for `./culprit`: a train, its steps and its verdicts.
+ * Contract shapes for `./culprit`: a batch member, and the integration
+ * branch's certification.
  */
 
 /**
@@ -14,23 +15,6 @@ export type IIntegrationCertification =
 	| 'pending'
 	| 'red'
 	| 'uncertified';
-
-/**
- * What the queue does with a train: land the members whose train passed
- * (naming a culprit when bisection isolated one beside them), dispatch the
- * full run of a train that has none, wait for one that is running, report
- * the member whose train of one is red, or nothing when there is no train.
- */
-export type ITrainStep =
-	| {
-			readonly kind: 'land';
-			readonly members: readonly number[];
-			readonly culprit?: number;
-	  }
-	| { readonly kind: 'dispatch'; readonly members: readonly number[] }
-	| { readonly kind: 'wait'; readonly members: readonly number[] }
-	| { readonly kind: 'culprit'; readonly number: number }
-	| { readonly kind: 'none' };
 
 /** A train candidate: its number, branch and current head. */
 export interface ITrainCandidate {

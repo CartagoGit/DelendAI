@@ -51,7 +51,11 @@ import type {
 	IRefVerdict,
 	IRefRole,
 } from './reconcile.interface';
-import { shortName as shortenRef } from '../integration/decisions/namespaces.helper';
+import {
+	ownedBatchPrefixes,
+	retiredMachineryPrefixes,
+	shortName as shortenRef,
+} from '../integration/decisions/namespaces.helper';
 
 export type {
 	IObservedPullRequest,
@@ -124,6 +128,25 @@ const roleOf = (
 			role: 'foreign',
 			reason: 'created by automation delendai does not own — reported, never reaped',
 		};
+	}
+	if (retiredMachineryPrefixes(branches).some((p) => name.startsWith(p))) {
+		return ref.contained === true
+			? {
+					role: 'retired-machinery',
+					reason: 'left by machinery that no longer exists, and every commit it holds is held elsewhere: deleting it loses nothing',
+				}
+			: {
+					role: 'retired-machinery-holding',
+					reason: 'left by machinery that no longer exists, and it may hold the only copy of a commit: check it, then publish or delete it deliberately',
+				};
+	}
+	if (ownedBatchPrefixes(branches).some((p) => name.startsWith(p))) {
+		return request?.state === 'open'
+			? { role: 'batch-open', reason: 'a land batch under test' }
+			: {
+					role: 'batch-spent',
+					reason: 'a land batch whose pull request is settled: its members keep their own branches',
+				};
 	}
 	if (inNamespace(name, branches.workRefPrefix)) {
 		if (ref.publishedIn !== undefined) {
@@ -230,7 +253,10 @@ export const reconcileRefs = (
 		// loses nothing.
 		reapable: verdicts.filter(
 			(v) =>
-				v.role === 'publication-spent' || v.role === 'work-published',
+				v.role === 'publication-spent' ||
+				v.role === 'work-published' ||
+				v.role === 'batch-spent' ||
+				v.role === 'retired-machinery',
 		),
 		// A published work branch is also a violation until removed: the
 		// flow is "publish, then delete the work branch", and a copy left
@@ -240,7 +266,9 @@ export const reconcileRefs = (
 				v.role === 'unmanaged' ||
 				v.role === 'publication-unclaimed' ||
 				v.role === 'work-abandoned' ||
-				v.role === 'work-published',
+				v.role === 'work-published' ||
+				v.role === 'retired-machinery' ||
+				v.role === 'retired-machinery-holding',
 		),
 		retirable: verdicts.filter((v) => {
 			if (v.role !== 'publication-closed') return false;
