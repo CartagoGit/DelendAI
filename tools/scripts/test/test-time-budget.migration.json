@@ -2384,7 +2384,6 @@
 		"tools/scripts/lint/types-in-contracts.script.spec.ts",
 		"tools/scripts/lint/unregistered-tools.script.spec.ts",
 		"tools/scripts/lint/user-markers.script.spec.ts",
-		"tools/scripts/lint/verdicts-through-the-tool.script.spec.ts",
 		"tools/scripts/lint/web-absolute-api-urls.spec.ts",
 		"tools/scripts/lint/workflow-command-duplication.script.spec.ts",
 		"tools/scripts/lint/workflow-history-depth.script.spec.ts",
