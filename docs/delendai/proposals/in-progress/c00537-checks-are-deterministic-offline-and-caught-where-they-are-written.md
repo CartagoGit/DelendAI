@@ -77,7 +77,7 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 ### S6 — The slowest specs become near-instant with test-kit
 - **Status**: pending
 - **DependsOn**: [S7]
-- **Files**: `packages/core/tests/src/lib/development-policy/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/lib/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`
+- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
