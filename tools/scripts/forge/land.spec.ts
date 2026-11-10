@@ -15,7 +15,11 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-import { LAND_WORKFLOW_PATH, REPO_LAND_WORKFLOW } from './land-workflow.script';
+import {
+	expectedLandWorkflow,
+	LAND_WORKFLOW_PATH,
+	REPO_LAND_WORKFLOW,
+} from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
 
@@ -62,6 +66,39 @@ describe('land', () => {
 		expect(world.mergeCalls).toEqual([{ number: n, sha: lone(n).headSha }]);
 		expect(lone(n).merged).toBe(true);
 		expect(world.tree()['a/x.ts']).toBe('1');
+	});
+
+	it('[<8ms] reports what merged as typed fields, and "not merged" as nothing', async () => {
+		const { world, pass, lone } = setup();
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.beforeMerge = () => {
+			lone(n).headSha = 'moved-head';
+			world.beforeMerge = undefined;
+		};
+		const refused = await pass();
+		expect(refused.actions.join('\n')).toContain('not merged');
+		expect(refused.mergedCount).toBe(0);
+		expect(refused.mergedPRs).toEqual([]);
+		world.ci();
+		const merged = await pass();
+		expect(merged.mergedCount).toBe(1);
+		expect(merged.mergedPRs).toEqual([n]);
+		expect(merged.tipSha).toBe(world.tip);
+	});
+
+	it('[<8ms] lands nothing with no required check unless the policy opts in', async () => {
+		const bare = { ...REPO_CONFIG, requiredChecks: [] };
+		const { world, pass } = setup({}, {}, bare);
+		world.requiredNames = [];
+		world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		expect((await pass()).mergedCount).toBe(0);
+		const opted = setup({}, {}, { ...bare, withoutChecks: true });
+		opted.world.requiredNames = [];
+		opted.world.addPull({ 'a/x.ts': '1' });
+		opted.world.ci();
+		expect((await opted.pass()).mergedCount).toBe(1);
 	});
 
 	it('[<8ms] waits for the required checks and skips drafts', async () => {
@@ -121,6 +158,34 @@ describe('land', () => {
 		expect(git.treeOf(await forge.integrationTip())).toBe(
 			git.treeOf(batch?.headSha ?? ''),
 		);
+	});
+
+	it('[<24ms] merges nothing more when the tree would differ from the tested one', async () => {
+		const { world, pass, open, lone } = setup();
+		world.addPull({ 'a/one.ts': '1' });
+		const two = world.addPull({ 'a/two.ts': '2' });
+		world.ci();
+		await pass();
+		world.ci();
+		// The first member merges, the second is refused once ...
+		world.beforeMerge = (n) => {
+			if (n === two) {
+				lone(two).state = 'closed';
+				world.beforeMerge = undefined;
+			}
+		};
+		await pass();
+		lone(two).state = 'open';
+		// ... and the branch gains a commit the batch never tested.
+		world.push({ 'b/other.ts': 'x' });
+		const calls = world.mergeCalls.length;
+		const report = await pass();
+		expect(world.mergeCalls).toHaveLength(calls);
+		expect(report.mergedCount).toBe(0);
+		expect(report.actions.join('\n')).toContain(
+			'the tree would differ from the tested one',
+		);
+		expect(open()).toHaveLength(0);
 	});
 
 	it('[<9ms] labels the culprit of a red batch and batches the rest once', async () => {
@@ -314,19 +379,47 @@ describe('the land workflow template', () => {
 		);
 	});
 
-	it("[<5ms] renders another project's branch, switch and follow-up", () => {
+	it("[<5ms] renders another project's branches, phases and upkeep", () => {
 		const text = renderLandWorkflow({
 			...REPO_LAND_WORKFLOW,
 			integrationBranch: 'trunk',
-			engineVariable: 'MY_ENGINE',
-			afterMergeWorkflows: ['build.yml'],
+			releaseBranch: 'stable',
 			passCommand: 'npx tool land',
+			promotionCommand: 'npx tool promote',
+			upkeep: [{ name: 'Tidy', run: 'npx tool tidy' }],
 		});
-		expect(text).toContain('branches: [trunk]');
-		expect(text).toContain("vars.MY_ENGINE == 'land'");
+		expect(text).toContain('branches: [trunk, stable]');
 		expect(text).toContain(
-			'gh workflow run build.yml --repo "$GITHUB_REPOSITORY" --ref trunk',
+			"github.event.workflow_run.head_branch == 'trunk'",
 		);
-		expect(text).not.toContain('develop');
+		expect(text).toContain("github.ref_name == 'stable'");
+		expect(text).toContain('run: npx tool promote');
+		expect(text).toContain('run: npx tool tidy');
+		expect(text).not.toMatch(/\bdevelop\b/u);
+		expect(text).not.toContain('vars.');
+	});
+
+	it('[<5ms] leaves out the phases a project does not declare', () => {
+		const {
+			promotionCommand: _promotion,
+			forwardSyncCommand: _forwardSync,
+			...bare
+		} = REPO_LAND_WORKFLOW;
+		const text = renderLandWorkflow({ ...bare, upkeep: [] });
+		expect(text).toContain('    land:');
+		expect(text).not.toContain('    promote:');
+		expect(text).not.toContain('    forward-sync:');
+		expect(text).not.toContain('    upkeep:');
+	});
+
+	it('[<5ms] exists only while the policy names land the engine', () => {
+		const engine = (value: string) => ({
+			development: { integration: { engine: value } },
+		});
+		expect(expectedLandWorkflow(engine('land'))).toBe(
+			renderLandWorkflow(REPO_LAND_WORKFLOW),
+		);
+		expect(expectedLandWorkflow(engine('none'))).toBeUndefined();
+		expect(expectedLandWorkflow({})).toBeUndefined();
 	});
 });

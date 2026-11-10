@@ -21,6 +21,7 @@ import {
 } from './work-unit-shared.service';
 import { reapHusks } from './worktree-husks.service';
 import { reapStrayRefs } from './stray-refs-reap.service';
+import { reapRetiredMachinery } from './retired-machinery-reap.service';
 
 /**
  * `work reap [--apply]` — remove the worktree and local branch of every
@@ -29,7 +30,9 @@ import { reapStrayRefs } from './stray-refs-reap.service';
  * such a directory held that no commit has; and drop from the forge the
  * retired work the integration branch came to hold, the slice
  * reservations and review claims whose unit is gone, and the refs
- * outside every namespace that carry no work; and give back the
+ * outside every namespace that carry no work, with what the retired
+ * queue left (train branches, scratch worktrees) once it holds nothing of
+ * its own; and give back the
  * dependencies of the kept units nobody works on. Reports only, without
  * `--apply`.
  */
@@ -125,6 +128,12 @@ export const reaped = async (
 		remote,
 		apply: args.includes('--apply'),
 	});
+	// What the retired queue left here: train branches and scratch worktrees.
+	const machinery = reapRetiredMachinery({
+		root,
+		policy: opened.policy,
+		apply: args.includes('--apply'),
+	});
 	return {
 		code: EXIT_CODE.OK,
 		data: {
@@ -136,6 +145,7 @@ export const reaped = async (
 			retired,
 			reservations,
 			strays,
+			machinery,
 		},
 	};
 };
