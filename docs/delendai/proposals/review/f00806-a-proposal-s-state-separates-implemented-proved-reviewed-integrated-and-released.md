@@ -10,6 +10,8 @@ last-transition-id: 947c1f72-3b49-4761-ab19-6bdce6d3df22
 last-correlation-id: 947c1f72-3b49-4761-ab19-6bdce6d3df22
 last-transition-from: in-progress
 last-transition-at: 2026-11-07T12:28:38.547Z
+shipped-in:
+  - "fdcfc8e56252"
 ---
 
 # f00806 — A proposal's state separates implemented, proved, reviewed, integrated and released
@@ -50,7 +52,7 @@ Owner-reported defect, 2026-11-05: the gpt-5.3-codex reviewer recorded `request_
 - review-implementer: claude-opus-5-5
 
 ### S2 — A repair returns proposals a reviewer moved out of review
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/services/review-restore.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-restore.interface.ts`, `plugins/proposals/src/lib/tools/review-restore.ts`, `plugins/proposals/src/lib/tools/recovery-tools.ts`, `apps/web/src/i18n/tools/delendai_proposals_proposal_review.ts`, `plugins/proposals/tests/src/lib/services/review-restore.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-restore.spec.ts`
 - **Gate**: type
@@ -58,8 +60,10 @@ Owner-reported defect, 2026-11-05: the gpt-5.3-codex reviewer recorded `request_
   - "`proposal_reconcile_folder` with no id (dry run by default, in its own `wouldChange` shape) lists each proposal in `in-progress/` whose slices were all handed in, none taken up since, and whose review-state is `in_review` or `changes_requested`, with its slices' review-state and the reviewers that sent it back; run, it moves status and folder to `review` only. No new tool: the proposals plugin stays under its 80,000 B hard budget."
   - "Its dry run over PR #1802's tree lists the ten proposals gpt-5.3-codex forced, and lists none on develop."
 - shipped-in: `fdcfc8e56252`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at fdcfc8e56252, validate exit 0 and tests 92/92 claimed, no recorded run cited; acceptance 2/2: (1) recovery-tools.ts restoreReviewMoves is wired to proposal_reconcile_folder, dry run by default; review-restore service and tool specs pass; no new tool (2) Live dry run on develop returns wouldChange=[]; the ten of PR 1802 are exercised only through same-shape spec fixtures, the PR tree no longer holds them in in-… — Repair verified; PR 1802 tree covered by fixtures only.
 
 ### S3 — The stage of a slice is derived from recorded facts
 - **Status**: review
