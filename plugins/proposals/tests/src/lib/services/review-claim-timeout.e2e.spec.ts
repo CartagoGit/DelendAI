@@ -1,5 +1,5 @@
 /**
- * review-claim-timeout.spec.ts — a claim commit can be reported failed and
+ * review-claim-timeout.e2e.spec.ts — a claim commit can be reported failed and
  * still land: under load the runner's timeout fires while git is finishing.
  * What the unit carries decides what the reviewer is told.
  */
