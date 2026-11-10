@@ -62,7 +62,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts: remaining always jobs (lint-architecture, lint-security, lint-governance, quality-gate, generated-artifacts-check, plan-scope, delendai-… (2) job-scope.script.spec.ts:371 (docs-only), :532 (proposal edit), :551 (change under tools/) green — every always job carries a because; spec records docs-only/proposal and tools-only job sets
 
 ### S3 — Packaging jobs run on a change of a published surface or build input
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: none
@@ -70,8 +70,10 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "site, pack-smoke, build-clean, verify-runtime and delendai-rebuild-digest run only when a published package's public surface or a build input changes, judged at symbol level for a barrel."
   - "Adding one export to a barrel runs the packaging jobs; a body change inside a module behind the barrel does not."
 - shipped-in: `6fcc4940a048`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 2/2: (1) job-scope.constant.ts site/pack-smoke/build-clean/verify-runtime carry surface: PUBLIC_ENTRY_FILES plus BUILD_INPUTS matches; delendai-rebuild-digest matches o… (2) job-scope.script.spec.ts 'runs the four that read a public surface when the barrel gained an export (#1838)' and 'runs none of them for a change inside a modul… — packaging jobs gated by surface: PUBLIC_ENTRY_FILES + surfaceMovedSince
 
 ### S4 — Fewer jobs: the lint jobs that run together share one setup
 - **Status**: review
