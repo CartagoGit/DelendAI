@@ -2,14 +2,14 @@
 id: f00806
 title: "A proposal's state separates implemented, proved, reviewed, integrated and released"
 kind: feat
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: 947c1f72-3b49-4761-ab19-6bdce6d3df22
-last-correlation-id: 947c1f72-3b49-4761-ab19-6bdce6d3df22
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T12:28:38.547Z
+last-transition-id: 8a9332e6-399d-450b-af76-27a8681ea209
+last-correlation-id: 8a9332e6-399d-450b-af76-27a8681ea209
+last-transition-from: review
+last-transition-at: 2026-11-10T02:52:18.049Z
 shipped-in:
   - "fdcfc8e56252"
   - "747c1f2e3f51"
@@ -82,15 +82,17 @@ Owner-reported defect, 2026-11-05: the gpt-5.3-codex reviewer recorded `request_
 - review-log: approved by claude-sonnet-5-5 — verified at 747c1f2e3f51, validate exit 0 and tests 92/92 claimed, no recorded run cited; acceptance 1/1: (1) swarm/slice-stage.ts sliceStage and stageCounts; slice-stage.spec.ts it.each covers each stage plus the awaiting-review case; passes — Pure stage function, one case per stage.
 
 ### S4 — Boards and status show the stage
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `plugins/proposals/src/lib/tools/proposal-board.tool.ts`, `plugins/proposals/src/lib/services/slice-stage-facts.service.ts`, `plugins/proposals/src/lib/swarm/proposal-stage.ts`, `plugins/proposals/tests/src/lib/tools/proposal-board-stage.spec.ts`, `plugins/proposals/tests/src/lib/services/slice-stage-facts.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`proposal_board`, whenever it shows slices (proposalId, detail or progress), shows each pending slice's stage in its `status` (in_review, changes_requested, implemented…) and the proposal's `stages` counts; git is asked once per delivering commit and branch, and never for the brief board. No proof record is read yet: `proved` stays false until a unit's proof verdict is recorded where the board can read it."
 - shipped-in: `91801c336c05`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 747c1f2e3f51, validate exit 0 and tests 92/92 claimed, no recorded run cited; acceptance 1/1: (1) proposal-board-stage.spec.ts :110 shows stages and counts, :125 brief board has none; slice-stage-facts.service.spec asks git once per commit and branch, nothi… — Board shows stages; brief board unchanged.
 
 ## acceptance
 
