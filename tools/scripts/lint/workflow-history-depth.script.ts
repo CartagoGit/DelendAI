@@ -72,7 +72,7 @@ export const asksForHistory = (body: string): boolean =>
  * The repository scripts a job invokes, resolved to their sources.
  *
  * Without this the check sees only what the YAML runs directly — and the
- * failure that prompted it ran `git merge` inside `forge:refresh`, two
+ * failure that prompted it ran `git merge` inside the old candidate refresh, two
  * levels away from the workflow. A rule that would not have caught its
  * own motivating example is not worth adding.
  *

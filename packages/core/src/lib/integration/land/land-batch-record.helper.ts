@@ -3,20 +3,56 @@
  * forge for the next pass: its body (members, verdict, a machine record),
  * its branch name, and what the red ones already settled.
  */
+import { z } from 'zod';
+
 import { LAND_BATCH_BRANCH, LAND_RECORD_PREFIX } from './land.constant';
 import type { ILandBatchRecord } from './land.interface';
 
 const RECORD = new RegExp(`^${LAND_RECORD_PREFIX}(\\{.*\\})$`, 'mu');
 
-/** The record a batch body carries, or `undefined` when it has none. */
+const SHA = z.string().regex(/^[0-9a-f]{7,64}$/u);
+const PR_NUMBER = z.number().int().positive();
+
+/** The record's shape: anything else in a body is a record nobody wrote. */
+const BATCH_RECORD = z
+	.object({
+		tip: SHA,
+		members: z.array(z.object({ number: PR_NUMBER, sha: SHA }).strict()),
+		regenerated: z.boolean(),
+		red: z
+			.object({
+				culprit: PR_NUMBER.optional(),
+				suspects: z.array(PR_NUMBER),
+			})
+			.strict()
+			.optional(),
+	})
+	.strict();
+
+/** The record a batch body carries, or `undefined` when it has none or it is malformed. */
 export const readBatchRecord = (body: string): ILandBatchRecord | undefined => {
 	const raw = RECORD.exec(body)?.[1];
 	if (raw === undefined) return undefined;
+	let parsed: unknown;
 	try {
-		return JSON.parse(raw) as ILandBatchRecord;
+		parsed = JSON.parse(raw);
 	} catch {
 		return undefined;
 	}
+	const record = BATCH_RECORD.safeParse(parsed);
+	if (!record.success) return undefined;
+	const { red, ...rest } = record.data;
+	return red === undefined
+		? rest
+		: {
+				...rest,
+				red: {
+					...(red.culprit === undefined
+						? {}
+						: { culprit: red.culprit }),
+					suspects: red.suspects,
+				},
+			};
 };
 
 /** A batch body in the product's PR format: what it is, its members, the record. */

@@ -43,6 +43,12 @@ export interface IObservedRef {
 	 * judged as it always was.
 	 */
 	readonly standing?: IUnitStanding | undefined;
+	/**
+	 * For a ref under a retired or batch namespace: true when every commit
+	 * it holds is in the integration branch or a work or publication ref.
+	 * The caller measures it; absent counts as holding.
+	 */
+	readonly contained?: boolean | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */
@@ -105,6 +111,25 @@ export const REF_ROLES = [
 	 * wrong ref. Reapable, because nothing is lost by deleting it.
 	 */
 	'work-published',
+	/** A `land` batch whose pull request is open: land settles it. */
+	'batch-open',
+	/**
+	 * A `land` batch whose pull request is merged or closed, or that has
+	 * none: its members keep their own branches, so deleting it loses
+	 * nothing. Reapable.
+	 */
+	'batch-spent',
+	/**
+	 * A ref under a namespace whose machinery is gone (the old queue's
+	 * trains and culprit markers) that holds no commit absent from the
+	 * integration branch and every work and publication ref. Reapable.
+	 */
+	'retired-machinery',
+	/**
+	 * The same, holding a commit nothing else holds: it may be the only
+	 * copy, so it is reported and never reaped.
+	 */
+	'retired-machinery-holding',
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**

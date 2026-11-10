@@ -130,7 +130,7 @@ no inferir el estado desde configs declarativas.
 ### S1 — Script + dashboard entry + CI nightly + tests
 
 - **Status**: done
-- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`, `apps/web/src/data/develop-health.json`, `.github/workflows/verify-develop-health.yml`
+- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/tests/ci/verify-develop-health.spec.ts`, `apps/web/src/data/develop-health.json` (its nightly workflow was retired when `land` became the one integrator)
 - **Gate**: type
 - review-state: submitted
 - review-implementer: mcp-vertex-orchestrator
