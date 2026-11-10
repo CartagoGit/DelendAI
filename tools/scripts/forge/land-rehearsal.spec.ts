@@ -2,10 +2,14 @@
  * land-rehearsal.spec.ts — the gates a batch meets are rehearsed, and
  * every failure is reported in one pass.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { createGitRepoTemplate } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
+
+import { throwawayClone } from './land-rehearsal-clone';
+import { assembleTrain, discardTrain } from './train-assembly';
 
 import {
 	NULL_OID,
@@ -120,5 +124,55 @@ describe('the rehearsal script', () => {
 		);
 		expect(source).not.toMatch(/'checkout',\s*'-q',\s*'-[bB]'/u);
 		expect(source).not.toMatch(/'(branch|switch)'/u);
+	});
+});
+
+describe('the rehearsal clone', () => {
+	const template = createGitRepoTemplate({ files: { 'a.txt': 'a\n' } });
+
+	it('[<900ms] builds the batch in its own clone and leaves no ref or worktree behind', () => {
+		const { root, git } = template.copy();
+		const tip = git('rev-parse', 'HEAD');
+		git('switch', '-q', '-c', 'side');
+		writeFileSync(join(root, 'b.txt'), 'b\n');
+		git('add', '-A');
+		git('commit', '-q', '-m', 'side');
+		const head = git('rev-parse', 'HEAD');
+		git('switch', '-q', '-');
+		git('branch', '-q', '-D', 'side');
+		const refsBefore = git('for-each-ref');
+		const worktreesBefore = git('worktree', 'list', '--porcelain');
+
+		const clone = throwawayClone(root, [head]);
+		const built = assembleTrain({
+			root: clone.dir,
+			remote: clone.dir,
+			tipSha: tip,
+			ref: 'delendai/queue/batch-1',
+			members: [{ number: 1, headRef: 'rehearsal/1', headSha: head }],
+			derived: new Set(),
+			regenerate: () => true,
+			linkDependencies: () => true,
+			rehearsal: true,
+		});
+		expect(built.conflicting).toEqual([]);
+		expect(built.scratch).toBeDefined();
+		expect(existsSync(join(built.scratch ?? '', 'b.txt'))).toBe(true);
+		discardTrain(clone.dir, built.scratch ?? '');
+		clone.dispose();
+
+		expect(git('for-each-ref')).toBe(refsBefore);
+		expect(git('worktree', 'list', '--porcelain')).toBe(worktreesBefore);
+		expect(existsSync(clone.dir)).toBe(false);
+		expect(existsSync(built.scratch ?? '')).toBe(false);
+	});
+
+	it('[<50ms] the script assembles only in the throwaway clone', () => {
+		const source = readFileSync(
+			join(import.meta.dirname, 'land-rehearsal.script.ts'),
+			'utf8',
+		);
+		expect(source).toContain('throwawayClone(root, heads)');
+		expect(source).toMatch(/root: clone\.dir,\s*remote: clone\.dir,/u);
 	});
 });

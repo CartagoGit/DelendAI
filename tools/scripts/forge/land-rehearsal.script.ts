@@ -38,6 +38,7 @@ import {
 	REGENERATED_PROJECTIONS,
 } from './land-derived.constant';
 import { prePushStdin, rehearseGates, reportOf } from './land-rehearsal';
+import { throwawayClone } from './land-rehearsal-clone';
 import type { IRehearsalGate } from './land-rehearsal.interface';
 
 /**
@@ -89,10 +90,11 @@ const main = async (): Promise<number> => {
 		members.map((member) => member.number),
 	);
 	const timeoutMs = (Number(arg('timeout')) || 900) * 1000;
+	// Its own clone: nothing it builds lands in the one it was run from.
+	const clone = throwawayClone(root, heads);
 	const built = assembleTrain({
-		root,
-		// The members are local commits: the repository is its own remote.
-		remote: root,
+		root: clone.dir,
+		remote: clone.dir,
 		tipSha,
 		ref,
 		members,
@@ -109,6 +111,7 @@ const main = async (): Promise<number> => {
 		console.error(
 			`rehearse-land: the batch could not be built: ${built.pushFailure ?? (built.conflicting.length > 0 ? `${built.conflicting.map((n) => `#${String(n)}`).join(', ')} conflict` : 'no worktree')}`,
 		);
+		clone.dispose();
 		return 1;
 	}
 	try {
@@ -127,12 +130,14 @@ const main = async (): Promise<number> => {
 				REHEARSED_JOBS.has(check.job) &&
 				jobMustRun({ ...plan, job: check.job }),
 		);
-		const hook = git(scratch, [
+		// The hooks and the remote of the clone the rehearsal stands in for.
+		const hook = git(root, [
 			'rev-parse',
+			'--path-format=absolute',
 			'--git-path',
 			'hooks/pre-push',
 		]);
-		const remote = git(scratch, ['remote', 'get-url', 'origin']);
+		const remote = git(root, ['remote', 'get-url', 'origin']);
 		const gates: IRehearsalGate[] = [
 			{
 				label: 'pre-push hooks',
@@ -162,7 +167,8 @@ const main = async (): Promise<number> => {
 		return results.every((result) => result.ok) ? 0 : 1;
 	} finally {
 		process.chdir(root);
-		discardTrain(root, scratch);
+		discardTrain(clone.dir, scratch);
+		clone.dispose();
 	}
 };
 
