@@ -10,6 +10,8 @@ last-transition-id: 03c71471-0992-46d7-a572-c03aa92748e2
 last-correlation-id: 03c71471-0992-46d7-a572-c03aa92748e2
 last-transition-from: in-progress
 last-transition-at: 2026-11-07T16:11:50.774Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # x01043 — Git reads must not rewrite the index: GIT_OPTIONAL_LOCKS=0 at the git seam
@@ -31,12 +33,14 @@ PR #1812's full run (42364090265) failed `reclaim-worktrees` because the dry run
 - global_gate: none
 
 ### S1 — Seam environment, process default, lint and spec
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/git-optional-locks.helper.ts`, `packages/core/src/lib/shared/hook-free-environment.helper.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/cli/run-cli.ts`, `tools/scripts/host/host-server.script.ts`, `tools/scripts/lint/git-optional-locks.script.ts`, `tools/scripts/lint/git-optional-locks.helper.ts`, `tools/scripts/lint/git-optional-locks.helper.spec.ts`, `packages/core/tests/src/lib/shared/git-optional-locks.helper.spec.ts`, `packages/core/tests/src/lib/shared/hook-free-environment.helper.spec.ts`, `package.json`
 - **Gate**: none
 - shipped-in: `c45ee9011796`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 15/15 claimed, no recorded run cited; acceptance 4/4: (1) packages/core/src/lib/shared/hook-free-environment.helper.ts:21,59,61 build env via withoutOptionalLocks; packages/core/src/lib/wip-engine/git-command.ts:98 too (2) applyGitOptionalLocksDefault (??= '0') called at run-cli.ts:250 and host-server.script.ts:290; spec 'the process default keeps a choice the caller made' green (3) package.json:96 script, chained in lint:architecture (:137); git-optional-locks.script.ts:56 entry check and helper dropsInheritedEnvironment/BARE_ENV; helper … (4) packages/core/tests/src/lib/shared/git-optional-locks.helper.spec.ts:39 (premise: plain status rewrites), :48 runGitCommand, :55 work-ref engine runner leave m… — GIT_OPTIONAL_LOCKS=0 at both seams and as process default in CLI and host server; lint in lint:architecture passes; mtime spec green
 
 ## acceptance
 
