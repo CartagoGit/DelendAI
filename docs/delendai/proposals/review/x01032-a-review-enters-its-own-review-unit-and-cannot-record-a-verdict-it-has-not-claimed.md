@@ -70,14 +70,16 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) proposal-review.tool.ts:277 and :308 call verdictClaimRefusal (review-claim.service.ts:253-285, nextAction names review_claim, 'Nothing was written'); proposal… — verdictClaimRefusal gates submit/approve/request_changes/attest; lint untouched
 
 ### S4 — A review pack is titled by its verdicts
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The pull request of a review unit is titled and summarised from the proposals it judges, never implement batch, on first open and on republish; a spec covers a review unit whose branch names batch."
 - shipped-in: `f7d36c3592bf`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) publication-pull-request.service.ts (f7d36c359); publication-pull-request.service.spec.ts:323 'names a review unit by what it claimed and judged, never impleme… — review unit PR titled from claims/verdicts
 
 ### S5 — One review wip, a diverged pack reported, a sibling publication merged or retired
 - **Status**: review
