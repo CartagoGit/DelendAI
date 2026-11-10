@@ -82,14 +82,16 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) publication-pull-request.service.ts (f7d36c359); publication-pull-request.service.spec.ts:323 'names a review unit by what it claimed and judged, never impleme… — review unit PR titled from claims/verdicts
 
 ### S5 — One review wip, a diverged pack reported, a sibling publication merged or retired
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/diverged-review-pack.service.ts`, `packages/core/src/lib/work-units/sibling-publications.service.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/diverged-review-pack.service.spec.ts`, `packages/core/tests/src/lib/work-units/sibling-publications.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and every proposal_review action commit on the reviewer's review wip, and work publish cuts the pack from that wip; work status reports a pack ref holding commits its wip lacks, with the merge to run; specs cover claim and verdict landing on the wip, a publish cutting the pack from it, and a diverged pack reported."
 - shipped-in: `247313bf9ee3`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) work-unit-status.service.ts:196,231-233 report divergedReviewPacks with the merge command; diverged-review-pack.service.spec.ts:9,19,35; sibling-publications.s… — diverged pack reported by work status; claims and verdicts on the wip
 
 ## acceptance
 
