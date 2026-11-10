@@ -193,7 +193,7 @@ Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
 - **Status**: pending
 - **Notes**: the engine switch is `development.integration.engine` (land|none) with `protocol` and `landWithoutChecks`, introduced here because q00047 S1 is ordered after this slice; q00047 S1 extends the same block. train-assembly is kept as land's batch builder and `forge:rehearse-train` became `forge:rehearse-land`, which builds in a throwaway clone. Left train refs and scratch worktrees are reaped by ref-lifecycle and work reap once they hold nothing of their own.
 - **DependsOn**: [S3]
-- **Files**: `.github/workflows/keep-the-queue-moving.yml`
+- **Files**: `.github/workflows/land.yml`, `tools/scripts/forge/land-cutover.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The same change deletes every workflow, script and host cadence the inventory marks REPLACED or DELETED for the queue, hydration and ref maintenance; none is left behind"
