@@ -2,10 +2,14 @@
 id: c00537
 title: "Checks are deterministic, offline and caught where they are written"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
+last-transition-id: af278677-a3dd-47d5-9cd3-b7a4bacd6c6e
+last-correlation-id: af278677-a3dd-47d5-9cd3-b7a4bacd6c6e
+last-transition-from: ready
+last-transition-at: 2026-11-10T02:08:56.031Z
 ---
 
 # c00537 — Checks are deterministic, offline and caught where they are written
