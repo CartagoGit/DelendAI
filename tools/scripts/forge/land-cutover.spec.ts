@@ -34,6 +34,8 @@ const REMOVED_MODULES = [
 	'reap-finished-units',
 	'stale-verdict-conflicts',
 	'work-ref-fate-agreement',
+	'close-approved-proposals',
+	'sent-back-proposals',
 	'forward-sync-release.yml',
 	'verify-develop-health.yml',
 ] as const;

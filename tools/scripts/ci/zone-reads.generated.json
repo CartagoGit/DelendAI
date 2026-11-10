@@ -18494,12 +18494,6 @@
 					],
 					"listed": []
 				},
-				"tools/scripts/proposals/close-approved-proposals.script.spec.ts": {
-					"read": [
-						"delendai.config.json"
-					],
-					"listed": []
-				},
 				"tools/scripts/proposals/collect-evidence.script.spec.ts": {
 					"read": [
 						"delendai.config.json"
