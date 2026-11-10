@@ -56,7 +56,7 @@ const pair = (path: string, clock: { at: number }, alive = true) => {
 };
 
 describe('createMaintenanceLease', () => {
-	it('lets one of two servers hold it, and the other read who', async () => {
+	it('[<100ms] lets one of two servers hold it, and the other read who', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		expect(await a.hold()).toBe(true);
@@ -65,7 +65,7 @@ describe('createMaintenanceLease', () => {
 		expect(a.self).not.toBe(b.self);
 	});
 
-	it('ends a race on an absent lease with one holder, the one the file names', async () => {
+	it('[<450ms] ends a race on an absent lease with one holder, the one the file names', async () => {
 		for (let round = 0; round < 25; round += 1) {
 			const clock = { at: 0 };
 			const { a, b } = pair(leasePath(), clock);
@@ -75,7 +75,7 @@ describe('createMaintenanceLease', () => {
 		}
 	});
 
-	it('stays with a holder that keeps beating', async () => {
+	it('[<50ms] stays with a holder that keeps beating', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		await a.hold();
@@ -85,7 +85,7 @@ describe('createMaintenanceLease', () => {
 		expect(await b.hold()).toBe(false);
 	});
 
-	it('passes to another server once the holder stops beating', async () => {
+	it('[<50ms] passes to another server once the holder stops beating', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		await a.hold();
@@ -94,14 +94,14 @@ describe('createMaintenanceLease', () => {
 		expect(await a.hold()).toBe(false);
 	});
 
-	it('passes at once when the holder process on this machine is gone', async () => {
+	it('[<30ms] passes at once when the holder process on this machine is gone', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock, false);
 		await a.hold();
 		expect(await b.hold()).toBe(true);
 	});
 
-	it('is free again once its holder releases it, and only its holder can', async () => {
+	it('[<30ms] is free again once its holder releases it, and only its holder can', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		await a.hold();
@@ -111,7 +111,7 @@ describe('createMaintenanceLease', () => {
 		expect(await b.hold()).toBe(true);
 	});
 
-	it('tells apart two servers with one pid on two machines', async () => {
+	it('[<30ms] tells apart two servers with one pid on two machines', async () => {
 		const path = leasePath();
 		const here = createMaintenanceLease({
 			path,
@@ -131,7 +131,7 @@ describe('createMaintenanceLease', () => {
 });
 
 describe('the lease scratch files (js/insecure-temporary-file)', () => {
-	it('leaves the lease 0600 and no scratch file behind, taking and renewing', async () => {
+	it('[<30ms] leaves the lease 0600 and no scratch file behind, taking and renewing', async () => {
 		const path = leasePath();
 		const { a } = pair(path, { at: 0 });
 		expect(await a.hold()).toBe(true);
@@ -140,7 +140,7 @@ describe('the lease scratch files (js/insecure-temporary-file)', () => {
 		expect(readdirSync(dirname(path))).toEqual(['maintainer.lease']);
 	});
 
-	it('does not write through a file or link planted at the old predictable name', async () => {
+	it('[<30ms] does not write through a file or link planted at the old predictable name', async () => {
 		const path = leasePath();
 		const { a } = pair(path, { at: 0 });
 		mkdirSync(dirname(path), { recursive: true });
@@ -153,7 +153,7 @@ describe('the lease scratch files (js/insecure-temporary-file)', () => {
 });
 
 describe('createMaintenanceGate', () => {
-	it('maintains while it holds the lease, and names the holder to the others', async () => {
+	it('[<30ms] maintains while it holds the lease, and names the holder to the others', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		const first = createMaintenanceGate({ lease: a });
@@ -166,7 +166,7 @@ describe('createMaintenanceGate', () => {
 		await second.stop();
 	});
 
-	it('gives the lease up on older code, so a current server takes over', async () => {
+	it('[<30ms] gives the lease up on older code, so a current server takes over', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		let behind: string | undefined;
@@ -183,7 +183,7 @@ describe('createMaintenanceGate', () => {
 });
 
 describe('what the gate tells the log', () => {
-	it('says each change of standing once', async () => {
+	it('[<30ms] says each change of standing once', async () => {
 		const clock = { at: 0 };
 		const { a } = pair(leasePath(), clock);
 		const lines: string[] = [];
@@ -207,7 +207,35 @@ describe('what the gate tells the log', () => {
 });
 
 describe('observing who maintains', () => {
-	it('takes nothing: a one-off status leaves the lease free', async () => {
+	it('[<30ms] never names a dead holder as the maintainer, and the next server takes over once', async () => {
+		const clock = { at: 0 };
+		const { a, b } = pair(leasePath(), clock, false);
+		await a.hold();
+		// The holder's pid is dead on this machine: nobody maintains, and
+		// the line says so instead of naming the dead server.
+		const standing = await observeMaintenance(b);
+		expect(standing).toEqual({
+			maintains: false,
+			reason: 'No server holds the maintenance lease yet.',
+		});
+		const told: string[] = [];
+		const gate = createMaintenanceGate({
+			lease: b,
+			report: (line) => told.push(line),
+		});
+		try {
+			expect(await gate.standDown()).toBeUndefined();
+			expect(await gate.standDown()).toBeUndefined();
+		} finally {
+			await gate.stop();
+		}
+		expect(told).toEqual([
+			`This server (${b.self}) maintains this workspace.`,
+		]);
+		expect(told.join('\n')).not.toContain(a.self);
+	});
+
+	it('[<30ms] takes nothing: a one-off status leaves the lease free', async () => {
 		const path = leasePath();
 		const lease = createMaintenanceLease({ path, machineId: 'laptop' });
 		expect(await observeMaintenance(lease)).toMatchObject({
@@ -216,7 +244,7 @@ describe('observing who maintains', () => {
 		expect(existsSync(path)).toBe(false);
 	});
 
-	it('says older code first, and who maintains', async () => {
+	it('[<30ms] says older code first, and who maintains', async () => {
 		const clock = { at: 0 };
 		const { a, b } = pair(leasePath(), clock);
 		await a.hold();
@@ -233,7 +261,7 @@ describe('observing who maintains', () => {
 		});
 	});
 
-	it('makes its gate only when a background step first asks', async () => {
+	it('[<30ms] makes its gate only when a background step first asks', async () => {
 		const path = leasePath();
 		const maintenance = createHostMaintenance({
 			workspace: dirname(path),
@@ -249,7 +277,7 @@ describe('observing who maintains', () => {
 });
 
 describe('removeIfStill', () => {
-	it('removes the record it judged, and puts back one replaced since', async () => {
+	it('[<30ms] removes the record it judged, and puts back one replaced since', async () => {
 		const path = leasePath();
 		mkdirSync(dirname(path), { recursive: true });
 		writeFileSync(path, 'judged');

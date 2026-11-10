@@ -2,14 +2,16 @@
 id: i00005
 title: "Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member"
 kind: infra
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 4148b636-01b6-4be5-8978-52ead995a6bc
-last-correlation-id: 4148b636-01b6-4be5-8978-52ead995a6bc
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T19:54:54.613Z
+last-transition-id: f581176b-65e9-478f-afa9-5f7a6d4a3f02
+last-correlation-id: f581176b-65e9-478f-afa9-5f7a6d4a3f02
+last-transition-from: review
+last-transition-at: 2026-11-10T03:11:51.621Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # i00005 — Integration machinery is rehearsed before it ships, and a train failure is not blamed on a member
@@ -31,7 +33,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - global_gate: none
 
 ### S1 — Train rehearsal
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/train-rehearsal.ts`, `tools/scripts/forge/train-rehearsal.interface.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
@@ -39,11 +41,13 @@ Integration machinery that is only exercised by the live queue fails the queue f
   - "A change under tools/scripts/forge, tools/scripts/ci, the guard, .github/workflows or lefthook.yml runs the rehearsal in the fast proof"
   - "The measured cost of a rehearsal is recorded in the slice hand-over and bounded by a timeout"
 - shipped-in: `0a634255e983`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) train-rehearsal.script.ts main(): assembleTrain(rehearsal:true, regenerateWith(GENERATED_REFRESH_COMMANDS)), pre-push hook with prePushStdin(ref,sha), STATIC_C… (2) train-rehearsal.ts INTEGRATION_MACHINERY (forge/, ci/, hooks/, guard lints, development-policy/, .github/workflows/, lefthook.yml); prove-plan.script.ts:400-40… (3) Notes: 9 gates, 173 s wall, 440 s CPU, 1.1 GB; runGate spawn timeout default 900 s (--timeout=); spec 'bounds a gate by its timeout' green — Rehearsal builds the train like assembleTrain, runs pre-push + selected static/governance lints, reports all failures; wired into prove-plan; timeout-bounded; 5 specs/66 tests green on 6578eb7c5
 
 ### S2 — Honest bisection
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/forge/train-fallback.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: none
 - acceptance:
@@ -51,19 +55,23 @@ Integration machinery that is only exercised by the live queue fails the queue f
   - "One issue for it is opened or refreshed, and the members take the individual landing path"
   - "Specs cover the exonerated member and the still-blamed member"
 - shipped-in: `9bddbd7dfcc6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) queue-order.ts runTrain culprit branch returns before ports.blame when ports.trainFault (requiredChecksVerdict on member head, keep-the-queue-moving.script.ts)… (2) keep-the-queue-moving reportTrainRed creates or edits the single 'merge train red on its own checks' issue; train-fallback.ts reportTrainRed calls fail() so me… (3) queue-order.spec cases trainFault ['lint-governance'] (exonerated, line 261) and trainFault undefined (blamed, line 293), green — runTrain consults trainFault before blame; one issue; members land individually; both cases specced
 
 ### S3 — CI detection is agnostic
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-identity/ci-environment.helper.ts`, `packages/core/tests/src/lib/work-identity/ci-environment.helper.spec.ts`, `packages/core/src/cli.ts`
 - **Gate**: none
 - acceptance:
   - "One shared reader answers 'running in the project CI' from the CI providers' own markers, and CI=true counts only when no agent marker is set"
   - "The c00537 S7 time-budget runner (PR 1841) adopts it once that PR lands; until then this is a recorded follow-up"
 - shipped-in: `9bddbd7dfcc6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 2/2: (1) packages/core/src/lib/work-identity/ci-environment.helper.ts ciEnvironmentMarker/isRunningInProjectCi: provider vars + DELENDAI override first, CI=true/1 only … (2) recorded as a follow-up in the proposal Notes (S3 bullet) — ci-environment.helper.ts is the one reader, exported from cli.ts; PR 1841 adoption recorded as follow-up
 
 ## acceptance
 

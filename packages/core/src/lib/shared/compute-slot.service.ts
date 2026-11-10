@@ -26,10 +26,8 @@ import {
 import type { IComputeSlotRequest } from '../contracts/interfaces/compute-slot.interface';
 import {
 	alive,
-	slotHolderOf,
 	joinUrgentLane,
 	urgentTicketName,
-	laneNotice,
 	leaveUrgentLane,
 	ownerFile,
 	pauseSlot,
@@ -38,6 +36,7 @@ import {
 	recordUrgentTurn,
 } from './compute-slot-lane.service';
 import { runGitCommand } from './git-command.helper';
+import { createWaitNotice } from './compute-slot-wait-notice.service';
 import { withFileMutex } from './with-file-mutex';
 
 /** A proof can outlast several peers' proofs: wait long before giving up. */
@@ -306,19 +305,13 @@ const withComputeSlotTurn = async <T>(
 			? lane.length > 0
 			: lane.some((ticket) => ticket.name < (ticketName as string));
 	};
-	let waiting = false;
-	let notice: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
-		waiting = true;
-		void Promise.all([slotHolderOf(lockPath), readLane(lockPath)]).then(
-			([holder, lane]) => {
-				if (waiting) {
-					notify(
-						`[compute-slot] "${label}" is waiting — ${holder} holds the machine's compute slot.${urgent === undefined ? '' : ` This turn is urgent (${urgent}): it goes next.`}${laneNotice(lane)} Waiting my turn...`,
-					);
-				}
-			},
-		);
-	}, request.waitNoticeMs ?? WAIT_NOTICE_MS);
+	const notice = createWaitNotice({
+		lockPath,
+		label,
+		urgent,
+		notify,
+		delayMs: request.waitNoticeMs ?? WAIT_NOTICE_MS,
+	});
 	try {
 		await before;
 		for (;;) {
@@ -326,11 +319,8 @@ const withComputeSlotTurn = async <T>(
 				lockPath,
 				async () => {
 					if (await mustYield()) return YIELD;
-					clearTimeout(notice);
-					notice = undefined;
-					if (waiting)
+					if (notice.end())
 						notify(`[compute-slot] "${label}" got its turn.`);
-					waiting = false;
 					await writeFile(
 						ownerFile(lockPath),
 						JSON.stringify({
@@ -364,8 +354,7 @@ const withComputeSlotTurn = async <T>(
 		}
 	} finally {
 		clearQueue();
-		waiting = false;
-		if (notice !== undefined) clearTimeout(notice);
+		notice.end();
 		if (ticketName !== undefined) {
 			await leaveUrgentLane(lockPath, ticketName);
 		}

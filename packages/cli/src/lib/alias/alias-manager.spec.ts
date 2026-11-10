@@ -9,6 +9,11 @@
  * Windows shim paths, which are otherwise the half nobody tests until a
  * Windows user reports the alias silently missing.
  */
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -56,7 +61,7 @@ const ioOver = (
 });
 
 describe('alias paths', () => {
-	it('writes both Windows shims, because one is not enough', () => {
+	it('[<20ms] writes both Windows shims, because one is not enough', () => {
 		// A bare extensionless file is not runnable from cmd, and a .cmd
 		// alone is invisible to PowerShell callers. Shipping one of the two
 		// is the "Unix-only solution wearing a hat" the plan forbids.
@@ -67,12 +72,12 @@ describe('alias paths', () => {
 		]);
 	});
 
-	it('writes a single file on POSIX', () => {
+	it('[<10ms] writes a single file on POSIX', () => {
 		const io = ioOver({});
 		expect(aliasPaths('est', POSIX, io)).toEqual(['/usr/local/bin/est']);
 	});
 
-	it('marks everything it renders, on every platform', () => {
+	it('[<10ms] marks everything it renders, on every platform', () => {
 		// The marker is what makes re-runs idempotent and removal safe. An
 		// unmarked shim is indistinguishable from a stranger's.
 		for (const path of [
@@ -85,14 +90,14 @@ describe('alias paths', () => {
 });
 
 describe('installAlias', () => {
-	it('creates the alias when the name is free', async () => {
+	it('[<10ms] creates the alias when the name is free', async () => {
 		const io = ioOver({});
 		const outcome = await installAlias('est', POSIX, io);
 		expect(outcome.action).toBe('created');
 		expect(io.files['/usr/local/bin/est']).toContain(POSIX.canonicalPath);
 	});
 
-	it('is idempotent: a second run changes nothing', async () => {
+	it('[<10ms] is idempotent: a second run changes nothing', async () => {
 		const io = ioOver({});
 		await installAlias('est', POSIX, io);
 		const before = { ...io.files };
@@ -101,7 +106,7 @@ describe('installAlias', () => {
 		expect(io.files).toEqual(before);
 	});
 
-	it('refuses a name held by other software and does not touch it', async () => {
+	it('[<10ms] refuses a name held by other software and does not touch it', async () => {
 		// The case the whole design exists for.
 		const foreign = '#!/bin/sh\nexec /opt/some-other-tool/bin/est "$@"\n';
 		const io = ioOver({ '/usr/local/bin/est': foreign });
@@ -114,7 +119,7 @@ describe('installAlias', () => {
 		expect(outcome.detail).toContain('left untouched');
 	});
 
-	it('treats an unreadable name as foreign rather than replacing it', async () => {
+	it('[<10ms] treats an unreadable name as foreign rather than replacing it', async () => {
 		// Guessing wrong here deletes somebody's executable, so the tie
 		// goes to leaving it alone.
 		const io = ioOver(
@@ -131,7 +136,7 @@ describe('installAlias', () => {
 		expect(io.files['/usr/local/bin/est']).toBe('x');
 	});
 
-	it('reports a write failure without failing the install', async () => {
+	it('[<10ms] reports a write failure without failing the install', async () => {
 		const io = ioOver(
 			{},
 			{
@@ -145,7 +150,7 @@ describe('installAlias', () => {
 		expect(outcome.detail).toContain('not fatal');
 	});
 
-	it('creates both shims on Windows', async () => {
+	it('[<10ms] creates both shims on Windows', async () => {
 		const io = ioOver({});
 		const outcome = await installAlias('est', WINDOWS, io);
 		expect(outcome.action).toBe('created');
@@ -155,7 +160,7 @@ describe('installAlias', () => {
 		]);
 	});
 
-	it('marks a POSIX alias executable', async () => {
+	it('[<10ms] marks a POSIX alias executable', async () => {
 		const made: string[] = [];
 		const io = ioOver(
 			{},
@@ -171,14 +176,14 @@ describe('installAlias', () => {
 });
 
 describe('readAliasState', () => {
-	it('recognises its own alias by the marker, not by the path', async () => {
+	it('[<10ms] recognises its own alias by the marker, not by the path', async () => {
 		const io = ioOver({
 			'/usr/local/bin/est': renderAlias('/usr/local/bin/est', POSIX),
 		});
 		expect((await readAliasState('est', POSIX, io)).state).toBe('ours');
 	});
 
-	it('names what holds a foreign alias, so doctor can say', async () => {
+	it('[<10ms] names what holds a foreign alias, so doctor can say', async () => {
 		const io = ioOver({
 			'/usr/local/bin/est': '#!/usr/bin/env python\nprint("other")\n',
 		});
@@ -189,7 +194,7 @@ describe('readAliasState', () => {
 });
 
 describe('removeAlias', () => {
-	it('removes only what it created', async () => {
+	it('[<10ms] removes only what it created', async () => {
 		const io = ioOver({});
 		await installAlias('est', POSIX, io);
 		const outcome = await removeAlias('est', POSIX, io);
@@ -197,7 +202,7 @@ describe('removeAlias', () => {
 		expect(io.files['/usr/local/bin/est']).toBeUndefined();
 	});
 
-	it('refuses to remove a foreign alias', async () => {
+	it('[<10ms] refuses to remove a foreign alias', async () => {
 		const foreign = 'other tool\n';
 		const io = ioOver({ '/usr/local/bin/est': foreign });
 		const outcome = await removeAlias('est', POSIX, io);
@@ -205,7 +210,7 @@ describe('removeAlias', () => {
 		expect(io.files['/usr/local/bin/est']).toBe(foreign);
 	});
 
-	it('is a no-op when there is nothing to remove', async () => {
+	it('[<10ms] is a no-op when there is nothing to remove', async () => {
 		const io = ioOver({});
 		expect((await removeAlias('est', POSIX, io)).action).toBe('unchanged');
 	});
@@ -217,7 +222,7 @@ describe('checkout launcher', () => {
 		binDir: '/g/bin',
 		checkoutRoot: '/src/delendai',
 	};
-	it('writes a marked launcher and is idempotent', async () => {
+	it('[<10ms] writes a marked launcher and is idempotent', async () => {
 		const io = ioOver({});
 		expect((await installLauncher(env, io)).action).toBe('created');
 		expect(io.files['/g/bin/delendai']).toContain(ALIAS_MARKER);
@@ -226,14 +231,14 @@ describe('checkout launcher', () => {
 		);
 		expect((await installLauncher(env, io)).action).toBe('unchanged');
 	});
-	it('never overwrites a file without the marker', async () => {
+	it('[<10ms] never overwrites a file without the marker', async () => {
 		const io = ioOver({ '/g/bin/delendai': '#!/bin/sh\necho mine\n' });
 		const outcome = await installLauncher(env, io);
 		expect(outcome.action).toBe('refused');
 		expect(io.files['/g/bin/delendai']).toContain('mine');
 		expect((await removeLauncher(env, io)).action).toBe('refused');
 	});
-	it('writes a .cmd on Windows and removes only its own', async () => {
+	it('[<10ms] writes a .cmd on Windows and removes only its own', async () => {
 		const win = { ...env, platform: 'win32' as const, binDir: 'C:\\bin' };
 		const io = ioOver({});
 		await installLauncher(win, io);
@@ -241,7 +246,7 @@ describe('checkout launcher', () => {
 		await removeLauncher(win, io);
 		expect(io.files).toEqual({});
 	});
-	it('prefers the bun bin, then npm prefix', async () => {
+	it('[<10ms] prefers the bun bin, then npm prefix', async () => {
 		const io = ioOver({ '/h/.bun/bin': '' });
 		expect(await resolveGlobalBinDir('posix', { HOME: '/h' }, io)).toBe(
 			'/h/.bun/bin',
@@ -255,7 +260,7 @@ describe('checkout launcher', () => {
 		).toBe('/n/bin');
 	});
 
-	it('renders a marked Windows launcher and quotes a POSIX fallback path', () => {
+	it('[<10ms] renders a marked Windows launcher and quotes a POSIX fallback path', () => {
 		const win = renderLauncher({
 			...env,
 			platform: 'win32',
@@ -267,7 +272,38 @@ describe('checkout launcher', () => {
 			`'/it'\\''s'`,
 		);
 	});
-	it('refuses what it cannot read, and reports a failed write', async () => {
+	it.skipIf(process.platform === 'win32')(
+		'[<60ms] reaches the fallback when PWD is empty instead of walking forever',
+		() => {
+			const dir = mkdtempSync(join(tmpdir(), 'launcher-'));
+			try {
+				const file = join(dir, 'delendai');
+				writeFileSync(
+					file,
+					renderLauncher({ ...env, checkoutRoot: dir }),
+				);
+				// `exec` is shadowed so the launcher reports where it would go
+				// instead of starting bun; the timeout only bounds a regression.
+				const run = spawnSync(
+					'bash',
+					[
+						'-c',
+						'exec() { echo "EXEC $*"; exit 0; }; PWD=; . "$1"',
+						'_',
+						file,
+					],
+					{ cwd: dir, encoding: 'utf8', timeout: 10_000 },
+				);
+				expect(run.status).toBe(0);
+				expect(run.stdout).toContain(
+					`EXEC bun ${dir}/packages/cli/src/index.ts`,
+				);
+			} finally {
+				rmSync(dir, { recursive: true, force: true });
+			}
+		},
+	);
+	it('[<10ms] refuses what it cannot read, and reports a failed write', async () => {
 		const boom = async () => {
 			throw new Error('EACCES');
 		};
@@ -281,7 +317,7 @@ describe('checkout launcher', () => {
 		const failing = ioOver({}, { write: boom });
 		expect((await installLauncher(env, failing)).action).toBe('failed');
 	});
-	it('falls back to the bun bin when nothing else is set', async () => {
+	it('[<10ms] falls back to the bun bin when nothing else is set', async () => {
 		const io = ioOver({});
 		expect(await resolveGlobalBinDir('posix', { HOME: '/h' }, io)).toBe(
 			'/h/.bun/bin',
