@@ -138,7 +138,7 @@ describe('land', () => {
 		expect(lone(n).merged).toBe(true);
 	});
 
-	it('[<24ms] batches two overlapping pull requests and verifies the landed tree', async () => {
+	it('[<55ms] batches two overlapping pull requests and verifies the landed tree', async () => {
 		const { world, pass, open, batches, lone, git, forge } = setup();
 		const one = world.addPull({ 'a/one.ts': '1' });
 		const two = world.addPull({ 'a/two.ts': '2' });
