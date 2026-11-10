@@ -10,6 +10,7 @@ import {
 	underPublication,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
+	retiredRefRoots,
 } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
@@ -126,5 +127,15 @@ describe('allowedRefPatterns and underNamespace', () => {
 		expect(underNamespace('wip/a/x', 'refs/heads/wip/')).toBe(true);
 		expect(underNamespace('wip/a/x', '')).toBe(false);
 		expect(underNamespace('wip/a/x', undefined)).toBe(false);
+	});
+
+	it('[<6ms] keeps retired tips under each owned namespace, current first', () => {
+		expect(
+			retiredRefRoots({
+				namespacePrefix: 'delendai',
+				formerNamespacePrefixes: ['mcp-vertex', 'delendai'],
+			}),
+		).toEqual(['refs/delendai/retired/', 'refs/mcp-vertex/retired/']);
+		expect(retiredRefRoots({})).toEqual(['refs/retired/']);
 	});
 });

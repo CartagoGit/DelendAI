@@ -15,6 +15,7 @@
  */
 import { fetchMakerNotes, makersOf } from '@delendai/core/runtime';
 import { compileWorkRefParser } from '@delendai/core/public';
+import { retiredRefRoots } from '@delendai/core/cli';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
@@ -23,21 +24,10 @@ import { unitOfRef } from './review-claims.service';
 /** The tool's own commits and claims: made where they are, never carried. */
 const BOOKKEEPING = /^chore\((?:delendai|review|wip)\):/u;
 
-/** Where a retired unit's tip is kept, mapped back to its work ref. */
-/** Where retired tips are kept, under each owned namespace, current first. */
-const retiredRoots = (shape: IWorkRefShape): readonly string[] => [
-	...new Set(
-		[
-			shape.namespacePrefix ?? '',
-			...(shape.formerNamespacePrefixes ?? []),
-		].map((namespace) =>
-			namespace === '' ? 'refs/retired/' : `refs/${namespace}/retired/`,
-		),
-	),
-];
-
 const retiredAsWork = (refName: string, shape: IWorkRefShape): string => {
-	const root = retiredRoots(shape).find((each) => refName.startsWith(each));
+	const root = retiredRefRoots(shape).find((each) =>
+		refName.startsWith(each),
+	);
 	const retired = root === undefined ? undefined : refName.slice(root.length);
 	return retired === undefined
 		? refName
@@ -110,7 +100,7 @@ export const carriedFrom = async (
 			'--format=%(refname)',
 			'refs/heads/',
 			'refs/remotes/',
-			...retiredRoots(shape),
+			...retiredRefRoots(shape),
 		]);
 		if (!refs.ok) return undefined;
 		const others = new Set(

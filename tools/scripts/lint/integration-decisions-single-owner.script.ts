@@ -37,6 +37,8 @@ export const DECISION_NAMES: readonly string[] = [
 	'ownedPublicationRefPrefixes',
 	'ownedTrainPrefixes',
 	'publicationPrefixesOf',
+	'retiredRefRoots',
+	'retiredRoots',
 	'underPublication',
 	'underNamespace',
 	'pullRequestReady',
@@ -72,6 +74,10 @@ export const DECISION_SIGNATURES: readonly {
 	{
 		name: 'a culprit marker read off a train branch (culpritsAmong)',
 		pattern: /startsWith\(`\$\{[^}]+\}culprit\/`\)/u,
+	},
+	{
+		name: 'retired roots built from an owned namespace (retiredRefRoots)',
+		pattern: /`refs\/\$\{[^}]*\}\/?retired\/|'refs\/retired\/'/u,
 	},
 	{
 		name: 'train namespaces derived by hand (ownedTrainPrefixes)',
