@@ -100,7 +100,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
 - **Status**: review
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `packages/core/src/lib/work-units/work-unit-rename-namespace.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-rename-namespace.service.spec.ts`, `packages/core/src/lib/contracts/interfaces/namespace-rename.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`
+- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `packages/core/src/lib/work-units/work-unit-rename-namespace.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-rename-namespace.service.e2e.spec.ts`, `packages/core/src/lib/contracts/interfaces/namespace-rename.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary."

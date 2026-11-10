@@ -21,7 +21,7 @@ const policyFor = (development: Record<string, unknown>) =>
 	resolveDevelopmentPolicy({ development });
 
 describe('forge settings projection', () => {
-	it('protects the integration branch under a pull-request policy', () => {
+	it('[<30ms] protects the integration branch under a pull-request policy', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { integration: 'develop', release: 'main' },
@@ -45,7 +45,7 @@ describe('forge settings projection', () => {
 		expect(branch.protection.allow_deletions).toBe(false);
 	});
 
-	it('leaves the integration branch open under a direct policy', () => {
+	it('[<30ms] leaves the integration branch open under a direct policy', () => {
 		// A project that chose direct integration must not have
 		// pull-request rules applied to it.
 		const policy = policyFor({ profile: 'shared-direct' });
@@ -55,7 +55,7 @@ describe('forge settings projection', () => {
 		expect(branch.protection.required_status_checks.contexts).toEqual([]);
 	});
 
-	it('derives the branch names from the policy, never from a constant', () => {
+	it('[<30ms] derives the branch names from the policy, never from a constant', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { integration: 'trunk', release: 'stable' },
@@ -66,7 +66,7 @@ describe('forge settings projection', () => {
 		expect(releaseBranchDocument(policy).name).toBe('stable');
 	});
 
-	it('keeps the release branch at least as strict as integration', () => {
+	it('[<30ms] keeps the release branch at least as strict as integration', () => {
 		const policy = policyFor({ profile: 'shared-direct' });
 		const release = releaseBranchDocument(policy).protection;
 		const integration = integrationBranchDocument(policy).protection;
@@ -79,7 +79,7 @@ describe('forge settings projection', () => {
 		expect(release.allow_deletions).toBe(false);
 	});
 
-	it('never emits a required check the policy did not name', () => {
+	it('[<30ms] never emits a required check the policy did not name', () => {
 		// `ci-complete` was required on main for months while no workflow
 		// produced it, so main could never merge. A projection cannot
 		// invent a context.
@@ -95,7 +95,7 @@ describe('forge settings projection', () => {
 		}
 	});
 
-	it('describes both branches in branch-protection, release first', () => {
+	it('[<30ms] describes both branches in branch-protection, release first', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-pr',
 			integration: { requiredChecks: ['delendai-validate'] },
@@ -109,7 +109,7 @@ describe('forge settings projection', () => {
 		]);
 	});
 
-	it('describes only the integration branch in settings', () => {
+	it('[<30ms] describes only the integration branch in settings', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-pr',
 			integration: { requiredChecks: ['delendai-validate'] },
@@ -120,7 +120,7 @@ describe('forge settings projection', () => {
 		]);
 	});
 
-	it('declares pull-request review with the policy approval counts', () => {
+	it('[<30ms] declares pull-request review with the policy approval counts', () => {
 		// The property the two committed files disagreed about while the
 		// live repository did a third thing. Projecting it means a
 		// reviewer can see PR-required follows from the strategy, and
@@ -144,7 +144,7 @@ describe('forge settings projection', () => {
 		).toEqual({ required_approving_review_count: 1 });
 	});
 
-	it('asks for no review at all when integration is direct', () => {
+	it('[<30ms] asks for no review at all when integration is direct', () => {
 		const policy = policyFor({ profile: 'shared-direct' });
 		expect(
 			integrationBranchDocument(policy).protection
@@ -152,7 +152,7 @@ describe('forge settings projection', () => {
 		).toBeNull();
 	});
 
-	it('lets the release branch require checks integration does not', () => {
+	it('[<30ms] lets the release branch require checks integration does not', () => {
 		// A version gate or a publish dry-run has no meaning on a
 		// day-to-day merge; folding it into one list would force every
 		// candidate to satisfy it.
@@ -174,7 +174,7 @@ describe('forge settings projection', () => {
 		).toEqual(['delendai-validate', 'release-pr-gate']);
 	});
 
-	it('falls back to the integration checks when release names none', () => {
+	it('[<30ms] falls back to the integration checks when release names none', () => {
 		const policy = policyFor({
 			profile: 'shared-checkout-pr',
 			integration: { requiredChecks: ['verify'] },
@@ -203,14 +203,14 @@ describe('required_conversation_resolution is projected at all', () => {
 		integration: { requiredChecks: ['delendai-validate'] },
 	});
 
-	it('asks for it on the release branch', () => {
+	it('[<30ms] asks for it on the release branch', () => {
 		expect(
 			releaseBranchDocument(policy).protection
 				.required_conversation_resolution,
 		).toBe(true);
 	});
 
-	it('does not ask for it on the integration branch', () => {
+	it('[<30ms] does not ask for it on the integration branch', () => {
 		expect(
 			integrationBranchDocument(policy).protection
 				.required_conversation_resolution,
@@ -220,7 +220,7 @@ describe('required_conversation_resolution is projected at all', () => {
 	// The point is that the field EXISTS in the document, not what it
 	// says: an absent property and a `false` one are the same YAML to a
 	// reader and completely different to the thing applying it.
-	it('emits the property even when it is false', () => {
+	it('[<30ms] emits the property even when it is false', () => {
 		expect(
 			Object.hasOwn(
 				integrationBranchDocument(policy).protection,
@@ -241,7 +241,7 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		}
 	).conditions.ref_name.exclude;
 
-	it('allows a publication ref as deep as the work ref it came from', () => {
+	it('[<30ms] allows a publication ref as deep as the work ref it came from', () => {
 		// The canonical publication ref is
 		// `delendai/pr/{agent}/{proposal}-{slice}-g{n}/{topic}`. A `**`
 		// pattern matches one segment, so the forge declined exactly that
@@ -250,14 +250,14 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(exclude).not.toContain('refs/heads/delendai/pr/**');
 	});
 
-	it('admits a train ref and a culprit ref (the queue pushes both)', () => {
+	it('[<30ms] admits a train ref and a culprit ref (the queue pushes both)', () => {
 		// `delendai/train/<sha12>/<members>` and `delendai/train/culprit/<n>`:
 		// without this the forge declined every train and the queue landed
 		// nothing.
 		expect(exclude).toContain('refs/heads/delendai/train/**/*');
 	});
 
-	it('admits the train namespace of every namespace the policy owns, old and new', () => {
+	it('[<30ms] admits the train namespace of every namespace the policy owns, old and new', () => {
 		const migrating = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: {
@@ -274,7 +274,7 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(both).toContain('refs/heads/delendai/train/**/*');
 	});
 
-	it('gives work and publication the same depth', () => {
+	it('[<30ms] gives work and publication the same depth', () => {
 		const work = exclude.filter((p) => p.includes('/wip/'));
 		const publication = exclude.filter((p) => p.includes('/pr/'));
 		expect(work).toHaveLength(1);
@@ -282,7 +282,7 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(publication[0]?.replace('/pr/', '/wip/')).toBe(work[0]);
 	});
 
-	it('follows the namespace the project configured', () => {
+	it('[<30ms] follows the namespace the project configured', () => {
 		const acme = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { namespacePrefix: 'acme' },
@@ -328,7 +328,7 @@ describe('a project with one branch', () => {
 		integration: { requiredChecks: ['verify'] },
 	});
 
-	it('protects its branch once, as the integration branch', () => {
+	it('[<30ms] protects its branch once, as the integration branch', () => {
 		const document = branchProtectionDocument(single);
 
 		expect(document.branches.map((branch) => branch.name)).toEqual([
@@ -337,14 +337,14 @@ describe('a project with one branch', () => {
 		expect(settingsDocument(single).branches).toHaveLength(1);
 	});
 
-	it('declares its branch once in the typed protection module', () => {
+	it('[<30ms] declares its branch once in the typed protection module', () => {
 		const module = branchProtectionModule(single);
 
 		expect(module.match(/name: 'main'/gu)).toHaveLength(1);
 		expect(module).toContain("required_checks: ['verify']");
 	});
 
-	it('allows its branch once in the creation ruleset', () => {
+	it('[<30ms] allows its branch once in the creation ruleset', () => {
 		const exclude = (
 			namespaceRuleset(single) as {
 				conditions: { ref_name: { exclude: readonly string[] } };
@@ -356,7 +356,7 @@ describe('a project with one branch', () => {
 		);
 	});
 
-	it('names the same branch for both roles without changing the result', () => {
+	it('[<30ms] names the same branch for both roles without changing the result', () => {
 		const equal = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: { integration: 'main', release: 'main' },
