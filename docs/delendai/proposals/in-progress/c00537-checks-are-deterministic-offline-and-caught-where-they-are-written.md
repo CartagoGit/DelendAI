@@ -108,6 +108,13 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
   - "The config-block comments are derived from the schema once per process"
   - "Profiled over six init runs, renderInitBundle no longer appears among the costly frames; what remains of an init run is file I/O (atomic writes, fsync, file mutex), which is S6's"
 
+### S9 — The slow-spec issue closes when no offender is left
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/slow-spec-issue.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When the integration run finds no spec over its budget, the CI step closes the open slow-spec issue with a comment naming the run, instead of refreshing it with an empty list; while offenders remain it still refreshes or opens the issue (slow-spec-issue.spec.ts)."
+
 ## acceptance
 
 - The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier
