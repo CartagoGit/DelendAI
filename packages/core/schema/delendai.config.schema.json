@@ -586,6 +586,10 @@
 								"land",
 								"none"
 							],
+							"enumDescriptions": {
+								"land": "the one stateless integrator: it merges what does not overlap and batches what does",
+								"none": "delendai integrates nothing: the forge or a person merges"
+							},
 							"description": "Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges."
 						},
 						"protocol": {

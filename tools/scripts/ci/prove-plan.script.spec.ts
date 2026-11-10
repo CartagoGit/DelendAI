@@ -24,7 +24,7 @@ const job = {
 };
 
 describe('vitestArgsOf', () => {
-	it('runs the specs the imports reach, on the job shard, against the base', () => {
+	it('[<40ms] runs the specs the imports reach, on the job shard, against the base', () => {
 		expect(vitestArgsOf(job, 'abc')).toEqual([
 			'plugins/a',
 			'plugins/b',
@@ -34,7 +34,7 @@ describe('vitestArgsOf', () => {
 		]);
 	});
 
-	it('runs only the listed readers, or the zone unfiltered, or nothing', () => {
+	it('[<20ms] runs only the listed readers, or the zone unfiltered, or nothing', () => {
 		expect(
 			vitestArgsOf(
 				{ ...job, filter: 'readers', readers: 'x.spec.ts y.spec.ts' },
@@ -53,7 +53,7 @@ describe('vitestArgsOf', () => {
 });
 
 describe('earlySteps', () => {
-	it('checks the site translations only when a tool can have changed', () => {
+	it('[<20ms] checks the site translations only when a tool can have changed', () => {
 		const labels = (path: string) =>
 			earlySteps([path]).map(([label]) => label);
 		expect(labels('plugins/a/src/lib/tools/b.tool.ts')).toEqual([
@@ -75,7 +75,7 @@ describe('earlySteps', () => {
 });
 
 describe('isProposalOnly', () => {
-	it('holds only when every changed file is a proposal', () => {
+	it('[<20ms] holds only when every changed file is a proposal', () => {
 		expect(isProposalOnly(['docs/delendai/proposals/a.md'])).toBe(true);
 		expect(
 			isProposalOnly(['docs/delendai/proposals/a.md', 'plugins/x/a.ts']),
@@ -85,7 +85,7 @@ describe('isProposalOnly', () => {
 });
 
 describe('timingTableOf', () => {
-	it('lists the slowest step first', () => {
+	it('[<20ms] lists the slowest step first', () => {
 		const lines = timingTableOf([
 			{ label: 'a', seconds: 3, ok: true },
 			{ label: 'b', seconds: 70, ok: false },
@@ -97,7 +97,7 @@ describe('timingTableOf', () => {
 });
 
 describe('fastSteps', () => {
-	it('rehearses a batch when the integration machinery changed', () => {
+	it('[<20ms] rehearses a batch when the integration machinery changed', () => {
 		const labels = (changed: readonly string[]) =>
 			fastSteps(changed, [], 'b').map(([label]) => label);
 		expect(labels(['tools/scripts/forge/train-assembly.ts'])).toContain(
@@ -107,7 +107,7 @@ describe('fastSteps', () => {
 		expect(labels(['README.md'])).not.toContain('land rehearsal');
 	});
 
-	it('runs the nearest specs with the touched files covered, then judges that coverage', () => {
+	it('[<20ms] runs the nearest specs with the touched files covered, then judges that coverage', () => {
 		const steps = fastSteps(
 			['plugins/x/src/a.ts'],
 			['plugins/x/a.spec.ts'],
@@ -122,7 +122,7 @@ describe('fastSteps', () => {
 		expect(steps[1]?.[1]).toContain('--base=b');
 	});
 
-	it('adds the bun suite for state or proposals code, and runs no tests for none near', () => {
+	it('[<20ms] adds the bun suite for state or proposals code, and runs no tests for none near', () => {
 		expect(
 			fastSteps(['packages/state-sqlite/src/a.ts'], [], 'b').map(
 				([label]) => label,
@@ -135,7 +135,7 @@ describe('fastSteps', () => {
 });
 
 describe('causeLinesOf', () => {
-	it('names a coverage floor, a stale generated file and a manifest budget', () => {
+	it('[<20ms] names a coverage floor, a stale generated file and a manifest budget', () => {
 		expect(
 			causeLinesOf(
 				'a.ts: lines 70% under floor 83%\n  drift: plugins/x/AGENT.md\nmanifest budget: x: over\nok',
@@ -147,7 +147,7 @@ describe('causeLinesOf', () => {
 		]);
 	});
 
-	it('keeps the lines that name a failure, without colour or repeats', () => {
+	it('[<20ms] keeps the lines that name a failure, without colour or repeats', () => {
 		const output = [
 			'all fine',
 			'\u001b[31m FAIL \u001b[0m a.spec.ts > breaks',
@@ -167,13 +167,13 @@ describe('causeLinesOf', () => {
 });
 
 describe('the sectioned checks', () => {
-	it('typechecks against the base the forge diffs against', () => {
+	it('[<20ms] typechecks against the base the forge diffs against', () => {
 		expect(proveGatesOf('abc123')).toEqual([
 			['bun', 'run', 'typecheck', '--', '--base=abc123'],
 		]);
 	});
 
-	it('prints which check families run for a docs-only change and why the others do not', () => {
+	it('[<20ms] prints which check families run for a docs-only change and why the others do not', () => {
 		const lines = familyPlanOf({
 			changed: ['docs/delendai/guide.md'],
 			structural: [],

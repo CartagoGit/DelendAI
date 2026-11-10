@@ -112,7 +112,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | orphan-rescue | keep an orphan candidate moving | DELETED |
 | reap-finished-units | clean finished units on this machine | DELETED (work retire and merge end a unit) |
 | stale-verdict-conflicts | resolve verdict-pack conflicts | REPLACED by land's derived-conflict policy |
-| tools/scripts/proposals/close-approved-proposals (script and spec), sent-back-proposals (its only reader) | close approved proposals in a unit of the queue | DELETED (its only caller was the hydration; closing an approved proposal belongs to proposal_review, folded into S5's lifecycle) |
+| tools/scripts/proposals/close-approved-proposals (script and spec), sent-back-proposals | close a proposal whose every slice is approved, in a review unit and one PR | KEEP (owner: host follower, run after each merge the checkout follows, replacing its old caller the hydration; S5's reconciler takes it over) |
 | generated-merge-driver | derived files never conflict | KEEP (owner: land calls it) |
 | check-workflow-invariants, clone-hygiene, harden-git-hooks, prepare-clone | clone and hook hygiene | KEEP (owner: git hygiene) |
 | ended-reservations, rewrite-llm-attribution | reservations, history rewrite | KEEP (owner: reviews, history) |
@@ -152,7 +152,7 @@ Measured by grep on 2026-11-08 (S1 re-runs it before S4 and fails the build on a
 | package.json script forge:publish | entry point of publish-candidate | DELETED in S5 |
 | package.json scripts forge:rehearse-train, forge:forward-sync, forge:promotion-alerts | rehearsal and promotion phases | KEEP (owner: rehearsal, land) |
 
-Counts: KEEP 56, REPLACED 27, DELETED 29 (of which 7 land in S5 with the publication path). S1 recounts and the cutover spec compares against the recount.
+Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publication path). S1 recounts and the cutover spec compares against the recount.
 
 ## slices
 
@@ -215,9 +215,7 @@ Counts: KEEP 56, REPLACED 27, DELETED 29 (of which 7 land in S5 with the publica
   - "work status shows what is under test, what waits and why, and what landed"
   - "One module in core owns the whole lifecycle of a work ref, its branch and its worktree: created at work enter, deleted when the work lands (its pull request merged) or is retired, on this machine and on the forge, run by the work commands and the land pass, never by an agent remembering. Today the same fact is acted on by work-unit-enter, endFinishedUnits on the host follower, work reap (unit-reaper, worktree-husks, stray refs, retired machinery), ref-lifecycle-guard --reap in land's upkeep, and work retire; S5 folds them into that one module and deletes the rest"
   - "kept-unit-hydration (work enter fast-forwards an idle unit) is deleted with the one-branch-per-unit model: a unit ends when its pull request merges, so no unit is entered again behind the integration branch"
-  - "No proposal in review waits on a person to close it: the approval that finishes its last slice closes it, retried by the lifecycle module, since close-approved-proposals is gone with the hydration"
-  - "The host follower's follow-ups (certify-integration, open-publication-prs) are settled: open-publication-prs goes with the publication path; certification is read from the forge by the decisions module instead of a log the owner machine writes"
-
+  - "The host follower's follow-ups (certify-integration, open-publication-prs, close-approved-proposals) move into the reconciler: certification is read from the forge, the publication path goes, and closing a proposal whose every slice is approved is one deterministic reconciler step after a merge"
 ### S6 — Transition commits folded
 - **Status**: pending
 - **DependsOn**: [S5]

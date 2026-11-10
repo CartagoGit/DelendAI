@@ -11,6 +11,7 @@
  * repository, and this one is about delivery. The shape is unchanged:
  * every axis here is the same schema, moved.
  */
+import { INTEGRATION_ENGINES } from '../contracts/interfaces/integration-engine.interface';
 import { z } from 'zod';
 
 import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
@@ -95,8 +96,10 @@ export const IntegrationAxis = z
 				'The checks the RELEASE branch requires, when they differ from the integration branch’s — a version gate, a changelog check. Leave it empty to use the same list as `requiredChecks`.',
 			)
 			.optional(),
-		engine: z
-			.enum(['land', 'none'])
+		engine: documentedEnum(INTEGRATION_ENGINES, {
+			land: 'the one stateless integrator: it merges what does not overlap and batches what does',
+			none: 'delendai integrates nothing: the forge or a person merges',
+		})
 			.describe(
 				'Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges.',
 			)

@@ -34,8 +34,6 @@ const REMOVED_MODULES = [
 	'reap-finished-units',
 	'stale-verdict-conflicts',
 	'work-ref-fate-agreement',
-	'close-approved-proposals',
-	'sent-back-proposals',
 	'forward-sync-release.yml',
 	'verify-develop-health.yml',
 ] as const;
@@ -50,7 +48,7 @@ const REMOVED_NAMES = [
 	'DELENDAI_CANDIDATE_REFRESH_INTERVAL_MS',
 ] as const;
 
-const escape = (text: string): string =>
+const escapeRegExp = (text: string): string =>
 	text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
 /** A reference by path or import: `/name`, `name.ts`, `'./name'`; a prose mention in a comment is history. */
@@ -58,9 +56,9 @@ const REFERENCE = new RegExp(
 	[
 		...REMOVED_MODULES.map(
 			(name) =>
-				`(?:${escape(name)}(?:\\.script)?\\.(?:ts|yml|interface|constant|spec)|['"/]${escape(name)}['"])`,
+				`(?:${escapeRegExp(name)}(?:\\.script)?\\.(?:ts|yml|interface|constant|spec)|['"/]${escapeRegExp(name)}['"])`,
 		),
-		...REMOVED_NAMES.map((name) => `${escape(name)}\\b`),
+		...REMOVED_NAMES.map((name) => `${escapeRegExp(name)}\\b`),
 	].join('|'),
 	'u',
 );

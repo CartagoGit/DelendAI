@@ -283,16 +283,10 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'it classifies the refs on the forge and checks its namespace ruleset, which no pull request changes; only the guards, the policy they resolve and the workflow that runs them can change its verdict, and every push still runs it.',
 	},
 	{
-		job: 'release-the-queue',
+		job: 'scan-the-integration-branch',
 		touches: 'always',
 		because:
-			'bookkeeping: it only runs on a push to develop, where it wakes the queue after a green certification.',
-	},
-	{
-		job: 'wake-the-queue',
-		touches: 'always',
-		because:
-			'bookkeeping: it wakes the queue when a publication goes green, which no file change describes.',
+			'bookkeeping: it only runs on the integration branch, where it starts the code scanning a merge made with the workflow token does not.',
 	},
 	{
 		job: 'develop-protection-live',
