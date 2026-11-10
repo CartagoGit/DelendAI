@@ -21,6 +21,7 @@ import type { IPolicyAdoption } from './policy-adoption.interface';
 import type { IPolicyGuard } from './policy-guard.interface';
 import type { IPolicyIdentity } from './policy-identity.interface';
 import type { IPolicyPublication } from './publication-unit.interface';
+import type { IPolicyIntegrationEngine } from './integration-engine.interface';
 /** How agents get a working tree to edit. */
 export const WORKSPACE_STRATEGIES = [
 	/** One checkout shared by every agent; nobody changes HEAD. */
@@ -260,7 +261,7 @@ export interface IPolicyCheckpoint {
 }
 
 /** Integration axis — the contract for reaching the integration branch. */
-export interface IPolicyIntegration {
+export interface IPolicyIntegration extends IPolicyIntegrationEngine {
 	readonly strategy: IIntegrationStrategy;
 	readonly requiresPullRequest: boolean;
 	/** Check contexts that must pass. Empty means the forge decides. */

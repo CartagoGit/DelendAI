@@ -11,6 +11,7 @@
  * repository, and this one is about delivery. The shape is unchanged:
  * every axis here is the same schema, moved.
  */
+import { INTEGRATION_ENGINES } from '../contracts/interfaces/integration-engine.interface';
 import { z } from 'zod';
 
 import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
@@ -93,6 +94,28 @@ export const IntegrationAxis = z
 			)
 			.describe(
 				'The checks the RELEASE branch requires, when they differ from the integration branch’s — a version gate, a changelog check. Leave it empty to use the same list as `requiredChecks`.',
+			)
+			.optional(),
+		engine: documentedEnum(INTEGRATION_ENGINES, {
+			land: 'the one stateless integrator: it merges what does not overlap and batches what does',
+			none: 'delendai integrates nothing: the forge or a person merges',
+		})
+			.describe(
+				'Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges.',
+			)
+			.optional(),
+		protocol: z
+			.number()
+			.int()
+			.min(1)
+			.describe(
+				'The integration protocol this repository runs. A process built for an older one refuses to move refs or pull requests until it is restarted. Written by the integration change that raises it; never lower it by hand.',
+			)
+			.optional(),
+		landWithoutChecks: z
+			.boolean()
+			.describe(
+				'Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands.',
 			)
 			.optional(),
 		mergeMethod: z

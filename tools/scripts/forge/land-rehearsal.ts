@@ -1,28 +1,29 @@
 /**
- * train-rehearsal.ts — a train is rehearsed before the machinery that
+ * land-rehearsal.ts — a batch is rehearsed before the machinery that
  * builds it ships.
  *
- * On 2026-11-08 the merge train failed in production five times in a row,
+ * On 2026-11-08 the old queue failed in production five times in a row,
  * one layer at a time: the forge ruleset refused its refs, then the
- * pre-push guard, then the post-merge refresh committed an empty catalog,
- * then the derived files went stale and drift-check refused the push, then
+ * pre-push guard, then a regeneration committed an empty catalog, then
+ * the derived files went stale and drift-check refused the push, then
  * commit-branch-discipline refused its CI checkout. Each was found only
- * when the live queue failed. The rehearsal builds a train exactly as
- * `assembleTrain` does, on a scratch worktree, and runs on it every gate
- * its run and its push will meet, reporting all failures in one pass.
+ * when the live queue failed. The rehearsal builds a batch exactly as
+ * `land` does (`assembleTrain`), on a scratch worktree, and runs on it
+ * every gate its run and its push will meet, reporting all failures in
+ * one pass.
  */
 import { spawn } from 'node:child_process';
 
 import type {
 	IRehearsalGate,
 	IRehearsalResult,
-} from './train-rehearsal.interface';
+} from './land-rehearsal.interface';
 
 /** Git's null object name: the remote side of a ref that does not exist yet. */
 export const NULL_OID = '0'.repeat(40);
 
 /**
- * The paths whose change alters how a train is built, pushed or judged: a
+ * The paths whose change alters how a batch is built, pushed or judged: a
  * change to any of them runs the rehearsal in its proof.
  */
 const INTEGRATION_MACHINERY: readonly RegExp[] = [
@@ -106,7 +107,7 @@ const runGate = (
 	});
 
 /**
- * Run every gate on the assembled train, at most `limit` at once, and
+ * Run every gate on the assembled batch, at most `limit` at once, and
  * return every result: one failure never hides the next.
  */
 export const rehearseGates = async (input: {
@@ -143,15 +144,15 @@ export const reportOf = (
 	return [
 		...results.map(
 			(result) =>
-				`rehearse-train: ${result.ok ? 'ok  ' : 'FAIL'} ${result.label} (${String(result.seconds)}s)`,
+				`rehearse-land: ${result.ok ? 'ok  ' : 'FAIL'} ${result.label} (${String(result.seconds)}s)`,
 		),
 		...failed.flatMap((result) =>
 			result.causes.map(
-				(cause) => `rehearse-train: why ${result.label}: ${cause}`,
+				(cause) => `rehearse-land: why ${result.label}: ${cause}`,
 			),
 		),
 		failed.length === 0
-			? `rehearse-train: the train ${trainRef} passes every gate its run and push will meet`
-			: `rehearse-train: the train ${trainRef} would fail: ${failed.map((result) => result.label).join(', ')}`,
+			? `rehearse-land: the batch ${trainRef} passes every gate its run and push will meet`
+			: `rehearse-land: the batch ${trainRef} would fail: ${failed.map((result) => result.label).join(', ')}`,
 	];
 };
