@@ -2,14 +2,14 @@
 id: x01032
 title: "A review enters its own review unit and cannot record a verdict it has not claimed"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
-last-correlation-id: 670d9592-ebdc-43d3-87e1-f68c66a62e5c
-last-transition-from: in-progress
-last-transition-at: 2026-11-04T15:42:39.015Z
+last-transition-id: 541a2213-79e2-416d-88eb-d2030a5ef9b9
+last-correlation-id: 541a2213-79e2-416d-88eb-d2030a5ef9b9
+last-transition-from: review
+last-transition-at: 2026-11-10T03:13:14.513Z
 shipped-in:
   - "6578eb7c5"
 ---
@@ -46,7 +46,7 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) packages/core/src/lib/work-units/review-kind.service.ts withReviewKind (called at work-unit-enter.service.ts:171): batch with no kind or review -> --kind=revie… — withReviewKind wired into work enter; batch refuses other kinds naming review next; a review/ proposal with no kind becomes the batch review unit. Reading: 'a contradicting --kind is refused' is met for the batch; an explicit kind on a review/ proposal is kept on purpose (fix after review), documented in review-kind.service.ts and specced.
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
