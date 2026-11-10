@@ -118,6 +118,13 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-state: in_review
 - review-implementer: claude-opus-5-5
 
+### S9 — ref-lifecycle reads the pull requests it needs, not their bodies
+- **Status**: pending
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-pr-fields.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "lint:ref-lifecycle asks the forge for every pull request projected to the fields it reads (number, state, merged and closed dates, head ref and sha), so the list no longer outgrows the 32 MB it reads (ENOBUFS on every pull request, run 42749758353)."
+
 ## acceptance
 
 - A server that finds the maintainer lease held by a pid that is dead on the same host takes it over and says so once.

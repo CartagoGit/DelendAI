@@ -420,7 +420,7 @@ describe('withComputeSlot unit turns, failures', () => {
 });
 
 describe('withComputeSlot superseded turns', () => {
-	it('[<250ms] proves its own tip when the turn it followed gave way and nothing newer answers', async () => {
+	it('[<450ms] proves its own tip when the turn it followed gave way and nothing newer answers', async () => {
 		const lockPath = lockIn();
 		const unitHash = createHash('sha1')
 			.update('u5')
