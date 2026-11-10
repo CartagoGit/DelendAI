@@ -18,6 +18,16 @@ const policyFor = (branches: Record<string, unknown>) =>
 const twoBranches = policyFor({ integration: 'trunk', release: 'release/2.x' });
 
 describe('promotionWorkflowDocument', () => {
+	it('[<5ms] is not generated while land is the engine: land promotes', () => {
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				branches: { integration: 'trunk', release: 'stable' },
+				integration: { engine: 'land' },
+			},
+		});
+		expect(promotionWorkflowDocument(policy, 'on-ready')).toBeUndefined();
+	});
+
 	it('runs on the declared cron, between the project branches', () => {
 		const workflow = promotionWorkflowDocument(twoBranches, '0 6 * * 1');
 		expect(workflow?.on).toEqual({
