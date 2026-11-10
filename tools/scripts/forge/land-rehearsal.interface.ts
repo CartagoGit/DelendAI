@@ -1,4 +1,4 @@
-/** One gate a train's run or push will meet, judged on the rehearsed train. */
+/** One gate a batch's run or push will meet, judged on the rehearsed batch. */
 export interface IRehearsalResult {
 	readonly label: string;
 	readonly ok: boolean;
@@ -7,7 +7,7 @@ export interface IRehearsalResult {
 	readonly causes: readonly string[];
 }
 
-/** One command the rehearsal runs on the assembled train. */
+/** One command the rehearsal runs on the assembled batch. */
 export interface IRehearsalGate {
 	readonly label: string;
 	/** A bash script, as the CI job or the hook runs it. */
