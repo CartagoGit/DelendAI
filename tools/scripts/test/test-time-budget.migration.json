@@ -860,7 +860,6 @@
 		"packages/core/tests/src/lib/work-units/work-claim.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-dirty-paths.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-event-journal.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/work-publish.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-ref-moves.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-ref-shape.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-retire.service.e2e.spec.ts",

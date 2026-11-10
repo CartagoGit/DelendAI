@@ -95,7 +95,7 @@ afterEach(() => {
 });
 
 describe('publicationRefFromWorkRef (x00568 S1)', () => {
-	it('keeps the whole name and changes only wip to pr', () => {
+	it('[<30ms] keeps the whole name and changes only wip to pr', () => {
 		expect(
 			publicationRefFromWorkRef(
 				policy,
@@ -104,7 +104,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 		).toBe('refs/heads/delendai/pr/claude-opus-5/x00568-S1-g1/a-topic');
 	});
 
-	it('follows the namespace the project configured, not a hard-coded one', () => {
+	it('[<30ms] follows the namespace the project configured, not a hard-coded one', () => {
 		const mine = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -143,7 +143,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 		).toBe('refs/heads/pr/claude-opus-5/x1-S1-g1/t');
 	});
 
-	it('has no name to keep for a ref outside the work-ref prefix', () => {
+	it('[<30ms] has no name to keep for a ref outside the work-ref prefix', () => {
 		expect(
 			publicationRefFromWorkRef(policy, 'refs/heads/feature/something'),
 		).toBeUndefined();
@@ -152,7 +152,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 		).toBeUndefined();
 	});
 
-	it('agrees with the shape the work ref template states', () => {
+	it('[<30ms] agrees with the shape the work ref template states', () => {
 		// The two templates must differ in exactly one segment. If a
 		// future edit gives publication its own shape, this fails.
 		const work = policy.branches.workRefTemplate
@@ -165,7 +165,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 });
 
 describe('publishWorkUnit (x00553 S5)', () => {
-	it('names the publication ref from the policy prefix', () => {
+	it('[<30ms] names the publication ref from the policy prefix', () => {
 		expect(publicationRefFor(policy, 'a-name')).toBe(
 			'refs/heads/delendai/pr/a-name',
 		);
@@ -175,7 +175,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		);
 	});
 
-	it('publishes, proves it, and then the work ref is gone', () => {
+	it('[<1500ms] publishes, proves it, and then the work ref is gone', () => {
 		const root = repoWithWork();
 		const tip = git(root, 'rev-parse', WORK_REF);
 		const outcome = publish(root);
@@ -198,7 +198,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		]);
 	});
 
-	it('keeps the work ref when asked to', () => {
+	it('[<1500ms] keeps the work ref when asked to', () => {
 		const root = repoWithWork();
 		const outcome = publish(root, { keepWorkRef: true });
 		expect(outcome.published).toBe(true);
@@ -206,7 +206,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
 	});
 
-	it('removes the worktree standing on the ref, even the caller\u2019s own', () => {
+	it('[<1500ms] removes the worktree standing on the ref, even the caller\u2019s own', () => {
 		const root = repoWithWork();
 		// The short branch name is what `work enter` passes, and it is
 		// what attaches the worktree to the ref; a fully-qualified ref
@@ -234,7 +234,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(existsSync(join(root, 'wt'))).toBe(false);
 	});
 
-	it('keeps the caller\u2019s worktree when it holds uncommitted changes', () => {
+	it('[<1500ms] keeps the caller\u2019s worktree when it holds uncommitted changes', () => {
 		const root = repoWithWork();
 		git(
 			root,
@@ -256,7 +256,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(existsSync(join(root, 'wt', 'unsaved.txt'))).toBe(true);
 	});
 
-	it('refuses a work ref that does not exist, and removes nothing', () => {
+	it('[<1500ms] refuses a work ref that does not exist, and removes nothing', () => {
 		const root = repoWithWork();
 		const outcome = publishWorkUnit({
 			root,
@@ -271,7 +271,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
 	});
 
-	it('keeps the work ref when the push fails', () => {
+	it('[<1500ms] keeps the work ref when the push fails', () => {
 		const root = repoWithWork();
 		const outcome = publish(root, { remote: 'nowhere' });
 		expect(outcome.published).toBe(false);
@@ -283,7 +283,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
 	});
 
-	it('refuses to delete a worktree that holds work made after the checkpoint', () => {
+	it('[<1500ms] refuses to delete a worktree that holds work made after the checkpoint', () => {
 		const root = repoWithWork();
 		const wt = join(root, 'wt');
 		git(
@@ -317,7 +317,7 @@ describe('publishWorkUnit (x00553 S5)', () => {
 });
 
 describe('the uncommitted work around a publication (x00635)', () => {
-	it('is left exactly as found in the checkout publishing it', () => {
+	it('[<1500ms] is left exactly as found in the checkout publishing it', () => {
 		const root = repoWithWork();
 		writeFileSync(join(root, 'README.md'), '# edited, not committed\n');
 		writeFileSync(join(root, 'notes.txt'), 'untracked\n');
@@ -339,7 +339,7 @@ describe('publishing holds the work ref against a cadence push', () => {
 	const commonDir = (root: string): string =>
 		git(root, 'rev-parse', '--path-format=absolute', '--git-common-dir');
 
-	it('publishes nothing while another process holds the ref', async () => {
+	it('[<1500ms] publishes nothing while another process holds the ref', async () => {
 		const root = repoWithWork();
 		const held = await holdWorkRef({
 			gitCommonDir: commonDir(root),
@@ -365,7 +365,7 @@ describe('publishing holds the work ref against a cadence push', () => {
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
 	});
 
-	it('waits for the holder, publishes, and releases the ref', async () => {
+	it('[<1500ms] waits for the holder, publishes, and releases the ref', async () => {
 		const root = repoWithWork();
 		const held = await holdWorkRef({
 			gitCommonDir: commonDir(root),
@@ -406,7 +406,7 @@ describe('where a publication is pushed from', () => {
 	const publishedFrom = (record: string): string =>
 		readFileSync(record, 'utf8').split('\n')[0] ?? '';
 
-	it("pushes from the unit's worktree, so a loose file in the shared checkout is not what the hook checks", () => {
+	it("[<1500ms] pushes from the unit's worktree, so a loose file in the shared checkout is not what the hook checks", () => {
 		const root = repoWithWork();
 		const record = recordingHook(root);
 		const worktree = mkdtempSync(join(tmpdir(), 'work-publish-unit-'));
@@ -431,7 +431,7 @@ describe('where a publication is pushed from', () => {
 		expect(readFileSync(join(root, 'loose.md'), 'utf8')).toContain('edit');
 	});
 
-	it('pushes from the shared checkout when the unit has no worktree', () => {
+	it('[<1500ms] pushes from the shared checkout when the unit has no worktree', () => {
 		const root = repoWithWork();
 		const record = recordingHook(root);
 
