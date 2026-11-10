@@ -66,7 +66,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 4/4: (1) git-invocation-memo.helper.spec :52 asks common-dir, remote, config --get, worktree list once; :243 across runners; shared-checkout and work-unit-roots read th… (2) spec :137, :156, :168 memoise merge-base --is-ancestor and rev-list by object id across writes (3) spec :71 a read after a write spawns again, :205 worktree add/remove forget listings, :115 symbolic-ref write forgets (4) work-unit.service.ts:115 runWorkUnit wraps runWorkUnitOnce in withGitInvocationMemo (AsyncLocalStorage); spec :270 nothing remembered outside or between invoca… — Memo scoped per invocation, cleared by writes.
 
 ### S3 — Ref reads once per invocation, and every spawner reports
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/shared/run-command.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/src/lib/work-units/unit-push.service.ts`, `packages/core/src/lib/work-units/work-ref-moves.service.ts`, `packages/core/src/lib/work-units/worktree-agent.service.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/development-policy/stale-runtime-advisory.ts`, `packages/core/src/lib/development-policy/loose-edits-advisory.ts`
 - **Gate**: type
@@ -75,8 +75,10 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "Every module that runs git itself reports through `execGitFileSync` / `execGitFile` (stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches, stale-runtime-advisory, loose-edits-advisory)."
   - "git-invocation-memo.helper.spec.ts proves a ref read is asked once, asked again after a commit through the asynchronous runner, and again after `forgetGitReads`."
 - shipped-in: `d4cd9f4825cd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 3/3: (1) spec :289 resolves a ref and for-each-ref once until a ref is written through any runner; :323 forgets after a non-git process; :115 symbolic-ref reads (2) stranded-edits, unit-push, work-ref-moves, worktree-agent, project-branches import execGitFileSync from git-read.helper (checked); stale-runtime and loose-edit… (3) spec :289 (once, again after write through async runner) and :323 (forgetGitReads) pass — Ref reads once per invocation; spawners report.
 
 ### S4 — One status and one fetch per invocation
 - **Status**: review
