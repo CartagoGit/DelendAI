@@ -2221,7 +2221,6 @@
 		"tools/scripts/governance/promotion-workflow.lib.spec.ts",
 		"tools/scripts/hooks/commit-time-checks.script.spec.ts",
 		"tools/scripts/hooks/refuse-integration-commit.script.spec.ts",
-		"tools/scripts/host/branch-runtime.helper.spec.ts",
 		"tools/scripts/host/forge-seam.service.spec.ts",
 		"tools/scripts/host/host-boot-journal.spec.ts",
 		"tools/scripts/host/host-server.script.spec.ts",

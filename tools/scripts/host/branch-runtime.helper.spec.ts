@@ -69,14 +69,14 @@ const noInstall: Parameters<typeof branchHostScript>[2] = (
 };
 
 describe('the branch flag', () => {
-	it('reads the branch, with or without quotes', () => {
+	it('[<2000ms] reads the branch, with or without quotes', () => {
 		expect(branchFlag(['--branch=main'])).toBe('main');
 		expect(branchFlag(['--branch="main"'])).toBe('main');
 		expect(branchFlag(['--workspace=.'])).toBeUndefined();
 		expect(branchFlag(['--branch='])).toBeUndefined();
 	});
 
-	it('is not passed on to the host', () => {
+	it('[<2000ms] is not passed on to the host', () => {
 		expect(withoutBranchFlag(['--workspace=.', '--branch=main'])).toEqual([
 			'--workspace=.',
 		]);
@@ -84,14 +84,14 @@ describe('the branch flag', () => {
 });
 
 describe('branchHostScript', () => {
-	it('runs the branch from its own tree and leaves the checkout alone', async () => {
+	it('[<2000ms] runs the branch from its own tree and leaves the checkout alone', async () => {
 		const root = repo();
 		const script = await branchHostScript(root, 'main', noInstall);
 		expect(script).toContain('.cache/delendai/branch-runtime/main/');
 		expect(git(root, 'branch', '--show-current')).toBe('develop');
 	});
 
-	it('follows the branch on the next start', async () => {
+	it('[<2000ms] follows the branch on the next start', async () => {
 		const root = repo();
 		await branchHostScript(root, 'main', noInstall);
 		git(root, 'switch', '-q', '--ignore-other-worktrees', 'main');
@@ -108,7 +108,7 @@ describe('branchHostScript', () => {
 		expect(git(tree, 'rev-parse', 'HEAD')).toBe(tip);
 	});
 
-	it('gives each branch its own tree, and one tree to two starts', async () => {
+	it('[<2000ms] gives each branch its own tree, and one tree to two starts', async () => {
 		const root = repo();
 		git(root, 'branch', 'other');
 		const [main, again, other] = await Promise.all([
@@ -120,13 +120,13 @@ describe('branchHostScript', () => {
 		expect(other).toContain('branch-runtime/other/');
 	});
 
-	it('answers nothing for a branch that does not exist', async () => {
+	it('[<2000ms] answers nothing for a branch that does not exist', async () => {
 		expect(
 			await branchHostScript(repo(), 'nope', noInstall),
 		).toBeUndefined();
 	});
 
-	it('refuses a name that could be read as an option', async () => {
+	it('[<2000ms] refuses a name that could be read as an option', async () => {
 		expect(
 			await branchHostScript(repo(), '--upload-pack=x', noInstall),
 		).toBeUndefined();
@@ -134,7 +134,7 @@ describe('branchHostScript', () => {
 });
 
 describe('a pinned release', () => {
-	it('runs the tag from its own tree, whatever the checkout holds', async () => {
+	it('[<2000ms] runs the tag from its own tree, whatever the checkout holds', async () => {
 		const root = repo();
 		git(root, 'tag', releaseTag('0.3.0'));
 		writeFileSync(join(root, 'later.txt'), 'x');
@@ -155,7 +155,7 @@ describe('a pinned release', () => {
 		expect(resolved.label).toContain('release v0.3.0');
 	});
 
-	it('refuses a version with no tag, naming the nearest tags', async () => {
+	it('[<2000ms] refuses a version with no tag, naming the nearest tags', async () => {
 		const root = repo();
 		for (const v of ['0.1.0', '0.2.0', '0.3.0', '0.4.0'])
 			git(root, 'tag', releaseTag(v));
@@ -205,7 +205,7 @@ describe('a pinned release', () => {
 		expect(reason).not.toContain('v0.1.0');
 	});
 
-	it('reads the flag and keeps it from the host', () => {
+	it('[<2000ms] reads the flag and keeps it from the host', () => {
 		expect(versionFlag(['--version="0.3.0"'])).toBe('0.3.0');
 		expect(
 			withoutRuntimeFlags([
@@ -216,7 +216,7 @@ describe('a pinned release', () => {
 		).toEqual(['--workspace=.']);
 	});
 
-	it('reports what it runs at startup', async () => {
+	it('[<2000ms] reports what it runs at startup', async () => {
 		const root = repo();
 		const script = (await branchHostScript(root, 'main', noInstall)) ?? '';
 		expect(branchLabel('main', script)).toMatch(
@@ -227,7 +227,7 @@ describe('a pinned release', () => {
 		);
 	});
 
-	it('from npm runs only the installed version, and says what is not wired', () => {
+	it('[<2000ms] from npm runs only the installed version, and says what is not wired', () => {
 		const root = repo();
 		writeFileSync(join(root, 'package.json'), '{"version":"0.3.0"}');
 		expect(npmVersionHostScript(root, '0.3.0', '/h').ok).toBe(true);
