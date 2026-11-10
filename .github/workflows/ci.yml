@@ -912,7 +912,7 @@ jobs:
                       --report-out=.cache/spec-timings/offenders.md
                   fi
 
-            - name: Open or refresh the slow-spec issue
+            - name: Open, refresh or close the slow-spec issue
               if: env.SCOPE_BASE == '' && steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true' && hashFiles('.cache/spec-timings/offenders.md') != ''
               continue-on-error: true
               env:
@@ -920,8 +920,16 @@ jobs:
               run: |
                   set -euo pipefail
                   title="Slow specs: spec-duration-budget offenders"
-                  body="$(cat .cache/spec-timings/offenders.md)"$'\n'"Found by run ${{ github.run_id }} at ${{ github.sha }}."
                   number="$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
+                  # No offender left: the issue says so and closes, instead
+                  # of being refreshed with an empty list.
+                  if [ ! -s .cache/spec-timings/offenders.md ]; then
+                    if [ -n "$number" ]; then
+                      gh issue close "$number" --comment "No spec is over its budget any more (run ${{ github.run_id }} at ${{ github.sha }})."
+                    fi
+                    exit 0
+                  fi
+                  body="$(cat .cache/spec-timings/offenders.md)"$'\n'"Found by run ${{ github.run_id }} at ${{ github.sha }}."
                   if [ -n "$number" ]; then
                     gh issue edit "$number" --body "$body"
                   else

@@ -2,7 +2,7 @@
  * compute-slot.service.spec.ts — heavy compute on one machine takes turns:
  * a second caller waits (and says for whom), and a dead holder frees the slot.
  */
-import { spawn, spawnSync } from 'node:child_process';
+import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
 	mkdirSync,
@@ -30,6 +30,7 @@ import {
 } from '@delendai/core/lib/shared/compute-slot.service';
 
 const dirs: string[] = [];
+const children: ChildProcess[] = [];
 const lockIn = (): string => {
 	const dir = mkdtempSync(join(tmpdir(), 'compute-slot-'));
 	dirs.push(dir);
@@ -37,12 +38,15 @@ const lockIn = (): string => {
 };
 
 afterEach(() => {
+	for (const proc of children.splice(0))
+		if (proc.exitCode === null && proc.signalCode === null)
+			proc.kill('SIGKILL');
 	for (const dir of dirs.splice(0))
 		rmSync(dir, { recursive: true, force: true });
 });
 
 describe('withComputeSlot', () => {
-	it('runs two concurrent proofs one after the other and names the holder', async () => {
+	it('[<80ms] runs two concurrent proofs one after the other and names the holder', async () => {
 		const lockPath = lockIn();
 		const events: string[] = [];
 		const notices: string[] = [];
@@ -87,7 +91,62 @@ describe('withComputeSlot', () => {
 		expect(process.env[COMPUTE_SLOT_ENV]).toBeUndefined();
 	});
 
-	it('releases the slot when the work throws', async () => {
+	it('[<200ms] tells a waiter each new holder once, then that it got its turn', async () => {
+		const lockPath = lockIn();
+		const gate = () => {
+			let open: () => void = () => undefined;
+			const promise = new Promise<void>((resolve) => {
+				open = resolve;
+			});
+			return { promise, open };
+		};
+		const firstHolds = gate();
+		const secondHolds = gate();
+		const told: string[] = [];
+		const heard = new Map<string, () => void>();
+		const hear = (word: string) =>
+			new Promise<void>((resolve) => heard.set(word, resolve));
+		const toldOfFirst = hear('agent-a');
+		const toldOfSecond = hear('agent-b');
+		const quiet = () => undefined;
+		const first = withComputeSlot({
+			lockPath,
+			label: 'proof of aaa by agent-a',
+			notify: quiet,
+			run: () => firstHolds.promise,
+		});
+		const second = withComputeSlot({
+			lockPath,
+			label: 'proof of bbb by agent-b',
+			notify: quiet,
+			run: () => secondHolds.promise,
+		});
+		const waiter = withComputeSlot({
+			lockPath,
+			label: 'proof of ccc by agent-c',
+			waitNoticeMs: 0,
+			notify: (message) => {
+				told.push(message);
+				for (const [word, resolve] of heard)
+					if (message.includes(`by ${word}`)) resolve();
+			},
+			run: () => 'ran',
+		});
+		await toldOfFirst;
+		firstHolds.open();
+		await toldOfSecond;
+		secondHolds.open();
+		await Promise.all([first, second]);
+		expect(await waiter).toBe('ran');
+		const waits = told.filter((line) => line.includes('is waiting'));
+		expect(waits).toHaveLength(2);
+		expect(waits[0]).toMatch(/holds.*/u);
+		expect(waits[0]).toContain('agent-a (pid');
+		expect(waits[1]).toContain('agent-b (pid');
+		expect(told.at(-1)).toMatch(/got its turn/u);
+	});
+
+	it('[<25ms] releases the slot when the work throws', async () => {
 		const lockPath = lockIn();
 		await expect(
 			withComputeSlot({
@@ -103,7 +162,7 @@ describe('withComputeSlot', () => {
 		).resolves.toBe('ok');
 	});
 
-	it('reclaims the slot from a holder that died without releasing it', async () => {
+	it('[<1000ms] reclaims the slot from a holder that died without releasing it', async () => {
 		const lockPath = lockIn();
 		const service = join(
 			dirname(fileURLToPath(import.meta.url)),
@@ -121,6 +180,7 @@ await withComputeSlot({ staleMs: 600, lockPath: ${JSON.stringify(lockPath)}, lab
 			],
 			{ stdio: ['ignore', 'pipe', 'inherit'] },
 		);
+		children.push(holder);
 		await new Promise<void>((resolve) =>
 			holder.stdout.once('data', () => resolve()),
 		);
@@ -148,7 +208,7 @@ describe('withComputeSlot per unit and tip', () => {
 		return { promise, open };
 	};
 
-	it('joins a second caller on the same tip to the first wait', async () => {
+	it('[<120ms] joins a second caller on the same tip to the first wait', async () => {
 		const lockPath = lockIn();
 		const blocker = gate();
 		const holding = withComputeSlot({
@@ -174,7 +234,7 @@ describe('withComputeSlot per unit and tip', () => {
 		expect(runs).toBe(1);
 	});
 
-	it('proves only the newer tip of one unit', async () => {
+	it('[<120ms] proves only the newer tip of one unit', async () => {
 		const lockPath = lockIn();
 		const blocker = gate();
 		const holding = withComputeSlot({
@@ -211,21 +271,22 @@ describe('withComputeSlot across processes', () => {
 	).href;
 	/**
 	 * A child process asking for the slot on one tip. The holder keeps the
-	 * turn until `releaseFile` exists, so it outlasts the second asker by
-	 * construction, not by a sleep. A joiner raises no notice, so the asker
+	 * turn until the parent writes a line to its stdin, so it outlasts the
+	 * second asker by construction, not by a sleep. It waits on the pipe, so
+	 * it uses no CPU, and the pipe closes when the parent dies, so a child
+	 * never outlives the spec that started it. A joiner raises no notice, so the asker
 	 * says ASKING as it calls; the holder is released only after that, and
 	 * the joiner's one read of the claim comes before the holder can have
 	 * finished (it still has the release, its result and its claim to
 	 * write). That ordering is the one thing here not enforced by a flag.
 	 */
-	const child = (
-		lockPath: string,
-		tip: string,
-		marker: string,
-		releaseFile: string,
-	) => {
+	const child = (lockPath: string, tip: string, marker: string) => {
 		const script = `
-			import { appendFileSync, existsSync } from 'node:fs';
+			import { appendFileSync } from 'node:fs';
+			const released = new Promise((resolve) => {
+				process.stdin.on('data', resolve);
+				process.stdin.on('end', () => process.exit(1));
+			});
 			const { withComputeSlot } = await import(${JSON.stringify(moduleUrl)});
 			console.log('ASKING');
 			const value = await withComputeSlot({
@@ -234,17 +295,17 @@ describe('withComputeSlot across processes', () => {
 				run: async () => {
 					appendFileSync(${JSON.stringify(marker)}, ${JSON.stringify(tip)} + '\\n');
 					console.log('HELD');
-					while (!existsSync(${JSON.stringify(releaseFile)})) {
-						await new Promise((r) => setImmediate(r));
-					}
+					await released;
 					return 'proof-of-' + ${JSON.stringify(tip)};
 				},
 			});
 			console.log('ANSWER ' + value);
+			process.exit(0);
 		`;
 		const proc = spawn('bun', ['-e', script], {
-			stdio: ['ignore', 'pipe', 'inherit'],
+			stdio: ['pipe', 'pipe', 'inherit'],
 		});
+		children.push(proc);
 		let out = '';
 		proc.stdout.on('data', (c: Buffer) => (out += c.toString()));
 		const done = new Promise<string>((resolve, reject) => {
@@ -253,6 +314,9 @@ describe('withComputeSlot across processes', () => {
 		});
 		return {
 			done,
+			release: () => proc.stdin?.write('go\n'),
+			orphan: () => proc.stdin?.end(),
+			exitCode: () => proc.exitCode,
 			said: (word: string) =>
 				waitUntil(`the child said ${word}`, () => out.includes(word), {
 					timeoutMs: 60_000,
@@ -260,15 +324,14 @@ describe('withComputeSlot across processes', () => {
 		};
 	};
 
-	it('joins two processes on one tip and proves it once', async () => {
+	it('[<250ms] joins two processes on one tip and proves it once', async () => {
 		const lockPath = lockIn();
 		const marker = `${lockPath}.ran`;
-		const releaseFile = `${lockPath}.release`;
-		const first = child(lockPath, 'aaa', marker, releaseFile);
+		const first = child(lockPath, 'aaa', marker);
 		await first.said('HELD');
-		const second = child(lockPath, 'aaa', marker, releaseFile);
+		const second = child(lockPath, 'aaa', marker);
 		await second.said('ASKING');
-		writeFileSync(releaseFile, '');
+		first.release();
 		const [one, two] = await Promise.all([first.done, second.done]);
 		expect(one).toContain('ANSWER proof-of-aaa');
 		expect(two).toContain('ANSWER proof-of-aaa');
@@ -276,10 +339,20 @@ describe('withComputeSlot across processes', () => {
 			'aaa',
 		]);
 	});
+
+	it('[<200ms] ends a holder whose parent went away instead of waiting forever', async () => {
+		const lockPath = lockIn();
+		const holder = child(lockPath, 'bbb', `${lockPath}.ran`);
+		await holder.said('HELD');
+		holder.orphan();
+		const out = await holder.done;
+		expect(out).not.toContain('ANSWER');
+		expect(holder.exitCode()).toBe(1);
+	});
 });
 
 describe('withComputeSlot unit turns, failures', () => {
-	it('gives a joiner the failure of the claimant, code included', async () => {
+	it('[<120ms] gives a joiner the failure of the claimant, code included', async () => {
 		const lockPath = lockIn();
 		const ask = () =>
 			withComputeSlot({
@@ -305,7 +378,7 @@ describe('withComputeSlot unit turns, failures', () => {
 		}
 	});
 
-	it('takes over a claim whose process is gone', async () => {
+	it('[<20ms] takes over a claim whose process is gone', async () => {
 		const lockPath = lockIn();
 		const unitHash = createHash('sha1')
 			.update('u3')
@@ -329,7 +402,7 @@ describe('withComputeSlot unit turns, failures', () => {
 		).resolves.toBe('mine');
 	});
 
-	it('runs again after a finished turn of the same tip', async () => {
+	it('[<30ms] runs again after a finished turn of the same tip', async () => {
 		const lockPath = lockIn();
 		let runs = 0;
 		const ask = () =>
@@ -347,7 +420,7 @@ describe('withComputeSlot unit turns, failures', () => {
 });
 
 describe('withComputeSlot superseded turns', () => {
-	it('proves its own tip when the turn it followed gave way and nothing newer answers', async () => {
+	it('[<450ms] proves its own tip when the turn it followed gave way and nothing newer answers', async () => {
 		const lockPath = lockIn();
 		const unitHash = createHash('sha1')
 			.update('u5')
@@ -382,7 +455,7 @@ describe('withComputeSlot superseded turns', () => {
 });
 
 describe('computeSlotPath', () => {
-	it('lives in the shared git directory, and is absent outside a repository', () => {
+	it('[<40ms] lives in the shared git directory, and is absent outside a repository', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'compute-slot-git-'));
 		dirs.push(dir);
 		expect(computeSlotPath(dir)).toBeUndefined();
@@ -394,7 +467,7 @@ describe('computeSlotPath', () => {
 });
 
 describe('withComputeSlot urgent lane', () => {
-	it('runs urgent callers ahead of waiting normals, in order, without interrupting the running proof', async () => {
+	it('[<600ms] runs urgent callers ahead of waiting normals, in order, without interrupting the running proof', async () => {
 		const lockPath = lockIn();
 		const events: string[] = [];
 		const owners: string[] = [];

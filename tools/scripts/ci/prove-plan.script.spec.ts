@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	causeLinesOf,
+	failedOutputPathOf,
 	earlySteps,
 	familyPlanOf,
 	isProposalOnly,
@@ -131,6 +132,17 @@ describe('fastSteps', () => {
 		expect(
 			fastSteps(['README.md'], [], 'b').map(([label]) => label),
 		).toEqual([]);
+	});
+});
+
+describe('failedOutputPathOf', () => {
+	it('[<20ms] keeps each failed step in a file of its own, named after the step', () => {
+		expect(failedOutputPathOf('test:sqlite')).toBe(
+			'.cache/delendai/results/logs/prove-failed/test-sqlite.log',
+		);
+		expect(failedOutputPathOf('tests: the specs nearest the change')).toBe(
+			'.cache/delendai/results/logs/prove-failed/tests-the-specs-nearest-the-change.log',
+		);
 	});
 });
 

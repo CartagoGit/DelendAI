@@ -70,13 +70,23 @@ const REAP = process.argv.includes('--reap');
 /** Where a proposal in progress sits, read on the forge at a ref's tip. */
 const PROPOSALS_IN_PROGRESS = 'docs/delendai/proposals/in-progress';
 
+/** The fields of a pull request this lint reads, and nothing else. */
+export const PULL_REQUEST_FIELDS =
+	'.[] | {number, state, merged_at, closed_at, head: {ref: .head.ref, sha: .head.sha}}';
+
 const ghScalar = (path: string, jq: string): string =>
 	execFileSync('gh', ['api', path, '--jq', jq], {
 		encoding: 'utf8',
 	}).trim();
 
-const gh = (path: string): unknown => {
-	const raw = execFileSync('gh', ['api', '--paginate', path, '--jq', '.[]'], {
+/**
+ * Every item of a paginated list, each projected by `jq`. A projection
+ * that keeps only the fields read matters: every pull request of the
+ * repository, bodies included, outgrew 32 MB and broke the lint on every
+ * pull request (ENOBUFS).
+ */
+const gh = (path: string, jq = '.[]'): unknown => {
+	const raw = execFileSync('gh', ['api', '--paginate', path, '--jq', jq], {
 		encoding: 'utf8',
 		maxBuffer: 32 * 1024 * 1024,
 	});
@@ -527,6 +537,7 @@ const main = (): void => {
 	const pullRequests = (
 		gh(
 			`repos/${REPOSITORY_SLUG}/pulls?state=all&per_page=100`,
+			PULL_REQUEST_FIELDS,
 		) as readonly {
 			readonly number: number;
 			readonly state: string;

@@ -76,9 +76,18 @@ const wrap = (text: string, width: number): readonly string[] => {
  * empty comment teaches nothing and the schema guard is what makes
  * that gap visible.
  */
+let renderedComments: Readonly<Record<string, readonly string[]>> | undefined;
+
 export const renderConfigBlockComments = (): Readonly<
 	Record<string, readonly string[]>
 > => {
+	// The schema is fixed for the life of the process, and converting it to
+	// JSON Schema took about 100 ms per call: every init paid it again.
+	renderedComments ??= Object.freeze(commentsFromSchema());
+	return renderedComments;
+};
+
+const commentsFromSchema = (): Record<string, readonly string[]> => {
 	const schema = z.toJSONSchema(CONFIG_FILE_SCHEMA) as {
 		readonly properties?: Readonly<
 			Record<string, { readonly description?: string }>

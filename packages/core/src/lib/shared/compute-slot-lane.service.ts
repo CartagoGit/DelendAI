@@ -19,6 +19,8 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { NO_RECORDED_HOLDER } from '../contracts/constants/compute-slot.constant';
+
 import type { IUrgentTicket } from '../contracts/interfaces/compute-slot.interface';
 
 export const alive = (pid: number): boolean => {
@@ -51,8 +53,8 @@ interface ISlotOwner {
 
 export const slotHolderOf = async (lockPath: string): Promise<string> => {
 	const owner = await readSlotJson<ISlotOwner>(ownerFile(lockPath));
-	if (owner === undefined) return 'another run';
-	return `${owner.label ?? 'another run'} (pid ${String(owner.pid)})${owner.urgent === undefined ? '' : ` [urgent: ${owner.urgent}]`}`;
+	if (owner === undefined) return NO_RECORDED_HOLDER;
+	return `${owner.label ?? NO_RECORDED_HOLDER} (pid ${String(owner.pid)})${owner.urgent === undefined ? '' : ` [urgent: ${owner.urgent}]`}`;
 };
 
 /** Every urgent turn taken, one JSON line each: the owner's record of jumps. */
