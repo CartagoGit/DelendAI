@@ -10,7 +10,7 @@ on:
     #
     # The promotion's head IS `develop`, so this used to rely on the push
     # run of that commit for `main`'s required `delendai-validate`. That
-    # run no longer exists: the queue merges with the workflow token,
+    # run no longer exists: `land` merges with the workflow token,
     # whose pushes start no workflow, and certifies `develop` with a
     # dispatched run, which the forge does not count towards a pull
     # request. On 2026-10-07 the promotion (#911) sat BLOCKED with the
@@ -41,34 +41,38 @@ on:
     merge_group:
     # A run on request, for a candidate no other event will build. A
     # workflow token's push and pull request start no workflow at all, so
-    # the forward-sync that `forward-sync-release.yml` opens would sit with
-    # its required check absent for good; a dispatch is the one event such
-    # a token may start. The forge resolves a dispatch against the default
-    # branch's copy of this file, so it takes effect from the next
-    # promotion.
-    #
-    # A train (keep-the-queue-moving) dispatches this with `base`, the
-    # integration tip it starts from: it is judged since that commit, so it
-    # runs the union of its members' scopes and not the whole suite.
+    # the forward sync that `land` opens would sit with its required check
+    # absent for good; a dispatch is the one event such a token may start.
     workflow_dispatch:
         inputs:
             base:
                 description: The commit this run is judged since; empty runs everything.
                 required: false
                 default: ''
+    # What follows a merge. `land` merges with the workflow token, whose
+    # push starts no workflow, so the integration branch's CI runs when a
+    # `land` run finishes, judged since the tip that run started from: the
+    # sections the merge reached, not the whole suite. A run whose tip did
+    # not move merged nothing and cancels itself (its first job).
+    workflow_run:
+        workflows: [land]
+        types: [completed]
 
 # The commit a run is judged since: the jobs and tests it runs are what the
 # change touches after it (job-scope, test-zones). A pull request into
-# develop is judged since its base, and a train since the integration tip it
-# starts from. The promotion into main, a push and a dispatch without a base
-# run everything: the full suite runs only on the promotion.
+# develop is judged since its base, and the run after a `land` merge since
+# the tip the pass started from. The promotion into main, a push and a
+# dispatch without a base run everything: the full suite runs only on the
+# promotion.
 env:
-    SCOPE_BASE: ${{ (github.event_name == 'pull_request' && github.base_ref != 'main') && github.event.pull_request.base.sha || inputs.base || '' }}
+    SCOPE_BASE: ${{ (github.event_name == 'pull_request' && github.base_ref != 'main') && github.event.pull_request.base.sha || (github.event_name == 'workflow_run' && github.event.workflow_run.head_sha) || inputs.base || '' }}
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
-# a cancelled required job is not evidence of a green branch.
+# a cancelled required job is not evidence of a green branch. A run after
+# `land` has a group per tip, so a run that merged nothing never displaces
+# a pending run of a tip that did move.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}${{ github.event_name == 'workflow_run' && format('-{0}', github.sha) || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -381,11 +385,27 @@ jobs:
         name: plan-scope
         runs-on: ubuntu-latest
         timeout-minutes: 5
+        # `actions: write` cancels a run that follows no merge.
+        permissions:
+            contents: read
+            actions: write
         outputs:
             plan: ${{ steps.plan.outputs.plan }}
             not-applicable: ${{ steps.plan.outputs.not-applicable }}
             changed: ${{ steps.plan.outputs.changed }}
         steps:
+            # A `land` run that merged nothing left the tip where it started:
+            # this run has nothing to judge, and cancels itself before it plans.
+            - name: Cancel a run that follows no merge
+              if: ${{ github.event_name == 'workflow_run' && github.sha == github.event.workflow_run.head_sha }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              # The cancellation reaches this job too; until it does, nothing
+              # after this step may start.
+              run: |
+                  gh run cancel "${{ github.run_id }}" --repo "${GITHUB_REPOSITORY}"
+                  sleep 240
+
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -424,10 +444,11 @@ jobs:
     plan-tests:
         name: plan-tests
         runs-on: ubuntu-latest
-        # `actions: read` downloads the timings artifact of another run.
+        # `actions: read` downloads the timings artifact of another run;
+        # `write` cancels a run that follows no merge.
         permissions:
             contents: read
-            actions: read
+            actions: write
         # No `needs`. It once waited for `typecheck` and `lint-biome`,
         # after one badly formatted file launched the whole matrix and its
         # ~16 MB of blobs exhausted the Actions artifact storage in a night.
@@ -442,6 +463,18 @@ jobs:
         outputs:
             zones: ${{ steps.plan.outputs.zones }}
         steps:
+            # A `land` run that merged nothing left the tip where it started:
+            # this run has nothing to judge, and cancels itself before it plans.
+            - name: Cancel a run that follows no merge
+              if: ${{ github.event_name == 'workflow_run' && github.sha == github.event.workflow_run.head_sha }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              # The cancellation reaches this job too; until it does, nothing
+              # after this step may start.
+              run: |
+                  gh run cancel "${{ github.run_id }}" --repo "${GITHUB_REPOSITORY}"
+                  sleep 240
+
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -1468,79 +1501,24 @@ jobs:
                   fi
                   bun tools/scripts/lint/branch-protection-guard.script.ts --live
 
-    # A certified integration branch releases the queue. The queue arms
-    # nothing until the integration branch's tip has a green full run
-    # (keep-the-queue-moving), and that run finishes long after the merge
-    # that started it — so without this hand-off a green certification
-    # woke nobody, and the next candidate waited for the hourly schedule,
-    # which runs main's copy of the workflow. A dispatch is the one event
-    # the workflow token may start another workflow with.
-    #
-    # Only a non-PR run, and whatever it concluded. A red certification
-    # wakes the queue too: the queue then looks for the candidate that
-    # repairs the branch and dispatches a full run on it, and that run,
-    # on a publication branch, wakes the queue again when it ends. Without
-    # it a red integration branch held every candidate, the fix included,
-    # until a person merged by hand. The queue always runs on the
-    # integration branch. A failed dispatch warns instead of failing:
-    # turning a green certification red because the queue could not be
-    # woken would block the very merge it tried to release.
-    release-the-queue:
-        name: release-the-queue
+    # `land` merges with the workflow token, and a push made with it starts
+    # no workflow: CodeQL never analysed a merged develop (x00879 S7). The
+    # certified tip is analysed here instead. A failed dispatch warns: a
+    # green certification must not turn red because a scan could not start.
+    scan-the-integration-branch:
+        name: scan-the-integration-branch
         needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/delendai/pr/') || startsWith(github.ref, 'refs/heads/delendai/train/')))) }}
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        permissions:
-            actions: write
-            contents: read
-        steps:
-            - name: Dispatch the queue on the integration branch
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: |
-                  gh workflow run keep-the-queue-moving.yml \
-                    --ref develop --repo "${GITHUB_REPOSITORY}" \
-                    || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
-            # The queue merges with the workflow token, and a push made with
-            # it starts no workflow: CodeQL never analysed a merged develop
-            # (x00879 S7). The certified tip is analysed here instead.
-            - name: Dispatch code scanning on the integration branch
-              if: ${{ github.ref == 'refs/heads/develop' }}
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: |
-                  gh workflow run codeql.yml \
-                    --ref develop --repo "${GITHUB_REPOSITORY}" \
-                    || echo "::warning::could not dispatch code scanning on develop"
-
-    # A publication that goes green wakes the queue, which arms every
-    # candidate that is green at that moment. Before, the queue woke only
-    # after a certification of the integration branch or on the hourly
-    # schedule, so a pull request green at :18 waited until :17 of the next
-    # hour to be armed, and a hundred of them landed in hourly waves.
-    # Waking per green run coalesces by itself: the queue's concurrency
-    # group keeps one run waiting, so a burst of green runs costs one pass
-    # that arms them together. Only the repository's own publication
-    # branches: a fork's token cannot dispatch, and nothing else is a
-    # candidate. `!cancelled()` because without a status function the
-    # condition also requires every job upstream to have succeeded, and
-    # the jobs a pull request scopes out are skipped: the first run of
-    # this job was skipped on a green publication (#1578).
-    wake-the-queue:
-        name: wake-the-queue
-        needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name == 'pull_request' && needs.delendai-validate.result == 'success' && startsWith(github.head_ref, 'delendai/pr/') && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:
             actions: write
             contents: read
         steps:
-            - name: Dispatch the queue on the integration branch
+            - name: Dispatch code scanning on the integration branch
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
-                  gh workflow run keep-the-queue-moving.yml \
+                  gh workflow run codeql.yml \
                     --ref develop --repo "${GITHUB_REPOSITORY}" \
-                    || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
+                    || echo "::warning::could not dispatch code scanning on develop"

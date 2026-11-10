@@ -118,8 +118,9 @@ const mirror = async (
  */
 export const linkSharedDependencies = async (
 	path: string,
+	/** Where the dependencies come from; the clone's shared checkout unless named. */
+	shared: string | undefined = sharedCheckout(path),
 ): Promise<IUnitDependencies | undefined> => {
-	const shared = sharedCheckout(path);
 	if (shared === undefined || resolve(shared) === resolve(path))
 		return undefined;
 	for (const { lockfile } of UNIT_INSTALL_BY_LOCKFILE) {

@@ -377,6 +377,16 @@ export const createFakeWorld = (
 			return { conflicting, sha: head, regenerated };
 		},
 		treeOf: (head) => treeKey(trees.get(head) ?? {}),
+		mergedTree: ({ tip: at, members }) => {
+			const tree = { ...(trees.get(at) ?? {}) };
+			for (const member of members) {
+				const pr = get(member.number);
+				if (conflictAgainst(pr.change, pr.testedBase) === 'authored')
+					return undefined;
+				Object.assign(tree, pr.change);
+			}
+			return treeKey(tree);
+		},
 	};
 	return { world, forge, git };
 };

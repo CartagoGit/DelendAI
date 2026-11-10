@@ -499,14 +499,6 @@ post-merge:
         reseed-proposal-counters:
             run: bun tools/scripts/proposals/sync-proposal-counters.script.ts >/dev/null 2>&1 || true
 
-        # x00554 S2 — the moment a candidate goes stale is the moment the
-        # integration branch moves, and this is the machine holding a
-        # credential the forge will build with. It abstains in an agent
-        # worktree and on any branch but the integration one, and never
-        # fails the hook: the merge has already happened.
-        hydrate-candidates:
-            run: bun tools/scripts/git/hydrate-candidates-after-merge.script.ts
-
         # A unit whose work this merge brought in has nothing left to do:
         # its worktree and local branch go, unless the worktree holds an
         # edit of its own. Left to a person, delivered units stayed for
