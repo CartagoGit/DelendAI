@@ -47,7 +47,7 @@ Integration machinery that is only exercised by the live queue fails the queue f
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) train-rehearsal.script.ts main(): assembleTrain(rehearsal:true, regenerateWith(GENERATED_REFRESH_COMMANDS)), pre-push hook with prePushStdin(ref,sha), STATIC_C… (2) train-rehearsal.ts INTEGRATION_MACHINERY (forge/, ci/, hooks/, guard lints, development-policy/, .github/workflows/, lefthook.yml); prove-plan.script.ts:400-40… (3) Notes: 9 gates, 173 s wall, 440 s CPU, 1.1 GB; runGate spawn timeout default 900 s (--timeout=); spec 'bounds a gate by its timeout' green — Rehearsal builds the train like assembleTrain, runs pre-push + selected static/governance lints, reports all failures; wired into prove-plan; timeout-bounded; 5 specs/66 tests green on 6578eb7c5
 
 ### S2 — Honest bisection
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/forge/train-fallback.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: none
 - acceptance:
@@ -55,8 +55,10 @@ Integration machinery that is only exercised by the live queue fails the queue f
   - "One issue for it is opened or refreshed, and the members take the individual landing path"
   - "Specs cover the exonerated member and the still-blamed member"
 - shipped-in: `9bddbd7dfcc6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 3/3: (1) queue-order.ts runTrain culprit branch returns before ports.blame when ports.trainFault (requiredChecksVerdict on member head, keep-the-queue-moving.script.ts)… (2) keep-the-queue-moving reportTrainRed creates or edits the single 'merge train red on its own checks' issue; train-fallback.ts reportTrainRed calls fail() so me… (3) queue-order.spec cases trainFault ['lint-governance'] (exonerated, line 261) and trainFault undefined (blamed, line 293), green — runTrain consults trainFault before blame; one issue; members land individually; both cases specced
 
 ### S3 — CI detection is agnostic
 - **Status**: review
