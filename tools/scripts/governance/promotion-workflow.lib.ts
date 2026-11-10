@@ -52,7 +52,7 @@ const triggerOf = (schedule: string): Readonly<Record<string, unknown>> => ({
 
 /**
  * The workflow document, or nothing when the project has nowhere to
- * promote to or no cadence to promote on.
+ * promote to, no cadence to promote on, or `land` promoting for it.
  */
 export const promotionWorkflowDocument = (
 	policy: IResolvedDevelopmentPolicy,
@@ -61,6 +61,9 @@ export const promotionWorkflowDocument = (
 	const { integration, release } = policy.branches;
 	if (schedule === undefined || schedule.trim() === '') return undefined;
 	if (release === integration) return undefined;
+	// `land` promotes the integration branch once its checks finish: a
+	// second actor on a clock would decide the same thing apart from it.
+	if (policy.integration.engine === 'land') return undefined;
 	return {
 		name: 'open-promotion',
 		on: triggerOf(schedule.trim()),

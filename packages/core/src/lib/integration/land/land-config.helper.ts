@@ -6,7 +6,7 @@
  * sizes a batch is passed in by whoever wires `land` into the project.
  */
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
-import { ownedNamespaces } from '../decisions/namespaces.helper';
+import { ownedBatchPrefixes } from '../decisions/namespaces.helper';
 import { LAND_BATCH_CAPACITY, LAND_QUEUE_SEGMENT } from './land.constant';
 import type { ILandConfig } from './land.interface';
 
@@ -17,14 +17,14 @@ export const landConfigFromPolicy = (
 		readonly batchCapacity?: number;
 	} = {},
 ): ILandConfig => {
-	const [namespace = ''] = ownedNamespaces(policy.branches);
+	const [batchPrefix = `${LAND_QUEUE_SEGMENT}/`] = ownedBatchPrefixes(
+		policy.branches,
+	);
 	return {
 		integrationBranch: policy.branches.integration,
 		releaseBranch: policy.branches.release,
-		batchPrefix:
-			namespace === ''
-				? `${LAND_QUEUE_SEGMENT}/`
-				: `${namespace}/${LAND_QUEUE_SEGMENT}/`,
+		batchPrefix,
+		withoutChecks: policy.integration.landWithoutChecks,
 		mergeMethod: policy.integration.mergeMethod,
 		requiredChecks: policy.integration.requiredChecks,
 		batchCapacity: project.batchCapacity ?? LAND_BATCH_CAPACITY,

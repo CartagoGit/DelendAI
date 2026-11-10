@@ -14,7 +14,7 @@
  *
  * Pure: the forge and git are read by the caller.
  */
-import type { IArmingCheckRun } from './queue-arming.interface';
+import type { ISectionCheckRun } from './section-health.interface';
 
 /** The title every urgent repair of a red promotion starts with. */
 export const REPAIR_TITLE_PREFIX = 'urgent repair:';
@@ -33,9 +33,9 @@ export const zoneOfCheck = (name: string): string | undefined =>
 		: undefined;
 
 const byZone = (
-	checks: readonly IArmingCheckRun[],
-): ReadonlyMap<string, readonly IArmingCheckRun[]> => {
-	const zones = new Map<string, IArmingCheckRun[]>();
+	checks: readonly ISectionCheckRun[],
+): ReadonlyMap<string, readonly ISectionCheckRun[]> => {
+	const zones = new Map<string, ISectionCheckRun[]>();
 	for (const check of checks) {
 		const zone = zoneOfCheck(check.name);
 		if (zone !== undefined)
@@ -46,7 +46,7 @@ const byZone = (
 
 /** The zones with a shard that failed. Sorted. */
 export const failedZonesOf = (
-	checks: readonly IArmingCheckRun[],
+	checks: readonly ISectionCheckRun[],
 ): readonly string[] =>
 	[...byZone(checks)]
 		.filter(([, runs]) =>
@@ -57,7 +57,7 @@ export const failedZonesOf = (
 
 /** The zones every shard of which ran and passed. */
 export const passedZonesOf = (
-	checks: readonly IArmingCheckRun[],
+	checks: readonly ISectionCheckRun[],
 ): ReadonlySet<string> =>
 	new Set(
 		[...byZone(checks)]

@@ -25,7 +25,7 @@ const job = {
 };
 
 describe('vitestArgsOf', () => {
-	it('[<20ms] runs the specs the imports reach, on the job shard, against the base', () => {
+	it('[<40ms] runs the specs the imports reach, on the job shard, against the base', () => {
 		expect(vitestArgsOf(job, 'abc')).toEqual([
 			'plugins/a',
 			'plugins/b',
@@ -98,14 +98,14 @@ describe('timingTableOf', () => {
 });
 
 describe('fastSteps', () => {
-	it('[<20ms] rehearses a train when the integration machinery changed', () => {
+	it('[<20ms] rehearses a batch when the integration machinery changed', () => {
 		const labels = (changed: readonly string[]) =>
 			fastSteps(changed, [], 'b').map(([label]) => label);
 		expect(labels(['tools/scripts/forge/train-assembly.ts'])).toContain(
-			'train rehearsal',
+			'land rehearsal',
 		);
-		expect(labels(['lefthook.yml'])).toContain('train rehearsal');
-		expect(labels(['README.md'])).not.toContain('train rehearsal');
+		expect(labels(['lefthook.yml'])).toContain('land rehearsal');
+		expect(labels(['README.md'])).not.toContain('land rehearsal');
 	});
 
 	it('[<20ms] runs the nearest specs with the touched files covered, then judges that coverage', () => {

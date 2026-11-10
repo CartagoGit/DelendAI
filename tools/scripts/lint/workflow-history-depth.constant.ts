@@ -23,7 +23,7 @@ export const HISTORY_HUNGRY: readonly RegExp[] = [
 	// The argv form. Scripts here do not write `git merge` as text; they
 	// call `execFileSync('git', ['merge', …])` or a local `git([…])`
 	// helper, so a text-only rule would have missed the very failure that
-	// prompted this check — `forge:refresh` merging inside a shallow
+	// prompted this check — the old candidate refresh merging inside a shallow
 	// clone. Anchored on the quoted subcommand so an unrelated word
 	// `merge` in prose does not fire.
 	/\[[^\]]{0,120}?['"]merge['"]\s*,/u,
