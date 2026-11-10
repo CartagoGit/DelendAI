@@ -69,15 +69,17 @@ Owner-reported defect, 2026-11-05: the gpt-5.3-codex reviewer recorded `request_
 - review-log: approved by claude-sonnet-5-5 — verified at fdcfc8e56252, validate exit 0 and tests 92/92 claimed, no recorded run cited; acceptance 2/2: (1) recovery-tools.ts restoreReviewMoves is wired to proposal_reconcile_folder, dry run by default; review-restore service and tool specs pass; no new tool (2) Live dry run on develop returns wouldChange=[]; the ten of PR 1802 are exercised only through same-shape spec fixtures, the PR tree no longer holds them in in-… — Repair verified; PR 1802 tree covered by fixtures only.
 
 ### S3 — The stage of a slice is derived from recorded facts
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/swarm/slice-stage.ts`, `plugins/proposals/src/lib/contracts/interfaces/slice-stage.interface.ts`, `plugins/proposals/tests/src/lib/swarm/slice-stage.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A pure function maps a slice to pending, in-progress, implemented, proved, in_review, changes_requested, reviewed, integrated, released or retired from its recorded facts (`Status`, `review-state`, `shipped-in`, a passed proof, the delivering commit on the integration and on the release branch); specs cover one slice per stage and a slice awaiting review."
 - shipped-in: `c5b48c83261d`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at 747c1f2e3f51, validate exit 0 and tests 92/92 claimed, no recorded run cited; acceptance 1/1: (1) swarm/slice-stage.ts sliceStage and stageCounts; slice-stage.spec.ts it.each covers each stage plus the awaiting-review case; passes — Pure stage function, one case per stage.
 
 ### S4 — Boards and status show the stage
 - **Status**: review
