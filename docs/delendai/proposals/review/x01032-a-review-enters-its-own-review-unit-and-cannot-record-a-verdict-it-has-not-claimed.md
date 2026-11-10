@@ -33,7 +33,7 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 
 ### S1 — work enter derives the review kind
 - **Status**: review
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "work enter for proposal batch, or for a proposal in review/, derives kind review and topic verdicts itself; a contradicting --kind is refused naming the right command (review next), and a spec covers each."
@@ -46,7 +46,8 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "review_claim and review_queue, called with no unit, enter or reuse the caller's review unit, so a reviewer never chooses a kind; a spec shows an agent with no unit ending in kind review."
+  - "review_claim called outside a review unit writes nothing and refuses, naming the one way in (`review next`, which derives kind review); review_queue stays read-only and reads the caller's review unit when one exists; a spec covers the refusal."
+- notes: The first acceptance had the tools enter the unit. One way to enter a review unit already exists (`work enter` derives kind review, S1), so a second entry inside two tools would add a path, make a read-only queue create a worktree, and couple the proposals plugin to the work-unit service for every host. The refusal names the single command, costs a reviewer one call, and needs no host-specific behaviour. S1 also named a spec that q00045 renamed to `.e2e.spec.ts`; the path is corrected.
 - shipped-in: `0fb7224c8398`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
