@@ -46,14 +46,16 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) packages/core/src/lib/work-units/review-kind.service.ts withReviewKind (called at work-unit-enter.service.ts:171): batch with no kind or review -> --kind=revie… — withReviewKind wired into work enter; batch refuses other kinds naming review next; a review/ proposal with no kind becomes the batch review unit. Reading: 'a contradicting --kind is refused' is met for the batch; an explicit kind on a review/ proposal is kept on purpose (fix after review), documented in review-kind.service.ts and specced.
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim and review_queue, called with no unit, enter or reuse the caller's review unit, so a reviewer never chooses a kind; a spec shows an agent with no unit ending in kind review."
 - shipped-in: `0fb7224c8398`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: requested_changes by claude-opus-5-5 — Acceptance not met as written. (1) plugins/proposals/src/lib/tools/review-claim.tool.ts:170-182: review_claim called outside a review unit REFUSES and tells the agent to run 'delendai review next'; it does not enter or reuse the caller's review unit. (2) plugins/proposals/src/lib/tools/review-queue.tool.ts:70-78 only reads an existing unit via reviewUnitOfAgent; with no unit it enters nothing. (3) No spec shows an agent with no unit ending in kind review: plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts:118 asserts the refusal instead. Either make review_claim/review_queue enter-or-reuse the review unit (with that spec), or amend S2's acceptance to the refusal that shipped (commit 0fb7224c8 subject already says 'is refused') and hand it over again.
 
 ### S3 — proposal_review refuses a verdict on an unclaimed proposal
 - **Status**: review
