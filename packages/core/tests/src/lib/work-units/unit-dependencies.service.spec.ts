@@ -20,7 +20,7 @@ describe('installUnitDependencies', () => {
 		return dir;
 	};
 
-	it('leaves a worktree that already has its modules, or has no lockfile, as it is', async () => {
+	it('[<150ms] leaves a worktree that already has its modules, or has no lockfile, as it is', async () => {
 		const withModules = unit({ 'bun.lock': '{}' });
 		mkdirSync(join(withModules, 'node_modules'));
 		expect(await installUnitDependencies(withModules, {})).toEqual({
@@ -32,7 +32,7 @@ describe('installUnitDependencies', () => {
 		});
 	});
 
-	it('installs nothing when told off', async () => {
+	it('[<150ms] installs nothing when told off', async () => {
 		expect(
 			await installUnitDependencies(unit({ 'bun.lock': '{}' }), {
 				DELENDAI_UNIT_INSTALL: 'off',
@@ -42,7 +42,7 @@ describe('installUnitDependencies', () => {
 		});
 	});
 
-	it('says what failed and the command that installs, never failing the entry', async () => {
+	it('[<150ms] says what failed and the command that installs, never failing the entry', async () => {
 		const answer = await installUnitDependencies(
 			unit({
 				'package.json':
@@ -54,6 +54,33 @@ describe('installUnitDependencies', () => {
 		expect(answer).toMatchObject({
 			status: 'failed',
 			command: 'bun install --frozen-lockfile --ignore-scripts',
+		});
+	});
+
+	it('[<150ms] treats modules missing a declared dependency as incomplete, and installs', async () => {
+		const partial = unit({
+			'package.json':
+				'{"name":"u","devDependencies":{"typescript":"5.0.0","local":"workspace:*"}}',
+			'bun.lock': 'not a lockfile',
+		});
+		mkdirSync(join(partial, 'node_modules'));
+		expect(await installUnitDependencies(partial, {})).toMatchObject({
+			status: 'failed',
+			command: 'bun install --frozen-lockfile --ignore-scripts',
+		});
+	});
+
+	it('[<150ms] leaves modules that hold every declared dependency alone', async () => {
+		const complete = unit({
+			'package.json':
+				'{"name":"u","dependencies":{"left-pad":"1.3.0","sibling":"workspace:*"}}',
+			'bun.lock': '{}',
+		});
+		mkdirSync(join(complete, 'node_modules', 'left-pad'), {
+			recursive: true,
+		});
+		expect(await installUnitDependencies(complete, {})).toEqual({
+			status: 'present',
 		});
 	});
 });

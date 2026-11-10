@@ -13,7 +13,7 @@
  * gives the command.
  */
 import { execFile } from 'node:child_process';
-import { access } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
@@ -34,15 +34,54 @@ const exists = (path: string): Promise<boolean> =>
 		() => false,
 	);
 
+/** Specs that name a local package, which no registry install fetches. */
+const LOCAL_SPEC = /^(?:workspace|file|link|portal):/u;
+
+/**
+ * The dependencies `package.json` declares that `node_modules` lacks. A
+ * `node_modules` folder alone proved nothing: a worktree left with an
+ * interrupted or partial install passed for complete, and its proof then
+ * failed late on a missing binary (`Missing workspace TypeScript binary`).
+ */
+const missingDeclared = async (path: string): Promise<readonly string[]> => {
+	let manifest: Record<string, unknown>;
+	try {
+		manifest = JSON.parse(
+			await readFile(join(path, 'package.json'), 'utf8'),
+		) as Record<string, unknown>;
+	} catch {
+		return [];
+	}
+	const declared = ['dependencies', 'devDependencies'].flatMap((field) => {
+		const group = manifest[field];
+		return typeof group === 'object' && group !== null
+			? Object.entries(group as Record<string, unknown>).filter(
+					([, spec]) =>
+						typeof spec === 'string' && !LOCAL_SPEC.test(spec),
+				)
+			: [];
+	});
+	const present = await Promise.all(
+		declared.map(([name]) => exists(join(path, 'node_modules', name))),
+	);
+	return declared.flatMap(([name], index) =>
+		present[index] === true ? [] : [name],
+	);
+};
+
 export const installUnitDependencies = async (
 	path: string,
 	env: NodeJS.ProcessEnv = process.env,
 ): Promise<IUnitDependencies> => {
 	if (env[UNIT_INSTALL_VARIABLE] === 'off')
 		return { status: 'skipped', reason: `${UNIT_INSTALL_VARIABLE}=off` };
-	if (await exists(join(path, 'node_modules'))) return { status: 'present' };
-	const linked = await linkSharedDependencies(path);
-	if (linked !== undefined) return linked;
+	const hasModules = await exists(join(path, 'node_modules'));
+	if (hasModules && (await missingDeclared(path)).length === 0)
+		return { status: 'present' };
+	if (!hasModules) {
+		const linked = await linkSharedDependencies(path);
+		if (linked !== undefined) return linked;
+	}
 	let install: (typeof UNIT_INSTALL_BY_LOCKFILE)[number] | undefined;
 	for (const candidate of UNIT_INSTALL_BY_LOCKFILE)
 		if (await exists(join(path, candidate.lockfile))) {
