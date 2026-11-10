@@ -30,6 +30,13 @@ import {
 	deliverUnit,
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
+import { runGitCommand } from '@delendai/core/runtime';
+import {
+	commitToolWrites,
+	dirtyPathsOf,
+	toolCommitSubject,
+} from '../lib/work-deliver-commit.service';
+import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -52,6 +59,9 @@ export const withSlicesView = (
 	}
 	return { ...result, data: { ...result.data, read: SLICES_VIEW_HINT } };
 };
+
+/** The tool whose write a delivery commits. */
+const TRANSITION_TOOL = 'delendai_proposals_proposal_transition';
 
 /** The flag that makes `work enter` print the worktree's path and nothing else. */
 const PRINT_PATH_FLAG = '--print-path';
@@ -164,7 +174,7 @@ export const createWorkCommand = (): ICliCommand => ({
 					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
 				preflight: (checkout) =>
 					answerOf(
-						request(ctx, 'delendai_proposals_proposal_transition', {
+						request(ctx, TRANSITION_TOOL, {
 							id,
 							to: 'review',
 							reason,
@@ -181,15 +191,29 @@ export const createWorkCommand = (): ICliCommand => ({
 					if (to === 'review' && urgent !== undefined) {
 						await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
 					}
-					return answerOf(
-						request(ctx, 'delendai_proposals_proposal_transition', {
+					const where = checkout ?? ctx.cwd;
+					const git: IGitInCheckout = (gitArgs) =>
+						runGitCommand(where, gitArgs);
+					const dirtyBefore = dirtyPathsOf(git);
+					const answer = await answerOf(
+						request(ctx, TRANSITION_TOOL, {
 							id,
 							to,
 							reason,
 							...(agent === undefined ? {} : { agent }),
-							checkout: checkout ?? ctx.cwd,
+							checkout: where,
 						}),
 					);
+					// The tool's write is committed by the tool's flow, before
+					// the proof reads the tree or anything else commits it.
+					const refusal = commitToolWrites(
+						git,
+						dirtyBefore,
+						toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
+					);
+					return refusal === undefined
+						? answer
+						: { ok: false, reason: refusal };
 				},
 			});
 		}
