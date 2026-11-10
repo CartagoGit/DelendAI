@@ -34,7 +34,8 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 
 ### S1 — Former prefixes are part of the policy
 - **Status**: review
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`, `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/tests/src/lib/development-policy/owned-ref-prefixes.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `packages/core/tests/src/lib/integration/decisions/namespaces.helper.spec.ts`
+- note: q00046 S2 moved owned-ref-prefixes (and S2's git-guard-namespaces) into the integration decisions module; these Files name where the logic lives now.
 - **Gate**: type
 - acceptance:
   - "No setting covers the transition today (checked: namespacePrefix, workRefTemplate, workRefPrefix, publicationRefPrefix, foreignRefPrefixes), so one is added: `development.branches.formerNamespacePrefixes` (default []), documented as transition-only."
@@ -47,7 +48,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S2 — Guards and ref identity recognise both prefixes
 - **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`, `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/tests/src/lib/development-policy/owned-work-ref-parser.spec.ts`, `packages/core/src/lib/contracts/interfaces/owned-work-ref-shape.interface.ts`
+- **Files**: `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`, `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/tests/src/lib/development-policy/owned-work-ref-parser.spec.ts`, `packages/core/src/lib/contracts/interfaces/owned-work-ref-shape.interface.ts`
 - **Gate**: type
 - acceptance:
   - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix; every NEW unit and publication is named under the current prefix by `work enter` and `work publish` (the guard does not refuse a branch-create there, which re-entering an old unit needs)."
@@ -75,7 +76,8 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S4 — Queue, publications and reapers take the prefix from the policy
 - **Status**: review
 - **DependsOn**: [S2]
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`, `tools/scripts/forge/publication-prefixes.ts`, `tools/scripts/forge/publication-prefixes.spec.ts`, `packages/cli/src/lib/review/review-releases.service.spec.ts`
+- **Files**: `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`, `packages/cli/src/lib/review/review-releases.service.spec.ts`
+- note: q00046 S4 replaced the old queue (keep-the-queue-moving, candidate-disposition, publication-prefixes, maintain-ref-namespace) with land, which reads the owned prefixes from the decisions module; those files are gone.
 - **Gate**: type
 - acceptance:
   - "The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix."
@@ -88,7 +90,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S5 — Forge rules and CI filters follow the policy
 - **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `package.json`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `packages/core/tests/src/lib/integration/decisions/namespaces.helper.spec.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
+- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `package.json`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
 - **Gate**: type
 - acceptance:
   - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix, through the decisions module's `allowedRefPatterns`."
