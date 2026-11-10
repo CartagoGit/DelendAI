@@ -35,7 +35,7 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | --- | --- | --- | --- | --- | --- | --- |
 | overview full | managed | 2,492 | 623 | 11,000 | 11,100 | within hard |
 | overview compact | managed | 938 | 235 | 1,450 | 1,500 | within hard |
-| overview full (native) | native | 14,799 | 3700 | 27,000 | 28,000 | within hard |
+| overview full (native) | native | 14,775 | 3694 | 27,000 | 28,000 | within hard |
 | overview compact (native) | native | 2,483 | 621 | 4,400 | 4,500 | within hard |
 | auto_work idle | native | 159 | 40 | 2,400 | 2,600 | within hard |
 | auto_work work plan | native | 2,263 | 566 | 2,400 | 2,600 | within hard |
@@ -96,7 +96,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | docs-web | docs-web | adaptive | managed | dynamic-client | 8 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,253 | n/a | within hard | n/a | none |
 | everything | everything | native | managed | tokens-gate | 58 | 236 | 296,645 | 74162 | 237,381 | 21,727 | 69,667 | 167,714 | 36,062 | 8,012 | n/a | within hard | within hard | none |
 | everything | everything | adaptive | managed | dynamic-client | 58 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 2,138 | n/a | within hard | n/a | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 325,273 | 81319 | 264,386 | 22,738 | 74,953 | 189,433 | 80,023 | 7,296 | 151 | over warning (320,000B) | over hard (80,000B) | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 325,249 | 81313 | 264,386 | 22,714 | 74,953 | 189,433 | 79,999 | 7,296 | 151 | over warning (320,000B) | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,835 | n/a | within hard | n/a | none |
 
 ## Plugin marginal dashboard — component breakdown by owner
@@ -269,7 +269,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | orchestrator-runner | 13 | 36,062 | 1,252 | 11,088 | 21,488 | 0 | 650 | 1,001 | 11.1% |
 | dogfood | native | managed | tokens-gate | agent-orchestrator | 5 | 10,998 | 554 | 1,967 | 7,658 | 0 | 250 | 385 | 3.4% |
 | dogfood | native | managed | tokens-gate | perf | 3 | 3,668 | 301 | 969 | 1,952 | 0 | 150 | 215 | 1.1% |
-| dogfood | native | managed | tokens-gate | proposals | 50 | 80,023 | 4,652 | 15,562 | 51,448 | 0 | 2,620 | 3,850 | 24.6% |
+| dogfood | native | managed | tokens-gate | proposals | 50 | 79,999 | 4,628 | 15,562 | 51,448 | 0 | 2,620 | 3,850 | 24.6% |
 | dogfood | native | managed | tokens-gate | project-kpis | 1 | 4,093 | 118 | 996 | 2,816 | 0 | 50 | 77 | 1.3% |
 | dogfood | native | managed | tokens-gate | quality | 6 | 3,627 | 406 | 690 | 1,579 | 0 | 300 | 462 | 1.1% |
 | dogfood | native | managed | tokens-gate | rules | 3 | 5,634 | 263 | 364 | 4,544 | 0 | 150 | 231 | 1.7% |
@@ -308,7 +308,7 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | delendai_create_plugin | core | 3,348 | 24 | 194 | 535 | 2,467 | 0 | 51 | 77 |
 | delendai_audit_audit_consolidate | audit | 3,175 | 34 | 269 | 343 | 2,402 | 0 | 50 | 77 |
 | delendai_proposals_agent_lock | proposals | 3,159 | 31 | 116 | 436 | 2,449 | 0 | 50 | 77 |
-| delendai_proposals_proposal_transition | proposals | 3,158 | 40 | 78 | 1,103 | 1,810 | 0 | 50 | 77 |
+| delendai_proposals_proposal_transition | proposals | 3,134 | 40 | 54 | 1,103 | 1,810 | 0 | 50 | 77 |
 
 ## CHECK-007 — tokenizer cost by preset
 
@@ -330,7 +330,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | docs-web | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | everything | native | managed | tokens-gate | 296,645 | 69743 | 69803 | 74162 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | everything | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 325,273 | 76737 | 76787 | 81319 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 325,249 | 76731 | 76781 | 81313 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,336 | 1435 | 1442 | 1584 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 
 ## Documented deficits (kept, not auto-bumped)
@@ -350,7 +350,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | audit | 6,336 | ok | — | 110,821 | ok | — |
 | docs-web | 6,336 | ok | — | 78,410 | ok | — |
 | everything | 6,336 | ok | — | 296,645 | ok | — |
-| dogfood | 6,336 | ok | — | 325,273 | warning | — |
+| dogfood | 6,336 | ok | — | 325,249 | warning | — |
 
 Metrics for plugin lifecycle transitions (c00134). Counters are 
 process-local aggregates; the router emits them on each transition 

@@ -36,16 +36,14 @@ export const buildProposalTransitionRegistration = (
 	id: 'proposal_transition',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
-	summary:
-		'Move a proposal to a new status; validated, folder+frontmatter kept in sync.',
+	summary: 'Move a proposal to a new status; its folder follows.',
 	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_proposal_transition`,
 			{
 				outputSchema: PROPOSAL_TRANSITION_OUTPUT_SCHEMA,
-				description:
-					'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
+				description: 'Move a proposal to a new status (DFA-checked).',
 				inputSchema: PROPOSAL_TRANSITION_INPUT_SCHEMA,
 			},
 			async (args: IProposalTransitionArgs) => {
