@@ -58,7 +58,17 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S3 — The land rehearsal's gates judge for the branch they rehearse
+- **Status**: pending
+- **Files**: `tools/scripts/lib/rehearsed-branch.ts`, `tools/scripts/lib/rehearsed-branch.spec.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/forge/land-rehearsal.script.ts`
+- **Gate**: type
+- acceptance:
+  - "root cause: the land rehearsal runs the gates in a detached scratch clone, where the current branch is HEAD, so proposal-hygiene lost the exemption for the proposal its own unit reopened and judged differently from the unit's worktree"
+  - "the rehearsal names the branch it stands in for in the environment of its gates (DELENDAI_REHEARSED_BRANCH, not an agent marker), and proposal-hygiene reads it when the checkout has no branch of its own"
+  - "a spec proves the environment is set only for a real branch and that hygiene exempts the reopened proposal from a detached clone and flags it without the variable"
+
 ## acceptance
 
 - A merge of a create pull request and the slices that moved the proposal leaves one copy of its id, in the folder of its furthest status.
 - A claimed publication is retired as superseded by the pull request that replaced it, and kept with a stated reason when that one lacks its tip.
+- The land rehearsal's gates judge a detached clone for the branch they rehearse, so a proposal its own unit reopened is not flagged only there.
