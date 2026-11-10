@@ -314,7 +314,10 @@ export type {
 	IInvariantResult,
 	IInvariantScope,
 } from './lib/contracts/interfaces/workflow-invariants.interface';
-export { worktreeAgent } from './lib/work-units/worktree-agent.service';
+export {
+	worktreeAgent,
+	worktreeSession,
+} from './lib/work-units/worktree-agent.service';
 
 // What only the host and the verification scripts read: the watch that tells
 // a running server its source moved, and the code a refused shared-checkout
