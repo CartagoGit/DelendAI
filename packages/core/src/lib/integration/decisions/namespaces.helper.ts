@@ -83,10 +83,12 @@ export const ownedBatchPrefixes = (
 	);
 
 /**
- * Namespaces whose machinery is gone, current and former namespaces alike:
- * the old queue's trains and their culprit markers (`<ns>/train/`). Never
- * written again; what is left under them is reaped once it holds nothing
- * of its own (`reconcileRefs`).
+ * Namespaces whose machinery is retired, current and former namespaces
+ * alike: the old queue's trains and their culprit markers (`<ns>/train/`).
+ * What is left under them is reaped once it holds nothing of its own
+ * (`reconcileRefs`). The guard and the ruleset still admit them so the old
+ * queue keeps working until the cutover lands; q00046 S5 drops them from
+ * both once nothing pushes train refs.
  */
 export const retiredMachineryPrefixes = (
 	branches: IOwnedBranches,
@@ -110,6 +112,9 @@ export const policyNamespaces = (
 		// land pushes its batches here; a guard that refused them would
 		// decline every batch push the forge itself admits.
 		...ownedBatchPrefixes(policy.branches),
+		// Still admitted while the old queue runs until the cutover lands;
+		// q00046 S5 removes it once nothing pushes train refs.
+		...retiredMachineryPrefixes(policy.branches),
 		...policy.branches.foreignRefPrefixes,
 	]
 		.map(shortName)
@@ -175,6 +180,11 @@ export const allowedRefPatterns = (
 			? []
 			: [`refs/heads/${branches.publicationRefPrefix}**/*`]),
 		...ownedBatchPrefixes(branches).map(
+			(prefix) => `refs/heads/${prefix}**/*`,
+		),
+		// The retired train prefix, admitted until q00046 S5 removes it
+		// once nothing pushes train refs (see `policyNamespaces`).
+		...retiredMachineryPrefixes(branches).map(
 			(prefix) => `refs/heads/${prefix}**/*`,
 		),
 		...branches.foreignRefPrefixes.map(

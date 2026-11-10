@@ -89,17 +89,12 @@ describe("land's batch refs", () => {
 		deleting: false,
 	});
 
-	it('[<7ms] admits a batch under either namespace, and no retired train', () => {
-		expect(
-			judgeGitOperation(
-				policy,
-				push('delendai/train/culprit/1802'),
-				AGENT,
-			).refused,
-		).toBe(true);
+	it('[<7ms] admits a batch, and the retired train until S5 drops it, under either namespace', () => {
 		for (const branch of [
 			'queue/batch-1778+1808',
 			'delendai/queue/batch-1778+1808',
+			'train/culprit/1802',
+			'delendai/train/3328521623df/1778-1808',
 		]) {
 			expect(insideNamespaces(policy, branch)).toBe(true);
 			expect(judgeGitOperation(policy, push(branch), AGENT).refused).toBe(

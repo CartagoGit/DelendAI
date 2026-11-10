@@ -217,6 +217,7 @@ Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
   - "Empty units end: a unit whose branch holds nothing of its own and whose worktree is clean (a review pack's spent generations, g14 and g15 of 2026-11-10) is retired by the reconciler, never left on disk"
   - "A proposal whose every slice is approved closes in one deterministic reconciler step after a merge, with no agent involved (f00782 sat in review with every slice approved); close-approved-proposals and its review units go"
   - "The host follower's other follow-ups settle here: certification is read from the forge by the decisions module instead of a log the owner machine writes, and open-publication-prs goes with the publication path"
+  - "The retired train prefix (`<ns>/train/`) leaves the guard and the forge ruleset (`policyNamespaces`, `allowedRefPatterns`), and the live ruleset is applied in the same change: S4 kept admitting it so the old queue worked until the cutover landed, and nothing pushes train refs after it"
   - "Generic and policy-driven: namespaces, branches, retirement and the safety cadence come from development.branches and development.integration; nothing names this repository"
   - "A draft PR opens at work enter, CI skips drafts and work deliver marks it ready; no pr/ ref, publication ref, checkout publishing cadence or ref-maintenance re-push exists"
   - "A large proposal lands as sequential PRs, never stacked, and claim opens no new PRs"

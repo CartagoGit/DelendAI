@@ -250,11 +250,11 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(exclude).not.toContain('refs/heads/delendai/pr/**');
 	});
 
-	it('[<5ms] admits a land batch ref, and no retired train', () => {
+	it('[<5ms] admits a land batch ref, and the retired train until S5 drops it', () => {
 		// `delendai/queue/batch-<a>+<b>`: without this the forge would
 		// decline every batch and land would merge nothing that overlaps.
 		expect(exclude).toContain('refs/heads/delendai/queue/**/*');
-		expect(exclude).not.toContain('refs/heads/delendai/train/**/*');
+		expect(exclude).toContain('refs/heads/delendai/train/**/*');
 	});
 
 	it('[<50ms] admits the batch namespace of every namespace the policy owns, old and new', () => {
