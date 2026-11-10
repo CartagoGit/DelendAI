@@ -16,6 +16,7 @@ import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
 	branchHostScript,
 	branchLabel,
+	malformedVersionReason,
 	runtimePin,
 	runtimeReport,
 	versionHostScript,
@@ -668,6 +669,8 @@ if (import.meta.main) {
 	};
 	if (pin.kind === 'refused') {
 		refuse(pin.reason);
+	} else if (pin.kind === 'malformed-version') {
+		refuse(malformedVersionReason(repository, pin.version));
 	} else if (pin.kind === 'version') {
 		const resolved = await versionHostScript(repository, pin.version);
 		if (resolved.ok) runChild(resolved.script, resolved.label);
