@@ -2,14 +2,16 @@
 id: x00982
 title: "Web tabs, dialogs and assets survive navigation and failed refreshes"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
-last-correlation-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
-last-transition-from: in-progress
-last-transition-at: 2026-11-03T05:01:54.171Z
+last-transition-id: 2e15d7da-38e5-48b0-9459-c9ca3e75916b
+last-correlation-id: 2e15d7da-38e5-48b0-9459-c9ca3e75916b
+last-transition-from: review
+last-transition-at: 2026-11-10T03:12:18.057Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # x00982 — Web tabs, dialogs and assets survive navigation and failed refreshes
@@ -31,26 +33,30 @@ gpt-6.1-sol's contribution to a00095, confirmed in a real Chrome: WEB-TABS01 an 
 - global_gate: type
 
 ### S1 — Tabs, copy and focus
-- **Status**: review
+- **Status**: done
 - **Files**: `apps/web/src/components/ui/_tabs-controller.ts`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/ui/CopyButton.astro`, `apps/web/src/components/ui/CodeBlock.astro`, `apps/web/src/components/Config.astro`, `apps/web/src/components/ui/_focus-trap.ts`, `apps/web/src/components/ui/_focus-trap.spec.ts`, `apps/web/src/components/ui/_tabs-controller.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Controllers rebind on astro:page-load and cancel stale fade callbacks (WEB-TABS01, WEB-TABS02)."
   - "The settings dialog moves focus in and traps it (WEB-A11Y01)."
 - shipped-in: `d0e829dafe93`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 2/2: (1) Tabs.astro:58, CopyButton.astro:34, CodeBlock.astro:59 call initTabs/initCopyButtons on astro:page-load; data-tabs-bound / data-copy-bound make it idempotent; … (2) Config.astro:185 focuses .modal__close on open, :193 returns focus to the opener, :214-221 wraps Tab/Shift+Tab via trapTarget (_focus-trap.ts); _focus-trap.spe… — Tabs/copy rebind on astro:page-load idempotently; fades cancellable; settings dialog focuses and traps
 
 ### S2 — Nav styles and brand assets
-- **Status**: review
+- **Status**: done
 - **Files**: `apps/web/src/components/SiteNav.astro`, `apps/web/src/styles/components/_nav.scss`, `apps/web/src/styles/components/_nav-media.scss`, `apps/web/scripts/fetch-brand-logos.ts`, `apps/web/scripts/lib/brand-logo-files.ts`, `apps/web/scripts/lib/brand-logo-refresh.ts`, `apps/web/scripts/__tests__/brand-logo-files.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The More dropdown classes are styled (WEB-CSS01)."
   - "A fetch writes to a temp file and replaces the cached logo only when the response is SVG (WEB-ASSET01, WEB-ASSET02)."
 - shipped-in: `14985863ee4f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 2/2: (1) SiteNav.astro passes classPrefix 'nav-more' to renderDropdown; _nav.scss:143-231 styles .nav-more, __trigger, __caret, __menu, __item; _nav-media.scss:22 (2) brand-logo-files.ts replaceFile writes <path>.<pid>.tmp then renameSync; isSvg requires an <svg root after prolog/comments/doctype so an HTML gateway page snif… — nav-more__* classes match renderDropdown classPrefix; logos replaced atomically and only for sniffed images
 
 ## acceptance
 
