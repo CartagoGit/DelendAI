@@ -108,7 +108,10 @@ export {
 	overlapBetween,
 } from './lib/integration/decisions/overlap.helper';
 export type { IChangeFootprint } from './lib/integration/decisions/overlap.interface';
-export { pullRequestReady } from './lib/integration/decisions/readiness.helper';
+export {
+	pullRequestReady,
+	whyNotReady,
+} from './lib/integration/decisions/readiness.helper';
 export type { IPullRequestChecks } from './lib/integration/decisions/readiness.interface';
 export { TRAIN_CAPACITY } from './lib/integration/decisions/culprit.constant';
 export {
@@ -143,6 +146,7 @@ export { createGithubLandForge } from './lib/integration/land/github-land-forge.
 export {
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
+	LAND_WORKFLOW_TOKEN_ACTOR,
 } from './lib/integration/land/land.constant';
 export type {
 	ILandBatchBuild,
@@ -158,7 +162,6 @@ export type {
 	ILandPullRequest,
 	ILandReport,
 	ILandWorkflowInput,
-	ILandUpdate,
 } from './lib/integration/land/land.interface';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {

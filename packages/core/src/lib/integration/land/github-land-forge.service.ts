@@ -13,7 +13,6 @@ import type {
 	ILandForge,
 	ILandMerge,
 	ILandPullRequest,
-	ILandUpdate,
 } from './land.interface';
 import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
 
@@ -99,6 +98,15 @@ export const createGithubLandForge = (input: {
 				`compare/${integration}...${pr.head.sha}`,
 			)
 		).merge_base_commit.sha;
+	/** Who pushed a head: its commit's author login, absent when GitHub names none. */
+	const headAuthorOf = async (
+		sha: string,
+	): Promise<{ readonly headAuthor?: string }> => {
+		const login = (
+			await ok<{ author?: { login?: string } | null }>(`commits/${sha}`)
+		).author?.login;
+		return login === undefined ? {} : { headAuthor: login };
+	};
 	const view = async (pr: IRawPull): Promise<ILandPullRequest> => ({
 		number: pr.number,
 		headRef: pr.head.ref,
@@ -109,6 +117,7 @@ export const createGithubLandForge = (input: {
 		labels: (pr.labels ?? []).map((l) => l.name),
 		body: pr.body ?? '',
 		testedBase: await baseOf(pr),
+		...(await headAuthorOf(pr.head.sha)),
 	});
 	const pulls = (query: string): Promise<readonly IRawPull[]> =>
 		all<IRawPull>(`pulls?base=${integration}&${query}`);
@@ -198,20 +207,6 @@ export const createGithubLandForge = (input: {
 				: status === 409
 					? 'head-moved'
 					: 'refused';
-		},
-		updateBranch: async (number, sha): Promise<ILandUpdate> => {
-			const { status } = await call(
-				'PUT',
-				`pulls/${String(number)}/update-branch`,
-				{
-					expected_head_sha: sha,
-				},
-			);
-			return status === 200 || status === 202
-				? 'updated'
-				: status === 409
-					? 'head-moved'
-					: 'conflict';
 		},
 		addLabel: async (number, label) => {
 			await call('POST', `issues/${String(number)}/labels`, {

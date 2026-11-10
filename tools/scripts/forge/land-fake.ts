@@ -8,7 +8,12 @@
  * text conflict does; only a batch resolves it by regenerating). Nothing
  * here is random or timed: a spec scripts CI results with `ci()`.
  */
-import { footprintFromReach, type ITrainCandidate } from '@delendai/core/cli';
+import {
+	footprintFromReach,
+	LAND_LABEL_NEEDS_UPDATE,
+	LAND_WORKFLOW_TOKEN_ACTOR,
+	type ITrainCandidate,
+} from '@delendai/core/cli';
 
 import type {
 	ILandBatchBuild,
@@ -18,10 +23,11 @@ import type {
 	ILandGit,
 	ILandMerge,
 	ILandPullRequest,
-	ILandUpdate,
 } from '@delendai/core/cli';
 
 export const FAKE_DERIVED = 'catalog.generated.md';
+/** The person who pushes a pull request's head in the fake world. */
+export const FAKE_AUTHOR = 'author';
 
 interface IFakePullRequest {
 	number: number;
@@ -33,6 +39,8 @@ interface IFakePullRequest {
 	labels: string[];
 	body: string;
 	testedBase: string;
+	/** Who pushed its head; the workflow token's heads are never built. */
+	headAuthor: string;
 	comments: string[];
 	/** The files a plain pull request writes. */
 	change: Record<string, string>;
@@ -102,7 +110,7 @@ export const createFakeWorld = (
 		},
 		addPull(
 			change: Record<string, string>,
-			options: { base?: string; draft?: boolean } = {},
+			options: { base?: string; draft?: boolean; author?: string } = {},
 		): number {
 			const number = next++;
 			pulls.set(number, {
@@ -115,10 +123,23 @@ export const createFakeWorld = (
 				labels: [],
 				body: '',
 				testedBase: options.base ?? tip,
+				headAuthor: options.author ?? FAKE_AUTHOR,
 				comments: [],
 				change,
 			});
 			return number;
+		},
+		/**
+		 * The author's own update, as the host does it with the person's
+		 * credentials: the tip merged into the pull request, a new head the
+		 * forge builds, its label gone.
+		 */
+		bringForward(number: number): void {
+			const pr = get(number);
+			pr.headSha = sha();
+			pr.testedBase = tip;
+			pr.headAuthor = FAKE_AUTHOR;
+			pr.labels = pr.labels.filter((l) => l !== LAND_LABEL_NEEDS_UPDATE);
 		},
 		/** An integration commit that is not a pull request (another push). */
 		push(change: Record<string, string>): string {
@@ -133,6 +154,8 @@ export const createFakeWorld = (
 		ci(): void {
 			for (const pr of pulls.values()) {
 				if (pr.state !== 'open' || results.has(pr.headSha)) continue;
+				// The forge builds nothing the workflow token pushed.
+				if (pr.headAuthor === LAND_WORKFLOW_TOKEN_ACTOR) continue;
 				const failing = pr.batch
 					? world.failBatch(
 							(
@@ -177,6 +200,7 @@ export const createFakeWorld = (
 		labels: [...pr.labels],
 		body: pr.body,
 		testedBase: pr.testedBase,
+		headAuthor: pr.headAuthor,
 	});
 	const get = (number: number): IFakePullRequest => {
 		const pr = pulls.get(number);
@@ -242,15 +266,6 @@ export const createFakeWorld = (
 			pr.merged = true;
 			return 'merged';
 		},
-		updateBranch: async (number, head): Promise<ILandUpdate> => {
-			mutate();
-			const pr = get(number);
-			if (pr.headSha !== head) return 'head-moved';
-			if (collides(pr.change, pr.testedBase)) return 'conflict';
-			pr.headSha = sha();
-			pr.testedBase = tip;
-			return 'updated';
-		},
 		addLabel: async (number, label) => {
 			mutate();
 			const pr = get(number);
@@ -280,6 +295,7 @@ export const createFakeWorld = (
 				labels: [],
 				body,
 				testedBase: ref.base,
+				headAuthor: FAKE_AUTHOR,
 				comments: [],
 				change: {},
 				batch: {

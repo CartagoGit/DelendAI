@@ -13,3 +13,5 @@ export const LAND_BATCH_CAPACITY = 8;
 export const LAND_PAGE_SIZE = 100;
 /** Pages read of one listing before the pass gives up rather than loop. */
 export const LAND_MAX_PAGES = 50;
+/** The actor of a GitHub workflow token: what it pushes starts no workflow. */
+export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';

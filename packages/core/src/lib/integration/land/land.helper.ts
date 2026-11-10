@@ -23,7 +23,7 @@ import { trainMembers } from '../decisions/culprit.helper';
 import { groupByOverlap, overlapBetween } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 import type { ITrainCandidate } from '../decisions/culprit.interface';
-import { pullRequestReady } from '../decisions/readiness.helper';
+import { whyNotReady } from '../decisions/readiness.helper';
 
 import {
 	BatchMemory,
@@ -33,6 +33,7 @@ import {
 	setKey,
 } from './land-batch-record.helper';
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
+import { mergeCertifiedBatch } from './land-batch-merge.helper';
 import {
 	closeRedBatch,
 	labelNeedsUpdate,
@@ -57,8 +58,13 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		actions.push(line);
 	};
 	const mergedPRs: number[] = [];
+	const reasons = new Map<number, string>();
+	const why = (number: number, reason: string): void => {
+		reasons.set(number, reason);
+	};
 	const landed = (number: number): void => {
 		mergedPRs.push(number);
+		why(number, 'merged');
 	};
 	const tip = await forge.integrationTip();
 	const required =
@@ -69,17 +75,20 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 	const recordOf = (pr: ILandPullRequest): ILandBatchRecord | undefined =>
 		readBatchRecord(pr.body);
 
-	const readyChecks = (
+	/** Why `pr` cannot land on these checks, `undefined` when it can. */
+	const notReady = (
 		pr: ILandPullRequest,
 		checks: readonly ILandCheck[],
-	): boolean =>
-		pullRequestReady({
+	): string | undefined =>
+		whyNotReady({
 			draft: pr.draft,
 			checks,
 			required,
 			withoutChecks: deps.config.withoutChecks,
 			labels: pr.labels,
 			blockingLabels: [],
+			headAuthor: pr.headAuthor,
+			unbuiltAuthors: deps.config.unbuiltAuthors,
 		});
 
 	const memory = new BatchMemory(tip);
@@ -149,83 +158,16 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 			await finishRed(batch, red, checks);
 			return false;
 		}
-		if (!readyChecks(batch, checks)) return true;
-		const tested = git.treeOf(batch.headSha);
-		const now = await forge.integrationTip();
-		const riding = open.filter(
-			({ pr, recorded }) => pr.headSha === recorded,
-		);
-		// Nothing lands that was not tested: the tree the merge would give is
-		// compared with the batch's BEFORE anything is merged.
-		const certified = record.regenerated
-			? now === record.tip
-			: riding.length === open.length &&
-				git.mergedTree({
-					tip: now,
-					members: riding.map(({ pr }) => ({
-						number: pr.number,
-						headRef: pr.headRef,
-						headSha: pr.headSha,
-					})),
-				}) === tested;
-		if (!certified) {
-			await forge.comment(
-				batch.number,
-				'land: merging now would give a tree other than the tested one (a member moved, or the integration branch did). Nothing was merged; the batch is built again.',
-			);
-			await forge.closePullRequest(batch.number);
-			note(
-				`batch #${String(batch.number)}: not merged, the tree would differ from the tested one`,
-			);
-			return false;
-		}
-		if (record.regenerated) {
-			// A regeneration commit rides on the batch branch only, and the
-			// forge cannot merge members that collide in a derived file one by
-			// one: the batch itself lands, carrying every member's commits.
-			const merged = await forge.merge(batch.number, batch.headSha);
-			if (merged !== 'merged') {
-				note(
-					`batch #${String(batch.number)} not merged (${merged}): next pass`,
-				);
-				return true;
-			}
-			for (const { pr } of open) {
-				const after = await forge.pullRequest(pr.number);
-				if (after.state !== 'open') continue;
-				await forge.comment(
-					pr.number,
-					`land: landed in batch #${String(batch.number)}.`,
-				);
-				await forge.closePullRequest(pr.number);
-			}
-			landed(batch.number);
-			note(`batch #${String(batch.number)} merged with its regeneration`);
-		} else {
-			for (const { pr, recorded } of riding) {
-				const merged = await forge.merge(pr.number, recorded);
-				if (merged !== 'merged') {
-					note(
-						`#${String(pr.number)} not merged (${merged}): next pass`,
-					);
-					return true;
-				}
-				landed(pr.number);
-				note(
-					`#${String(pr.number)} merged in batch #${String(batch.number)}`,
-				);
-			}
-		}
-		if (git.treeOf(await forge.integrationTip()) !== tested) {
-			// Only a push between the check and the merge gets here.
-			await forge.comment(
-				batch.number,
-				'land: the integration tree differs from the tested one: the branch moved during the merge. Nothing is reverted; the integration CI judges it.',
-			);
-			note(
-				`batch #${String(batch.number)}: tree differs from the tested one`,
-			);
-		}
+		if (notReady(batch, checks) !== undefined) return true;
+		const outcome = await mergeCertifiedBatch({
+			deps,
+			batch,
+			record,
+			open,
+			note,
+			landed,
+		});
+		if (outcome === 'in-flight') return true;
 		await forge.closePullRequest(batch.number);
 		return false;
 	};
@@ -247,14 +189,34 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		conflict: ILandConflict;
 	}[] = [];
 	for (const pr of await forge.openPullRequests()) {
-		if (inFlight.has(pr.number)) continue;
-		if (culpritHeads.get(pr.number) === pr.headSha) continue;
+		if (inFlight.has(pr.number)) {
+			why(pr.number, 'rides a batch under test');
+			continue;
+		}
+		if (culpritHeads.get(pr.number) === pr.headSha) {
+			why(pr.number, 'the culprit of a red batch: waits for a new head');
+			continue;
+		}
 		if (pr.labels.includes(LAND_LABEL_CULPRIT)) {
 			await forge.removeLabel(pr.number, LAND_LABEL_CULPRIT);
 		}
-		if (!readyChecks(pr, await forge.checks(pr.headSha))) continue;
+		const waits = notReady(pr, await forge.checks(pr.headSha));
+		if (waits !== undefined) {
+			why(pr.number, waits);
+			// A head the forge never builds never turns green by waiting.
+			if (
+				pr.headAuthor !== undefined &&
+				deps.config.unbuiltAuthors.includes(pr.headAuthor)
+			)
+				await needsUpdate(pr, waits);
+			continue;
+		}
 		const conflict = git.conflictOf(pr, tip);
 		if (conflict === 'authored') {
+			why(
+				pr.number,
+				'needs update: it conflicts with the integration branch',
+			);
 			await needsUpdate(pr, 'it conflicts with the integration branch');
 			continue;
 		}
@@ -325,13 +287,22 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		const [first] = group;
 		if (first !== undefined && group.length === 1) {
 			const { pr, own, conflict } = first;
-			if (aloneOnTip.has(pr.number)) {
+			if (aloneOnTip.has(pr.number) && deps.config.batches) {
+				why(pr.number, 'a suspect of a red batch, tested alone');
 				return aloneBusy
 					? undefined
 					: openBatch([pr], 'a suspect, tested alone');
 			}
 			if (conflict === 'derived') {
-				return openBatch([pr], 'derived files to regenerate');
+				if (deps.config.batches)
+					return openBatch([pr], 'derived files to regenerate');
+				// Land pushes nothing the forge will not build: the author's
+				// side regenerates them.
+				why(pr.number, 'needs update: its derived files conflict');
+				return needsUpdate(
+					pr,
+					'its derived files conflict with the integration branch',
+				);
 			}
 			const gained =
 				pr.testedBase === tip
@@ -341,20 +312,33 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 				gained !== undefined &&
 				overlapBetween(own, gained) !== undefined
 			) {
-				const updated = await forge.updateBranch(pr.number, pr.headSha);
-				note(
-					`#${String(pr.number)} brought up to the tip (${updated})`,
-				);
-				return;
+				// Never through the forge: an update made with the workflow
+				// token is a head nothing builds, and the pull request would
+				// wait for checks that never come.
+				const reason =
+					'the integration branch changed what it touches since its checks ran';
+				why(pr.number, `needs update: ${reason}`);
+				return needsUpdate(pr, reason);
 			}
 			const merged = await forge.merge(pr.number, pr.headSha);
 			if (merged === 'merged') landed(pr.number);
+			else why(pr.number, `not merged (${merged}): next pass`);
 			note(
 				merged === 'merged'
 					? `#${String(pr.number)} merged at ${pr.headSha.slice(0, 12)}`
 					: `#${String(pr.number)} not merged (${merged}): next pass`,
 			);
 			return;
+		}
+		if (!deps.config.batches && first !== undefined) {
+			// No batch: the first lands alone, and what overlaps it is brought
+			// up to the tip by its author once it has.
+			for (const { pr } of group.slice(1))
+				why(
+					pr.number,
+					`waits for #${String(first.pr.number)}, which it overlaps`,
+				);
+			return settleGroup([first]);
 		}
 		const suspects = group.filter(({ pr }) => aloneOnTip.has(pr.number));
 		const rest = group.filter(({ pr }) => !aloneOnTip.has(pr.number));
@@ -386,6 +370,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 	await Promise.all(groupByOverlap(candidates).map(settleGroup));
 	return {
 		actions,
+		reasons,
 		mergedCount: mergedPRs.length,
 		mergedPRs: [...mergedPRs].sort((a, b) => a - b),
 		tipSha: await forge.integrationTip(),
