@@ -126,7 +126,7 @@ describe('the real host boot with a journal remote', () => {
 	afterAll(() => rmSync(root, { recursive: true, force: true }));
 
 	it(
-		'binds a forge and a journal collaborator, and publishes the journal to its ref',
+		'[<9880ms] binds a forge and a journal collaborator, and publishes the journal to its ref',
 		async () => {
 			const first = await boot(clone('machine-one'));
 			expect(first.notExecuted).toBe('none');
@@ -147,7 +147,7 @@ describe('the real host boot with a journal remote', () => {
 	);
 
 	it(
-		'lets a second machine replay what the first published, once',
+		'[<13450ms] lets a second machine replay what the first published, once',
 		async () => {
 			const published = (): { occurredAt: number }[] =>
 				execFileSync('git', ['show', `${JOURNAL_REF}:journal.ndjson`], {

@@ -14,12 +14,12 @@ import {
 } from './host-server.script';
 
 describe('hasHelpFlag', () => {
-	it('recognizes long and short help flags', () => {
+	it('[<50ms] recognizes long and short help flags', () => {
 		expect(hasHelpFlag(['--help'])).toBe(true);
 		expect(hasHelpFlag(['-h'])).toBe(true);
 	});
 
-	it('does not treat unrelated flags as help', () => {
+	it('[<50ms] does not treat unrelated flags as help', () => {
 		expect(hasHelpFlag(['--workspace=/tmp/x'])).toBe(false);
 	});
 });
@@ -28,27 +28,27 @@ describe('hasHelpFlag', () => {
 // uses to resolve `--workspace` before falling back to cwd/env. The e2e
 // spawn tests in host-graceful-shutdown.spec.ts cover the full boot path.
 describe('resolveWorkspaceFlag', () => {
-	it('reads the `=` form', () => {
+	it('[<50ms] reads the `=` form', () => {
 		expect(
 			resolveWorkspaceFlag(['--workspace=/tmp/x', '--preset=lean']),
 		).toBe('/tmp/x');
 	});
 
-	it('reads the space-separated form', () => {
+	it('[<50ms] reads the space-separated form', () => {
 		expect(resolveWorkspaceFlag(['--workspace', '/tmp/x'])).toBe('/tmp/x');
 	});
 
-	it('returns undefined when the flag is absent', () => {
+	it('[<50ms] returns undefined when the flag is absent', () => {
 		expect(resolveWorkspaceFlag(['--preset=lean'])).toBeUndefined();
 	});
 
-	it('returns undefined when --workspace is the last token with no value', () => {
+	it('[<50ms] returns undefined when --workspace is the last token with no value', () => {
 		expect(
 			resolveWorkspaceFlag(['--preset=lean', '--workspace']),
 		).toBeUndefined();
 	});
 
-	it('prefers the first occurrence when passed twice', () => {
+	it('[<50ms] prefers the first occurrence when passed twice', () => {
 		expect(
 			resolveWorkspaceFlag(['--workspace=/first', '--workspace=/second']),
 		).toBe('/first');
@@ -56,23 +56,23 @@ describe('resolveWorkspaceFlag', () => {
 });
 
 describe('hydrationIntervalMs', () => {
-	it('defers to core when the operator said nothing', () => {
+	it('[<50ms] defers to core when the operator said nothing', () => {
 		// `undefined` is not "off": it means the cadence is core's to
 		// choose, so the default lives in one place instead of two.
 		expect(hydrationIntervalMs({})).toBeUndefined();
 	});
 
-	it('honours an explicit interval', () => {
+	it('[<50ms] honours an explicit interval', () => {
 		expect(hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: '5000' })).toBe(
 			5000,
 		);
 	});
 
-	it('treats 0 as off, because that is a decision', () => {
+	it('[<50ms] treats 0 as off, because that is a decision', () => {
 		expect(hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: '0' })).toBe(0);
 	});
 
-	it('falls back to the default on an unreadable value, never to silence', () => {
+	it('[<80ms] falls back to the default on an unreadable value, never to silence', () => {
 		// "off" has to be something somebody chose. A typo that turned
 		// the background refresh off would reproduce the exact bug this
 		// watch exists to fix, and leave no trace of why.
@@ -85,7 +85,7 @@ describe('hydrationIntervalMs', () => {
 });
 
 describe('describeMigrationRun', () => {
-	it('says nothing when nothing happened', () => {
+	it('[<50ms] says nothing when nothing happened', () => {
 		expect(
 			describeMigrationRun({
 				outcomes: [{ status: 'not-needed' }],
@@ -94,7 +94,7 @@ describe('describeMigrationRun', () => {
 		).toEqual([]);
 	});
 
-	it('names a migration that ran and one that failed', () => {
+	it('[<50ms] names a migration that ran and one that failed', () => {
 		expect(
 			describeMigrationRun({
 				outcomes: [
@@ -106,7 +106,7 @@ describe('describeMigrationRun', () => {
 		).toEqual(['migrated: v1', 'migration failed: v2 — locked']);
 	});
 
-	it('prints every applied configuration step, one per line', () => {
+	it('[<50ms] prints every applied configuration step, one per line', () => {
 		expect(
 			describeMigrationRun({
 				outcomes: [],
@@ -136,7 +136,7 @@ describe('describeMigrationRun', () => {
 		]);
 	});
 
-	it('explains why no configuration change was attempted', () => {
+	it('[<50ms] explains why no configuration change was attempted', () => {
 		// An operator whose edit "did nothing" needs to hear that the
 		// file was refused, not silence.
 		const [line] = describeMigrationRun({
@@ -154,7 +154,7 @@ describe('describeMigrationRun', () => {
 		expect(line).toContain('has problems');
 	});
 
-	it('names the one file it created in a project that changed nothing else (x00607)', () => {
+	it('[<50ms] names the one file it created in a project that changed nothing else (x00607)', () => {
 		// The directory holding it is self-ignoring, so `git status` in
 		// that project shows nothing. If the report is silent too, the
 		// owner has no way to learn the file exists.
@@ -175,7 +175,7 @@ describe('describeMigrationRun', () => {
 		]);
 	});
 
-	it('says nothing about a record that already matched (x00607)', () => {
+	it('[<50ms] says nothing about a record that already matched (x00607)', () => {
 		expect(
 			describeMigrationRun({
 				outcomes: [],
@@ -193,14 +193,14 @@ describe('describeMigrationRun', () => {
 });
 
 describe('createStopHandler', () => {
-	it('stops cleanly when a signal lands before anything has started', () => {
+	it('[<50ms] stops cleanly when a signal lands before anything has started', () => {
 		const shutdown = vi.fn();
 		const targets = {};
 		expect(() => createStopHandler(targets, shutdown)(143)).not.toThrow();
 		expect(shutdown).toHaveBeenCalledWith(143);
 	});
 
-	it('stops what has started by the time the signal arrives', () => {
+	it('[<90ms] stops what has started by the time the signal arrives', () => {
 		const shutdown = vi.fn();
 		const maintenance = { stop: vi.fn() };
 		const hydration = { stop: vi.fn() };

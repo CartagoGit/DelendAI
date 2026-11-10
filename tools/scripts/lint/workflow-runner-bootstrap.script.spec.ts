@@ -20,7 +20,7 @@ const resolveComposite = (uses: string): IProvides | undefined =>
 	uses === './.github/actions/setup-bun-repo' ? SETUP_BUN_REPO : undefined;
 
 describe('workflow runner bootstrap', () => {
-	it('flags the exact shape that broke delendai-validate', () => {
+	it('[<50ms] flags the exact shape that broke delendai-validate', () => {
 		// The required check on `develop` ran `bun …` on a bare
 		// ubuntu-latest with no checkout and no setup-bun. It exited 127
 		// on every run, so nothing could merge into develop at all.
@@ -51,7 +51,7 @@ describe('workflow runner bootstrap', () => {
 		]);
 	});
 
-	it('accepts checkout + setup-bun in that order', () => {
+	it('[<50ms] accepts checkout + setup-bun in that order', () => {
 		expect(
 			analyseJobs(
 				'ci.yml',
@@ -68,7 +68,7 @@ describe('workflow runner bootstrap', () => {
 		).toEqual([]);
 	});
 
-	it('credits a resolved local composite action with what it provides', () => {
+	it('[<50ms] credits a resolved local composite action with what it provides', () => {
 		expect(
 			analyseJobs(
 				'ci.yml',
@@ -82,7 +82,7 @@ describe('workflow runner bootstrap', () => {
 		).toEqual([]);
 	});
 
-	it('credits nothing to a composite action it cannot resolve', () => {
+	it('[<50ms] credits nothing to a composite action it cannot resolve', () => {
 		// Conservative on purpose: an unreadable action must not be
 		// assumed to install a toolchain.
 		const findings = analyseJobs(
@@ -97,7 +97,7 @@ describe('workflow runner bootstrap', () => {
 		expect(findings.map((f) => f.missing)).toEqual(['oven-sh/setup-bun']);
 	});
 
-	it('is positional: a setup step after the run does not count', () => {
+	it('[<50ms] is positional: a setup step after the run does not count', () => {
 		const findings = analyseJobs(
 			'ci.yml',
 			workflow([
@@ -109,7 +109,7 @@ describe('workflow runner bootstrap', () => {
 		expect(findings.map((f) => f.missing)).toEqual(['oven-sh/setup-bun']);
 	});
 
-	it('finds bun inside a multi-line run block', () => {
+	it('[<50ms] finds bun inside a multi-line run block', () => {
 		const findings = analyseJobs(
 			'ci.yml',
 			workflow([
@@ -124,7 +124,7 @@ describe('workflow runner bootstrap', () => {
 		expect(findings[0]?.command).toBe('bun run lint');
 	});
 
-	it('flags a repo-path command in a job that never checked out', () => {
+	it('[<50ms] flags a repo-path command in a job that never checked out', () => {
 		const findings = analyseJobs(
 			'ci.yml',
 			workflow([
@@ -138,7 +138,7 @@ describe('workflow runner bootstrap', () => {
 		expect(findings.map((f) => f.missing)).toEqual(['actions/checkout']);
 	});
 
-	it('does not flag a command that needs neither', () => {
+	it('[<100ms] does not flag a command that needs neither', () => {
 		expect(
 			analyseJobs(
 				'ci.yml',
@@ -149,7 +149,7 @@ describe('workflow runner bootstrap', () => {
 		).toEqual([]);
 	});
 
-	it('flags bunx as well as bun', () => {
+	it('[<50ms] flags bunx as well as bun', () => {
 		const findings = analyseJobs(
 			'ci.yml',
 			workflow([
@@ -160,7 +160,7 @@ describe('workflow runner bootstrap', () => {
 		expect(findings.map((f) => f.missing)).toEqual(['oven-sh/setup-bun']);
 	});
 
-	it('ignores an unnamed job step list and jobs without steps', () => {
+	it('[<50ms] ignores an unnamed job step list and jobs without steps', () => {
 		expect(
 			analyseJobs(
 				'reusable.yml',
@@ -169,7 +169,7 @@ describe('workflow runner bootstrap', () => {
 		).toEqual([]);
 	});
 
-	it('names the job and the missing step in the report', () => {
+	it('[<50ms] names the job and the missing step in the report', () => {
 		const report = formatReport([
 			{
 				workflow: 'ci.yml',
@@ -184,7 +184,7 @@ describe('workflow runner bootstrap', () => {
 		expect(report).toContain('oven-sh/setup-bun');
 	});
 
-	it('reports nothing for unparseable YAML (another gate owns that)', () => {
+	it('[<50ms] reports nothing for unparseable YAML (another gate owns that)', () => {
 		expect(
 			analyseJobs('broken.yml', '    oops: not column zero\n'),
 		).toEqual([]);
@@ -195,7 +195,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 	const needsInstall = (command: string): boolean =>
 		command.includes('ref-lifecycle');
 
-	it("flags the exact shape that left #193's ref on the forge", () => {
+	it("[<50ms] flags the exact shape that left #193's ref on the forge", () => {
 		// checkout + Bun, no install, and a reaper whose graph reaches
 		// `@modelcontextprotocol/sdk` through core.
 		const findings = analyseJobs(
@@ -217,7 +217,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 		]);
 	});
 
-	it('accepts the same step after the composite action that installs', () => {
+	it('[<50ms] accepts the same step after the composite action that installs', () => {
 		expect(
 			analyseJobs(
 				'land.yml',
@@ -232,7 +232,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 		).toEqual([]);
 	});
 
-	it('credits an explicit `bun install` step for what follows it', () => {
+	it('[<50ms] credits an explicit `bun install` step for what follows it', () => {
 		expect(
 			analyseJobs(
 				'x.yml',
@@ -248,7 +248,7 @@ describe('rule 3: a script that imports a package needs an install', () => {
 		).toEqual([]);
 	});
 
-	it('still lets a zero-import job skip the install on purpose', () => {
+	it('[<50ms] still lets a zero-import job skip the install on purpose', () => {
 		// The aggregator that gates every merge runs without an install
 		// deliberately, so it does not depend on the dependency graph it
 		// reports on. The rule reads imports; it does not demand installs.

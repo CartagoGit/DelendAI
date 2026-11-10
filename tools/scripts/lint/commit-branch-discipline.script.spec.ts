@@ -26,7 +26,7 @@ const baseInput = {
 };
 
 describe('lintCommitBranch', () => {
-	it('fails open on detached HEAD (release-engineer carve-out)', () => {
+	it('[<50ms] fails open on detached HEAD (release-engineer carve-out)', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/foo.ts'],
@@ -35,7 +35,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('fails open on empty branch string (same carve-out)', () => {
+	it('[<50ms] fails open on empty branch string (same carve-out)', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/foo.ts'],
@@ -44,7 +44,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('allows any number of deep files on develop (the shared branch)', () => {
+	it('[<50ms] allows any number of deep files on develop (the shared branch)', () => {
 		const staged = Array.from(
 			{ length: 10 },
 			(_, i) => `packages/core/src/lib/foo-${i}.ts`,
@@ -57,7 +57,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('blocks a user-managed feature branch (gate off)', () => {
+	it('[<50ms] blocks a user-managed feature branch (gate off)', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['README.md'],
@@ -66,7 +66,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(false);
 	});
 
-	it('allows a release branch (gate off)', () => {
+	it('[<50ms] allows a release branch (gate off)', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['README.md'],
@@ -75,7 +75,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('blocks an agent/* branch when the worktree gate is off', () => {
+	it('[<50ms] blocks an agent/* branch when the worktree gate is off', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/lib/foo.ts'],
@@ -93,7 +93,7 @@ describe('lintCommitBranch', () => {
 		}
 	});
 
-	it('allows an agent/* branch when the worktree gate is on', () => {
+	it('[<50ms] allows an agent/* branch when the worktree gate is on', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/lib/foo.ts'],
@@ -103,7 +103,7 @@ describe('lintCommitBranch', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('blocks the LEFTHOOK_BYPASS escape hatch in the message', () => {
+	it('[<50ms] blocks the LEFTHOOK_BYPASS escape hatch in the message', () => {
 		const result = lintCommitBranch({
 			...baseInput,
 			stagedFiles: ['packages/core/src/lib/foo.ts'],
@@ -125,7 +125,7 @@ describe('lintCommitBranch', () => {
 			publicationRefPrefix: 'delendai/pr/',
 		} as const;
 
-		it('allows a work branch inside the policy work namespace', () => {
+		it('[<50ms] allows a work branch inside the policy work namespace', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -136,7 +136,7 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(true);
 		});
 
-		it('allows a publication branch', () => {
+		it('[<50ms] allows a publication branch', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -146,7 +146,7 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(true);
 		});
 
-		it('still blocks a branch outside both namespaces', () => {
+		it('[<50ms] still blocks a branch outside both namespaces', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -156,7 +156,7 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(false);
 		});
 
-		it('never tells an agent to switch the shared checkout back to develop', () => {
+		it('[<50ms] never tells an agent to switch the shared checkout back to develop', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -175,7 +175,7 @@ describe('lintCommitBranch', () => {
 			expect(text).toContain('delendai/pr/<name>');
 		});
 
-		it('renders the shape from the template, never from a literal', () => {
+		it('[<50ms] renders the shape from the template, never from a literal', () => {
 			// An operator who declares another shape must be told THEIRS.
 			const result = lintCommitBranch({
 				cwd: '/tmp',
@@ -191,7 +191,7 @@ describe('lintCommitBranch', () => {
 			expect(text).not.toContain('<proposal>-<slice>');
 		});
 
-		it('says which setting decides the shape when none is declared', () => {
+		it('[<50ms] says which setting decides the shape when none is declared', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -205,7 +205,7 @@ describe('lintCommitBranch', () => {
 			);
 		});
 
-		it('does not treat a lookalike prefix as the work namespace', () => {
+		it('[<50ms] does not treat a lookalike prefix as the work namespace', () => {
 			const result = lintCommitBranch({
 				cwd: '/tmp',
 				stagedFiles: ['docs/a.md'],
@@ -216,7 +216,7 @@ describe('lintCommitBranch', () => {
 		});
 	});
 	describe('integration branch from the development policy', () => {
-		it('allows the configured integration branch', () => {
+		it('[<50ms] allows the configured integration branch', () => {
 			const result = lintCommitBranch({
 				...baseInput,
 				stagedFiles: ['README.md'],
@@ -226,7 +226,7 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(true);
 		});
 
-		it('does not treat develop as shared when the policy integrates elsewhere', () => {
+		it('[<50ms] does not treat develop as shared when the policy integrates elsewhere', () => {
 			const result = lintCommitBranch({
 				...baseInput,
 				stagedFiles: ['README.md'],
@@ -236,7 +236,7 @@ describe('lintCommitBranch', () => {
 			expect(result.ok).toBe(false);
 		});
 
-		it('does not refuse a CI checkout of the release branch, which is a merged pull request', () => {
+		it('[<50ms] does not refuse a CI checkout of the release branch, which is a merged pull request', () => {
 			const result = lintCommitBranch({
 				...baseInput,
 				currentBranch: 'main',
@@ -249,7 +249,7 @@ describe('lintCommitBranch', () => {
 			});
 		});
 
-		it('still refuses a commit on the release branch outside CI, or with something staged', () => {
+		it('[<50ms] still refuses a commit on the release branch outside CI, or with something staged', () => {
 			for (const ciCheckout of [false, undefined]) {
 				expect(
 					lintCommitBranch({
@@ -272,7 +272,7 @@ describe('lintCommitBranch', () => {
 			).toBe(false);
 		});
 
-		it('admits the CI checkout of a land batch, under every batch namespace', () => {
+		it('[<50ms] admits the CI checkout of a land batch, under every batch namespace', () => {
 			for (const branch of [
 				'delendai/queue/batch-1861',
 				'queue/batch-1861+1830',
@@ -296,7 +296,7 @@ describe('lintCommitBranch', () => {
 			).toBe(false);
 		});
 
-		it('keeps develop as the default when no policy was read', () => {
+		it('[<50ms] keeps develop as the default when no policy was read', () => {
 			const result = lintCommitBranch({
 				...baseInput,
 				stagedFiles: ['README.md'],

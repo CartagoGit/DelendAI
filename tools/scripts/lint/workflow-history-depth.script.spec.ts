@@ -25,14 +25,14 @@ const job = (name: string, steps: string): string =>
 	].join('\n');
 
 describe('workflow-history-depth (x00583)', () => {
-	it('splits a workflow into its jobs', () => {
+	it('[<50ms] splits a workflow into its jobs', () => {
 		const source = workflow(
 			`${job('one', '            - run: echo a')}\n${job('two', '            - run: echo b')}`,
 		);
 		expect(jobsOf(source).map((each) => each.name)).toEqual(['one', 'two']);
 	});
 
-	it('refuses a job that merges on the default shallow clone', () => {
+	it('[<90ms] refuses a job that merges on the default shallow clone', () => {
 		// The exact shape that made `keep-the-queue-moving` report
 		// `0 refreshed` for days, with every candidate called conflicted.
 		const source = workflow(
@@ -46,7 +46,7 @@ describe('workflow-history-depth (x00583)', () => {
 		expect(found[0]?.job).toBe('merger');
 	});
 
-	it('accepts the same job once it asks for the history', () => {
+	it('[<50ms] accepts the same job once it asks for the history', () => {
 		const source = workflow(
 			job(
 				'merger',
@@ -58,7 +58,7 @@ describe('workflow-history-depth (x00583)', () => {
 		);
 	});
 
-	it('follows one level into the script a job invokes', () => {
+	it('[<50ms] follows one level into the script a job invokes', () => {
 		// The rule would not have caught its own motivating example
 		// otherwise: that merge ran inside the old candidate refresh, two levels
 		// from the workflow.
@@ -79,7 +79,7 @@ describe('workflow-history-depth (x00583)', () => {
 		expect(found).toHaveLength(1);
 	});
 
-	it('lets a job say why shallow is enough, in writing', () => {
+	it('[<60ms] lets a job say why shallow is enough, in writing', () => {
 		const source = workflow(
 			job(
 				'waived',
@@ -91,7 +91,7 @@ describe('workflow-history-depth (x00583)', () => {
 		);
 	});
 
-	it('says nothing about a job that only reads the tip', () => {
+	it('[<50ms] says nothing about a job that only reads the tip', () => {
 		const source = workflow(
 			job(
 				'plain',
@@ -103,7 +103,7 @@ describe('workflow-history-depth (x00583)', () => {
 		);
 	});
 
-	it('knows which commands need an ancestor and which do not', () => {
+	it('[<50ms] knows which commands need an ancestor and which do not', () => {
 		// At least one pattern each — several may describe the same
 		// command, and which of them fired is not the claim.
 		for (const command of [
@@ -129,7 +129,7 @@ describe('workflow-history-depth (x00583)', () => {
 		expect(historyCommandsIn('git diff --name-only')).toEqual([]);
 	});
 
-	it('refuses a job handed the pull request base on the default shallow clone', () => {
+	it('[<50ms] refuses a job handed the pull request base on the default shallow clone', () => {
 		// `plan-tests`: the diff against the base happened two modules
 		// below the script the job runs, where no command pattern reaches.
 		const planner = (setup: string): string =>
@@ -155,7 +155,7 @@ describe('workflow-history-depth (x00583)', () => {
 		).toEqual([]);
 	});
 
-	it('reads a depth of zero however it is quoted', () => {
+	it('[<70ms] reads a depth of zero however it is quoted', () => {
 		for (const spelling of [
 			'fetch-depth: 0',
 			"fetch-depth: '0'",
@@ -166,7 +166,7 @@ describe('workflow-history-depth (x00583)', () => {
 		expect(asksForHistory("fetch-depth: '1'")).toBe(false);
 	});
 
-	it('resolves both spellings of an invocation', () => {
+	it('[<50ms] resolves both spellings of an invocation', () => {
 		const seen = invokedSources(
 			'run: bun run forge:forward-sync\nrun: bun tools/scripts/git/x.script.ts',
 			(name) => `source-of:${name}`,

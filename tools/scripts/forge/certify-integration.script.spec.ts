@@ -26,17 +26,17 @@ describe('a run whose job timed out (x00641 S2)', () => {
 	const timedOut = (): ICertificationRun =>
 		run({ event: 'workflow_dispatch', conclusion: 'cancelled' });
 
-	it('is not read as red', () => {
+	it('[<50ms] is not read as red', () => {
 		expect(certificationOf([timedOut()], SHA)).toBe('uncertified');
 	});
 
-	it('reads red once the commit was cancelled the bounded number of times', () => {
+	it('[<50ms] reads red once the commit was cancelled the bounded number of times', () => {
 		const runs = Array.from({ length: MAX_CANCELLED_FULL_RUNS }, timedOut);
 		expect(certificationOf(runs.slice(1), SHA)).toBe('uncertified');
 		expect(certificationOf(runs, SHA)).toBe('red');
 	});
 
-	it('lets a run that finished decide, whatever was cancelled before it', () => {
+	it('[<50ms] lets a run that finished decide, whatever was cancelled before it', () => {
 		const cancelled = Array.from(
 			{ length: MAX_CANCELLED_FULL_RUNS },
 			timedOut,
@@ -55,7 +55,7 @@ describe('a run whose job timed out (x00641 S2)', () => {
 });
 
 describe('certificationOf — the promotion runs everything', () => {
-	it("counts the promotion's own run, whose head is the integration branch", () => {
+	it("[<50ms] counts the promotion's own run, whose head is the integration branch", () => {
 		const promotion = run({
 			event: 'pull_request',
 			head_branch: 'develop',
@@ -74,14 +74,14 @@ describe('certificationOf — the promotion runs everything', () => {
 });
 
 describe('certificationOf', () => {
-	it('is uncertified with no full run, as right after a bot merge', () => {
+	it('[<50ms] is uncertified with no full run, as right after a bot merge', () => {
 		expect(certificationOf([], SHA)).toBe('uncertified');
 		expect(certificationOf([run({ event: 'pull_request' })], SHA)).toBe(
 			'uncertified',
 		);
 	});
 
-	it('is pending while a full run is still going', () => {
+	it('[<50ms] is pending while a full run is still going', () => {
 		expect(
 			certificationOf(
 				[
@@ -96,13 +96,13 @@ describe('certificationOf', () => {
 		).toBe('pending');
 	});
 
-	it('is red when every full run finished and none passed', () => {
+	it('[<50ms] is red when every full run finished and none passed', () => {
 		expect(certificationOf([run({ conclusion: 'failure' })], SHA)).toBe(
 			'red',
 		);
 	});
 
-	it('is certified by one green full run, whatever else ran', () => {
+	it('[<120ms] is certified by one green full run, whatever else ran', () => {
 		expect(
 			certificationOf(
 				[
@@ -114,7 +114,7 @@ describe('certificationOf', () => {
 		).toBe('certified');
 	});
 
-	it('ignores cancelled runs, pull-request runs and other commits', () => {
+	it('[<50ms] ignores cancelled runs, pull-request runs and other commits', () => {
 		expect(
 			certificationOf(
 				[
@@ -131,21 +131,21 @@ describe('certificationOf', () => {
 describe('certificationRecord', () => {
 	const now = new Date('2026-09-26T10:00:00Z');
 
-	it('records a finished run, green or red', () => {
+	it('[<50ms] records a finished run, green or red', () => {
 		expect(certificationRecord('', 'abc', 'certified', now)).toBe(
 			`${JSON.stringify({ sha: 'abc', state: 'certified', timestamp: now.toISOString() })}\n`,
 		);
 		expect(certificationRecord('', 'abc', 'red', now)).toContain('"red"');
 	});
 
-	it('records nothing for a run still going or never started', () => {
+	it('[<50ms] records nothing for a run still going or never started', () => {
 		expect(certificationRecord('', 'abc', 'pending', now)).toBeUndefined();
 		expect(
 			certificationRecord('', 'abc', 'uncertified', now),
 		).toBeUndefined();
 	});
 
-	it('records the same verdict for the same commit once, and a change of verdict again', () => {
+	it('[<130ms] records the same verdict for the same commit once, and a change of verdict again', () => {
 		const first = certificationRecord('', 'abc', 'red', now) ?? '';
 		expect(certificationRecord(first, 'abc', 'red', now)).toBeUndefined();
 		expect(certificationRecord(first, 'abc', 'certified', now)).toContain(

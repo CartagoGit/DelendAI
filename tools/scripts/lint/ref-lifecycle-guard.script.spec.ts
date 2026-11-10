@@ -27,7 +27,7 @@ const work = { name: 'delendai/wip/m/x1-S1-g1-topic', sha: 'aaa' };
 const never = () => false;
 
 describe('publishedInFor', () => {
-	it('finds a publication ref at the same commit without asking the forge', () => {
+	it('[<940ms] finds a publication ref at the same commit without asking the forge', () => {
 		let asked = false;
 		expect(
 			publishedInFor(
@@ -42,7 +42,7 @@ describe('publishedInFor', () => {
 		expect(asked).toBe(false);
 	});
 
-	it('finds a publication ref that moved past the work tip', () => {
+	it('[<50ms] finds a publication ref that moved past the work tip', () => {
 		expect(
 			publishedInFor(
 				work,
@@ -52,7 +52,7 @@ describe('publishedInFor', () => {
 		).toBe('delendai/pr/x1-topic');
 	});
 
-	it('finds the integration branch once the work merged', () => {
+	it('[<50ms] finds the integration branch once the work merged', () => {
 		expect(
 			publishedInFor(
 				work,
@@ -62,7 +62,7 @@ describe('publishedInFor', () => {
 		).toBe('develop');
 	});
 
-	it('is undefined while the work exists nowhere else', () => {
+	it('[<50ms] is undefined while the work exists nowhere else', () => {
 		expect(
 			publishedInFor(
 				work,
@@ -75,7 +75,7 @@ describe('publishedInFor', () => {
 		).toBeUndefined();
 	});
 
-	it('is undefined with no containers at all', () => {
+	it('[<50ms] is undefined with no containers at all', () => {
 		expect(publishedInFor(work, [], never)).toBeUndefined();
 	});
 });
@@ -91,7 +91,7 @@ describe('containsWith — git first, forge only when git cannot tell', () => {
 		throw new Error('the forge was asked when git had already answered');
 	};
 
-	it('takes git yes without asking the forge', () => {
+	it('[<50ms] takes git yes without asking the forge', () => {
 		expect(
 			containsWith('base', 'head', {
 				inGit: () => true,
@@ -100,7 +100,7 @@ describe('containsWith — git first, forge only when git cannot tell', () => {
 		).toBe(true);
 	});
 
-	it('takes git no without asking the forge', () => {
+	it('[<50ms] takes git no without asking the forge', () => {
 		expect(
 			containsWith('base', 'head', {
 				inGit: () => false,
@@ -109,7 +109,7 @@ describe('containsWith — git first, forge only when git cannot tell', () => {
 		).toBe(false);
 	});
 
-	it('falls back to the forge only when this clone cannot tell', () => {
+	it('[<50ms] falls back to the forge only when this clone cannot tell', () => {
 		expect(
 			containsWith('base', 'head', {
 				inGit: () => undefined,
@@ -118,7 +118,7 @@ describe('containsWith — git first, forge only when git cannot tell', () => {
 		).toBe(true);
 	});
 
-	it('names the refs it could not check instead of crashing opaquely', () => {
+	it('[<50ms] names the refs it could not check instead of crashing opaquely', () => {
 		expect(() =>
 			containsWith('baselongsha1', 'headlongsha1', {
 				inGit: () => undefined,
@@ -153,11 +153,11 @@ describe('containedInGit', () => {
 			}
 		};
 
-	it('answers yes when the base already contains the head', () => {
+	it('[<50ms] answers yes when the base already contains the head', () => {
 		expect(containedInGit('base', 'head', gitThat({}))).toBe(true);
 	});
 
-	it('answers yes when the head adds only merges of commits the base holds', () => {
+	it('[<150ms] answers yes when the head adds only merges of commits the base holds', () => {
 		expect(
 			containedInGit(
 				'base',
@@ -168,7 +168,7 @@ describe('containedInGit', () => {
 		).toBe(true);
 	});
 
-	it('answers no on git exit 1, which is git saying no', () => {
+	it('[<50ms] answers no on git exit 1, which is git saying no', () => {
 		expect(
 			containedInGit(
 				'base',
@@ -179,7 +179,7 @@ describe('containedInGit', () => {
 		).toBe(false);
 	});
 
-	it('cannot tell when git fails for any other reason', () => {
+	it('[<50ms] cannot tell when git fails for any other reason', () => {
 		// Exit 128 is git failing to answer. Reading that as "no" would
 		// report an unpublished ref as published, or the reverse.
 		expect(
@@ -187,7 +187,7 @@ describe('containedInGit', () => {
 		).toBeUndefined();
 	});
 
-	it('cannot tell when the commit is not in this clone', () => {
+	it('[<50ms] cannot tell when the commit is not in this clone', () => {
 		expect(
 			containedInGit('base', 'head', gitThat({ missing: 'head' })),
 		).toBeUndefined();
@@ -201,7 +201,7 @@ describe('publishedInFor across units', () => {
 	};
 	const containsEverything = () => true;
 
-	it('does not count another unit it was stacked on as its publication', () => {
+	it('[<50ms] does not count another unit it was stacked on as its publication', () => {
 		expect(
 			publishedInFor(
 				stacked,
@@ -216,7 +216,7 @@ describe('publishedInFor across units', () => {
 		).toBeUndefined();
 	});
 
-	it('counts its own slice, or its whole proposal, as its publication', () => {
+	it('[<50ms] counts its own slice, or its whole proposal, as its publication', () => {
 		for (const name of [
 			'delendai/pr/claude-opus-5-5/x00642-S2-g1/a-level-head-is-armed',
 			'delendai/pr/claude-opus-5-5/x00642-all-g1/a-derived-conflict',
@@ -231,7 +231,7 @@ describe('publishedInFor across units', () => {
 		}
 	});
 
-	it('does not count another generation or model of the same proposal', () => {
+	it('[<50ms] does not count another generation or model of the same proposal', () => {
 		expect(
 			publishedInFor(
 				stacked,
@@ -250,7 +250,7 @@ describe('publishedInFor across units', () => {
 		).toBeUndefined();
 	});
 
-	it('still counts the integration branch once the work merged', () => {
+	it('[<50ms] still counts the integration branch once the work merged', () => {
 		expect(
 			publishedInFor(
 				stacked,
@@ -262,12 +262,12 @@ describe('publishedInFor across units', () => {
 });
 
 describe('blockingRefs', () => {
-	it('lets a published copy pass: the queue reaps it and nothing is lost', () => {
+	it('[<50ms] lets a published copy pass: the queue reaps it and nothing is lost', () => {
 		const stale = { name: 'delendai/wip/m/x00001-S1-g1/t' };
 		expect(blockingRefs([stale], [stale])).toEqual([]);
 	});
 
-	it("still fails on a ref that may be the only copy of somebody's work", () => {
+	it("[<50ms] still fails on a ref that may be the only copy of somebody's work", () => {
 		const copy = { name: 'delendai/wip/m/x00001-S1-g1/t' };
 		const unpublished = { name: 'delendai/wip/m/x00002-S1-g1/t' };
 		expect(blockingRefs([copy, unpublished], [copy])).toEqual([
@@ -282,7 +282,7 @@ describe('refs that name their kind of work (f00644)', () => {
 		sha: 'kkk',
 	};
 
-	it('counts the same unit’s publication, reading the kind as a kind', () => {
+	it('[<50ms] counts the same unit’s publication, reading the kind as a kind', () => {
 		expect(
 			publishedInFor(
 				kinded,
@@ -297,7 +297,7 @@ describe('refs that name their kind of work (f00644)', () => {
 		).toBe('delendai/pr/claude-opus-5-5/implement/x00642-all-g1/t');
 	});
 
-	it('never takes the kind for the model: another agent’s unit is not its publication', () => {
+	it('[<50ms] never takes the kind for the model: another agent’s unit is not its publication', () => {
 		expect(
 			publishedInFor(
 				kinded,
@@ -319,7 +319,7 @@ describe('failingFor (x00678)', () => {
 		{ name: 'delendai/pr/me/implement/x00001-S1-g1/mine' },
 	];
 
-	it('fails a pull request only on its own ref, and reports the rest', () => {
+	it('[<50ms] fails a pull request only on its own ref, and reports the rest', () => {
 		const judged = failingFor(blocking, {
 			scope: undefined,
 			event: 'pull_request',
@@ -333,7 +333,7 @@ describe('failingFor (x00678)', () => {
 		]);
 	});
 
-	it('does not fail the integration branch\u2019s certification over refs of any unit', () => {
+	it('[<50ms] does not fail the integration branch\u2019s certification over refs of any unit', () => {
 		for (const event of ['push', 'workflow_dispatch', undefined]) {
 			const judged = failingFor(blocking, {
 				scope: undefined,
@@ -345,7 +345,7 @@ describe('failingFor (x00678)', () => {
 		}
 	});
 
-	it('judges the whole repository in the queue job', () => {
+	it('[<50ms] judges the whole repository in the queue job', () => {
 		expect(
 			failingFor(blocking, {
 				scope: 'repository',
@@ -364,7 +364,7 @@ describe('closedPublicationRetirement', () => {
 	};
 	const unit = 'minimax-m3.1/review/batch-all-g4/verdicts';
 
-	it('keeps a closed publication under the retired namespace of its unit', () => {
+	it('[<50ms] keeps a closed publication under the retired namespace of its unit', () => {
 		expect(
 			closedPublicationRetirement(
 				`delendai/pr/${unit}`,
@@ -374,7 +374,7 @@ describe('closedPublicationRetirement', () => {
 		).toBe(`refs/delendai/retired/${unit}`);
 	});
 
-	it('leaves it while its unit is still on the forge: the author holds it', () => {
+	it('[<50ms] leaves it while its unit is still on the forge: the author holds it', () => {
 		expect(
 			closedPublicationRetirement(
 				`delendai/pr/${unit}`,
@@ -384,7 +384,7 @@ describe('closedPublicationRetirement', () => {
 		).toBeUndefined();
 	});
 
-	it('never retires a work ref by this path', () => {
+	it('[<50ms] never retires a work ref by this path', () => {
 		expect(
 			closedPublicationRetirement(
 				`delendai/wip/${unit}`,
@@ -396,7 +396,7 @@ describe('closedPublicationRetirement', () => {
 });
 
 describe('deleteForgeBranch', () => {
-	it('reports a branch already gone as gone, not as a failure', () => {
+	it('[<50ms] reports a branch already gone as gone, not as a failure', () => {
 		const refused = () => {
 			throw new Error('HTTP 422: Reference does not exist');
 		};
@@ -413,7 +413,7 @@ describe('deleteForgeBranch', () => {
 });
 
 describe('ownedUnitReader in a namespace transition (f00808)', () => {
-	it('reads a unit under the former namespace and the current one alike', () => {
+	it('[<110ms] reads a unit under the former namespace and the current one alike', () => {
 		const read = ownedUnitReader(
 			resolveDevelopmentPolicy({
 				development: {
@@ -461,7 +461,7 @@ describe('holdsNothingOfItsOwn', () => {
 		]);
 	});
 
-	it('[<5ms] keeps a ref this clone cannot check', () => {
+	it('[<70ms] keeps a ref this clone cannot check', () => {
 		expect(
 			holdsNothingOfItsOwn('t', ['d'], () => {
 				throw new Error('bad object');

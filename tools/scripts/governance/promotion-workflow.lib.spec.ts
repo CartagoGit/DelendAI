@@ -28,7 +28,7 @@ describe('promotionWorkflowDocument', () => {
 		expect(promotionWorkflowDocument(policy, 'on-ready')).toBeUndefined();
 	});
 
-	it('runs on the declared cron, between the project branches', () => {
+	it('[<50ms] runs on the declared cron, between the project branches', () => {
 		const workflow = promotionWorkflowDocument(twoBranches, '0 6 * * 1');
 		expect(workflow?.on).toEqual({
 			schedule: [{ cron: '0 6 * * 1' }],
@@ -41,7 +41,7 @@ describe('promotionWorkflowDocument', () => {
 		expect(text).not.toContain('develop');
 	});
 
-	it('asks every hour when the cadence is on-ready, since a push comes before its checks', () => {
+	it('[<50ms] asks every hour when the cadence is on-ready, since a push comes before its checks', () => {
 		const workflow = promotionWorkflowDocument(twoBranches, 'on-ready');
 		expect(workflow?.on).toEqual({
 			schedule: [{ cron: PROMOTION_ON_READY_CRON }],
@@ -49,7 +49,7 @@ describe('promotionWorkflowDocument', () => {
 		});
 	});
 
-	it('fetches the release branch, against whose version the release is read', () => {
+	it('[<50ms] fetches the release branch, against whose version the release is read', () => {
 		const text = JSON.stringify(
 			promotionWorkflowDocument(twoBranches, 'on-ready'),
 		);
@@ -57,7 +57,7 @@ describe('promotionWorkflowDocument', () => {
 		expect(text).toContain('"RELEASE":"release/2.x"');
 	});
 
-	it('may open a pull request and holds no permission to push', () => {
+	it('[<50ms] may open a pull request and holds no permission to push', () => {
 		const workflow = promotionWorkflowDocument(twoBranches, 'on-ready');
 		expect(workflow?.permissions).toEqual({
 			contents: 'read',
@@ -69,14 +69,14 @@ describe('promotionWorkflowDocument', () => {
 		});
 	});
 
-	it('is nothing for a project that declares no cadence', () => {
+	it('[<50ms] is nothing for a project that declares no cadence', () => {
 		expect(
 			promotionWorkflowDocument(twoBranches, undefined),
 		).toBeUndefined();
 		expect(promotionWorkflowDocument(twoBranches, '  ')).toBeUndefined();
 	});
 
-	it('is nothing for a project with one branch, whatever cadence it declares', () => {
+	it('[<50ms] is nothing for a project with one branch, whatever cadence it declares', () => {
 		expect(
 			promotionWorkflowDocument(
 				policyFor({ integration: 'main' }),

@@ -27,7 +27,9 @@ export const throwawayClone = (
 ): { readonly dir: string; dispose(): void } => {
 	const dir = mkdtempSync(join(tmpdir(), 'delendai-rehearsal-'));
 	try {
-		git(root, ['clone', '-q', '--shared', '--no-checkout', root, dir]);
+		// Checked out: the hooks a push meets resolve their code from the
+		// clone's own tree.
+		git(root, ['clone', '-q', '--shared', root, dir]);
 		heads.forEach((sha, index) => {
 			git(dir, [
 				'update-ref',

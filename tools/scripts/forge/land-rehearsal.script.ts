@@ -32,7 +32,12 @@ import {
 	declaredIntegrationRef,
 } from '../lib/declared-branches';
 import { readDevelopmentConfig } from './land-policy';
-import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
+import {
+	assembleTrain,
+	discardTrain,
+	linkDependenciesFrom,
+	regenerateWith,
+} from './train-assembly';
 import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
@@ -92,6 +97,8 @@ const main = async (): Promise<number> => {
 	const timeoutMs = (Number(arg('timeout')) || 900) * 1000;
 	// Its own clone: nothing it builds lands in the one it was run from.
 	const clone = throwawayClone(root, heads);
+	// Its hooks run from its own tree, with the dependencies of this one.
+	linkDependenciesFrom(root)(clone.dir);
 	const built = assembleTrain({
 		root: clone.dir,
 		remote: clone.dir,
@@ -100,6 +107,8 @@ const main = async (): Promise<number> => {
 		members,
 		derived: REGENERATED_PROJECTIONS,
 		regenerate: regenerateWith(GENERATED_REFRESH_COMMANDS),
+		// The throwaway clone has no dependencies: they come from here.
+		linkDependencies: linkDependenciesFrom(root),
 		rehearsal: true,
 	});
 	const { scratch } = built;
