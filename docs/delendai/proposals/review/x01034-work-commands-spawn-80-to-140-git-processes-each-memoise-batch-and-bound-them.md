@@ -50,7 +50,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 3/3: (1) git-read.helper.ts withGitReadCache is AsyncLocalStorage (:26); noteGitSpawn is called in git-command.helper.ts:39, git-write.ts:150, wip-engine/git-command.ts… (2) unit-ref-rename.service.ts:21,24 imports and calls noteGitSpawn (3) git-read.helper.spec.ts :65 and :77 pass, absent observer returns plain answers (:38) — Spawn seam and read cache verified.
 
 ### S2 — Memoise what does not change within one invocation
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/lib/tools/work-unit-roots.helper.ts`
 - **Gate**: type
@@ -60,8 +60,10 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "Any git command that is not a known read, through any runner (update-ref, worktree add/remove, commit, push, fetch, config set), clears the remembered repository reads; the memo spec proves a read after a write spawns again. shared-checkout.ts and work-unit-roots.helper.ts read the common dir through `readGit`."
   - "The memo lives in one invocation scope that `runWorkUnit` (the engine behind the CLI `work` command and the MCP `work` tool) opens and closes; nothing persists across invocations, and two concurrent invocations never share one."
 - shipped-in: `d4cd9f4825cd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: claude-sonnet-5-5
+- review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 4/4: (1) git-invocation-memo.helper.spec :52 asks common-dir, remote, config --get, worktree list once; :243 across runners; shared-checkout and work-unit-roots read th… (2) spec :137, :156, :168 memoise merge-base --is-ancestor and rev-list by object id across writes (3) spec :71 a read after a write spawns again, :205 worktree add/remove forget listings, :115 symbolic-ref write forgets (4) work-unit.service.ts:115 runWorkUnit wraps runWorkUnitOnce in withGitInvocationMemo (AsyncLocalStorage); spec :270 nothing remembered outside or between invoca… — Memo scoped per invocation, cleared by writes.
 
 ### S3 — Ref reads once per invocation, and every spawner reports
 - **Status**: review
