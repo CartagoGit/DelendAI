@@ -203,19 +203,25 @@ Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
   - "The engine switch moves from the repository variable DELENDAI_INTEGRATION_ENGINE (S3's interim gate) to the policy, development.integration.engine as q00047 S1 defines it, and the after-merge dispatch job of land.yml becomes workflow_run triggers, so the policy stays the one source of truth"
   - "After a merge, the sectioned integration CI and the promotion run through workflow_run on land; a red develop opens one urgent repair and blocks nobody; the full suite runs only on the promotion"
 
-### S5 — One branch per unit, draft PRs, with its migration
+### S5 — The branch flow: one reconciler, one branch per unit, draft PRs, with its migration
 - **Status**: pending
 - **DependsOn**: [S4]
 - **Files**: `tools/scripts/forge/publish-candidate.script.ts`
 - **Gate**: none
+- **Notes**: the owner, 2026-11-10: stray branches keep piling up in history and must be handled automatically, never by an agent's decision. S4 deleted the train and hydration mechanisms; S5 replaces every remaining actor on refs, branches and worktrees with one reconciler.
 - acceptance:
+  - "One source of truth: the unit registry plus the forge. One core reconciler derives the desired state of every ref, branch and worktree, local and remote, from them and converges to it: a unit's branch, worktree and draft pull request are created at work enter; updated or rehydrated (fast-forwarded when it holds nothing of its own, reported when it holds work) when the integration branch moves; deleted, with the tip kept under the retired namespace, when the work lands, its pull request closes or the unit is retired"
+  - "Event-driven: land's merges, a pull request closing, work retire and work deliver run the reconciler, and a periodic safety pass (land's upkeep) catches what an event missed. No agent ever deletes, re-pushes or refreshes a ref by hand, and no other module does: work-unit-enter's ref creation, endFinishedUnits on the host follower, work reap (unit-reaper, worktree-husks, stray refs, retired machinery), ref-lifecycle-guard --reap, kept-unit-hydration and close-approved-proposals' own units are folded into it or deleted"
+  - "Idempotent and safe: a pass run twice changes nothing the second time, and no pass deletes a commit that exists nowhere else (not in the integration branch, a work, publication or retired ref); such a ref is kept and reported. A spec over the fake forge covers every transition, and a rehearsal runs the reconciler in a throwaway clone and asserts the shared clone gains no ref or worktree"
+  - "Every kind of ref the product writes is covered: work (wip), publication (pr) until it goes, retired, claims and reservations, land's batches, the retired queue's trains and culprit markers, rehearsal refs, and the unit worktrees. A ref kind under the product's namespaces that the reconciler does not know fails a lint"
+  - "Empty units end: a unit whose branch holds nothing of its own and whose worktree is clean (a review pack's spent generations, g14 and g15 of 2026-11-10) is retired by the reconciler, never left on disk"
+  - "A proposal whose every slice is approved closes in one deterministic reconciler step after a merge, with no agent involved (f00782 sat in review with every slice approved); close-approved-proposals and its review units go"
+  - "The host follower's other follow-ups settle here: certification is read from the forge by the decisions module instead of a log the owner machine writes, and open-publication-prs goes with the publication path"
+  - "Generic and policy-driven: namespaces, branches, retirement and the safety cadence come from development.branches and development.integration; nothing names this repository"
   - "A draft PR opens at work enter, CI skips drafts and work deliver marks it ready; no pr/ ref, publication ref, checkout publishing cadence or ref-maintenance re-push exists"
   - "A large proposal lands as sequential PRs, never stacked, and claim opens no new PRs"
   - "Units and refs in the old layout are migrated by a command shipped in the same change, and the same change deletes the publication path the inventory marks DELETED in S5"
   - "work status shows what is under test, what waits and why, and what landed"
-  - "One module in core owns the whole lifecycle of a work ref, its branch and its worktree: created at work enter, deleted when the work lands (its pull request merged) or is retired, on this machine and on the forge, run by the work commands and the land pass, never by an agent remembering. Today the same fact is acted on by work-unit-enter, endFinishedUnits on the host follower, work reap (unit-reaper, worktree-husks, stray refs, retired machinery), ref-lifecycle-guard --reap in land's upkeep, and work retire; S5 folds them into that one module and deletes the rest"
-  - "kept-unit-hydration (work enter fast-forwards an idle unit) is deleted with the one-branch-per-unit model: a unit ends when its pull request merges, so no unit is entered again behind the integration branch"
-  - "The host follower's follow-ups (certify-integration, open-publication-prs, close-approved-proposals) move into the reconciler: certification is read from the forge, the publication path goes, and closing a proposal whose every slice is approved is one deterministic reconciler step after a merge"
 ### S6 — Transition commits folded
 - **Status**: pending
 - **DependsOn**: [S5]
