@@ -2,14 +2,14 @@
 id: q00045
 title: "Plan: pull requests are few and fast"
 kind: plan
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: 615fbf32-8556-4839-bd76-d5fe3d810c4b
-last-correlation-id: 615fbf32-8556-4839-bd76-d5fe3d810c4b
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:26:00.713Z
+last-transition-id: 9355db5f-de73-4310-abcb-c41f6b07f924
+last-correlation-id: 9355db5f-de73-4310-abcb-c41f6b07f924
+last-transition-from: review
+last-transition-at: 2026-11-10T02:29:59.100Z
 ---
 
 # q00045 — Plan: pull requests are few and fast
