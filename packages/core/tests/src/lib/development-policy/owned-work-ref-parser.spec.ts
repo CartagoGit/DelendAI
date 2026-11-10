@@ -92,7 +92,7 @@ describe('owned work-ref parser', () => {
 });
 
 describe('a unit in its own namespace', () => {
-	it('gives a former unit the settings of its namespace', () => {
+	it('[<20ms] gives a former unit the settings of its namespace', () => {
 		const own = branchesForRef(transition, OLD_UNIT);
 		expect(own.namespacePrefix).toBe('delendai');
 		expect(own.workRefPrefix).toBe('heads/delendai/wip/');
@@ -100,7 +100,7 @@ describe('a unit in its own namespace', () => {
 		expect(branchesForRef(transition, NEW_UNIT)).toBe(transition);
 	});
 
-	it('leaves the policy as it is for a current unit', () => {
+	it('[<20ms] leaves the policy as it is for a current unit', () => {
 		const policy = { branches: transition };
 		expect(unitPolicy(policy, NEW_UNIT)).toBe(policy);
 		expect(unitPolicy(policy, OLD_UNIT).branches.namespacePrefix).toBe(

@@ -48,7 +48,7 @@ const movedRepo = (): string => {
 };
 
 describe('work rename-namespace', () => {
-	it('renames nothing when the open pull requests cannot be read', async () => {
+	it('[<2000ms] renames nothing when the open pull requests cannot be read', async () => {
 		const root = movedRepo();
 		const result = await runWorkUnit(['rename-namespace', '--apply'], {
 			...ctxOf(root),
@@ -59,7 +59,7 @@ describe('work rename-namespace', () => {
 		expect(result.error).toMatch(/could not be read|could not be listed/u);
 	});
 
-	it('has nothing to rename without a former namespace', async () => {
+	it('[<1500ms] has nothing to rename without a former namespace', async () => {
 		const { root } = unitRepo();
 		const result = await runWorkUnit(['rename-namespace'], ctxOf(root));
 		expect(result.code).not.toBe(EXIT_CODE.OK);

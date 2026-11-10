@@ -297,7 +297,7 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 });
 
 describe('namespaceRuleset in a namespace transition (f00808)', () => {
-	it('lets both prefixes create refs, current first', () => {
+	it('[<20ms] lets both prefixes create refs, current first', () => {
 		const moved = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: {

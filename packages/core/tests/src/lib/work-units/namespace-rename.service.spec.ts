@@ -31,7 +31,7 @@ const BRANCHES = [
 ];
 
 describe('planNamespaceRename', () => {
-	it('moves only refs under a former namespace, to the same name under the current one', () => {
+	it('[<20ms] moves only refs under a former namespace, to the same name under the current one', () => {
 		const plan = planNamespaceRename({
 			policy,
 			branches: BRANCHES,
@@ -54,7 +54,7 @@ describe('planNamespaceRename', () => {
 		]);
 	});
 
-	it('renames nothing while a pull request is open from a former namespace', () => {
+	it('[<20ms] renames nothing while a pull request is open from a former namespace', () => {
 		const plan = planNamespaceRename({
 			policy,
 			branches: BRANCHES,
@@ -64,7 +64,7 @@ describe('planNamespaceRename', () => {
 		expect(plan.refusal).toContain(OLD_PR);
 	});
 
-	it('renames nothing when the open pull requests cannot be read', () => {
+	it('[<20ms] renames nothing when the open pull requests cannot be read', () => {
 		const plan = planNamespaceRename({
 			policy,
 			branches: BRANCHES,
@@ -74,7 +74,7 @@ describe('planNamespaceRename', () => {
 		expect(plan.refusal).toContain('could not be read');
 	});
 
-	it('leaves a ref whose new name another ref already has', () => {
+	it('[<20ms] leaves a ref whose new name another ref already has', () => {
 		const plan = planNamespaceRename({
 			policy,
 			branches: [
@@ -86,7 +86,7 @@ describe('planNamespaceRename', () => {
 		expect(plan.moves.map((move) => move.from)).toEqual([OLD_PR]);
 	});
 
-	it('has nothing to do without a former namespace', () => {
+	it('[<20ms] has nothing to do without a former namespace', () => {
 		const plain = resolveDevelopmentPolicy({
 			development: { branches: { namespacePrefix: 'delendai' } },
 		});
@@ -107,7 +107,7 @@ describe('applyNamespaceRename', () => {
 		openHeads: [],
 	}).moves;
 
-	it('pushes the new name at the same tip, keeps the old tip, then deletes the old name', () => {
+	it('[<20ms] pushes the new name at the same tip, keeps the old tip, then deletes the old name', () => {
 		const calls: string[] = [];
 		const result = applyNamespaceRename({
 			git: (args) => {
@@ -127,7 +127,7 @@ describe('applyNamespaceRename', () => {
 		expect(calls.some((call) => call.includes('rename'))).toBe(false);
 	});
 
-	it('does not rename a ref with an open pull request, checked just before it moves', () => {
+	it('[<20ms] does not rename a ref with an open pull request, checked just before it moves', () => {
 		const calls: string[] = [];
 		const result = applyNamespaceRename({
 			git: (args) => {
@@ -145,7 +145,7 @@ describe('applyNamespaceRename', () => {
 		expect(calls.some((call) => call.includes(OLD_PR))).toBe(false);
 	});
 
-	it('stops at the first failed push and deletes nothing after it', () => {
+	it('[<20ms] stops at the first failed push and deletes nothing after it', () => {
 		const calls: string[] = [];
 		const result = applyNamespaceRename({
 			git: (args) => {
@@ -162,7 +162,7 @@ describe('applyNamespaceRename', () => {
 		);
 	});
 
-	it('stops when the open pull requests cannot be read', () => {
+	it('[<20ms] stops when the open pull requests cannot be read', () => {
 		expect(
 			applyNamespaceRename({
 				git: () => ({ ok: true }),

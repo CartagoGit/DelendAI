@@ -316,7 +316,7 @@ describe('a namespace transition (f00808)', () => {
 		formerPrefixes: ['heads/delendai/wip/', 'delendai/pr/'],
 	};
 
-	it('lets a unit under the former namespace commit, and one under the current', () => {
+	it('[<20ms] lets a unit under the former namespace commit, and one under the current', () => {
 		expect(
 			lintCommitBranch({
 				...moved,
@@ -331,7 +331,7 @@ describe('a namespace transition (f00808)', () => {
 		).toBe(true);
 	});
 
-	it('still refuses a branch outside every namespace', () => {
+	it('[<20ms] still refuses a branch outside every namespace', () => {
 		expect(
 			lintCommitBranch({ ...moved, currentBranch: 'feature/mine' }).ok,
 		).toBe(false);

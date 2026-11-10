@@ -119,7 +119,7 @@ describe('publicationRefFromWorkRef (x00568 S1)', () => {
 		).toBe('refs/heads/acme/pr/claude-opus-5/x1-S1-g1/t');
 	});
 
-	it('publishes a unit under a former namespace in its own namespace (f00808)', () => {
+	it('[<20ms] publishes a unit under a former namespace in its own namespace (f00808)', () => {
 		const moved = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',

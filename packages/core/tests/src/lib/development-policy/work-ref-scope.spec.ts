@@ -31,12 +31,15 @@ const CASES = [
 ] as const;
 
 describe('scope grammar', () => {
-	it.each(CASES)('renders and parses %s both ways', (segment, scope) => {
-		expect(renderWorkRefScope(scope)).toBe(segment);
-		expect(parseWorkRefScope(segment)).toEqual(scope);
-	});
+	it.each(CASES)(
+		'[<20ms] renders and parses %s both ways',
+		(segment, scope) => {
+			expect(renderWorkRefScope(scope)).toBe(segment);
+			expect(parseWorkRefScope(segment)).toEqual(scope);
+		},
+	);
 
-	it('shows the generation only from the second on, in upper case', () => {
+	it('[<20ms] shows the generation only from the second on, in upper case', () => {
 		expect(
 			renderWorkRefScope({ proposal: 'x1', slice: 'S2', generation: 1 }),
 		).toBe('x1-S2');
@@ -45,13 +48,13 @@ describe('scope grammar', () => {
 		).toBe('x1-S2-G2');
 	});
 
-	it('refuses what is not a scope', () => {
+	it('[<20ms] refuses what is not a scope', () => {
 		expect(parseWorkRefScope('x01003-all-g1')).toBeUndefined();
 		expect(parseWorkRefScope('X01003')).toBeUndefined();
 		expect(parseWorkRefScope('x01003..S2')).toBeUndefined();
 	});
 
-	it('renders only names git accepts', () => {
+	it('[<600ms] renders only names git accepts', () => {
 		for (const [segment] of CASES) {
 			const ref = `refs/heads/wip/implement/agent/${segment}/topic`;
 			expect(() =>
@@ -66,7 +69,7 @@ describe('scope grammar', () => {
 describe('the readable template', () => {
 	const template = `heads/wip/${READABLE_WORK_REF_SHAPE}`;
 
-	it('names what is done, and reads back the identity', () => {
+	it('[<60ms] names what is done, and reads back the identity', () => {
 		const ref = resolveWorkRef(template, {
 			agent: 'claude-opus-5-5',
 			kind: 'implement',
@@ -90,7 +93,7 @@ describe('the readable template', () => {
 		});
 	});
 
-	it('names a review of several proposals by what it reviews', () => {
+	it('[<20ms] names a review of several proposals by what it reviews', () => {
 		const ref = resolveWorkRef(template, {
 			agent: 'gpt-5.3-codex',
 			kind: 'review',
@@ -104,7 +107,7 @@ describe('the readable template', () => {
 		);
 	});
 
-	it('is configurable in the policy, and reads the old form in the transition', () => {
+	it('[<60ms] is configurable in the policy, and reads the old form in the transition', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: {
 				branches: {
