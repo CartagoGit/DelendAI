@@ -81,7 +81,7 @@ describe('guard namespaces in a transition', () => {
 	});
 });
 
-describe("the merge queue's train refs", () => {
+describe("land's batch refs", () => {
 	const AGENT = { agentMarker: 'GITHUB_ACTIONS' } as const;
 	const push = (branch: string) => ({
 		kind: 'push' as const,
@@ -89,12 +89,17 @@ describe("the merge queue's train refs", () => {
 		deleting: false,
 	});
 
-	it('[<7ms] admits a train and a culprit marker under either namespace', () => {
+	it('[<7ms] admits a batch under either namespace, and no retired train', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				push('delendai/train/culprit/1802'),
+				AGENT,
+			).refused,
+		).toBe(true);
 		for (const branch of [
-			'train/3328521623df/1778-1808',
-			'train/culprit/1802',
-			'delendai/train/3328521623df/1778-1808',
-			'delendai/train/culprit/1802',
+			'queue/batch-1778+1808',
+			'delendai/queue/batch-1778+1808',
 		]) {
 			expect(insideNamespaces(policy, branch)).toBe(true);
 			expect(judgeGitOperation(policy, push(branch), AGENT).refused).toBe(
@@ -104,7 +109,7 @@ describe("the merge queue's train refs", () => {
 	});
 
 	it('[<6ms] still refuses a branch outside every namespace', () => {
-		expect(judgeGitOperation(policy, push('trains/x'), AGENT).refused).toBe(
+		expect(judgeGitOperation(policy, push('queues/x'), AGENT).refused).toBe(
 			true,
 		);
 	});

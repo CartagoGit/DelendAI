@@ -250,14 +250,14 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(exclude).not.toContain('refs/heads/delendai/pr/**');
 	});
 
-	it('admits a train ref and a culprit ref (the queue pushes both)', () => {
-		// `delendai/train/<sha12>/<members>` and `delendai/train/culprit/<n>`:
-		// without this the forge declined every train and the queue landed
-		// nothing.
-		expect(exclude).toContain('refs/heads/delendai/train/**/*');
+	it('[<5ms] admits a land batch ref, and no retired train', () => {
+		// `delendai/queue/batch-<a>+<b>`: without this the forge would
+		// decline every batch and land would merge nothing that overlaps.
+		expect(exclude).toContain('refs/heads/delendai/queue/**/*');
+		expect(exclude).not.toContain('refs/heads/delendai/train/**/*');
 	});
 
-	it('admits the train namespace of every namespace the policy owns, old and new', () => {
+	it('[<5ms] admits the batch namespace of every namespace the policy owns, old and new', () => {
 		const migrating = policyFor({
 			profile: 'shared-checkout-pr',
 			branches: {
@@ -270,8 +270,8 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 				conditions: { ref_name: { exclude: readonly string[] } };
 			}
 		).conditions.ref_name.exclude;
-		expect(both).toContain('refs/heads/train/**/*');
-		expect(both).toContain('refs/heads/delendai/train/**/*');
+		expect(both).toContain('refs/heads/queue/**/*');
+		expect(both).toContain('refs/heads/delendai/queue/**/*');
 	});
 
 	it('gives work and publication the same depth', () => {
