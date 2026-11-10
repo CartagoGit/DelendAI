@@ -415,7 +415,6 @@
 		"packages/core/tests/src/lib/development-policy/git-guard.spec.ts",
 		"packages/core/tests/src/lib/development-policy/loose-edits-advisory.spec.ts",
 		"packages/core/tests/src/lib/development-policy/maintenance-lease-path.spec.ts",
-		"packages/core/tests/src/lib/development-policy/maintenance-lease.service.spec.ts",
 		"packages/core/tests/src/lib/development-policy/owned-work-ref-parser.spec.ts",
 		"packages/core/tests/src/lib/development-policy/policy-identity.spec.ts",
 		"packages/core/tests/src/lib/development-policy/project-branches.spec.ts",
