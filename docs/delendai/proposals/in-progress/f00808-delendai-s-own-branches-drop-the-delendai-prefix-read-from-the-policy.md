@@ -128,7 +128,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - review-implementer: claude-opus-5-5
 
 ### S8 — This repository switches, and q00040 learns the current namespace
-- **Status**: review
+- **Status**: in-progress
 - **DependsOn**: [S2, S3, S4, S5, S9]
 - **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
