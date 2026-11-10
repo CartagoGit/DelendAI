@@ -134,3 +134,34 @@ export const READABLE_WORK_REF_SHAPE = '${kind}/${agent}/${scope}/${topic}';
  * mistaken for the `codex` program.
  */
 export const HOST_APPLICATION_IDS: readonly string[] = AGENT_HOST_APPLICATIONS;
+
+/**
+ * Branch identities are intentionally NOT part of a profile: they are
+ * per-project facts, and inferring them from the forge's `default_branch`
+ * is exactly the mistake this policy exists to prevent. The resolver
+ * supplies them; a profile only describes the shape of the workflow.
+ */
+export const DEFAULT_BRANCHES = {
+	integration: 'develop',
+	release: 'main',
+	// Empty by default: a project adopting delendai should not inherit
+	// the tool's name in its refs. `delendai.config.json` sets it here.
+	namespacePrefix: '',
+	// The documented shape, component by component:
+	//
+	//   <ns>/wip/<model>/<proposal>-<slice>-g<generation>/<what it is>
+	//
+	// `${agent}` is the exact model (`claude-opus-5`), never the machine
+	// and never the editor. The unit of work and its generation form one
+	// component so a client groups them; the explanation is its OWN
+	// component, which is what makes a long description readable in a Git
+	// client instead of a 90-character dash-run (x00563).
+	workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
+	workRefPrefix: 'heads/wip/',
+	workRefVisibility: 'visible',
+	publicationRefPrefix: 'pr/',
+	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
+	// "not mine" from "abandoned" is a reaper nobody can safely enable.
+	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
+	rules: [], // defaults are added by `deriveCapabilities`
+} as const;

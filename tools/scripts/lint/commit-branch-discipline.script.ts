@@ -35,8 +35,8 @@ import { spawnSync } from 'node:child_process';
 
 import {
 	isRunningInProjectCi,
+	ownedBatchPrefixes,
 	ownedPublicationRefPrefixes,
-	ownedTrainPrefixes,
 	ownedWorkRefPrefixes,
 	shortName as shortRef,
 	underNamespace as inNamespace,
@@ -71,18 +71,17 @@ export interface ICommitBranchInput {
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
 	/**
-	/**
 	 * Work and publication namespaces of a former namespace: a unit entered
 	 * before the project changed it is still somebody's work (f00808).
 	 */
 	readonly formerPrefixes?: readonly string[];
 	/**
-	 * The merge queue's train namespaces (`ownedTrainPrefixes`, from core,
-	 * the source the guard and the forge ruleset read). A train's CI run
-	 * checks out `<ns>/train/…`; left out here, every train went red on
-	 * this lint and the queue's bisection blamed innocent members.
+	 * land's batch namespaces (`ownedBatchPrefixes`, from core, the source
+	 * the guard and the forge ruleset read). A batch's CI run checks out
+	 * `<ns>/queue/batch-…`; left out here, every batch would go red on this
+	 * lint and its culprit attribution would blame innocent members.
 	 */
-	readonly trainRefPrefixes?: readonly string[];
+	readonly batchRefPrefixes?: readonly string[];
 	/** Policy release branch (`branches.release`). */
 	readonly releaseBranch?: string;
 	/**
@@ -183,7 +182,7 @@ export const lintCommitBranch = (
 		inNamespace(currentBranch, publicationRefPrefix) ||
 		[
 			...(input.formerPrefixes ?? []),
-			...(input.trainRefPrefixes ?? []),
+			...(input.batchRefPrefixes ?? []),
 		].some((prefix) => inNamespace(currentBranch, prefix))
 	) {
 		return { ok: true };
@@ -337,7 +336,7 @@ const main = async (): Promise<number> => {
 		workRefTemplate?: string;
 		publicationRefPrefix?: string;
 		formerPrefixes?: readonly string[];
-		trainRefPrefixes?: readonly string[];
+		batchRefPrefixes?: readonly string[];
 	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
@@ -350,7 +349,7 @@ const main = async (): Promise<number> => {
 				...ownedWorkRefPrefixes(branches).slice(1),
 				...ownedPublicationRefPrefixes(branches).slice(1),
 			],
-			trainRefPrefixes: ownedTrainPrefixes(branches),
+			batchRefPrefixes: ownedBatchPrefixes(branches),
 			releaseBranch: branches.release,
 		};
 	} catch {

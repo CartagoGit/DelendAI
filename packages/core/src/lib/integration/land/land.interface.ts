@@ -92,6 +92,15 @@ export interface ILandGit {
 	}): ILandBatchBuild;
 	/** The tree a commit holds, comparable by equality. */
 	treeOf(sha: string): string;
+	/**
+	 * The tree `members` merged onto `tip` would hold, as `treeOf` writes
+	 * it, without regenerating or pushing anything; `undefined` when they
+	 * conflict. Read before a merge: nothing lands that was not tested.
+	 */
+	mergedTree(input: {
+		readonly tip: string;
+		readonly members: readonly ITrainCandidate[];
+	}): string | undefined;
 }
 
 /**
@@ -108,6 +117,8 @@ export interface ILandConfig {
 	readonly mergeMethod: 'merge' | 'squash' | 'rebase';
 	/** The checks that must be green; empty reads them from the forge. */
 	readonly requiredChecks: readonly string[];
+	/** True only where the policy opts in to landing with no required check. */
+	readonly withoutChecks: boolean;
 	/** Most pull requests in one batch. */
 	readonly batchCapacity: number;
 	/**
@@ -135,6 +146,12 @@ export type ILandCommandRunner = (args: readonly string[]) => Promise<{
 /** What one pass did, in order; the next pass reads the forge, not this. */
 export interface ILandReport {
 	readonly actions: readonly string[];
+	/** How many pull requests the forge merged in this pass. */
+	readonly mergedCount: number;
+	/** The pull requests the forge merged, a batch by its own number. */
+	readonly mergedPRs: readonly number[];
+	/** The integration tip when the pass ended. */
+	readonly tipSha: string;
 }
 
 /** What a batch pull request records in its body, read back by the next pass. */
@@ -151,18 +168,38 @@ export interface ILandBatchRecord {
 	};
 }
 
-/** The values the land workflow template takes from a project. */
+/** One upkeep step the land workflow runs on its schedule. */
+export interface ILandUpkeepStep {
+	readonly name: string;
+	readonly run: string;
+	readonly env?: Readonly<Record<string, string>>;
+}
+
+/**
+ * The values the land workflow template takes from a project. Whether the
+ * project integrates with `land` at all is its policy's
+ * `development.integration.engine`: the file exists only when it says so.
+ */
 export interface ILandWorkflowInput {
 	readonly integrationBranch: string;
-	/** The workflow whose finishing starts a pass (the project's CI). */
-	readonly ciWorkflowName: string;
-	/** Workflow files run on the new tip after a merge. */
-	readonly afterMergeWorkflows: readonly string[];
-	/** The repository variable that switches the engine to `land`. */
-	readonly engineVariable: string;
+	readonly releaseBranch: string;
+	/**
+	 * The workflows whose finishing starts a pass on a pull request, and
+	 * the promotion on the integration branch (the project's CI, its scan).
+	 */
+	readonly checkWorkflows: readonly string[];
 	/** Steps that prepare a runner (checkout and toolchain), as YAML lines. */
 	readonly setupSteps: readonly string[];
 	/** The command that runs one pass. */
 	readonly passCommand: string;
 	readonly cron: string;
+	/**
+	 * Run once the integration branch's CI finishes: opens the promotion
+	 * when the branch is green, files one urgent repair when it is red.
+	 */
+	readonly promotionCommand?: string;
+	/** Run when the release branch moves: carries it back into the integration branch. */
+	readonly forwardSyncCommand?: string;
+	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
+	readonly upkeep?: readonly ILandUpkeepStep[];
 }

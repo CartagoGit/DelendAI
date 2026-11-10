@@ -125,8 +125,8 @@ describe('allowedRefPatterns and underNamespace', () => {
 		expect(patterns).toContain('refs/heads/delendai/pr/**/*');
 		expect(patterns).toContain('refs/heads/wip/**/*');
 		expect(patterns).toContain('refs/heads/delendai/wip/**/*');
-		expect(patterns).toContain('refs/heads/train/**/*');
-		expect(patterns).toContain('refs/heads/delendai/train/**/*');
+		expect(patterns).toContain('refs/heads/queue/**/*');
+		expect(patterns).toContain('refs/heads/delendai/queue/**/*');
 		expect(underNamespace('wip/a/x', 'refs/heads/wip/')).toBe(true);
 		expect(underNamespace('wip/a/x', '')).toBe(false);
 		expect(underNamespace('wip/a/x', undefined)).toBe(false);

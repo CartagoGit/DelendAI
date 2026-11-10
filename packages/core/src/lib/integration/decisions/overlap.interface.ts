@@ -20,24 +20,3 @@ export interface IChangeFootprint {
 	/** It adds a file that existed nowhere before (a move adds none). */
 	readonly creates?: boolean;
 }
-
-export interface IQueueCandidateChange {
-	readonly number: number;
-	readonly headRef: string;
-	/** It carries the integration branch's tip: its checks ran on it. */
-	readonly level: boolean;
-	/** What the candidate changed since it left the integration branch. */
-	readonly own: IChangeFootprint;
-	/** What the integration branch changed since the candidate left it. */
-	readonly integration: IChangeFootprint;
-}
-
-export interface ICandidateAcceptance {
-	readonly number: number;
-	readonly headRef: string;
-	readonly accepted: boolean;
-	readonly why: string;
-}
-
-/** Where a candidate stands in a train: an urgent repair first, review batches last. */
-export type ITrainPriority = 'urgent' | 'normal' | 'review';

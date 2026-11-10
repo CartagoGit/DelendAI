@@ -11,7 +11,8 @@
  * slice sat in `review/` with every slice done and approved, and the
  * owner saw a review folder that never emptied.
  *
- * The owner machine's hydrator runs this on every pass. It reads the
+ * The owner machine's host server runs this each time its checkout
+ * follows the integration branch (after every merge). It reads the
  * proposals in `review/` on the integration branch, and closes those
  * whose finished slices all carry an approval by someone other than their
  * implementer (the rule `lint:closed-with-independent-approval` enforces)

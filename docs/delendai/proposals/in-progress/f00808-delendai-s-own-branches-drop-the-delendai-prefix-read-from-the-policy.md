@@ -88,11 +88,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S5 — Forge rules and CI filters follow the policy
 - **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `tools/scripts/lint/ci-publication-filters.script.ts`, `tools/scripts/lint/ci-publication-filters.script.spec.ts`, `package.json`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `packages/core/tests/src/lib/integration/decisions/namespaces.helper.spec.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
+- **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`, `package.json`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `packages/core/tests/src/lib/integration/decisions/namespaces.helper.spec.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/tests/src/lib/work-units/work-publish.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
 - **Gate**: type
 - acceptance:
   - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix, through the decisions module's `allowedRefPatterns`."
-  - "ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so `lint:ci-publication-filters` fails when the publication or train prefixes ci.yml names differ from the resolved policy's owned ones (`ownedPublicationRefPrefixes`, `ownedTrainPrefixes`)."
+  - "ci.yml names no publication or train prefix: the queue jobs that filtered on `delendai/pr/` went with the old queue (q00046 S4), and land reads the owned publication prefixes from the policy. The `lint:ci-publication-filters` this slice once added went with them, having nothing left to check."
 - shipped-in: `b193017aeeb9`
 - review-state: in_review
 - review-implementer: claude-opus-5-5
@@ -157,7 +157,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - maintain-ref-namespace, ref-lifecycle --reap and agent-claims treat refs under a former prefix as delendai's (reaped or kept by the same rules), and refs outside every owned prefix as foreign.
 - Spec per script: a fixture with one `delendai/pr/...` and one `pr/...` publication under `namespacePrefix: ""` + former `delendai` handles both.
 - Rendered rulesets and branch protection cover the work and publication refs of every owned prefix, through the decisions module's `allowedRefPatterns`.
-- ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so `lint:ci-publication-filters` fails when the publication or train prefixes ci.yml names differ from the resolved policy's owned ones (`ownedPublicationRefPrefixes`, `ownedTrainPrefixes`).
+- ci.yml names no publication or train prefix: the queue jobs that filtered on `delendai/pr/` went with the old queue (q00046 S4), and land reads the owned publication prefixes from the policy. The `lint:ci-publication-filters` this slice once added went with them, having nothing left to check.
 - `delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary.
 - It refuses as a whole while any open pull request has its head under a former prefix, and when the forge cannot be read; it checks each ref again just before acting.
 - Each ref is renamed by pushing the new name at the same tip, verifying it, keeping the old tip under the retired root, then deleting the old name. The forge rename API is never called.

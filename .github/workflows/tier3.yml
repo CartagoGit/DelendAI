@@ -7,7 +7,6 @@
 #   - pack-smoke (x00268)            — publishable packages tarball + install roundtrip.
 #   - drift (c00133)                 — generators vs checked-in tree.
 #   - branch-protection verifier     — c00130, AUD-P0-001.
-#   - develop-health verifier        — v00125.
 #   - security audit                 — codeql + privacy lints.
 #   - local-repro smoke              — v00126 against the last failed run, if any.
 #   - state-parity                   — random operations through both state drivers; the report is kept.
@@ -153,26 +152,6 @@ jobs:
           # than a false pass or a red build.
           BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
         run: bun tools/scripts/ci/verify-branch-protection.script.ts --repo ${{ github.repository }}
-
-  develop-health:
-    name: develop-health
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      # See pack-smoke above: bootstraps the local composite action.
-      - name: Checkout (required to resolve the local composite action)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Setup repo (checkout + bun + install)
-        uses: ./.github/actions/setup-bun-repo
-
-      - name: Verify develop + main are healthy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # See the `branch-protection` job above — same optional token,
-          # same fallback, same `unverified` semantics.
-          BRANCH_PROTECTION_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
-        run: bun tools/scripts/ci/verify-develop-health.script.ts --repo ${{ github.repository }}
 
   privacy-audit:
     name: privacy-audit
