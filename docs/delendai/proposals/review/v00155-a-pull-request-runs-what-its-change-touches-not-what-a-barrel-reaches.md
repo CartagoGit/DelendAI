@@ -10,6 +10,8 @@ last-transition-id: 4acd74d8-70db-43c6-8f9d-28b009d0bc68
 last-correlation-id: 4acd74d8-70db-43c6-8f9d-28b009d0bc68
 last-transition-from: in-progress
 last-transition-at: 2026-11-08T16:26:43.140Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # v00155 — A pull request runs what its change touches, not what a barrel reaches
@@ -32,7 +34,7 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
 - global_gate: none
 
 ### S1 — Tests, symbol-level: CI uses testing.scope and a barrel selects the importers of the exports that changed
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/export-delta.ts`, `tools/scripts/ci/export-delta.spec.ts`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: none
 - acceptance:
@@ -40,8 +42,10 @@ Measured on PR #1838 (6 files: one new export in packages/core/src/cli.ts, 2 cor
   - "Adding one export to a cli.ts-shaped barrel selects only that export's importers' specs, not the specs of the other names."
   - "The forge test plan (test-zones) reads testing.scope from delendai.config.json: touched by default, reach for the symbol-reach analysis, all for every spec."
 - shipped-in: `b97d4e5a0009`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 119/119 claimed, no recorded run cited; acceptance 3/3: (1) tools/scripts/ci/export-delta.ts exportDelta/reexportSurface (undefined when the file declares locally); test-scope.ts touchedSpecs adds changed specs and mirr… (2) test-scope.spec.ts:57 (#1838 case) green (3) test-zones.script.ts:594-617 uses nearSpecsSince(rootDir, base) whose scope defaults to readTestScope(root); near-specs.ts:161-185 branches reach/all/touched; … — export-delta + touchedSpecs select only importers of moved names; test-zones reads testing.scope via nearSpecsSince
 
 ### S2 — No declared-always job without a reason in code
 - **Status**: review
