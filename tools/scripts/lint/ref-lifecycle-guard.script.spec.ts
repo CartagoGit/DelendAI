@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import {
+	holdsNothingOfItsOwn,
 	ownedUnitReader,
 	blockingRefs,
 	closedPublicationRetirement,
@@ -438,5 +439,33 @@ describe('ownedUnitReader in a namespace transition (f00808)', () => {
 		expect(
 			read('delendai/pr/claude-opus-5-5/implement/x00642-S2-g1/t'),
 		).toEqual(old);
+	});
+});
+
+describe('holdsNothingOfItsOwn', () => {
+	it('[<5ms] is true only when no commit of the ref is outside every holder', () => {
+		const asked: string[][] = [];
+		const answer = (count: string) => (args: readonly string[]) => {
+			asked.push([...args]);
+			return count;
+		};
+		expect(holdsNothingOfItsOwn('t', ['d', 'w'], answer('0'))).toBe(true);
+		expect(holdsNothingOfItsOwn('t', ['d'], answer('2'))).toBe(false);
+		expect(asked[0]).toEqual([
+			'rev-list',
+			'--count',
+			't',
+			'--not',
+			'd',
+			'w',
+		]);
+	});
+
+	it('[<5ms] keeps a ref this clone cannot check', () => {
+		expect(
+			holdsNothingOfItsOwn('t', ['d'], () => {
+				throw new Error('bad object');
+			}),
+		).toBe(false);
 	});
 });

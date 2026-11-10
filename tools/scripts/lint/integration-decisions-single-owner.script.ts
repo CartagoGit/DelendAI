@@ -36,6 +36,7 @@ export const DECISION_NAMES: readonly string[] = [
 	'ownedWorkRefPrefixes',
 	'ownedPublicationRefPrefixes',
 	'ownedBatchPrefixes',
+	'retiredMachineryPrefixes',
 	'publicationPrefixesOf',
 	'underPublication',
 	'underNamespace',

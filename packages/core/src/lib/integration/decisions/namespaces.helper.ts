@@ -82,6 +82,19 @@ export const ownedBatchPrefixes = (
 		(namespace) => `${withSlash(namespace)}${LAND_QUEUE_SEGMENT}/`,
 	);
 
+/**
+ * Namespaces whose machinery is gone, current and former namespaces alike:
+ * the old queue's trains and their culprit markers (`<ns>/train/`). Never
+ * written again; what is left under them is reaped once it holds nothing
+ * of its own (`reconcileRefs`).
+ */
+export const retiredMachineryPrefixes = (
+	branches: IOwnedBranches,
+): readonly string[] =>
+	ownedNamespaces(branches).map(
+		(namespace) => `${withSlash(namespace)}train/`,
+	);
+
 /** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
 export const shortName = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');

@@ -130,38 +130,53 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 
 /**
- * The script that records what the integration branch's full runs
- * concluded, for `proposal_transition` to read as evidence. Only this
- * repository ships it; a project without it records nothing.
+ * What this repository runs once its checkout followed the integration
+ * branch, in order, each with its timeout: record what the tip's full runs
+ * concluded (evidence `proposal_transition` reads), give every
+ * publication its pull request, and close the proposals whose every slice
+ * is approved. They need this machine's credential: a pull request opened
+ * with a workflow token starts no CI. A project that ships none of them
+ * runs nothing.
  */
-const INTEGRATION_CERTIFIER =
-	'tools/scripts/forge/certify-integration.script.ts';
+export const INTEGRATION_FOLLOW_UPS: ReadonlyArray<readonly [string, number]> =
+	[
+		['tools/scripts/forge/certify-integration.script.ts', 60_000],
+		['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
+		['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
+	];
+
+/** One follow-up at a time: a second move waits for none, it is skipped. */
+let followingUp = false;
 
 /**
- * Record the certification of the tip the checkout just followed, without
- * making the watch wait for the forge. Detached and never fatal: a record
- * that cannot reach the forge is reported, and the next move records it.
+ * Run the follow-ups without making the watch wait for the forge.
+ * Detached and never fatal: a step that cannot reach the forge is
+ * reported, and the next move runs it again.
  */
-const certifyInBackground = async (root: string): Promise<void> => {
-	if (!existsSync(join(root, INTEGRATION_CERTIFIER))) return;
+const followUpInBackground = async (root: string): Promise<void> => {
+	if (followingUp) return;
+	followingUp = true;
 	try {
 		const { execFile } = await import('node:child_process');
-		const certify = lowPriority('bun', [INTEGRATION_CERTIFIER]);
-		execFile(
-			certify.command,
-			[...certify.args],
-			{ cwd: root, timeout: 60_000, env: backgroundEnv() },
-			(error) => {
-				if (error !== null)
-					process.stderr.write(
-						`[delendai] integration certification did not complete: ${error.message}\n`,
-					);
-			},
-		);
-	} catch (error) {
-		process.stderr.write(
-			`[delendai] integration certification could not start: ${error instanceof Error ? error.message : String(error)}\n`,
-		);
+		const { promisify } = await import('node:util');
+		const execFileAsync = promisify(execFile);
+		for (const [script, timeout] of INTEGRATION_FOLLOW_UPS) {
+			if (!existsSync(join(root, script))) continue;
+			const step = lowPriority('bun', [script, '--apply']);
+			try {
+				await execFileAsync(step.command, [...step.args], {
+					cwd: root,
+					timeout,
+					env: backgroundEnv(),
+				});
+			} catch (error) {
+				process.stderr.write(
+					`[delendai] ${script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+				);
+			}
+		}
+	} finally {
+		followingUp = false;
 	}
 };
 
@@ -509,7 +524,7 @@ const run = async (): Promise<void> => {
 					},
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
-						void certifyInBackground(config.workspace.root);
+						void followUpInBackground(config.workspace.root);
 					},
 				});
 

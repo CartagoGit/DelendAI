@@ -1,6 +1,10 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+	INTEGRATION_FOLLOW_UPS,
 	createStopHandler,
 	describeMigrationRun,
 	hasHelpFlag,
@@ -208,5 +212,15 @@ describe('createStopHandler', () => {
 		expect(maintenance.stop).toHaveBeenCalledOnce();
 		expect(hydration.stop).toHaveBeenCalledOnce();
 		expect(shutdown).toHaveBeenCalledWith(130);
+	});
+});
+
+describe('INTEGRATION_FOLLOW_UPS', () => {
+	it('[<20ms] runs only scripts that exist, none of the retired queue', () => {
+		const root = join(import.meta.dirname, '../../..');
+		for (const [script] of INTEGRATION_FOLLOW_UPS) {
+			expect(existsSync(join(root, script))).toBe(true);
+			expect(script).not.toMatch(/queue|refresh|hydrat|namespace/u);
+		}
 	});
 });
