@@ -10,6 +10,8 @@ last-transition-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
 last-correlation-id: dfd4f1bd-6a5a-4e81-8af0-1ed7365387b5
 last-transition-from: in-progress
 last-transition-at: 2026-11-03T05:01:54.171Z
+shipped-in:
+  - "6578eb7c5"
 ---
 
 # x00982 — Web tabs, dialogs and assets survive navigation and failed refreshes
@@ -31,15 +33,17 @@ gpt-6.1-sol's contribution to a00095, confirmed in a real Chrome: WEB-TABS01 an 
 - global_gate: type
 
 ### S1 — Tabs, copy and focus
-- **Status**: review
+- **Status**: done
 - **Files**: `apps/web/src/components/ui/_tabs-controller.ts`, `apps/web/src/components/ui/Tabs.astro`, `apps/web/src/components/ui/CopyButton.astro`, `apps/web/src/components/ui/CodeBlock.astro`, `apps/web/src/components/Config.astro`, `apps/web/src/components/ui/_focus-trap.ts`, `apps/web/src/components/ui/_focus-trap.spec.ts`, `apps/web/src/components/ui/_tabs-controller.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Controllers rebind on astro:page-load and cancel stale fade callbacks (WEB-TABS01, WEB-TABS02)."
   - "The settings dialog moves focus in and traps it (WEB-A11Y01)."
 - shipped-in: `d0e829dafe93`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: claude-opus-5-5
+- review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 16/16 claimed, no recorded run cited; acceptance 2/2: (1) Tabs.astro:58, CopyButton.astro:34, CodeBlock.astro:59 call initTabs/initCopyButtons on astro:page-load; data-tabs-bound / data-copy-bound make it idempotent; … (2) Config.astro:185 focuses .modal__close on open, :193 returns focus to the opener, :214-221 wraps Tab/Shift+Tab via trapTarget (_focus-trap.ts); _focus-trap.spe… — Tabs/copy rebind on astro:page-load idempotently; fades cancellable; settings dialog focuses and traps
 
 ### S2 — Nav styles and brand assets
 - **Status**: review
