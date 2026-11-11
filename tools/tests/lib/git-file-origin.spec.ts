@@ -1,0 +1,175 @@
+/**
+ * git-file-origin.spec.ts — against a real repository, because the
+ * whole question is what git reports.
+ */
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+	gitFileOrigin,
+	gitFileOrigins,
+	originsFromLog,
+	parseOriginLine,
+} from '../../scripts/lib/git-file-origin';
+
+let repo: string;
+
+const IDENTITY = {
+	GIT_AUTHOR_NAME: 't',
+	GIT_AUTHOR_EMAIL: 't@t',
+	GIT_COMMITTER_NAME: 't',
+	GIT_COMMITTER_EMAIL: 't@t',
+};
+
+const git = (...args: string[]): string =>
+	execFileSync('git', args, {
+		cwd: repo,
+		encoding: 'utf8',
+		env: { ...process.env, ...IDENTITY },
+	}).trim();
+
+const commitAt = (message: string, date: string): void => {
+	execFileSync('git', ['commit', '--quiet', '--no-verify', '-m', message], {
+		cwd: repo,
+		env: {
+			...process.env,
+			...IDENTITY,
+			GIT_AUTHOR_DATE: date,
+			GIT_COMMITTER_DATE: date,
+		},
+	});
+};
+
+beforeEach(() => {
+	repo = mkdtempSync(join(tmpdir(), 'git-file-origin-'));
+	git('init', '--quiet');
+});
+
+afterEach(() => {
+	rmSync(repo, { recursive: true, force: true });
+});
+
+describe('gitFileOrigin', () => {
+	it('reports the commit and date that first added a file', () => {
+		writeFileSync(join(repo, 'a.ts'), '1');
+		git('add', 'a.ts');
+		commitAt('add a', '2026-06-01T10:00:00Z');
+		writeFileSync(join(repo, 'a.ts'), '2');
+		git('add', 'a.ts');
+		commitAt('edit a', '2026-09-01T10:00:00Z');
+
+		const origin = gitFileOrigin(repo, 'a.ts');
+
+		expect(origin?.date).toBe('2026-06-01');
+		expect(origin?.sha).toBe(git('rev-list', '--max-parents=0', 'HEAD'));
+	});
+
+	it('follows a rename back to the original creation only when asked', () => {
+		writeFileSync(
+			join(repo, 'old.ts'),
+			'content that is long enough to follow\n',
+		);
+		git('add', 'old.ts');
+		commitAt('add old', '2026-06-01T10:00:00Z');
+		git('mv', 'old.ts', 'new.ts');
+		commitAt('rename', '2026-09-01T10:00:00Z');
+
+		expect(gitFileOrigin(repo, 'new.ts')?.date).toBe('2026-09-01');
+		expect(gitFileOrigin(repo, 'new.ts', { follow: true })?.date).toBe(
+			'2026-06-01',
+		);
+	});
+
+	it('knows nothing of an untracked file in a repository with history', () => {
+		// With history, so `git log` SUCCEEDS and prints nothing — the
+		// case a repository with no commits at all never reaches, because
+		// there `git log` fails outright.
+		writeFileSync(join(repo, 'tracked.ts'), '1');
+		git('add', 'tracked.ts');
+		commitAt('add tracked', '2026-06-01T10:00:00Z');
+		writeFileSync(join(repo, 'loose.ts'), 'x');
+
+		expect(gitFileOrigin(repo, 'loose.ts')).toBeUndefined();
+	});
+
+	it('knows nothing in a repository with no commits yet', () => {
+		writeFileSync(join(repo, 'loose.ts'), 'x');
+		expect(gitFileOrigin(repo, 'loose.ts')).toBeUndefined();
+	});
+
+	it('knows nothing outside a repository', () => {
+		const bare = mkdtempSync(join(tmpdir(), 'not-a-repo-'));
+		try {
+			expect(gitFileOrigin(bare, 'x.ts')).toBeUndefined();
+		} finally {
+			rmSync(bare, { recursive: true, force: true });
+		}
+	});
+});
+
+describe('parseOriginLine', () => {
+	it('reads a sha and an ISO author date', () => {
+		expect(
+			parseOriginLine(
+				'0123456789abcdef0123456789abcdef01234567 2026-09-08T10:11:12+02:00',
+			),
+		).toEqual({
+			sha: '0123456789abcdef0123456789abcdef01234567',
+			iso: '2026-09-08T10:11:12+02:00',
+			date: '2026-09-08',
+		});
+	});
+
+	it('refuses anything that is not exactly that', () => {
+		for (const line of [
+			'',
+			'abc',
+			'0123456 not-a-date',
+			'2026-09-08T10:11:12Z',
+		]) {
+			expect(parseOriginLine(line)).toBeUndefined();
+		}
+	});
+});
+
+describe('originsFromLog', () => {
+	it('dates each path by the commit that added it, and a renamed one by its old name', () => {
+		const origins = originsFromLog(
+			[
+				'@aaaaaaa 2026-01-01T00:00:00+00:00',
+				'',
+				'A\tsrc/a.ts',
+				'A\tsrc/b.ts',
+				'@bbbbbbb 2026-02-01T00:00:00+00:00',
+				'',
+				'R100\tsrc/a.ts\tsrc/renamed.ts',
+				'A\tsrc/b.ts',
+			].join('\n'),
+		);
+		expect(origins.get('src/renamed.ts')?.sha).toBe('aaaaaaa');
+		expect(origins.get('src/b.ts')?.date).toBe('2026-01-01');
+		expect(origins.get('src/missing.ts')).toBeUndefined();
+	});
+});
+
+describe('gitFileOrigins', () => {
+	it('dates every path of a real history in one walk, a renamed one by its first name', () => {
+		writeFileSync(join(repo, 'a.ts'), '1');
+		git('add', 'a.ts');
+		commitAt('add a', '2026-06-01T10:00:00Z');
+		git('mv', 'a.ts', 'b.ts');
+		writeFileSync(join(repo, 'c.ts'), '3');
+		git('add', 'c.ts');
+		commitAt('rename a, add c', '2026-09-01T10:00:00Z');
+
+		const origins = gitFileOrigins(repo);
+
+		expect(origins.get('b.ts')?.date).toBe('2026-06-01');
+		expect(origins.get('c.ts')?.date).toBe('2026-09-01');
+		expect(gitFileOrigins(join(repo, 'not-a-repo')).size).toBe(0);
+	});
+});
