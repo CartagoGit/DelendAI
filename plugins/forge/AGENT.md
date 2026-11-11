@@ -17,10 +17,10 @@
 - showIssue
 - createRelease
 - createForgeEventNormaliser
+- createForgeEventReceiver
 - FORGE_EVENT_DROP_REASONS
 - FORGE_EVENT_KINDS
-- FORGE_PR_CHANGES
-- searchCode
+- FORGE_EVENT_RETRY_DEFAULTS
 
 ## Depends on
 
