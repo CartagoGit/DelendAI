@@ -200,6 +200,31 @@ describe('delendai review', () => {
 		).toBe(true);
 	});
 
+	it("[<5000ms] releases into the reviewer's open unit when no --session is given", async () => {
+		const root = repo();
+		const { ctx } = contextFor(root, [{ id: 'x00001' }]);
+		const first = (await run(ctx, 'next', '--agent=minimax-m3')).data as {
+			worktree: string;
+			session: string;
+		};
+		const released = (
+			await run(
+				ctx,
+				'release',
+				'x00001',
+				'--agent=minimax-m3',
+				'--note=cannot run its gate here',
+			)
+		).data as { unit: string; next: string };
+		expect(released.next).toContain(`--session=${first.session}`);
+		expect(released.unit).toContain('/review/batch-all-g1/');
+		const reviewUnits = git(root, 'worktree', 'list', '--porcelain')
+			.split('\n')
+			.filter((line) => line.includes('/review/'));
+		expect(reviewUnits).toHaveLength(1);
+		expect(first.worktree.length).toBeGreaterThan(0);
+	});
+
 	it('[<5000ms] offers another proposal after one was released, not the same one again', async () => {
 		const root = repo();
 		const { ctx } = contextFor(root, [{ id: 'x00001' }, { id: 'x00002' }]);
