@@ -131,17 +131,25 @@ const timerSchedule: IHydrationSchedule = (run, everyMs) => {
 /**
  * Start looking. Ticks never overlap: a slow fetch on a bad network
  * would otherwise stack passes on top of each other and turn a refresh
- * into a load problem.
+ * into a load problem. A pass asked for while one runs is not lost: it
+ * runs once when that one ends, however many were asked for, because a
+ * schedule driven by forge events asks the moment the branch moves, and
+ * a pass whose fetch began before the move would not see it.
  */
 export const startHydrationWatch = (
 	input: IHydrationWatchInput,
 ): IHydrationWatch => {
 	const schedule = input.schedule ?? timerSchedule;
 	let running = false;
+	let again = false;
 	let stopped = false;
 
 	const pass = (): void => {
-		if (running || stopped) return;
+		if (stopped) return;
+		if (running) {
+			again = true;
+			return;
+		}
 		running = true;
 		const once = (): Promise<IHydrationTick> =>
 			hydrateOnce({
@@ -181,6 +189,9 @@ export const startHydrationWatch = (
 			})
 			.finally(() => {
 				running = false;
+				if (!again) return;
+				again = false;
+				pass();
 			});
 	};
 

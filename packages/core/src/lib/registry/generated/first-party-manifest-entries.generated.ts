@@ -270,7 +270,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/github',
 			summary: 'GitHub read-only provider context, HTTP client and remote resource tools.',
 			tags: ['github', 'provider'],
-			permissions: ['filesystem-write', 'network', 'env-read'],
+			permissions: ['filesystem-write', 'network', 'env-read', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -361,7 +361,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			summary: 'Notification + lock-await primitives.',
 			tags: ['notification', 'concurrency'],
 			permissions: ['filesystem-read', 'filesystem-write'],
-			tokenBudgetBytes: 1872,
+			tokenBudgetBytes: 3429,
 		},
 		{
 			origin: 'first-party',

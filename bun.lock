@@ -814,11 +814,13 @@
       "version": "0.3.0",
       "dependencies": {
         "@delendai/contracts": "workspace:*",
+        "@delendai/forge": "workspace:*",
         "@delendai/remote-provider-core": "workspace:*",
         "zod": "^4.6.6",
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
+        "@delendai/forge": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "5.0.3",
@@ -1479,7 +1481,9 @@
         "@delendai/docs": "workspace:*",
         "@delendai/env": "workspace:*",
         "@delendai/error-reporting": "workspace:*",
+        "@delendai/forge": "workspace:*",
         "@delendai/git": "workspace:*",
+        "@delendai/github": "workspace:*",
         "@delendai/i18n": "workspace:*",
         "@delendai/impact-analysis": "workspace:*",
         "@delendai/link-check": "workspace:*",

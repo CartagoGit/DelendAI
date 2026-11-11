@@ -774,7 +774,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"permissions": [
 			"filesystem-write",
 			"network",
-			"env-read"
+			"env-read",
+			"process"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -1016,8 +1017,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 1970,
-			"hard": 2160,
+			"warning": 3610,
+			"hard": 3960,
 			"releaseRelativePercent": 20
 		}
 	},

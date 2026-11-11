@@ -205,13 +205,16 @@ describe('createStopHandler', () => {
 		const shutdown = vi.fn();
 		const maintenance = { stop: vi.fn() };
 		const hydration = { stop: vi.fn() };
+		const forgeEvents = { stop: vi.fn() };
 		const targets: Parameters<typeof createStopHandler>[0] = {};
 		const handler = createStopHandler(targets, shutdown);
 		targets.maintenance = maintenance;
 		targets.hydration = hydration;
+		targets.forgeEvents = forgeEvents;
 		handler(130);
 		expect(maintenance.stop).toHaveBeenCalledOnce();
 		expect(hydration.stop).toHaveBeenCalledOnce();
+		expect(forgeEvents.stop).toHaveBeenCalledOnce();
 		expect(shutdown).toHaveBeenCalledWith(130);
 	});
 });

@@ -54,7 +54,7 @@ const advanceTheForge = (from: IStartupOrigin): void => {
 };
 
 describe('hydrateOnce, against real git', () => {
-	it('pulls a clean checkout up to a branch that moved after it booted', async () => {
+	it('[<1352ms] pulls a clean checkout up to a branch that moved after it booted', async () => {
 		origin = createStartupOrigin();
 		// Clone FIRST: this machine holds the branch as it was, and only
 		// afterwards does the forge absorb somebody else's pull request.
@@ -80,7 +80,7 @@ describe('hydrateOnce, against real git', () => {
 		);
 	});
 
-	it('does nothing, twice over, when the checkout is already level', async () => {
+	it('[<600ms] does nothing, twice over, when the checkout is already level', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('level');
 
@@ -102,7 +102,7 @@ describe('hydrateOnce, against real git', () => {
 		);
 	});
 
-	it('leaves a tree alone when the advance would change an edited file', async () => {
+	it('[<600ms] leaves a tree alone when the advance would change an edited file', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('dirty');
 		const before = local.git('rev-parse', 'HEAD').trim();
@@ -124,7 +124,7 @@ describe('hydrateOnce, against real git', () => {
 		expect(local.git('rev-parse', 'HEAD').trim()).toBe(before);
 	});
 
-	it('advances past an edit to a file the advance does not touch (x00675)', async () => {
+	it('[<600ms] advances past an edit to a file the advance does not touch (x00675)', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('dirty-elsewhere');
 		advanceTheForge(origin);
@@ -158,7 +158,7 @@ const countingSeam = (
 });
 
 describe('hydrateOnce, when there is nothing to do', () => {
-	it('skips with a reason when HEAD is not on the integration branch', async () => {
+	it('[<20ms] skips with a reason when HEAD is not on the integration branch', async () => {
 		// The normal state under a worktree-per-agent policy. A tick that
 		// quietly did nothing would read exactly like a dead timer.
 		const tick = await hydrateOnce({
@@ -171,7 +171,7 @@ describe('hydrateOnce, when there is nothing to do', () => {
 		expect(tick.skipped).toContain('feature/x');
 	});
 
-	it('refuses to judge freshness when the fetch failed', async () => {
+	it('[<20ms] refuses to judge freshness when the fetch failed', async () => {
 		// The remote-tracking ref did not move, so comparing the
 		// checkout against it would call a stale copy of the forge
 		// "level" — the exact wrong answer, arrived at confidently.
@@ -210,7 +210,7 @@ describe('startHydrationWatch', () => {
 		};
 	};
 
-	it('reports every pass, including the ones that did nothing', async () => {
+	it('[<20ms] reports every pass, including the ones that did nothing', async () => {
 		const ticks: IHydrationTick[] = [];
 		const driver = manual();
 		const watch = startHydrationWatch({
@@ -231,7 +231,7 @@ describe('startHydrationWatch', () => {
 		expect(ticks[0]?.skipped).toBeDefined();
 	});
 
-	it('never stacks passes when one is still in flight', async () => {
+	it('[<20ms] never stacks passes when one is still in flight', async () => {
 		// A slow fetch on a bad network would otherwise pile passes on
 		// top of each other and turn a background refresh into a load
 		// problem of its own.
@@ -264,7 +264,45 @@ describe('startHydrationWatch', () => {
 		watch.stop();
 	});
 
-	it('moves nothing while it is told to stand down, and says why', async () => {
+	it('[<20ms] runs once more after a pass that was asked for while one ran', async () => {
+		// An event-driven schedule asks the moment the branch moves; a pass
+		// whose fetch began before the move would not see it, so the ask is
+		// kept, and however many arrive it is one more pass, not a pile.
+		let fetches = 0;
+		const releases: Array<() => void> = [];
+		const driver = manual();
+		const watch = startHydrationWatch({
+			git: countingSeam('develop', async () => {
+				fetches += 1;
+				await new Promise<void>((resolve) => {
+					releases.push(resolve);
+				});
+				return { ok: true };
+			}),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: () => undefined,
+			schedule: driver.schedule,
+		});
+
+		driver.fire();
+		await Promise.resolve();
+		driver.fire();
+		driver.fire();
+		const settle = async (): Promise<void> => {
+			for (let i = 0; i < 20; i += 1) await Promise.resolve();
+		};
+		releases[0]?.();
+		await settle();
+		expect(fetches).toBe(2);
+		releases[1]?.();
+		await settle();
+		expect(fetches).toBe(2);
+		watch.stop();
+	});
+
+	it('[<40ms] moves nothing while it is told to stand down, and says why', async () => {
 		const ticks: IHydrationTick[] = [];
 		let fetches = 0;
 		const driver = manual();
@@ -295,7 +333,7 @@ describe('startHydrationWatch', () => {
 		});
 	});
 
-	it('stops once, however many times it is asked', async () => {
+	it('[<20ms] stops once, however many times it is asked', async () => {
 		const driver = manual();
 		const watch = startHydrationWatch({
 			git: countingSeam('develop', async () => ({ ok: true })),
@@ -312,7 +350,7 @@ describe('startHydrationWatch', () => {
 		expect(driver.cancelled()).toBe(1);
 	});
 
-	it('does not report a pass that finished after it was stopped', async () => {
+	it('[<20ms] does not report a pass that finished after it was stopped', async () => {
 		// Otherwise a server shutting down prints a hydration notice for
 		// a tree nobody is watching any more.
 		const ticks: IHydrationTick[] = [];
@@ -340,10 +378,12 @@ describe('startHydrationWatch, on its own clock', () => {
 		vi.useRealTimers();
 	});
 
-	it('ticks on the real interval when no schedule is injected, and stops it', async () => {
+	it('[<40ms] ticks on the real interval when no schedule is injected, and stops it', async () => {
 		// Every other case injects a schedule, so the timer a host
 		// actually gets was never run by anything. This is that timer.
-		vi.useFakeTimers();
+		// Only the interval is faked: faking every clock made the test's
+		// own budget clock count the six seconds advanced here.
+		vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
 		const ticks: IHydrationTick[] = [];
 		const watch = startHydrationWatch({
 			git: countingSeam('feature/x', async () => ({ ok: true })),
@@ -390,7 +430,7 @@ describe('startHydrationWatch, when a pass throws', () => {
 		for (let i = 0; i < 5; i += 1) await Promise.resolve();
 	};
 
-	it('reports the failure as a tick instead of taking the server down', async () => {
+	it('[<20ms] reports the failure as a tick instead of taking the server down', async () => {
 		const ticks: IHydrationTick[] = [];
 		const driver = manualOnce();
 		const watch = startHydrationWatch({
@@ -411,7 +451,7 @@ describe('startHydrationWatch, when a pass throws', () => {
 		expect(ticks[0]?.skipped).toContain('git vanished');
 	});
 
-	it('stays quiet about a failure that lands after stop()', async () => {
+	it('[<20ms] stays quiet about a failure that lands after stop()', async () => {
 		const ticks: IHydrationTick[] = [];
 		const driver = manualOnce();
 		const watch = startHydrationWatch({
@@ -430,7 +470,7 @@ describe('startHydrationWatch, when a pass throws', () => {
 		expect(ticks).toHaveLength(0);
 	});
 
-	it('runs the next pass after a failed one, rather than wedging', async () => {
+	it('[<20ms] runs the next pass after a failed one, rather than wedging', async () => {
 		// `running` is released in `finally`. Without that, one thrown
 		// pass would silently disable every later one — the dead-timer
 		// failure this module exists to prevent.

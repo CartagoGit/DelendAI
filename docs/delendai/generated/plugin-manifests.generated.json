@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-03T01:24:49.458Z",
+	"generatedAt": "2026-11-11T05:47:43.278Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1210,7 +1210,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"presets": [
 				"everything"
@@ -1610,12 +1611,12 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 1872,
+				"staticBytes": 3429,
 				"caps": {
-					"hard": 2160,
-					"warning": 1970
+					"hard": 3960,
+					"warning": 3610
 				},
-				"measuredAt": "2026-11-01",
+				"measuredAt": "2026-11-11",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -3344,7 +3345,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3526,7 +3528,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 1872
+			"tokenBudgetBytes": 3429
 		},
 		{
 			"origin": "first-party",
@@ -4902,7 +4904,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -5144,8 +5147,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 1970,
-				"hard": 2160,
+				"warning": 3610,
+				"hard": 3960,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -6066,8 +6069,8 @@
 		},
 		{
 			"id": "notification",
-			"warning": 1970,
-			"hard": 2160,
+			"warning": 3610,
+			"hard": 3960,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -6576,7 +6579,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			]
 		},
 		{

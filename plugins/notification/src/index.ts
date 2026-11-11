@@ -5,6 +5,7 @@ import z from 'zod';
 
 import {
 	buildAwaitLockRegistration,
+	buildForgeEventRegistrations,
 	buildNotifyRegistration,
 } from './lib/tools';
 
@@ -115,6 +116,14 @@ export default definePlugin({
 			tools: [
 				buildNotifyRegistration(toolOptions),
 				buildAwaitLockRegistration(toolOptions),
+				// Sessions wait for their pull requests' outcomes here.
+				...buildForgeEventRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					cacheDir: ctx.cacheDir,
+					enabled:
+						ctx.developmentPolicy?.integration.forgeEvents === true,
+				}),
 			],
 			knowledge: [
 				{

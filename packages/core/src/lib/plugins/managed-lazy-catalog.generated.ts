@@ -1005,7 +1005,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'notification',
 			'@delendai/notification',
-			['notify_status', 'await_lock'],
+			['notify_status', 'await_lock', 'forge_subscribe', 'forge_await'],
 			[],
 			[],
 			['lock-notifications'],
@@ -1019,6 +1019,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Lock-release notifier: pushes notifications/message when a watched lock frees, so agents stop polling.',
 					await_lock:
 						'Wait until a task lock is released (or timeout), so agents stop polling agent_lock status.',
+					forge_subscribe:
+						'Subscribe this session to a pull request or issue: its outcome arrives as a notification.',
+					forge_await:
+						'Wait, spending nothing, until the forge reports an outcome on a subscribed pull request or issue.',
 				},
 			},
 		),

@@ -57,7 +57,11 @@ type ICloseCapableServer = {
 	};
 };
 
-const attachCloseHandler = (server: McpServer, handler: () => void): void => {
+/** Run `handler` when the server's transport closes, after none it replaced. */
+export const attachCloseHandler = (
+	server: McpServer,
+	handler: () => void,
+): void => {
 	const closeCapable = server as McpServer & ICloseCapableServer;
 	const transportServer = closeCapable.server;
 	if (transportServer === undefined) return;

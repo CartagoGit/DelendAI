@@ -9,7 +9,7 @@ export default definePluginManifest({
 		'GitHub read-only provider context, HTTP client and remote resource tools.',
 	tags: ['github', 'provider'],
 	maturity: 'experimental',
-	permissions: ['filesystem-write', 'network', 'env-read'],
+	permissions: ['filesystem-write', 'network', 'env-read', 'process'],
 	presets: ['everything'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@delendai/contracts', 'zod'],

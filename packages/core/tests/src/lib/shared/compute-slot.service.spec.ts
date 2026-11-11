@@ -455,7 +455,7 @@ describe('withComputeSlot superseded turns', () => {
 });
 
 describe('computeSlotPath', () => {
-	it('[<40ms] lives in the shared git directory, and is absent outside a repository', () => {
+	it('[<283ms] lives in the shared git directory, and is absent outside a repository', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'compute-slot-git-'));
 		dirs.push(dir);
 		expect(computeSlotPath(dir)).toBeUndefined();

@@ -12,6 +12,7 @@ _(none)_
 ## Depends on
 
 - @delendai/contracts
+- @delendai/forge
 - @delendai/remote-provider-core
 - zod
 - @delendai/core

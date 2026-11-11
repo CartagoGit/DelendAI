@@ -20,4 +20,10 @@ export interface IPolicyIntegrationEngine {
 	 * check. Off, an empty `requiredChecks` lands nothing: nothing was proved.
 	 */
 	readonly landWithoutChecks: boolean;
+	/**
+	 * True when the server that maintains the workspace receives the forge's
+	 * events over a connection it opens out, and follows the integration
+	 * branch when they arrive. Off, it looks on a timer.
+	 */
+	readonly forgeEvents: boolean;
 }

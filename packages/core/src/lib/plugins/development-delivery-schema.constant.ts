@@ -118,6 +118,12 @@ export const IntegrationAxis = z
 				'Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands.',
 			)
 			.optional(),
+		forgeEvents: z
+			.boolean()
+			.describe(
+				'Whether the server that maintains this workspace receives forge events (pushes, pull requests, checks, reviews, issues) over a connection it opens out, and follows the integration branch and brings labelled pull requests forward the moment they arrive, instead of looking every minute. Off by default. For GitHub it needs the `gh` extension `cli/gh-webhook` and a login that may create repository webhooks; while no connection is up the server falls back to looking on its timer.',
+			)
+			.optional(),
 		mergeMethod: z
 			.string()
 			.min(1)

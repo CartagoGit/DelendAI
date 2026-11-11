@@ -3,7 +3,7 @@ id: github
 package: @delendai/github
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-03T01:24:49.458Z
+generated: 2026-11-11T05:47:43.278Z
 ---
 
 # Github
@@ -28,6 +28,7 @@ GitHub read-only provider context, HTTP client and remote resource tools.
 - filesystem-write
 - network
 - env-read
+- process
 
 ## Dependencies
 

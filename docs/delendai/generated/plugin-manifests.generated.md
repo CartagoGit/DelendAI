@@ -102,7 +102,7 @@
 | link-check | 1810 | 1990 | 20 |
 | logs | 7670 | 8400 | 20 |
 | memory | 8620 | 9440 | 20 |
-| notification | 1970 | 2160 | 20 |
+| notification | 3610 | 3960 | 20 |
 | observability | 6030 | 6600 | 20 |
 | orchestrator-runner | 37870 | 41480 | 20 |
 | perf | 3860 | 4220 | 20 |
@@ -159,7 +159,7 @@
 | forge | filesystem-read, process, network, forge-read, forge-write | pr_list: forge-read, network; pr_show: forge-read, network; ci_status: forge-read, network; issue_list: forge-read, network; issue_show: forge-read, network; release: forge-read, forge-write, network; search_code: forge-read, network; pr_create: forge-write, network; pr_comment: forge-write, network; issue_create: forge-write, network |
 | framework-knowledge | filesystem-read, filesystem-write |  |
 | git | filesystem-read, process, git-read, git-write | status: git-read; changed: git-read; diff: git-read; log: git-read; blame: git-read; show: git-read; worktree: git-read; changelog: git-read; commit: git-write; push: git-write |
-| github | filesystem-write, network, env-read |  |
+| github | filesystem-write, network, env-read, process |  |
 | gitlab | filesystem-write, network, env-read |  |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |

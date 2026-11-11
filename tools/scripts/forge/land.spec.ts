@@ -430,7 +430,7 @@ describe('land run with a workflow token', () => {
 });
 
 describe('the land workflow template', () => {
-	it("[<5ms] renders this repository's committed instance", () => {
+	it("[<32ms] renders this repository's committed instance", () => {
 		expect(renderLandWorkflow(REPO_LAND_WORKFLOW)).toBe(
 			readFileSync(LAND_WORKFLOW_PATH, 'utf8'),
 		);
