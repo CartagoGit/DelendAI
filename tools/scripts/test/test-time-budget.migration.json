@@ -2176,7 +2176,6 @@
 		"tools/scripts/forge/promotion-alerts.script.spec.ts",
 		"tools/scripts/forge/publish-cleanup.spec.ts",
 		"tools/scripts/forge/sync-with-integration.script.spec.ts",
-		"tools/scripts/forge/train-assembly.spec.ts",
 		"tools/scripts/gen-all.spec.ts",
 		"tools/scripts/gen/agent-md.script.spec.ts",
 		"tools/scripts/gen/authorities.script.spec.ts",

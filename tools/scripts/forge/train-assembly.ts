@@ -19,6 +19,8 @@ import { fileURLToPath } from 'node:url';
 
 import type { ITrainCandidate } from '@delendai/core/cli';
 
+import { keepOneProposalCopy } from '../proposals/keep-one-proposal-copy';
+
 /** The subject of the commit a train adds when regeneration moved a file. */
 export const TRAIN_REGENERATION_SUBJECT =
 	'chore(generated): recompute on the merge train';
@@ -236,6 +238,12 @@ export const assembleTrain = (input: {
 			if (outcome === 'derived') regenerated.push(member.number);
 		}
 		if (conflicting.length > 0) return { conflicting, regenerated };
+		// Two members that moved one proposal leave it in two folders; keep
+		// the copy furthest along before the generators read the registry.
+		keepOneProposalCopy(scratch, (subject) => {
+			run(scratch, ['add', '-A']);
+			run(scratch, [...IDENTITY, 'commit', '-q', '-m', subject]);
+		});
 		{
 			// Once, after every member is in: a generator run on half a train
 			// computes the file from half a tree. ALWAYS, not only after a
