@@ -86,7 +86,10 @@ const setup = (retry = {}) => {
 	const receiver = createForgeEventReceiver({
 		transport,
 		adapter,
-		secret: () => `secret-${String((secrets += 1))}`,
+		secret: () => {
+			secrets += 1;
+			return `secret-${String(secrets)}`;
+		},
 		delay: (run, ms) => {
 			const entry = { run, ms, cancelled: false };
 			delays.push(entry);

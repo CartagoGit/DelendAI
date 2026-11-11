@@ -188,7 +188,10 @@ const setup = (standing: { reason: string | undefined }) => {
 	let drawn = 0;
 	const receiver = createForgeEventReceiver({
 		adapter: createGitHubEventAdapter(),
-		secret: () => `${SECRET_PREFIX}${String((drawn += 1))}`,
+		secret: () => {
+			drawn += 1;
+			return `${SECRET_PREFIX}${String(drawn)}`;
+		},
 		delay: (run) => {
 			retries.push(run);
 			return () => undefined;
