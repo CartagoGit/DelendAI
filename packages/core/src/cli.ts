@@ -147,6 +147,7 @@ export { createGithubLandForge } from './lib/integration/land/github-land-forge.
 export {
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
+	LAND_WORKFLOW_NAME,
 	LAND_WORKFLOW_TOKEN_ACTOR,
 } from './lib/integration/land/land.constant';
 export type {
@@ -162,8 +163,11 @@ export type {
 	ILandMerge,
 	ILandPullRequest,
 	ILandReport,
+	ILandFollowUps,
 	ILandWorkflowInput,
+	ILandWorkflowTriggers,
 } from './lib/integration/land/land.interface';
+export { followUpWorkflows } from './lib/integration/land/land-follow-ups.helper';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,

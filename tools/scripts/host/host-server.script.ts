@@ -131,57 +131,49 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 
 /**
- * What this repository runs once its checkout followed the integration
- * branch, in order, each with its timeout: record what the tip's full runs
- * concluded (evidence `proposal_transition` reads), give every
- * publication its pull request, and close the proposals whose every slice
- * is approved, once per move of the integration branch, with no agent
- * involved. They need this machine's credential: a pull request opened
- * with a workflow token starts no CI. A project that ships none of them
- * runs nothing.
+ * The script that runs this repository's follow-ups (certify, open the
+ * publications' pull requests, bring labelled ones forward, close approved
+ * proposals), read from the checkout at every run so a step added since this
+ * server started runs without a restart. A project that ships none runs
+ * nothing.
  */
-export const INTEGRATION_FOLLOW_UPS: ReadonlyArray<readonly [string, number]> =
-	[
-		['tools/scripts/forge/certify-integration.script.ts', 60_000],
-		['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
-		// What land labels "needs update" is brought forward here, with this
-		// machine's credentials: a workflow-token push starts no CI.
-		['tools/scripts/forge/bring-forward.script.ts', 1_800_000],
-		['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
-	];
+export const INTEGRATION_FOLLOW_UPS_SCRIPT =
+	'tools/scripts/host/integration-follow-ups.script.ts';
 
-/** One follow-up at a time: a second move waits for none, it is skipped. */
-let followingUp = false;
+/** One run at a time per occasion: a run still going skips the next. */
+const followingUp = { move: false, event: false };
 
 /**
  * Run the follow-ups without making the watch wait for the forge.
- * Detached and never fatal: a step that cannot reach the forge is
- * reported, and the next move runs it again.
+ * Detached and never fatal.
  */
-const followUpInBackground = async (root: string): Promise<void> => {
-	if (followingUp) return;
-	followingUp = true;
+const followUpInBackground = async (
+	root: string,
+	on: 'move' | 'event',
+): Promise<void> => {
+	if (
+		followingUp[on] ||
+		!existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))
+	)
+		return;
+	followingUp[on] = true;
 	try {
 		const { execFile } = await import('node:child_process');
 		const { promisify } = await import('node:util');
-		const execFileAsync = promisify(execFile);
-		for (const [script, timeout] of INTEGRATION_FOLLOW_UPS) {
-			if (!existsSync(join(root, script))) continue;
-			const step = lowPriority('bun', [script, '--apply']);
-			try {
-				await execFileAsync(step.command, [...step.args], {
-					cwd: root,
-					timeout,
-					env: backgroundEnv(),
-				});
-			} catch (error) {
-				process.stderr.write(
-					`[delendai] ${script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
-				);
-			}
-		}
+		const step = lowPriority('bun', [
+			INTEGRATION_FOLLOW_UPS_SCRIPT,
+			`--on=${on}`,
+		]);
+		await promisify(execFile)(step.command, [...step.args], {
+			cwd: root,
+			env: backgroundEnv(),
+		}).catch((error: unknown) => {
+			process.stderr.write(
+				`[delendai] follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+			);
+		});
 	} finally {
-		followingUp = false;
+		followingUp[on] = false;
 	}
 };
 
@@ -529,7 +521,10 @@ const run = async (): Promise<void> => {
 					},
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
-						void followUpInBackground(config.workspace.root);
+						void followUpInBackground(
+							config.workspace.root,
+							'move',
+						);
 					},
 				});
 

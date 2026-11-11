@@ -11,13 +11,16 @@
  */
 import {
 	createGithubLandForge,
+	followUpWorkflows,
 	integrationProtocolRefusal,
+	LAND_WORKFLOW_NAME,
 	landConfigFromPolicy,
 	landPass,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
+import { readWorkflowTriggers } from './land-follow-ups';
 import { createLandGit } from './land-git';
 import { readDevelopmentConfig } from './land-policy';
 import { zoneOfCheck } from './section-health';
@@ -54,13 +57,14 @@ const main = async (): Promise<number> => {
 	const config = landConfigFromPolicy(policy, {
 		sectionOfCheck: zoneOfCheck,
 	});
+	const forge = createGithubLandForge({
+		slug,
+		integration: config.integrationBranch,
+		mergeMethod: config.mergeMethod,
+		run: createForgeCliRunner(root),
+	});
 	const report = await landPass({
-		forge: createGithubLandForge({
-			slug,
-			integration: config.integrationBranch,
-			mergeMethod: config.mergeMethod,
-			run: createForgeCliRunner(root),
-		}),
+		forge,
 		git: createLandGit({ root, remote: 'origin' }),
 		config,
 	});
@@ -73,6 +77,25 @@ const main = async (): Promise<number> => {
 	console.log(
 		`land: ${String(report.mergedCount)} merged${report.mergedPRs.length > 0 ? ` (${report.mergedPRs.map((n) => `#${String(n)}`).join(', ')})` : ''}; tip ${report.tipSha.slice(0, 12)}`,
 	);
+	if (report.mergedCount === 0) return 0;
+	// Its merges started nothing: start what a push would have, the next
+	// pass among them, so nothing waits for the timer.
+	const followUps = followUpWorkflows(
+		readWorkflowTriggers('.github/workflows', config.integrationBranch),
+		LAND_WORKFLOW_NAME,
+	);
+	for (const workflow of followUps.dispatch) {
+		const started = await forge
+			.dispatchWorkflow(workflow, config.integrationBranch)
+			.catch(() => false);
+		console.log(
+			`land: ${started ? 'started' : 'could NOT start'} ${workflow} on ${config.integrationBranch}`,
+		);
+	}
+	for (const workflow of followUps.unreachable)
+		console.log(
+			`land: ${workflow} runs on a push to ${config.integrationBranch} but cannot be started on request, so a merge by land skips it; give it workflow_dispatch.`,
+		);
 	return 0;
 };
 

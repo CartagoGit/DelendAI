@@ -243,5 +243,13 @@ export const createGithubLandForge = (input: {
 		closePullRequest: async (number) => {
 			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
 		},
+		dispatchWorkflow: async (workflow, ref) =>
+			(
+				await call(
+					'POST',
+					`actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
+					{ ref },
+				)
+			).status === 200,
 	};
 };

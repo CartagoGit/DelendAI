@@ -59,6 +59,31 @@ export interface ILandForge {
 	}): Promise<number>;
 	updatePullRequest(number: number, body: string): Promise<void>;
 	closePullRequest(number: number): Promise<void>;
+	/**
+	 * Start `workflow` on `ref`, as a person's push there would have; whether
+	 * the forge took it. The integrator's own merges start no workflow, so it
+	 * starts the ones a push would.
+	 */
+	dispatchWorkflow(workflow: string, ref: string): Promise<boolean>;
+}
+
+/** When a workflow runs, as far as a merge by the integrator is concerned. */
+export interface ILandWorkflowTriggers {
+	/** Its file name, which is how the forge is asked to start it. */
+	readonly file: string;
+	/** A push to the integration branch starts it. */
+	readonly pushesIntegration: boolean;
+	/** It can be started on request. */
+	readonly dispatchable: boolean;
+	/** The workflows whose completion starts it. */
+	readonly afterWorkflows: readonly string[];
+}
+
+/** What follows a pass that merged: what to start, and what cannot be. */
+export interface ILandFollowUps {
+	readonly dispatch: readonly string[];
+	/** Started by a push but not on request: a merge by the integrator skips it. */
+	readonly unreachable: readonly string[];
 }
 
 /** What a trial merge onto the tip says about one pull request. */

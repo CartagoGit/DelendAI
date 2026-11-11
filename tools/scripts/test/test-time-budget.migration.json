@@ -165,7 +165,6 @@
 		"packages/cli/src/commands/work.command.spec.ts",
 		"packages/cli/src/contracts/constants/offer-messages.constant.spec.ts",
 		"packages/cli/src/contracts/constants/version.constant.spec.ts",
-		"packages/cli/src/index.spec.ts",
 		"packages/cli/src/lib/alias/alias-command.integration.spec.ts",
 		"packages/cli/src/lib/alias/alias-launcher.integration.spec.ts",
 		"packages/cli/src/lib/alias/integration.spec.ts",
