@@ -718,7 +718,6 @@
 		"packages/core/tests/src/lib/startup-gate/policy-gate.spec.ts",
 		"packages/core/tests/src/lib/startup-gate/repair-resolutions-seam.spec.ts",
 		"packages/core/tests/src/lib/startup-gate/run-startup-gate.spec.ts",
-		"packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts",
 		"packages/core/tests/src/lib/startup-gate/state-database-seam.spec.ts",
 		"packages/core/tests/src/lib/startup-reconciler/ambiguous-conditions.spec.ts",
 		"packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts",
