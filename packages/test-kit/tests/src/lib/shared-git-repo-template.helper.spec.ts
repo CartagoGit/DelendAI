@@ -20,9 +20,8 @@ describe('createSharedGitRepoTemplate', () => {
 			expect(one.root).not.toBe(two.root);
 			expect(one.git('symbolic-ref', '--short', 'HEAD')).toBe('develop');
 			expect(existsSync(`${one.root}/a.txt`)).toBe(true);
-			expect(one.git('worktree', 'list', '--porcelain')).toContain(
-				one.worktrees['unit'],
-			);
+			const { unit } = one.worktrees;
+			expect(one.git('worktree', 'list', '--porcelain')).toContain(unit);
 			one.git('commit', '--allow-empty', '-q', '-m', 'only here');
 			expect(two.git('log', '--format=%s', '-1')).toBe('base');
 		} finally {
