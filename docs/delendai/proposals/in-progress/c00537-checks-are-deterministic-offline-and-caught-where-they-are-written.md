@@ -77,7 +77,7 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 ### S6 — The slowest specs become near-instant with test-kit
 - **Status**: pending
 - **DependsOn**: [S7]
-- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`
+- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`, `plugins/proposals/tests/src/lib/services/review-claim-timeout.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"

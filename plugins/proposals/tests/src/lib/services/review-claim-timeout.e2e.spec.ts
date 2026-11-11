@@ -3,12 +3,9 @@
  * still land: under load the runner's timeout fires while git is finishing.
  * What the unit carries decides what the reviewer is told.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
 import { claimForReview } from '@delendai/proposals/lib/services/review-claim.service';
 import {
@@ -16,25 +13,18 @@ import {
 	type IGitRunner,
 } from '@delendai/proposals/lib/shared/git-runner';
 
-const roots: string[] = [];
-afterEach(() => {
-	for (const root of roots.splice(0))
-		rmSync(root, { recursive: true, force: true });
+/**
+ * The project, built once for the file and copied per case: built per case
+ * it was six git processes, and one case took 170 ms on CI against 150.
+ */
+const project = createGitRepoTemplate({
+	trunk: 'develop',
+	files: { 'README.md': '# project\n' },
 });
 
 /** A review unit one commit ahead of nothing: develop is its base. */
 const unit = () => {
-	const root = mkdtempSync(join(tmpdir(), 'claim-timeout-'));
-	roots.push(root);
-	const git = (...args: string[]) =>
-		execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-	git('init', '-q', '-b', 'develop');
-	git('config', 'user.email', 'r@example.com');
-	git('config', 'user.name', 'R');
-	git('config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'README.md'), '# project\n');
-	git('add', '-A');
-	git('commit', '-q', '-m', 'base');
+	const { root, git } = project.copy();
 	git(
 		'switch',
 		'-q',
