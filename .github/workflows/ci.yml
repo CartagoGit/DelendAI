@@ -874,6 +874,14 @@ jobs:
                     VITEST_TIMINGS_OUT=.cache/spec-timings/report.json bun run test:merged
                   fi
 
+            # c00537: a budget the change writes was never measured by CI,
+            # so its overrun does not fail the shard. Here every test CI
+            # measured over its declared budget fails the run, naming the
+            # calibrated number the spec must carry.
+            - name: Require the CI-calibrated number of every budget overrun
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
+              run: bun run test:budgets:check
+
             - name: Record how long each spec took
               if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
               # An optimisation of the next pull requests' split: it never

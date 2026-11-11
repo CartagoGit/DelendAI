@@ -33,7 +33,9 @@ describe('useFakeClock', () => {
 		clock.advance(60_000);
 		onTestFinished(() => {
 			// The runner measured the body; the minute the fake clock moved is not in it.
-			expect(task.meta[MEASURED_META_KEY]).toBeLessThan(1_000);
+			expect(
+				(task.meta as Record<string, unknown>)[MEASURED_META_KEY],
+			).toBeLessThan(1_000);
 		});
 	});
 });

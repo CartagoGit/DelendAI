@@ -17,4 +17,9 @@ export interface ITimeBudgetCase {
 	 * calibrated in CI, so a run anywhere else only warns.
 	 */
 	readonly softOverrun?: boolean;
+	/**
+	 * The change declares or changes this budget, so CI has never measured
+	 * it: an overrun is reported for correction, not failed here.
+	 */
+	readonly fresh?: boolean;
 }

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	changedFiles,
 	defaultChangeBase,
+	freshBudgets,
 	INTEGRATION_REF,
 	judgeDeclaredBudgets,
 	unbudgetedTests,
@@ -96,6 +97,29 @@ describe('declared test budgets', () => {
 			changedFiles(() => {
 				throw new Error('no base');
 			}),
+		).toBeUndefined();
+	});
+
+	it('[<50ms] reads fresh budgets from committed, edited and new spec files, and none without a base', () => {
+		const git = (args: readonly string[]): string =>
+			args[0] === 'merge-base'
+				? 'abc\n'
+				: args[0] === 'ls-files'
+					? 'new.spec.ts\nnotes.md\n'
+					: args.includes('abc...HEAD')
+						? "+++ b/c.spec.ts\n+it('[<8ms] committed', f);\n"
+						: "+++ b/e.spec.ts\n+it('[<6ms] edited', f);\n";
+		const read = (path: string): string =>
+			path === 'new.spec.ts' ? "it('[<4ms] new', f);\n" : 'unread';
+		expect(freshBudgets(git, read)).toEqual([
+			'c.spec.ts\t[<8ms] committed',
+			'e.spec.ts\t[<6ms] edited',
+			'new.spec.ts\t[<4ms] new',
+		]);
+		expect(
+			freshBudgets(() => {
+				throw new Error('no base');
+			}, read),
 		).toBeUndefined();
 	});
 });

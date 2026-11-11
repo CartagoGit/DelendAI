@@ -133,6 +133,10 @@ export const budgetChanges = (
 		}),
 	);
 
+/** One line a run prints for a test CI measured over its budget, naming the number the spec must carry. */
+export const requiredCorrection = (change: IBudgetChange): string =>
+	`${change.file} > ${change.name}: CI measured ${String(change.maxMs)} ms; declare [<${String(change.calibrated)}ms] (bun run test:budgets:calibrate --from-ci=<this run> --update).`;
+
 /** The spec source with the budget of `change` rewritten, if its name appears exactly once. */
 export const withCalibratedBudget = (
 	source: string,

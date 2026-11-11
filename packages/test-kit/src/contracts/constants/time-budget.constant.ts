@@ -18,6 +18,14 @@ export const MIGRATION_ROOT_ENV = 'DELENDAI_TEST_BUDGET_ROOT';
  */
 export const CHANGED_ENV = 'DELENDAI_TEST_BUDGET_CHANGED';
 
+/**
+ * Holds the budgets the change declares or changes, one `file<TAB>name` a
+ * line. No CI measurement exists for such a number yet, so its overrun is
+ * reported with the number CI calls for and the merge step requires it,
+ * instead of failing the shard (`freshBudgetsOfDiff`).
+ */
+export const FRESH_ENV = 'DELENDAI_TEST_BUDGET_FRESH';
+
 /** Set to `1` for a run whose time overruns are reported, not failed. */
 export const SOFT_OVERRUN_ENV = 'DELENDAI_TEST_BUDGET_SOFT';
 

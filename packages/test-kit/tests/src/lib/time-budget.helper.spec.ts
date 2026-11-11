@@ -4,6 +4,7 @@ import {
 	budgetFailure,
 	budgetInName,
 	budgetOverrun,
+	freshBudgetsOfDiff,
 	mayGoUnbudgeted,
 } from '../../../src/public/index';
 
@@ -63,6 +64,41 @@ describe('time budget', () => {
 				migrating: false,
 				tookMs: 1,
 				softOverrun: true,
+			}),
+		).toContain('no time budget');
+	});
+
+	it('[<20ms] reads the budgets a diff adds, unescaped, by the file it changes', () => {
+		const diff = [
+			'diff --git a/a.spec.ts b/a.spec.ts',
+			'--- a/a.spec.ts',
+			'+++ b/a.spec.ts',
+			"-\tit('[<9ms] old', () => {});",
+			"+\tit('[<20ms] new', () => {});",
+			"+\tit('[<5ms] can\\'t wait', () => {});",
+			'+\tit(`[<7ms] plain`, () => {}); it("[<3ms] two", f);',
+			'+++ /dev/null',
+			"+\tit('[<4ms] gone', () => {});",
+		].join('\n');
+		expect(freshBudgetsOfDiff(diff)).toEqual([
+			'a.spec.ts\t[<20ms] new',
+			"a.spec.ts\t[<5ms] can't wait",
+			'a.spec.ts\t[<7ms] plain',
+			'a.spec.ts\t[<3ms] two',
+		]);
+	});
+
+	it('[<20ms] lets a fresh budget overrun pass, and still fails a missing one', () => {
+		const over = { name: '[<5ms] x', migrating: false, tookMs: 9 };
+		expect(budgetFailure(over)).toContain('over its declared budget');
+		expect(budgetFailure({ ...over, fresh: true })).toBeUndefined();
+		expect(budgetOverrun({ ...over, fresh: true })).toContain('9.0 ms');
+		expect(
+			budgetFailure({
+				name: 'x',
+				migrating: false,
+				tookMs: 1,
+				fresh: true,
 			}),
 		).toContain('no time budget');
 	});

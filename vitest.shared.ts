@@ -3,9 +3,13 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { changedFiles } from './tools/scripts/ci/declared-test-budget.ts';
+import {
+	changedFiles,
+	freshBudgets,
+} from './tools/scripts/ci/declared-test-budget.ts';
 import {
 	CHANGED_ENV,
+	FRESH_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
@@ -153,6 +157,24 @@ if (process.env[CHANGED_ENV] === undefined) {
 	if (changed !== undefined) {
 		process.env[CHANGED_ENV] = [...changed].join('\n');
 	}
+}
+
+// A budget the change writes was never measured by CI, so its overrun is
+// reported with the calibrated number and required by the merge step
+// (`test:budgets:check`) instead of failing the shard.
+if (process.env[FRESH_ENV] === undefined) {
+	const root = dirname(fileURLToPath(import.meta.url));
+	const fresh = freshBudgets(
+		(args) =>
+			execFileSync('git', [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				maxBuffer: 256 * 1024 * 1024,
+				stdio: ['ignore', 'pipe', 'ignore'],
+			}),
+		(path) => readFileSync(join(root, path), 'utf8'),
+	);
+	if (fresh !== undefined) process.env[FRESH_ENV] = fresh.join('\n');
 }
 
 /**
