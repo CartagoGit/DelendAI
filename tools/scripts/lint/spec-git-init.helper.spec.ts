@@ -54,4 +54,14 @@ describe('countGitInits', () => {
 		].join('\n');
 		expect(countGitInits(text)).toBe(0);
 	});
+
+	it('[<4ms] leaves out a builder that runs once per worker, and counts what follows it', () => {
+		const text = [
+			'const fixture = createSharedGitFixture((root) => {',
+			"\tgit(root, 'init', '-q');",
+			'});',
+			"git(dir, 'init', '-q');",
+		].join('\n');
+		expect(countGitInits(text)).toBe(1);
+	});
 });

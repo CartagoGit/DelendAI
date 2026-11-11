@@ -35,6 +35,7 @@ export type { IAbortSignalTimeoutStub } from '../contracts/interfaces/abort-sign
 export { skipLockPauses } from '../lib/lock-pause.helper';
 export {
 	createGitRepoTemplate,
+	createSharedGitFixture,
 	createSharedGitRepoTemplate,
 } from '../lib/template-git-repo.helper';
 export type {

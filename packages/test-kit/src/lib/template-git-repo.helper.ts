@@ -165,3 +165,50 @@ export const createSharedGitRepoTemplate = (
 		},
 	};
 };
+
+/** Git's own files that may hold an absolute path; objects are never read. */
+const PATH_HOLDERS = new Set(['config', 'gitdir', '.git']);
+
+/** Rewrite `from` to `to` in every git file under `dir` that may name a path. */
+const rewriteGitPaths = (dir: string, from: string, to: string): void => {
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const path = join(dir, entry.name);
+		if (entry.isDirectory()) {
+			if (entry.name !== 'objects') rewriteGitPaths(path, from, to);
+		} else if (PATH_HOLDERS.has(entry.name)) {
+			rewrite(path, from, to);
+		}
+	}
+};
+
+/**
+ * Any arrangement of repositories a helper builds (a server and its clone,
+ * an origin and a seed), built once per worker by `build` under the
+ * directory it is given, and copied per call: `copy()` returns a fresh
+ * directory whose git files name the copy, not the original. Like
+ * `createSharedGitRepoTemplate` it registers no hook, so a helper shared
+ * across files may hold it; each copy is the caller's to remove.
+ */
+export const createSharedGitFixture = (
+	build: (root: string) => void,
+): { readonly copy: () => string } => {
+	let base: string | undefined;
+	return {
+		copy: () => {
+			if (base === undefined || !existsSync(base)) {
+				const built = newBase();
+				build(built);
+				process.once('exit', () => {
+					rmSync(built, { recursive: true, force: true });
+				});
+				base = built;
+			}
+			const target = realpathSync(
+				mkdtempSync(join(tmpdir(), 'git-copy-')),
+			);
+			cpSync(base, target, { recursive: true, preserveTimestamps: true });
+			rewriteGitPaths(target, base, target);
+			return target;
+		},
+	};
+};

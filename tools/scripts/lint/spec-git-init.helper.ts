@@ -29,10 +29,29 @@ export const isFastTestSupport = (path: string): boolean =>
 	!isE2eTier(path) &&
 	!/\.e2e\.[^/]*$/u.test(path);
 
-/** Lines in `text` that run `git init`, comments left out. */
-export const countGitInits = (text: string): number =>
-	text.split('\n').filter((line) => {
+/** A call whose argument builds repositories once per worker, not per case. */
+const ONCE_PER_WORKER = 'createSharedGitFixture(';
+
+/** `(` minus `)` on a line: how far it opens a call. */
+const depthChange = (line: string): number =>
+	(line.match(/\(/gu)?.length ?? 0) - (line.match(/\)/gu)?.length ?? 0);
+
+/**
+ * Lines in `text` that run `git init`, comments left out, and those inside a
+ * `createSharedGitFixture(...)` builder too: that runs once per worker.
+ */
+export const countGitInits = (text: string): number => {
+	let depth = 0;
+	return text.split('\n').filter((line) => {
 		const code = line.trim();
+		const opens = code.includes(ONCE_PER_WORKER);
+		const inBuilder = depth > 0 || opens;
+		if (inBuilder) {
+			const at = opens ? code.indexOf(ONCE_PER_WORKER) : 0;
+			depth = Math.max(0, depth + depthChange(code.slice(at)));
+		}
+		if (inBuilder) return false;
 		if (code.startsWith('//') || code.startsWith('*')) return false;
 		return GIT_INIT.test(code);
 	}).length;
+};
