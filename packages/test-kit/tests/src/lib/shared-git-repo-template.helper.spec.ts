@@ -13,7 +13,7 @@ const template = createSharedGitRepoTemplate({
 });
 
 describe('createSharedGitRepoTemplate', () => {
-	it('[<250ms] copies one repository built on first use, each copy its own', () => {
+	it('[<119ms] copies one repository built on first use, each copy its own', () => {
 		const one = template.copy();
 		const two = template.copy();
 		try {
@@ -32,7 +32,7 @@ describe('createSharedGitRepoTemplate', () => {
 		}
 	});
 
-	it('[<60ms] leaves the template whole when a copy is removed', () => {
+	it('[<21ms] leaves the template whole when a copy is removed', () => {
 		const first = template.copy();
 		rmSync(dirname(first.root), { recursive: true, force: true });
 		expect(template.copy().git('log', '--format=%s', '-1')).toBe('base');

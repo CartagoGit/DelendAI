@@ -8,7 +8,7 @@ import {
 } from './spec-git-init.helper';
 
 describe('isFastSpec', () => {
-	it('[<20ms] is every spec outside the e2e tier', () => {
+	it('[<5ms] is every spec outside the e2e tier', () => {
 		expect(isFastSpec('a/b.spec.ts')).toBe(true);
 		expect(isFastSpec('a/b.e2e.spec.ts')).toBe(false);
 		expect(isFastSpec('tests/e2e/b.spec.ts')).toBe(false);
@@ -18,7 +18,7 @@ describe('isFastSpec', () => {
 });
 
 describe('isFastTestSupport', () => {
-	it('[<20ms] is a module specs import for setup, outside the e2e tier', () => {
+	it('[<5ms] is a module specs import for setup, outside the e2e tier', () => {
 		expect(
 			isFastTestSupport(
 				'packages/core/tests/src/lib/unit-repo.helper.ts',
@@ -37,7 +37,7 @@ describe('isFastTestSupport', () => {
 });
 
 describe('countGitInits', () => {
-	it('[<20ms] counts git init as an argument list or a command line', () => {
+	it('[<4ms] counts git init as an argument list or a command line', () => {
 		const text = [
 			"execFileSync('git', ['init', '-q'], { cwd });",
 			"git(root, 'init', '-q', '-b', 'develop');",
@@ -46,7 +46,7 @@ describe('countGitInits', () => {
 		expect(countGitInits(text)).toBe(3);
 	});
 
-	it('[<20ms] ignores comments and a template built for the file', () => {
+	it('[<4ms] ignores comments and a template built for the file', () => {
 		const text = [
 			'// git init was here',
 			' * runs git init once',
