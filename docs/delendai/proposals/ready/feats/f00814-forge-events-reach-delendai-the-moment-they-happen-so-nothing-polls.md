@@ -30,26 +30,26 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 
 ### S1 — A forge-agnostic event port and normalised events
 - **Status**: pending
-- **Files**: `plugins/forge/src/lib/contracts/interfaces/forge-event-port.interface.ts`, `plugins/forge/src/lib/services/forge-event-normaliser.ts`, `plugins/forge/tests/forge-event-normaliser.spec.ts`
+- **Files**: `plugins/forge/src/lib/contracts/interfaces/forge-event-port.interface.ts`, `plugins/forge/src/lib/contracts/constants/forge-event.constant.ts`, `plugins/forge/src/lib/services/forge-event-normaliser.ts`, `plugins/forge/src/public/index.ts`, `plugins/forge/tests/forge-event-normaliser.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed."
+  - "The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed."
   - "An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field."
   - "A payload that fits no event is dropped with a counted reason, not thrown."
 
 ### S2 — GitHub webhooks feed the port
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/tests/webhook-events.service.spec.ts`
+- **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/src/lib/contracts/constants/github-webhook.constant.ts`, `plugins/github/src/index.ts`, `plugins/github/package.json`, `plugins/github/tests/webhook-events.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "GitHub pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
-  - "A delivery whose signature does not verify is refused; the secret is read from the environment, never from config, and never logged."
+  - "GitHub push, pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
+  - "A delivery whose signature does not verify is refused; the secret is generated per connection and kept in memory, never in config, and never logged."
 
 ### S3 — Events reach a dev machine with no public address
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/forge/src/lib/services/forge-event-receiver.ts`, `plugins/forge/tests/forge-event-receiver.spec.ts`
+- **Files**: `plugins/forge/src/lib/services/forge-event-receiver.ts`, `plugins/forge/tests/forge-event-receiver.spec.ts`, `plugins/github/src/lib/webhook-forward.service.ts`, `plugins/github/tests/webhook-forward.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed."
@@ -74,13 +74,26 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
   - "An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted."
   - "With events flowing, no product code path polls the forge, and a lint fails if one is added."
 
+### S6 — The host follows the integration branch and brings labelled pull requests forward on forge events, not on a timer
+- **Status**: pending
+- **DependsOn**: [S2, S3]
+- **Files**: `tools/scripts/host/forge-event-follow.service.ts`, `tools/scripts/host/forge-event-follow.service.spec.ts`, `tools/scripts/host/host-server.script.ts`, `packages/core/src/lib/startup-reconciler/hydration-watch.ts`, `packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.interface.ts`, `packages/core/src/lib/contracts/interfaces/integration-engine.interface.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/plugins/development-delivery-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`, `delendai.config.json`
+- **Gate**: type
+- acceptance:
+  - "With events flowing, a push to the integration branch runs the follow (fetch and fast-forward) and the follow-ups `--on=move`."
+  - "A pull request labelled `delendai:needs-update`, or synchronized by a bot, runs the follow-ups `--on=event`."
+  - "The 60 s watch is a fallback: it runs only while no event connection is up, and logs that it is the fallback; while connected no timer runs."
+  - "A reconnection asks the forge once for what was missed: one follow pass and one `--on=event` run."
+  - "Only the server that holds the maintenance lease runs the receiver."
+  - "The policy key `development.integration.forgeEvents` turns it on per project; it is off until a project opts in."
+
 ## acceptance
 
-- The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed.
+- The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed.
 - An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field.
 - A payload that fits no event is dropped with a counted reason, not thrown.
-- GitHub pull_request, check_run, pull_request_review and issues payloads map to the normalised events.
-- A delivery whose signature does not verify is refused; the secret is read from the environment, never from config, and never logged.
+- GitHub push, pull_request, check_run, pull_request_review and issues payloads map to the normalised events.
+- A delivery whose signature does not verify is refused; the secret is generated per connection and kept in memory, never in config, and never logged.
 - The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed.
 - A dropped connection reconnects and asks the forge once for what was missed; it does not poll.
 - A session subscribes to events by repository, pull request or issue; only subscribed sessions receive the MCP notification.
@@ -88,7 +101,12 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - No credential appears in a notification, a log line or the config.
 - An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted.
 - With events flowing, no product code path polls the forge, and a lint fails if one is added.
-
+- With events flowing, a push to the integration branch runs the follow (fetch and fast-forward) and the follow-ups `--on=move`.
+- A pull request labelled `delendai:needs-update`, or synchronized by a bot, runs the follow-ups `--on=event`.
+- The 60 s watch is a fallback: it runs only while no event connection is up, and logs that it is the fallback; while connected no timer runs.
+- A reconnection asks the forge once for what was missed: one follow pass and one `--on=event` run.
+- Only the server that holds the maintenance lease runs the receiver.
+- The policy key `development.integration.forgeEvents` turns it on per project; it is off until a project opts in.
 ## architecture
 
 Options for receiving events on a machine with no public address:
