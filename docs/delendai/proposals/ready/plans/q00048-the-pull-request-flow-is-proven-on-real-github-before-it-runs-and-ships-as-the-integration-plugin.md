@@ -34,7 +34,7 @@ Every one of the nine production failures came from one of two causes:
 - **The integrator acted as the workflow token.** GitHub starts no workflow for anything that token pushes or merges. That caused F1 (heads stuck at `action_required`), F2 (no CI, no next pass and no scan after a merge), F5 (no batches, because a batch the token pushed is never built) and F9 (develop not scanned). It also forced work onto the host, where F4 and F7 happened.
 - **Nothing was proven on real GitHub.** The fake forge cannot show which identity starts workflows, which triggers fire from which branch's workflow file, or how labels and events interleave (F3, F4). It also cannot show what CI's runners measure (F6), or whether a session hears anything at all (F8).
 
-The decision: the integrator acts as an identity that the forge builds. That identity is a GitHub App installation token (`identity: app`, the recommended choice) or a personal token (`identity: pat`), and it is never the workflow token. With that identity the integrator does every forge write in CI, and the host does no integration write. Each case below is proven on real GitHub before the switch is turned on.
+The decision (owner, 2026-11-11): the integrator acts as a GitHub App. This repository sets `identity: app`, and the integrator uses the App's installation token. The policy still offers `identity: pat` to a project that cannot install an App. The identity is never the workflow token. With that identity the integrator does every forge write in CI, and the host does no integration write. Each case below is proven on real GitHub before the switch is turned on.
 
 Owner prerequisite, once per project: create the App from the manifest that `delendai integration doctor` prints, install it on the repository, and add its id and key as secrets. The App needs contents, pull requests, issues, actions and workflows write, and checks read. No pull request ever needs a manual step.
 
@@ -162,11 +162,11 @@ Nothing of this repository is emitted into the other project.
 - `resume` then marks the paused PRs ready, and the integrator lands them by the flow above.
 - `deactivate` is one command.
 
-### Test-budget enforcement — the owner's decision
+### Test-budget enforcement — decided by the owner on 2026-11-11: option (c)
 
 **Evidence.** Tests that do real git or disk I/O fail CI from runner load alone, with their budgets unchanged: 40 ms declared and 99 ms measured, 150 and 170, 162 and 178, 148 and 305. On one day these failures blocked several PRs. The owner's standing rule is: an over-budget test fails CI, budgets are calibrated on CI, and there is no hidden multiplier.
 
-**Options.**
+**Options that were weighed.**
 
 - **(a) Keep the rule, and make every I/O test pure** (in-memory git, repo templates, a fake clock).
   - Reliable once it is done: a pure test's time does not depend on runner load.
@@ -179,7 +179,7 @@ Nothing of this repository is emitted into the other project.
   - An I/O test fails when it is over its budget and its own ratio is more than 1.5 times that load factor.
   - Every run prints the load factor and each ratio, so nothing is a hidden multiplier.
 
-**Recommendation: (c).** The reliability argument:
+**Decision (owner, 2026-11-11): (c), tiered.** The reliability argument:
 
 - Runner load slows all I/O tests of a shard together. A real regression slows one test against its peers.
 - Judging the difference from the peers removes the false reds of the evidence: in each of those cases, every I/O test of the shard was slow together.
@@ -194,7 +194,6 @@ Nothing of this repository is emitted into the other project.
 - **The weekly calibration of #1906 (`test-budget-calibration.yml`):** it opens its PR through a built identity. That is the host role with the person's credentials until S6's identity exists, then the identity's token, never the workflow token (F1b). The PR it opens lands by case 1.
 - **The load-factor judgement:** it goes in `spec-duration-budget.script.ts`, with its spec, and the report prints the load factor of each shard.
 
-If the owner chooses (a) or (b) instead, S10 implements that option. Its acceptance line on the I/O tier changes accordingly, and nothing else in this plan changes.
 
 ### What is kept, changed or superseded
 
@@ -332,7 +331,7 @@ If the owner chooses (a) or (b) instead, S10 implements that option. Its accepta
 - acceptance:
   - "A unit test declares at most 200 ms; only the e2e tier (the project's e2e glob, default `*.e2e.spec.ts`) may declare more, at most 5,000 ms per test, 60 s per file and 3 minutes per e2e shard on CI; a lint refuses anything else"
   - "Times are read by the corrected runner of #1906, which measures fake-timer tests on the real clock (a 5 ms test had read 59 s on the fake clock). Budgets come only from CI measurement, with headroom of the larger of 1.5 times and 50 ms over the CI maximum. Fresh-budget rule: a budget that a pull request sets or changes does not fail that pull request's shard; the integrator's merge step requires it to equal the value calibrated from that pull request's own CI run, and labels the PR `needs-update` with the calibrated value otherwise"
-  - "An over-budget test fails only a change that touches its spec file; anywhere else it is recorded on the slow-spec issue with the run link, and never makes a batch or the integration branch red. In the I/O/e2e tier, by the recommended option (c) of 'Test-budget enforcement' unless the owner chooses otherwise, an over-budget test fails only when its ratio to its calibrated p95 exceeds 1.5 times its shard's measured load factor, which every run prints; the weekly calibration opens its pull request through a built identity (the host role until S6's identity, never the workflow token)"
+  - "An over-budget test fails only a change that touches its spec file; anywhere else it is recorded on the slow-spec issue with the run link, and never makes a batch or the integration branch red. In the I/O/e2e tier, by the owner's decision of 2026-11-11 (option (c) of 'Test-budget enforcement'), an over-budget test fails only when its ratio to its calibrated p95 exceeds 1.5 times its shard's measured load factor, which every run prints; the weekly calibration opens its pull request through a built identity (the host role until S6's identity, never the workflow token)"
   - "Scenario F6 is green"
 
 ### S11 — Sessions are told at once; the host does no integration write
@@ -422,7 +421,7 @@ If the owner chooses (a) or (b) instead, S10 implements that option. Its accepta
 - Scenario F9 is green: in fast mode each tip has its push-started scan workflow, in real mode a completed CodeQL analysis
 - A unit test declares at most 200 ms; only the e2e tier (the project's e2e glob, default `*.e2e.spec.ts`) may declare more, at most 5,000 ms per test, 60 s per file and 3 minutes per e2e shard on CI; a lint refuses anything else
 - Times are read by the corrected runner of #1906, which measures fake-timer tests on the real clock (a 5 ms test had read 59 s on the fake clock). Budgets come only from CI measurement, with headroom of the larger of 1.5 times and 50 ms over the CI maximum. Fresh-budget rule: a budget that a pull request sets or changes does not fail that pull request's shard; the integrator's merge step requires it to equal the value calibrated from that pull request's own CI run, and labels the PR `needs-update` with the calibrated value otherwise
-- An over-budget test fails only a change that touches its spec file; anywhere else it is recorded on the slow-spec issue with the run link, and never makes a batch or the integration branch red. In the I/O/e2e tier, by the recommended option (c) of 'Test-budget enforcement' unless the owner chooses otherwise, an over-budget test fails only when its ratio to its calibrated p95 exceeds 1.5 times its shard's measured load factor, which every run prints; the weekly calibration opens its pull request through a built identity (the host role until S6's identity, never the workflow token)
+- An over-budget test fails only a change that touches its spec file; anywhere else it is recorded on the slow-spec issue with the run link, and never makes a batch or the integration branch red. In the I/O/e2e tier, by the owner's decision of 2026-11-11 (option (c) of 'Test-budget enforcement'), an over-budget test fails only when its ratio to its calibrated p95 exceeds 1.5 times its shard's measured load factor, which every run prints; the weekly calibration opens its pull request through a built identity (the host role until S6's identity, never the workflow token)
 - Scenario F6 is green
 - The host's follow-ups are local only (fetch and fast-forward, the local reconcile); bring-forward and batch opening leave the host, and a spec refuses a forge write in a follow-up
 - The follow-up list is read from the checkout at each run, and a process with an older integration protocol refuses every integration action and says to restart
