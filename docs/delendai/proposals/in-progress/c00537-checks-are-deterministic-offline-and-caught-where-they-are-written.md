@@ -125,6 +125,16 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
   - "The merge step (bun run test:budgets:check) fails the change for every test CI measured over its declared budget, naming ceil(1.5 x measured) as the number the spec must declare"
   - "A weekly workflow reads the last N develop runs' duration artifacts (test:budgets:calibrate --from-develop=N --update) and opens or refreshes one pull request raising the budgets CI measured over"
 
+### S11 — Test helpers build their repository once per worker, and the git-init rule sees them
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `packages/test-kit/src/lib/template-git-repo.helper.ts`, `packages/test-kit/src/public/index.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/work-units/unit-repo.helper.ts`, `tools/scripts/lint/spec-git-init.helper.ts`, `tools/scripts/lint/spec-git-init.script.ts`, `tools/scripts/lint/spec-git-init.helper.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/test/test-time-budget.migration.json`
+- **Gate**: type
+- acceptance:
+  - "lint:spec-git-init also scans the modules specs import for setup outside the e2e tier, and baselines the helpers that still run git init per call"
+  - "createSharedGitRepoTemplate builds a repository once per worker with no vitest hook, so a helper shared across files under isolate: false copies it per case"
+  - "unit-repo.helper.ts copies the shared template instead of running git init per case"
+
 ## acceptance
 
 - The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier
