@@ -37,6 +37,7 @@ import {
 } from './compute-slot-lane.service';
 import { runGitCommand } from './git-command.helper';
 import { createWaitNotice } from './compute-slot-wait-notice.service';
+import { followTurn } from './compute-slot-follow.helper';
 import { withFileMutex } from './with-file-mutex';
 
 /** A proof can outlast several peers' proofs: wait long before giving up. */
@@ -149,15 +150,15 @@ const withUnitTurn = async <T>(
 		name: string,
 		claim: ITurnClaim,
 	): Promise<{ readonly result?: TurnResult }> => {
-		for (;;) {
-			const result = await readSlotJson<TurnResult>(
-				resultPath(name, claim.id),
-			);
-			if (result !== undefined) return { result };
-			const now = await readSlotJson<ITurnClaim>(claimPath(name));
-			if (now?.id !== claim.id || !alive(claim.pid)) return {};
-			await pauseSlot(JOIN_POLL_MS);
-		}
+		const result = await followTurn({
+			readResult: () =>
+				readSlotJson<TurnResult>(resultPath(name, claim.id)),
+			claimHeld: async () =>
+				(await readSlotJson<ITurnClaim>(claimPath(name)))?.id ===
+					claim.id && alive(claim.pid),
+			pause: () => pauseSlot(JOIN_POLL_MS),
+		});
+		return result === undefined ? {} : { result };
 	};
 	const settle = (result: TurnResult): T => {
 		if ('error' in result) {
