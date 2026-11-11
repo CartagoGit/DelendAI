@@ -35,13 +35,11 @@ import type {
 	IForgeEventToolOptions,
 } from '../contracts/interfaces/forge-event-bridge.interface';
 
+/** An entry, not the whole notice: the outcome already says what happened. */
 const noticeSchema = z.object({
-	agent: z.string(),
 	repository: z.string(),
 	number: z.number(),
-	kind: z.string(),
 	outcome: z.string(),
-	at: z.number(),
 });
 
 /** The bridge of one server, made when its first forge tool registers. */
@@ -165,7 +163,13 @@ export const buildForgeEventRegistrations = (
 							controller.signal,
 						);
 						return toolJson({
-							notices: [...notices],
+							notices: notices.map(
+								({ repository, number, outcome }) => ({
+									repository,
+									number,
+									outcome,
+								}),
+							),
 							timedOut: notices.length === 0,
 						});
 					} finally {

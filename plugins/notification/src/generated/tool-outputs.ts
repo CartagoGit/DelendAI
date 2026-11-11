@@ -33,12 +33,9 @@ export interface DelendaiNotificationAwaitLockOutput {
 
 export interface DelendaiNotificationForgeAwaitOutput {
 	notices: {
-		agent: string;
 		repository: string;
 		number: number;
-		kind: string;
 		outcome: string;
-		at: number;
 	}[];
 	timedOut: boolean;
 	reason?: string;
