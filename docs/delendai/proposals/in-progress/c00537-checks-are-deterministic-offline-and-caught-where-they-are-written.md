@@ -77,7 +77,7 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 ### S6 — The slowest specs become near-instant with test-kit
 - **Status**: pending
 - **DependsOn**: [S7]
-- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`
+- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: none
 - acceptance:
   - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
@@ -114,6 +114,16 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 - **Gate**: type
 - acceptance:
   - "When the integration run finds no spec over its budget, the CI step closes the open slow-spec issue with a comment naming the run, instead of refreshing it with an empty list; while offenders remain it still refreshes or opens the issue (slow-spec-issue.spec.ts)."
+
+### S10 — A budget the change sets is corrected from CI, not failed; develop's budgets follow CI
+- **Status**: pending
+- **DependsOn**: [S7]
+- **Files**: `packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/contracts/constants/time-budget.constant.ts`, `packages/test-kit/src/contracts/interfaces/time-budget.interface.ts`, `packages/test-kit/src/public/index.ts`, `packages/test-kit/tests/src/lib/time-budget.helper.spec.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/ci/declared-test-budget.spec.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibration.spec.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `vitest.shared.ts`, `package.json`, `.github/workflows/ci.yml`, `.github/workflows/test-budget-calibration.yml`
+- **Gate**: type
+- acceptance:
+  - "On CI, a test whose budget the change declares or changes (a budgeted name on a line the diff adds) and that runs over it does not fail its shard; every other overrun fails exactly as before"
+  - "The merge step (bun run test:budgets:check) fails the change for every test CI measured over its declared budget, naming ceil(1.5 x measured) as the number the spec must declare"
+  - "A weekly workflow reads the last N develop runs' duration artifacts (test:budgets:calibrate --from-develop=N --update) and opens or refreshes one pull request raising the budgets CI measured over"
 
 ## acceptance
 
