@@ -4,7 +4,7 @@ import type { IToolI18n } from '#I18N/tools/_shape';
 
 export const proposalsProposalTransitionI18n: IToolI18n = {
 	description: {
-		en: 'Move a proposal to a new status. Validates against the DFA, updates frontmatter + git mv. Requires reason.',
+		en: 'Move a proposal to a new status (DFA-checked).',
 		es: 'Mueve una propuesta a un nuevo estado. Valida contra el DFA, actualiza el frontmatter + git mv. Requiere razón.',
 		fr: 'Déplace une proposition vers un nouveau statut. Valide par rapport au DFA, met à jour le frontmatter + git mv. Nécessite une raison.',
 		de: 'Verschiebt einen Vorschlag in einen neuen Status. Validiert gegen den DFA, aktualisiert Frontmatter + git mv. Erfordert eine Begründung.',
