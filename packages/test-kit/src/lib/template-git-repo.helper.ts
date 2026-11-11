@@ -19,10 +19,11 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterAll, afterEach } from 'vitest';
 import type {
+	IGitRepoCopy,
 	IGitRepoTemplateSpec,
 	IGitRepoTemplate,
 } from '../contracts/interfaces/git-repo-template.interface';
@@ -44,14 +45,8 @@ const rewrite = (file: string, from: string, to: string): void => {
 	writeFileSync(file, current.split(from).join(to));
 };
 
-/**
- * Build the template now and clean it, and every copy, up when the file
- * ends. Call it at module or `describe` scope, where hooks can register.
- */
-export const createGitRepoTemplate = (
-	spec: IGitRepoTemplateSpec = {},
-): IGitRepoTemplate => {
-	const base = realpathSync(mkdtempSync(join(tmpdir(), 'git-template-')));
+/** Build the template's repository under `base`; spawns git a handful of times. */
+const buildTemplate = (base: string, spec: IGitRepoTemplateSpec): void => {
 	const root = join(base, 'repo');
 	execFileSync('git', [
 		'init',
@@ -83,7 +78,49 @@ export const createGitRepoTemplate = (
 	for (const [name, branch] of Object.entries(spec.worktrees ?? {})) {
 		git(root, 'worktree', 'add', '-q', '-b', branch, join(base, name));
 	}
+};
 
+/** Copy the template at `base` into a new temporary directory; spawns nothing. */
+const copyTemplate = (
+	base: string,
+	spec: IGitRepoTemplateSpec,
+): IGitRepoCopy => {
+	const target = realpathSync(mkdtempSync(join(tmpdir(), 'git-copy-')));
+	cpSync(base, target, { recursive: true, preserveTimestamps: true });
+	const copyRoot = join(target, 'repo');
+	// The files that hold an absolute path name the template's.
+	rewrite(join(copyRoot, '.git', 'config'), base, target);
+	const admin = join(copyRoot, '.git', 'worktrees');
+	if (existsSync(admin)) {
+		for (const name of readdirSync(admin)) {
+			rewrite(join(admin, name, 'gitdir'), base, target);
+		}
+	}
+	const worktrees: Record<string, string> = {};
+	for (const name of Object.keys(spec.worktrees ?? {})) {
+		worktrees[name] = join(target, name);
+		rewrite(join(target, name, '.git'), base, target);
+	}
+	return {
+		root: copyRoot,
+		worktrees,
+		...(spec.remote === true ? { remote: join(target, 'remote.git') } : {}),
+		git: (...args) => git(copyRoot, ...args),
+	};
+};
+
+const newBase = (): string =>
+	realpathSync(mkdtempSync(join(tmpdir(), 'git-template-')));
+
+/**
+ * Build the template now and clean it, and every copy, up when the file
+ * ends. Call it at module or `describe` scope, where hooks can register.
+ */
+export const createGitRepoTemplate = (
+	spec: IGitRepoTemplateSpec = {},
+): IGitRepoTemplate => {
+	const base = newBase();
+	buildTemplate(base, spec);
 	const copies: string[] = [];
 	afterEach(() => {
 		for (const dir of copies.splice(0)) {
@@ -93,36 +130,38 @@ export const createGitRepoTemplate = (
 	afterAll(() => {
 		rmSync(base, { recursive: true, force: true });
 	});
-
 	return {
 		copy: () => {
-			const target = realpathSync(
-				mkdtempSync(join(tmpdir(), 'git-copy-')),
-			);
-			copies.push(target);
-			cpSync(base, target, { recursive: true, preserveTimestamps: true });
-			const copyRoot = join(target, 'repo');
-			// The files that hold an absolute path name the template's.
-			rewrite(join(copyRoot, '.git', 'config'), base, target);
-			const admin = join(copyRoot, '.git', 'worktrees');
-			if (existsSync(admin)) {
-				for (const name of readdirSync(admin)) {
-					rewrite(join(admin, name, 'gitdir'), base, target);
-				}
+			const copy = copyTemplate(base, spec);
+			copies.push(dirname(copy.root));
+			return copy;
+		},
+	};
+};
+
+/**
+ * The template for a helper that many spec files share. It registers no
+ * hook: with `isolate: false` a module outlives the file that imported it,
+ * so a template torn down in one file's `afterAll` would be gone for the
+ * next. It is built on the first `copy()` in each worker and removed when
+ * the worker exits; each copy is the caller's to remove (the directory
+ * holding `root`).
+ */
+export const createSharedGitRepoTemplate = (
+	spec: IGitRepoTemplateSpec = {},
+): IGitRepoTemplate => {
+	let base: string | undefined;
+	return {
+		copy: () => {
+			if (base === undefined || !existsSync(base)) {
+				const built = newBase();
+				buildTemplate(built, spec);
+				process.once('exit', () => {
+					rmSync(built, { recursive: true, force: true });
+				});
+				base = built;
 			}
-			const worktrees: Record<string, string> = {};
-			for (const name of Object.keys(spec.worktrees ?? {})) {
-				worktrees[name] = join(target, name);
-				rewrite(join(target, name, '.git'), base, target);
-			}
-			return {
-				root: copyRoot,
-				worktrees,
-				...(spec.remote === true
-					? { remote: join(target, 'remote.git') }
-					: {}),
-				git: (...args) => git(copyRoot, ...args),
-			};
+			return copyTemplate(base, spec);
 		},
 	};
 };
