@@ -69,6 +69,8 @@ const clampTimeout = (timeoutMs: number | undefined): number =>
 export const buildForgeEventRegistrations = (
 	options: IForgeEventToolOptions,
 ): readonly IToolRegistration[] => {
+	// Made on the first forge call, never at registration: a server whose
+	// session never subscribes watches nothing and writes nothing.
 	const bridges = new WeakMap<McpServer, IForgeEventBridge>();
 	const bridgeOf = (server: McpServer): IForgeEventBridge => {
 		const made = bridges.get(server) ?? bridgeFor(options, server);
@@ -81,7 +83,6 @@ export const buildForgeEventRegistrations = (
 			'Subscribe this session to a pull request or issue: its outcome arrives as a notification.',
 		tags: ['coordination', 'lazy'],
 		register: async (server: McpServer) => {
-			const bridge = bridgeOf(server);
 			server.registerTool(
 				`${options.namespacePrefix}_forge_subscribe`,
 				{
@@ -111,7 +112,7 @@ export const buildForgeEventRegistrations = (
 						),
 						{ ...args, since: Date.now() },
 					);
-					await bridge.bind(args.agent);
+					await bridgeOf(server).bind(args.agent);
 					return toolJson({ subscribed: true, ...args });
 				},
 			);
@@ -123,11 +124,10 @@ export const buildForgeEventRegistrations = (
 			'Wait, spending nothing, until the forge reports an outcome on a subscribed pull request or issue.',
 		tags: ['coordination', 'lazy'],
 		register: async (server: McpServer) => {
-			const bridge = bridgeOf(server);
 			const pending = new Set<AbortController>();
 			attachCloseHandler(server, () => {
 				for (const controller of pending) controller.abort();
-				bridge.stop();
+				bridges.get(server)?.stop();
 			});
 			server.registerTool(
 				`${options.namespacePrefix}_forge_await`,
@@ -157,7 +157,7 @@ export const buildForgeEventRegistrations = (
 					const controller = new AbortController();
 					pending.add(controller);
 					try {
-						const notices = await bridge.next(
+						const notices = await bridgeOf(server).next(
 							args.agent,
 							clampTimeout(args.timeoutMs),
 							controller.signal,

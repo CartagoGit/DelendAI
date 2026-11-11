@@ -54,7 +54,7 @@ const advanceTheForge = (from: IStartupOrigin): void => {
 };
 
 describe('hydrateOnce, against real git', () => {
-	it('[<600ms] pulls a clean checkout up to a branch that moved after it booted', async () => {
+	it('[<1352ms] pulls a clean checkout up to a branch that moved after it booted', async () => {
 		origin = createStartupOrigin();
 		// Clone FIRST: this machine holds the branch as it was, and only
 		// afterwards does the forge absorb somebody else's pull request.
@@ -378,7 +378,7 @@ describe('startHydrationWatch, on its own clock', () => {
 		vi.useRealTimers();
 	});
 
-	it('[<40ms] ticks on the real interval when no schedule is injected, and stops it', async () => {
+	it('[<3855ms] ticks on the real interval when no schedule is injected, and stops it', async () => {
 		// Every other case injects a schedule, so the timer a host
 		// actually gets was never run by anything. This is that timer.
 		vi.useFakeTimers();

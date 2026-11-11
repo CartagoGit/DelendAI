@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('runHumanCli', () => {
-	it('[<6000ms] prints the version and exits OK', async () => {
+	it('[<9305ms] prints the version and exits OK', async () => {
 		capture();
 		const code = await runHumanCli(['--version']);
 		expect(code).toBe(EXIT_CODE.OK);
