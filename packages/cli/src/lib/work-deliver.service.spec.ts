@@ -12,13 +12,22 @@ import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.int
 import { answerOf, deliverUnit, unitFlagsOf } from './work-deliver.service';
 
 const ports = (
-	answers: { 'in-progress'?: unknown; review?: unknown },
+	answers: {
+		'in-progress'?: unknown;
+		review?: unknown;
+		preflight?: unknown;
+	},
 	proveCode: IExitCode = EXIT_CODE.OK,
 	slice = 'all',
 ) => {
 	const calls: string[] = [];
 	const value: IWorkDeliverPorts = {
 		slice,
+		preflight: async (checkout) => {
+			expect(checkout).toBe('/unit');
+			calls.push('preflight');
+			return answers.preflight ?? { ok: true };
+		},
 		publish: async () => {
 			calls.push('publish');
 			return { code: EXIT_CODE.OK, data: 'pr/slice' };
@@ -51,7 +60,7 @@ describe('deliverUnit', () => {
 	it('[<20ms] opens the proposal, proves the unit, then hands it to review', async () => {
 		const { calls, value } = ports({});
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.OK);
-		expect(calls).toEqual(['in-progress', 'prove', 'review']);
+		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'review']);
 	});
 
 	it('[<20ms] hands nothing over when the proof fails', async () => {
@@ -59,7 +68,7 @@ describe('deliverUnit', () => {
 		expect(await deliverUnit(value)).toMatchObject({
 			error: 'its proof failed',
 		});
-		expect(calls).toEqual(['in-progress', 'prove']);
+		expect(calls).toEqual(['in-progress', 'preflight', 'prove']);
 	});
 
 	it('[<20ms] goes on from a proposal already in progress', async () => {
@@ -67,7 +76,7 @@ describe('deliverUnit', () => {
 			'in-progress': illegal('in-progress', 'in-progress'),
 		});
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.OK);
-		expect(calls).toEqual(['in-progress', 'prove', 'review']);
+		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'review']);
 	});
 
 	it('[<20ms] stops with the reason of any other refusal', async () => {
@@ -105,7 +114,7 @@ describe('deliverUnit, one slice of several', () => {
 
 	it('[<20ms] publishes only the slice it proved while others are undelivered', async () => {
 		const { calls, value } = ports(
-			{ review: undelivered('S3, S4, S6') },
+			{ preflight: undelivered('S3, S4, S6') },
 			EXIT_CODE.OK,
 			'S1',
 		);
@@ -113,23 +122,39 @@ describe('deliverUnit, one slice of several', () => {
 			code: EXIT_CODE.OK,
 			data: { delivered: 'slice', remaining: ['S3', 'S4', 'S6'] },
 		});
-		expect(calls).toEqual(['in-progress', 'prove', 'review', 'publish']);
+		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'publish']);
 	});
 
 	it('[<20ms] refuses when the slice it proved is itself undelivered', async () => {
 		const { calls, value } = ports(
-			{ review: undelivered('S1, S4') },
+			{ preflight: undelivered('S1, S4') },
 			EXIT_CODE.OK,
 			'S1',
 		);
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.VALIDATION);
-		expect(calls).not.toContain('publish');
+		expect(calls).toEqual(['in-progress', 'preflight']);
 	});
 
 	it('[<20ms] keeps handing a whole proposal over, refusal included', async () => {
-		const { calls, value } = ports({ review: undelivered('S3') });
+		const { calls, value } = ports({ preflight: undelivered('S3') });
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.VALIDATION);
-		expect(calls).not.toContain('publish');
+		expect(calls).toEqual(['in-progress', 'preflight']);
+	});
+
+	it('[<20ms] refuses before the proof when a declared file is missing', async () => {
+		const { calls, value } = ports({
+			preflight: {
+				ok: false,
+				error: {
+					code: 'missing-declared-files',
+					reason: 'declared files do not exist: a.ts',
+				},
+			},
+		});
+		expect(await deliverUnit(value)).toMatchObject({
+			error: 'declared files do not exist: a.ts',
+		});
+		expect(calls).not.toContain('prove');
 	});
 });
 
