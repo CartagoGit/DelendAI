@@ -828,7 +828,6 @@
 		"packages/core/tests/src/lib/work-units/unit-activity.helper.spec.ts",
 		"packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/unit-departures.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/unit-edit-fence.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/unit-edits-kept.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/unit-fence.service.spec.ts",

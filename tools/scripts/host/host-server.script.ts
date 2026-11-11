@@ -259,6 +259,26 @@ const startForgeEvents = async (input: {
 	return follow;
 };
 
+/**
+ * Once at boot: what happened while no server was up is caught up, by the
+ * server that maintains the workspace. Waiting for the integration branch's
+ * next move missed it: a server restarted after the last merge found its
+ * checkout already level, ran nothing, and pull requests labelled for update
+ * waited for a merge that their own update was holding back.
+ */
+export const catchUpAtBoot = async (input: {
+	readonly standDown: () => Promise<string | undefined>;
+	readonly followUp: () => Promise<void>;
+	readonly report: (line: string) => void;
+}): Promise<void> => {
+	const reason = await input.standDown();
+	if (reason !== undefined) {
+		input.report(`follow-ups not caught up at boot: ${reason}`);
+		return;
+	}
+	await input.followUp();
+};
+
 /** The interval, or 0 when the operator turned it off. */
 export const hydrationIntervalMs = (
 	env: Readonly<Record<string, string | undefined>>,
@@ -626,6 +646,13 @@ const run = async (): Promise<void> => {
 						);
 					},
 				});
+	if (hydration !== undefined) {
+		void catchUpAtBoot({
+			standDown,
+			followUp: () => followUpInBackground(config.workspace.root, 'move'),
+			report: (line) => process.stderr.write(`[delendai] ${line}\n`),
+		});
+	}
 
 	if (eventsWanted && hydration !== undefined && policy !== undefined) {
 		forgeEvents = await startForgeEvents({
