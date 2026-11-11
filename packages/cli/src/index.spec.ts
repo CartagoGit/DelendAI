@@ -47,21 +47,21 @@ afterEach(() => {
 });
 
 describe('runHumanCli', () => {
-	it('prints the version and exits OK', async () => {
+	it('[<6000ms] prints the version and exits OK', async () => {
 		capture();
 		const code = await runHumanCli(['--version']);
 		expect(code).toBe(EXIT_CODE.OK);
 		expect(captured.out.trim()).toBe(CLI_VERSION);
 	});
 
-	it('prints help and exits OK', async () => {
+	it('[<30ms] prints help and exits OK', async () => {
 		capture();
 		const code = await runHumanCli(['--help']);
 		expect(code).toBe(EXIT_CODE.OK);
 		expect(captured.out.length).toBeGreaterThan(0);
 	});
 
-	it('names an unknown command and points at help, without starting a server', async () => {
+	it('[<30ms] names an unknown command and points at help, without starting a server', async () => {
 		capture();
 		const code = await runHumanCli(['definitely-not-a-command']);
 		expect(code).toBe(EXIT_CODE.USAGE);
@@ -71,7 +71,7 @@ describe('runHumanCli', () => {
 		expect(captured.err).toContain('--help');
 	});
 
-	it("prints a command's own help instead of running it (x00721)", async () => {
+	it("[<30ms] prints a command's own help instead of running it (x00721)", async () => {
 		capture();
 		const code = await runHumanCli(['proposals', 'review-queue', '--help']);
 		expect(code).toBe(EXIT_CODE.OK);
@@ -81,7 +81,7 @@ describe('runHumanCli', () => {
 		expect(captured.out).toContain('--offset');
 	});
 
-	it('refuses a flag the command does not read, before anything runs (x00721)', async () => {
+	it('[<30ms] refuses a flag the command does not read, before anything runs (x00721)', async () => {
 		capture();
 		const code = await runHumanCli([
 			'proposals',
@@ -94,7 +94,7 @@ describe('runHumanCli', () => {
 		expect(captured.out).toBe('');
 	});
 
-	it('runs an offline command against --workspace, not the process cwd', async () => {
+	it('[<220ms] runs an offline command against --workspace, not the process cwd', async () => {
 		// a00061, pinned: `guard` is offline, so it gets a noop context
 		// built from `parsed.globals.workspace`. Passing the raw cwd here
 		// once made `init:default --workspace=<other>` bootstrap whatever
@@ -112,7 +112,7 @@ describe('runHumanCli', () => {
 		expect(captured.err).toBe('');
 	});
 
-	it('lets `migrate status` and `--dry-run` look without migrating', async () => {
+	it('[<540ms] lets `migrate status` and `--dry-run` look without migrating', async () => {
 		// The guard migrates before any other command. Run before `migrate`,
 		// it applied everything, and the dry run a person asked for had
 		// nothing left to show.
@@ -133,7 +133,7 @@ describe('runHumanCli', () => {
 		expect(captured.out).not.toContain('not-needed');
 	});
 
-	it('writes the structured envelope on --json', async () => {
+	it('[<57ms] writes the structured envelope on --json', async () => {
 		// The stdout policy (a00087): `--json` always emits, even for a
 		// command that printed its own human recap and asked to suppress
 		// the default print.
@@ -148,7 +148,7 @@ describe('runHumanCli', () => {
 		expect(parse).not.toThrow();
 	});
 
-	it('turns a throwing command into an exit code and a line on stderr', async () => {
+	it('[<30ms] turns a throwing command into an exit code and a line on stderr', async () => {
 		// The catch arm. Whatever a command does, the entry has to turn it
 		// into an exit code — a CLI that propagates is a CLI that prints a
 		// stack trace at somebody in the middle of a commit, because
@@ -171,7 +171,7 @@ describe('runHumanCli', () => {
 });
 
 describe('runEntry — what the binary actually does', () => {
-	it('starts the server for __serve, and reports the guard it found', async () => {
+	it('[<570ms] starts the server for __serve, and reports the guard it found', async () => {
 		// The boot sequence, which lived inside `if (import.meta.main)`
 		// where no test could reach it — and which is exactly the code
 		// x00591 exists to correct, because one of its steps was writing
@@ -199,7 +199,7 @@ describe('runEntry — what the binary actually does', () => {
 		expect(existsSync(join(root, '.husky', 'pre-push'))).toBe(false);
 	});
 
-	it('reports a server that cannot start, instead of an unhandled rejection', async () => {
+	it('[<510ms] reports a server that cannot start, instead of an unhandled rejection', async () => {
 		// `assemble` refuses a configuration it cannot honour, and the
 		// refusal names the rule AND its remedy. `void serve(...)` turned
 		// that into an unhandled rejection, so what reached the person was
@@ -241,7 +241,7 @@ describe('runEntry — what the binary actually does', () => {
 		process.exitCode = previousExitCode;
 	});
 
-	it('says so at boot when work refs will not carry a model (x00617)', async () => {
+	it('[<520ms] says so at boot when work refs will not carry a model (x00617)', async () => {
 		// By the time `client-claude-code` shows up in the graph the branch
 		// already exists. The remedy is one variable, and somebody has to
 		// say it before the ref is written, not after.
@@ -267,7 +267,7 @@ describe('runEntry — what the binary actually does', () => {
 		expect(said).toContain('DELENDAI_AGENT_ID');
 	});
 
-	it('says nothing about identity when the agent is declared (x00617)', async () => {
+	it('[<520ms] says nothing about identity when the agent is declared (x00617)', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'entry-named-'));
 		roots.push(root);
 		execFileSync('git', ['init', '-q'], { cwd: root });
@@ -291,7 +291,7 @@ describe('runEntry — what the binary actually does', () => {
 		expect(lines.join('\n')).not.toContain('DELENDAI_AGENT_ID');
 	});
 
-	it('runs a human command and hands back its exit code', async () => {
+	it('[<30ms] runs a human command and hands back its exit code', async () => {
 		capture();
 		const root = mkdtempSync(join(tmpdir(), 'entry-human-'));
 		roots.push(root);
@@ -304,7 +304,7 @@ describe('runEntry — what the binary actually does', () => {
 		expect(captured.out.trim()).toBe(CLI_VERSION);
 	});
 
-	it('does not migrate when the command is `guard`', async () => {
+	it('[<51ms] does not migrate when the command is `guard`', async () => {
 		// `guard` runs inside pre-commit and pre-push, with git holding
 		// its locks. A migration there writes to the workspace mid-commit.
 		const root = mkdtempSync(join(tmpdir(), 'entry-guard-'));
@@ -319,7 +319,7 @@ describe('runEntry — what the binary actually does', () => {
 });
 
 describe('runEntry reports a workflow the project is not following (x00598)', () => {
-	it('names the broken invariants on stderr, and writes nothing', async () => {
+	it('[<700ms] names the broken invariants on stderr, and writes nothing', async () => {
 		// The checks existed in this repository's toolbox, reachable as
 		// `bun run work:doctor` by somebody who already knew to run it.
 		// Nobody ran it, which is why the last dozen breakages were found
@@ -366,7 +366,7 @@ describe('runEntry reports a workflow the project is not following (x00598)', ()
 		);
 	});
 
-	it('reports only what does not hold, never the promises it keeps', async () => {
+	it('[<500ms] reports only what does not hold, never the promises it keeps', async () => {
 		// A server that recites its own health on every start is a server
 		// whose output gets ignored. Every invariant that holds is silent;
 		// only the broken one is named.
@@ -423,7 +423,7 @@ describe('runEntry — a refusal the host cannot take', () => {
 		sourcesAt: 2,
 	};
 
-	it('says a stale build on stderr by default and survives a handshake that fails', async () => {
+	it('[<30ms] says a stale build on stderr by default and survives a handshake that fails', async () => {
 		const written: string[] = [];
 		const stderr = vi
 			.spyOn(process.stderr, 'write')
@@ -431,8 +431,12 @@ describe('runEntry — a refusal the host cannot take', () => {
 				written.push(String(chunk));
 				return true;
 			});
+		// Its own directory, never the shared temp dir itself: the serve path
+		// writes delendai's records into the workspace it is given.
+		const root = mkdtempSync(join(tmpdir(), 'entry-stale-'));
+		roots.push(root);
 		try {
-			const code = await runEntry(['__serve'], tmpdir(), {
+			const code = await runEntry(['__serve'], root, {
 				staleBuild: () => stale,
 				refuse: () => Promise.reject(new Error('closed')),
 			});
@@ -443,7 +447,7 @@ describe('runEntry — a refusal the host cannot take', () => {
 		}
 	});
 
-	it('survives a handshake that fails after the server could not start', async () => {
+	it('[<72ms] survives a handshake that fails after the server could not start', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'entry-refuse-fails-'));
 		roots.push(root);
 

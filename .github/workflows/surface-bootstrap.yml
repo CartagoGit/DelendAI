@@ -9,6 +9,9 @@ on:
     # `ci.yml` for the measurement.
     pull_request:
         branches: [develop]
+    # land merges with the workflow token, whose pushes start nothing: it
+    # starts this on the integration branch after a merge, as a push would.
+    workflow_dispatch:
 
 jobs:
     measure-bootstrap:

@@ -13,6 +13,7 @@
  */
 
 import type { ILandUpkeepStep, ILandWorkflowInput } from './land.interface';
+import { LAND_WORKFLOW_NAME } from './land.constant';
 
 const indent = (lines: readonly string[], by: number): string[] =>
 	lines.map((line) => (line === '' ? line : `${' '.repeat(by)}${line}`));
@@ -137,7 +138,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		);
 	}
 	return [
-		'name: land',
+		`name: ${LAND_WORKFLOW_NAME}`,
 		'',
 		'# GENERATED from the land workflow template (renderLandWorkflow); edit the',
 		'# project values, not this file. The one integration actor: a stateless',
