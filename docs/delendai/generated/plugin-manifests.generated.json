@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-11T01:55:54.994Z",
+	"generatedAt": "2026-11-11T05:47:43.278Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1210,7 +1210,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"presets": [
 				"everything"
@@ -3344,7 +3345,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -4902,7 +4904,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -6576,7 +6579,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			]
 		},
 		{

@@ -270,7 +270,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/github',
 			summary: 'GitHub read-only provider context, HTTP client and remote resource tools.',
 			tags: ['github', 'provider'],
-			permissions: ['filesystem-write', 'network', 'env-read'],
+			permissions: ['filesystem-write', 'network', 'env-read', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{

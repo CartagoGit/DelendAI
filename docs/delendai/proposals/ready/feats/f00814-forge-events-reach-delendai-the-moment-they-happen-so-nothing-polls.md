@@ -49,7 +49,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 ### S3 — Events reach a dev machine with no public address
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/forge/src/lib/services/forge-event-receiver.ts`, `plugins/forge/tests/forge-event-receiver.spec.ts`, `plugins/github/src/lib/webhook-forward.service.ts`, `plugins/github/src/lib/contracts/interfaces/webhook-forward.interface.ts`, `plugins/github/tests/webhook-forward.service.spec.ts`
+- **Files**: `plugins/forge/src/lib/services/forge-event-receiver.ts`, `plugins/forge/tests/forge-event-receiver.spec.ts`, `plugins/github/src/lib/webhook-forward.service.ts`, `plugins/github/plugin.manifest.ts`, `plugins/github/src/lib/contracts/interfaces/webhook-forward.interface.ts`, `plugins/github/tests/webhook-forward.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed."
