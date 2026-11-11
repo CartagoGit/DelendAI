@@ -409,6 +409,23 @@ export const runProposalTransition = async (
 		if (!entry.ok) {
 			return buildCodeError(entry.code, entry.reason, entry.nextAction);
 		}
+		if (args.preflight === true) {
+			const envelope = {
+				ok: true as const,
+				id: args.id,
+				from,
+				to: finalTo,
+				reason: args.reason,
+				warning:
+					'preflight only: the hand-over checks passed and nothing was moved or written.',
+			};
+			return {
+				content: [
+					{ type: 'text' as const, text: JSON.stringify(envelope) },
+				],
+				structuredContent: envelope,
+			};
+		}
 		if (entry.recorded.length > 0) {
 			await writeFileAtomic(found.absPath, entry.markdown);
 		}
