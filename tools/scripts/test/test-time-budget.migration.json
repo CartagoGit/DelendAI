@@ -366,7 +366,6 @@
 		"packages/core/tests/src/lib/cli/run-init.spec.ts",
 		"packages/core/tests/src/lib/cli/setup-subcommand.spec.ts",
 		"packages/core/tests/src/lib/cli/state-registry-choice.spec.ts",
-		"packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts",
 		"packages/core/tests/src/lib/cli/strict-logs.spec.ts",
 		"packages/core/tests/src/lib/code-map/resource.spec.ts",
 		"packages/core/tests/src/lib/commands/process-group.spec.ts",
