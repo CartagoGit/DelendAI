@@ -14,7 +14,12 @@ import {
 } from './land-derived.constant';
 import { footprintBetween } from './candidate-footprint';
 import type { ILandConflict, ILandGit } from '@delendai/core/cli';
-import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
+import {
+	assembleTrain,
+	discardTrain,
+	linkDependenciesFrom,
+	regenerateWith,
+} from './train-assembly';
 
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], {
@@ -26,6 +31,8 @@ const git = (root: string, args: readonly string[]): string =>
 export const createLandGit = (input: {
 	readonly root: string;
 	readonly remote: string;
+	/** Where a throwaway clone takes its dependencies from; its shared checkout unless named. */
+	readonly dependenciesFrom?: string;
 }): ILandGit => {
 	const { root, remote } = input;
 	const have = (sha: string): void => {
@@ -102,6 +109,7 @@ export const createLandGit = (input: {
 				members,
 				derived: REGENERATED_PROJECTIONS,
 				regenerate: regenerateWith(GENERATED_REFRESH_COMMANDS),
+				linkDependencies: linkDependenciesFrom(input.dependenciesFrom),
 			});
 			if (
 				built.conflicting.length > 0 ||

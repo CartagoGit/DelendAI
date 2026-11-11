@@ -5,6 +5,16 @@
 export const INTEGRATION_ENGINES = ['land', 'none'] as const;
 export type IIntegrationEngine = (typeof INTEGRATION_ENGINES)[number];
 
+/**
+ * Who builds and opens a batch of overlapping pull requests: the
+ * `integrator` itself, where its pushes start CI; the `host`, with the
+ * person's own credentials, where the integrator runs as a workflow token
+ * whose pushes the forge does not build; or `none`, and overlapping pull
+ * requests land one at a time.
+ */
+export const BATCH_OPENERS = ['integrator', 'host', 'none'] as const;
+export type IBatchOpener = (typeof BATCH_OPENERS)[number];
+
 /** The integration axis's switch: the engine, and the protocol the repository records. */
 export interface IPolicyIntegrationEngine {
 	/** The actor that integrates ready work; the one switch every reader reads. */
@@ -20,4 +30,6 @@ export interface IPolicyIntegrationEngine {
 	 * check. Off, an empty `requiredChecks` lands nothing: nothing was proved.
 	 */
 	readonly landWithoutChecks: boolean;
+	/** Who opens the batch of an overlapping group (`BATCH_OPENERS`). */
+	readonly batchOpener: IBatchOpener;
 }

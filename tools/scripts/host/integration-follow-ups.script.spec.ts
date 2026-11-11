@@ -20,6 +20,7 @@ describe('integration follow-ups', () => {
 	it('[<20ms] runs every step on a move, and only waiting work on a forge event', () => {
 		expect(followUpsFor('move')).toEqual(INTEGRATION_FOLLOW_UPS);
 		expect(followUpsFor('event').map((step) => step.script)).toEqual([
+			'tools/scripts/forge/open-batches.script.ts',
 			'tools/scripts/forge/bring-forward.script.ts',
 		]);
 	});

@@ -22,7 +22,7 @@ import {
 } from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
-import { LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
+import { guardedFor, LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
 
 const REPO_POLICY = resolveDevelopmentPolicy({
 	development: {
@@ -38,10 +38,11 @@ const REPO_POLICY = resolveDevelopmentPolicy({
 const REPO_CONFIG = landConfigFromPolicy(REPO_POLICY, {
 	sectionOfCheck: (name) =>
 		name.startsWith('tests: ') ? name.slice(7) : undefined,
-	batches: true,
 });
 /** A land run with a workflow token: it pushes nothing, and batches nothing. */
-const TOKEN_CONFIG = { ...REPO_CONFIG, batches: false };
+const TOKEN_CONFIG = { ...REPO_CONFIG, batchOpener: 'none' as const };
+/** The integrator in a project whose host opens the batches. */
+const HOST_CONFIG = { ...REPO_CONFIG, batchOpener: 'host' as const };
 const PREFIX = REPO_CONFIG.batchPrefix;
 
 const setup = (
@@ -51,6 +52,14 @@ const setup = (
 ) => {
 	const fake = createFakeWorld(initial, options);
 	const pass = () => landPass({ forge: fake.forge, git: fake.git, config });
+	/** The host's pass: it opens batches with the person's credentials. */
+	const host = () =>
+		landPass({
+			forge: fake.forge,
+			git: fake.git,
+			config,
+			role: 'open-batches',
+		});
 	const batches = () =>
 		[...fake.world.pulls.values()].filter((pr) => pr.batch !== undefined);
 	const open = () => batches().filter((pr) => pr.state === 'open');
@@ -59,7 +68,7 @@ const setup = (
 		if (pr === undefined) throw new Error(`no #${String(n)}`);
 		return pr;
 	};
-	return { ...fake, pass, batches, open, lone };
+	return { ...fake, pass, host, batches, open, lone };
 };
 
 describe('land', () => {
@@ -190,7 +199,12 @@ describe('land', () => {
 		expect(report.actions.join('\n')).toContain(
 			'the tree would differ from the tested one',
 		);
-		expect(open()).toHaveLength(0);
+		// What is left rides a batch of one, built on the new tip.
+		expect(
+			open().map((b) =>
+				readBatchRecord(b.body)?.members.map((m) => m.number),
+			),
+		).toEqual([[two]]);
 	});
 
 	it('[<9ms] labels the culprit of a red batch and batches the rest once', async () => {
@@ -325,7 +339,6 @@ describe('land in a project that is not this one', () => {
 	});
 	const config = landConfigFromPolicy(policy, {
 		batchCapacity: 2,
-		batches: true,
 	});
 	const other = () =>
 		setup({}, { sectionOf: () => 'all', derived: undefined }, config);
@@ -380,6 +393,110 @@ describe('land in a project that is not this one', () => {
 	});
 });
 
+describe('land with batches opened by the host', () => {
+	it('[<15ms] the integrator opens nothing and says each member waits for the host', async () => {
+		const { world, pass, batches, lone } = setup({}, {}, HOST_CONFIG);
+		const one = world.addPull({ 'a/1.ts': '1' });
+		const two = world.addPull({ 'a/2.ts': '2' });
+		world.ci();
+		const report = await pass();
+		expect(batches()).toEqual([]);
+		expect(world.mergeCalls).toEqual([]);
+		for (const n of [one, two]) {
+			expect(report.reasons.get(n)).toMatch(
+				/^waits for its batch, opened by the host/u,
+			);
+			expect(lone(n).labels).not.toContain(LAND_LABEL_NEEDS_UPDATE);
+		}
+	});
+
+	it('[<15ms] the host opens one batch for an overlapping group and merges nothing', async () => {
+		const { world, host, open } = setup({}, {}, HOST_CONFIG);
+		const one = world.addPull({ 'a/1.ts': '1' });
+		const two = world.addPull({ 'a/2.ts': '2' });
+		const three = world.addPull({ 'a/3.ts': '3' });
+		const apart = world.addPull({ 'b/x.ts': '1' });
+		world.ci();
+		const report = await host();
+		expect(world.mergeCalls).toEqual([]);
+		expect(report.mergedCount).toBe(0);
+		expect(report.reasons.get(apart)).toBe(
+			'ready: the integrator merges it',
+		);
+		const [batch] = open();
+		expect(open()).toHaveLength(1);
+		expect(
+			readBatchRecord(batch?.body ?? '')?.members.map((m) => m.number),
+		).toEqual([one, two, three]);
+		// A second host pass opens no second batch for the same group.
+		await host();
+		expect(open()).toHaveLength(1);
+	});
+
+	it('[<20ms] the integrator merges every member of a green batch in one pass, none updated', async () => {
+		const { world, pass, host, open, lone } = setup({}, {}, HOST_CONFIG);
+		const members = [
+			world.addPull({ 'a/1.ts': '1' }),
+			world.addPull({ 'a/2.ts': '2' }),
+			world.addPull({ 'a/3.ts': '3' }),
+		];
+		world.ci();
+		await pass();
+		const heads = members.map((n) => lone(n).headSha);
+		await host();
+		const runsBefore = world.mergeCalls.length;
+		world.ci(); // one CI: the batch's
+		const report = await pass();
+		expect(report.mergedPRs).toEqual(members);
+		expect(world.mergeCalls.length - runsBefore).toBe(3);
+		expect(members.map((n) => lone(n).headSha)).toEqual(heads);
+		expect(
+			members.every(
+				(n) => !lone(n).labels.includes(LAND_LABEL_NEEDS_UPDATE),
+			),
+		).toBe(true);
+		expect(open()).toEqual([]);
+	});
+
+	it('[<20ms] a red batch names its culprit, and the host batches the rest again', async () => {
+		const { world, pass, host, open, lone } = setup({}, {}, HOST_CONFIG);
+		world.requiredNames = ['tests: a', 'tests: b', 'tests: c'];
+		const one = world.addPull({ 'a/1.ts': '1', 'b/s.ts': '1' });
+		const two = world.addPull({ 'b/2.ts': '2', 'c/2.ts': '2' });
+		const three = world.addPull({ 'a/3.ts': '3' });
+		world.failBatch = (members) =>
+			members.includes(two) ? ['tests: c'] : [];
+		world.ci();
+		await host();
+		world.ci();
+		await pass();
+		expect(lone(two).labels).toContain(LAND_LABEL_CULPRIT);
+		expect(open()).toEqual([]);
+		await host();
+		const [rebuilt] = open();
+		expect(
+			readBatchRecord(rebuilt?.body ?? '')?.members.map((m) => m.number),
+		).toEqual([one, three]);
+		world.ci();
+		expect((await pass()).mergedPRs).toEqual([one, three]);
+	});
+
+	it('[<5ms] the host role can never merge, and the integrator never pushes a batch for the host', async () => {
+		const { forge, git } = createFakeWorld();
+		const hostDeps = guardedFor({
+			forge,
+			git,
+			config: HOST_CONFIG,
+			role: 'open-batches',
+		});
+		expect(() => hostDeps.forge.merge(1, 'a')).toThrow('never merges');
+		const integrator = guardedFor({ forge, git, config: HOST_CONFIG });
+		expect(() =>
+			integrator.git.buildBatch({ ref: 'r', tip: 't', members: [] }),
+		).toThrow('pushes no batch');
+	});
+});
+
 describe('land run with a workflow token', () => {
 	it('[<15ms] never updates a branch through the forge: it labels the author and merges once updated', async () => {
 		const { world, pass, lone, batches } = setup({}, {}, TOKEN_CONFIG);
@@ -395,6 +512,23 @@ describe('land run with a workflow token', () => {
 		world.bringForward(n);
 		world.ci();
 		expect((await pass()).mergedPRs).toEqual([n]);
+	});
+
+	it('[<15ms] keeps the needs-update label on every pass until the update comes, then takes it off', async () => {
+		const { world, pass, lone } = setup({}, {}, TOKEN_CONFIG);
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.push({ 'a/x.ts': '0' });
+		for (let round = 0; round < 3; round += 1) {
+			await pass();
+			expect(lone(n).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
+		}
+		// An update by its author that is still under test needs nothing
+		// more from it: the label goes, the merge follows the green checks.
+		world.bringForward(n);
+		lone(n).labels.push(LAND_LABEL_NEEDS_UPDATE);
+		await pass();
+		expect(lone(n).labels).not.toContain(LAND_LABEL_NEEDS_UPDATE);
 	});
 
 	it('[<15ms] never counts a head the workflow token pushed as ready, and asks for its author', async () => {
@@ -414,18 +548,35 @@ describe('land run with a workflow token', () => {
 	});
 
 	it('[<15ms] lands overlapping pull requests one at a time, and says why each waits', async () => {
-		const { world, pass, batches } = setup({}, {}, TOKEN_CONFIG);
+		const { world, pass, batches, lone } = setup({}, {}, TOKEN_CONFIG);
 		const one = world.addPull({ 'a/one.ts': '1' });
 		const two = world.addPull({ 'a/two.ts': '2' });
 		const draft = world.addPull({ 'b/z.ts': '1' }, { draft: true });
 		world.ci();
 		const report = await pass();
 		expect(report.mergedPRs).toEqual([one]);
+		// Labelled in the same pass: its author's side need not wait for
+		// the next pass to notice.
 		expect(report.reasons.get(two)).toBe(
-			`waits for #${String(one)}, which it overlaps`,
+			`needs update: #${String(one)} just landed and overlaps it`,
 		);
+		expect(lone(two).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
 		expect(report.reasons.get(draft)).toBe('a draft');
 		expect(batches()).toEqual([]);
+	});
+
+	it('[<15ms] lands the ready member of an overlapping group when the first one needs an update', async () => {
+		const { world, pass, lone } = setup({}, {}, TOKEN_CONFIG);
+		const stale = world.addPull({ 'a/one.ts': '1' });
+		world.ci();
+		// The integration branch moves under the first one only.
+		world.push({ 'a/one.ts': '0' });
+		const ready = world.addPull({ 'a/two.ts': '2' });
+		world.ci();
+		const report = await pass();
+		expect(report.mergedPRs).toEqual([ready]);
+		expect(report.reasons.get(stale)).toMatch(/^needs update: /u);
+		expect(lone(stale).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
 	});
 });
 

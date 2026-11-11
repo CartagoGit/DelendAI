@@ -598,6 +598,20 @@
 							"maximum": 9007199254740991,
 							"description": "The integration protocol this repository runs. A process built for an older one refuses to move refs or pull requests until it is restarted. Written by the integration change that raises it; never lower it by hand."
 						},
+						"batchOpener": {
+							"type": "string",
+							"enum": [
+								"integrator",
+								"host",
+								"none"
+							],
+							"enumDescriptions": {
+								"integrator": "the integrator builds and opens the batch itself: only where its pushes start CI",
+								"host": "the host opens it with the person’s own credentials, and the integrator only judges and merges it: where the integrator runs as a workflow token",
+								"none": "no batch: overlapping pull requests land one at a time"
+							},
+							"description": "Who builds and opens the one batch an overlapping group of ready pull requests is tested in."
+						},
 						"landWithoutChecks": {
 							"type": "boolean",
 							"description": "Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands."

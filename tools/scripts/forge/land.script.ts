@@ -12,17 +12,15 @@
 import {
 	createGithubLandForge,
 	followUpWorkflows,
-	integrationProtocolRefusal,
 	LAND_WORKFLOW_NAME,
 	landConfigFromPolicy,
 	landPass,
 } from '@delendai/core/cli';
-import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
 import { readWorkflowTriggers } from './land-follow-ups';
 import { createLandGit } from './land-git';
-import { readDevelopmentConfig } from './land-policy';
+import { landPolicy } from './land-policy';
 import { zoneOfCheck } from './section-health';
 
 const main = async (): Promise<number> => {
@@ -32,27 +30,14 @@ const main = async (): Promise<number> => {
 		return 2;
 	}
 	const root = process.cwd();
-	let development: ReturnType<typeof readDevelopmentConfig>;
-	try {
-		development = readDevelopmentConfig();
-	} catch (error) {
-		console.error(
-			`land: ${error instanceof Error ? error.message : String(error)}`,
+	const resolved = landPolicy();
+	if ('stop' in resolved) {
+		(resolved.code === 0 ? console.log : console.error)(
+			`land: ${resolved.stop}`,
 		);
-		return 2;
+		return resolved.code;
 	}
-	const policy = resolveDevelopmentPolicy(development);
-	if (policy.integration.engine !== 'land') {
-		console.log(
-			"land: the policy's integration engine is not `land`; nothing to do.",
-		);
-		return 0;
-	}
-	const stale = integrationProtocolRefusal(policy.integration.protocol);
-	if (stale !== undefined) {
-		console.error(`land: ${stale.reason} ${stale.remedy}`);
-		return 2;
-	}
+	const { policy } = resolved;
 	// This repository's wiring: its CI sections name the checks `tests: <zone>`.
 	const config = landConfigFromPolicy(policy, {
 		sectionOfCheck: zoneOfCheck,

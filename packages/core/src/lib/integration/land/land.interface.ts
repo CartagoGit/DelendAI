@@ -6,6 +6,7 @@
  */
 import type { ITrainCandidate } from '../decisions/culprit.interface';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
+import type { IBatchOpener } from '../../contracts/interfaces/integration-engine.interface';
 
 /** One check on a commit: no conclusion yet means it is still running. */
 export interface ILandCheck {
@@ -143,12 +144,11 @@ export interface ILandConfig {
 	/** True only where the policy opts in to landing with no required check. */
 	readonly withoutChecks: boolean;
 	/**
-	 * Whether land may build batch branches. Only where the actor that runs
-	 * land pushes commits the forge builds: a workflow token's push and the
-	 * pull request it opens start no CI, so a batch it built would never be
-	 * judged. Off, overlapping pull requests land one at a time.
+	 * Who opens the batch of an overlapping group: `integrator` (this pass,
+	 * where its pushes start CI), `host` (the person's machine opens it and
+	 * this pass only judges and merges it), or `none` (one at a time).
 	 */
-	readonly batches: boolean;
+	readonly batchOpener: IBatchOpener;
 	/** Actors whose pushes the forge does not build; a head they pushed is never ready. */
 	readonly unbuiltAuthors: readonly string[];
 	/** Most pull requests in one batch. */
@@ -161,10 +161,19 @@ export interface ILandConfig {
 	readonly sectionOfCheck: (name: string) => string | undefined;
 }
 
+/**
+ * The role a pass plays. `integrate` judges batches and merges, and opens
+ * batches only where it is the batch opener; `open-batches` is the host's
+ * pass: it opens the batches the integrator waits for, and never merges.
+ */
+export type ILandRole = 'integrate' | 'open-batches';
+
 export interface ILandDeps {
 	readonly forge: ILandForge;
 	readonly git: ILandGit;
 	readonly config: ILandConfig;
+	/** `integrate` unless said. */
+	readonly role?: ILandRole;
 }
 
 /** Runs the forge CLI with these arguments (the forge seam's shape). */
@@ -236,4 +245,31 @@ export interface ILandWorkflowInput {
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
 	readonly upkeep?: readonly ILandUpkeepStep[];
+}
+
+/** What opening a batch needs from its pass. */
+export interface ILandOpenContext {
+	readonly deps: ILandDeps;
+	readonly tip: string;
+	readonly note: (line: string) => void;
+	readonly needsUpdate: (pr: ILandPullRequest, why: string) => Promise<void>;
+}
+
+/** One ready pull request of a pass, with what it changed and how it meets the tip. */
+export interface ILandCandidate {
+	readonly pr: ILandPullRequest;
+	readonly own: IChangeFootprint;
+	readonly conflict: ILandConflict;
+}
+
+/** What settling the ready pull requests needs from its pass. */
+export interface ILandSettleContext extends ILandOpenContext {
+	readonly why: (number: number, reason: string) => void;
+	readonly landed: (number: number) => void;
+	/** Suspects of a red batch, each tested alone on this tip. */
+	readonly aloneOnTip: ReadonlySet<number>;
+	/** Whether a suspect is already under test alone. */
+	readonly aloneBusy: boolean;
+	/** The member sets already red on this tip: never batched again. */
+	readonly redSets: ReadonlySet<string>;
 }

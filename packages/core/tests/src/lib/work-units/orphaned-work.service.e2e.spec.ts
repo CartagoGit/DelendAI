@@ -22,7 +22,7 @@ describe('publicationPresence on a just-delivered publication (x01051)', () => {
 	const git = (cwd: string, ...args: string[]): string =>
 		execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
-	it('[<503ms] reads its owner as alive, and as gone when it dates from long ago and carries no tip', async () => {
+	it('[<955ms] reads its owner as alive, and as gone when it dates from long ago and carries no tip', async () => {
 		const policy = resolveDevelopmentPolicy({
 			development: { profile: 'shared-checkout-pr' },
 		});

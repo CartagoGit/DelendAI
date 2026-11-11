@@ -83,6 +83,7 @@ export interface IDevelopmentConfigInput {
 				readonly engine?: string | undefined;
 				readonly protocol?: number | undefined;
 				readonly landWithoutChecks?: boolean | undefined;
+				readonly batchOpener?: string | undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;
 				readonly allowForcePush?: boolean | undefined;
