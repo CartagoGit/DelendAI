@@ -2,6 +2,7 @@
  * train-assembly.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
+import { execFileSync } from 'node:child_process';
 import {
 	chmodSync,
 	existsSync,
@@ -15,6 +16,7 @@ import { join } from 'node:path';
 import { createGitRepoTemplate } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
+import { KEEP_ONE_COPY_SUBJECT } from '../proposals/keep-one-proposal-copy';
 import {
 	assembleTrain,
 	discardTrain,
@@ -56,13 +58,62 @@ const project = () => {
 		git('commit', '-q', '-m', `feat: ${String(number)}`);
 		git('push', '-q', 'origin', branch);
 		git('switch', '-q', 'develop');
-		return { number, headRef: branch, headSha: git('rev-parse', branch) };
+		return {
+			number,
+			headRef: branch,
+			headSha: git('rev-parse', branch),
+		};
 	};
 	return { root, git, tip, candidate };
 };
 
 describe('assembleTrain', () => {
-	it('keeps the scratch worktree of a rehearsal and pushes nothing', () => {
+	// ROOT CAUSE (x01054): a create pull request and the slices that moved
+	// the proposal merge cleanly as two paths, and the train carried both.
+	it('[<5000ms] keeps the copy furthest along when two members moved one proposal', () => {
+		const { root, git, tip, candidate } = project();
+		const dir = 'docs/delendai/proposals';
+		const file = 'f00155-example.md';
+		const text = (status: string, stamp: string) =>
+			`---\nid: f00155\nkind: feat\nstatus: ${status}\n${stamp}---\n\n# f00155\n`;
+		mkdirSync(join(root, dir, 'ready', 'feats'), { recursive: true });
+		mkdirSync(join(root, dir, 'review'), { recursive: true });
+		const create = candidate(3, {
+			[`${dir}/ready/feats/${file}`]: text('ready', ''),
+		});
+		const slices = candidate(5, {
+			[`${dir}/review/${file}`]: text(
+				'review',
+				'last-transition-at: 2026-11-08T10:00:00.000Z\n',
+			),
+		});
+		const outcome = assembleTrain({
+			root,
+			remote: 'origin',
+			tipSha: tip,
+			ref: TRAIN,
+			members: [create, slices],
+			derived: new Set([DERIVED]),
+			linkDependencies: () => true,
+			regenerate: () => true,
+			rehearsal: true,
+		});
+		const scratch = outcome.scratch ?? '';
+		expect(existsSync(join(scratch, dir, 'ready', 'feats', file))).toBe(
+			false,
+		);
+		expect(existsSync(join(scratch, dir, 'review', file))).toBe(true);
+		expect(
+			execFileSync('git', ['log', '-1', '--format=%s'], {
+				cwd: scratch,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe(KEEP_ONE_COPY_SUBJECT);
+		discardTrain(root, scratch);
+		expect(git('rev-parse', 'HEAD')).toBe(tip);
+	});
+
+	it('[<5000ms] keeps the scratch worktree of a rehearsal and pushes nothing', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'three.ts': '3\n' });
 		const outcome = assembleTrain({
@@ -86,7 +137,7 @@ describe('assembleTrain', () => {
 		expect(existsSync(scratch ?? '')).toBe(false);
 	});
 
-	it('regenerates a conflicting derived file on the train, once, and pushes it', () => {
+	it('[<5000ms] regenerates a conflicting derived file on the train, once, and pushes it', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, {
 			'three.ts': '3\n',
@@ -134,7 +185,7 @@ describe('assembleTrain', () => {
 		);
 	});
 
-	it('links the dependencies before the generators run, and pushes a tree equal to a fresh regeneration', () => {
+	it('[<5000ms] links the dependencies before the generators run, and pushes a tree equal to a fresh regeneration', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, {
 			'three.ts': '3\n',
@@ -188,7 +239,7 @@ describe('assembleTrain', () => {
 		}
 	});
 
-	it('pushes nothing when the dependencies cannot be linked', () => {
+	it('[<5000ms] pushes nothing when the dependencies cannot be linked', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { [DERIVED]: 'catalog: 3\n' });
 		const five = candidate(5, { [DERIVED]: 'catalog: 5\n' });
@@ -206,7 +257,7 @@ describe('assembleTrain', () => {
 		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
-	it('returns the reason when the forge declines the push, and the ref stays absent', () => {
+	it('[<5000ms] returns the reason when the forge declines the push, and the ref stays absent', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'three.ts': '3\n' });
 		const hook = join(
@@ -234,7 +285,7 @@ describe('assembleTrain', () => {
 		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
-	it('regenerates the derived files of a train whose members merged cleanly', () => {
+	it('[<5000ms] regenerates the derived files of a train whose members merged cleanly', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'three.ts': '3\n' });
 		let ran = 0;
@@ -257,7 +308,7 @@ describe('assembleTrain', () => {
 		expect(git('show', `origin/${TRAIN}:${DERIVED}`)).toBe('fresh');
 	});
 
-	it('pushes nothing when the regeneration of a clean train fails', () => {
+	it('[<5000ms] pushes nothing when the regeneration of a clean train fails', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'three.ts': '3\n' });
 		const outcome = assembleTrain({
@@ -274,7 +325,7 @@ describe('assembleTrain', () => {
 		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
-	it('leaves out a member that conflicts in an authored file, and pushes nothing', () => {
+	it('[<5000ms] leaves out a member that conflicts in an authored file, and pushes nothing', () => {
 		const { root, git, tip, candidate } = project();
 		const three = candidate(3, { 'authored.ts': 'export const a = 3;\n' });
 		const four = candidate(4, { 'authored.ts': 'export const a = 4;\n' });
@@ -291,7 +342,7 @@ describe('assembleTrain', () => {
 		expect(git('ls-remote', 'origin', TRAIN)).toBe('');
 	});
 
-	it('leaves out the members whose derived files could not be regenerated', () => {
+	it('[<5000ms] leaves out the members whose derived files could not be regenerated', () => {
 		const { root, tip, candidate } = project();
 		const three = candidate(3, { [DERIVED]: 'catalog: 3\n' });
 		const five = candidate(5, { [DERIVED]: 'catalog: 5\n' });
@@ -310,7 +361,7 @@ describe('assembleTrain', () => {
 });
 
 describe('regenerateWith', () => {
-	it('runs each command in the directory and stops at the first failure', () => {
+	it('[<5000ms] runs each command in the directory and stops at the first failure', () => {
 		const { root } = project();
 		expect(regenerateWith(['--version'])(root)).toBe(true);
 		expect(
