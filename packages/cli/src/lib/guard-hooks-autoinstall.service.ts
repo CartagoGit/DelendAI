@@ -1,0 +1,171 @@
+/**
+ * Starting a server reads the project. It never writes to it.
+ *
+ * This module used to install: a project that declared a `development`
+ * block had its `.husky/` rewritten on every boot, on the theory that a
+ * policy which only advises is a policy an agent can ignore. The theory
+ * was right and the remedy was not. Opening a folder in an editor
+ * produced eleven modified files in an unrelated repository — five of
+ * them the project's own git hooks, staged, carrying the installing
+ * machine's absolute paths, ready to be committed to colleagues who
+ * installed nothing.
+ *
+ * Writing to somebody's repository because they opened it is not a
+ * default a tool gets to have, and no configuration flag makes it one:
+ * from the outside it is indistinguishable from something malicious.
+ *
+ * So there is no install path here at all. Boot inspects and says what
+ * it found. Installing is `delendai guard install` — a command somebody
+ * types, or a project's own `prepare`.
+ */
+import { parseJsonc } from '@delendai/core/cli';
+
+import type {
+	IGuardAutoinstallOutcome,
+	IGuardHooksMode,
+} from '../contracts/interfaces/guard-hooks-autoinstall.interface';
+import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
+import { isRecord } from './helpers/cli-command.helper';
+import { readConfigText } from './config-file.service';
+import { inspectGuardHooks, installLefthookHooks } from './guard-hooks.service';
+
+/** What the project asks for, or `absent` when it declares no policy. */
+export const guardHooksMode = async (
+	workspaceRoot: string,
+): Promise<IGuardHooksMode | 'absent'> => {
+	const text = await readConfigText(workspaceRoot);
+	if (text === undefined) return 'absent';
+	const parsed = parseJsonc(text);
+	if (parsed.errors.length > 0) return 'absent';
+	const config = parsed.value;
+	if (!isRecord(config) || !isRecord(config.development)) return 'absent';
+	const declared = config.development.guardHooks;
+	if (declared === 'report' || declared === 'off' || declared === 'install') {
+		return declared;
+	}
+	return 'report';
+};
+
+/**
+ * Whether the hooks on disk are what the declared mode asks for, and the
+ * command that makes them so.
+ *
+ * A project that turns the guard off, or changes to a profile that does
+ * not use it, kept the hooks an earlier mode installed: nothing compared
+ * the two, so a clone said it was guarded by a policy that no longer
+ * asked for a guard. `report` and an absent policy ask for nothing either
+ * way, so they always follow.
+ */
+export const guardHooksFollowMode = (
+	report: IGuardHooksReport,
+	mode: IGuardHooksMode | 'absent',
+): { readonly follows: boolean; readonly remedy?: string } => {
+	const installed = report.hooks.filter(
+		(entry) => entry.state === 'installed',
+	);
+	if (mode === 'off' && installed.length > 0) {
+		return {
+			follows: false,
+			remedy: `\`development.guardHooks\` is "off" and ${installed.map((entry) => entry.hook).join(', ')} still run${installed.length === 1 ? 's' : ''} the guard: \`delendai guard uninstall\``,
+		};
+	}
+	// A hook its manager owns is installed through that manager's
+	// configuration; its own reason already says so.
+	const missing = report.hooks.filter(
+		(entry) => entry.state === 'absent' && entry.reason === undefined,
+	);
+	if (mode === 'install' && missing.length > 0) {
+		return {
+			follows: false,
+			remedy: `\`development.guardHooks\` is "install" and ${missing.map((entry) => entry.hook).join(', ')} ${missing.length === 1 ? 'does' : 'do'} not run the guard: \`delendai guard install\``,
+		};
+	}
+	return { follows: true };
+};
+
+/**
+ * One line per state, not per hook: a project with none installed was
+ * shown every hook on a line of its own at every start. A hook with a
+ * reason of its own keeps its line, because the reason is the remedy.
+ */
+const describe = (report: IGuardHooksReport): string[] => {
+	const plain = new Map<string, string[]>();
+	const explained: string[] = [];
+	for (const entry of report.hooks) {
+		if (entry.reason !== undefined) {
+			explained.push(`  ${entry.hook}: ${entry.state} — ${entry.reason}`);
+			continue;
+		}
+		plain.set(entry.state, [...(plain.get(entry.state) ?? []), entry.hook]);
+	}
+	const states = [...plain.entries()].map(
+		([state, hooks]) =>
+			`${String(hooks.length)} ${state} (${hooks.join(', ')})`,
+	);
+	return [
+		`guard hooks in ${report.dir}: ${states.join('; ') || 'none'}`,
+		...explained,
+	];
+};
+
+/** Nothing to say, and nothing done. */
+const SILENT = (
+	mode: IGuardHooksMode | 'absent',
+): IGuardAutoinstallOutcome => ({
+	mode,
+	lines: [],
+});
+
+/**
+ * Look at the guard a workspace declares and report it, and never throw:
+ * a repository that cannot be inspected still gets its server. The one
+ * thing written is what the project's own lefthook configuration already
+ * declares, by its own lefthook: a section it never installed runs
+ * nothing, and the start must leave the hooks the project asked for.
+ *
+ * `development.guardHooks: "install"` is honoured as a statement of
+ * intent — the report names the command — not as permission to write
+ * during boot. The two are not the same act, and only one of them was
+ * asked for by the person who opened the folder.
+ */
+export const reportGuardHooks = async (input: {
+	readonly workspaceRoot: string;
+}): Promise<IGuardAutoinstallOutcome> => {
+	const mode = await guardHooksMode(input.workspaceRoot);
+	if (mode === 'absent' || mode === 'off') return SILENT(mode);
+	try {
+		const first = inspectGuardHooks(input.workspaceRoot);
+		// What the project's own lefthook.yml declares is installed at start:
+		// a section lefthook never wrote a script for runs nothing.
+		const declaredOnly = first.hooks.some(
+			(entry) => entry.reason?.includes('lefthook install') === true,
+		);
+		const report =
+			declaredOnly && installLefthookHooks(input.workspaceRoot)
+				? inspectGuardHooks(input.workspaceRoot)
+				: first;
+		// A missing hook that carries its own reason already says how to
+		// fix it; `guard install` is the fix only for the others.
+		const missing = report.hooks.some(
+			(entry) =>
+				entry.state !== 'installed' && entry.reason === undefined,
+		);
+		return {
+			mode,
+			report,
+			lines: [
+				...describe(report),
+				...(missing
+					? ['  run `delendai guard install` to install them']
+					: []),
+			],
+		};
+	} catch (error) {
+		return {
+			mode,
+			lines: [
+				`guard hooks could not be inspected: ${error instanceof Error ? error.message : String(error)}`,
+			],
+		};
+	}
+};

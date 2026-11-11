@@ -1,0 +1,40 @@
+---
+id: database
+package: @delendai/database
+version: 0.3.0
+maturity: stable
+generated: 2026-11-03T01:24:49.458Z
+---
+
+# Database
+
+> Auto-generated. Do not edit. Regenerate with bun run generate:from-manifests.
+
+## Summary
+
+Database schema/introspection tools (read-only, offline).
+
+## Tags
+
+- database
+- schema
+
+## Presets
+
+- everything
+
+## Permissions
+
+- env-read
+- database
+
+## Dependencies
+
+- @delendai/core
+- better-sqlite3
+- zod
+
+## Capabilities
+
+- database
+- schema
