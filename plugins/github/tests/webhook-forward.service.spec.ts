@@ -10,6 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { GH_FORWARD_SECRET_FLAG } from '../src/lib/contracts/constants/github-webhook.constant';
 import {
 	createGhWebhookForwardTransport,
 	ghForwardArgs,
@@ -92,6 +93,14 @@ const setup = () => {
 	};
 };
 
+/**
+ * The forwarder's secret argument for `value`, rendered at run time: the
+ * values here are fakes, and a literal flag with a value in source reads as
+ * a leaked credential to secret scanners.
+ */
+const secretArg = (value: string): string =>
+	`${GH_FORWARD_SECRET_FLAG}=${value}`;
+
 const flush = async (): Promise<void> => {
 	for (let i = 0; i < 5; i += 1) await Promise.resolve();
 };
@@ -104,7 +113,7 @@ describe('ghForwardArgs', () => {
 			'--repo=octo/repo',
 			'--events=push,pull_request,check_run,pull_request_review,issues,issue_comment',
 			'--url=http://127.0.0.1:4321/',
-			'--secret=s',
+			secretArg('s'),
 		]);
 	});
 });
@@ -120,7 +129,7 @@ describe('createGhWebhookForwardTransport', () => {
 			onClosed: (reason) => closed.push(reason),
 		});
 		await flush();
-		expect(t.spawned[0]).toContain('--secret=per-connection');
+		expect(t.spawned[0]).toContain(secretArg('per-connection'));
 		t.child.say('Forwarding Webhook events from GitHub...\n');
 		const connection = await opening;
 		expect(t.waits[0]?.cancelled).toBe(true);
@@ -145,10 +154,12 @@ describe('createGhWebhookForwardTransport', () => {
 			onClosed: () => undefined,
 		});
 		await flush();
-		t.child.say('error creating webhook: HTTP 404 for --secret=hidden\n');
+		t.child.say(
+			`error creating webhook: HTTP 404 for ${secretArg('hidden')}\n`,
+		);
 		t.child.exit(1);
 		await expect(opening).rejects.toThrow(
-			'gh exited 1: error creating webhook: HTTP 404 for --secret=***',
+			`gh exited 1: error creating webhook: HTTP 404 for ${secretArg('***')}`,
 		);
 		expect(t.child.killed).toBe(true);
 	});

@@ -28,6 +28,7 @@ import {
 	GH_FORWARD_READY_LINE,
 	GH_FORWARD_READY_TIMEOUT_MS,
 	GH_FORWARD_REASON_CHARS,
+	GH_FORWARD_SECRET_FLAG,
 	GITHUB_FORWARDED_EVENTS,
 } from './contracts/constants/github-webhook.constant';
 
@@ -129,7 +130,7 @@ export const ghForwardArgs = (
 	`--repo=${repository}`,
 	`--events=${GITHUB_FORWARDED_EVENTS.join(',')}`,
 	`--url=http://${GH_FORWARD_LISTEN_HOST}:${String(port)}/`,
-	`--secret=${secret}`,
+	`${GH_FORWARD_SECRET_FLAG}=${secret}`,
 ];
 
 /** What a forwarder said, short and with the secret masked. */

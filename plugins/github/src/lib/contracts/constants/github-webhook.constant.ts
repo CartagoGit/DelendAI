@@ -39,3 +39,6 @@ export const GH_FORWARD_REASON_CHARS = 300;
 
 /** The tail of a forwarder's output kept to explain why it ended. */
 export const GH_FORWARD_OUTPUT_KEEP_CHARS = 4_096;
+
+/** The forwarder's flag that carries the per-connection signing secret. */
+export const GH_FORWARD_SECRET_FLAG = '--secret';
