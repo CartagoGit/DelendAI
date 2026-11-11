@@ -28,7 +28,9 @@ import type {
 	IGitRunResult,
 } from '@delendai/core/lib/contracts/interfaces/git-runner.interface';
 
-import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+import { createSharedGitFixture } from '@delendai/test-kit';
+
+import { removeTestWorkspace } from '../test-workspace';
 
 /** The branch every startup spec treats as the integration branch. */
 export const INTEGRATION_BRANCH = 'develop';
@@ -111,8 +113,11 @@ const configure = (dir: string): void => {
  * A bare origin with one commit on the integration branch — the shared
  * remote both "machines" in the laptop/office scenario talk to.
  */
-export const createStartupOrigin = (): IStartupOrigin => {
-	const root = createTestWorkspace('delendai-startup-');
+/**
+ * The origin and the seed that pushed its first commit, built once per
+ * worker and copied per call: built per call it was a dozen git processes.
+ */
+const fixture = createSharedGitFixture((root) => {
 	const originDir = join(root, 'origin.git');
 	const seedDir = join(root, 'seed');
 	mkdirSync(originDir, { recursive: true });
@@ -133,6 +138,11 @@ export const createStartupOrigin = (): IStartupOrigin => {
 	git(seedDir, 'commit', '--quiet', '--no-verify', '-m', 'base');
 	git(seedDir, 'remote', 'add', 'origin', originDir);
 	git(seedDir, 'push', '--quiet', 'origin', INTEGRATION_BRANCH);
+});
+
+export const createStartupOrigin = (): IStartupOrigin => {
+	const root = fixture.copy();
+	const originDir = join(root, 'origin.git');
 
 	const clone = (name: string): IStartupClone => {
 		const dir = join(root, name);
