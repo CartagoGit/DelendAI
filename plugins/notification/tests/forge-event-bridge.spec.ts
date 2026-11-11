@@ -19,7 +19,7 @@ import {
 	appendForgeEventRecord,
 	forgeEventsDir,
 	readForgeEventSubscriptions,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import {
 	createForgeEventBridge,

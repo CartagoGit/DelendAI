@@ -25,7 +25,7 @@ import {
 	forgeEventRecordsDir,
 	readForgeEventRecord,
 	readForgeEventSubscriptions,
-} from '@delendai/core/public';
+} from '@delendai/core/runtime';
 
 import {
 	LAND_COMMENT_PREFIX,
