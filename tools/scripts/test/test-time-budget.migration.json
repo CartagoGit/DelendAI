@@ -627,7 +627,6 @@
 		"packages/core/tests/src/lib/setup/cross-project-guide.spec.ts",
 		"packages/core/tests/src/lib/setup/setup-steps.spec.ts",
 		"packages/core/tests/src/lib/shared/account-sources.service.spec.ts",
-		"packages/core/tests/src/lib/shared/acp-client.service.spec.ts",
 		"packages/core/tests/src/lib/shared/acp-session.service.spec.ts",
 		"packages/core/tests/src/lib/shared/agent-detection.service.spec.ts",
 		"packages/core/tests/src/lib/shared/agent-registry.service.spec.ts",
