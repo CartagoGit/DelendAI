@@ -304,7 +304,7 @@ describe('runEntry — what the binary actually does', () => {
 		expect(captured.out.trim()).toBe(CLI_VERSION);
 	});
 
-	it('[<51ms] does not migrate when the command is `guard`', async () => {
+	it('[<102ms] does not migrate when the command is `guard`', async () => {
 		// `guard` runs inside pre-commit and pre-push, with git holding
 		// its locks. A migration there writes to the workspace mid-commit.
 		const root = mkdtempSync(join(tmpdir(), 'entry-guard-'));
