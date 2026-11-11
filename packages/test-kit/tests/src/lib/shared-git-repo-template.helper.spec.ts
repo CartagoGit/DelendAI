@@ -1,9 +1,13 @@
-import { existsSync, rmSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { createSharedGitRepoTemplate } from '../../../src/public/index';
+import {
+	createSharedGitFixture,
+	createSharedGitRepoTemplate,
+} from '../../../src/public/index';
 
 /** Module scope, as a helper shared across spec files declares it. */
 const template = createSharedGitRepoTemplate({
@@ -36,5 +40,29 @@ describe('createSharedGitRepoTemplate', () => {
 		const first = template.copy();
 		rmSync(dirname(first.root), { recursive: true, force: true });
 		expect(template.copy().git('log', '--format=%s', '-1')).toBe('base');
+	});
+});
+
+const git = (cwd: string, ...args: string[]): string =>
+	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+
+/** A bare origin and a clone that names it, as a helper's builder makes them. */
+const pair = createSharedGitFixture((root) => {
+	mkdirSync(join(root, 'origin.git'));
+	git(join(root, 'origin.git'), 'init', '-q', '--bare');
+	git(root, 'clone', '-q', join(root, 'origin.git'), 'clone');
+});
+
+describe('createSharedGitFixture', () => {
+	it('[<120ms] copies what the builder made, its paths naming the copy', () => {
+		const copy = pair.copy();
+		try {
+			expect(
+				git(join(copy, 'clone'), 'remote', 'get-url', 'origin'),
+			).toBe(join(copy, 'origin.git'));
+			expect(existsSync(join(copy, 'origin.git', 'HEAD'))).toBe(true);
+		} finally {
+			rmSync(copy, { recursive: true, force: true });
+		}
 	});
 });
