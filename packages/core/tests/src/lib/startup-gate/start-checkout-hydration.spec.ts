@@ -74,7 +74,7 @@ const advanceTheForge = (from: IStartupOrigin): void => {
 };
 
 describe('startCheckoutHydration', () => {
-	it('[<1400ms] moves a clean checkout the forge left behind, and says so once', async () => {
+	it('[<1241ms] moves a clean checkout the forge left behind, and says so once', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('shared');
 		advanceTheForge(origin);
@@ -106,7 +106,7 @@ describe('startCheckoutHydration', () => {
 		expect(messages[0]).toContain('fast-forwarded');
 	});
 
-	it("[<470ms] falls back to core's cadence when the host names none", () => {
+	it("[<287ms] falls back to core's cadence when the host names none", () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('default');
 
@@ -122,7 +122,7 @@ describe('startCheckoutHydration', () => {
 		expect(() => watch.stop()).not.toThrow();
 	});
 
-	it('[<2100ms] ends the finished units of the clone it was given, after a pass that ran', async () => {
+	it('[<1485ms] ends the finished units of the clone it was given, after a pass that ran', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('maintainer');
 		const policy = testPolicy();

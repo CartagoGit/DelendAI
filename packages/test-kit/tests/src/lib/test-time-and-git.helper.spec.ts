@@ -13,7 +13,7 @@ import {
 import { MEASURED_META_KEY } from '../../../src/contracts/constants/time-budget.constant';
 
 describe('useFakeClock', () => {
-	it('[<10ms] runs a timer when the clock moves, with no real wait', async () => {
+	it('[<12ms] runs a timer when the clock moves, with no real wait', async () => {
 		const clock = useFakeClock();
 		let fired = false;
 		setTimeout(() => {
@@ -25,7 +25,7 @@ describe('useFakeClock', () => {
 		expect(fired).toBe(true);
 	});
 
-	it('[<10ms] leaves the budget runner on the real clock', ({
+	it('[<5ms] leaves the budget runner on the real clock', ({
 		task,
 		onTestFinished,
 	}) => {

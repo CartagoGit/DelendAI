@@ -105,7 +105,7 @@ describe('acpLaunchOf', () => {
 });
 
 describe('runAcpAgent', () => {
-	it('[<470ms] drives a real process over stdio and stops it', async () => {
+	it('[<420ms] drives a real process over stdio and stops it', async () => {
 		const result = await runAcpAgent(
 			{ command: process.execPath, args: [FAKE] },
 			{ cwd: tmpdir(), prompt: 'abc', timeoutMs: 20_000 },
@@ -117,7 +117,7 @@ describe('runAcpAgent', () => {
 		});
 	});
 
-	it('[<53ms] fails when the process cannot start or ends before answering', async () => {
+	it('[<69ms] fails when the process cannot start or ends before answering', async () => {
 		await expect(
 			runAcpAgent(
 				{ command: join(tmpdir(), 'no-such-agent'), args: [] },
@@ -132,7 +132,7 @@ describe('runAcpAgent', () => {
 		).rejects.toThrow(/exited \(3\)|connection closed/u);
 	});
 
-	it('[<11ms] stops the agent when the turn is cancelled', async () => {
+	it('[<14ms] stops the agent when the turn is cancelled', async () => {
 		const controller = new AbortController();
 		const turn = runAcpAgent(
 			{
@@ -170,7 +170,7 @@ const fakeDeadline = () =>
 	useFakeClock({ toFake: ['setTimeout', 'clearTimeout'] });
 
 describe('a turn that runs out of time', () => {
-	it('[<30ms] stops an agent that never answers', async () => {
+	it('[<12ms] stops an agent that never answers', async () => {
 		const clock = fakeDeadline();
 		const turn = expect(
 			runAcpAgent(SILENT, {
@@ -187,7 +187,7 @@ describe('a turn that runs out of time', () => {
 });
 
 describe('introduceAgent', () => {
-	it('[<314ms] greets a real process and says what it is, at no cost', async () => {
+	it('[<285ms] greets a real process and says what it is, at no cost', async () => {
 		const introduction = await introduceAgent(
 			{ command: process.execPath, args: [FAKE] },
 			tmpdir(),
@@ -196,7 +196,7 @@ describe('introduceAgent', () => {
 		expect(introduction).toMatchObject({ agent: { name: 'Fake Stdio' } });
 	});
 
-	it('[<30ms] gives up on a process that does not answer in time', async () => {
+	it('[<8ms] gives up on a process that does not answer in time', async () => {
 		const clock = fakeDeadline();
 		const greeting = expect(
 			introduceAgent(SILENT, tmpdir(), DEADLINE_MS),
