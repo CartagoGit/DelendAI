@@ -94,6 +94,7 @@ export {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedBatchPrefixes,
+	ownedRehearsalPrefixes,
 	ownedWorkRefPrefixes,
 	policyNamespaces,
 	publicationPrefixesOf,
