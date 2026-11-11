@@ -48,6 +48,11 @@ const OptionsSchema = z
 export { createGitHubHttpClient } from './lib/client';
 export { resolveGitHubProviderContext } from './lib/config';
 export { diagnoseGitHubWorkflow } from './lib/diagnostics';
+export {
+	createGitHubEventAdapter,
+	mapGitHubEvent,
+	verifyGitHubSignature,
+} from './lib/webhook-events.service';
 export type { IGitHubPluginOptions } from './lib/config';
 export type {
 	IGitHubWorkflowDiagnosticInput,

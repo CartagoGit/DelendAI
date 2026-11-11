@@ -40,7 +40,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 ### S2 — GitHub webhooks feed the port
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/src/lib/contracts/constants/github-webhook.constant.ts`, `plugins/github/src/index.ts`, `plugins/github/package.json`, `plugins/github/tests/webhook-events.service.spec.ts`
+- **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/src/lib/contracts/constants/github-webhook.constant.ts`, `plugins/github/src/index.ts`, `plugins/github/package.json`, `bun.lock`, `plugins/github/tests/webhook-events.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "GitHub push, pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
