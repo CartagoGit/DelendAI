@@ -43,9 +43,19 @@ afterEach(() => {
 		rmSync(root, { recursive: true, force: true });
 });
 
-const settle = async (): Promise<void> => {
-	for (let i = 0; i < 50; i += 1) await new Promise((r) => setImmediate(r));
+/**
+ * Turn the event loop until `ready` holds: real file reads finish in their
+ * own time, so a test waits for the state it needs, never a fixed count.
+ */
+const until = async (ready: () => boolean, what: string): Promise<void> => {
+	for (let turn = 0; turn < 100_000; turn += 1) {
+		if (ready()) return;
+		await new Promise((resolve) => setImmediate(resolve));
+	}
+	throw new Error(`never happened: ${what}`);
 };
+
+const waiterArmed = (): boolean => vi.getTimerCount() === 1;
 
 const setup = async () => {
 	const { root, dir } = storeDir();
@@ -69,7 +79,8 @@ const setup = async () => {
 			at,
 		);
 		fires[0]?.(name);
-		await settle();
+		// The watcher's own call, awaited: delivery is once per file anyway.
+		await bridge.handle(name);
 		return name;
 	};
 	return {
@@ -212,8 +223,8 @@ describe('createForgeEventBridge', () => {
 		await t.write({ kind: 'pr.merged', number: 8 }, 101);
 		await t.write({ kind: 'pr.opened', number: 7 }, 102);
 		t.fires[0]?.(name);
-		t.fires[0]?.('not-a-record.tmp');
-		await settle();
+		await t.bridge.handle(name);
+		await t.bridge.handle('not-a-record.tmp');
 		expect(t.notices).toEqual([
 			{
 				agent: 'me',
@@ -241,8 +252,7 @@ describe('createForgeEventBridge', () => {
 		await t.bridge.bind('late');
 		expect(t.notices.map((n) => n.outcome)).toEqual(['#7 merged']);
 		await t.write({ kind: 'issue.closed', number: 7 }, 70);
-		t.fires[0]?.(undefined);
-		await settle();
+		await t.bridge.handle(undefined);
 		expect(t.notices.map((n) => n.outcome)).toEqual([
 			'#7 merged',
 			'issue #7 closed',
@@ -265,7 +275,7 @@ describe('createForgeEventBridge', () => {
 
 		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 		const waiting = t.bridge.next('me', 1_000);
-		await settle();
+		await until(waiterArmed, 'the wait was armed');
 		await t.write(
 			{
 				kind: 'check.completed',
@@ -280,13 +290,13 @@ describe('createForgeEventBridge', () => {
 		]);
 
 		const empty = t.bridge.next('me', 1_000);
-		await settle();
+		await until(waiterArmed, 'the empty wait was armed');
 		vi.advanceTimersByTime(1_000);
 		expect(await empty).toEqual([]);
 
 		const aborted = new AbortController();
 		const cut = t.bridge.next('me', 1_000, aborted.signal);
-		await settle();
+		await until(waiterArmed, 'the abortable wait was armed');
 		aborted.abort();
 		expect(await cut).toEqual([]);
 	});
@@ -294,8 +304,9 @@ describe('createForgeEventBridge', () => {
 	it('[<500ms] stop ends the watch and releases every wait', async () => {
 		const t = await setup();
 		await t.bridge.bind('me');
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 		const waiting = t.bridge.next('me', 60_000);
-		await settle();
+		await until(waiterArmed, 'the wait was armed');
 		t.bridge.stop();
 		expect(await waiting).toEqual([]);
 		expect(t.unwatched()).toBe(1);
@@ -350,7 +361,7 @@ describe('buildForgeEventRegistrations', () => {
 			Date.now() + 1,
 		);
 		t.fires[0]?.(name);
-		await settle();
+		await until(() => t.logged.length > 0, 'the notification was sent');
 		expect(t.logged).toMatchObject([
 			{ event: 'forge-event', agent: 'me', outcome: '#7 merged' },
 		]);
@@ -373,11 +384,12 @@ describe('buildForgeEventRegistrations', () => {
 
 	it('[<500ms] closing the server releases a pending await', async () => {
 		const t = await register(true);
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 		const waiting = t.handlers.get('delendai_forge_await')?.({
 			agent: 'me',
 			timeoutMs: 10_000_000,
 		}) as Promise<{ structuredContent: { timedOut: boolean } }>;
-		await settle();
+		await until(waiterArmed, 'the await was armed');
 		t.server.server.onclose?.();
 		expect((await waiting).structuredContent.timedOut).toBe(true);
 	});
