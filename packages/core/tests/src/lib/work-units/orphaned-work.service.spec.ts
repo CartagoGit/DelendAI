@@ -232,7 +232,7 @@ describe('the publication a work ref was published as (x01051)', () => {
 });
 
 describe('the rescues the hydrator keeps (x01051)', () => {
-	it('[<250ms] survive a write and tell the owner what it gave up on', async () => {
+	it('[<1000ms] survive a write, which fsyncs to the CI disk, and tell the owner what it gave up on', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'rescues-'));
 		try {
 			expect(await readOrphanRescues(root)).toEqual({ rescues: {} });
