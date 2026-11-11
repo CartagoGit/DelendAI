@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+	catchUpAtBoot,
 	INTEGRATION_FOLLOW_UPS_SCRIPT,
 	createStopHandler,
 	describeMigrationRun,
@@ -220,6 +221,34 @@ describe('INTEGRATION_FOLLOW_UPS_SCRIPT', () => {
 		const root = join(import.meta.dirname, '../../..');
 		expect(existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))).toBe(
 			true,
+		);
+	});
+});
+
+describe('catchUpAtBoot', () => {
+	it('[<20ms] runs the follow-ups once when this server maintains the workspace', async () => {
+		const followUp = vi.fn(async () => undefined);
+		const report = vi.fn();
+		await catchUpAtBoot({
+			standDown: async () => undefined,
+			followUp,
+			report,
+		});
+		expect(followUp).toHaveBeenCalledOnce();
+		expect(report).not.toHaveBeenCalled();
+	});
+
+	it('[<20ms] leaves them to the maintainer, and says why, when it stands down', async () => {
+		const followUp = vi.fn(async () => undefined);
+		const report = vi.fn();
+		await catchUpAtBoot({
+			standDown: async () => 'Server h#1#a maintains this workspace.',
+			followUp,
+			report,
+		});
+		expect(followUp).not.toHaveBeenCalled();
+		expect(report).toHaveBeenCalledWith(
+			'follow-ups not caught up at boot: Server h#1#a maintains this workspace.',
 		);
 	});
 });
