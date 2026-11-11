@@ -97,8 +97,18 @@ export const landPass = async (given: ILandDeps): Promise<ILandReport> => {
 	const remember = (record: ILandBatchRecord): void =>
 		memory.remember(record);
 
-	const needsUpdate = (pr: ILandPullRequest, why: string): Promise<void> =>
-		labelNeedsUpdate(forge, pr, why, note);
+	/**
+	 * The pull requests this pass judged in need of an update. The label is
+	 * taken off only at the end of a pass, from those it no longer judged so:
+	 * taken off before the judgement, it was put back one pass and taken off
+	 * the next, and the host bringing labelled pull requests forward found it
+	 * missing half the time (2026-11-11, #1875 for nine hours).
+	 */
+	const flagged = new Set<number>();
+	const needsUpdate = (pr: ILandPullRequest, why: string): Promise<void> => {
+		flagged.add(pr.number);
+		return labelNeedsUpdate(forge, pr, why, note);
+	};
 
 	/**
 	 * The host's view of an open batch: in flight while it is current, and
@@ -209,7 +219,8 @@ export const landPass = async (given: ILandDeps): Promise<ILandReport> => {
 
 	// The ready pull requests: green on their head, not a known culprit.
 	const candidates: ILandCandidate[] = [];
-	for (const pr of await forge.openPullRequests()) {
+	const open = await forge.openPullRequests();
+	for (const pr of open) {
 		if (inFlight.has(pr.number)) {
 			why(pr.number, 'rides a batch under test');
 			continue;
@@ -246,9 +257,6 @@ export const landPass = async (given: ILandDeps): Promise<ILandReport> => {
 				);
 			continue;
 		}
-		if (judges && pr.labels.includes(LAND_LABEL_NEEDS_UPDATE)) {
-			await forge.removeLabel(pr.number, LAND_LABEL_NEEDS_UPDATE);
-		}
 		candidates.push({ pr, own: git.footprint(pr), conflict });
 	}
 	candidates.sort((a, b) => a.pr.number - b.pr.number);
@@ -267,6 +275,16 @@ export const landPass = async (given: ILandDeps): Promise<ILandReport> => {
 		},
 		candidates,
 	);
+	if (judges) {
+		for (const pr of open) {
+			if (
+				pr.labels.includes(LAND_LABEL_NEEDS_UPDATE) &&
+				!flagged.has(pr.number) &&
+				!mergedPRs.includes(pr.number)
+			)
+				await forge.removeLabel(pr.number, LAND_LABEL_NEEDS_UPDATE);
+		}
+	}
 	return {
 		actions,
 		reasons,

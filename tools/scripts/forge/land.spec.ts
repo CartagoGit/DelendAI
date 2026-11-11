@@ -514,6 +514,23 @@ describe('land run with a workflow token', () => {
 		expect((await pass()).mergedPRs).toEqual([n]);
 	});
 
+	it('[<15ms] keeps the needs-update label on every pass until the update comes, then takes it off', async () => {
+		const { world, pass, lone } = setup({}, {}, TOKEN_CONFIG);
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.push({ 'a/x.ts': '0' });
+		for (let round = 0; round < 3; round += 1) {
+			await pass();
+			expect(lone(n).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
+		}
+		// An update by its author that is still under test needs nothing
+		// more from it: the label goes, the merge follows the green checks.
+		world.bringForward(n);
+		lone(n).labels.push(LAND_LABEL_NEEDS_UPDATE);
+		await pass();
+		expect(lone(n).labels).not.toContain(LAND_LABEL_NEEDS_UPDATE);
+	});
+
 	it('[<15ms] never counts a head the workflow token pushed as ready, and asks for its author', async () => {
 		const { world, pass, lone } = setup({}, {}, TOKEN_CONFIG);
 		const n = world.addPull(
