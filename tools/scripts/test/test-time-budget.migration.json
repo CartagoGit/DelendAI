@@ -2346,7 +2346,6 @@
 		"tools/scripts/lint/skills-are-published.spec.ts",
 		"tools/scripts/lint/skills-script.spec.ts",
 		"tools/scripts/lint/solid-compliance.script.spec.ts",
-		"tools/scripts/lint/spec-git-init.helper.spec.ts",
 		"tools/scripts/lint/spec-timeout-undercut.script.spec.ts",
 		"tools/scripts/lint/state-engine-coverage.script.spec.ts",
 		"tools/scripts/lint/state-engine-purity.script.spec.ts",

@@ -15,6 +15,20 @@ export const isE2eTier = (path: string): boolean =>
 export const isFastSpec = (path: string): boolean =>
 	/\.spec\.[cm]?[jt]sx?$/u.test(path) && !isE2eTier(path);
 
+/**
+ * A module that specs import for their setup, outside the e2e tier: a
+ * repository a helper builds per call is one each case builds. Before this,
+ * `unit-repo.helper.ts` ran git init for every case of 14 spec files and the
+ * rule never saw it.
+ */
+export const isFastTestSupport = (path: string): boolean =>
+	/(?:^|\/)tests?\//u.test(path) &&
+	/\.[cm]?[jt]sx?$/u.test(path) &&
+	!/\.(?:spec|test)\.[cm]?[jt]sx?$/u.test(path) &&
+	!/(?:^|\/)fixtures?\//u.test(path) &&
+	!isE2eTier(path) &&
+	!/\.e2e\.[^/]*$/u.test(path);
+
 /** Lines in `text` that run `git init`, comments left out. */
 export const countGitInits = (text: string): number =>
 	text.split('\n').filter((line) => {
