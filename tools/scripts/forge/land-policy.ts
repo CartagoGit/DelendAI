@@ -8,7 +8,8 @@
  */
 import { readFileSync } from 'node:fs';
 
-import { parseJsonc } from '@delendai/core/cli';
+import { integrationProtocolRefusal, parseJsonc } from '@delendai/core/cli';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 export const DEVELOPMENT_CONFIG_PATH = 'delendai.config.json';
 
@@ -41,3 +42,32 @@ export const readDevelopmentConfig = (
 	path: string = DEVELOPMENT_CONFIG_PATH,
 ): { readonly development?: Record<string, unknown> } =>
 	developmentConfigOf(readFileSync(path, 'utf8'));
+
+/**
+ * The policy a land pass runs under, or why it does not run: a config that
+ * cannot be read, an engine that is not `land` (nothing to do), or a
+ * repository on a newer integration protocol than this code speaks.
+ */
+export const landPolicy = ():
+	| { readonly policy: ReturnType<typeof resolveDevelopmentPolicy> }
+	| { readonly stop: string; readonly code: number } => {
+	let development: ReturnType<typeof readDevelopmentConfig>;
+	try {
+		development = readDevelopmentConfig();
+	} catch (error) {
+		return {
+			stop: error instanceof Error ? error.message : String(error),
+			code: 2,
+		};
+	}
+	const policy = resolveDevelopmentPolicy(development);
+	if (policy.integration.engine !== 'land')
+		return {
+			stop: "the policy's integration engine is not `land`; nothing to do.",
+			code: 0,
+		};
+	const stale = integrationProtocolRefusal(policy.integration.protocol);
+	if (stale !== undefined)
+		return { stop: `${stale.reason} ${stale.remedy}`, code: 2 };
+	return { policy };
+};

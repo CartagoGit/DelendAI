@@ -19,8 +19,6 @@ export const landConfigFromPolicy = (
 	project: {
 		readonly sectionOfCheck?: ILandConfig['sectionOfCheck'];
 		readonly batchCapacity?: number;
-		/** Only where land runs as an actor whose pushes the forge builds. */
-		readonly batches?: boolean;
 		readonly unbuiltAuthors?: readonly string[];
 	} = {},
 ): ILandConfig => {
@@ -32,7 +30,7 @@ export const landConfigFromPolicy = (
 		releaseBranch: policy.branches.release,
 		batchPrefix,
 		withoutChecks: policy.integration.landWithoutChecks,
-		batches: project.batches ?? false,
+		batchOpener: policy.integration.batchOpener,
 		unbuiltAuthors: project.unbuiltAuthors ?? [LAND_WORKFLOW_TOKEN_ACTOR],
 		mergeMethod: policy.integration.mergeMethod,
 		requiredChecks: policy.integration.requiredChecks,

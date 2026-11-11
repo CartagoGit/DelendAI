@@ -50,6 +50,13 @@ export const INTEGRATION_FOLLOW_UPS: readonly IFollowUp[] = [
 		onEvent: false,
 	},
 	{
+		// The batches land waits for, opened by this machine: one CI per
+		// overlapping group (development.integration.batchOpener: host).
+		script: 'tools/scripts/forge/open-batches.script.ts',
+		timeoutMs: 1_800_000,
+		onEvent: true,
+	},
+	{
 		// What land labels "needs update", pushed by this machine.
 		script: 'tools/scripts/forge/bring-forward.script.ts',
 		timeoutMs: 1_800_000,

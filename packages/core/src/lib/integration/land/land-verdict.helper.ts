@@ -28,7 +28,7 @@ export const labelNeedsUpdate = async (
 	await forge.addLabel(pr.number, LAND_LABEL_NEEDS_UPDATE);
 	await forge.comment(
 		pr.number,
-		`land: this pull request conflicts with the integration branch in authored code (${why}). Update it on your side and push; land picks it up on the next pass.`,
+		`land: this pull request needs an update: ${why}. The author's side brings it forward (a push that starts CI); a conflict in authored code stays with its author. land picks it up once its checks are green.`,
 	);
 	note(`#${String(pr.number)} needs update: ${why}`);
 };

@@ -11,7 +11,10 @@
  * repository, and this one is about delivery. The shape is unchanged:
  * every axis here is the same schema, moved.
  */
-import { INTEGRATION_ENGINES } from '../contracts/interfaces/integration-engine.interface';
+import {
+	BATCH_OPENERS,
+	INTEGRATION_ENGINES,
+} from '../contracts/interfaces/integration-engine.interface';
 import { z } from 'zod';
 
 import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
@@ -110,6 +113,16 @@ export const IntegrationAxis = z
 			.min(1)
 			.describe(
 				'The integration protocol this repository runs. A process built for an older one refuses to move refs or pull requests until it is restarted. Written by the integration change that raises it; never lower it by hand.',
+			)
+			.optional(),
+		batchOpener: documentedEnum(BATCH_OPENERS, {
+			integrator:
+				'the integrator builds and opens the batch itself: only where its pushes start CI',
+			host: 'the host opens it with the person’s own credentials, and the integrator only judges and merges it: where the integrator runs as a workflow token',
+			none: 'no batch: overlapping pull requests land one at a time',
+		})
+			.describe(
+				'Who builds and opens the one batch an overlapping group of ready pull requests is tested in.',
 			)
 			.optional(),
 		landWithoutChecks: z

@@ -158,6 +158,7 @@ export type {
 	ILandConfig,
 	ILandConflict,
 	ILandDeps,
+	ILandRole,
 	ILandForge,
 	ILandGit,
 	ILandMerge,

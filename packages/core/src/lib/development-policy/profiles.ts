@@ -125,6 +125,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		batchOpener: 'integrator',
 		// The forge must NOT delete the branch when a pull request
 		// merges. A work ref lives as long as the proposal it serves,
 		// and a proposal lands one pull request per slice: GitHub's
@@ -202,6 +203,7 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		batchOpener: 'integrator',
 		deleteMergedWorkRef: false,
 		linearHistory: true,
 		allowForcePush: false,
@@ -292,6 +294,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		batchOpener: 'integrator',
 		deleteMergedWorkRef: true,
 		linearHistory: true,
 		allowForcePush: false,
