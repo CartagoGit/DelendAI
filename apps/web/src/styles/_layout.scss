@@ -1,0 +1,10 @@
+// _layout.scss — global layout primitives.
+//
+// Only the page shell (`.container`) lives here.  Section / grid / feature
+// belong in components/_section.scss and components/_feature.scss.
+
+.container {
+	max-width: var(--maxw);
+	margin: 0 auto;
+	padding: 0 1.25rem;
+}
