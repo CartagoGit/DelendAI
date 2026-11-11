@@ -2,10 +2,14 @@
 id: f00814
 title: "Forge events reach delendai the moment they happen, so nothing polls"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-09
+last-transition-id: 143548be-48c5-4ad8-8838-1bbecc0d2d45
+last-correlation-id: 143548be-48c5-4ad8-8838-1bbecc0d2d45
+last-transition-from: ready
+last-transition-at: 2026-11-11T05:53:51.480Z
 ---
 
 # f00814 — Forge events reach delendai the moment they happen, so nothing polls
