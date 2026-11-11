@@ -16,11 +16,11 @@
 - listIssues
 - showIssue
 - createRelease
+- createForgeEventNormaliser
+- FORGE_EVENT_DROP_REASONS
+- FORGE_EVENT_KINDS
+- FORGE_PR_CHANGES
 - searchCode
-- buildPrBody
-- commentOnPr
-- createIssue
-- createPr
 
 ## Depends on
 

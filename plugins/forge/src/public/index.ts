@@ -10,6 +10,34 @@ export {
 	showIssue,
 } from '../lib/services/forge';
 export { createRelease } from '../lib/services/forge-release';
+export { createForgeEventNormaliser } from '../lib/services/forge-event-normaliser';
+export {
+	FORGE_EVENT_DROP_REASONS,
+	FORGE_EVENT_KINDS,
+	FORGE_PR_CHANGES,
+} from '../lib/contracts/constants/forge-event.constant';
+export type {
+	IForgeEvent,
+	IForgeEventActor,
+	IForgeEventAdapter,
+	IForgeEventCancel,
+	IForgeEventConnection,
+	IForgeEventDelay,
+	IForgeEventDelivery,
+	IForgeEventDrops,
+	IForgeEventGap,
+	IForgeEventKind,
+	IForgeEventMapping,
+	IForgeEventNormaliser,
+	IForgeEventPort,
+	IForgeEventReceiver,
+	IForgeEventReceiverInput,
+	IForgeEventRetry,
+	IForgeEventSubscriber,
+	IForgeEventTransport,
+	IForgeEventTransportHandlers,
+	IForgePrChange,
+} from '../lib/contracts/interfaces/forge-event-port.interface';
 export { searchCode } from '../lib/services/forge-search';
 export {
 	buildPrBody,
