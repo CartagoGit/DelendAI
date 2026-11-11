@@ -178,6 +178,8 @@ const applyOverrides = (
 			engine: (input.integration?.engine ??
 				base.integration.engine) as IIntegrationEngine,
 			protocol: input.integration?.protocol ?? base.integration.protocol,
+			forgeEvents:
+				input.integration?.forgeEvents ?? base.integration.forgeEvents,
 			publication: {
 				granularity: (input.integration?.publication?.granularity ??
 					base.integration.publication

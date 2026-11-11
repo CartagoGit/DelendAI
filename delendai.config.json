@@ -20,7 +20,8 @@
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0,
 			"engine": "land",
-			"protocol": 1
+			"protocol": 1,
+			"forgeEvents": true
 		}
 	},
 	"core": {

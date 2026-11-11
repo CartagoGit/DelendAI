@@ -264,6 +264,44 @@ describe('startHydrationWatch', () => {
 		watch.stop();
 	});
 
+	it('[<20ms] runs once more after a pass that was asked for while one ran', async () => {
+		// An event-driven schedule asks the moment the branch moves; a pass
+		// whose fetch began before the move would not see it, so the ask is
+		// kept, and however many arrive it is one more pass, not a pile.
+		let fetches = 0;
+		const releases: Array<() => void> = [];
+		const driver = manual();
+		const watch = startHydrationWatch({
+			git: countingSeam('develop', async () => {
+				fetches += 1;
+				await new Promise<void>((resolve) => {
+					releases.push(resolve);
+				});
+				return { ok: true };
+			}),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: () => undefined,
+			schedule: driver.schedule,
+		});
+
+		driver.fire();
+		await Promise.resolve();
+		driver.fire();
+		driver.fire();
+		const settle = async (): Promise<void> => {
+			for (let i = 0; i < 20; i += 1) await Promise.resolve();
+		};
+		releases[0]?.();
+		await settle();
+		expect(fetches).toBe(2);
+		releases[1]?.();
+		await settle();
+		expect(fetches).toBe(2);
+		watch.stop();
+	});
+
 	it('moves nothing while it is told to stand down, and says why', async () => {
 		const ticks: IHydrationTick[] = [];
 		let fetches = 0;

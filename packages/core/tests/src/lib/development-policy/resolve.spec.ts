@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import { validateDevelopmentPolicy } from '@delendai/core/lib/development-policy/validate';
 import { DEVELOPMENT_POLICY_VERSION } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
+import { DEVELOPMENT_PROFILES } from '@delendai/core/lib/development-policy/profiles.constant';
 
 /** The `commit-policy` options this repo actually shipped before f-policy. */
 const LEGACY_COMMIT_POLICY = {
@@ -256,5 +257,24 @@ describe('resolveDevelopmentPolicy — derived capabilities', () => {
 		});
 
 		expect(twice).toEqual(once);
+	});
+});
+
+describe('resolveDevelopmentPolicy — forge events', () => {
+	it('[<20ms] is off in every profile until a project opts in', () => {
+		for (const profile of DEVELOPMENT_PROFILES) {
+			const policy = resolveDevelopmentPolicy({
+				development: { profile },
+			});
+			expect(policy.integration.forgeEvents).toBe(false);
+		}
+		expect(
+			resolveDevelopmentPolicy({
+				development: {
+					profile: 'shared-checkout-pr',
+					integration: { forgeEvents: true },
+				},
+			}).integration.forgeEvents,
+		).toBe(true);
 	});
 });
