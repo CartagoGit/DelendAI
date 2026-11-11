@@ -27,6 +27,13 @@ import {
 
 let migrating: ReadonlySet<string> | undefined;
 
+/**
+ * The real clock, taken before any test runs. A test that fakes timers
+ * replaces `performance`; read through it, the body of a test that moves a
+ * fake clock a minute measured a minute (59 s on CI for a 5 ms test).
+ */
+const realNow = performance.now.bind(performance);
+
 /** The spec files still allowed tests with no budget, read once a worker. */
 const migrationList = (): ReadonlySet<string> => {
 	if (migrating !== undefined) return migrating;
@@ -75,9 +82,9 @@ export default class TimeBudgetRunner extends TestRunner {
 
 	async runTask(test: RunnerTestCase): Promise<void> {
 		const body = TestRunner.getTestFn(test);
-		const start = performance.now();
+		const start = realNow();
 		await body();
-		const tookMs = performance.now() - start;
+		const tookMs = realNow() - start;
 		Object.assign(test.meta, { [MEASURED_META_KEY]: tookMs });
 		const measured = {
 			name: test.name,
