@@ -203,6 +203,10 @@ Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
   - "The engine switch moves from the repository variable DELENDAI_INTEGRATION_ENGINE (S3's interim gate) to the policy, development.integration.engine as q00047 S1 defines it, and the after-merge dispatch job of land.yml becomes workflow_run triggers, so the policy stays the one source of truth"
   - "After a merge, the sectioned integration CI and the promotion run through workflow_run on land; a red develop opens one urgent repair and blocks nobody; the full suite runs only on the promotion"
 
+### Design note — who pushes (2026-11-10)
+
+land runs with the workflow token, and GitHub builds nothing that token pushes: `update-branch` made bot-authored heads whose CI sat at `action_required`, and nothing merged for four hours after the cutover. A run dispatched on the same commit does not satisfy a pull request's required check (#911), so land cannot certify a combination itself. The rule is therefore: land never creates a commit, branch or pull request. It merges a pull request whose head is green and was pushed by an actor the forge builds; any other one it labels `delendai:needs-update` with the reason, and every pass prints a reason for every open pull request. The host, with the person's own git credentials, brings labelled pull requests forward (`bring-forward`: develop merged in, derived files regenerated, pushed without force, built in a throwaway clone). Batches stay off (`batches: false`) while land runs as the workflow token: overlapping pull requests land one at a time, the next brought forward after the first merges. The S5 reconciler owns the host side, and batches return only through an actor whose pushes the forge builds.
+
 ### S5 — The branch flow: one reconciler, one branch per unit, draft PRs, with its migration
 - **Status**: pending
 - **DependsOn**: [S4]

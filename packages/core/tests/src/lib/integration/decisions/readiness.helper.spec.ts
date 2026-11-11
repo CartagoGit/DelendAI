@@ -4,7 +4,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { pullRequestReady } from '@delendai/core/lib/integration/decisions/readiness.helper';
+import {
+	pullRequestReady,
+	whyNotReady,
+} from '@delendai/core/lib/integration/decisions/readiness.helper';
 import type { IPullRequestChecks } from '@delendai/core/lib/integration/decisions/readiness.interface';
 
 const base: IPullRequestChecks = {
@@ -16,6 +19,7 @@ const base: IPullRequestChecks = {
 	required: ['delendai-validate', 'CodeQL'],
 	withoutChecks: false,
 	labels: [],
+	unbuiltAuthors: ['github-actions[bot]'],
 	blockingLabels: ['needs update'],
 };
 
@@ -63,5 +67,28 @@ describe('pullRequestReady', () => {
 
 	it('[<5ms] is deterministic for the same facts', () => {
 		expect(pullRequestReady(base)).toBe(pullRequestReady({ ...base }));
+	});
+
+	it('[<5ms] a head the workflow token pushed is never ready, and says why', () => {
+		const bot = { ...base, headAuthor: 'github-actions[bot]' };
+		expect(pullRequestReady(bot)).toBe(false);
+		expect(whyNotReady(bot)).toContain('whose pushes start no CI');
+		expect(pullRequestReady({ ...base, headAuthor: 'someone' })).toBe(true);
+	});
+
+	it('[<5ms] names what it waits for, and what did not pass', () => {
+		expect(whyNotReady({ ...base, checks: [] })).toBe(
+			'waiting for delendai-validate, CodeQL',
+		);
+		expect(
+			whyNotReady({
+				...base,
+				checks: [
+					{ name: 'delendai-validate', conclusion: 'failure' },
+					{ name: 'CodeQL', conclusion: 'success' },
+				],
+			}),
+		).toBe('delendai-validate did not pass');
+		expect(whyNotReady(base)).toBeUndefined();
 	});
 });

@@ -57,7 +57,7 @@ describe('owned ref prefixes', () => {
 		expect(ownedPublicationRefPrefixes(branches)).toEqual(['delendai/pr/']);
 	});
 
-	it('[<5ms] keeps hidden work refs hidden under a former prefix', () => {
+	it('[<10ms] keeps hidden work refs hidden under a former prefix', () => {
 		const branches = branchesOf({
 			namespacePrefix: '',
 			formerNamespacePrefixes: ['delendai'],

@@ -144,6 +144,9 @@ export const INTEGRATION_FOLLOW_UPS: ReadonlyArray<readonly [string, number]> =
 	[
 		['tools/scripts/forge/certify-integration.script.ts', 60_000],
 		['tools/scripts/forge/open-publication-prs.script.ts', 180_000],
+		// What land labels "needs update" is brought forward here, with this
+		// machine's credentials: a workflow-token push starts no CI.
+		['tools/scripts/forge/bring-forward.script.ts', 1_800_000],
 		['tools/scripts/proposals/close-approved-proposals.script.ts', 600_000],
 	];
 

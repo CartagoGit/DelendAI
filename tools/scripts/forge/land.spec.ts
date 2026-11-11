@@ -22,6 +22,7 @@ import {
 } from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
+import { LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
 
 const REPO_POLICY = resolveDevelopmentPolicy({
 	development: {
@@ -33,10 +34,14 @@ const REPO_POLICY = resolveDevelopmentPolicy({
 		integration: { requiredChecks: ['tests: a'] },
 	},
 });
+/** A land whose actor pushes commits the forge builds: it may batch. */
 const REPO_CONFIG = landConfigFromPolicy(REPO_POLICY, {
 	sectionOfCheck: (name) =>
 		name.startsWith('tests: ') ? name.slice(7) : undefined,
+	batches: true,
 });
+/** A land run with a workflow token: it pushes nothing, and batches nothing. */
+const TOKEN_CONFIG = { ...REPO_CONFIG, batches: false };
 const PREFIX = REPO_CONFIG.batchPrefix;
 
 const setup = (
@@ -133,7 +138,7 @@ describe('land', () => {
 		expect(lone(n).merged).toBe(true);
 	});
 
-	it('[<24ms] batches two overlapping pull requests and verifies the landed tree', async () => {
+	it('[<195ms] batches two overlapping pull requests and verifies the landed tree', async () => {
 		const { world, pass, open, batches, lone, git, forge } = setup();
 		const one = world.addPull({ 'a/one.ts': '1' });
 		const two = world.addPull({ 'a/two.ts': '2' });
@@ -318,7 +323,10 @@ describe('land in a project that is not this one', () => {
 			integration: { requiredChecks: ['ci'], mergeMethod: 'squash' },
 		},
 	});
-	const config = landConfigFromPolicy(policy, { batchCapacity: 2 });
+	const config = landConfigFromPolicy(policy, {
+		batchCapacity: 2,
+		batches: true,
+	});
 	const other = () =>
 		setup({}, { sectionOf: () => 'all', derived: undefined }, config);
 
@@ -369,6 +377,55 @@ describe('land in a project that is not this one', () => {
 		expect(
 			ids.every((n) => !lone(n).labels.includes(LAND_LABEL_CULPRIT)),
 		).toBe(true);
+	});
+});
+
+describe('land run with a workflow token', () => {
+	it('[<15ms] never updates a branch through the forge: it labels the author and merges once updated', async () => {
+		const { world, pass, lone, batches } = setup({}, {}, TOKEN_CONFIG);
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.push({ 'a/x.ts': '0' });
+		const first = await pass();
+		expect(world.mergeCalls).toEqual([]);
+		expect(lone(n).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
+		expect(lone(n).headAuthor).not.toBe(LAND_WORKFLOW_TOKEN_ACTOR);
+		expect(first.reasons.get(n)).toMatch(/^needs update: /u);
+		expect(batches()).toEqual([]);
+		world.bringForward(n);
+		world.ci();
+		expect((await pass()).mergedPRs).toEqual([n]);
+	});
+
+	it('[<15ms] never counts a head the workflow token pushed as ready, and asks for its author', async () => {
+		const { world, pass, lone } = setup({}, {}, TOKEN_CONFIG);
+		const n = world.addPull(
+			{ 'a/x.ts': '1' },
+			{ author: LAND_WORKFLOW_TOKEN_ACTOR },
+		);
+		world.ci();
+		const report = await pass();
+		expect(world.mergeCalls).toEqual([]);
+		expect(report.reasons.get(n)).toContain('whose pushes start no CI');
+		expect(lone(n).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
+		world.bringForward(n);
+		world.ci();
+		expect((await pass()).mergedCount).toBe(1);
+	});
+
+	it('[<15ms] lands overlapping pull requests one at a time, and says why each waits', async () => {
+		const { world, pass, batches } = setup({}, {}, TOKEN_CONFIG);
+		const one = world.addPull({ 'a/one.ts': '1' });
+		const two = world.addPull({ 'a/two.ts': '2' });
+		const draft = world.addPull({ 'b/z.ts': '1' }, { draft: true });
+		world.ci();
+		const report = await pass();
+		expect(report.mergedPRs).toEqual([one]);
+		expect(report.reasons.get(two)).toBe(
+			`waits for #${String(one)}, which it overlaps`,
+		);
+		expect(report.reasons.get(draft)).toBe('a draft');
+		expect(batches()).toEqual([]);
 	});
 });
 

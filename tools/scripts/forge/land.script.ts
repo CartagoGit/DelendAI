@@ -65,6 +65,11 @@ const main = async (): Promise<number> => {
 		config,
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
+	// Every open pull request, every pass: "0 merged" is never silent.
+	for (const [number, reason] of [...report.reasons].sort(
+		([a], [b]) => a - b,
+	))
+		console.log(`land: #${String(number)} ${reason}`);
 	console.log(
 		`land: ${String(report.mergedCount)} merged${report.mergedPRs.length > 0 ? ` (${report.mergedPRs.map((n) => `#${String(n)}`).join(', ')})` : ''}; tip ${report.tipSha.slice(0, 12)}`,
 	);
