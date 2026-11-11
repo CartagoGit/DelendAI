@@ -206,6 +206,24 @@ const issue = (
 	});
 };
 
+/** A comment on a pull request; GitHub delivers those as issue comments. */
+const comment = (
+	payload: unknown,
+	base: Pick<IForgeEvent, 'repository' | 'actor'>,
+): IForgeEventMapping => {
+	const action = text(payload, 'action');
+	if (action !== 'created') return unmapped('issue_comment', action);
+	const found = record(payload, 'issue');
+	if (record(found, 'pull_request') === undefined)
+		return unmapped('issue_comment', 'issue');
+	return one({
+		kind: 'pr.commented',
+		...base,
+		number: count(found, 'number'),
+		comment: text(record(payload, 'comment'), 'body'),
+	});
+};
+
 const BRANCH_REF_PREFIX = 'refs/heads/';
 
 const push = (
@@ -239,6 +257,7 @@ const MAPPERS: Readonly<
 	check_run: checkRun,
 	pull_request_review: review,
 	issues: issue,
+	issue_comment: comment,
 	push,
 };
 

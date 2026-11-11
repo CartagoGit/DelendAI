@@ -204,6 +204,39 @@ describe('mapGitHubEvent', () => {
 		expect(of('transferred')).toBe('unmapped:issues.transferred');
 	});
 
+	it('[<5ms] maps a new comment on a pull request, not one on an issue', () => {
+		expect(
+			eventsOf('issue_comment', {
+				action: 'created',
+				issue: { number: 12, pull_request: { url: 'x' } },
+				comment: { body: 'land: conflicts in src/a.ts' },
+				repository,
+				sender: bot,
+			}),
+		).toMatchObject([
+			{
+				kind: 'pr.commented',
+				number: 12,
+				comment: 'land: conflicts in src/a.ts',
+			},
+		]);
+		expect(
+			eventsOf('issue_comment', {
+				action: 'created',
+				issue: { number: 3 },
+				repository,
+				sender: human,
+			}),
+		).toBe('unmapped:issue_comment.issue');
+		expect(
+			eventsOf('issue_comment', {
+				action: 'edited',
+				repository,
+				sender: human,
+			}),
+		).toBe('unmapped:issue_comment.edited');
+	});
+
 	it('[<5ms] drops an event it does not map and a payload with no repository', () => {
 		expect(eventsOf('ping', { zen: 'hi', repository })).toBe(
 			'unmapped:ping',

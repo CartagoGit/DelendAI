@@ -17,6 +17,7 @@ export const FORGE_EVENT_KINDS = [
 	'issue.updated',
 	'issue.closed',
 	'branch.pushed',
+	'pr.commented',
 ] as const;
 
 /** What changed on a pull request reported as `pr.updated`. */

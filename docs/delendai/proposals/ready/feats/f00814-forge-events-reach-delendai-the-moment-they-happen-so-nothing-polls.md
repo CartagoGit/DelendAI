@@ -33,7 +33,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - **Files**: `plugins/forge/src/lib/contracts/interfaces/forge-event-port.interface.ts`, `plugins/forge/src/lib/contracts/constants/forge-event.constant.ts`, `plugins/forge/src/lib/services/forge-event-normaliser.ts`, `plugins/forge/src/public/index.ts`, `plugins/forge/tests/forge-event-normaliser.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed."
+  - "The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed, pr.commented."
   - "An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field."
   - "A payload that fits no event is dropped with a counted reason, not thrown."
 
@@ -43,7 +43,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - **Files**: `plugins/github/src/lib/webhook-events.service.ts`, `plugins/github/src/lib/contracts/constants/github-webhook.constant.ts`, `plugins/github/src/index.ts`, `plugins/github/package.json`, `bun.lock`, `plugins/github/tests/webhook-events.service.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "GitHub push, pull_request, check_run, pull_request_review and issues payloads map to the normalised events."
+  - "GitHub push, pull_request, check_run, pull_request_review, issues and issue_comment payloads map to the normalised events."
   - "A delivery whose signature does not verify is refused; the secret is generated per connection and kept in memory, never in config, and never logged."
 
 ### S3 — Events reach a dev machine with no public address
@@ -58,12 +58,15 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 ### S4 — Sessions subscribe and are notified
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/notification/src/lib/services/forge-event-bridge.ts`, `plugins/notification/tests/forge-event-bridge.spec.ts`, `plugins/notification/src/lib/tools/tools.ts`
+- **Files**: `plugins/notification/src/lib/services/forge-event-bridge.ts`, `plugins/notification/tests/forge-event-bridge.spec.ts`, `plugins/notification/src/lib/tools/tools.ts`, `plugins/notification/src/lib/tools/forge-events.tool.ts`, `plugins/notification/src/lib/tools/index.ts`, `plugins/notification/src/index.ts`, `plugins/notification/plugin.manifest.ts`, `plugins/notification/src/lib/contracts/constants/forge-event-bridge.constant.ts`, `plugins/notification/src/lib/contracts/interfaces/forge-event-bridge.interface.ts`, `packages/core/src/lib/forge-events/forge-event-store.service.ts`, `packages/core/src/lib/contracts/constants/forge-event-store.constant.ts`, `packages/core/src/lib/contracts/interfaces/forge-event-store.interface.ts`, `packages/core/src/public/index.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/forge-events/forge-event-store.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A session subscribes to events by repository, pull request or issue; only subscribed sessions receive the MCP notification."
   - "A policy toggle turns the feature on per project and it is off until a project opts in."
   - "No credential appears in a notification, a log line or the config."
+  - "`work publish` and `work deliver` subscribe the publishing agent to the pull request they open."
+  - "A notification names the outcome: merged, a check failed with its name, a label, or the reason `land` gave."
+  - "An agent waits for an outcome in one blocking call (`forge_await`) that costs it nothing until the forge speaks."
 
 ### S5 — The remaining polling watchers are removed
 - **Status**: pending
@@ -89,16 +92,19 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 
 ## acceptance
 
-- The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed.
+- The port declares subscribe and a normalised event: pr.opened, pr.updated, pr.ready, pr.merged, pr.closed, check.completed, review.submitted, issue.opened, issue.updated, issue.closed, branch.pushed, pr.commented.
 - An adapter that implements the port needs no change elsewhere; the event shape carries no forge-specific field.
 - A payload that fits no event is dropped with a counted reason, not thrown.
-- GitHub push, pull_request, check_run, pull_request_review and issues payloads map to the normalised events.
+- GitHub push, pull_request, check_run, pull_request_review, issues and issue_comment payloads map to the normalised events.
 - A delivery whose signature does not verify is refused; the secret is generated per connection and kept in memory, never in config, and never logged.
 - The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed.
 - A dropped connection reconnects and asks the forge once for what was missed; it does not poll.
 - A session subscribes to events by repository, pull request or issue; only subscribed sessions receive the MCP notification.
 - A policy toggle turns the feature on per project and it is off until a project opts in.
 - No credential appears in a notification, a log line or the config.
+- `work publish` and `work deliver` subscribe the publishing agent to the pull request they open.
+- A notification names the outcome: merged, a check failed with its name, a label, or the reason `land` gave.
+- An agent waits for an outcome in one blocking call (`forge_await`) that costs it nothing until the forge speaks.
 - An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted.
 - With events flowing, no product code path polls the forge, and a lint fails if one is added.
 - With events flowing, a push to the integration branch runs the follow (fetch and fast-forward) and the follow-ups `--on=move`.

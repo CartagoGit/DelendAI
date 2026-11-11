@@ -102,7 +102,7 @@ describe('ghForwardArgs', () => {
 			'webhook',
 			'forward',
 			'--repo=octo/repo',
-			'--events=push,pull_request,check_run,pull_request_review,issues',
+			'--events=push,pull_request,check_run,pull_request_review,issues,issue_comment',
 			'--url=http://127.0.0.1:4321/',
 			'--secret=s',
 		]);

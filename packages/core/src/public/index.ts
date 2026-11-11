@@ -295,6 +295,21 @@ export {
 	withFileMutex,
 } from '../lib/shared/with-file-mutex';
 export { withFileMutexes } from '../lib/shared/with-file-mutexes';
+// The workspace's shared forge event store: the lease holder writes what
+// the forge says, every server's notification bridge reads it.
+export {
+	addForgeEventSubscription,
+	appendForgeEventRecord,
+	forgeEventRecordsDir,
+	forgeEventsDir,
+	readForgeEventRecord,
+	readForgeEventSubscriptions,
+} from '../lib/forge-events/forge-event-store.service';
+export type {
+	IForgeEventRecord,
+	IForgeEventRecordEvent,
+	IForgeEventSubscription,
+} from '../lib/contracts/interfaces/forge-event-store.interface';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 
 // --- write-side git primitives (S9: git_commit/git_push, auto_work persist) ---

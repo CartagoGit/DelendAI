@@ -46,7 +46,7 @@ const delivery = (event: string, body: string): IForgeEventDelivery => ({
 });
 
 describe('createForgeEventNormaliser', () => {
-	it('[<5ms] declares the eleven normalised kinds, push included', () => {
+	it('[<5ms] declares the twelve normalised kinds, push and comments included', () => {
 		expect([...FORGE_EVENT_KINDS]).toEqual([
 			'pr.opened',
 			'pr.updated',
@@ -59,6 +59,7 @@ describe('createForgeEventNormaliser', () => {
 			'issue.updated',
 			'issue.closed',
 			'branch.pushed',
+			'pr.commented',
 		]);
 	});
 

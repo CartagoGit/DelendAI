@@ -11,9 +11,10 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'filesystem-write'],
 	presets: ['swarm', 'everything', 'dogfood'],
 	tokenBudget: {
-		staticBytes: 1_872,
-		caps: { hard: 2_160, warning: 1_970 },
-		measuredAt: '2026-11-01',
+		// Re-measured when the forge event tools (subscribe, await) joined.
+		staticBytes: 3_429,
+		caps: { hard: 3_960, warning: 3_610 },
+		measuredAt: '2026-11-11',
 		source: 'token-budget-real',
 	},
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],

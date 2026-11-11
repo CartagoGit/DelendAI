@@ -32,10 +32,10 @@
 
 ## Tests
 
+- plugins/notification/tests/forge-event-bridge.spec.ts
 - plugins/notification/tests/src/lib/agent-events.spec.ts
 - plugins/notification/tests/src/lib/notification.spec.ts
 - plugins/notification/tests/src/lib/safe-logging.spec.ts
-- plugins/notification/tests/src/lib/wait-diagnosis.spec.ts
 
 ## Do not
 

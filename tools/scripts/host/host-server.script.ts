@@ -23,8 +23,10 @@ import {
 	withoutRuntimeFlags,
 } from './branch-runtime.helper';
 import {
+	appendForgeEventRecord,
 	assembleCliConfig,
 	createMcpProject,
+	forgeEventsDir,
 	resolveWorkAgentId,
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
@@ -202,6 +204,7 @@ const followUpInBackground = async (
  */
 const startForgeEvents = async (input: {
 	readonly root: string;
+	readonly cacheDir: string;
 	readonly repository: string | undefined;
 	readonly integrationBranch: string;
 	readonly schedule: ReturnType<typeof createSwitchableSchedule>;
@@ -226,6 +229,17 @@ const startForgeEvents = async (input: {
 		);
 		return undefined;
 	}
+	// Every server's notification bridge reads what this one hears.
+	const store = forgeEventsDir(input.root, input.cacheDir);
+	receiver.subscribe({
+		onEvent: (event) => {
+			appendForgeEventRecord(store, event).catch((error: unknown) => {
+				say(
+					`forge events: an event was not stored: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			});
+		},
+	});
 	const follow = startForgeEventFollow({
 		receiver,
 		scope: {
@@ -616,6 +630,7 @@ const run = async (): Promise<void> => {
 	if (eventsWanted && hydration !== undefined && policy !== undefined) {
 		forgeEvents = await startForgeEvents({
 			root: config.workspace.root,
+			cacheDir: config.corePaths?.cacheDir ?? '.cache/delendai',
 			repository: forgeSlug,
 			integrationBranch: policy.branches.integration,
 			schedule,

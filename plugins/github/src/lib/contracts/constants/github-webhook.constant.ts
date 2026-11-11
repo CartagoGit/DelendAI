@@ -19,6 +19,7 @@ export const GITHUB_FORWARDED_EVENTS = [
 	'check_run',
 	'pull_request_review',
 	'issues',
+	'issue_comment',
 ] as const;
 
 /** The sender type GitHub gives an automation. */

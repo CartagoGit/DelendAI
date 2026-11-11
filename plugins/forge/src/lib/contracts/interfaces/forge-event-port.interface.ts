@@ -47,6 +47,8 @@ export interface IForgeEvent {
 	readonly conclusion?: string | undefined;
 	/** `review.submitted`: the review's state. */
 	readonly review?: string | undefined;
+	/** `pr.commented`: the comment's text, as written. */
+	readonly comment?: string | undefined;
 }
 
 /** One delivery as a transport received it: headers and the raw body. */
