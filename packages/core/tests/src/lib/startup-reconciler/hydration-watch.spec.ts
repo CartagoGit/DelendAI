@@ -378,10 +378,12 @@ describe('startHydrationWatch, on its own clock', () => {
 		vi.useRealTimers();
 	});
 
-	it('[<3855ms] ticks on the real interval when no schedule is injected, and stops it', async () => {
+	it('[<40ms] ticks on the real interval when no schedule is injected, and stops it', async () => {
 		// Every other case injects a schedule, so the timer a host
 		// actually gets was never run by anything. This is that timer.
-		vi.useFakeTimers();
+		// Only the interval is faked: faking every clock made the test's
+		// own budget clock count the six seconds advanced here.
+		vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
 		const ticks: IHydrationTick[] = [];
 		const watch = startHydrationWatch({
 			git: countingSeam('feature/x', async () => ({ ok: true })),
