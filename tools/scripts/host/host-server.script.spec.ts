@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-	INTEGRATION_FOLLOW_UPS,
+	INTEGRATION_FOLLOW_UPS_SCRIPT,
 	createStopHandler,
 	describeMigrationRun,
 	hasHelpFlag,
@@ -215,12 +215,11 @@ describe('createStopHandler', () => {
 	});
 });
 
-describe('INTEGRATION_FOLLOW_UPS', () => {
-	it('[<20ms] runs only scripts that exist, none of the retired queue', () => {
+describe('INTEGRATION_FOLLOW_UPS_SCRIPT', () => {
+	it('[<20ms] names the one script the server runs, read from the checkout', () => {
 		const root = join(import.meta.dirname, '../../..');
-		for (const [script] of INTEGRATION_FOLLOW_UPS) {
-			expect(existsSync(join(root, script))).toBe(true);
-			expect(script).not.toMatch(/queue|refresh|hydrat|namespace/u);
-		}
+		expect(existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))).toBe(
+			true,
+		);
 	});
 });

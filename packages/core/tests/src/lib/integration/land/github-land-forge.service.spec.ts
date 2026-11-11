@@ -149,6 +149,24 @@ describe('the GitHub land forge', () => {
 		expect(calls[0]).toContain('merge_method=squash');
 	});
 
+	it('[<12ms] starts a workflow on a branch, and says when the forge refused', async () => {
+		const { forge, calls } = harness(() => ({ exitCode: 0, stdout: '' }));
+		expect(await forge.dispatchWorkflow('codeql.yml', 'develop')).toBe(
+			true,
+		);
+		expect(calls[0]).toContain(
+			'POST repos/o/r/actions/workflows/codeql.yml/dispatches',
+		);
+		expect(calls[0]).toContain('ref=develop');
+		const refused = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: HTTP 422',
+		}));
+		expect(
+			await refused.forge.dispatchWorkflow('surface.yml', 'develop'),
+		).toBe(false);
+	});
+
 	it('[<12ms] reads 409 as a moved head and any other refusal as refused', async () => {
 		const status = (code: number) =>
 			harness(() => ({

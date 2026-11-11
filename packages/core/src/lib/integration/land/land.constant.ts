@@ -15,3 +15,6 @@ export const LAND_PAGE_SIZE = 100;
 export const LAND_MAX_PAGES = 50;
 /** The actor of a GitHub workflow token: what it pushes starts no workflow. */
 export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';
+
+/** The integrator's workflow name: what `workflow_run` lists it as. */
+export const LAND_WORKFLOW_NAME = 'land';

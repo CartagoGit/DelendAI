@@ -186,6 +186,8 @@ export const createFakeWorld = (
 			return log.slice(at + 1);
 		},
 	};
+	/** The workflows the integrator started, as `file@ref`, in order. */
+	const dispatched: string[] = [];
 	const mutate = (): void => {
 		mutations += 1;
 		if (mutations >= crashAt) throw new Error('crash');
@@ -321,6 +323,11 @@ export const createFakeWorld = (
 			mutate();
 			get(number).state = 'closed';
 		},
+		dispatchWorkflow: async (workflow, ref) => {
+			mutate();
+			dispatched.push(`${workflow}@${ref}`);
+			return true;
+		},
 	};
 	const footprintOf = (files: readonly string[]) =>
 		footprintFromReach({
@@ -404,5 +411,5 @@ export const createFakeWorld = (
 			return treeKey(tree);
 		},
 	};
-	return { world, forge, git };
+	return { world, forge, git, dispatched };
 };
