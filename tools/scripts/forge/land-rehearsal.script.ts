@@ -25,6 +25,7 @@ import {
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
+import { withRehearsedBranch } from '../lib/rehearsed-branch';
 import { STATIC_CHECK_JOBS, staticChecksOf } from '../ci/ci-static-steps';
 import { jobMustRun, planInputSince } from '../ci/job-scope.script';
 import {
@@ -161,7 +162,10 @@ const main = async (): Promise<number> => {
 		const results = await rehearseGates({
 			gates,
 			cwd: scratch,
-			env: ciEnvironment(),
+			env: withRehearsedBranch(
+				ciEnvironment(),
+				git(root, ['rev-parse', '--abbrev-ref', 'HEAD']),
+			),
 			limit: Math.max(
 				1,
 				Number(process.env.PROVE_PARALLEL) ||
