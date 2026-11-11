@@ -1,0 +1,469 @@
+---
+title: Install & run
+description: Install delendai, wire it into your IDE, choose a preset, and verify the server before you start working.
+order: 1
+navLabel: Install
+---
+
+# Install & run
+
+Add delendai to your workflow, point your MCP client at the binary, and verify the resolved plugin set before the first session.
+
+## Pick your package manager
+
+Every package manager below runs the same published package. Choose the one your team already uses and keep the commands exactly as shown.
+
+### npm
+
+Node Package Manager ships with Node.js, so it is the safest universal default when you need the broadest compatibility across machines and CI runners.
+
+```bash
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
+```
+
+### pnpm
+
+pnpm is fast, disk-efficient, and strict about dependency resolution, which makes it a strong fit for monorepos or teams that already standardize on pnpm.
+
+```bash
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
+```
+
+### yarn
+
+Yarn remains a familiar alternative in many JavaScript codebases, so this path works well when your project tooling and developer muscle memory already revolve around Yarn.
+
+```bash
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
+```
+
+### bun
+
+bundles the runtime and the package manager in one tool, and delendai itself is built with bun, so this is the most direct path when bun is already available on the machine.
+
+```bash
+bunx @delendai/cli init
+bunx @delendai/cli validate
+```
+
+### deno
+
+Deno can execute the npm package directly, which is useful when you prefer a secure-by-default runtime with first-class TypeScript support and npm compatibility.
+
+```bash
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
+```
+
+## Pick your IDE
+
+The snippets below use the default solo preset over bun. Paste the JSON into the target file as-is, then let your IDE register the stdio server.
+
+### VS Code
+
+File: .vscode/mcp.json
+Scope: project
+
+```json
+{
+  "servers": {
+    "delendai": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Cursor
+
+File: .cursor/mcp.json or ~/.cursor/mcp.json
+Scope: project / global
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Windsurf
+
+File: ~/.codeium/windsurf/mcp_config.json
+Scope: global
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Claude Code
+
+File: .mcp.json or via claude mcp add
+Scope: project
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+File: claude_desktop_config.json
+Scope: global
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Antigravity
+
+File: ~/.gemini/antigravity-ide/mcp_config.json
+Scope: global
+
+```json
+{
+  "mcpServers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+### Zed
+
+File: settings.json
+
+## Install once for all projects
+
+The CLI can merge the same MCP server into the supported global host
+configurations, so each repository does not need its own hand-written MCP
+file:
+
+```bash
+delendai init:global --all
+```
+
+To select only specific global hosts, use:
+
+```bash
+delendai init:global --ide=cursor-global,windsurf,claude-desktop,antigravity,zed
+```
+
+The command is intentionally separate from `init`: it never writes project
+files such as `.vscode/mcp.json`, `.cursor/mcp.json`, or `.mcp.json`. It
+preserves unrelated MCP servers and host settings, and is safe to run again.
+Project-only targets (`vscode`, `cursor`, and `claude-code`), unknown ids, and
+an empty `--ide=` value are rejected instead of falling back to autodetection.
+
+`init:global` installs the MCP connection, not a second copy of agent rules.
+The same MCP tools and canonical bootstrap are available to any MCP-capable
+host, including Copilot, Claude, Cursor, Codex, Continue, and Aider. Run
+`delendai init` or `delendai init:default` inside a repository when that host needs
+project-local instruction pointers, generated agent adapters, skills, or a
+project-specific `delendai.config.json`.
+Scope: global
+
+```json
+{
+  "context_servers": {
+    "delendai": {
+      "command": "bunx",
+      "args": [
+        "--package",
+        "@delendai/cli",
+        "delendai",
+        "__serve",
+        "--workspace",
+        ".",
+        "--preset",
+        "solo"
+      ]
+    }
+  }
+}
+```
+
+## Pick a preset
+
+Presets are additive. Start small, then widen the plugin set only when your workflow actually needs the extra surface.
+
+### minimal
+
+Recommended use: read-only orientation and CI smoke tests.
+Size: 2 plugins · 42 tools · ~11805 tokens at cold start
+
+- git
+- search
+
+### solo
+
+Recommended use: one developer and one agent doing day-to-day coding; the default for `init`.
+Size: 10 plugins · 79 tools · ~19037 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+
+### team-pr
+
+Recommended use: a team working through pull requests, with commit and test conventions.
+Size: 18 plugins · 116 tools · ~25446 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- quality
+- rules
+- deps
+- test-policy
+- env
+- refactor
+- forge
+- commit-policy
+- conventions
+- test-convention
+- security
+- web-fetch
+- status-marker
+- error-reporting
+
+### swarm
+
+Recommended use: several agents sharing one checkout, with proposals, logs and close markers.
+Size: 19 plugins · 125 tools · ~26802 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- quality
+- test-policy
+- proposals
+- error-reporting
+- logs
+- agent-orchestrator
+- auto-agent-selector
+- notification
+- completion
+- status-marker
+- forge
+- commit-policy
+- conventions
+- test-convention
+- usage-tracking
+
+### audit
+
+Recommended use: read-only review and audit runs.
+Size: 15 plugins · 89 tools · ~21955 tokens at cold start
+
+- git
+- search
+- docs
+- audit
+- security
+- web-fetch
+- deps
+- tech-debt
+- link-check
+- project-health
+- impact-analysis
+- refactor
+- quality
+- test-policy
+- logs
+
+### docs-web
+
+Recommended use: documentation and web sites.
+Size: 8 plugins · 61 tools · ~15696 tokens at cold start
+
+- git
+- search
+- memory
+- docs
+- i18n
+- link-check
+- web-fetch
+- env
+
+### everything
+
+Recommended use: diagnostics with every published plugin, including the ones that use the network or credentials.
+Size: 58 plugins · 236 tools · ~59122 tokens at cold start
+
+- adaptive-optimizer
+- agent-orchestrator
+- api
+- audit
+- audit-orchestrator
+- auto-agent-selector
+- auto-plugin-selector
+- browser
+- cache
+- commit-policy
+- completion
+- container
+- context-for-change
+- conventions
+- database
+- deps
+- diagram
+- docs
+- env
+- error-reporting
+- execution-env
+- external-mcps
+- forge
+- framework-knowledge
+- git
+- github
+- gitlab
+- i18n
+- impact-analysis
+- issues
+- link-check
+- logs
+- memory
+- notification
+- observability
+- orchestrator-runner
+- perf
+- project-health
+- project-kpis
+- prompt-eval
+- prompts-pack
+- proposals
+- quality
+- quality-policy
+- refactor
+- remote-provider-core
+- rules
+- search
+- security
+- self-learning
+- skills-pack
+- status-marker
+- style-convention
+- tech-debt
+- test-convention
+- test-policy
+- usage-tracking
+- web-fetch
+
+## Verify
+
+After the config lands, run a self-check with the same package manager you used for install. Replace `bunx` with `npx`, `pnpm dlx`, `yarn dlx`, or `deno run -A npm:` if that is your chosen path.
+
+```bash
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
+```
+
+Use `--exclude-plugins=` when you want to subtract one plugin from a preset without forking the preset, for example to keep a swarm baseline but drop notifications in a single-agent session.
+
+## FAQ
+
+### Why is `deno run -A npm:@delendai/cli` slow to start?
+
+Deno resolves and verifies the npm package on first use. Later runs reuse the cache under `~/.cache/deno`, but for repeated local launches bun or npx still start faster.
+
+### My IDE is not listed. What now?
+
+Any IDE that accepts a stdio MCP server can run the same server. Start from the VS Code JSON, switch the file path to whatever your IDE expects, and keep the same command plus args.
+
+### Can I run multiple presets at once?
+
+No. One server instance resolves one preset at a time. If different projects need different plugin sets, place a dedicated delendai.config.json in each project and let the loader resolve it per workspace.
