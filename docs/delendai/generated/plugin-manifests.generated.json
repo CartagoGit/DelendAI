@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-03T01:24:49.458Z",
+	"generatedAt": "2026-11-11T01:55:54.994Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1610,12 +1610,12 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 1872,
+				"staticBytes": 3429,
 				"caps": {
-					"hard": 2160,
-					"warning": 1970
+					"hard": 3960,
+					"warning": 3610
 				},
-				"measuredAt": "2026-11-01",
+				"measuredAt": "2026-11-11",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -3526,7 +3526,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 1872
+			"tokenBudgetBytes": 3429
 		},
 		{
 			"origin": "first-party",
@@ -5144,8 +5144,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 1970,
-				"hard": 2160,
+				"warning": 3610,
+				"hard": 3960,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -6066,8 +6066,8 @@
 		},
 		{
 			"id": "notification",
-			"warning": 1970,
-			"hard": 2160,
+			"warning": 3610,
+			"hard": 3960,
 			"releaseRelativePercent": 20
 		},
 		{

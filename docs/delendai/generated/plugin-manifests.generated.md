@@ -102,7 +102,7 @@
 | link-check | 1810 | 1990 | 20 |
 | logs | 7670 | 8400 | 20 |
 | memory | 8620 | 9440 | 20 |
-| notification | 1970 | 2160 | 20 |
+| notification | 3610 | 3960 | 20 |
 | observability | 6030 | 6600 | 20 |
 | orchestrator-runner | 37870 | 41480 | 20 |
 | perf | 3860 | 4220 | 20 |

@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 423
+Total exports: 432
 
 | Maturity | Count |
 | --- | --- |
-| stable | 420 |
+| stable | 429 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -90,6 +90,9 @@ Total exports: 423
 | `IFilesystemConfig` | type | stable | `../lib/plugins/load-config-file` |
 | `IFinding` | type | stable | `../contracts` |
 | `IFindingCounts` | type | stable | `../lib/contracts/interfaces/finding.interface` |
+| `IForgeEventRecord` | type | stable | `../lib/contracts/interfaces/forge-event-store.interface` |
+| `IForgeEventRecordEvent` | type | stable | `../lib/contracts/interfaces/forge-event-store.interface` |
+| `IForgeEventSubscription` | type | stable | `../lib/contracts/interfaces/forge-event-store.interface` |
 | `IGitRunResult` | type | stable | `../contracts` |
 | `IGitRunner` | type | stable | `../contracts` |
 | `IGithubSetupContext` | type | stable | `../lib/setup/setup-steps` |
@@ -248,11 +251,13 @@ Total exports: 423
 | `WORK_REF_NAMING` | const | stable | `../lib/contracts/constants/work-ref-naming.constant` |
 | `WorkspaceContainmentError` | const | stable | `../lib/filesystem/safe-workspace-reader.errors` |
 | `adaptLegacyPlugin` | const | stable | `../lib/plugins/lifecycle` |
+| `addForgeEventSubscription` | const | stable | `../lib/forge-events/forge-event-store.service` |
 | `adoptProposalId` | const | stable | `../lib/work-units/unit-adoption.service` |
 | `aggregateScans` | const | stable | `../lib/external-tool/aggregate-scans` |
 | `anchorFromPolicy` | const | stable | `../lib/wip-engine/index` |
 | `anchorRefusal` | const | stable | `../lib/wip-engine/index` |
 | `announceLines` | const | stable | `../lib/shared/announce-lines` |
+| `appendForgeEventRecord` | const | stable | `../lib/forge-events/forge-event-store.service` |
 | `assembleCliConfig` | const | stable | `../lib/cli/assemble` |
 | `assertExpectedFinalReleaseState` | const | stable | `../lib/contracts/release-finalize` |
 | `assertExpectedReleaseState` | const | stable | `../lib/contracts/release-state` |
@@ -304,6 +309,8 @@ Total exports: 423
 | `findStableDescriptor` | const | stable | `../lib/api/stable-facade` |
 | `findWaitForCycles` | const | stable | `../lib/shared/wait-for-graph` |
 | `fnv1a` | const | stable | `../lib/scan` |
+| `forgeEventRecordsDir` | const | stable | `../lib/forge-events/forge-event-store.service` |
+| `forgeEventsDir` | const | stable | `../lib/forge-events/forge-event-store.service` |
 | `formatEventTimestamp` | const | stable | `../lib/observability/timeline` |
 | `fsRead` | const | stable | `../lib/shared/fs-tools` |
 | `fsWrite` | const | stable | `../lib/shared/fs-tools` |
@@ -356,6 +363,8 @@ Total exports: 423
 | `quarantineCorruptFile` | const | stable | `../lib/shared/quarantine-corrupt-file` |
 | `rankCandidates` | const | stable | `../lib/routing/utility` |
 | `readAbsoluteTextSafe` | const | stable | `../lib/filesystem/safe-workspace-reader.helpers` |
+| `readForgeEventRecord` | const | stable | `../lib/forge-events/forge-event-store.service` |
+| `readForgeEventSubscriptions` | const | stable | `../lib/forge-events/forge-event-store.service` |
 | `readMetricsSnapshot` | const | stable | `../lib/metrics/payload-percentile` |
 | `readWorkflowKpis` | const | stable | `../lib/work-units/workflow-kpis.service` |
 | `realProbeDeps` | const | stable | `../lib/external-tool/probe` |
