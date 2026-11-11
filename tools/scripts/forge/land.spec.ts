@@ -22,8 +22,7 @@ import {
 } from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
-import { LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
-import { guardedFor } from '@delendai/core/lib/integration/land/land-role.helper';
+import { guardedFor, LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
 
 const REPO_POLICY = resolveDevelopmentPolicy({
 	development: {

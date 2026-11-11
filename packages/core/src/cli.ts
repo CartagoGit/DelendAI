@@ -133,6 +133,8 @@ export {
 } from './lib/integration/decisions/landed.helper';
 // land: the one integrator pass, its adapter contract and workflow template.
 export { landPass } from './lib/integration/land/land.helper';
+// What each role of a pass may never do.
+export { guardedFor } from './lib/integration/land/land-role.helper';
 export {
 	batchBody,
 	readBatchRecord,
