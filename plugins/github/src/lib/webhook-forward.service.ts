@@ -1,3 +1,7 @@
+// effect-boundary-authorized: this is the transport adapter itself, run by
+// the host server that holds the maintenance lease, not by a plugin tool;
+// `IPluginEffectsCapability` declares only `git`, and the adapter's spawn
+// and loopback listener are injected seams its spec replaces.
 /**
  * webhook-forward.service.ts — GitHub's transport for the forge event port:
  * `gh webhook forward` opens a websocket OUT to GitHub and posts each

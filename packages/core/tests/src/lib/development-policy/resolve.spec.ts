@@ -30,7 +30,7 @@ const LEGACY_COMMIT_POLICY = {
 };
 
 describe('resolveDevelopmentPolicy — backward compatibility', () => {
-	it('gives an unconfigured project a ref of its own, asking nothing of its forge', () => {
+	it('[<20ms] gives an unconfigured project a ref of its own, asking nothing of its forge', () => {
 		// This used to assert `direct`: no work ref at all, every agent
 		// committing straight onto the integration branch. As the DEFAULT,
 		// that made the whole work-ref model opt-in — and opt-in only for
@@ -53,7 +53,7 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 		expect(policy.version).toBe(DEVELOPMENT_POLICY_VERSION);
 	});
 
-	it('still offers the historical model to a project that asks for it', () => {
+	it('[<20ms] still offers the historical model to a project that asks for it', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: { profile: 'shared-direct' },
 		});
@@ -62,7 +62,7 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 		expect(policy.branches.workRefTemplate).toBe('');
 	});
 
-	it('maps the pre-policy fields instead of ignoring them', () => {
+	it('[<20ms] maps the pre-policy fields instead of ignoring them', () => {
 		const policy = resolveDevelopmentPolicy({
 			legacy: {
 				agentWorktree: false,
@@ -81,7 +81,7 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 		expect(policy.integration.allowForcePush).toBe(false);
 	});
 
-	it('does not silently migrate a legacy project to the new model', () => {
+	it('[<20ms] does not silently migrate a legacy project to the new model', () => {
 		const policy = resolveDevelopmentPolicy({
 			legacy: { commitPolicyOptions: LEGACY_COMMIT_POLICY },
 		});
@@ -91,7 +91,7 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 		expect(validateDevelopmentPolicy(policy)).toEqual([]);
 	});
 
-	it('maps agentWorktree onto the workspace axis only', () => {
+	it('[<20ms] maps agentWorktree onto the workspace axis only', () => {
 		const policy = resolveDevelopmentPolicy({
 			legacy: {
 				agentWorktree: true,
@@ -108,7 +108,7 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 });
 
 describe('resolveDevelopmentPolicy — profiles', () => {
-	it('expands shared-checkout-pr into the new model', () => {
+	it('[<20ms] expands shared-checkout-pr into the new model', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -135,7 +135,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(validateDevelopmentPolicy(policy)).toEqual([]);
 	});
 
-	it('still supports the worktree model', () => {
+	it('[<20ms] still supports the worktree model', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: {
 				profile: 'worktree-pr',
@@ -149,7 +149,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(validateDevelopmentPolicy(policy)).toEqual([]);
 	});
 
-	it('still supports direct integration', () => {
+	it('[<20ms] still supports direct integration', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: { profile: 'shared-direct' },
 		});
@@ -158,7 +158,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(validateDevelopmentPolicy(policy)).toEqual([]);
 	});
 
-	it('gives two profiles different governance', () => {
+	it('[<20ms] gives two profiles different governance', () => {
 		const direct = resolveDevelopmentPolicy({
 			development: { profile: 'shared-direct' },
 		});
@@ -175,7 +175,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(pr.integration.requiredChecks).toEqual([]);
 	});
 
-	it('lets a project override one axis without losing the profile', () => {
+	it('[<20ms] lets a project override one axis without losing the profile', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -193,7 +193,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 });
 
 describe('resolveDevelopmentPolicy — derived capabilities', () => {
-	it('recomputes capability flags when an override changes a strategy', () => {
+	it('[<20ms] recomputes capability flags when an override changes a strategy', () => {
 		const policy = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-direct',
@@ -209,7 +209,7 @@ describe('resolveDevelopmentPolicy — derived capabilities', () => {
 		expect(policy.integration.requiresPullRequest).toBe(true);
 	});
 
-	it('is idempotent — resolving a resolved policy changes nothing', () => {
+	it('[<20ms] is idempotent — resolving a resolved policy changes nothing', () => {
 		const once = resolveDevelopmentPolicy({
 			development: { profile: 'shared-checkout-pr' },
 		});
