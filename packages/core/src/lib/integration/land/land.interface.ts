@@ -29,13 +29,12 @@ export interface ILandPullRequest {
 	readonly body: string;
 	/** The integration commit its head was tested against. */
 	readonly testedBase: string;
+	/** Who pushed its head, when the forge says (a login). */
+	readonly headAuthor?: string | undefined;
 }
 
 /** The answer to a merge pinned to a head: nothing merges on another head. */
 export type ILandMerge = 'merged' | 'head-moved' | 'refused';
-
-/** The answer to bringing a branch up to the tip through the forge. */
-export type ILandUpdate = 'updated' | 'head-moved' | 'conflict';
 
 /** The forge calls land needs, and no others. */
 export interface ILandForge {
@@ -50,7 +49,6 @@ export interface ILandForge {
 	checks(sha: string): Promise<readonly ILandCheck[]>;
 	/** Merge, refusing when the head is no longer `sha`. */
 	merge(number: number, sha: string): Promise<ILandMerge>;
-	updateBranch(number: number, sha: string): Promise<ILandUpdate>;
 	addLabel(number: number, label: string): Promise<void>;
 	removeLabel(number: number, label: string): Promise<void>;
 	comment(number: number, text: string): Promise<void>;
@@ -61,6 +59,31 @@ export interface ILandForge {
 	}): Promise<number>;
 	updatePullRequest(number: number, body: string): Promise<void>;
 	closePullRequest(number: number): Promise<void>;
+	/**
+	 * Start `workflow` on `ref`, as a person's push there would have; whether
+	 * the forge took it. The integrator's own merges start no workflow, so it
+	 * starts the ones a push would.
+	 */
+	dispatchWorkflow(workflow: string, ref: string): Promise<boolean>;
+}
+
+/** When a workflow runs, as far as a merge by the integrator is concerned. */
+export interface ILandWorkflowTriggers {
+	/** Its file name, which is how the forge is asked to start it. */
+	readonly file: string;
+	/** A push to the integration branch starts it. */
+	readonly pushesIntegration: boolean;
+	/** It can be started on request. */
+	readonly dispatchable: boolean;
+	/** The workflows whose completion starts it. */
+	readonly afterWorkflows: readonly string[];
+}
+
+/** What follows a pass that merged: what to start, and what cannot be. */
+export interface ILandFollowUps {
+	readonly dispatch: readonly string[];
+	/** Started by a push but not on request: a merge by the integrator skips it. */
+	readonly unreachable: readonly string[];
 }
 
 /** What a trial merge onto the tip says about one pull request. */
@@ -119,6 +142,15 @@ export interface ILandConfig {
 	readonly requiredChecks: readonly string[];
 	/** True only where the policy opts in to landing with no required check. */
 	readonly withoutChecks: boolean;
+	/**
+	 * Whether land may build batch branches. Only where the actor that runs
+	 * land pushes commits the forge builds: a workflow token's push and the
+	 * pull request it opens start no CI, so a batch it built would never be
+	 * judged. Off, overlapping pull requests land one at a time.
+	 */
+	readonly batches: boolean;
+	/** Actors whose pushes the forge does not build; a head they pushed is never ready. */
+	readonly unbuiltAuthors: readonly string[];
 	/** Most pull requests in one batch. */
 	readonly batchCapacity: number;
 	/**
@@ -146,6 +178,8 @@ export type ILandCommandRunner = (args: readonly string[]) => Promise<{
 /** What one pass did, in order; the next pass reads the forge, not this. */
 export interface ILandReport {
 	readonly actions: readonly string[];
+	/** Every open pull request this pass saw, with what happened to it or why it waits. */
+	readonly reasons: ReadonlyMap<number, string>;
 	/** How many pull requests the forge merged in this pass. */
 	readonly mergedCount: number;
 	/** The pull requests the forge merged, a batch by its own number. */

@@ -10,6 +10,7 @@ import {
 	underPublication,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
+	retiredRefRoots,
 } from '@delendai/core/lib/integration/decisions/namespaces.helper';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
@@ -56,7 +57,7 @@ describe('owned ref prefixes', () => {
 		expect(ownedPublicationRefPrefixes(branches)).toEqual(['delendai/pr/']);
 	});
 
-	it('[<5ms] keeps hidden work refs hidden under a former prefix', () => {
+	it('[<10ms] keeps hidden work refs hidden under a former prefix', () => {
 		const branches = branchesOf({
 			namespacePrefix: '',
 			formerNamespacePrefixes: ['delendai'],
@@ -126,5 +127,17 @@ describe('allowedRefPatterns and underNamespace', () => {
 		expect(underNamespace('wip/a/x', 'refs/heads/wip/')).toBe(true);
 		expect(underNamespace('wip/a/x', '')).toBe(false);
 		expect(underNamespace('wip/a/x', undefined)).toBe(false);
+	});
+
+	it('[<6ms] keeps retired tips under each owned namespace, current first', () => {
+		expect(
+			retiredRefRoots({
+				namespacePrefix: 'delendai',
+				formerNamespacePrefixes: ['former-ns', 'delendai'],
+			}),
+		).toEqual(['refs/delendai/retired/', 'refs/former-ns/retired/']);
+		expect(retiredRefRoots({})).toEqual([
+			['refs', 'retired', ''].join('/'),
+		]);
 	});
 });

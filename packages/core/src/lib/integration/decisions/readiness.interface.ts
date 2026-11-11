@@ -11,6 +11,10 @@ export interface IPullRequestChecks {
 	/** True only where the policy opts in to landing with no required check. */
 	readonly withoutChecks: boolean;
 	readonly labels: readonly string[];
+	/** Who pushed its head, when the forge says (a login). */
+	readonly headAuthor?: string | undefined;
+	/** Actors whose pushes the forge does not build, such as the workflow token's bot. */
+	readonly unbuiltAuthors: readonly string[];
 	/** The labels that keep a pull request out of the queue. */
 	readonly blockingLabels: readonly string[];
 }

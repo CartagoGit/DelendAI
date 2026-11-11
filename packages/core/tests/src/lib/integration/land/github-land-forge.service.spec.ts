@@ -149,6 +149,24 @@ describe('the GitHub land forge', () => {
 		expect(calls[0]).toContain('merge_method=squash');
 	});
 
+	it('[<12ms] starts a workflow on a branch, and says when the forge refused', async () => {
+		const { forge, calls } = harness(() => ({ exitCode: 0, stdout: '' }));
+		expect(await forge.dispatchWorkflow('codeql.yml', 'develop')).toBe(
+			true,
+		);
+		expect(calls[0]).toContain(
+			'POST repos/o/r/actions/workflows/codeql.yml/dispatches',
+		);
+		expect(calls[0]).toContain('ref=develop');
+		const refused = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: HTTP 422',
+		}));
+		expect(
+			await refused.forge.dispatchWorkflow('surface.yml', 'develop'),
+		).toBe(false);
+	});
+
 	it('[<12ms] reads 409 as a moved head and any other refusal as refused', async () => {
 		const status = (code: number) =>
 			harness(() => ({
@@ -157,16 +175,20 @@ describe('the GitHub land forge', () => {
 			}));
 		expect(await status(409).forge.merge(7, 'abc')).toBe('head-moved');
 		expect(await status(405).forge.merge(7, 'abc')).toBe('refused');
-		expect(await status(409).forge.updateBranch(7, 'abc')).toBe(
-			'head-moved',
-		);
-		expect(await status(422).forge.updateBranch(7, 'abc')).toBe('conflict');
 	});
 
-	it('[<12ms] updates a branch expecting its head', async () => {
-		const { forge, calls } = harness(() => json({}));
-		expect(await forge.updateBranch(7, 'abc')).toBe('updated');
-		expect(calls[0]).toContain('expected_head_sha=abc');
+	it('[<12ms] reads who pushed a head, and offers no forge-side update', async () => {
+		const { forge } = harness((call) => {
+			if (call.includes('compare/'))
+				return json({ merge_base_commit: { sha: 'b' } });
+			if (call.includes('commits/abc'))
+				return json({ author: { login: 'github-actions[bot]' } });
+			return json(rawPull);
+		});
+		expect((await forge.pullRequest(7)).headAuthor).toBe(
+			'github-actions[bot]',
+		);
+		expect('updateBranch' in forge).toBe(false);
 	});
 
 	it('[<12ms] labels, unlabels, comments, opens, edits and closes', async () => {

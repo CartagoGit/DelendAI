@@ -38,6 +38,20 @@ describe('integration decisions have one owner', () => {
 		expect(found[0]).toContain('batch namespaces');
 	});
 
+	it('[<5ms] refuses retired roots built from the owned namespaces by hand (carried-work)', () => {
+		const old =
+			"namespace === '' ? 'refs/retired/' : `refs/${namespace}/retired/`,\n";
+		const found = findReimplementations('plugins/proposals/a.ts', old);
+		expect(found).toHaveLength(1);
+		expect(found[0]).toContain('retired roots');
+		expect(
+			findReimplementations(
+				'plugins/proposals/a.ts',
+				'const roots = retiredRefRoots(shape);\n',
+			),
+		).toEqual([]);
+	});
+
 	it('[<5ms] allows the module itself and ignores comments', () => {
 		const text = 'export const overlapBetween = () => undefined;\n';
 		expect(
