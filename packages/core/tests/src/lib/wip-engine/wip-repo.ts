@@ -9,7 +9,7 @@
  * repository, commits actual files, and inspects the actual `.git`
  * directory afterwards.
  *
- * `createTestWorkspace` (the shared helper) supplies the temp directory;
+ * `createSharedGitFixture` (test-kit) supplies the repository, built once;
  * everything git-specific lives here.
  */
 
@@ -17,7 +17,9 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+import { createSharedGitFixture } from '@delendai/test-kit';
+
+import { removeTestWorkspace } from '../test-workspace';
 
 /** A throwaway repository plus the helpers a spec needs against it. */
 export interface IWipTestRepo {
@@ -38,9 +40,10 @@ export interface IWipTestRepo {
 /** The branch every spec keeps HEAD pinned to. */
 export const INTEGRATION_BRANCH = 'develop';
 
-export const createWipTestRepo = (): IWipTestRepo => {
-	const dir = createTestWorkspace('delendai-wip-engine-');
-	const git = (...args: readonly string[]): string =>
+/** git in `dir`, with an identity no machine's config can override. */
+const gitAt =
+	(dir: string) =>
+	(...args: readonly string[]): string =>
 		execFileSync('git', [...args], {
 			cwd: dir,
 			encoding: 'utf8',
@@ -53,6 +56,24 @@ export const createWipTestRepo = (): IWipTestRepo => {
 			},
 		}).trim();
 
+/**
+ * The repository, built once per worker and copied per call: built per call
+ * it was five git processes before the case did anything.
+ */
+const fixture = createSharedGitFixture((dir) => {
+	const git = gitAt(dir);
+	git('init', '--quiet', '--initial-branch', INTEGRATION_BRANCH);
+	git('config', 'user.name', 'Test');
+	git('config', 'user.email', 'test@example.com');
+	git('config', 'commit.gpgsign', 'false');
+	// Never let a developer's global hooks run inside a spec.
+	git('config', 'core.hooksPath', join(dir, '.no-hooks'));
+});
+
+export const createWipTestRepo = (): IWipTestRepo => {
+	const dir = fixture.copy();
+	const git = gitAt(dir);
+
 	const write = (path: string, content: string): void => {
 		mkdirSync(dirname(join(dir, path)), { recursive: true });
 		writeFileSync(join(dir, path), content, 'utf8');
@@ -64,13 +85,6 @@ export const createWipTestRepo = (): IWipTestRepo => {
 			return undefined;
 		}
 	};
-
-	git('init', '--quiet', '--initial-branch', INTEGRATION_BRANCH);
-	git('config', 'user.name', 'Test');
-	git('config', 'user.email', 'test@example.com');
-	git('config', 'commit.gpgsign', 'false');
-	// Never let a developer's global hooks run inside a spec.
-	git('config', 'core.hooksPath', join(dir, '.no-hooks'));
 
 	const commitAll = (message: string): string => {
 		git('add', '-A');
