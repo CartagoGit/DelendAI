@@ -370,6 +370,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const perf = resolve(workspaceRoot, 'plugins/perf/src');
 	const techDebt = resolve(workspaceRoot, 'plugins/tech-debt/src');
 	const linkCheck = resolve(workspaceRoot, 'plugins/link-check/src');
+	const integration = resolve(workspaceRoot, 'plugins/integration/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const browser = resolve(workspaceRoot, 'plugins/browser/src');
@@ -993,6 +994,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@delendai/link-check',
 			replacement: resolve(linkCheck, 'index.ts'),
+		},
+		{
+			find: '@delendai/integration/public',
+			replacement: resolve(integration, 'public/index.ts'),
+		},
+		{
+			find: /^@delendai\/integration\/lib\/(.*)$/,
+			replacement: `${resolve(integration, 'lib')}/$1`,
+		},
+		{
+			find: '@delendai/integration',
+			replacement: resolve(integration, 'index.ts'),
 		},
 		{
 			find: '@delendai/logs/public',
