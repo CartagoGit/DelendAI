@@ -1,0 +1,471 @@
+import { describe, expect, it } from 'vitest';
+
+import type { IDashboardAllModels } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
+
+import { renderDashboard } from '../../src/dashboard/render-dashboard';
+import { renderPanelAgents } from '../../src/dashboard/render-panel-agents';
+import { renderPanelMetrics } from '../../src/dashboard/render-panel-metrics';
+import { renderPanelOverview } from '../../src/dashboard/render-panel-overview';
+import { renderPanelPlugins } from '../../src/dashboard/render-panel-plugins';
+import { renderPanelSessions } from '../../src/dashboard/render-panel-sessions';
+import { renderPanelSpend } from '../../src/dashboard/render-panel-spend';
+import { renderPanelTimes } from '../../src/dashboard/render-panel-times';
+import { renderPanelTokens } from '../../src/dashboard/render-panel-tokens';
+import { renderPanelTools } from '../../src/dashboard/render-panel-tools';
+
+const baseOverview = {
+	serverName: 'delendai',
+	serverVersion: '0.1.0',
+	namespacePrefix: 'delendai',
+	plugins: [{ name: 'proposals', version: '0.1.0' }, { name: 'memory' }],
+	tools: [
+		{ name: 'delendai_overview', plugin: 'delendai' },
+		{ name: 'delendai_metrics', plugin: 'delendai' },
+		{ name: 'proposals_proposal_board', plugin: 'proposals' },
+	],
+	knowledgeIds: ['overview', 'plugins'],
+	recommendedNextAction: 'Call overview first.',
+	totals: {
+		tools: 3,
+		plugins: 2,
+		proposals: 1,
+		calls: 27,
+		errors: 1,
+		totalMs: 2160,
+		tokens: 1950,
+		tokensSaved: 350,
+		savingsPercent: 15,
+		agents: 1,
+	},
+};
+
+const baseMetrics = {
+	totals: { calls: 27, errors: 1, totalMs: 2160, totalBytes: 7800 },
+	rows: [
+		{
+			tool: 'delendai_overview',
+			plugin: 'delendai',
+			calls: 12,
+			errors: 0,
+			totalMs: 240,
+			maxMs: 60,
+			avgMs: 20,
+			totalBytes: 2400,
+			tokens: 600,
+		},
+		{
+			tool: 'proposals_proposal_board',
+			plugin: 'proposals',
+			calls: 4,
+			errors: 1,
+			totalMs: 320,
+			maxMs: 200,
+			avgMs: 80,
+			totalBytes: 3200,
+			tokens: 800,
+		},
+	],
+	sparklines: {},
+	collectedAt: '2026-06-21T07:00:00.000Z',
+};
+
+const baseTokens = {
+	tokensUsed: 1950,
+	tokensSaved: 350,
+	savingsPercent: 18,
+	topByTokens: baseMetrics.rows.slice().sort((a, b) => b.tokens - a.tokens),
+	history: [],
+};
+
+const baseTools = {
+	rows: baseMetrics.rows,
+	sortBy: 'calls' as const,
+	sortDir: 'desc' as const,
+};
+
+const basePlugins = {
+	rows: [
+		{
+			plugin: 'proposals',
+			tools: 2,
+			calls: 4,
+			errors: 1,
+			avgMs: 80,
+			tokens: 800,
+			tokenSharePercent: 41,
+		},
+		{
+			plugin: 'delendai',
+			tools: 2,
+			calls: 12,
+			errors: 0,
+			avgMs: 20,
+			tokens: 600,
+			tokenSharePercent: 31,
+		},
+	],
+};
+
+const baseSessions = {
+	total: 2,
+	byStatus: { in_progress: 1, ready: 1 },
+	rows: [
+		{
+			id: 'f00022',
+			title: 'IDE extension v2',
+			status: 'in_progress',
+			track: 'apps+client+docs',
+		},
+		{
+			id: 'f00028',
+			title: 'Plugin depth extension',
+			status: 'ready',
+			track: 'plugins',
+		},
+	],
+};
+
+const baseTimes = {
+	totalWallMs: 2160,
+	slowestTool: { tool: 'proposals_proposal_board', maxMs: 200 },
+	p50Ms: 20,
+	p95Ms: 200,
+	histogram: [
+		{ bucket: '<10ms', count: 0 },
+		{ bucket: '10–50ms', count: 1 },
+		{ bucket: '50–200ms', count: 1 },
+		{ bucket: '200ms–1s', count: 0 },
+		{ bucket: '≥1s', count: 0 },
+	],
+};
+
+const baseAgents = {
+	agents: [{ name: 'implementation_runner' }],
+	totalActive: 1,
+};
+
+const baseHealth = {
+	healthy: true,
+	locksActive: 0,
+	queue: null,
+	orphans: 0,
+	orphansThreshold: 'unknown',
+	stale: [],
+	staleCount: 0,
+	agents: [],
+	fetchedAt: '2026-06-21T07:00:00.000Z',
+};
+
+const fixture: IDashboardAllModels = {
+	overview: baseOverview,
+	metrics: baseMetrics,
+	tokens: baseTokens,
+	tools: baseTools,
+	plugins: basePlugins,
+	proposals: {
+		total: 0,
+		byStatus: {},
+		rows: [],
+	},
+	kpis: {
+		totals: baseOverview.totals,
+		tokens: { used: 0, saved: 0, savingsPercent: 0 },
+		latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+		spend: null,
+	},
+	docs: {
+		pluginLoaded: false,
+		tools: [],
+		knowledge: [],
+		recommendedNextAction: '',
+	},
+	spend: null,
+	sessions: baseSessions,
+	times: baseTimes,
+	agents: baseAgents,
+	memory: {
+		notes: [],
+		total: 0,
+		offset: 0,
+	},
+	health: baseHealth,
+	workspace: {
+		overview: { state: 'ready', data: baseOverview },
+		tools: { state: 'ready', data: baseTools },
+		plugins: { state: 'ready', data: basePlugins },
+		memory: {
+			state: 'unavailable',
+			data: { notes: [], total: 0, offset: 0 },
+		},
+		proposals: {
+			state: 'empty' as const,
+			data: { total: 0, byStatus: {}, rows: [] },
+		},
+		agents: {
+			state: 'ready' as const,
+			data: { agents: [], totalActive: 0 },
+		},
+		kpis: {
+			state: 'empty' as const,
+			data: {
+				totals: baseOverview.totals,
+				tokens: { used: 0, saved: 0, savingsPercent: 0 },
+				latency: { totalWallMs: 0, p50Ms: 0, p95Ms: 0 },
+				spend: null,
+			},
+		},
+		health: {
+			state: 'ready' as const,
+			data: baseHealth,
+		},
+		docs: {
+			state: 'empty',
+			data: {
+				pluginLoaded: false,
+				tools: [],
+				knowledge: [],
+				recommendedNextAction: '',
+			},
+		},
+	},
+	server: {
+		name: 'delendai',
+		version: '0.1.0',
+		fetchedAt: '2026-06-21T07:00:00Z',
+	},
+};
+
+const opts = {
+	docsUrl: 'https://delendai.dev',
+	refreshCommand: 'delendai.refresh',
+	openDocsCommand: 'delendai.openDocs',
+	lang: dictsByLang.en,
+};
+
+describe('renderPanelOverview', async () => {
+	it('renders the server name, version, and recommended next action', async () => {
+		const html = renderPanelOverview(baseOverview, dictsByLang.en);
+		expect(html).toContain('delendai');
+		expect(html).toContain('v0.1.0');
+		expect(html).toContain('Call overview first.');
+		expect(html).toContain('panel-overview');
+	});
+
+	it('escapes user-provided strings (no XSS via plugin name)', async () => {
+		const evil = {
+			...baseOverview,
+			plugins: [{ name: '<script>alert(1)</script>' }],
+		};
+		const html = renderPanelOverview(evil, dictsByLang.en);
+		expect(html).not.toContain('<script>alert(1)</script>');
+		expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+	});
+});
+
+describe('renderPanelMetrics', async () => {
+	it('renders totals and the top-tools table', async () => {
+		const html = renderPanelMetrics(baseMetrics, dictsByLang.en);
+		expect(html).toContain('panel-metrics');
+		expect(html).toContain('Total calls');
+		expect(html).toContain('27');
+		expect(html).toContain('delendai_overview');
+	});
+});
+
+describe('renderPanelTokens', async () => {
+	it('renders the savings percent and the top-tools table', async () => {
+		const html = renderPanelTokens(baseTokens, dictsByLang.en);
+		expect(html).toContain('panel-tokens');
+		expect(html).toContain('18%');
+		expect(html).toContain('Tokens used');
+	});
+});
+
+describe('renderPanelTools', async () => {
+	it('renders a sortable table with data-* attributes for client-side sort', async () => {
+		const html = renderPanelTools(baseTools, dictsByLang.en);
+		expect(html).toContain('delendai-tools-table');
+		expect(html).toContain('data-calls="12"');
+		expect(html).toContain('data-calls="4"');
+	});
+});
+
+describe('renderPanelPlugins', async () => {
+	it('renders the barchart and the rollup table', async () => {
+		const html = renderPanelPlugins(basePlugins, dictsByLang.en);
+		expect(html).toContain('panel-plugins');
+		expect(html).toContain('<svg');
+		expect(html).toContain('Token share by plugin');
+	});
+});
+
+describe('renderPanelSpend (f00118 S2)', async () => {
+	it('renders total cost, real savings, and cost-by-provider table when spend is available', async () => {
+		const html = renderPanelSpend(
+			{
+				totalCostUsd: 4.82,
+				totalTokensSaved: 214_000,
+				savingsPercent: 18,
+				windowDays: 7,
+				byProvider: [
+					{ provider: 'anthropic', costUsd: 3.1, calls: 260 },
+					{ provider: 'openai', costUsd: 1.72, calls: 94 },
+				],
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('panel-spend');
+		expect(html).toContain('<svg');
+		expect(html).toContain('anthropic');
+		expect(html).toContain('Cost by provider');
+	});
+
+	it('renders an unavailable message when spend is null (usage-tracking not loaded)', async () => {
+		const html = renderPanelSpend(null, dictsByLang.en);
+		expect(html).toContain('panel-spend');
+		expect(html).toContain('usage-tracking');
+	});
+});
+
+describe('renderPanelSessions', async () => {
+	it('groups proposals by status with a pill per row', async () => {
+		const html = renderPanelSessions(baseSessions, dictsByLang.en);
+		expect(html).toContain('panel-sessions');
+		expect(html).toContain('in_progress');
+		expect(html).toContain('ready');
+		expect(html).toContain('data-status="in_progress"');
+	});
+});
+
+describe('renderPanelTimes', async () => {
+	it('renders total wall, p50/p95, and the histogram', async () => {
+		const html = renderPanelTimes(baseTimes, dictsByLang.en);
+		expect(html).toContain('panel-times');
+		expect(html).toContain('Total wall');
+		expect(html).toContain('p50 latency');
+		expect(html).toContain('Slowest tool');
+		expect(html).toContain('proposals_proposal_board');
+	});
+});
+
+describe('renderPanelAgents', async () => {
+	it('renders one row per active agent', async () => {
+		const html = renderPanelAgents(baseAgents, dictsByLang.en);
+		expect(html).toContain('panel-agents');
+		expect(html).toContain('implementation_runner');
+	});
+
+	it('normalises object-shaped current proposals to their id', async () => {
+		const html = renderPanelAgents(
+			{
+				agents: [
+					{
+						name: 'implementation_runner',
+						currentProposal: { id: 'f00001' },
+					},
+				],
+				totalActive: 1,
+			},
+			dictsByLang.en,
+		);
+		expect(html).toContain('data-proposal="f00001"');
+		expect(html).not.toContain('[object Object]');
+	});
+
+	it('shows the empty-state row when no agents', async () => {
+		const html = renderPanelAgents(
+			{ agents: [], totalActive: 0 },
+			dictsByLang.en,
+		);
+		expect(html).toContain('No active agents.');
+	});
+});
+
+describe('renderDashboard', async () => {
+	it('composes header, KPI strip, 8 tabs + 8 panels + Docs + footer', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toMatch(
+			/<header class="delendai-header"[^>]*data-connection="ok"/,
+		);
+		expect(html).toContain('delendai-kpis');
+		expect(html).toContain('delendai-tabs');
+		expect(html).toContain('tab-overview');
+		expect(html).toContain('tab-metrics');
+		expect(html).toContain('tab-tokens');
+		expect(html).toContain('tab-tools');
+		expect(html).toContain('tab-plugins');
+		expect(html).toContain('tab-sessions');
+		expect(html).toContain('tab-times');
+		expect(html).toContain('tab-agents');
+		expect(html).toContain('tab-health');
+		expect(html).toContain('panel-health');
+		expect(html).toContain('tab-docs');
+		expect(html).toContain('panel-overview');
+		expect(html).toContain('panel-metrics');
+		expect(html).toContain('panel-docs');
+		expect(html).toContain('delendai-footer');
+		expect(html).toContain('https://delendai.dev');
+	});
+
+	it('inlines the brand logo SVG in the header (via shared --delendai-brand-* tokens)', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain('delendai-header__logo');
+		expect(html).toContain('linearGradient');
+		// f00047 S3: brand hex literals moved to apps/shared; the webview
+		// references them via CSS variables so there is exactly one source
+		// of truth. Asserting the variable names keeps the test honest.
+		expect(html).toContain('--delendai-brand-blue');
+		expect(html).toContain('--delendai-brand-purple');
+	});
+
+	it('sets the first tab as active by default', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain('aria-selected="true"');
+		expect(html).toContain('data-active="true"');
+	});
+
+	it('escapes the docsUrl to prevent injection', async () => {
+		const evil = renderDashboard(fixture, {
+			...opts,
+			docsUrl: 'https://x.com/"><script>alert(1)</script>',
+		});
+		expect(evil).not.toContain('<script>alert(1)</script>');
+	});
+
+	it('embeds the tab-switching client script', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain('<script>');
+		expect(html).toContain('const root = document.documentElement;');
+		// f00102 S4-real-extract: the client script now selects tabs
+		// via the shared `data-tab-trigger` attribute (stamped by
+		// `renderTabs` in `@delendai/shared/components/ui/tabs`)
+		// instead of the old `.delendai-tabs [role="tab"]` selector. The
+		// attribute selector works for any host that delegates to
+		// the shared renderer.
+		expect(html).toContain('[data-tab-trigger]');
+	});
+
+	it('posts refresh and proposal-link actions through the VS Code bridge', async () => {
+		const html = renderDashboard(fixture, opts);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'action', action: 'refresh' })",
+		);
+		expect(html).toContain(
+			"host?.postMessage({ command: 'openProposal', id })",
+		);
+		expect(html).toContain("target.closest('[data-proposal]')");
+	});
+
+	it('wires ArrowLeft/ArrowRight roving tabindex with wrapping (H27)', async () => {
+		const html = renderDashboard(fixture, opts);
+		// ArrowRight advances (wrapping via modulo); ArrowLeft wraps to the
+		// last tab from tab 0 via (index - 1 + len) % len.
+		expect(html).toContain("evt.key === 'ArrowRight'");
+		expect(html).toContain("evt.key === 'ArrowLeft'");
+		expect(html).toContain('(index + 1) % tabs.length');
+		expect(html).toContain('(index - 1 + tabs.length) % tabs.length');
+		// Selecting a tab moves the roving tabindex (0 / -1).
+		expect(html).toContain("t.setAttribute('tabindex', on ? '0' : '-1')");
+	});
+});

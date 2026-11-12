@@ -1,0 +1,28 @@
+---
+/**
+ * `/[lang]/proposals` — localized read-only proposals board (f00097 S5).
+ *
+ * Static parity with the VS Code host's board. Title + breadcrumb come from the
+ * standalone `proposalBoardByLang` map (not the site `ITranslations`), so this
+ * page adds no keys to the 12-lang site-dict gate. Mirrors the
+ * `[lang]/skills.astro` shell recipe.
+ */
+import ProposalsSection from '#COMPONENTS/ProposalsSection.astro';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { proposalBoardByLang } from '#I18N/proposals-board';
+
+export const getStaticPaths = langStaticPaths;
+
+const lang = resolveLang(Astro.params.lang);
+const tb = proposalBoardByLang[lang];
+---
+
+<PageShell
+	lang={lang}
+	title={tb.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: tb.title, href: localePath(lang, 'proposals') }]}
+>
+	<ProposalsSection lang={lang} />
+</PageShell>
