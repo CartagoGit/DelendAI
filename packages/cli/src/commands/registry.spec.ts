@@ -126,6 +126,7 @@ const EXPECTED_COMMANDS = [
 	'project create',
 	'plugin new',
 	'guard',
+	'integration',
 	'repair',
 	'release promote',
 	'release follow',

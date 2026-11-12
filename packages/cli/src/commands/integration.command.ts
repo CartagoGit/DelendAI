@@ -24,6 +24,7 @@ import {
 	renderReportTable,
 	selectScenarios,
 	type IRehearsalCommandResult,
+	type IRehearsalCommandRunner,
 } from '@delendai/integration/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -41,7 +42,7 @@ import { usage } from './groups/group-helpers';
 const USAGE = `integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
-const runGh = (
+const spawnGh = (
 	args: readonly string[],
 	input?: string,
 ): Promise<IRehearsalCommandResult> =>
@@ -62,7 +63,10 @@ const runGh = (
 		child.stdin.end(input ?? '');
 	});
 
-export const integrationCommand: ICliCommand = {
+/** The command over the program that runs `gh`; the real one spawns it, a spec gives it answers. */
+export const createIntegrationCommand = (
+	runGh: IRehearsalCommandRunner,
+): ICliCommand => ({
 	name: 'integration',
 	...INTEGRATION_COMMAND,
 	async run(args, ctx): Promise<ICliCommandResult> {
@@ -138,4 +142,6 @@ export const integrationCommand: ICliCommand = {
 			};
 		}
 	},
-};
+});
+
+export const integrationCommand = createIntegrationCommand(spawnGh);

@@ -134,4 +134,135 @@ describe('the GitHub rehearsal forge', () => {
 			/token|--hostname|Authorization/iu,
 		);
 	});
+
+	it('[<100ms] makes, lists and deletes branches, labels and hooks through the matching calls', async () => {
+		const { forge, calls } = fake({
+			'git/matching-refs/heads/ns/rehearsal/':
+				'[{"ref":"refs/heads/ns/rehearsal/r1/a"}]',
+			'--method GET repos/o/r/labels':
+				'[{"name":"rehearsal-r1:x"},{"name":"bug"}]',
+			'--method GET repos/o/r/hooks':
+				'[{"id":9,"config":{"url":"https://h"}}]',
+			'--method POST repos/o/r/git/refs': '{}',
+			'--method DELETE': '{}',
+		});
+		expect(await forge.listBranches('ns/rehearsal/')).toEqual([
+			'ns/rehearsal/r1/a',
+		]);
+		await forge.createBranch('ns/rehearsal/r1/b', 'sha');
+		await forge.deleteBranch('ns/rehearsal/r1/b');
+		expect(await forge.labels('rehearsal-r1:')).toEqual(['rehearsal-r1:x']);
+		await forge.deleteLabel('rehearsal-r1:x');
+		expect(await forge.hooks()).toEqual([{ id: 9, url: 'https://h' }]);
+		await forge.deleteHook(9);
+		const joined = calls.map((c) => c.args.join(' ')).join('\n');
+		expect(joined).toContain('git/refs/heads/ns/rehearsal/r1/b');
+		expect(joined).toContain('labels/rehearsal-r1%3Ax');
+		expect(joined).toContain('hooks/9');
+	});
+
+	it('[<100ms] opens, merges, closes and labels a pull request and reads its timeline and runs', async () => {
+		const { forge, calls } = fake({
+			'--method POST repos/o/r/pulls': '{"number":11}',
+			'pulls/11/merge': '{}',
+			'--method PATCH repos/o/r/pulls/11': '{}',
+			'issues/11/labels': '[]',
+			'issues/11/events':
+				'[{"event":"labeled","created_at":"t","label":{"name":"l"},"actor":{"login":"a"}},{"event":"merged","created_at":"u"}]',
+			'actions/runs': JSON.stringify({
+				workflow_runs: [
+					{
+						id: 1,
+						name: 'ci',
+						event: 'push',
+						head_branch: 'b',
+						head_sha: 's',
+						status: 'completed',
+						conclusion: 'success',
+						actor: { login: 'x' },
+						created_at: 'c',
+						updated_at: 'd',
+					},
+					{
+						id: 2,
+						event: 'push',
+						head_sha: 's2',
+						created_at: 'c',
+						updated_at: 'd',
+					},
+				],
+			}),
+			'commits?sha=': '[{"sha":"n"},{"sha":"u"},{"sha":"older"}]',
+		});
+		expect(
+			await forge.openPull({
+				head: 'h',
+				base: 'b',
+				title: 't',
+				body: 'x',
+				draft: true,
+			}),
+		).toBe(11);
+		await forge.mergePull(11, 'sha');
+		await forge.closePull(11);
+		await forge.addLabel(11, 'l');
+		expect(await forge.pullEvents(11)).toEqual([
+			{ event: 'labeled', label: 'l', createdAt: 't', actor: 'a' },
+			{ event: 'merged', createdAt: 'u', actor: '' },
+		]);
+		const runs = await forge.runs('b');
+		expect(runs[0]).toMatchObject({
+			id: 1,
+			workflow: 'ci',
+			conclusion: 'success',
+		});
+		expect(runs[1]).toMatchObject({
+			workflow: '',
+			headBranch: '',
+			actor: '',
+		});
+		expect(await forge.history('main', 'u')).toEqual(['n', 'u']);
+		const merge = calls.find((c) =>
+			c.args.join(' ').includes('pulls/11/merge'),
+		);
+		expect(merge?.args.join(' ')).toContain('merge_method=merge');
+	});
+
+	it('[<100ms] reads a file and the files of a directory at a commit', async () => {
+		const { forge } = fake({
+			'contents/rehearsal?ref=s':
+				'[{"name":"a.json","type":"file"},{"name":"d","type":"dir"}]',
+			'contents/rehearsal/a.json': 'body',
+		});
+		expect(await forge.listFiles('s', 'rehearsal')).toEqual(['a.json']);
+		expect(await forge.readFile('s', 'rehearsal/a.json')).toBe('body');
+		await expect(forge.readFile('s', 'missing')).rejects.toThrow(
+			'is not at',
+		);
+	});
+
+	it('[<100ms] reads a run log through gh and says so when it cannot', async () => {
+		const ok = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async () => ({ exitCode: 0, stdout: 'log text', stderr: '' }),
+		});
+		expect(await ok.runLog(5)).toBe('log text');
+		const bad = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async () => ({ exitCode: 1, stdout: '', stderr: 'gone' }),
+		});
+		await expect(bad.runLog(5)).rejects.toThrow('gone');
+		await expect(bad.setDraft(1, true)).rejects.toThrow();
+	});
+
+	it('[<100ms] converts a pull request to draft with the matching mutation', async () => {
+		const { forge, calls } = fake({
+			'pulls/6': '{"node_id":"N6"}',
+			graphql: '{}',
+		});
+		await forge.setDraft(6, true);
+		expect(calls.at(-1)?.args.join(' ')).toContain(
+			'convertPullRequestToDraft',
+		);
+	});
 });
