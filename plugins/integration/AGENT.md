@@ -34,10 +34,10 @@
 
 ## Tests
 
+- plugins/integration/tests/src/lib/services/rehearsal-cleanup.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-expectation.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-github-forge.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-report.service.spec.ts
-- plugins/integration/tests/src/lib/services/rehearsal-run.service.spec.ts
 
 ## Do not
 

@@ -7,26 +7,8 @@ import type {
 	IRehearsalRun,
 	IRehearsalScenario,
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
-import {
-	newRunId,
-	runStartOf,
-	secretHitsIn,
-	sweepStaleRuns,
-} from '../../../../src/lib/services/rehearsal-cleanup.service';
-import {
-	renderRehearsalCiWorkflow,
-	renderRehearsalScanWorkflow,
-	renderRehearsalTokenWorkflow,
-} from '../../../../src/lib/services/rehearsal-ci-workflow.helper';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
-import {
-	createRehearsalSetup,
-	landIntegratorWorkflow,
-} from '../../../../src/lib/services/rehearsal-setup.helper';
-import {
-	pullChanges,
-	runLabelPrefix,
-} from '../../../../src/lib/services/rehearsal-names.helper';
+import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
 
 interface IMutablePull
 	extends Omit<
@@ -43,7 +25,10 @@ interface IMutablePull
 /** An in-memory forge whose "integrator" merges a pull request the moment it is marked ready. */
 const memoryForge = () => {
 	let counter = 0;
-	const sha = (): string => `sha${String((counter += 1))}`;
+	const sha = (): string => {
+		counter += 1;
+		return `sha${String(counter)}`;
+	};
 	const branches = new Map<string, string>([['base', 'sha0']]);
 	const pulls: IMutablePull[] = [];
 	const commits: {
@@ -102,8 +87,12 @@ const memoryForge = () => {
 			p.draft = draft;
 			if (!draft && p.mergedAt === undefined) p.mergedAt = iso();
 		},
-		mergePull: async (n) => void (pull(n).mergedAt = iso()),
-		closePull: async (n) => void (pull(n).state = 'closed'),
+		mergePull: async (n) => {
+			pull(n).mergedAt = iso();
+		},
+		closePull: async (n) => {
+			pull(n).state = 'closed';
+		},
 		addLabel: async (n, label) => {
 			labelNames.add(label);
 			pull(n).labels.push(label);
@@ -134,7 +123,9 @@ const memoryForge = () => {
 	};
 	const fakeClock: IRehearsalClock = {
 		now: () => clock.at,
-		wait: async (ms) => void (clock.at += ms),
+		wait: async (ms) => {
+			clock.at += ms;
+		},
 	};
 	return { forge, clock: fakeClock, pulls, commits, branches, runs };
 };
@@ -316,76 +307,5 @@ describe('runScenario', () => {
 				files: { 'src/x.ts': '' },
 			}),
 		).toThrow('writes only under rehearsal/');
-	});
-});
-
-describe('cleanup and setup', () => {
-	it('[<50ms] reads the start of a run from its id and refuses other names', () => {
-		const id = newRunId(Date.parse('2026-11-12T10:00:00Z'));
-		expect(id).toBe('r20261112-100000');
-		expect(runStartOf(id)).toBe(Date.parse('2026-11-12T10:00:00Z'));
-		expect(runStartOf('nope')).toBeUndefined();
-	});
-
-	it('[<100ms] sweeps runs older than the stale age and keeps a fresh one', async () => {
-		const { forge, branches } = memoryForge();
-		branches.set('ns/rehearsal/r20261112-060000/x-integration', 's');
-		branches.set('ns/rehearsal/r20261112-095900/y-integration', 's');
-		const swept = await sweepStaleRuns({
-			forge,
-			branchPrefix: 'ns/rehearsal/',
-			now: Date.parse('2026-11-12T10:00:00Z'),
-		});
-		expect(swept).toEqual(['r20261112-060000']);
-		expect([...branches.keys()].some((b) => b.includes('095900'))).toBe(
-			true,
-		);
-	});
-
-	it('[<50ms] finds a token shape and a secret value in a log, and nothing in a clean one', () => {
-		const run = { id: 4, workflow: 'w' };
-		const shaped = `ghp_${'a'.repeat(36)}`;
-		expect(secretHitsIn(run, `ok\nleak ${shaped}`)).toHaveLength(1);
-		expect(
-			secretHitsIn(run, 'has hunter2hunter2 inside', ['hunter2hunter2']),
-		).toHaveLength(1);
-		expect(secretHitsIn(run, 'nothing here')).toEqual([]);
-	});
-
-	it('[<50ms] renders the workflows with the event values reaching the shell through env only', () => {
-		const ci = renderRehearsalCiWorkflow({
-			integration: 'ns/i',
-			runId: 'r1',
-		});
-		expect(ci).toContain("branches: ['ns/i']");
-		expect(ci).not.toMatch(/run:.*\$\{\{/u);
-		expect(renderRehearsalScanWorkflow({ integration: 'ns/i' })).toContain(
-			'rehearsal-scan',
-		);
-		const token = renderRehearsalTokenWorkflow({
-			integration: 'ns/i',
-			labelPrefix: runLabelPrefix('r1'),
-			branchPrefix: 'ns/rehearsal/',
-		});
-		expect(token).toContain('github.token');
-	});
-
-	it('[<100ms] makes the setup commit of workflows, policy and run marker', () => {
-		const setup = createRehearsalSetup({
-			runId: 'r1',
-			branchPrefix: 'ns/rehearsal/',
-			policyText: '{"development":{}}',
-			integratorWorkflow: (integration) =>
-				landIntegratorWorkflow(integration, {
-					releaseBranch: 'main',
-					passCommand: 'bun pass',
-				}),
-		});
-		const paths = setup
-			.files('ns/rehearsal/r1/s-integration')
-			.map((f) => f.path);
-		expect(paths).toContain('.github/workflows/land.yml');
-		expect(paths).toContain('delendai.config.json');
-		expect(paths).toContain('rehearsal/r1/.keep');
 	});
 });
