@@ -1,7 +1,7 @@
 import type { IRehearsalScenario } from '../interfaces/rehearsal.interface';
 
-/**
- * The scenarios a run can play. Empty until the scenario slice fills it:
- * the harness runs whatever it is given, and a run with none reports that.
- */
-export const REHEARSAL_CATALOGUE: readonly IRehearsalScenario[] = [];
+import { REHEARSAL_SCENARIOS } from './rehearsal-scenarios.constant';
+
+/** The scenarios a run can play: every case and every production failure. */
+export const REHEARSAL_CATALOGUE: readonly IRehearsalScenario[] =
+	REHEARSAL_SCENARIOS;

@@ -2,7 +2,10 @@
  * rehearsal-names.helper.ts — where a rehearsal's branches, files and labels
  * live, so the run, the cleanup and the setup agree on them.
  */
-import { REHEARSAL_DIR } from '../contracts/constants/rehearsal.constant';
+import {
+	REHEARSAL_DIR,
+	RUN_PLACEHOLDER,
+} from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalFileChange,
 	IRehearsalPullSpec,
@@ -44,7 +47,13 @@ export const pullChanges = (
 	spec: IRehearsalPullSpec,
 	extra: Readonly<Record<string, string>> = {},
 ): readonly IRehearsalFileChange[] => {
-	const files = { ...spec.files, ...extra };
+	// A scenario names a path before the run exists: `{run}` is the run's id.
+	const files = Object.fromEntries(
+		Object.entries({ ...spec.files, ...extra }).map(([path, content]) => [
+			path.replaceAll(RUN_PLACEHOLDER, runId),
+			content,
+		]),
+	);
 	for (const path of Object.keys(files))
 		if (!path.startsWith(`${REHEARSAL_DIR}/`))
 			throw new Error(

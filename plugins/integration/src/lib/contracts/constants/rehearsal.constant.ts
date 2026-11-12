@@ -67,3 +67,6 @@ export const REHEARSAL_WORKFLOW_PATH = '.github/workflows/rehearsal.yml';
 
 /** What a rehearsal run is told to play: every scenario of the catalogue. */
 export const REHEARSAL_ALL_SCENARIOS = 'all';
+
+/** What a scenario writes where the run's id belongs. */
+export const RUN_PLACEHOLDER = '{run}';

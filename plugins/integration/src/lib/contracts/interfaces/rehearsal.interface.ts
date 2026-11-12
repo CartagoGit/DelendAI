@@ -343,3 +343,11 @@ export interface IScenarioState {
 	readonly tokenPulls: Map<string, number>;
 	setupSha: string;
 }
+
+/** A scenario that is red against today's land, and the slice that makes it green. */
+export interface IRehearsalKnownRed {
+	readonly scenario: string;
+	readonly fixedBy: string;
+	/** Real mode only: fast mode cannot measure it, so it has no fast scenario. */
+	readonly realModeOnly?: boolean;
+}

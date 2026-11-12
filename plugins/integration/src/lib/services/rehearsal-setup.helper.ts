@@ -50,7 +50,11 @@ export const rehearsalPolicy = (
 			development: {
 				...development,
 				branches: { ...branches, integration },
-				integration: { ...integrationBlock, engine: 'land' },
+				integration: {
+					...integrationBlock,
+					engine: 'land',
+					requiredChecks: [REHEARSAL_CI_CHECK],
+				},
 			},
 		},
 		null,
