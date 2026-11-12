@@ -83,4 +83,30 @@ describe('rehearse', () => {
 		);
 		expect(parsed.development.integration.engine).toBe('land');
 	});
+
+	it('[<100ms] says in the log why a scenario stopped', async () => {
+		const { forge } = forgeThatRecords();
+		const lines: string[] = [];
+		await rehearse({
+			forge: {
+				...forge,
+				createBranch: async () => {
+					throw new Error('POST git/refs answered 422');
+				},
+			},
+			clock: {
+				now: () => Date.parse('2026-11-12T10:00:00Z'),
+				wait: async () => undefined,
+			},
+			setup: () => ({ files: () => [] }),
+			repository: 'o/r',
+			branchPrefix: 'delendai/rehearsal/',
+			baseBranch: 'develop',
+			scenarios: [
+				{ id: 's', title: 's', pulls: [], steps: [], expect: [] },
+			],
+			log: (line) => lines.push(line),
+		});
+		expect(lines).toContain('s: stopped: POST git/refs answered 422');
+	});
 });

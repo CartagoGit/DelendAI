@@ -79,8 +79,13 @@ export const rehearse = async (
 	let secretHits: readonly string[] = [];
 	let leftovers: readonly string[] = [];
 	try {
-		for (const scenario of input.scenarios)
-			evidence.push(await runScenario(context, scenario));
+		for (const scenario of input.scenarios) {
+			const played = await runScenario(context, scenario);
+			// A step that could not be taken is said at once, not only in the report.
+			for (const failure of played.failures)
+				input.log(`${scenario.id}: ${failure}`);
+			evidence.push(played);
+		}
 		secretHits = await logHits(input, evidence);
 	} finally {
 		leftovers = await cleanRun({
