@@ -341,7 +341,7 @@ describe('the commands that delegate or read the config', () => {
 		['docs list', ['--limit=5']],
 		['docs read', ['README.md']],
 		['search', ['needle', '--max=3']],
-	] as const)('%s answers through its tool', async (name, args) => {
+	] as const)('[<200ms] %s answers through its tool', async (name, args) => {
 		expect((await run(name, args)).code).toBe(0);
 	});
 
@@ -374,7 +374,7 @@ describe('the commands that delegate or read the config', () => {
 		['search', []],
 		['config get', []],
 	] as const)(
-		'%s without what it needs is a usage error',
+		'[<200ms] %s without what it needs is a usage error',
 		async (name, args) => {
 			expect((await run(name, args)).code).not.toBe(0);
 		},
