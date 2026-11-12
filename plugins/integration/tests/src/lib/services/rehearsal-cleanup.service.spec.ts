@@ -92,8 +92,8 @@ describe('cleanup and setup', () => {
 			runId: 'r1',
 			branchPrefix: 'ns/rehearsal/',
 			policyText: '{"development":{}}',
-			integratorWorkflow: (integration) =>
-				landIntegratorWorkflow(integration, {
+			integratorWorkflow: (integration, group) =>
+				landIntegratorWorkflow(integration, group, {
 					releaseBranch: 'main',
 					passCommand: 'bun pass',
 				}),
@@ -102,6 +102,9 @@ describe('cleanup and setup', () => {
 			.files('ns/rehearsal/r1/s-integration')
 			.map((f) => f.path);
 		expect(paths).toContain('.github/workflows/land.yml');
+		expect(
+			setup.files('i').find((f) => f.path.endsWith('land.yml'))?.content,
+		).toContain('group: land-rehearsal-r1');
 		expect(paths).toContain('delendai.config.json');
 		expect(paths).toContain('rehearsal/r1/.keep');
 	});

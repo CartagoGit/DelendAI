@@ -133,6 +133,7 @@ describe('today land on the rehearsal branch', () => {
 	it('[<50ms] is the real render, changed only by the branch and the check it waits on', () => {
 		const rendered = landIntegratorWorkflow(
 			'ns/rehearsal/r1/s-integration',
+			'land-rehearsal-r1',
 			input,
 		);
 		expect(rendered).toBe(
@@ -142,6 +143,7 @@ describe('today land on the rehearsal branch', () => {
 				checkWorkflows: ['rehearsal-ci'],
 				cron: '*/15 * * * *',
 				passCommand: 'bun pass',
+				concurrencyGroup: 'land-rehearsal-r1',
 				setupSteps: [
 					'- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7',
 					'- uses: ./.github/actions/setup-bun-repo',
@@ -151,6 +153,7 @@ describe('today land on the rehearsal branch', () => {
 			}),
 		);
 		expect(rendered).toContain('ns/rehearsal/r1/s-integration');
+		expect(rendered).toContain('group: land-rehearsal-r1');
 	});
 
 	it('[<50ms] has the policy wait for the rehearsal CI and no other check', () => {

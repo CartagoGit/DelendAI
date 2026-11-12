@@ -315,7 +315,10 @@ export interface IRehearsalSetupInput {
 	readonly runId: string;
 	readonly branchPrefix: string;
 	/** The integrator workflow for a branch, as the project's land renders it. */
-	readonly integratorWorkflow: (integration: string) => string;
+	readonly integratorWorkflow: (
+		integration: string,
+		concurrencyGroup: string,
+	) => string;
 	/** The project's policy file text; the setup points its integration branch at the rehearsal one. */
 	readonly policyText: string;
 }

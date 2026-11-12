@@ -113,12 +113,16 @@ export const createIntegrationCommand = (
 						runId,
 						branchPrefix,
 						policyText,
-						integratorWorkflow: (integration) =>
-							landIntegratorWorkflow(integration, {
-								releaseBranch: policy.branches.release,
-								passCommand:
-									'bun tools/scripts/forge/land.script.ts',
-							}),
+						integratorWorkflow: (integration, concurrencyGroup) =>
+							landIntegratorWorkflow(
+								integration,
+								concurrencyGroup,
+								{
+									releaseBranch: policy.branches.release,
+									passCommand:
+										'bun tools/scripts/forge/land.script.ts',
+								},
+							),
 					}),
 				repository,
 				branchPrefix,

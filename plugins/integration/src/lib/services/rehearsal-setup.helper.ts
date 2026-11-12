@@ -69,7 +69,10 @@ export const createRehearsalSetup = (
 	files: (integration): readonly IRehearsalFileChange[] => [
 		{
 			path: `${WORKFLOWS}/land.yml`,
-			content: input.integratorWorkflow(integration),
+			content: input.integratorWorkflow(
+				integration,
+				`land-rehearsal-${input.runId}`,
+			),
 		},
 		{
 			path: `${WORKFLOWS}/rehearsal-ci.yml`,
@@ -108,6 +111,7 @@ export const createRehearsalSetup = (
  */
 export const landIntegratorWorkflow = (
 	integration: string,
+	concurrencyGroup: string,
 	input: { readonly releaseBranch: string; readonly passCommand: string },
 ): string =>
 	renderLandWorkflow({
@@ -116,6 +120,7 @@ export const landIntegratorWorkflow = (
 		checkWorkflows: [REHEARSAL_CI_CHECK],
 		cron: `*/${String(PASS_INTERVAL_MINUTES)} * * * *`,
 		passCommand: input.passCommand,
+		concurrencyGroup,
 		setupSteps: [
 			`- uses: ${REHEARSAL_CHECKOUT_ACTION}`,
 			'- uses: ./.github/actions/setup-bun-repo',
