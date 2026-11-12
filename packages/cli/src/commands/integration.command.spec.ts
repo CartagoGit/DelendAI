@@ -49,7 +49,7 @@ describe('the integration command', () => {
 		expect(integrationCommand.offline).toBe(true);
 	});
 
-	it('[<200ms] rehearses with no scenarios, leaves nothing and reports red for want of data', async () => {
+	it('[<200ms] rehearses one scenario through gh, leaves nothing and reports it red', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'integration-cmd-'));
 		try {
 			writeFileSync(
@@ -68,14 +68,27 @@ describe('the integration command', () => {
 						stdout: '{"object":{"sha":"tip"}}',
 						stderr: '',
 					};
+				if (line.includes('actions/runs'))
+					return {
+						exitCode: 0,
+						stdout: '{"workflow_runs":[]}',
+						stderr: '',
+					};
+				if (/--method (POST|PUT|PATCH)/u.test(line))
+					return {
+						exitCode: 0,
+						stdout: '{"sha":"x","tree":{"sha":"t"},"number":1}',
+						stderr: '',
+					};
 				return { exitCode: 0, stdout: '[]', stderr: '' };
 			};
 			const result = await createIntegrationCommand(run).run(
-				['rehearse', '--scenarios=all'],
+				['rehearse', '--scenarios=host-offline'],
 				fakePartial<ICliCommandContext>({ cwd: dir }),
 			);
 			// With nothing played the targets have no data, so the run is red, never green by absence.
 			expect(result.code).toBe(EXIT_CODE.RUNTIME);
+			expect(result.error).toBeUndefined();
 			expect(result.text).toContain('RED');
 			expect(result.text).toContain('leftovers: none');
 			const writes = calls.filter((c) =>
