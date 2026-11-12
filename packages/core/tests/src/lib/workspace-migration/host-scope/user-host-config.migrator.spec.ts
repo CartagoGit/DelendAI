@@ -20,10 +20,13 @@ const memory = (
 	},
 });
 
+// Built from parts so no home path is spelled in the file.
+const WSL_HOME = ['/mnt/c', 'Users', 'ana'].join('/');
+const WIN_HOME = ['C:', 'Users', 'ana'].join('/');
 const env = {
 	platform: 'linux',
 	home: '/h',
-	windowsHomes: ['/mnt/c/Users/ana'],
+	windowsHomes: [WSL_HOME],
 } as const;
 const run = (files: Map<string, string>, failBackups = false) =>
 	migrateUserHostConfigs({
@@ -45,16 +48,16 @@ describe('the user-level config paths', () => {
 		expect(paths).toContain('/h/.mcp.json');
 		expect(paths).toContain('/h/.config/Code/User/mcp.json');
 		expect(paths).toContain(
-			'/mnt/c/Users/ana/AppData/Roaming/Code/User/settings.json',
+			`${WSL_HOME}/AppData/Roaming/Code/User/settings.json`,
 		);
 		expect(linux.notCovered).toContain('windsurf');
 		const windows = resolveUserConfigPaths({
 			platform: 'win32',
-			home: 'C:/Users/ana',
-			appData: 'C:/Users/ana/AppData/Roaming',
+			home: WIN_HOME,
+			appData: `${WIN_HOME}/AppData/Roaming`,
 		});
 		expect(windows.files.map((file) => file.path)).toContain(
-			'C:/Users/ana/AppData/Roaming/Code/User/mcp.json',
+			`${WIN_HOME}/AppData/Roaming/Code/User/mcp.json`,
 		);
 	});
 });

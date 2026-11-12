@@ -8,7 +8,6 @@
  * byte changes a timestamped copy of it is written; when that copy cannot be
  * written the file is not edited.
  */
-import type { ILegacyResidueIO } from '../../contracts/interfaces/legacy-residue.interface';
 import type {
 	IResolvedUserConfigFile,
 	IUserHostConfigMigrationOptions,
