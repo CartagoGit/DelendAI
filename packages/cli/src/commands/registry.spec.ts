@@ -186,20 +186,20 @@ const EXPECTED_COMMANDS = [
 ] as const;
 
 describe('CLI command registry', async () => {
-	it('registers the complete public command surface', async () => {
+	it('[<200ms] registers the complete public command surface', async () => {
 		const names = (await registerAllCommands()).map(
 			(command) => command.name,
 		);
 		expect(names).toEqual(EXPECTED_COMMANDS);
 	});
 
-	it('keeps every command documented with a summary', async () => {
+	it('[<200ms] keeps every command documented with a summary', async () => {
 		for (const command of await registerAllCommands()) {
 			expect(command.summary.trim().length).toBeGreaterThan(0);
 		}
 	});
 
-	it('does not register duplicate command names', async () => {
+	it('[<200ms] does not register duplicate command names', async () => {
 		const names = (await registerAllCommands()).map(
 			(command) => command.name,
 		);
@@ -221,7 +221,7 @@ describe('plugin inspect (a00087)', async () => {
 		return command.run([pluginName], fakeOverviewCtx());
 	};
 
-	it("finds a namespaced plugin's tools by the real prefix convention", async () => {
+	it("[<200ms] finds a namespaced plugin's tools by the real prefix convention", async () => {
 		const result = await inspect('proposals');
 		const data = result.data as { plugin: string; tools: unknown[] };
 		expect(data.plugin).toBe('proposals');
@@ -234,7 +234,7 @@ describe('plugin inspect (a00087)', async () => {
 		]);
 	});
 
-	it('finds only core tools for "core", never another plugin\'s tools', async () => {
+	it('[<200ms] finds only core tools for "core", never another plugin\'s tools', async () => {
 		const result = await inspect('core');
 		const data = result.data as { tools: Array<{ name: string }> };
 		expect(data.tools.map((t) => t.name)).toEqual([
@@ -243,7 +243,7 @@ describe('plugin inspect (a00087)', async () => {
 		]);
 	});
 
-	it('returns NOT_FOUND for a plugin with no matching tools', async () => {
+	it('[<200ms] returns NOT_FOUND for a plugin with no matching tools', async () => {
 		const result = await inspect('does-not-exist');
 		expect(result.code).not.toBe(0);
 		const data = result.data as { tools: unknown[] };
@@ -257,7 +257,7 @@ describe('plugin inspect (a00087)', async () => {
 // stdout/stderr) whenever `--json` was not passed. `dataOrText` fixes
 // this by routing through the always-emitted `.text` channel instead.
 describe('dataOrText fallback (a00087)', async () => {
-	it('emits .data (not .text) in --json mode', async () => {
+	it('[<200ms] emits .data (not .text) in --json mode', async () => {
 		const commands = await registerAllCommands();
 		const status = commands.find((c) => c.name === 'status');
 		if (status === undefined) throw new Error('status not registered');
@@ -266,7 +266,7 @@ describe('dataOrText fallback (a00087)', async () => {
 		expect(result.text).toBeUndefined();
 	});
 
-	it('emits .text (never silently nothing) outside --json mode', async () => {
+	it('[<200ms] emits .text (never silently nothing) outside --json mode', async () => {
 		const commands = await registerAllCommands();
 		const status = commands.find((c) => c.name === 'status');
 		if (status === undefined) throw new Error('status not registered');
@@ -302,19 +302,19 @@ describe('validate runs what the project declares (x00712)', () => {
 		validationMatrix: { scopes: { gates: [{ command, expect: 'exit0' }] } },
 	});
 
-	it('says what to declare when the project declares nothing', async () => {
+	it('[<200ms] says what to declare when the project declares nothing', async () => {
 		const result = await inProject(undefined);
 		expect(result?.code).not.toBe(0);
 		expect(result?.error).toContain('validationMatrix');
 	});
 
-	it('fails naming the gate that failed', async () => {
+	it('[<200ms] fails naming the gate that failed', async () => {
 		const result = await inProject(gates('false'));
 		expect(result?.code).not.toBe(0);
 		expect(result?.error).toContain('gates: false');
 	});
 
-	it('passes when every declared gate does', async () => {
+	it('[<200ms] passes when every declared gate does', async () => {
 		expect((await inProject(gates('true')))?.code).toBe(0);
 	});
 });
@@ -345,7 +345,7 @@ describe('the commands that delegate or read the config', () => {
 		expect((await run(name, args)).code).toBe(0);
 	});
 
-	it('lists the loaded plugins, as rows or as JSON', async () => {
+	it('[<200ms] lists the loaded plugins, as rows or as JSON', async () => {
 		const command = (await registerAllCommands()).find(
 			(each) => each.name === 'plugin list',
 		);
@@ -359,7 +359,7 @@ describe('the commands that delegate or read the config', () => {
 		]);
 	});
 
-	it('reports a script that does not exist as a failed run', async () => {
+	it('[<200ms] reports a script that does not exist as a failed run', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'registry-schema-'));
 		try {
 			const result = await run('config schema', [], dir);
@@ -380,7 +380,7 @@ describe('the commands that delegate or read the config', () => {
 		},
 	);
 
-	it('reads the config on disk, and says when there is none', async () => {
+	it('[<200ms] reads the config on disk, and says when there is none', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'registry-config-'));
 		try {
 			expect((await run('config show', [], dir)).code).not.toBe(0);
@@ -432,7 +432,7 @@ describe('the commands that delegate or read the config', () => {
 });
 
 describe('lazily loaded commands', () => {
-	it('load their module and answer a subcommand they do not have', async () => {
+	it('[<200ms] load their module and answer a subcommand they do not have', async () => {
 		const commands = await registerAllCommands();
 		const accounts = commands.find((c) => c.name === 'accounts');
 		if (accounts === undefined) throw new Error('accounts not registered');
