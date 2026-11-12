@@ -16,11 +16,12 @@ The dependency-advisories gate passes again: the @hono/node-server pin moves fro
 
 ## why
 
-TODO: why this work matters now.
+The dependency-advisories gate reports two moderate advisories against @hono/node-server 2.1.3, reached through @modelcontextprotocol/sdk. The root overrides pin holds it at the vulnerable release, so every proof fails lint-security until the pin moves; the first patched release is 2.1.6.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Adding an advisory exception: the patched release exists, so the pin moves instead.
+- Moving to the latest 2.1.x: only the first release past both advisories is needed.
 
 ## slices
 
