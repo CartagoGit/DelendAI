@@ -13,7 +13,7 @@ import {
 } from '../../../src/public/index';
 
 describe('useFakeClock', () => {
-	it('runs a timer when the clock moves, with no real wait', async () => {
+	it('[<30ms] runs a timer when the clock moves, with no real wait', async () => {
 		const clock = useFakeClock();
 		let fired = false;
 		setTimeout(() => {
@@ -27,7 +27,7 @@ describe('useFakeClock', () => {
 });
 
 describe('stubAbortSignalTimeout', () => {
-	it('hands out a signal the spec fires, and records the duration', () => {
+	it('[<12ms] hands out a signal the spec fires, and records the duration', () => {
 		const deadlines = stubAbortSignalTimeout();
 		const signal = AbortSignal.timeout(8_000);
 		expect(signal.aborted).toBe(false);
@@ -38,7 +38,7 @@ describe('stubAbortSignalTimeout', () => {
 });
 
 describe('skipLockPauses', () => {
-	it('runs a pause of the named length at once and tells the spec', async () => {
+	it('[<12ms] runs a pause of the named length at once and tells the spec', async () => {
 		let paused = 0;
 		const pauseMs = 1_000;
 		skipLockPauses(pauseMs, () => {
@@ -51,7 +51,7 @@ describe('skipLockPauses', () => {
 });
 
 describe('createInMemoryGit', () => {
-	it('answers from its table, records calls and refuses the unknown', () => {
+	it('[<12ms] answers from its table, records calls and refuses the unknown', () => {
 		const fake = createInMemoryGit({ 'rev-parse HEAD': 'abc' });
 		expect(fake.run('/x', 'rev-parse', 'HEAD')).toBe('abc');
 		expect(fake.calls).toEqual(['rev-parse HEAD']);
@@ -66,7 +66,7 @@ describe('createGitRepoTemplate', () => {
 		worktrees: { unit: 'wip/unit' },
 	});
 
-	it('copies a repository whose remote and worktree point at the copy', () => {
+	it('[<150ms] copies a repository whose remote and worktree point at the copy', () => {
 		const one = template.copy();
 		const two = template.copy();
 		expect(one.root).not.toBe(two.root);
@@ -82,7 +82,7 @@ describe('createGitRepoTemplate', () => {
 });
 
 describe('gitReadCacheOf', () => {
-	it('answers a read from the table and starts no process', () => {
+	it('[<12ms] answers a read from the table and starts no process', () => {
 		const git = createInMemoryGit({ 'status --porcelain': ' M a.txt' });
 		const cache = gitReadCacheOf(git);
 		expect(
