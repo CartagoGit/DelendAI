@@ -52,7 +52,7 @@ type Payload = {
 };
 
 describe('parseDoctorModes', () => {
-	it('reads the three flags independently', () => {
+	it('[<200ms] reads the three flags independently', () => {
 		expect(parseDoctorModes(['--ci', '--deep'])).toEqual({
 			ci: true,
 			offline: false,
@@ -64,14 +64,14 @@ describe('parseDoctorModes', () => {
 });
 
 describe('doctor command flags', () => {
-	it('declares ci, offline, deep and fix so they are not refused', () => {
+	it('[<200ms] declares ci, offline, deep and fix so they are not refused', () => {
 		const command = doctorCommands.find((c) => c.name === 'doctor');
 		expect(command?.flags).toEqual(['ci', 'offline', 'deep', 'fix']);
 	});
 });
 
 describe('doctor --ci', () => {
-	it('adds the documented exit code and failing sections on a broken fixture', async () => {
+	it('[<200ms] adds the documented exit code and failing sections on a broken fixture', async () => {
 		const broken = async () => {
 			throw new Error('server down');
 		};
@@ -86,14 +86,14 @@ describe('doctor --ci', () => {
 		expect(payload.ci?.meaning).toContain('P0');
 	});
 
-	it('leaves the report without a ci block when not asked', async () => {
+	it('[<200ms] leaves the report without a ci block when not asked', async () => {
 		const res = await runDoctorBody(buildContext(healthy), {
 			extraChecks: [],
 		});
 		expect((res.data as Payload).ci).toBeUndefined();
 	});
 
-	it('does not write the human recap to stderr', async () => {
+	it('[<200ms] does not write the human recap to stderr', async () => {
 		const write = vi.spyOn(process.stderr, 'write').mockReturnValue(true);
 		const ctx = {
 			...buildContext(healthy),
@@ -109,7 +109,7 @@ describe('doctor --ci', () => {
 });
 
 describe('doctor --offline', () => {
-	it('reports the remote server sections as skipped, never as passed, and does not ask it', async () => {
+	it('[<200ms] reports the remote server sections as skipped, never as passed, and does not ask it', async () => {
 		const request = vi.fn(healthy);
 		const res = await runDoctorBody(
 			buildContext(request, 'https://x.example'),
@@ -129,7 +129,7 @@ describe('doctor --offline', () => {
 		expect(payload.ci?.skipped).toEqual(['plugins', 'tools']);
 	});
 
-	it('still asks a local server, which needs no network', async () => {
+	it('[<200ms] still asks a local server, which needs no network', async () => {
 		const request = vi.fn(healthy);
 		await runDoctorBody(buildContext(request), {
 			extraChecks: [],
@@ -138,7 +138,7 @@ describe('doctor --offline', () => {
 		expect(request).toHaveBeenCalledTimes(1);
 	});
 
-	it('skips a deep check marked requiresNetwork instead of running it', async () => {
+	it('[<200ms] skips a deep check marked requiresNetwork instead of running it', async () => {
 		const run = vi.fn();
 		const res = await runDoctorBody(buildContext(healthy), {
 			extraChecks: [],
@@ -171,7 +171,7 @@ describe('doctor --deep', () => {
 			};
 		}) satisfies IErrorReportingSelfTestRunner;
 
-	it('runs the self-test as a section and never creates an issue', async () => {
+	it('[<200ms] runs the self-test as a section and never creates an issue', async () => {
 		const calls: IErrorReportingSelfTestInput[] = [];
 		const ghCreateCalls: string[][] = [];
 		const exec = async (argv: readonly string[]) => {
@@ -199,7 +199,7 @@ describe('doctor --deep', () => {
 		expect(ghCreateCalls.length).toBe(0);
 	});
 
-	it('does not run deep checks without the flag', async () => {
+	it('[<200ms] does not run deep checks without the flag', async () => {
 		const run = vi.fn();
 		await runDoctorBody(buildContext(healthy), {
 			extraChecks: [],
@@ -208,7 +208,7 @@ describe('doctor --deep', () => {
 		expect(run).not.toHaveBeenCalled();
 	});
 
-	it('passes live: false offline, and reports the skipped gh checks as skipped', async () => {
+	it('[<200ms] passes live: false offline, and reports the skipped gh checks as skipped', async () => {
 		const calls: IErrorReportingSelfTestInput[] = [];
 		const check = createErrorReportingSelfTestCheck(async () =>
 			okRunner(calls),
@@ -220,7 +220,7 @@ describe('doctor --deep', () => {
 		).toBe(true);
 	});
 
-	it('fails the section when a self-test check fails', async () => {
+	it('[<200ms] fails the section when a self-test check fails', async () => {
 		const runner: IErrorReportingSelfTestRunner = async () => ({
 			ok: false,
 			checks: [
@@ -236,7 +236,7 @@ describe('doctor --deep', () => {
 		]);
 	});
 
-	it('reports a warning, not a pass, when the plugin cannot be loaded', async () => {
+	it('[<200ms] reports a warning, not a pass, when the plugin cannot be loaded', async () => {
 		const section = await createErrorReportingSelfTestCheck(
 			async () => undefined,
 		).run({ offline: false });
@@ -244,7 +244,7 @@ describe('doctor --deep', () => {
 		expect(section.findings[0]).toMatch(/^skipped:/);
 	});
 
-	it('turns a self-test that throws into an error section', async () => {
+	it('[<200ms] turns a self-test that throws into an error section', async () => {
 		const runner: IErrorReportingSelfTestRunner = async () => {
 			throw new Error('boom');
 		};
@@ -258,7 +258,7 @@ describe('doctor --deep', () => {
 describe('doctor --fix', () => {
 	const ok = healthy;
 
-	it('reports what the registry migrated, as its own section', async () => {
+	it('[<200ms] reports what the registry migrated, as its own section', async () => {
 		const res = await runDoctorBody(buildContext(ok), {
 			extraChecks: [],
 			modes: { ci: false, offline: true, deep: false, fix: true },
@@ -272,7 +272,7 @@ describe('doctor --fix', () => {
 		expect(section?.findings).toEqual(['legacy residue: x migrated']);
 	});
 
-	it('says there was nothing to migrate', async () => {
+	it('[<200ms] says there was nothing to migrate', async () => {
 		const res = await runDoctorBody(buildContext(ok), {
 			extraChecks: [],
 			modes: { ci: false, offline: true, deep: false, fix: true },

@@ -6,13 +6,10 @@
  * are delendai's own are edited, each file after its backup. Everything else
  * is reported, with what to do by hand.
  */
-import { homedir } from 'node:os';
-import { dirname } from 'node:path';
-
 import { LEGACY_RESIDUE_BACKUPS_DIR } from '../../contracts/constants/legacy-residue.constant';
 import type { ILegacyResidueBootOptions } from '../../contracts/interfaces/legacy-residue.interface';
 import type { IUserHostConfigReport } from '../../contracts/interfaces/user-host-config.interface';
-import { windowsAppDataUnderWsl } from '../../platform/user-directories.helper';
+import { thisMachineConfigEnvironment } from '../../platform/this-machine-config.helper';
 import { resolveUserConfigPaths } from '../host-scope/user-config-paths.helper';
 import { migrateUserHostConfigs } from '../host-scope/user-host-config.migrator';
 import {
@@ -25,16 +22,8 @@ import { renderLegacyResidueReport } from './legacy-residue-report.helper';
 export const thisMachineResidueOptions = (
 	workspaceRoot: string,
 ): ILegacyResidueBootOptions => ({
+	...thisMachineConfigEnvironment(),
 	workspaceRoot,
-	home: homedir(),
-	platform:
-		process.platform === 'win32' || process.platform === 'darwin'
-			? process.platform
-			: 'linux',
-	...(process.env.APPDATA === undefined
-		? {}
-		: { appData: process.env.APPDATA }),
-	windowsHomes: windowsAppDataUnderWsl().map((dir) => dirname(dirname(dir))),
 	env: process.env,
 	configText: undefined,
 	io: createUserFileIO(),
