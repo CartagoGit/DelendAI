@@ -60,7 +60,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - **Status**: pending
 - **DependsOn**: [S1]
 - **Extends**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.service.spec.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/closed-contract.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One generated template carries objective, authorized files, interfaces and expected behaviour, invariants, dependencies, acceptance criteria, exact tests, budget and limits, and stop conditions."

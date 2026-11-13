@@ -1572,7 +1572,6 @@
 		"plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/invoke/spend-caps.helper.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/invoke/spend-guard.spec.ts",
-		"plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/invoke/token.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/invoke/unicode-safe-prompt.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/options.spec.ts",
