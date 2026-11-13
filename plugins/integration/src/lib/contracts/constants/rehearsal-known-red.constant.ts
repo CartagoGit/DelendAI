@@ -13,7 +13,6 @@ export const REHEARSAL_KNOWN_RED: readonly IRehearsalKnownRed[] = [
 	{ scenario: 'derived-conflict', fixedBy: 'S8' },
 	{ scenario: 'authored-conflict', fixedBy: 'S6, S7' },
 	{ scenario: 'bot-head', fixedBy: 'S8' },
-	{ scenario: 'develop-moving', fixedBy: 'S8' },
 	{ scenario: 'host-offline', fixedBy: 'S11' },
 	{ scenario: 'automation-opened', fixedBy: 'S6' },
 	{ scenario: 'promotion', fixedBy: 'S6' },

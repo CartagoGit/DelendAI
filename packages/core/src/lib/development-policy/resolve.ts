@@ -15,6 +15,7 @@
  * Legacy fields are mapped rather than ignored, unsupported combinations stay
  * visible to validation, and choosing the new model is the operator's edit.
  */
+import { resolveIntegrationOptions } from './integration-options';
 import type { IIntegrationEngine } from '../contracts/interfaces/integration-engine.interface';
 import {
 	DEVELOPMENT_POLICY_VERSION,
@@ -178,6 +179,7 @@ const applyOverrides = (
 			engine: (input.integration?.engine ??
 				base.integration.engine) as IIntegrationEngine,
 			protocol: input.integration?.protocol ?? base.integration.protocol,
+			...resolveIntegrationOptions(input.integration, base.integration),
 			publication: {
 				granularity: (input.integration?.publication?.granularity ??
 					base.integration.publication

@@ -83,6 +83,39 @@ export interface IDevelopmentConfigInput {
 				readonly engine?: string | undefined;
 				readonly protocol?: number | undefined;
 				readonly landWithoutChecks?: boolean | undefined;
+				readonly identity?:
+					| {
+							readonly kind?: string | undefined;
+							readonly appIdVariable?: string | undefined;
+							readonly keySecret?: string | undefined;
+							readonly tokenSecret?: string | undefined;
+					  }
+					| undefined;
+				readonly batching?: string | undefined;
+				readonly labels?:
+					| { readonly prefix?: string | undefined }
+					| undefined;
+				readonly derived?:
+					| {
+							readonly paths?: readonly string[] | undefined;
+							readonly command?: string | undefined;
+					  }
+					| undefined;
+				readonly zones?: readonly string[] | undefined;
+				readonly signalWorkflows?: readonly string[] | undefined;
+				readonly scanWorkflows?: readonly string[] | undefined;
+				readonly watchdog?:
+					| {
+							readonly enabled?: boolean | undefined;
+							readonly cron?: string | undefined;
+					  }
+					| undefined;
+				readonly rehearsal?:
+					| {
+							readonly secrets?: readonly string[] | undefined;
+							readonly scenarios?: readonly string[] | undefined;
+					  }
+					| undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;
 				readonly allowForcePush?: boolean | undefined;

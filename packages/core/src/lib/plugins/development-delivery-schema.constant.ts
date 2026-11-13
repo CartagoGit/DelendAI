@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
 import { documentedEnum } from './config-schema-docs';
 import { PUBLICATION_GRANULARITY_DOCS } from '../contracts/constants/config-schema-docs.constant';
+import { IntegrationOptionsShape } from './integration-options-schema.constant';
 import { strategy, wholeNumber } from './development-axis-helpers';
 
 export const IntegrationAxis = z
@@ -104,6 +105,7 @@ export const IntegrationAxis = z
 				'Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges.',
 			)
 			.optional(),
+		...IntegrationOptionsShape,
 		protocol: z
 			.number()
 			.int()

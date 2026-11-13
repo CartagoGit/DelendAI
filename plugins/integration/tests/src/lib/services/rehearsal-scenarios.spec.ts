@@ -119,11 +119,13 @@ describe('the known-red list', () => {
 		}
 	});
 
-	it('[<50ms] holds every scenario: today none is green', () => {
-		for (const scenario of REHEARSAL_SCENARIOS)
-			expect(REHEARSAL_KNOWN_RED.map((r) => r.scenario)).toContain(
-				scenario.id,
-			);
+	it('[<50ms] holds every scenario but the one real GitHub showed green', () => {
+		const red = REHEARSAL_KNOWN_RED.map((r) => r.scenario);
+		for (const scenario of REHEARSAL_SCENARIOS) {
+			if (scenario.id === 'develop-moving') {
+				expect(red).not.toContain(scenario.id);
+			} else expect(red).toContain(scenario.id);
+		}
 	});
 });
 
