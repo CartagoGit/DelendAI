@@ -1,0 +1,48 @@
+// _pkg.scss — package row (clickable link with name + version + arrow).
+//
+// BEM root: .pkg with __main and __arrow.  Descendant selectors (`code`,
+// `.v`, `p`) are nested with `&` to keep the BEM scope.  The arrow
+// translate on hover is also nested so the state stays scoped to the block.
+
+.pkg {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.7rem 0.6rem;
+	border-bottom: 1px solid var(--line);
+	border-radius: 8px;
+	color: inherit;
+	text-decoration: none;
+	transition: background 0.15s ease;
+
+	&:hover {
+		background: color-mix(in srgb, var(--accent) 7%, transparent);
+		text-decoration: none;
+	}
+	& code {
+		color: var(--accent);
+	}
+	& .v {
+		color: var(--muted);
+		font-size: 0.82rem;
+	}
+	& p {
+		margin: 0.2rem 0 0;
+		color: var(--muted);
+		font-size: 0.86rem;
+	}
+	&:hover .pkg__arrow {
+		color: var(--accent);
+		transform: translateX(3px);
+	}
+}
+.pkg__main {
+	min-width: 0;
+}
+.pkg__arrow {
+	color: var(--muted);
+	font-size: 1rem;
+	flex: 0 0 auto;
+	transition: transform 0.15s ease, color 0.15s ease;
+}
