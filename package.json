@@ -388,7 +388,7 @@
 	"dependencies": {
 		"@types/vscode": "^1.125.0",
 		"@vscode/vsce": "^3.9.2",
-		"astro": "~7.3.8",
+		"astro": "~7.4.7",
 		"simple-icons": "^16.24.0"
 	}
 }
