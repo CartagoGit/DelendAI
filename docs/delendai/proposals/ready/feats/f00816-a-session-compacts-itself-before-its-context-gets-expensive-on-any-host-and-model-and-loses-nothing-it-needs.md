@@ -70,7 +70,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 ### S3 — Session handover from delendai's own stores
 - **Status**: pending
 - **Extends**: `packages/core/src/lib/work-units/work-unit.service.ts`, `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`
-- **Files**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/core/tests/src/lib/work-units/session-handover.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/core/src/lib/work-units/session-handover.interface.ts`, `packages/core/tests/src/lib/work-units/session-handover.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Before compaction the handover is persisted from the stores: invariants, decisions with reasons, unit states, pending and done work, branches, commits, PRs, evidence, test results, known errors and blockers."
