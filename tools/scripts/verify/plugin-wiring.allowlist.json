@@ -1,0 +1,6 @@
+{
+	"execution-env": "half-built: no vitest alias, no defaults entry and no preset; the half-built-packages proposal finishes or removes it",
+	"framework-knowledge": "half-built: no vitest alias, no defaults entry and no preset; the half-built-packages proposal finishes or removes it",
+	"self-learning": "half-built: no vitest alias, no defaults entry and no preset; the half-built-packages proposal finishes or removes it",
+	"style-convention": "half-built: no vitest alias, no defaults entry and no preset; the half-built-packages proposal finishes or removes it"
+}
