@@ -21,6 +21,7 @@ interface IRegisteredTool {
 		consent?: boolean;
 		install?: boolean;
 		installProviderId?: string;
+		taskType?: string;
 	}) => Promise<{ structuredContent?: Record<string, unknown> }>;
 }
 
@@ -35,6 +36,7 @@ const capture = async (
 	}>,
 	runProvider?: IRunEscalationDeps['runProvider'],
 	checkAcceptance?: IRunEscalationDeps['checkAcceptance'],
+	tierFor?: Parameters<typeof buildAutoRunRegistration>[0]['tierFor'],
 ): Promise<IRegisteredTool> => {
 	let tool: IRegisteredTool | undefined;
 	const server = {
@@ -55,6 +57,7 @@ const capture = async (
 		...(installRunner !== undefined ? { installRunner } : {}),
 		...(runProvider !== undefined ? { runProvider } : {}),
 		...(checkAcceptance !== undefined ? { checkAcceptance } : {}),
+		...(tierFor !== undefined ? { tierFor } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!tool) throw new Error('auto_run did not register');
@@ -68,7 +71,7 @@ const deps: IDiscoveryDeps = {
 };
 
 describe('auto_run tool', () => {
-	it('returns an escalation ladder starting cheap and climbing, with execution left null by default', async () => {
+	it('[<200ms] returns an escalation ladder starting cheap and climbing, with execution left null by default', async () => {
 		const tool = await capture(deps);
 		const res = await tool.handler({});
 		const body = res.structuredContent as {
@@ -86,7 +89,7 @@ describe('auto_run tool', () => {
 		expect(body.execution).toBeNull();
 	});
 
-	it('honours a cost ceiling — never plans a rung above it', async () => {
+	it('[<200ms] honours a cost ceiling — never plans a rung above it', async () => {
 		const tool = await capture(deps);
 		const res = await tool.handler({ costCeiling: 2 });
 		const body = res.structuredContent as {
@@ -96,7 +99,7 @@ describe('auto_run tool', () => {
 		expect(body.ladder.every((r) => r.costTier <= 2)).toBe(true);
 	});
 
-	it('persists discovery before planning a route', async () => {
+	it('[<200ms] persists discovery before planning a route', async () => {
 		let saves = 0;
 		const tool = await capture(deps, {
 			save: async () => {
@@ -107,7 +110,7 @@ describe('auto_run tool', () => {
 		expect(saves).toBe(1);
 	});
 
-	it('returns a trusted install hint when no provider is reachable', async () => {
+	it('[<200ms] returns a trusted install hint when no provider is reachable', async () => {
 		const tool = await capture({
 			commandExists: async () => false,
 			env: {},
@@ -123,7 +126,7 @@ describe('auto_run tool', () => {
 		);
 	});
 
-	it('runs only the catalogue argv after explicit install consent', async () => {
+	it('[<200ms] runs only the catalogue argv after explicit install consent', async () => {
 		const received: Array<readonly [string, ...string[]]> = [];
 		const tool = await capture(
 			{ commandExists: async () => false, env: {} },
@@ -155,7 +158,7 @@ describe('auto_run tool', () => {
 		);
 	});
 
-	it('executes the first rung and stops when it passes acceptance', async () => {
+	it('[<200ms] executes the first rung and stops when it passes acceptance', async () => {
 		const calls: string[] = [];
 		const tool = await capture(
 			deps,
@@ -188,7 +191,7 @@ describe('auto_run tool', () => {
 		]);
 	});
 
-	it('escalates to the second rung when the first fails acceptance', async () => {
+	it('[<200ms] does not escalate to the second rung when the first fails acceptance', async () => {
 		const calls: string[] = [];
 		const tool = await capture(
 			deps,
@@ -213,16 +216,14 @@ describe('auto_run tool', () => {
 				attempts: { id: string; passed: boolean }[];
 			};
 		};
-		expect(calls).toEqual(['groq-api', 'claude-cli']);
-		expect(body.execution.ok).toBe(true);
-		expect(body.execution.chosen?.id).toBe('claude-cli');
+		expect(calls).toEqual(['groq-api']);
+		expect(body.execution.ok).toBe(false);
 		expect(body.execution.attempts).toEqual([
 			{ id: 'groq-api', passed: false },
-			{ id: 'claude-cli', passed: true },
 		]);
 	});
 
-	it('reports an unsuccessful execution when every rung fails', async () => {
+	it('[<200ms] reports an unsuccessful execution when the first rung fails', async () => {
 		const tool = await capture(
 			deps,
 			undefined,
@@ -247,11 +248,10 @@ describe('auto_run tool', () => {
 		expect(body.execution.chosen).toBeNull();
 		expect(body.execution.attempts).toEqual([
 			{ id: 'groq-api', passed: false },
-			{ id: 'claude-cli', passed: false },
 		]);
 	});
 
-	it('requires explicit consent before execute mode is valid', async () => {
+	it('[<200ms] requires explicit consent before execute mode is valid', async () => {
 		const tool = await capture(deps);
 		expect(
 			tool.def.inputSchema.safeParse({
@@ -266,5 +266,55 @@ describe('auto_run tool', () => {
 				consent: true,
 			}).success,
 		).toBe(true);
+	});
+
+	it('[<200ms] plans no route and names the blocker when the task class needs an unauthorized tier', async () => {
+		const tool = await capture(
+			deps,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			() => ({ ok: false, blocker: 'needs owner authorization' }),
+		);
+		const body = (await tool.handler({ taskType: 'architecture' }))
+			.structuredContent as { ladder: unknown[]; blocker: string };
+		expect(body.ladder).toEqual([]);
+		expect(body.blocker).toBe('needs owner authorization');
+	});
+
+	it('[<200ms] caps the ladder at the tier the task class maps to', async () => {
+		const tool = await capture(
+			deps,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			() => ({ ok: true, tier: 1 }),
+		);
+		const body = (await tool.handler({ taskType: 'mechanical' }))
+			.structuredContent as {
+			ladder: { costTier: number }[];
+			blocker: null;
+			costCeiling: number;
+		};
+		expect(body.costCeiling).toBe(1);
+		expect(body.blocker).toBeNull();
+		expect(body.ladder.every((rung) => rung.costTier <= 1)).toBe(true);
+	});
+
+	it('[<200ms] hands the first rung to the host when no executor is injected', async () => {
+		const tool = await capture(deps);
+		const body = (
+			await tool.handler({
+				task: 'ship it',
+				execute: true,
+				consent: true,
+			})
+		).structuredContent as {
+			execution: { ok: boolean; attempts: { id: string }[] };
+		};
+		expect(body.execution.ok).toBe(false);
+		expect(body.execution.attempts).toHaveLength(1);
 	});
 });
