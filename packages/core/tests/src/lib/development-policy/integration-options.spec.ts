@@ -11,6 +11,7 @@ describe('the integration options', () => {
 		expect(integration.batching).toBe('overlap');
 		expect(integration.labels.prefix).toBe('delendai');
 		expect(integration.derived).toEqual({ paths: [], command: '' });
+		expect(integration.commands).toEqual({ jobs: '', normalizeBatch: '' });
 		expect(integration.watchdog.enabled).toBe(true);
 		expect(integration.rehearsal.scenarios).toEqual(['all']);
 	});
@@ -21,6 +22,7 @@ describe('the integration options', () => {
 				integration: {
 					identity: { kind: 'pat', tokenSecret: 'MY_TOKEN' },
 					derived: { paths: ['gen/**'], command: 'make gen' },
+					commands: { jobs: 'make jobs' },
 					zones: ['a/*'],
 					signalWorkflows: ['ci'],
 					scanWorkflows: ['scan'],
@@ -38,6 +40,10 @@ describe('the integration options', () => {
 			tokenSecret: 'MY_TOKEN',
 		});
 		expect(integration.derived.command).toBe('make gen');
+		expect(integration.commands).toEqual({
+			jobs: 'make jobs',
+			normalizeBatch: '',
+		});
 		expect(integration.zones).toEqual(['a/*']);
 		expect(integration.signalWorkflows).toEqual(['ci']);
 		expect(integration.scanWorkflows).toEqual(['scan']);

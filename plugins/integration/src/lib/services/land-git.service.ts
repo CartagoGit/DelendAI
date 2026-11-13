@@ -1,33 +1,39 @@
 /**
- * land-git.ts — `ILandGit` on a real clone: the footprint comes from the
- * planner that picks a pull request's CI sections, a trial merge from the
- * same assembly a batch is built with, and the batch itself from
- * `assembleTrain` (merge, regenerate once, push).
+ * land-git.service.ts — `ILandGit` on a real clone. The footprint is the
+ * project's own (a port), a trial merge uses the same assembly a batch is
+ * built with, and the batch itself is `assembleTrain` (merge, normalize,
+ * regenerate once, push). Nothing here names a project.
  */
-import { execFileSync } from 'node:child_process';
-
-import type { ITrainCandidate } from '@delendai/core/cli';
+import type {
+	ILandConflict,
+	ILandGit,
+	ITrainCandidate,
+} from '@delendai/core/cli';
 
 import {
-	GENERATED_REFRESH_COMMANDS,
-	REGENERATED_PROJECTIONS,
-} from './land-derived.constant';
-import { footprintBetween } from './candidate-footprint';
-import type { ILandConflict, ILandGit } from '@delendai/core/cli';
-import { assembleTrain, discardTrain, regenerateWith } from './train-assembly';
+	BATCH_REGENERATION_SUBJECT,
+	LAND_TRIAL_REF,
+} from '../contracts/constants/integration-pass.constant';
+import type {
+	IGitExec,
+	ILandProjectPorts,
+} from '../contracts/interfaces/integration-pass.interface';
 
-const git = (root: string, args: readonly string[]): string =>
-	execFileSync('git', [...args], {
-		cwd: root,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-	}).trim();
+import {
+	assembleTrain,
+	discardTrain,
+	runGit,
+} from './land-train-assembly.helper';
 
 export const createLandGit = (input: {
 	readonly root: string;
 	readonly remote: string;
+	readonly ports: ILandProjectPorts;
+	readonly exec?: IGitExec;
 }): ILandGit => {
-	const { root, remote } = input;
+	const { root, remote, ports } = input;
+	const git = input.exec ?? runGit;
+	const normalizing = { normalize: ports.normalizeBatch };
 	const have = (sha: string): void => {
 		try {
 			git(root, ['cat-file', '-e', `${sha}^{commit}`]);
@@ -47,12 +53,12 @@ export const createLandGit = (input: {
 			root,
 			remote,
 			tipSha: tip,
-			ref: 'land/trial',
+			ref: LAND_TRIAL_REF,
 			members,
 			derived: new Set(),
 			regenerate: () => true,
-			linkDependencies: () => true,
 			rehearsal: true,
+			...normalizing,
 		});
 		if (built.scratch === undefined) return undefined;
 		try {
@@ -67,12 +73,12 @@ export const createLandGit = (input: {
 		footprint: (pr) => {
 			have(pr.testedBase);
 			have(pr.headSha);
-			return footprintBetween(root, pr.testedBase, pr.headSha);
+			return ports.footprintOf(pr.testedBase, pr.headSha);
 		},
 		landedSince: (base, tip) => {
 			have(base);
 			have(tip);
-			return footprintBetween(root, base, tip);
+			return ports.footprintOf(base, tip);
 		},
 		conflictOf: (pr, tip): ILandConflict => {
 			have(pr.headSha);
@@ -96,7 +102,7 @@ export const createLandGit = (input: {
 				root,
 				remote,
 				tipSha: tip,
-				ref: 'land/trial',
+				ref: LAND_TRIAL_REF,
 				members: [
 					{
 						number: pr.number,
@@ -104,10 +110,10 @@ export const createLandGit = (input: {
 						headSha: pr.headSha,
 					},
 				],
-				derived: REGENERATED_PROJECTIONS,
+				derived: ports.derivedPaths,
 				regenerate: () => true,
-				linkDependencies: () => true,
 				rehearsal: true,
+				...normalizing,
 			});
 			if (built.scratch !== undefined) discardTrain(root, built.scratch);
 			if (built.conflicting.length > 0) return 'authored';
@@ -128,8 +134,9 @@ export const createLandGit = (input: {
 				tipSha: tip,
 				ref,
 				members,
-				derived: REGENERATED_PROJECTIONS,
-				regenerate: regenerateWith(GENERATED_REFRESH_COMMANDS),
+				derived: ports.derivedPaths,
+				regenerate: ports.regenerate,
+				...normalizing,
 			});
 			if (
 				built.conflicting.length > 0 ||
@@ -155,7 +162,7 @@ export const createLandGit = (input: {
 				'-1',
 				'--format=%s',
 				sha,
-			]).startsWith('chore(generated)');
+			]).startsWith(BATCH_REGENERATION_SUBJECT);
 			return { conflicting: [], sha, regenerated };
 		},
 		treeOf: (sha) => {

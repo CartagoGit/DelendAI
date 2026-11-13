@@ -255,15 +255,16 @@ Nothing of this repository is emitted into the other project.
   - "The known-red list names each red scenario and the slice that fixes it; it may only shrink, and activation requires it empty"
   - "Where today's triggers cannot fire from a non-default branch, the harness dispatches the pass and counts each such wake as a manual step, so F4 shows as red"
 
-### S4 — land moves into the plugin unchanged
+### S4 — `delendai integration pass`: a project that adopts the flow runs the integrator without this repository's tools
 - **Status**: pending
 - **DependsOn**: [S3]
-- **Files**: `packages/core/src/lib/integration/land/land.interface.ts`, `packages/core/src/lib/integration/land/github-land-forge.service.ts`, `packages/core/src/lib/integration/land/land-config.helper.ts`, `packages/core/src/lib/integration/land/land.constant.ts`, `tools/scripts/forge/land.script.ts`, `tools/scripts/forge/land-fake.ts`, `tools/scripts/forge/land.spec.ts`, `tools/scripts/forge/land-git.ts`, `tools/scripts/forge/land-policy.ts`, `tools/scripts/forge/land-derived.constant.ts`, `tools/scripts/forge/land-rehearsal.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/integration-engine.interface.ts`, `packages/core/src/lib/contracts/constants/integration-options.constant.ts`, `packages/core/src/lib/development-policy/integration-options.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/integration-options-schema.constant.ts`, `plugins/integration/src/lib/services/integration-pass.service.ts`, `plugins/integration/src/lib/services/land-project-ports.helper.ts`, `plugins/integration/src/lib/services/land-zones.helper.ts`, `plugins/integration/src/lib/services/land-git.service.ts`, `plugins/integration/src/lib/services/land-train-assembly.helper.ts`, `plugins/integration/src/lib/services/land-bring-forward.helper.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `plugins/integration/src/lib/contracts/constants/integration-pass.constant.ts`, `packages/cli/src/commands/integration-pass.command.ts`, `packages/cli/src/commands/integration.command.ts`, `tools/scripts/forge/land.script.ts`, `tools/scripts/forge/land-jobs.script.ts`, `tools/scripts/forge/land-forward.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-pass-equivalence.spec.ts`, `delendai.config.json`
 - **Gate**: none
 - acceptance:
-  - "Every module of `packages/core/src/lib/integration/land/`, `tools/scripts/forge/land*.ts`, `bring-forward.script.ts` and `train-assembly.ts` moves to `plugins/integration/src/lib/land/` with its spec, by `git mv`, with no behaviour change (except `land-follow-ups.helper.ts`, which stays until S6 deletes it); the decisions module and the protocol helper stay in core, which the guard, lints and extension read"
-  - "The pass runs as `delendai integration pass`; the section function, the forge adapter and the derived-file command are injected, so nothing in the plugin names this repository"
-  - "The fast rehearsal gives the same verdict per scenario before and after the move"
+  - "`delendai integration pass` runs one integrator pass: the CLI resolves the policy and the forge CLI and calls one composition function of the integration plugin; the generic integrator stays in core, which plugins and the CLI import and never the reverse"
+  - "The composition builds its ports from `development.integration` (`derived`, `zones`, and the optional `commands.jobs` and `commands.normalizeBatch`), each with a default, so a project with no tools of its own needs only configuration; the plugin imports nothing from `tools/`"
+  - "`tools/scripts/forge/land.script.ts` is a thin caller of the same function, and a spec with the in-memory forge shows the script and `integration pass` make the same decisions and the same forge calls, in order"
+  - "The land workflow renderer emits the command that runs `integration pass`, and the committed file equals the renderer's output; the engine stays `none` and `land.yml` stays absent while integration is paused"
 
 ### S5 — The integration options in the policy
 - **Status**: pending

@@ -1,5 +1,5 @@
 /**
- * integration.command.ts — `delendai integration rehearse` and `doctor`.
+ * integration.command.ts — `delendai integration rehearse`, `doctor`, `adopt` and `pass`.
  *
  * It only wires ports: `gh` as the signed-in user, the real clock, the
  * project's policy and files. The rehearsal itself, its scenarios and its
@@ -39,9 +39,10 @@ import type {
 
 import { runIntegrationAdopt } from './integration-adopt.command';
 import { runIntegrationDoctor } from './integration-doctor.command';
+import { runIntegrationPassCommand } from './integration-pass.command';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const spawnGh = (
@@ -95,6 +96,7 @@ export const createIntegrationCommand = (
 		const [sub, ...rest] = args;
 		if (sub === 'doctor') return runIntegrationDoctor(rest, ctx, runGh);
 		if (sub === 'adopt') return runIntegrationAdopt(rest, ctx);
+		if (sub === 'pass') return runIntegrationPassCommand(ctx, runGh);
 		if (sub !== 'rehearse') return usage(USAGE);
 		const mode = scalarArg(rest, 'mode') ?? 'fast';
 		if (!(INTEGRATION_REHEARSAL_MODES as readonly string[]).includes(mode))

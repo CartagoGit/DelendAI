@@ -27,6 +27,11 @@ export const resolveIntegrationOptions = (
 		paths: [...(input?.derived?.paths ?? base.derived.paths)],
 		command: input?.derived?.command ?? base.derived.command,
 	},
+	commands: {
+		jobs: input?.commands?.jobs ?? base.commands.jobs,
+		normalizeBatch:
+			input?.commands?.normalizeBatch ?? base.commands.normalizeBatch,
+	},
 	zones: [...(input?.zones ?? base.zones)],
 	signalWorkflows: [...(input?.signalWorkflows ?? base.signalWorkflows)],
 	scanWorkflows: [...(input?.scanWorkflows ?? base.scanWorkflows)],

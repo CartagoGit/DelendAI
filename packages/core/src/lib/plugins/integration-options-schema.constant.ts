@@ -85,6 +85,24 @@ export const IntegrationOptionsShape = {
 		.strict()
 		.describe('How a conflict in generated files is resolved.')
 		.optional(),
+	commands: z
+		.object({
+			jobs: z
+				.string()
+				.describe(
+					'A command that prints the zones a change from <base> to <head> can affect, one per line, or `*` for all; both revisions are appended as arguments.',
+				)
+				.optional(),
+			normalizeBatch: z
+				.string()
+				.describe(
+					'A command run in a batch tree after its members merged and before the derived files are regenerated.',
+				)
+				.optional(),
+		})
+		.strict()
+		.describe('Commands the project owns that the integrator runs.')
+		.optional(),
 	zones: names('A glob that declares one zone of the project.')
 		.describe(
 			'The zones (sections) the project is split into, used to group pull requests and to dispatch CI.',

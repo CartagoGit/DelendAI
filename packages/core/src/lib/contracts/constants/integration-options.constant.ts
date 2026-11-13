@@ -14,6 +14,7 @@ export const DEFAULT_INTEGRATION_OPTIONS: IPolicyIntegrationOptions = {
 	batching: 'overlap',
 	labels: { prefix: 'delendai' },
 	derived: { paths: [], command: '' },
+	commands: { jobs: '', normalizeBatch: '' },
 	zones: [],
 	signalWorkflows: [],
 	scanWorkflows: [],

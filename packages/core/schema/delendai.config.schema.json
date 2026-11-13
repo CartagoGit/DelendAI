@@ -670,6 +670,21 @@
 							"additionalProperties": false,
 							"description": "How a conflict in generated files is resolved."
 						},
+						"commands": {
+							"type": "object",
+							"properties": {
+								"jobs": {
+									"type": "string",
+									"description": "A command that prints the zones a change from <base> to <head> can affect, one per line, or `*` for all; both revisions are appended as arguments."
+								},
+								"normalizeBatch": {
+									"type": "string",
+									"description": "A command run in a batch tree after its members merged and before the derived files are regenerated."
+								}
+							},
+							"additionalProperties": false,
+							"description": "Commands the project owns that the integrator runs."
+						},
 						"zones": {
 							"type": "array",
 							"items": {

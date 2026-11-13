@@ -39,7 +39,7 @@ export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 	releaseBranch: 'main',
 	identity: DEFAULT_INTEGRATION_OPTIONS.identity,
 	cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
-	passCommand: 'bun tools/scripts/forge/land.script.ts',
+	passCommand: 'bun packages/cli/src/index.ts integration pass',
 	derived: {
 		prepareCommand:
 			'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',

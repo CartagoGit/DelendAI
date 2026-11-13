@@ -168,12 +168,13 @@ describe('the cutover to land', () => {
 				),
 		);
 		expect(writes).toEqual([]);
-		// The two scripts that act on pull requests refuse under any other engine.
-		for (const script of ['land.script.ts', 'bring-forward.script.ts']) {
-			const source = readFileSync(
-				join(ROOT, 'tools/scripts/forge', script),
-				'utf8',
-			);
+		// The two that act on pull requests refuse under any other engine: the
+		// pass lives in the integration plugin, the script this repository keeps.
+		for (const path of [
+			'plugins/integration/src/lib/services/integration-pass.service.ts',
+			'tools/scripts/forge/bring-forward.script.ts',
+		]) {
+			const source = readFileSync(join(ROOT, path), 'utf8');
 			expect(source).toMatch(/\.integration\.engine (?:!==|===) 'land'/u);
 		}
 	});

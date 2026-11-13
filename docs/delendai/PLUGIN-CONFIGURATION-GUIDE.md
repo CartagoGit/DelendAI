@@ -207,6 +207,7 @@ one has a default, and with `engine: none` nothing integrates.
 | `requiredChecks` | The project's own CI jobs that must be green. |
 | `zones` | Globs that declare the project's sections, for grouping. |
 | `derived` | `paths` the project regenerates and the `command` that does it. |
+| `commands` | Project commands the pass runs: `jobs` prints the zones a change reaches (one per line, `*` for all; both revisions are appended), `normalizeBatch` runs in a batch tree before its derived files are regenerated. Empty means none. |
 | `signalWorkflows`, `scanWorkflows` | The workflows whose end wakes the integrator, and those that scan the integration branch. |
 | `watchdog` | The hourly alarm on the default branch. |
 

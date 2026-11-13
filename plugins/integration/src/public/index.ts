@@ -31,3 +31,16 @@ export {
 	renderAdoptedRehearsalWorkflow,
 	renderSignalJob,
 } from '../lib/services/integration-adoption.service';
+export type * from '../lib/contracts/interfaces/integration-pass.interface';
+export * from '../lib/contracts/constants/integration-pass.constant';
+export { runIntegrationPass } from '../lib/services/integration-pass.service';
+export {
+	createBringForward,
+	identityPushEnv,
+	plainMerge,
+} from '../lib/services/land-bring-forward.helper';
+export {
+	assembleTrain,
+	discardTrain,
+	runGit,
+} from '../lib/services/land-train-assembly.helper';

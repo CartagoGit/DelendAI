@@ -31,6 +31,22 @@ export interface IIntegrationDerived {
 	readonly command: string;
 }
 
+/**
+ * Commands a project owns that the integrator runs in its own checkout.
+ * An empty string means the project has none: the integrator then falls
+ * back to the policy's `zones` and does nothing extra to a batch.
+ */
+export interface IIntegrationCommands {
+	/**
+	 * Prints the zones (CI jobs) a change from `<base>` to `<head>` can
+	 * affect, one per line, or `*` for all of them. Run with those two
+	 * revisions as its last arguments.
+	 */
+	readonly jobs: string;
+	/** Run in a batch's tree after its members merged, before the derived files are regenerated. */
+	readonly normalizeBatch: string;
+}
+
 /** The hourly safety net on the default branch. */
 export interface IIntegrationWatchdog {
 	readonly enabled: boolean;
@@ -50,6 +66,7 @@ export interface IPolicyIntegrationOptions {
 	/** The prefix of the labels the integrator owns. */
 	readonly labels: { readonly prefix: string };
 	readonly derived: IIntegrationDerived;
+	readonly commands: IIntegrationCommands;
 	/** Globs that declare the project's zones (sections), for grouping and dispatch. */
 	readonly zones: readonly string[];
 	/** The workflows whose completion signals the integrator. */

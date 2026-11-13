@@ -101,6 +101,12 @@ export interface IDevelopmentConfigInput {
 							readonly command?: string | undefined;
 					  }
 					| undefined;
+				readonly commands?:
+					| {
+							readonly jobs?: string | undefined;
+							readonly normalizeBatch?: string | undefined;
+					  }
+					| undefined;
 				readonly zones?: readonly string[] | undefined;
 				readonly signalWorkflows?: readonly string[] | undefined;
 				readonly scanWorkflows?: readonly string[] | undefined;
