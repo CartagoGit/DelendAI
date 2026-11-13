@@ -35,7 +35,7 @@ const TRIVIAL_TASK: ITask = {
 };
 
 describe('createOrchestratorEngine', () => {
-	it('returns an engine that plans via the chosen default mode', () => {
+	it('[<200ms] returns an engine that plans via the chosen default mode', () => {
 		const eng = createOrchestratorEngine({
 			...POLICY,
 			defaultMode: 'single',
@@ -45,7 +45,7 @@ describe('createOrchestratorEngine', () => {
 		expect(plan.steps[0]?.kind).toBe('orchestrate');
 	});
 
-	it('falls back to auto when the chosen default declines the task', () => {
+	it('[<200ms] falls back to auto when the chosen default declines the task', () => {
 		// `single` declines tasks tagged `refactor`; auto → linear takes over.
 		const eng = createOrchestratorEngine({
 			...POLICY,
@@ -61,14 +61,14 @@ describe('createOrchestratorEngine', () => {
 		expect(plan.rationale).toMatch(/linear/);
 	});
 
-	it('lists all four modes', () => {
+	it('[<200ms] lists all four modes', () => {
 		const eng = createOrchestratorEngine(POLICY);
 		expect([...eng.listModes()].sort()).toEqual(
 			['auto', 'linear', 'single', 'swarm'].sort(),
 		);
 	});
 
-	it('throws when no adapter is registered for the default mode', () => {
+	it('[<200ms] throws when no adapter is registered for the default mode', () => {
 		// We construct a registry manually with no adapters and set
 		// defaultMode to `swarm`. The engine must throw UnknownModeError.
 		expect(() => {
@@ -90,11 +90,11 @@ describe('createOrchestratorEngine', () => {
 });
 
 describe('assertPolicyValid', () => {
-	it('accepts a valid policy', () => {
+	it('[<200ms] accepts a valid policy', () => {
 		expect(() => assertPolicyValid(POLICY)).not.toThrow();
 	});
 
-	it('rejects unknown mode', () => {
+	it('[<200ms] rejects unknown mode', () => {
 		expect(() =>
 			assertPolicyValid({
 				...POLICY,
@@ -104,7 +104,7 @@ describe('assertPolicyValid', () => {
 		).toThrow(/defaultMode/);
 	});
 
-	it('rejects negative budget caps', () => {
+	it('[<200ms] rejects negative budget caps', () => {
 		expect(() =>
 			assertPolicyValid({
 				...POLICY,
@@ -119,7 +119,27 @@ describe('assertPolicyValid', () => {
 		).toThrow(/maxTokensOrchestrator/);
 	});
 
-	it('rejects a negative per-subagent budget cap', () => {
+	it('[<200ms] rejects a negative call, turn, retry, concurrency or barren-turn limit', () => {
+		for (const name of [
+			'maxCalls',
+			'maxTurns',
+			'maxRetries',
+			'maxConcurrency',
+			'maxBarrenTurns',
+		]) {
+			expect(() =>
+				assertPolicyValid({
+					...POLICY,
+					defaults: {
+						...POLICY.defaults,
+						budget: { ...POLICY.defaults.budget, [name]: -1 },
+					},
+				}),
+			).toThrow(new RegExp(name));
+		}
+	});
+
+	it('[<200ms] rejects a negative per-subagent budget cap', () => {
 		expect(() =>
 			assertPolicyValid({
 				...POLICY,
@@ -134,13 +154,13 @@ describe('assertPolicyValid', () => {
 		).toThrow(/maxTokensPerSubagent/);
 	});
 
-	it('rejects a null/undefined policy up front', () => {
+	it('[<200ms] rejects a null/undefined policy up front', () => {
 		expect(() =>
 			assertPolicyValid(undefined as unknown as IOrchestratorPolicy),
 		).toThrow(TypeError);
 	});
 
-	it('rejects zero maxIterationsPerSubagent', () => {
+	it('[<200ms] rejects zero maxIterationsPerSubagent', () => {
 		expect(() =>
 			assertPolicyValid({
 				...POLICY,
@@ -157,7 +177,7 @@ describe('assertPolicyValid', () => {
 });
 
 describe('OrchestratorEngine.plan — unknown default mode', () => {
-	it('throws UnknownModeError when the policy names a mode with no registered adapter', () => {
+	it('[<200ms] throws UnknownModeError when the policy names a mode with no registered adapter', () => {
 		// createOrchestratorEngine always registers all four modes; this
 		// constructs a deliberately incomplete registry the way a host
 		// embedding a custom mode set could, to prove `plan()` itself

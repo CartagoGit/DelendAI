@@ -134,6 +134,18 @@ export function assertPolicyValid(policy: IOrchestratorPolicy): void {
 	if (policy.defaults.budget.maxTokensPerSubagent < 0) {
 		throw new RangeError('budget.maxTokensPerSubagent must be ≥ 0');
 	}
+	const { budget } = policy.defaults;
+	for (const [name, value] of [
+		['maxCalls', budget.maxCalls],
+		['maxTurns', budget.maxTurns],
+		['maxRetries', budget.maxRetries],
+		['maxConcurrency', budget.maxConcurrency],
+		['maxBarrenTurns', budget.maxBarrenTurns],
+	] as const) {
+		if (value !== undefined && value < 0) {
+			throw new RangeError(`budget.${name} must be ≥ 0`);
+		}
+	}
 	if (policy.defaults.rotation.maxIterationsPerSubagent <= 0) {
 		throw new RangeError('rotation.maxIterationsPerSubagent must be ≥ 1');
 	}
