@@ -53,6 +53,7 @@ import {
 import { touchesIntegrationMachinery } from '../forge/land-rehearsal';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
+import { bunSuiteCommand, splitByRunner } from './bun-near-specs';
 import { chooseSelectionBase } from './proved-ancestors';
 import {
 	proofGitReader,
@@ -479,56 +480,57 @@ const PROPOSAL_GENERATORS: readonly (readonly [string, readonly string[]])[] = [
 /** A file that can change what a tool tells the site. */
 const TOOL_SOURCE = /^(plugins|packages)\/.*\.tool\.ts$/u;
 
-/** Where a change needs the bun-only suite, which vitest never runs. */
-const BUN_SUITE =
-	/^(plugins\/proposals|packages\/proposals-sqlite|packages\/state-sqlite)\//u;
-
 /** The fast proof's test steps, for the paths a change touched. */
 export const fastSteps = (
 	changed: readonly string[],
 	specs: readonly string[],
 	base: string,
-): readonly (readonly [string, readonly string[]])[] => [
-	...(specs.length === 0
-		? []
-		: ([
-				[
-					'tests: the specs nearest the change',
+): readonly (readonly [string, readonly string[]])[] => {
+	// vitest never runs the bun-owned specs: `bun test` runs those near the change.
+	const { vitest, bun } = splitByRunner(specs);
+	const bunSuite = bunSuiteCommand(changed, bun);
+	return [
+		...(vitest.length === 0
+			? []
+			: ([
 					[
-						// Not npx: it hands the command to `sh -c` as one string,
-						// and a change that reaches every spec (the shared test
-						// config) names more than the 128 KB one argument allows.
-						'bunx',
-						'vitest',
-						'run',
-						'--coverage',
-						'--passWithNoTests',
-						...specs,
+						'tests: the specs nearest the change',
+						[
+							// Not npx: it hands the command to `sh -c` as one string,
+							// and a change that reaches every spec (the shared test
+							// config) names more than the 128 KB one argument allows.
+							'bunx',
+							'vitest',
+							'run',
+							'--coverage',
+							'--passWithNoTests',
+							...vitest,
+						],
 					],
-				],
-				[
-					'changed-file coverage',
 					[
-						'bun',
-						'tools/scripts/ci/changed-file-coverage.script.ts',
-						`--base=${base}`,
+						'changed-file coverage',
+						[
+							'bun',
+							'tools/scripts/ci/changed-file-coverage.script.ts',
+							`--base=${base}`,
+						],
 					],
-				],
-			] as const)),
-	// The machinery that builds, pushes and judges a batch is rehearsed on
-	// one, so the layer that would fail land live fails here first.
-	...(touchesIntegrationMachinery(changed)
-		? ([
-				[
-					'land rehearsal',
-					['bun', 'tools/scripts/forge/land-rehearsal.script.ts'],
-				],
-			] as const)
-		: []),
-	...(changed.some((path) => BUN_SUITE.test(path))
-		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
-		: []),
-];
+				] as const)),
+		// The machinery that builds, pushes and judges a batch is rehearsed on
+		// one, so the layer that would fail land live fails here first.
+		...(touchesIntegrationMachinery(changed)
+			? ([
+					[
+						'land rehearsal',
+						['bun', 'tools/scripts/forge/land-rehearsal.script.ts'],
+					],
+				] as const)
+			: []),
+		...(bunSuite === undefined
+			? []
+			: ([['test:sqlite', bunSuite]] as const)),
+	];
+};
 
 /**
  * What fails in seconds runs first and ends the proof: a budget overshot by 27
