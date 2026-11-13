@@ -16,11 +16,12 @@ orphaned-work, work-ref-lifecycle and shared-checkout-shell-rescue specs overran
 
 ## why
 
-TODO: why this work matters now.
+CI measured 699, 326 and 49 ms against budgets of 503, 193 and 35 ms. Each test ran a dozen to twenty git processes (fixture setup and the service's own reads), and the orphaned-work reading also scanned every process of the machine in /proc, so the time follows the runner's load and no budget describes it. The services already read git through one seam, so a spec can hand it a table.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The other specs that spawn processes; the count is reported, not fixed here.
+- Any change of behaviour: the one added seam, an injected machine reader, defaults to the real scan.
 
 ## slices
 
@@ -33,4 +34,5 @@ TODO: why this work matters now.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The three specs' logic cases run on an in-memory git and spawn no process; each behaviour keeps one real-git e2e spec.
+- No test was removed: every case still has an assertion, in the fast tier or in the e2e spec.

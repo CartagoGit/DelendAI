@@ -2,22 +2,21 @@
  * shared-checkout-shell-rescue.service.spec.ts — after a shell command, an
  * agent that holds a unit and left loose edits in the shared checkout has
  * them rescued, and is told the unit worktree; every other case is silent.
+ *
+ * The cases that decide nothing but "silent" are answered from a table of
+ * what git says, so no process runs; the rescue itself, which moves files
+ * and refs, is proved against a real repository in the e2e spec beside it.
  */
-import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
-import { createGitRepoTemplate } from '@delendai/test-kit';
+import { createInMemoryGit, gitReadCacheOf } from '@delendai/test-kit';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { withGitReadCache } from '@delendai/core/lib/shared/git-read.helper';
 import { rescueAfterShell } from '@delendai/core/lib/work-units/shared-checkout-shell-rescue.service';
 
 const AGENT = 'claude-opus-5-5';
-
-const git = (cwd: string, ...args: string[]): string =>
-	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+const ROOT = '/shared/checkout';
 
 const policy = resolveDevelopmentPolicy({
 	development: {
@@ -26,43 +25,53 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
-const template = createGitRepoTemplate({
-	trunk: 'develop',
-	files: { 'a.txt': 'as it was\n' },
-	worktrees: { unit: `delendai/wip/${AGENT}/implement/x1-S1-g1/probe` },
-});
+/** The porcelain v2 status of a checkout: its branch header, then one entry per path. */
+const status = (...paths: readonly string[]): string =>
+	[
+		'# branch.head develop',
+		...paths.map((path) => `1 .M N... 100644 100644 100644 h1 h2 ${path}`),
+	].join('\0') + '\0';
 
-/** A shared checkout on `develop` where `AGENT` holds one unit worktree. */
-const project = (): { root: string; unit: string } => {
-	const copy = template.copy();
-	return { root: copy.root, unit: copy.worktrees.unit ?? '' };
-};
+/** What git says of a shared checkout on `develop` holding `worktrees`, with `edited` loose. */
+const checkout = (
+	edited: readonly string[],
+	worktrees: readonly (readonly [path: string, branch: string])[] = [],
+): ReturnType<typeof createInMemoryGit> =>
+	createInMemoryGit({
+		'status --porcelain=v2 --branch -z --untracked-files=all': status(
+			...edited,
+		),
+		'worktree list --porcelain': [
+			`worktree ${ROOT}\nHEAD abc\nbranch refs/heads/develop`,
+			...worktrees.map(
+				([path, branch]) =>
+					`worktree ${path}\nHEAD abc\nbranch refs/heads/${branch}`,
+			),
+		].join('\n\n'),
+	});
+
+const rescue = (git: ReturnType<typeof createInMemoryGit>, agent: string) =>
+	withGitReadCache(gitReadCacheOf(git), () =>
+		rescueAfterShell({ cwd: ROOT, agent, policy }),
+	);
 
 describe('rescueAfterShell', () => {
-	it('[<53ms] says nothing for a clean checkout', () => {
-		const { root } = project();
-		expect(rescueAfterShell({ cwd: root, agent: AGENT, policy })).toEqual({
-			outcome: 'none',
-		});
+	it('[<35ms] says nothing for a clean checkout', () => {
+		const git = checkout(
+			[],
+			[['/unit', `delendai/wip/${AGENT}/implement/x1-S1-g1/probe`]],
+		);
+		expect(rescue(git, AGENT)).toEqual({ outcome: 'none' });
+		expect(git.calls).toHaveLength(2);
 	});
 
-	it('[<312ms] rescues loose edits and names the unit worktree', () => {
-		const { root, unit } = project();
-		writeFileSync(join(root, 'a.txt'), 'edited by a heredoc\n');
-		const verdict = rescueAfterShell({ cwd: root, agent: AGENT, policy });
-		expect(verdict.outcome).toBe('rescued');
-		expect(verdict.message).toContain(unit);
-		expect(git(root, 'status', '--porcelain')).toBe('');
-	});
-
-	it('[<96ms] leaves the edits of an agent that holds no unit, and of an unidentified one', () => {
-		const { root } = project();
-		writeFileSync(join(root, 'a.txt'), 'a person edits\n');
+	it('[<35ms] leaves the edits of an agent that holds no unit, and of an unidentified one', () => {
+		const git = checkout(
+			['a.txt'],
+			[['/unit', `delendai/wip/${AGENT}/implement/x1-S1-g1/probe`]],
+		);
 		for (const agent of ['claude-opus-5-6', '']) {
-			expect(rescueAfterShell({ cwd: root, agent, policy }).outcome).toBe(
-				'none',
-			);
+			expect(rescue(git, agent).outcome).toBe('none');
 		}
-		expect(git(root, 'status', '--porcelain')).toBe('M a.txt');
 	});
 });

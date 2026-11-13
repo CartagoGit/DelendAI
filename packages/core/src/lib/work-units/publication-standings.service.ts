@@ -61,6 +61,10 @@ export const readOrphans = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly published: readonly ISwarmUnit[];
 	readonly standings: Parameters<typeof orphanedUnits>[0];
+	/** How the machine's processes are read; the real scan by default. */
+	readonly readMachine?: Parameters<
+		typeof publicationPresence
+	>[0]['readMachine'];
 }): Promise<{
 	readonly orphans: readonly IOrphanedWork[];
 	readonly presence: ReadonlyMap<
@@ -73,6 +77,7 @@ export const readOrphans = async (input: {
 		policy: input.policy,
 		publications: input.published.map((unit) => unit.ref),
 		tips: new Map(input.published.map((unit) => [unit.ref, unit.tip])),
+		readMachine: input.readMachine,
 	});
 	const published = [...presence.entries()].flatMap(
 		([ref, judged]): IOrphanedWork[] =>

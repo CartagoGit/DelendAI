@@ -8,6 +8,7 @@
  */
 import type {
 	IGitAnswers,
+	IGitReadCacheShape,
 	IInMemoryGit,
 } from '../contracts/interfaces/in-memory-git.interface';
 
@@ -26,3 +27,16 @@ export const createInMemoryGit = (answers: IGitAnswers): IInMemoryGit => {
 		},
 	};
 };
+
+/**
+ * What a service that reads git through the shared synchronous seam is
+ * handed (`withGitReadCache`) so its reads are answered from `git` and no
+ * process is spawned. The shape is the seam's own read cache, written out
+ * here so the kit depends on nothing of the package under test.
+ */
+export const gitReadCacheOf = (git: IInMemoryGit): IGitReadCacheShape => ({
+	recall: (spawn) => ({ output: git.run(spawn.cwd, ...spawn.args) }),
+	remember: () => undefined,
+	ran: () => undefined,
+	forgetUnit: () => undefined,
+});

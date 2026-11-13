@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	createGitRepoTemplate,
 	createInMemoryGit,
+	gitReadCacheOf,
 	skipLockPauses,
 	stubAbortSignalTimeout,
 	useFakeClock,
@@ -77,5 +78,16 @@ describe('createGitRepoTemplate', () => {
 		// A commit in one copy is invisible in the other.
 		one.git('commit', '--allow-empty', '-q', '-m', 'only here');
 		expect(two.git('log', '--format=%s', '-1')).toBe('base');
+	});
+});
+
+describe('gitReadCacheOf', () => {
+	it('answers a read from the table and starts no process', () => {
+		const git = createInMemoryGit({ 'status --porcelain': ' M a.txt' });
+		const cache = gitReadCacheOf(git);
+		expect(
+			cache.recall({ cwd: '/x', args: ['status', '--porcelain'] }),
+		).toEqual({ output: ' M a.txt' });
+		expect(git.calls).toEqual(['status --porcelain']);
 	});
 });

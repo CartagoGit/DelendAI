@@ -39,9 +39,10 @@ export type {
 	IGitRepoTemplate,
 	IGitRepoTemplateSpec,
 } from '../contracts/interfaces/git-repo-template.interface';
-export { createInMemoryGit } from '../lib/in-memory-git.helper';
+export { createInMemoryGit, gitReadCacheOf } from '../lib/in-memory-git.helper';
 export type {
 	IGitAnswers,
+	IGitReadCacheShape,
 	IInMemoryGit,
 } from '../contracts/interfaces/in-memory-git.interface';
 
