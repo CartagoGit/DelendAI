@@ -1,0 +1,133 @@
+---
+id: f00511
+title: "F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico"
+kind: feat
+status: done
+type: proposal
+track: trust
+date: 2026-09-06
+shipped-in:
+  - "86bd19eb0"
+  - "0249c4a72dd2"
+parent-plan: q00020
+depends-on:
+    - f00510
+cascadeBoost: shipped-blocking
+tags:
+    - work-telemetry
+    - eta
+    - statistics
+    - non-ml
+last-transition-id: 489c0cd4-5770-4246-b978-1bfb2303b2e1
+last-correlation-id: 489c0cd4-5770-4246-b978-1bfb2303b2e1
+last-transition-from: review
+last-transition-at: 2026-10-11T02:40:32.159Z
+---
+
+# f00511 — F3 — ETA Engine: cálculo puramente estadístico (mediana + p80, sin ML) sobre duración histórica local, con vector de características por hash canónico
+
+## Goal
+
+Calcular la **estimación de tiempo restante** (ETA) para cada `(slice, agent_profile)` a partir de la duración histórica de slices análogos, sin ML ni embeddings. La ETA se modela como `eta: { p50, p80, range }` y se materializa en `progress_snapshots` junto a la confidence y la incertidumbre que ya entrega `f00510`. Cuando el histórico es insuficiente (<5 muestras para la combinación `(feature_vector_hash, actor_profile)`), la ETA devuelve `null` con `reason: 'insufficient_history'` y la UI renderiza `~?`.
+
+## why
+
+El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta". La conversación con ChatGPT del 2026-09-06 cerró la discusión sobre cómo hacerlo: **estadística local sobre eventos propios**, sin llamadas a un LLM, sin embeddings. La razón es doble: (1) DelendAI ya acumula duración de slices reales en `duration_history` si F1/F2 están corriendo, así que el histórico se construye orgánicamente; (2) un predictor aprendido fuera del repo no puede mejorar sobre el histórico local porque no conoce el working set, el agente ni la fase. La condición "ETA inicial ruidosa ⇒ mostrar `~?`" protege al usuario de un número falso durante las primeras sesiones.
+
+## non-goals
+
+- Calcular la duración real de un slice en curso. Eso es `Date.now() − claim_started_at` y lo cubre `f00510` S5 (`subscribe` ya entrega el snapshot incremental).
+- Inventar embeddings o modelos. El vector de características es un objeto plano `{ slice_count, affected_packages, public_api_changes, test_count, loc_changed, complexity_proxy }` que se serializa canónicamente y se hashea con sha256.
+- Re-entrenar el histórico al cierre de cada slice. El insert en `duration_history` se hace en el `proposal_transition → done`, no en un job batch; mantenerlo así evita race conditions con el GC del bus.
+- Cross-project learning. La ETA vive en `.cache/delendai/telemetry/` del proyecto; cross-project es un proposal aparte que puede apoyarse en `usage-tracking` o `memory` si la propuesta dueña lo decide.
+
+## Slices
+
+- global_gate: type
+
+### S1 — `feature-vector.ts` — vector canónico {slice_count, affected_packages, public_api_changes, test_count, loc_changed, complexity_proxy} + sha256
+- **Status**: done
+- **Shipped-In**: b5c63bcb0 feat(state-telemetry): add canonical feature vector (f00511 S1)
+- **Files**: `packages/state-telemetry/src/lib/eta/feature-vector.ts`, `packages/state-telemetry/src/lib/eta/feature-vector.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`computeFeatureVector(proposal, slice, workItem, snapshot)` devuelve `IWorkFeatureVector` con los 6 campos documentados y un método `canonicalHash(): string` estable byte-a-byte."
+  - "Dos propuestas distintas con los mismos 6 campos producen el mismo hash; cambiar 1 campo cambia el hash."
+  - "`complexity_proxy` se calcula como `slice_count × 1.2 + affected_packages × 2.1 + public_api_changes × 3.2 + test_count × 0.7 + loc_changed × 0.0001`, redondeado a 2 decimales."
+  - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
+
+### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
+- **Status**: done
+- **DependsOn**: [F3-S1]
+- **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.ts`, `packages/state-telemetry/src/lib/eta/duration-journal.service.spec.ts`, `packages/state-telemetry/src/lib/eta/index.ts`, `packages/state-telemetry/src/lib/eta/contracts/interfaces/duration-journal.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/proposal-transition-duration.ts`, `plugins/proposals/src/lib/contracts/constants/transition-duration.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/transition-duration.interface.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- **Gate**: `bunx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
+- shipped: the store (`duration_history`, median guard, memory fallback) already existed. `proposal_transition` now stamps `last-transition-at` on every move and, when the target is `done` or `review`, hands a sample (features read from the document, actor = the caller's `agent`, task kind `<kind>:<target>`, duration since the previous stamp) to an injected `durationRecorder` in a microtask after the frontmatter is written; a recorder that throws or rejects is swallowed. The server's recorder appends one JSON line to `<cacheDir>/telemetry/transition-durations.ndjson`; `drainTransitionDurationJournal` in state-telemetry claims that journal by renaming it and records every line into the history.
+- design correction: (1) the proposal says the PK is the triple; the store keeps it as a lookup index with an autoincrement id, because many samples per key are the point (see the header of `duration-history.ts`). (2) The plugin cannot call `recordDuration` directly: `@delendai/proposals` is published and `@delendai/state-telemetry` is private, which `lint:cli-imports` refuses, so the two sides meet in a journal file instead of an import. (3) The transition tool works on whole proposals, so a sample measures the stretch between two status changes, not one slice; the task kind carries the target so building and reviewing never share a key. Nothing calls the drain yet: the reconcile in S4 is its consumer.
+- acceptance:
+  - "Tabla `duration_history` creada con la PK compuesta `(feature_vector_hash, actor_profile, task_kind)`."
+  - "`recordDuration(vector, actor, kind, durationMs, outcome)` se invoca desde `proposal-transition.tool.ts` cuando `to === 'done'` o `to === 'review'`; sin await en el camino crítico (se ejecuta en background tras el `await writeFileAtomic(frontmatter)`)."
+  - "Una transición `done` para un slice con `outcome: 'blocked'` no se inserta (sólo `outcome ∈ {done, review}` cuentan)."
+  - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
+- shipped-in: `186488db1e20`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
+
+### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
+- **Status**: done
+- **DependsOn**: [F3-S2]
+- **Files**: `packages/state-telemetry/src/lib/eta/eta-engine.ts`, `packages/state-telemetry/src/lib/eta/eta-engine.spec.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`computeEta(featureVector, actorProfile, taskKind, observedMs)` devuelve `{ p50: number, p80: number, range: [number, number], sampleSize: number }` o `null` con `reason: 'insufficient_history'` si `sampleSize < 5`."
+  - "La agregación por `(vector, actor)` usa el percentil p80 (no la media) para absorber outliers sin inflar el rango."
+  - "Si `(vector, actor)` tiene <5 muestras pero `(taskKind, actor)` tiene ≥5, se devuelve la ETA agregada por task_kind con `confidence: 0.6` (vs 0.9 del caso específico)."
+  - "Test con fixture `tests/fixtures/eta-fixtures.spec.ts` (≥50 muestras sintéticas): la mediana de error de p50 sobre el dataset es ≤35%."
+  - "`computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`."
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
+
+### S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
+- **Status**: done
+- **DependsOn**: [F3-S3]
+- **Files**: `packages/state-telemetry/src/lib/projector/integration-with-eta.service.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.service.spec.ts`, `packages/state-telemetry/src/lib/projector/contracts/interfaces/eta-integration.interface.ts`, `packages/state-telemetry/src/lib/projector/contracts/constants/eta-integration.constant.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts`
+- **Gate**: `bunx vitest run --root packages/state-telemetry`
+- shipped: `createEtaIntegration` decorates a snapshot with `eta_p50_ms`, `eta_p80_ms` (null without history) and `eta_reason` (`computed` | `insufficient_history`) by calling `computeEta` once per snapshot a reader receives; the producer and the snapshot shape are untouched. `classifyStalledByEta` turns a stalled item plus its p80 into `near-completion`, `far-from-done` or `unknown`, which is what a watchdog needs to tell a stall at the end of its budget from one at the start.
+- design correction: there is no `progress_snapshots` table (the projection is canonical rows held by the State Engine, with the SQLite shadow still to come), so the three fields live on a decorated snapshot rather than as SQL columns; when the shadow table lands its writer maps these three fields to the columns named in the acceptance. The `f00504` watchdog is not wired here: it consumes `classifyStalledByEta`; the integration spec shows the verdict flipping with the estimate. The no-tokens test named in the acceptance is the S5 spec of f00512, and this slice never calls a model.
+- acceptance:
+  - "`progress_snapshots` schema extendido con `eta_p50_ms INTEGER`, `eta_p80_ms INTEGER` (NULL cuando `eta: null`) y `eta_reason TEXT` (`'insufficient_history'` | `'computed'`)."
+  - "El producer llama a `computeEta` UNA vez por snapshot, en `reconcile` (no en `rebuild`, para no recalcular al rehidratar)."
+  - "El test `tests/integration/telemetry-no-tokens.spec.ts` (acceptance del plan) demuestra que pintar un snapshot con ETA no añade tokens al LLM."
+  - "`f00504` (Progress Watchdog) puede consumir `eta_p80_ms` para distinguir “stalled pero cerca de terminar” de “stalled al 5%”: tests de integración demuestran que el watchdog cambia su decisión en función de la ETA."
+- shipped-in: `0249c4a72dd2`
+- review-state: done
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: minimax-3.1
+- review-log: approved by minimax-3.1 — verified at 0249c4a72dd2, validate exit 0, tests 128/128 — Gate declared by S2 (npx vitest run --project proposals plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts): 1 file / 8 tests passed, exit 0. The S4 gate (npx vitest run --root packages/state-telemetry) covers S1 and S3 too: 23 files / 128 tests passed, exit 0. Repo typecheck exit 0. Every criterion of S1 and S3 is pinned by a named assertion rather than by prose. The weight table is literally the formula the acceptance states; the hash stability and 100-vector uniqueness are separate specs; the p80 is a quantile with R type-7 interpolation, not a mean; the sample-size boundary is pinned on both sides (fallback at 4, no fallback at 5); and the <=35% median relative error is asserted directly. eta-engine.spec.ts also asserts computeEta never reaches the network or a model, which is the purity the fifth criterion asks for. Two criteria of S2 are met in a corrected shape that the slice itself documents and that I judged sound: the triple is an index rather than the primary key (many samples per key are the point of the table — the engine takes a median and a p80 over them), and the two sides meet through a journal file rather than a direct import because @delendai/proposals is published while @delendai/state-telemetry is private. Neither correction weakens the acceptance: the lookup is indexed and the 5% median guard is exported and tested on both branches.
+
+## acceptance
+
+- `computeFeatureVector(proposal, slice, workItem, snapshot)` devuelve `IWorkFeatureVector` con los 6 campos documentados y un método `canonicalHash(): string` estable byte-a-byte.
+- Dos propuestas distintas con los mismos 6 campos producen el mismo hash; cambiar 1 campo cambia el hash.
+- `complexity_proxy` se calcula como `slice_count × 1.2 + affected_packages × 2.1 + public_api_changes × 3.2 + test_count × 0.7 + loc_changed × 0.0001`, redondeado a 2 decimales.
+- Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input.
+- Tabla `duration_history` creada con la PK compuesta `(feature_vector_hash, actor_profile, task_kind)`.
+- `recordDuration(vector, actor, kind, durationMs, outcome)` se invoca desde `proposal-transition.tool.ts` cuando `to === 'done'` o `to === 'review'`; sin await en el camino crítico (se ejecuta en background tras el `await writeFileAtomic(frontmatter)`).
+- Una transición `done` para un slice con `outcome: 'blocked'` no se inserta (sólo `outcome ∈ {done, review}` cuentan).
+- Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%.
+- `computeEta(featureVector, actorProfile, taskKind, observedMs)` devuelve `{ p50: number, p80: number, range: [number, number], sampleSize: number }` o `null` con `reason: 'insufficient_history'` si `sampleSize < 5`.
+- La agregación por `(vector, actor)` usa el percentil p80 (no la media) para absorber outliers sin inflar el rango.
+- Si `(vector, actor)` tiene <5 muestras pero `(taskKind, actor)` tiene ≥5, se devuelve la ETA agregada por task_kind con `confidence: 0.6` (vs 0.9 del caso específico).
+- Test con fixture `tests/fixtures/eta-fixtures.spec.ts` (≥50 muestras sintéticas): la mediana de error de p50 sobre el dataset es ≤35%.
+- `computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`.
+- `progress_snapshots` schema extendido con `eta_p50_ms INTEGER`, `eta_p80_ms INTEGER` (NULL cuando `eta: null`) y `eta_reason TEXT` (`'insufficient_history'` | `'computed'`).
+- El producer llama a `computeEta` UNA vez por snapshot, en `reconcile` (no en `rebuild`, para no recalcular al rehidratar).
+- El test `tests/integration/telemetry-no-tokens.spec.ts` (acceptance del plan) demuestra que pintar un snapshot con ETA no añade tokens al LLM.
+- `f00504` (Progress Watchdog) puede consumir `eta_p80_ms` para distinguir “stalled pero cerca de terminar” de “stalled al 5%”: tests de integración demuestran que el watchdog cambia su decisión en función de la ETA.

@@ -1,0 +1,65 @@
+// _notfound.scss — 404 page centered hero.
+//
+// BEM root: .notfound. Reuses `.btn` / `.container` from the layout primitives
+// and the brand logo from `public/logo.svg`. The accent glow echoes the
+// hero gradient so the page feels like part of the site instead of
+// Astro's stock 404.
+
+.notfound {
+	padding: clamp(3rem, 8vw, 6rem) 0 clamp(3rem, 8vw, 6rem);
+	min-height: 60vh;
+	display: flex;
+	align-items: center;
+	background:
+		radial-gradient(60% 80% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+		radial-gradient(40% 60% at 50% 100%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
+}
+.notfound__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	max-width: 40rem;
+}
+.notfound__logo {
+	width: clamp(72px, 12vw, 120px);
+	height: auto;
+	margin-bottom: 1.2rem;
+	filter: drop-shadow(0 6px 24px color-mix(in srgb, var(--accent) 25%, transparent));
+	animation: notfound-float 5s ease-in-out infinite;
+}
+@keyframes notfound-float {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-2deg);
+	}
+	50% {
+		transform: translateY(-6px) rotate(2deg);
+	}
+}
+.notfound__code {
+	margin: 0 0 0.4rem;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 0.85rem;
+	letter-spacing: 0.18em;
+	color: var(--muted);
+	text-transform: uppercase;
+}
+.notfound__title {
+	margin: 0 0 0.8rem;
+	font-size: clamp(1.8rem, 4.4vw, 2.6rem);
+	line-height: 1.1;
+	letter-spacing: -0.025em;
+}
+.notfound__lead {
+	margin: 0 0 1.6rem;
+	color: var(--muted);
+	max-width: 34rem;
+	font-size: clamp(1rem, 1.8vw, 1.1rem);
+}
+.notfound__ctas {
+	display: flex;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+	justify-content: center;
+}
