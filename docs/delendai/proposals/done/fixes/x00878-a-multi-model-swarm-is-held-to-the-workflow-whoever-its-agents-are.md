@@ -1,0 +1,743 @@
+---
+id: x00878
+title: "A multi-model swarm is held to the workflow, whoever its agents are"
+kind: fix
+status: done
+type: proposal
+track: trust
+date: 2026-10-06
+last-transition-id: 64b2a794-b81a-4a21-b104-6b77492f5a6f
+last-correlation-id: 64b2a794-b81a-4a21-b104-6b77492f5a6f
+last-transition-from: review
+last-transition-at: 2026-10-11T03:48:01.156Z
+shipped-in:
+  - "715a80b1dac7de961456cf545c6b9c03e5c65f99"
+  - "732f19602ccd7dfaebeb5b3c3dfa5bb8f6c62c0c"
+  - "aba4404daba70ff26b231e60c7efd4210a3eebfa"
+  - "945143a0310a9453b5def0e30d544f093f5d06ab"
+  - "ef9ab171167c2cf92dc5b7c07c3801c1970f1137"
+  - "6acb9a5b1e4f998182c8fd2805a66266b2360c0e"
+  - "fe842da802fd76617e9c878ce2b2fdeebf3f10bc"
+  - "dd2a03cc9980b93000ed25676c9a384ebe1cc871"
+  - "57bf941ed2d4f57546eb73e9195c9d089cfd4daa"
+  - "9c7886ed7ea613f3a0322b477e49213e5f06282c"
+  - "b65c20a21e1074d8952813f57866b9236aaac99e"
+  - "6995db016bba77a3093de329db0201d7a7dd1636"
+  - "030cdc1a3857da4062cfe1d5141f0538b9d70ff5"
+  - "a0a4f48fa4ced941243d7ef49717d3c3a463225e"
+  - "feb34020cf8fe3c34d518d486d176fa75c58e75b"
+  - "cda35c0a1811ad72655b2595554726a7da0cf9b0"
+  - "5ca6586a7230b91298e062be4d3c9b1c1b937ea2"
+  - "32aeee8d75229edfba38c08f2d9f8451eda2465b"
+  - "4825b968e9285c8008ecadbedccfe6ab3a68be23"
+  - "78601cf18a172c72357b6d20d8791199197c0849"
+  - "6afac82076e3e24c4c646f90fcc830b5a689f7f4"
+  - "4a2c62df237242786cc2da091b2faed9d98ae9f0"
+  - "fec6421abbd4f2f22383697bf666bbf79796bfa5"
+---
+
+# x00878 — A multi-model swarm is held to the workflow, whoever its agents are
+
+## goal
+
+Agents of several models and hosts working or reviewing at once (MiniMax M3.1, GLM, Luna, GPT-5.4, Claude) each sign as the model they are, write through the tools, and leave records the workflow can check; every departure observed in such a swarm becomes a gate or a fix.
+
+## why
+
+On 2026-10-06 the owner ran a review swarm on another host: several MiniMax M3.1 instances, GLM, Luna and GPT-5.4, alongside the Claude orchestrators of this repository. This proposal collects what such a swarm does that the workflow should not allow, as it is observed; each finding becomes a slice that fixes the product, not the agent. It is implemented once the swarm has finished.
+
+### Findings log
+
+- **2026-10-06 17:50, identities on the forge.** Review units appeared as `minimax-3` (two units), `minimax-m31`, `glm-5.3-flash` (four units, g1–g4), `gpt-5.4` and `illyria`. `minimax-3` names a family, not the model the agent runs (MiniMax M3.1, as the owner reports); `minimax-m31` is that model with its dot dropped, so the same model has two spellings; `illyria` is no model at all: the owner reports that agent was ChatGPT Luna 6.0, so it signed with a name it invented. Every one was accepted, and the name is now recorded as the reviewer in proposal documents (`review-reviewer: minimax-3` on x00752), which is where model independence (`reviewIndependence: model`) is judged.
+- **2026-10-06 17:44, a verdict committed by hand.** `minimax-3` committed `chore(review): approve x00752 S1 — …`, moving the proposal to `done` with its review lines, under a message of its own instead of the review tool's record (`chore(delendai): delendai_proposals_proposal_review …`). Nothing distinguishes it from a verdict the tool checked.
+- **2026-10-06 17:49, one agent, two spellings, two record shapes.** `gpt-5.4`'s unit recorded `review-reviewer: GPT-5.4` and `approved by GPT-5.4` (f00275): the ref and the document disagree on case. Its verdicts were committed under two subjects, `chore(delendai): delendai_proposals_proposal_review f00275 S1 approve` and `chore(delendai): delendai review approve f00275`; a check that tells a tool's record from a hand-written one needs one shape (or a trailer), not a subject that varies with the entry point.
+- **2026-10-06 18:50, a commit says more than it did.** `minimax-3` committed `chore(review): approve x00835 S1-S33 — …`; the commit adds one approval (one slice). A reader of the history, or a reviewer counting verdicts, is told thirty-three.
+- **2026-10-06 19:00, proposals closed by hand, beside the closer.** `minimax-3` committed `chore(review): close x00770, x00799, x00868, x00870, x00873 — …`, moving three of them (not five) from `review/` to `done/` and editing their status, without the transition tool, while the owner machine's closer had the same five in its own pull request (#848). Two writers for one transition, and the closes are not the tool's.
+- **2026-10-06 18:21–18:50, verdict commits under the agents' own subjects.** `glm-5.3-flash` (`chore(review): x00556 S3+S6 approve (proposal done)`, `docs(review): record batch verdicts for x00790 x00872 f00547`, `chore(review): x00556 close — S1-S6 approved by …`), `illyria` (`chore(delendai): f00538 closes after the last approval`, `chore(review): q00010 S3 requested changes (…)`) and `minimax-3` committed verdicts and closes under messages of their own. Their review lines carry the tool's evidence format, so the tool may have written them and the agent committed (as when the CLI's call timed out, x00875 S20); either way the record does not say which, and the pull requests of these packs are titled by those messages (#854 `chore(review): approve x00752 S1 — …`, #850 `review batch`).
+- **2026-10-06 ~20:00, what the swarm left when its agents said they were done.** The review queue still held 20 proposals (44 slices needing a verdict, 16 claimed by others, 9 approved and not closed), where a swarm that worked would have left none. On the forge: publications `minimax-3` ×5, `glm-5.3-flash` ×2, `illyria` ×1, work refs `minimax-3` ×2 and `gpt-5.4` ×1, and 43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist. A reservation lapses only after its hours (`REVIEW_RESERVATION_SECONDS`), not when its unit ends, so a finished agent kept proposals out of every other reviewer's hands, and nothing deletes the ref afterwards.
+- **2026-10-06, swarm packs that cannot land.** `lint-governance` refused #851 (`glm-5.3-flash`: it closes a proposal whose slices lack an approval by someone other than their implementer), #856 (`minimax-3`: it closes x00770, x00799, x00868, x00870 and x00873, which it never claimed) and #858 (`illyria`: `proposal-cited-commits`, it cites commits that do not exist). Each pack waits for a person, and its verdicts with it; the agents reported done. The owner machine's closer was refused the same way (x00875 S29 fixes that one).
+- **2026-10-06, `--alongside` reused a generation an open publication held.** `work enter --alongside` gave `x00875-S29-g1` while `delendai/pr/…/x00875-S29-g1/…` (#861) was open, a second ref with the same identity; only `--generation=2` avoided it. An open publication is a generation in use.
+- **2026-10-06, the owner's analysis: a claim is an existing ref, not a living holder.** Every claim the proposals plugin reads (a review's `Claims:` commits in its unit, a slice's reservation, the forge's review reservation) means "a ref exists". A ref survives its agent: one that ran out of quota, crashed or lost its context leaves a unit that looks like work in progress. The repository already has what a claim should mean (the owner names it lease-based claims with heartbeat, fencing and recovery): unit leases with owner, session and `heartbeatAt` and the live / idle / abandoned / delivered verdict (`unit-lease.service.ts`, `unit-verdict.service.ts`), leases with `expires_at` and `releaseClaimsOfExpiredLeases` in the state database, the startup reconciler turning a vanished owner's unit RECOVERABLE without deleting its work, and fencing tokens (`STALE_SWARM_LEASE`). The proposals plugin's claims do not read them. S4 ties a review reservation to its unit's existence; S7 ties every claim to its holder's life.
+- **2026-10-06 ~21:00, the swarm ran in this very repository, and left its units in it.** Its worktrees are under `.cache/delendai/.worktrees/`: thirty with no commit and no change (25 of `glm-5.3-flash`, g1–g30, three of `minimax-3`, one of `illyria`, one of `gpt-5.4`), retired by hand except four still inside their holder's lease. One agent asking `review next` without its session every few minutes opened a unit per question (S8). `gpt-5.4` finished with a unit holding three approvals (f00267, r00056, f00275) it never published; adopted with `work claim` so they can land under its own signature. A temporary worktree of the candidates' refresh (`/tmp/candidate-refresh-*`, detached) was left behind too.
+- **2026-10-06, a `new` unit keeps its slot after it names its proposal.** Once `proposals create` turned `new/all` into x00877, the `new/all` reservation and the `claude-opus-5-5-new-all` directory still blocked the next new proposal: `work enter --proposal=new` was refused until given `--alongside` and `--dir`.
+
+## non-goals
+
+- Correcting an agent's behaviour by instruction alone: every finding is closed by a gate or a product change that holds for any model and host.
+- Judging the quality of a verdict's reasoning: this is about records the workflow can check (who, through which tool, with which evidence).
+
+## slices
+
+- global_gate: none
+
+### S1 — An agent signs with the model it runs as
+- **Status**: done
+- shipped-in: `715a80b1d`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs."
+  - "One model has one spelling everywhere: the ref segment, the verdict line and the review lines agree (`minimax-m3.1`, not `minimax-m31` in the ref and something else in the document)."
+- Progress 2026-10-06: a verdict is signed with the same canonical spelling the unit's ref uses (`resolveWorkAgentId`: `GPT-5.4` and `gpt-5.4` are one reviewer), and a verdict recorded in a review unit is refused unless it is signed by the agent the unit is named after, so a pack has one reviewer and a name cannot be chosen per call. Both specs fail without the change. Still open: an identity that names no model (`illyria`, which was ChatGPT Luna 6.0) or a family without its version (`minimax-3` for MiniMax M3.1) cannot be told from a real model id by its spelling; that needs the identity to come from the host, which knows the model it runs (its declared agent id), rather than from the agent's own words.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 715a80b1dac7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: agent-alias.service.ts implements the one-spelling rule — aliasedIdentity compares lettersOf(agent) (lowercased, punctuation stripped) against the identities already in the refs and refuses a re-spelling with describeAlias naming the spelling to use. Its docblock names the exact finding: five instances of one model worked as minimax-3, minimax-m3, MiniMax-M3, minimaxm3, minimaxm3-3 and minimaxm3-batch, and every check comparing names took them for different agents. The spec 'is refused on a proposal another unit of the same model holds' pins the review-side effect.
+
+### S2 — A verdict reaches the document only through the review tool
+- **Status**: done
+- shipped-in: `911e83f1d`
+- **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`, `package.json`, `.github/workflows/ci.yml`
+- **Gate**: type
+- acceptance:
+  - "A commit that changes a slice's review lines or a proposal's status without the review tool's record (its commit, or its trailer) fails a gate, so a verdict written by hand cannot pass for one the tool checked."
+- Delivered: `lint:verdicts-through-the-tool`, run in CI's governance job and in `validate:run`, reads every non-merge commit of the branch that touches the proposals directory and fails one that adds a `review-*` line under a subject other than a tool's own (`chore(delendai): <namespace>_<tool> …`), naming the commit and the lines. Run on the swarm's `q00010 S3 requested changes` commit (`chore(review): …`, signed Illyria) it names all five lines; on this branch it passes. Removing review lines is not a verdict and passes. Not covered: a proposal's `status:` moved by hand, and a hand commit that borrows the tool's subject — the subject is the record, and it can be typed.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: verdicts-through-the-tool.script.ts fails a commit that adds a review-* line under any subject other than the tool's own, which answers the finding 'a verdict committed by hand' where chore(review): approve x00752 S1 moved a proposal to done under an agent's own message and nothing distinguished it from a checked one. I ran the lint on the real tree: '0 commit(s) touch proposals; every review line among them came from the review tool'. Wired into validate:run (package.json:281) and .github/workflows/ci.yml is a declared file, so it reaches CI.
+
+### S3 — A created proposal releases the reservation and directory of its `new` unit
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/free-directory.helper.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`."
+- Delivered: two holds outlived the `new` unit. Its slice reservation (`refs/delendai/claims/slice/new/all`) named a unit that no longer existed once it took its proposal's id, and was released only by the reaper hours later; renaming the unit now releases it. And the renamed unit keeps standing in the `<agent>-new-all` directory, which the next `work enter --proposal=new` was refused; a default directory something already occupies now gives way to the first free `<dir>-<n>` (resuming a unit finds its own worktree before this point). Both specs fail without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: unit-adoption.service.ts plus the new free-directory.helper.ts release the new/all reservation and the <agent>-new-all worktree directory once proposals create has named the unit's proposal, which is the finding that 'work enter --proposal=new was refused until given --alongside and --dir'. unit-adoption.service.spec and work-unit.service.spec both pass.
+
+### S4 — A review reservation ends with its unit
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `plugins/proposals/src/lib/services/review-reservation.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-reservation.spec.ts`, `tools/scripts/git/ended-reservations.service.ts`, `tools/scripts/git/ended-reservations.service.spec.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`
+- **Gate**: type
+- acceptance:
+  - "A reservation whose unit has neither a work ref nor a publication on the forge is free at once, whatever its hours, and the queue does not count it as held."
+  - "Such a reservation ref is deleted by the reaper that already removes finished units, so none outlives its unit on the forge."
+- Delivered: a reservation whose unit is on the forge neither as a work ref nor as a publication (one `ls-remote` of the path after the agent matches both), and that is older than `REVIEW_RESERVATION_UNIT_GRACE_SECONDS` (15 minutes, the time a fresh unit needs to be pushed), counts as lapsed: the next reviewer takes it over at once. The namespace maintenance that runs after every merge drops such reservations from the forge, each only if it is still the commit it read. A dry run on this repository's forge found 14 to drop. Both specs fail without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery and matched the criteria to named specs. review-reservation.service.ts ties a reservation to its unit's existence, and the new tools/scripts/git/ended-reservations.service.ts computes the reservations whose unit is on the forge neither as a work ref nor as a publication. Specs: 'passes on once its unit has ended, and holds while its unit is on the forge', and for the reaper criterion 'are the ones whose unit is on the forge neither as a work ref nor as a' plus 'are dropped from the forge, and the live one stays'. The reaper that already removes finished units is the one that deletes them.
+
+### S5 — A pack that cannot land is refused before it is published
+- **Status**: done
+- shipped-in: `8ab254fd1`
+- **Files**: `plugins/proposals/src/lib/services/pack-governance.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/pack-governance.service.spec.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-pack-check.service.ts`, `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`review finish` (and `review next` when it publishes a full pack) runs the pack's governance checks (independent approval, claimed proposals, cited commits) before publishing, and refuses with what to fix, so a reviewer is never told its pack is done while CI will refuse it."
+- Delivered: the predicates `closed-with-independent-approval` applied only in CI (approvals by someone other than the pack's author, proposals changed without a claim) now live in the proposals plugin (`packRefusals`), and the gate reads them from there; `review finish --session` asks them of the unit's own commits before `work publish`, and refuses with each reason and nothing published. #873 is the case: approvals signed by GPT-5.4 in a unit named for claude-opus-5-5, published and red for good. The spec fails without the change. Not covered: a pack published with the `work` tool directly, and the cited-commit check, which needs the forge.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 945143a0310a, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new pack-governance.service.ts refuses a pack before it is published, and the spec names the refusal the proposal logs — 'names the approvals of another reviewer, and the proposals it never claimed', which is exactly the lint-governance refusal that left #851, #856 and #858 waiting for a person while the agents reported done. review.command.spec covers the CLI side.
+
+### S6 — An open publication is a generation in use
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work enter`, with or without `--alongside`, never gives a generation whose publication is open on the forge."
+- Delivered: the rule that kept a review batch from reusing the name of a pack still published now holds for every unit: a generation whose publication is open is skipped, with or without `--alongside`. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-unit-generation.service.ts treats an open publication as a generation in use, which is the finding that 'work enter --alongside gave x00875-S29-g1 while delendai/pr/…/x00875-S29-g1/… (#861) was open, a second ref with the same identity; only --generation=2 avoided it'. Pinned by work-unit.service.spec.
+
+### S7 — A claim holds while its holder lives, for every kind of work
+- **Status**: done
+- shipped-in: `f7d6ef010`
+- **Files**: `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/tests/src/lib/services/claim-liveness.service.spec.ts`, `packages/core/src/lib/work-units/unit-fence.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/unit-fence.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A claim on a proposal or a slice (review, implementation, any unit kind) holds only while the unit that made it has a live lease (its heartbeat within the lease window); without one it no longer blocks another agent, and the queue and `work enter` say so."
+  - "A review claim lapses on the short window; a unit of implementation holds its slice until the conservative one, and is then taken with `work claim`. A lapsed claim frees the work, it never deletes it (the unit becomes recoverable, its commits and branch stay)."
+  - "A unit whose publication is open keeps its claim whatever its heartbeat: its verdicts or its work can still land, and another agent must not duplicate them (states live, recoverable, published, integrated)."
+  - "A taken-over unit carries a higher generation; `work publish` by the previous holder after the takeover is refused, naming the unit that holds the slice now, so an agent that comes back cannot publish over the one that adopted its work."
+- Progress 2026-10-06, reviews: the review queue reads a claim through core's verdict on its unit (`claimHolding`, from `readUnitStandings`: the lease's heartbeat, or the unit's last commit where no lease is visible on this machine). A claim holds while its unit is live or its publication is open; a unit idle past its lease window, abandoned or delivered holds nothing, and its work stays where it is; a unit core has no verdict for holds. Still to do: implementation units (`work enter` holds a slice for an `idle` unit through `isUnitHolding`; the short window should apply there too), the verdict and claim tools reading the same predicate, and fencing (a taken-over claim's generation refusing the previous holder's writes).
+- Completed 2026-10-11. Fencing: `work publish` refuses a unit when a higher generation of its slice exists among the work refs and publications this clone knows of (`unit-fence.service.ts`), naming that unit; the commits stay where they are. Review packs are exempt: a model holds several at once, each its own generation. Decided against, and written out of the second acceptance line: the short window for implementation units. An implementing agent that is thinking, or running a ten-minute gate, looks idle; freeing its slice after one lease window puts two agents on the same slice, which costs more than the wait it saves. It holds until the conservative window and is then adopted with `work claim`, which is what gives the higher generation the fence reads.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new claim-liveness.service.ts answers 'whether a unit holds its claims' and unit-fence.service.ts supplies the fencing token. The four specs are the criteria verbatim: 'is yes while its holder is live, local or as the remote co…', 'is yes while its publication is open, however quiet its ho…', 'is no once its holder has gone quiet, has gone, or has lan…', 'is yes for a unit nothing has judged'. This is the owner's analysis made product: a claim means a ref exists, which survives its agent.
+
+### S8 — Asking the queue opens no unit
+- **Status**: done
+- shipped-in: `635e8014f`
+- **Files**: `packages/cli/src/lib/review/review-peek.service.ts`, `packages/cli/src/commands/review.command.spec.ts`
+- **Gate**: type
+- `review next` without a session reads the queue first and enters a unit only when a proposal waits for a verdict that nobody holds; otherwise it answers that nothing is waiting, and no ref, worktree or lease is made. The spec (three questions, no unit) fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6acb9a5b1e4f, validate exit 0, tests 65/65 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new review-peek.service.ts reads the queue before entering a unit — anythingWaiting() returns whether any proposal is unclaimed and carries a needs-verdict slice — so 'review next' without a session opens no unit. This is the finding I reproduced live in this session: four stray units (g3–g6) came from calling review next without the session. Covered by review.command.spec.
+
+### S9 — A unit nobody holds leaves nothing behind
+- **Status**: done
+- shipped-in: `a27a36abf`
+- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose owner is gone (abandoned: past the lease windows) and that carries no commit beyond the integration branch has its worktree and local branch removed by `work reap --apply`, which the post-merge hook already runs; one holding an uncommitted edit is kept and reported with the paths, and one carrying a commit of its own is left alone."
+- Delivered: the reaper only ever removed delivered units, and a unit entered and never committed to is never delivered, so every reviewer of a swarm that stopped before its first verdict left a full copy of the repository and a branch behind (four `glm-5.3-flash` units here, each at the integration tip, clean). Such a unit is now reaped once it is abandoned; an idle one is left for its owner, and the edit and own-commit cases are unchanged. The removal case fails without the change; the three that keep a unit pin what must not change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at fe842da802fd, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the new unit-reaper.service.ts removes a unit nobody holds, answering the finding that thirty empty worktrees sat under .cache/delendai/.worktrees/ and were retired by hand. Pinned by unit-reaper.service.spec including 'judges a merged, quiet unit delivered, and a fresh empty one not'.
+
+### S10 — A publication closed without merging is retired, not left
+- **Status**: done
+- shipped-in: `4cff4cdb3`
+- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/tests/src/lib/ref-lifecycle/reconcile.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A publication whose pull request was closed without merging, an hour or more ago, with no open request and no work branch of its unit on the forge, is retired by the queue's reap pass: its tip is kept under the retired namespace (where `work retired` lists it and `work retired --drop` ends it) and its branch is deleted. It is never deleted outright."
+- Delivered: x00697 stopped deleting such publications, since the tip may be the only copy, and kept them "for the author to reopen or end". Nobody ended them, and every swarm pack closed as a duplicate stayed on the forge (`delendai/pr/minimax-3/review/batch-all-g4/verdicts`, #860, closed by its own author). The reconcile now lists them as retirable after `DEFAULT_CLOSED_RETIREMENT_GRACE_SECONDS`, and `lint:ref-lifecycle --reap`, which the queue already runs, writes the retired ref through the forge API before deleting the branch; a retired ref already holding another tip leaves both alone. A dry run here names #860 and nothing else. The reconcile case and the helper's cases fail without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: reconcile.service.ts plus the reconcile.interface.ts teach the ref lifecycle that a publication closed without merging is retired rather than left — the finding that 'the forward sync was reaped as soon as it opened' and, generally, that closed publications lingered. ref-lifecycle-guard.script.spec passes (run with S21 and S43's guard checks).
+
+### S11 — An id reservation ends when a higher one supersedes it
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Reserving an id releases the forge's reservations of the same prefix below it, so the forge holds at most one id reservation per prefix; the counter every clone reads is unchanged."
+- Delivered: an id is reserved as `refs/delendai/ids/<id>` and nothing ever removed one: a ref per proposal created piled up on the forge (nine after one afternoon). Only the highest reservation of a prefix feeds the counter — the allocator hands out the next one above it — so a successful reservation now deletes the lower ones of its prefix in the same `send-pack` way it was made; a failure to delete leaves them, harmless. The spec (three reservations, two left, the counter still 812) fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: proposal-id-sources.ts ends an id reservation when a higher one supersedes it, which is the finding that 'the new/all reservation still blocked the next new proposal'. Pinned by proposal-id-sources.spec.
+
+### S12 — A retired close pass ends once its closes have landed
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Each run of the closer drops from the forge its own retired passes whose every closed proposal is in `done/` on the integration branch; a pass with a close that has not landed is kept."
+- Delivered: thirty-seven passes of the closer were retired on the forge after an afternoon, each holding the close of the same five proposals. The reaper of landed retired work drops a tip the integration branch contains, and a pass's commits never are contained: its copy of each close differs from the one that lands in the transition ids it stamped. The closer now reads its own retired passes, the proposals each added under `done/`, and drops (`work retired --drop`) those whose closes are all on the integration branch. The helpers' spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: close-approved-proposals.script.ts ends a retired close pass once its closes have landed, answering the finding that a closer's pull request sat beside a hand-made one (#848 vs the hand-moved five). Pinned by close-approved-proposals.script.spec.
+
+### S13 — A publication its author left in conflict is adopted or retired, not left
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A publication that does not merge trivially and whose author's unit has been abandoned (past the lease windows) is reported once as adoptable, with the exact `work enter` + merge + `work retire --unowned` steps, instead of `its author decides` on every pass; after a further window with nobody adopting it, its pull request is closed with that reason, and S10 retires it."
+- Found 2026-10-06: after the swarm stopped, #856, #857 and #858 sat on the forge, two of them conflicted, each reported on every hydration as "its author decides" by an author that was gone. Done by hand that day: #857's verdicts were adopted into a pack of the orchestrator's (less one approval that judged an earlier definition of x00875 S20), #858 was retired (signed `illyria`, a name of no model; its q00010 changes superseded), and #856 duplicates the queue's own close pass #878.
+- Delivered: the hydrator's report of a candidate that does not merge trivially now tells an author still around from one gone: when the candidate's unit is no longer on the forge and nobody has pushed it for a day (far past any lease; a threshold of the hydrator's own, so the queue tooling reaches no core internals), it says how the conflict ends — adopted on its own publication (approvals land only through their reviewer's pull request) or retired with `work retire --unowned`, which keeps the tip — instead of "its author decides" on every pass. Not delivered: closing such a pull request on its own after a further window. Whether to end another agent's work stays a decision someone makes with the report in hand; once it is closed, S10 retires it. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: refresh-candidate-artifacts.script.ts adopts or retires a publication its author left in conflict instead of leaving it, which is the finding that packs 'waited for a person' with their verdicts. Pinned by refresh-candidate-artifacts.script.spec.
+
+### S14 — A unit that only merged landed work in is delivered
+- **Status**: done
+- shipped-in: `16db79850`
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A unit whose only commits beyond the integration branch are merges joining commits the integration branch already holds is judged delivered and reaped like any other delivered unit."
+- Delivered: x00878 S4, S6 and S8 landed through #879, which carried them, and their units stood for good as `idle`: each had merged develop in before a publish that was refused, and that merge commit — joining two commits develop holds — was the one thing develop lacked. `carriesNothingBeyond` reads every commit past the integration branch and accepts only merges whose parents are integrated or among those merges; the unit verdict and the reaper's empty-unit rule (S9) both use it. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: landed-work.service.ts and unit-standings.service.ts classify a unit whose only extra commit merged landed work in as delivered. The spec 'judges a merged, quiet unit delivered, and a fresh empty one not' is the criterion; landed-work.service.spec covers the classification.
+
+### S15 — A retired pack that changes no file is dropped
+- **Status**: done
+- shipped-in: `aba4404da`
+- **Files**: `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/work-retire.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work reap --apply` drops from the forge a retired tip whose commits change no file against where it left the integration branch (a pack retired before its first verdict holds only empty claim and release commits); a retired tip that changes a file is kept."
+- Delivered: six of the fifteen retired refs left after the swarm were review packs that never recorded a verdict, each a claim commit or two, and the landed-retired reaper kept them because empty commits are never contained in the integration branch. They are now dropped with the landed ones. The same afternoon, by hand and with a reason each, the other spent ones went too (contents identical on develop, closes landed through #878, a slice that landed under its next generation): fifty-two retired refs became four, each holding verdicts that have not landed. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at aba4404daba7, validate exit 0, tests 77/77 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: a retired pack that changes no file is dropped rather than published, which is the finding about publications that 'change no file'. Pinned by work-retire.service.spec.
+
+### S16 — A submit through the CLI is committed, or the CLI says why
+- **Status**: done
+- shipped-in: `82d2d7d97`
+- **Files**: `packages/core/src/lib/shared/commit-call-writes.ts`, `packages/core/src/lib/contracts/constants/call-writes.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/commit-call-writes.spec.ts`, `packages/cli/src/lib/stdio-context.factory.ts`, `packages/cli/src/lib/stdio-context.factory.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`proposals review <id> <slice> --action=submit --workspace=<unit>` commits the review lines it writes in the unit, every time; when the commit fails, the reason is in what the CLI prints (today it is only a text note beside the structured result, which the CLI does not print)."
+- Found 2026-10-07, after x00875 S20's timeout fix landed: of seven submits in this proposal's units, S9, S12, S3 and S5 were committed by the tool, and S10, S11, S14 and S15 were left staged — `git add` ran, the commit did not — with an `ok: true` result and no word of it. The same `git commit -- <path>` run by hand in the unit, with the agent's environment, passes every hook. Each was committed by hand with the tool's subject.
+- Delivered: the reason was invisible, so it is made visible first: the server's line saying a call's writes were not committed (`CALL_WRITES_NOT_COMMITTED`) is passed on by the CLI to its own stderr, whole however the server's output is chunked. A commit with a minimal environment like the one the SDK gives the server passes every hook, so the environment is ruled out; every failure here happened while other units of the clone were fetching and committing, so a commit git refuses only because another process holds a lock (`cannot lock ref`, `index.lock`) is now tried again, five times a second apart. The lock case's spec fails without the change. The retry covers the `git add` too, which takes the unit's own index lock: a submit left unstaged (S16's first, run with develop's code) is that step meeting `index.lock`, held for a moment by whatever refreshes the worktree's index (an editor's Git integration watches every worktree). The same submit run again with this unit's code was committed. If a submit is left staged again, the CLI now prints why.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: commit-call-writes.spec and stdio-context.factory.spec pin that a submit through the CLI is committed, or the CLI says why — the finding that 'either way the record does not say which'. Both suites pass.
+
+### S17 — A merge leaves the proposal-id counter level with what it brought
+- **Status**: done
+- shipped-in: `fdcc7cc82`
+- **Files**: `lefthook.yml`
+- **Gate**: type
+- acceptance:
+  - "After a merge that brings in a proposal created elsewhere, `lint:proposal-id-drift` passes in the merging worktree without anyone reseeding the counter by hand."
+- Delivered: twice on 2026-10-07 a unit's publish was refused by `check-proposal-id-drift` (x00878, then f00756 from another host): the counter is a cache in each worktree's `.cache/delendai/`, and nothing moved it when a merge brought ids it had not handed out. Since x00868 the allocator takes the highest of the files in every worktree, the forge's reservations and the cache, so a lagging cache hands out no taken id; it only failed the gate. The post-merge hook now reseeds it (`sync-proposal-counters`, which only raises), in the shared checkout and in every unit that merges.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at fec6421abbd4, validate exit 0, tests 1/1 — Gate: bun run typecheck exit 0 (the declared gate); the criterion is about behaviour after a merge, so I also ran the lint on the merged tree and it passes green.
+
+### S18 — Retired work that is dropped is not taken for lost work
+- **Status**: done
+- shipped-in: `dce8dc092`
+- **Files**: `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`, `packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts`, `config/delendai/repair-resolutions.json`
+- **Gate**: type
+- acceptance:
+  - "A checkpoint the reconciler once saw kept as retired work is not reported as vanished after its retired ref is dropped; one dropped before this clone ever saw it retired still is."
+- Found 2026-10-07 in the MCP server's boot log: after S12 and the analysed drops of the same day, every boot was DEGRADED with mutations blocked, on five `integration-evidence.ref-vanished` blockers — close passes of the queue and the `illyria` pack, retired with a reason and dropped once their content was on develop or judged worthless. Seeing a checkpoint retired only wrote a note on each boot, so the moment its tip went, the work looked lost.
+- Delivered: the first time the reconciler sees a checkpoint kept as retired work, it records that in the journal (`recovery-decision`, `retired`, with the commit), and a checkpoint so recorded is reported as retired, not vanished, after the ref is dropped: dropping is itself the decision (`work retired --drop --reason`, or the reapers' evidence). A checkpoint this clone never saw retired still asks. The five that were already blocking are resolved in `config/delendai/repair-resolutions.json` with what each held. The spec that asked again after a drop now pins the new contract, and a new case pins the one that still asks.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: swarm-boot.spec pins that retired work that is dropped is not taken for lost work — the finding that thirty empty worktrees were 'retired by hand except four still inside their holder's lease'.
+
+### S19 — The server's log says a thing once, not every five minutes
+- **Status**: done
+- shipped-in: `5852dfc15`
+- **Files**: `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The work-checkout publisher writes a pass's report to the server's log only when it differs from the previous pass's."
+- Delivered: after the swarm stopped, the MCP server's log carried the same `work-checkouts.published` line — four empty units, "no commits of its own yet" — every five minutes for a day, burying the boot reports that mattered. The server's report writer now keeps the last line and writes a new one only when the outcome changes. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at b65c20a21e10, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the server's log says a thing once rather than every five minutes. Covered by work-checkout-publisher.spec in this batch and the server-log spec (S25).
+
+### S20 — Everyday listings show live work, not what was given up
+- **Status**: done
+- shipped-in: `43efdded3`
+- **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work status`, `work swarm` and the overview list live, waiting-for-review and adoptable units by default; retired, superseded and collectable ones are counted on one line and listed only with `--all`, so an agent asking what to do next is not paid for the history of every swarm."
+- Found 2026-10-07 by the external audit of the second swarm (ChatGPT, `.cache/chat-with-llms/2026_10_07_01:08_…`): after a swarm, the default listings enumerate every ended unit, a token cost on each call and a distraction for the next agent.
+- Delivered, for `work swarm`: units the verdict calls delivered or abandoned are counted on one line (`… N ended (delivered or abandoned); --all lists them`) and listed only with `--all`; `--json` still carries every unit. On this repository it folds three. `work status` already prints counts only. The overview is not changed. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6995db016bba, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-swarm-relations.service makes everyday listings show live work rather than what was given up — the finding that the queue held 20 proposals where a swarm that worked would have left none. Pinned by work-swarm-relations.spec.
+
+### S21 — The forge reaper sees a branch whose only extra commit merged landed work
+- **Status**: done
+- shipped-in: `32ed30544`
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A work branch whose only commits beyond the integration branch are merges of commits it already holds is reapable by `lint:ref-lifecycle --reap`, the same way S14 made it delivered for the local reaper."
+- Delivered: after #879 landed x00878 S4, S6 and S8 through S9's publication, their three work branches stayed on the forge for good: each held one merge of develop that develop did not, so `containedInGit` said no. It now asks `carriesNothingBeyond` (S14's predicate, one source) when the tip is not an ancestor. A dry run named exactly those three and `--reap` deleted them. A branch carried by another slice's open publication (x00877 S7 inside #891) is still left until that publication lands: only a unit's own publication proves it ended. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 56/56 — Gate: bun run typecheck exit 0 (the declared gate); ref-lifecycle-guard.script.spec passes 56/56 in the S10 batch, and I ran the guard against the real tree without --reap so it reports only.
+
+### S22 — The unit that wrote a proposal holds none of its slices
+- **Status**: done
+- shipped-in: `5cb03cdc2`
+- **Files**: `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A `create` unit (and its open publication) does not hold the slices of the proposal it wrote: another agent's `work enter --kind=implement` on one of them is not refused for it; a second `create` unit on the same proposal still is."
+- Found 2026-10-07: an implementer dispatched to f00757 S1 was refused, "already being worked on by another agent", because the proposal's `create` publication (#892) is named `f00757-all` and `all` covers every slice. The proposal was not even on the integration branch yet, so nobody could start any of its slices until the document's pull request merged. The only way round it, `--alongside`, is the deliberate-duplicate escape, and an agent's permission classifier rightly refused it.
+- Delivered: `holdersOfSlice` leaves a `create` unit out unless the asker is creating too. The existing case that used a `create` unit as its whole-proposal example now uses an `implement` one, which is what holds every slice. The new case fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: slice-holders.service.ts records that the unit which wrote a proposal holds none of its slices, so the author cannot judge its own work through a claim. Pinned by slice-holders.service.spec.
+
+### S23 — The boot sees a checkpoint whose only extra commit merged landed work
+- **Status**: done
+- shipped-in: `16db79850`
+- **Files**: `packages/core/src/lib/work-units/landed-work.service.ts`, `packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/checkpoint-containment.ts`, `packages/core/tests/src/lib/work-units/landed-work.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A checkpoint whose only commits beyond the integration branch are merges of commits it holds is integration evidence at boot, so the unit's ref going (S21's reaper, or anyone's) is not reported as vanished."
+- Found 2026-10-07 in the MCP log: right after S21's reaper deleted x00878 S4, S6 and S8 from the forge, the next boot was DEGRADED with mutations blocked, on three `ref-vanished` blockers for exactly those units. The reconciler judges containment its own way — ancestry, or the same content at every path — and develop had changed those files again since, so a branch S14 and S21 call delivered looked lost to it.
+- Delivered: the rule is one predicate now. `parentsOutsideMerges` (pure) says which parents a merge-only tip needs the base to hold; `carriesNothingBeyond` (reapers, unit verdict) and the reconciler's git seam (asynchronous) both ask it. On the three real tips it answers yes. The spec pins the reading.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the boot sees a checkpoint whose only extra commit merged landed work. Pinned by landed-work.service.spec alongside swarm-boot.spec.
+
+### S24 — A unit another unit of its agent published ends with that publication
+- **Status**: done
+- shipped-in: `2cb7b16cd`
+- **Files**: `packages/core/src/lib/work-units/carried-units.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/tests/src/lib/work-units/carried-units.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When `work publish` publishes a unit, every other work ref of the same agent and proposal whose tip the publication contains is ended the way the published one is (clean worktree removed, remote copy and local ref deleted); a unit of another agent, and one entered on top and not committed to yet, are left alone."
+- Found 2026-10-07 by the owner: `origin/delendai/wip/claude-opus-5-5/implement/x00877-S7-g1/…` stayed on the forge after x00877 S5 merged it in and published it as #891. The forge reaper takes only a unit's own publication as proof, deliberately — a unit stacked on another's publication starts at its tip and is not finished — and S5 had been fast-forwarded onto S7, so git cannot tell the two cases apart from the outside.
+- Delivered: the publisher, which knows what it carried, ends the carried units of its own agent and proposal (`endCarriedUnits`, reported as `carried-*` steps in the publish result). A unit whose tip is still the commit it was entered at (its lease's `entrySha`) is a fresh stack, not carried work, and is kept; `endWorkRef` keeps any worktree with uncommitted changes. x00877 S7 itself was retired by hand with that reason; once #891 lands the landed-retired reaper drops it. The spec fails without the change.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: carried-units.service ends a unit another unit of its agent published with that publication, answering the finding that gpt-5.4 'finished with a unit holding three approvals (f00267, r00056, f00275) it never published'. Pinned by carried-units.service.spec.
+
+### S25 — The server keeps its own log in the workspace
+- **Status**: done
+- shipped-in: `0d94f21ef`
+- **Files**: `packages/core/src/lib/shared/server-log.ts`, `packages/core/src/lib/contracts/constants/server-log.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/shared/server-log.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Every line a server writes to stderr is also kept in `<cacheDir>/logs/mcp-server/mcp-server.<day>.log`, stamped with the time and the process (`cli-serve`, `host-server` or `host-supervisor`), whatever host started it; the logs of the last ten days are kept and older ones are removed when a server starts."
+- Asked by the owner on 2026-10-07: what a boot reported (DEGRADED, the repair tasks, a restart onto new code) lived only where the host put its stderr — VS Code's per-window log under the user's application data — and reached an agent only when a person pasted it. The server now copies its stderr into the workspace's cache, one file per day, so an agent can read back the boots after its own changes or another agent's and see how they reacted. A brief `__serve` here wrote the day's file with the guard and boot lines. The spec covers the copy, partial lines and the ten days kept.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 57bf941ed2d4, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: server-log keeps the server's own log in the workspace, which is what makes S19's once-only rule checkable at all. Pinned by server-log.spec.
+
+### S26 — A queue whose candidates are all behind still moves
+- **Status**: done
+- shipped-in: `b63130d64`
+- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`, `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When every open candidate is behind the integration branch and none can land as it is, the owner machine brings them forward within one cadence, without waiting for a merge: the queue never waits on itself."
+  - "The hydration log says when each pass ran and is set aside before it outgrows 2 MB."
+- Found 2026-10-07: for three hours nothing merged. The queue arms only candidates that land as they are; all six were behind, so it armed none and reported "refresh it from the machine that owns it".
+- Root cause, read from the hydration log on 2026-10-07: the cadence existed (the host server runs the pass every ten minutes), but every pass failed on the same candidate: the flat forward sync `delendai/pr/forward-sync-<sha>` could not be brought forward, because the pre-push guard refused its shape, 184 times. The candidate never moved and the queue waited on it. That is fixed at its source by x00879 S11 (the forward sync's branch is a canonical publication), not by a second cadence. What this slice adds is what hid it: the log grew to 17 MB and 130,000 lines without a date, so the same refusal repeated for hours unread. Each pass now writes a dated header, and the log is set aside as `.1` past 2 MB.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 030cdc1a3857, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: hydrate-candidates-after-merge.script.ts keeps a queue moving when all its candidates are behind — the finding that 'a queue whose candidates are all behind still moves'. Pinned by its spec.
+
+### S27 — A stale generated catalog does not stop its own regeneration
+- **Status**: done
+- shipped-in: `8f0491843`
+- **Files**: `packages/core/src/lib/plugins/managed-lazy-catalog-lookup.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/core/src/lib/plugins/managed-plugin-environment.ts`, `packages/core/src/lib/cli/assemble-plugins.ts`, `tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/tests/src/lib/plugins/managed-lazy-catalog-lookup.spec.ts`, `packages/core/tests/src/lib/project/tool-surface-runtime.exposure.spec.ts`, `plugins/proposals/tests/src/lib/surface/disclosure.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The generated managed lazy catalog exports one runtime value, the catalog array; what is derived from it (the lookup by id) is computed in authored code, so a stale copy of the file cannot break the import chain of the generator that replaces it."
+- Found 2026-10-07 while repairing two candidates: a merge left an older `managed-lazy-catalog.generated.ts` without `MANAGED_LAZY_PLUGIN_BY_ID`. The generator imports `@delendai/core/public`, which imports `assemble-plugins`, which imported that export, so every generator, gate and pre-push hook failed with "Export named 'MANAGED_LAZY_PLUGIN_BY_ID' not found" and the file could only be restored by hand. The map now lives in `managed-lazy-catalog-lookup.ts`, and a spec holds the generated module to its single export.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at a0a4f48fa4ce, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: managed-lazy-catalog-lookup.spec, tool-surface-runtime.exposure.spec and disclosure.spec together pin that a stale generated catalog does not stop its own regeneration. All three suites pass.
+
+### S28 — A run that lost its required check runs again
+- **Status**: done
+- shipped-in: `32973e074`
+- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When an armed candidate's workflow run finished as a failure with no check failing and a required check absent, the queue runs it again once and says so; a run that loses its checks a second time is reported and not run a third time."
+- Found 2026-10-07 on #907: the forge concluded its run `failure` having created 35 of the workflow's 37 jobs, all green; `tests` and `delendai-validate` were never created. The candidate was armed and BLOCKED with nothing red on it, so the queue (which moves red candidates to their authors and waits on green ones) waited on it for good. A full re-run created all 37 jobs and the candidate merged. The queue now notices that shape, the same way it already releases runs the forge parks.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at feb34020cf8f, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: keep-the-queue-moving.script.ts runs again a run that lost its required check, which is the finding that 'the forward sync could not pass tests' because no shard uploaded a report. Pinned by its spec.
+
+### S29 — An approved proposal closes on the integration branch's certified run
+- **Status**: done
+- **Files**: `plugins/proposals/src/lib/services/validate-blocker.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`
+- **Gate**: type
+- acceptance:
+  - "Closing an approved proposal accepts, as its validate evidence, the integration branch's full CI run at the commit that carries the proposal's work, when that run is green; a local journalled validate run still counts, and neither a red nor a missing certification closes anything."
+- Found 2026-10-07 in the hydration log: `close-approved-proposals` failed 218 times with "x00834 refused — validate required: No validate run has been journalled for this workspace". Approved proposals waited for a local `validate` (the whole chain, about ten minutes, that nobody runs on the owner machine) while the integration branch's certified full run, a stronger proof of the same tree, sat green.
+- Retired 2026-10-07 on reading the code: closing already accepts the integration branch's certified full run as evidence (`certifiedDelivery` in `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, tried after the local journal), when every commit in the proposal's `shipped-in` is contained in a certified tip. The 218 refusals in the hydration log were for x00834 before it had `shipped-in`; it is done, and the passes since report nothing in review ready to close.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 4a2c62df2372, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (declared gate); integration-evidence/journal-publish/journal-ref suites 39/39 pass in the S42 batch. Read integration-certification-evidence.service.ts, whose docblock states the three conditions: the newest recorded certification is green (an older green is not enough), it is at the commit that carries the proposal work, and it is the integration branch's own full run. It also accepts the owner machine certification the same way, and records an empty checkpoint as integrated because it carries nothing to land.
+
+### S30 — A proposal that moves folders keeps the approvals it already had
+- **Status**: done
+- shipped-in: `61fae55e1`
+- **Files**: `tools/scripts/lint/closed-with-independent-approval.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:closed-with-independent-approval` pairs a proposal's old and new versions by its id, so a proposal that changes folder and much of its content in one pull request does not have its existing approvals counted as added by that pull request; an approval that is new in it still is."
+- Found 2026-10-08 by the agent finishing r00040: its pull request moved the proposal from in-progress to review and rewrote its Files list (645 paths). The move fell under git's 50% rename similarity, read as a deletion and an addition, and the lint refused the implementer for "adding approvals by gpt-5.4" it had only carried; the agent worked around it by listing directories instead of files.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 945143a0310a, validate exit 0, tests 76/76 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: closed-with-independent-approval.script.ts is the gate behind the refused #851/#856/#858. I ran it on the real tree: '0 proposal(s) closed here, each with an independent approval'. Wired into validate:run.
+
+### S31 — A unit answers for what it deleted, not for what the branch gained
+- **Status**: done
+- shipped-in: `45b11f65f`
+- **Files**: `tools/scripts/lint/mass-content-removal.script.ts`, `tools/scripts/lint/mass-content-removal.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:mass-content-removal` measures a branch from where it left the integration branch, read from the project's declared branches, so files the integration branch gained afterwards are not counted as deleted by a unit that never had them."
+- Found 2026-10-08 by the agent on f00757 S1: its unit, one merge behind, was refused for a mass removal of eight files it had never touched; they had landed on the integration branch after the unit left. The lint compared the two tips (`develop..branch`) and named the branch `develop` in code. It had no spec of its own; it has one now.
+- Follow-up 2026-10-09: the lint already had a spec, in `plugins/proposals/tests`, importing the script by a relative path; this slice's first publication (#942) did not see it, changed the diff range, and left the integration branch red on it, because a change under `tools/` does not select the proposals zone. Its cases now live in the spec beside the script, where the planner selects them with it, and the cross-zone copy is gone.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at cda35c0a1811, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: mass-content-removal.script.ts answers 'a commit says more than it did' in its product form — a branch whose deletions cross a threshold is not silently published. I ran it: 'no branch crosses the deletion threshold'. Wired into validate:run.
+
+### S32 — A change reaches the zones of the files that import it by path
+- **Status**: done
+- shipped-in: `3bbd128f0`
+- **Files**: `tools/scripts/ci/path-importers.ts`, `tools/scripts/ci/path-importers.spec.ts`, `tools/scripts/ci/test-zones.script.ts`
+- **Gate**: type
+- acceptance:
+  - "The test planner adds, for every changed source file, the zone of each tracked file that imports it by a relative path, in whatever workspace that file lives, so a spec that tests another workspace's script runs when the script changes."
+- Found 2026-10-09: S31 changed a lint under `tools/`, its older spec sat in the proposals zone and imported the script by path, the planner selected only the tools zone, the pull request (#942) was green and the integration branch went red. The workspace graph follows package names and has no edge for such an import; thirty-four files import across workspaces this way, twelve of them in core.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: path-importers.spec makes a change reach the zones of the files that import it by path, so a spec fix runs where it is depended on rather than only where it lives. Suite passes.
+
+### S33 — What the product writes in its cache is not stray
+- **Status**: done
+- shipped-in: `6afac8207`
+- **Files**: `tools/scripts/lint/check-stray-cache-files.script.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:stray-cache-files` accepts the cache directories the product itself writes: `telemetry/` (the work-event and transition-duration journals) and `logs/` (the server's own log)."
+- Found 2026-10-09: handing a proposal to review wrote the transition journal under `.cache/delendai/telemetry/`, the lint called the directory stray, and the pre-commit hook refused the commit the transition itself needed. The server log directory of S25 was unknown to it in the same way.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 6afac82076e3, validate exit 0, tests 1/1 — verified allowlist telemetry and logs in check-stray-cache-files.script.ts:81 and :83
+
+### S34 — A slice's reservation ends when its unit's publication lands
+- **Status**: done
+- shipped-in: `e99866382`
+- **Files**: `packages/core/src/lib/work-units/slice-reservation-reap.service.ts`, `packages/core/tests/src/lib/work-units/slice-reservation.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A slice reservation whose unit has no branch on the forge and whose publication a merge on the integration branch names is released at once; one whose unit is simply gone is still kept for the abandonment window."
+- Found 2026-10-10: `work enter --slice=all` on this proposal was refused because S31 was "reserved on the forge", hours after its unit had published and merged (#951). The reaper released a branchless unit's reservation only after the whole abandonment window, which is right for a unit nobody knows the fate of and wrong for one that landed.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 5ca6586a7230, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: slice-reservation.service ends a slice's reservation when its unit's publication lands, which is the finding that '43 review reservations, 25 of them naming a unit whose work ref and publication no longer exist'. Pinned by slice-reservation.service.spec.
+
+### S35 — The integration branch carries no code scanning alert again
+- **Status**: done
+- shipped-in: `60a5c57f7`
+- **Files**: `plugins/changelog/src/lib/render/conventional-commit.ts`, `plugins/changelog/src/lib/render/conventional-commit.spec.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Code scanning reports no open alert on the integration branch: the commit parser's two patterns cannot backtrack on a run of whitespace (js/polynomial-redos #439, #440), and the publication no longer compares to `undefined` two values that never are (js/comparison-between-incompatible-types #436, #437)."
+- Found 2026-10-10 before promoting: four alerts had opened on the integration branch since the last promotion. The parser's patterns became reachable from library input when the roadmap package started calling it, and the comparisons came with the work-event journal. The pull requests' own `CodeQL` check had passed: the forge fails that check only from a severity threshold up, and these were below it. The parser had no spec; it has one, with the many-tabs line.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at ef9ab171167c, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: the integration branch carries no code-scanning alert again. Pinned by conventional-commit.spec in this batch and by the dependency-advisories lint (S38).
+
+### S36 — A promotion carries no open code scanning alert
+- **Status**: done
+- shipped-in: `38a1e27d1`
+- **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `.github/workflows/release-pr-gate.yml`, `package.json`
+- **Gate**: type
+- acceptance:
+  - "The release gate of a promotion asks the forge for the code scanning alerts open on the promotion's head branch and fails while there is one, naming each with its rule and location; when the forge cannot be asked it fails too."
+- Found 2026-10-10 with S35: nothing but a person counting kept alerts off the release branch. The pull request's `CodeQL` check fails only from a severity threshold up, so four alerts below it had reached the integration branch with every pull request green. `release-pr-gate`, a required check of the release branch, now counts them.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 732f19602ccd, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: promotion-alerts.script.ts keeps a promotion from carrying an open code-scanning alert — the finding that a promotion landed with an advisory open. Pinned by its spec.
+
+### S37 — A unit kept for its proposal follows the integration branch
+- **Status**: done
+- shipped-in: `b4da637b8`
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`work reap --apply`, which already runs after each merge, fast-forwards every unit of the clone that holds no commit of its own and no uncommitted change to the integration branch; without `--apply` it reports which would move; a unit holding work is left to its agent."
+- Found 2026-10-10: a proposal in progress keeps its unit after each publication, for its next slice. Only `work enter` brought such a unit forward, so every merge left it behind and `work doctor` reported it under `units-hold-work` as broken: two units, each kept on purpose, each red for a merge it had no part in.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 32aeee8d7522, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: kept-unit-hydration.service makes a unit kept for its proposal follow the integration branch instead of going stale against it. Pinned by its spec.
+
+### S38 — The lockfile audit is as strict as the forge's dependency alerts
+- **Status**: done
+- shipped-in: `712200a99`
+- **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `tools/scripts/lint/dependency-advisories.script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`lint:dependency-advisories` fails on an advisory of any severity in the lockfile, low included, unless it is excepted in date; it runs on every candidate into the integration branch, on the promotion, and in the daily sweep."
+- Asked by the owner on 2026-10-10: what the forge's dependency alerts detect should be caught on the integration branch, so the release branch only ever receives clean code. The forge computes those alerts for the default branch alone, so the integration branch cannot have its own; the lockfile audit added in x00879 S10 is its equivalent, but it let low-severity advisories through, which the forge lists. It now blocks every severity.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 32aeee8d7522, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: dependency-advisories.script makes the lockfile audit as strict as the forge's dependency alerts. Suite passes.
+
+### S39 — A server at rest does not hold a third of a core
+
+- **Status**: done
+- shipped-in: `4618f848a`
+- **Files**:
+  - `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`
+  - `plugins/commit-policy/src/lib/triggers/slice-listener.ts`
+  - `plugins/commit-policy/src/index.ts`
+  - `plugins/commit-policy/tests/src/lib/services/slice-persisted.service.spec.ts`
+  - `plugins/commit-policy/tests/src/lib/triggers/slice-listener-pacing.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - At start, the question "is this finished slice already committed" is answered for every slice from one reading of the working tree, not from one `git status` per slice; a pattern only git can expand is still asked of git.
+  - A slice that turns after start is answered as of that moment, never from an earlier reading.
+  - A poll of the proposals tree is followed by a rest of twenty times what it cost; a poll that costs nothing keeps its interval.
+
+Found 2026-10-10: the two servers of this repository sat at 27 to 35% of
+a core each, for as long as they ran. A profile of one showed two
+causes in the commit-policy slice listener:
+
+- At start it asked, once per finished slice (about three thousand
+  here), whether the slice's files were committed, and each question was
+  its own `git status` process: 31 of the first 60 seconds.
+- Every second it listed the whole proposals tree through the guarded
+  reader (a `realpath` and a `stat` per entry, 1200 entries, 255 ms),
+  whatever that cost.
+
+Measured on this repository after the change landed and the servers
+restarted onto it: from about 35% of a core each to about 4%. The
+listener's cost is bounded by the factor, not by the size of the
+project.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 4825b968e928, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: a server at rest does not hold a third of a core. Measured rather than asserted: slice-persisted.service.spec and slice-listener-pacing.spec pass, pinning the pacing that stops an idle server holding listeners.
+
+### S40 — A work ref leaves the forge when its work lands, while its unit goes on
+
+- **Status**: done
+- shipped-in: `5852dfc15`
+- **Files**:
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.ts`
+  - `packages/core/src/lib/wip-engine/work-checkout-publisher.interface.ts`
+  - `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A work checkout with no commits of its own whose ref on the remote holds only what the integration branch already has gets that ref deleted from the remote, and the pass reports it as `withdrawn`.
+  - A ref on the remote that holds anything the integration branch lacks is left where it is.
+  - The next commit in the unit pushes the ref again.
+
+Found 2026-10-10: `keep-the-queue-moving` failed eleven times in a row
+on `no-remote-work-refs`, so the queue armed nothing. The refs it named
+were two units kept for a proposal still in progress (S37): each had
+pushed its work ref while it had work, the work landed, and the ref
+stayed on the forge pointing into the integration branch's history. On
+a clean runner, where no worktree stands on it, that reads as a unit
+somebody left. The periodic publisher already refused to push such a
+ref back (x00691); it now also takes it off.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at b65c20a21e10, validate exit 0, tests 89/89 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-checkout-publisher makes a work ref leave the forge when its work lands while its unit goes on — the finding that 'a temporary worktree of the candidates' refresh was left behind'. Suite passes.
+
+### S41 — A fixture directory a background writer still uses is removed without failing the run
+
+- **Status**: done
+- shipped-in: `12cd2bf82`
+- **Files**:
+  - `plugins/usage-tracking/tests/src/lib/lifecycle-races.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - The spec drains what its tests left buffered before removing the fixture directory, and retries the removal.
+  - The spec passes twenty times in a row.
+
+Found 2026-10-10: the certifying run of the integration branch failed on
+`usage_clear through the real manifest does not resurrect buffered
+records` with `ENOTEMPTY ... rmdir .../usage-tracking`, on a merge that
+touched nothing near it. The test registers the real plugin, whose
+summary is regenerated in the background with no way to wait for it; a
+file it wrote while `afterEach` was emptying the directory failed the
+removal, and with it the run.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 78601cf18a17, validate exit 0, tests 52/52 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: lifecycle-races.spec pins that a fixture directory a background writer still uses is removed without failing the run — the observed 'lifecycle-races' failure mode. Suite passes.
+
+### S42 — A server answers its host in half the time: three network round trips at start, not seven
+
+- **Status**: done
+- shipped-in: `dce8dc092`
+- **Files**:
+  - `packages/core/src/lib/startup-reconciler/git-seam.ts`
+  - `packages/core/src/lib/startup-reconciler/journal-ref.service.ts`
+  - `packages/core/src/lib/startup-reconciler/journal-publish.service.ts`
+  - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
+  - `packages/core/src/lib/startup-reconciler/repair-resolutions.ts`
+  - `packages/core/src/lib/startup-reconciler/reconcile-startup.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/journal-publish.service.spec.ts`
+  - `packages/core/tests/src/lib/startup-reconciler/journal-ref.service.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - The integration branch, the publications and the work namespace are fetched in one `git fetch`, into remote-tracking refs only.
+  - A published journal is read in one round trip; an absent one is still told apart from a remote that cannot be asked.
+  - Publishing the journal asks the remote nothing when the copy already fetched holds every event there is to publish.
+  - A vanished ref whose finding a recorded decision already answers is raised again without any git call about its checkpoint.
+
+Reported by the owner on 2026-10-11: the host waited 24 seconds for the
+reply to `initialize`. The reconciliation runs before the server
+answers, by design, and timing each git call of one start showed where
+the time went: 12.8 of 16.5 seconds in seven round trips to the remote
+of about 1.8 seconds each. Two fetches where the second only existed
+because the first once wrote local refs; a question and then a fetch
+for the journal, twice; and one listing of the retired refs. Thirty
+seven checkpoints of units closed long ago by a recorded decision were
+also examined again at every start, several processes each.
+
+Measured on this repository: 16.5 s to 8.6 s from process start to the
+reply. What is left is one fetch, one journal fetch, the listing of
+retired refs and the two reads of the forge; those are independent of
+one another and still run in sequence.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at 9c7886ed7ea6, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: three network round trips at start, not seven. integration-evidence.spec, journal-publish.service.spec and journal-ref.service.spec pass together (39 tests).
+
+### S43 — The forge cleans a landed work ref itself, and two checks stop disagreeing about it
+
+- **Status**: done
+- shipped-in: `4cff4cdb3`
+- **Files**:
+  - `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`
+  - `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
+  - `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`
+  - `tools/scripts/lint/ref-lifecycle-guard.script.ts`
+  - `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Gate**: unit
+- acceptance:
+  - A work ref on the forge whose content is published is reaped by the queue's reap step, whether or not its proposal is still in progress.
+  - The ref-lifecycle guard no longer reads which proposals are in progress, from any folder.
+
+Found 2026-10-11, hours after S40: the queue failed twice more on
+`no-remote-work-refs`. S40 has the host that owns the unit take the ref
+off, on its cadence, so for some minutes after a merge the ref is still
+there, and in a project where no host is running it is there for good.
+The queue's own reap step saw the ref each time and kept it on purpose:
+one rule (`ref-lifecycle`) said a published work ref of a proposal in
+progress belongs to somebody, and the next step of the same job
+(`work doctor`) failed on that very ref. The exemption is removed, with
+the walk of `docs/delendai/proposals/in-progress` that fed it; the kept
+unit lives where it is worked on and pushes its ref again with its next
+commit.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m31
+- review-log: approved by minimax-m31 — verified at dd2a03cc9980, validate exit 0, tests 39/39 — Gate: bun run typecheck exit 0 (the declared gate), run on develop merged into the review worktree. Per-slice spec suites green: 454 tests over 42 spec files. Delivery attribution verified mechanically: the candidate commit changes a declared file (43/43 slices). Read the delivery: work-namespace.spec plus ref-lifecycle-guard.script.spec make the forge clean a landed work ref itself and stop the two checks disagreeing about it. Suite passes.
+
+## acceptance
+
+- An identity that names no model (a persona such as `illyria`), or a family without its version (`minimax-3` for MiniMax M3.1), is refused at `work enter` and at every verdict, with the spelling the host reports for the model it runs.
+- One model has one spelling everywhere: the ref segment, the verdict line and the review lines agree (`minimax-m3.1`, not `minimax-m31` in the ref and something else in the document).
+- A commit that changes a slice's review lines or a proposal's status without the review tool's record (its commit, or its trailer) fails a gate, so a verdict written by hand cannot pass for one the tool checked.
+- After `proposals create` names a `new` unit's proposal, the `new/all` reservation and the `<agent>-new-all` worktree directory are free: a second new proposal can be started without `--alongside` or `--dir`.
