@@ -5,7 +5,7 @@
  * preset migration, which must run with or without an explicit --config.
  */
 import { mkdtempSync, rmSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -399,5 +399,17 @@ describe('runCli', () => {
 		handler?.();
 		await vi.waitFor(() => expect(mocks.shutdown).toHaveBeenCalled());
 		expect(server.dispose).toHaveBeenCalled();
+	});
+
+	it('settles only after the blueprint write finished, so nothing still writes into the workspace', async () => {
+		const root = await workspace();
+		mocks.create.mockResolvedValue(assembled());
+		await runCli(
+			[`--workspace=${root}`, '--surface=native', '--plugins='],
+			root,
+		);
+		await expect(
+			access(join(root, '.cache/delendai/bootstrap/blueprint.json')),
+		).resolves.toBeUndefined();
 	});
 });

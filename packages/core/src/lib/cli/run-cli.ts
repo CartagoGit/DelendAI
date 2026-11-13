@@ -360,9 +360,12 @@ export const runCli = async (
 
 	// Fast boot: the one-time server blueprint is prepared AFTER the server
 	// is live and off the critical path — analysing the repo + writing the
-	// cache file must never delay the first MCP response. Best-effort.
+	// cache file must never delay the first MCP response. Best-effort. It is
+	// awaited here, after `start()`, so `runCli` settles only once nothing of
+	// its own is still writing: the server is already live, so waiting costs
+	// no response, and a caller that removes the workspace cannot race it.
 	if (args.mcpProjectCreate) {
-		void prepareServerBlueprintOnStart(args, config.corePaths?.cacheDir)
+		await prepareServerBlueprintOnStart(args, config.corePaths?.cacheDir)
 			.then((result) => {
 				if (result.written) {
 					process.stderr.write(
