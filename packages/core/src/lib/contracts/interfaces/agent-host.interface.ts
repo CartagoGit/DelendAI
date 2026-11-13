@@ -38,6 +38,11 @@ export interface IAgentHost {
 	 */
 	readonly legacyInstructions?: readonly string[];
 	/** Paths in the project, or variables in the environment, that mean it is in use. */
+	/**
+	 * The files the host keeps for the person, outside any project. A host
+	 * with none is reported as not covered by the user-level migration.
+	 */
+	readonly userConfig?: readonly IAgentHostUserConfigFile[];
 	readonly evidence: {
 		readonly paths: readonly string[];
 		readonly env?: readonly string[];
@@ -50,6 +55,14 @@ export interface IAgentHost {
  * What a host leaves behind when it runs an agent. Every list that names
  * hosts by one of these is derived from `AGENT_HOSTS`, never kept beside it.
  */
+/** One user-level config file of a host. */
+export interface IAgentHostUserConfigFile {
+	/** `home`: under the home directory; `vscode-user`: under VS Code's User directory. */
+	readonly location: 'home' | 'vscode-user';
+	readonly path: string;
+	readonly format: 'json' | 'toml';
+}
+
 export interface IAgentHostIdentity {
 	/** The name a composite agent identity records for it (`vscode-copilot`). */
 	readonly name?: string;
