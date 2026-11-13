@@ -5,7 +5,7 @@
  * preset migration, which must run with or without an explicit --config.
  */
 import { mkdtempSync, rmSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -99,7 +99,7 @@ const config = fakePartial<IDelendaiHostConfig>({
 });
 
 describe('--verbose diagnostics (N23)', async () => {
-	it('buildAssemblyDiagnostics snapshots plugins, counts and order', async () => {
+	it('[<50ms] buildAssemblyDiagnostics snapshots plugins, counts and order', async () => {
 		const d = buildAssemblyDiagnostics(verboseArgs, loadResult, config, [
 			'delendai_overview',
 			'demo_x',
@@ -116,7 +116,7 @@ describe('--verbose diagnostics (N23)', async () => {
 		expect(d.registrationOrder).toEqual(['delendai_overview', 'demo_x']);
 	});
 
-	it('formatVerbose renders stderr lines with version + counts + order', async () => {
+	it('[<50ms] formatVerbose renders stderr lines with version + counts + order', async () => {
 		const out = formatVerbose(
 			buildAssemblyDiagnostics(verboseArgs, loadResult, config, ['t1']),
 		);
@@ -136,26 +136,26 @@ describe('prepareServerBlueprintOnStart cacheDir (M15/H5)', async () => {
 	});
 	afterEach(() => rmSync(ws, { recursive: true, force: true }));
 
-	it('writes under the resolved cacheDir (e.g. from config), not the default', async () => {
+	it('[<100ms] writes under the resolved cacheDir (e.g. from config), not the default', async () => {
 		const args = parseCliArgs([`--workspace=${ws}`], ws);
 		const res = await prepareServerBlueprintOnStart(args, 'build/state');
 		expect(res.written).toBe(true);
 		expect(res.path).toBe('build/state/bootstrap/blueprint.json');
 	});
 
-	it('falls back to the default cacheDir when none is resolved', async () => {
+	it('[<100ms] falls back to the default cacheDir when none is resolved', async () => {
 		const args = parseCliArgs([`--workspace=${ws}`], ws);
 		const res = await prepareServerBlueprintOnStart(args);
 		expect(res.path).toBe('.cache/delendai/bootstrap/blueprint.json');
 	});
 
-	it('collapses trailing slashes in the resolved cacheDir path', async () => {
+	it('[<100ms] collapses trailing slashes in the resolved cacheDir path', async () => {
 		const args = parseCliArgs([`--workspace=${ws}`], ws);
 		const res = await prepareServerBlueprintOnStart(args, 'build/state///');
 		expect(res.path).toBe('build/state/bootstrap/blueprint.json');
 	});
 
-	it('handles a long trailing slash run in cacheDir quickly', async () => {
+	it('[<100ms] handles a long trailing slash run in cacheDir quickly', async () => {
 		const args = parseCliArgs([`--workspace=${ws}`], ws);
 		const started = Date.now();
 		const res = await prepareServerBlueprintOnStart(
@@ -186,7 +186,7 @@ describe('migratePresetOnStart', () => {
 		plugins: { docs: {}, git: {}, memory: {}, search: {} },
 	});
 
-	it('runs with an explicit relative --config, the way consumers launch it', async () => {
+	it('[<50ms] runs with an explicit relative --config, the way consumers launch it', async () => {
 		const root = await workspace();
 		await writeFile(join(root, 'custom.config.json'), lean);
 		const result = await migratePresetOnStart({
@@ -204,7 +204,7 @@ describe('migratePresetOnStart', () => {
 		);
 	});
 
-	it('runs with an absolute --config and with the default config', async () => {
+	it('[<50ms] runs with an absolute --config and with the default config', async () => {
 		const root = await workspace();
 		await writeFile(join(root, 'delendai.config.json'), lean);
 		expect((await migratePresetOnStart({ workspace: root })).outcome).toBe(
@@ -219,7 +219,7 @@ describe('migratePresetOnStart', () => {
 		).toBe('recorded');
 	});
 
-	it('does nothing without a config', async () => {
+	it('[<50ms] does nothing without a config', async () => {
 		expect(
 			(await migratePresetOnStart({ workspace: await workspace() }))
 				.outcome,
@@ -229,7 +229,7 @@ describe('migratePresetOnStart', () => {
 
 describe('runDoctor', async () => {
 	const demoPlugin = { name: 'demo', register: () => ({}) };
-	it('reports loaded plugins, errors and counts without starting stdio', async () => {
+	it('[<500ms] reports loaded plugins, errors and counts without starting stdio', async () => {
 		const args = parseCliArgs(
 			[
 				'--plugins=demo,nope',
@@ -251,7 +251,7 @@ describe('runDoctor', async () => {
 		expect(report.counts.tools).toBeGreaterThan(0);
 	});
 
-	it("names each account's layer, and reports a personal file it could not take", async () => {
+	it("[<500ms] names each account's layer, and reports a personal file it could not take", async () => {
 		const args = parseCliArgs(
 			[`--workspace=${WRITABLE_WORKSPACE}`, '--surface=native'],
 			WRITABLE_WORKSPACE,
@@ -333,13 +333,13 @@ describe('runCli', () => {
 		);
 	});
 
-	it('hands `init` to the init command and stops', async () => {
+	it('[<50ms] hands `init` to the init command and stops', async () => {
 		await runCli(['init', '--yes'], '/cwd');
 		expect(mocks.runInit).toHaveBeenCalledWith(['--yes'], '/cwd');
 		expect(mocks.create).not.toHaveBeenCalled();
 	});
 
-	it('prints the doctor report for --check without starting the server', async () => {
+	it('[<300ms] prints the doctor report for --check without starting the server', async () => {
 		const root = await workspace();
 		mocks.create.mockResolvedValue(assembled());
 		await runCli(
@@ -355,7 +355,22 @@ describe('runCli', () => {
 		expect(mocks.create.mock.calls.length).toBeLessThanOrEqual(1);
 	});
 
-	it('journals the retired preset on start even with an explicit --config', async () => {
+	it('[<500ms] exits non-zero when the --check report is not ok', async () => {
+		const root = await workspace();
+		await runCli(
+			[
+				`--workspace=${root}`,
+				'--surface=native',
+				'--plugins=missing-plugin-for-check',
+				'--check',
+			],
+			root,
+		);
+		expect(process.exitCode).toBe(1);
+		expect(mocks.shutdown).not.toHaveBeenCalled();
+	});
+
+	it('[<300ms] journals the retired preset on start even with an explicit --config', async () => {
 		const root = await workspace();
 		await writeFile(join(root, 'shared.config.json'), lean);
 		const server = assembled();
@@ -379,7 +394,7 @@ describe('runCli', () => {
 		expect(JSON.parse(journal.trim())).toMatchObject({ retired: 'lean' });
 	});
 
-	it('wires the shutdown signals and prepares the blueprint after boot', async () => {
+	it('[<500ms] wires the shutdown signals and prepares the blueprint after boot', async () => {
 		const root = await workspace();
 		const server = assembled();
 		mocks.create.mockResolvedValue(server);
@@ -399,5 +414,17 @@ describe('runCli', () => {
 		handler?.();
 		await vi.waitFor(() => expect(mocks.shutdown).toHaveBeenCalled());
 		expect(server.dispose).toHaveBeenCalled();
+	});
+
+	it('[<300ms] settles only after the blueprint write finished, so nothing still writes into the workspace', async () => {
+		const root = await workspace();
+		mocks.create.mockResolvedValue(assembled());
+		await runCli(
+			[`--workspace=${root}`, '--surface=native', '--plugins='],
+			root,
+		);
+		await expect(
+			access(join(root, '.cache/delendai/bootstrap/blueprint.json')),
+		).resolves.toBeUndefined();
 	});
 });

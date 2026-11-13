@@ -362,7 +362,6 @@
 		"packages/core/tests/src/lib/cli/managed-lazy-local-plugin.spec.ts",
 		"packages/core/tests/src/lib/cli/plugin-id-collision.spec.ts",
 		"packages/core/tests/src/lib/cli/refused-server.spec.ts",
-		"packages/core/tests/src/lib/cli/run-cli.spec.ts",
 		"packages/core/tests/src/lib/cli/run-init.spec.ts",
 		"packages/core/tests/src/lib/cli/setup-subcommand.spec.ts",
 		"packages/core/tests/src/lib/cli/state-registry-choice.spec.ts",
