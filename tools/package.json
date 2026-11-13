@@ -29,6 +29,7 @@
 		"@delendai/error-reporting": "workspace:*",
 		"@delendai/git": "workspace:*",
 		"@delendai/i18n": "workspace:*",
+		"@delendai/integration": "workspace:*",
 		"@delendai/impact-analysis": "workspace:*",
 		"@delendai/link-check": "workspace:*",
 		"@delendai/logs": "workspace:*",

@@ -436,6 +436,23 @@ describe('the land workflow template', () => {
 		);
 	});
 
+	it('[<5ms] names its concurrency group `land` unless the caller names another', () => {
+		const base = renderLandWorkflow(REPO_LAND_WORKFLOW);
+		expect(
+			renderLandWorkflow({
+				...REPO_LAND_WORKFLOW,
+				concurrencyGroup: 'land',
+			}),
+		).toBe(base);
+		const own = renderLandWorkflow({
+			...REPO_LAND_WORKFLOW,
+			concurrencyGroup: 'land-rehearsal-r1',
+		});
+		expect(own).toBe(
+			base.replace('group: land\n', 'group: land-rehearsal-r1\n'),
+		);
+	});
+
 	it("[<5ms] renders another project's branches, phases and upkeep", () => {
 		const text = renderLandWorkflow({
 			...REPO_LAND_WORKFLOW,

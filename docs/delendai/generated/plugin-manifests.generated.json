@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-03T01:24:49.458Z",
+	"generatedAt": "2026-11-12T21:02:56.092Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1343,6 +1343,41 @@
 			"capabilities": [
 				"impact-analysis",
 				"test-selection"
+			]
+		},
+		{
+			"id": "integration",
+			"package": "@delendai/integration",
+			"version": "0.3.0",
+			"visibility": "public",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read"
+			],
+			"presets": [
+				"everything"
+			],
+			"tokenBudget": {
+				"staticBytes": 120,
+				"caps": {
+					"hard": 400,
+					"warning": 300
+				},
+				"measuredAt": "2026-11-12",
+				"source": "token-budget-real"
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": [
+				"integration"
 			]
 		},
 		{
@@ -3395,6 +3430,21 @@
 		},
 		{
 			"origin": "first-party",
+			"id": "integration",
+			"package": "@delendai/integration",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudgetBytes": 120
+		},
+		{
+			"origin": "first-party",
 			"id": "issues",
 			"package": "@delendai/issues",
 			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
@@ -4996,6 +5046,32 @@
 			}
 		},
 		{
+			"id": "integration",
+			"package": "@delendai/integration",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [
+				"everything"
+			],
+			"capabilities": [
+				"integration"
+			],
+			"permissions": [
+				"filesystem-read"
+			],
+			"tokenBudget": {
+				"warning": 300,
+				"hard": 400,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "issues",
 			"package": "@delendai/issues",
 			"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",
@@ -6035,6 +6111,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "integration",
+			"warning": 300,
+			"hard": 400,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "issues",
 			"warning": 870,
 			"hard": 950,
@@ -6595,6 +6677,12 @@
 		},
 		{
 			"id": "impact-analysis",
+			"permissions": [
+				"filesystem-read"
+			]
+		},
+		{
+			"id": "integration",
 			"permissions": [
 				"filesystem-read"
 			]
@@ -8643,6 +8731,62 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "solo",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{

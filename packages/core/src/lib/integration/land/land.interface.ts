@@ -236,4 +236,6 @@ export interface ILandWorkflowInput {
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
 	readonly upkeep?: readonly ILandUpkeepStep[];
+	/** The concurrency group of the passes; `land` when absent. A rehearsal names its own, so it never queues behind production. */
+	readonly concurrencyGroup?: string;
 }
