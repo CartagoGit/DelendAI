@@ -28,7 +28,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 
 - global_gate: type
 
-### A — Proved ancestors narrow the diff
+### S1 — Proved ancestors narrow the diff
 - **Status**: pending
 - **Files**: `tools/scripts/ci/proved-ancestors.ts`, `tools/scripts/ci/proved-ancestors.store.ts`, `tools/scripts/ci/proved-ancestors.spec.ts`, `tools/scripts/ci/proved-ancestors.e2e.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
@@ -37,9 +37,9 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
   - "The base for selection is the candidate with the fewest changed files against HEAD among merge-base(develop, HEAD) and the 20 most recent proved commits that are ancestors of HEAD, and the proof prints which it used and why."
   - "Generated-files, tool budgets and typecheck steps keep the merge-base; the choice is a pure function with specs over an in-memory git reader."
 
-### B — Per-step result reuse
+### S2 — Per-step result reuse
 - **Status**: pending
-- **DependsOn**: [A]
+- **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/step-reuse.ts`, `tools/scripts/ci/step-reuse.spec.ts`, `tools/scripts/ci/step-inputs.constant.ts`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
@@ -47,9 +47,9 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
   - "Failures are never cached; steps without declared inputs always run; --no-reuse and an environment variable force everything; reuse is keyed on the presence of the store, never on CI."
   - "lint-docs, lint-security, quality-gate, land rehearsal and lint-governance declare the paths their scripts read."
 
-### C — test:sqlite near the change
+### S3 — test:sqlite near the change
 - **Status**: pending
-- **DependsOn**: [B]
+- **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/bun-near-specs.ts`, `tools/scripts/ci/bun-near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
 - acceptance:
