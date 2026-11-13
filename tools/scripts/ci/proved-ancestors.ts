@@ -12,14 +12,14 @@
  */
 
 /** How much of the proof a record vouches for. */
-export type ProofScope = 'fast' | 'full';
+export type IProofScope = 'fast' | 'full';
 
 /** One passed proof: the commit it judged and where its change began. */
 export interface IProvedCommit {
 	readonly commit: string;
 	readonly tree: string;
 	readonly base: string;
-	readonly scope: ProofScope;
+	readonly scope: IProofScope;
 	readonly at: string;
 }
 
@@ -116,7 +116,7 @@ export const chooseSelectionBase = (
 	mergeBase: string,
 	proofs: readonly IProvedCommit[],
 	git: IProofGitReader,
-	accepts: readonly ProofScope[] = ['fast', 'full'],
+	accepts: readonly IProofScope[] = ['fast', 'full'],
 ): IBaseChoice => {
 	const mergeBaseFiles = git.changedFileCount(mergeBase);
 	let best: Omit<IBaseChoice, 'message'> = {

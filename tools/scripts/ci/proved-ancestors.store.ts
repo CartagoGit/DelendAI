@@ -17,7 +17,7 @@ import {
 	type IProvedCommit,
 	livingProofs,
 	parseProofStore,
-	type ProofScope,
+	type IProofScope,
 	recordProof,
 	serializeProofStore,
 } from './proved-ancestors';
@@ -95,7 +95,7 @@ const writeProofs = (path: string, proofs: readonly IProvedCommit[]): void => {
 export const recordPassedProof = (
 	root: string,
 	base: string,
-	scope: ProofScope,
+	scope: IProofScope,
 	now: Date = new Date(),
 ): boolean => {
 	const path = proofStorePath(root);
