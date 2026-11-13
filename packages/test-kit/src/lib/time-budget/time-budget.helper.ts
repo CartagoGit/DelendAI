@@ -30,7 +30,9 @@ export const budgetFailure = (test: ITimeBudgetCase): string | undefined => {
 			? 'malformed time budget: write it at the front of the name as "[<7ms] does X" (a number, then ms, then a space).'
 			: 'no time budget: start the name with its maximum, "[<7ms] does X". Every test has one.';
 	}
-	return test.softOverrun === true ? undefined : budgetOverrun(test);
+	return test.softOverrun === true || test.fresh === true
+		? undefined
+		: budgetOverrun(test);
 };
 
 /** How a test is over its budget, or nothing when it keeps it. */
@@ -42,3 +44,4 @@ export const budgetOverrun = (test: ITimeBudgetCase): string | undefined => {
 };
 
 export { mayGoUnbudgeted } from './may-go-unbudgeted.helper';
+export { freshBudgetsOfDiff } from './fresh-budget.helper';

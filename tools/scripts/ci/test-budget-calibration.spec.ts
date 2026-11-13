@@ -5,6 +5,7 @@ import {
 	calibratedBudget,
 	longestDurations,
 	parseFlatted,
+	requiredCorrection,
 	withCalibratedBudget,
 } from './test-budget-calibration';
 
@@ -60,5 +61,15 @@ describe('test budget calibration', () => {
 			"it('[<175ms] x', f)",
 		);
 		expect(withCalibratedBudget('nothing', change)).toBeUndefined();
+	});
+
+	it('[<20ms] names the calibrated number a test over its budget must declare', () => {
+		const [change] = budgetChanges({ 'a.spec.ts': { '[<24ms] x': 130 } });
+		expect(change).toBeDefined();
+		if (change === undefined) return;
+		expect(requiredCorrection(change)).toBe(
+			'a.spec.ts > [<24ms] x: CI measured 130 ms; declare [<195ms] (bun run test:budgets:calibrate --from-ci=<this run> --update).',
+		);
+		expect(budgetChanges({ 'a.spec.ts': { '[<24ms] x': 24 } })).toEqual([]);
 	});
 });

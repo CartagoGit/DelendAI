@@ -7,6 +7,8 @@ import { tmpdir } from 'node:os';
 
 import { describe, expect, it } from 'vitest';
 
+import { useFakeClock } from '@delendai/test-kit';
+
 import type { IRegistryAgent } from '../../../../src/lib/contracts/interfaces/public-catalogue.interface';
 import {
 	acpFetchRefusal,
@@ -29,7 +31,7 @@ const entry = (
 });
 
 describe('acpLaunchOf', () => {
-	it('starts a package through npx or uvx only when the project allowed that exact package', () => {
+	it('[<8ms] starts a package through npx or uvx only when the project allowed that exact package', () => {
 		const coder = entry({
 			npx: { package: '@q/code@1.0.0', args: ['--acp'] },
 		});
@@ -53,7 +55,7 @@ describe('acpLaunchOf', () => {
 		).toEqual(['fast-agent-acp@1']);
 	});
 
-	it('runs the version the registry pins, and names the setting when it refuses', () => {
+	it('[<6ms] runs the version the registry pins, and names the setting when it refuses', () => {
 		expect(pinnedPackage('fast-agent-acp', '2.1.0')).toBe(
 			'fast-agent-acp@2.1.0',
 		);
@@ -72,7 +74,7 @@ describe('acpLaunchOf', () => {
 		).toBeUndefined();
 	});
 
-	it('starts a binary only from where it was installed, for this platform', () => {
+	it('[<5ms] starts a binary only from where it was installed, for this platform', () => {
 		const binary = entry({
 			binary: {
 				'linux-x86_64': { archive: 'a', cmd: './x', args: ['acp'] },
@@ -95,7 +97,7 @@ describe('acpLaunchOf', () => {
 		).toBeUndefined();
 	});
 
-	it('names platforms the way the registry does', () => {
+	it('[<5ms] names platforms the way the registry does', () => {
 		expect(registryPlatform('linux', 'x64')).toBe('linux-x86_64');
 		expect(registryPlatform('darwin', 'arm64')).toBe('darwin-aarch64');
 		expect(registryPlatform('win32', 'x64')).toBe('windows-x86_64');
@@ -103,7 +105,7 @@ describe('acpLaunchOf', () => {
 });
 
 describe('runAcpAgent', () => {
-	it('drives a real process over stdio and stops it', async () => {
+	it('[<420ms] drives a real process over stdio and stops it', async () => {
 		const result = await runAcpAgent(
 			{ command: process.execPath, args: [FAKE] },
 			{ cwd: tmpdir(), prompt: 'abc', timeoutMs: 20_000 },
@@ -115,7 +117,7 @@ describe('runAcpAgent', () => {
 		});
 	});
 
-	it('fails when the process cannot start or ends before answering', async () => {
+	it('[<69ms] fails when the process cannot start or ends before answering', async () => {
 		await expect(
 			runAcpAgent(
 				{ command: join(tmpdir(), 'no-such-agent'), args: [] },
@@ -130,7 +132,7 @@ describe('runAcpAgent', () => {
 		).rejects.toThrow(/exited \(3\)|connection closed/u);
 	});
 
-	it('stops the agent when the turn is cancelled', async () => {
+	it('[<14ms] stops the agent when the turn is cancelled', async () => {
 		const controller = new AbortController();
 		const turn = runAcpAgent(
 			{
@@ -162,18 +164,30 @@ const SILENT = {
 	args: ['-e', 'setTimeout(() => {}, 60_000)'],
 };
 
+/** The turn's deadline: passed on a fake clock, not waited out. */
+const DEADLINE_MS = 300;
+const fakeDeadline = () =>
+	useFakeClock({ toFake: ['setTimeout', 'clearTimeout'] });
+
 describe('a turn that runs out of time', () => {
-	it('stops an agent that never answers', async () => {
-		await expect(
-			runAcpAgent(SILENT, { cwd: tmpdir(), prompt: 'x', timeoutMs: 300 }),
+	it('[<12ms] stops an agent that never answers', async () => {
+		const clock = fakeDeadline();
+		const turn = expect(
+			runAcpAgent(SILENT, {
+				cwd: tmpdir(),
+				prompt: 'x',
+				timeoutMs: DEADLINE_MS,
+			}),
 		).rejects.toThrow(
 			/took longer than the turn allows|connection closed/u,
 		);
+		clock.advance(DEADLINE_MS);
+		await turn;
 	});
 });
 
 describe('introduceAgent', () => {
-	it('greets a real process and says what it is, at no cost', async () => {
+	it('[<285ms] greets a real process and says what it is, at no cost', async () => {
 		const introduction = await introduceAgent(
 			{ command: process.execPath, args: [FAKE] },
 			tmpdir(),
@@ -182,9 +196,12 @@ describe('introduceAgent', () => {
 		expect(introduction).toMatchObject({ agent: { name: 'Fake Stdio' } });
 	});
 
-	it('gives up on a process that does not answer in time', async () => {
-		await expect(introduceAgent(SILENT, tmpdir(), 300)).rejects.toThrow(
-			/did not answer within 300 ms|connection closed/u,
-		);
+	it('[<8ms] gives up on a process that does not answer in time', async () => {
+		const clock = fakeDeadline();
+		const greeting = expect(
+			introduceAgent(SILENT, tmpdir(), DEADLINE_MS),
+		).rejects.toThrow(/did not answer within 300 ms|connection closed/u);
+		clock.advance(DEADLINE_MS);
+		await greeting;
 	});
 });

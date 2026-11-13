@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { waitUntil } from '@delendai/test-kit';
 
@@ -455,12 +455,25 @@ describe('withComputeSlot superseded turns', () => {
 });
 
 describe('computeSlotPath', () => {
+	// The repository and the plain directory are made once for the file:
+	// git init inside the case took up to 99 ms on CI against a 40 ms
+	// budget, for a fact about where the path points.
+	let plain = '';
+	let repo = '';
+	beforeAll(() => {
+		plain = mkdtempSync(join(tmpdir(), 'compute-slot-plain-'));
+		repo = mkdtempSync(join(tmpdir(), 'compute-slot-git-'));
+		spawnSync('git', ['init', '-q', repo]);
+	});
+	afterAll(() => {
+		for (const dir of [plain, repo]) {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
 	it('[<40ms] lives in the shared git directory, and is absent outside a repository', () => {
-		const dir = mkdtempSync(join(tmpdir(), 'compute-slot-git-'));
-		dirs.push(dir);
-		expect(computeSlotPath(dir)).toBeUndefined();
-		spawnSync('git', ['init', '-q', dir]);
-		expect(computeSlotPath(dir)).toMatch(
+		expect(computeSlotPath(plain)).toBeUndefined();
+		expect(computeSlotPath(repo)).toMatch(
 			/\.git[\\/]delendai[\\/]heavy-compute\.lock$/u,
 		);
 	});

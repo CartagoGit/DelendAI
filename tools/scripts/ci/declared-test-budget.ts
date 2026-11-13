@@ -9,6 +9,7 @@
  * must drop it, so it cannot slide back.
  */
 
+import { freshBudgetsOfDiff } from '../../../packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts';
 import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts';
 
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
@@ -156,6 +157,41 @@ export const changedFiles = (
 				['diff', '--name-only', 'HEAD'],
 				['ls-files', '--others', '--exclude-standard'],
 			].flatMap((args) => git(args).split('\n')),
+		);
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * The budgets the change declares or changes (`file<TAB>name`): budgeted
+ * names on lines it adds since the merge-base, in the working tree, or in a
+ * new untracked file. `undefined` when the base is unknown, so no budget is
+ * let off for want of a diff.
+ */
+export const freshBudgets = (
+	git: (args: readonly string[]) => string,
+	read: (path: string) => string,
+): readonly string[] | undefined => {
+	const base = defaultChangeBase(git);
+	if (base === undefined) return undefined;
+	try {
+		const untracked = git(['ls-files', '--others', '--exclude-standard'])
+			.split('\n')
+			.filter((path) => /\.(?:spec|test)\.[cm]?[jt]sx?$/u.test(path))
+			.map(
+				(path) =>
+					`+++ b/${path}\n${read(path)
+						.split('\n')
+						.map((line) => `+${line}`)
+						.join('\n')}`,
+			);
+		return freshBudgetsOfDiff(
+			[
+				git(['diff', '-U0', `${base}...HEAD`]),
+				git(['diff', '-U0', 'HEAD']),
+				...untracked,
+			].join('\n'),
 		);
 	} catch {
 		return undefined;

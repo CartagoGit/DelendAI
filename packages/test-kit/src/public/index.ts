@@ -54,11 +54,13 @@ export {
 	budgetFailure,
 	budgetInName,
 	budgetOverrun,
+	freshBudgetsOfDiff,
 	mayGoUnbudgeted,
 } from '../lib/time-budget/time-budget.helper';
 export { timeBudgetRunnerPath } from '../lib/time-budget/time-budget-runner-path.helper';
 export {
 	CHANGED_ENV,
+	FRESH_ENV,
 	SOFT_OVERRUN_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,

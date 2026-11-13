@@ -90,6 +90,7 @@
 		"diagnostics:codex-parse-noise:rewrite": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite",
 		"lint:tool-schema-shape": "bun tools/scripts/lint/tool-schema-shape.script.ts",
 		"test:budgets:calibrate": "bun tools/scripts/ci/test-budget-calibrate.script.ts",
+		"test:budgets:check": "bun tools/scripts/ci/test-budget-calibrate.script.ts --check=.vitest-reports",
 		"lint:test-time-budget": "bun tools/scripts/ci/spec-duration-budget.script.ts --declared",
 		"lint:spec-duration-budget": "bun tools/scripts/ci/spec-duration-budget.script.ts",
 		"lint:spec-git-init": "bun tools/scripts/lint/spec-git-init.script.ts",
