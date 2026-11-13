@@ -60,7 +60,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - **Status**: pending
 - **DependsOn**: [S1]
 - **Extends**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.service.spec.ts`
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/closed-contract.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One generated template carries objective, authorized files, interfaces and expected behaviour, invariants, dependencies, acceptance criteria, exact tests, budget and limits, and stop conditions."
@@ -87,17 +87,45 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One policy value renders per host: Claude Code gets CLAUDE_AUTOCOMPACT_PCT_OVERRIDE plus PreCompact and SessionStart hooks that run S3."
   - "A host with a native setting gets it; any other host gets a compact-now directive from the MCP server."
 
-### S5 — Cost controls and honest guarantees
+### S1b — Task-class tier policy wired to plugin config
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
-- **Files**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
+- **Extends**: `plugins/auto-agent-selector` (`index.ts` options schema)
+- **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/tests/src/index.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/tools/auto-run.tool.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Token budgets per task and per agent; limits on calls, turns, retries and concurrency; a breach stops the work."
-  - "The ledger holds real model, tokens, cache and result; a run with no progress stops; duplicate work is detected and a still-valid result or proof is reused."
-  - "Cost per correctly completed task is reported."
-  - "The report states what cannot be technically guaranteed on each host (for example a host that exposes no real model id or context meter)."
+  - "The plugin options carry `taskClassTiers` and `ownerAuthorizedTopTier`; `auto_run` caps the ladder at the tier of the task class and returns a blocker when the top tier lacks the owner authorization."
+
+### S5a — Ledger record and cost per correct result
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Extends**: `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
+- **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/contracts/usage-rollup.interface.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-buckets.helper.ts`, `plugins/usage-tracking/src/lib/services/cost-per-correct.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "One invocation record holds requested model, real model, tokens in, out, cache read and cache write, wall time, turns, retries, task class and an outcome (correct, blocked or failed) set from a gate result, never self-reported."
+  - "The rollup reports cost per correct result by task class and model, with the sample count."
+  - "Records without the new fields still read."
+
+### S5b — Cost limits and the no-progress stop
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`
+- **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The budget policy limits calls, turns, retries and concurrency; exceeding one returns a blocker naming the limit."
+  - "A run with N consecutive turns and no progress signal stops, using the progress signal the orchestrator already has."
+
+### S5c — Proof reuse and duplicate-work detection
+- **Status**: pending
+- **DependsOn**: [S5a]
+- **Extends**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
+- **Gate**: type
+- acceptance:
+  - "Duplicate work is detected across units and a still-valid result or proof is reused."
+  - "The report states what cannot be technically guaranteed on each host."
 
 ## acceptance
 
