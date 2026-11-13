@@ -40,7 +40,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 ### B — Per-step result reuse
 - **Status**: pending
 - **DependsOn**: [A]
-- **Files**: `tools/scripts/ci/step-reuse.ts`, `tools/scripts/ci/step-reuse.spec.ts`, `tools/scripts/ci/step-inputs.constant.ts`
+- **Files**: `tools/scripts/ci/step-reuse.ts`, `tools/scripts/ci/step-reuse.spec.ts`, `tools/scripts/ci/step-inputs.constant.ts`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "A step that declares inputs is keyed by sha256 of its label, command and the git index entries of its inputs at HEAD, and is skipped with a 'reused' line when that key passed before on this machine and the inputs are clean in the working tree."
@@ -50,7 +50,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 ### C — test:sqlite near the change
 - **Status**: pending
 - **DependsOn**: [B]
-- **Files**: `tools/scripts/ci/bun-near-specs.ts`, `tools/scripts/ci/bun-near-specs.spec.ts`
+- **Files**: `tools/scripts/ci/bun-near-specs.ts`, `tools/scripts/ci/bun-near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Only the bun-owned specs the near-spec selection names run under bun test; none run when no bun-owned spec is near the change."
