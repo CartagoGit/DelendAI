@@ -302,4 +302,19 @@ describe('auto_run tool', () => {
 		expect(body.blocker).toBeNull();
 		expect(body.ladder.every((rung) => rung.costTier <= 1)).toBe(true);
 	});
+
+	it('[<200ms] hands the first rung to the host when no executor is injected', async () => {
+		const tool = await capture(deps);
+		const body = (
+			await tool.handler({
+				task: 'ship it',
+				execute: true,
+				consent: true,
+			})
+		).structuredContent as {
+			execution: { ok: boolean; attempts: { id: string }[] };
+		};
+		expect(body.execution.ok).toBe(false);
+		expect(body.execution.attempts).toHaveLength(1);
+	});
 });
