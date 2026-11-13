@@ -28,7 +28,7 @@ export interface ITimeBudgetCase {
 	 * number times the load factor. Absent, the test is judged by its name
 	 * alone, as before tiers existed.
 	 */
-	readonly tier?: 'unit' | 'e2e';
+	readonly tier?: 'unit' | 'e2e' | undefined;
 	/** This shard's load factor, 1 to 4; 1 when unknown. */
 	readonly loadFactor?: number;
 }

@@ -5,10 +5,8 @@ import {
 	loadFactorFromEnv,
 	loadFactorOf,
 } from '../../../src/lib/time-budget/time-budget-tier.helper';
-import {
-	measureLoadBenchmark,
-	type ILoadBenchmarkWork,
-} from '../../../src/lib/time-budget/load-benchmark.helper';
+import type { ILoadBenchmarkWork } from '../../../src/contracts/interfaces/load-benchmark.interface';
+import { measureLoadBenchmark } from '../../../src/lib/time-budget/load-benchmark.helper';
 
 describe('the budget tiers', () => {
 	it('[<20ms] puts *.e2e.spec.ts and tests/e2e/ in the e2e tier and every other spec in the unit tier', () => {
