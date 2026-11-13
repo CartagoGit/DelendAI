@@ -30,7 +30,8 @@ const status = (...paths: readonly string[]): string =>
 	[
 		'# branch.head develop',
 		...paths.map((path) => `1 .M N... 100644 100644 100644 h1 h2 ${path}`),
-	].join('\0') + '\0';
+		'',
+	].join('\0');
 
 /** What git says of a shared checkout on `develop` holding `worktrees`, with `edited` loose. */
 const checkout = (
