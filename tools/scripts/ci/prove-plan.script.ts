@@ -25,10 +25,12 @@ import {
 	appendFileSync,
 	mkdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
 import { availableParallelism } from 'node:os';
+import { dirname, join } from 'node:path';
 
 import {
 	RUN_ALONE,
@@ -54,9 +56,16 @@ import type { IProveJob } from './prove-plan.interface';
 import { chooseSelectionBase } from './proved-ancestors';
 import {
 	proofGitReader,
+	proofStorePath,
 	readProofs,
 	recordPassedProof,
 } from './proved-ancestors.store';
+import {
+	createStepReuse,
+	type IStepReuse,
+	reusedLine,
+	reuseForbidden,
+} from './step-reuse';
 
 const arg = (name: string): string | undefined =>
 	process.argv
@@ -98,6 +107,54 @@ export const familyPlanOf = (input: IPlanInput): readonly string[] => {
 				`prove: ${each.runs ? 'run ' : 'skip'} ${each.job} — ${each.why}`,
 		);
 };
+
+/** The store of passed steps, beside the proved commits every worktree shares. */
+const stepStorePath = (root: string): string | undefined => {
+	const proved = proofStorePath(root);
+	return proved === undefined
+		? undefined
+		: join(dirname(proved), 'passed-steps.json');
+};
+
+/** Reuse of this proof's steps, over this checkout and its machine-level store. */
+const stepReuse: IStepReuse = ((): IStepReuse => {
+	const root = process.cwd();
+	const path = stepStorePath(root);
+	return createStepReuse(
+		{
+			git: (args) =>
+				execFileSync('git', [...args], {
+					cwd: root,
+					encoding: 'utf8',
+					maxBuffer: 256 * 1024 * 1024,
+					stdio: ['ignore', 'pipe', 'ignore'],
+				}).trim(),
+			read: () => {
+				try {
+					return path === undefined
+						? undefined
+						: readFileSync(path, 'utf8');
+				} catch {
+					return undefined;
+				}
+			},
+			write: (text) => {
+				if (path === undefined) return false;
+				try {
+					mkdirSync(dirname(path), { recursive: true });
+					const scratch = `${path}.${String(process.pid)}.tmp`;
+					writeFileSync(scratch, text);
+					renameSync(scratch, path);
+					return true;
+				} catch {
+					return false;
+				}
+			},
+			now: () => new Date(),
+		},
+		reuseForbidden(process.argv, process.env),
+	);
+})();
 
 /** What failed, said last: a caller keeps only the tail of the output. */
 const failed: string[] = [];
@@ -205,6 +262,12 @@ const runTogether = async (
 		) {
 			const [label, script] = next;
 			const started = Date.now();
+			const earlier = stepReuse.attempt(label, script, changedFiles);
+			if (earlier !== undefined) {
+				timings.push({ label, seconds: 0, ok: true });
+				console.log(`prove: ${reusedLine(earlier)}`);
+				continue;
+			}
 			const { code, output } = await new Promise<{
 				code: number | null;
 				output: string;
@@ -244,6 +307,7 @@ const runTogether = async (
 				ok: passed,
 			});
 			ok = passed && ok;
+			if (passed) stepReuse.record(label, script, changedFiles);
 			if (!passed) {
 				failed.push(label);
 				causes.push(...causeLinesOf(output));
@@ -328,6 +392,13 @@ const runChecks = async (
 
 const step = (label: string, command: readonly string[]): boolean => {
 	const started = Date.now();
+	const text = command.join(' ');
+	const earlier = stepReuse.attempt(label, text, []);
+	if (earlier !== undefined) {
+		timings.push({ label, seconds: 0, ok: true });
+		console.log(`prove: ${reusedLine(earlier)}`);
+		return true;
+	}
 	const [bin = 'bun', ...rest] = command;
 	const result = spawnSync(bin, rest, {
 		stdio: ['ignore', 'pipe', 'pipe'],
@@ -337,6 +408,7 @@ const step = (label: string, command: readonly string[]): boolean => {
 	});
 	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;
+	if (ok) stepReuse.record(label, text, []);
 	timings.push({
 		label,
 		seconds: Math.round((Date.now() - started) / 1000),
