@@ -38,10 +38,10 @@
 
 ## Tests
 
+- plugins/integration/tests/src/lib/services/integration-adoption.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-doctor.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-cleanup.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-expectation.service.spec.ts
-- plugins/integration/tests/src/lib/services/rehearsal-github-forge.service.spec.ts
 
 ## Do not
 

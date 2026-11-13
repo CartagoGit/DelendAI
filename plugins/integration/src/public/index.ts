@@ -25,3 +25,9 @@ export {
 	renderBranchFilters,
 	wallSecondsOf,
 } from '../lib/services/rehearsal-real-ci.service';
+export type * from '../lib/contracts/interfaces/integration-adoption.interface';
+export {
+	renderAdoption,
+	renderAdoptedRehearsalWorkflow,
+	renderSignalJob,
+} from '../lib/services/integration-adoption.service';
