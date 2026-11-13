@@ -19,7 +19,7 @@ afterEach(() => rmSync(root, { recursive: true, force: true }));
 const many = (count: number) =>
 	Array.from({ length: count }, (_, index) => ({
 		id: `unit-${String(index)}-${'x'.repeat(40)}`,
-		summary: 'é'.repeat(200),
+		summary: '\u00e9'.repeat(200),
 		source: `refs/heads/${'y'.repeat(60)}`,
 	}));
 

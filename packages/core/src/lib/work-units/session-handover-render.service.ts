@@ -10,7 +10,7 @@ import type {
 	IHandoverSection,
 } from './session-handover.interface';
 
-const lineOf = (entry: IHandoverEntry): string =>
+const entryLine = (entry: IHandoverEntry): string =>
 	`  ${entry.id}: ${entry.summary} [${entry.source}]`;
 
 const byteLength = (text: string): number => Buffer.byteLength(text, 'utf8');
@@ -26,7 +26,7 @@ export const renderHandoverIndex = (
 	let left = 0;
 	for (const name of sections) {
 		const header = `${name}: ${String(index.counts[name])}${index.missing.includes(name) ? ' (missing: no store answers it)' : ''}`;
-		const entries = index.entries[name].map(lineOf);
+		const entries = index.entries[name].map(entryLine);
 		lines.push(header);
 		used += byteLength(header) + 1;
 		for (const line of entries) {
