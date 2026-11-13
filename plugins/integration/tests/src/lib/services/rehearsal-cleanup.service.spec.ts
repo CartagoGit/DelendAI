@@ -107,5 +107,10 @@ describe('cleanup and setup', () => {
 		).toContain('group: land-rehearsal-r1');
 		expect(paths).toContain('delendai.config.json');
 		expect(paths).toContain('rehearsal/r1/.keep');
+		// The token workflow opens its branch under the run's own root, where the harness and cleanup look.
+		expect(
+			setup.files('i').find((f) => f.path.endsWith('rehearsal-token.yml'))
+				?.content,
+		).toContain('BRANCH_PREFIX: ns/rehearsal/r1/');
 	});
 });

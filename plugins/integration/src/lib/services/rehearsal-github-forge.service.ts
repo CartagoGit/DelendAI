@@ -336,6 +336,8 @@ export const createGithubRehearsalForge = (input: {
 				'--repo',
 				slug,
 			]);
+			// A run that never started a job (held for approval, skipped) has no log: nothing to scan.
+			if (/log not found/u.test(result.stderr)) return '';
 			if (result.exitCode !== 0)
 				throw new Error(
 					`the log of run ${String(id)} could not be read: ${result.stderr.trim() || result.spawnError || 'no answer'}`,

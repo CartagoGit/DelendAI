@@ -21,7 +21,7 @@ import {
 	renderRehearsalScanWorkflow,
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
-import { runLabelPrefix } from './rehearsal-names.helper';
+import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
 
 const PASS_INTERVAL_MINUTES = 15;
 const WORKFLOWS = '.github/workflows';
@@ -90,7 +90,7 @@ export const createRehearsalSetup = (
 			content: renderRehearsalTokenWorkflow({
 				integration,
 				labelPrefix: runLabelPrefix(input.runId),
-				branchPrefix: input.branchPrefix,
+				branchPrefix: runBranchRoot(input.branchPrefix, input.runId),
 			}),
 		},
 		{

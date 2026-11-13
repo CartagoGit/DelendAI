@@ -301,4 +301,16 @@ describe('the GitHub rehearsal forge', () => {
 			'is not in the last',
 		);
 	});
+
+	it('[<100ms] reads a run that has no log as an empty log', async () => {
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async () => ({
+				exitCode: 1,
+				stdout: '',
+				stderr: 'failed to get run log: log not found',
+			}),
+		});
+		expect(await forge.runLog(7)).toBe('');
+	});
 });
