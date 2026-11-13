@@ -41,6 +41,7 @@ const retiredNameAndLaunchShape: ILegacyResidueEntry = {
 	since: '0.1.0',
 	kind: 'launch-command',
 	scope: 'project',
+	names: ['mcp-vertex', 'mcp-vertex.config.json'],
 	detect: async (ctx) => (await pathsWithResidue(ctx)).length > 0,
 	migrate: async (ctx) => {
 		const changed: string[] = [];
