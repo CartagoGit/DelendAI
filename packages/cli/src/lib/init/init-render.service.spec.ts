@@ -378,9 +378,12 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);
 		process.stdin.isTTY = false;
+		// The person's own host configs are not this spec's to touch.
+		vi.stubEnv('DELENDAI_LEGACY_RESIDUE', '0');
 	});
 
 	afterEach(async () => {
+		vi.unstubAllEnvs();
 		stderrWrite.mockRestore();
 		await rm(workspace, { recursive: true, force: true });
 	});

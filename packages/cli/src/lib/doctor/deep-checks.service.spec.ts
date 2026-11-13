@@ -57,14 +57,16 @@ describe('parseDoctorModes', () => {
 			ci: true,
 			offline: false,
 			deep: true,
+			fix: false,
 		});
+		expect(parseDoctorModes(['--fix']).fix).toBe(true);
 	});
 });
 
 describe('doctor command flags', () => {
-	it('declares ci, offline and deep so they are not refused', () => {
+	it('declares ci, offline, deep and fix so they are not refused', () => {
 		const command = doctorCommands.find((c) => c.name === 'doctor');
-		expect(command?.flags).toEqual(['ci', 'offline', 'deep']);
+		expect(command?.flags).toEqual(['ci', 'offline', 'deep', 'fix']);
 	});
 });
 
@@ -250,5 +252,36 @@ describe('doctor --deep', () => {
 			async () => runner,
 		).run({ offline: false });
 		expect(section.status).toBe('error');
+	});
+});
+
+describe('doctor --fix', () => {
+	const ok = healthy;
+
+	it('reports what the registry migrated, as its own section', async () => {
+		const res = await runDoctorBody(buildContext(ok), {
+			extraChecks: [],
+			modes: { ci: false, offline: true, deep: false, fix: true },
+			applyResidue: async () => ({
+				lines: ['legacy residue: x migrated'],
+			}),
+		});
+		const section = (res.data as Payload).sections.find(
+			(s) => s.name === 'legacy-residue-fix',
+		);
+		expect(section?.findings).toEqual(['legacy residue: x migrated']);
+	});
+
+	it('says there was nothing to migrate', async () => {
+		const res = await runDoctorBody(buildContext(ok), {
+			extraChecks: [],
+			modes: { ci: false, offline: true, deep: false, fix: true },
+			applyResidue: async () => ({ lines: [] }),
+		});
+		expect(
+			(res.data as Payload).sections.find(
+				(s) => s.name === 'legacy-residue-fix',
+			)?.findings,
+		).toEqual(['nothing to migrate']);
 	});
 });

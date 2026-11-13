@@ -60,6 +60,18 @@ const projectOptedOut = (configText: string | undefined): boolean => {
 	return isRecord(parsed) && parsed[LEGACY_RESIDUE_CONFIG_KEY] === false;
 };
 
+/** Whether the person or the project turned the residue run off. */
+export const legacyResidueDisabled = (
+	env: Readonly<Record<string, string | undefined>>,
+	configText: string | undefined,
+): boolean => {
+	const off = env[LEGACY_RESIDUE_ENV];
+	return (
+		(off !== undefined && OFF_VALUES.has(off.toLowerCase())) ||
+		projectOptedOut(configText)
+	);
+};
+
 const readState = async (
 	io: ILegacyResidueIO,
 	path: string,
@@ -90,13 +102,7 @@ const readState = async (
 export const runLegacyResidueBoot = async (
 	options: ILegacyResidueBootOptions,
 ): Promise<readonly string[]> => {
-	const off = options.env[LEGACY_RESIDUE_ENV];
-	if (
-		(off !== undefined && OFF_VALUES.has(off.toLowerCase())) ||
-		projectOptedOut(options.configText)
-	) {
-		return [];
-	}
+	if (legacyResidueDisabled(options.env, options.configText)) return [];
 	try {
 		const stateDir = userStateDirectory(options.home);
 		const statePath = `${stateDir}/${LEGACY_RESIDUE_STATE_FILE}`;

@@ -149,3 +149,42 @@ describe('the user-level host config migrator', () => {
 		]);
 	});
 });
+
+describe('the old clones and the dry run', () => {
+	const CLONE = '/p/_projects/mcp-vertex';
+	const FROM_CLONE = `{"mcpServers":{"mcp-vertex":{"command":"bun","args":["${CLONE}/run.ts"]}}}`;
+
+	it('[<20ms] removes an entry launched from an old clone and reports the clone', async () => {
+		const files = new Map([['/h/.claude.json', FROM_CLONE]]);
+		const report = await run(files);
+		expect(report.clones).toEqual([CLONE]);
+		expect(files.get('/h/.claude.json')).not.toContain('mcp-vertex');
+		expect(parseJsonc(files.get('/h/.claude.json') ?? '').value).toEqual({
+			mcpServers: {},
+		});
+	});
+
+	it('[<20ms] removes a Codex table launched from an old clone', async () => {
+		const toml = `[mcp_servers.mcp-vertex]\ncommand = "bun"\nargs = ["${CLONE}/run.ts"]\n[mcp_servers.other]\ncommand = "node"\n`;
+		const files = new Map([['/h/.codex/config.toml', toml]]);
+		const report = await run(files);
+		expect(report.clones).toEqual([CLONE]);
+		expect(files.get('/h/.codex/config.toml')).toBe(
+			'[mcp_servers.other]\ncommand = "node"\n',
+		);
+	});
+
+	it('[<20ms] writes nothing on a dry run, backup included', async () => {
+		const files = new Map([['/h/.claude.json', FROM_CLONE]]);
+		const report = await migrateUserHostConfigs({
+			resolved: resolveUserConfigPaths(env),
+			io: memory(files),
+			backupDir: '/h/state/backups',
+			now: () => new Date(0),
+			dryRun: true,
+		});
+		expect(report.changes).toHaveLength(1);
+		expect(files.size).toBe(1);
+		expect(files.get('/h/.claude.json')).toBe(FROM_CLONE);
+	});
+});

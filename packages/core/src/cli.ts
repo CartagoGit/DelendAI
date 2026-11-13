@@ -472,8 +472,16 @@ export {
 	DEFAULT_MIGRATIONS,
 	createFileSystemJournal,
 } from './lib/workspace-migration/migration-registry';
+export type { IUserHostConfigReport } from './lib/contracts/interfaces/user-host-config.interface';
+export { stringHasLegacyIdentity } from './lib/workspace-migration/migrators/identity-renames';
+export {
+	applyLegacyResidue,
+	scanLegacyResidue,
+	thisMachineResidueOptions,
+} from './lib/workspace-migration/legacy-residue/legacy-residue-scan.service';
 export {
 	createUserFileIO,
+	legacyResidueDisabled,
 	runLegacyResidueBoot,
 } from './lib/workspace-migration/legacy-residue/legacy-residue-boot.service';
 export {

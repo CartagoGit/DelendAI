@@ -43,7 +43,12 @@ import {
 	parseJsonc,
 	readAgentSignature,
 } from '@delendai/core/cli';
-import { AGENT_HOSTS } from '@delendai/core/cli';
+import {
+	AGENT_HOSTS,
+	applyLegacyResidue,
+	legacyResidueDisabled,
+	thisMachineResidueOptions,
+} from '@delendai/core/cli';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,
@@ -889,6 +894,28 @@ export const runInitWithAnswers = async (
 	};
 };
 
+/**
+ * What an older delendai left in the person's own host configs is migrated
+ * once init has written the project: only what the registry proves is
+ * delendai's own, each file after its backup. Never fails the init.
+ */
+const migrateResidueAfterInit = async (workspace: string): Promise<void> => {
+	try {
+		const options = thisMachineResidueOptions(workspace);
+		const configText = await readFile(
+			join(workspace, 'delendai.config.json'),
+			'utf8',
+		).catch(() => undefined);
+		if (legacyResidueDisabled(options.env, configText)) return;
+		const { lines } = await applyLegacyResidue(options);
+		for (const line of lines) process.stderr.write(`[delendai] ${line}\n`);
+	} catch (error) {
+		process.stderr.write(
+			`[delendai] legacy residue was not migrated: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
+};
+
 export const initCommand: ICliCommand = {
 	name: 'init',
 	summary: 'Interactive workspace bootstrap for delendai.',
@@ -914,6 +941,9 @@ export const initCommand: ICliCommand = {
 			workspaceRoot: ctx.cwd,
 		});
 		const result = await runInitWithAnswers(ctx, flags, answers);
+		if (result.code === EXIT_CODE.OK && !flags.dryRun) {
+			await migrateResidueAfterInit(ctx.cwd);
+		}
 		if (result.code === EXIT_CODE.OK) await offerAccountsAfterInit(ctx.cwd);
 		return result;
 	},

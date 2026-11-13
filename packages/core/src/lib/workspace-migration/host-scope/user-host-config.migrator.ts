@@ -35,7 +35,15 @@ interface IFileOutcome {
 	readonly next: string | undefined;
 	readonly entries: readonly string[];
 	readonly questions: readonly string[];
+	readonly clones: readonly string[];
 }
+
+/** The directories an entry launches from that carry the retired name. */
+const CLONE_PATH = /[^\s"'=,[\]]*[\\/]mcp-vertex(?=[\\/"'\s,\]]|$)/gu;
+
+const clonesIn = (text: string): readonly string[] => [
+	...new Set(text.match(CLONE_PATH) ?? []),
+];
 
 const mapAt = (
 	root: Record<string, unknown>,
@@ -66,11 +74,21 @@ const migrateJson = (text: string): IFileOutcome => {
 	const edits: IJsoncEdit[] = [];
 	const entries: string[] = [];
 	const questions: string[] = [];
+	const clones: string[] = [];
 	for (const path of SERVER_MAPS) {
 		const servers = mapAt(parsed.value, path);
 		if (servers === undefined) continue;
 		for (const [name, entry] of Object.entries(servers)) {
-			if (isOwnEntry(name, JSON.stringify(entry))) {
+			const body = JSON.stringify(entry);
+			if (stringHasLegacyIdentity(body)) clones.push(...clonesIn(body));
+			if (isOwnEntry(name, body)) {
+				// An entry launched from an old clone has nothing to be rewritten
+				// to: the clone is not renamed, so the entry goes.
+				if (clonesIn(body).length > 0) {
+					edits.push({ path: [...path, name], value: undefined });
+					entries.push(name);
+					continue;
+				}
 				const renamed = rewriteIdentityInString(name);
 				const value: unknown = JSON.parse(
 					rewriteIdentityInString(JSON.stringify(entry)),
@@ -93,6 +111,7 @@ const migrateJson = (text: string): IFileOutcome => {
 		next: edits.length === 0 ? undefined : applyJsoncEdits(text, edits),
 		entries,
 		questions,
+		clones: [...new Set(clones)],
 	};
 };
 
@@ -121,16 +140,35 @@ const migrateToml = (text: string): IFileOutcome => {
 		(name) => name === CURRENT_SERVER_NAME || stringHasLegacyIdentity(name),
 	);
 	const questions = [...legacyBody].filter((name) => !own.includes(name));
-	if (own.length === 0) return { next: undefined, entries: [], questions };
+	const clones = [
+		...new Set(
+			lines.flatMap((line, index) => {
+				const name = owner[index];
+				return name !== undefined && legacyBody.has(name)
+					? clonesIn(line)
+					: [];
+			}),
+		),
+	];
+	if (own.length === 0)
+		return { next: undefined, entries: [], questions, clones };
+	// A server launched from an old clone is removed; the others are rewritten.
+	const removed = new Set(
+		own.filter((name) =>
+			lines.some(
+				(line, index) =>
+					owner[index] === name && clonesIn(line).length > 0,
+			),
+		),
+	);
 	const next = lines
-		.map((line, index) => {
+		.flatMap((line, index) => {
 			const name = owner[index];
-			return name !== undefined && own.includes(name)
-				? rewriteIdentityInString(line)
-				: line;
+			if (name === undefined || !own.includes(name)) return [line];
+			return removed.has(name) ? [] : [rewriteIdentityInString(line)];
 		})
 		.join('\n');
-	return { next, entries: own, questions };
+	return { next, entries: own, questions, clones };
 };
 
 const stamp = (now: Date): string => now.toISOString().replace(/[:.]/gu, '-');
@@ -144,9 +182,10 @@ const migrateFile = async (
 ): Promise<{
 	change?: IUserHostConfigChange;
 	questions: IUserHostConfigQuestion[];
+	clones: readonly string[];
 }> => {
 	const text = await options.io.readText(file.path);
-	if (text === undefined) return { questions: [] };
+	if (text === undefined) return { questions: [], clones: [] };
 	const outcome =
 		file.format === 'toml' ? migrateToml(text) : migrateJson(text);
 	const questions = outcome.questions.map((entry) => ({
@@ -154,12 +193,15 @@ const migrateFile = async (
 		file: file.path,
 		entry,
 	}));
+	const clones = outcome.clones;
 	if (outcome.next === undefined || outcome.next === text)
-		return { questions };
+		return { questions, clones };
 	const backup = backupPath(options.backupDir, file.path, options.now());
-	// A copy that cannot be written stops the edit: the throw leaves the file alone.
-	await options.io.writeText(backup, text);
-	await options.io.writeText(file.path, outcome.next);
+	if (options.dryRun !== true) {
+		// A copy that cannot be written stops the edit: the throw leaves the file alone.
+		await options.io.writeText(backup, text);
+		await options.io.writeText(file.path, outcome.next);
+	}
 	return {
 		change: {
 			hostId: file.hostId,
@@ -168,6 +210,7 @@ const migrateFile = async (
 			entries: outcome.entries,
 		},
 		questions,
+		clones,
 	};
 };
 
@@ -178,11 +221,13 @@ export const migrateUserHostConfigs = async (
 	const changes: IUserHostConfigChange[] = [];
 	const questions: IUserHostConfigQuestion[] = [];
 	const failures: IUserHostConfigFailure[] = [];
+	const clones = new Set<string>();
 	for (const file of options.resolved.files) {
 		try {
 			const result = await migrateFile(file, options);
 			if (result.change !== undefined) changes.push(result.change);
 			questions.push(...result.questions);
+			for (const clone of result.clones) clones.add(clone);
 		} catch (error) {
 			failures.push({
 				file: file.path,
@@ -195,5 +240,6 @@ export const migrateUserHostConfigs = async (
 		questions,
 		failures,
 		notCovered: options.resolved.notCovered,
+		clones: [...clones],
 	};
 };

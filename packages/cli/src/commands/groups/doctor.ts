@@ -17,7 +17,11 @@
  */
 import type { IOverview } from '@delendai/client/public';
 
-import { parseJsonc } from '@delendai/core/cli';
+import {
+	applyLegacyResidue,
+	parseJsonc,
+	thisMachineResidueOptions,
+} from '@delendai/core/cli';
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -175,6 +179,10 @@ export interface IRunDoctorOptions {
 	readonly extraChecks?: readonly DoctorCheck[] | undefined;
 	/** Modes asked for on the command line; all off when omitted. */
 	readonly modes?: IDoctorModes | undefined;
+	/** What `--fix` applies; tests inject a fake so no real file is touched. */
+	readonly applyResidue?: (
+		workspace: string,
+	) => Promise<{ readonly lines: readonly string[] }>;
 	/** Override for the deep-check registry; tests inject fakes here. */
 	readonly deepChecks?: readonly IDeepCheck[] | undefined;
 }
@@ -257,6 +265,24 @@ export const runDoctorBody = async (
 	const modes = options.modes ?? NO_MODES;
 	const sections: IDoctorSection[] = [];
 
+	// --fix: only what the registry proves is delendai's own is migrated,
+	// each file after its backup; the checks below then report the rest.
+	if (modes.fix === true) {
+		const applied = await (
+			options.applyResidue ??
+			((workspace: string) =>
+				applyLegacyResidue(thisMachineResidueOptions(workspace)))
+		)(ctx.globals.workspace);
+		sections.push({
+			name: 'legacy-residue-fix',
+			status: 'ok',
+			findings:
+				applied.lines.length === 0
+					? ['nothing to migrate']
+					: [...applied.lines],
+		});
+	}
+
 	// Environment — workspace resolution is always available.
 	sections.push({
 		name: 'env',
@@ -332,7 +358,7 @@ const doctorCommand: ICliCommand = {
 	summary:
 		'Sectioned health report (env, config, manifests, runtime, plugins, tools) + exit code + 0–100 score.',
 	flags: DOCTOR_FLAGS,
-	usage: 'doctor [--ci] [--offline] [--deep]',
+	usage: 'doctor [--ci] [--offline] [--deep] [--fix]',
 	async run(args, ctx) {
 		return runDoctorBody(ctx, { modes: parseDoctorModes(args) });
 	},

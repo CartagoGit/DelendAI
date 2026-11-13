@@ -12,6 +12,8 @@ export interface IDoctorModes {
 	readonly offline: boolean;
 	/** Also run the slower checks registered as deep checks. */
 	readonly deep: boolean;
+	/** Apply what the registry can prove is delendai's own; report the rest. */
+	readonly fix?: boolean;
 }
 
 /** One check that only runs under `--deep`. */

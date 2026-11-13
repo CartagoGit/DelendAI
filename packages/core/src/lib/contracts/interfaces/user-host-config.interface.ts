@@ -52,6 +52,8 @@ export interface IUserHostConfigReport {
 	readonly questions: readonly IUserHostConfigQuestion[];
 	readonly failures: readonly IUserHostConfigFailure[];
 	readonly notCovered: readonly string[];
+	/** Directories of old clones the entries launch from; reported, never touched. */
+	readonly clones: readonly string[];
 }
 
 export interface IUserHostConfigMigrationOptions {
@@ -60,4 +62,6 @@ export interface IUserHostConfigMigrationOptions {
 	/** The delendai user state directory's backups folder. */
 	readonly backupDir: string;
 	readonly now: () => Date;
+	/** Report what would change, writing nothing: no backup, no edit. */
+	readonly dryRun?: boolean;
 }
