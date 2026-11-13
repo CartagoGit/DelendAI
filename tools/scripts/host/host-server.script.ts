@@ -8,6 +8,8 @@
  */
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,10 +37,13 @@ import {
 } from '@delendai/core/runtime';
 import {
 	createFileSystemJournal,
+	createUserFileIO,
 	DEFAULT_MIGRATIONS,
 	ensureWorkspaceMigrated,
 	gracefulShutdown,
 	hasExplicitPluginSurfaceSelection,
+	runLegacyResidueBoot,
+	windowsAppDataUnderWsl,
 } from '@delendai/core/cli';
 import {
 	renderStartupReportAnsi,
@@ -309,6 +314,32 @@ const run = async (): Promise<void> => {
 				process.stderr.write(`[delendai] ${line}\n`);
 		},
 	});
+	// What an older delendai left in the user's own host configs, once per
+	// machine. Quiet when clean; it never stops the boot.
+	const hostConfigText = await readFile(
+		join(cwd, 'delendai.config.json'),
+		'utf8',
+	).catch(() => undefined);
+	for (const line of await runLegacyResidueBoot({
+		workspaceRoot: cwd,
+		home: homedir(),
+		platform:
+			process.platform === 'win32' || process.platform === 'darwin'
+				? process.platform
+				: 'linux',
+		...(process.env.APPDATA === undefined
+			? {}
+			: { appData: process.env.APPDATA }),
+		windowsHomes: windowsAppDataUnderWsl().map((dir) =>
+			dirname(dirname(dir)),
+		),
+		env: process.env,
+		configText: hostConfigText,
+		io: createUserFileIO(),
+		now: () => new Date(),
+	})) {
+		process.stderr.write(`[delendai] ${line}\n`);
+	}
 	// The state of the hooks that enforce this project's development
 	// policy — reported, never written. This entry is what an editor
 	// launches: opening a folder must leave it byte-identical.
