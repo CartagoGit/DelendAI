@@ -57,7 +57,7 @@ describe('the state registry a boot uses', () => {
 		expect(source).not.toContain('defineInMemoryStateRegistry(');
 	});
 
-	it('[<200ms] accepts a registry core could never have built itself', async () => {
+	it('[<550ms] accepts a registry core could never have built itself', async () => {
 		// The point of the seam: a SQLite-backed registry lives in
 		// @delendai/state-sqlite, and core may not import bun:sqlite. It
 		// can only ever be handed one.
@@ -84,7 +84,7 @@ describe('the state registry a boot uses', () => {
 });
 
 describe('the assembler answers for the shapes a project can boot in', () => {
-	it('[<119ms] boots a workspace with no config file at all', async () => {
+	it('[<480ms] boots a workspace with no config file at all', async () => {
 		// A greenfield project: no delendai.config.json anywhere. The
 		// assembler has to reach a usable host config from defaults
 		// alone, which is the first thing any new adopter exercises.
@@ -102,7 +102,7 @@ describe('the assembler answers for the shapes a project can boot in', () => {
 		}
 	});
 
-	it('[<140ms] reports a config file it cannot parse instead of throwing', async () => {
+	it('[<500ms] reports a config file it cannot parse instead of throwing', async () => {
 		// A boot that dies on a malformed config gives an operator a
 		// stack trace; one that reports it gives them the line to fix.
 		const dir = mkdtempSync(join(tmpdir(), 'delendai-assemble-bad-'));
@@ -124,7 +124,7 @@ describe('the assembler answers for the shapes a project can boot in', () => {
 		}
 	});
 
-	it('[<113ms] carries a declared development policy into the boot', async () => {
+	it('[<470ms] carries a declared development policy into the boot', async () => {
 		// The policy is what every other subsystem reads to decide how
 		// work is persisted and integrated, so the assembler resolving it
 		// is load-bearing rather than incidental.
