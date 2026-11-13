@@ -177,7 +177,6 @@
 		"packages/cli/src/lib/doctor/applicability.spec.ts",
 		"packages/cli/src/lib/doctor/checks/branch-protection.check.spec.ts",
 		"packages/cli/src/lib/doctor/checks/preset.check.spec.ts",
-		"packages/cli/src/lib/doctor/deep-checks.service.spec.ts",
 		"packages/cli/src/lib/doctor/runner.spec.ts",
 		"packages/cli/src/lib/generated-merge-driver.service.spec.ts",
 		"packages/cli/src/lib/generated-refresh.service.spec.ts",

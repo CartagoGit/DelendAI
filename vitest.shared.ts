@@ -259,6 +259,11 @@ export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-git-setup.ts'),
 	// No test reads the machine's provider-model bridge.
 	resolve(workspaceRoot, 'tools/scripts/lib/hermetic-agent-bridge-setup.ts'),
+	// No test migrates the machine's own host configs.
+	resolve(
+		workspaceRoot,
+		'tools/scripts/lib/hermetic-legacy-residue-setup.ts',
+	),
 	// Every spec runs from the repository root, wherever the run started.
 	resolve(workspaceRoot, 'tools/scripts/test/hermetic-cwd-setup.ts'),
 ];

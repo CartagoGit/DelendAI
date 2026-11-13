@@ -18,6 +18,10 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 			format: 'copilot',
 		},
 		instructions: '.github/copilot-instructions.md',
+		userConfig: [
+			{ location: 'vscode-user', path: 'mcp.json', format: 'json' },
+			{ location: 'vscode-user', path: 'settings.json', format: 'json' },
+		],
 		evidence: {
 			paths: [
 				'.github/agents',
@@ -45,6 +49,10 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		skills: { dir: '.claude/skills', forkContext: true },
 		agents: { dir: '.claude/agents', suffix: '.md', format: 'claude' },
 		instructions: 'CLAUDE.md',
+		userConfig: [
+			{ location: 'home', path: '.claude.json', format: 'json' },
+			{ location: 'home', path: '.mcp.json', format: 'json' },
+		],
 		evidence: {
 			paths: ['.claude', 'CLAUDE.md', '.mcp.json'],
 			env: ['CLAUDECODE'],
@@ -63,6 +71,9 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		agents: { dir: '.codex/agents', suffix: '.md', format: 'codex' },
 		instructions: 'AGENTS.md',
 		legacyInstructions: ['.codex/instructions.md'],
+		userConfig: [
+			{ location: 'home', path: '.codex/config.toml', format: 'toml' },
+		],
 		evidence: { paths: ['.codex'], env: ['CODEX_HOME'] },
 		identity: {
 			name: 'codex-cli',
@@ -84,6 +95,9 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		label: 'Cursor',
 		instructions: '.cursor/rules/delendai.mdc',
 		legacyInstructions: ['.cursorrules'],
+		userConfig: [
+			{ location: 'home', path: '.cursor/mcp.json', format: 'json' },
+		],
 		evidence: { paths: ['.cursor', '.cursorrules'] },
 		identity: {
 			name: 'cursor',
@@ -103,6 +117,9 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		id: 'gemini',
 		label: 'Gemini CLI',
 		instructions: 'GEMINI.md',
+		userConfig: [
+			{ location: 'home', path: '.gemini/settings.json', format: 'json' },
+		],
 		evidence: { paths: ['.gemini', 'GEMINI.md'] },
 		identity: { applications: ['gemini-cli'], markers: ['GEMINI_CLI'] },
 	},

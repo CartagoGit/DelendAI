@@ -18,6 +18,7 @@ import { safePathExists } from '@delendai/core/cli';
 
 import {
 	checkGitStatus,
+	checkLegacyResidue,
 	checkManifests,
 	checkPermissions,
 	checkRuntime,
@@ -66,6 +67,7 @@ export const defaultChecks: readonly DoctorCheck[] = [
 	checkSchemas,
 	checkPorts,
 	checkNetworkDependentSurfaces,
+	checkLegacyResidue(),
 ];
 
 /**
