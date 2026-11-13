@@ -2170,7 +2170,6 @@
 		"tools/scripts/docs/generate-docs-index.script.spec.ts",
 		"tools/scripts/forge/close-unpublished-prs.script.spec.ts",
 		"tools/scripts/forge/forward-sync-release.script.spec.ts",
-		"tools/scripts/forge/promotion-alerts.script.spec.ts",
 		"tools/scripts/forge/publish-cleanup.spec.ts",
 		"tools/scripts/forge/sync-with-integration.script.spec.ts",
 		"tools/scripts/gen-all.spec.ts",
