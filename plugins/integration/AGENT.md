@@ -17,6 +17,9 @@
 - buildReport
 - renderReportTable
 - REHEARSAL_CATALOGUE
+- diagnoseIdentity
+- renderAppManifest
+- renderDoctorTable
 
 ## Depends on
 
@@ -34,10 +37,10 @@
 
 ## Tests
 
+- plugins/integration/tests/src/lib/services/integration-doctor.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-cleanup.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-expectation.service.spec.ts
 - plugins/integration/tests/src/lib/services/rehearsal-github-forge.service.spec.ts
-- plugins/integration/tests/src/lib/services/rehearsal-report.service.spec.ts
 
 ## Do not
 

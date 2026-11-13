@@ -13,3 +13,9 @@ export {
 	renderReportTable,
 } from '../lib/services/rehearsal-report.service';
 export { REHEARSAL_CATALOGUE } from '../lib/contracts/constants/rehearsal-catalogue.constant';
+export type * from '../lib/contracts/interfaces/integration-doctor.interface';
+export {
+	diagnoseIdentity,
+	renderAppManifest,
+	renderDoctorTable,
+} from '../lib/services/integration-doctor.service';

@@ -466,13 +466,12 @@ describe('the land workflow template', () => {
 		});
 		expect(text).toContain('branches: [trunk, stable]');
 		expect(text).toContain(
-			"github.event.workflow_run.head_branch == 'trunk'",
+			"github.event_name == 'workflow_dispatch' && inputs.promote != ''",
 		);
 		expect(text).toContain("github.ref_name == 'stable'");
 		expect(text).toContain('run: npx tool promote');
 		expect(text).toContain('run: npx tool tidy');
 		expect(text).not.toMatch(/\bdevelop\b/u);
-		expect(text).not.toContain('vars.');
 	});
 
 	it('[<5ms] leaves out the phases a project does not declare', () => {
@@ -483,7 +482,7 @@ describe('the land workflow template', () => {
 		} = REPO_LAND_WORKFLOW;
 		const text = renderLandWorkflow({ ...bare, upkeep: [] });
 		expect(text).toContain('    land:');
-		expect(text).not.toContain('    promote:');
+		expect(text).not.toContain('\n    promote:\n');
 		expect(text).not.toContain('    forward-sync:');
 		expect(text).not.toContain('    upkeep:');
 	});

@@ -178,10 +178,13 @@ describe('the cutover to land', () => {
 		}
 	});
 
-	it('[<20ms] runs the integration branch CI after land, judged since the tip the pass started from', () => {
+	it('[<20ms] runs on the pushes the identity makes and tells the integrator when a pull request run ends', () => {
 		const ci = readFileSync(join(ROOT, '.github/workflows/ci.yml'), 'utf8');
-		expect(ci).toMatch(/workflow_run:\n\s+workflows: \[land\]/u);
-		expect(ci).toContain('github.event.workflow_run.head_sha');
+		expect(ci).not.toContain('workflow_run');
+		expect(ci).toContain('integration-signal:');
+		expect(ci).toContain('if: ${{ always() && (github.event_name == ');
+		expect(ci).toContain('zones:');
+		expect(ci).not.toContain('scan-the-integration-branch');
 		expect(ci).not.toContain('gh workflow run keep-the-queue');
 	});
 });

@@ -3,7 +3,11 @@
  * the integrator workflow, the fast CI, the stand-ins for the scan and for
  * a workflow-token writer, and the project's policy pointed at the branch.
  */
-import { parseJsonc, renderLandWorkflow } from '@delendai/core/cli';
+import {
+	parseJsonc,
+	renderLandWorkflow,
+	type ILandWorkflowIdentity,
+} from '@delendai/core/cli';
 
 import {
 	REHEARSAL_CHECKOUT_ACTION,
@@ -112,12 +116,16 @@ export const createRehearsalSetup = (
 export const landIntegratorWorkflow = (
 	integration: string,
 	concurrencyGroup: string,
-	input: { readonly releaseBranch: string; readonly passCommand: string },
+	input: {
+		readonly releaseBranch: string;
+		readonly passCommand: string;
+		readonly identity: ILandWorkflowIdentity;
+	},
 ): string =>
 	renderLandWorkflow({
 		integrationBranch: integration,
 		releaseBranch: input.releaseBranch,
-		checkWorkflows: [REHEARSAL_CI_CHECK],
+		identity: input.identity,
 		cron: `*/${String(PASS_INTERVAL_MINUTES)} * * * *`,
 		passCommand: input.passCommand,
 		concurrencyGroup,

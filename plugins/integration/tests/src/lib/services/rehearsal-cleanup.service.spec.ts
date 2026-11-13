@@ -1,3 +1,4 @@
+import { DEFAULT_INTEGRATION_OPTIONS } from '@delendai/core/cli';
 import { describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
@@ -96,6 +97,7 @@ describe('cleanup and setup', () => {
 				landIntegratorWorkflow(integration, group, {
 					releaseBranch: 'main',
 					passCommand: 'bun pass',
+					identity: DEFAULT_INTEGRATION_OPTIONS.identity,
 				}),
 		});
 		const paths = setup

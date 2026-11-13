@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderLandWorkflow } from '@delendai/core/cli';
+import {
+	DEFAULT_INTEGRATION_OPTIONS,
+	renderLandWorkflow,
+} from '@delendai/core/cli';
 
 import { REHEARSAL_CATALOGUE } from '../../../../src/lib/contracts/constants/rehearsal-catalogue.constant';
 import { REHEARSAL_KNOWN_RED } from '../../../../src/lib/contracts/constants/rehearsal-known-red.constant';
@@ -130,7 +133,11 @@ describe('the known-red list', () => {
 });
 
 describe('today land on the rehearsal branch', () => {
-	const input = { releaseBranch: 'main', passCommand: 'bun pass' } as const;
+	const input = {
+		releaseBranch: 'main',
+		passCommand: 'bun pass',
+		identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+	} as const;
 
 	it('[<50ms] is the real render, changed only by the branch and the check it waits on', () => {
 		const rendered = landIntegratorWorkflow(
@@ -142,7 +149,7 @@ describe('today land on the rehearsal branch', () => {
 			renderLandWorkflow({
 				integrationBranch: 'ns/rehearsal/r1/s-integration',
 				releaseBranch: 'main',
-				checkWorkflows: ['rehearsal-ci'],
+				identity: DEFAULT_INTEGRATION_OPTIONS.identity,
 				cron: '*/15 * * * *',
 				passCommand: 'bun pass',
 				concurrencyGroup: 'land-rehearsal-r1',

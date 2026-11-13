@@ -1,5 +1,5 @@
 /**
- * integration.command.ts — `delendai integration rehearse`.
+ * integration.command.ts — `delendai integration rehearse` and `doctor`.
  *
  * It only wires ports: `gh` as the signed-in user, the real clock, the
  * project's policy and files. The rehearsal itself, its scenarios and its
@@ -37,9 +37,10 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 
+import { runIntegrationDoctor } from './integration-doctor.command';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
+const USAGE = `integration doctor [--manifest] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const spawnGh = (
@@ -71,6 +72,7 @@ export const createIntegrationCommand = (
 	...INTEGRATION_COMMAND,
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [sub, ...rest] = args;
+		if (sub === 'doctor') return runIntegrationDoctor(rest, ctx, runGh);
 		if (sub !== 'rehearse') return usage(USAGE);
 		const mode = scalarArg(rest, 'mode') ?? 'fast';
 		if (!(INTEGRATION_REHEARSAL_MODES as readonly string[]).includes(mode))
@@ -121,6 +123,7 @@ export const createIntegrationCommand = (
 									releaseBranch: policy.branches.release,
 									passCommand:
 										'bun tools/scripts/forge/land.script.ts',
+									identity: policy.integration.identity,
 								},
 							),
 					}),
