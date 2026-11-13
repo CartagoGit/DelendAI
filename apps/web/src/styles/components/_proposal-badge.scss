@@ -1,0 +1,60 @@
+.proposal-badge {
+	--proposal-badge-dot: var(--accent);
+
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	width: max-content;
+	max-width: 100%;
+	padding: 0.2rem 0.55rem;
+	border: 1px solid color-mix(in srgb, var(--fg) 12%, var(--line));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--fg) 5%, var(--card));
+	color: var(--fg);
+	font-size: 0.78rem;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+.proposal-badge__dot {
+	width: 0.55rem;
+	height: 0.55rem;
+	border-radius: 999px;
+	background: var(--proposal-badge-dot);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--proposal-badge-dot) 18%, transparent);
+}
+
+.proposal-badge--ready {
+	--proposal-badge-dot: #3b82f6;
+}
+
+.proposal-badge--in-progress {
+	--proposal-badge-dot: #f59e0b;
+}
+
+.proposal-badge--review {
+	--proposal-badge-dot: #8b5cf6;
+}
+
+.proposal-badge--done {
+	--proposal-badge-dot: #22c55e;
+}
+
+.proposal-badge--paused {
+	--proposal-badge-dot: #64748b;
+}
+
+.proposal-badge--blocked {
+	--proposal-badge-dot: #ef4444;
+}
+
+.proposal-badge--retired {
+	--proposal-badge-dot: #525252;
+}
+
+.proposal-badge--kind {
+	border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+	background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
