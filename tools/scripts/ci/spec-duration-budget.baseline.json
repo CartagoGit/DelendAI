@@ -1,0 +1,21 @@
+[
+	"apps/web/scripts/__tests__/gen-capabilities.spec.ts",
+	"packages/cli/src/lib/init/init-render.service.spec.ts",
+	"packages/cli/src/lib/leave-no-trace.service.spec.ts",
+	"packages/core/tests/src/architecture/core-proposals-boundary.spec.ts",
+	"packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts",
+	"packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts",
+	"packages/core/tests/src/lib/startup-reconciler/idempotency.spec.ts",
+	"packages/core/tests/src/lib/startup-reconciler/swarm-boot.spec.ts",
+	"packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts",
+	"packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts",
+	"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts",
+	"packages/core/tests/src/public/deprecation.spec.ts",
+	"plugins/agent-orchestrator/tests/src/lib/dispatch/change-context-reader.helper.spec.ts",
+	"plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts",
+	"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
+	"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
+	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts",
+	"plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts",
+	"tools/scripts/host/host-boot-journal.spec.ts"
+]

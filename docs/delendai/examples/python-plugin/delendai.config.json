@@ -1,0 +1,18 @@
+{
+	"$schema": "../../../../packages/core/schema/delendai.config.schema.json",
+	"plugins": {
+		"external-mcps": {
+			"options": {
+				"servers": {
+					"greeter": {
+						"version": "0.1.0",
+						"command": "python3",
+						"args": [
+							"docs/delendai/examples/python-plugin/server.py"
+						]
+					}
+				}
+			}
+		}
+	}
+}
