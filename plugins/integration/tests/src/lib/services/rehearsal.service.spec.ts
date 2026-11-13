@@ -109,4 +109,53 @@ describe('rehearse', () => {
 		});
 		expect(lines).toContain('s: stopped: POST git/refs answered 422');
 	});
+
+	it('[<100ms] records an exception in one scenario as its result and plays the next', async () => {
+		const { forge } = forgeThatRecords();
+		let calls = 0;
+		const report = await rehearse({
+			forge: {
+				...forge,
+				tipOf: forge.tipOf,
+				createBranch: async (name, sha) => {
+					calls += 1;
+					if (calls === 1) throw new Error('boom');
+					await forge.createBranch(name, sha);
+				},
+				pulls: async () => {
+					throw new Error('pulls unreadable');
+				},
+			},
+			clock: {
+				now: () => Date.parse('2026-11-12T10:00:00Z'),
+				wait: async () => undefined,
+			},
+			setup: () => ({ files: () => [] }),
+			repository: 'o/r',
+			branchPrefix: 'delendai/rehearsal/',
+			baseBranch: 'develop',
+			scenarios: [
+				{ id: 'one', title: 'one', pulls: [], steps: [], expect: [] },
+				{ id: 'two', title: 'two', pulls: [], steps: [], expect: [] },
+			],
+			log: () => undefined,
+		}).catch((error: unknown) => error);
+		// The unreadable forge makes collection and cleanup throw: each is a result, and the report still exists.
+		expect(report).not.toBeInstanceOf(Error);
+		const built = report as {
+			scenarios: {
+				id: string;
+				ok: boolean;
+				expectations: { detail: string }[];
+			}[];
+		};
+		expect(built.scenarios.map((s) => s.id)).toEqual(['one', 'two']);
+		expect(built.scenarios.every((s) => !s.ok)).toBe(true);
+		expect(
+			(report as { leftovers: string[] }).leftovers.join(' '),
+		).toContain('cleanup failed: pulls unreadable');
+		expect(
+			built.scenarios[0]?.expectations.map((e) => e.detail).join(' '),
+		).toMatch(/error: /u);
+	});
 });

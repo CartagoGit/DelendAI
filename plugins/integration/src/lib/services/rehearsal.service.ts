@@ -8,6 +8,7 @@
 import type {
 	IRehearsalEvidence,
 	IRehearsalReport,
+	IRehearsalScenario,
 	IRehearseInput,
 } from '../contracts/interfaces/rehearsal.interface';
 
@@ -37,6 +38,49 @@ export const selectScenarios = <T extends { readonly id: string }>(
 };
 
 const iso = (ms: number): string => new Date(ms).toISOString();
+
+/** One scenario's evidence; an exception while playing or reading it is the scenario's result, never the run's end. */
+const playOne = async (
+	context: Parameters<typeof runScenario>[0],
+	scenario: IRehearsalScenario,
+	now: () => number,
+): Promise<IRehearsalEvidence> => {
+	try {
+		return await runScenario(context, scenario);
+	} catch (error) {
+		const at = iso(now());
+		return {
+			scenario: scenario.id,
+			integration: '',
+			pulls: {},
+			events: {},
+			runs: [],
+			tips: [],
+			manualSteps: [],
+			tokenHeads: {},
+			tokenPulls: {},
+			startedAt: at,
+			finishedAt: at,
+			failures: [
+				`error: ${error instanceof Error ? error.message : String(error)}`,
+			],
+		};
+	}
+};
+
+/** Token shapes in every log the run started; a log that cannot be read is a hit, never a pass. */
+const scanLogs = async (
+	input: IRehearseInput,
+	evidence: readonly IRehearsalEvidence[],
+): Promise<readonly string[]> => {
+	try {
+		return await logHits(input, evidence);
+	} catch (error) {
+		return [
+			`log scan failed: ${error instanceof Error ? error.message : String(error)}`,
+		];
+	}
+};
 
 const logHits = async (
 	input: IRehearseInput,
@@ -80,19 +124,22 @@ export const rehearse = async (
 	let leftovers: readonly string[] = [];
 	try {
 		for (const scenario of input.scenarios) {
-			const played = await runScenario(context, scenario);
+			const played = await playOne(context, scenario, input.clock.now);
 			// A step that could not be taken is said at once, not only in the report.
 			for (const failure of played.failures)
 				input.log(`${scenario.id}: ${failure}`);
 			evidence.push(played);
 		}
-		secretHits = await logHits(input, evidence);
+		secretHits = await scanLogs(input, evidence);
 	} finally {
+		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
 		leftovers = await cleanRun({
 			forge: input.forge,
 			branchPrefix: input.branchPrefix,
 			runId,
-		});
+		}).catch((error: unknown) => [
+			`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+		]);
 	}
 	input.log(
 		`run ${runId} cleaned under ${runBranchRoot(input.branchPrefix, runId)}`,
