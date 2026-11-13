@@ -127,6 +127,45 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "Duplicate work is detected across units and a still-valid result or proof is reused."
   - "The report states what cannot be technically guaranteed on each host."
 
+### S6a — The handover command
+- **Status**: pending
+- **DependsOn**: [S3, S4]
+- **Extends**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/cli/src/commands/registry.ts`
+- **Files**: `packages/core/src/lib/contracts/constants/session-handover-command.constant.ts`, `packages/core/src/lib/work-units/session-handover-run.service.ts`, `packages/core/src/lib/work-units/session-handover-sources.service.ts`, `packages/core/src/lib/work-units/session-handover-render.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/session-handover.command.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/src/commands/session-handover.command.spec.ts`, `packages/core/tests/src/lib/work-units/session-handover-run.service.spec.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`delendai session handover persist` writes the handover from the stores; `index` prints the bounded index within its declared byte budget; `show --entry=<id>` prints one entry in full; the CLI holds no logic."
+  - "The host renderers name this command: the rendered hooks are `delendai session handover persist` and `delendai session handover index`."
+
+### S6b — Compaction policy from config
+- **Status**: pending
+- **DependsOn**: [S6a]
+- **Extends**: `packages/core/src/lib/plugins/config-file-schema.ts`
+- **Files**: `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/session-config-schema.ts`, `packages/core/src/lib/hosts/compaction-config-sync.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/hosts/compaction-config-sync.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "A `session.compaction` block of `enabled` (default false) and `thresholdPct` (default 40) is resolved and documented."
+  - "`init` and the config sync write each declared project host's rendering only when enabled, idempotently, keeping unknown keys and comments."
+
+### S6c — Limits enforced by the dispatcher
+- **Status**: pending
+- **DependsOn**: [S5b]
+- **Extends**: `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`
+- **Files**: `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`, `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.helper.ts`, `plugins/agent-orchestrator/tests/src/lib/dispatch/linear-dispatcher-limits.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The dispatcher consults the budget tracker's calls, turns, retries and concurrency limits and the no-progress stop before each step; the limit reached stops the run and is named in the blocker."
+
+### S6d — Outcome from the gate
+- **Status**: pending
+- **DependsOn**: [S5a]
+- **Extends**: `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts`
+- **Files**: `plugins/usage-tracking/src/lib/services/invocation-recorder.service.ts`, `plugins/usage-tracking/src/lib/services/invocation-recorder-outcome.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/invocation-recorder.service.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "The recorder sets the task outcome from the gate result (correct, failed or blocked), never from the model's claim; no gate result leaves it unset."
+  - "The rollup's cost per correct result counts only calls a gate passed."
+
 ## acceptance
 
 - Every inventory row names an existing module or an explicit gap, and each gap is owned by one slice.
