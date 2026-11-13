@@ -179,6 +179,7 @@ const EXPECTED_COMMANDS = [
 	'usage-tracking report',
 	'usage-tracking clear',
 	'usage host-sessions',
+	'session handover',
 	'security secrets',
 	'security audit',
 	'router-dashboard',

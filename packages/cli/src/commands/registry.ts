@@ -63,6 +63,7 @@ import { securityCommands } from './groups/security';
 import { statusMarkerCommands } from './groups/status-marker';
 import { testConventionCommands } from './groups/test-convention';
 import { usageTrackingCommands } from './groups/usage-tracking';
+import { sessionHandoverCommand } from './session-handover.command';
 import { usageHostSessionsCommand } from './usage-host-sessions.command';
 import { webFetchCommands } from './groups/web-fetch';
 
@@ -733,6 +734,7 @@ export const registerAllCommands = async (): Promise<
 	...doctorCommands,
 	...usageTrackingCommands,
 	usageHostSessionsCommand,
+	sessionHandoverCommand,
 	...securityCommands,
 	...routerDashboardCommands,
 ];

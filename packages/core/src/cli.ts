@@ -249,6 +249,9 @@ export type {
 	IAdoption,
 } from './lib/workspace-migration/migrators/development-policy-adoption.interface';
 export { runWorkUnit } from './lib/work-units/work-unit.service';
+export { runSessionHandover } from './lib/work-units/session-handover-run.service';
+export { SESSION_HANDOVER_ACTIONS } from './lib/contracts/constants/session-handover-command.constant';
+export type { ISessionHandoverAction } from './lib/work-units/session-handover-run.interface';
 export { noteUnitUrgency } from './lib/work-units/pull-request-urgency.service';
 export { EXIT_CODE } from './lib/contracts/constants/exit-code.constant';
 export type { IExitCode } from './lib/contracts/interfaces/exit-code.interface';

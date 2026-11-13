@@ -192,6 +192,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
 	'usage host-sessions':
 		'Report the tokens each thread of a Claude Code session spent: main and every subagent.',
+	'session handover':
+		'Persist the session handover from delendai stores, print its bounded index, or show one entry in full.',
 	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
 	// S1.6 (cli-i18n gate repair): three commands shipped
 	// without being indexed in HELP_TRANSLATIONS. Their summaries
