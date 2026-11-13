@@ -10,15 +10,15 @@ name: land
 
 on:
     workflow_run:
-        workflows: [CI, CodeQL]
+        workflows: [rehearsal-ci]
         types: [completed]
     check_suite:
         types: [completed]
     pull_request_target:
         types: [ready_for_review]
-        branches: [develop]
+        branches: [delendai/rehearsal/r20261113-001246/red-batch-integration]
     push:
-        branches: [develop, main]
+        branches: [delendai/rehearsal/r20261113-001246/red-batch-integration, main]
     schedule:
         - cron: '*/15 * * * *'
     workflow_dispatch:
@@ -26,7 +26,7 @@ on:
 # Concurrency 1; a waiting pass is kept, since the next reads what the
 # cancelled one would have.
 concurrency:
-    group: land
+    group: land-rehearsal-r20261113-001246
     cancel-in-progress: false
 
 permissions:
@@ -44,14 +44,9 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 30
         steps:
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
               with:
-                  # Full history: a batch merges members onto the tip, and the
-                  # promotion and the forward sync ask ancestry questions.
                   fetch-depth: '0'
 
             - name: One pass
@@ -59,94 +54,3 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
               run: bun tools/scripts/forge/land.script.ts
-
-    # A check of the integration branch finished: promote it when it is
-    # green, file one urgent repair when it is red. It blocks nobody.
-    promote:
-        name: promote
-        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event != 'pull_request' && github.event.workflow_run.head_branch == 'develop' && github.event.workflow_run.conclusion != 'skipped' }}
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  # Full history: a batch merges members onto the tip, and the
-                  # promotion and the forward sync ask ancestry questions.
-                  fetch-depth: '0'
-
-            - name: Open the promotion if it is ready, or file its urgent repair
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun tools/scripts/forge/open-promotion.script.ts --apply
-
-    # The release branch moved: carry it back into the integration branch.
-    forward-sync:
-        name: forward-sync
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-        steps:
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  # Full history: a batch merges members onto the tip, and the
-                  # promotion and the forward sync ask ancestry questions.
-                  fetch-depth: '0'
-
-            - name: Carry the release branch back into the integration branch
-              env:
-                  GH_TOKEN: ${{ github.token }}
-                  GIT_AUTHOR_NAME: github-actions[bot]
-                  GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-                  GIT_COMMITTER_NAME: github-actions[bot]
-                  GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-              run: bun run forge:forward-sync -- --apply
-
-    # Upkeep on the schedule: every step runs, whatever the one before concluded.
-    upkeep:
-        name: upkeep
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - name: Checkout (required to resolve the local composite action)
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-            - name: Setup repo (checkout + bun + install)
-              uses: ./.github/actions/setup-bun-repo
-              with:
-                  # Full history: a batch merges members onto the tip, and the
-                  # promotion and the forward sync ask ancestry questions.
-                  fetch-depth: '0'
-
-            - name: Reap the refs whose pull requests are finished
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-                  REF_LIFECYCLE_SCOPE: repository
-              run: bun run lint:ref-lifecycle -- --reap
-
-            - name: Close the pull requests not opened from a publication
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun tools/scripts/forge/close-unpublished-prs.script.ts --apply
-
-            - name: Fail while something hangs on the forge
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun run work:doctor -- --forge
-
-            - name: Fail while a code scanning alert is open on the integration branch
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun run forge:promotion-alerts -- --branch=develop
