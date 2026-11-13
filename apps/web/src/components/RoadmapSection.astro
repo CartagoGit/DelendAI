@@ -1,0 +1,71 @@
+---
+/**
+ * RoadmapSection.astro — the static body of `/[lang]/roadmap`.
+ *
+ * It reads `roadmaps.json`, the projection generated from the roadmap
+ * file, and nothing else: no live tool call, no second source. What it
+ * shows is intent — what each version promises and where each entry
+ * stands; whether a version can be promoted now is the tools' answer.
+ * The layout reuses the board styles of the proposals page.
+ */
+import EntryCard from '#COMPONENTS/roadmap/EntryCard.astro';
+import ProgressBar from '#COMPONENTS/roadmap/ProgressBar.astro';
+import roadmaps from '#DATA/roadmaps.json';
+import type { Lang } from '#I18N/index';
+import { roadmapBoardByLang } from '#I18N/roadmap-board';
+
+interface Props {
+	readonly lang: Lang;
+}
+
+const { lang } = Astro.props;
+const tb = roadmapBoardByLang[lang];
+const { file, horizons } = roadmaps;
+---
+
+<section class="proposals-board">
+	<p class="proposals-board__lead">{tb.lead}</p>
+
+	<div class="proposals-board__panel">
+		<h2 class="proposals-board__panel-title">{tb.intent.title}</h2>
+		<p class="proposals-board__panel-body">{tb.intent.body}</p>
+	</div>
+
+	{horizons.length === 0 && <p class="proposals-board__note">{tb.empty}</p>}
+
+	{
+		horizons.map((horizon) => (
+			<>
+				<h2 class="proposals-board__h">
+					{tb.version} {horizon.version}
+				</h2>
+				<div class="proposals-board__cards">
+					<div class="proposals-board__card">
+						<strong class="proposals-board__card-title">{tb.progress}</strong>
+						<ProgressBar
+							delivered={horizon.delivered.length}
+							promised={horizon.declared.length}
+							label={tb.progress}
+						/>
+						<span class="proposals-board__card-body">
+							{horizon.counts.delivered} {tb.counts.delivered} ·{' '}
+							{horizon.counts.open} {tb.counts.open} ·{' '}
+							{horizon.counts.withdrawn} {tb.counts.withdrawn}
+						</span>
+					</div>
+					<div class="proposals-board__card">
+						<strong class="proposals-board__card-title">{tb.bump}</strong>
+						<span class="proposals-board__card-body">
+							{horizon.bump.kind} — {tb.bumpAuthority} {horizon.bump.authority}
+						</span>
+					</div>
+				</div>
+				<ul class="proposals-board__rows">
+					{horizon.entries.map((entry) => <EntryCard lang={lang} entry={entry} />)}
+				</ul>
+			</>
+		))
+	}
+
+	{file !== null && <p class="proposals-board__note">{tb.source}: {file}</p>}
+</section>

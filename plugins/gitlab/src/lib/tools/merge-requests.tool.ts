@@ -1,0 +1,1 @@
+export { buildGitLabMergeRequestsToolRegistrations } from './shared';
