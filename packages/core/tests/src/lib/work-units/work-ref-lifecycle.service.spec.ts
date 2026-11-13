@@ -206,7 +206,7 @@ describe('reading a clone', () => {
 		);
 	});
 
-	it('[<193ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
+	it('[<401ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
 		// a00095 kept every finished reviewer's ref for days: the audit
 		// stayed in progress while others were still at work.
 		const root = clone('in-progress', 'in-progress');
