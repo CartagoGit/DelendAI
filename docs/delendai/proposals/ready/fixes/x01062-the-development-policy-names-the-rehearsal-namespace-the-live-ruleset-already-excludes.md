@@ -16,11 +16,11 @@ The live forge ruleset excludes refs/heads/delendai/rehearsal/**/* but develop's
 
 ## why
 
-TODO: why this work matters now.
+The live ruleset was applied from an unmerged branch (q00048 S2/S3) ahead of the policy, so develop's policy does not yet name the rehearsal namespace and the ruleset guard reports a disagreement on every pull request.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The rehearsal plugin and its harness; only the namespace, its decisions and reconciler handling are brought in.
 
 ## slices
 
@@ -33,4 +33,5 @@ TODO: why this work matters now.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- `bun run lint:namespace-ruleset` exits 0 against the live forge ruleset.
+- The reconcile rehearsal spec passes and the rehearsal namespace is admitted and never reaped.
