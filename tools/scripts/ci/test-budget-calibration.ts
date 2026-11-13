@@ -3,11 +3,7 @@
  * for it. The runner leaves each test's measured body time in its `meta`;
  * a vitest blob report carries it, and these functions read it back.
  */
-import {
-	BUDGET_PREFIX,
-	MEASURED_BENCH_META_KEY,
-	MEASURED_LOAD_META_KEY,
-} from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import { BUDGET_PREFIX } from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
 import { isE2eSpec } from '../../../packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
 
 /** The digest's own entry: the benchmark times shards measured, each a key and a value. */

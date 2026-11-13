@@ -53,7 +53,9 @@ jobs:
 
             - name: Open or refresh the calibration pull request
               env:
-                  GH_TOKEN: ${{ github.token }}
+                  # The integration identity's token, never the workflow token:
+                  # a pull request the workflow token opens starts no checks.
+                  GH_TOKEN: ${{ secrets.DELENDAI_INTEGRATION_TOKEN }}
               run: |
                   set -euo pipefail
                   if git diff --quiet; then
