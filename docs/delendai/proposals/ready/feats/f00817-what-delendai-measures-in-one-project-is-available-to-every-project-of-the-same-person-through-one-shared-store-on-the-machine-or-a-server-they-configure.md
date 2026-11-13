@@ -12,11 +12,9 @@ date: 2026-11-13
 
 ## goal
 
-## goal
-
 A person who runs delendai in many projects gets one shared body of measured knowledge. What is measured in one project (which model, subagent or Batuta route is cheapest and correct for a task class) is available to every other project of the same person, through one store configured once: a directory on the machine (`local`) or a server the person hosts (`remote`). Only project-agnostic records leave a project, through a single schema-validated redaction allow-list. The auto-agent-selector and Batuta read cached rollups of that store to rank the enabled agents by cost per correct result, fall back to project-local data and then to defaults when samples are few, and always say which source decided.
 
-## START GATE (read first)
+**START GATE (read first)**
 
 **Implementation of this proposal does NOT start until ALL of the following hold AND the owner explicitly says so. Starting earlier only causes problems.**
 
@@ -32,14 +30,6 @@ This proposal stays `ready` and is never moved to in-progress until then. The pr
 
 Owner, 2026-11-13. A person with 30 delendai projects has an agent in each. The agent in one project knows what was measured there: which model, subagent or Batuta route is cheapest and correct for a task class. It knows nothing of what was measured in the other 29, so every project pays again to learn the same thing and the selector ranks on a handful of local samples. The measurements are project-agnostic by nature (a task class, a model, tokens, outcome); the project is incidental. Builds on f00816 (its cost ledger is the only producer), on the auto-agent-selector calibration store, on Batuta's router and quota ledger, and on usage-tracking rollups. It adds sync and a shared read path, not a second ledger and not a second ranking. Agnostic: any host, any LLM, BYOK, and projects that use delendai as an MCP server.
 
-## design
-
-- **One store per person, configured once.** `local`: a directory under the user's data dir shared by every project on the machine (default when enabled). `remote`: a server URL the person hosts, a tiny documented HTTP contract (append records, fetch rollups, health). Credentials only via the OS keychain or environment, never in config, logs or the repo. Opt-in and off by default. A policy block in config with a user-level default and a per-project override or opt-out.
-- **What is stored: only project-agnostic records.** Task class (from a closed taxonomy), model, provider, host, tier, context size used, tokens in, out and cached, wall time, turns, retries, outcome (correct, blocked, failed, verified by a gate and not self-reported), delendai version, timestamp, and a salted project hash used only for de-duplication. Never: paths, file names, code, prompts, proposal text, repo or branch names, user identifiers. A redaction allow-list, schema-validated so that anything not in the schema is dropped, is the single write path.
-- **Source.** The per-project metrics ledger (the f00816 cost ledger) is the only producer. Local-first: append to the project ledger, then a background reconcile pushes and pulls. Offline is normal. Idempotent by record id. Bounded retention and aggregation: rollups per task class x model with sample count and confidence, so reads are cheap.
-- **Consumers.** The auto-agent-selector and Batuta read aggregated rollups, cached locally with a TTL, never a network call on the hot path. They rank the enabled agents for a task class by cost per correct result. With too few samples they fall back to project-local data, then to defaults, and report which source decided.
-- **Privacy and trust.** `delendai knowledge show|export|purge` and a dry-run that prints exactly what would leave the project. Remote data is the person's own and single-tenant. The schema is versioned with migrations.
-
 ## non-goals
 
 - No sharing between different people or organisations.
@@ -47,6 +37,14 @@ Owner, 2026-11-13. A person with 30 delendai projects has an agent in each. The 
 - No telemetry to delendai's authors.
 - No second metrics ledger and no second ranking algorithm.
 - No network call on the selector or Batuta hot path.
+
+## architecture
+
+- **One store per person, configured once.** `local`: a directory under the user's data dir shared by every project on the machine (default when enabled). `remote`: a server URL the person hosts, a tiny documented HTTP contract (append records, fetch rollups, health). Credentials only via the OS keychain or environment, never in config, logs or the repo. Opt-in and off by default. A policy block in config with a user-level default and a per-project override or opt-out.
+- **What is stored: only project-agnostic records.** Task class (from a closed taxonomy), model, provider, host, tier, context size used, tokens in, out and cached, wall time, turns, retries, outcome (correct, blocked, failed, verified by a gate and not self-reported), delendai version, timestamp, and a salted project hash used only for de-duplication. Never: paths, file names, code, prompts, proposal text, repo or branch names, user identifiers. A redaction allow-list, schema-validated so that anything not in the schema is dropped, is the single write path.
+- **Source.** The per-project metrics ledger (the f00816 cost ledger) is the only producer. Local-first: append to the project ledger, then a background reconcile pushes and pulls. Offline is normal. Idempotent by record id. Bounded retention and aggregation: rollups per task class x model with sample count and confidence, so reads are cheap.
+- **Consumers.** The auto-agent-selector and Batuta read aggregated rollups, cached locally with a TTL, never a network call on the hot path. They rank the enabled agents for a task class by cost per correct result. With too few samples they fall back to project-local data, then to defaults, and report which source decided.
+- **Privacy and trust.** `delendai knowledge show|export|purge` and a dry-run that prints exactly what would leave the project. Remote data is the person's own and single-tenant. The schema is versioned with migrations.
 
 ## slices
 
