@@ -5,8 +5,63 @@
 export const INTEGRATION_ENGINES = ['land', 'none'] as const;
 export type IIntegrationEngine = (typeof INTEGRATION_ENGINES)[number];
 
+/** Who the integrator acts as: a GitHub App, or a personal access token. Never the workflow token. */
+export const INTEGRATION_IDENTITY_KINDS = ['app', 'pat'] as const;
+export type IIntegrationIdentityKind =
+	(typeof INTEGRATION_IDENTITY_KINDS)[number];
+
+/** Whether the integrator groups overlapping pull requests into one batch. */
+export const INTEGRATION_BATCHING_MODES = ['overlap', 'off'] as const;
+export type IIntegrationBatching = (typeof INTEGRATION_BATCHING_MODES)[number];
+
+/** The identity the integrator's token is minted from; only the names are policy, never a value. */
+export interface IIntegrationIdentity {
+	readonly kind: IIntegrationIdentityKind;
+	/** `app`: the variable holding the App id. */
+	readonly appIdVariable: string;
+	/** `app`: the secret holding the App private key. */
+	readonly keySecret: string;
+	/** `pat`: the secret holding the token. */
+	readonly tokenSecret: string;
+}
+
+/** The commands and paths a project owns to regenerate derived files. */
+export interface IIntegrationDerived {
+	readonly paths: readonly string[];
+	readonly command: string;
+}
+
+/** The hourly safety net on the default branch. */
+export interface IIntegrationWatchdog {
+	readonly enabled: boolean;
+	readonly cron: string;
+}
+
+/** What the rehearsal reads: the secret names it needs and the scenarios it runs. */
+export interface IIntegrationRehearsal {
+	readonly secrets: readonly string[];
+	readonly scenarios: readonly string[];
+}
+
+/** The options of the integration plugin; every one has a default, and with engine `none` none acts. */
+export interface IPolicyIntegrationOptions {
+	readonly identity: IIntegrationIdentity;
+	readonly batching: IIntegrationBatching;
+	/** The prefix of the labels the integrator owns. */
+	readonly labels: { readonly prefix: string };
+	readonly derived: IIntegrationDerived;
+	/** Globs that declare the project's zones (sections), for grouping and dispatch. */
+	readonly zones: readonly string[];
+	/** The workflows whose completion signals the integrator. */
+	readonly signalWorkflows: readonly string[];
+	/** The workflows that scan the integration branch. */
+	readonly scanWorkflows: readonly string[];
+	readonly watchdog: IIntegrationWatchdog;
+	readonly rehearsal: IIntegrationRehearsal;
+}
+
 /** The integration axis's switch: the engine, and the protocol the repository records. */
-export interface IPolicyIntegrationEngine {
+export interface IPolicyIntegrationEngine extends IPolicyIntegrationOptions {
 	/** The actor that integrates ready work; the one switch every reader reads. */
 	readonly engine: IIntegrationEngine;
 	/**

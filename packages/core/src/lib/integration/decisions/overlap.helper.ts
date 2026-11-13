@@ -68,6 +68,18 @@ export const overlapBetween = (
 	return undefined;
 };
 
+/**
+ * Why a batch tested on an older tip is stale, or `undefined` when the
+ * integration branch moved only by what the batch does not reach: its
+ * members still merge, and the tree they give is checked against what the
+ * batch itself changed (`mergedFiles`). `batch` is what the batch changed
+ * over the tip it was built on, `gained` what the branch gained since.
+ */
+export const staleAgainstTip = (
+	batch: IChangeFootprint,
+	gained: IChangeFootprint,
+): string | undefined => overlapBetween(batch, gained);
+
 /** A change's footprint, from the files it touches and what the CI selection reaches. */
 export const footprintFromReach = (input: {
 	readonly files: ReadonlySet<string>;

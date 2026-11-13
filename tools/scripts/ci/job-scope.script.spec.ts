@@ -539,7 +539,7 @@ describe('the jobs the real scopes run, by kind of change', () => {
 			'plan-scope',
 			'quality-gate',
 			'delendai-validate',
-			'scan-the-integration-branch',
+			'integration-signal',
 			'generated-artifacts-check',
 		]);
 	});
@@ -578,12 +578,12 @@ describe('the jobs the real scopes run, by kind of change', () => {
 		expect(always.map((scope) => scope.job).sort()).toEqual([
 			'delendai-validate',
 			'generated-artifacts-check',
+			'integration-signal',
 			'lint-architecture',
 			'lint-governance',
 			'lint-security',
 			'plan-scope',
 			'quality-gate',
-			'scan-the-integration-branch',
 		]);
 		for (const scope of always) {
 			expect(scope.because).not.toContain('\n');
