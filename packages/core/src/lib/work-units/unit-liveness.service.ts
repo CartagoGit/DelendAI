@@ -189,6 +189,7 @@ export const unitLifeNow = (input: {
 	readonly ref: string;
 	readonly worktree?: string | null | undefined;
 	readonly now?: number | undefined;
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): Promise<IUnitLife> =>
 	unitLifeReader(input)({
 		ref: input.ref.replace(/^refs\/heads\//u, ''),
@@ -201,6 +202,7 @@ export const liveUnitRefs = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly refs: Iterable<string>;
 	readonly now?: number | undefined;
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): Promise<ReadonlySet<string>> => {
 	const lifeOf = unitLifeReader(input);
 	const live = new Set<string>();

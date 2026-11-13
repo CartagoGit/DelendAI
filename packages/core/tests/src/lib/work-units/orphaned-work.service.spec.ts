@@ -18,6 +18,11 @@ import {
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { withGitReadCache } from '@delendai/core/lib/shared/git-read.helper';
+import {
+	liveUnitRefs,
+	unitLifeNow,
+} from '@delendai/core/lib/work-units/unit-liveness.service';
+import type { IOrphanRescues } from '@delendai/core/lib/contracts/interfaces/orphaned-work.interface';
 import type {
 	IUnitLease,
 	IUnitStandingEntry,
@@ -243,10 +248,7 @@ describe('the orphans of a swarm', () => {
 
 describe('planOrphanRescues', () => {
 	const at = new Date('2026-11-13T00:00:00Z');
-	const plan = (
-		rescues: Record<string, { attempts: number; reportedAt?: string }>,
-		behind: boolean,
-	) =>
+	const plan = (rescues: IOrphanRescues['rescues'], behind: boolean) =>
 		planOrphanRescues({
 			orphaned: [{ headRef: 'h', behind }],
 			rescues: { rescues },
@@ -299,5 +301,24 @@ describe('the rescue count on disk', () => {
 				reportedAt: '2026-11-13T00:00:00.000Z',
 			},
 		]);
+	});
+});
+
+describe('the life of a unit nobody holds', () => {
+	const common = createInMemoryGit({
+		'rev-parse --path-format=absolute --git-common-dir':
+			'/nonexistent/.git',
+	});
+	const unit = 'wip/claude-opus-5-5/implement/x1-all-g1/t';
+
+	it('[<35ms] reads it as not alive, one unit or many, on a machine with no sign of it', async () => {
+		const life = await read(common, () =>
+			unitLifeNow({ root: ROOT, policy, ref: unit, readMachine }),
+		);
+		expect(life.alive).toBe(false);
+		const live = await read(common, () =>
+			liveUnitRefs({ root: ROOT, policy, refs: [unit], readMachine }),
+		);
+		expect([...live]).toEqual([]);
 	});
 });
