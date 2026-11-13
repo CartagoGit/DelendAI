@@ -43,11 +43,11 @@ export interface IWriteIdentityFinding {
 }
 
 const tokenOf = (step: IStep): string | undefined => {
-	const named = [
-		step.env?.['GH_TOKEN'],
-		step.env?.['GITHUB_TOKEN'],
-		step.with?.['token'],
-	].find((value) => value !== undefined);
+	const { GH_TOKEN, GITHUB_TOKEN } = step.env ?? {};
+	const { token } = step.with ?? {};
+	const named = [GH_TOKEN, GITHUB_TOKEN, token].find(
+		(value) => value !== undefined,
+	);
 	return named === undefined ? undefined : String(named);
 };
 
