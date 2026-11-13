@@ -473,6 +473,10 @@ export {
 	createFileSystemJournal,
 } from './lib/workspace-migration/migration-registry';
 export {
+	createUserFileIO,
+	runLegacyResidueBoot,
+} from './lib/workspace-migration/legacy-residue/legacy-residue-boot.service';
+export {
 	runPendingMigrations,
 	ensureWorkspaceMigrated,
 	migrationStepIds,
