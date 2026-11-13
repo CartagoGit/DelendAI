@@ -111,7 +111,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - **Status**: pending
 - **DependsOn**: [S1]
 - **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`
-- **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`
+- **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The budget policy limits calls, turns, retries and concurrency; exceeding one returns a blocker naming the limit."
