@@ -13,7 +13,7 @@ export default definePluginManifest({
 		'The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.',
 	tags: ['integration', 'pull-request', 'rehearsal'],
 	maturity: 'experimental',
-	permissions: ['filesystem-read'],
+	permissions: ['filesystem-read', 'process', 'env-read'],
 	// In no preset: a project opts in with its own validations.
 	presets: ['everything'],
 	tokenBudget: {

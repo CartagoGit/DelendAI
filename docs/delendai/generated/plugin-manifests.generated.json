@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-12T21:02:56.092Z",
+	"generatedAt": "2026-11-13T14:22:05.043Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1358,7 +1358,9 @@
 			],
 			"maturity": "experimental",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"presets": [
 				"everything"
@@ -3439,7 +3441,9 @@
 				"rehearsal"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"tokenBudgetBytes": 120
 		},
@@ -5063,7 +5067,9 @@
 				"integration"
 			],
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			],
 			"tokenBudget": {
 				"warning": 300,
@@ -6684,7 +6690,9 @@
 		{
 			"id": "integration",
 			"permissions": [
-				"filesystem-read"
+				"filesystem-read",
+				"process",
+				"env-read"
 			]
 		},
 		{

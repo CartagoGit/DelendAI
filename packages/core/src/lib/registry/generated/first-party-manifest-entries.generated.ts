@@ -306,7 +306,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/integration',
 			summary: 'The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.',
 			tags: ['integration', 'pull-request', 'rehearsal'],
-			permissions: ['filesystem-read'],
+			permissions: ['filesystem-read', 'process', 'env-read'],
 			tokenBudgetBytes: 120,
 		},
 		{

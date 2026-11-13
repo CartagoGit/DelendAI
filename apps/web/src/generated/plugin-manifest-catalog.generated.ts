@@ -885,7 +885,9 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"integration"
 		],
 		"permissions": [
-			"filesystem-read"
+			"filesystem-read",
+			"process",
+			"env-read"
 		],
 		"tokenBudget": {
 			"warning": 300,

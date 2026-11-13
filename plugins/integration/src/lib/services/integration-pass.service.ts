@@ -4,6 +4,7 @@
  * integration pass` and this repository's own script both call it, so the
  * same inputs make the same pass. Core owns the decisions; this only wires.
  */
+// effect-boundary-authorized: runs the project's own commands, the one port that spawns for the pass
 import { spawnSync } from 'node:child_process';
 
 import {

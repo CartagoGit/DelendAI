@@ -165,7 +165,7 @@
 | gitlab | filesystem-write, network, env-read |  |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
-| integration | filesystem-read |  |
+| integration | filesystem-read, process, env-read |  |
 | issues | filesystem-read, filesystem-write, process, network, forge-read, forge-write, env-read | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
 | issues-triage | forge-read, forge-write, filesystem-read, filesystem-write, network |  |
 | link-check | filesystem-read |  |

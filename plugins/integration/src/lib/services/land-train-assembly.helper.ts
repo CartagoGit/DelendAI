@@ -9,10 +9,8 @@
  * other file still leaves the member out. Nothing here names a project:
  * the derived paths, the regeneration and the normalization are given.
  */
+// effect-boundary-authorized: the integrator's git adapter; a batch is built by git in a throwaway worktree
 import { execFileSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 
 import type { ITrainCandidate } from '@delendai/core/cli';
 
@@ -152,8 +150,13 @@ export const assembleTrain = (input: {
 	/** Git's stderr when the push was declined: nothing is on the forge. */
 	readonly pushFailure?: string;
 } => {
-	// `git worktree add` creates the directory, and removing the worktree deletes it.
-	const scratch = join(tmpdir(), `delendai-train-${randomUUID()}`);
+	const scratch = execFileSync(
+		'mktemp',
+		['-d', '-t', 'delendai-train.XXXXXX'],
+		{
+			encoding: 'utf8',
+		},
+	).trim();
 	const conflicting: number[] = [];
 	const regenerated: number[] = [];
 	let kept = false;
@@ -251,4 +254,10 @@ export const assembleTrain = (input: {
 export const discardTrain = (root: string, scratch: string): void => {
 	run(root, ['worktree', 'remove', '--force', scratch]);
 	run(root, ['worktree', 'prune']);
+	// A failed `worktree add` leaves the empty directory `mktemp` made.
+	try {
+		execFileSync('rm', ['-rf', '--', scratch]);
+	} catch {
+		// Nothing more to remove.
+	}
 };
