@@ -16,11 +16,12 @@ review-claim-timeout.e2e.spec.ts spawned about a dozen git processes per test, s
 
 ## why
 
-TODO: why this work matters now.
+Cause: the timeout under test is already an answer the runner gives, not a clock, so nothing waited; the time was the real git processes (fixture setup plus the claim's own, about a dozen) whose duration follows the CI machine's load: 65-79 ms locally, 174 and 288 ms in CI. A budget cannot describe that.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- The orphaned-work e2e spec, which overran tonight too and is not changed here.
+- Any change to the product service: it already has the seam (the injected runner).
 
 ## slices
 
@@ -33,4 +34,5 @@ TODO: why this work matters now.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The spec spawns no git process and runs in under 10 ms, five runs in a row.
+- Both cases still pass: a claim commit reported timed out that landed is `claimed`; one that did not land is `failed`.
