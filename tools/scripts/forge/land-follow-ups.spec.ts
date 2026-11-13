@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -84,7 +85,15 @@ describe('what land starts after it merged', () => {
 		);
 		const { dispatch } = followUpWorkflows(triggers, 'land');
 		expect(dispatch).toContain('codeql.yml');
-		expect(dispatch).toContain('land.yml');
+		// The next pass only while land runs: integration paused has no land.yml.
+		expect(dispatch.includes('land.yml')).toBe(
+			existsSync(
+				join(
+					import.meta.dirname,
+					'../../../.github/workflows/land.yml',
+				),
+			),
+		);
 		expect(dispatch).not.toContain('ci.yml');
 	});
 });

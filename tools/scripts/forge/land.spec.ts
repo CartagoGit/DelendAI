@@ -12,7 +12,7 @@ import {
 	renderLandWorkflow,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -22,6 +22,7 @@ import {
 } from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
+import { readDevelopmentConfig } from './land-policy';
 import { LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
 
 const REPO_POLICY = resolveDevelopmentPolicy({
@@ -430,10 +431,11 @@ describe('land run with a workflow token', () => {
 });
 
 describe('the land workflow template', () => {
-	it("[<5ms] renders this repository's committed instance", () => {
-		expect(renderLandWorkflow(REPO_LAND_WORKFLOW)).toBe(
-			readFileSync(LAND_WORKFLOW_PATH, 'utf8'),
-		);
+	it("[<5ms] commits this repository's instance exactly as its policy renders it", () => {
+		const committed = existsSync(LAND_WORKFLOW_PATH)
+			? readFileSync(LAND_WORKFLOW_PATH, 'utf8')
+			: undefined;
+		expect(committed).toBe(expectedLandWorkflow(readDevelopmentConfig()));
 	});
 
 	it('[<5ms] names its concurrency group `land` unless the caller names another', () => {
