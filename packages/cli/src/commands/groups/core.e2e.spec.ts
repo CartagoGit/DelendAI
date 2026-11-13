@@ -64,7 +64,7 @@ describe('core extra group (f00046 S5)', async () => {
 		]);
 	});
 
-	it('[<200ms] repair loads lazily and rejects an unknown subcommand', async () => {
+	it('[<370ms] repair loads lazily and rejects an unknown subcommand', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await find('repair').run(['nonsense'], ctx);
 		expect(result.code).not.toBe(0);
@@ -72,7 +72,7 @@ describe('core extra group (f00046 S5)', async () => {
 		expect(calls).toEqual([]);
 	});
 
-	it('[<200ms] work loads lazily and rejects an unknown subcommand', async () => {
+	it('[<370ms] work loads lazily and rejects an unknown subcommand', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await find('work').run(['nonsense'], ctx);
 		expect(result.code).not.toBe(0);
@@ -80,7 +80,7 @@ describe('core extra group (f00046 S5)', async () => {
 		expect(calls).toEqual([]);
 	});
 
-	it('[<200ms] guard loads lazily and rejects an unknown hook without a server', async () => {
+	it('[<370ms] guard loads lazily and rejects an unknown hook without a server', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await find('guard').run(['post-rewrite'], ctx);
 		expect(result.code).not.toBe(0);

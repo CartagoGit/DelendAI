@@ -5,7 +5,6 @@
 	"packages/cli/src/commands/guard-facts.spec.ts": 2,
 	"packages/cli/src/commands/guard-index-change.spec.ts": 1,
 	"packages/cli/src/commands/guard.command.spec.ts": 2,
-	"packages/cli/src/commands/registry.spec.ts": 1,
 	"packages/cli/src/commands/repair.command.spec.ts": 1,
 	"packages/cli/src/commands/work-claim.command.spec.ts": 2,
 	"packages/cli/src/commands/work-ref-migration.spec.ts": 2,
