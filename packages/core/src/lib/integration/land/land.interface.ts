@@ -52,6 +52,8 @@ export interface ILandForge {
 	addLabel(number: number, label: string): Promise<void>;
 	removeLabel(number: number, label: string): Promise<void>;
 	comment(number: number, text: string): Promise<void>;
+	/** The text of every comment on a pull request, oldest first. */
+	comments(number: number): Promise<readonly string[]>;
 	openPullRequest(input: {
 		readonly head: string;
 		readonly title: string;

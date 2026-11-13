@@ -224,6 +224,12 @@ export const createGithubLandForge = (input: {
 				body: text,
 			});
 		},
+		comments: async (number) =>
+			(
+				await all<{ body?: string }>(
+					`issues/${String(number)}/comments`,
+				)
+			).map((entry) => entry.body ?? ''),
 		openPullRequest: async ({ head, title, body }) =>
 			(
 				(

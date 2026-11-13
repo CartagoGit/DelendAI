@@ -282,6 +282,7 @@ export const createFakeWorld = (
 			mutate();
 			get(number).comments.push(text);
 		},
+		comments: async (number) => [...get(number).comments],
 		openPullRequest: async ({ head, title: _title, body }) => {
 			mutate();
 			const ref = refs.get(head);
