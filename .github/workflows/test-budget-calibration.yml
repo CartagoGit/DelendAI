@@ -4,8 +4,9 @@
 # A budget is ceil(1.5 x the longest time CI measured for that test). The
 # integration branch's runs upload those times per shard (`test-durations-*`,
 # 14 days); weekly, this reads the last runs of develop and raises every
-# budget declared below what they measured (never lowers one), then opens or
-# refreshes one pull request with the new numbers.
+# budget declared below what they measured (never lowers one), then keeps the
+# change as a patch artifact and names it in an issue (no pull request is opened
+# with the workflow token; the integrator identity of q00048 S6 may take that over).
 
 name: test-budget-calibration
 
@@ -19,8 +20,8 @@ on:
                 default: '10'
 
 permissions:
-    contents: write
-    pull-requests: write
+    contents: read
+    issues: write
     actions: read
 
 concurrency:
@@ -51,25 +52,30 @@ jobs:
                   RUNS: ${{ inputs.runs || '10' }}
               run: bun run test:budgets:calibrate --from-develop="$RUNS" --update
 
-            - name: Open or refresh the calibration pull request
-              env:
-                  # The integration identity's token, never the workflow token:
-                  # a pull request the workflow token opens starts no checks.
-                  GH_TOKEN: ${{ secrets.DELENDAI_INTEGRATION_TOKEN }}
+            - name: Keep the calibration as a patch
+              id: patch
               run: |
                   set -euo pipefail
-                  if git diff --quiet; then
-                    echo "Every budget holds what develop measured."
-                    exit 0
-                  fi
-                  branch=delendai/pr/ci/calibrate/test-budgets
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git switch -c "$branch"
-                  git commit -qam "test: calibrate budgets from develop's last CI runs"
-                  git push -f origin "$branch"
-                  if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
-                    gh pr create --base develop --head "$branch" \
-                      --title "test: calibrate budgets from develop's last CI runs" \
-                      --body "ceil(1.5 x the longest time develop's last CI runs measured), for every test declaring less (run ${GITHUB_RUN_ID})."
-                  fi
+                  git diff > calibration.patch
+                  if [ -s calibration.patch ]; then echo "changed=1" >> "$GITHUB_OUTPUT"; fi
+
+            - name: Upload the calibration patch
+              if: ${{ steps.patch.outputs.changed == '1' }}
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+              with:
+                  name: test-budget-calibration
+                  path: calibration.patch
+                  retention-days: 30
+
+            # The workflow token opens no pull request here: one it opens starts
+            # no checks. The change is carried as the patch above and named in an
+            # issue; applying it is one `git apply` on a branch.
+            - name: Say where the calibration is
+              if: ${{ steps.patch.outputs.changed == '1' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN: ${{ github.run_id }}
+              run: >-
+                  gh issue create --repo "${GITHUB_REPOSITORY}"
+                  --title "Test budgets: a calibration from develop's last CI runs is ready"
+                  --body "The patch is the artifact test-budget-calibration of run ${RUN}: git apply it on a branch."
