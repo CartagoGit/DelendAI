@@ -81,7 +81,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - **Status**: pending
 - **DependsOn**: [S3]
 - **Extends**: `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/hosts/host-capability-profile.ts`
-- **Files**: `packages/core/src/lib/hosts/compaction-policy.helper.ts`, `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
+- **Files**: `packages/core/src/lib/hosts/compaction-policy.helper.ts`, `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One policy value renders per host: Claude Code gets CLAUDE_AUTOCOMPACT_PCT_OVERRIDE plus PreCompact and SessionStart hooks that run S3."
