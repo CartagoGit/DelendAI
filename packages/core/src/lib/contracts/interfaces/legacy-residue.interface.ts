@@ -38,6 +38,8 @@ export interface ILegacyResidueEntry {
 	readonly since: string;
 	readonly kind: ILegacyResidueKind;
 	readonly scope: ILegacyResidueScope;
+	/** The retired names, config keys, file names or launch shapes this entry carries away. */
+	readonly names?: readonly string[];
 	/** Whether the residue is present. Reads only. */
 	readonly detect: (ctx: ILegacyResidueContext) => Promise<boolean>;
 	/** Migrates the residue; returns the paths it changed, none when clean. */

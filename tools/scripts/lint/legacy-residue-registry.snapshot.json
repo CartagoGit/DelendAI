@@ -1,0 +1,25 @@
+{
+	"names": [
+		"agents-md-instructions:AGENTS.md",
+		"cache-dir:.cache/delendai",
+		"claude-agents:.claude/agents",
+		"claude-instructions:CLAUDE.md",
+		"claude-skills:.claude/skills",
+		"codex-agents:.codex/agents",
+		"codex-instructions:AGENTS.md",
+		"codex-skills:.agents/skills",
+		"config-file:delendai.config.json",
+		"continue-instructions:.continue/rules/delendai.md",
+		"copilot-agents:.github/agents",
+		"copilot-instructions:.github/copilot-instructions.md",
+		"copilot-skills:.github/skills",
+		"cursor-instructions:.cursor/rules/delendai.mdc",
+		"docs-dir:docs/delendai",
+		"gemini-instructions:GEMINI.md",
+		"opencode-agents:.opencode/agent",
+		"opencode-instructions:AGENTS.md",
+		"opencode-skills:.opencode/skills",
+		"server-name:delendai",
+		"windsurf-instructions:.windsurfrules"
+	]
+}

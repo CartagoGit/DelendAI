@@ -34,10 +34,12 @@ The dependency-advisories gate reports two moderate advisories against @hono/nod
 - acceptance:
   - "The root overrides pin @hono/node-server at 2.1.6, the first release past both advisories"
   - "bun.lock resolves @hono/node-server to 2.1.6"
+  - "The root overrides pin hono at 4.13.18, past GHSA-4m76-xfj5-7975, GHSA-h7mg-cq63-vhpq and GHSA-3gg2-335m-rxc6, which the same gate reported next"
   - "bun tools/scripts/lint/dependency-advisories.script.ts reports no @hono/node-server advisory"
 
 ## acceptance
 
+- The root overrides pin hono at 4.13.18, past GHSA-4m76-xfj5-7975, GHSA-h7mg-cq63-vhpq and GHSA-3gg2-335m-rxc6, which the same gate reported next
 - The root overrides pin @hono/node-server at 2.1.6, the first release past both advisories
 - bun.lock resolves @hono/node-server to 2.1.6
 - bun tools/scripts/lint/dependency-advisories.script.ts reports no @hono/node-server advisory
