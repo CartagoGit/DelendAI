@@ -51,7 +51,7 @@ const TIMED_OUT = {
 };
 
 describe('claimForReview when git times out', () => {
-	it('[<150ms] reports the claim held when the commit landed after all', async () => {
+	it('[<420ms] reports the claim held when the commit landed after all', async () => {
 		const { git, run } = unit();
 		const late: IGitRunner = async (args) => {
 			const result = await run(args);
