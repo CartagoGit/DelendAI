@@ -45,3 +45,25 @@ export interface ILegacyResidueEntry {
 		ctx: ILegacyResidueContext,
 	) => Promise<readonly string[]>;
 }
+
+/** What a machine-scope run records in the user state directory. */
+export interface ILegacyResidueState {
+	/** The registry the run was made against; a changed registry runs again. */
+	readonly registry: string;
+	/** Questions already put to the person, as `file::entry`. */
+	readonly asked: readonly string[];
+}
+
+export interface ILegacyResidueBootOptions {
+	readonly workspaceRoot: string;
+	readonly home: string;
+	readonly platform: 'linux' | 'darwin' | 'win32';
+	readonly appData?: string;
+	readonly windowsHomes?: readonly string[];
+	readonly env: Readonly<Record<string, string | undefined>>;
+	/** The workspace configuration's text, when it has one. */
+	readonly configText: string | undefined;
+	/** Reads and writes files; writing creates the directories it needs. */
+	readonly io: ILegacyResidueIO;
+	readonly now: () => Date;
+}
