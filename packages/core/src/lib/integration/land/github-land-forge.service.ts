@@ -23,7 +23,7 @@ interface IRawPull {
 	merged?: boolean;
 	body?: string | null;
 	labels?: { name: string }[];
-	head: { ref: string; sha: string };
+	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
 }
 
 export const createGithubLandForge = (input: {
@@ -116,6 +116,10 @@ export const createGithubLandForge = (input: {
 		merged: pr.merged === true,
 		labels: (pr.labels ?? []).map((l) => l.name),
 		body: pr.body ?? '',
+		...(pr.head.repo?.full_name !== undefined &&
+		pr.head.repo.full_name.toLowerCase() !== slug.toLowerCase()
+			? { crossRepository: true }
+			: {}),
 		testedBase: await baseOf(pr),
 		...(await headAuthorOf(pr.head.sha)),
 	});
@@ -249,12 +253,20 @@ export const createGithubLandForge = (input: {
 		closePullRequest: async (number) => {
 			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
 		},
-		dispatchWorkflow: async (workflow, ref) =>
+		dispatchWorkflow: async (workflow, ref, inputs = {}) =>
 			(
 				await call(
 					'POST',
 					`actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
-					{ ref },
+					{
+						ref,
+						...Object.fromEntries(
+							Object.entries(inputs).map(([k, v]) => [
+								`inputs[${k}]`,
+								v,
+							]),
+						),
+					},
 				)
 			).status === 200,
 	};

@@ -35,6 +35,34 @@ export const createLandGit = (input: {
 			git(root, ['fetch', '-q', '--', remote, sha]);
 		}
 	};
+	/** `read` on the tree `members` merged onto `tip` would give: same assembly as a batch, never pushed or regenerated. */
+	const trialMerge = <T>(
+		tip: string,
+		members: readonly ITrainCandidate[],
+		read: (scratch: string) => T,
+	): T | undefined => {
+		have(tip);
+		for (const member of members) have(member.headSha);
+		const built = assembleTrain({
+			root,
+			remote,
+			tipSha: tip,
+			ref: 'land/trial',
+			members,
+			derived: new Set(),
+			regenerate: () => true,
+			linkDependencies: () => true,
+			rehearsal: true,
+		});
+		if (built.scratch === undefined) return undefined;
+		try {
+			return built.conflicting.length > 0
+				? undefined
+				: read(built.scratch);
+		} finally {
+			discardTrain(root, built.scratch);
+		}
+	};
 	return {
 		footprint: (pr) => {
 			have(pr.testedBase);
@@ -134,30 +162,20 @@ export const createLandGit = (input: {
 			have(sha);
 			return git(root, ['rev-parse', `${sha}^{tree}`]);
 		},
-		mergedTree: ({ tip, members }) => {
-			have(tip);
-			for (const member of members) have(member.headSha);
-			// The same assembly a batch is built with, never pushed and
-			// never regenerated: what merging the members would give.
-			const built = assembleTrain({
-				root,
-				remote,
-				tipSha: tip,
-				ref: 'land/trial',
+		mergedTree: ({ tip, members }) =>
+			trialMerge(tip, members, (scratch) =>
+				git(scratch, ['rev-parse', 'HEAD^{tree}']),
+			),
+		mergedFiles: ({ tip, members }) =>
+			trialMerge(
+				tip,
 				members,
-				derived: new Set(),
-				regenerate: () => true,
-				linkDependencies: () => true,
-				rehearsal: true,
-			});
-			if (built.scratch === undefined) return undefined;
-			try {
-				return built.conflicting.length > 0
-					? undefined
-					: git(built.scratch, ['rev-parse', 'HEAD^{tree}']);
-			} finally {
-				discardTrain(root, built.scratch);
-			}
-		},
+				(scratch) =>
+					new Set(
+						git(scratch, ['diff', '--name-only', tip, 'HEAD'])
+							.split('\n')
+							.filter((file) => file !== ''),
+					),
+			),
 	};
 };

@@ -31,6 +31,8 @@ export interface ILandPullRequest {
 	readonly testedBase: string;
 	/** Who pushed its head, when the forge says (a login). */
 	readonly headAuthor?: string | undefined;
+	/** Its head lives in another repository: never built, pushed or batched. */
+	readonly crossRepository?: boolean | undefined;
 }
 
 /** The answer to a merge pinned to a head: nothing merges on another head. */
@@ -66,7 +68,11 @@ export interface ILandForge {
 	 * the forge took it. The integrator's own merges start no workflow, so it
 	 * starts the ones a push would.
 	 */
-	dispatchWorkflow(workflow: string, ref: string): Promise<boolean>;
+	dispatchWorkflow(
+		workflow: string,
+		ref: string,
+		inputs?: Readonly<Record<string, string>>,
+	): Promise<boolean>;
 }
 
 /** What a trial merge onto the tip says about one pull request. */
@@ -107,7 +113,19 @@ export interface ILandGit {
 		readonly tip: string;
 		readonly members: readonly ITrainCandidate[];
 	}): string | undefined;
+	/**
+	 * The files `members` merged onto `tip` would change there; `undefined`
+	 * when they conflict. A batch whose base the integration branch left
+	 * lands when this equals what the batch itself changed.
+	 */
+	mergedFiles(input: {
+		readonly tip: string;
+		readonly members: readonly ITrainCandidate[];
+	}): ReadonlySet<string> | undefined;
 }
+
+/** What bringing a head up to the tip came to. */
+export type ILandForward = 'brought' | 'conflict' | 'moved';
 
 /**
  * Everything project-specific a pass reads. `landConfigFromPolicy` fills
@@ -148,6 +166,22 @@ export interface ILandDeps {
 	readonly forge: ILandForge;
 	readonly git: ILandGit;
 	readonly config: ILandConfig;
+	/**
+	 * Merge the tip into a head the forge never built and push it as the
+	 * identity, so the forge builds the new head. No generator runs. Absent
+	 * where the actor's pushes are not built: the author then updates it.
+	 */
+	readonly bringForward?:
+		| ((pr: ILandPullRequest, tip: string) => Promise<ILandForward>)
+		| undefined;
+	/**
+	 * Start the two jobs that resolve a derived-file conflict of `pr` (one
+	 * tokenless job regenerates, one pushes as the identity); whether the
+	 * forge took it. Absent: a batch regenerates it, as before.
+	 */
+	readonly resolveDerived?:
+		| ((pr: ILandPullRequest) => Promise<boolean>)
+		| undefined;
 }
 
 /** Runs the forge CLI with these arguments (the forge seam's shape). */
@@ -228,6 +262,51 @@ export interface ILandWorkflowInput {
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
 	readonly upkeep?: readonly ILandUpkeepStep[];
+	/**
+	 * The two jobs that resolve a derived-file conflict: `prepare` runs with
+	 * no token and writes what it built to a bundle, `push` mints the
+	 * identity and pushes it, without force. Absent: no such jobs.
+	 */
+	readonly derived?: {
+		readonly prepareCommand: string;
+		readonly pushCommand: string;
+	};
 	/** The concurrency group of the passes; `land` when absent. A rehearsal names its own, so it never queues behind production. */
 	readonly concurrencyGroup?: string;
+}
+
+/** What the tokenless job built, or why it built nothing. */
+export type IDerivedPreparation =
+	| { readonly kind: 'ready'; readonly sha: string; readonly base: string }
+	| { readonly kind: 'conflict' }
+	| { readonly kind: 'refused'; readonly outside: readonly string[] }
+	| { readonly kind: 'failed'; readonly reason: string };
+
+/** What the tokenless job can do: no forge, no token, a throwaway clone. */
+export interface IDerivedPreparePorts {
+	/** Merge the tip into the head; `conflict` when authored code clashes. */
+	merge(): 'merged' | 'conflict';
+	/** Run the project's `derived.command`; false when it failed. */
+	regenerate(): boolean;
+	/** The regeneration commit's sha, and the paths it changed over the merge. */
+	result(): { readonly sha: string; readonly changed: readonly string[] };
+}
+
+/** What the second job can do: it holds the identity. */
+export interface IDerivedPushPorts {
+	/** The head's sha on the forge right now. */
+	headNow(): string;
+	/** Re-derive the paths the commit changed over its parent; the artifact is not trusted. */
+	changedBy(sha: string): readonly string[];
+	/** Push without force; false when git declined. */
+	push(sha: string): boolean;
+}
+
+export type IDerivedPush = 'pushed' | 'head-moved' | 'refused' | 'declined';
+
+/** What the pass wants to hear back while a batch is assembled. */
+export interface IBatchAssemblyReport {
+	readonly why: (number: number, reason: string) => void;
+	readonly note: (line: string) => void;
+	readonly needsUpdate: (pr: ILandPullRequest, reason: string) => void;
 }

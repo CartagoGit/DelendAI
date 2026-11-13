@@ -108,6 +108,7 @@ export {
 	footprintFromReach,
 	groupByOverlap,
 	overlapBetween,
+	staleAgainstTip,
 } from './lib/integration/decisions/overlap.helper';
 export type { IChangeFootprint } from './lib/integration/decisions/overlap.interface';
 export {
@@ -139,6 +140,12 @@ export {
 	readBatchRecord,
 	refOf as batchRefOf,
 } from './lib/integration/land/land-batch-record.helper';
+export {
+	headNotBuilt,
+	outsideDerived,
+	prepareDerived,
+	pushDerived,
+} from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
 export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
 // Whether this process is older than the integration protocol the repository runs.
@@ -150,6 +157,7 @@ export {
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
 	LAND_WORKFLOW_NAME,
+	LAND_WORKFLOW_FILE,
 	LAND_WORKFLOW_TOKEN_ACTOR,
 } from './lib/integration/land/land.constant';
 export type {
@@ -160,6 +168,7 @@ export type {
 	ILandConfig,
 	ILandConflict,
 	ILandDeps,
+	ILandForward,
 	ILandForge,
 	ILandGit,
 	ILandMerge,

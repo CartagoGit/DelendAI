@@ -40,6 +40,12 @@ export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 	identity: DEFAULT_INTEGRATION_OPTIONS.identity,
 	cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
 	passCommand: 'bun tools/scripts/forge/land.script.ts',
+	derived: {
+		prepareCommand:
+			'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
+		pushCommand:
+			'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
+	},
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',

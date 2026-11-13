@@ -39,6 +39,11 @@ const envLines = (env: Readonly<Record<string, string>>): string[] =>
 const IDENTITY_STEP_ID = 'identity';
 const APP_TOKEN_ACTION =
 	'actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0';
+const UPLOAD_ARTIFACT =
+	'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7';
+const DOWNLOAD_ARTIFACT =
+	'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8';
+const DERIVED_ARTIFACT = 'derived-result';
 const PULL_REQUEST_EVENTS = [
 	'opened',
 	'reopened',
@@ -109,7 +114,13 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 	const token = { GH_TOKEN: tokenOf(input.identity) };
 	const dispatched = (flag: string): string =>
 		`github.event_name == 'workflow_dispatch' && inputs.${flag} != ''`;
-	const passes = `!(github.event_name == 'workflow_dispatch' && inputs.promote != '') && !(github.event_name == 'push' && github.ref_name == ${release})`;
+	const derivedDispatch =
+		input.derived === undefined ? [] : [dispatched('derived')];
+	const passes = [
+		`!(github.event_name == 'workflow_dispatch' && inputs.promote != '')`,
+		...derivedDispatch.map((d) => `!(${d})`),
+		`!(github.event_name == 'push' && github.ref_name == ${release})`,
+	].join(' && ');
 	const jobs: string[] = [
 		'    # A pull request event, a push to the integration branch, or the CI of a',
 		'    # pull request ending: re-read the forge and settle every pull request.',
@@ -142,6 +153,65 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 			input.identity,
 		),
 	];
+	if (input.derived !== undefined) {
+		const { prepareCommand, pushCommand } = input.derived;
+		jobs.push(
+			'    # A derived-file conflict, in two jobs. This one holds no token: it',
+			"    # runs the pull request's code, so it can only read, and hands its",
+			'    # result over as an artifact.',
+			'    derived-prepare:',
+			'        name: derived-prepare',
+			`        if: \${{ ${dispatched('derived')} }}`,
+			'        runs-on: ubuntu-latest',
+			'        timeout-minutes: 30',
+			'        permissions:',
+			'            contents: read',
+			'        steps:',
+			...indent(input.setupSteps, 12),
+			'',
+			'            - name: Merge the integration branch and regenerate',
+			'              env:',
+			'                  DERIVED_PR: ${{ inputs.derived }}',
+			`              run: ${prepareCommand}`,
+			'',
+			'            - name: Hand the result over',
+			`              uses: ${UPLOAD_ARTIFACT}`,
+			'              with:',
+			`                  name: ${DERIVED_ARTIFACT}`,
+			'                  path: derived-out',
+			'',
+			"    # This one holds the identity and runs none of the pull request's code:",
+			'    # it checks the artifact against its own merge and pushes, without force.',
+			...job(
+				{
+					id: 'derived-push',
+					condition: dispatched('derived'),
+					timeout: 10,
+					setup: input.setupSteps,
+					steps: [
+						'- name: Fetch the result',
+						`  uses: ${DOWNLOAD_ARTIFACT}`,
+						'  with:',
+						`      name: ${DERIVED_ARTIFACT}`,
+						'      path: derived-out',
+						'',
+						'- name: Push it if the head did not move',
+						...envLines({
+							...token,
+							GITHUB_REPOSITORY: '${{ github.repository }}',
+							DERIVED_PR: '${{ inputs.derived }}',
+						}),
+						`  run: ${pushCommand}`,
+					],
+				},
+				input.identity,
+			).map((line) =>
+				line === '        runs-on: ubuntu-latest'
+					? `${line}\n        needs: derived-prepare`
+					: line,
+			),
+		);
+	}
 	if (input.promotionCommand !== undefined) {
 		jobs.push(
 			'    # The CI of the integration branch ended: promote it when it is green,',
@@ -233,6 +303,14 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'                description: The pull request whose CI ended; the pass reads them all.',
 		'                required: false',
 		"                default: ''",
+		...(input.derived === undefined
+			? []
+			: [
+					'            derived:',
+					'                description: The pull request whose derived files conflict with the integration branch.',
+					'                required: false',
+					"                default: ''",
+				]),
 		'            promote:',
 		'                description: Set when the integration branch CI ended green or red.',
 		'                required: false',

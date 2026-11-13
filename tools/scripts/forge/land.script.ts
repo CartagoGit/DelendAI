@@ -14,12 +14,14 @@ import {
 	createGithubLandForge,
 	integrationProtocolRefusal,
 	landConfigFromPolicy,
+	LAND_WORKFLOW_FILE,
 	landPass,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
 import { createLandGit } from './land-git';
+import { createBringForward } from './land-forward';
 import { readDevelopmentConfig } from './land-policy';
 import { zoneOfCheck } from './section-health';
 
@@ -65,6 +67,21 @@ const main = async (): Promise<number> => {
 		forge,
 		git: createLandGit({ root, remote: 'origin' }),
 		config,
+		// Its pushes are the identity's, so the forge builds what it moves.
+		bringForward: createBringForward({
+			root,
+			remote: 'origin',
+			token: process.env.GH_TOKEN ?? '',
+		}),
+		// A derived conflict is two jobs of the land workflow, never this pass.
+		resolveDerived: (pr) =>
+			forge.dispatchWorkflow(
+				LAND_WORKFLOW_FILE,
+				config.integrationBranch,
+				{
+					derived: String(pr.number),
+				},
+			),
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
 	// Every open pull request, every pass: "0 merged" is never silent.
