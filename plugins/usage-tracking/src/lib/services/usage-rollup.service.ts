@@ -8,12 +8,13 @@ import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import type { IDelegationRollup } from '../contracts/delegation-rollup.interface';
 import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.interface';
 import type { IInvocationTelemetryRollup } from '../contracts/usage-rollup.interface';
+import { buildCostPerCorrect } from './cost-per-correct.helper';
 import {
 	bucketByAxis,
 	buildIssues,
 	latencyOf,
 	summarizeLatencies,
-	totalTokensOf,
+	telemetryTotalTokensOf,
 } from './usage-rollup-buckets.helper';
 import { buildDelegationRollup } from './delegation-rollup.service';
 import {
@@ -29,6 +30,7 @@ import type { ILimitsConfig } from '../circuit-breaker';
 export type {
 	IInvocationTelemetryBucket,
 	IInvocationTelemetryIssue,
+	ICostPerCorrectRow,
 	IInvocationTelemetryRollup,
 	IInvocationTelemetryTotals,
 } from '../contracts/usage-rollup.interface';
@@ -104,7 +106,7 @@ export const buildInvocationTelemetryRollup = (
 				0,
 			),
 			totalTokens: telemetryRecords.reduce(
-				(acc, record) => acc + totalTokensOf(record),
+				(acc, record) => acc + telemetryTotalTokensOf(record),
 				0,
 			),
 			costUsd: telemetryRecords.reduce(
@@ -127,6 +129,7 @@ export const buildInvocationTelemetryRollup = (
 		byError: bucketByAxis(telemetryRecords, 'error', 'calls'),
 		byDay: bucketByAxis(telemetryRecords, 'day', 'calls'),
 		issues: buildIssues(telemetryRecords),
+		costPerCorrect: buildCostPerCorrect(telemetryRecords),
 	};
 };
 

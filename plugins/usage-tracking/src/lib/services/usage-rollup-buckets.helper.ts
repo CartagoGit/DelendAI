@@ -25,7 +25,9 @@ export const latencyOf = (
 	return typeof value === 'number' && Number.isFinite(value) ? value : null;
 };
 
-export const totalTokensOf = (record: IInvocationRecordTelemetry): number => {
+export const telemetryTotalTokensOf = (
+	record: IInvocationRecordTelemetry,
+): number => {
 	const total = record.tokenCount ?? record.usage?.totalTokens;
 	if (typeof total === 'number' && Number.isFinite(total)) return total;
 	return (record.usage?.inputTokens ?? 0) + (record.usage?.outputTokens ?? 0);
@@ -131,7 +133,7 @@ export const bucketByAxis = (
 				0,
 			),
 			totalTokens: group.reduce(
-				(acc, record) => acc + totalTokensOf(record),
+				(acc, record) => acc + telemetryTotalTokensOf(record),
 				0,
 			),
 			costUsd: group.reduce(

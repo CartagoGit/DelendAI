@@ -48,6 +48,20 @@ export interface IInvocationTelemetryTotals {
 	readonly schemaIncongruences: number;
 }
 
+/** What one correct result cost, for one task class and model. */
+export interface ICostPerCorrectRow {
+	readonly taskClass: string;
+	readonly model: string;
+	/** Calls that carried a gate-set outcome. */
+	readonly samples: number;
+	readonly correct: number;
+	readonly costUsd: number;
+	readonly totalTokens: number;
+	/** Null when nothing was correct: no honest figure exists. */
+	readonly costPerCorrectUsd: number | null;
+	readonly tokensPerCorrect: number | null;
+}
+
 export interface IInvocationTelemetryRollup {
 	readonly generatedAt: string;
 	readonly windowDays: number;
@@ -61,4 +75,6 @@ export interface IInvocationTelemetryRollup {
 	readonly byError: readonly IInvocationTelemetryBucket[];
 	readonly byDay: readonly IInvocationTelemetryBucket[];
 	readonly issues: readonly IInvocationTelemetryIssue[];
+	/** Cost per correct result by task class and model, with the sample count. */
+	readonly costPerCorrect: readonly ICostPerCorrectRow[];
 }

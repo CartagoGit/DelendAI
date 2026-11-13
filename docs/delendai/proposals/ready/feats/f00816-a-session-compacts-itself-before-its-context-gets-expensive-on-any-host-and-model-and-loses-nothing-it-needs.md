@@ -100,7 +100,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - **Status**: pending
 - **DependsOn**: [S1]
 - **Extends**: `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
-- **Files**: `plugins/usage-tracking/src/lib/contracts/interfaces`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-helpers.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
+- **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/contracts/usage-rollup.interface.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-buckets.helper.ts`, `plugins/usage-tracking/src/lib/services/cost-per-correct.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "One invocation record holds requested model, real model, tokens in, out, cache read and cache write, wall time, turns, retries, task class and an outcome (correct, blocked or failed) set from a gate result, never self-reported."
