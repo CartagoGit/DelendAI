@@ -18,8 +18,10 @@ describe('useFakeClock', () => {
 		let fired = false;
 		setTimeout(() => {
 			fired = true;
-		}, 60_000);
-		clock.advance(59_999);
+		}, 20);
+		// The time budget reads this clock too: a timer set further out
+		// than the budget would measure as the test taking that long.
+		clock.advance(19);
 		expect(fired).toBe(false);
 		await clock.advanceAsync(1);
 		expect(fired).toBe(true);
