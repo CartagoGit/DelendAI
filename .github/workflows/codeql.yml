@@ -22,10 +22,15 @@ on:
     branches: [develop]
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref.
+# One run per ref, and only the newest tip waits behind it. A pull request's
+# superseded run is cancelled. A push's is not: the analysis under way
+# finishes and the newest tip follows it, so every merged commit is covered
+# by a completed analysis of itself or of a descendant, even when merges
+# arrive faster than a scan ends. The push is the integrator identity's, so
+# the forge starts this run.
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:

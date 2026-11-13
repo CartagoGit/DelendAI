@@ -11,10 +11,14 @@
  * counts them: the head of a promotion is the integration branch, and the
  * forge reports what is open on it.
  *
+ * A branch whose tip no completed analysis covers (neither the tip nor a
+ * descendant of it was analysed) has unknown alerts, so it is refused too:
+ * the answer "none open" would be about an older tree.
+ *
  * Exit codes:
- *   0 — no alert is open on the head branch.
- *   1 — at least one is, or the forge could not be asked (a gate that
- *       cannot run is not a pass).
+ *   0 — no alert is open on the head branch, and an analysis covers its tip.
+ *   1 — at least one is, no analysis covers the tip, or the forge could not
+ *       be asked (a gate that cannot run is not a pass).
  */
 import { execFileSync } from 'node:child_process';
 
@@ -71,6 +75,49 @@ export const promotionAlertReport = (
 				],
 			};
 
+/** What `compare/<tip>...<analysed>` says: the tip is the analysed commit or one of its ancestors. */
+export const analysisCoversTip = (compareStatus: string): boolean =>
+	compareStatus === 'identical' || compareStatus === 'ahead';
+
+/** The line a branch gets when no completed analysis covers its tip. */
+export const uncoveredReport = (
+	branch: string,
+	tip: string,
+	analysed: string | undefined,
+): string =>
+	`✖ promotion-alerts: no completed code scanning analysis covers ${branch} at ${tip.slice(0, 12)} (${analysed === undefined ? 'none yet' : `latest is ${analysed.slice(0, 12)}`}); its open alerts are unknown. Wait for the push-started scan.`;
+
+const ask = (repository: string, path: string): string =>
+	execFileSync('gh', ['api', `repos/${repository}/${path}`], {
+		encoding: 'utf8',
+		maxBuffer: 16 * 1024 * 1024,
+	});
+
+/** Whether a completed analysis covers `branch`'s tip; the refusal line when not. */
+const coverageRefusal = (
+	repository: string,
+	branch: string,
+): string | undefined => {
+	const tip = (
+		JSON.parse(ask(repository, `commits/${branch}`)) as { sha: string }
+	).sha;
+	const [latest] = JSON.parse(
+		ask(
+			repository,
+			`code-scanning/analyses?ref=refs/heads/${branch}&per_page=1`,
+		),
+	) as readonly { commit_sha: string }[];
+	if (latest === undefined) return uncoveredReport(branch, tip, undefined);
+	const status = (
+		JSON.parse(
+			ask(repository, `compare/${tip}...${latest.commit_sha}`),
+		) as { status: string }
+	).status;
+	return analysisCoversTip(status)
+		? undefined
+		: uncoveredReport(branch, tip, latest.commit_sha);
+};
+
 export const main = (): number => {
 	const repository = process.env.GITHUB_REPOSITORY;
 	const branch =
@@ -102,6 +149,18 @@ export const main = (): number => {
 	} catch (error) {
 		console.error(
 			`✖ promotion-alerts: the forge could not be asked for the alerts of ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
+		);
+		return 1;
+	}
+	try {
+		const refusal = coverageRefusal(repository, branch);
+		if (refusal !== undefined) {
+			console.error(refusal);
+			return 1;
+		}
+	} catch (error) {
+		console.error(
+			`✖ promotion-alerts: the forge could not be asked which analysis covers ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
 		);
 		return 1;
 	}
