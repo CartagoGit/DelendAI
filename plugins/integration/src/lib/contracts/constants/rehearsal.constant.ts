@@ -70,3 +70,11 @@ export const REHEARSAL_ALL_SCENARIOS = 'all';
 
 /** What a scenario writes where the run's id belongs. */
 export const RUN_PLACEHOLDER = '{run}';
+
+/** A pull request's CI wall time, in minutes: the target for one that does not touch the integration code, and for one that also runs the rehearsal. */
+const PLAIN_WALL_MINUTES = 5;
+const REHEARSAL_WALL_MINUTES = 20;
+export const PR_CI_WALL_TARGET_MINUTES = {
+	plain: PLAIN_WALL_MINUTES,
+	withRehearsal: REHEARSAL_WALL_MINUTES,
+} as const;

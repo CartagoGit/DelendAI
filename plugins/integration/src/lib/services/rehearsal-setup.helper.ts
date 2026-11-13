@@ -25,6 +25,7 @@ import {
 	renderRehearsalScanWorkflow,
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
+import { realModeFiles } from './rehearsal-real-ci.service';
 import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
 
 const PASS_INTERVAL_MINUTES = 15;
@@ -35,6 +36,7 @@ const POLICY_PATH = 'delendai.config.json';
 export const rehearsalPolicy = (
 	policyText: string,
 	integration: string,
+	keepRequiredChecks = false,
 ): string => {
 	const { value, errors } = parseJsonc(policyText);
 	if (errors.length > 0 || value === null || typeof value !== 'object')
@@ -57,7 +59,9 @@ export const rehearsalPolicy = (
 				integration: {
 					...integrationBlock,
 					engine: 'land',
-					requiredChecks: [REHEARSAL_CI_CHECK],
+					...(keepRequiredChecks
+						? {}
+						: { requiredChecks: [REHEARSAL_CI_CHECK] }),
 				},
 			},
 		},
@@ -70,43 +74,68 @@ export const rehearsalPolicy = (
 export const createRehearsalSetup = (
 	input: IRehearsalSetupInput,
 ): IRehearsalSetup => ({
-	files: (integration): readonly IRehearsalFileChange[] => [
-		{
-			path: `${WORKFLOWS}/land.yml`,
-			content: input.integratorWorkflow(
+	files: (integration): readonly IRehearsalFileChange[] => {
+		const all = fastFiles(input, integration);
+		if (input.realWorkflows === undefined) return all;
+		// Real mode: the project's CI and scans, not the fast stand-ins.
+		const stand = new Set([
+			`${WORKFLOWS}/rehearsal-ci.yml`,
+			`${WORKFLOWS}/rehearsal-scan.yml`,
+			POLICY_PATH,
+		]);
+		return [
+			...all.filter((file) => !stand.has(file.path)),
+			...realModeFiles({
 				integration,
-				`land-rehearsal-${input.runId}`,
-			),
-		},
-		{
-			path: `${WORKFLOWS}/rehearsal-ci.yml`,
-			content: renderRehearsalCiWorkflow({
-				integration,
-				runId: input.runId,
+				workflows: input.realWorkflows,
 			}),
-		},
-		{
-			path: `${WORKFLOWS}/rehearsal-scan.yml`,
-			content: renderRehearsalScanWorkflow({ integration }),
-		},
-		{
-			path: `${WORKFLOWS}/rehearsal-token.yml`,
-			content: renderRehearsalTokenWorkflow({
-				integration,
-				labelPrefix: runLabelPrefix(input.runId),
-				branchPrefix: runBranchRoot(input.branchPrefix, input.runId),
-			}),
-		},
-		{
-			path: POLICY_PATH,
-			content: rehearsalPolicy(input.policyText, integration),
-		},
-		{
-			path: `${REHEARSAL_DIR}/${input.runId}/.keep`,
-			content: '',
-		},
-	],
+			{
+				path: POLICY_PATH,
+				content: rehearsalPolicy(input.policyText, integration, true),
+			},
+		];
+	},
 });
+
+const fastFiles = (
+	input: IRehearsalSetupInput,
+	integration: string,
+): readonly IRehearsalFileChange[] => [
+	{
+		path: `${WORKFLOWS}/land.yml`,
+		content: input.integratorWorkflow(
+			integration,
+			`land-rehearsal-${input.runId}`,
+		),
+	},
+	{
+		path: `${WORKFLOWS}/rehearsal-ci.yml`,
+		content: renderRehearsalCiWorkflow({
+			integration,
+			runId: input.runId,
+		}),
+	},
+	{
+		path: `${WORKFLOWS}/rehearsal-scan.yml`,
+		content: renderRehearsalScanWorkflow({ integration }),
+	},
+	{
+		path: `${WORKFLOWS}/rehearsal-token.yml`,
+		content: renderRehearsalTokenWorkflow({
+			integration,
+			labelPrefix: runLabelPrefix(input.runId),
+			branchPrefix: runBranchRoot(input.branchPrefix, input.runId),
+		}),
+	},
+	{
+		path: POLICY_PATH,
+		content: rehearsalPolicy(input.policyText, integration),
+	},
+	{
+		path: `${REHEARSAL_DIR}/${input.runId}/.keep`,
+		content: '',
+	},
+];
 
 /**
  * Today's land workflow, rendered unchanged onto a rehearsal branch: the

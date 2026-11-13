@@ -64,6 +64,26 @@ const spawnGh = (
 		child.stdin.end(input ?? '');
 	});
 
+/** The project's CI and scan workflows, by file name, for a real-mode rehearsal. */
+const REAL_WORKFLOW_FILES = ['ci.yml', 'codeql.yml'] as const;
+const readRealWorkflows = async (
+	cwd: string,
+): Promise<Record<string, string>> =>
+	Object.fromEntries(
+		await Promise.all(
+			REAL_WORKFLOW_FILES.map(
+				async (name) =>
+					[
+						name,
+						await readFile(
+							join(cwd, '.github', 'workflows', name),
+							'utf8',
+						),
+					] as const,
+			),
+		),
+	);
+
 /** The command over the program that runs `gh`; the real one spawns it, a spec gives it answers. */
 export const createIntegrationCommand = (
 	runGh: IRehearsalCommandRunner,
@@ -99,6 +119,8 @@ export const createIntegrationCommand = (
 			join(ctx.cwd, 'delendai.config.json'),
 			'utf8',
 		);
+		const realWorkflows =
+			mode === 'real' ? await readRealWorkflows(ctx.cwd) : undefined;
 		const branchPrefix = ownedRehearsalPrefixes(policy.branches)[0] ?? '';
 		try {
 			const report = await rehearse({
@@ -115,6 +137,9 @@ export const createIntegrationCommand = (
 						runId,
 						branchPrefix,
 						policyText,
+						...(realWorkflows === undefined
+							? {}
+							: { realWorkflows }),
 						integratorWorkflow: (integration, concurrencyGroup) =>
 							landIntegratorWorkflow(
 								integration,

@@ -19,3 +19,9 @@ export {
 	renderAppManifest,
 	renderDoctorTable,
 } from '../lib/services/integration-doctor.service';
+export {
+	judgePrCiWall,
+	realModeFiles,
+	renderBranchFilters,
+	wallSecondsOf,
+} from '../lib/services/rehearsal-real-ci.service';

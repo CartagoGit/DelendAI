@@ -38,7 +38,7 @@ describe('the integration command', () => {
 
 	it('[<50ms] refuses a mode it does not run', async () => {
 		const result = await integrationCommand.run(
-			['rehearse', '--mode=real'],
+			['rehearse', '--mode=slow'],
 			ctx,
 		);
 		expect(result.code).toBe(EXIT_CODE.USAGE);

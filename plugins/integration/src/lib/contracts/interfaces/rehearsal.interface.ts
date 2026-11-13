@@ -321,6 +321,12 @@ export interface IRehearsalSetupInput {
 	) => string;
 	/** The project's policy file text; the setup points its integration branch at the rehearsal one. */
 	readonly policyText: string;
+	/**
+	 * Real mode: the project's own CI and scan workflows (file name to text)
+	 * replace the fast stand-ins, with their branch filters rendered for the
+	 * rehearsal branch, and the project's required checks stay as they are.
+	 */
+	readonly realWorkflows?: Readonly<Record<string, string>>;
 }
 
 /** What a scenario run is given: the forge, the clock and the run's names. */
@@ -353,4 +359,11 @@ export interface IRehearsalKnownRed {
 	readonly fixedBy: string;
 	/** Real mode only: fast mode cannot measure it, so it has no fast scenario. */
 	readonly realModeOnly?: boolean;
+}
+
+/** The verdict on one pull request's CI wall time. */
+export interface IPrCiWallVerdict {
+	readonly ok: boolean;
+	readonly minutes: number;
+	readonly thresholdMinutes: number;
 }

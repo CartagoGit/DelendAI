@@ -20,6 +20,7 @@
 - diagnoseIdentity
 - renderAppManifest
 - renderDoctorTable
+- judgePrCiWall
 
 ## Depends on
 
