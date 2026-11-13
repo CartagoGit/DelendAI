@@ -94,6 +94,7 @@ export {
 	ownedNamespaces,
 	ownedPublicationRefPrefixes,
 	ownedBatchPrefixes,
+	ownedRehearsalPrefixes,
 	ownedWorkRefPrefixes,
 	policyNamespaces,
 	publicationPrefixesOf,
@@ -142,6 +143,7 @@ export { landConfigFromPolicy } from './lib/integration/land/land-config.helper'
 export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
 // Whether this process is older than the integration protocol the repository runs.
 export { integrationProtocolRefusal } from './lib/integration/protocol/integration-protocol.helper';
+export { DEFAULT_INTEGRATION_OPTIONS } from './lib/contracts/constants/integration-options.constant';
 export { INTEGRATION_PROTOCOL_VERSION } from './lib/contracts/constants/integration-protocol.constant';
 export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
 export {
@@ -163,11 +165,9 @@ export type {
 	ILandMerge,
 	ILandPullRequest,
 	ILandReport,
-	ILandFollowUps,
 	ILandWorkflowInput,
-	ILandWorkflowTriggers,
+	ILandWorkflowIdentity,
 } from './lib/integration/land/land.interface';
-export { followUpWorkflows } from './lib/integration/land/land-follow-ups.helper';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,

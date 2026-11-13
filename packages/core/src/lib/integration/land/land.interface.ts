@@ -67,25 +67,6 @@ export interface ILandForge {
 	dispatchWorkflow(workflow: string, ref: string): Promise<boolean>;
 }
 
-/** When a workflow runs, as far as a merge by the integrator is concerned. */
-export interface ILandWorkflowTriggers {
-	/** Its file name, which is how the forge is asked to start it. */
-	readonly file: string;
-	/** A push to the integration branch starts it. */
-	readonly pushesIntegration: boolean;
-	/** It can be started on request. */
-	readonly dispatchable: boolean;
-	/** The workflows whose completion starts it. */
-	readonly afterWorkflows: readonly string[];
-}
-
-/** What follows a pass that merged: what to start, and what cannot be. */
-export interface ILandFollowUps {
-	readonly dispatch: readonly string[];
-	/** Started by a push but not on request: a merge by the integrator skips it. */
-	readonly unreachable: readonly string[];
-}
-
 /** What a trial merge onto the tip says about one pull request. */
 export type ILandConflict = 'none' | 'derived' | 'authored';
 
@@ -214,18 +195,27 @@ export interface ILandUpkeepStep {
  * project integrates with `land` at all is its policy's
  * `development.integration.engine`: the file exists only when it says so.
  */
+/** The names of the identity; a value is never rendered, only where the forge keeps it. */
+export interface ILandWorkflowIdentity {
+	readonly kind: 'app' | 'pat';
+	readonly appIdVariable: string;
+	readonly keySecret: string;
+	readonly tokenSecret: string;
+}
+
 export interface ILandWorkflowInput {
 	readonly integrationBranch: string;
 	readonly releaseBranch: string;
 	/**
-	 * The workflows whose finishing starts a pass on a pull request, and
-	 * the promotion on the integration branch (the project's CI, its scan).
+	 * Who the integrator acts as. Every merge, push, pull request and label
+	 * uses the token minted from it; the workflow token only reads.
 	 */
-	readonly checkWorkflows: readonly string[];
+	readonly identity: ILandWorkflowIdentity;
 	/** Steps that prepare a runner (checkout and toolchain), as YAML lines. */
 	readonly setupSteps: readonly string[];
 	/** The command that runs one pass. */
 	readonly passCommand: string;
+	/** The schedule of the watchdog: an alarm on the default branch, not a poll loop. */
 	readonly cron: string;
 	/**
 	 * Run once the integration branch's CI finishes: opens the promotion
@@ -236,4 +226,6 @@ export interface ILandWorkflowInput {
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
 	readonly upkeep?: readonly ILandUpkeepStep[];
+	/** The concurrency group of the passes; `land` when absent. A rehearsal names its own, so it never queues behind production. */
+	readonly concurrencyGroup?: string;
 }

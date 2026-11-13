@@ -66,6 +66,7 @@
 | gitlab | public | * | filesystem-write, network, env-read |
 | i18n | public | * | filesystem-read |
 | impact-analysis | public | * | filesystem-read |
+| integration | public | * | filesystem-read |
 | issues | public | issues_list | forge-read, network |
 | issues | public | issues_fetch | forge-read, network |
 | issues | public | issues_analyze | forge-read |
