@@ -138,6 +138,8 @@ export const unitLifeReader = (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly now?: number | undefined;
+	/** How the machine's processes are read; the real scan unless a spec gives its own. */
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): ((unit: {
 	readonly ref: string;
 	readonly lease?: IUnitLease | undefined;
@@ -165,7 +167,7 @@ export const unitLifeReader = (input: {
 				}
 			}
 		}
-		machine ??= readMachineLife();
+		machine ??= (input.readMachine ?? readMachineLife)();
 		return judgeUnitLife({
 			lease,
 			worktrees,
@@ -187,6 +189,7 @@ export const unitLifeNow = (input: {
 	readonly ref: string;
 	readonly worktree?: string | null | undefined;
 	readonly now?: number | undefined;
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): Promise<IUnitLife> =>
 	unitLifeReader(input)({
 		ref: input.ref.replace(/^refs\/heads\//u, ''),
@@ -199,6 +202,7 @@ export const liveUnitRefs = async (input: {
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly refs: Iterable<string>;
 	readonly now?: number | undefined;
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): Promise<ReadonlySet<string>> => {
 	const lifeOf = unitLifeReader(input);
 	const live = new Set<string>();
