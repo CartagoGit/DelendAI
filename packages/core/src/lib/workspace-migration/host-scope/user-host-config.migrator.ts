@@ -49,6 +49,14 @@ const mapAt = (
 	return isRecord(node) ? node : undefined;
 };
 
+/** The server name delendai uses today: an entry under it is delendai's own. */
+const CURRENT_SERVER_NAME = rewriteIdentityInString('mcp-vertex');
+
+/** Under the retired name, or under today's with the retired launch shape. */
+const isOwnEntry = (name: string, body: string): boolean =>
+	stringHasLegacyIdentity(name) ||
+	(name === CURRENT_SERVER_NAME && stringHasLegacyIdentity(body));
+
 const migrateJson = (text: string): IFileOutcome => {
 	const parsed = parseJsonc(text);
 	const first = parsed.errors[0];
@@ -62,16 +70,18 @@ const migrateJson = (text: string): IFileOutcome => {
 		const servers = mapAt(parsed.value, path);
 		if (servers === undefined) continue;
 		for (const [name, entry] of Object.entries(servers)) {
-			if (stringHasLegacyIdentity(name)) {
+			if (isOwnEntry(name, JSON.stringify(entry))) {
 				const renamed = rewriteIdentityInString(name);
-				edits.push({ path: [...path, name], value: undefined });
-				if (!Object.hasOwn(servers, renamed)) {
-					edits.push({
-						path: [...path, renamed],
-						value: JSON.parse(
-							rewriteIdentityInString(JSON.stringify(entry)),
-						),
-					});
+				const value: unknown = JSON.parse(
+					rewriteIdentityInString(JSON.stringify(entry)),
+				);
+				if (renamed === name) {
+					edits.push({ path: [...path, name], value });
+				} else {
+					edits.push({ path: [...path, name], value: undefined });
+					if (!Object.hasOwn(servers, renamed)) {
+						edits.push({ path: [...path, renamed], value });
+					}
 				}
 				entries.push(name);
 			} else if (stringHasLegacyIdentity(JSON.stringify(entry))) {
@@ -107,7 +117,9 @@ const migrateToml = (text: string): IFileOutcome => {
 		if (name !== undefined && stringHasLegacyIdentity(line))
 			legacyBody.add(name);
 	});
-	const own = [...legacyBody].filter(stringHasLegacyIdentity);
+	const own = [...legacyBody].filter(
+		(name) => name === CURRENT_SERVER_NAME || stringHasLegacyIdentity(name),
+	);
 	const questions = [...legacyBody].filter((name) => !own.includes(name));
 	if (own.length === 0) return { next: undefined, entries: [], questions };
 	const next = lines
