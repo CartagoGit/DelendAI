@@ -182,6 +182,9 @@ if (process.env[LOAD_FACTOR_ENV] === undefined) {
 	const benchMs = measureLoadBenchmark();
 	process.env[LOAD_BENCH_ENV] = benchMs.toFixed(1);
 	process.env[LOAD_FACTOR_ENV] = String(loadFactorOf(benchMs, reference));
+	console.log(
+		`time budget: load benchmark ${benchMs.toFixed(1)} ms against ${String(reference)} ms, load factor ${process.env[LOAD_FACTOR_ENV]}`,
+	);
 }
 
 // A budget the change writes was never measured by CI, so its overrun is

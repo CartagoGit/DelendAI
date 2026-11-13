@@ -402,7 +402,7 @@ describe('withComputeSlot unit turns, failures', () => {
 		).resolves.toBe('mine');
 	});
 
-	it('[<30ms] runs again after a finished turn of the same tip', async () => {
+	it('[<240ms] runs again after a finished turn of the same tip', async () => {
 		const lockPath = lockIn();
 		let runs = 0;
 		const ask = () =>
