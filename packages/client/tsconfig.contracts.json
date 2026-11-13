@@ -1,0 +1,31 @@
+// tsconfig.contracts.json — r00041 S3.
+//
+// Compiles `@delendai/client/contracts` and `@delendai/client/transport`
+// the way a consumer WITHOUT Node types would: no `@types/node`, and a
+// `lib` set a browser could actually provide.
+//
+// This exists because S1's boundary spec cannot see the whole problem.
+// That spec scans import specifiers, so it catches `import ... from
+// 'node:fs'` — but not `chunk: Buffer`, not `NodeJS.Timeout`, not a bare
+// `process.env`. Those are ambient globals; only a compile without
+// `@types/node` reveals them, and the repository otherwise compiles WITH
+// it everywhere. The `Buffer` annotation in `mcp-stdio-client.ts` sat in
+// `transport/` unnoticed until this config was pointed at it.
+//
+// If this fails, move the offending code under `src/node/` rather than
+// adding `"types": ["node"]` here — that would delete the check instead
+// of satisfying it.
+{
+	"compilerOptions": {
+		"noEmit": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"types": []
+	},
+	"include": ["src/contracts/**/*.ts", "src/transport/**/*.ts"],
+	"exclude": ["**/*.spec.ts"]
+}

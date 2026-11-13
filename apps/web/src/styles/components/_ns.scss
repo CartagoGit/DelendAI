@@ -1,0 +1,23 @@
+// _ns.scss — namespace section header (h3 + optional count) inside a tools list.
+//
+// BEM root: .ns with __head and __count.  The h3 inside __head is nested
+// with `&` to keep the BEM scope.
+
+.ns {
+	margin-top: 1.5rem;
+}
+.ns__head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6rem;
+	margin-bottom: 0.6rem;
+
+	& h3 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
+}
+.ns__count {
+	color: var(--muted);
+	font-size: 0.85rem;
+}
