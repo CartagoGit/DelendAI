@@ -9,7 +9,7 @@
  * no tier (the caller routes by the ranking as before).
  */
 
-type TTier = 1 | 2 | 3 | 4 | 5;
+type TTier = number;
 
 type TTierPolicy = Readonly<Record<string, TTier>>;
 

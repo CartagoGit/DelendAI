@@ -21,6 +21,7 @@ interface IRegisteredTool {
 		consent?: boolean;
 		install?: boolean;
 		installProviderId?: string;
+		taskType?: string;
 	}) => Promise<{ structuredContent?: Record<string, unknown> }>;
 }
 
@@ -35,6 +36,7 @@ const capture = async (
 	}>,
 	runProvider?: IRunEscalationDeps['runProvider'],
 	checkAcceptance?: IRunEscalationDeps['checkAcceptance'],
+	tierFor?: Parameters<typeof buildAutoRunRegistration>[0]['tierFor'],
 ): Promise<IRegisteredTool> => {
 	let tool: IRegisteredTool | undefined;
 	const server = {
@@ -55,6 +57,7 @@ const capture = async (
 		...(installRunner !== undefined ? { installRunner } : {}),
 		...(runProvider !== undefined ? { runProvider } : {}),
 		...(checkAcceptance !== undefined ? { checkAcceptance } : {}),
+		...(tierFor !== undefined ? { tierFor } : {}),
 	});
 	await reg.register(server as unknown as Parameters<typeof reg.register>[0]);
 	if (!tool) throw new Error('auto_run did not register');
@@ -263,5 +266,40 @@ describe('auto_run tool', () => {
 				consent: true,
 			}).success,
 		).toBe(true);
+	});
+
+	it('[<200ms] plans no route and names the blocker when the task class needs an unauthorized tier', async () => {
+		const tool = await capture(
+			deps,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			() => ({ ok: false, blocker: 'needs owner authorization' }),
+		);
+		const body = (await tool.handler({ taskType: 'architecture' }))
+			.structuredContent as { ladder: unknown[]; blocker: string };
+		expect(body.ladder).toEqual([]);
+		expect(body.blocker).toBe('needs owner authorization');
+	});
+
+	it('[<200ms] caps the ladder at the tier the task class maps to', async () => {
+		const tool = await capture(
+			deps,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			() => ({ ok: true, tier: 1 }),
+		);
+		const body = (await tool.handler({ taskType: 'mechanical' }))
+			.structuredContent as {
+			ladder: { costTier: number }[];
+			blocker: null;
+			costCeiling: number;
+		};
+		expect(body.costCeiling).toBe(1);
+		expect(body.blocker).toBeNull();
+		expect(body.ladder.every((rung) => rung.costTier <= 1)).toBe(true);
 	});
 });

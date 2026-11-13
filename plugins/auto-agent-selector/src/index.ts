@@ -4,6 +4,7 @@ import z from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
 import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';
+import { resolveTaskClassTier } from './lib/routing/task-class-tier.service';
 import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
 import { buildAutoEvaluateRegistration } from './lib/tools/auto-evaluate.tool';
@@ -36,6 +37,16 @@ const OptionsSchema = z
 		costQualityTradeoff: z.number().int().min(0).max(10).optional(),
 		/** Optional provider pin per stable task type; explicit tool pins win. */
 		taskPins: z.record(z.string().min(1), z.string().min(1)).optional(),
+		/**
+		 * Cost tier (1 cheapest … 5 top) per task class. The top tier is only
+		 * granted when `ownerAuthorizedTopTier` is true. Omitted = the
+		 * built-in mapping.
+		 */
+		taskClassTiers: z
+			.record(z.string().min(1), z.number().int().min(1).max(5))
+			.optional(),
+		/** The owner's explicit authorization to use the top tier. */
+		ownerAuthorizedTopTier: z.boolean().optional(),
 	})
 	.strict();
 
@@ -59,6 +70,11 @@ export default definePlugin({
 			? (parsed.data.costQualityTradeoff ?? DEFAULT_TRADEOFF)
 			: DEFAULT_TRADEOFF;
 		const taskPins = parsed.success ? parsed.data.taskPins : undefined;
+		const taskClassTiers = parsed.success
+			? parsed.data.taskClassTiers
+			: undefined;
+		const ownerAuthorizedTopTier =
+			parsed.success && parsed.data.ownerAuthorizedTopTier === true;
 		// The cache directory the shared model-outcome store lives under.
 		const calibrationDir = ctx.workspace.resolve(ctx.cacheDir);
 		const rosterStore = realRosterSnapshotStore(
@@ -96,6 +112,11 @@ export default definePlugin({
 					rosterStore,
 					workspaceRoot: ctx.workspace.root,
 					...(taskPins !== undefined ? { taskPins } : {}),
+					tierFor: (taskClass) =>
+						resolveTaskClassTier(taskClass, {
+							policy: taskClassTiers,
+							ownerAuthorized: ownerAuthorizedTopTier,
+						}),
 				}),
 			],
 			knowledge: [
