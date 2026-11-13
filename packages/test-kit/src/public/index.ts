@@ -55,13 +55,24 @@ export {
 	budgetInName,
 	budgetOverrun,
 	freshBudgetsOfDiff,
+	isE2eSpec,
+	loadFactorFromEnv,
+	loadFactorOf,
 	mayGoUnbudgeted,
 } from '../lib/time-budget/time-budget.helper';
+export {
+	measureLoadBenchmark,
+	realLoadBenchmarkWork,
+} from '../lib/time-budget/load-benchmark.helper';
+export type { ILoadBenchmarkWork } from '../contracts/interfaces/load-benchmark.interface';
 export { timeBudgetRunnerPath } from '../lib/time-budget/time-budget-runner-path.helper';
 export {
 	CHANGED_ENV,
 	FRESH_ENV,
+	LOAD_BENCH_ENV,
+	LOAD_FACTOR_ENV,
 	SOFT_OVERRUN_ENV,
+	UNIT_LIMIT_MS,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from '../contracts/constants/time-budget.constant';

@@ -35,12 +35,15 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
+import { resolve } from 'node:path';
+
 import { repoRoot } from '../lib/repo-root';
 import { INTEGRATION_REF } from './declared-test-budget';
 import {
 	budgetChanges,
 	longestDurations,
 	measuredTestsOfBlob,
+	referenceOfDurations,
 	requiredCorrection,
 	type ITestDurations,
 	withCalibratedBudget,
@@ -179,6 +182,21 @@ const main = (): number => {
 		`test-budget-calibrate: ${String(changes.length)} test(s) declare less than CI measured.`,
 	);
 	if (process.argv.includes('--update')) {
+		// The reference the shards' load factor is measured against is the
+		// median benchmark of the run(s) just read.
+		const reference = referenceOfDurations(durations);
+		if (reference !== undefined) {
+			writeFileSync(
+				resolve(
+					repoRoot(),
+					'tools/scripts/test/test-load-reference.json',
+				),
+				`${JSON.stringify({ referenceMs: reference }, null, '\t')}\n`,
+			);
+			console.log(
+				`test-budget-calibrate: load reference ${String(reference)} ms.`,
+			);
+		}
 		for (const c of changes) {
 			const path = join(repoRoot(), c.file);
 			const next = withCalibratedBudget(readFileSync(path, 'utf8'), c);

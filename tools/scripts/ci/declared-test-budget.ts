@@ -3,13 +3,15 @@
  * time" (the run itself is the other half: the test-kit runner fails a
  * test with no budget, or over it).
  *
- * A spec file that is not on the migration list must start the name of
+ * An e2e spec file that is not on the migration list must start the name of
  * every `it`/`test` with its budget, `[<7ms] does X`. A file on the list may still hold tests with none,
  * and the list only ever shrinks: a file that no longer needs its entry
  * must drop it, so it cannot slide back.
  */
 
 import { freshBudgetsOfDiff } from '../../../packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts';
+import { isE2eSpec } from '../../../packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
+import { UNIT_LIMIT_MS } from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
 import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts';
 
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
@@ -80,6 +82,59 @@ export const unbudgetedTests = (text: string): number => {
 	return missing;
 };
 
+/**
+ * The budgets a spec's test names declare above the unit limit, in the
+ * order written. In a unit-tier file a budget is documentation the judge
+ * ignores, and none may promise more than the unit tier allows.
+ */
+export const budgetsOverUnitLimit = (text: string): readonly number[] => {
+	const over: number[] = [];
+	for (const call of text.matchAll(PLAIN_CALL)) {
+		if (
+			(call[1] ?? '').includes('.skip') ||
+			inString(text, call.index ?? 0)
+		) {
+			continue;
+		}
+		const name = stringAt(
+			text,
+			skipSpaces(text, (call.index ?? 0) + call[0].length),
+		);
+		const budget = /^\[<(\d+(?:\.\d+)?)ms\] /u.exec(name ?? '')?.[1];
+		if (budget !== undefined && Number(budget) > UNIT_LIMIT_MS) {
+			over.push(Number(budget));
+		}
+	}
+	return over;
+};
+
+/** A unit-tier spec the change touches that declares a budget over the limit. */
+export interface IUnitLimitBreach {
+	readonly path: string;
+	readonly budgets: readonly number[];
+}
+
+/**
+ * The unit-tier files that declare a budget over the unit limit, asked of
+ * the files a change writes (with no change known, every file): an e2e file
+ * and a file still on the migration list are not asked.
+ */
+export const judgeUnitLimit = (
+	over: ReadonlyMap<string, readonly number[]>,
+	listed: ReadonlySet<string>,
+	changed?: ReadonlySet<string>,
+): readonly IUnitLimitBreach[] =>
+	[...over]
+		.filter(
+			([path, budgets]) =>
+				budgets.length > 0 &&
+				!isE2eSpec(path) &&
+				!listed.has(path) &&
+				(changed === undefined || changed.has(path)),
+		)
+		.map(([path, budgets]) => ({ path, budgets }))
+		.sort((a, b) => a.path.localeCompare(b.path));
+
 /** The verdict on one repository against its migration list. */
 export interface IDeclaredBudgetVerdict {
 	/** Spec files off the list that hold tests with no budget. */
@@ -106,7 +161,10 @@ export const judgeDeclaredBudgets = (
 	missing: [...files]
 		.filter(
 			([path, tests]) =>
-				tests > 0 && !mayGoUnbudgeted(path, listed, changed),
+				// Only the e2e tier is asked to declare: a unit test's limit is fixed.
+				tests > 0 &&
+				isE2eSpec(path) &&
+				!mayGoUnbudgeted(path, listed, changed),
 		)
 		.map(([path, tests]) => ({ path, tests }))
 		.sort((a, b) => a.path.localeCompare(b.path)),

@@ -57,7 +57,7 @@ describe('the state registry a boot uses', () => {
 		expect(source).not.toContain('defineInMemoryStateRegistry(');
 	});
 
-	it('[<201ms] accepts a registry core could never have built itself', async () => {
+	it('[<200ms] accepts a registry core could never have built itself', async () => {
 		// The point of the seam: a SQLite-backed registry lives in
 		// @delendai/state-sqlite, and core may not import bun:sqlite. It
 		// can only ever be handed one.

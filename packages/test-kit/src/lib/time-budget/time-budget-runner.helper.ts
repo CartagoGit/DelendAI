@@ -14,12 +14,17 @@ import { type RunnerTestCase, TestRunner } from 'vitest';
 import {
 	CHANGED_ENV,
 	FRESH_ENV,
+	LOAD_BENCH_ENV,
+	LOAD_FACTOR_ENV,
+	MEASURED_BENCH_META_KEY,
+	MEASURED_LOAD_META_KEY,
 	MIGRATION_ENV,
 	MEASURED_META_KEY,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
+import { isE2eSpec, loadFactorFromEnv } from './time-budget-tier.helper';
 import {
 	budgetFailure,
 	budgetOverrun,
@@ -87,6 +92,23 @@ const isMigrating = (test: RunnerTestCase): boolean => {
 const isFresh = (test: RunnerTestCase): boolean =>
 	freshList().has(`${fileOf(test) ?? ''}\t${test.name}`);
 
+/**
+ * The tier of the test's file; none is known without the migration root. A
+ * file the change does not touch is only reported: an over-limit test fails
+ * the change that touches its spec file (`softOverrun`).
+ */
+const tierOf = (test: RunnerTestCase): 'unit' | 'e2e' | undefined => {
+	const file = fileOf(test);
+	if (file === undefined) return undefined;
+	return isE2eSpec(file) ? 'e2e' : 'unit';
+};
+
+const untouched = (test: RunnerTestCase): boolean => {
+	const file = fileOf(test);
+	const paths = changedList();
+	return file !== undefined && paths !== undefined && !paths.has(file);
+};
+
 const overruns: string[] = [];
 
 const freshOverruns: string[] = [];
@@ -111,12 +133,21 @@ export default class TimeBudgetRunner extends TestRunner {
 		const start = realNow();
 		await body();
 		const tookMs = realNow() - start;
-		Object.assign(test.meta, { [MEASURED_META_KEY]: tookMs });
+		const loadFactor = loadFactorFromEnv(process.env[LOAD_FACTOR_ENV]);
+		Object.assign(test.meta, {
+			[MEASURED_META_KEY]: tookMs,
+			[MEASURED_LOAD_META_KEY]: loadFactor,
+			[MEASURED_BENCH_META_KEY]: Number(process.env[LOAD_BENCH_ENV] ?? 0),
+		});
 		const measured = {
+			tier: tierOf(test),
+			loadFactor,
 			name: test.name,
 			migrating: isMigrating(test),
 			tookMs,
-			softOverrun: process.env[SOFT_OVERRUN_ENV] === '1',
+			softOverrun:
+				process.env[SOFT_OVERRUN_ENV] === '1' ||
+				(tierOf(test) === 'unit' && untouched(test)),
 			fresh: isFresh(test),
 		};
 		const failure = budgetFailure(measured);

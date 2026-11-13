@@ -22,4 +22,13 @@ export interface ITimeBudgetCase {
 	 * it: an overrun is reported for correction, not failed here.
 	 */
 	readonly fresh?: boolean;
+	/**
+	 * The tier the test's file belongs to: `unit` fails past 200 ms of real
+	 * time and ignores its name's number; `e2e` fails past its declared
+	 * number times the load factor. Absent, the test is judged by its name
+	 * alone, as before tiers existed.
+	 */
+	readonly tier?: 'unit' | 'e2e';
+	/** This shard's load factor, 1 to 4; 1 when unknown. */
+	readonly loadFactor?: number;
 }
