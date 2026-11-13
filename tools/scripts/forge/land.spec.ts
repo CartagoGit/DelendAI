@@ -12,7 +12,7 @@ import {
 	renderLandWorkflow,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -22,6 +22,7 @@ import {
 } from './land-workflow.script';
 
 import { FAKE_DERIVED, createFakeWorld } from './land-fake';
+import { readDevelopmentConfig } from './land-policy';
 import { LAND_WORKFLOW_TOKEN_ACTOR } from '@delendai/core/cli';
 
 const REPO_POLICY = resolveDevelopmentPolicy({
@@ -430,9 +431,27 @@ describe('land run with a workflow token', () => {
 });
 
 describe('the land workflow template', () => {
-	it("[<5ms] renders this repository's committed instance", () => {
-		expect(renderLandWorkflow(REPO_LAND_WORKFLOW)).toBe(
-			readFileSync(LAND_WORKFLOW_PATH, 'utf8'),
+	it("[<5ms] commits this repository's instance exactly as its policy renders it", () => {
+		const committed = existsSync(LAND_WORKFLOW_PATH)
+			? readFileSync(LAND_WORKFLOW_PATH, 'utf8')
+			: undefined;
+		expect(committed).toBe(expectedLandWorkflow(readDevelopmentConfig()));
+	});
+
+	it('[<5ms] names its concurrency group `land` unless the caller names another', () => {
+		const base = renderLandWorkflow(REPO_LAND_WORKFLOW);
+		expect(
+			renderLandWorkflow({
+				...REPO_LAND_WORKFLOW,
+				concurrencyGroup: 'land',
+			}),
+		).toBe(base);
+		const own = renderLandWorkflow({
+			...REPO_LAND_WORKFLOW,
+			concurrencyGroup: 'land-rehearsal-r1',
+		});
+		expect(own).toBe(
+			base.replace('group: land\n', 'group: land-rehearsal-r1\n'),
 		);
 	});
 
@@ -447,13 +466,12 @@ describe('the land workflow template', () => {
 		});
 		expect(text).toContain('branches: [trunk, stable]');
 		expect(text).toContain(
-			"github.event.workflow_run.head_branch == 'trunk'",
+			"github.event_name == 'workflow_dispatch' && inputs.promote != ''",
 		);
 		expect(text).toContain("github.ref_name == 'stable'");
 		expect(text).toContain('run: npx tool promote');
 		expect(text).toContain('run: npx tool tidy');
 		expect(text).not.toMatch(/\bdevelop\b/u);
-		expect(text).not.toContain('vars.');
 	});
 
 	it('[<5ms] leaves out the phases a project does not declare', () => {
@@ -464,7 +482,7 @@ describe('the land workflow template', () => {
 		} = REPO_LAND_WORKFLOW;
 		const text = renderLandWorkflow({ ...bare, upkeep: [] });
 		expect(text).toContain('    land:');
-		expect(text).not.toContain('    promote:');
+		expect(text).not.toContain('\n    promote:\n');
 		expect(text).not.toContain('    forward-sync:');
 		expect(text).not.toContain('    upkeep:');
 	});

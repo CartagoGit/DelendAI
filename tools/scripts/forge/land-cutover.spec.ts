@@ -3,10 +3,12 @@
  * mechanism it replaced is left: no workflow, script, hook or host module
  * references the queue, its trains, the candidate refresh, hydration or
  * ref maintenance; the policy, not a repository variable, switches the
- * engine; and the integration branch's CI follows land.
+ * engine; and the integration branch's CI follows land. While the engine
+ * is not `land` (integration paused), nothing merges, labels or pushes a
+ * pull request.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -47,6 +49,14 @@ const REMOVED_NAMES = [
 	'DELENDAI_INTEGRATION_ENGINE',
 	'DELENDAI_CANDIDATE_REFRESH_INTERVAL_MS',
 ] as const;
+
+/** A workflow line that merges, labels, updates or pushes a pull request, or runs what does. */
+const PULL_REQUEST_WRITE =
+	/gh pr (?:merge|edit|ready)|--add-label|\/labels\b|update-branch|land\.script|bring-forward|open-batches/u;
+
+/** The engine `delendai.config.json` records. */
+const engineOf = (config: string): string | undefined =>
+	/"engine": "(\w+)"/u.exec(config)?.[1];
 
 const escapeRegExp = (text: string): string =>
 	text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -136,19 +146,45 @@ describe('the cutover to land', () => {
 
 	it('[<20ms] switches the engine in the policy and records the protocol', () => {
 		const config = readFileSync(join(ROOT, 'delendai.config.json'), 'utf8');
-		expect(config).toMatch(/"engine": "land"/u);
+		expect(config).toMatch(/"engine": "(?:land|none)"/u);
 		expect(config).toMatch(/"protocol": \d+/u);
-		const land = readFileSync(
-			join(ROOT, '.github/workflows/land.yml'),
-			'utf8',
-		);
-		expect(land).not.toContain('vars.');
+		const land = join(ROOT, '.github/workflows/land.yml');
+		expect(existsSync(land)).toBe(engineOf(config) === 'land');
+		if (existsSync(land))
+			expect(readFileSync(land, 'utf8')).not.toContain('vars.');
 	});
 
-	it('[<20ms] runs the integration branch CI after land, judged since the tip the pass started from', () => {
+	it('[<50ms] while the engine is not land, nothing merges, labels or pushes a pull request', () => {
+		const config = readFileSync(join(ROOT, 'delendai.config.json'), 'utf8');
+		if (engineOf(config) === 'land') return;
+		const workflows = join(ROOT, '.github/workflows');
+		const writes = readdirSync(workflows).flatMap((file) =>
+			readFileSync(join(workflows, file), 'utf8')
+				.split('\n')
+				.flatMap((line, index) =>
+					PULL_REQUEST_WRITE.test(line)
+						? [`${file}:${String(index + 1)}: ${line.trim()}`]
+						: [],
+				),
+		);
+		expect(writes).toEqual([]);
+		// The two scripts that act on pull requests refuse under any other engine.
+		for (const script of ['land.script.ts', 'bring-forward.script.ts']) {
+			const source = readFileSync(
+				join(ROOT, 'tools/scripts/forge', script),
+				'utf8',
+			);
+			expect(source).toMatch(/\.integration\.engine (?:!==|===) 'land'/u);
+		}
+	});
+
+	it('[<20ms] runs on the pushes the identity makes and tells the integrator when a pull request run ends', () => {
 		const ci = readFileSync(join(ROOT, '.github/workflows/ci.yml'), 'utf8');
-		expect(ci).toMatch(/workflow_run:\n\s+workflows: \[land\]/u);
-		expect(ci).toContain('github.event.workflow_run.head_sha');
+		expect(ci).not.toContain('workflow_run');
+		expect(ci).toContain('integration-signal:');
+		expect(ci).toContain('if: ${{ always() && (github.event_name == ');
+		expect(ci).toContain('zones:');
+		expect(ci).not.toContain('scan-the-integration-branch');
 		expect(ci).not.toContain('gh workflow run keep-the-queue');
 	});
 });

@@ -41,6 +41,7 @@ interface IFakePullRequest {
 	testedBase: string;
 	/** Who pushed its head; the workflow token's heads are never built. */
 	headAuthor: string;
+	crossRepository?: boolean;
 	comments: string[];
 	/** The files a plain pull request writes. */
 	change: Record<string, string>;
@@ -110,7 +111,12 @@ export const createFakeWorld = (
 		},
 		addPull(
 			change: Record<string, string>,
-			options: { base?: string; draft?: boolean; author?: string } = {},
+			options: {
+				base?: string;
+				draft?: boolean;
+				author?: string;
+				crossRepository?: boolean;
+			} = {},
 		): number {
 			const number = next++;
 			pulls.set(number, {
@@ -124,6 +130,9 @@ export const createFakeWorld = (
 				body: '',
 				testedBase: options.base ?? tip,
 				headAuthor: options.author ?? FAKE_AUTHOR,
+				...(options.crossRepository === true
+					? { crossRepository: true }
+					: {}),
 				comments: [],
 				change,
 			});
@@ -203,6 +212,7 @@ export const createFakeWorld = (
 		body: pr.body,
 		testedBase: pr.testedBase,
 		headAuthor: pr.headAuthor,
+		...(pr.crossRepository === true ? { crossRepository: true } : {}),
 	});
 	const get = (number: number): IFakePullRequest => {
 		const pr = pulls.get(number);
@@ -282,6 +292,7 @@ export const createFakeWorld = (
 			mutate();
 			get(number).comments.push(text);
 		},
+		comments: async (number) => [...get(number).comments],
 		openPullRequest: async ({ head, title: _title, body }) => {
 			mutate();
 			const ref = refs.get(head);
@@ -323,9 +334,11 @@ export const createFakeWorld = (
 			mutate();
 			get(number).state = 'closed';
 		},
-		dispatchWorkflow: async (workflow, ref) => {
+		dispatchWorkflow: async (workflow, ref, inputs) => {
 			mutate();
-			dispatched.push(`${workflow}@${ref}`);
+			dispatched.push(
+				`${workflow}@${ref}${inputs === undefined ? '' : ` ${JSON.stringify(inputs)}`}`,
+			);
 			return true;
 		},
 	};
@@ -351,8 +364,21 @@ export const createFakeWorld = (
 	};
 	const git: ILandGit = {
 		footprint: (pr) => footprintOf(Object.keys(get(pr.number).change)),
-		landedSince: (base) =>
-			footprintOf(world.since(base).flatMap((entry) => entry.files)),
+		landedSince: (base, at) => {
+			// A batch head is not on the integration log: what it changed is
+			// the difference of its tree from the tree it was built on.
+			const batch = [...refs.values()].find((ref) => ref.sha === at);
+			if (batch === undefined)
+				return footprintOf(
+					world.since(base).flatMap((entry) => entry.files),
+				);
+			const before = trees.get(base) ?? {};
+			return footprintOf(
+				Object.entries(batch.tree)
+					.filter(([path, value]) => before[path] !== value)
+					.map(([path]) => path),
+			);
+		},
 		conflictOf: (pr, at) => {
 			void at;
 			return conflictAgainst(get(pr.number).change, pr.testedBase);
@@ -409,6 +435,16 @@ export const createFakeWorld = (
 				Object.assign(tree, pr.change);
 			}
 			return treeKey(tree);
+		},
+		mergedFiles: ({ members }) => {
+			const files = new Set<string>();
+			for (const member of members) {
+				const pr = get(member.number);
+				if (conflictAgainst(pr.change, pr.testedBase) === 'authored')
+					return undefined;
+				for (const path of Object.keys(pr.change)) files.add(path);
+			}
+			return files;
 		},
 	};
 	return { world, forge, git, dispatched };

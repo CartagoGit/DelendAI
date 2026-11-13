@@ -18,3 +18,5 @@ export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';
 
 /** The integrator's workflow name: what `workflow_run` lists it as. */
 export const LAND_WORKFLOW_NAME = 'land';
+/** The integrator's workflow file: what a dispatch names. */
+export const LAND_WORKFLOW_FILE = 'land.yml';

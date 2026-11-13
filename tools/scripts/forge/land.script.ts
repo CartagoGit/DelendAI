@@ -3,7 +3,8 @@
  * land.script.ts — runs one `land` pass against GitHub from a checkout.
  *
  * Usage: bun tools/scripts/forge/land.script.ts
- * Env: GITHUB_REPOSITORY (`owner/name`).
+ * Env: GITHUB_REPOSITORY (`owner/name`), GH_TOKEN (the identity's token),
+ * LAND_WATCHDOG (`1` on the scheduled pass: any action it takes fails the run).
  *
  * Does nothing unless the policy's `development.integration.engine` is
  * `land`, and refuses when the repository records a newer integration
@@ -11,17 +12,16 @@
  */
 import {
 	createGithubLandForge,
-	followUpWorkflows,
 	integrationProtocolRefusal,
-	LAND_WORKFLOW_NAME,
 	landConfigFromPolicy,
+	LAND_WORKFLOW_FILE,
 	landPass,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { createForgeCliRunner } from '../host/forge-seam.service';
-import { readWorkflowTriggers } from './land-follow-ups';
 import { createLandGit } from './land-git';
+import { createBringForward } from './land-forward';
 import { readDevelopmentConfig } from './land-policy';
 import { zoneOfCheck } from './section-health';
 
@@ -67,6 +67,21 @@ const main = async (): Promise<number> => {
 		forge,
 		git: createLandGit({ root, remote: 'origin' }),
 		config,
+		// Its pushes are the identity's, so the forge builds what it moves.
+		bringForward: createBringForward({
+			root,
+			remote: 'origin',
+			token: process.env.GH_TOKEN ?? '',
+		}),
+		// A derived conflict is two jobs of the land workflow, never this pass.
+		resolveDerived: (pr) =>
+			forge.dispatchWorkflow(
+				LAND_WORKFLOW_FILE,
+				config.integrationBranch,
+				{
+					derived: String(pr.number),
+				},
+			),
 	});
 	for (const line of report.actions) console.log(`land: ${line}`);
 	// Every open pull request, every pass: "0 merged" is never silent.
@@ -77,25 +92,14 @@ const main = async (): Promise<number> => {
 	console.log(
 		`land: ${String(report.mergedCount)} merged${report.mergedPRs.length > 0 ? ` (${report.mergedPRs.map((n) => `#${String(n)}`).join(', ')})` : ''}; tip ${report.tipSha.slice(0, 12)}`,
 	);
-	if (report.mergedCount === 0) return 0;
-	// Its merges started nothing: start what a push would have, the next
-	// pass among them, so nothing waits for the timer.
-	const followUps = followUpWorkflows(
-		readWorkflowTriggers('.github/workflows', config.integrationBranch),
-		LAND_WORKFLOW_NAME,
-	);
-	for (const workflow of followUps.dispatch) {
-		const started = await forge
-			.dispatchWorkflow(workflow, config.integrationBranch)
-			.catch(() => false);
-		console.log(
-			`land: ${started ? 'started' : 'could NOT start'} ${workflow} on ${config.integrationBranch}`,
+	// The watchdog runs the same pass on a timer: work it finds is work no
+	// event started, so it fails the run and the workflow files the evidence.
+	if (process.env.LAND_WATCHDOG === '1' && report.actions.length > 0) {
+		console.error(
+			`land: the watchdog acted ${String(report.actions.length)} time(s): an event was missed.`,
 		);
+		return 1;
 	}
-	for (const workflow of followUps.unreachable)
-		console.log(
-			`land: ${workflow} runs on a push to ${config.integrationBranch} but cannot be started on request, so a merge by land skips it; give it workflow_dispatch.`,
-		);
 	return 0;
 };
 

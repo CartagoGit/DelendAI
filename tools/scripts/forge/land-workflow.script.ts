@@ -10,6 +10,7 @@
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 import {
+	DEFAULT_INTEGRATION_OPTIONS,
 	INTEGRATION_PROTOCOL_VERSION,
 	renderLandWorkflow,
 	type ILandWorkflowInput,
@@ -36,9 +37,15 @@ const SETUP_STEPS = [
 export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 	integrationBranch: 'develop',
 	releaseBranch: 'main',
-	checkWorkflows: ['CI', 'CodeQL'],
-	cron: '*/15 * * * *',
+	identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+	cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
 	passCommand: 'bun tools/scripts/forge/land.script.ts',
+	derived: {
+		prepareCommand:
+			'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
+		pushCommand:
+			'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
+	},
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',
@@ -67,10 +74,16 @@ export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 /** What the committed file must be: the render, or absent when the engine is not `land`. */
 export const expectedLandWorkflow = (
 	development: ReturnType<typeof readDevelopmentConfig>,
-): string | undefined =>
-	resolveDevelopmentPolicy(development).integration.engine === 'land'
-		? renderLandWorkflow(REPO_LAND_WORKFLOW)
+): string | undefined => {
+	const { integration } = resolveDevelopmentPolicy(development);
+	return integration.engine === 'land'
+		? renderLandWorkflow({
+				...REPO_LAND_WORKFLOW,
+				identity: integration.identity,
+				cron: integration.watchdog.cron,
+			})
 		: undefined;
+};
 
 /** The committed file, or `undefined` when there is none: one read, no check before it. */
 const readCommitted = (path: string): string | undefined => {
