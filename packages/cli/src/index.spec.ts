@@ -7,7 +7,6 @@
  * inside `pre-commit` on every commit, and a `guard` that opens an stdio
  * server there deadlocks against the git lock it was invoked under.
  */
-import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
 	mkdtempSync,
@@ -18,9 +17,12 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { createGitRepoTemplate } from '@delendai/test-kit';
 
 import { runEntry, runHumanCli } from './index';
+import { loadCommandsFor } from './lib/command-loader.service';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 
@@ -46,8 +48,26 @@ afterEach(() => {
 	}
 });
 
+// One real repository per shape, copied per case: building one is a handful
+// of git processes, and a copy is a file copy.
+const plain = createGitRepoTemplate({ trunk: 'develop' });
+const configured = createGitRepoTemplate({
+	trunk: 'develop',
+	files: {
+		'delendai.config.json':
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		'a.ts': 'export const a = 1;\n',
+	},
+});
+
+// The commands the entry loads on its first call are a cold import, paid once
+// per process; it is not the behaviour the first test names.
+beforeAll(async () => {
+	await loadCommandsFor(['--version']);
+}, 60_000);
+
 describe('runHumanCli', () => {
-	it('[<6000ms] prints the version and exits OK', async () => {
+	it('[<30ms] prints the version and exits OK', async () => {
 		capture();
 		const code = await runHumanCli(['--version']);
 		expect(code).toBe(EXIT_CODE.OK);
@@ -99,9 +119,7 @@ describe('runHumanCli', () => {
 		// built from `parsed.globals.workspace`. Passing the raw cwd here
 		// once made `init:default --workspace=<other>` bootstrap whatever
 		// directory the command was typed in.
-		const root = mkdtempSync(join(tmpdir(), 'cli-entry-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
+		const root = plain.copy().root;
 		capture();
 		const code = await runHumanCli([
 			'guard',
@@ -116,9 +134,7 @@ describe('runHumanCli', () => {
 		// The guard migrates before any other command. Run before `migrate`,
 		// it applied everything, and the dry run a person asked for had
 		// nothing left to show.
-		const root = mkdtempSync(join(tmpdir(), 'cli-entry-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
+		const root = plain.copy().root;
 		const legacy = join(root, 'mcp-vertex.config.json');
 		writeFileSync(legacy, '{}\n');
 		capture();
@@ -137,9 +153,7 @@ describe('runHumanCli', () => {
 		// The stdout policy (a00087): `--json` always emits, even for a
 		// command that printed its own human recap and asked to suppress
 		// the default print.
-		const root = mkdtempSync(join(tmpdir(), 'cli-entry-json-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
+		const root = plain.copy().root;
 		capture();
 		await runHumanCli(['guard', 'status', `--workspace=${root}`, '--json']);
 		const parse = (): void => {
@@ -176,13 +190,7 @@ describe('runEntry — what the binary actually does', () => {
 		// where no test could reach it — and which is exactly the code
 		// x00591 exists to correct, because one of its steps was writing
 		// to somebody else's repository.
-		const root = mkdtempSync(join(tmpdir(), 'entry-serve-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
+		const root = configured.copy().root;
 		const served: unknown[][] = [];
 		const lines: string[] = [];
 
@@ -205,13 +213,7 @@ describe('runEntry — what the binary actually does', () => {
 		// that into an unhandled rejection, so what reached the person was
 		// a stack trace with the runtime's source listing wrapped around
 		// the one sentence they could act on.
-		const root = mkdtempSync(join(tmpdir(), 'entry-serve-fails-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
+		const root = configured.copy().root;
 		const lines: string[] = [];
 		const refusals: string[] = [];
 		const previousExitCode = process.exitCode;
@@ -245,13 +247,7 @@ describe('runEntry — what the binary actually does', () => {
 		// By the time `client-claude-code` shows up in the graph the branch
 		// already exists. The remedy is one variable, and somebody has to
 		// say it before the ref is written, not after.
-		const root = mkdtempSync(join(tmpdir(), 'entry-unnamed-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
+		const root = configured.copy().root;
 		const lines: string[] = [];
 		const previous = process.env.DELENDAI_AGENT_ID;
 		delete process.env.DELENDAI_AGENT_ID;
@@ -268,13 +264,7 @@ describe('runEntry — what the binary actually does', () => {
 	});
 
 	it('[<520ms] says nothing about identity when the agent is declared (x00617)', async () => {
-		const root = mkdtempSync(join(tmpdir(), 'entry-named-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
+		const root = configured.copy().root;
 		const lines: string[] = [];
 		const previous = process.env.DELENDAI_AGENT_ID;
 		process.env.DELENDAI_AGENT_ID = 'claude-opus-5';
@@ -307,9 +297,7 @@ describe('runEntry — what the binary actually does', () => {
 	it('[<51ms] does not migrate when the command is `guard`', async () => {
 		// `guard` runs inside pre-commit and pre-push, with git holding
 		// its locks. A migration there writes to the workspace mid-commit.
-		const root = mkdtempSync(join(tmpdir(), 'entry-guard-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q'], { cwd: root });
+		const root = plain.copy().root;
 		writeFileSync(join(root, 'mcp-vertex.config.json'), '{}');
 		capture();
 		await runEntry(['guard', 'status', `--workspace=${root}`], root);
@@ -324,29 +312,7 @@ describe('runEntry reports a workflow the project is not following (x00598)', ()
 		// `bun run work:doctor` by somebody who already knew to run it.
 		// Nobody ran it, which is why the last dozen breakages were found
 		// by a person noticing a git graph.
-		const root = mkdtempSync(join(tmpdir(), 'entry-doctor-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
-		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
-		execFileSync('git', ['add', '-A'], { cwd: root });
-		execFileSync(
-			'git',
-			[
-				'-c',
-				'user.email=t@t',
-				'-c',
-				'user.name=t',
-				'commit',
-				'-q',
-				'-m',
-				'base',
-			],
-			{ cwd: root },
-		);
+		const root = configured.copy().root;
 		// A modification the shared checkout must not be carrying.
 		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
 
@@ -370,28 +336,7 @@ describe('runEntry reports a workflow the project is not following (x00598)', ()
 		// A server that recites its own health on every start is a server
 		// whose output gets ignored. Every invariant that holds is silent;
 		// only the broken one is named.
-		const root = mkdtempSync(join(tmpdir(), 'entry-doctor-ok-'));
-		roots.push(root);
-		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
-		writeFileSync(
-			join(root, 'delendai.config.json'),
-			'{ "development": { "profile": "shared-checkout-merge" } }',
-		);
-		execFileSync('git', ['add', '-A'], { cwd: root });
-		execFileSync(
-			'git',
-			[
-				'-c',
-				'user.email=t@t',
-				'-c',
-				'user.name=t',
-				'commit',
-				'-q',
-				'-m',
-				'base',
-			],
-			{ cwd: root },
-		);
+		const root = configured.copy().root;
 
 		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
 		const lines: string[] = [];
