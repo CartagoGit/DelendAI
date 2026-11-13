@@ -41,6 +41,7 @@ import {
 } from '../lib/declared-branches';
 import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
 import {
+	changedSince as changedWithDeletionsSince,
 	explainJobs,
 	type IPlanInput,
 	jobMustRun,
@@ -50,6 +51,12 @@ import {
 import { touchesIntegrationMachinery } from '../forge/land-rehearsal';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
+import { chooseSelectionBase } from './proved-ancestors';
+import {
+	proofGitReader,
+	readProofs,
+	recordPassedProof,
+} from './proved-ancestors.store';
 
 const arg = (name: string): string | undefined =>
 	process.argv
@@ -270,11 +277,20 @@ const runTogether = async (
  * the typecheck and the static checks together, then those that must run
  * alone.
  */
-const runChecks = async (base: string): Promise<boolean> => {
+const runChecks = async (
+	base: string,
+	selectionBase: string = base,
+): Promise<boolean> => {
 	// Deletions included, as plan-scope reads them: a deleted file can break
 	// what a family reads, and it widens the per-file lints to the repository.
 	const plan = planInputSince(base);
 	const { changed } = plan;
+	// The lints that judge files one by one judge what changed since the
+	// selection base; which checks run, and the whole-repo ones, keep `base`.
+	const lintChanged =
+		selectionBase === base
+			? changed
+			: changedWithDeletionsSince(selectionBase);
 	for (const line of familyPlanOf(plan)) console.log(line);
 	// What the forge would run for this change: a check it skips proves
 	// nothing here either.
@@ -298,14 +314,14 @@ const runChecks = async (base: string): Promise<boolean> => {
 				.map((check) => [check.job, check.script] as const),
 		],
 		Number(process.env.PROVE_PARALLEL) || availableParallelism(),
-		changed,
+		lintChanged,
 	);
 	const alone = await runTogether(
 		checks
 			.filter((check) => RUN_ALONE.has(check.job))
 			.map((check) => [check.job, check.script] as const),
 		1,
-		changed,
+		lintChanged,
 	);
 	return first && alone;
 };
@@ -484,9 +500,18 @@ const main = async (): Promise<number> => {
 	rmSync('build', { recursive: true, force: true });
 	if (process.argv.includes('--fast')) {
 		const root = process.cwd();
-		const changed = changedSince(root, base);
+		// A proof that passed narrows what the next one selects by; the
+		// whole-repo steps (early steps, typecheck) keep the merge base.
+		const choice = chooseSelectionBase(
+			base,
+			readProofs(root),
+			proofGitReader(root),
+		);
+		console.log(`prove: selecting by ${choice.message}`);
+		const selectionBase = choice.base;
+		const changed = changedSince(root, selectionBase);
 		let early = true;
-		for (const [label, command] of earlySteps(changed)) {
+		for (const [label, command] of earlySteps(changedSince(root, base))) {
 			early = step(label, command) && early;
 		}
 		if (!early) {
@@ -497,19 +522,20 @@ const main = async (): Promise<number> => {
 			);
 			return 1;
 		}
-		let ok = await runChecks(base);
+		let ok = await runChecks(base, selectionBase);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
 		for (const [label, command] of fastSteps(
 			changed,
-			nearSpecsSince(root, base),
-			base,
+			nearSpecsSince(root, selectionBase),
+			selectionBase,
 		)) {
 			ok = step(label, command) && ok;
 		}
 		saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 		printCauses();
+		if (ok) recordPassedProof(root, base, 'fast');
 		console.error(
 			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 		);
@@ -541,6 +567,7 @@ const main = async (): Promise<number> => {
 	}
 	saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
 	printCauses();
+	if (ok) recordPassedProof(process.cwd(), base, 'full');
 	console.log(
 		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
 	);
