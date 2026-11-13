@@ -4,7 +4,7 @@ import z from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
 import { buildAutoRecordRegistration } from './lib/tools/auto-record.tool';
-import { resolveTaskClassTier } from './lib/routing/task-class-tier.service';
+import { tierResolverFor } from './lib/routing/task-class-tier.service';
 import { buildAutoRunRegistration } from './lib/tools/auto-run.tool';
 import { buildAutoStatusRegistration } from './lib/tools/auto-status.tool';
 import { buildAutoEvaluateRegistration } from './lib/tools/auto-evaluate.tool';
@@ -112,11 +112,10 @@ export default definePlugin({
 					rosterStore,
 					workspaceRoot: ctx.workspace.root,
 					...(taskPins !== undefined ? { taskPins } : {}),
-					tierFor: (taskClass) =>
-						resolveTaskClassTier(taskClass, {
-							policy: taskClassTiers,
-							ownerAuthorized: ownerAuthorizedTopTier,
-						}),
+					tierFor: tierResolverFor({
+						policy: taskClassTiers,
+						ownerAuthorized: ownerAuthorizedTopTier,
+					}),
 				}),
 			],
 			knowledge: [

@@ -51,6 +51,15 @@ export const resolveTaskClassTier = (
 	return { ok: true, tier };
 };
 
+/** A resolver bound to one configured policy and owner authorization. */
+export const tierResolverFor =
+	(options: {
+		readonly policy?: TTierPolicy | undefined;
+		readonly ownerAuthorized?: boolean | undefined;
+	}) =>
+	(taskClass: string): TTierDecision | undefined =>
+		resolveTaskClassTier(taskClass, options);
+
 /**
  * The mismatch between the model requested and the one actually used, or
  * undefined when they agree or either side is unknown (a host that exposes

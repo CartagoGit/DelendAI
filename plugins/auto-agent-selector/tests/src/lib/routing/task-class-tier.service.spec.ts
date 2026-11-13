@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	modelMismatch,
 	resolveTaskClassTier,
+	tierResolverFor,
 } from '../../../../src/lib/routing/task-class-tier.service';
 
 describe('resolveTaskClassTier', () => {
@@ -47,5 +48,16 @@ describe('modelMismatch', () => {
 		expect(modelMismatch(undefined, 'a')).toBeUndefined();
 		expect(modelMismatch(['a'], undefined)).toBeUndefined();
 		expect(modelMismatch([], 'a')).toBeUndefined();
+	});
+});
+
+describe('tierResolverFor', () => {
+	it('[<20ms] binds the policy and the owner authorization', () => {
+		const resolve = tierResolverFor({
+			policy: { architecture: 5 },
+			ownerAuthorized: true,
+		});
+		expect(resolve('architecture')).toEqual({ ok: true, tier: 5 });
+		expect(resolve('unknown')).toBeUndefined();
 	});
 });
