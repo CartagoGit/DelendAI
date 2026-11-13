@@ -10,7 +10,12 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { publicationPresence } from '@delendai/core/lib/work-units/orphaned-work.service';
+import {
+	publicationPresence,
+	readOrphanRescues,
+	reportedOrphans,
+	writeOrphanRescues,
+} from '@delendai/core/lib/work-units/orphaned-work.service';
 import { readOrphans } from '@delendai/core/lib/work-units/publication-standings.service';
 
 describe('publicationPresence on a just-delivered publication (x01051)', () => {
@@ -74,5 +79,35 @@ describe('publicationPresence on a just-delivered publication (x01051)', () => {
 		});
 		expect(read.orphans).toEqual([]);
 		expect(read.presence.get(publication)?.orphaned).toBe(false);
+	});
+});
+
+describe('the rescue count on disk', () => {
+	const dirs: string[] = [];
+	afterEach(() => {
+		for (const dir of dirs.splice(0))
+			rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('[<200ms] starts empty, keeps what it was given and tells the owner of the reported', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'orphan-rescues-'));
+		dirs.push(root);
+		expect(await readOrphanRescues(root)).toEqual({ rescues: {} });
+		await writeOrphanRescues(root, {
+			rescues: {
+				a: { attempts: 1 },
+				b: { attempts: 3, reportedAt: '2026-11-13T00:00:00.000Z' },
+			},
+		});
+		expect((await readOrphanRescues(root)).rescues.a).toEqual({
+			attempts: 1,
+		});
+		expect(await reportedOrphans(root)).toEqual([
+			{
+				headRef: 'b',
+				attempts: 3,
+				reportedAt: '2026-11-13T00:00:00.000Z',
+			},
+		]);
 	});
 });
