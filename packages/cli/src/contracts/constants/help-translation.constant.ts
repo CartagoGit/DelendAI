@@ -1,5 +1,6 @@
 import type { IHelpTranslation } from '../interfaces/help-translation.interface';
 
+import { INTEGRATION_COMMAND } from './integration-command.constant';
 import { REVIEW_COMMAND } from './review-command.constant';
 export type { IHelpTranslation };
 
@@ -222,6 +223,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Make each branch that follows another take in what it has moved on, by its own route.',
 	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
 	review: REVIEW_COMMAND.summary,
+	integration: INTEGRATION_COMMAND.summary,
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

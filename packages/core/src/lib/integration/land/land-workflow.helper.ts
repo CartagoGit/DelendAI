@@ -166,7 +166,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'# Concurrency 1; a waiting pass is kept, since the next reads what the',
 		'# cancelled one would have.',
 		'concurrency:',
-		'    group: land',
+		`    group: ${input.concurrencyGroup ?? LAND_WORKFLOW_NAME}`,
 		'    cancel-in-progress: false',
 		'',
 		'permissions:',
