@@ -2,10 +2,14 @@
 id: x01069
 title: "Advisories are judged where they can be acted on, and the proof no longer races on the vitest cache"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-13
+last-transition-id: 976db6ae-632f-481c-861e-b4c135d9aa74
+last-correlation-id: 976db6ae-632f-481c-861e-b4c135d9aa74
+last-transition-from: ready
+last-transition-at: 2026-11-13T21:38:38.313Z
 ---
 
 # x01069 — Advisories are judged where they can be acted on, and the proof no longer races on the vitest cache
