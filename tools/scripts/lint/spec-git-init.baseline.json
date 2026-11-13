@@ -35,7 +35,6 @@
 	"packages/core/tests/src/lib/ref-lifecycle/branch-delivery.spec.ts": 1,
 	"packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts": 1,
 	"packages/core/tests/src/lib/shared/bind-write-root.spec.ts": 2,
-	"packages/core/tests/src/lib/shared/compute-slot.service.spec.ts": 1,
 	"packages/core/tests/src/lib/shared/git-command.helper.spec.ts": 1,
 	"packages/core/tests/src/lib/shared/git-read.helper.spec.ts": 1,
 	"packages/core/tests/src/lib/shared/git-runner-failure-reason.spec.ts": 1,

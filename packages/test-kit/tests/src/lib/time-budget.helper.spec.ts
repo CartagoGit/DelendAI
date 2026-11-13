@@ -102,4 +102,76 @@ describe('time budget', () => {
 			}),
 		).toContain('no time budget');
 	});
+
+	describe('the tiers', () => {
+		const unit = (tookMs: number, name = '[<5ms] x') =>
+			budgetFailure({ name, tookMs, migrating: false, tier: 'unit' });
+		const e2e = (tookMs: number, loadFactor: number, name = '[<100ms] x') =>
+			budgetFailure({
+				name,
+				tookMs,
+				migrating: false,
+				tier: 'e2e',
+				loadFactor,
+			});
+
+		it('[<20ms] holds a unit test to 200 ms of real time and ignores the number in its name', () => {
+			expect(unit(199)).toBeUndefined();
+			expect(unit(150, 'no budget at all')).toBeUndefined();
+			expect(unit(201)).toContain('unit tier');
+			expect(unit(201)).toContain('200 ms limit');
+			expect(unit(201)).toContain('load factor 1.00');
+		});
+
+		it('[<20ms] stretches an e2e budget by the load factor and names tier, limit, factor and time', () => {
+			expect(e2e(150, 1.5)).toBeUndefined();
+			const failure = e2e(151, 1.5);
+			expect(failure).toContain('e2e tier');
+			expect(failure).toContain('100 ms x load factor 1.50 = 150.0 ms');
+			expect(failure).toContain('took 151.0 ms');
+		});
+
+		it('[<20ms] still asks an e2e test for its declaration', () => {
+			expect(e2e(1, 1, 'no budget')).toContain('no time budget');
+			expect(e2e(1, 1, '[<ms] x')).toContain('malformed time budget');
+		});
+
+		it('[<20ms] judges a migrating file, and a file with no known tier, by its name as before', () => {
+			expect(
+				budgetFailure({
+					name: '[<5ms] x',
+					tookMs: 100,
+					migrating: true,
+					tier: 'unit',
+				}),
+			).toContain('declared budget of 5 ms');
+			expect(
+				budgetFailure({
+					name: '[<5ms] x',
+					tookMs: 100,
+					migrating: false,
+				}),
+			).toContain('declared budget of 5 ms');
+		});
+
+		it('[<20ms] only reports a unit overrun when told to', () => {
+			expect(
+				budgetFailure({
+					name: 'x',
+					tookMs: 500,
+					migrating: false,
+					tier: 'unit',
+					softOverrun: true,
+				}),
+			).toBeUndefined();
+			expect(
+				budgetOverrun({
+					name: 'x',
+					tookMs: 500,
+					migrating: false,
+					tier: 'unit',
+				}),
+			).toContain('unit tier');
+		});
+	});
 });

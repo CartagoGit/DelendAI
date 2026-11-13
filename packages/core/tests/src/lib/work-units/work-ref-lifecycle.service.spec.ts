@@ -204,7 +204,7 @@ describe('reading a clone', () => {
 		expect(silent).toBeLessThan(ABANDONED_UNIT_SILENCE_SECONDS);
 	});
 
-	it('[<401ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
+	it('[<200ms] lets a landed ref of an open proposal go once its unit is abandoned', () => {
 		// a00095 kept every finished reviewer's ref for days: the audit
 		// stayed in progress while others were still at work.
 		const year2000 = 946_684_800;
