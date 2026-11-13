@@ -230,15 +230,23 @@ export const createGithubRehearsalForge = (input: {
 			return text;
 		},
 		history: async (branch, until) => {
+			// Newest first, and the walk ends at `until`: a branch cut from a long
+			// history is never read past the commit the run made it from.
 			const shas: string[] = [];
-			const commits = await pages<{ sha: string }>(
-				`commits?sha=${encodeURIComponent(branch)}`,
-			);
-			for (const entry of commits) {
-				shas.push(entry.sha);
-				if (entry.sha === until) break;
+			for (let page = 1; page <= REHEARSAL_PAGE_LIMIT; page += 1) {
+				const got = await json<{ sha: string }[]>(
+					'GET',
+					`commits?sha=${encodeURIComponent(branch)}&per_page=${String(REHEARSAL_PAGE_SIZE)}&page=${String(page)}`,
+				);
+				for (const entry of got) {
+					shas.push(entry.sha);
+					if (entry.sha === until) return shas;
+				}
+				if (got.length < REHEARSAL_PAGE_SIZE) return shas;
 			}
-			return shas;
+			throw new Error(
+				`${until} is not in the last ${String(REHEARSAL_PAGE_LIMIT * REHEARSAL_PAGE_SIZE)} commits of ${branch}`,
+			);
 		},
 		openPull: async (pull) =>
 			(

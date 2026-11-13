@@ -265,4 +265,40 @@ describe('the GitHub rehearsal forge', () => {
 			'convertPullRequestToDraft',
 		);
 	});
+
+	it('[<100ms] stops reading history at the commit it was asked down to, however long the rest is', async () => {
+		const calls: string[] = [];
+		const page = JSON.stringify(
+			Array.from({ length: 100 }, (_, i) => ({
+				sha: i === 3 ? 'stop' : `c${String(i)}`,
+			})),
+		);
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async (args) => {
+				calls.push(args.join(' '));
+				return { exitCode: 0, stdout: page, stderr: '' };
+			},
+		});
+		expect(await forge.history('b', 'stop')).toEqual([
+			'c0',
+			'c1',
+			'c2',
+			'stop',
+		]);
+		expect(calls).toHaveLength(1);
+	});
+
+	it('[<100ms] refuses a history that never reaches the commit', async () => {
+		const full = JSON.stringify(
+			Array.from({ length: 100 }, (_, i) => ({ sha: `c${String(i)}` })),
+		);
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async () => ({ exitCode: 0, stdout: full, stderr: '' }),
+		});
+		await expect(forge.history('b', 'gone')).rejects.toThrow(
+			'is not in the last',
+		);
+	});
 });
