@@ -50,6 +50,9 @@
  * document. The migrator does NOT touch any keys it does not
  * own — Claude Code's `oauthAccount`, `statsigGgs`, etc. pass
  * through untouched because they are not under `projects`.
+ *
+ * The user-level server entries an older delendai left under the old name are
+ * migrated by `user-host-config.migrator.ts`, beside this file.
  */
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
