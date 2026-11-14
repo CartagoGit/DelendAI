@@ -7,6 +7,8 @@
 // effect-boundary-authorized: the integrator's git adapter; the one place its pushes leave the clone
 import { execFileSync } from 'node:child_process';
 
+import { gitFailureText, landGitArgs } from './land-git-process.helper';
+
 /**
  * The environment that makes git authenticate as `token`: the checkout's
  * own credential is reset and replaced. It is an environment, never an
@@ -45,14 +47,14 @@ export const pushAsIdentity = (input: {
 	try {
 		execFileSync(
 			'git',
-			[
+			landGitArgs([
 				'push',
 				'-q',
 				...(input.force === true ? ['--force'] : []),
 				'--',
 				input.remote,
 				input.refspec,
-			],
+			]),
 			{
 				cwd: input.cwd,
 				encoding: 'utf8',
@@ -62,11 +64,6 @@ export const pushAsIdentity = (input: {
 		);
 		return undefined;
 	} catch (error) {
-		const stderr = (error as { stderr?: unknown }).stderr;
-		const text =
-			typeof stderr === 'string' || Buffer.isBuffer(stderr)
-				? String(stderr).trim()
-				: '';
-		return text.length > 0 ? text : String(error);
+		return gitFailureText(error);
 	}
 };

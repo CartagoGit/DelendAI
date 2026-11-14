@@ -183,7 +183,13 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		title: 'A head the workflow token pushed is built by the forge',
 		reproduces: 'F1',
 		pulls: [pullIn('a', 's1')],
-		steps: [open('a'), ready('a'), { kind: 'token-push', key: 'a' }],
+		steps: [
+			open('a'),
+			ready('a'),
+			{ kind: 'token-push', key: 'a' },
+			// The integrator reopens the head the token wrote, and it lands.
+			merged('a'),
+		],
 		expect: [
 			{ kind: 'heads-built', key: 'a' },
 			{ kind: 'no-manual-steps' },
@@ -214,7 +220,12 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		title: 'A pull request a workflow opens with the workflow token is built',
 		reproduces: 'F1b',
 		pulls: [pullIn('a', 's1')],
-		steps: [open('a'), ready('a'), { kind: 'token-open', key: 'a' }],
+		steps: [
+			open('a'),
+			ready('a'),
+			{ kind: 'token-open', key: 'a' },
+			merged('a:token-open'),
+		],
 		expect: [
 			{ kind: 'heads-built', key: 'a' },
 			{ kind: 'no-manual-steps' },

@@ -27,3 +27,9 @@ export const BATCH_COMMIT_IDENTITY = [
 	'-c',
 	'core.hooksPath=/dev/null',
 ] as const;
+
+/** `-c core.hooksPath` pointing at no directory: git finds no hook of any hook manager. */
+export const LAND_NO_HOOKS_ARGS: readonly string[] = [
+	'-c',
+	'core.hooksPath=/dev/null',
+];
