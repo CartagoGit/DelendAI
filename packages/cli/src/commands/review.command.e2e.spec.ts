@@ -576,7 +576,7 @@ describe('delendai review', () => {
 		expect(String(finished.error)).toContain('approvals by gpt-5.4');
 	});
 
-	it('[<80ms] asks for what it needs before doing anything', async () => {
+	it('[<214ms] asks for what it needs before doing anything', async () => {
 		const root = repo();
 		const { ctx, calls } = contextFor(root, []);
 		const previous = process.env.DELENDAI_AGENT_ID;

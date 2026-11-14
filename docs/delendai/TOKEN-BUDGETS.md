@@ -94,8 +94,8 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | audit | audit | adaptive | managed | dynamic-client | 15 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,052 | n/a | within hard | n/a | none |
 | docs-web | docs-web | native | managed | tokens-gate | 8 | 61 | 78,410 | 19603 | 63,678 | 5,341 | 18,102 | 45,576 | 8,202 | 2,252 | n/a | within hard | within hard | none |
 | docs-web | docs-web | adaptive | managed | dynamic-client | 8 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,253 | n/a | within hard | n/a | none |
-| everything | everything | native | managed | tokens-gate | 58 | 236 | 296,645 | 74162 | 237,381 | 21,727 | 69,667 | 167,714 | 36,062 | 8,012 | n/a | within hard | within hard | none |
-| everything | everything | adaptive | managed | dynamic-client | 58 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 2,138 | n/a | within hard | n/a | none |
+| everything | everything | native | managed | tokens-gate | 59 | 236 | 296,645 | 74162 | 237,381 | 21,727 | 69,667 | 167,714 | 36,062 | 8,026 | n/a | within hard | within hard | none |
+| everything | everything | adaptive | managed | dynamic-client | 59 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 2,152 | n/a | within hard | n/a | none |
 | dogfood | dogfood | native | managed | tokens-gate | 38 | 237 | 325,242 | 81311 | 264,355 | 22,738 | 74,922 | 189,433 | 79,992 | 7,296 | 151 | over warning (320,000B) | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,336 | 1584 | 4,350 | 902 | 997 | 3,353 | 0 | 1,835 | n/a | within hard | n/a | none |
 

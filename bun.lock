@@ -143,6 +143,7 @@
         "@delendai/forge": "workspace:*",
         "@delendai/git": "workspace:*",
         "@delendai/i18n": "workspace:*",
+        "@delendai/integration": "workspace:*",
         "@delendai/logs": "workspace:*",
         "@delendai/memory": "workspace:*",
         "@delendai/notification": "workspace:*",
@@ -887,6 +888,22 @@
         "@delendai/core": "^0.3.0",
       },
     },
+    "plugins/integration": {
+      "name": "@delendai/integration",
+      "version": "0.3.0",
+      "dependencies": {
+        "zod": "^4.6.6",
+      },
+      "devDependencies": {
+        "@delendai/core": "workspace:*",
+        "@delendai/test-kit": "workspace:*",
+        "typescript": "7.0.2",
+        "vitest": "5.0.3",
+      },
+      "peerDependencies": {
+        "@delendai/core": "^0.3.0",
+      },
+    },
     "plugins/issues": {
       "name": "@delendai/issues",
       "version": "0.3.0",
@@ -1482,6 +1499,7 @@
         "@delendai/git": "workspace:*",
         "@delendai/i18n": "workspace:*",
         "@delendai/impact-analysis": "workspace:*",
+        "@delendai/integration": "workspace:*",
         "@delendai/link-check": "workspace:*",
         "@delendai/logs": "workspace:*",
         "@delendai/memory": "workspace:*",
@@ -1777,6 +1795,8 @@
     "@delendai/i18n": ["@delendai/i18n@workspace:plugins/i18n"],
 
     "@delendai/impact-analysis": ["@delendai/impact-analysis@workspace:plugins/impact-analysis"],
+
+    "@delendai/integration": ["@delendai/integration@workspace:plugins/integration"],
 
     "@delendai/issues": ["@delendai/issues@workspace:plugins/issues"],
 
