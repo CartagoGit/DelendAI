@@ -1,0 +1,69 @@
+---
+import { useTranslations, type Lang } from '#I18N/ui';
+import capabilities from '#MANIFESTS/capabilities.json';
+
+interface Props {
+	lang: Lang;
+	/** Page title. Rendered as the section's <h1> (l122 S3). */
+	heading?: string;
+}
+const { lang, heading: headingProp } = Astro.props;
+const t = useTranslations(lang);
+const heading = headingProp ?? t.bench.title;
+
+const BASELINE_TOK = 4000;
+
+type IBench = { id: string; label: string; bytes: number; tokens: number };
+const benches = ((capabilities as { benchmarks?: IBench[] }).benchmarks ??
+	[]) as IBench[];
+const benchById = Object.fromEntries(benches.map((b) => [b.id, b]));
+const compactTok = benchById.overview_compact?.tokens ?? 0;
+const autoTok = benchById.auto_work?.tokens ?? 0;
+const benchBars = [
+	{
+		name: 'overview (full)',
+		tokens: benchById.overview_full?.tokens ?? 0,
+		kind: '',
+	},
+	{ name: 'overview (compact)', tokens: compactTok, kind: '' },
+	{ name: 'auto_work', tokens: autoTok, kind: '' },
+	{
+		name: 'compact + auto_work',
+		tokens: compactTok + autoTok,
+		kind: 'is-hl',
+	},
+	{ name: t.bench.baseline, tokens: BASELINE_TOK, kind: 'is-base' },
+].filter((b) => b.tokens > 0);
+const benchMax = Math.max(1, ...benchBars.map((b) => b.tokens));
+---
+
+<section id="benchmarks" class="section">
+	<div class="container">
+		<h1>{heading}</h1>
+		<p class="lead">{t.bench.lead}</p>
+		<div class="grid">
+			<div class="feature"><h3>&lt;300 · {t.bench.b1.t}</h3><p>{t.bench.b1.b}</p></div>
+			<div class="feature"><h3>0 · {t.bench.b2.t}</h3><p>{t.bench.b2.b}</p></div>
+			<div class="feature"><h3>✓ {t.bench.b3.t}</h3><p>{t.bench.b3.b}</p></div>
+		</div>
+		{
+			benchBars.length > 0 && (
+				<div class="bench">
+					<h3 class="bench__title">{t.bench.live.title}</h3>
+					<div class="bench__chart">
+						{benchBars.map((b) => (
+							<div class={`bar ${b.kind}`}>
+								<span class="bar__label">{b.name}</span>
+								<span class="bar__track">
+									<span class="bar__fill" style={`width:${Math.max(2, (b.tokens / benchMax) * 100)}%`} />
+								</span>
+								<span class="bar__val">{b.tokens.toLocaleString()} tok</span>
+							</div>
+						))}
+					</div>
+					<p class="bench__note">{t.bench.live.note}</p>
+				</div>
+			)
+		}
+	</div>
+</section>

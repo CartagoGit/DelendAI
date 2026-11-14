@@ -1,0 +1,78 @@
+---
+id: x00978
+title: "The VS Code extension works per folder and keeps edits, choices and polling consistent"
+kind: fix
+status: ready
+type: proposal
+track: a00095-consistency
+date: 2026-10-24
+last-transition-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
+last-correlation-id: 64a98b59-ec69-44b9-8d35-a31e468ee438
+last-transition-from: review
+last-transition-at: 2026-11-04T22:12:13.800Z
+---
+
+# x00978 — The VS Code extension works per folder and keeps edits, choices and polling consistent
+
+## goal
+
+Commands act on the workspace folder they were invoked from, run-validation keeps the command's cwd, saves and discards never lose newer edits, a cancelled dialog changes nothing, routing uses the current tool name, the dashboard submits current preferences and its first realtime click starts, and a disposed view stops polling.
+
+## why
+
+Joint audit a00095 and gpt-6.1-sol. D24: the extension is biased to workspaceFolders[0]. D25: run validation re-runs the failed command in a private terminal without cwd. UI-01: the dashboard serialises functions with missing dependencies. UI-CFG01: a save acknowledgement clears edits made after the request. UI-CFG02: discard restores the opening snapshot after a successful save. UI-ACTION01: cancelling the provider reason dialog still changes the provider state. UI-ROUTE01: VS Code routes non-direct calls through the retired vertex tool name. UI-PREF01: theme and language controls submit stale preferences. UI-LOG01: the first Start realtime click sends stop. UI-LOG02: disposing a dashboard view leaves its log polling running.
+
+## non-goals
+
+- Escaping and CSP (the escaping proposal).
+
+## slices
+
+- global_gate: type
+
+### S1 — Folder and cwd
+- **Status**: pending
+- **Files**: `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/run-validation.ts`, `extensions/vscode/src/commands/resolve-workspace-folder.ts`, `extensions/vscode/src/commands/types.ts`, `extensions/vscode/src/test/resolve-workspace-folder.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Commands resolve the folder of the active editor or the picked folder (D24)."
+  - "The re-run passes the dry-run command's cwd (D25)."
+- shipped-in: `3cef0ac90073`
+- review-state: changes_requested
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale due to drift after shipped-in commit; rebase and re-validate on current develop before approval.
+
+### S2 — Edits and choices
+- **Status**: pending
+- **Files**: `extensions/vscode/src/commands/open-configuration-center.ts`, `packages/ui-extension/src/configuration-center/configuration-center-script.ts`, `extensions/vscode/src/commands/provider-actions.ts`, `extensions/vscode/src/test/open-plugin-config.spec.ts`, `extensions/vscode/src/test/provider-actions.spec.ts`, `packages/ui-extension/tests/dashboard/configuration-center-script.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "An acknowledgement clears only the edits it saved (UI-CFG01); discard restores the last saved state (UI-CFG02); cancel changes nothing (UI-ACTION01)."
+- shipped-in: `8fe0646db56a`
+- review-state: changes_requested
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+
+### S3 — Routing, dashboard and polling
+- **Status**: pending
+- **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `packages/ui-extension/src/dashboard/render-dashboard.ts`, `extensions/vscode/src/test/dashboard-detail-broker.spec.ts`, `packages/ui-extension/tests/dashboard/render-dashboard-escaping.spec.ts`
+- **Gate**: type
+- **Notes**: UI-ROUTE01 was already fixed: no source under extensions/vscode or packages/client names the retired vertex tool; non-direct calls go through the client's resolve_capability broker path (mcp-stdio-client.ts), which compact_router shares. extension.ts and logs.service.ts needed no change (the subscribe loop already stops on abort; the dispose hook now aborts it).
+- acceptance:
+  - "Calls route through delendai_compact_router (UI-ROUTE01)."
+  - "The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02)."
+- shipped-in: `99169458ee61`
+- review-state: changes_requested
+- review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+
+## acceptance
+
+- Commands resolve the folder of the active editor or the picked folder (D24).
+- The re-run passes the dry-run command's cwd (D25).
+- An acknowledgement clears only the edits it saved (UI-CFG01); discard restores the last saved state (UI-CFG02); cancel changes nothing (UI-ACTION01).
+- Calls route through delendai_compact_router (UI-ROUTE01).
+- The dashboard script is self-contained (UI-01); controls submit current values (UI-PREF01); the first click starts (UI-LOG01); dispose stops polling (UI-LOG02).

@@ -1,0 +1,160 @@
+/**
+ * review-verdict-lifecycle.ts — what a review verdict does to the
+ * proposal it ends (x00643).
+ *
+ * The last approval used to rewrite the frontmatter to `done` and leave
+ * the file in `review/`, then log an "auto-transition repair" for
+ * somebody else to finish. The close now runs the one
+ * transition every other caller uses, so the folder, the frontmatter
+ * and the index move together and under the same gates. A change
+ * request moves nothing: the proposal stays in review/, its slices'
+ * review-state says changes_requested, and the next step is its
+ * implementer's.
+ *
+ * A refused close does not undo the approval: the verdict is a fact
+ * about the code, the close is a separate step, and its refusal is
+ * returned for the reviewer to read.
+ */
+import type { IReviewVerdictLifecycle } from '../contracts/interfaces/review-verdict-lifecycle.interface';
+
+import { readTextOrNull } from '../proposals/index-reader';
+import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { isSentBack, sentBackNextAction } from '../swarm/proposal-stage';
+import {
+	runProposalTransition,
+	type IProposalTransitionToolOptions,
+} from './proposal-transition.tool';
+
+export type { IReviewVerdictLifecycle } from '../contracts/interfaces/review-verdict-lifecycle.interface';
+
+/** Whether a transition's tool result is a refusal. */
+const refused = (result: object): boolean =>
+	'isError' in result && result.isError === true;
+
+/** The refusal a transition answered with, as one readable line. */
+const refusalOf = (result: {
+	readonly structuredContent?: unknown;
+	readonly content?: readonly { readonly text?: string }[];
+}): string => {
+	// Two envelope shapes are in use: `{ error: { reason } }` and
+	// `{ error: "<code>", reason }`.
+	const structured = result.structuredContent as
+		| {
+				readonly error?: { readonly reason?: unknown } | string;
+				readonly reason?: unknown;
+		  }
+		| undefined;
+	const nested =
+		typeof structured?.error === 'object'
+			? structured.error.reason
+			: undefined;
+	const reason = nested ?? structured?.reason;
+	if (typeof reason === 'string' && reason.length > 0) return reason;
+	return result.content?.[0]?.text ?? 'the transition was refused';
+};
+
+/** The gates a verdict's transition must apply as the project set them. */
+type IVerdictGatePolicy = Pick<
+	IProposalTransitionToolOptions,
+	| 'peerReviewLogPathAbs'
+	| 'requirePeerReview'
+	| 'reviewIndependence'
+	| 'requireValidateEvidence'
+	| 'folderPolicy'
+	| 'validateEvidenceDeps'
+>;
+
+/**
+ * The project's gate settings, carried whole into the transition a
+ * verdict runs. Each was once copied by hand at the call site, and the
+ * one left out (what makes a reviewer independent) silently fell back
+ * to the transition's default.
+ */
+export const verdictGatePolicy = (
+	policy: {
+		readonly [K in keyof IVerdictGatePolicy]-?:
+			| IVerdictGatePolicy[K]
+			| undefined;
+	},
+): IVerdictGatePolicy =>
+	Object.fromEntries(
+		Object.entries(policy).filter(([, value]) => value !== undefined),
+	) as IVerdictGatePolicy;
+
+export const moveProposalAfterVerdict = async (input: {
+	readonly close: boolean;
+	/** The submission left no slice to do: the proposal goes to review. */
+	readonly handOver?: boolean;
+	readonly proposalId: string;
+	readonly sliceId: string;
+	readonly agent: string;
+	readonly options: IProposalTransitionToolOptions;
+}): Promise<IReviewVerdictLifecycle> => {
+	if (input.close) {
+		const result = await runProposalTransition(
+			{
+				id: input.proposalId,
+				to: 'done',
+				reason: `independent review approved the last open slice (${input.sliceId})`,
+				agent: input.agent,
+			},
+			input.options,
+		);
+		return refused(result)
+			? { proposalClosed: false, proposalCloseBlocker: refusalOf(result) }
+			: { proposalClosed: true };
+	}
+	if (input.handOver === true) {
+		const result = await runProposalTransition(
+			{
+				id: input.proposalId,
+				to: 'review',
+				reason: `every slice is handed in (${input.sliceId} was the last)`,
+				agent: input.agent,
+			},
+			input.options,
+		);
+		return refused(result)
+			? {
+					proposalHandedOver: false,
+					proposalCloseBlocker: refusalOf(result),
+				}
+			: { proposalHandedOver: true };
+	}
+	return {};
+};
+
+/**
+ * What follows a verdict that left the proposal in review/ sent back,
+ * read back from the document it wrote; nothing otherwise.
+ */
+export const verdictNextAction = async (
+	docPath: string,
+	proposalId: string,
+): Promise<Pick<IReviewVerdictLifecycle, 'nextAction'>> => {
+	const markdown = await readTextOrNull(docPath);
+	return markdown !== null &&
+		readFrontmatterField(markdown, 'status')?.toLowerCase() === 'review' &&
+		isSentBack(markdown)
+		? { nextAction: sentBackNextAction(proposalId) }
+		: {};
+};
+
+const HANDED_OVER = new Set(['review', 'done', 'retired']);
+
+/** Whether no slice of `markdown` is left to do: each is in review, done or retired. */
+export const everySliceHandedOver = (markdown: string): boolean => {
+	const statuses = [
+		...markdown.matchAll(/^###[^\n]*\n(?:(?!^#{2,3} )[^\n]*\n?)*/gmu),
+	]
+		.map((block) =>
+			/^[-*]\s*\*\*Status\*\*:\s*([a-z-]+)/imu
+				.exec(block[0])?.[1]
+				?.toLowerCase(),
+		)
+		.filter((status): status is string => status !== undefined);
+	return (
+		statuses.length > 0 &&
+		statuses.every((status) => HANDED_OVER.has(status))
+	);
+};

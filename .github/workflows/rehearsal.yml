@@ -1,0 +1,42 @@
+name: rehearsal
+
+# GENERATED from the integration plugin's rehearsal template
+# (renderRehearsalWorkflow); edit the template, not this file.
+on:
+    workflow_dispatch:
+    push:
+        branches: ['delendai/pr/**']
+        paths:
+            - 'plugins/integration/**'
+            - '.github/workflows/rehearsal.yml'
+
+# One rehearsal at a time: a second run would read the first one's branches.
+concurrency:
+    group: rehearsal
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+    actions: read
+
+jobs:
+    rehearsal:
+        name: rehearsal
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        steps:
+            - name: Mint the integrator identity token
+              id: identity
+              uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+              with:
+                  app-id: ${{ vars.DELENDAI_APP_ID }}
+                  private-key: ${{ secrets.DELENDAI_APP_PRIVATE_KEY }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Rehearse the pull request flow on the real forge
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun run cli -- integration rehearse --mode=fast --scenarios=all
