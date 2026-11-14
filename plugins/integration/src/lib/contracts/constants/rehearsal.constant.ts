@@ -99,3 +99,12 @@ export const rehearsalOverlapContent = (edit?: {
 			? `edited by ${edit.key}`
 			: `line ${String(index)}`,
 	).join('\n')}\n`;
+
+/** Run statuses of work still in flight: the system is not idle. */
+export const REHEARSAL_RUNNING_STATUSES: ReadonlySet<string> = new Set([
+	'queued',
+	'in_progress',
+	'waiting',
+	'pending',
+	'requested',
+]);

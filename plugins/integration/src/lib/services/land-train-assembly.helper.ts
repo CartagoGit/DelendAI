@@ -20,11 +20,12 @@ import {
 } from '../contracts/constants/integration-pass.constant';
 import type { IGitExec } from '../contracts/interfaces/integration-pass.interface';
 
+import { gitFailureText, landGitArgs } from './land-git-process.helper';
 import { identityFetchEnv, pushAsIdentity } from './land-identity-push.helper';
 
 /** Git in `cwd`, trimmed; throws when git fails. */
 export const runGit: IGitExec = (cwd, args, env) =>
-	execFileSync('git', [...args], {
+	execFileSync('git', landGitArgs(args), {
 		cwd,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
@@ -37,7 +38,7 @@ const run = (
 	env?: NodeJS.ProcessEnv,
 ): string | undefined => {
 	try {
-		return execFileSync('git', [...args], {
+		return execFileSync('git', landGitArgs(args), {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
@@ -48,25 +49,20 @@ const run = (
 	}
 };
 
-/** `undefined` when git succeeded, else its stderr (or the error text). */
+/** `undefined` when git succeeded, else what it said (stdout and stderr). */
 const failureOf = (
 	cwd: string,
 	args: readonly string[],
 ): string | undefined => {
 	try {
-		execFileSync('git', [...args], {
+		execFileSync('git', landGitArgs(args), {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
 		});
 		return undefined;
 	} catch (error) {
-		const stderr = (error as { stderr?: unknown }).stderr;
-		const text =
-			typeof stderr === 'string' || Buffer.isBuffer(stderr)
-				? String(stderr).trim()
-				: '';
-		return text.length > 0 ? text : String(error);
+		return gitFailureText(error);
 	}
 };
 
@@ -160,7 +156,7 @@ export const assembleTrain = (input: {
 	readonly scratch?: string;
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
-	/** Git's stderr when the push was declined: nothing is on the forge. */
+	/** What git said when the push was declined: nothing is on the forge. */
 	readonly pushFailure?: string;
 } => {
 	const scratch = execFileSync(

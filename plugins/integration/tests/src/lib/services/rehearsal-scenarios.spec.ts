@@ -72,8 +72,12 @@ describe('the scenario catalogue', () => {
 			const keys = new Set(scenario.pulls.map((p) => p.key));
 			for (const step of scenario.steps)
 				if ('keys' in step)
+					// A pull a workflow opened is named `<key>:token-open`.
 					for (const k of step.keys)
-						expect(keys.has(k) || step.kind === 'open').toBe(true);
+						expect(
+							keys.has(k.replace(/:token-open$/u, '')) ||
+								step.kind === 'open',
+						).toBe(true);
 		}
 	});
 
