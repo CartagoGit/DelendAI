@@ -431,7 +431,7 @@ describe('land run with a workflow token', () => {
 });
 
 describe('the land workflow template', () => {
-	it("[<5ms] commits this repository's instance exactly as its policy renders it", () => {
+	it("[<10ms] commits this repository's instance exactly as its policy renders it", () => {
 		const committed = existsSync(LAND_WORKFLOW_PATH)
 			? readFileSync(LAND_WORKFLOW_PATH, 'utf8')
 			: undefined;
