@@ -10,16 +10,21 @@
 			"visibility": "visible"
 		},
 		"branches": {
-			"integration": "develop",
+			"integration": "delendai/rehearsal/r20261114-134418/red-batch-integration",
 			"release": "main",
 			"namespacePrefix": "delendai"
 		},
 		"integration": {
-			"requiredChecks": ["delendai-validate", "CodeQL"],
-			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
+			"requiredChecks": [
+				"rehearsal-ci"
+			],
+			"releaseRequiredChecks": [
+				"delendai-validate",
+				"release-pr-gate"
+			],
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0,
-			"engine": "none",
+			"engine": "land",
 			"protocol": 1,
 			"derived": {
 				"paths": [
@@ -92,8 +97,22 @@
 		},
 		"search": {
 			"options": {
-				"roots": ["packages", "plugins", "extensions", "apps", "tools"],
-				"extensions": ["ts", "tsx", "js", "mjs", "cjs", "md", "json"],
+				"roots": [
+					"packages",
+					"plugins",
+					"extensions",
+					"apps",
+					"tools"
+				],
+				"extensions": [
+					"ts",
+					"tsx",
+					"js",
+					"mjs",
+					"cjs",
+					"md",
+					"json"
+				],
 				"ignoreDirs": [
 					"node_modules",
 					".cache",
@@ -105,7 +124,10 @@
 		},
 		"context-for-change": {
 			"options": {
-				"docsRoots": ["docs/delendai", "README.md"],
+				"docsRoots": [
+					"docs/delendai",
+					"README.md"
+				],
 				"maxBytes": 3000
 			}
 		},
@@ -139,9 +161,19 @@
 		},
 		"docs": {
 			"options": {
-				"roots": ["docs/delendai", "README.md"],
-				"extensions": ["md", "mdx"],
-				"ignoreDirs": ["node_modules", ".cache", "dist"]
+				"roots": [
+					"docs/delendai",
+					"README.md"
+				],
+				"extensions": [
+					"md",
+					"mdx"
+				],
+				"ignoreDirs": [
+					"node_modules",
+					".cache",
+					"dist"
+				]
 			}
 		},
 		"rules": {
@@ -150,7 +182,9 @@
 		"quality": {
 			"options": {
 				"scopes": {
-					"all": ["bun run build"]
+					"all": [
+						"bun run build"
+					]
 				}
 			}
 		},
@@ -271,7 +305,13 @@
 		},
 		"conventions": {
 			"options": {
-				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
+				"roots": [
+					"packages",
+					"plugins",
+					"extensions",
+					"apps",
+					"tools"
+				]
 			}
 		},
 		"security": {
@@ -357,7 +397,9 @@
 				"file": "docs/delendai/ROADMAP.md",
 				"versionFile": "packages/core/package.json",
 				"promotion": {
-					"blockingGates": ["proposal-done"]
+					"blockingGates": [
+						"proposal-done"
+					]
 				}
 			}
 		},
@@ -373,7 +415,10 @@
 				"push": {
 					"enabled": true,
 					"force": "with-lease",
-					"protectedBranches": ["main", "master"],
+					"protectedBranches": [
+						"main",
+						"master"
+					],
 					"remote": "origin"
 				},
 				"cadence": {
