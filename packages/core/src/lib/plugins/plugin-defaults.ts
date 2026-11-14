@@ -104,6 +104,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 	perf: {},
 	'tech-debt': {},
 	'link-check': {},
+	integration: {},
 	issues: {
 		// The issues plugin owns DEFAULT_SCAFFOLD_DIR.
 	},

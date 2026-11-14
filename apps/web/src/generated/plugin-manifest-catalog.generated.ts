@@ -868,6 +868,34 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "integration",
+		"package": "@delendai/integration",
+		"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+		"tags": [
+			"integration",
+			"pull-request",
+			"rehearsal"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [
+			"everything"
+		],
+		"capabilities": [
+			"integration"
+		],
+		"permissions": [
+			"filesystem-read",
+			"process",
+			"env-read"
+		],
+		"tokenBudget": {
+			"warning": 300,
+			"hard": 400,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "issues",
 		"package": "@delendai/issues",
 		"summary": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",

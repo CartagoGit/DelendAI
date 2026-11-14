@@ -257,6 +257,10 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(exclude).toContain('refs/heads/delendai/train/**/*');
 	});
 
+	it('[<5ms] admits the rehearsal namespace, so a rehearsal can create its branches', () => {
+		expect(exclude).toContain('refs/heads/delendai/rehearsal/**/*');
+	});
+
 	it('[<50ms] admits the batch namespace of every namespace the policy owns, old and new', () => {
 		const migrating = policyFor({
 			profile: 'shared-checkout-pr',

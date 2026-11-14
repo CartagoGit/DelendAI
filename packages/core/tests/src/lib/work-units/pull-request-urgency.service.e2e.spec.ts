@@ -58,7 +58,7 @@ describe('the urgent note of a unit', () => {
 		);
 	});
 
-	it('[<175ms] gives way to what the publishing command was told', async () => {
+	it('[<400ms] gives way to what the publishing command was told', async () => {
 		const { root, worktree } = unit();
 		await noteUnitUrgency(worktree, 'noted');
 		expect(await urgencyOfUnit(['--urgent=said'], root, REF)).toBe('said');

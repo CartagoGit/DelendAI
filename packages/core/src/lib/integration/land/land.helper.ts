@@ -20,25 +20,25 @@
  *   code labels the pull request for its author.
  */
 import { trainMembers } from '../decisions/culprit.helper';
-import { groupByOverlap, overlapBetween } from '../decisions/overlap.helper';
+import {
+	groupByOverlap,
+	overlapBetween,
+	staleAgainstTip,
+} from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
-import type { ITrainCandidate } from '../decisions/culprit.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
 
+import { openBatch as assembleBatch } from './land-batch-assembly.helper';
+import { bringForwardUnbuilt, headNotBuilt } from './land-bring-forward.helper';
 import {
 	BatchMemory,
-	batchBody,
 	readBatchRecord,
-	refOf,
 	setKey,
 } from './land-batch-record.helper';
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
 import { mergeCertifiedBatch } from './land-batch-merge.helper';
-import {
-	closeRedBatch,
-	labelNeedsUpdate,
-	markRedBatch,
-} from './land-verdict.helper';
+import { needsUpdateComment, reconcileLabels } from './land-labels.helper';
+import { closeRedBatch, markRedBatch } from './land-verdict.helper';
 import type {
 	ILandBatchRecord,
 	ILandCheck,
@@ -100,8 +100,20 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 	const remember = (record: ILandBatchRecord): void =>
 		memory.remember(record);
 
-	const needsUpdate = (pr: ILandPullRequest, why: string): Promise<void> =>
-		labelNeedsUpdate(forge, pr, why, note);
+	// Verdicts are collected while judging and applied once, at the end.
+	const wanted = new Map<number, Map<string, string | undefined>>();
+	const want = (
+		number: number,
+		label: string,
+		comment: string | undefined,
+	): void => {
+		const own = wanted.get(number) ?? new Map<string, string | undefined>();
+		own.set(label, comment);
+		wanted.set(number, own);
+	};
+	const needsUpdate = (pr: ILandPullRequest, reason: string): void => {
+		want(pr.number, LAND_LABEL_NEEDS_UPDATE, needsUpdateComment(reason));
+	};
 
 	const markRed = (
 		batch: ILandPullRequest,
@@ -145,10 +157,21 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		const changed = open.some(
 			({ pr, recorded }) => pr.headSha !== recorded,
 		);
-		if (!started && (changed || record.tip !== tip)) {
+		// The branch moved: the batch stands when it moved only by sections
+		// the batch does not reach (its members merge, the tree is checked).
+		const moved =
+			record.tip === tip
+				? undefined
+				: record.regenerated
+					? 'the batch carries a regeneration of the old tip'
+					: staleAgainstTip(
+							git.landedSince(record.tip, batch.headSha),
+							git.landedSince(record.tip, tip),
+						);
+		if (!started && (changed || moved !== undefined)) {
 			await forge.closePullRequest(batch.number);
 			note(
-				`batch #${String(batch.number)} is stale: closed, rebuilt below`,
+				`batch #${String(batch.number)} is stale${moved === undefined ? '' : ` (the integration branch moved in ${moved})`}: closed, rebuilt below`,
 			);
 			return false;
 		}
@@ -188,27 +211,35 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		own: IChangeFootprint;
 		conflict: ILandConflict;
 	}[] = [];
-	for (const pr of await forge.openPullRequests()) {
+	const openNow = await forge.openPullRequests();
+	for (const pr of openNow) {
 		if (inFlight.has(pr.number)) {
 			why(pr.number, 'rides a batch under test');
 			continue;
 		}
 		if (culpritHeads.get(pr.number) === pr.headSha) {
 			why(pr.number, 'the culprit of a red batch: waits for a new head');
+			want(pr.number, LAND_LABEL_CULPRIT, undefined);
 			continue;
 		}
-		if (pr.labels.includes(LAND_LABEL_CULPRIT)) {
-			await forge.removeLabel(pr.number, LAND_LABEL_CULPRIT);
-		}
-		const waits = notReady(pr, await forge.checks(pr.headSha));
+		const checks = await forge.checks(pr.headSha);
+		const waits = notReady(pr, checks);
 		if (waits !== undefined) {
 			why(pr.number, waits);
-			// A head the forge never builds never turns green by waiting.
-			if (
-				pr.headAuthor !== undefined &&
-				deps.config.unbuiltAuthors.includes(pr.headAuthor)
-			)
-				await needsUpdate(pr, waits);
+			// A head the forge never builds never turns green by waiting: the
+			// integrator brings it forward once, else its author is asked.
+			if (headNotBuilt(pr, checks, deps.config.unbuiltAuthors)) {
+				const forward = await bringForwardUnbuilt({ deps, pr, tip });
+				if (forward === 'brought') {
+					why(pr.number, 'brought forward: the new head is built');
+					note(`#${String(pr.number)} brought forward to the tip`);
+				} else if (pr.crossRepository === true) {
+					why(
+						pr.number,
+						'a cross-repository head is never built or pushed by the integrator',
+					);
+				} else needsUpdate(pr, waits);
+			}
 			continue;
 		}
 		const conflict = git.conflictOf(pr, tip);
@@ -217,65 +248,24 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 				pr.number,
 				'needs update: it conflicts with the integration branch',
 			);
-			await needsUpdate(pr, 'it conflicts with the integration branch');
+			needsUpdate(pr, 'it conflicts with the integration branch');
 			continue;
-		}
-		if (pr.labels.includes(LAND_LABEL_NEEDS_UPDATE)) {
-			await forge.removeLabel(pr.number, LAND_LABEL_NEEDS_UPDATE);
 		}
 		candidates.push({ pr, own: git.footprint(pr), conflict });
 	}
 	candidates.sort((a, b) => a.pr.number - b.pr.number);
 
-	const openBatch = async (
+	const openBatch = (
 		members: readonly ILandPullRequest[],
-		why: string,
-	): Promise<void> => {
-		const candidatesOf: ITrainCandidate[] = members.map((pr) => ({
-			number: pr.number,
-			headRef: pr.headRef,
-			headSha: pr.headSha,
-		}));
-		const numbers = candidatesOf.map((c) => c.number);
-		const ref = refOf(deps.config.batchPrefix, numbers);
-		const built = git.buildBatch({ ref, tip, members: candidatesOf });
-		if (built.conflicting.length > 0) {
-			// Members that clash inside the batch go back to their authors; the
-			// rest are built again, once, without them.
-			for (const n of built.conflicting) {
-				const pr = members.find((m) => m.number === n);
-				if (pr !== undefined)
-					await needsUpdate(pr, 'it conflicts with another member');
-			}
-			const rest = members.filter(
-				(pr) => !built.conflicting.includes(pr.number),
-			);
-			if (rest.length > 0) await openBatch(rest, why);
-			return;
-		}
-		if (built.sha === undefined) {
-			note(
-				`batch ${numbers.join('+')} not pushed: ${built.failure ?? 'a member conflicts'}`,
-			);
-			return;
-		}
-		const record: ILandBatchRecord = {
+		because: string,
+	): Promise<void> =>
+		assembleBatch({
+			deps,
 			tip,
-			members: members.map((pr) => ({
-				number: pr.number,
-				sha: pr.headSha,
-			})),
-			regenerated: built.regenerated,
-		};
-		const number = await forge.openPullRequest({
-			head: ref,
-			title: `chore(queue): batch ${numbers.map((n) => `#${String(n)}`).join(' ')}`,
-			body: batchBody(record, new Map()),
+			members,
+			because,
+			report: { why, note, needsUpdate },
 		});
-		note(
-			`batch #${String(number)} opened for ${numbers.join('+')} (${why})`,
-		);
-	};
 
 	const settleGroup = async (
 		group: readonly {
@@ -294,6 +284,25 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 					: openBatch([pr], 'a suspect, tested alone');
 			}
 			if (conflict === 'derived') {
+				if (pr.crossRepository === true) {
+					why(
+						pr.number,
+						'a cross-repository head is never built or pushed',
+					);
+					return;
+				}
+				if (deps.resolveDerived !== undefined) {
+					// Two jobs, never this pass: the regeneration runs the
+					// project's code, so it holds no token.
+					const started = await deps.resolveDerived(pr);
+					why(
+						pr.number,
+						started
+							? 'its derived files conflict: resolved by the derived jobs'
+							: 'its derived files conflict: the derived jobs were not started',
+					);
+					return;
+				}
 				if (deps.config.batches)
 					return openBatch([pr], 'derived files to regenerate');
 				// Land pushes nothing the forge will not build: the author's
@@ -368,6 +377,18 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 	};
 
 	await Promise.all(groupByOverlap(candidates).map(settleGroup));
+	// Judged first, applied once: the difference between what each pull
+	// request wants and what the forge shows, and one reason line for each.
+	for (const pr of openNow) {
+		if (!reasons.has(pr.number)) why(pr.number, 'nothing to do this pass');
+		if (mergedPRs.includes(pr.number)) continue;
+		await reconcileLabels({
+			forge,
+			pr,
+			wanted: wanted.get(pr.number) ?? new Map(),
+			note,
+		});
+	}
 	return {
 		actions,
 		reasons,

@@ -592,6 +592,167 @@
 							},
 							"description": "Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges."
 						},
+						"identity": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"enum": [
+										"app",
+										"pat"
+									],
+									"enumDescriptions": {
+										"app": "a GitHub App: the integrator mints an installation token for each job",
+										"pat": "a personal access token kept in a secret, for a project that cannot install an App"
+									},
+									"description": "Who the integrator acts as. Never the workflow token, which starts no workflow for what it pushes or merges."
+								},
+								"appIdVariable": {
+									"type": "string",
+									"minLength": 1,
+									"description": "For `app`: the variable that holds the App id."
+								},
+								"keySecret": {
+									"type": "string",
+									"minLength": 1,
+									"description": "For `app`: the name of the secret that holds the App private key."
+								},
+								"tokenSecret": {
+									"type": "string",
+									"minLength": 1,
+									"description": "For `pat`: the name of the secret that holds the token."
+								}
+							},
+							"additionalProperties": false,
+							"description": "The identity the integrator’s token is minted from."
+						},
+						"batching": {
+							"type": "string",
+							"enum": [
+								"overlap",
+								"off"
+							],
+							"enumDescriptions": {
+								"overlap": "overlapping ready pull requests are built once, as one batch pull request",
+								"off": "every pull request is built and merged on its own"
+							},
+							"description": "Whether overlapping pull requests are batched."
+						},
+						"labels": {
+							"type": "object",
+							"properties": {
+								"prefix": {
+									"type": "string",
+									"minLength": 1,
+									"description": "The prefix of the labels the integrator owns."
+								}
+							},
+							"additionalProperties": false,
+							"description": "The labels the integrator applies."
+						},
+						"derived": {
+							"type": "object",
+							"properties": {
+								"paths": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"minLength": 1,
+										"description": "A path or glob of a generated file the integrator may regenerate."
+									},
+									"description": "The only paths a derived-file resolution may change."
+								},
+								"command": {
+									"type": "string",
+									"description": "The command that regenerates the derived files after a merge."
+								}
+							},
+							"additionalProperties": false,
+							"description": "How a conflict in generated files is resolved."
+						},
+						"commands": {
+							"type": "object",
+							"properties": {
+								"jobs": {
+									"type": "string",
+									"description": "A command that prints the zones a change from <base> to <head> can affect, one per line, or `*` for all; both revisions are appended as arguments."
+								},
+								"normalizeBatch": {
+									"type": "string",
+									"description": "A command run in a batch tree after its members merged and before the derived files are regenerated."
+								}
+							},
+							"additionalProperties": false,
+							"description": "Commands the project owns that the integrator runs."
+						},
+						"zones": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1,
+								"description": "A glob that declares one zone of the project."
+							},
+							"description": "The zones (sections) the project is split into, used to group pull requests and to dispatch CI."
+						},
+						"signalWorkflows": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1,
+								"description": "The name of a workflow."
+							},
+							"description": "The workflows whose completion signals the integrator to run a pass."
+						},
+						"scanWorkflows": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1,
+								"description": "The name of a workflow."
+							},
+							"description": "The workflows that scan the integration branch after a merge."
+						},
+						"watchdog": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean",
+									"description": "Whether the hourly safety net runs."
+								},
+								"cron": {
+									"type": "string",
+									"minLength": 1,
+									"description": "The schedule of the safety net."
+								}
+							},
+							"additionalProperties": false,
+							"description": "An alarm, not a poll loop: any action it takes counts as a missed event."
+						},
+						"rehearsal": {
+							"type": "object",
+							"properties": {
+								"secrets": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"minLength": 1,
+										"description": "The name of a secret the rehearsal reads."
+									},
+									"description": "The secret names the rehearsal needs."
+								},
+								"scenarios": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"minLength": 1,
+										"description": "A scenario id, or `all`."
+									},
+									"description": "The scenarios a rehearsal runs by default."
+								}
+							},
+							"additionalProperties": false,
+							"description": "What the rehearsal of the pull request flow reads and runs."
+						},
 						"protocol": {
 							"type": "integer",
 							"minimum": 1,

@@ -217,6 +217,14 @@ describe('the GitHub land forge', () => {
 		]);
 	});
 
+	it('[<12ms] reads the text of every comment on a pull request', async () => {
+		const { forge, calls } = harness(() =>
+			json([{ body: 'one' }, { body: null }, { body: 'two' }]),
+		);
+		expect(await forge.comments(7)).toEqual(['one', '', 'two']);
+		expect(calls[0]).toContain('GET repos/o/r/issues/7/comments');
+	});
+
 	it('[<12ms] throws on a failure the contract does not name, so the pass ends', async () => {
 		const { forge } = harness(() => ({
 			exitCode: 1,

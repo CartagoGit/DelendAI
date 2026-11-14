@@ -163,6 +163,7 @@ docs as the delivery and verification surfaces around that core.
 | `plugins/gitlab` | `@delendai/gitlab` | GitLab read-only provider context, HTTP client and resource tools. |
 | `plugins/i18n` | `@delendai/i18n` | i18n key/interpolation validation across locale JSON files. |
 | `plugins/impact-analysis` | `@delendai/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. |
+| `plugins/integration` | `@delendai/integration` | The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did. |
 | `plugins/issues` | `@delendai/issues` | Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve. |
 | `plugins/issues-triage` | `@delendai/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifies them mechanically, drafts fix proposals and replies automatically with a machine-disclosure notice. Never published to npm. |
 | `plugins/link-check` | `@delendai/link-check` | Markdown link checker. |

@@ -884,6 +884,11 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				},
 			},
 		),
+		tools('integration', '@delendai/integration', [], [], [], [], [], [], {
+			summary:
+				'The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.',
+			tags: ['integration', 'pull-request', 'rehearsal'],
+		}),
 		tools(
 			'issues',
 			'@delendai/issues',

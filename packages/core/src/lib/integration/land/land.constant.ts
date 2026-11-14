@@ -18,3 +18,22 @@ export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';
 
 /** The integrator's workflow name: what `workflow_run` lists it as. */
 export const LAND_WORKFLOW_NAME = 'land';
+/** The integrator's workflow file: what a dispatch names. */
+export const LAND_WORKFLOW_FILE = 'land.yml';
+/** The signal workflow's file: it wakes the integrator on pull request events. */
+export const LAND_SIGNAL_WORKFLOW_FILE = 'land-signal.yml';
+/** The signal workflow's name, and the name of its one job. */
+export const LAND_SIGNAL_WORKFLOW_NAME = 'land-signal';
+/** Minutes a signal may run: it only sends a dispatch. */
+export const LAND_SIGNAL_TIMEOUT_MINUTES = 5;
+/** The pull request events that change what the integrator has to settle. */
+export const LAND_SIGNAL_EVENTS = [
+	'opened',
+	'reopened',
+	'synchronize',
+	'ready_for_review',
+	'labeled',
+	'unlabeled',
+	'converted_to_draft',
+	'closed',
+] as const;

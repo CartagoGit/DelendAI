@@ -108,6 +108,7 @@ export {
 	footprintFromReach,
 	groupByOverlap,
 	overlapBetween,
+	staleAgainstTip,
 } from './lib/integration/decisions/overlap.helper';
 export type { IChangeFootprint } from './lib/integration/decisions/overlap.interface';
 export {
@@ -139,16 +140,36 @@ export {
 	readBatchRecord,
 	refOf as batchRefOf,
 } from './lib/integration/land/land-batch-record.helper';
+export {
+	headNotBuilt,
+	outsideDerived,
+	prepareDerived,
+	pushDerived,
+} from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
-export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
+export {
+	indentLines,
+	renderLandSignalWorkflow,
+	wakeIntegratorStep,
+} from './lib/integration/land/land-signal.helper';
+export {
+	identitySteps,
+	renderLandWorkflow,
+	tokenOf,
+} from './lib/integration/land/land-workflow.helper';
 // Whether this process is older than the integration protocol the repository runs.
 export { integrationProtocolRefusal } from './lib/integration/protocol/integration-protocol.helper';
+export { DEFAULT_INTEGRATION_OPTIONS } from './lib/contracts/constants/integration-options.constant';
 export { INTEGRATION_PROTOCOL_VERSION } from './lib/contracts/constants/integration-protocol.constant';
 export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
 export {
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
+	LAND_SIGNAL_EVENTS,
+	LAND_SIGNAL_TIMEOUT_MINUTES,
+	LAND_SIGNAL_WORKFLOW_FILE,
 	LAND_WORKFLOW_NAME,
+	LAND_WORKFLOW_FILE,
 	LAND_WORKFLOW_TOKEN_ACTOR,
 } from './lib/integration/land/land.constant';
 export type {
@@ -159,16 +180,15 @@ export type {
 	ILandConfig,
 	ILandConflict,
 	ILandDeps,
+	ILandForward,
 	ILandForge,
 	ILandGit,
 	ILandMerge,
 	ILandPullRequest,
 	ILandReport,
-	ILandFollowUps,
 	ILandWorkflowInput,
-	ILandWorkflowTriggers,
+	ILandWorkflowIdentity,
 } from './lib/integration/land/land.interface';
-export { followUpWorkflows } from './lib/integration/land/land-follow-ups.helper';
 export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
 export {
 	DEFAULT_WORK_KIND,
