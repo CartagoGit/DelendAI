@@ -127,7 +127,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
-		steps: [open('a', 'b'), ready('a', 'b'), labelled('a')],
+		steps: [open('a', 'b'), ready('a', 'b'), labelled('a'), merged('b')],
 		expect: [
 			{ kind: 'labelled', key: 'a', label: 'culprit' },
 			{ kind: 'merged', keys: ['b'] },

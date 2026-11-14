@@ -26,18 +26,18 @@ describe('renderLandWorkflow concurrency', () => {
 		expect(render()).not.toMatch(/^concurrency:/mu);
 	});
 
-	it('gives every job its own group, the pass keeping the base name', () => {
+	it('gives every job its own group, ending with the branch the run acts on', () => {
 		const text = render();
 		const jobCount = [
 			...(text.split('\njobs:\n')[1] ?? '').matchAll(/^ {4}[a-z-]+:$/gmu),
 		].length;
 		expect(groups(text)).toEqual([
-			'land',
-			'land-derived-prepare',
-			'land-derived-push',
-			'land-promote',
-			'land-forward-sync',
-			'land-upkeep',
+			'land-${{ github.ref_name }}',
+			'land-derived-prepare-${{ github.ref_name }}',
+			'land-derived-push-${{ github.ref_name }}',
+			'land-promote-${{ github.ref_name }}',
+			'land-forward-sync-${{ github.ref_name }}',
+			'land-upkeep-${{ github.ref_name }}',
 		]);
 		expect(groups(text)).toHaveLength(jobCount);
 		expect(text.match(/cancel-in-progress: false/gu)).toHaveLength(6);
@@ -45,10 +45,10 @@ describe('renderLandWorkflow concurrency', () => {
 
 	it('derives the groups from the named concurrency group', () => {
 		expect(groups(render('land-rehearsal-r1'))[0]).toBe(
-			'land-rehearsal-r1',
+			'land-rehearsal-r1-${{ github.ref_name }}',
 		);
 		expect(groups(render('land-rehearsal-r1'))[3]).toBe(
-			'land-rehearsal-r1-promote',
+			'land-rehearsal-r1-promote-${{ github.ref_name }}',
 		);
 	});
 });

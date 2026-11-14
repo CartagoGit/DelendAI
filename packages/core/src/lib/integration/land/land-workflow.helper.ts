@@ -65,10 +65,14 @@ export const tokenOf = (identity: ILandWorkflowIdentity): string =>
 		? `\${{ steps.${IDENTITY_STEP_ID}.outputs.token }}`
 		: `\${{ secrets.${identity.tokenSecret} }}`;
 
-/** One waiting run per group is kept, and none is cancelled for a newer one. */
+/**
+ * One waiting run per group is kept, and none is cancelled for a newer one.
+ * Every group ends with the branch the run acts on, so activity on one branch
+ * never displaces the pending pass of another.
+ */
 const concurrencyLines = (group: string): string[] => [
 	'        concurrency:',
-	`            group: ${group}`,
+	`            group: ${group}-\${{ github.ref_name }}`,
 	'            cancel-in-progress: false',
 ];
 
