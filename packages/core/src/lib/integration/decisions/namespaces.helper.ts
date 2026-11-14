@@ -105,6 +105,21 @@ export const ownedBatchPrefixes = (
 	);
 
 /**
+ * Rehearsal prefixes, current first: `<namespace>/rehearsal/`. A rehearsal
+ * of the pull request flow creates its own integration branch and its
+ * synthetic pull requests here, on the real forge, and its own cleanup
+ * deletes them. The guard and the forge ruleset admit them; the ref
+ * reconciler reports them and never reaps them, since a run in progress
+ * owns them.
+ */
+export const ownedRehearsalPrefixes = (
+	branches: INamespaceBranches,
+): readonly string[] =>
+	ownedNamespaces(branches).map(
+		(namespace) => `${withSlash(namespace)}rehearsal/`,
+	);
+
+/**
  * Namespaces whose machinery is retired, current and former namespaces
  * alike: the old queue's trains and their culprit markers (`<ns>/train/`).
  * What is left under them is reaped once it holds nothing of its own
@@ -137,6 +152,7 @@ export const policyNamespaces = (
 		// Still admitted while the old queue runs until the cutover lands;
 		// it goes once nothing pushes train refs.
 		...retiredMachineryPrefixes(policy.branches),
+		...ownedRehearsalPrefixes(policy.branches),
 		...policy.branches.foreignRefPrefixes,
 	]
 		.map(shortName)
@@ -207,6 +223,9 @@ export const allowedRefPatterns = (
 		// The retired train prefix, admitted until nothing pushes train
 		// refs (see `policyNamespaces`).
 		...retiredMachineryPrefixes(branches).map(
+			(prefix) => `refs/heads/${prefix}**/*`,
+		),
+		...ownedRehearsalPrefixes(branches).map(
 			(prefix) => `refs/heads/${prefix}**/*`,
 		),
 		...branches.foreignRefPrefixes.map(

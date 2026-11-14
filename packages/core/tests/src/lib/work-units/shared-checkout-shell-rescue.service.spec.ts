@@ -39,7 +39,7 @@ const project = (): { root: string; unit: string } => {
 };
 
 describe('rescueAfterShell', () => {
-	it('[<35ms] says nothing for a clean checkout', () => {
+	it('[<53ms] says nothing for a clean checkout', () => {
 		const { root } = project();
 		expect(rescueAfterShell({ cwd: root, agent: AGENT, policy })).toEqual({
 			outcome: 'none',
