@@ -1,0 +1,54 @@
+name: rehearsal-ci
+
+# Rendered by the integration plugin's rehearsal for run r20261114-151436.
+on:
+    pull_request:
+        branches: ['delendai/rehearsal/r20261114-151436/develop-moving-integration']
+    push:
+        branches: ['delendai/rehearsal/r20261114-151436/develop-moving-integration']
+
+permissions:
+    contents: read
+
+jobs:
+    rehearsal-ci:
+        name: rehearsal-ci
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - name: Conclude as the pull request declares
+              env:
+                  HEAD_REF: ${{ github.head_ref }}
+                  RUN_DIR: rehearsal/r20261114-151436
+              run: |
+                  if [ -z "$HEAD_REF" ]; then echo "push: nothing declared"; exit 0; fi
+                  declaration="$RUN_DIR/${HEAD_REF##*/}.json"
+                  if [ ! -f "$declaration" ]; then echo "no declaration at $declaration"; exit 1; fi
+                  seconds=$(jq -r '.seconds' "$declaration")
+                  result=$(jq -r '.result' "$declaration")
+                  echo "declared: $result after ${seconds}s"
+                  sleep "$seconds"
+                  [ "$result" = success ]
+
+    integration-signal:
+        name: integration-signal
+        needs: [rehearsal-ci]
+        if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/delendai/rehearsal/r20261114-151436/develop-moving-integration')) }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            actions: write
+            contents: read
+        steps:
+            - name: Wake the integrator
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  BRANCH: ${{ github.event.pull_request.base.ref || github.ref_name }}
+                  PULL_REQUEST: ${{ github.event.pull_request.number }}
+                  PROMOTE: ${{ github.event_name == 'push' && 'true' || '' }}
+              run: |
+                  gh workflow run land.yml \
+                    --ref "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+                    -f pr="${PULL_REQUEST}" -f promote="${PROMOTE}" \
+                    || echo "::warning::could not wake the integrator"
