@@ -12,6 +12,7 @@ import type {
 	IRehearsalPullState,
 	IRehearsalRun,
 } from '../contracts/interfaces/rehearsal.interface';
+import { scanStarted } from './rehearsal-scan.helper';
 
 const SHORT_SHA = 12;
 
@@ -191,13 +192,7 @@ const JUDGES: TJudges = {
 
 		const merged = evidence.tips.slice(1);
 		const unscanned = merged.filter(
-			(sha) =>
-				!evidence.runs.some(
-					(run) =>
-						run.event === 'push' &&
-						run.headSha === sha &&
-						run.workflow === 'rehearsal-scan',
-				),
+			(sha) => !scanStarted(evidence.runs, sha),
 		);
 		return result(
 			'every integration tip started its push workflows',

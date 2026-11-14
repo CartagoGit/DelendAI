@@ -25,6 +25,7 @@ import {
 	REHEARSAL_POLL_MS,
 	REHEARSAL_SETTLE_SECONDS,
 } from '../contracts/constants/rehearsal.constant';
+import { scanStarted } from './rehearsal-scan.helper';
 import { scenarioIntegration } from './rehearsal-names.helper';
 import { runStep } from './rehearsal-step.service';
 
@@ -43,19 +44,12 @@ const runsOf = async (
 const missingPush = (
 	runs: readonly IRehearsalRun[],
 	tips: readonly string[],
-): boolean =>
-	tips
-		.slice(1)
-		.some(
-			(sha) =>
-				!runs.some(
-					(run) => run.event === 'push' && run.headSha === sha,
-				),
-		);
+): boolean => tips.slice(1).some((sha) => !scanStarted(runs, sha));
 
 /**
- * The runs of `heads`, read again until every merged tip has its push run:
- * the forge lists a tip's runs some time after the merge. Bounded: what is
+ * The runs of `heads`, read again until every merged tip has its scan run:
+ * the forge lists a tip's scan run some time after the merge, and after the
+ * integrator's own push run. Bounded: what is
  * still missing at the deadline is evidence of a run that never started.
  */
 const settledRuns = async (

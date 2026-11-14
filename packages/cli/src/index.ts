@@ -39,6 +39,7 @@ import { loadCommandsFor } from './lib/command-loader.service';
 import { createLazyContext, serverOpener } from './lib/lazy-context.factory';
 import { leaveNoTrace } from './lib/leave-no-trace.service';
 import { formatJson } from './lib/stable-json.service';
+import { writeStdoutSync } from './lib/stdout-sync.service';
 
 export {
 	CANONICAL_CLI_BIN,
@@ -216,10 +217,10 @@ export const runHumanCli = async (
 			const emitStructured =
 				parsed.globals.json || parsed.globals.format === 'json';
 			if (emitStructured || !result.suppressDefaultPrint) {
-				process.stdout.write(formatJson(result.data));
+				writeStdoutSync(formatJson(result.data));
 			}
 		} else if (result.text !== undefined) {
-			process.stdout.write(result.text);
+			writeStdoutSync(result.text);
 		}
 		return result.code;
 	} catch (error) {
