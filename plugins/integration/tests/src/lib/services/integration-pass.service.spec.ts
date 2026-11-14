@@ -1,5 +1,6 @@
 /** integration-pass.service.spec.ts — a pass refuses before it touches the forge. */
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import type { ILandDeps, ILandForge, ILandGit } from '@delendai/core/cli';
 import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -62,9 +63,9 @@ describe('runIntegrationPass', () => {
 		seen.batches.length = 0;
 		const env = { GITHUB_REPOSITORY: 'o/n' };
 		const ports = fakePartial<NonNullable<IIntegrationPassInput['ports']>>({
-			forge: fakePartial<never>({}),
-			git: fakePartial<never>({}),
-			bringForward: fakePartial<never>({}),
+			forge: fakePartial<ILandForge>({}),
+			git: fakePartial<ILandGit>({}),
+			bringForward: fakePartial<ILandDeps['bringForward']>({}),
 		});
 		const pass = async (batching: string) =>
 			runIntegrationPass({
