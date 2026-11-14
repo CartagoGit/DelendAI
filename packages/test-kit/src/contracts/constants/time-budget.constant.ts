@@ -43,6 +43,14 @@ export const UNIT_LIMIT_MS = 200;
 export const LOAD_FACTOR_MIN = 1;
 export const LOAD_FACTOR_MAX = 4;
 
+/**
+ * An e2e test's time also follows momentary contention from the shard's other
+ * workers, which the once-a-shard load factor cannot see: an overrun fails
+ * only above budget x load factor x this headroom, and between the two it is
+ * reported.
+ */
+export const E2E_NOISE_HEADROOM = 2;
+
 /** Holds the shard's load factor (this shard's benchmark time over the reference, clamped), for the workers. */
 export const LOAD_FACTOR_ENV = 'DELENDAI_TEST_BUDGET_LOAD';
 

@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * `extensions/vscode/src/dev/settings-panel.ts` — the dev preview's
  * Settings panel. Hosts:

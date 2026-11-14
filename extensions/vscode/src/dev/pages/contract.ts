@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * `extensions/vscode/src/dev/pages/contract.ts` — typed
  * contract for the dev entry's lazy page modules.

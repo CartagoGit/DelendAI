@@ -27,6 +27,7 @@ import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budge
 import { isE2eSpec, loadFactorFromEnv } from './time-budget-tier.helper';
 import {
 	budgetFailure,
+	budgetNoise,
 	budgetOverrun,
 	mayGoUnbudgeted,
 } from './time-budget.helper';
@@ -111,6 +112,8 @@ const untouched = (test: RunnerTestCase): boolean => {
 
 const overruns: string[] = [];
 
+const noise: string[] = [];
+
 const freshOverruns: string[] = [];
 
 export default class TimeBudgetRunner extends TestRunner {
@@ -120,6 +123,12 @@ export default class TimeBudgetRunner extends TestRunner {
 				`time budget: ${String(freshOverruns.length)} budget(s) this change sets ran over on CI, which never measured them; the merge step (test:budgets:check) fails the change until each spec declares the calibrated number:\n${freshOverruns.join('\n')}`,
 			);
 			freshOverruns.length = 0;
+		}
+		if (noise.length > 0) {
+			console.warn(
+				`time budget: ${String(noise.length)} e2e test(s) over their stretched budget but within the noise headroom (reported, not failed):\n${noise.join('\n')}`,
+			);
+			noise.length = 0;
 		}
 		if (overruns.length === 0) return;
 		console.warn(
@@ -166,6 +175,10 @@ export default class TimeBudgetRunner extends TestRunner {
 			if (over !== undefined) {
 				overruns.push(`  ${test.file.name} > ${test.name}: ${over}`);
 			}
+		}
+		const reported = budgetNoise(measured);
+		if (reported !== undefined) {
+			noise.push(`  ${test.file.name} > ${test.name}: ${reported}`);
 		}
 		if (failure !== undefined) throw new Error(failure);
 	}
