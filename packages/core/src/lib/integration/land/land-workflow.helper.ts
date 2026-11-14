@@ -11,8 +11,10 @@
  * because a push or merge made with the workflow token starts no workflow.
  * The workflow token is never used: nothing here writes through it.
  *
- * It wakes on events only: a pull request event on the integration branch,
- * a push to it, and a dispatch from the CI's last job. The schedule is a
+ * It wakes on events only: a push to the integration branch, and a dispatch
+ * at its base ref from the signal (see land-signal.helper) on a pull request
+ * event or from the CI's last job. It never listens to `pull_request_target`:
+ * GitHub reads that workflow from the default branch. The schedule is a
  * watchdog on the default branch: any work it finds was a missed event.
  */
 
@@ -22,9 +24,7 @@ import type {
 	ILandWorkflowInput,
 } from './land.interface';
 import { LAND_WORKFLOW_NAME } from './land.constant';
-
-const indent = (lines: readonly string[], by: number): string[] =>
-	lines.map((line) => (line === '' ? line : `${' '.repeat(by)}${line}`));
+import { indentLines as indent } from './land-signal.helper';
 
 const envLines = (env: Readonly<Record<string, string>>): string[] =>
 	Object.keys(env).length === 0
@@ -44,16 +44,6 @@ const UPLOAD_ARTIFACT =
 const DOWNLOAD_ARTIFACT =
 	'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8';
 const DERIVED_ARTIFACT = 'derived-result';
-const PULL_REQUEST_EVENTS = [
-	'opened',
-	'reopened',
-	'synchronize',
-	'ready_for_review',
-	'labeled',
-	'unlabeled',
-	'converted_to_draft',
-	'closed',
-] as const;
 
 /** The step that mints the identity's token, when the identity needs one. */
 export const identitySteps = (identity: ILandWorkflowIdentity): string[] =>
@@ -122,8 +112,9 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		`!(github.event_name == 'push' && github.ref_name == ${release})`,
 	].join(' && ');
 	const jobs: string[] = [
-		'    # A pull request event, a push to the integration branch, or the CI of a',
-		'    # pull request ending: re-read the forge and settle every pull request.',
+		'    # A dispatch for a pull request event or its CI ending (an empty `pr`',
+		'    # included), or a push to the integration branch: re-read the forge and',
+		'    # settle every pull request.',
 		'    # On the schedule the same pass is the watchdog: work found there was a',
 		'    # missed event, so it fails and files the evidence.',
 		...job(
@@ -290,9 +281,6 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'# because the policy says `development.integration.engine: land`.',
 		'',
 		'on:',
-		'    pull_request_target:',
-		`        types: [${PULL_REQUEST_EVENTS.join(', ')}]`,
-		`        branches: [${input.integrationBranch}]`,
 		'    push:',
 		`        branches: [${input.integrationBranch}, ${input.releaseBranch}]`,
 		'    schedule:',
@@ -300,7 +288,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'    workflow_dispatch:',
 		'        inputs:',
 		'            pr:',
-		'                description: The pull request whose CI ended; the pass reads them all.',
+		'                description: The pull request whose event woke the pass; empty runs the full pass, and the pass reads them all.',
 		'                required: false',
 		"                default: ''",
 		...(input.derived === undefined

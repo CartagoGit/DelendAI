@@ -1,10 +1,12 @@
 /**
  * rehearsal-setup.helper.ts — the one setup commit of a rehearsal branch:
- * the integrator workflow, the fast CI, the stand-ins for the scan and for
+ * the integrator workflow and its signal, the fast CI, the stand-ins for the scan and for
  * a workflow-token writer, and the project's policy pointed at the branch.
  */
 import {
+	LAND_SIGNAL_WORKFLOW_FILE,
 	parseJsonc,
+	renderLandSignalWorkflow,
 	renderLandWorkflow,
 	type ILandWorkflowIdentity,
 } from '@delendai/core/cli';
@@ -107,6 +109,10 @@ const fastFiles = (
 			integration,
 			`land-rehearsal-${input.runId}`,
 		),
+	},
+	{
+		path: `${WORKFLOWS}/${LAND_SIGNAL_WORKFLOW_FILE}`,
+		content: renderLandSignalWorkflow({ integrationBranch: integration }),
 	},
 	{
 		path: `${WORKFLOWS}/rehearsal-ci.yml`,
