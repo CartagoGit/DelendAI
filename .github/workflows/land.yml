@@ -1,0 +1,77 @@
+name: land
+
+# GENERATED from the land workflow template (renderLandWorkflow); edit the
+# project values, not this file. The one integration actor: a stateless
+# pass over the ready pull requests (merge what does not overlap, batch
+# what does, label the culprit of a red batch), the promotion after the
+# integration branch's CI, the forward sync after the release branch moves,
+# and the upkeep. It keeps nothing; every pass reads the forge. It acts as
+# the identity the policy names and never as the workflow token. It exists
+# because the policy says `development.integration.engine: land`.
+
+on:
+    push:
+        branches: [delendai/rehearsal/r20261114-151436/overlapping-integration, main]
+    schedule:
+        - cron: '*/15 * * * *'
+    workflow_dispatch:
+        inputs:
+            pr:
+                description: The pull request whose event woke the pass; empty runs the full pass, and the pass reads them all.
+                required: false
+                default: ''
+            promote:
+                description: Set when the integration branch CI ended green or red.
+                required: false
+                default: ''
+
+# The workflow token only reads; every write uses the identity.
+permissions:
+    contents: read
+    pull-requests: read
+    checks: read
+    actions: read
+
+jobs:
+    # A dispatch for a pull request event or its CI ending (an empty `pr`
+    # included), or a push to the integration branch: re-read the forge and
+    # settle every pull request.
+    # On the schedule the same pass is the watchdog: work found there was a
+    # missed event, so it fails and files the evidence.
+    land:
+        name: land
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.promote != '') && !(github.event_name == 'push' && github.ref_name == 'main') }}
+        concurrency:
+            group: land-rehearsal-r20261114-151436
+            cancel-in-progress: false
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Mint the integrator identity token
+              id: identity
+              uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+              with:
+                  app-id: ${{ vars.DELENDAI_APP_ID }}
+                  private-key: ${{ secrets.DELENDAI_APP_PRIVATE_KEY }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
+            - name: One pass
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  LAND_WATCHDOG: ${{ github.event_name == 'schedule' && '1' || '' }}
+              run: bun tools/scripts/forge/land.script.ts
+
+            - name: File the evidence of a missed event
+              if: ${{ failure() && github.event_name == 'schedule' }}
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+                  RUN: ${{ github.run_id }}
+              run: >-
+                  gh issue create --repo "${GITHUB_REPOSITORY}"
+                  --title "The watchdog found work no event had started"
+                  --body "The scheduled pass acted, so an event was missed. Run ${RUN}."
