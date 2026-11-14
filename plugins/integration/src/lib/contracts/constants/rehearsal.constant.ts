@@ -26,6 +26,9 @@ export const REHEARSAL_POLL_MS = 15_000;
 /** Seconds the harness keeps reading the forge, after the last step, for the push runs of every merged tip. */
 export const REHEARSAL_SETTLE_SECONDS = 120;
 
+/** The longest an await runs, idle or not: a ceiling over the project's slowest real CI. */
+export const REHEARSAL_AWAIT_CAP_SECONDS = 45 * 60;
+
 /** The pinned checkout action the rendered workflows use. */
 export const REHEARSAL_CHECKOUT_ACTION =
 	'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7';

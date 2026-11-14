@@ -12,6 +12,7 @@ import type {
 	IRehearsalRun,
 	IRehearsalScenario,
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
+import { REHEARSAL_AWAIT_CAP_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
 
 const pullOf = (over: Partial<IRehearsalPullState>): IRehearsalPullState =>
@@ -28,7 +29,14 @@ const pullOf = (over: Partial<IRehearsalPullState>): IRehearsalPullState =>
 const runOf = (status: string): IRehearsalRun =>
 	fakePartial<IRehearsalRun>({ headSha: 'h1', status, workflow: 'ci' });
 
-const world = (pull: Partial<IRehearsalPullState>, runs: IRehearsalRun[]) => {
+type TOverTime<T> = T | ((at: number) => T);
+const at = <T>(value: TOverTime<T>, now: number): T =>
+	typeof value === 'function' ? (value as (at: number) => T)(now) : value;
+
+const world = (
+	pull: TOverTime<Partial<IRehearsalPullState>>,
+	runs: TOverTime<IRehearsalRun[]>,
+) => {
 	const drafts: boolean[] = [];
 	const clock = { at: 0 };
 	const forge = fakePartial<IRehearsalForge>({
@@ -37,8 +45,8 @@ const world = (pull: Partial<IRehearsalPullState>, runs: IRehearsalRun[]) => {
 		tipOf: async () => 'tip',
 		openPull: async () => 1,
 		setDraft: async (_n: number, draft: boolean) => void drafts.push(draft),
-		pulls: async () => [pullOf(pull)],
-		runs: async () => runs,
+		pulls: async () => [pullOf(at(pull, clock.at))],
+		runs: async () => at(runs, clock.at),
 		pullEvents: async () => [],
 		history: async () => [],
 	});
@@ -144,5 +152,32 @@ describe('an await step', () => {
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
 		expect(drafts).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
+	});
+
+	it('[<50ms] counts only idle time: runs for 20 minutes, then the merge, passes with no manual step', async () => {
+		const minute = 60_000;
+		const { ctx } = world(
+			(now) => (now >= 20 * minute ? { mergedAt: 'merged' } : {}),
+			(now) => [runOf(now < 20 * minute ? 'in_progress' : 'completed')],
+		);
+		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
+		expect(evidence.failures).toEqual([]);
+		expect(evidence.manualSteps).toEqual([]);
+	});
+
+	it('[<50ms] fails once it has been idle for its seconds, whatever ran before', async () => {
+		const { ctx } = world({}, (now) => [
+			runOf(now < 600_000 ? 'queued' : 'completed'),
+		]);
+		const evidence = await runScenario(ctx, scenario('merged', ['a']));
+		expect(evidence.failures).toEqual(['merged not reached in 60 s for a']);
+	});
+
+	it('[<50ms] fails at the cap, naming it, however long something keeps running', async () => {
+		const { ctx } = world({}, [runOf('in_progress')]);
+		const evidence = await runScenario(ctx, scenario('merged', ['a']));
+		expect(evidence.failures).toEqual([
+			`merged not reached within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap for a`,
+		]);
 	});
 });
