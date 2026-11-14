@@ -20,6 +20,8 @@ import {
 } from '../contracts/constants/integration-pass.constant';
 import type { IGitExec } from '../contracts/interfaces/integration-pass.interface';
 
+import { identityFetchEnv, pushAsIdentity } from './land-identity-push.helper';
+
 /** Git in `cwd`, trimmed; throws when git fails. */
 export const runGit: IGitExec = (cwd, args, env) =>
 	execFileSync('git', [...args], {
@@ -29,12 +31,17 @@ export const runGit: IGitExec = (cwd, args, env) =>
 		...(env === undefined ? {} : { env: { ...process.env, ...env } }),
 	}).trim();
 
-const run = (cwd: string, args: readonly string[]): string | undefined => {
+const run = (
+	cwd: string,
+	args: readonly string[],
+	env?: NodeJS.ProcessEnv,
+): string | undefined => {
 	try {
 		return execFileSync('git', [...args], {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
+			...(env === undefined ? {} : { env: { ...process.env, ...env } }),
 		}).trim();
 	} catch {
 		return undefined;
@@ -78,8 +85,12 @@ const mergeMember = (
 	remote: string,
 	member: ITrainCandidate,
 	derived: ReadonlySet<string>,
+	fetchEnv?: NodeJS.ProcessEnv,
 ): 'clean' | 'derived' | 'conflict' => {
-	if (run(dir, ['fetch', '-q', '--', remote, member.headSha]) === undefined) {
+	if (
+		run(dir, ['fetch', '-q', '--', remote, member.headSha], fetchEnv) ===
+		undefined
+	) {
 		return 'conflict';
 	}
 	const message = `Merge pull request #${String(member.number)} from ${member.headRef}`;
@@ -142,6 +153,8 @@ export const assembleTrain = (input: {
 	 * calls `discardTrain`. Nothing reaches the remote.
 	 */
 	readonly rehearsal?: boolean;
+	/** The identity's token: the push and the fetches are made as it. Without one nothing is pushed. */
+	readonly identityToken?: string;
 }): {
 	/** The kept worktree of a rehearsal. */
 	readonly scratch?: string;
@@ -183,6 +196,7 @@ export const assembleTrain = (input: {
 				input.remote,
 				member,
 				input.derived,
+				identityFetchEnv(input.identityToken ?? ''),
 			);
 			if (outcome === 'conflict') conflicting.push(member.number);
 			if (outcome === 'derived') regenerated.push(member.number);
@@ -235,13 +249,13 @@ export const assembleTrain = (input: {
 			kept = true;
 			return { conflicting, regenerated, scratch };
 		}
-		const pushFailure = failureOf(scratch, [
-			'push',
-			'-q',
-			'--force',
-			input.remote,
-			`HEAD:refs/heads/${input.ref}`,
-		]);
+		const pushFailure = pushAsIdentity({
+			cwd: scratch,
+			remote: input.remote,
+			refspec: `HEAD:refs/heads/${input.ref}`,
+			token: input.identityToken ?? '',
+			force: true,
+		});
 		return pushFailure === undefined
 			? { conflicting, regenerated }
 			: { conflicting, regenerated, pushFailure };

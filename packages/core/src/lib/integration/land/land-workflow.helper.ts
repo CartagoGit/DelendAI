@@ -128,7 +128,25 @@ export const landWorkflowInputOf = (
 	derived: LAND_DERIVED_JOBS,
 });
 
+/**
+ * Every checkout the workflow renders must drop the workflow token from the
+ * clone: the integrator pushes as its identity or not at all, so a push that
+ * forgot its credential fails instead of falling back to a read-only token.
+ */
+const refuseKeptCredentials = (setupSteps: readonly string[]): void => {
+	const steps = setupSteps
+		.join('\n')
+		.split(/\n(?=\s*- )/u)
+		.filter((step) => step.includes('actions/checkout'));
+	for (const step of steps)
+		if (!/persist-credentials:\s*['"]?false['"]?/u.test(step))
+			throw new Error(
+				'the land workflow renders a checkout that keeps the workflow token: set persist-credentials: false on it',
+			);
+};
+
 export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
+	refuseKeptCredentials(input.setupSteps);
 	const release = `'${input.releaseBranch}'`;
 	const token = { GH_TOKEN: tokenOf(input.identity) };
 	const dispatched = (flag: string): string =>

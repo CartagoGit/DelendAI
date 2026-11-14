@@ -15,7 +15,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { prepareDerived, pushDerived } from '@delendai/core/cli';
@@ -31,7 +31,7 @@ import {
 	regenerateWith,
 	TRAIN_REGENERATION_SUBJECT,
 } from './train-assembly';
-import { identityPushEnv, runGit } from './land-forward';
+import { identityFetchEnv, pushAsIdentity, runGit } from './land-forward';
 
 const flag = (name: string): string | undefined =>
 	process.argv
@@ -47,13 +47,18 @@ interface IMeta {
 	readonly tip: string;
 }
 
-const prepare = (
+/** `dir` as an absolute path against the invoking directory: a git command in a scratch worktree must not resolve it there. */
+export const absoluteDir = (dir: string, cwd = process.cwd()): string =>
+	isAbsolute(dir) ? dir : resolve(cwd, dir);
+
+export const prepare = (
 	pr: number,
-	out: string,
+	outDir: string,
 	commands: readonly string[],
 	derived: readonly string[],
 ): number => {
 	const root = process.cwd();
+	const out = absoluteDir(outDir, root);
 	runGit(root, ['fetch', '-q', 'origin', `refs/pull/${String(pr)}/head`]);
 	const head = runGit(root, ['rev-parse', 'FETCH_HEAD']);
 	const integration = resolveDevelopmentPolicy(readDevelopmentConfig())
@@ -117,9 +122,15 @@ const prepare = (
 	return 0;
 };
 
-const push = (pr: number, from: string, derived: readonly string[]): number => {
+export const push = (
+	pr: number,
+	fromDir: string,
+	derived: readonly string[],
+): number => {
 	const root = process.cwd();
+	const from = absoluteDir(fromDir, root);
 	const token = process.env.GH_TOKEN ?? '';
+	const fetchEnv = identityFetchEnv(token);
 	const meta = JSON.parse(
 		readFileSync(join(from, 'meta.json'), 'utf8'),
 	) as IMeta;
@@ -142,7 +153,7 @@ const push = (pr: number, from: string, derived: readonly string[]): number => {
 		);
 		return 1;
 	}
-	runGit(root, ['fetch', '-q', 'origin', info.head.sha, meta.tip]);
+	runGit(root, ['fetch', '-q', 'origin', info.head.sha, meta.tip], fetchEnv);
 	runGit(root, [
 		'fetch',
 		'-q',
@@ -167,6 +178,7 @@ const push = (pr: number, from: string, derived: readonly string[]): number => {
 		regenerate: () => true,
 		linkDependencies: () => true,
 		rehearsal: true,
+		identityToken: token,
 	});
 	if (plain.scratch === undefined || plain.conflicting.length > 0) return 1;
 	try {
@@ -185,23 +197,13 @@ const push = (pr: number, from: string, derived: readonly string[]): number => {
 					])
 						.split('\n')
 						.filter((p) => p !== ''),
-				push: (sha) => {
-					try {
-						runGit(
-							root,
-							[
-								'push',
-								'-q',
-								'origin',
-								`${sha}:refs/heads/${info.head.ref}`,
-							],
-							identityPushEnv(token),
-						);
-						return true;
-					} catch {
-						return false;
-					}
-				},
+				push: (sha) =>
+					pushAsIdentity({
+						cwd: root,
+						remote: 'origin',
+						refspec: `${sha}:refs/heads/${info.head.ref}`,
+						token,
+					}) === undefined,
 			},
 		});
 		console.log(`derived-resolve: #${String(pr)} ${verdict}`);

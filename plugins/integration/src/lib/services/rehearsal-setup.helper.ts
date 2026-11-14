@@ -204,9 +204,12 @@ export const landIntegratorWorkflow = (
 				concurrencyGroup,
 				setupSteps: [
 					`- uses: ${REHEARSAL_CHECKOUT_ACTION}`,
+					'  with:',
+					'      persist-credentials: false',
 					'- uses: ./.github/actions/setup-bun-repo',
 					'  with:',
 					"      fetch-depth: '0'",
+					"      persist-credentials: 'false'",
 				],
 			},
 			{

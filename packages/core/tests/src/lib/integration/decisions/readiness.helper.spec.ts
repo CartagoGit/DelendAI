@@ -76,6 +76,12 @@ describe('pullRequestReady', () => {
 		expect(
 			pullRequestReady({ ...base, headAuthor: 'github-actions[bot]' }),
 		).toBe(true);
+		expect(
+			whyNotReady({
+				...bot,
+				checks: [{ name: 'GitGuardian', conclusion: 'success' }],
+			}),
+		).toContain('whose pushes start no CI');
 		expect(pullRequestReady({ ...base, headAuthor: 'someone' })).toBe(true);
 	});
 

@@ -9,8 +9,10 @@ import { join } from 'node:path';
 
 import {
 	createBringForward,
+	identityFetchEnv,
 	identityPushEnv,
 	plainMerge,
+	pushAsIdentity,
 	runGit,
 } from '@delendai/integration/public';
 
@@ -21,4 +23,11 @@ export const scratchDir = (): string =>
 export const removeScratch = (dir: string): void =>
 	rmSync(dir, { recursive: true, force: true });
 
-export { createBringForward, identityPushEnv, plainMerge, runGit };
+export {
+	createBringForward,
+	identityFetchEnv,
+	identityPushEnv,
+	plainMerge,
+	pushAsIdentity,
+	runGit,
+};

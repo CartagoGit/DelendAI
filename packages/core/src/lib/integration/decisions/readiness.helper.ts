@@ -6,7 +6,7 @@ import type { IPullRequestChecks } from './readiness.interface';
 /**
  * Why a pull request is not ready to land, or `undefined` when it is:
  * a draft; a head the forge never built (pushed by an actor whose
- * pushes start no CI, and no check reports on it: once the integrator's
+ * pushes start no CI, and no required check reports on it: once the integrator's
  * reopen made the forge build it, its checks are the proof); no required
  * check where the policy did not opt in (nothing was proved); a required
  * check missing, pending or red on its head; or a label that blocks it.
@@ -14,7 +14,9 @@ import type { IPullRequestChecks } from './readiness.interface';
 export const whyNotReady = (facts: IPullRequestChecks): string | undefined => {
 	if (facts.draft) return 'a draft';
 	if (
-		facts.checks.length === 0 &&
+		!facts.required.some((name) =>
+			facts.checks.some((check) => check.name === name),
+		) &&
 		facts.headAuthor !== undefined &&
 		facts.unbuiltAuthors.includes(facts.headAuthor)
 	)

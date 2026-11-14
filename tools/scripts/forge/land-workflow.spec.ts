@@ -1,3 +1,4 @@
+import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -132,5 +133,46 @@ describe('the land signal workflow wakes the land at the base ref', () => {
 		expect(text).toContain('--ref "${BRANCH}"');
 		expect(text).toContain('-f pr="${PULL_REQUEST}"');
 		expect(text).toContain('::warning::could not wake the integrator');
+	});
+});
+
+describe('the land workflow keeps no workflow token in its clone', () => {
+	const checkoutsOf = (text: string) =>
+		Object.values(
+			(
+				parse(text) as {
+					jobs: Record<
+						string,
+						{
+							steps?: {
+								uses?: string;
+								with?: Record<string, unknown>;
+							}[];
+						}
+					>;
+				}
+			).jobs,
+		).flatMap((job) =>
+			(job.steps ?? []).filter(
+				(step) =>
+					step.uses?.startsWith('actions/checkout') === true ||
+					step.uses === './.github/actions/setup-bun-repo',
+			),
+		);
+
+	it('[<20ms] sets persist-credentials false on every checkout it renders', () => {
+		const steps = checkoutsOf(renderLandWorkflow(REPO_LAND_WORKFLOW));
+		expect(steps.length).toBeGreaterThan(0);
+		for (const step of steps)
+			expect(String(step.with?.['persist-credentials'])).toBe('false');
+	});
+
+	it('[<20ms] refuses a checkout that keeps the credential', () => {
+		expect(() =>
+			renderLandWorkflow({
+				...REPO_LAND_WORKFLOW,
+				setupSteps: ['- uses: actions/checkout@abc'],
+			}),
+		).toThrow('persist-credentials: false');
 	});
 });

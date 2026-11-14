@@ -82,7 +82,13 @@ export const runIntegrationPass = async (
 		forge,
 		git:
 			input.ports?.git ??
-			createLandGit({ root, remote: LAND_REMOTE, ports, exec }),
+			createLandGit({
+				root,
+				remote: LAND_REMOTE,
+				ports,
+				exec,
+				token: env.GH_TOKEN ?? '',
+			}),
 		config,
 		// Its pushes are the identity's, so the forge builds what it moves.
 		bringForward:

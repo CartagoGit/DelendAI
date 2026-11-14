@@ -225,10 +225,10 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		const checks = await forge.checks(pr.headSha);
 		const waits = notReady(pr, checks);
 		if (waits !== undefined) {
-			why(pr.number, waits);
 			// A head the forge never builds never turns green by waiting: the
-			// integrator brings it forward once, else its author is asked.
-			if (headNotBuilt(pr, checks, deps.config.unbuiltAuthors)) {
+			// integrator brings it forward once, else its author is asked. Its
+			// reason is recorded once, with the result.
+			if (headNotBuilt(pr, checks, deps.config.unbuiltAuthors, required))
 				await settleUnbuilt({
 					deps,
 					pr,
@@ -236,7 +236,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 					waits,
 					report: { why, note, needsUpdate },
 				});
-			}
+			else why(pr.number, waits);
 			continue;
 		}
 		const conflict = git.conflictOf(pr, tip);
