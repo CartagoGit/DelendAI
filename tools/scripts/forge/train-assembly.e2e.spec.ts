@@ -1,5 +1,5 @@
 /**
- * train-assembly.spec.ts — a conflict in a derived file is regenerated on
+ * train-assembly.e2e.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
 import { execFileSync } from 'node:child_process';
@@ -151,6 +151,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three, five],
@@ -214,6 +215,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three, five],
@@ -246,6 +248,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three, five],
@@ -273,6 +276,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three],
@@ -292,6 +296,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three],
@@ -314,6 +319,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three],
@@ -332,6 +338,7 @@ describe('assembleTrain', () => {
 		const outcome = assembleTrain({
 			root,
 			remote: 'origin',
+			identityToken: 'identity-token',
 			tipSha: tip,
 			ref: TRAIN,
 			members: [three, four],
@@ -350,6 +357,7 @@ describe('assembleTrain', () => {
 			assembleTrain({
 				root,
 				remote: 'origin',
+				identityToken: 'identity-token',
 				tipSha: tip,
 				ref: TRAIN,
 				members: [three, five],

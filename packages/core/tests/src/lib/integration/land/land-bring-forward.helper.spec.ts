@@ -23,20 +23,37 @@ const pr = (headAuthor?: string): ILandPullRequest => ({
 const BOT = 'github-actions[bot]';
 
 describe('headNotBuilt', () => {
-	it('[<5ms] is true for action_required, or no run on a bot head', () => {
+	const REQUIRED = ['ci'];
+	it('[<5ms] is true for action_required, or no required check on a bot head', () => {
 		expect(
 			headNotBuilt(
 				pr('ann'),
 				[{ name: 'x', conclusion: 'action_required' }],
 				[BOT],
+				REQUIRED,
 			),
 		).toBe(true);
-		expect(headNotBuilt(pr(BOT), [], [BOT])).toBe(true);
+		expect(headNotBuilt(pr(BOT), [], [BOT], REQUIRED)).toBe(true);
 	});
-	it('[<5ms] is false for a person with no run yet, or a head with runs', () => {
-		expect(headNotBuilt(pr('ann'), [], [BOT])).toBe(false);
+	it('[<5ms] is true for a bot head that only a third-party check reported on', () => {
 		expect(
-			headNotBuilt(pr(BOT), [{ name: 'x', conclusion: null }], [BOT]),
+			headNotBuilt(
+				pr(BOT),
+				[{ name: 'GitGuardian', conclusion: 'success' }],
+				[BOT],
+				REQUIRED,
+			),
+		).toBe(true);
+	});
+	it('[<5ms] is false for a person with no run yet, or a head a required check reported on', () => {
+		expect(headNotBuilt(pr('ann'), [], [BOT], REQUIRED)).toBe(false);
+		expect(
+			headNotBuilt(
+				pr(BOT),
+				[{ name: 'ci', conclusion: null }],
+				[BOT],
+				REQUIRED,
+			),
 		).toBe(false);
 	});
 });

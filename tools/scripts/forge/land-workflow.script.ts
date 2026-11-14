@@ -27,6 +27,9 @@ export const LAND_SIGNAL_WORKFLOW_PATH = '.github/workflows/land-signal.yml';
 const SETUP_STEPS = [
 	'- name: Checkout (required to resolve the local composite action)',
 	'  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7',
+	'  with:',
+	'      # The integrator pushes as its identity, never with this token.',
+	'      persist-credentials: false',
 	'',
 	'- name: Setup repo (checkout + bun + install)',
 	'  uses: ./.github/actions/setup-bun-repo',
@@ -34,6 +37,7 @@ const SETUP_STEPS = [
 	'      # Full history: a batch merges members onto the tip, and the',
 	'      # promotion and the forward sync ask ancestry questions.',
 	"      fetch-depth: '0'",
+	"      persist-credentials: 'false'",
 ];
 
 /** This repository's values for the template, apart from what the policy sets. */

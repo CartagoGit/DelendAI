@@ -158,6 +158,26 @@ describe('a head the forge did not build', () => {
 		expect(reopens).toEqual([n]);
 	});
 
+	it('[<15ms] records one reason that carries the bring-forward result, for a head with only a third-party check', async () => {
+		const fake = createFakeWorld();
+		const n = fake.world.addPull(
+			{ 'a/x.ts': '1' },
+			{ author: LAND_WORKFLOW_TOKEN_ACTOR },
+		);
+		const report = await landPass({
+			forge: {
+				...fake.forge,
+				checks: async () => [
+					{ name: 'GitGuardian', conclusion: 'success' },
+				],
+			},
+			git: fake.git,
+			config: CONFIG,
+			bringForward: async () => 'moved',
+		});
+		expect(report.reasons.get(n)).toMatch(/; bring-forward moved: /u);
+	});
+
 	it('[<15ms] reopens a head once: the second pass asks its author and says it skipped', async () => {
 		const fake = createFakeWorld();
 		const n = fake.world.addPull(
@@ -175,7 +195,7 @@ describe('a head the forge did not build', () => {
 			config: CONFIG,
 			bringForward: async () => 'current',
 		});
-		expect(report.reasons.get(n)).toContain('bring-forward skipped');
+		expect(report.reasons.get(n)).toContain('bring-forward current');
 		expect(fake.world.pulls.get(n)?.labels).toContain(
 			LAND_LABEL_NEEDS_UPDATE,
 		);

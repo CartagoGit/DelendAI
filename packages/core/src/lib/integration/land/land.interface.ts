@@ -134,11 +134,8 @@ export interface ILandGit {
 /** What bringing a head up to the tip came to. */
 export type ILandForward = 'brought' | 'conflict' | 'moved' | 'current';
 
-/** What a pass made of a head nobody built: the forward result, or the reopen that stands for it. */
-export type ILandBringResult =
-	| Exclude<ILandForward, 'current'>
-	| 'reopened'
-	| 'skipped';
+/** What a pass made of a head nobody built: the forward result, or the reopen or refusal that stands for it. */
+export type ILandBringResult = ILandForward | 'reopened' | 'skipped';
 
 /**
  * Everything project-specific a pass reads. `landConfigFromPolicy` fills

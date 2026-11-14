@@ -123,6 +123,7 @@ export const renderAdoption = (input: IAdoptionInput): IAdoptionOutput => ({
 					`- uses: ${CHECKOUT}`,
 					'  with:',
 					"      fetch-depth: '0'",
+					'      persist-credentials: false',
 				],
 			}),
 		},

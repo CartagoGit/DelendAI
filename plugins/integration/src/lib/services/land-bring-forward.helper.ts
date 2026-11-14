@@ -11,31 +11,23 @@ import type { ILandDeps } from '@delendai/core/cli';
 import type { ILandProjectPorts } from '../contracts/interfaces/integration-pass.interface';
 
 import {
+	identityFetchEnv,
+	identityPushEnv,
+	pushAsIdentity,
+} from './land-identity-push.helper';
+import {
 	assembleTrain,
 	discardTrain,
 	runGit as git,
 } from './land-train-assembly.helper';
 
-/**
- * The environment that makes git authenticate as `token`, for pushes only:
- * the checkout's own credential (the workflow token, which starts no
- * workflow) is reset and replaced. It is an environment, never an argument,
- * so the token is in no command line.
- */
-export const identityPushEnv = (
-	token: string,
-	host = 'https://github.com/',
-): NodeJS.ProcessEnv => ({
-	GIT_CONFIG_COUNT: '2',
-	GIT_CONFIG_KEY_0: `http.${host}.extraheader`,
-	GIT_CONFIG_VALUE_0: '',
-	GIT_CONFIG_KEY_1: `http.${host}.extraheader`,
-	GIT_CONFIG_VALUE_1: `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`,
-});
+export { identityPushEnv };
 
 /** The tip merged into `headSha` in a scratch worktree, plain: nothing is regenerated. */
 const plainMerge = (input: {
 	readonly normalize?: ILandProjectPorts['normalizeBatch'];
+	/** Only for the fetches: the merge is a trial, never pushed. */
+	readonly identityToken?: string;
 	readonly root: string;
 	readonly remote: string;
 	readonly tip: string;
@@ -62,6 +54,9 @@ const plainMerge = (input: {
 		regenerate: () => true,
 		linkDependencies: () => true,
 		rehearsal: true,
+		...(input.identityToken === undefined
+			? {}
+			: { identityToken: input.identityToken }),
 	});
 	return {
 		...(built.scratch === undefined ? {} : { scratch: built.scratch }),
@@ -91,13 +86,15 @@ export const createBringForward =
 	async (pr, tip) => {
 		const { root, remote, token } = input;
 		try {
-			git(root, ['fetch', '-q', '--', remote, pr.headSha]);
-			git(root, ['fetch', '-q', '--', remote, tip]);
+			const env = identityFetchEnv(token);
+			git(root, ['fetch', '-q', '--', remote, pr.headSha], env);
+			git(root, ['fetch', '-q', '--', remote, tip], env);
 		} catch {
 			return 'moved';
 		}
 		if (holdsTip(root, tip, pr.headSha)) return 'current';
 		const merged = plainMerge({
+			identityToken: token,
 			...(input.normalize === undefined
 				? {}
 				: { normalize: input.normalize }),
@@ -111,15 +108,15 @@ export const createBringForward =
 		if (merged.scratch === undefined) return 'conflict';
 		try {
 			if (merged.conflicting) return 'conflict';
-			git(
-				merged.scratch,
-				['push', '-q', remote, `HEAD:refs/heads/${pr.headRef}`],
-				identityPushEnv(token),
-			);
-			return 'brought';
-		} catch {
 			// Declined: the head moved since the listing.
-			return 'moved';
+			return pushAsIdentity({
+				cwd: merged.scratch,
+				remote,
+				refspec: `HEAD:refs/heads/${pr.headRef}`,
+				token,
+			}) === undefined
+				? 'brought'
+				: 'moved';
 		} finally {
 			discardTrain(root, merged.scratch);
 		}

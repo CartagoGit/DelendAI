@@ -161,9 +161,12 @@ describe('today land on the rehearsal branch', () => {
 				derived: LAND_DERIVED_JOBS,
 				setupSteps: [
 					'- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7',
+					'  with:',
+					'      persist-credentials: false',
 					'- uses: ./.github/actions/setup-bun-repo',
 					'  with:',
 					"      fetch-depth: '0'",
+					"      persist-credentials: 'false'",
 				],
 			}),
 		);
