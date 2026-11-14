@@ -1,0 +1,19 @@
+name: rehearsal-scan
+
+on:
+    push:
+        branches: ['delendai/rehearsal/r20261114-181254/authored-conflict-integration']
+
+permissions:
+    contents: read
+
+jobs:
+    scan:
+        name: rehearsal-scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: The push started a scan
+              env:
+                  SHA: ${{ github.sha }}
+              run: echo "scanned $SHA"
