@@ -14,7 +14,13 @@ import type {
 	IRehearsalFileChange,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import { renderSignalJob } from './integration-adoption.service';
+
 const WORKFLOWS = '.github/workflows';
+const SIGNAL_INDENT = 4;
+const JOBS_KEY = /^jobs:\s*$/u;
+const JOB_KEY = /^( +)([\w-]+):\s*(?:#.*)?$/u;
+const PULL_REQUEST_TRIGGER = /^\s*pull_request:/mu;
 const SECONDS_PER_MINUTE = 60;
 
 /** Judge a wall time (seconds) the one way the report and production do. */
@@ -85,5 +91,50 @@ export const realModeFiles = (input: {
 }): readonly IRehearsalFileChange[] =>
 	Object.entries(input.workflows).map(([name, text]) => ({
 		path: `${WORKFLOWS}/${name}`,
-		content: renderBranchFilters(text, input.integration),
+		content: withSignalJob(
+			renderBranchFilters(text, input.integration),
+			input.integration,
+		),
 	}));
+
+/** The ids of the jobs `text` declares and the indent they sit at, or `undefined` without a `jobs:` block. */
+const declaredJobs = (
+	text: string,
+): { readonly ids: readonly string[]; readonly indent: number } | undefined => {
+	const lines = text.split('\n');
+	const start = lines.findIndex((line) => JOBS_KEY.test(line));
+	if (start < 0) return undefined;
+	let indent: number | undefined;
+	const ids: string[] = [];
+	for (const line of lines.slice(start + 1)) {
+		if (/^\S/u.test(line)) break;
+		const key = JOB_KEY.exec(line);
+		if (key === null) continue;
+		const width = key[1]?.length ?? 0;
+		indent ??= width;
+		if (width === indent && key[2] !== undefined) ids.push(key[2]);
+	}
+	return indent === undefined ? undefined : { ids, indent };
+};
+
+/**
+ * `text` with the signal job appended after its last job, so a finished CI
+ * wakes the integrator on the rehearsal branch. A file that is no pull
+ * request CI, or has no jobs block, is returned as it is.
+ */
+export const withSignalJob = (text: string, integration: string): string => {
+	const jobs = declaredJobs(text);
+	if (jobs === undefined || !PULL_REQUEST_TRIGGER.test(text)) return text;
+	const signal = renderSignalJob({
+		needs: jobs.ids,
+		integrationBranch: integration,
+	})
+		.trimEnd()
+		.split('\n')
+		.map((line) => {
+			const lead = line.length - line.trimStart().length;
+			return `${' '.repeat((lead * jobs.indent) / SIGNAL_INDENT)}${line.trimStart()}`;
+		})
+		.join('\n');
+	return `${text.trimEnd()}\n\n${signal}\n`;
+};

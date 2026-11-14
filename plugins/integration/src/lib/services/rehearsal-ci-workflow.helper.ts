@@ -20,6 +20,8 @@ import {
 	REHEARSAL_WORKFLOW_NAME,
 } from '../contracts/constants/rehearsal.constant';
 
+import { renderSignalJob } from './integration-adoption.service';
+
 const CI_TIMEOUT_MINUTES = 15;
 const WORKFLOW_TIMEOUT_MINUTES = 45;
 /** The user id of the GitHub Actions bot: its commit email carries it. */
@@ -70,6 +72,11 @@ export const renderRehearsalCiWorkflow = (input: {
 		'                  echo "declared: $result after ${seconds}s"',
 		'                  sleep "$seconds"',
 		'                  [ "$result" = success ]',
+		'',
+		renderSignalJob({
+			needs: [REHEARSAL_CI_CHECK],
+			integrationBranch: input.integration,
+		}).trimEnd(),
 	);
 
 /** A workflow every push to the integration branch starts: where the scan would run. */

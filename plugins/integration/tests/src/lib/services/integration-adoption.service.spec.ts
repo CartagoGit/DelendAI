@@ -28,10 +28,16 @@ describe('integration adoption', () => {
 		const { files } = renderAdoption(FIXTURE);
 		expect(files.map((file) => file.path)).toEqual([
 			'.github/workflows/land.yml',
+			'.github/workflows/land-signal.yml',
 			'.github/workflows/rehearsal.yml',
 		]);
 		const land = files[0]?.content ?? '';
-		expect(land).toContain('branches: [main]');
+		expect(land).not.toContain('pull_request_target');
+		expect(land).toContain('branches: [main, stable]');
+		const signal = files[1]?.content ?? '';
+		expect(signal).toContain('branches: [main]');
+		expect(signal).toContain('actions: write');
+		expect(signal).toContain('gh workflow run land.yml');
 		expect(land).toContain('vars.ACME_APP_ID');
 		expect(land).toContain(
 			'npx --yes @delendai/cli@9.9.9 integration pass',

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { renderRehearsalCiWorkflow } from '../../../../src/lib/services/rehearsal-ci-workflow.helper';
 import { createRehearsalSetup } from '../../../../src/lib/services/rehearsal-setup.helper';
 
 import {
@@ -7,6 +8,7 @@ import {
 	realModeFiles,
 	renderBranchFilters,
 	wallSecondsOf,
+	withSignalJob,
 } from '../../../../src/lib/services/rehearsal-real-ci.service';
 
 const CI = [
@@ -43,6 +45,20 @@ describe('renderBranchFilters', () => {
 			'.github/workflows/ci.yml',
 			'.github/workflows/codeql.yml',
 		]);
+	});
+	it('[<5ms] ends a pull request CI with the signal job, indented like its own jobs, and leaves other files alone', () => {
+		const [ci] = realModeFiles({
+			integration: 'x',
+			workflows: { 'ci.yml': CI },
+		});
+		expect(ci?.content).toContain('\n  integration-signal:\n');
+		expect(ci?.content).toContain('    needs: [a]');
+		expect(ci?.content).toContain('gh workflow run land.yml');
+		expect(
+			ci?.content?.trimEnd().endsWith('could not wake the integrator"'),
+		).toBe(true);
+		const plain = 'name: x\non:\n  push:\njobs:\n  a:\n    runs-on: x\n';
+		expect(withSignalJob(plain, 'x')).toBe(plain);
 	});
 });
 
@@ -81,11 +97,31 @@ describe('a real-mode setup', () => {
 			realWorkflows: { 'ci.yml': CI },
 		}).files('b');
 		expect(fast).toContain('.github/workflows/rehearsal-ci.yml');
+		expect(fast).toContain('.github/workflows/land-signal.yml');
 		expect(real.map((f) => f.path)).not.toContain(
 			'.github/workflows/rehearsal-ci.yml',
 		);
 		expect(real.map((f) => f.path)).toContain('.github/workflows/ci.yml');
+		expect(real.map((f) => f.path)).toContain(
+			'.github/workflows/land-signal.yml',
+		);
 		const policy = real.find((f) => f.path === 'delendai.config.json');
 		expect(policy?.content).toContain('"tests"');
+	});
+});
+
+describe('the fast rehearsal CI', () => {
+	it('[<5ms] ends with the signal job that wakes the land on the rehearsal branch', () => {
+		const text = renderRehearsalCiWorkflow({
+			integration: 'ns/r1',
+			runId: 'r1',
+		});
+		expect(text.trimEnd().endsWith('could not wake the integrator"')).toBe(
+			true,
+		);
+		expect(text).toContain('    integration-signal:\n');
+		expect(text).toContain('needs: [rehearsal-ci]');
+		expect(text).toContain('gh workflow run land.yml');
+		expect(text).toContain('actions: write');
 	});
 });

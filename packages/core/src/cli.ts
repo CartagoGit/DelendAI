@@ -148,6 +148,11 @@ export {
 } from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
 export {
+	indentLines,
+	renderLandSignalWorkflow,
+	wakeIntegratorStep,
+} from './lib/integration/land/land-signal.helper';
+export {
 	identitySteps,
 	renderLandWorkflow,
 	tokenOf,
@@ -160,6 +165,9 @@ export { createGithubLandForge } from './lib/integration/land/github-land-forge.
 export {
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
+	LAND_SIGNAL_EVENTS,
+	LAND_SIGNAL_TIMEOUT_MINUTES,
+	LAND_SIGNAL_WORKFLOW_FILE,
 	LAND_WORKFLOW_NAME,
 	LAND_WORKFLOW_FILE,
 	LAND_WORKFLOW_TOKEN_ACTOR,

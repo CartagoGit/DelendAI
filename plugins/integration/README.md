@@ -27,7 +27,8 @@ validations are your own required checks and your own CI.
    `command` that regenerates them), `identity`, `signalWorkflows` and
    `scanWorkflows`. Every option has a default; with `engine: none` nothing acts.
 2. Run `delendai integration adopt [--needs=<job,job>]`. It writes
-   `.github/workflows/land.yml` (the integrator) and
+   `.github/workflows/land.yml` (the integrator),
+   `.github/workflows/land-signal.yml` (what wakes it) and
    `.github/workflows/rehearsal.yml`, pinned to this CLI's version, and prints
    the `integration-signal` job. Append that job to your own CI: it runs last
    and wakes the integrator.
@@ -37,6 +38,26 @@ validations are your own required checks and your own CI.
    plays every scenario on `<namespace>/rehearsal/<run>/…` branches and
    cleans up after itself.
 5. Activate once the rehearsal is green on every scenario and target.
+
+### How the land is woken
+
+The land never listens to `pull_request_target`, for two GitHub facts: since
+2025-12-08 GitHub takes a `pull_request_target` workflow file from the
+repository's default branch whatever the pull request's base, so a `land.yml`
+on the integration branch never starts on a pull request event; and from
+2026-12-02 public repositories without an event policy block
+`pull_request_target` by default.
+
+Instead `land-signal.yml` (on `pull_request` into the integration branch:
+opened, reopened, synchronize, ready_for_review, labeled, unlabeled,
+converted_to_draft, closed) and the `integration-signal` job at the end of
+your CI each run `gh workflow run land.yml --ref <base ref> -f pr=<number>`
+with the workflow token. That token holds `actions: write` and
+`contents: read` only, checks out no code and never holds the identity; a
+refused dispatch warns and fails nothing. The pass runs from the base
+branch's `land.yml` as the identity, and a dispatch with an empty `pr` runs
+the full pass. A push to the integration branch and the watchdog schedule
+still wake it too.
 
 ### The identity
 
