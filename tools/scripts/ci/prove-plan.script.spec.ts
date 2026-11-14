@@ -123,15 +123,39 @@ describe('fastSteps', () => {
 		expect(steps[1]?.[1]).toContain('--base=b');
 	});
 
-	it('[<20ms] adds the bun suite for state or proposals code, and runs no tests for none near', () => {
+	it('[<20ms] runs the near bun-owned specs under bun test, and leaves them out of vitest', () => {
+		const steps = fastSteps(
+			['packages/state-sqlite/src/a.ts'],
+			['packages/state-sqlite/src/a.spec.ts', 'plugins/x/a.spec.ts'],
+			'b',
+		);
+		const sqlite = steps.find(([label]) => label === 'test:sqlite');
+		expect(sqlite?.[1]).toContain('packages/state-sqlite/src/a.spec.ts');
+		expect(sqlite?.[1]).not.toContain('plugins/x/a.spec.ts');
+		const vitest = steps.find(([label]) => label.startsWith('tests:'));
+		expect(vitest?.[1]).not.toContain(
+			'packages/state-sqlite/src/a.spec.ts',
+		);
+		expect(vitest?.[1]).toContain('plugins/x/a.spec.ts');
+	});
+
+	it('[<20ms] runs no test for a change no spec is near', () => {
 		expect(
 			fastSteps(['packages/state-sqlite/src/a.ts'], [], 'b').map(
 				([label]) => label,
 			),
-		).toEqual(['test:sqlite']);
+		).toEqual([]);
 		expect(
 			fastSteps(['README.md'], [], 'b').map(([label]) => label),
 		).toEqual([]);
+	});
+
+	it('[<20ms] runs the whole bun suite when the bun runner changed', () => {
+		expect(
+			fastSteps(['bunfig.toml'], [], 'b').find(
+				([label]) => label === 'test:sqlite',
+			)?.[1],
+		).toEqual(['bun', 'run', 'test:sqlite']);
 	});
 });
 
