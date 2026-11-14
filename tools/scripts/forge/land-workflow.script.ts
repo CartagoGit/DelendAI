@@ -12,6 +12,7 @@ import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import {
 	DEFAULT_INTEGRATION_OPTIONS,
 	INTEGRATION_PROTOCOL_VERSION,
+	renderLandSignalWorkflow,
 	renderLandWorkflow,
 	type ILandWorkflowInput,
 } from '@delendai/core/cli';
@@ -20,6 +21,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { readDevelopmentConfig } from './land-policy';
 
 export const LAND_WORKFLOW_PATH = '.github/workflows/land.yml';
+export const LAND_SIGNAL_WORKFLOW_PATH = '.github/workflows/land-signal.yml';
 
 const SETUP_STEPS = [
 	'- name: Checkout (required to resolve the local composite action)',
@@ -85,6 +87,16 @@ export const expectedLandWorkflow = (
 		: undefined;
 };
 
+/** The signal that wakes the integrator: written beside the land workflow, absent with it. */
+export const expectedLandSignalWorkflow = (
+	development: ReturnType<typeof readDevelopmentConfig>,
+): string | undefined =>
+	resolveDevelopmentPolicy(development).integration.engine === 'land'
+		? renderLandSignalWorkflow({
+				integrationBranch: REPO_LAND_WORKFLOW.integrationBranch,
+			})
+		: undefined;
+
 /** The committed file, or `undefined` when there is none: one read, no check before it. */
 const readCommitted = (path: string): string | undefined => {
 	try {
@@ -105,16 +117,27 @@ if (import.meta.main) {
 		);
 		process.exit(1);
 	}
-	const expected = expectedLandWorkflow(development);
-	const committed = readCommitted(LAND_WORKFLOW_PATH);
+	const files = [
+		{
+			path: LAND_WORKFLOW_PATH,
+			expected: expectedLandWorkflow(development),
+		},
+		{
+			path: LAND_SIGNAL_WORKFLOW_PATH,
+			expected: expectedLandSignalWorkflow(development),
+		},
+	];
 	if (process.argv.includes('--check')) {
-		const same = committed === expected;
-		if (!same)
+		const stale = files.filter(
+			({ path, expected }) => readCommitted(path) !== expected,
+		);
+		for (const { path } of stale)
 			console.error(
-				`${LAND_WORKFLOW_PATH} differs from its template and the policy's engine; run land-workflow.script.ts`,
+				`${path} differs from its template and the policy's engine; run land-workflow.script.ts`,
 			);
-		process.exit(same ? 0 : 1);
+		process.exit(stale.length === 0 ? 0 : 1);
 	}
-	if (expected === undefined) rmSync(LAND_WORKFLOW_PATH, { force: true });
-	else writeFileSync(LAND_WORKFLOW_PATH, expected);
+	for (const { path, expected } of files)
+		if (expected === undefined) rmSync(path, { force: true });
+		else writeFileSync(path, expected);
 }

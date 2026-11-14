@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderLandWorkflow } from '@delendai/core/cli';
+import {
+	renderLandSignalWorkflow,
+	renderLandWorkflow,
+} from '@delendai/core/cli';
 
 import { REPO_LAND_WORKFLOW } from './land-workflow.script';
 
@@ -73,11 +76,9 @@ describe('the land workflow acts as its identity', () => {
 describe('the land workflow wakes on events only', () => {
 	const text = renderLandWorkflow(REPO_LAND_WORKFLOW);
 
-	it('[<10ms] runs on the pull request events, a push and a dispatch, and not on workflow_run or check_suite', () => {
-		expect(text).toContain(
-			'types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]',
-		);
-		expect(text).toContain('pull_request_target:');
+	it('[<10ms] runs on a push, the schedule and a dispatch, and not on pull_request_target, workflow_run or check_suite', () => {
+		expect(text).not.toContain('pull_request_target');
+		expect(text).not.toContain('pull_request:');
 		expect(text).toContain('    push:');
 		expect(text).toContain('    workflow_dispatch:');
 		expect(text).not.toContain('workflow_run');
@@ -96,5 +97,40 @@ describe('the land workflow wakes on events only', () => {
 		expect(text).not.toContain('github.event.pull_request.head');
 		expect(text).not.toContain('github.head_ref');
 		expect(text).not.toMatch(/ref:\s/u);
+	});
+});
+
+describe('the land signal workflow wakes the land at the base ref', () => {
+	const text = renderLandSignalWorkflow({ integrationBranch: 'develop' });
+
+	it('[<10ms] triggers on the pull request events into the integration branch only', () => {
+		expect(text).toContain('    pull_request:\n');
+		expect(text).toContain(
+			'types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]',
+		);
+		expect(text).toContain('branches: [develop]');
+		expect(text).not.toContain('pull_request_target');
+	});
+
+	it('[<10ms] holds only actions write and contents read, and checks out nothing', () => {
+		expect(text).toContain(
+			'permissions:\n    actions: write\n    contents: read\n',
+		);
+		expect(text).not.toMatch(/uses:|checkout|create-github-app-token/u);
+		expect(text.match(/^ {4}[\w-]+:$/gmu)).toEqual([
+			'    pull_request:',
+			'    land-signal:',
+		]);
+	});
+
+	it('[<10ms] dispatches land.yml at the base ref with the pull request number, and warns when refused', () => {
+		expect(text).toContain('GH_TOKEN: ${{ github.token }}');
+		expect(text).toContain(
+			'BRANCH: ${{ github.event.pull_request.base.ref }}',
+		);
+		expect(text).toContain('gh workflow run land.yml');
+		expect(text).toContain('--ref "${BRANCH}"');
+		expect(text).toContain('-f pr="${PULL_REQUEST}"');
+		expect(text).toContain('::warning::could not wake the integrator');
 	});
 });

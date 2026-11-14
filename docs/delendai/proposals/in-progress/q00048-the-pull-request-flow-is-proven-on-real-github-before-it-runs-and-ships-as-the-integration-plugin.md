@@ -237,6 +237,7 @@ Nothing of this repository is emitted into the other project.
 ### S2 — The rehearsal harness on real GitHub
 - **Status**: pending
 - **DependsOn**: [S1]
+- **Decision (2026-11-14)**: the land workflow does not use `pull_request_target`. Since 2025-12-08 GitHub reads that workflow from the default branch whatever the PR's base, so a land on the integration branch never started on PR events (rehearsal run 43595171791: 15 land runs, all `push`, every scenario timed out), and from 2026-12-02 public repositories without an event policy block it by default. PR events and CI completion wake the land by `workflow_dispatch` at the PR's base ref, sent by `land-signal.yml` and the CI's signal job, which hold only the workflow token with `actions: write`.
 - **Files**: `plugins/integration/package.json`, `plugins/integration/plugin.manifest.ts`, `plugins/integration/src/index.ts`, `plugins/integration/src/lib/services/rehearsal-run.service.ts`, `plugins/integration/src/lib/services/rehearsal-cleanup.service.ts`, `plugins/integration/src/lib/services/rehearsal-report.service.ts`, `plugins/integration/src/lib/services/rehearsal-ci-workflow.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-report.service.spec.ts`, `.github/workflows/rehearsal.yml`
 - **Gate**: none
 - acceptance:
