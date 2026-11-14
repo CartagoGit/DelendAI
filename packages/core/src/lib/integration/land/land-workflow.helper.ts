@@ -65,11 +65,20 @@ export const tokenOf = (identity: ILandWorkflowIdentity): string =>
 		? `\${{ steps.${IDENTITY_STEP_ID}.outputs.token }}`
 		: `\${{ secrets.${identity.tokenSecret} }}`;
 
+/** One waiting run per group is kept, and none is cancelled for a newer one. */
+const concurrencyLines = (group: string): string[] => [
+	'        concurrency:',
+	`            group: ${group}`,
+	'            cancel-in-progress: false',
+];
+
 /** A job that mints the identity, prepares a runner, then runs `steps`. */
 const job = (
 	input: {
 		readonly id: string;
 		readonly condition: string;
+		/** The job's own concurrency group: a job whose `if` is false never enters one. */
+		readonly group: string;
 		readonly timeout: number;
 		readonly setup: readonly string[];
 		readonly steps: readonly string[];
@@ -79,6 +88,7 @@ const job = (
 	`    ${input.id}:`,
 	`        name: ${input.id}`,
 	`        if: \${{ ${input.condition} }}`,
+	...concurrencyLines(input.group),
 	'        runs-on: ubuntu-latest',
 	`        timeout-minutes: ${String(input.timeout)}`,
 	'        steps:',
@@ -111,6 +121,11 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		...derivedDispatch.map((d) => `!(${d})`),
 		`!(github.event_name == 'push' && github.ref_name == ${release})`,
 	].join(' && ');
+	const baseGroup = input.concurrencyGroup ?? LAND_WORKFLOW_NAME;
+	// The pass job keeps the group; every other job has its own, so a dispatch
+	// that skips a job never displaces the run another job has waiting.
+	const groupOf = (id: string): string =>
+		id === 'land' ? baseGroup : `${baseGroup}-${id}`;
 	const jobs: string[] = [
 		'    # A dispatch for a pull request event or its CI ending (an empty `pr`',
 		'    # included), or a push to the integration branch: re-read the forge and',
@@ -121,6 +136,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 			{
 				id: 'land',
 				condition: passes,
+				group: groupOf('land'),
 				timeout: 30,
 				setup: input.setupSteps,
 				steps: [
@@ -153,6 +169,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 			'    derived-prepare:',
 			'        name: derived-prepare',
 			`        if: \${{ ${dispatched('derived')} }}`,
+			...concurrencyLines(groupOf('derived-prepare')),
 			'        runs-on: ubuntu-latest',
 			'        timeout-minutes: 30',
 			'        permissions:',
@@ -177,6 +194,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 				{
 					id: 'derived-push',
 					condition: dispatched('derived'),
+					group: groupOf('derived-push'),
 					timeout: 10,
 					setup: input.setupSteps,
 					steps: [
@@ -211,6 +229,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 				{
 					id: 'promote',
 					condition: dispatched('promote'),
+					group: groupOf('promote'),
 					timeout: 10,
 					setup: input.setupSteps,
 					steps: [
@@ -230,6 +249,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 				{
 					id: 'forward-sync',
 					condition: `github.event_name == 'push' && github.ref_name == ${release}`,
+					group: groupOf('forward-sync'),
 					timeout: 30,
 					setup: input.setupSteps,
 					steps: [
@@ -257,6 +277,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 				{
 					id: 'upkeep',
 					condition: `github.event_name == 'schedule'`,
+					group: groupOf('upkeep'),
 					timeout: 15,
 					setup: input.setupSteps,
 					steps: input.upkeep.flatMap((step, index) => [
@@ -303,12 +324,6 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'                description: Set when the integration branch CI ended green or red.',
 		'                required: false',
 		"                default: ''",
-		'',
-		'# Concurrency 1; a waiting pass is kept, since the next reads what the',
-		'# cancelled one would have.',
-		'concurrency:',
-		`    group: ${input.concurrencyGroup ?? LAND_WORKFLOW_NAME}`,
-		'    cancel-in-progress: false',
 		'',
 		'# The workflow token only reads; every write uses the identity.',
 		'permissions:',

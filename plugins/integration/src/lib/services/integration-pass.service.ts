@@ -68,6 +68,7 @@ export const runIntegrationPass = async (
 	});
 	const config = landConfigFromPolicy(policy, {
 		sectionOfCheck: ports.sectionOfCheck,
+		batches: policy.integration.batching === 'overlap',
 	});
 	const forge =
 		input.ports?.forge ??

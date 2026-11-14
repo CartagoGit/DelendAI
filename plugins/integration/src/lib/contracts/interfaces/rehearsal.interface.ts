@@ -172,7 +172,7 @@ export interface IRehearsalForge {
 	) => Promise<readonly string[]>;
 	/** A file's content at `sha`. */
 	readonly readFile: (sha: string, path: string) => Promise<string>;
-	/** Shas `branch` reached, newest first, down to and including `until`. */
+	/** The first-parent shas `branch` reached, newest first, down to and including `until`. */
 	readonly history: (
 		branch: string,
 		until: string,
