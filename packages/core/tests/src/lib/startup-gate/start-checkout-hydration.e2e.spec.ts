@@ -3,12 +3,16 @@
  * shared checkout level while it runs.
  *
  * Driven end to end against real git, through a real runner and the real
- * interval: this is the wiring a host actually gets, so a spec that
- * swapped in the seam or the clock would prove the parts and not the
- * assembly — and the assembly is this module's only job.
+ * watch: this is the wiring a host actually gets, so a spec that swapped in
+ * the seam would prove the parts and not the assembly — and the assembly is
+ * this module's only job. Only the interval is fake: a real one kept
+ * fetching every 25 ms while the pass under test worked, and one case took
+ * 7 s on CI.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { type IFakeClock, useFakeClock } from '@delendai/test-kit';
 
 import { startCheckoutHydration } from '@delendai/core/lib/startup-gate/start-checkout-hydration';
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
@@ -27,6 +31,40 @@ afterEach(() => {
 	origin = undefined;
 });
 
+const INTERVAL_MS = 25;
+
+/** Fake only the interval the watch schedules on; git and its I/O stay real. */
+const fakeInterval = (): IFakeClock =>
+	useFakeClock({ toFake: ['setInterval', 'clearInterval'] });
+
+/** Counts the passes the watch starts: it asks `standDown` before each one. */
+const passCounter = () => {
+	let started = 0;
+	return {
+		standDown: (): Promise<undefined> => {
+			started += 1;
+			return Promise.resolve(undefined);
+		},
+		started: (): number => started,
+	};
+};
+
+/**
+ * Move the clock an interval at a time until `count` passes have started.
+ * Passes never overlap, so the start of pass n means pass n - 1 has
+ * reported its tick.
+ */
+const runUntilStarted = async (
+	clock: IFakeClock,
+	passes: { readonly started: () => number },
+	count: number,
+): Promise<void> => {
+	while (passes.started() < count) {
+		clock.advance(INTERVAL_MS);
+		await new Promise((resolve) => setImmediate(resolve));
+	}
+};
+
 const advanceTheForge = (from: IStartupOrigin): void => {
 	const author = from.clone('author');
 	author.write('src/alpha.ts', 'export const alpha = 2;\n');
@@ -36,26 +74,25 @@ const advanceTheForge = (from: IStartupOrigin): void => {
 };
 
 describe('startCheckoutHydration', () => {
-	it('moves a clean checkout the forge left behind, and says so once', async () => {
+	it('[<1241ms] moves a clean checkout the forge left behind, and says so once', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('shared');
 		advanceTheForge(origin);
 
+		const clock = fakeInterval();
+		const passes = passCounter();
 		const messages: string[] = [];
 		const watch = startCheckoutHydration({
 			run: runnerFor(local.dir),
 			policy: testPolicy(),
-			intervalMs: 25,
+			intervalMs: INTERVAL_MS,
+			standDown: passes.standDown,
 			onHydrated: (message) => messages.push(message),
 		});
 
 		try {
-			await vi.waitFor(
-				() => {
-					expect(messages.length).toBeGreaterThan(0);
-				},
-				{ timeout: 15_000, interval: 25 },
-			);
+			// The third pass starting means the first two have reported.
+			await runUntilStarted(clock, passes, 3);
 		} finally {
 			watch.stop();
 		}
@@ -69,7 +106,7 @@ describe('startCheckoutHydration', () => {
 		expect(messages[0]).toContain('fast-forwarded');
 	});
 
-	it("falls back to core's cadence when the host names none", () => {
+	it("[<287ms] falls back to core's cadence when the host names none", () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('default');
 
@@ -85,7 +122,7 @@ describe('startCheckoutHydration', () => {
 		expect(() => watch.stop()).not.toThrow();
 	});
 
-	it('ends the finished units of the clone it was given, after a pass that ran', async () => {
+	it('[<1485ms] ends the finished units of the clone it was given, after a pass that ran', async () => {
 		origin = createStartupOrigin();
 		const local = origin.clone('maintainer');
 		const policy = testPolicy();
@@ -114,27 +151,29 @@ describe('startCheckoutHydration', () => {
 		);
 		local.push('develop');
 
-		const ended: string[] = [];
+		const clock = fakeInterval();
+		let reportEnded: (message: string) => void = () => undefined;
+		const ended = new Promise<string>((resolve) => {
+			reportEnded = resolve;
+		});
 		const watch = startCheckoutHydration({
 			run: runnerFor(local.dir),
 			policy,
-			intervalMs: 25,
+			intervalMs: INTERVAL_MS,
 			root: local.dir,
 			onHydrated: () => undefined,
-			onUnitsEnded: (message) => ended.push(message),
+			onUnitsEnded: (message) => reportEnded(message),
 		});
+		let message: string;
 		try {
-			await vi.waitFor(
-				() => {
-					expect(ended.length).toBeGreaterThan(0);
-				},
-				{ timeout: 15_000, interval: 25 },
-			);
+			// One pass, and only one: the end pass follows the pass that ran.
+			clock.advance(INTERVAL_MS);
+			message = await ended;
 		} finally {
 			watch.stop();
 		}
 
-		expect(ended[0]).toContain('ended 1 finished unit');
+		expect(message).toContain('ended 1 finished unit');
 		expect(local.git('branch', '--list', unit).trim()).toBe('');
 		expect(local.git('ls-remote', 'origin', unit).trim()).toBe('');
 	});

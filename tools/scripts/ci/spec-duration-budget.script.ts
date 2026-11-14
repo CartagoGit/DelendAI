@@ -28,9 +28,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { UNIT_LIMIT_MS } from '../../../packages/test-kit/src/contracts/constants/time-budget.constant';
+import { isE2eSpec } from '../../../packages/test-kit/src/lib/time-budget/time-budget-tier.helper';
 import {
+	budgetsOverUnitLimit,
 	changedFiles,
 	judgeDeclaredBudgets,
+	judgeUnitLimit,
 	unbudgetedTests,
 } from './declared-test-budget';
 import {
@@ -129,6 +133,21 @@ const declaredMain = (): number => {
 						]).split('\n'),
 					);
 	const verdict = judgeDeclaredBudgets(files, listed, changed);
+	const over = new Map<string, readonly number[]>();
+	for (const path of files.keys()) {
+		if (!isE2eSpec(path) && changed?.has(path) !== false) {
+			over.set(
+				path,
+				budgetsOverUnitLimit(readFileSync(join(root, path), 'utf8')),
+			);
+		}
+	}
+	const breaches = judgeUnitLimit(over, listed, changed);
+	for (const { path, budgets } of breaches) {
+		console.error(
+			`✖ ${path}: a unit-tier test is held to ${String(UNIT_LIMIT_MS)} ms and declares ${budgets.map(String).join(', ')} ms. Rename the spec to *.e2e.spec.ts, or make the test pure.`,
+		);
+	}
 	if (process.argv.includes('--update')) {
 		const stale = new Set(verdict.stale);
 		write([...listed].filter((path) => !stale.has(path)).sort());
@@ -153,7 +172,8 @@ const declaredMain = (): number => {
 	if (
 		verdict.missing.length +
 			verdict.stale.length +
-			verdict.touched.length ===
+			verdict.touched.length +
+			breaches.length ===
 		0
 	) {
 		console.log(
@@ -162,7 +182,8 @@ const declaredMain = (): number => {
 	}
 	return verdict.missing.length +
 		verdict.stale.length +
-		verdict.touched.length ===
+		verdict.touched.length +
+		breaches.length ===
 		0
 		? 0
 		: 1;

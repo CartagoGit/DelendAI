@@ -1,5 +1,5 @@
 /**
- * land-cutover.spec.ts — land is the one integrator, and nothing of the
+ * land-cutover.e2e.spec.ts — land is the one integrator, and nothing of the
  * mechanism it replaced is left: no workflow, script, hook or host module
  * references the queue, its trains, the candidate refresh, hydration or
  * ref maintenance; the policy, not a repository variable, switches the
@@ -85,7 +85,7 @@ const SCANNED = [
 
 /** Files that only record history or measure it, and this spec. */
 const UNSCANNED = new Set([
-	'tools/scripts/forge/land-cutover.spec.ts',
+	'tools/scripts/forge/land-cutover.e2e.spec.ts',
 	'tools/scripts/ci/zone-reads.generated.json',
 	'tools/scripts/test/test-time-budget.migration.json',
 	'tools/scripts/lint/spec-git-init.baseline.json',

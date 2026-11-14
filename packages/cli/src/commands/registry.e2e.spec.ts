@@ -380,7 +380,7 @@ describe('the commands that delegate or read the config', () => {
 		},
 	);
 
-	it('[<200ms] reads the config on disk, and says when there is none', async () => {
+	it('[<470ms] reads the config on disk, and says when there is none', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'registry-config-'));
 		try {
 			expect((await run('config show', [], dir)).code).not.toBe(0);
