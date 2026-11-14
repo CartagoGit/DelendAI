@@ -62,6 +62,35 @@ describe('rehearse', () => {
 		expect(report.leftovers).toEqual([]);
 	});
 
+	it('[<100ms] cuts every integration branch from the commit it was given and names it as the tip', async () => {
+		const { forge } = forgeThatRecords();
+		const cutFrom: string[] = [];
+		const report = await rehearse({
+			forge: {
+				...forge,
+				createBranch: async (name, sha) => {
+					cutFrom.push(sha);
+					await forge.createBranch(name, sha);
+				},
+			},
+			clock: {
+				now: () => Date.parse('2026-11-12T10:00:00Z'),
+				wait: async () => undefined,
+			},
+			setup: () => ({ files: () => [] }),
+			repository: 'o/r',
+			branchPrefix: 'delendai/rehearsal/',
+			baseBranch: 'develop',
+			baseCommit: 'pr-head-sha',
+			scenarios: [
+				{ id: 's', title: 's', pulls: [], steps: [], expect: [] },
+			],
+			log: () => undefined,
+		});
+		expect(report.tip).toBe('pr-head-sha');
+		expect(cutFrom).toEqual(['pr-head-sha']);
+	});
+
 	it('[<50ms] refuses an unknown scenario id, naming the known ones', () => {
 		expect(() => selectScenarios([{ id: 'a' }], ['b'])).toThrow('known: a');
 	});

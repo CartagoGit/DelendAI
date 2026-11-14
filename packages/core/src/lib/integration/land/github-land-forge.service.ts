@@ -253,6 +253,31 @@ export const createGithubLandForge = (input: {
 		closePullRequest: async (number) => {
 			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
 		},
+		reopenPullRequest: async (number, headSha) => {
+			const [events, commit] = await Promise.all([
+				all<{ event?: string; created_at?: string }>(
+					`issues/${String(number)}/events`,
+				),
+				ok<{ commit: { committer?: { date?: string } } }>(
+					`commits/${headSha}`,
+				),
+			]);
+			const pushedAt = Date.parse(commit.commit.committer?.date ?? '');
+			// A reopen after the head's commit is this head's one reopen.
+			if (
+				events.some(
+					(event) =>
+						event.event === 'reopened' &&
+						Date.parse(event.created_at ?? '') >= pushedAt,
+				)
+			)
+				return false;
+			await call('PATCH', `pulls/${String(number)}`, {
+				state: 'closed',
+			});
+			await call('PATCH', `pulls/${String(number)}`, { state: 'open' });
+			return true;
+		},
 		dispatchWorkflow: async (workflow, ref, inputs = {}) =>
 			(
 				await call(

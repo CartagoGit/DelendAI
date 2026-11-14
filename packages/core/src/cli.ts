@@ -154,6 +154,7 @@ export {
 } from './lib/integration/land/land-signal.helper';
 export {
 	identitySteps,
+	landWorkflowInputOf,
 	renderLandWorkflow,
 	tokenOf,
 } from './lib/integration/land/land-workflow.helper';
@@ -163,6 +164,7 @@ export { DEFAULT_INTEGRATION_OPTIONS } from './lib/contracts/constants/integrati
 export { INTEGRATION_PROTOCOL_VERSION } from './lib/contracts/constants/integration-protocol.constant';
 export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
 export {
+	LAND_DERIVED_JOBS,
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
 	LAND_SIGNAL_EVENTS,
@@ -178,6 +180,7 @@ export type {
 	ILandCheck,
 	ILandCommandRunner,
 	ILandConfig,
+	ILandBringResult,
 	ILandConflict,
 	ILandDeps,
 	ILandForward,

@@ -23,7 +23,7 @@ import type {
 	ILandWorkflowIdentity,
 	ILandWorkflowInput,
 } from './land.interface';
-import { LAND_WORKFLOW_NAME } from './land.constant';
+import { LAND_DERIVED_JOBS, LAND_WORKFLOW_NAME } from './land.constant';
 import { indentLines as indent } from './land-signal.helper';
 
 const envLines = (env: Readonly<Record<string, string>>): string[] =>
@@ -108,6 +108,25 @@ const upkeepStep = (
 	...envLines({ ...token, ...step.env }),
 	`  run: ${step.run}`,
 ];
+
+/**
+ * The workflow input for a project's integration policy: the identity and
+ * the schedule come from the policy, the derived jobs are always present.
+ * This repository's generator and the rehearsal both build their input
+ * here, so the rehearsal's workflow has what the real one has.
+ */
+export const landWorkflowInputOf = (
+	values: Omit<ILandWorkflowInput, 'identity' | 'cron' | 'derived'>,
+	policy: {
+		readonly identity: ILandWorkflowIdentity;
+		readonly cron: string;
+	},
+): ILandWorkflowInput => ({
+	...values,
+	identity: policy.identity,
+	cron: policy.cron,
+	derived: LAND_DERIVED_JOBS,
+});
 
 export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 	const release = `'${input.releaseBranch}'`;

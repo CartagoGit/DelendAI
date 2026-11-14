@@ -64,6 +64,13 @@ export interface ILandForge {
 	updatePullRequest(number: number, body: string): Promise<void>;
 	closePullRequest(number: number): Promise<void>;
 	/**
+	 * Close and reopen the pull request as the integrator: the `reopened`
+	 * event starts its CI on the same head, with no new commit. At most once
+	 * per head, read from the forge itself: false when this head was already
+	 * reopened.
+	 */
+	reopenPullRequest(number: number, headSha: string): Promise<boolean>;
+	/**
 	 * Start `workflow` on `ref`, as a person's push there would have; whether
 	 * the forge took it. The integrator's own merges start no workflow, so it
 	 * starts the ones a push would.
@@ -125,7 +132,13 @@ export interface ILandGit {
 }
 
 /** What bringing a head up to the tip came to. */
-export type ILandForward = 'brought' | 'conflict' | 'moved';
+export type ILandForward = 'brought' | 'conflict' | 'moved' | 'current';
+
+/** What a pass made of a head nobody built: the forward result, or the reopen that stands for it. */
+export type ILandBringResult =
+	| Exclude<ILandForward, 'current'>
+	| 'reopened'
+	| 'skipped';
 
 /**
  * Everything project-specific a pass reads. `landConfigFromPolicy` fills
@@ -168,7 +181,8 @@ export interface ILandDeps {
 	readonly config: ILandConfig;
 	/**
 	 * Merge the tip into a head the forge never built and push it as the
-	 * identity, so the forge builds the new head. No generator runs. Absent
+	 * identity, so the forge builds the new head. No generator runs. `current`:
+	 * the head already holds the tip, so there is nothing to push. Absent
 	 * where the actor's pushes are not built: the author then updates it.
 	 */
 	readonly bringForward?:

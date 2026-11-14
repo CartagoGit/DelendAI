@@ -232,4 +232,39 @@ describe('the GitHub land forge', () => {
 		}));
 		await expect(forge.integrationTip()).rejects.toThrow('network down');
 	});
+
+	it('[<12ms] closes and reopens a pull request once per head, reading the forge', async () => {
+		const events =
+			(reopenedAt?: string) =>
+			(call: string): IReply =>
+				call.includes('/events')
+					? json(
+							reopenedAt === undefined
+								? [{ event: 'labeled' }]
+								: [
+										{
+											event: 'reopened',
+											created_at: reopenedAt,
+										},
+									],
+						)
+					: call.includes('commits/')
+						? json({
+								commit: {
+									committer: { date: '2026-11-14T10:00:00Z' },
+								},
+							})
+						: json({});
+		const fresh = harness(events());
+		expect(await fresh.forge.reopenPullRequest(7, 'abc')).toBe(true);
+		expect(fresh.calls.slice(-2)).toEqual([
+			expect.stringContaining('PATCH repos/o/r/pulls/7 -f state=closed'),
+			expect.stringContaining('PATCH repos/o/r/pulls/7 -f state=open'),
+		]);
+		const stale = harness(events('2026-11-14T09:00:00Z'));
+		expect(await stale.forge.reopenPullRequest(7, 'abc')).toBe(true);
+		const done = harness(events('2026-11-14T11:00:00Z'));
+		expect(await done.forge.reopenPullRequest(7, 'abc')).toBe(false);
+		expect(done.calls.some((call) => call.includes('PATCH'))).toBe(false);
+	});
 });

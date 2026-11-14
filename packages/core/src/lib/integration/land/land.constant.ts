@@ -1,3 +1,5 @@
+import type { ILandWorkflowInput } from './land.interface';
+
 /** Labels and markers `land` leaves on the forge. */
 export const LAND_LABEL_CULPRIT = 'delendai:culprit';
 export const LAND_LABEL_NEEDS_UPDATE = 'delendai:needs-update';
@@ -37,3 +39,17 @@ export const LAND_SIGNAL_EVENTS = [
 	'converted_to_draft',
 	'closed',
 ] as const;
+
+/** The two jobs of a derived-file conflict: the project's own scripts, which read the policy's derived paths and command. */
+export const LAND_DERIVED_JOBS: NonNullable<ILandWorkflowInput['derived']> = {
+	prepareCommand:
+		'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
+	pushCommand:
+		'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
+};
+
+/** What the pass notes when it made the forge build a head. */
+export const BRING_NOTES = {
+	brought: 'brought forward to the tip',
+	reopened: 'reopened so its head is built',
+} as const;

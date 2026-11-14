@@ -70,6 +70,16 @@ const plainMerge = (input: {
 	};
 };
 
+/** Whether `headSha` already contains `tip`: a merge of it would push nothing. */
+const holdsTip = (root: string, tip: string, headSha: string): boolean => {
+	try {
+		git(root, ['merge-base', '--is-ancestor', tip, headSha]);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
 /** `ILandDeps.bringForward` on a real clone, pushing as the identity `token`. */
 export const createBringForward =
 	(input: {
@@ -86,6 +96,7 @@ export const createBringForward =
 		} catch {
 			return 'moved';
 		}
+		if (holdsTip(root, tip, pr.headSha)) return 'current';
 		const merged = plainMerge({
 			...(input.normalize === undefined
 				? {}

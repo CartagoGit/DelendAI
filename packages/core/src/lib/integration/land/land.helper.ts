@@ -29,7 +29,7 @@ import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
 
 import { openBatch as assembleBatch } from './land-batch-assembly.helper';
-import { bringForwardUnbuilt, headNotBuilt } from './land-bring-forward.helper';
+import { headNotBuilt, settleUnbuilt } from './land-bring-forward.helper';
 import {
 	BatchMemory,
 	readBatchRecord,
@@ -229,16 +229,13 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 			// A head the forge never builds never turns green by waiting: the
 			// integrator brings it forward once, else its author is asked.
 			if (headNotBuilt(pr, checks, deps.config.unbuiltAuthors)) {
-				const forward = await bringForwardUnbuilt({ deps, pr, tip });
-				if (forward === 'brought') {
-					why(pr.number, 'brought forward: the new head is built');
-					note(`#${String(pr.number)} brought forward to the tip`);
-				} else if (pr.crossRepository === true) {
-					why(
-						pr.number,
-						'a cross-repository head is never built or pushed by the integrator',
-					);
-				} else needsUpdate(pr, waits);
+				await settleUnbuilt({
+					deps,
+					pr,
+					tip,
+					waits,
+					report: { why, note, needsUpdate },
+				});
 			}
 			continue;
 		}

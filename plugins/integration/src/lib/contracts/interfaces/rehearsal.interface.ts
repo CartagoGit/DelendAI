@@ -8,6 +8,11 @@
 export interface IRehearsalDeclaration {
 	readonly result: 'success' | 'failure';
 	readonly seconds: number;
+	/**
+	 * What a batch holding this pull request concludes, whatever its own
+	 * result: the batch is red when any declaration in its tree says `failure`.
+	 */
+	readonly batch?: 'success' | 'failure';
 	/** Sections the change claims to touch; the files it writes carry them. */
 	readonly sections: readonly string[];
 }
@@ -304,8 +309,14 @@ export interface IRehearseInput {
 	readonly repository: string;
 	/** `<namespace>/rehearsal/`, from the decisions module. */
 	readonly branchPrefix: string;
-	/** The branch the run starts from; it is read, never written. */
+	/** The branch the run starts from when no commit is given; it is read, never written. */
 	readonly baseBranch: string;
+	/**
+	 * The commit every scenario's integration branch is cut from, and the one
+	 * the report names as its tip: the commit the code under test runs at.
+	 * Absent: the tip of `baseBranch`.
+	 */
+	readonly baseCommit?: string;
 	readonly scenarios: readonly IRehearsalScenario[];
 	readonly log: (line: string) => void;
 }
