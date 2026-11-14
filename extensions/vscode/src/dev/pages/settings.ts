@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * `extensions/vscode/src/dev/pages/settings.ts` — settings
  * view, lazily loaded.

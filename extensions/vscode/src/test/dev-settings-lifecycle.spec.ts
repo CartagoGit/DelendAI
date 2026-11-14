@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mountSettingsPanel, type ISetupStatus } from '../dev/settings-panel';

@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * `extensions/vscode/src/test/configuration-center-dev-page.spec.ts`
  * — behaviour coverage for the dev-preview page at
