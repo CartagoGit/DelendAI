@@ -576,8 +576,9 @@ describe('delendai review', () => {
 		expect(String(finished.error)).toContain('approvals by gpt-5.4');
 	});
 
-	it('[<214ms] asks for what it needs before doing anything', async () => {
-		const root = repo();
+	it('[<80ms] asks for what it needs before doing anything', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'review-cmd-'));
+		roots.push(root);
 		const { ctx, calls } = contextFor(root, []);
 		const previous = process.env.DELENDAI_AGENT_ID;
 		delete process.env.DELENDAI_AGENT_ID;
