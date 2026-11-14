@@ -264,6 +264,38 @@ describe('runScenario', () => {
 		expect(evidence.failures[0]).toContain('merged not reached');
 	});
 
+	it('[<100ms] does not wake, nor count a step, while a run on the scenario is in progress', async () => {
+		const { forge, clock, runs } = memoryForge();
+		runs.push({
+			id: 7,
+			workflow: 'land',
+			event: 'workflow_dispatch',
+			headBranch: 'ns',
+			headSha: 'x',
+			status: 'in_progress',
+			actor: 'bot',
+			createdAt: '2026-11-12T10:00:00Z',
+			updatedAt: '2026-11-12T10:00:00Z',
+		});
+		const evidence = await runScenario(
+			ctxOf(forge, clock),
+			scenario({
+				steps: [
+					{ kind: 'open', keys: ['a'] },
+					{
+						kind: 'await',
+						until: 'merged',
+						keys: ['a'],
+						seconds: 120,
+						wakeAfterSeconds: 30,
+					},
+				],
+			}),
+		);
+		expect(evidence.manualSteps).toEqual([]);
+		expect(evidence.failures[0]).toContain('merged not reached');
+	});
+
 	it('[<100ms] waits for a label, a check and a changed head', async () => {
 		const { forge, clock, pulls, runs } = memoryForge();
 		const evidence = await runScenario(

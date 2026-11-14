@@ -61,6 +61,12 @@ still wake it too.
 
 ### The identity
 
+Every git command the land runs (its merges, commits and pushes, and the
+derived jobs') runs with client-side hooks turned off
+(`-c core.hooksPath=/dev/null`), whatever hook manager the project uses:
+hooks guard people and agents, and what the integrator produces is judged by
+the required checks.
+
 The integrator acts as a GitHub App, never as the workflow token (GitHub
 starts no workflow for what that token pushes). Run
 `delendai integration doctor --manifest` to print the App manifest, create the

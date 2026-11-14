@@ -6,6 +6,7 @@
 import {
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
+	REHEARSAL_RUNNING_STATUSES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 } from '../contracts/constants/rehearsal.constant';
@@ -48,7 +49,12 @@ const pullByKey = async (
 	const open = await ctx.forge.pulls(state.integration);
 	const byNumber = new Map(open.map((pull) => [pull.number, pull]));
 	const found = new Map<string, IRehearsalPullState>();
-	for (const [key, number] of state.numbers) {
+	for (const [key, number] of [
+		...state.numbers,
+		...[...state.tokenPulls].map(
+			([key, number]) => [`${key}:token-open`, number] as const,
+		),
+	]) {
 		const pull = byNumber.get(number);
 		if (pull !== undefined) found.set(key, pull);
 	}
@@ -110,6 +116,25 @@ const wake = async (
 	}
 };
 
+/** Whether any workflow run on the scenario's integration branch or its pull requests' heads is queued or in progress. */
+const somethingRuns = async (
+	ctx: IRehearsalRunContext,
+	state: IScenarioState,
+): Promise<boolean> => {
+	const heads = new Set([
+		state.integration,
+		...(await ctx.forge.pulls(state.integration)).map((pull) => pull.head),
+	]);
+	for (const head of heads)
+		if (
+			(await ctx.forge.runs(head)).some((run) =>
+				REHEARSAL_RUNNING_STATUSES.has(run.status),
+			)
+		)
+			return true;
+	return false;
+};
+
 const awaitStep = async (
 	ctx: IRehearsalRunContext,
 	state: IScenarioState,
@@ -129,7 +154,9 @@ const awaitStep = async (
 		}
 		if (
 			step.wakeAfterSeconds !== undefined &&
-			now - lastWake >= step.wakeAfterSeconds * 1000
+			now - lastWake >= step.wakeAfterSeconds * 1000 &&
+			// A wake is a manual step only when the system is idle.
+			!(await somethingRuns(ctx, state))
 		) {
 			await wake(ctx, state, pending);
 			lastWake = now;
