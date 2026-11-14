@@ -80,6 +80,42 @@ describe('the rehearsal report', () => {
 		expect(built.scenarios[0]?.expectations[0]?.detail).toContain('a');
 	});
 
+	it('[<50ms] counts the merge times only over the pull requests the scenario expects merged', () => {
+		const culpritStays = evidence({
+			pulls: {
+				a: pull({ number: 8 }),
+				b: pull({ mergedAt: '2026-11-12T10:05:00Z' }),
+			},
+		});
+		const built = buildReport({
+			runId: 'r1',
+			repository: 'o/r',
+			tip: 'abcdef0123456789',
+			startedAt: culpritStays.startedAt,
+			finishedAt: culpritStays.finishedAt,
+			scenarios: [
+				{ ...scenario, expect: [{ kind: 'merged', keys: ['b'] }] },
+			],
+			evidence: [culpritStays],
+			leftovers: [],
+			secretHits: [],
+		});
+		const p95 = built.targets.find((t) => t.id === 'pr-to-merged-p95');
+		expect(p95?.ok).toBe(true);
+		expect(p95?.detail).toBe(
+			'every pull request expected merged did merge',
+		);
+	});
+
+	it('[<50ms] still fails the merge times when a pull request expected merged did not merge', () => {
+		const built = report(evidence({ pulls: { a: pull() } }));
+		const p95 = built.targets.find((t) => t.id === 'pr-to-merged-p95');
+		expect(p95?.ok).toBe(false);
+		expect(p95?.detail).toBe(
+			'1 pull request(s) expected merged never merged',
+		);
+	});
+
 	it('[<50ms] fails the run on a leftover even when every scenario passed', () => {
 		const built = report(evidence(), ['branch x']);
 		expect(built.ok).toBe(false);

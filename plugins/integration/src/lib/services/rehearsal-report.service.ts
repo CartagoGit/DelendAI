@@ -18,6 +18,7 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { judge, result } from './rehearsal-expectation.service';
+import { scanStarted } from './rehearsal-scan.helper';
 
 const SHORT_SHA = 12;
 
@@ -86,28 +87,42 @@ const target = (
 	detail,
 });
 
+/** The keys a scenario expects merged: the one source of which pull requests the merge times cover. */
+const mergedKeysOf = (
+	scenarios: readonly IRehearsalScenario[],
+	id: string,
+): readonly string[] =>
+	(scenarios.find((scenario) => scenario.id === id)?.expect ?? []).flatMap(
+		(expectation) =>
+			expectation.kind === 'merged' ? expectation.keys : [],
+	);
+
 /** The targets of the pull request flow that the fast mode measures, across every scenario. */
 export const measureTargets = (
+	scenarios: readonly IRehearsalScenario[],
 	evidence: readonly IRehearsalEvidence[],
 	results: readonly IRehearsalScenarioResult[],
 	secretHits: number,
 ): readonly IRehearsalTargetResult[] => {
-	const durations = evidence.flatMap((one) =>
-		Object.entries(one.pulls).flatMap(([key, pull]) =>
-			pull.mergedAt === undefined
-				? []
-				: [
-						minutesBetween(
-							readyAt(pull, one.events[key] ?? []),
-							pull.mergedAt,
-						),
-					],
-		),
+	// Only a pull request its scenario expects merged counts for the merge
+	// times: a culprit that stays open is the flow working.
+	const expectedMerged = evidence.flatMap((one) => {
+		const keys = new Set(mergedKeysOf(scenarios, one.scenario));
+		return Object.entries(one.pulls)
+			.filter(([key]) => keys.has(key))
+			.map(([key, pull]) => ({ one, key, pull }));
+	});
+	const durations = expectedMerged.flatMap(({ one, key, pull }) =>
+		pull.mergedAt === undefined
+			? []
+			: [
+					minutesBetween(
+						readyAt(pull, one.events[key] ?? []),
+						pull.mergedAt,
+					),
+				],
 	);
-	const opened = evidence.reduce(
-		(count, one) => count + Object.keys(one.pulls).length,
-		0,
-	);
+	const opened = expectedMerged.length;
 	const groupChecks = results.flatMap((one) =>
 		one.expectations.filter((e) => e.expectation.startsWith('one CI for')),
 	);
@@ -118,14 +133,7 @@ export const measureTargets = (
 	const tips = evidence.flatMap((one) =>
 		one.tips.slice(1).map((sha) => ({ one, sha })),
 	);
-	const scanned = tips.filter(({ one, sha }) =>
-		one.runs.some(
-			(run) =>
-				run.event === 'push' &&
-				run.headSha === sha &&
-				run.workflow === 'rehearsal-scan',
-		),
-	);
+	const scanned = tips.filter(({ one, sha }) => scanStarted(one.runs, sha));
 	const notified = evidence.some((one) => one.notifications !== undefined);
 	return [
 		target(
@@ -133,7 +141,7 @@ export const measureTargets = (
 			percentile(durations, 0.5),
 			REHEARSAL_TARGETS.prToMergedP50Minutes,
 			'min',
-			`${String(durations.length)} of ${String(opened)} pull request(s) merged`,
+			`${String(durations.length)} of ${String(opened)} pull request(s) expected merged did merge`,
 		),
 		target(
 			'pr-to-merged-p95',
@@ -141,8 +149,8 @@ export const measureTargets = (
 			REHEARSAL_TARGETS.prToMergedP95Minutes,
 			'min',
 			durations.length < opened
-				? `${String(opened - durations.length)} pull request(s) never merged`
-				: 'every pull request merged',
+				? `${String(opened - durations.length)} pull request(s) expected merged never merged`
+				: 'every pull request expected merged did merge',
 		),
 		target(
 			'one-ci-per-overlapping-group',
@@ -216,6 +224,7 @@ export const buildReport = (input: {
 			: judgeScenario(scenario, evidence);
 	});
 	const targets = measureTargets(
+		input.scenarios,
 		input.evidence,
 		results,
 		input.secretHits.length,
