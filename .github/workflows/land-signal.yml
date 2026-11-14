@@ -1,0 +1,32 @@
+name: land-signal
+
+# GENERATED from the land signal template (renderLandSignalWorkflow); edit
+# the template, not this file. A pull request event dispatches land.yml at
+# the pull request's base ref. It holds only the workflow token, which can
+# dispatch and nothing else, and it checks out no code.
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]
+        branches: [delendai/rehearsal/r20261114-171556/promotion-integration]
+
+permissions:
+    actions: write
+    contents: read
+
+jobs:
+    land-signal:
+        name: land-signal
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: Wake the integrator
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  BRANCH: ${{ github.event.pull_request.base.ref }}
+                  PULL_REQUEST: ${{ github.event.pull_request.number }}
+              run: |
+                  gh workflow run land.yml \
+                    --ref "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+                    -f pr="${PULL_REQUEST}" \
+                    || echo "::warning::could not wake the integrator"
