@@ -78,3 +78,21 @@ export const PR_CI_WALL_TARGET_MINUTES = {
 	plain: PLAIN_WALL_MINUTES,
 	withRehearsal: REHEARSAL_WALL_MINUTES,
 } as const;
+
+/**
+ * The file two pull requests of one scenario both change, a different line
+ * each, so their diffs overlap whatever zones the project declares and still
+ * merge without a conflict. The setup commit creates it.
+ */
+export const REHEARSAL_OVERLAP_FILE = `${REHEARSAL_DIR}/shared/overlap.txt`;
+const OVERLAP_LINES = 30;
+/** The overlap file with `key` written on `line` (a 0-based line; none leaves it as the setup made it). */
+export const rehearsalOverlapContent = (edit?: {
+	readonly line: number;
+	readonly key: string;
+}): string =>
+	`${Array.from({ length: OVERLAP_LINES }, (_, index) =>
+		edit?.line === index
+			? `edited by ${edit.key}`
+			: `line ${String(index)}`,
+	).join('\n')}\n`;

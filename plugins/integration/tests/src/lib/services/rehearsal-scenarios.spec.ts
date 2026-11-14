@@ -1,3 +1,4 @@
+import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -11,6 +12,9 @@ import {
 	REHEARSAL_MAX_PULLS,
 	REHEARSAL_SCENARIOS,
 } from '../../../../src/lib/contracts/constants/rehearsal-scenarios.constant';
+import type { IRehearsalSetupInput } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
+import { REHEARSAL_OVERLAP_FILE } from '../../../../src/lib/contracts/constants/rehearsal.constant';
+import { createRehearsalSetup } from '../../../../src/lib/services/rehearsal-setup.helper';
 import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
 import {
 	landIntegratorWorkflow,
@@ -175,5 +179,60 @@ describe('today land on the rehearsal branch', () => {
 		expect(policy.development.integration.requiredChecks).toEqual([
 			'rehearsal-ci',
 		]);
+	});
+
+	it('[<50ms] has the pull requests of overlapping and red-batch change one shared file on different lines', () => {
+		for (const id of ['overlapping', 'red-batch']) {
+			const pulls = REHEARSAL_SCENARIOS.find((s) => s.id === id)?.pulls;
+			const [a, b] = (pulls ?? []).map(
+				(p) => p.files[REHEARSAL_OVERLAP_FILE]?.split('\n') ?? [],
+			);
+			expect(a?.length).toBeGreaterThan(20);
+			const changed = (lines: string[] = []) =>
+				lines.flatMap((l, i) => (l.startsWith('edited') ? [i] : []));
+			expect(changed(a)).toHaveLength(1);
+			expect(changed(b)).toHaveLength(1);
+			expect(changed(a)).not.toEqual(changed(b));
+		}
+	});
+
+	it('[<50ms] has the promotion scenario land one green pull request', () => {
+		const promotion = REHEARSAL_SCENARIOS.find((s) => s.id === 'promotion');
+		expect(promotion?.pulls).toHaveLength(1);
+		expect(promotion?.steps.length).toBeGreaterThan(0);
+	});
+
+	it('[<50ms] has the policy batch what overlaps and derive the file the derived-conflict scenario collides on', () => {
+		const policy = JSON.parse(
+			rehearsalPolicy(
+				'{"development":{"integration":{"batching":"off"}}}',
+				'i',
+				false,
+				'r1',
+			),
+		).development.integration;
+		expect(policy.batching).toBe('overlap');
+		expect(policy.derived).toEqual({
+			paths: ['rehearsal/r1/derived-conflict-a.txt'],
+			command: '',
+		});
+		const derivedPull = REHEARSAL_SCENARIOS.find(
+			(s) => s.id === 'derived-conflict',
+		)?.pulls[0];
+		expect(Object.keys(derivedPull?.files ?? {})).toContain(
+			'rehearsal/{run}/derived-conflict-a.txt',
+		);
+	});
+
+	it('[<50ms] creates the shared file in the setup commit', () => {
+		const files = createRehearsalSetup(
+			fakePartial<IRehearsalSetupInput>({
+				runId: 'r1',
+				branchPrefix: 'ns',
+				policyText: '{}',
+				integratorWorkflow: () => '',
+			}),
+		).files('i');
+		expect(files.map((f) => f.path)).toContain(REHEARSAL_OVERLAP_FILE);
 	});
 });

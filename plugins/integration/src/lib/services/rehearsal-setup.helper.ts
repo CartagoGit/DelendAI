@@ -15,6 +15,8 @@ import {
 	REHEARSAL_CHECKOUT_ACTION,
 	REHEARSAL_CI_CHECK,
 	REHEARSAL_DIR,
+	REHEARSAL_OVERLAP_FILE,
+	rehearsalOverlapContent,
 } from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalFileChange,
@@ -34,11 +36,15 @@ const PASS_INTERVAL_MINUTES = 15;
 const WORKFLOWS = '.github/workflows';
 const POLICY_PATH = 'delendai.config.json';
 
+const derivedPathsOf = (block: Record<string, unknown>): string[] =>
+	Array.isArray(block.paths) ? (block.paths as string[]) : [];
+
 /** The project's policy with its integration branch set to the rehearsal branch and the engine on. */
 export const rehearsalPolicy = (
 	policyText: string,
 	integration: string,
 	keepRequiredChecks = false,
+	runId?: string,
 ): string => {
 	const { value, errors } = parseJsonc(policyText);
 	if (errors.length > 0 || value === null || typeof value !== 'object')
@@ -52,6 +58,10 @@ export const rehearsalPolicy = (
 		string,
 		unknown
 	>;
+	const derivedBlock = (integrationBlock.derived ?? {}) as Record<
+		string,
+		unknown
+	>;
 	return `${JSON.stringify(
 		{
 			...policy,
@@ -61,6 +71,22 @@ export const rehearsalPolicy = (
 				integration: {
 					...integrationBlock,
 					engine: 'land',
+					// The pass batches what overlaps; the harness does not turn it off.
+					batching: 'overlap',
+					...(runId === undefined
+						? {}
+						: {
+								// The one file the derived-conflict scenario collides on is
+								// derived here, and regenerating it has nothing to run.
+								derived: {
+									...derivedBlock,
+									paths: [
+										...derivedPathsOf(derivedBlock),
+										`${REHEARSAL_DIR}/${runId}/derived-conflict-a.txt`,
+									],
+									command: '',
+								},
+							}),
 					...(keepRequiredChecks
 						? {}
 						: { requiredChecks: [REHEARSAL_CI_CHECK] }),
@@ -93,7 +119,12 @@ export const createRehearsalSetup = (
 			}),
 			{
 				path: POLICY_PATH,
-				content: rehearsalPolicy(input.policyText, integration, true),
+				content: rehearsalPolicy(
+					input.policyText,
+					integration,
+					true,
+					input.runId,
+				),
 			},
 		];
 	},
@@ -135,12 +166,18 @@ const fastFiles = (
 	},
 	{
 		path: POLICY_PATH,
-		content: rehearsalPolicy(input.policyText, integration),
+		content: rehearsalPolicy(
+			input.policyText,
+			integration,
+			false,
+			input.runId,
+		),
 	},
 	{
 		path: `${REHEARSAL_DIR}/${input.runId}/.keep`,
 		content: '',
 	},
+	{ path: REHEARSAL_OVERLAP_FILE, content: rehearsalOverlapContent() },
 ];
 
 /**

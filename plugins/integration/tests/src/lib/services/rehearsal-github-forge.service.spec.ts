@@ -192,7 +192,8 @@ describe('the GitHub rehearsal forge', () => {
 					},
 				],
 			}),
-			'commits?sha=': '[{"sha":"n"},{"sha":"u"},{"sha":"older"}]',
+			'commits?sha=':
+				'[{"sha":"n","parents":[{"sha":"u"}]},{"sha":"u","parents":[{"sha":"older"}]},{"sha":"older","parents":[]}]',
 		});
 		expect(
 			await forge.openPull({
@@ -271,6 +272,7 @@ describe('the GitHub rehearsal forge', () => {
 		const page = JSON.stringify(
 			Array.from({ length: 100 }, (_, i) => ({
 				sha: i === 3 ? 'stop' : `c${String(i)}`,
+				parents: [{ sha: i === 2 ? 'stop' : `c${String(i + 1)}` }],
 			})),
 		);
 		const forge = createGithubRehearsalForge({
@@ -289,9 +291,36 @@ describe('the GitHub rehearsal forge', () => {
 		expect(calls).toHaveLength(1);
 	});
 
+	it('[<100ms] keeps the first-parent commits only, not the ones a merged pull request carried', async () => {
+		const commits = [
+			{ sha: 'merge2', parents: [{ sha: 'merge1' }, { sha: 'pr2b' }] },
+			{ sha: 'pr2b', parents: [{ sha: 'pr2a' }] },
+			{ sha: 'pr2a', parents: [{ sha: 'merge1' }] },
+			{ sha: 'merge1', parents: [{ sha: 'setup' }, { sha: 'pr1a' }] },
+			{ sha: 'pr1a', parents: [{ sha: 'setup' }] },
+			{ sha: 'setup', parents: [{ sha: 'older' }] },
+		];
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run: async () => ({
+				exitCode: 0,
+				stdout: JSON.stringify(commits),
+				stderr: '',
+			}),
+		});
+		expect(await forge.history('b', 'setup')).toEqual([
+			'merge2',
+			'merge1',
+			'setup',
+		]);
+	});
+
 	it('[<100ms] refuses a history that never reaches the commit', async () => {
 		const full = JSON.stringify(
-			Array.from({ length: 100 }, (_, i) => ({ sha: `c${String(i)}` })),
+			Array.from({ length: 100 }, (_, i) => ({
+				sha: `c${String(i)}`,
+				parents: [{ sha: `c${String(i + 1)}` }],
+			})),
 		);
 		const forge = createGithubRehearsalForge({
 			slug: 'o/r',

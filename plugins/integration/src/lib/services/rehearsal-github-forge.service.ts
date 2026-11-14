@@ -230,19 +230,33 @@ export const createGithubRehearsalForge = (input: {
 			return text;
 		},
 		history: async (branch, until) => {
-			// Newest first, and the walk ends at `until`: a branch cut from a long
-			// history is never read past the commit the run made it from.
-			const shas: string[] = [];
+			// First parent only: a merge push starts workflows for its new head, so
+			// the commits a merged pull request carried are not tips. The walk ends
+			// at `until`, and a branch cut from a long history is never read past it.
+			const firstParent = new Map<string, string | undefined>();
+			let head: string | undefined;
 			for (let page = 1; page <= REHEARSAL_PAGE_LIMIT; page += 1) {
-				const got = await json<{ sha: string }[]>(
+				const got = await json<
+					{ sha: string; parents?: { sha: string }[] }[]
+				>(
 					'GET',
 					`commits?sha=${encodeURIComponent(branch)}&per_page=${String(REHEARSAL_PAGE_SIZE)}&page=${String(page)}`,
 				);
 				for (const entry of got) {
-					shas.push(entry.sha);
-					if (entry.sha === until) return shas;
+					head ??= entry.sha;
+					firstParent.set(entry.sha, entry.parents?.[0]?.sha);
 				}
-				if (got.length < REHEARSAL_PAGE_SIZE) return shas;
+				if (firstParent.has(until) || got.length < REHEARSAL_PAGE_SIZE)
+					break;
+			}
+			const shas: string[] = [];
+			for (
+				let at = head;
+				at !== undefined && firstParent.has(at);
+				at = firstParent.get(at)
+			) {
+				shas.push(at);
+				if (at === until) return shas;
 			}
 			throw new Error(
 				`${until} is not in the last ${String(REHEARSAL_PAGE_LIMIT * REHEARSAL_PAGE_SIZE)} commits of ${branch}`,

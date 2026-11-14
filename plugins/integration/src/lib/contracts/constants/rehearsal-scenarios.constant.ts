@@ -5,6 +5,11 @@ import type {
 	IRehearsalStep,
 } from '../interfaces/rehearsal.interface';
 
+import {
+	REHEARSAL_OVERLAP_FILE,
+	rehearsalOverlapContent,
+} from './rehearsal.constant';
+
 /**
  * Every case of the pull request flow and every production failure as data:
  * what each scenario sets up, the events it causes and the end state the
@@ -17,6 +22,9 @@ import type {
 const CI_SECONDS = 20;
 const AWAIT_SECONDS = 360;
 const WAKE_AFTER_SECONDS = 150;
+/** The lines of the shared file the two overlapping pull requests edit, far apart. */
+const OVERLAP_NEAR_LINE = 2;
+const OVERLAP_FAR_LINE = 25;
 
 const passing: IRehearsalDeclaration = {
 	result: 'success',
@@ -38,6 +46,19 @@ const pullIn = (
 	files: { [`rehearsal/sections/${section}/${key}.txt`]: key, ...files },
 	draft: true,
 });
+
+/**
+ * A pull request of a pair that must overlap: both change the one shared
+ * file, far enough apart to merge without a conflict.
+ */
+const overlapPullIn = (
+	key: string,
+	line: number,
+	declaration: IRehearsalDeclaration = passing,
+): IRehearsalPullSpec =>
+	pullIn(key, 's1', declaration, {
+		[REHEARSAL_OVERLAP_FILE]: rehearsalOverlapContent({ line, key }),
+	});
 
 const open = (...keys: string[]): IRehearsalStep => ({ kind: 'open', keys });
 const ready = (...keys: string[]): IRehearsalStep => ({ kind: 'ready', keys });
@@ -87,7 +108,10 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'overlapping',
 		title: 'Two pull requests in one section are built once, as a batch',
 		reproduces: 'F5',
-		pulls: [pullIn('a', 's1'), pullIn('b', 's1')],
+		pulls: [
+			overlapPullIn('a', OVERLAP_NEAR_LINE),
+			overlapPullIn('b', OVERLAP_FAR_LINE),
+		],
 		steps: [open('a', 'b'), ready('a', 'b'), merged('a', 'b')],
 		expect: [
 			{ kind: 'merged', keys: ['a', 'b'] },
@@ -98,7 +122,10 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	{
 		id: 'red-batch',
 		title: 'A red batch names its culprit and lands the rest',
-		pulls: [pullIn('a', 's1', failing), pullIn('b', 's1')],
+		pulls: [
+			overlapPullIn('a', OVERLAP_NEAR_LINE, failing),
+			overlapPullIn('b', OVERLAP_FAR_LINE),
+		],
 		steps: [open('a', 'b'), ready('a', 'b'), labelled('a')],
 		expect: [
 			{ kind: 'labelled', key: 'a', label: 'culprit' },
@@ -195,8 +222,8 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	{
 		id: 'promotion',
 		title: 'After a green integration branch, the promotion is opened and built',
-		pulls: [],
-		steps: [],
+		pulls: [pullIn('a', 's1')],
+		steps: [open('a'), ready('a'), merged('a')],
 		expect: [{ kind: 'tips-built' }],
 	},
 ];
