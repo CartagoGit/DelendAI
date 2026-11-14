@@ -1,0 +1,55 @@
+import type { ILandWorkflowInput } from './land.interface';
+
+/** Labels and markers `land` leaves on the forge. */
+export const LAND_LABEL_CULPRIT = 'delendai:culprit';
+export const LAND_LABEL_NEEDS_UPDATE = 'delendai:needs-update';
+/** The branch name of a batch: `<prefix>batch-a+b+c`. */
+export const LAND_BATCH_BRANCH = 'batch-';
+/** The state `land` keeps in a batch pull request's body, read back each pass. */
+export const LAND_RECORD_PREFIX = 'land-record: ';
+/** The folder, under the project's namespace, batch branches live in. */
+export const LAND_QUEUE_SEGMENT = 'queue';
+/** Most pull requests one batch carries unless the project says otherwise. */
+export const LAND_BATCH_CAPACITY = 8;
+/** Items per page of a forge listing: the most GitHub serves. */
+export const LAND_PAGE_SIZE = 100;
+/** Pages read of one listing before the pass gives up rather than loop. */
+export const LAND_MAX_PAGES = 50;
+/** The actor of a GitHub workflow token: what it pushes starts no workflow. */
+export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';
+
+/** The integrator's workflow name: what `workflow_run` lists it as. */
+export const LAND_WORKFLOW_NAME = 'land';
+/** The integrator's workflow file: what a dispatch names. */
+export const LAND_WORKFLOW_FILE = 'land.yml';
+/** The signal workflow's file: it wakes the integrator on pull request events. */
+export const LAND_SIGNAL_WORKFLOW_FILE = 'land-signal.yml';
+/** The signal workflow's name, and the name of its one job. */
+export const LAND_SIGNAL_WORKFLOW_NAME = 'land-signal';
+/** Minutes a signal may run: it only sends a dispatch. */
+export const LAND_SIGNAL_TIMEOUT_MINUTES = 5;
+/** The pull request events that change what the integrator has to settle. */
+export const LAND_SIGNAL_EVENTS = [
+	'opened',
+	'reopened',
+	'synchronize',
+	'ready_for_review',
+	'labeled',
+	'unlabeled',
+	'converted_to_draft',
+	'closed',
+] as const;
+
+/** The two jobs of a derived-file conflict: the project's own scripts, which read the policy's derived paths and command. */
+export const LAND_DERIVED_JOBS: NonNullable<ILandWorkflowInput['derived']> = {
+	prepareCommand:
+		'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
+	pushCommand:
+		'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
+};
+
+/** What the pass notes when it made the forge build a head. */
+export const BRING_NOTES = {
+	brought: 'brought forward to the tip',
+	reopened: 'reopened so its head is built',
+} as const;

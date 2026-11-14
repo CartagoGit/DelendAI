@@ -1,0 +1,671 @@
+#!/usr/bin/env bun
+/**
+ * This repo's own MCP host entrypoint (M44). It reuses the CLI's assembly
+ * path (`parseCliArgs` + `assembleCliConfig`) and defaults to
+ * `--preset=swarm` when the caller did not explicitly choose a plugin surface.
+ * Equivalent to `cli.ts`'s own `runCli`, minus the `init`/`--check`/`--doctor`
+ * branches a long-running server process never needs.
+ */
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
+import { runSupervised, shouldSupervise } from './host-supervisor-process';
+import {
+	branchHostScript,
+	branchLabel,
+	malformedVersionReason,
+	runtimePin,
+	runtimeReport,
+	versionHostScript,
+	withoutRuntimeFlags,
+} from './branch-runtime.helper';
+import {
+	assembleCliConfig,
+	createMcpProject,
+	resolveWorkAgentId,
+} from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/plugin';
+import {
+	applyGitOptionalLocksDefault,
+	backgroundEnv,
+	lowPriority,
+} from '@delendai/core/runtime';
+import {
+	createFileSystemJournal,
+	DEFAULT_MIGRATIONS,
+	ensureWorkspaceMigrated,
+	gracefulShutdown,
+	hasExplicitPluginSurfaceSelection,
+} from '@delendai/core/cli';
+import {
+	renderStartupReportAnsi,
+	renderStartupReportPlain,
+	shouldUseAnsiColors,
+} from '@delendai/core/cli';
+import { createWriteGitRunner } from '@delendai/core/public';
+import { workspaceForgeSlug } from './workspace-forge-slug.helper';
+import { followUpsRefusal } from './integration-follow-ups.script';
+import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
+import {
+	createStartupGovernanceSeam,
+	renderStartupGate,
+	runStartupGate,
+	startupGateWarnings,
+} from '@delendai/core/cli';
+import {
+	holdToolCalls,
+	integrationProtocolRefusal,
+	readWorkspacePolicy,
+	startCheckoutHydration,
+	startServerLogIn,
+} from '@delendai/core/cli';
+import type { IMigrationRunResult } from '@delendai/core/cli';
+import {
+	openStartupStatePorts,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
+
+/**
+ * Fail-closed switch for the boot-time reconciliation. Default OFF, and
+ * deliberately so: a DEGRADED workspace is exactly the situation in which
+ * an operator needs the server up to ask it what is wrong, and refusing
+ * to start would hide the report behind the failure it describes. A
+ * supervised deployment that would rather not serve at all sets this.
+ */
+/**
+ * One stderr line per thing that happened at boot — a migration that ran
+ * or failed, a configuration change that was applied or refused — so an
+ * operator learns why their workspace changed under them.
+ */
+export const describeMigrationRun = (
+	result: IMigrationRunResult,
+): readonly string[] => {
+	const lines: string[] = [];
+	for (const outcome of result.outcomes) {
+		if (outcome.status === 'migrated')
+			lines.push(`migrated: ${outcome.id}`);
+		if (outcome.status === 'failed')
+			lines.push(`migration failed: ${outcome.id} — ${outcome.reason}`);
+	}
+	const transitions = result.transitions;
+	if (transitions?.skipped !== undefined)
+		lines.push(`config: ${transitions.skipped}`);
+	for (const outcome of transitions?.outcomes ?? []) {
+		if (outcome.status === 'failed') {
+			lines.push(
+				`config change failed: ${outcome.id} — ${outcome.reason}`,
+			);
+			continue;
+		}
+		for (const step of outcome.steps)
+			lines.push(`config: ${step.kind} ${step.detail}`);
+	}
+	// The one file delendai creates in a project that has changed nothing
+	// else. Said here because it is said nowhere else: the directory is
+	// self-ignoring, so `git status` in that project shows nothing, and an
+	// empty outcome list reads as "nothing happened".
+	if (transitions?.recorded === 'written') {
+		lines.push(
+			`config: recorded this workspace's configuration in ${transitions.recordPath} — so a later edit to it can be acted on`,
+		);
+	}
+	return lines;
+};
+
+export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
+
+/**
+ * How often the server re-checks whether the forge has moved past this
+ * clone. `0` turns it off.
+ *
+ * WHY a running server has to look at all: the boot-time reconciler
+ * already advances a shared checkout the forge left behind, but a boot
+ * happens once and pull requests land all afternoon. Measured on this
+ * repository: the checkout was brought level and was four merges behind
+ * again within the hour, with nothing local in a position to notice —
+ * git has no hook for "a remote moved", and the forge cannot push into a
+ * laptop. The only long-lived local process is this one.
+ */
+export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
+
+/**
+ * The script that runs this repository's follow-ups (certify, close approved
+ * proposals; local steps only), read from the checkout at every run so a step added since this
+ * server started runs without a restart. A project that ships none runs
+ * nothing.
+ */
+export const INTEGRATION_FOLLOW_UPS_SCRIPT =
+	'tools/scripts/host/integration-follow-ups.script.ts';
+
+/** One run at a time per occasion: a run still going skips the next. */
+const followingUp = { move: false, event: false };
+
+/**
+ * Run the follow-ups without making the watch wait for the forge.
+ * Detached and never fatal.
+ */
+const followUpInBackground = async (
+	root: string,
+	on: 'move' | 'event',
+): Promise<void> => {
+	if (
+		followingUp[on] ||
+		!existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))
+	)
+		return;
+	// A server older than the repository's integration protocol refuses.
+	const refusal = followUpsRefusal(
+		(await readWorkspacePolicy(root)).integration.protocol,
+	);
+	if (refusal !== undefined) {
+		process.stderr.write(
+			`[delendai] follow-ups (${on}) refused: ${refusal}\n`,
+		);
+		return;
+	}
+	followingUp[on] = true;
+	try {
+		const { execFile } = await import('node:child_process');
+		const { promisify } = await import('node:util');
+		const step = lowPriority('bun', [
+			INTEGRATION_FOLLOW_UPS_SCRIPT,
+			`--on=${on}`,
+		]);
+		await promisify(execFile)(step.command, [...step.args], {
+			cwd: root,
+			env: backgroundEnv(),
+		}).catch((error: unknown) => {
+			process.stderr.write(
+				`[delendai] follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+			);
+		});
+	} finally {
+		followingUp[on] = false;
+	}
+};
+
+/**
+ * Once at boot: what happened while no server was up is caught up, by the
+ * server that maintains the workspace. Waiting for the integration branch's
+ * next move missed it: a server restarted after the last merge found its
+ * checkout already level, ran nothing, and pull requests labelled for update
+ * waited for a merge that their own update was holding back.
+ */
+export const catchUpAtBoot = async (input: {
+	readonly standDown: () => Promise<string | undefined>;
+	readonly followUp: () => Promise<void>;
+	readonly report: (line: string) => void;
+}): Promise<void> => {
+	const reason = await input.standDown();
+	if (reason !== undefined) {
+		input.report(`follow-ups not caught up at boot: ${reason}`);
+		return;
+	}
+	await input.followUp();
+};
+
+/** The interval, or 0 when the operator turned it off. */
+export const hydrationIntervalMs = (
+	env: Readonly<Record<string, string | undefined>>,
+): number | undefined => {
+	const raw = env[HYDRATION_INTERVAL_ENV];
+	if (raw === undefined || raw.trim().length === 0) return undefined;
+	const parsed = Number(raw);
+	// An unreadable value falls back to the default rather than to
+	// silence: "off" is a decision somebody makes on purpose, never a
+	// typo's side effect. `undefined` means "core's cadence"; only an
+	// explicit 0 turns the refresh off.
+	if (!Number.isFinite(parsed) || parsed < 0) return undefined;
+	return Math.trunc(parsed);
+};
+
+export const isStartupStrict = (
+	env: NodeJS.ProcessEnv = process.env,
+): boolean => env[STARTUP_STRICT_ENV] === '1';
+
+// x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
+// through parseCliArgs's own `tokens.workspace ?? cwd` resolution
+// regardless of this function — but there was no DELENDAI_WORKSPACE
+// env-var fallback, and no signal when the caller silently got cwd.
+// Resolving it explicitly here adds both.
+export const resolveWorkspaceFlag = (
+	argv: readonly string[],
+): string | undefined => {
+	for (let i = 0; i < argv.length; i += 1) {
+		const token = argv[i];
+		if (token === undefined) continue;
+		if (token.startsWith('--workspace='))
+			return token.slice('--workspace='.length);
+		if (token === '--workspace') {
+			const next = argv[i + 1];
+			if (next !== undefined) return next;
+		}
+	}
+	return undefined;
+};
+
+export const hasHelpFlag = (argv: readonly string[]): boolean =>
+	argv.includes('--help') || argv.includes('-h');
+
+/** What a stop signal may find already started; each is optional because a signal can land at any point of start-up. */
+export interface IStopTargets {
+	hydration?: { stop(): unknown } | undefined;
+	maintenance?: { stop(): unknown } | undefined;
+}
+
+/**
+ * The stop run on a signal. It reads `targets` when the signal arrives, so
+ * whatever has not started yet is skipped and never a temporal-dead-zone read.
+ */
+export const createStopHandler =
+	(
+		targets: IStopTargets,
+		shutdown: (code: number) => unknown,
+	): ((code: number) => void) =>
+	(code) => {
+		targets.hydration?.stop();
+		// Another server takes the workspace over at once, not after the
+		// lease runs out.
+		void targets.maintenance?.stop();
+		void shutdown(code);
+	};
+
+const run = async (): Promise<void> => {
+	// Every git this host (and the server it supervises) starts reads
+	// without rewriting what it reads.
+	applyGitOptionalLocksDefault();
+	const forwarded = process.argv.slice(2);
+	if (hasHelpFlag(forwarded)) {
+		process.stdout.write(
+			`${[
+				'delendai MCP host',
+				'',
+				'Usage: bun tools/scripts/host/host-server.script.ts [options]',
+				'',
+				'  --workspace <path>   Workspace root',
+				'  --preset <name>      Plugin preset',
+				'  --plugins <a,b>      Plugins to load',
+				'  --surface <mode>     MCP surface mode',
+				'  --help, -h           Show this help',
+			].join('\n')}\n`,
+		);
+		return;
+	}
+	const explicitWorkspace =
+		resolveWorkspaceFlag(forwarded) ?? process.env.DELENDAI_WORKSPACE;
+	const cwd =
+		explicitWorkspace !== undefined && explicitWorkspace !== ''
+			? explicitWorkspace
+			: process.cwd();
+	// Everything this server says from here on is kept in the workspace
+	// too, for any agent to read back.
+	await startServerLogIn(cwd, 'host-server');
+	if (explicitWorkspace === undefined || explicitWorkspace === '') {
+		process.stderr.write('[delendai] warning: using cwd as workspace\n');
+	}
+	// Heal the workspace BEFORE anything reads it. The CLI entrypoint has
+	// always done this; the MCP host never did, so a project opened from
+	// an editor kept its legacy identity and, now, would never follow an
+	// edit to `delendai.config.json`. Quiet when there is nothing to do.
+	await ensureWorkspaceMigrated({
+		migrations: DEFAULT_MIGRATIONS,
+		journal: createFileSystemJournal(),
+		workspaceRoot: cwd,
+		report: (result) => {
+			for (const line of describeMigrationRun(result))
+				process.stderr.write(`[delendai] ${line}\n`);
+		},
+	});
+	// The state of the hooks that enforce this project's development
+	// policy — reported, never written. This entry is what an editor
+	// launches: opening a folder must leave it byte-identical.
+	try {
+		const { reportGuardHooks } = await import('@delendai/cli');
+		for (const line of (await reportGuardHooks({ workspaceRoot: cwd }))
+			.lines) {
+			process.stderr.write(`[delendai] ${line}\n`);
+		}
+	} catch (error) {
+		process.stderr.write(
+			`[delendai] guard hooks were not inspected: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
+
+	const parsedForwarded = parseCliArgs(forwarded, cwd);
+	// Repo default: when the caller did not explicitly choose a plugin surface,
+	// fall back to `--preset=swarm`. If the caller *did* pass --preset/--plugins,
+	// trust that explicit selection and do not hide it behind an implicit preset.
+	const effectiveArgv = hasExplicitPluginSurfaceSelection(parsedForwarded)
+		? forwarded
+		: ['--preset=swarm', ...forwarded];
+	// `assembleCliConfig` then adds plugin entries from
+	// `delendai.config.json` and applies exclude-plugins to the final set.
+	const args = parseCliArgs(effectiveArgv, cwd);
+	const { config, loadResult, startupReportColor, buildStartupReport } =
+		await assembleCliConfig(args);
+	for (const error of loadResult.errors) {
+		process.stderr.write(`[delendai] plugin error: ${error.message}\n`);
+	}
+
+	const assembled = await createMcpProject(config);
+	const surfaceRuntime = config.toolSurfaceRuntime?.get();
+	const surfaceMode = config.toolSurfacePlan?.mode ?? 'managed';
+	const schemaBytesByRegistrationId =
+		surfaceRuntime === undefined
+			? undefined
+			: {
+					...surfaceRuntime.measureSchemaBytes('native'),
+					...surfaceRuntime.measureSchemaBytes(surfaceMode),
+				};
+	// Answer the client first, and hold its tool calls until the start below
+	// has settled. Reconciling walks git and the forge, which takes as long as
+	// the repository's history and the network do, and a client gives up on
+	// `initialize` after a fixed window: losing it loses every tool.
+	// Install signal handlers BEFORE `await assembled.connect()`. The
+	// `connect()` call can take several seconds on a cold start (loading
+	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
+	// arrives during that window must be handled gracefully — not
+	// terminate the process with the signal still set. The handler
+	// closure captures `assembled`, which is assigned synchronously
+	// before `connect()` resolves, so the reference is always live by
+	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
+	let hydration: ReturnType<typeof startCheckoutHydration> | undefined;
+	let maintenance: typeof config.maintenance;
+	const onSignal = createStopHandler(
+		{
+			get hydration() {
+				return hydration;
+			},
+			get maintenance() {
+				return maintenance;
+			},
+		},
+		(code) => gracefulShutdown(assembled.server, { exitCode: code }),
+	);
+	process.on('SIGTERM', () => onSignal(143));
+	process.on('SIGINT', () => onSignal(130));
+	process.on('SIGHUP', () => onSignal(129));
+	process.on('beforeExit', () => {
+		// beforeExit fires when the event loop drains naturally;
+		// gracefulShutdown's idempotent guard makes the no-op safe
+		// when we got here via SIGTERM first.
+		void assembled.server.close().catch(() => undefined);
+	});
+
+	const releaseToolCalls = holdToolCalls();
+	await assembled.connect();
+
+	// NO reconciliation -> NO READY. The gate consults the resolved
+	// development policy first (a `shared-direct` project reconciles
+	// nothing and boots exactly as before), and its verdict is folded
+	// into the operator report BEFORE the server is started, so a
+	// DEGRADED workspace can never be announced as operational.
+	//
+	// `developmentPolicy` is optional on the host-config contract (a
+	// hand-built config may omit it), so its absence is reported as an
+	// unreconciled boot rather than defaulted to a model nobody chose.
+	const policy = config.developmentPolicy;
+	const forgeSlug = workspaceForgeSlug(config.workspace.root);
+	const gate =
+		policy === undefined
+			? undefined
+			: await runStartupGate({
+					policy,
+					workspaceRoot: config.workspace.root,
+					// One resolver for the whole system (x00560): the
+					// host used to invent `host@<config name>` while the
+					// plugin walked its own chain down to the machine.
+					agentId: resolveWorkAgentId({
+						environment: process.env.DELENDAI_AGENT_ID,
+						client: `host@${config.metadata.name}`,
+					}).id,
+					lockPath: config.workspace.resolve(
+						`${config.corePaths?.cacheDir ?? '.cache/delendai'}/${STARTUP_CACHE_DIR}/reconcile.lock`,
+					),
+					databasePath: resolveProposalsDbPaths(config.workspace.root)
+						.databasePath,
+					git: createWriteGitRunner(config.workspace.root),
+					// The concrete storage engine. Core declares the
+					// ports and may not import `bun:sqlite`, so the
+					// binding is injected here by the one process that
+					// legitimately knows which database this host uses.
+					// Without it the reconciler learns nothing about the
+					// state and reports `unverifiable` — honest, but
+					// never READY.
+					openStatePorts: openStartupStatePorts,
+					// Read-only, mutations disabled: a boot INSPECTS the
+					// forge's live governance and never repairs it. The
+					// credential is never read by delendai — `gh` picks
+					// it up from the ambient environment itself — and a
+					// forge it cannot reach yields "not read", from
+					// which nothing is inferred.
+					// The pull-request and check-run mirror reads the
+					// same forge through the same CLI session, with the
+					// last ETag, so a warm boot costs one request.
+					// The forge of the workspace served, read from its own
+					// remote; none when it names no GitHub repository.
+					...(forgeSlug === undefined
+						? {}
+						: {
+								forge: createForgeSeam({
+									repositorySlug: forgeSlug,
+									run: createForgeCliRunner(
+										config.workspace.root,
+									),
+								}),
+							}),
+					governance: createStartupGovernanceSeam({
+						cwd: config.workspace.root,
+					}),
+				});
+	const startupReport = buildStartupReport(
+		schemaBytesByRegistrationId,
+		gate === undefined
+			? [
+					{
+						severity: 'error' as const,
+						code: 'startup-reconciliation',
+						message:
+							'NOT EXECUTED — this host config carries no resolved development policy, so the boot could not decide whether reconciliation was required.',
+					},
+				]
+			: startupGateWarnings(gate),
+	);
+	const startupText =
+		startupReportColor === 'always'
+			? renderStartupReportAnsi(startupReport, {
+					...process.env,
+					FORCE_COLOR: '1',
+				})
+			: startupReportColor === 'never'
+				? renderStartupReportPlain(startupReport)
+				: shouldUseAnsiColors()
+					? renderStartupReportAnsi(startupReport)
+					: renderStartupReportPlain(startupReport);
+	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
+	// Printed separately from the report's warning list as well: a
+	// blocked workspace has to be legible at a glance, not one line
+	// among many.
+	if (gate !== undefined) {
+		process.stderr.write(
+			`${renderStartupGate(gate)
+				.map((line) => `[delendai] ${line}`)
+				.join('\n')}\n`,
+		);
+	}
+	if (
+		gate?.kind === 'reconciled' &&
+		gate.report.status === 'DEGRADED' &&
+		isStartupStrict()
+	) {
+		process.stderr.write(
+			`[delendai] ${STARTUP_STRICT_ENV}=1 and the workspace is DEGRADED; refusing to start.\n`,
+		);
+		process.exit(1);
+	}
+
+	// Keep looking, for as long as this process is up. The boot-time
+	// gate above brought the checkout level exactly once; this is what
+	// keeps it level while pull requests land. It may only fast-forward
+	// a clean tree that is merely behind — the rules live in the
+	// checkout phase, and the watch borrows them rather than restating
+	// them — and every pass that moves the tree says so on stderr,
+	// because silently changing what somebody is looking at is its own
+	// kind of surprise.
+	const startedMaintenance = config.maintenance;
+	maintenance = startedMaintenance;
+	const runtimeStandDown =
+		startedMaintenance === undefined
+			? config.runtimeBehindCheckout
+			: () => startedMaintenance.gate().standDown();
+	// A server started before the repository's integration protocol
+	// changed keeps the old rules in memory: it stops moving the checkout
+	// and says to restart, rather than act on rules that no longer hold.
+	const standDown = async (): Promise<string | undefined> => {
+		const stale = integrationProtocolRefusal(
+			(await readWorkspacePolicy(config.workspace.root)).integration
+				.protocol,
+		);
+		if (stale !== undefined) return `${stale.reason} ${stale.remedy}`;
+		return runtimeStandDown?.();
+	};
+	const hydrationInterval = hydrationIntervalMs(process.env);
+	hydration =
+		policy === undefined || hydrationInterval === 0
+			? undefined
+			: startCheckoutHydration({
+					run: createWriteGitRunner(config.workspace.root),
+					policy,
+					...(hydrationInterval === undefined
+						? {}
+						: { intervalMs: hydrationInterval }),
+					standDown,
+					// Finished units end here, in every project, not only
+					// where the repository ships its own maintenance.
+					root: config.workspace.root,
+					onUnitsEnded: (message) => {
+						process.stderr.write(`[delendai] ${message}\n`);
+					},
+					onHydrated: (message) => {
+						process.stderr.write(`[delendai] ${message}\n`);
+						void followUpInBackground(
+							config.workspace.root,
+							'move',
+						);
+					},
+				});
+	if (hydration !== undefined) {
+		void catchUpAtBoot({
+			standDown,
+			followUp: () => followUpInBackground(config.workspace.root, 'move'),
+			report: (line) => process.stderr.write(`[delendai] ${line}\n`),
+		});
+	}
+
+	releaseToolCalls();
+	await assembled.start();
+
+	// Deterministic e2e handshake — emitted AFTER `start()` resolves so the
+	// test never races a child whose event loop has already drained. An empty
+	// workspace + 0 plugins can make `start()` return synchronously, in which
+	// case the child would exit cleanly with code 0 before the parent has a
+	// chance to send SIGTERM. Production hosts never see this marker; only
+	// opt-in tests do.
+	if (process.env.DELENDAI_TEST_READY === '1') {
+		process.stderr.write('[delendai] signal-handlers-ready\n');
+		// Keep the event loop alive until a signal arrives. Without this,
+		// `start()` can return synchronously when the workspace has 0 plugins,
+		// the loop drains, and the host exits cleanly with code 0 before the
+		// parent sends SIGTERM/SIGINT. The 1ms interval is unref'd after the
+		// handshake so a signal can still tear it down promptly.
+		await new Promise<void>((resolve) => {
+			const keepAlive = setInterval(() => undefined, 1_000);
+			const onExit = (): void => {
+				clearInterval(keepAlive);
+				resolve();
+			};
+			process.once('SIGTERM', onExit);
+			process.once('SIGINT', onExit);
+			process.once('SIGHUP', onExit);
+		});
+	}
+};
+
+// a00083 F26: a terminal `.catch` so a rejected boot surfaces as a
+// structured error and exits with code 1 instead of an unhandled
+// rejection that CI wrappers / host supervisors cannot parse.
+const handleBootFailure = (err: unknown): void => {
+	process.stderr.write(
+		`[delendai] boot failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
+	);
+	process.exit(1);
+};
+
+const startHost = (): void => {
+	// The process a host starts supervises a server child, which it moves
+	// onto the checkout's current code when that changes (x00756).
+	if (shouldSupervise(process.env)) {
+		// The supervisor's own lines (restarts onto new code) are kept too.
+		void startServerLogIn(
+			resolveWorkspaceFlag(process.argv.slice(2)) ??
+				process.env.DELENDAI_WORKSPACE ??
+				process.cwd(),
+			'host-supervisor',
+		);
+		runSupervised(fileURLToPath(import.meta.url), process.argv.slice(2));
+	} else {
+		run().catch(handleBootFailure);
+	}
+};
+
+// Guarded so a spec file can `import { resolveWorkspaceFlag }` from this
+// module (to unit-test the argv parsing) without also booting a real server.
+if (import.meta.main) {
+	// A project that names a branch or a release runs that one's own host,
+	// supervisor included, so this checkout moving restarts nothing there.
+	const pin = runtimePin(process.argv);
+	const repository = resolve(
+		dirname(fileURLToPath(import.meta.url)),
+		'../../..',
+	);
+	const runChild = (script: string, label: string): void => {
+		process.stderr.write(runtimeReport(label));
+		const child = spawn(
+			process.execPath,
+			[script, ...withoutRuntimeFlags(process.argv.slice(2))],
+			{ stdio: 'inherit' },
+		);
+		for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
+			process.on(signal, () => child.kill(signal));
+		child.on('exit', (code) => process.exit(code ?? 1));
+	};
+	const refuse = (reason: string): never => {
+		process.stderr.write(`[delendai] refusing to start: ${reason}\n`);
+		process.exit(1);
+	};
+	if (pin.kind === 'refused') {
+		refuse(pin.reason);
+	} else if (pin.kind === 'malformed-version') {
+		refuse(malformedVersionReason(repository, pin.version));
+	} else if (pin.kind === 'version') {
+		const resolved = await versionHostScript(repository, pin.version);
+		if (resolved.ok) runChild(resolved.script, resolved.label);
+		else refuse(resolved.reason);
+	} else if (pin.kind === 'branch') {
+		const script = await branchHostScript(repository, pin.branch);
+		if (script !== undefined) {
+			runChild(script, branchLabel(pin.branch, script));
+		} else {
+			process.stderr.write(
+				`[delendai] no branch "${pin.branch}": running this checkout's code.\n`,
+			);
+			process.argv = [...withoutRuntimeFlags(process.argv)];
+			startHost();
+		}
+	} else {
+		startHost();
+	}
+}
