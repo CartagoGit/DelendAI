@@ -54,6 +54,7 @@ export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermeti
 export {
 	budgetFailure,
 	budgetInName,
+	budgetNoise,
 	budgetOverrun,
 	freshBudgetsOfDiff,
 	isE2eSpec,

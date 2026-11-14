@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	budgetFailure,
 	budgetInName,
+	budgetNoise,
 	budgetOverrun,
 	freshBudgetsOfDiff,
 	mayGoUnbudgeted,
@@ -123,12 +124,48 @@ describe('time budget', () => {
 			expect(unit(201)).toContain('load factor 1.00');
 		});
 
-		it('[<20ms] stretches an e2e budget by the load factor and names tier, limit, factor and time', () => {
-			expect(e2e(150, 1.5)).toBeUndefined();
-			const failure = e2e(151, 1.5);
+		const e2eCase = (tookMs: number, loadFactor: number) => ({
+			name: '[<100ms] x',
+			tookMs,
+			migrating: false,
+			tier: 'e2e' as const,
+			loadFactor,
+		});
+
+		it('[<20ms] passes and reports an e2e overrun within the noise headroom', () => {
+			expect(e2e(140, 1)).toBeUndefined();
+			expect(budgetNoise(e2eCase(140, 1))).toContain('within the noise');
+			expect(budgetNoise(e2eCase(90, 1))).toBeUndefined();
+		});
+
+		it('[<20ms] fails an e2e overrun above the headroom and names time, budget, factor and headroom', () => {
+			const failure = e2e(210, 1);
 			expect(failure).toContain('e2e tier');
-			expect(failure).toContain('100 ms x load factor 1.50 = 150.0 ms');
-			expect(failure).toContain('took 151.0 ms');
+			expect(failure).toContain('took 210.0 ms');
+			expect(failure).toContain('100 ms');
+			expect(failure).toContain('load factor 1.00');
+			expect(failure).toContain('noise headroom 2');
+			expect(budgetNoise(e2eCase(210, 1))).toBeUndefined();
+		});
+
+		it('[<20ms] scales both e2e limits by the load factor', () => {
+			expect(e2e(300, 1.5)).toBeUndefined();
+			expect(e2e(301, 1.5)).toContain('= 300.0 ms');
+			expect(budgetNoise(e2eCase(151, 1.5))).toContain(
+				'fails above 300.0',
+			);
+			expect(budgetNoise(e2eCase(150, 1.5))).toBeUndefined();
+		});
+
+		it('[<20ms] reports no noise for a unit test', () => {
+			expect(
+				budgetNoise({
+					name: '[<5ms] x',
+					tookMs: 150,
+					migrating: false,
+					tier: 'unit',
+				}),
+			).toBeUndefined();
 		});
 
 		it('[<20ms] still asks an e2e test for its declaration', () => {
