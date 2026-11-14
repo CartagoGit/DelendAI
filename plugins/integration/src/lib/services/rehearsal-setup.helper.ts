@@ -6,6 +6,7 @@
 import {
 	LAND_SIGNAL_WORKFLOW_FILE,
 	parseJsonc,
+	landWorkflowInputOf,
 	renderLandSignalWorkflow,
 	renderLandWorkflow,
 	type ILandWorkflowIdentity,
@@ -195,16 +196,22 @@ export const landIntegratorWorkflow = (
 	},
 ): string =>
 	renderLandWorkflow({
-		integrationBranch: integration,
-		releaseBranch: input.releaseBranch,
-		identity: input.identity,
-		cron: `*/${String(PASS_INTERVAL_MINUTES)} * * * *`,
-		passCommand: input.passCommand,
-		concurrencyGroup,
-		setupSteps: [
-			`- uses: ${REHEARSAL_CHECKOUT_ACTION}`,
-			'- uses: ./.github/actions/setup-bun-repo',
-			'  with:',
-			"      fetch-depth: '0'",
-		],
+		...landWorkflowInputOf(
+			{
+				integrationBranch: integration,
+				releaseBranch: input.releaseBranch,
+				passCommand: input.passCommand,
+				concurrencyGroup,
+				setupSteps: [
+					`- uses: ${REHEARSAL_CHECKOUT_ACTION}`,
+					'- uses: ./.github/actions/setup-bun-repo',
+					'  with:',
+					"      fetch-depth: '0'",
+				],
+			},
+			{
+				identity: input.identity,
+				cron: `*/${String(PASS_INTERVAL_MINUTES)} * * * *`,
+			},
+		),
 	});

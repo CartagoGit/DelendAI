@@ -12,6 +12,7 @@ import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import {
 	DEFAULT_INTEGRATION_OPTIONS,
 	INTEGRATION_PROTOCOL_VERSION,
+	landWorkflowInputOf,
 	renderLandSignalWorkflow,
 	renderLandWorkflow,
 	type ILandWorkflowInput,
@@ -35,19 +36,11 @@ const SETUP_STEPS = [
 	"      fetch-depth: '0'",
 ];
 
-/** This repository's values for the template. */
-export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
+/** This repository's values for the template, apart from what the policy sets. */
+const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 	integrationBranch: 'develop',
 	releaseBranch: 'main',
-	identity: DEFAULT_INTEGRATION_OPTIONS.identity,
-	cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
 	passCommand: 'bun packages/cli/src/index.ts integration pass',
-	derived: {
-		prepareCommand:
-			'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
-		pushCommand:
-			'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
-	},
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',
@@ -73,17 +66,27 @@ export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 	],
 };
 
+/** This repository's values for the template. */
+export const REPO_LAND_WORKFLOW: ILandWorkflowInput = landWorkflowInputOf(
+	REPO_VALUES,
+	{
+		identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+		cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
+	},
+);
+
 /** What the committed file must be: the render, or absent when the engine is not `land`. */
 export const expectedLandWorkflow = (
 	development: ReturnType<typeof readDevelopmentConfig>,
 ): string | undefined => {
 	const { integration } = resolveDevelopmentPolicy(development);
 	return integration.engine === 'land'
-		? renderLandWorkflow({
-				...REPO_LAND_WORKFLOW,
-				identity: integration.identity,
-				cron: integration.watchdog.cron,
-			})
+		? renderLandWorkflow(
+				landWorkflowInputOf(REPO_VALUES, {
+					identity: integration.identity,
+					cron: integration.watchdog.cron,
+				}),
+			)
 		: undefined;
 };
 

@@ -72,6 +72,21 @@ describe('createBringForward', () => {
 		).toBe('');
 	});
 
+	it('[<5000ms] pushes nothing and says current when the head already holds the tip', async () => {
+		const { root, git, headRef, headSha } = world('a.ts', 'b.ts');
+		const held = git('rev-parse', headRef);
+		const bring = createBringForward({
+			root,
+			remote: 'origin',
+			token: 't',
+		});
+		// The tip the head was cut from is in the head's own history.
+		expect(await bring(pull(headRef, headSha), held)).toBe('current');
+		expect(
+			git('ls-remote', 'origin', `refs/heads/${headRef}`).split(/\s/u)[0],
+		).toBe(headSha);
+	});
+
 	it('[<5000ms] leaves a head that conflicts in authored code to its author', async () => {
 		const { root, git, headRef, headSha, tip } = world('a.ts', 'a.ts');
 		const bring = createBringForward({

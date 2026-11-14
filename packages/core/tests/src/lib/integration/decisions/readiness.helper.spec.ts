@@ -69,10 +69,13 @@ describe('pullRequestReady', () => {
 		expect(pullRequestReady(base)).toBe(pullRequestReady({ ...base }));
 	});
 
-	it('[<5ms] a head the workflow token pushed is never ready, and says why', () => {
-		const bot = { ...base, headAuthor: 'github-actions[bot]' };
+	it('[<5ms] a head the workflow token pushed is not ready while no check reports on it, and says why', () => {
+		const bot = { ...base, headAuthor: 'github-actions[bot]', checks: [] };
 		expect(pullRequestReady(bot)).toBe(false);
 		expect(whyNotReady(bot)).toContain('whose pushes start no CI');
+		expect(
+			pullRequestReady({ ...base, headAuthor: 'github-actions[bot]' }),
+		).toBe(true);
 		expect(pullRequestReady({ ...base, headAuthor: 'someone' })).toBe(true);
 	});
 

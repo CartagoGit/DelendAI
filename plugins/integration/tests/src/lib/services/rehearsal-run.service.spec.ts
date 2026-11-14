@@ -159,6 +159,60 @@ const scenario = (over: Partial<IRehearsalScenario>): IRehearsalScenario => ({
 });
 
 describe('runScenario', () => {
+	it('[<100ms] reads the runs again until the merged tip has its push run', async () => {
+		const { forge, clock } = memoryForge();
+		let reads = 0;
+		const push = (headSha: string): IRehearsalRun => ({
+			id: 1,
+			workflow: 'rehearsal-scan',
+			event: 'push',
+			headBranch: 'ns/rehearsal/r/s-integration',
+			headSha,
+			status: 'completed',
+			conclusion: 'success',
+			actor: 'bot',
+			createdAt: '2026-11-12T10:00:00Z',
+			updatedAt: '2026-11-12T10:00:00Z',
+		});
+		const evidence = await runScenario(
+			ctxOf(
+				{
+					...forge,
+					history: async () => ['tip2', 'tip1'],
+					runs: async () => {
+						reads += 1;
+						return reads < 3 ? [] : [push('tip2')];
+					},
+				},
+				clock,
+			),
+			scenario({ steps: [] }),
+		);
+		expect(reads).toBe(3);
+		expect(evidence.runs.map((run) => run.headSha)).toEqual(['tip2']);
+	});
+
+	it('[<100ms] stops reading at the deadline when a tip never gets its push run', async () => {
+		const { forge, clock } = memoryForge();
+		let reads = 0;
+		const evidence = await runScenario(
+			ctxOf(
+				{
+					...forge,
+					history: async () => ['tip2', 'tip1'],
+					runs: async () => {
+						reads += 1;
+						return [];
+					},
+				},
+				clock,
+			),
+			scenario({ steps: [] }),
+		);
+		expect(reads).toBe(8);
+		expect(evidence.runs).toEqual([]);
+	});
+
 	it('[<100ms] opens pull requests, readies one, and reads back its merge', async () => {
 		const { forge, clock } = memoryForge();
 		const evidence = await runScenario(

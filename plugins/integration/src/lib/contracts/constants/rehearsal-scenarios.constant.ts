@@ -32,7 +32,8 @@ const passing: IRehearsalDeclaration = {
 	sections: [],
 };
 
-const failing: IRehearsalDeclaration = { ...passing, result: 'failure' };
+/** Green on its own pull request, red in any batch that holds it. */
+const redInBatch: IRehearsalDeclaration = { ...passing, batch: 'failure' };
 
 /** A draft pull request writing one file under a section. */
 const pullIn = (
@@ -123,7 +124,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'red-batch',
 		title: 'A red batch names its culprit and lands the rest',
 		pulls: [
-			overlapPullIn('a', OVERLAP_NEAR_LINE, failing),
+			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
 		steps: [open('a', 'b'), ready('a', 'b'), labelled('a')],

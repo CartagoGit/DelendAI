@@ -87,6 +87,8 @@ export const createFakeWorld = (
 		{ sha: string; tree: Record<string, string>; base: string }
 	>();
 	const results = new Map<string, ILandCheck[]>();
+	/** The heads the identity reopened: the forge builds them. */
+	const reopened = new Set<string>();
 	let next = 1;
 	let mutations = 0;
 	let crashAt = Number.POSITIVE_INFINITY;
@@ -163,8 +165,13 @@ export const createFakeWorld = (
 		ci(): void {
 			for (const pr of pulls.values()) {
 				if (pr.state !== 'open' || results.has(pr.headSha)) continue;
-				// The forge builds nothing the workflow token pushed.
-				if (pr.headAuthor === LAND_WORKFLOW_TOKEN_ACTOR) continue;
+				// The forge builds nothing the workflow token pushed, unless the
+				// identity reopened the pull request on that head.
+				if (
+					pr.headAuthor === LAND_WORKFLOW_TOKEN_ACTOR &&
+					!reopened.has(pr.headSha)
+				)
+					continue;
 				const failing = pr.batch
 					? world.failBatch(
 							(
@@ -333,6 +340,13 @@ export const createFakeWorld = (
 		closePullRequest: async (number) => {
 			mutate();
 			get(number).state = 'closed';
+		},
+		reopenPullRequest: async (number, headSha) => {
+			mutate();
+			if (reopened.has(headSha)) return false;
+			reopened.add(headSha);
+			get(number).state = 'open';
+			return true;
 		},
 		dispatchWorkflow: async (workflow, ref, inputs) => {
 			mutate();

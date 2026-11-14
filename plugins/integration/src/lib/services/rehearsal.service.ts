@@ -2,7 +2,8 @@
  * rehearsal.service.ts — one run of the rehearsal: sweep what an earlier
  * run left, play each scenario on its own branch, read every log the run
  * started for secrets, clean up, and judge. Nothing here writes to the
- * integration or release branch: the base is read for its tip and every
+ * integration or release branch: the base is read for its tip (or is the
+ * commit the code runs at) and every
  * write goes under the run's namespace.
  */
 import type {
@@ -109,7 +110,7 @@ export const rehearse = async (
 		now: startedMs,
 	}))
 		input.log(`swept the leftovers of ${swept}`);
-	const tip = await input.forge.tipOf(input.baseBranch);
+	const tip = input.baseCommit ?? (await input.forge.tipOf(input.baseBranch));
 	const context = {
 		forge: input.forge,
 		clock: input.clock,

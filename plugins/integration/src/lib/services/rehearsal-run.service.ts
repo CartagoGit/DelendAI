@@ -21,11 +21,58 @@ import type {
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import {
+	REHEARSAL_POLL_MS,
+	REHEARSAL_SETTLE_SECONDS,
+} from '../contracts/constants/rehearsal.constant';
 import { scenarioIntegration } from './rehearsal-names.helper';
 import { runStep } from './rehearsal-step.service';
 
 const isoOf = (clock: IRehearsalClock): string =>
 	new Date(clock.now()).toISOString();
+
+const runsOf = async (
+	ctx: IRehearsalRunContext,
+	heads: ReadonlySet<string>,
+): Promise<IRehearsalRun[]> => {
+	const runs: IRehearsalRun[] = [];
+	for (const head of heads) runs.push(...(await ctx.forge.runs(head)));
+	return runs;
+};
+
+const missingPush = (
+	runs: readonly IRehearsalRun[],
+	tips: readonly string[],
+): boolean =>
+	tips
+		.slice(1)
+		.some(
+			(sha) =>
+				!runs.some(
+					(run) => run.event === 'push' && run.headSha === sha,
+				),
+		);
+
+/**
+ * The runs of `heads`, read again until every merged tip has its push run:
+ * the forge lists a tip's runs some time after the merge. Bounded: what is
+ * still missing at the deadline is evidence of a run that never started.
+ */
+const settledRuns = async (
+	ctx: IRehearsalRunContext,
+	heads: ReadonlySet<string>,
+	tips: readonly string[],
+): Promise<IRehearsalRun[]> => {
+	const reads = Math.ceil(
+		(REHEARSAL_SETTLE_SECONDS * 1000) / REHEARSAL_POLL_MS,
+	);
+	let runs = await runsOf(ctx, heads);
+	for (let read = 1; read < reads && missingPush(runs, tips); read += 1) {
+		await ctx.clock.wait(REHEARSAL_POLL_MS);
+		runs = await runsOf(ctx, heads);
+	}
+	return runs;
+};
 
 /** Everything the forge holds about the scenario once it ran. */
 const collect = async (
@@ -55,11 +102,10 @@ const collect = async (
 			.filter((pull) => !Object.values(pulls).includes(pull))
 			.map((pull) => pull.head),
 	]);
-	const runs: IRehearsalRun[] = [];
-	for (const head of heads) runs.push(...(await ctx.forge.runs(head)));
 	const tips = [
 		...(await ctx.forge.history(state.integration, state.setupSha)),
 	].reverse();
+	const runs = await settledRuns(ctx, heads, tips);
 	return {
 		scenario: scenario.id,
 		integration: state.integration,

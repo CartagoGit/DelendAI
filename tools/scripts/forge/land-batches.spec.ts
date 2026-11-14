@@ -122,6 +122,65 @@ describe('a head the forge did not build', () => {
 		expect(calls).toEqual([n]);
 	});
 
+	it('[<15ms] is reopened by the integrator when its head already holds the tip, once per head, and says so', async () => {
+		const reopens: number[] = [];
+		const fake = createFakeWorld();
+		const n = fake.world.addPull(
+			{ 'a/x.ts': '1' },
+			{ author: LAND_WORKFLOW_TOKEN_ACTOR },
+		);
+		fake.world.ci();
+		const run = () =>
+			landPass({
+				forge: {
+					...fake.forge,
+					reopenPullRequest: async (number, sha) => {
+						const took = await fake.forge.reopenPullRequest(
+							number,
+							sha,
+						);
+						if (took) reopens.push(number);
+						return took;
+					},
+				},
+				git: fake.git,
+				config: CONFIG,
+				bringForward: async () => 'current',
+			});
+		const first = await run();
+		expect(reopens).toEqual([n]);
+		expect(first.reasons.get(n)).toContain('bring-forward reopened');
+		expect(first.actions.join('\n')).toContain(
+			`#${String(n)} reopened so its head is built`,
+		);
+		fake.world.ci();
+		expect((await run()).mergedPRs).toEqual([n]);
+		expect(reopens).toEqual([n]);
+	});
+
+	it('[<15ms] reopens a head once: the second pass asks its author and says it skipped', async () => {
+		const fake = createFakeWorld();
+		const n = fake.world.addPull(
+			{ 'a/x.ts': '1' },
+			{ author: LAND_WORKFLOW_TOKEN_ACTOR },
+		);
+		fake.world.ci();
+		await fake.forge.reopenPullRequest(
+			n,
+			fake.world.pulls.get(n)?.headSha ?? '',
+		);
+		const report = await landPass({
+			forge: fake.forge,
+			git: fake.git,
+			config: CONFIG,
+			bringForward: async () => 'current',
+		});
+		expect(report.reasons.get(n)).toContain('bring-forward skipped');
+		expect(fake.world.pulls.get(n)?.labels).toContain(
+			LAND_LABEL_NEEDS_UPDATE,
+		);
+	});
+
 	it('[<15ms] never brings a cross-repository head forward, nor batches it', async () => {
 		const calls: number[] = [];
 		const { world, pass, lone } = setup({

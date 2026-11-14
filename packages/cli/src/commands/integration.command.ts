@@ -5,9 +5,10 @@
  * project's policy and files. The rehearsal itself, its scenarios and its
  * report live in the integration plugin.
  */
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 import {
 	ownedRehearsalPrefixes,
@@ -42,9 +43,24 @@ import { runIntegrationDoctor } from './integration-doctor.command';
 import { runIntegrationPassCommand } from './integration-pass.command';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
+const execFileAsync = promisify(execFile);
+
+/** The commit a rehearsal tests: `base` when given, else the checkout's HEAD, which is the code that runs. */
+export const commitUnderTest = async (
+	cwd: string,
+	base: string | undefined,
+): Promise<string> =>
+	(
+		await execFileAsync(
+			'git',
+			['rev-parse', '--verify', `${base ?? 'HEAD'}^{commit}`],
+			{ cwd },
+		)
+	).stdout.trim();
+
 const spawnGh = (
 	args: readonly string[],
 	input?: string,
@@ -89,6 +105,7 @@ const readRealWorkflows = async (
 /** The command over the program that runs `gh`; the real one spawns it, a spec gives it answers. */
 export const createIntegrationCommand = (
 	runGh: IRehearsalCommandRunner,
+	commitOf: typeof commitUnderTest = commitUnderTest,
 ): ICliCommand => ({
 	name: 'integration',
 	...INTEGRATION_COMMAND,
@@ -127,6 +144,7 @@ export const createIntegrationCommand = (
 			mode === 'real' ? await readRealWorkflows(ctx.cwd) : undefined;
 		const branchPrefix = ownedRehearsalPrefixes(policy.branches)[0] ?? '';
 		try {
+			const baseCommit = await commitOf(ctx.cwd, scalarArg(rest, 'base'));
 			const report = await rehearse({
 				forge: createGithubRehearsalForge({
 					slug: repository,
@@ -159,6 +177,7 @@ export const createIntegrationCommand = (
 				repository,
 				branchPrefix,
 				baseBranch: policy.branches.integration,
+				baseCommit,
 				scenarios: selectScenarios(
 					REHEARSAL_CATALOGUE,
 					ids,

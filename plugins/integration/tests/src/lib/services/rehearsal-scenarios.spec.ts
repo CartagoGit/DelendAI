@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_INTEGRATION_OPTIONS,
+	LAND_DERIVED_JOBS,
 	renderLandWorkflow,
 } from '@delendai/core/cli';
 
@@ -157,6 +158,7 @@ describe('today land on the rehearsal branch', () => {
 				cron: '*/15 * * * *',
 				passCommand: 'bun pass',
 				concurrencyGroup: 'land-rehearsal-r1',
+				derived: LAND_DERIVED_JOBS,
 				setupSteps: [
 					'- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7',
 					'- uses: ./.github/actions/setup-bun-repo',
@@ -165,6 +167,8 @@ describe('today land on the rehearsal branch', () => {
 				],
 			}),
 		);
+		expect(rendered).toContain('derived-prepare:');
+		expect(rendered).toContain('derived-push:');
 		expect(rendered).toContain('ns/rehearsal/r1/s-integration');
 		expect(rendered).toContain('group: land-rehearsal-r1');
 	});

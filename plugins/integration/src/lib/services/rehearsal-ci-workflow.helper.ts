@@ -32,7 +32,9 @@ const lines = (...rows: readonly string[]): string => `${rows.join('\n')}\n`;
 /**
  * The fast CI: on a pull request it reads `rehearsal/<run>/<key>.json`
  * (the key is the last segment of the head branch), sleeps the declared
- * seconds and concludes as declared; on a push to the integration branch it
+ * seconds and concludes as declared; a head with no declaration is a batch,
+ * which concludes red when a declaration of the run in its tree says its
+ * batch fails; on a push to the integration branch it
  * concludes green at once.
  */
 export const renderRehearsalCiWorkflow = (input: {
@@ -66,7 +68,13 @@ export const renderRehearsalCiWorkflow = (input: {
 		'              run: |',
 		'                  if [ -z "$HEAD_REF" ]; then echo "push: nothing declared"; exit 0; fi',
 		'                  declaration="$RUN_DIR/${HEAD_REF##*/}.json"',
-		'                  if [ ! -f "$declaration" ]; then echo "no declaration at $declaration"; exit 1; fi',
+		'                  if [ ! -f "$declaration" ]; then',
+		'                      # Not a declared member: a batch, red when any declaration in its tree says so.',
+		`                      failing=$(find "$RUN_DIR" -name '*.json' -exec cat {} + | jq -s '[.[] | select(.batch == "failure")] | length')`,
+		'                      echo "batch: $failing declaration(s) fail a batch"',
+		'                      [ "$failing" = 0 ]',
+		'                      exit $?',
+		'                  fi',
 		`                  seconds=$(jq -r '.seconds' "$declaration")`,
 		`                  result=$(jq -r '.result' "$declaration")`,
 		'                  echo "declared: $result after ${seconds}s"',
