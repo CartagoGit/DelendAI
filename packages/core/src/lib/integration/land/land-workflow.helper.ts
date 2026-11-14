@@ -56,7 +56,7 @@ const PULL_REQUEST_EVENTS = [
 ] as const;
 
 /** The step that mints the identity's token, when the identity needs one. */
-const identitySteps = (identity: ILandWorkflowIdentity): string[] =>
+export const identitySteps = (identity: ILandWorkflowIdentity): string[] =>
 	identity.kind === 'app'
 		? [
 				'- name: Mint the integrator identity token',
@@ -70,7 +70,7 @@ const identitySteps = (identity: ILandWorkflowIdentity): string[] =>
 		: [];
 
 /** The token every write uses: the identity's, never `github.token`. */
-const tokenOf = (identity: ILandWorkflowIdentity): string =>
+export const tokenOf = (identity: ILandWorkflowIdentity): string =>
 	identity.kind === 'app'
 		? `\${{ steps.${IDENTITY_STEP_ID}.outputs.token }}`
 		: `\${{ secrets.${identity.tokenSecret} }}`;

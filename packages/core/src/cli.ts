@@ -147,7 +147,11 @@ export {
 	pushDerived,
 } from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
-export { renderLandWorkflow } from './lib/integration/land/land-workflow.helper';
+export {
+	identitySteps,
+	renderLandWorkflow,
+	tokenOf,
+} from './lib/integration/land/land-workflow.helper';
 // Whether this process is older than the integration protocol the repository runs.
 export { integrationProtocolRefusal } from './lib/integration/protocol/integration-protocol.helper';
 export { DEFAULT_INTEGRATION_OPTIONS } from './lib/contracts/constants/integration-options.constant';

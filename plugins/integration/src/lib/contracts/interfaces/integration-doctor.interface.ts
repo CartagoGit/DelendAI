@@ -10,13 +10,23 @@ export interface IIntegrationDoctorProbe {
 	readonly variables: () => Promise<readonly string[]>;
 	/** Names of the repository's Actions secrets. */
 	readonly secrets: () => Promise<readonly string[]>;
-	/** The permissions granted to the installed App, or `undefined` when they cannot be read. */
-	readonly installationPermissions: () => Promise<
-		Readonly<Record<string, string>> | undefined
-	>;
+	/** What the forge says about the App's installation on the repository. */
+	readonly installationPermissions: () => Promise<IInstallationReading>;
 }
 
 /** One thing the doctor checked. */
+/**
+ * The forge answers the installation only to an App's own credential: a user
+ * credential gets `unverifiable`, which is not the same as `not-installed`.
+ */
+export type IInstallationReading =
+	| {
+			readonly status: 'granted';
+			readonly permissions: Readonly<Record<string, string>>;
+	  }
+	| { readonly status: 'not-installed' }
+	| { readonly status: 'unverifiable' };
+
 export interface IDoctorCheck {
 	readonly name: string;
 	readonly ok: boolean;

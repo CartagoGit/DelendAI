@@ -8,6 +8,9 @@
  * Every value that comes from an event reaches the shell through `env`,
  * never through an expression inside a `run` script.
  */
+import type { ILandWorkflowIdentity } from '@delendai/core/cli';
+import { identitySteps, tokenOf } from '@delendai/core/cli';
+
 import {
 	REHEARSAL_CHECKOUT_ACTION,
 	REHEARSAL_CI_CHECK,
@@ -165,6 +168,8 @@ export const renderRehearsalTokenWorkflow = (input: {
 export const renderRehearsalWorkflow = (input: {
 	readonly namespace: string;
 	readonly codePaths: readonly string[];
+	/** Who the rehearsal acts as: the workflow token cannot write trees. */
+	readonly identity: ILandWorkflowIdentity;
 }): string =>
 	lines(
 		`name: ${REHEARSAL_WORKFLOW_NAME}`,
@@ -195,10 +200,13 @@ export const renderRehearsalWorkflow = (input: {
 		'        runs-on: ubuntu-latest',
 		`        timeout-minutes: ${String(WORKFLOW_TIMEOUT_MINUTES)}`,
 		'        steps:',
+		...identitySteps(input.identity).map((line) =>
+			line === '' ? line : `            ${line}`,
+		),
 		`            - uses: ${REHEARSAL_CHECKOUT_ACTION}`,
 		'            - uses: ./.github/actions/setup-bun-repo',
 		'            - name: Rehearse the pull request flow on the real forge',
 		'              env:',
-		'                  GH_TOKEN: ${{ github.token }}',
+		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
 		'              run: bun run cli -- integration rehearse --mode=fast --scenarios=all',
 	);
