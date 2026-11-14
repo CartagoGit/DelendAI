@@ -49,7 +49,7 @@ const USAGE = `integration doctor [--manifest] | integration pass | integration 
 const execFileAsync = promisify(execFile);
 
 /** The commit a rehearsal tests: `base` when given, else the checkout's HEAD, which is the code that runs. */
-const commitUnderTest = async (
+export const commitUnderTest = async (
 	cwd: string,
 	base: string | undefined,
 ): Promise<string> =>
@@ -105,6 +105,7 @@ const readRealWorkflows = async (
 /** The command over the program that runs `gh`; the real one spawns it, a spec gives it answers. */
 export const createIntegrationCommand = (
 	runGh: IRehearsalCommandRunner,
+	commitOf: typeof commitUnderTest = commitUnderTest,
 ): ICliCommand => ({
 	name: 'integration',
 	...INTEGRATION_COMMAND,
@@ -143,10 +144,7 @@ export const createIntegrationCommand = (
 			mode === 'real' ? await readRealWorkflows(ctx.cwd) : undefined;
 		const branchPrefix = ownedRehearsalPrefixes(policy.branches)[0] ?? '';
 		try {
-			const baseCommit = await commitUnderTest(
-				ctx.cwd,
-				scalarArg(rest, 'base'),
-			);
+			const baseCommit = await commitOf(ctx.cwd, scalarArg(rest, 'base'));
 			const report = await rehearse({
 				forge: createGithubRehearsalForge({
 					slug: repository,

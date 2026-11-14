@@ -82,11 +82,20 @@ describe('the integration command', () => {
 					};
 				return { exitCode: 0, stdout: '[]', stderr: '' };
 			};
-			const result = await createIntegrationCommand(run).run(
-				['rehearse', '--scenarios=host-offline'],
+			const asked: (string | undefined)[] = [];
+			const result = await createIntegrationCommand(
+				run,
+				async (_cwd, base) => {
+					asked.push(base);
+					return 'under-test';
+				},
+			).run(
+				['rehearse', '--scenarios=host-offline', '--base=feature-sha'],
 				fakePartial<ICliCommandContext>({ cwd: dir }),
 			);
 			// With nothing played the targets have no data, so the run is red, never green by absence.
+			expect(asked).toEqual(['feature-sha']);
+			expect(calls.some((c) => c.includes('sha=under-test'))).toBe(true);
 			expect(result.code).toBe(EXIT_CODE.RUNTIME);
 			expect(result.error).toBeUndefined();
 			expect(result.text).toContain('RED');
@@ -112,7 +121,10 @@ describe('the integration command', () => {
 							stdout: '{"object":{"sha":"t"}}',
 							stderr: '',
 						};
-			const result = await createIntegrationCommand(run).run(
+			const result = await createIntegrationCommand(
+				run,
+				async () => 'under-test',
+			).run(
 				['rehearse', '--scenarios=nope'],
 				fakePartial<ICliCommandContext>({ cwd: dir }),
 			);
@@ -129,7 +141,10 @@ describe('the integration command', () => {
 			stdout: '',
 			stderr: 'not logged in',
 		});
-		const result = await createIntegrationCommand(run).run(
+		const result = await createIntegrationCommand(
+			run,
+			async () => 'under-test',
+		).run(
 			['rehearse'],
 			fakePartial<ICliCommandContext>({ cwd: '/nowhere' }),
 		);
