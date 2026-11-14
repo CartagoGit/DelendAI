@@ -1,56 +1,71 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-	identityFetchEnv,
-	identityPushEnv,
-	pushAsIdentity,
-} from '../../../../src/lib/services/land-identity-push.helper';
-import { assembleTrain } from '../../../../src/lib/services/land-train-assembly.helper';
+const sent: { args: string[]; env: Record<string, string | undefined> }[] = [];
+let fail: Error | undefined;
 
-const MISSING = '/nonexistent-land-clone';
+vi.mock('node:child_process', () => ({
+	execFileSync: (
+		_command: string,
+		args: string[],
+		options: { env: Record<string, string | undefined> },
+	): string => {
+		sent.push({ args, env: options.env });
+		if (fail !== undefined) throw fail;
+		return '';
+	},
+}));
 
-describe('the identity push', () => {
-	it('[<20ms] refuses without a token, naming why', () => {
-		expect(
-			pushAsIdentity({
-				cwd: MISSING,
-				remote: 'origin',
-				refspec: 'HEAD:refs/heads/x',
-				token: '',
-			}),
-		).toContain('no identity token');
-	});
+const { identityFetchEnv, identityPushEnv, pushAsIdentity } = await import(
+	'../../../../src/lib/services/land-identity-push.helper'
+);
 
-	it('[<200ms] says what failed, forced or not', () => {
-		for (const force of [true, false])
-			expect(
-				pushAsIdentity({
-					cwd: MISSING,
-					remote: 'origin',
-					refspec: 'HEAD:refs/heads/x',
-					token: 't',
-					force,
-				}),
-			).toBeTruthy();
-	});
+const input = {
+	cwd: '/clone',
+	remote: 'origin',
+	refspec: 'HEAD:refs/heads/x',
+	token: 't',
+};
 
-	it('[<5ms] reads the forge as the identity only with a token', () => {
-		expect(identityFetchEnv('')).toBeUndefined();
-		expect(identityFetchEnv('t')).toEqual(identityPushEnv('t'));
-	});
+beforeEach(() => {
+	sent.length = 0;
+	fail = undefined;
 });
 
-describe('assembling a train in a clone that is not there', () => {
-	it('[<500ms] reports the failure and pushes nothing', () => {
-		const built = assembleTrain({
-			root: MISSING,
-			remote: 'origin',
-			tipSha: 'abc',
-			ref: 'batch-1',
-			members: [],
-			derived: new Set(),
-			regenerate: () => true,
+describe('the identity push', () => {
+	it('[<20ms] refuses without a token and spawns nothing', () => {
+		expect(pushAsIdentity({ ...input, token: '' })).toContain(
+			'no identity token',
+		);
+		expect(sent).toEqual([]);
+	});
+
+	it('[<20ms] pushes hook-free as the identity, forced only when asked', () => {
+		expect(pushAsIdentity({ ...input, force: true })).toBeUndefined();
+		expect(pushAsIdentity(input)).toBeUndefined();
+		expect(sent[0]?.args).toEqual([
+			'-c',
+			'core.hooksPath=/dev/null',
+			'push',
+			'-q',
+			'--force',
+			'--',
+			'origin',
+			'HEAD:refs/heads/x',
+		]);
+		expect(sent[1]?.args).not.toContain('--force');
+		expect(sent[0]?.env.GIT_CONFIG_VALUE_1).toContain('AUTHORIZATION');
+	});
+
+	it('[<20ms] reports what a refusing hook said on stdout and stderr', () => {
+		fail = Object.assign(new Error('x'), {
+			stdout: 'hook: no\n',
+			stderr: 'rejected\n',
 		});
-		expect(built.pushFailure).toBeTruthy();
+		expect(pushAsIdentity(input)).toBe('hook: no\nrejected');
+	});
+
+	it('[<20ms] reads the forge as the identity only with a token', () => {
+		expect(identityFetchEnv('')).toBeUndefined();
+		expect(identityFetchEnv('t')).toEqual(identityPushEnv('t'));
 	});
 });

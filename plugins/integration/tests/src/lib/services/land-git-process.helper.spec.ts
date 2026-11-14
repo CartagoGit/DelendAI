@@ -20,5 +20,6 @@ describe('the integrator git process', () => {
 			gitFailureText({ stdout: 'hook said\n', stderr: 'git said\n' }),
 		).toBe('hook said\ngit said');
 		expect(gitFailureText(new Error('boom'))).toContain('boom');
+		expect(gitFailureText({ stdout: Buffer.from('b\n') })).toBe('b');
 	});
 });
