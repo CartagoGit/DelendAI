@@ -28,7 +28,10 @@ const probe = (
 ): IIntegrationDoctorProbe => ({
 	variables: async () => ['APP_ID'],
 	secrets: async () => ['APP_KEY'],
-	installationPermissions: async () => GOOD,
+	installationPermissions: async () => ({
+		status: 'granted',
+		permissions: GOOD,
+	}),
 	...over,
 });
 
@@ -46,9 +49,8 @@ describe('the integration doctor', () => {
 				variables: async () => [],
 				secrets: async () => [],
 				installationPermissions: async () => ({
-					...GOOD,
-					workflows: 'read',
-					checks: 'none',
+					status: 'granted',
+					permissions: { ...GOOD, workflows: 'read', checks: 'none' },
 				}),
 			}),
 		);
@@ -63,13 +65,30 @@ describe('the integration doctor', () => {
 		expect(renderDoctorTable(report)).toContain('NOT green');
 	});
 
-	it('[<50ms] refuses while the installation cannot be read', async () => {
+	it('[<50ms] refuses an App that is not installed', async () => {
 		const report = await diagnoseIdentity(
 			app,
-			probe({ installationPermissions: async () => undefined }),
+			probe({
+				installationPermissions: async () => ({
+					status: 'not-installed',
+				}),
+			}),
 		);
 		expect(report.ok).toBe(false);
 		expect(report.checks.at(-1)?.name).toBe('app permissions');
+	});
+
+	it('[<50ms] does not fail on an installation the credential cannot read', async () => {
+		const report = await diagnoseIdentity(
+			app,
+			probe({
+				installationPermissions: async () => ({
+					status: 'unverifiable',
+				}),
+			}),
+		);
+		expect(report.ok).toBe(true);
+		expect(report.checks.at(-1)?.detail).toContain('cannot be verified');
 	});
 
 	it('[<50ms] needs only the token secret for a personal access token', async () => {

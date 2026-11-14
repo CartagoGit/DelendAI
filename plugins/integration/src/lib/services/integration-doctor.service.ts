@@ -15,6 +15,7 @@ import type {
 	IDoctorCheck,
 	IDoctorIdentity,
 	IDoctorReport,
+	IInstallationReading,
 	IIntegrationDoctorProbe,
 } from '../contracts/interfaces/integration-doctor.interface';
 
@@ -45,9 +46,9 @@ const present = (
 });
 
 const permissionChecks = (
-	granted: Readonly<Record<string, string>> | undefined,
+	reading: IInstallationReading,
 ): readonly IDoctorCheck[] => {
-	if (granted === undefined)
+	if (reading.status === 'not-installed')
 		return [
 			{
 				name: 'app permissions',
@@ -55,6 +56,15 @@ const permissionChecks = (
 				detail: 'cannot be read: install the App on this repository, then run the doctor again',
 			},
 		];
+	if (reading.status === 'unverifiable')
+		return [
+			{
+				name: 'app permissions',
+				ok: true,
+				detail: "cannot be verified with this credential; the rehearsal workflow's identity step verifies it",
+			},
+		];
+	const granted = reading.permissions;
 	const need = [
 		...APP_WRITE_PERMISSIONS.map((p) => [p, 'write'] as const),
 		...APP_READ_PERMISSIONS.map((p) => [p, 'read'] as const),

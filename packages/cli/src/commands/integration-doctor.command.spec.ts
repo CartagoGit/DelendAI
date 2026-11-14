@@ -16,6 +16,7 @@ const gh =
 	(
 		secrets: string,
 		installation: string | undefined,
+		installationFailure = 'HTTP 404',
 	): IRehearsalCommandRunner =>
 	async (args) => {
 		const line = args.join(' ');
@@ -26,7 +27,7 @@ const gh =
 		if (line.startsWith('variable list'))
 			return { exitCode: 0, stdout: 'DELENDAI_APP_ID\n', stderr: '' };
 		return installation === undefined
-			? { exitCode: 1, stdout: '', stderr: 'no' }
+			? { exitCode: 1, stdout: '', stderr: installationFailure }
 			: { exitCode: 0, stdout: installation, stderr: '' };
 	};
 
@@ -83,6 +84,34 @@ describe('integration doctor', () => {
 			);
 			expect(result.code).toBe(EXIT_CODE.OK);
 			expect(result.text).toContain('doctor: green');
+		});
+	});
+
+	it('[<200ms] does not fail on an installation a user credential cannot read', async () => {
+		await withDir(async (ctx) => {
+			const result = await runIntegrationDoctor(
+				[],
+				ctx,
+				gh(
+					'DELENDAI_APP_PRIVATE_KEY\n',
+					undefined,
+					'gh: Bad credentials (HTTP 401)',
+				),
+			);
+			expect(result.code).toBe(EXIT_CODE.OK);
+			expect(result.text).toContain('cannot be verified');
+		});
+	});
+
+	it('[<200ms] fails on an App that is not installed', async () => {
+		await withDir(async (ctx) => {
+			const result = await runIntegrationDoctor(
+				[],
+				ctx,
+				gh('DELENDAI_APP_PRIVATE_KEY\n', undefined),
+			);
+			expect(result.code).toBe(EXIT_CODE.RUNTIME);
+			expect(result.text).toContain('install the App');
 		});
 	});
 

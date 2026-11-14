@@ -50,11 +50,19 @@ const probeOf = (
 			'--jq',
 			'.permissions',
 		]);
-		if (out.exitCode !== 0) return undefined;
+		if (out.exitCode !== 0)
+			// Only an App's own credential may read an installation: a user's
+			// gets 401/403 even for an installed App, and only 404 means absent.
+			return /HTTP 404/u.test(out.stderr)
+				? { status: 'not-installed' }
+				: { status: 'unverifiable' };
 		try {
-			return JSON.parse(out.stdout) as Record<string, string>;
+			return {
+				status: 'granted',
+				permissions: JSON.parse(out.stdout) as Record<string, string>,
+			};
 		} catch {
-			return undefined;
+			return { status: 'unverifiable' };
 		}
 	},
 });

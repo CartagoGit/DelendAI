@@ -7,7 +7,8 @@
  * waits on the jobs the project names, and nothing here points at a path,
  * script or action that belongs to this repository.
  */
-import { renderLandWorkflow } from '@delendai/core/cli';
+import type { ILandWorkflowIdentity } from '@delendai/core/cli';
+import { identitySteps, renderLandWorkflow, tokenOf } from '@delendai/core/cli';
 
 import type {
 	IAdoptionInput,
@@ -63,6 +64,7 @@ export const renderSignalJob = (input: {
 /** The rehearsal workflow: on demand, never on the integration or release branch. */
 export const renderAdoptedRehearsalWorkflow = (input: {
 	readonly version: string;
+	readonly identity: ILandWorkflowIdentity;
 }): string =>
 	[
 		'name: rehearsal',
@@ -87,10 +89,13 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 		'        runs-on: ubuntu-latest',
 		`        timeout-minutes: ${String(REHEARSAL_TIMEOUT_MINUTES)}`,
 		'        steps:',
+		...identitySteps(input.identity).map((line) =>
+			line === '' ? line : `            ${line}`,
+		),
 		`            - uses: ${CHECKOUT}`,
 		'            - name: Rehearse the pull request flow on the real forge',
 		'              env:',
-		'                  GH_TOKEN: ${{ github.token }}',
+		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
 		`              run: ${cliCommand(input.version)} integration rehearse --mode=fast --scenarios=all`,
 		'',
 	].join('\n');
@@ -117,6 +122,7 @@ export const renderAdoption = (input: IAdoptionInput): IAdoptionOutput => ({
 			path: `${WORKFLOWS}/${REHEARSAL_FILE}`,
 			content: renderAdoptedRehearsalWorkflow({
 				version: input.version,
+				identity: input.identity,
 			}),
 		},
 	],
