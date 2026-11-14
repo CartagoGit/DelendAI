@@ -48,7 +48,9 @@ const world = (pull: Partial<IRehearsalPullState>, runs: IRehearsalRun[]) => {
 			forge,
 			clock: {
 				now: () => clock.at,
-				wait: async (ms: number) => void (clock.at += ms),
+				wait: async (ms: number) => {
+					clock.at += ms;
+				},
 			},
 			setup: { files: () => [] },
 			runId: 'r',
