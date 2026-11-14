@@ -1,5 +1,5 @@
 /**
- * train-assembly.spec.ts — a conflict in a derived file is regenerated on
+ * train-assembly.e2e.spec.ts — a conflict in a derived file is regenerated on
  * the train, once; any other conflict leaves the member out.
  */
 import { execFileSync } from 'node:child_process';
