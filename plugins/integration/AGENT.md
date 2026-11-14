@@ -41,7 +41,7 @@
 - plugins/integration/tests/src/lib/services/integration-adoption.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-doctor.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts
-- plugins/integration/tests/src/lib/services/land-project-ports.helper.spec.ts
+- plugins/integration/tests/src/lib/services/land-git.service.spec.ts
 
 ## Do not
 
