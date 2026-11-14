@@ -1,0 +1,45 @@
+name: rehearsal-token
+
+on:
+    pull_request:
+        types: [labeled]
+        branches: ['delendai/rehearsal/r20261114-151436/red-batch-integration']
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    write:
+        if: ${{ github.event.label.name == 'rehearsal-r20261114-151436:token-push' || github.event.label.name == 'rehearsal-r20261114-151436:token-open' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  ref: ${{ github.head_ref }}
+            - name: Write with the workflow token
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  LABEL: ${{ github.event.label.name }}
+                  HEAD_REF: ${{ github.head_ref }}
+                  NUMBER: ${{ github.event.pull_request.number }}
+                  PUSH_LABEL: rehearsal-r20261114-151436:token-push
+                  BASE: delendai/rehearsal/r20261114-151436/red-batch-integration
+                  BRANCH_PREFIX: delendai/rehearsal/r20261114-151436/
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  mkdir -p rehearsal/token
+                  echo "$NUMBER $LABEL" > "rehearsal/token/$NUMBER.txt"
+                  git add "rehearsal/token/$NUMBER.txt"
+                  if [ "$LABEL" = "$PUSH_LABEL" ]; then
+                      git commit -m "rehearsal: a push with the workflow token"
+                      git push origin "HEAD:$HEAD_REF"
+                  else
+                      branch="${BRANCH_PREFIX}token-open-$NUMBER"
+                      git switch -c "$branch"
+                      git commit -m "rehearsal: a pull request opened with the workflow token"
+                      git push origin "$branch"
+                      gh pr create --base "$BASE" --head "$branch" --title "rehearsal: opened with the workflow token" --body "Opened by rehearsal-token for #$NUMBER."
+                  fi
