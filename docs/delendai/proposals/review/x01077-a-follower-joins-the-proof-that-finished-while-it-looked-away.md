@@ -2,14 +2,14 @@
 id: x01077
 title: "A follower joins the proof that finished while it looked away"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-15
-last-transition-id: 6c22561b-304b-40d6-bae6-bcad7b799252
-last-correlation-id: 6c22561b-304b-40d6-bae6-bcad7b799252
-last-transition-from: ready
-last-transition-at: 2026-11-15T23:12:53.152Z
+last-transition-id: 912929de-8329-499c-bbb0-9b25c32720f1
+last-correlation-id: 912929de-8329-499c-bbb0-9b25c32720f1
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T23:23:08.157Z
 ---
 
 # x01077 — A follower joins the proof that finished while it looked away
@@ -32,9 +32,12 @@ A caller that follows another caller's proof of the same unit and tip returns th
 - global_gate: none
 
 ### S1 — follow reads the result once more when its claim vanishes
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/shared/compute-slot-follow.helper.ts`, `packages/core/tests/src/lib/shared/compute-slot-follow.helper.spec.ts`
 - **Gate**: none
+- shipped-in: `466f34cc864b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
