@@ -56,6 +56,10 @@ import {
 } from './forge-event-follow.service';
 import type { IForgeEventFollow } from './forge-event-follow.interface';
 import { detectForgeProvider } from '@delendai/forge/public';
+import {
+	createHostCatchUp,
+	forgeCatchUpSourceFor,
+} from './forge-event-catch-up.service';
 import { followUpsRefusal } from './integration-follow-ups.script';
 import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
@@ -67,6 +71,7 @@ import {
 import {
 	holdToolCalls,
 	integrationProtocolRefusal,
+	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
 	readWorkspacePolicy,
 	startCheckoutHydration,
@@ -159,31 +164,22 @@ export const INTEGRATION_FOLLOW_UPS_SCRIPT =
 const followingUp = { move: false, event: false };
 const followAgain = { move: false, event: false };
 
-/**
- * Run the follow-ups without making the watch wait for the forge.
- * Detached and never fatal.
- */
-const followUpInBackground = async (
-	root: string,
-	on: 'move' | 'event',
-): Promise<void> => {
-	if (!existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))) return;
-	if (followingUp[on]) {
-		followAgain[on] = true;
-		return;
-	}
-	// A server older than the repository's integration protocol refuses.
-	const refusal = followUpsRefusal(
+/** What running the follow-ups touches. No port writes to a forge. */
+export interface IFollowUpDeps {
+	readonly scriptExists: (root: string) => boolean;
+	/** The integration protocol the repository records, read at each run. */
+	readonly recordedProtocol: (root: string) => Promise<number>;
+	/** Run the follow-up script once, in the checkout. */
+	readonly runScript: (root: string, on: 'move' | 'event') => Promise<void>;
+	readonly report: (line: string) => void;
+}
+
+const realFollowUpDeps: IFollowUpDeps = {
+	scriptExists: (root) =>
+		existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT)),
+	recordedProtocol: async (root) =>
 		(await readWorkspacePolicy(root)).integration.protocol,
-	);
-	if (refusal !== undefined) {
-		process.stderr.write(
-			`[delendai] follow-ups (${on}) refused: ${refusal}\n`,
-		);
-		return;
-	}
-	followingUp[on] = true;
-	try {
+	runScript: async (root, on) => {
 		const { execFile } = await import('node:child_process');
 		const { promisify } = await import('node:util');
 		const step = lowPriority('bun', [
@@ -193,16 +189,46 @@ const followUpInBackground = async (
 		await promisify(execFile)(step.command, [...step.args], {
 			cwd: root,
 			env: backgroundEnv(),
-		}).catch((error: unknown) => {
-			process.stderr.write(
-				`[delendai] follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+		});
+	},
+	report: (line) => {
+		process.stderr.write(`[delendai] ${line}\n`);
+	},
+};
+
+/**
+ * Run the follow-ups without making the watch wait for the forge.
+ * Detached and never fatal. The list is the checkout's own script, spawned
+ * at every run, and a server older than the repository's integration
+ * protocol refuses.
+ */
+export const followUpInBackground = async (
+	root: string,
+	on: 'move' | 'event',
+	deps: IFollowUpDeps = realFollowUpDeps,
+): Promise<void> => {
+	if (!deps.scriptExists(root)) return;
+	if (followingUp[on]) {
+		followAgain[on] = true;
+		return;
+	}
+	const refusal = followUpsRefusal(await deps.recordedProtocol(root));
+	if (refusal !== undefined) {
+		deps.report(`follow-ups (${on}) refused: ${refusal}`);
+		return;
+	}
+	followingUp[on] = true;
+	try {
+		await deps.runScript(root, on).catch((error: unknown) => {
+			deps.report(
+				`follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		});
 	} finally {
 		followingUp[on] = false;
 		if (followAgain[on]) {
 			followAgain[on] = false;
-			void followUpInBackground(root, on);
+			void followUpInBackground(root, on, deps);
 		}
 	}
 };
@@ -241,13 +267,49 @@ const startForgeEvents = async (input: {
 	}
 	// Every server's notification bridge reads what this one hears.
 	const store = forgeEventsDir(input.root, input.cacheDir);
+	const source = detected.ok
+		? forgeCatchUpSourceFor(detected.provider, [
+				LAND_LABEL_NEEDS_UPDATE,
+				LAND_LABEL_CULPRIT,
+			])
+		: undefined;
+	const hostCatchUp =
+		source === undefined
+			? undefined
+			: createHostCatchUp({
+					dir: store,
+					repository: input.repository,
+					source,
+				});
 	receiver.subscribe({
 		onEvent: (event) => {
-			appendForgeEventRecord(store, event).catch((error: unknown) => {
+			appendForgeEventRecord(store, event)
+				.then(() => hostCatchUp?.noteLive(event))
+				.catch((error: unknown) => {
+					say(
+						`forge events: an event was not stored: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				});
+		},
+		// Each (re)connection asks the forge once what sessions missed; only
+		// the server that maintains the workspace does.
+		onGap: async () => {
+			if (
+				hostCatchUp === undefined ||
+				(await input.standDown()) !== undefined
+			)
+				return;
+			try {
+				const told = await hostCatchUp.catchUp();
+				if (told > 0)
+					say(
+						`forge events: ${String(told)} missed notification(s) delivered`,
+					);
+			} catch (error) {
 				say(
-					`forge events: an event was not stored: ${error instanceof Error ? error.message : String(error)}`,
+					`forge events: catch-up failed: ${error instanceof Error ? error.message : String(error)}`,
 				);
-			});
+			}
 		},
 	});
 	const follow = startForgeEventFollow({

@@ -116,6 +116,42 @@ describe('the rehearsal report', () => {
 		);
 	});
 
+	it('[<50ms] reports the notification timing as not measured, and not failed, when only catch-up ran', () => {
+		const built = report(
+			evidence({ notifications: [{ event: 'pr.merged', at: 't' }] }),
+		);
+		const timing = built.targets.find(
+			(t) => t.id === 'session-notified-p95',
+		);
+		expect(timing?.ok).toBe(true);
+		expect(timing?.value).toBeUndefined();
+		expect(timing?.detail).toBe(
+			'not measured: real-time transport is S11b',
+		);
+	});
+
+	it('[<50ms] measures the notification timing when a real-time transport ran', () => {
+		const built = report(
+			evidence({
+				notifications: [{ event: 'pr.merged', at: 't' }],
+				notifiedSeconds: [2, 4, 30],
+			}),
+		);
+		const timing = built.targets.find(
+			(t) => t.id === 'session-notified-p95',
+		);
+		expect(timing?.value).toBe(30);
+		expect(timing?.ok).toBe(false);
+	});
+
+	it('[<50ms] fails the notification timing when no receiver ran at all', () => {
+		const built = report(evidence());
+		const timing = built.targets.find(
+			(t) => t.id === 'session-notified-p95',
+		);
+		expect(timing?.ok).toBe(false);
+	});
+
 	it('[<50ms] fails the run on a leftover even when every scenario passed', () => {
 		const built = report(evidence(), ['branch x']);
 		expect(built.ok).toBe(false);

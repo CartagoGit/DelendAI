@@ -14,6 +14,7 @@ import type {
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { REHEARSAL_AWAIT_CAP_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { runBranchRoot } from '../../../../src/lib/services/rehearsal-names.helper';
+import { judge } from '../../../../src/lib/services/rehearsal-expectation.service';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
 
 const pullOf = (over: Partial<IRehearsalPullState>): IRehearsalPullState =>
@@ -266,5 +267,42 @@ describe('the other steps of a scenario', () => {
 		expect(none.failures[0]).toContain(
 			'the workflow token opened no pull request',
 		);
+	});
+});
+
+describe('a receive step', () => {
+	const receiving = (): IRehearsalScenario => ({
+		...scenario('merged', ['a']),
+		steps: [
+			{ kind: 'open', keys: ['a'] },
+			{ kind: 'receive', keys: ['a'] },
+		],
+	});
+
+	it('[<50ms] tells a merge that happened while no receiver ran once, and nothing on the second connection', async () => {
+		const { ctx } = world({ mergedAt: '2026-11-12T10:05:00Z' }, []);
+		const evidence = await runScenario(ctx, receiving());
+		expect(evidence.notifications?.map((n) => n.event)).toEqual([
+			'pr.merged',
+		]);
+		expect(evidence.notifications?.[0]?.number).toBe(1);
+		expect(judge(evidence, { kind: 'sessions-notified' }).ok).toBe(true);
+	});
+
+	it('[<50ms] tells a label once and leaves nothing told when nothing changed', async () => {
+		const labelled = world({ labels: ['p:culprit'] }, []);
+		const told = await runScenario(labelled.ctx, receiving());
+		expect(told.notifications?.map((n) => n.event)).toEqual(['pr.updated']);
+		const quiet = world({}, []);
+		const none = await runScenario(quiet.ctx, receiving());
+		expect(none.notifications).toEqual([]);
+	});
+
+	it('[<50ms] tells a pull request closed without merging', async () => {
+		const { ctx } = world({ state: 'closed' }, []);
+		const evidence = await runScenario(ctx, receiving());
+		expect(evidence.notifications?.map((n) => n.event)).toEqual([
+			'pr.closed',
+		]);
 	});
 });

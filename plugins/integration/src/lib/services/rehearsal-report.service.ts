@@ -97,6 +97,37 @@ const mergedKeysOf = (
 			expectation.kind === 'merged' ? expectation.keys : [],
 	);
 
+/**
+ * Seconds from a change to its notification. Measured only when a real-time
+ * transport ran; catch-up alone is not a timing, so it is reported as not
+ * measured and does not fail.
+ */
+const notifiedTarget = (
+	evidence: readonly IRehearsalEvidence[],
+): IRehearsalTargetResult => {
+	const seconds = evidence.flatMap((one) => one.notifiedSeconds ?? []);
+	const threshold = REHEARSAL_TARGETS.notifiedP95Seconds;
+	if (seconds.length > 0)
+		return target(
+			'session-notified-p95',
+			percentile(seconds, 0.95),
+			threshold,
+			's',
+			`${String(seconds.length)} notification(s) timed`,
+		);
+	const caughtUp = evidence.some((one) => one.notifications !== undefined);
+	return {
+		id: 'session-notified-p95',
+		value: undefined,
+		threshold,
+		unit: 's',
+		ok: caughtUp,
+		detail: caughtUp
+			? 'not measured: real-time transport is S11b'
+			: 'no session receiver ran: no notification can be timed',
+	};
+};
+
 /** The targets of the pull request flow that the fast mode measures, across every scenario. */
 export const measureTargets = (
 	scenarios: readonly IRehearsalScenario[],
@@ -134,7 +165,6 @@ export const measureTargets = (
 		one.tips.slice(1).map((sha) => ({ one, sha })),
 	);
 	const scanned = tips.filter(({ one, sha }) => scanStarted(one.runs, sha));
-	const notified = evidence.some((one) => one.notifications !== undefined);
 	return [
 		target(
 			'pr-to-merged-p50',
@@ -167,15 +197,7 @@ export const measureTargets = (
 			'step',
 			`${String(manual)} wake(s) or other step(s) a person would have taken`,
 		),
-		target(
-			'session-notified-p95',
-			undefined,
-			REHEARSAL_TARGETS.notifiedP95Seconds,
-			's',
-			notified
-				? 'receipts recorded but not timed'
-				: 'no session receiver ran: no notification can be timed',
-		),
+		notifiedTarget(evidence),
 		target(
 			'integration-branch-scanned',
 			tips.length === 0 ? undefined : scanned.length / tips.length,

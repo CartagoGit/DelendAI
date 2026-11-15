@@ -14,3 +14,9 @@ export const FORGE_EVENT_RETENTION_MS = 3_600_000;
 
 /** The most subscriptions kept; the oldest go first. */
 export const FORGE_EVENT_MAX_SUBSCRIPTIONS = 500;
+
+/** What this host last delivered of each subscribed pull request. */
+export const FORGE_EVENT_CURSOR_FILE = 'cursor.json';
+
+/** The most delivered events remembered per pull request; the oldest go first. */
+export const FORGE_EVENT_CURSOR_KEYS = 20;

@@ -74,6 +74,35 @@ export const followUpsFor = (
 ): readonly IFollowUp[] =>
 	on === 'move' ? steps : steps.filter((step) => step.onEvent);
 
+/**
+ * What the follow-ups may touch: whether a script exists and running one
+ * locally. There is no port that writes to a forge, so a follow-up cannot.
+ */
+export interface IFollowUpPorts {
+	readonly exists: (script: string) => boolean;
+	readonly run: (step: IFollowUp) => Promise<void>;
+	readonly report: (line: string) => void;
+}
+
+/** Run the steps of one occasion; a step that fails is reported, never fatal. */
+export const runFollowUps = async (
+	on: 'move' | 'event',
+	ports: IFollowUpPorts,
+	steps: readonly IFollowUp[] = INTEGRATION_FOLLOW_UPS,
+): Promise<void> => {
+	for (const step of followUpsFor(on, steps)) {
+		if (!ports.exists(step.script)) continue;
+		try {
+			await ports.run(step);
+		} catch (error) {
+			// Never fatal: the next occasion runs it again.
+			ports.report(
+				`[delendai] ${step.script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+			);
+		}
+	}
+};
+
 const main = async (): Promise<number> => {
 	const on = process.argv
 		.find((arg) => arg.startsWith('--on='))
@@ -85,23 +114,19 @@ const main = async (): Promise<number> => {
 		return 2;
 	}
 	const root = process.cwd();
-	const run = promisify(execFile);
-	for (const step of followUpsFor(on)) {
-		if (!existsSync(join(root, step.script))) continue;
-		const command = lowPriority('bun', [step.script, '--apply']);
-		try {
-			await run(command.command, [...command.args], {
+	const exec = promisify(execFile);
+	await runFollowUps(on, {
+		exists: (script) => existsSync(join(root, script)),
+		run: async (step) => {
+			const command = lowPriority('bun', [step.script, '--apply']);
+			await exec(command.command, [...command.args], {
 				cwd: root,
 				timeout: step.timeoutMs,
 				env: backgroundEnv(),
 			});
-		} catch (error) {
-			// Never fatal: the next occasion runs it again.
-			process.stderr.write(
-				`[delendai] ${step.script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
-			);
-		}
-	}
+		},
+		report: (line) => process.stderr.write(line),
+	});
 	return 0;
 };
 

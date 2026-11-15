@@ -59,6 +59,15 @@ export type IRehearsalStep =
 			/** The integration branch moves under the run, merged by the environment. */
 			readonly kind: 'move-integration';
 			readonly key: string;
+	  }
+	| {
+			/**
+			 * A receiver subscribed to these pull requests connects after they
+			 * changed, asks the forge once for what it missed, and connects
+			 * again: the host's own catch-up, driven by the harness.
+			 */
+			readonly kind: 'receive';
+			readonly keys: readonly string[];
 	  };
 
 /** What a scenario must show on the forge for it to pass. */
@@ -92,7 +101,7 @@ export type IRehearsalExpectation =
 	  }
 	| { readonly kind: 'no-manual-steps' }
 	| {
-			/** A subscribed session heard each merge and failure. */
+			/** A subscribed session heard each merge and failure, each exactly once. */
 			readonly kind: 'sessions-notified';
 	  };
 
@@ -235,7 +244,13 @@ export interface IRehearsalEvidence {
 	readonly notifications?: readonly {
 		readonly event: string;
 		readonly at: string;
+		readonly number?: number;
 	}[];
+	/**
+	 * Seconds from each change to its notification, measured only when a
+	 * real-time transport ran. Catch-up alone leaves it absent.
+	 */
+	readonly notifiedSeconds?: readonly number[];
 	/** Head shas the harness pushed with the workflow token, by key. */
 	readonly tokenHeads: Readonly<Record<string, readonly string[]>>;
 	/** Pull requests a workflow opened with the workflow token, by key. */
@@ -363,6 +378,8 @@ export interface IScenarioState {
 	readonly failures: string[];
 	readonly tokenHeads: Map<string, string[]>;
 	readonly tokenPulls: Map<string, number>;
+	/** What each receiver that connected was told; `undefined` until one did. */
+	notifications: { event: string; at: string; number?: number }[] | undefined;
 	setupSha: string;
 }
 
