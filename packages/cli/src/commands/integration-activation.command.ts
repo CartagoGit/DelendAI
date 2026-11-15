@@ -28,6 +28,7 @@ import {
 	deactivateIntegration,
 	renderAdoption,
 	resumeIntegration,
+	scenariosForMode,
 	type IActivationFile,
 	type IActivationPorts,
 	type IDoctorReport,
@@ -144,7 +145,14 @@ const portsOf = (
 		tipOf: () => forge.tipOf(policy.branches.integration),
 		reportOf: evidence.reportOf,
 		knownRed: REHEARSAL_KNOWN_RED,
-		scenarioIds: REHEARSAL_CATALOGUE.map((scenario) => scenario.id),
+		scenarioIds: {
+			fast: scenariosForMode(REHEARSAL_CATALOGUE, 'fast').map(
+				(s) => s.id,
+			),
+			real: scenariosForMode(REHEARSAL_CATALOGUE, 'real').map(
+				(s) => s.id,
+			),
+		},
 		doctor: async () => {
 			const out = await runIntegrationDoctor([], ctx, runGh);
 			if (out.error !== undefined) throw new Error(out.error);

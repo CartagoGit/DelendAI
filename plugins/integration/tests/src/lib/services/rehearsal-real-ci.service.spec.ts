@@ -139,7 +139,7 @@ describe('the pull request CI wall time', () => {
 });
 
 describe('a real-mode setup', () => {
-	it('[<5ms] swaps the stand-ins for the project workflows and keeps its required checks', () => {
+	it('[<5ms] swaps the stand-ins for the project workflows and keeps its required checks', async () => {
 		const input = {
 			runId: 'r1',
 			branchPrefix: 'ns/rehearsal/',
@@ -147,10 +147,10 @@ describe('a real-mode setup', () => {
 				'{"development":{"integration":{"requiredChecks":["tests"]}}}',
 			integratorWorkflow: () => 'land',
 		};
-		const fast = createRehearsalSetup(input)
-			.files('b')
-			.map((f) => f.path);
-		const real = createRehearsalSetup({
+		const fast = (await createRehearsalSetup(input).files('b')).map(
+			(f) => f.path,
+		);
+		const real = await createRehearsalSetup({
 			...input,
 			realWorkflows: { 'ci.yml': CI },
 			projectIntegration: 'develop',
@@ -166,6 +166,74 @@ describe('a real-mode setup', () => {
 		);
 		const policy = real.find((f) => f.path === 'delendai.config.json');
 		expect(policy?.content).toContain('"tests"');
+	});
+
+	const realInput = {
+		runId: 'r1',
+		branchPrefix: 'ns/rehearsal/',
+		policyText: '{}',
+		integratorWorkflow: () => 'land',
+		realWorkflows: { 'ci.yml': CI },
+		projectIntegration: 'develop',
+	};
+
+	it('[<5ms] writes no workflow-token writer, which only the fast mode has', async () => {
+		const paths = async (input: typeof realInput) =>
+			(await createRehearsalSetup(input).files('b')).map((f) => f.path);
+		expect(await paths(realInput)).not.toContain(
+			'.github/workflows/rehearsal-token.yml',
+		);
+		const { realWorkflows: _fast, ...fastInput } = realInput;
+		expect(await paths(fastInput as typeof realInput)).toContain(
+			'.github/workflows/rehearsal-token.yml',
+		);
+	});
+
+	it('[<5ms] includes every file the setup command changed, the command winning on a shared path', async () => {
+		const seen: { command: string; paths: string[] }[] = [];
+		const files = await createRehearsalSetup({
+			...realInput,
+			setupCommand: 'regenerate',
+			materialise: async (command, written) => {
+				seen.push({ command, paths: written.map((f) => f.path) });
+				return [
+					{ path: 'delendai.config.json', content: 'regenerated' },
+					{ path: '.github/settings.yml', content: 'settings' },
+					{ path: 'gone.txt', content: null },
+				];
+			},
+		}).files('b');
+		expect(seen).toHaveLength(1);
+		expect(seen[0]?.command).toBe('regenerate');
+		expect(seen[0]?.paths).toContain('.github/workflows/ci.yml');
+		const byPath = new Map(files.map((f) => [f.path, f.content]));
+		expect(byPath.get('delendai.config.json')).toBe('regenerated');
+		expect(byPath.get('.github/settings.yml')).toBe('settings');
+		expect(byPath.get('gone.txt')).toBeNull();
+		expect(byPath.has('.github/workflows/ci.yml')).toBe(true);
+	});
+
+	it('[<5ms] runs nothing without a setup command, and fails naming the command when it fails', async () => {
+		let ran = 0;
+		const materialise = async () => {
+			ran += 1;
+			throw new Error('the rehearsal setup command `boom` failed: x');
+		};
+		await createRehearsalSetup({
+			...realInput,
+			setupCommand: '',
+			materialise,
+		}).files('b');
+		expect(ran).toBe(0);
+		await expect(
+			Promise.resolve(
+				createRehearsalSetup({
+					...realInput,
+					setupCommand: 'boom',
+					materialise,
+				}).files('b'),
+			),
+		).rejects.toThrow('`boom`');
 	});
 });
 
@@ -289,7 +357,7 @@ describe('the real-mode workflow files', () => {
 		);
 	});
 
-	it("[<20ms] keep the project's required checks in the real-mode policy", () => {
+	it("[<20ms] keep the project's required checks in the real-mode policy", async () => {
 		const text = readRepo('delendai.config.json');
 		const original = JSON.parse(text).development.integration;
 		expect(original.requiredChecks).toEqual([
@@ -299,16 +367,16 @@ describe('the real-mode workflow files', () => {
 		const direct = JSON.parse(rehearsalPolicy(text, 'b', true, 'r1'))
 			.development.integration;
 		expect(direct.requiredChecks).toEqual(original.requiredChecks);
-		const policy = createRehearsalSetup({
-			runId: 'r1',
-			branchPrefix: 'ns/rehearsal/',
-			policyText: text,
-			integratorWorkflow: () => 'land',
-			realWorkflows: {},
-			projectIntegration: 'develop',
-		})
-			.files('b')
-			.find((file) => file.path === 'delendai.config.json');
+		const policy = (
+			await createRehearsalSetup({
+				runId: 'r1',
+				branchPrefix: 'ns/rehearsal/',
+				policyText: text,
+				integratorWorkflow: () => 'land',
+				realWorkflows: {},
+				projectIntegration: 'develop',
+			}).files('b')
+		).find((file) => file.path === 'delendai.config.json');
 		expect(
 			JSON.parse(policy?.content ?? '{}').development.integration
 				.requiredChecks,

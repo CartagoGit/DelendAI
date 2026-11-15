@@ -1,3 +1,5 @@
+import type { IRehearsalSetupMaterialiser } from './rehearsal-setup-materialiser.interface';
+
 /**
  * The shapes of a rehearsal of the pull request flow on the real forge:
  * what a synthetic pull request declares, the scenarios a run plays, the
@@ -96,9 +98,14 @@ export type IRehearsalExpectation =
 			readonly kind: 'sessions-notified';
 	  };
 
+/** How a rehearsal runs: on stand-in workflows, or under the project's own CI and scans. */
+export type IRehearsalMode = 'fast' | 'real';
+
 export interface IRehearsalScenario {
 	readonly id: string;
 	readonly title: string;
+	/** The modes it runs in; absent means both. A scenario that needs the workflow token runs in fast only. */
+	readonly modes?: readonly IRehearsalMode[];
 	/** The production failure it reproduces (F1 to F9, F1b), when it is one. */
 	readonly reproduces?: string;
 	readonly pulls: readonly IRehearsalPullSpec[];
@@ -216,7 +223,9 @@ export interface IRehearsalClock {
 /** What the integrator workflow and the project files of a branch are. */
 export interface IRehearsalSetup {
 	/** Files the setup commit writes, given the scenario's integration branch. */
-	readonly files: (integration: string) => readonly IRehearsalFileChange[];
+	readonly files: (
+		integration: string,
+	) => Promise<readonly IRehearsalFileChange[]>;
 }
 
 /** Everything one scenario left on the forge, read back after it ran. */
@@ -274,7 +283,7 @@ export interface IRehearsalTargetResult {
 
 export interface IRehearsalReport {
 	readonly runId: string;
-	readonly mode: 'fast';
+	readonly mode: IRehearsalMode;
 	readonly repository: string;
 	readonly tip: string;
 	readonly startedAt: string;
@@ -318,6 +327,8 @@ export interface IRehearseInput {
 	 */
 	readonly baseCommit?: string;
 	readonly scenarios: readonly IRehearsalScenario[];
+	/** The mode the run plays and its report names; absent means fast. */
+	readonly mode?: IRehearsalMode;
 	readonly log: (line: string) => void;
 }
 
@@ -340,6 +351,10 @@ export interface IRehearsalSetupInput {
 	readonly realWorkflows?: Readonly<Record<string, string>>;
 	/** Real mode: the project's integration branch name, the one the filters of those workflows name. */
 	readonly projectIntegration?: string;
+	/** Real mode: the policy's `rehearsal.setupCommand`; empty or absent runs nothing. */
+	readonly setupCommand?: string;
+	/** Real mode: runs `setupCommand`; required when there is one. */
+	readonly materialise?: IRehearsalSetupMaterialiser;
 }
 
 /** What a scenario run is given: the forge, the clock and the run's names. */

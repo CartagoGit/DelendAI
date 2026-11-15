@@ -10,6 +10,7 @@ import { REHEARSAL_TARGETS } from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalEvidence,
 	IRehearsalPullEvent,
+	IRehearsalMode,
 	IRehearsalPullState,
 	IRehearsalReport,
 	IRehearsalScenario,
@@ -202,6 +203,8 @@ export const buildReport = (input: {
 	readonly startedAt: string;
 	readonly finishedAt: string;
 	readonly scenarios: readonly IRehearsalScenario[];
+	/** The mode the run used; absent means fast. */
+	readonly mode?: IRehearsalMode;
 	readonly evidence: readonly IRehearsalEvidence[];
 	readonly leftovers: readonly string[];
 	readonly secretHits: readonly string[];
@@ -231,7 +234,7 @@ export const buildReport = (input: {
 	);
 	return {
 		runId: input.runId,
-		mode: 'fast',
+		mode: input.mode ?? 'fast',
 		repository: input.repository,
 		tip: input.tip,
 		startedAt: input.startedAt,

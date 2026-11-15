@@ -53,10 +53,12 @@ export interface IIntegrationWatchdog {
 	readonly cron: string;
 }
 
-/** What the rehearsal reads: the secret names it needs and the scenarios it runs. */
+/** What the rehearsal reads: the secret names it needs, the scenarios it runs and the command that regenerates its tree. */
 export interface IIntegrationRehearsal {
 	readonly secrets: readonly string[];
 	readonly scenarios: readonly string[];
+	/** Real mode: run in a worktree holding the rehearsal's files, and every file it changes joins the setup commit; empty runs nothing. */
+	readonly setupCommand: string;
 }
 
 /** The options of the integration plugin; every one has a default, and with engine `none` none acts. */

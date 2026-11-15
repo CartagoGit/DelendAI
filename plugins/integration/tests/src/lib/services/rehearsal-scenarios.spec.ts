@@ -21,7 +21,11 @@ import {
 	landIntegratorWorkflow,
 	rehearsalPolicy,
 } from '../../../../src/lib/services/rehearsal-setup.helper';
-import { selectScenarios } from '../../../../src/lib/services/rehearsal.service';
+import {
+	runsInMode,
+	scenariosForMode,
+	selectScenarios,
+} from '../../../../src/lib/services/rehearsal.service';
 
 const reproduced = REHEARSAL_SCENARIOS.flatMap(
 	(s) => s.reproduces?.split('+') ?? [],
@@ -117,6 +121,37 @@ describe('the scenario catalogue', () => {
 		expect(() => selectScenarios(REHEARSAL_CATALOGUE, ['F99'])).toThrow(
 			'unknown scenario',
 		);
+	});
+});
+
+describe('the modes of a scenario', () => {
+	it('[<50ms] runs a scenario that names no mode in both', () => {
+		expect(runsInMode({}, 'fast')).toBe(true);
+		expect(runsInMode({}, 'real')).toBe(true);
+		expect(runsInMode({ modes: ['fast'] }, 'real')).toBe(false);
+	});
+
+	it('[<50ms] keeps the scenarios that need the workflow token out of the real mode', () => {
+		const real = scenariosForMode(REHEARSAL_CATALOGUE, 'real').map(
+			(s) => s.id,
+		);
+		expect(real).not.toContain('bot-head');
+		expect(real).not.toContain('automation-opened');
+		expect(real).toContain('one-pr');
+		const fast = scenariosForMode(REHEARSAL_CATALOGUE, 'fast').map(
+			(s) => s.id,
+		);
+		expect(fast).toEqual(REHEARSAL_CATALOGUE.map((s) => s.id));
+	});
+
+	it('[<50ms] has a scenario that opens by the workflow token run in fast only', () => {
+		for (const scenario of REHEARSAL_CATALOGUE) {
+			const usesToken = scenario.steps.some(
+				(step) =>
+					step.kind === 'token-push' || step.kind === 'token-open',
+			);
+			expect(runsInMode(scenario, 'real')).toBe(!usesToken);
+		}
 	});
 });
 
@@ -233,8 +268,8 @@ describe('today land on the rehearsal branch', () => {
 		);
 	});
 
-	it('[<50ms] creates the shared file in the setup commit', () => {
-		const files = createRehearsalSetup(
+	it('[<50ms] creates the shared file in the setup commit', async () => {
+		const files = await createRehearsalSetup(
 			fakePartial<IRehearsalSetupInput>({
 				runId: 'r1',
 				branchPrefix: 'ns',

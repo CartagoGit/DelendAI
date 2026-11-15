@@ -85,8 +85,8 @@ describe('the red-batch scenario', () => {
 		expect(b?.declaration.batch).toBeUndefined();
 	});
 
-	it('[<50ms] reaches the tree of a branch only through its own pull request, never the setup commit', () => {
-		const files = createRehearsalSetup({
+	it('[<50ms] reaches the tree of a branch only through its own pull request, never the setup commit', async () => {
+		const files = await createRehearsalSetup({
 			runId: 'r1',
 			branchPrefix: 'ns/rehearsal/',
 			policyText: '{}',

@@ -72,7 +72,7 @@ const world = (
 					clock.at += ms;
 				},
 			},
-			setup: { files: () => [] },
+			setup: { files: async () => [] },
 			runId: 'r',
 			tip: 'tip',
 			branchPrefix: 'ns/rehearsal/',
