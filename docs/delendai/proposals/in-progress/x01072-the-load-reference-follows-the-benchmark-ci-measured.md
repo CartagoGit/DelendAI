@@ -2,10 +2,14 @@
 id: x01072
 title: "The load reference follows the benchmark CI measured"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 1c17b6ba-50eb-4d16-b6db-7b528f3a055d
+last-correlation-id: 1c17b6ba-50eb-4d16-b6db-7b528f3a055d
+last-transition-from: ready
+last-transition-at: 2026-11-15T17:22:09.690Z
 ---
 
 # x01072 — The load reference follows the benchmark CI measured
