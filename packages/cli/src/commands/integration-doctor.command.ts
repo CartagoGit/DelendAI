@@ -19,7 +19,7 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
-import { repositoryOf } from './integration-repository.helper';
+import { repositorySlugOf } from './integration-repository.helper';
 
 const names = async (
 	runGh: IRehearsalCommandRunner,
@@ -74,7 +74,7 @@ export const runIntegrationDoctor = async (
 	ctx: ICliCommandContext,
 	runGh: IRehearsalCommandRunner,
 ): Promise<ICliCommandResult> => {
-	const named = await repositoryOf(runGh);
+	const named = await repositorySlugOf(runGh);
 	if ('error' in named)
 		return { code: EXIT_CODE.RUNTIME, error: named.error };
 	const repository = named.slug;

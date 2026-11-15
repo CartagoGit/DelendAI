@@ -41,7 +41,7 @@ import type {
 } from '../contracts/interfaces/cli-command.interface';
 
 import { runIntegrationDoctor } from './integration-doctor.command';
-import { repositoryOf } from './integration-repository.helper';
+import { repositorySlugOf } from './integration-repository.helper';
 
 const CONFIG_FILE = 'delendai.config.json';
 /** A project that generates its own land workflow says how here; every other project gets the generic one. */
@@ -87,7 +87,7 @@ const downloadReport = async (
 };
 
 /** The workflow files a config text implies: the project's own generator when it has one, else the generic render. */
-const renderWorkflows = async (
+export const renderWorkflows = async (
 	cwd: string,
 	configText: string,
 ): Promise<readonly IActivationFile[]> => {
@@ -151,15 +151,15 @@ const portsOf = (
 		readConfig: () => readFile(join(ctx.cwd, CONFIG_FILE), 'utf8'),
 		writeConfig: (text) => writeFile(join(ctx.cwd, CONFIG_FILE), text),
 		renderWorkflows: (text) => renderWorkflows(ctx.cwd, text),
-		writeFile: async (path, content) => {
+		writeWorkflow: async (path, content) => {
 			await mkdir(dirname(join(ctx.cwd, path)), { recursive: true });
 			await writeFile(join(ctx.cwd, path), content);
 		},
-		removeFile: (path) => rm(join(ctx.cwd, path), { force: true }),
+		removeWorkflow: (path) => rm(join(ctx.cwd, path), { force: true }),
 	};
 };
 
-const failure = (error: unknown): ICliCommandResult => ({
+const runtimeFailure = (error: unknown): ICliCommandResult => ({
 	code: EXIT_CODE.RUNTIME,
 	error: error instanceof Error ? error.message : String(error),
 });
@@ -170,7 +170,7 @@ export const runIntegrationActivate = async (
 	runGh: IRehearsalCommandRunner,
 ): Promise<ICliCommandResult> => {
 	try {
-		const repository = await repositoryOf(runGh);
+		const repository = await repositorySlugOf(runGh);
 		if ('error' in repository)
 			return { code: EXIT_CODE.RUNTIME, error: repository.error };
 		const policy = await readWorkspacePolicy(ctx.cwd);
@@ -189,7 +189,7 @@ export const runIntegrationActivate = async (
 			text: `engine land written to ${CONFIG_FILE}; wrote ${result.changed.join(', ')}. Commit them in a work unit and publish it as a pull request: nothing was committed or pushed.`,
 		};
 	} catch (error) {
-		return failure(error);
+		return runtimeFailure(error);
 	}
 };
 
@@ -199,7 +199,7 @@ export const runIntegrationDeactivate = async (
 	runGh: IRehearsalCommandRunner,
 ): Promise<ICliCommandResult> => {
 	try {
-		const repository = await repositoryOf(runGh);
+		const repository = await repositorySlugOf(runGh);
 		if ('error' in repository)
 			return { code: EXIT_CODE.RUNTIME, error: repository.error };
 		const policy = await readWorkspacePolicy(ctx.cwd);
@@ -212,7 +212,7 @@ export const runIntegrationDeactivate = async (
 			text: `engine none written to ${CONFIG_FILE}; removed ${result.changed.join(', ')}. Nothing was committed or pushed.`,
 		};
 	} catch (error) {
-		return failure(error);
+		return runtimeFailure(error);
 	}
 };
 
@@ -228,7 +228,7 @@ export const runIntegrationResume = async (
 				code: EXIT_CODE.RUNTIME,
 				error: 'the engine is none: nothing would land the resumed pull requests. Run `integration activate` and merge it first.',
 			};
-		const repository = await repositoryOf(runGh);
+		const repository = await repositorySlugOf(runGh);
 		if ('error' in repository)
 			return { code: EXIT_CODE.RUNTIME, error: repository.error };
 		const resumed = await resumeIntegration({
@@ -248,6 +248,6 @@ export const runIntegrationResume = async (
 					: `marked ready and unlabelled: ${resumed.map((number) => `#${String(number)}`).join(', ')}`,
 		};
 	} catch (error) {
-		return failure(error);
+		return runtimeFailure(error);
 	}
 };

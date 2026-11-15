@@ -78,10 +78,10 @@ const fake = (over: Partial<IActivationPorts> = {}): IFake => {
 						{ path: 'land.yml', content: undefined },
 						{ path: 'land-signal.yml', content: undefined },
 					],
-		writeFile: async (path, content) => {
+		writeWorkflow: async (path, content) => {
 			files.set(path, content);
 		},
-		removeFile: async (path) => {
+		removeWorkflow: async (path) => {
 			removed.push(path);
 		},
 		...over,

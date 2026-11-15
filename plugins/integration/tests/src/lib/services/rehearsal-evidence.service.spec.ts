@@ -76,4 +76,29 @@ describe('rehearsal evidence', () => {
 			/HTTP 403/u,
 		);
 	});
+
+	it('[<50ms] skips a run whose artifact cannot be downloaded', async () => {
+		const evidence = createRehearsalEvidence({
+			slug: 'o/p',
+			run: async (args) => ({
+				exitCode: 0,
+				stdout: (args[1] ?? '').includes('/artifacts')
+					? JSON.stringify({
+							artifacts: [{ name: 'rehearsal-report-fast' }],
+						})
+					: JSON.stringify({
+							workflow_runs: [
+								{
+									id: 1,
+									head_sha: TIP,
+									created_at: '2026-01-01T00:00:00Z',
+								},
+							],
+						}),
+				stderr: '',
+			}),
+			download: async () => undefined,
+		});
+		expect(await evidence.reportOf('fast', TIP)).toBeUndefined();
+	});
 });

@@ -47,7 +47,7 @@ import {
 import { runIntegrationAdopt } from './integration-adopt.command';
 import { runIntegrationDoctor } from './integration-doctor.command';
 import { runIntegrationPassCommand } from './integration-pass.command';
-import { repositoryOf } from './integration-repository.helper';
+import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
 const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>]`;
@@ -131,7 +131,7 @@ export const createIntegrationCommand = (
 		const ids = (scalarArg(rest, 'scenarios') ?? REHEARSAL_ALL_SCENARIOS)
 			.split(',')
 			.filter((id) => id !== '');
-		const named = await repositoryOf(runGh);
+		const named = await repositorySlugOf(runGh);
 		if ('error' in named)
 			return { code: EXIT_CODE.RUNTIME, error: named.error };
 		const repository = named.slug;

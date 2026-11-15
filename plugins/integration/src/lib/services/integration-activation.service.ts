@@ -89,8 +89,8 @@ const switchEngine = async (
 	await ports.writeConfig(text);
 	const files = await ports.renderWorkflows(text);
 	for (const file of files)
-		if (file.content === undefined) await ports.removeFile(file.path);
-		else await ports.writeFile(file.path, file.content);
+		if (file.content === undefined) await ports.removeWorkflow(file.path);
+		else await ports.writeWorkflow(file.path, file.content);
 	return files.map((file) => file.path);
 };
 

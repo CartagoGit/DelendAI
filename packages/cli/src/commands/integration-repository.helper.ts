@@ -1,7 +1,7 @@
 import type { IRehearsalCommandRunner } from '@delendai/integration/public';
 
 /** `owner/name` of the repository `gh` is pointed at, or why it could not be named. */
-export const repositoryOf = async (
+export const repositorySlugOf = async (
 	runGh: IRehearsalCommandRunner,
 ): Promise<{ readonly slug: string } | { readonly error: string }> => {
 	const named = await runGh([

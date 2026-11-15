@@ -30,8 +30,8 @@ export interface IActivationPorts {
 	readonly renderWorkflows: (
 		configText: string,
 	) => Promise<readonly IActivationFile[]>;
-	readonly writeFile: (path: string, content: string) => Promise<void>;
-	readonly removeFile: (path: string) => Promise<void>;
+	readonly writeWorkflow: (path: string, content: string) => Promise<void>;
+	readonly removeWorkflow: (path: string) => Promise<void>;
 }
 
 export interface IActivationResult {

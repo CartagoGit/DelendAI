@@ -18,6 +18,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 
 import {
+	renderWorkflows,
 	runIntegrationActivate,
 	runIntegrationDeactivate,
 	runIntegrationResume,
@@ -130,6 +131,142 @@ describe('integration activate, deactivate and resume', () => {
 			expect(
 				calls.filter((call) => call.includes('DELETE')),
 			).toHaveLength(1);
+		});
+	});
+
+	it('[<500ms] reads the report artifact of the tip and lists the reasons left', async () => {
+		await withProject('none', async (ctx) => {
+			const tip = 'a'.repeat(40);
+			const report = {
+				tip,
+				scenarios: [{ id: 'F1', ok: false }],
+				targets: [{ id: 'T1', ok: true, detail: '' }],
+			};
+			const run: IRehearsalCommandRunner = async (args) => {
+				const line = args.join(' ');
+				if (line.startsWith('run download')) {
+					const dir = args[args.indexOf('--dir') + 1] ?? '';
+					writeFileSync(
+						join(dir, 'report.json'),
+						JSON.stringify(report),
+					);
+					return { exitCode: 0, stdout: '', stderr: '' };
+				}
+				if (line.includes('/workflows/'))
+					return {
+						exitCode: 0,
+						stdout: JSON.stringify({
+							workflow_runs: [
+								{
+									id: 9,
+									head_sha: tip,
+									created_at: '2026-01-01T00:00:00Z',
+								},
+							],
+						}),
+						stderr: '',
+					};
+				if (line.includes('/artifacts'))
+					return {
+						exitCode: 0,
+						stdout: JSON.stringify({
+							artifacts: [
+								{ name: 'rehearsal-report-fast' },
+								{ name: 'rehearsal-report-real' },
+							],
+						}),
+						stderr: '',
+					};
+				return gh()(args);
+			};
+			const result = await runIntegrationActivate(ctx, run);
+			expect(result.code).toBe(EXIT_CODE.RUNTIME);
+			expect(result.error).toContain('fast scenario F1 is red');
+			expect(result.error).toContain('real scenario F1 is red');
+			expect(result.error).not.toContain('no fast rehearsal report');
+		});
+	});
+
+	it('[<500ms] says when the artifact cannot be downloaded', async () => {
+		await withProject('none', async (ctx) => {
+			const run: IRehearsalCommandRunner = async (args) => {
+				const line = args.join(' ');
+				if (line.startsWith('run download'))
+					return { exitCode: 1, stdout: '', stderr: 'gone' };
+				if (line.includes('/workflows/'))
+					return {
+						exitCode: 0,
+						stdout: JSON.stringify({
+							workflow_runs: [
+								{
+									id: 9,
+									head_sha: 'a'.repeat(40),
+									created_at: '2026-01-01T00:00:00Z',
+								},
+							],
+						}),
+						stderr: '',
+					};
+				if (line.includes('/artifacts'))
+					return {
+						exitCode: 0,
+						stdout: JSON.stringify({
+							artifacts: [{ name: 'rehearsal-report-fast' }],
+						}),
+						stderr: '',
+					};
+				return gh()(args);
+			};
+			const result = await runIntegrationActivate(ctx, run);
+			expect(result.code).toBe(EXIT_CODE.RUNTIME);
+			expect(result.error).toContain('could not be downloaded');
+		});
+	});
+
+	it('[<500ms] stops every command when gh cannot name the repository', async () => {
+		const blind: IRehearsalCommandRunner = async () => ({
+			exitCode: 1,
+			stdout: '',
+			stderr: 'no repo',
+		});
+		await withProject('land', async (ctx) => {
+			for (const run of [
+				runIntegrationActivate,
+				runIntegrationDeactivate,
+				runIntegrationResume,
+			]) {
+				const result = await run(ctx, blind);
+				expect(result.code).toBe(EXIT_CODE.RUNTIME);
+				expect(result.error).toContain('could not name the repository');
+			}
+		});
+	});
+
+	it('[<500ms] renders the generic land workflows while the engine is land, and none otherwise', async () => {
+		await withProject('land', async (_ctx, dir) => {
+			const files = await renderWorkflows(dir, configOf('land'));
+			expect(files.map((file) => file.path)).toEqual([
+				'.github/workflows/land.yml',
+				'.github/workflows/land-signal.yml',
+			]);
+			for (const file of files) expect(file.content).toContain('name:');
+		});
+		await withProject('none', async (_ctx, dir) => {
+			for (const file of await renderWorkflows(dir, configOf('none')))
+				expect(file.content).toBeUndefined();
+		});
+	});
+
+	it('[<500ms] takes the files from the project generator when it has one', async () => {
+		await withProject('land', async (_ctx, dir) => {
+			mkdirSync(join(dir, 'tools/scripts/forge'), { recursive: true });
+			writeFileSync(
+				join(dir, 'tools/scripts/forge/land-workflow.script.ts'),
+				"export const landWorkflowFilesOf = () => [{ path: 'x.yml', expected: 'own' }];\n",
+			);
+			expect(await renderWorkflows(dir, configOf('land'))).toEqual([
+				{ path: 'x.yml', content: 'own' },
+			]);
 		});
 	});
 });

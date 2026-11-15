@@ -67,4 +67,37 @@ describe('integration resume', () => {
 			'api --method DELETE repos/o/p/issues/7/labels/delendai%3Apaused',
 		);
 	});
+
+	it('[<50ms] reads every page of open pull requests', async () => {
+		let page = 0;
+		const forge = createGithubResumeForge({
+			slug: 'o/p',
+			run: async () => {
+				page += 1;
+				const count = page === 1 ? 100 : 1;
+				return {
+					exitCode: 0,
+					stdout: JSON.stringify(
+						Array.from({ length: count }, (_, i) => ({
+							number: page * 1000 + i,
+							node_id: 'N',
+						})),
+					),
+					stderr: '',
+				};
+			},
+		});
+		const pulls = await forge.openPulls('develop');
+		expect(pulls).toHaveLength(101);
+		expect(pulls[0]?.labels).toEqual([]);
+	});
+
+	it('[<50ms] says what gh refused', async () => {
+		const forge = createGithubResumeForge({
+			slug: 'o/p',
+			run: async () => ({ exitCode: 1, stdout: '', stderr: 'HTTP 403' }),
+		});
+		await expect(forge.openPulls('develop')).rejects.toThrow(/HTTP 403/u);
+		await expect(forge.removeLabel(1, 'x')).rejects.toThrow(/HTTP 403/u);
+	});
 });
