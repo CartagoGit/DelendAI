@@ -4,6 +4,7 @@
  * integrator does not act, a wake is taken and counted as a manual step.
  */
 import {
+	REHEARSAL_AWAIT_CAP_SECONDS,
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_RUNNING_STATUSES,
@@ -135,18 +136,35 @@ const somethingRuns = async (
 	return false;
 };
 
+/**
+ * Waits for `step`. Its clock advances only while no workflow run is queued
+ * or in progress on the scenario (the project's real CI takes as long as it
+ * takes): it fails after `seconds` of idleness, and after the absolute cap
+ * whatever runs.
+ */
 const awaitStep = async (
 	ctx: IRehearsalRunContext,
 	state: IScenarioState,
 	step: Extract<IRehearsalStep, { kind: 'await' }>,
 ): Promise<void> => {
 	const started = ctx.clock.now();
+	let lastTick = started;
 	let lastWake = started;
+	let idleMs = 0;
 	for (;;) {
 		const pending = await satisfied(ctx, state, step);
 		if (pending.length === 0) return;
 		const now = ctx.clock.now();
-		if (now - started >= step.seconds * 1000) {
+		const busy = await somethingRuns(ctx, state);
+		if (!busy) idleMs += now - lastTick;
+		lastTick = now;
+		if (now - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000) {
+			state.failures.push(
+				`${step.until} not reached within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap for ${pending.join(', ')}`,
+			);
+			return;
+		}
+		if (idleMs >= step.seconds * 1000) {
 			state.failures.push(
 				`${step.until} not reached in ${String(step.seconds)} s for ${pending.join(', ')}`,
 			);
@@ -156,7 +174,7 @@ const awaitStep = async (
 			step.wakeAfterSeconds !== undefined &&
 			now - lastWake >= step.wakeAfterSeconds * 1000 &&
 			// A wake is a manual step only when the system is idle.
-			!(await somethingRuns(ctx, state))
+			!busy
 		) {
 			await wake(ctx, state, pending);
 			lastWake = now;

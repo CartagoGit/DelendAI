@@ -17,7 +17,6 @@ import type {
 import { renderSignalJob } from './integration-adoption.service';
 
 const WORKFLOWS = '.github/workflows';
-const SIGNAL_INDENT = 4;
 const JOBS_KEY = /^jobs:\s*$/u;
 const JOB_KEY = /^( +)([\w-]+):\s*(?:#.*)?$/u;
 const PULL_REQUEST_TRIGGER = /^\s*pull_request:/mu;
@@ -117,24 +116,61 @@ const declaredJobs = (
 	return indent === undefined ? undefined : { ids, indent };
 };
 
+const SIGNAL_JOB_ID = 'integration-signal';
+/** Columns of the template the signal job is rendered at: a job key, and a step item inside it. */
+const TEMPLATE_JOB_COLUMN = 4;
+const TEMPLATE_STEP_COLUMN = 12;
+/** Columns inside a step item, counted from its dash: its keys, their children, a block's continuation. */
+const STEP_KEYS = 2;
+const STEP_CHILDREN = 6;
+const STEP_CONTINUATION = 8;
+const DASH_WIDTH = 2;
+
+/**
+ * One line of the template at the target's indent. The levels up to the
+ * step item scale with the unit; inside a step the keys sit after the dash
+ * (never scaled), their children one unit deeper and a block's continuation
+ * two spaces beyond that, so no list item is ever mis-aligned.
+ */
+const placed = (line: string, unit: number, jobsIndent: number): string => {
+	const text = line.trimStart();
+	if (text === '') return '';
+	const column = line.length - text.length;
+	const stepAt = TEMPLATE_STEP_COLUMN - TEMPLATE_JOB_COLUMN;
+	const offset = column - TEMPLATE_JOB_COLUMN;
+	const pad = (width: number): string => ' '.repeat(width);
+	if (offset <= stepAt)
+		return `${pad(jobsIndent + (offset / TEMPLATE_JOB_COLUMN) * unit)}${text}`;
+	const stepIndent = jobsIndent + (stepAt / TEMPLATE_JOB_COLUMN) * unit;
+	const inside = column - TEMPLATE_STEP_COLUMN;
+	const within =
+		inside === STEP_KEYS
+			? DASH_WIDTH
+			: inside === STEP_CHILDREN
+				? DASH_WIDTH + unit
+				: inside === STEP_CONTINUATION
+					? DASH_WIDTH + unit + DASH_WIDTH
+					: inside;
+	return `${pad(stepIndent + within)}${text}`;
+};
+
 /**
  * `text` with the signal job appended after its last job, so a finished CI
  * wakes the integrator on the rehearsal branch. A file that is no pull
- * request CI, or has no jobs block, is returned as it is.
+ * request CI, has no jobs block, or already has the signal job is returned
+ * as it is; the job never waits on itself.
  */
 export const withSignalJob = (text: string, integration: string): string => {
 	const jobs = declaredJobs(text);
 	if (jobs === undefined || !PULL_REQUEST_TRIGGER.test(text)) return text;
+	if (jobs.ids.includes(SIGNAL_JOB_ID)) return text;
 	const signal = renderSignalJob({
-		needs: jobs.ids,
+		needs: jobs.ids.filter((id) => id !== SIGNAL_JOB_ID),
 		integrationBranch: integration,
 	})
 		.trimEnd()
 		.split('\n')
-		.map((line) => {
-			const lead = line.length - line.trimStart().length;
-			return `${' '.repeat((lead * jobs.indent) / SIGNAL_INDENT)}${line.trimStart()}`;
-		})
+		.map((line) => placed(line, jobs.indent, jobs.indent))
 		.join('\n');
 	return `${text.trimEnd()}\n\n${signal}\n`;
 };
