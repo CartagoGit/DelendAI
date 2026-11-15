@@ -83,6 +83,7 @@ export interface IDevelopmentConfigInput {
 				readonly engine?: string | undefined;
 				readonly protocol?: number | undefined;
 				readonly landWithoutChecks?: boolean | undefined;
+				readonly forgeEvents?: boolean | undefined;
 				readonly identity?:
 					| {
 							readonly kind?: string | undefined;

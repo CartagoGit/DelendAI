@@ -126,6 +126,9 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		// Opt-in: receiving events needs the forge CLI's forwarding and a
+		// login that may create webhooks, which no project has by default.
+		forgeEvents: false,
 		...DEFAULT_INTEGRATION_OPTIONS,
 		// The forge must NOT delete the branch when a pull request
 		// merges. A work ref lives as long as the proposal it serves,
@@ -204,6 +207,9 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		// Opt-in: receiving events needs the forge CLI's forwarding and a
+		// login that may create webhooks, which no project has by default.
+		forgeEvents: false,
 		...DEFAULT_INTEGRATION_OPTIONS,
 		deleteMergedWorkRef: false,
 		linearHistory: true,
@@ -295,6 +301,9 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		engine: 'none',
 		protocol: INTEGRATION_PROTOCOL_VERSION,
 		landWithoutChecks: false,
+		// Opt-in: receiving events needs the forge CLI's forwarding and a
+		// login that may create webhooks, which no project has by default.
+		forgeEvents: false,
 		...DEFAULT_INTEGRATION_OPTIONS,
 		deleteMergedWorkRef: true,
 		linearHistory: true,

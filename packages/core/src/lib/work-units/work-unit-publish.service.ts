@@ -21,6 +21,7 @@ import {
 	proposalInProgress,
 } from './publication-target.service';
 import { openUnitPullRequest } from './publication-pull-request.service';
+import { subscribeAgentToPullRequest } from '../forge-events/forge-event-store.service';
 import { urgencyOfUnit } from './pull-request-urgency.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
@@ -345,6 +346,12 @@ export const published = async (
 					urgent,
 				})
 			: undefined;
+	// The agent that published waits for the outcome, not by asking.
+	const subscribed = await subscribeAgentToPullRequest({
+		root,
+		agent,
+		pullRequest,
+	});
 	// Published but not cleaned up is not a success: the namespace is
 	// left carrying a ref that looks like live work.
 	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
@@ -385,6 +392,7 @@ export const published = async (
 			...(departures.length === 0 ? {} : { departures }),
 			publication,
 			...(pullRequest === undefined ? {} : { pullRequest }),
+			...(subscribed ? { subscribed: true } : {}),
 			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
 		},
 	};
