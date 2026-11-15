@@ -31,6 +31,23 @@ export interface DelendaiNotificationAwaitLockOutput {
 	nextAction?: string;
 }
 
+export interface DelendaiNotificationForgeAwaitOutput {
+	notices: {
+		repository: string;
+		number: number;
+		outcome: string;
+	}[];
+	timedOut: boolean;
+	reason?: string;
+}
+
+export interface DelendaiNotificationForgeSubscribeOutput {
+	subscribed: boolean;
+	agent: string;
+	repository: string;
+	number: number;
+}
+
 export interface DelendaiNotificationNotifyStatusOutput {
 	watching: string;
 	emitted: number;
@@ -45,5 +62,7 @@ export interface DelendaiNotificationNotifyStatusOutput {
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface INotificationToolOutputs {
 	"delendai_notification_await_lock": DelendaiNotificationAwaitLockOutput;
+	"delendai_notification_forge_await": DelendaiNotificationForgeAwaitOutput;
+	"delendai_notification_forge_subscribe": DelendaiNotificationForgeSubscribeOutput;
 	"delendai_notification_notify_status": DelendaiNotificationNotifyStatusOutput;
 }

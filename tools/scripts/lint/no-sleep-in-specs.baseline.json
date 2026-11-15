@@ -23,7 +23,7 @@
 		"packages/core/tests/src/lib/shared/with-file-mutex.spec.ts",
 		"packages/core/tests/src/lib/shared/with-file-mutexes.spec.ts",
 		"plugins/memory/tests/src/lib/memory.spec.ts",
-		"plugins/notification/tests/src/lib/notification.spec.ts",
+		"plugins/notification/tests/src/lib/notification.e2e.spec.ts",
 		"plugins/orchestrator-runner/tests/src/lib/subprocess/stdio-transport.spec.ts",
 		"plugins/proposals/tests/src/lib/agents/worktree-sync-coordinator.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts",

@@ -186,7 +186,7 @@
 	"plugins/memory/tests/src/lib/memory.spec.ts": 2,
 	"plugins/memory/tests/src/lib/store-watcher.spec.ts": 2,
 	"plugins/notification/tests/src/lib/agent-events.spec.ts": 3,
-	"plugins/notification/tests/src/lib/notification.spec.ts": 2,
+	"plugins/notification/tests/src/lib/notification.e2e.spec.ts": 2,
 	"plugins/notification/tests/src/lib/safe-logging.spec.ts": 3,
 	"plugins/observability/src/index.spec.ts": 3,
 	"plugins/observability/src/lib/errors/ierror-source.spec.ts": 4,

@@ -55,7 +55,7 @@ describe('lock-release watcher [N14]', async () => {
 		lockFile = join(dir, 'agents.lock.json');
 	});
 
-	it('does not treat a claim from a dead agent as in flight', async () => {
+	it('[<60ms] does not treat a claim from a dead agent as in flight', async () => {
 		// The point of the shared expiry rule: the lock engine drops a
 		// claim whose owning process is gone, so a waiter that still saw
 		// it would wait out its whole timeout for an agent that stopped
@@ -75,7 +75,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect((await readInFlight(lockFile)).has('t-dead')).toBe(false);
 	});
 
-	it('does not treat a claim past its heartbeat window as in flight', async () => {
+	it('[<60ms] does not treat a claim past its heartbeat window as in flight', async () => {
 		writeFileSync(
 			lockFile,
 			lock([
@@ -89,7 +89,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect((await readInFlight(lockFile)).has('t-stale')).toBe(false);
 	});
 
-	it('still holds a claim from a live process on this host', async () => {
+	it('[<60ms] still holds a claim from a live process on this host', async () => {
 		// The other half: a slow-but-alive holder must never be released
 		// early, or two agents write the same files believing they own them.
 		writeFileSync(
@@ -108,7 +108,7 @@ describe('lock-release watcher [N14]', async () => {
 
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('readInFlight maps claims by task_id (empty on missing/corrupt)', async () => {
+	it('[<60ms] readInFlight maps claims by task_id (empty on missing/corrupt)', async () => {
 		expect((await readInFlight(lockFile)).size).toBe(0);
 		writeFileSync(lockFile, '{{{ corrupt');
 		expect((await readInFlight(lockFile)).size).toBe(0);
@@ -121,7 +121,7 @@ describe('lock-release watcher [N14]', async () => {
 		]);
 	});
 
-	it('diffReleased reports claims gone since the previous scan', async () => {
+	it('[<60ms] diffReleased reports claims gone since the previous scan', async () => {
 		const prev = await readInFlight(lockFile);
 		writeFileSync(lockFile, lock([{ task_id: 't1' }, { task_id: 't2' }]));
 		const curr = await readInFlight(lockFile);
@@ -132,7 +132,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(diffReleased(curr, after).map((c) => c.taskId)).toEqual(['t1']);
 	});
 
-	it('watcher.check fires onRelease exactly for freed claims', async () => {
+	it('[<60ms] watcher.check fires onRelease exactly for freed claims', async () => {
 		writeFileSync(
 			lockFile,
 			lock([{ task_id: 't1', agent: 'falcon', ownership: ['src/a.ts'] }]),
@@ -156,7 +156,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(seen[0]?.files).toEqual(['src/a.ts']);
 	});
 
-	it('stop() resets prev so a restart does not emit stale releases (a00085 #7)', async () => {
+	it('[<60ms] stop() resets prev so a restart does not emit stale releases (a00085 #7)', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
 		const seen: IReleasedClaim[] = [];
 		const watcher = createReleaseWatcher({
@@ -181,7 +181,7 @@ describe('lock-release watcher [N14]', async () => {
 	// wait for the NEXT release instead of hearing about this one. Fixed
 	// by priming eagerly inside start() itself, decoupled from whatever
 	// external event happens to fire next.
-	it('start() primes the baseline eagerly so a release right after boot is not swallowed', async () => {
+	it('[<60ms] start() primes the baseline eagerly so a release right after boot is not swallowed', async () => {
 		writeFileSync(
 			lockFile,
 			lock([{ task_id: 't1', agent: 'falcon', ownership: ['src/a.ts'] }]),
@@ -233,7 +233,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
 	});
 
-	it('awaitLockRelease returns immediately when the lock is already free', async () => {
+	it('[<60ms] awaitLockRelease returns immediately when the lock is already free', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 'other' }]));
 		const r = await awaitLockRelease({
 			lockFile,
@@ -248,7 +248,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(r.waitedMs).toBe(0);
 	});
 
-	it('awaitLockRelease resolves when the held lock is later released', async () => {
+	it('[<300ms] awaitLockRelease resolves when the held lock is later released', async () => {
 		writeFileSync(
 			lockFile,
 			lock([{ task_id: 't1', agent: 'falcon', ownership: ['a.ts'] }]),
@@ -267,7 +267,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(r.waitedMs).toBeGreaterThan(0);
 	});
 
-	it('awaitLockRelease times out while the lock stays held', async () => {
+	it('[<1600ms] awaitLockRelease times out while the lock stays held', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
 		const r = await awaitLockRelease({
 			lockFile,
@@ -282,7 +282,7 @@ describe('lock-release watcher [N14]', async () => {
 		});
 	});
 
-	it('awaitLockRelease keeps waiting on an unreadable lock and reports why', async () => {
+	it('[<1600ms] awaitLockRelease keeps waiting on an unreadable lock and reports why', async () => {
 		writeFileSync(lockFile, '{ torn');
 		const r = await awaitLockRelease({
 			lockFile,
@@ -294,7 +294,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(r.readError).toContain('agents.lock.json');
 	});
 
-	it('an unreadable lock is not a release of the claims seen before it', async () => {
+	it('[<60ms] an unreadable lock is not a release of the claims seen before it', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
 		const seen: IReleasedClaim[] = [];
 		const watcher = createReleaseWatcher({
@@ -311,7 +311,7 @@ describe('lock-release watcher [N14]', async () => {
 		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
 	});
 
-	it('awaitLockRelease resolves early when aborted', async () => {
+	it('[<250ms] awaitLockRelease resolves early when aborted', async () => {
 		writeFileSync(lockFile, lock([{ task_id: 't1' }]));
 		const ac = new AbortController();
 		const waiting = awaitLockRelease({
@@ -339,7 +339,7 @@ describe('handoff watcher', async () => {
 	});
 	afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
-	it('ignores pre-existing files in the handoff directory', async () => {
+	it('[<60ms] ignores pre-existing files in the handoff directory', async () => {
 		writeFileSync(
 			join(handoffDir, 'prev.json'),
 			JSON.stringify({
@@ -361,7 +361,7 @@ describe('handoff watcher', async () => {
 		watcher.stop();
 	});
 
-	it('detects newly created valid handoff files', async () => {
+	it('[<60ms] detects newly created valid handoff files', async () => {
 		const seen: IHandoffEvent[] = [];
 		const watcher = createHandoffWatcher({
 			handoffDir,
@@ -389,7 +389,7 @@ describe('handoff watcher', async () => {
 		expect(seen[0]?.agent).toBe('a2');
 	});
 
-	it('ignores invalid JSON or non-handoff schema files', async () => {
+	it('[<60ms] ignores invalid JSON or non-handoff schema files', async () => {
 		const seen: IHandoffEvent[] = [];
 		const watcher = createHandoffWatcher({
 			handoffDir,
@@ -431,7 +431,7 @@ describe('notification plugin', async () => {
 		args: {},
 	});
 
-	it('accepts contained custom watch paths', async () => {
+	it('[<60ms] accepts contained custom watch paths', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
 		expect(() =>
 			plugin.register(
@@ -444,7 +444,7 @@ describe('notification plugin', async () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('rejects watch path traversal outside the workspace', async () => {
+	it('[<60ms] rejects watch path traversal outside the workspace', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
 		expect(() =>
 			plugin.register(
@@ -459,7 +459,7 @@ describe('notification plugin', async () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('rejects watch paths reached through a symlink that leaves the workspace', async () => {
+	it('[<60ms] rejects watch paths reached through a symlink that leaves the workspace', async () => {
 		const dir = realpathSync(mkdtempSync(join(tmpdir(), 'notify-paths-')));
 		const outside = realpathSync(
 			mkdtempSync(join(tmpdir(), 'notify-out-')),
@@ -483,7 +483,7 @@ describe('notification plugin', async () => {
 		rmSync(outside, { recursive: true, force: true });
 	});
 
-	it('rejects absolute watch paths', async () => {
+	it('[<60ms] rejects absolute watch paths', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-paths-'));
 		expect(() =>
 			plugin.register(
@@ -502,7 +502,7 @@ describe('notification plugin', async () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('registers notify_status + knowledge and emits on release and handoff', async () => {
+	it('[<250ms] registers notify_status + knowledge and emits on release and handoff', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-plug-'));
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },
@@ -526,6 +526,8 @@ describe('notification plugin', async () => {
 		expect(reg.tools?.map((t) => t.id)).toEqual([
 			'notify_status',
 			'await_lock',
+			'forge_subscribe',
+			'forge_await',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('lock-notifications');
 
@@ -593,7 +595,7 @@ describe('notification plugin', async () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('registers await_lock with anti-polling guidance in the description', async () => {
+	it('[<60ms] registers await_lock with anti-polling guidance in the description', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'notify-await-'));
 		const ctx = {
 			workspace: { root: dir, resolve: (p: string) => join(dir, p) },

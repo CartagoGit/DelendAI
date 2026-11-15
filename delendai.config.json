@@ -24,6 +24,7 @@
 				"setupCommand": "bun tools/scripts/governance/forge-settings.script.ts --write"
 			},
 			"protocol": 1,
+			"forgeEvents": true,
 			"derived": {
 				"paths": [
 					"docs/delendai/generated/plugin-manifests.generated.json",

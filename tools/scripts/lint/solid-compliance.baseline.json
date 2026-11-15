@@ -3117,7 +3117,7 @@
 		"oversized-file:plugins/logs/tests/tools.spec.ts:1",
 		"oversized-file:plugins/memory/src/lib/tools/tools.ts:1",
 		"oversized-file:plugins/memory/tests/src/lib/memory.spec.ts:1",
-		"oversized-file:plugins/notification/tests/src/lib/notification.spec.ts:1",
+		"oversized-file:plugins/notification/tests/src/lib/notification.e2e.spec.ts:1",
 		"oversized-file:plugins/orchestrator-runner/src/lib/invoke/manager.ts:1",
 		"oversized-file:plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts:1",
 		"oversized-file:plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1",

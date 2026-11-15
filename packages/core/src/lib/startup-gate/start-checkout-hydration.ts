@@ -69,6 +69,7 @@ export const startCheckoutHydration = (
 		policy: input.policy,
 		intervalMs: input.intervalMs ?? DEFAULT_HYDRATION_INTERVAL_MS,
 		clock: { now: () => Date.now() },
+		schedule: input.schedule,
 		standDown: input.standDown,
 		onTick: (tick) => {
 			// Only after a pass that ran: held the lease and fetched, so
