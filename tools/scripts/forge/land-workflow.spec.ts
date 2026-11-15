@@ -6,7 +6,10 @@ import {
 	renderLandWorkflow,
 } from '@delendai/core/cli';
 
-import { REPO_LAND_WORKFLOW } from './land-workflow.script';
+import {
+	REPO_LAND_WORKFLOW,
+	landWorkflowFilesOf,
+} from './land-workflow.script';
 
 const app = REPO_LAND_WORKFLOW.identity;
 const pat = { ...app, kind: 'pat', tokenSecret: 'MY_PAT' } as const;
@@ -174,5 +177,24 @@ describe('the land workflow keeps no workflow token in its clone', () => {
 				setupSteps: ['- uses: actions/checkout@abc'],
 			}),
 		).toThrow('persist-credentials: false');
+	});
+});
+
+describe('the land workflow files follow the engine in a config text', () => {
+	const config = (engine: string): string =>
+		`{ "development": { "integration": { "engine": "${engine}" } } }`;
+
+	it('[<50ms] renders both files while the engine is land', () => {
+		const files = landWorkflowFilesOf(config('land'));
+		expect(files.map((file) => file.path)).toEqual([
+			'.github/workflows/land.yml',
+			'.github/workflows/land-signal.yml',
+		]);
+		for (const file of files) expect(file.expected).toBeTypeOf('string');
+	});
+
+	it('[<50ms] renders none while the engine is none', () => {
+		for (const file of landWorkflowFilesOf(config('none')))
+			expect(file.expected).toBeUndefined();
 	});
 });

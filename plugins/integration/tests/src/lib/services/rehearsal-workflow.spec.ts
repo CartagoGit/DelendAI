@@ -34,6 +34,20 @@ describe('the rehearsal workflow', () => {
 		expect(text).toContain("branches: ['delendai/pr/**']");
 	});
 
+	it('[<50ms] takes the mode and the scenarios, and always keeps the report as an artifact', () => {
+		const text = render();
+		expect(text).toContain('mode:');
+		expect(text).toContain('options: [fast, real]');
+		expect(text).toContain('scenarios:');
+		expect(text).toContain('--mode="$REHEARSAL_MODE"');
+		expect(text).toMatch(
+			/if: always\(\)\n\s+uses: actions\/upload-artifact@[0-9a-f]{40}/u,
+		);
+		expect(text).toContain(
+			"name: rehearsal-report-${{ inputs.mode || 'fast' }}",
+		);
+	});
+
 	it('[<50ms] runs one at a time', () => {
 		expect(render()).toContain('cancel-in-progress: false');
 	});

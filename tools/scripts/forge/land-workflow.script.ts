@@ -19,7 +19,7 @@ import {
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import { readDevelopmentConfig } from './land-policy';
+import { developmentConfigOf, readDevelopmentConfig } from './land-policy';
 
 export const LAND_WORKFLOW_PATH = '.github/workflows/land.yml';
 export const LAND_SIGNAL_WORKFLOW_PATH = '.github/workflows/land-signal.yml';
@@ -104,6 +104,29 @@ export const expectedLandSignalWorkflow = (
 			})
 		: undefined;
 
+/** The files the engine switch decides: each one's content, or none while the engine is not `land`. */
+export const landWorkflowFiles = (
+	development: ReturnType<typeof readDevelopmentConfig>,
+): readonly {
+	readonly path: string;
+	readonly expected: string | undefined;
+}[] => [
+	{
+		path: LAND_WORKFLOW_PATH,
+		expected: expectedLandWorkflow(development),
+	},
+	{
+		path: LAND_SIGNAL_WORKFLOW_PATH,
+		expected: expectedLandSignalWorkflow(development),
+	},
+];
+
+/** The same files for a config text: what `integration activate` and `deactivate` write. */
+export const landWorkflowFilesOf = (
+	configText: string,
+): ReturnType<typeof landWorkflowFiles> =>
+	landWorkflowFiles(developmentConfigOf(configText));
+
 /** The committed file, or `undefined` when there is none: one read, no check before it. */
 const readCommitted = (path: string): string | undefined => {
 	try {
@@ -124,16 +147,7 @@ if (import.meta.main) {
 		);
 		process.exit(1);
 	}
-	const files = [
-		{
-			path: LAND_WORKFLOW_PATH,
-			expected: expectedLandWorkflow(development),
-		},
-		{
-			path: LAND_SIGNAL_WORKFLOW_PATH,
-			expected: expectedLandSignalWorkflow(development),
-		},
-	];
+	const files = landWorkflowFiles(development);
 	if (process.argv.includes('--check')) {
 		const stale = files.filter(
 			({ path, expected }) => readCommitted(path) !== expected,

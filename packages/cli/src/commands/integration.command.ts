@@ -6,8 +6,8 @@
  * report live in the integration plugin.
  */
 import { execFile, spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
 
 import {
@@ -23,6 +23,7 @@ import {
 	REHEARSAL_CATALOGUE,
 	rehearse,
 	renderReportTable,
+	rehearsalReportPath,
 	selectScenarios,
 	type IRehearsalCommandResult,
 	type IRehearsalCommandRunner,
@@ -38,12 +39,18 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 
+import {
+	runIntegrationActivate,
+	runIntegrationDeactivate,
+	runIntegrationResume,
+} from './integration-activation.command';
 import { runIntegrationAdopt } from './integration-adopt.command';
 import { runIntegrationDoctor } from './integration-doctor.command';
 import { runIntegrationPassCommand } from './integration-pass.command';
+import { repositoryOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const execFileAsync = promisify(execFile);
@@ -113,6 +120,9 @@ export const createIntegrationCommand = (
 		const [sub, ...rest] = args;
 		if (sub === 'doctor') return runIntegrationDoctor(rest, ctx, runGh);
 		if (sub === 'adopt') return runIntegrationAdopt(rest, ctx);
+		if (sub === 'activate') return runIntegrationActivate(ctx, runGh);
+		if (sub === 'deactivate') return runIntegrationDeactivate(ctx, runGh);
+		if (sub === 'resume') return runIntegrationResume(ctx, runGh);
 		if (sub === 'pass') return runIntegrationPassCommand(ctx, runGh);
 		if (sub !== 'rehearse') return usage(USAGE);
 		const mode = scalarArg(rest, 'mode') ?? 'fast';
@@ -121,20 +131,10 @@ export const createIntegrationCommand = (
 		const ids = (scalarArg(rest, 'scenarios') ?? REHEARSAL_ALL_SCENARIOS)
 			.split(',')
 			.filter((id) => id !== '');
-		const named = await runGh([
-			'repo',
-			'view',
-			'--json',
-			'nameWithOwner',
-			'--jq',
-			'.nameWithOwner',
-		]);
-		const repository = named.stdout.trim();
-		if (named.exitCode !== 0 || repository === '')
-			return {
-				code: EXIT_CODE.RUNTIME,
-				error: `gh could not name the repository: ${named.stderr.trim() || named.spawnError || 'no answer'}`,
-			};
+		const named = await repositoryOf(runGh);
+		if ('error' in named)
+			return { code: EXIT_CODE.RUNTIME, error: named.error };
+		const repository = named.slug;
 		const policy = await readWorkspacePolicy(ctx.cwd);
 		const policyText = await readFile(
 			join(ctx.cwd, 'delendai.config.json'),
@@ -185,6 +185,9 @@ export const createIntegrationCommand = (
 				),
 				log: (line) => process.stderr.write(`${line}\n`),
 			});
+			const reportFile = join(ctx.cwd, rehearsalReportPath(mode));
+			await mkdir(dirname(reportFile), { recursive: true });
+			await writeFile(reportFile, JSON.stringify(report, null, '\t'));
 			return {
 				code: report.ok ? EXIT_CODE.OK : EXIT_CODE.RUNTIME,
 				data: report,
