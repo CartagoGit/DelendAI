@@ -2,10 +2,14 @@
 id: x01075
 title: "Static checks run side by side"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: bbe1d511-ce3d-4be3-8582-f6572bdd44b6
+last-correlation-id: bbe1d511-ce3d-4be3-8582-f6572bdd44b6
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T22:43:41.442Z
 ---
 
 # x01075 — Static checks run side by side
@@ -62,7 +66,7 @@ How the constraints hold:
 - global_gate: none
 
 ### S1 — Split static-checks into three jobs
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -70,14 +74,20 @@ How the constraints hold:
   - "`delendai-validate` lists the three jobs in `needs`; `job-scope.constant.ts` declares them and the plan spec passes."
   - "`staticChecksOf` returns the same checks, with the same scripts, as before the split."
   - "No job uses `github.token` beyond the read use it already had."
+- shipped-in: `8f553abaf27d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Prove the wall clock
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/ci-static-steps.spec.ts`
 - **Gate**: none
 - acceptance:
   - "A spec asserts that every plan entry of `STATIC_CHECK_JOBS` gates a step in exactly one static job."
   - "The CI run of this slice's pull request shows the longest static job under 70 s of steps and the three running at once."
+- shipped-in: `4da0a548e36b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
