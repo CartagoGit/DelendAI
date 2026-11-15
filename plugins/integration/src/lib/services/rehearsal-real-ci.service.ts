@@ -49,35 +49,61 @@ export const wallSecondsOf = (
 					1000,
 			);
 
-const BRANCHES_INLINE = /^(\s*)branches:\s*\[.*\]\s*$/u;
+const BRANCHES_INLINE = /^(\s*)branches:\s*\[(.*)\]\s*$/u;
 const BRANCHES_BLOCK = /^(\s*)branches:\s*$/u;
+const BLOCK_ITEM = /^(\s*-\s+)(['"]?)([^'"\s#]+)\2(\s*(?:#.*)?)$/u;
 const TOP_KEY = /^\S/u;
 
+/** An unquoted or quoted list entry's value. */
+const unquoted = (entry: string): string =>
+	entry.trim().replace(/^(['"])(.*)\1$/u, '$2');
+
 /**
- * `text` with every `branches` filter under `on:` set to `[branch]`. Only
- * the trigger block changes; steps, jobs and the pinned actions stay as the
+ * `text` with the project's integration branch, wherever a `branches` filter
+ * under `on:` names it, replaced by the rehearsal branch. Every other entry
+ * stays, so a list that also names the release branch still does. Only the
+ * trigger block changes; steps, jobs and the pinned actions stay as the
  * project wrote them.
  */
-export const renderBranchFilters = (text: string, branch: string): string => {
+export const renderBranchFilters = (
+	text: string,
+	branch: string,
+	projectIntegration: string,
+): string => {
 	const out: string[] = [];
 	let inOn = false;
-	let skipItemsOf: number | undefined;
+	let inBlockList = false;
 	for (const line of text.split('\n')) {
 		if (TOP_KEY.test(line)) inOn = /^(on|"on"|'on'):/u.test(line);
-		if (skipItemsOf !== undefined) {
-			const item = /^(\s*)-\s/u.exec(line);
-			if (item !== null && (item[1]?.length ?? 0) >= skipItemsOf)
-				continue;
-			skipItemsOf = undefined;
-		}
 		const inline = inOn ? BRANCHES_INLINE.exec(line) : null;
-		const block = inOn ? BRANCHES_BLOCK.exec(line) : null;
 		if (inline !== null) {
-			out.push(`${inline[1] ?? ''}branches: ['${branch}']`);
-		} else if (block !== null) {
-			out.push(`${block[1] ?? ''}branches: ['${branch}']`);
-			skipItemsOf = block[1]?.length ?? 0;
-		} else out.push(line);
+			const items = (inline[2] ?? '')
+				.split(',')
+				.map((entry) =>
+					unquoted(entry) === projectIntegration
+						? `${/^\s*/u.exec(entry)?.[0] ?? ''}'${branch}'`
+						: entry,
+				);
+			out.push(`${inline[1] ?? ''}branches: [${items.join(',')}]`);
+			inBlockList = false;
+			continue;
+		}
+		if (inOn && BRANCHES_BLOCK.test(line)) {
+			inBlockList = true;
+			out.push(line);
+			continue;
+		}
+		const item = inBlockList ? BLOCK_ITEM.exec(line) : null;
+		if (item !== null) {
+			out.push(
+				item[3] === projectIntegration
+					? `${item[1] ?? ''}'${branch}'${item[4] ?? ''}`
+					: line,
+			);
+			continue;
+		}
+		if (inBlockList && !/^\s*(#.*)?$/u.test(line)) inBlockList = false;
+		out.push(line);
 	}
 	return out.join('\n');
 };
@@ -85,13 +111,19 @@ export const renderBranchFilters = (text: string, branch: string): string => {
 /** The files a real-mode setup commit writes: the project's CI and scan workflows for the rehearsal branch. */
 export const realModeFiles = (input: {
 	readonly integration: string;
+	/** The project's own integration branch name, which the rehearsal branch stands in for. */
+	readonly projectIntegration: string;
 	/** Workflow file name → its text, as the project has them. */
 	readonly workflows: Readonly<Record<string, string>>;
 }): readonly IRehearsalFileChange[] =>
 	Object.entries(input.workflows).map(([name, text]) => ({
 		path: `${WORKFLOWS}/${name}`,
 		content: withSignalJob(
-			renderBranchFilters(text, input.integration),
+			renderBranchFilters(
+				text,
+				input.integration,
+				input.projectIntegration,
+			),
 			input.integration,
 		),
 	}));

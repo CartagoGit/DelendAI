@@ -33,6 +33,14 @@ import {
 import { realModeFiles } from './rehearsal-real-ci.service';
 import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
 
+const requireProjectIntegration = (input: IRehearsalSetupInput): string => {
+	if (input.projectIntegration === undefined)
+		throw new Error(
+			'a real-mode setup needs the project integration branch name',
+		);
+	return input.projectIntegration;
+};
+
 const PASS_INTERVAL_MINUTES = 15;
 const WORKFLOWS = '.github/workflows';
 const POLICY_PATH = 'delendai.config.json';
@@ -116,6 +124,7 @@ export const createRehearsalSetup = (
 			...all.filter((file) => !stand.has(file.path)),
 			...realModeFiles({
 				integration,
+				projectIntegration: requireProjectIntegration(input),
 				workflows: input.realWorkflows,
 			}),
 			{

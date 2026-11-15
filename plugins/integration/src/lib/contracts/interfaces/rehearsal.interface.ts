@@ -338,6 +338,8 @@ export interface IRehearsalSetupInput {
 	 * rehearsal branch, and the project's required checks stay as they are.
 	 */
 	readonly realWorkflows?: Readonly<Record<string, string>>;
+	/** Real mode: the project's integration branch name, the one the filters of those workflows name. */
+	readonly projectIntegration?: string;
 }
 
 /** What a scenario run is given: the forge, the clock and the run's names. */

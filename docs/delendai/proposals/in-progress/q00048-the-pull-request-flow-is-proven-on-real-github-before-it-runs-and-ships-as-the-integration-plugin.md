@@ -369,6 +369,7 @@ Nothing of this repository is emitted into the other project.
   - "`--mode=real` runs the real ci.yml (branch filters rendered for the rehearsal branch) on each synthetic pull request with its declared zones, and the real scan workflows on each tip"
   - "The report and the weekly production KPIs compute every target with the same metric functions and thresholds"
   - "Real mode is green on every scenario and every target"
+- **Decision (2026-11-15)**: real mode renders the branch filters by replacing only the project's integration branch name with the rehearsal branch in each trigger list and keeping every other entry, so a list that also names the release branch still does and the project's no-duplicate-release-triggers lint stays green on the rehearsal branch. The project's integration branch name is passed in from its policy, never assumed, and no lint or governance script changes.
 
 ### S13 — Another project adopts the plugin with its own validations
 - **Status**: pending

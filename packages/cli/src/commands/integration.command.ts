@@ -161,7 +161,11 @@ export const createIntegrationCommand = (
 						policyText,
 						...(realWorkflows === undefined
 							? {}
-							: { realWorkflows }),
+							: {
+									realWorkflows,
+									projectIntegration:
+										policy.branches.integration,
+								}),
 						integratorWorkflow: (integration, concurrencyGroup) =>
 							landIntegratorWorkflow(
 								integration,

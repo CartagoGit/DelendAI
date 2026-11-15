@@ -36,17 +36,66 @@ const CI = [
 ].join('\n');
 
 describe('renderBranchFilters', () => {
-	it('[<5ms] sets every trigger filter to the rehearsal branch and leaves the jobs alone', () => {
-		const text = renderBranchFilters(CI, 'ns/rehearsal/r1/integration');
-		expect(text).toContain("    branches: ['ns/rehearsal/r1/integration']");
-		expect(text.match(/ns\/rehearsal\/r1\/integration/gu)).toHaveLength(2);
-		expect(text).not.toContain('- develop');
+	it('[<5ms] replaces only the integration branch in each trigger list and keeps the others', () => {
+		const text = renderBranchFilters(
+			CI,
+			'ns/rehearsal/r1/integration',
+			'develop',
+		);
+		expect(text).toContain(
+			"    branches: [main, 'ns/rehearsal/r1/integration']",
+		);
+		expect(text).toContain("      - 'ns/rehearsal/r1/integration'");
+		expect(text).toContain('      - main');
+		expect(text).not.toContain('develop');
 		expect(text).toContain('types: [opened]');
 		expect(text).toContain('branches: [keep]');
+	});
+	it('[<5ms] keeps quoted entries and lists that do not name the integration branch', () => {
+		const text = renderBranchFilters(
+			[
+				'on:',
+				'  push:',
+				'    branches: [\'develop\', "release/*"]',
+				'  pull_request:',
+				'    branches: [main]',
+				'  schedule:',
+				'    branches:',
+				'      - "develop" # the line',
+				'      - main',
+				'jobs: {}',
+			].join('\n'),
+			'r',
+			'develop',
+		);
+		expect(text).toContain('branches: [\'r\', "release/*"]');
+		expect(text).toContain('branches: [main]');
+		expect(text).toContain("- 'r' # the line");
+		expect(text).toContain('- main');
+	});
+	it("[<50ms] keeps main in this repository's own ci.yml and codeql.yml", () => {
+		const branch = 'ns/rehearsal/r1/integration';
+		for (const name of ['ci.yml', 'codeql.yml']) {
+			const text = renderBranchFilters(
+				readRepo(`.github/workflows/${name}`),
+				branch,
+				'develop',
+			);
+			const lists = text
+				.split('\n')
+				.filter((line) => /^\s*branches:/u.test(line));
+			expect(lists.length).toBeGreaterThan(0);
+			for (const line of lists) expect(line).not.toContain('develop');
+			expect(lists.some((line) => line.includes('main'))).toBe(true);
+			expect(lists.filter((line) => line.includes(branch)).length).toBe(
+				lists.length,
+			);
+		}
 	});
 	it('[<5ms] renders each named workflow under the workflows directory', () => {
 		const files = realModeFiles({
 			integration: 'x',
+			projectIntegration: 'develop',
 			workflows: { 'ci.yml': CI, 'codeql.yml': CI },
 		});
 		expect(files.map((f) => f.path)).toEqual([
@@ -57,6 +106,7 @@ describe('renderBranchFilters', () => {
 	it('[<5ms] ends a pull request CI with the signal job, indented like its own jobs, and leaves other files alone', () => {
 		const [ci] = realModeFiles({
 			integration: 'x',
+			projectIntegration: 'develop',
 			workflows: { 'ci.yml': CI },
 		});
 		expect(ci?.content).toContain('\n  integration-signal:\n');
@@ -103,6 +153,7 @@ describe('a real-mode setup', () => {
 		const real = createRehearsalSetup({
 			...input,
 			realWorkflows: { 'ci.yml': CI },
+			projectIntegration: 'develop',
 		}).files('b');
 		expect(fast).toContain('.github/workflows/rehearsal-ci.yml');
 		expect(fast).toContain('.github/workflows/land-signal.yml');
@@ -197,6 +248,7 @@ describe('the real-mode workflow files', () => {
 		for (const unit of [2, 4]) {
 			const [ci] = realModeFiles({
 				integration: 'x',
+				projectIntegration: 'develop',
 				workflows: { 'ci.yml': fixture(unit) },
 			});
 			const text = ci?.content ?? '';
@@ -209,6 +261,7 @@ describe('the real-mode workflow files', () => {
 	it("[<100ms] parse for this repository's own ci.yml and codeql.yml, and never wait on themselves", () => {
 		const files = realModeFiles({
 			integration: 'ns/rehearsal/r1/integration',
+			projectIntegration: 'develop',
 			workflows: {
 				'ci.yml': readRepo('.github/workflows/ci.yml'),
 				'codeql.yml': readRepo('.github/workflows/codeql.yml'),
@@ -228,6 +281,7 @@ describe('the real-mode workflow files', () => {
 		const own = readRepo('.github/workflows/ci.yml');
 		const [ci] = realModeFiles({
 			integration: 'x',
+			projectIntegration: 'develop',
 			workflows: { 'ci.yml': own },
 		});
 		expect(jobsOf(ci?.content ?? '')['integration-signal']?.needs).toEqual(
@@ -251,6 +305,7 @@ describe('the real-mode workflow files', () => {
 			policyText: text,
 			integratorWorkflow: () => 'land',
 			realWorkflows: {},
+			projectIntegration: 'develop',
 		})
 			.files('b')
 			.find((file) => file.path === 'delendai.config.json');
