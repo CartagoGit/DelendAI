@@ -2,10 +2,14 @@
 id: x01070
 title: "Parallel test runs never delete each other's module cache"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: f58455d7-68f3-4f7a-b9ab-e433bd023264
+last-correlation-id: f58455d7-68f3-4f7a-b9ab-e433bd023264
+last-transition-from: ready
+last-transition-at: 2026-11-15T12:39:43.786Z
 ---
 
 # x01070 — Parallel test runs never delete each other's module cache
