@@ -79,6 +79,8 @@ const spawnGh = (
 		child.on('close', (exitCode) =>
 			resolve({ exitCode: exitCode ?? undefined, stdout, stderr }),
 		);
+		// A gh that exits (or never starts) before reading its input is its answer, not a crash.
+		child.stdin.on('error', () => undefined);
 		child.stdin.end(input ?? '');
 	});
 
