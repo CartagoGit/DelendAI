@@ -22,6 +22,7 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { receive } from './rehearsal-receive.helper';
+import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
 import {
 	pullChanges,
 	pullHead,
@@ -145,6 +146,7 @@ const somethingRuns = async (
  */
 const awaitStep = async (
 	ctx: IRehearsalRunContext,
+	scenario: IRehearsalScenario,
 	state: IScenarioState,
 	step: Extract<IRehearsalStep, { kind: 'await' }>,
 ): Promise<void> => {
@@ -156,7 +158,20 @@ const awaitStep = async (
 		const pending = await satisfied(ctx, state, step);
 		if (pending.length === 0) return;
 		const now = ctx.clock.now();
-		const busy = await somethingRuns(ctx, state);
+		const checks = await awaitedChecks(
+			ctx.forge,
+			await pullByKey(ctx, state),
+			pending,
+		);
+		if (step.until === 'merged' && redEndsWait(scenario) && checks.red) {
+			state.failures.push(
+				`${step.until} not reachable for ${checks.red.key}: ${checks.red.workflow} ended ${checks.red.conclusion} on its head (run ${String(checks.red.id)})`,
+			);
+			return;
+		}
+		// Once the awaited pull requests' own checks have finished, the integrator's
+		// runs no longer excuse the wait: its budget counts wall time.
+		const busy = (await somethingRuns(ctx, state)) && !checks.concluded;
 		if (!busy) idleMs += now - lastTick;
 		lastTick = now;
 		if (now - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000) {
@@ -252,7 +267,7 @@ const STEPS: TSteps = {
 	},
 	await: async (ctx, scenario, state, step) => {
 		const _specOf = specOfIn(scenario);
-		await awaitStep(ctx, state, step);
+		await awaitStep(ctx, scenario, state, step);
 		return;
 	},
 	'author-update': async (ctx, scenario, state, step) => {

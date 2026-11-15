@@ -11,7 +11,7 @@ const BRANCHES = {
 	workRefTemplate:
 		'heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
 	workRefPrefix: 'heads/delendai/wip/',
-	publicationRefPrefix: 'heads/delendai/pr/',
+	publicationRefPrefix: 'delendai/pr/',
 };
 
 describe('prHeadProblem', () => {
@@ -88,5 +88,27 @@ describe('prHeadProblem in a namespace transition (f00808)', () => {
 			),
 		).toBeUndefined();
 		expect(prHeadProblem('feature/mine', moved)).toContain('outside');
+	});
+});
+
+describe('prHeadProblem under the policy of a base branch', () => {
+	it('still yields delendai/pr/ for this project, and judges a head by the prefix its own policy names', () => {
+		const project = resolveDevelopmentPolicy({
+			development: { branches: { namespacePrefix: 'delendai' } },
+		}).branches;
+		expect(project.publicationRefPrefix).toBe('delendai/pr/');
+		const run = resolveDevelopmentPolicy({
+			development: {
+				branches: {
+					namespacePrefix: 'delendai',
+					publicationRefPrefix: 'delendai/rehearsal/r1/',
+				},
+			},
+		}).branches;
+		const head =
+			'delendai/rehearsal/r1/rehearsal/implement/x00000-S1-g1/one-pr-a';
+		expect(prHeadProblem(head, run)).toBeUndefined();
+		// The project's own policy does not take it for a publication.
+		expect(prHeadProblem(head, project)).toContain('outside');
 	});
 });
