@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: 8900f418-b336-4065-bf7a-777d8589f613
-last-correlation-id: 8900f418-b336-4065-bf7a-777d8589f613
+last-transition-id: a5bfdf9c-6131-4a2e-9567-36c172112b46
+last-correlation-id: a5bfdf9c-6131-4a2e-9567-36c172112b46
 last-transition-from: in-progress
-last-transition-at: 2026-11-15T12:31:31.791Z
+last-transition-at: 2026-11-15T17:34:24.733Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -406,7 +406,7 @@ Nothing of this repository is emitted into the other project.
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: review
 - **DependsOn**: [S8]
-- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`
+- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`--mode=real` runs the real ci.yml (branch filters rendered for the rehearsal branch) on each synthetic pull request with its declared zones, and the real scan workflows on each tip"

@@ -118,8 +118,6 @@ const memoryForge = () => {
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),
 		deleteLabel: async (name) => void labelNames.delete(name),
-		hooks: async () => [],
-		deleteHook: async () => undefined,
 	};
 	const fakeClock: IRehearsalClock = {
 		now: () => clock.at,

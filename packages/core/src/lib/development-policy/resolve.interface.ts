@@ -122,6 +122,7 @@ export interface IDevelopmentConfigInput {
 							readonly secrets?: readonly string[] | undefined;
 							readonly scenarios?: readonly string[] | undefined;
 							readonly setupCommand?: string | undefined;
+							readonly concurrency?: number | undefined;
 					  }
 					| undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;

@@ -44,6 +44,17 @@ describe('the integration command', () => {
 		expect(result.code).toBe(EXIT_CODE.USAGE);
 	});
 
+	it.each(['0', '-1', 'x', '1.5'])(
+		'[<50ms] refuses a concurrency of %s',
+		async (value) => {
+			const result = await integrationCommand.run(
+				['rehearse', `--concurrency=${value}`],
+				ctx,
+			);
+			expect(result.code).toBe(EXIT_CODE.USAGE);
+		},
+	);
+
 	it('[<50ms] declares the flags it reads and runs without a server', () => {
 		expect(integrationCommand.flags).toEqual(INTEGRATION_COMMAND.flags);
 		expect(integrationCommand.offline).toBe(true);

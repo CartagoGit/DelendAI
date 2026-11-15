@@ -135,14 +135,12 @@ describe('the GitHub rehearsal forge', () => {
 		);
 	});
 
-	it('[<100ms] makes, lists and deletes branches, labels and hooks through the matching calls', async () => {
+	it('[<100ms] makes, lists and deletes branches, and labels through the matching calls', async () => {
 		const { forge, calls } = fake({
 			'git/matching-refs/heads/ns/rehearsal/':
 				'[{"ref":"refs/heads/ns/rehearsal/r1/a"}]',
 			'--method GET repos/o/r/labels':
 				'[{"name":"rehearsal-r1:x"},{"name":"bug"}]',
-			'--method GET repos/o/r/hooks':
-				'[{"id":9,"config":{"url":"https://h"}}]',
 			'--method POST repos/o/r/git/refs': '{}',
 			'--method DELETE': '{}',
 		});
@@ -153,12 +151,10 @@ describe('the GitHub rehearsal forge', () => {
 		await forge.deleteBranch('ns/rehearsal/r1/b');
 		expect(await forge.labels('rehearsal-r1:')).toEqual(['rehearsal-r1:x']);
 		await forge.deleteLabel('rehearsal-r1:x');
-		expect(await forge.hooks()).toEqual([{ id: 9, url: 'https://h' }]);
-		await forge.deleteHook(9);
 		const joined = calls.map((c) => c.args.join(' ')).join('\n');
 		expect(joined).toContain('git/refs/heads/ns/rehearsal/r1/b');
 		expect(joined).toContain('labels/rehearsal-r1%3Ax');
-		expect(joined).toContain('hooks/9');
+		expect(joined).not.toContain('hooks');
 	});
 
 	it('[<100ms] opens, merges, closes and labels a pull request and reads its timeline and runs', async () => {

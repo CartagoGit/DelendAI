@@ -32,8 +32,6 @@ const branchesForge = (names: Map<string, string>) =>
 		closePull: async () => undefined,
 		labels: async () => [],
 		deleteLabel: async () => undefined,
-		hooks: async () => [],
-		deleteHook: async () => undefined,
 	});
 
 describe('cleanup and setup', () => {
