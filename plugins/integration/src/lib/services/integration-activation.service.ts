@@ -26,6 +26,7 @@ const reportRefusals = (
 	mode: IActivationMode,
 	tip: string,
 	report: IRehearsalReport | undefined,
+	required: readonly string[],
 ): readonly string[] => {
 	if (report === undefined)
 		return [
@@ -36,6 +37,12 @@ const reportRefusals = (
 			`the ${mode} rehearsal report is for ${report.tip}, not for ${tip}`,
 		];
 	const reasons: string[] = [];
+	const played = new Set(report.scenarios.map((scenario) => scenario.id));
+	const missing = required.filter((id) => !played.has(id));
+	if (missing.length > 0)
+		reasons.push(
+			`the ${mode} rehearsal report does not cover the whole catalogue: missing ${missing.join(', ')}`,
+		);
 	if (report.scenarios.length === 0 || report.targets.length === 0)
 		reasons.push(`the ${mode} rehearsal report measured nothing`);
 	for (const scenario of report.scenarios)
@@ -57,9 +64,11 @@ export const activationRefusals = (input: {
 	>;
 	readonly knownRed: readonly IRehearsalKnownRed[];
 	readonly doctor: IDoctorReport;
+	/** The scenario ids `--scenarios=all` plays: a report must hold every one. */
+	readonly scenarioIds: readonly string[];
 }): readonly string[] => [
 	...ACTIVATION_MODES.flatMap((mode) =>
-		reportRefusals(mode, input.tip, input.reports[mode]),
+		reportRefusals(mode, input.tip, input.reports[mode], input.scenarioIds),
 	),
 	...input.knownRed.map(
 		(red) =>
@@ -106,6 +115,7 @@ export const activateIntegration = async (
 		tip,
 		reports: { fast, real },
 		knownRed: ports.knownRed,
+		scenarioIds: ports.scenarioIds,
 		doctor: await ports.doctor(),
 	});
 	if (refusals.length > 0) return { engine: 'none', refusals, changed: [] };

@@ -19,6 +19,7 @@ import { pathToFileURL } from 'node:url';
 
 import { readWorkspacePolicy } from '@delendai/core/cli';
 import {
+	REHEARSAL_CATALOGUE,
 	REHEARSAL_KNOWN_RED,
 	activateIntegration,
 	createGithubRehearsalForge,
@@ -143,6 +144,7 @@ const portsOf = (
 		tipOf: () => forge.tipOf(policy.branches.integration),
 		reportOf: evidence.reportOf,
 		knownRed: REHEARSAL_KNOWN_RED,
+		scenarioIds: REHEARSAL_CATALOGUE.map((scenario) => scenario.id),
 		doctor: async () => {
 			const out = await runIntegrationDoctor([], ctx, runGh);
 			if (out.error !== undefined) throw new Error(out.error);

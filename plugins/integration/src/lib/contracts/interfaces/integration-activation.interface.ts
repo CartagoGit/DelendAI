@@ -23,6 +23,8 @@ export interface IActivationPorts {
 		tip: string,
 	) => Promise<IRehearsalReport | undefined>;
 	readonly knownRed: readonly IRehearsalKnownRed[];
+	/** The ids a run with every scenario plays, from the catalogue the rehearse command draws on. */
+	readonly scenarioIds: readonly string[];
 	readonly doctor: () => Promise<IDoctorReport>;
 	readonly readConfig: () => Promise<string>;
 	readonly writeConfig: (text: string) => Promise<void>;

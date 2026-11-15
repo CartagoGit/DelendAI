@@ -63,6 +63,7 @@ const fake = (over: Partial<IActivationPorts> = {}): IFake => {
 		tipOf: async () => TIP,
 		reportOf: async () => report(),
 		knownRed: [],
+		scenarioIds: ['F1'],
 		doctor: async () => ({ ok: true, checks: [] }),
 		readConfig: async () => config.text,
 		writeConfig: async (text) => {
@@ -132,7 +133,10 @@ describe('integration activation', () => {
 		const red = report({
 			scenarios: [{ ...report().scenarios[0]!, id: 'F9', ok: false }],
 		});
-		const reasons = await refused({ reportOf: async () => red });
+		const reasons = await refused({
+			scenarioIds: ['F9'],
+			reportOf: async () => red,
+		});
 		expect(reasons).toEqual([
 			'fast scenario F9 is red',
 			'real scenario F9 is red',
@@ -149,8 +153,28 @@ describe('integration activation', () => {
 		expect(reasons).toEqual(['fast target T1 is red: slow']);
 	});
 
+	it('[<50ms] refuses a subset report, naming the scenarios it lacks', async () => {
+		const reasons = await refused({
+			scenarioIds: ['F1', 'F2', 'F3'],
+			reportOf: async (mode) =>
+				mode === 'fast'
+					? report()
+					: report({
+							scenarios: [
+								report().scenarios[0]!,
+								{ ...report().scenarios[0]!, id: 'F3' },
+							],
+						}),
+		});
+		expect(reasons).toEqual([
+			'the fast rehearsal report does not cover the whole catalogue: missing F2, F3',
+			'the real rehearsal report does not cover the whole catalogue: missing F2',
+		]);
+	});
+
 	it('[<50ms] refuses a report that measured nothing', async () => {
 		const reasons = await refused({
+			scenarioIds: [],
 			reportOf: async () => report({ scenarios: [], targets: [] }),
 		});
 		expect(reasons).toHaveLength(2);
