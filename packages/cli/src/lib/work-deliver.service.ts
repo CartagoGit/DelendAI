@@ -90,6 +90,14 @@ const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&
 	!reason.includes(`"ready" → "${to}"`);
 
+/**
+ * A proposal that already stands in review refuses the transition to
+ * review. That step is also what publishes the unit, so a delivery that
+ * only logged the refusal left the pull request on its old head.
+ */
+const alreadyInReview = (reason: string | undefined): boolean =>
+	reason?.includes('illegal transition: "review" → "review"') === true;
+
 /** The tool's code for a proposal whose other slices have no delivering commit. */
 const UNDELIVERED_CODE = 'undelivered-slices';
 
@@ -203,6 +211,27 @@ export const deliverUnit = async (
 						pullRequest: pullRequestOf(
 							published.data,
 							unit.publication,
+						),
+						proved: proved.data,
+					},
+				}
+			: published;
+	}
+	// Nothing to transition: the unit's new tip still has to reach its
+	// publication, so it is published here and the result says so.
+	if (alreadyInReview(handed)) {
+		const published = await ports.publish();
+		return published.code === 0
+			? {
+					code: EXIT_CODE.OK,
+					data: {
+						delivered: 'review',
+						republished: true,
+						publication: published.data,
+						pullRequest: pullRequestOf(
+							published.data,
+							unit.publication,
+							ports.slice,
 						),
 						proved: proved.data,
 					},

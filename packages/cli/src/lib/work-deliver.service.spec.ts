@@ -99,6 +99,57 @@ describe('deliverUnit', () => {
 	});
 });
 
+describe('deliverUnit, a proposal already in review', () => {
+	it('[<20ms] publishes the new tip instead of failing on the transition', async () => {
+		const { calls, value } = ports({
+			review: illegal('review', 'review'),
+		});
+		const result = await deliverUnit(value);
+		expect(result).toMatchObject({
+			code: EXIT_CODE.OK,
+			data: {
+				delivered: 'review',
+				republished: true,
+				publication: 'pr/slice',
+				pullRequest: { pending: true, branch: 'pr/unit' },
+			},
+		});
+		expect(calls).toEqual(['in-progress', 'prove', 'review', 'publish']);
+	});
+
+	it('[<20ms] reports the pull request the publication answered with', async () => {
+		const { value } = ports({ review: illegal('review', 'review') });
+		const result = await deliverUnit({
+			...value,
+			publish: async () => ({
+				code: EXIT_CODE.OK,
+				data: { pullRequest: { url: 'https://x/o/r/pull/7' } },
+			}),
+		});
+		expect(result.data).toMatchObject({
+			republished: true,
+			pullRequest: { number: 7, url: 'https://x/o/r/pull/7' },
+		});
+	});
+
+	it('[<20ms] fails when the republication fails, and on any other refusal', async () => {
+		const { value } = ports({ review: illegal('review', 'review') });
+		const failed = await deliverUnit({
+			...value,
+			publish: async () => ({
+				code: EXIT_CODE.VALIDATION,
+				error: 'push refused',
+			}),
+		});
+		expect(failed).toMatchObject({ error: 'push refused' });
+		const other = ports({ review: illegal('ready', 'review') });
+		expect((await deliverUnit(other.value)).code).toBe(
+			EXIT_CODE.VALIDATION,
+		);
+		expect(other.calls).not.toContain('publish');
+	});
+});
+
 describe('deliverUnit, one slice of several', () => {
 	const undelivered = (slices: string) => ({
 		ok: false,
