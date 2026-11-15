@@ -226,7 +226,7 @@ Nothing of this repository is emitted into the other project.
 
 ### S1 — Integration paused until the rehearsal is green
 - **Status**: pending
-- **Files**: `delendai.config.json`, `.github/workflows/land.yml`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-cutover.spec.ts`
+- **Files**: `delendai.config.json`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-cutover.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "develop's policy sets `development.integration.engine` to `none`; the land workflow is not rendered (`land-workflow.script.ts --check` passes with the file absent), and no workflow, schedule or host step merges, labels or pushes a pull request"
@@ -291,7 +291,7 @@ Nothing of this repository is emitted into the other project.
 ### S6 — The integrator acts as an identity the forge builds, woken only by events
 - **Status**: pending
 - **DependsOn**: [S5]
-- **Files**: `plugins/integration/src/lib/land/land-workflow.helper.ts`, `packages/core/src/lib/integration/land/land-follow-ups.helper.ts`, `plugins/integration/src/lib/services/integration-doctor.service.ts`, `.github/workflows/ci.yml`
+- **Files**: `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `plugins/integration/src/lib/services/integration-doctor.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
 - acceptance:
   - "Every merge, push, pull request and label the integrator makes uses the token minted from `identity`; `github.token` only reads, and a spec over the rendered workflow refuses any write through it. The same rule binds every automation: a lint over `.github/workflows/` refuses a workflow that opens a pull request or pushes a branch with `github.token` (today `test-budget-calibration.yml` of #1906 and the forward sync); each takes the identity's token, or the host role with the person's credentials where a project has no identity. Scenario F1b (an automation-opened pull request, such as the weekly budget calibration) is green: its CI starts and it lands with no step"
@@ -304,7 +304,7 @@ Nothing of this repository is emitted into the other project.
 ### S7 — Verdicts are reconciled, never flipped
 - **Status**: pending
 - **DependsOn**: [S6]
-- **Files**: `plugins/integration/src/lib/land/land-verdict.helper.ts`, `plugins/integration/src/lib/land/land.helper.ts`
+- **Files**: `packages/core/src/lib/integration/land/land-verdict.helper.ts`, `packages/core/src/lib/integration/land/land.helper.ts`
 - **Gate**: none
 - acceptance:
   - "A pass judges every pull request on its fresh read first, then applies the difference between wanted and present labels; nothing is removed before judging"
@@ -315,7 +315,7 @@ Nothing of this repository is emitted into the other project.
 ### S8 — One CI per overlapping group, and the integrator brings heads forward
 - **Status**: pending
 - **DependsOn**: [S7]
-- **Files**: `plugins/integration/src/lib/land/land-batch-merge.helper.ts`, `plugins/integration/src/lib/land/land-batch-record.helper.ts`, `plugins/integration/src/lib/land/land-bring-forward.helper.ts`, `plugins/integration/src/lib/land/land-batch-assembly.helper.ts`, `packages/core/src/lib/integration/decisions/overlap.helper.ts`
+- **Files**: `packages/core/src/lib/integration/land/land-batch-merge.helper.ts`, `packages/core/src/lib/integration/land/land-batch-record.helper.ts`, `packages/core/src/lib/integration/land/land-bring-forward.helper.ts`, `packages/core/src/lib/integration/land/land-batch-assembly.helper.ts`, `packages/core/src/lib/integration/decisions/overlap.helper.ts`, `plugins/integration/src/lib/services/land-bring-forward.helper.ts`
 - **Gate**: none
 - acceptance:
   - "Each overlapping ready group gets one batch pull request opened by the integrator; its CI is the only run for the group, and no member is updated or re-run on its own"
