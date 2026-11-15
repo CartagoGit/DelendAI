@@ -2126,7 +2126,6 @@
 		"tools/scripts/ci/affected.script.spec.ts",
 		"tools/scripts/ci/blob-upload-on-failure.spec.ts",
 		"tools/scripts/ci/changed-file-coverage.script.spec.ts",
-		"tools/scripts/ci/ci-static-steps.spec.ts",
 		"tools/scripts/ci/job-reach.helper.spec.ts",
 		"tools/scripts/ci/local-repro.spec.ts",
 		"tools/scripts/ci/near-specs.spec.ts",
