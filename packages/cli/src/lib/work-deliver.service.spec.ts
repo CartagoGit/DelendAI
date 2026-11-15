@@ -9,7 +9,12 @@ import {
 	type IExitCode,
 } from '../contracts/constants/exit-code.constant';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
-import { answerOf, deliverUnit, unitFlagsOf } from './work-deliver.service';
+import {
+	answerOf,
+	deliverUnit,
+	pullRequestOf,
+	unitFlagsOf,
+} from './work-deliver.service';
 
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },
@@ -189,5 +194,49 @@ describe('unitFlagsOf', () => {
 				parse,
 			),
 		).toEqual([]);
+	});
+});
+
+describe('pullRequestOf', () => {
+	it('[<20ms] gives the number and URL the publication answered with', () => {
+		expect(
+			pullRequestOf(
+				{
+					pullRequest: {
+						status: 'opened',
+						url: 'https://h/o/r/pull/12',
+					},
+				},
+				'pr/b',
+			),
+		).toEqual({ url: 'https://h/o/r/pull/12', number: 12 });
+	});
+
+	it('[<20ms] says the pull request is pending, with the branch, when none answered', () => {
+		expect(pullRequestOf(undefined, 'pr/b')).toEqual({
+			pending: true,
+			branch: 'pr/b',
+			message: 'publication pushed, pull request pending: pr/b',
+		});
+	});
+
+	it('[<20ms] explains a whole-proposal branch named all for a unit of S1', () => {
+		expect(
+			pullRequestOf(undefined, 'pr/a/implement/x1-all-g1/work', 'S1'),
+		).toMatchObject({
+			slice: 'S1',
+			sliceNote: expect.stringContaining('S1'),
+		});
+		expect(
+			pullRequestOf(undefined, 'pr/a/implement/x1-S1-g1/work', 'S1'),
+		).not.toHaveProperty('sliceNote');
+	});
+
+	it('[<20ms] reaches a delivery that hands the proposal to review', async () => {
+		const { value } = ports({});
+		const result = await deliverUnit(value);
+		expect(result.data).toMatchObject({
+			pullRequest: { pending: true, branch: 'pr/unit' },
+		});
 	});
 });

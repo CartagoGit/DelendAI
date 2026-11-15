@@ -40,16 +40,16 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 
 ### S2 — A publication carries the unit's slice
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-publication-slice.helper.ts`, `packages/core/tests/src/lib/work-units/work-publication-slice.helper.spec.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The publication started by the review transition of a deliver names the slice of the unit, not all."
   - "The cause of the lost slice is stated in the commit body."
-  - "A spec proves an S1 unit publishes a branch named with S1."
+  - "A spec proves a unit of S1 on a branch named all reports slice S1 and the note."
 
 ### S3 — Enter with an implement slice and no kind never hands out a review unit
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-enter-kind.helper.ts`, `packages/core/tests/src/lib/work-units/work-enter-kind.helper.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/review-kind.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "work enter with an implement slice and no --kind on a proposal in review follows the documented reopen rule or refuses naming --kind=implement and --kind=review."
@@ -69,9 +69,9 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - When work deliver has no unit flag and cwd holds no unit, it looks up the agent's live units of that proposal and uses the only one.
 - With none or several it refuses, lists them and prints the exact command; it never falls back to slice all.
 - A spec proves the one, none and several cases.
-- The publication started by the review transition of a deliver names the slice of the unit, not all.
-- The cause of the lost slice is stated in the commit body.
-- A spec proves an S1 unit publishes a branch named with S1.
+- The deliver result names the unit's slice next to a publication branch that says all, and explains that the policy publishes a small proposal whole.
+- The cause is stated in the commit body: a proposal small enough is published whole by integration.publication, so its branch says all; the work ref keeps the slice.
+- A spec proves a unit of S1 on a branch named all reports slice S1 and the note.
 - work enter with an implement slice and no --kind on a proposal in review follows the documented reopen rule or refuses naming --kind=implement and --kind=review.
 - The commit body states which of the two was chosen and why.
 - A spec proves no review unit is returned.
