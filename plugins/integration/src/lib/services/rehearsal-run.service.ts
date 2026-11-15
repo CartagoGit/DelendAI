@@ -113,6 +113,9 @@ const collect = async (
 		startedAt,
 		finishedAt: isoOf(ctx.clock),
 		failures: state.failures,
+		...(state.notifications === undefined
+			? {}
+			: { notifications: state.notifications }),
 	};
 };
 
@@ -134,6 +137,7 @@ export const runScenario = async (
 		failures: [],
 		tokenHeads: new Map(),
 		tokenPulls: new Map(),
+		notifications: undefined,
 		setupSha: ctx.tip,
 	};
 	try {

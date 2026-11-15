@@ -216,13 +216,28 @@ const JUDGES: TJudges = {
 	},
 	'sessions-notified': (evidence, _expectation) => {
 		const _pull = pullOf(evidence);
+		const told = evidence.notifications;
+		if (told === undefined)
+			return result(
+				'sessions notified',
+				false,
+				'no session receiver ran: nobody was told',
+			);
+		const counts = new Map<string, number>();
+		for (const one of told) {
+			const key = `${one.event}#${String(one.number)}`;
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+		const repeated = [...counts].filter(([, count]) => count > 1);
+		const merges = told.filter((one) => one.event === 'pr.merged').length;
 		return result(
-			'sessions notified',
-			evidence.notifications !== undefined &&
-				evidence.notifications.length > 0,
-			evidence.notifications === undefined
-				? 'no session receiver ran: nobody was told'
-				: `${String(evidence.notifications.length)} notification(s)`,
+			'sessions notified exactly once',
+			merges > 0 && repeated.length === 0,
+			repeated.length > 0
+				? `told more than once: ${repeated.map(([key]) => key).join(', ')}`
+				: merges === 0
+					? `${String(told.length)} notification(s), none of a merge`
+					: `${String(told.length)} notification(s), each once`,
 		);
 	},
 };

@@ -6,6 +6,5 @@ import type { IRehearsalKnownRed } from '../interfaces/rehearsal.interface';
  * empty.
  */
 export const REHEARSAL_KNOWN_RED: readonly IRehearsalKnownRed[] = [
-	{ scenario: 'host-offline', fixedBy: 'S11' },
 	{ scenario: 'F6', fixedBy: 'S10', realModeOnly: true },
 ];

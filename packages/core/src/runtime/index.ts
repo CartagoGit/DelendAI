@@ -154,3 +154,19 @@ export {
 	readForgeEventRecord,
 	readForgeEventSubscriptions,
 } from '../lib/forge-events/forge-event-store.service';
+export {
+	catchUpForgeEvents,
+	forgeEventKey,
+} from '../lib/forge-events/forge-event-catch-up.service';
+export type {
+	IForgeCatchUpCursor,
+	IForgeCatchUpEvent,
+	IForgeCatchUpInput,
+	IForgeCatchUpSource,
+	IForgeCatchUpTarget,
+} from '../lib/contracts/interfaces/forge-catch-up.interface';
+export {
+	forgeCursorTarget,
+	markForgeEventDelivered,
+	readForgeEventCursor,
+} from '../lib/forge-events/forge-event-cursor.service';
