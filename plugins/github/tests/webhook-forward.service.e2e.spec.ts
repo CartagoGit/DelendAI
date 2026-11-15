@@ -1,5 +1,5 @@
 /**
- * webhook-forward.service.spec.ts — `gh webhook forward` is the connection
+ * webhook-forward.service.e2e.spec.ts — `gh webhook forward` is the connection
  * out: ready when the extension says so, refused when it dies first, closed
  * when it dies later, and the secret never appears in a reason.
  *

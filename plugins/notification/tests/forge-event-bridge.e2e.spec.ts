@@ -1,5 +1,5 @@
 /**
- * forge-event-bridge.spec.ts — a forge event written to the workspace's
+ * forge-event-bridge.e2e.spec.ts — a forge event written to the workspace's
  * store reaches the sessions subscribed to its pull request, and only
  * those, as a notification and as the answer of a waiting `forge_await`.
  *

@@ -1,5 +1,5 @@
 /**
- * hydration-watch.spec.ts — the clone keeps up with the forge while the
+ * hydration-watch.e2e.spec.ts — the clone keeps up with the forge while the
  * server runs, not only at the instant it started.
  *
  * The complaint this pins, in the operator's words: the origin updates,

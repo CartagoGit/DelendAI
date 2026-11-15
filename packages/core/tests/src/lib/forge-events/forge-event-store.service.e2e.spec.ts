@@ -1,5 +1,5 @@
 /**
- * forge-event-store.service.spec.ts — the store every server of a workspace
+ * forge-event-store.service.e2e.spec.ts — the store every server of a workspace
  * shares: one file per event, tidied by the next write and never by a
  * timer, and one file of subscriptions that `work publish` adds to.
  */
