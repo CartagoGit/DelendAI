@@ -406,7 +406,7 @@ Nothing of this repository is emitted into the other project.
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: review
 - **DependsOn**: [S8]
-- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`
+- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`--mode=real` runs the real ci.yml (branch filters rendered for the rehearsal branch) on each synthetic pull request with its declared zones, and the real scan workflows on each tip"

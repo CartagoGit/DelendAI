@@ -70,6 +70,17 @@ const merged = (...keys: string[]): IRehearsalStep => ({
 	seconds: AWAIT_SECONDS,
 	wakeAfterSeconds: WAKE_AFTER_SECONDS,
 });
+/**
+ * Every head's own check has finished. Pull requests meant for one batch are
+ * made ready only after this: the integrator acts on the first ready one, so
+ * a peer whose check is still running would be left behind the merge.
+ */
+const checked = (...keys: string[]): IRehearsalStep => ({
+	kind: 'await',
+	until: 'checked',
+	keys,
+	seconds: AWAIT_SECONDS,
+});
 const labelled = (...keys: string[]): IRehearsalStep => ({
 	kind: 'await',
 	until: 'labelled',
@@ -113,7 +124,12 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 			overlapPullIn('a', OVERLAP_NEAR_LINE),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
-		steps: [open('a', 'b'), ready('a', 'b'), merged('a', 'b')],
+		steps: [
+			open('a', 'b'),
+			checked('a', 'b'),
+			ready('a', 'b'),
+			merged('a', 'b'),
+		],
 		expect: [
 			{ kind: 'merged', keys: ['a', 'b'] },
 			{ kind: 'group-ci-runs', keys: ['a', 'b'], exactly: 1 },
@@ -127,7 +143,13 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
-		steps: [open('a', 'b'), ready('a', 'b'), labelled('a'), merged('b')],
+		steps: [
+			open('a', 'b'),
+			checked('a', 'b'),
+			ready('a', 'b'),
+			labelled('a'),
+			merged('b'),
+		],
 		expect: [
 			{ kind: 'labelled', key: 'a', label: 'culprit' },
 			{ kind: 'merged', keys: ['b'] },

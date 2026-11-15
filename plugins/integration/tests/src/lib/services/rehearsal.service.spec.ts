@@ -26,11 +26,9 @@ const forgeThatRecords = () => {
 		pulls: async () => [],
 		runs: async () => [],
 		labels: async () => [],
-		hooks: async () => [],
 		pullEvents: async () => [],
 		runLog: async () => '',
 		deleteLabel: async () => undefined,
-		deleteHook: async () => undefined,
 		closePull: async () => undefined,
 	});
 	return { forge, written, branches };

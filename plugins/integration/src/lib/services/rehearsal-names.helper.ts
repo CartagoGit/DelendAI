@@ -22,6 +22,13 @@ export const scenarioIntegration = (
 	scenario: string,
 ): string => `${runBranchRoot(prefix, runId)}${scenario}-integration`;
 
+/**
+ * The concurrency group of one scenario's land passes. It names the scenario, so
+ * scenarios playing at once never queue behind or cancel each other's passes.
+ */
+export const scenarioLandGroup = (runId: string, integration: string): string =>
+	`land-rehearsal-${runId}-${(integration.split('/').at(-1) ?? integration).replace(/-integration$/u, '')}`;
+
 /** A synthetic pull request's head: its last segment is its declaration's name. */
 export const pullHead = (
 	prefix: string,
