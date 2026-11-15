@@ -2,10 +2,14 @@
 id: x01071
 title: "A second proof of the same tip always joins the first"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 84b46e0c-d4ed-498b-a2f7-834ef6b66b9f
+last-correlation-id: 84b46e0c-d4ed-498b-a2f7-834ef6b66b9f
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T17:14:56.343Z
 ---
 
 # x01071 — A second proof of the same tip always joins the first
@@ -32,12 +36,15 @@ Fix design. Stamp the time a call starts (`askedAt`, taken synchronously at entr
 - global_gate: type
 
 ### S1 — Join the proof that finished during the call
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A caller that asked before a proof of the same unit and tip finished returns that proof's answer even when its first claim read happens after the claimant removed its claim; a call made after the finish proves again."
   - "The compute-slot e2e spec has a test where the claimant has finished before the second caller's first claim read (done record planted with finishedAt after askedAt), and it passes deterministically."
+- shipped-in: `98d10cd17288`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
