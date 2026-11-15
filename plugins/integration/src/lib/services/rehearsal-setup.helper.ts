@@ -34,6 +34,7 @@ import { realModeFiles } from './rehearsal-real-ci.service';
 import {
 	runBranchRoot,
 	runLabelPrefix,
+	runPublicationPrefix,
 	scenarioLandGroup,
 } from './rehearsal-names.helper';
 
@@ -80,7 +81,18 @@ export const rehearsalPolicy = (
 			...policy,
 			development: {
 				...development,
-				branches: { ...branches, integration },
+				branches: {
+					...branches,
+					integration,
+					// The run's heads are its publications: the project's head-shape
+					// lint reads this from the policy of the base it runs for.
+					...(runId === undefined
+						? {}
+						: {
+								publicationRefPrefix:
+									runPublicationPrefix(integration),
+							}),
+				},
 				integration: {
 					...integrationBlock,
 					engine: 'land',

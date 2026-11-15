@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-15
-last-transition-id: 3461ac64-ca5f-4230-a266-fbd27161fbe8
-last-correlation-id: 3461ac64-ca5f-4230-a266-fbd27161fbe8
+last-transition-id: c568c88b-b4b8-4e33-82f5-4517402c7dca
+last-correlation-id: c568c88b-b4b8-4e33-82f5-4517402c7dca
 last-transition-from: in-progress
-last-transition-at: 2026-11-15T18:14:47.417Z
+last-transition-at: 2026-11-15T22:32:46.732Z
 ---
 
 # x01073 — Unit commands never guess the unit, and deliver says where the pull request is
@@ -80,6 +80,18 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S5 — A small fix travels with its proposal in one unit and one pull request
+- **Status**: review
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`
+- **Gate**: none
+- acceptance:
+  - "work deliver and prove --locate find a create-kind unit: the unit flags of the checked-out branch carry its kind."
+  - "The outside-slice report covers create units."
+  - "The skill and the publish next-action say a small fix may be delivered from the create unit."
+- shipped-in: `18990d7333dd`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
 ## acceptance
 
 - When work deliver has no unit flag and cwd holds no unit, it looks up the agent's live units of that proposal and uses the only one.
@@ -93,3 +105,5 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - A spec proves no review unit is returned.
 - The deliver result includes the pull request number and URL, or states publication pushed, pull request pending, with the branch.
 - A spec proves both outputs.
+- work deliver and prove --locate find a create-kind unit, and the outside-slice report covers create units.
+- The skill text and the publish next-action say a small fix may be delivered from the create unit.

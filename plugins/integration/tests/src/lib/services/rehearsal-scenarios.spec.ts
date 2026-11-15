@@ -1,3 +1,4 @@
+import { pullHead } from '../../../../src/lib/services/rehearsal-names.helper';
 import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
@@ -208,6 +209,18 @@ describe('today land on the rehearsal branch', () => {
 		expect(rendered).toContain('derived-push:');
 		expect(rendered).toContain('ns/rehearsal/r1/s-integration');
 		expect(rendered).toContain('group: land-rehearsal-r1');
+	});
+
+	it('[<50ms] names the run root as the publication prefix of a run policy, and its heads publications under it', () => {
+		const policy = JSON.parse(
+			rehearsalPolicy('{}', 'ns/rehearsal/r1/s-integration', true, 'r1'),
+		);
+		expect(policy.development.branches.publicationRefPrefix).toBe(
+			'ns/rehearsal/r1/',
+		);
+		expect(pullHead('ns/rehearsal/', 'r1', 's', 'a')).toBe(
+			'ns/rehearsal/r1/rehearsal/implement/x00000-S1-g1/s-a',
+		);
 	});
 
 	it('[<50ms] has the policy wait for the rehearsal CI and no other check', () => {
