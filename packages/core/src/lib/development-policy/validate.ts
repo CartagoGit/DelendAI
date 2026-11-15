@@ -13,7 +13,11 @@
  * values are Y" instead of a stack trace from deep inside a merge.
  */
 
-import { INTEGRATION_ENGINES } from '../contracts/interfaces/integration-engine.interface';
+import {
+	INTEGRATION_BATCHING_MODES,
+	INTEGRATION_ENGINES,
+	INTEGRATION_IDENTITY_KINDS,
+} from '../contracts/interfaces/integration-engine.interface';
 import {
 	CHECKPOINT_STRATEGIES,
 	COORDINATION_STRATEGIES,
@@ -149,6 +153,18 @@ const validateVocabulary = (
 		'integration.engine',
 		policy.integration.engine,
 		INTEGRATION_ENGINES,
+		out,
+	);
+	oneOf(
+		'integration.identity.kind',
+		policy.integration.identity.kind,
+		INTEGRATION_IDENTITY_KINDS,
+		out,
+	);
+	oneOf(
+		'integration.batching',
+		policy.integration.batching,
+		INTEGRATION_BATCHING_MODES,
 		out,
 	);
 

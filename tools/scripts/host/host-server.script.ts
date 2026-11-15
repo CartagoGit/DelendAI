@@ -56,6 +56,7 @@ import {
 } from './forge-event-follow.service';
 import type { IForgeEventFollow } from './forge-event-follow.interface';
 import { detectForgeProvider } from '@delendai/forge/public';
+import { followUpsRefusal } from './integration-follow-ups.script';
 import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
 	createStartupGovernanceSeam,
@@ -141,9 +142,8 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 
 /**
- * The script that runs this repository's follow-ups (certify, open the
- * publications' pull requests, bring labelled ones forward, close approved
- * proposals), read from the checkout at every run so a step added since this
+ * The script that runs this repository's follow-ups (certify, close approved
+ * proposals; local steps only), read from the checkout at every run so a step added since this
  * server started runs without a restart. A project that ships none runs
  * nothing.
  */
@@ -170,6 +170,16 @@ const followUpInBackground = async (
 	if (!existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))) return;
 	if (followingUp[on]) {
 		followAgain[on] = true;
+		return;
+	}
+	// A server older than the repository's integration protocol refuses.
+	const refusal = followUpsRefusal(
+		(await readWorkspacePolicy(root)).integration.protocol,
+	);
+	if (refusal !== undefined) {
+		process.stderr.write(
+			`[delendai] follow-ups (${on}) refused: ${refusal}\n`,
+		);
 		return;
 	}
 	followingUp[on] = true;

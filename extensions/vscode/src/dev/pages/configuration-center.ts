@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { buildConfigurationCenterModel } from '../../../../../packages/ui-extension/src/configuration-center/configuration-center-model';
 import { renderConfigurationCenter } from '../../../../../packages/ui-extension/src/configuration-center/render-configuration-center';
 import type { IConfigurationCenterSource } from '../../../../../packages/ui-extension/src/contracts/interfaces/configuration-center.interface';

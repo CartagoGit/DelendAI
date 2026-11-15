@@ -31,6 +31,7 @@
 		"@delendai/git": "workspace:*",
 		"@delendai/github": "workspace:*",
 		"@delendai/i18n": "workspace:*",
+		"@delendai/integration": "workspace:*",
 		"@delendai/impact-analysis": "workspace:*",
 		"@delendai/link-check": "workspace:*",
 		"@delendai/logs": "workspace:*",

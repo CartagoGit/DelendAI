@@ -20,7 +20,7 @@
 - skipLockPauses
 - createGitRepoTemplate
 - createInMemoryGit
-- clearAmbientEnvironment
+- gitReadCacheOf
 
 ## Depends on
 

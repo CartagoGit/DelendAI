@@ -33,6 +33,7 @@
 | gitlab | @delendai/gitlab | public | experimental | everything |
 | i18n | @delendai/i18n | public | stable | docs-web, everything, dogfood |
 | impact-analysis | @delendai/impact-analysis | public | experimental | audit, everything, dogfood |
+| integration | @delendai/integration | public | experimental | everything |
 | issues | @delendai/issues | public | beta | everything |
 | link-check | @delendai/link-check | public | stable | audit, docs-web, everything, dogfood |
 | logs | @delendai/logs | public | stable | swarm, audit, everything, dogfood |
@@ -97,6 +98,7 @@
 | gitlab | 2700 | 3000 | 20 |
 | i18n | 2710 | 2970 | 20 |
 | impact-analysis | 2000 | 2190 | 20 |
+| integration | 300 | 400 | 20 |
 | issues | 870 | 950 | 20 |
 | issues-triage | 2700 | 3000 | 20 |
 | link-check | 1810 | 1990 | 20 |
@@ -163,6 +165,7 @@
 | gitlab | filesystem-write, network, env-read |  |
 | i18n | filesystem-read |  |
 | impact-analysis | filesystem-read |  |
+| integration | filesystem-read, process, env-read |  |
 | issues | filesystem-read, filesystem-write, process, network, forge-read, forge-write, env-read | issues_list: forge-read, network; issues_fetch: forge-read, network; issues_analyze: forge-read; issues_ingest: forge-read, network; issues_resolve: forge-write, network; setup_github: forge-write, network, secrets |
 | issues-triage | forge-read, forge-write, filesystem-read, filesystem-write, network |  |
 | link-check | filesystem-read |  |
@@ -439,6 +442,14 @@
 | impact-analysis | docs-web | no | no | yes |
 | impact-analysis | everything | yes | yes | yes |
 | impact-analysis | dogfood | yes | yes | yes |
+| integration | minimal | no | no | yes |
+| integration | solo | no | no | yes |
+| integration | team-pr | no | no | yes |
+| integration | swarm | no | no | yes |
+| integration | audit | no | no | yes |
+| integration | docs-web | no | no | yes |
+| integration | everything | yes | yes | yes |
+| integration | dogfood | no | no | yes |
 | issues | minimal | no | no | yes |
 | issues | solo | no | no | yes |
 | issues | team-pr | no | no | yes |

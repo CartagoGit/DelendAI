@@ -133,6 +133,11 @@ export const REF_ROLES = [
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**
+	 * A rehearsal's integration branch or synthetic pull request: its run
+	 * deletes it at cleanup. Reported, never reaped here.
+	 */
+	'rehearsal',
+	/**
 	 * A branch outside every namespace the policy knows. Under a shared
 	 * checkout this is an agent that took ownership of a branch.
 	 */

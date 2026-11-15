@@ -371,6 +371,11 @@
 			"@delendai/style-convention/*": [
 				"./plugins/style-convention/src/*"
 			],
+			"@delendai/integration": ["./plugins/integration/src/index.ts"],
+			"@delendai/integration/public": [
+				"./plugins/integration/src/public/index.ts"
+			],
+			"@delendai/integration/*": ["./plugins/integration/src/*"],
 			"@delendai/execution-env": ["./plugins/execution-env/src/index.ts"],
 			"@delendai/execution-env/public": [
 				"./plugins/execution-env/src/public/index.ts"

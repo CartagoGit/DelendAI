@@ -18,14 +18,17 @@
  * work run. Nothing calls it on a timer: the forge-event receiver runs it,
  * so the work happens when the forge says, not when a poll notices.
  *
- * Each step needs this machine's credential: a pull request opened, or a
- * branch pushed, with a workflow token starts no CI.
+ * Local only: the host fetches and fast-forwards, reads the forge, and
+ * records what it read. It does no integration write: bringing a head
+ * forward and opening batches are the integrator's, as the App identity,
+ * and a publication's pull request is opened by `work publish`.
  */
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
+import { integrationProtocolRefusal } from '@delendai/core/cli';
 import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
 
 /** One follow-up: its script, its timeout, and whether a forge event runs it. */
@@ -44,24 +47,25 @@ export const INTEGRATION_FOLLOW_UPS: readonly IFollowUp[] = [
 		onEvent: false,
 	},
 	{
-		// Every publication gets its pull request.
-		script: 'tools/scripts/forge/open-publication-prs.script.ts',
-		timeoutMs: 180_000,
-		onEvent: false,
-	},
-	{
-		// What land labels "needs update", pushed by this machine.
-		script: 'tools/scripts/forge/bring-forward.script.ts',
-		timeoutMs: 1_800_000,
-		onEvent: true,
-	},
-	{
 		// A proposal whose every slice is approved closes.
 		script: 'tools/scripts/proposals/close-approved-proposals.script.ts',
 		timeoutMs: 600_000,
 		onEvent: false,
 	},
 ];
+
+/**
+ * Why a process may not run the follow-ups: it speaks an older integration
+ * protocol than the repository records, so every integration action is
+ * refused until it restarts. `undefined` when it may run them.
+ */
+export const followUpsRefusal = (
+	recorded: number,
+	spoken?: number,
+): string | undefined => {
+	const stale = integrationProtocolRefusal(recorded, spoken);
+	return stale === undefined ? undefined : `${stale.reason} ${stale.remedy}`;
+};
 
 /** The steps one occasion runs. Pure. */
 export const followUpsFor = (

@@ -23,7 +23,7 @@ interface IRawPull {
 	merged?: boolean;
 	body?: string | null;
 	labels?: { name: string }[];
-	head: { ref: string; sha: string };
+	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
 }
 
 export const createGithubLandForge = (input: {
@@ -116,6 +116,10 @@ export const createGithubLandForge = (input: {
 		merged: pr.merged === true,
 		labels: (pr.labels ?? []).map((l) => l.name),
 		body: pr.body ?? '',
+		...(pr.head.repo?.full_name !== undefined &&
+		pr.head.repo.full_name.toLowerCase() !== slug.toLowerCase()
+			? { crossRepository: true }
+			: {}),
 		testedBase: await baseOf(pr),
 		...(await headAuthorOf(pr.head.sha)),
 	});
@@ -224,6 +228,12 @@ export const createGithubLandForge = (input: {
 				body: text,
 			});
 		},
+		comments: async (number) =>
+			(
+				await all<{ body?: string }>(
+					`issues/${String(number)}/comments`,
+				)
+			).map((entry) => entry.body ?? ''),
 		openPullRequest: async ({ head, title, body }) =>
 			(
 				(
@@ -243,12 +253,45 @@ export const createGithubLandForge = (input: {
 		closePullRequest: async (number) => {
 			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
 		},
-		dispatchWorkflow: async (workflow, ref) =>
+		reopenPullRequest: async (number, headSha) => {
+			const [events, commit] = await Promise.all([
+				all<{ event?: string; created_at?: string }>(
+					`issues/${String(number)}/events`,
+				),
+				ok<{ commit: { committer?: { date?: string } } }>(
+					`commits/${headSha}`,
+				),
+			]);
+			const pushedAt = Date.parse(commit.commit.committer?.date ?? '');
+			// A reopen after the head's commit is this head's one reopen.
+			if (
+				events.some(
+					(event) =>
+						event.event === 'reopened' &&
+						Date.parse(event.created_at ?? '') >= pushedAt,
+				)
+			)
+				return false;
+			await call('PATCH', `pulls/${String(number)}`, {
+				state: 'closed',
+			});
+			await call('PATCH', `pulls/${String(number)}`, { state: 'open' });
+			return true;
+		},
+		dispatchWorkflow: async (workflow, ref, inputs = {}) =>
 			(
 				await call(
 					'POST',
 					`actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
-					{ ref },
+					{
+						ref,
+						...Object.fromEntries(
+							Object.entries(inputs).map(([k, v]) => [
+								`inputs[${k}]`,
+								v,
+							]),
+						),
+					},
 				)
 			).status === 200,
 	};

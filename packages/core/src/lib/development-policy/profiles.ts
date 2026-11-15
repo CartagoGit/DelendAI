@@ -25,6 +25,7 @@ import {
 	WORK_REF_SHAPE,
 } from './profiles.constant';
 import { DEFAULT_PUBLICATION } from '../contracts/constants/publication-granularity.constant';
+import { DEFAULT_INTEGRATION_OPTIONS } from '../contracts/constants/integration-options.constant';
 import { INTEGRATION_PROTOCOL_VERSION } from '../contracts/constants/integration-protocol.constant';
 
 export type { IDevelopmentProfile } from './profiles.interface';
@@ -128,6 +129,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		// Opt-in: receiving events needs the forge CLI's forwarding and a
 		// login that may create webhooks, which no project has by default.
 		forgeEvents: false,
+		...DEFAULT_INTEGRATION_OPTIONS,
 		// The forge must NOT delete the branch when a pull request
 		// merges. A work ref lives as long as the proposal it serves,
 		// and a proposal lands one pull request per slice: GitHub's
@@ -208,6 +210,7 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		// Opt-in: receiving events needs the forge CLI's forwarding and a
 		// login that may create webhooks, which no project has by default.
 		forgeEvents: false,
+		...DEFAULT_INTEGRATION_OPTIONS,
 		deleteMergedWorkRef: false,
 		linearHistory: true,
 		allowForcePush: false,
@@ -301,6 +304,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		// Opt-in: receiving events needs the forge CLI's forwarding and a
 		// login that may create webhooks, which no project has by default.
 		forgeEvents: false,
+		...DEFAULT_INTEGRATION_OPTIONS,
 		deleteMergedWorkRef: true,
 		linearHistory: true,
 		allowForcePush: false,

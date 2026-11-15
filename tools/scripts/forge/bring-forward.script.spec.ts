@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { toBringForward } from './bring-forward.script';
+import { bringsForward, toBringForward } from './bring-forward.script';
 
 describe('bring-forward', () => {
 	it('[<20ms] leaves a fork’s pull request to its author', () => {
@@ -22,6 +22,15 @@ describe('bring-forward', () => {
 				(p) => p.number,
 			),
 		).toEqual([1]);
+	});
+
+	it('[<20ms] brings nothing forward unless the engine is land', () => {
+		const engine = (value: string) => ({
+			development: { integration: { engine: value } },
+		});
+		expect(bringsForward(engine('land'))).toBe(true);
+		expect(bringsForward(engine('none'))).toBe(false);
+		expect(bringsForward({})).toBe(false);
 	});
 
 	it('[<50ms] builds in a throwaway clone and never forces a push', () => {

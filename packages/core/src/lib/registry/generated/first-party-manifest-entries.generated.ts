@@ -302,6 +302,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'integration',
+			package: '@delendai/integration',
+			summary: 'The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.',
+			tags: ['integration', 'pull-request', 'rehearsal'],
+			permissions: ['filesystem-read', 'process', 'env-read'],
+			tokenBudgetBytes: 120,
+		},
+		{
+			origin: 'first-party',
 			id: 'issues',
 			package: '@delendai/issues',
 			summary: 'Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.',

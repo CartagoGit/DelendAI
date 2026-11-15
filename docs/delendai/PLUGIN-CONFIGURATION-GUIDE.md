@@ -195,3 +195,21 @@ are catalogued in [ADOPTER-CONFIG-FOOTGUNS.md](ADOPTER-CONFIG-FOOTGUNS.md).
   output to the catalog generator (if it isn't picked up automatically).
 - Persisted state? Routed through `withFileMutex` + `writeFileAtomic`.
 - Wrote a secret through a durable store? Ran it through `redactSecrets`.
+
+## Integration plugin
+
+`development.integration` holds the options of the pull request flow. Every
+one has a default, and with `engine: none` nothing integrates.
+
+| Option | Meaning |
+|---|---|
+| `identity` | Who the integrator acts as: a GitHub App (`appIdVariable`, `keySecret`) or a token (`tokenSecret`). Names only; values live in the forge's secrets. |
+| `requiredChecks` | The project's own CI jobs that must be green. |
+| `zones` | Globs that declare the project's sections, for grouping. |
+| `derived` | `paths` the project regenerates and the `command` that does it. |
+| `commands` | Project commands the pass runs: `jobs` prints the zones a change reaches (one per line, `*` for all; both revisions are appended), `normalizeBatch` runs in a batch tree before its derived files are regenerated. Empty means none. |
+| `signalWorkflows`, `scanWorkflows` | The workflows whose end wakes the integrator, and those that scan the integration branch. |
+| `watchdog` | The hourly alarm on the default branch. |
+
+`delendai integration adopt` renders the integrator, the rehearsal and the CI
+signal job from these values; see the plugin README for the steps.

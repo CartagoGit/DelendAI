@@ -54,6 +54,7 @@
 		"@delendai/forge": "workspace:*",
 		"@delendai/git": "workspace:*",
 		"@delendai/i18n": "workspace:*",
+		"@delendai/integration": "workspace:*",
 		"@delendai/logs": "workspace:*",
 		"@delendai/memory": "workspace:*",
 		"@delendai/notification": "workspace:*",
