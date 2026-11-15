@@ -15,7 +15,7 @@ const BRANCHES = {
 };
 
 describe('prHeadProblem', () => {
-	it('accepts a publication of the shape, and one written before the kind', () => {
+	it('[<20ms] accepts a publication of the shape, and one written before the kind', () => {
 		expect(
 			prHeadProblem(
 				'delendai/pr/claude-opus-5-5/review/x00001-all-g1/batch',
@@ -30,7 +30,7 @@ describe('prHeadProblem', () => {
 		).toBeUndefined();
 	});
 
-	it('refuses a pull request opened from a work ref', () => {
+	it('[<20ms] refuses a pull request opened from a work ref', () => {
 		expect(
 			prHeadProblem(
 				'delendai/wip/minimax-m3/review/x00558-all-g1/review',
@@ -39,7 +39,7 @@ describe('prHeadProblem', () => {
 		).toContain('is a work ref');
 	});
 
-	it('refuses an agent named after the program it runs in (x00694)', () => {
+	it('[<20ms] refuses an agent named after the program it runs in (x00694)', () => {
 		expect(
 			prHeadProblem(
 				'delendai/pr/copilot/review/batch-all-g1/close-the-ready-review-batches',
@@ -48,7 +48,7 @@ describe('prHeadProblem', () => {
 		).toContain('the program the agent runs in');
 	});
 
-	it('refuses an agent that spells the kind of work', () => {
+	it('[<20ms] refuses an agent that spells the kind of work', () => {
 		expect(
 			prHeadProblem(
 				'delendai/pr/minimax-m3-review-20260926/x00558-review-g1/review',
@@ -57,7 +57,7 @@ describe('prHeadProblem', () => {
 		).toContain('spells the kind of work');
 	});
 
-	it('refuses a name with no shape at all', () => {
+	it('[<20ms] refuses a name with no shape at all', () => {
 		expect(
 			prHeadProblem('delendai/pr/proposal-f00643', BRANCHES),
 		).toContain('does not have the shape');
@@ -77,7 +77,7 @@ describe('prHeadProblem in a namespace transition (f00808)', () => {
 		},
 	}).branches;
 
-	it('accepts a publication of either prefix, and nothing outside them', () => {
+	it('[<20ms] accepts a publication of either prefix, and nothing outside them', () => {
 		expect(
 			prHeadProblem('pr/claude-opus-5-5/implement/x00642-S2-g1/t', moved),
 		).toBeUndefined();
@@ -92,7 +92,7 @@ describe('prHeadProblem in a namespace transition (f00808)', () => {
 });
 
 describe('prHeadProblem under the policy of a base branch', () => {
-	it('still yields delendai/pr/ for this project, and judges a head by the prefix its own policy names', () => {
+	it('[<20ms] still yields delendai/pr/ for this project, and judges a head by the prefix its own policy names', () => {
 		const project = resolveDevelopmentPolicy({
 			development: { branches: { namespacePrefix: 'delendai' } },
 		}).branches;
