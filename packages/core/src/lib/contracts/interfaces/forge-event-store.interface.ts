@@ -33,3 +33,6 @@ export interface IForgePullRequestAddress {
 	readonly repository: string;
 	readonly number: number;
 }
+
+/** The delivered events of each pull request, by `repository#number`. */
+export type IForgeEventCursor = Readonly<Record<string, readonly string[]>>;

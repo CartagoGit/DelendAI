@@ -212,9 +212,18 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'host-offline',
 		title: 'A subscribed session is told of every merge and failure whether or not the host was up',
 		reproduces: 'F8',
-		pulls: [],
-		steps: [],
-		expect: [{ kind: 'sessions-notified' }],
+		pulls: [pullIn('a', 's1')],
+		// One pull request lands while no receiver runs; a receiver then connects.
+		steps: [
+			open('a'),
+			ready('a'),
+			merged('a'),
+			{ kind: 'receive', keys: ['a'] },
+		],
+		expect: [
+			{ kind: 'merged', keys: ['a'] },
+			{ kind: 'sessions-notified' },
+		],
 	},
 	{
 		id: 'automation-opened',

@@ -28,10 +28,10 @@ _(none)_
 
 ## Tests
 
+- plugins/github/tests/catch-up-source.service.spec.ts
 - plugins/github/tests/change-request.spec.ts
 - plugins/github/tests/diagnose-github-workflow.spec.ts
 - plugins/github/tests/diagnostics.spec.ts
-- plugins/github/tests/src/lib/catalog-sweep.spec.ts
 
 ## Do not
 

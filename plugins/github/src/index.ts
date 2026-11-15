@@ -53,6 +53,11 @@ export {
 	mapGitHubEvent,
 	verifyGitHubSignature,
 } from './lib/webhook-events.service';
+export { createGitHubCatchUpSource } from './lib/catch-up-source.service';
+export type {
+	IGitHubCatchUpInput,
+	IGitHubCatchUpRun,
+} from './lib/contracts/interfaces/catch-up-source.interface';
 export {
 	createGhWebhookForwardTransport,
 	ghForwardArgs,

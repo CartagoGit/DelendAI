@@ -166,11 +166,8 @@ describe('the known-red list', () => {
 		}
 	});
 
-	it('[<50ms] holds only what real GitHub still showed red: the offline host and the real-mode scenario', () => {
-		expect(REHEARSAL_KNOWN_RED.map((r) => r.scenario)).toEqual([
-			'host-offline',
-			'F6',
-		]);
+	it('[<50ms] holds only what real GitHub still showed red: the real-mode scenario', () => {
+		expect(REHEARSAL_KNOWN_RED.map((r) => r.scenario)).toEqual(['F6']);
 	});
 });
 
@@ -278,5 +275,21 @@ describe('today land on the rehearsal branch', () => {
 			}),
 		).files('i');
 		expect(files.map((f) => f.path)).toContain(REHEARSAL_OVERLAP_FILE);
+	});
+});
+
+describe('the host-offline scenario', () => {
+	it('[<50ms] lands one pull request, then connects a receiver that must be told once', () => {
+		const offline = REHEARSAL_SCENARIOS.find(
+			(s) => s.id === 'host-offline',
+		);
+		expect(offline?.pulls).toHaveLength(1);
+		expect(offline?.steps.map((step) => step.kind)).toEqual([
+			'open',
+			'ready',
+			'await',
+			'receive',
+		]);
+		expect(offline?.expect).toContainEqual({ kind: 'sessions-notified' });
 	});
 });

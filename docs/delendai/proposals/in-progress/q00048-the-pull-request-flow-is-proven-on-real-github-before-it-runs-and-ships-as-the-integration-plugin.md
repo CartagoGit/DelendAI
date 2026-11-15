@@ -348,17 +348,26 @@ Nothing of this repository is emitted into the other project.
   - "A failure names the tier, the limit, the load factor and the measured time"
   - "Scenario F6 is green"
 
-### S11 — Sessions are told at once; the host does no integration write
+### S11a — The host does no integration write and tells sessions what they missed
 - **Status**: pending
 - **DependsOn**: [S6]
-- **Files**: `tools/scripts/host/integration-follow-ups.script.ts`, `tools/scripts/host/host-server.script.ts`, `packages/core/src/lib/integration/protocol/integration-protocol.helper.ts`
+- **Files**: `tools/scripts/host/integration-follow-ups.script.ts`, `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-cursor.service.ts`, `plugins/github/src/lib/catch-up-source.service.ts`, `plugins/integration/src/lib/contracts/constants/rehearsal-scenarios.constant.ts`
 - **Gate**: none
 - acceptance:
-  - "The host's follow-ups are local only (fetch and fast-forward, the local reconcile); bring-forward and batch opening leave the host, and a spec refuses a forge write in a follow-up"
+  - "The host's follow-ups are local only (fetch and fast-forward, the local reconcile); bring-forward and batch opening leave the host, and a spec refuses a forge write in a follow-up: the follow-up receives no forge-writing port"
   - "The follow-up list is read from the checkout at each run, and a process with an older integration protocol refuses every integration action and says to restart"
-  - "A session subscribed to a pull request receives merged, failed check, needs-update and culprit within 10 s p95 of the forge event, through the f00814 port, with no polling"
-  - "With the host offline integration completes; on reconnect the host asks the forge once and each missed notification is delivered once"
-  - "Scenarios F7, F8 and host-offline are green"
+  - "The host persists the last forge event it delivered per pull request; on connect it asks the forge once for what it missed (merged, failed required check, needs-update, culprit) and delivers each missed notification once to subscribed sessions through the f00814 bridge; a second reconnect with nothing new delivers nothing"
+  - "Scenario host-offline is green: one pull request lands while no receiver runs, then a receiver connects and is told of the merge once; the session-notified target reports not measured, and does not fail, while no real-time transport ran"
+
+### S11b — Sessions are told within 10 s p95 through a relay transport
+- **Status**: pending
+- **DependsOn**: [S11a]
+- **Files**: none yet
+- **Gate**: none
+- acceptance:
+  - "Sessions are told within 10 s p95 through a relay transport behind the f00814 port; gh webhook forward stays a development transport (one forwarder per repository, unsupported in production per GitHub docs)"
+  - "Scenario F7 is green and the session-notified-p95 target is measured"
+- **Decision (2026-11-15)**: real-time delivery needs a relay transport; deferred, no service or account is assumed. S11 is split because GitHub documents that gh webhook forward allows one forwarder per repository and is not supported in production. S11a delivers the local-only follow-ups and the offline catch-up; S14 depends on S11a, not on S11b.
 
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: pending
@@ -384,7 +393,7 @@ Nothing of this repository is emitted into the other project.
 
 ### S14 — Activation and resume
 - **Status**: pending
-- **DependsOn**: [S8, S9, S10, S11, S12, S13]
+- **DependsOn**: [S8, S9, S10, S11a, S12, S13]
 - **Files**: `plugins/integration/src/lib/services/integration-activation.service.ts`, `plugins/integration/tests/src/lib/services/integration-activation.service.spec.ts`
 - **Gate**: none
 - acceptance:

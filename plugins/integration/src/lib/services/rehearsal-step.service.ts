@@ -21,6 +21,7 @@ import type {
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import { receive } from './rehearsal-receive.helper';
 import {
 	pullChanges,
 	pullHead,
@@ -329,6 +330,11 @@ const STEPS: TSteps = {
 		state.failures.push(
 			`token-open: the workflow token opened no pull request for ${step.key}`,
 		);
+		return;
+	},
+	receive: async (ctx, scenario, state, step) => {
+		const _specOf = specOfIn(scenario);
+		await receive(ctx, state, step.keys);
 		return;
 	},
 	'move-integration': async (ctx, scenario, state, step) => {
