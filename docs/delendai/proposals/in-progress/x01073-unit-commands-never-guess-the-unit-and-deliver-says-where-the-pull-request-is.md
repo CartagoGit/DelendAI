@@ -2,10 +2,14 @@
 id: x01073
 title: "Unit commands never guess the unit, and deliver says where the pull request is"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: cc66165e-4594-491f-9d44-83be51ec4a1f
+last-correlation-id: cc66165e-4594-491f-9d44-83be51ec4a1f
+last-transition-from: ready
+last-transition-at: 2026-11-15T18:10:55.656Z
 ---
 
 # x01073 — Unit commands never guess the unit, and deliver says where the pull request is
