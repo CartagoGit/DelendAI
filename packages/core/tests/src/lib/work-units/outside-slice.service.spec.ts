@@ -28,7 +28,7 @@ const PROPOSAL = [
 ].join('\n');
 
 describe('the files a proposal names', () => {
-	it('reads every Files line', () => {
+	it('[<20ms] reads every Files line', () => {
 		expect(namedFiles(PROPOSAL)).toEqual([
 			'src/a.ts',
 			'src/lib/',
@@ -36,7 +36,7 @@ describe('the files a proposal names', () => {
 		]);
 	});
 
-	it('matches a file by name, by folder and by glob', () => {
+	it('[<20ms] matches a file by name, by folder and by glob', () => {
 		const named = namedFiles(PROPOSAL);
 		expect(isNamed('src/a.ts', named)).toBe(true);
 		expect(isNamed('src/lib/deep/b.ts', named)).toBe(true);
@@ -47,7 +47,7 @@ describe('the files a proposal names', () => {
 });
 
 describe('unitsOutsideTheirSlice', () => {
-	it('names the files an implement unit changed that its proposal does not', () => {
+	it('[<200ms] names the files an implement or create unit changed that its proposal does not', () => {
 		const root = mkdtempSync(join(tmpdir(), 'outside-slice-'));
 		const git = (...args: string[]): string =>
 			execFileSync(
@@ -82,12 +82,17 @@ describe('unitsOutsideTheirSlice', () => {
 				policy,
 				units: [
 					unit('delendai/wip/a/implement/x00001-S1-g1/t'),
+					unit('delendai/wip/a/create/x00001-all-g1/t'),
 					unit('delendai/wip/a/review/x00001-S1-g1/t'),
 				],
 			}),
 		).toEqual([
 			{
 				ref: 'delendai/wip/a/implement/x00001-S1-g1/t',
+				files: ['src/other.ts'],
+			},
+			{
+				ref: 'delendai/wip/a/create/x00001-all-g1/t',
 				files: ['src/other.ts'],
 			},
 		]);

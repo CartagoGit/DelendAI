@@ -795,7 +795,6 @@
 		"packages/core/tests/src/lib/work-units/kept-unit-hydration.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/landing-certification-record.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts",
-		"packages/core/tests/src/lib/work-units/outside-slice.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-dispositions.service.spec.ts",
