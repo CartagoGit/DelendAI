@@ -2300,7 +2300,6 @@
 		"tools/scripts/lint/plugin-manifest.script.spec.ts",
 		"tools/scripts/lint/plugin-permissions-declared.script.spec.ts",
 		"tools/scripts/lint/plugin-physical-containment.script.spec.ts",
-		"tools/scripts/lint/pr-head-shape.script.spec.ts",
 		"tools/scripts/lint/preset-drift.script.spec.ts",
 		"tools/scripts/lint/privacy-internal-only.script.spec.ts",
 		"tools/scripts/lint/proposal-audit-ledger.spec.ts",

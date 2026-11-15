@@ -4,6 +4,7 @@
  */
 import {
 	REHEARSAL_DIR,
+	REHEARSAL_HEAD_UNIT,
 	RUN_PLACEHOLDER,
 } from '../contracts/constants/rehearsal.constant';
 import type {
@@ -35,7 +36,12 @@ export const pullHead = (
 	runId: string,
 	scenario: string,
 	key: string,
-): string => `${runBranchRoot(prefix, runId)}${scenario}-${key}`;
+): string =>
+	`${runBranchRoot(prefix, runId)}${REHEARSAL_HEAD_UNIT}/${scenario}-${key}`;
+
+/** The publication prefix of a run, as its policy states it: the root its integration branch lives under. */
+export const runPublicationPrefix = (integration: string): string =>
+	integration.slice(0, integration.lastIndexOf('/') + 1);
 
 /** The declaration the fast CI reads for a head (see the CI workflow). */
 export const declarationPath = (
