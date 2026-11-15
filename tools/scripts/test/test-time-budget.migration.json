@@ -802,7 +802,6 @@
 		"packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-target.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/review-kind.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/review-pack-scope.spec.ts",
 		"packages/core/tests/src/lib/work-units/reviewed-proposal.service.spec.ts",
