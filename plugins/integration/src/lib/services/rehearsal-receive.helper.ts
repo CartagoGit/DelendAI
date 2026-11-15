@@ -74,7 +74,8 @@ export const receive = async (
 			return Promise.resolve();
 		},
 	};
-	const receipts = (state.notifications ??= []);
+	const receipts = state.notifications ?? [];
+	state.notifications = receipts;
 	for (let connection = 0; connection < 2; connection += 1)
 		await catchUpForgeEvents({
 			source: { missed: () => missedOn(ctx, state, subscribed) },
