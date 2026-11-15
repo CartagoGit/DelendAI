@@ -2,10 +2,14 @@
 id: x01077
 title: "A follower joins the proof that finished while it looked away"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 6c22561b-304b-40d6-bae6-bcad7b799252
+last-correlation-id: 6c22561b-304b-40d6-bae6-bcad7b799252
+last-transition-from: ready
+last-transition-at: 2026-11-15T23:12:53.152Z
 ---
 
 # x01077 — A follower joins the proof that finished while it looked away
