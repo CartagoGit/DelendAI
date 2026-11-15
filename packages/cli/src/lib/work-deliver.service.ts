@@ -66,6 +66,7 @@ export const unitFlagsOf = (
 	parse: (ref: string) =>
 		| {
 				readonly proposal: string;
+				readonly kind?: string | undefined;
 				readonly slice: string;
 				readonly generation: number;
 				readonly topic?: string | undefined;
@@ -77,6 +78,7 @@ export const unitFlagsOf = (
 	return unit === undefined || unit.proposal !== proposal
 		? []
 		: [
+				...(unit.kind === undefined ? [] : [`--kind=${unit.kind}`]),
 				`--slice=${unit.slice}`,
 				`--generation=${String(unit.generation)}`,
 				...(unit.topic === undefined ? [] : [`--topic=${unit.topic}`]),

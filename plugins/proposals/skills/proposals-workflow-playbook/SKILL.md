@@ -54,6 +54,7 @@ through the tool that allocates one, never as a file by hand:
 delendai work enter --kind=create --proposal=new --slice=all --agent=<you> --topic=<t> --print-path
   -> delendai_proposals_create_proposal { title, goal, why, nonGoals, slices, checkout: <that worktree> }
   -> commit in the worktree, then publish the unit
+  -> a small fix: edit the code in this same worktree, then `delendai work deliver --kind=create --proposal=<id>` (ready, in-progress, review) and publish once
 ```
 
 - `create_proposal` allocates the id; a hand-picked id is not the

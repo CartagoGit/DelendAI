@@ -184,6 +184,23 @@ describe('unitFlagsOf', () => {
 		).toEqual(['--slice=S2', '--generation=2', '--topic=the-fix']);
 	});
 
+	it('[<20ms] names the kind of a create unit, so deliver finds it', () => {
+		expect(
+			unitFlagsOf('delendai/wip/a/create/x1-all-g2/t', 'x1', () => ({
+				proposal: 'x1',
+				kind: 'create',
+				slice: 'all',
+				generation: 2,
+				topic: 't',
+			})),
+		).toEqual([
+			'--kind=create',
+			'--slice=all',
+			'--generation=2',
+			'--topic=t',
+		]);
+	});
+
 	it('[<20ms] names nothing off a unit, or on another proposal', () => {
 		expect(unitFlagsOf('develop', 'x1', parse)).toEqual([]);
 		expect(unitFlagsOf(undefined, 'x1', parse)).toEqual([]);

@@ -80,6 +80,15 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S5 — A small fix travels with its proposal in one unit and one pull request
+- **Status**: pending
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`
+- **Gate**: none
+- acceptance:
+  - "work deliver and prove --locate find a create-kind unit: the unit flags of the checked-out branch carry its kind."
+  - "The outside-slice report covers create units."
+  - "The skill and the publish next-action say a small fix may be delivered from the create unit."
+
 ## acceptance
 
 - When work deliver has no unit flag and cwd holds no unit, it looks up the agent's live units of that proposal and uses the only one.
@@ -93,3 +102,5 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - A spec proves no review unit is returned.
 - The deliver result includes the pull request number and URL, or states publication pushed, pull request pending, with the branch.
 - A spec proves both outputs.
+- work deliver and prove --locate find a create-kind unit, and the outside-slice report covers create units.
+- The skill text and the publish next-action say a small fix may be delivered from the create unit.
