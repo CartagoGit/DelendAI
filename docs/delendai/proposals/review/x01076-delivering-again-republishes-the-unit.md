@@ -2,14 +2,14 @@
 id: x01076
 title: "Delivering again republishes the unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-15
-last-transition-id: b60721d8-27a3-4e96-b446-119092a72a1e
-last-correlation-id: b60721d8-27a3-4e96-b446-119092a72a1e
-last-transition-from: ready
-last-transition-at: 2026-11-15T23:02:05.726Z
+last-transition-id: 91781bd6-6516-45d7-a4f8-d48d975ce9b1
+last-correlation-id: 91781bd6-6516-45d7-a4f8-d48d975ce9b1
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T23:04:59.607Z
 ---
 
 # x01076 — Delivering again republishes the unit
@@ -32,7 +32,7 @@ Re-delivering a unit of a proposal in review logged `illegal transition: "review
 - global_gate: none
 
 ### S1 — Deliver republishes when the proposal is already in review
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -40,6 +40,9 @@ Re-delivering a unit of a proposal in review logged `illegal transition: "review
   - "The result of such a delivery has republished true and the pull request (number and url, or the pending branch)."
   - "A refusal other than already-in-review still fails the delivery; a first delivery behaves as before."
   - "The behaviour is covered by specs with injected ports."
+- shipped-in: `c02f198ae128`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
