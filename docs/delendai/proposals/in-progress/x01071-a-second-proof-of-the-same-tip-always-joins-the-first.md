@@ -2,10 +2,14 @@
 id: x01071
 title: "A second proof of the same tip always joins the first"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 597aeb37-607e-4878-89dc-86c3f4bce6d8
+last-correlation-id: 597aeb37-607e-4878-89dc-86c3f4bce6d8
+last-transition-from: ready
+last-transition-at: 2026-11-15T13:14:28.498Z
 ---
 
 # x01071 — A second proof of the same tip always joins the first
