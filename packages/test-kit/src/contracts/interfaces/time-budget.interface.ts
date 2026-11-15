@@ -37,7 +37,7 @@ export interface ITimeBudgetCase {
 	 * `loadFactor` is then the larger of the two, the one the test is
 	 * judged against.
 	 */
-	readonly loadFactorAtStart?: number;
+	readonly loadFactorAtStart?: number | undefined;
 	/** The factor measured again when the test ran over; see `loadFactorAtStart`. */
-	readonly loadFactorNow?: number;
+	readonly loadFactorNow?: number | undefined;
 }

@@ -176,7 +176,7 @@ export default class TimeBudgetRunner extends TestRunner {
 		Object.assign(test.meta, {
 			[MEASURED_META_KEY]: tookMs,
 			// The factor that applied: the calibration divides by it.
-			[MEASURED_LOAD_META_KEY]: judged.loadFactor,
+			[MEASURED_LOAD_META_KEY]: judged.loadFactor ?? loadFactor,
 			[MEASURED_BENCH_META_KEY]: Number(process.env[LOAD_BENCH_ENV] ?? 0),
 			...(judged.loadFactorNow === undefined
 				? {}
@@ -184,7 +184,7 @@ export default class TimeBudgetRunner extends TestRunner {
 		});
 		const measured = {
 			tier: judged.tier,
-			loadFactor: judged.loadFactor,
+			loadFactor: judged.loadFactor ?? loadFactor,
 			loadFactorAtStart: judged.loadFactorAtStart,
 			loadFactorNow: judged.loadFactorNow,
 			name: test.name,
