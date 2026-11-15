@@ -2,10 +2,14 @@
 id: x01075
 title: "Static checks run side by side"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 1469ef2a-9e9a-4e6d-9181-7732075761f0
+last-correlation-id: 1469ef2a-9e9a-4e6d-9181-7732075761f0
+last-transition-from: ready
+last-transition-at: 2026-11-15T22:27:49.986Z
 ---
 
 # x01075 — Static checks run side by side
