@@ -18,6 +18,7 @@ import {
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
 import { measureLoadBenchmark } from './packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts';
 import { loadFactorOf } from './packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
+import { vitestModuleCachePath } from './tools/scripts/ci/vitest-cache-key.helper.ts';
 import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
@@ -122,6 +123,12 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
+	// One directory per lockfile: vitest clears the whole cache directory
+	// when the lockfile changed, and parallel runs in one worktree did it
+	// at once (ENOTEMPTY). A new lockfile gets a new empty directory.
+	fsModuleCachePath: vitestModuleCachePath(
+		dirname(fileURLToPath(import.meta.url)),
+	),
 	// Every test declares its maximum time and the run fails one that
 	// exceeds it. It lives in the options every project spreads, so no
 	// project and no spec opts out (`lint:test-time-budget` and the shared
