@@ -180,6 +180,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	},
 	{
 		id: 'bot-head',
+		modes: ['fast'],
 		title: 'A head the workflow token pushed is built by the forge',
 		reproduces: 'F1',
 		pulls: [pullIn('a', 's1')],
@@ -226,6 +227,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	},
 	{
 		id: 'automation-opened',
+		modes: ['fast'],
 		title: 'A pull request a workflow opens with the workflow token is built',
 		reproduces: 'F1b',
 		pulls: [pullIn('a', 's1')],

@@ -111,34 +111,61 @@ export const rehearsalPolicy = (
 export const createRehearsalSetup = (
 	input: IRehearsalSetupInput,
 ): IRehearsalSetup => ({
-	files: (integration): readonly IRehearsalFileChange[] => {
+	files: async (integration) => {
 		const all = fastFiles(input, integration);
 		if (input.realWorkflows === undefined) return all;
-		// Real mode: the project's CI and scans, not the fast stand-ins.
-		const stand = new Set([
-			`${WORKFLOWS}/rehearsal-ci.yml`,
-			`${WORKFLOWS}/rehearsal-scan.yml`,
-			POLICY_PATH,
-		]);
-		return [
-			...all.filter((file) => !stand.has(file.path)),
-			...realModeFiles({
-				integration,
-				projectIntegration: requireProjectIntegration(input),
-				workflows: input.realWorkflows,
-			}),
-			{
-				path: POLICY_PATH,
-				content: rehearsalPolicy(
-					input.policyText,
-					integration,
-					true,
-					input.runId,
-				),
-			},
-		];
+		const real = realFiles(input, integration, all);
+		return hasSetupCommand(input) ? withSetupCommand(input, real) : real;
 	},
 });
+
+const hasSetupCommand = (input: IRehearsalSetupInput): boolean =>
+	input.setupCommand !== undefined && input.setupCommand !== '';
+
+/** The rehearsal's files, then those the policy's setup command changed over them (it wins on a path both write). */
+const withSetupCommand = async (
+	input: IRehearsalSetupInput,
+	files: readonly IRehearsalFileChange[],
+): Promise<readonly IRehearsalFileChange[]> => {
+	if (input.materialise === undefined)
+		throw new Error(
+			`the setup command \`${input.setupCommand ?? ''}\` has no worktree to run in`,
+		);
+	const changed = await input.materialise(input.setupCommand ?? '', files);
+	const written = new Set(changed.map((file) => file.path));
+	return [...files.filter((file) => !written.has(file.path)), ...changed];
+};
+
+/** Real mode: the project's CI and scans replace the fast stand-ins, and no workflow-token writer is rendered. */
+const realFiles = (
+	input: IRehearsalSetupInput,
+	integration: string,
+	all: readonly IRehearsalFileChange[],
+): readonly IRehearsalFileChange[] => {
+	const stand = new Set([
+		`${WORKFLOWS}/rehearsal-ci.yml`,
+		`${WORKFLOWS}/rehearsal-scan.yml`,
+		`${WORKFLOWS}/rehearsal-token.yml`,
+		POLICY_PATH,
+	]);
+	return [
+		...all.filter((file) => !stand.has(file.path)),
+		...realModeFiles({
+			integration,
+			projectIntegration: requireProjectIntegration(input),
+			workflows: input.realWorkflows ?? {},
+		}),
+		{
+			path: POLICY_PATH,
+			content: rehearsalPolicy(
+				input.policyText,
+				integration,
+				true,
+				input.runId,
+			),
+		},
+	];
+};
 
 const fastFiles = (
 	input: IRehearsalSetupInput,

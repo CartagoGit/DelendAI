@@ -44,5 +44,7 @@ export const resolveIntegrationOptions = (
 		scenarios: [
 			...(input?.rehearsal?.scenarios ?? base.rehearsal.scenarios),
 		],
+		setupCommand:
+			input?.rehearsal?.setupCommand ?? base.rehearsal.setupCommand,
 	},
 });

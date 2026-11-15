@@ -82,7 +82,17 @@ const JOIN_POLL_MS = 50;
 interface ITurnClaim {
 	readonly pid: number;
 	readonly id: string;
+	/** Set on the `.done` record: when the claimant's turn finished. */
+	readonly finishedAt?: number;
 }
+
+/**
+ * Wall clock in ms with sub-millisecond resolution, read the same way at
+ * both ends: a call's start and a claimant's finish are compared across
+ * processes, so a per-process monotonic clock alone would not do, and whole
+ * milliseconds would let a call that starts right after a finish tie it.
+ */
+const clockMs = (): number => performance.timeOrigin + performance.now();
 
 type TurnResult =
 	| { readonly value: unknown }
@@ -129,6 +139,9 @@ const withUnitTurn = async <T>(
 	unit: string,
 	tip: string,
 ): Promise<T> => {
+	// Taken before any await: whatever happens after this call began is
+	// something it must join, whatever its own first reads then take.
+	const askedAt = clockMs();
 	const dir = unitTurnDirectory(request.lockPath, unit);
 	// On record at once in this process, so a newer tip is known before any
 	// older tip can take the slot; the file tells other processes.
@@ -206,6 +219,17 @@ const withUnitTurn = async <T>(
 			}
 			return settle(result);
 		}
+		// No live claim, but a proof of this tip may have finished while
+		// this call was starting: it answers this call too.
+		const done = await readSlotJson<ITurnClaim>(donePath(tip));
+		if (done?.finishedAt !== undefined && done.finishedAt >= askedAt) {
+			const finished = await readSlotJson<TurnResult>(
+				resultPath(tip, done.id),
+			);
+			if (finished !== undefined && !('superseded' in finished)) {
+				return settle(finished);
+			}
+		}
 		const mine: ITurnClaim = { pid: process.pid, id: randomUUID() };
 		if (claim !== undefined) await rm(claimPath(tip), { force: true });
 		try {
@@ -230,7 +254,10 @@ const withUnitTurn = async <T>(
 			};
 		}
 		await writeFile(resultPath(tip, mine.id), JSON.stringify(result));
-		await writeFile(donePath(tip), JSON.stringify(mine));
+		await writeFile(
+			donePath(tip),
+			JSON.stringify({ ...mine, finishedAt: clockMs() }),
+		);
 		await rm(claimPath(tip), { force: true });
 		if ('superseded' in result) {
 			const newer = await currentTip();

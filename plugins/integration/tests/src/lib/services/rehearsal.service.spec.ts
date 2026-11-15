@@ -45,7 +45,7 @@ describe('rehearse', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: () => [] }),
+			setup: () => ({ files: async () => [] }),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',
@@ -60,6 +60,29 @@ describe('rehearse', () => {
 		expect(written).not.toContain('develop');
 		expect(branches.size).toBe(0);
 		expect(report.leftovers).toEqual([]);
+	});
+
+	it('[<50ms] names in the report the mode the run used, fast when none is given', async () => {
+		const play = async (mode?: 'fast' | 'real') =>
+			(
+				await rehearse({
+					forge: forgeThatRecords().forge,
+					clock: {
+						now: () => Date.parse('2026-11-12T10:00:00Z'),
+						wait: async () => undefined,
+					},
+					setup: () => ({ files: async () => [] }),
+					repository: 'o/r',
+					branchPrefix: 'delendai/rehearsal/',
+					baseBranch: 'develop',
+					...(mode === undefined ? {} : { mode }),
+					scenarios: [],
+					log: () => undefined,
+				})
+			).mode;
+		expect(await play('real')).toBe('real');
+		expect(await play('fast')).toBe('fast');
+		expect(await play()).toBe('fast');
 	});
 
 	it('[<100ms] cuts every integration branch from the commit it was given and names it as the tip', async () => {
@@ -77,7 +100,7 @@ describe('rehearse', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: () => [] }),
+			setup: () => ({ files: async () => [] }),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',
@@ -127,7 +150,7 @@ describe('rehearse', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: () => [] }),
+			setup: () => ({ files: async () => [] }),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',
@@ -159,7 +182,7 @@ describe('rehearse', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: () => [] }),
+			setup: () => ({ files: async () => [] }),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',
