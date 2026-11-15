@@ -20,6 +20,9 @@ export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
 /** Leftovers of a run older than this are swept by the next run's start. */
 export const REHEARSAL_STALE_AFTER_MS = 2 * 60 * 60 * 1000;
 
+/** How many scenarios play at once when no option says: each has its own integration branch. */
+export const REHEARSAL_DEFAULT_CONCURRENCY = 4;
+
 /** How often the harness reads the forge while it waits on a step. */
 export const REHEARSAL_POLL_MS = 15_000;
 

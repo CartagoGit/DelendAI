@@ -224,10 +224,6 @@ export interface IRehearsalForge {
 	readonly runLog: (id: number) => Promise<string>;
 	readonly labels: (prefix: string) => Promise<readonly string[]>;
 	readonly deleteLabel: (name: string) => Promise<void>;
-	readonly hooks: () => Promise<
-		readonly { readonly id: number; readonly url: string }[]
-	>;
-	readonly deleteHook: (id: number) => Promise<void>;
 }
 
 /** The clock and the wait of a run, injected so a spec never sleeps. */
@@ -278,6 +274,8 @@ export interface IRehearseInput {
 	readonly scenarios: readonly IRehearsalScenario[];
 	/** The mode the run plays and its report names; absent means fast. */
 	readonly mode?: IRehearsalMode;
+	/** How many scenarios play at once; absent means the default, 1 plays them one after another. */
+	readonly concurrency?: number;
 	readonly log: (line: string) => void;
 }
 

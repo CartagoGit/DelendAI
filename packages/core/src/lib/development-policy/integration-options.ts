@@ -46,5 +46,7 @@ export const resolveIntegrationOptions = (
 		],
 		setupCommand:
 			input?.rehearsal?.setupCommand ?? base.rehearsal.setupCommand,
+		concurrency:
+			input?.rehearsal?.concurrency ?? base.rehearsal.concurrency,
 	},
 });

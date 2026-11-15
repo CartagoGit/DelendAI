@@ -31,7 +31,11 @@ import {
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
 import { realModeFiles } from './rehearsal-real-ci.service';
-import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
+import {
+	runBranchRoot,
+	runLabelPrefix,
+	scenarioLandGroup,
+} from './rehearsal-names.helper';
 
 const requireProjectIntegration = (input: IRehearsalSetupInput): string => {
 	if (input.projectIntegration === undefined)
@@ -175,7 +179,7 @@ const fastFiles = (
 		path: `${WORKFLOWS}/land.yml`,
 		content: input.integratorWorkflow(
 			integration,
-			`land-rehearsal-${input.runId}`,
+			scenarioLandGroup(input.runId, integration),
 		),
 	},
 	{
