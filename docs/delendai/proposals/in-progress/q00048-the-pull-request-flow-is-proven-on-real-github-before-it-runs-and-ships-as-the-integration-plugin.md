@@ -2,14 +2,14 @@
 id: q00048
 title: "The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin"
 kind: plan
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: 685a2ba8-1a9e-490f-bf88-25af9947c97e
-last-correlation-id: 685a2ba8-1a9e-490f-bf88-25af9947c97e
-last-transition-from: in-progress
-last-transition-at: 2026-11-15T18:04:58.348Z
+last-transition-id: 947a65eb-12cb-4530-bd14-92f646b2f47b
+last-correlation-id: 947a65eb-12cb-4530-bd14-92f646b2f47b
+last-transition-from: review
+last-transition-at: 2026-11-15T22:28:49.576Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -406,7 +406,7 @@ Nothing of this repository is emitted into the other project.
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: review
 - **DependsOn**: [S8]
-- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`
+- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`, `plugins/integration/src/lib/services/rehearsal-wait.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-wait.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`--mode=real` runs the real ci.yml (branch filters rendered for the rehearsal branch) on each synthetic pull request with its declared zones, and the real scan workflows on each tip"
