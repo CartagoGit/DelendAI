@@ -12,6 +12,8 @@ import {
 	STATIC_CHECK_JOBS,
 	staticChecksOf,
 } from './ci-static-steps';
+import { JOB_SCOPES } from './job-scope.constant';
+import { parseWorkflowYaml } from './workflow-yaml';
 
 const workflow = (lintSecurityRun: string): string =>
 	[
@@ -108,5 +110,50 @@ describe('a static check that is steps of a grouped job', () => {
 				(check) => check.job === 'lint-docs',
 			)?.script,
 		).toBe('echo grouped-docs');
+	});
+});
+
+describe('the static checks run side by side in ci.yml', () => {
+	const text = readFileSync(
+		join(import.meta.dirname, '../../../.github/workflows/ci.yml'),
+		'utf8',
+	);
+	const jobs = parseWorkflowYaml(text).jobs as Record<
+		string,
+		{ steps?: readonly { if?: string }[]; needs?: unknown }
+	>;
+	const groups = JOB_SCOPES.filter(
+		(scope) =>
+			scope.group !== undefined && /^static-checks/u.test(scope.job),
+	);
+
+	it('has the three static jobs, each declared with the checks it runs', () => {
+		expect(groups.map((scope) => scope.job)).toEqual([
+			'static-checks',
+			'static-checks-b',
+			'static-checks-c',
+		]);
+		const members = groups.flatMap((scope) => scope.group ?? []);
+		expect(new Set(members).size).toBe(members.length);
+	});
+
+	it('gates every check in exactly one static job, the one that declares it', () => {
+		for (const group of groups) {
+			for (const member of group.group ?? []) {
+				const holders = Object.entries(jobs)
+					.filter(([, job]) =>
+						(job.steps ?? []).some((step) =>
+							String(step.if ?? '').includes(`['${member}']`),
+						),
+					)
+					.map(([name]) => name);
+				expect(holders, member).toEqual([group.job]);
+			}
+		}
+	});
+
+	it('makes delendai-validate wait for all three, so none can be skipped into success', () => {
+		const needs = jobs['delendai-validate']?.needs as readonly string[];
+		for (const group of groups) expect(needs).toContain(group.job);
 	});
 });
