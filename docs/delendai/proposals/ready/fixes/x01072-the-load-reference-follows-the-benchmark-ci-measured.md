@@ -12,15 +12,15 @@ date: 2026-11-15
 
 ## goal
 
-TODO: describe the goal.
+tools/scripts/test/test-load-reference.json holds the benchmark CI measures today, so the load factor of a shard reflects its real load.
 
 ## why
 
-TODO: why this work matters now.
+The committed 44.7 ms reference is older than the runners' current 42.8 ms median; the load factor came out too low and an untouched e2e test (forge-event-store, 216.8 ms against 200 ms at factor 1.067) failed PR #2154.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- No test budget is raised and no test is changed; the calibration workflow itself is not changed.
 
 ## slices
 
