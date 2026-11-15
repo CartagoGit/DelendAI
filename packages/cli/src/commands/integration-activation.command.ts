@@ -161,6 +161,15 @@ const portsOf = (
 		readConfig: () => readFile(join(ctx.cwd, CONFIG_FILE), 'utf8'),
 		writeConfig: (text) => writeFile(join(ctx.cwd, CONFIG_FILE), text),
 		renderWorkflows: (text) => renderWorkflows(ctx.cwd, text),
+		readWorkflow: async (path) => {
+			try {
+				return await readFile(join(ctx.cwd, path), 'utf8');
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+					return undefined;
+				throw error;
+			}
+		},
 		writeWorkflow: async (path, content) => {
 			await mkdir(dirname(join(ctx.cwd, path)), { recursive: true });
 			await writeFile(join(ctx.cwd, path), content);

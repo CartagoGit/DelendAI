@@ -9,6 +9,7 @@ import { applyJsoncEdits, parseJsonc } from '@delendai/core/cli';
 
 import { ACTIVATION_MODES } from '../contracts/constants/integration-activation.constant';
 import type {
+	IActivationFile,
 	IActivationMode,
 	IActivationPorts,
 	IActivationResult,
@@ -94,17 +95,60 @@ export const withEngine = (text: string, engine: 'land' | 'none'): string => {
 	return applyJsoncEdits(text, [{ path: ENGINE_PATH, value: engine }]);
 };
 
-/** Write the config with `engine`, then the files that engine implies. */
+const messageOf = (error: unknown): string =>
+	error instanceof Error ? error.message : String(error);
+
+/** Write or remove one workflow file. */
+const applyFile = (ports: IActivationPorts, file: IActivationFile) =>
+	file.content === undefined
+		? ports.removeWorkflow(file.path)
+		: ports.writeWorkflow(file.path, file.content);
+
+/**
+ * Switch the engine all or nothing as far as the disk can: everything is
+ * computed first, the workflows are applied next, and the config is written
+ * last. A failing workflow restores the ones already touched and names both.
+ * A re-run recomputes from the current files, so it converges.
+ */
 const switchEngine = async (
 	ports: IActivationPorts,
 	engine: 'land' | 'none',
 ): Promise<readonly string[]> => {
 	const text = withEngine(await ports.readConfig(), engine);
-	await ports.writeConfig(text);
 	const files = await ports.renderWorkflows(text);
+	const before = new Map<string, string | undefined>();
 	for (const file of files)
-		if (file.content === undefined) await ports.removeWorkflow(file.path);
-		else await ports.writeWorkflow(file.path, file.content);
+		before.set(file.path, await ports.readWorkflow(file.path));
+	const touched: IActivationFile[] = [];
+	for (const file of files) {
+		touched.push(file);
+		try {
+			await applyFile(ports, file);
+		} catch (error) {
+			const restored: string[] = [];
+			const stuck: string[] = [];
+			for (const done of touched) {
+				try {
+					await applyFile(ports, {
+						path: done.path,
+						content: before.get(done.path),
+					});
+					restored.push(done.path);
+				} catch (restoreError) {
+					stuck.push(`${done.path} (${messageOf(restoreError)})`);
+				}
+			}
+			throw new Error(
+				`the engine switch failed on ${file.path}: ${messageOf(error)}; ` +
+					`restored: ${restored.join(', ') || 'none'}` +
+					(stuck.length > 0
+						? `; could not restore: ${stuck.join(', ')}`
+						: '') +
+					'; the config was not written, so running it again converges.',
+			);
+		}
+	}
+	await ports.writeConfig(text);
 	return files.map((file) => file.path);
 };
 
