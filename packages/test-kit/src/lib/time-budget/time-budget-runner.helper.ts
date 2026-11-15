@@ -16,6 +16,8 @@ import {
 	FRESH_ENV,
 	LOAD_BENCH_ENV,
 	LOAD_FACTOR_ENV,
+	LOAD_REFERENCE_ENV,
+	MEASURED_LOAD_NOW_META_KEY,
 	MEASURED_BENCH_META_KEY,
 	MEASURED_LOAD_META_KEY,
 	MIGRATION_ENV,
@@ -24,12 +26,18 @@ import {
 	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
-import { isE2eSpec, loadFactorFromEnv } from './time-budget-tier.helper';
+import { measureLoadBenchmark } from './load-benchmark.helper';
+import {
+	isE2eSpec,
+	loadFactorFromEnv,
+	loadFactorOf,
+} from './time-budget-tier.helper';
 import {
 	budgetFailure,
 	budgetNoise,
 	budgetOverrun,
 	mayGoUnbudgeted,
+	withRemeasuredLoad,
 } from './time-budget.helper';
 
 let migrating: ReadonlySet<string> | undefined;
@@ -110,6 +118,18 @@ const untouched = (test: RunnerTestCase): boolean => {
 	return file !== undefined && paths !== undefined && !paths.has(file);
 };
 
+/**
+ * The load factor right now: the same benchmark, reference and clamp as the
+ * shard's start. Without a reference there is nothing to divide by, and the
+ * start factor stands.
+ */
+const loadFactorNow = (atStart: number): number => {
+	const reference = Number(process.env[LOAD_REFERENCE_ENV]);
+	return Number.isFinite(reference) && reference > 0
+		? loadFactorOf(measureLoadBenchmark(), reference)
+		: atStart;
+};
+
 const overruns: string[] = [];
 
 const noise: string[] = [];
@@ -143,14 +163,30 @@ export default class TimeBudgetRunner extends TestRunner {
 		await body();
 		const tookMs = realNow() - start;
 		const loadFactor = loadFactorFromEnv(process.env[LOAD_FACTOR_ENV]);
+		const judged = withRemeasuredLoad(
+			{
+				tier: tierOf(test),
+				loadFactor,
+				name: test.name,
+				migrating: isMigrating(test),
+				tookMs,
+			},
+			() => loadFactorNow(loadFactor),
+		);
 		Object.assign(test.meta, {
 			[MEASURED_META_KEY]: tookMs,
-			[MEASURED_LOAD_META_KEY]: loadFactor,
+			// The factor that applied: the calibration divides by it.
+			[MEASURED_LOAD_META_KEY]: judged.loadFactor,
 			[MEASURED_BENCH_META_KEY]: Number(process.env[LOAD_BENCH_ENV] ?? 0),
+			...(judged.loadFactorNow === undefined
+				? {}
+				: { [MEASURED_LOAD_NOW_META_KEY]: judged.loadFactorNow }),
 		});
 		const measured = {
-			tier: tierOf(test),
-			loadFactor,
+			tier: judged.tier,
+			loadFactor: judged.loadFactor,
+			loadFactorAtStart: judged.loadFactorAtStart,
+			loadFactorNow: judged.loadFactorNow,
 			name: test.name,
 			migrating: isMigrating(test),
 			tookMs,

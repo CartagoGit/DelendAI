@@ -30,6 +30,38 @@ export const budgetInName = (name: string): number | undefined => {
 const byNameAlone = (test: ITimeBudgetCase): boolean =>
 	test.migrating || test.tier === undefined;
 
+/** The two load factors of a re-measured test, for a message; nothing otherwise. */
+const loadWords = (test: ITimeBudgetCase): string => {
+	const load = test.loadFactor ?? 1;
+	return test.loadFactorNow === undefined
+		? `load factor ${load.toFixed(2)}`
+		: `load factor ${load.toFixed(2)} (${(test.loadFactorAtStart ?? 1).toFixed(2)} at the start of the shard, ${test.loadFactorNow.toFixed(2)} measured when it ran over)`;
+};
+
+/**
+ * An e2e test over `budget x` the load measured at the shard's start gets the
+ * load measured again, right then: the runner's load changes during a shard,
+ * so the start factor does not describe the moment the test ran. It is judged
+ * against the larger of the two. Within its start budget (or any other tier)
+ * nothing is measured and the case is returned as is.
+ */
+export const withRemeasuredLoad = (
+	test: ITimeBudgetCase,
+	measureFactor: () => number,
+): ITimeBudgetCase => {
+	if (byNameAlone(test) || test.tier !== 'e2e') return test;
+	const budget = budgetInName(test.name);
+	const start = test.loadFactor ?? 1;
+	if (budget === undefined || test.tookMs <= budget * start) return test;
+	const now = measureFactor();
+	return {
+		...test,
+		loadFactor: Math.max(start, now),
+		loadFactorAtStart: start,
+		loadFactorNow: now,
+	};
+};
+
 /** Why a test fails its budget, or nothing when it keeps it. */
 export const budgetFailure = (test: ITimeBudgetCase): string | undefined => {
 	// A unit-tier test declares nothing the judge reads: 200 ms of real time.
@@ -54,7 +86,7 @@ export const budgetOverrun = (test: ITimeBudgetCase): string | undefined => {
 	const took = test.tookMs.toFixed(1);
 	if (!byNameAlone(test) && test.tier === 'unit') {
 		return test.tookMs > UNIT_LIMIT_MS
-			? `unit tier: took ${took} ms, over the ${String(UNIT_LIMIT_MS)} ms limit (load factor ${load.toFixed(2)}). Make the test pure, or name the spec *.e2e.spec.ts.`
+			? `unit tier: took ${took} ms, over the ${String(UNIT_LIMIT_MS)} ms limit (${loadWords(test)}). Make the test pure, or name the spec *.e2e.spec.ts.`
 			: undefined;
 	}
 	const budget = budgetInName(test.name);
@@ -66,7 +98,7 @@ export const budgetOverrun = (test: ITimeBudgetCase): string | undefined => {
 	}
 	const limit = budget * load * E2E_NOISE_HEADROOM;
 	if (test.tookMs <= limit) return undefined;
-	return `e2e tier: took ${took} ms, over its declared ${String(budget)} ms x load factor ${load.toFixed(2)} x noise headroom ${String(E2E_NOISE_HEADROOM)} = ${limit.toFixed(1)} ms. Make the test faster; do not raise the number to fit.`;
+	return `e2e tier: took ${took} ms, over its declared ${String(budget)} ms x ${loadWords(test)} x noise headroom ${String(E2E_NOISE_HEADROOM)} = ${limit.toFixed(1)} ms. Make the test faster; do not raise the number to fit.`;
 };
 
 /**
@@ -79,10 +111,12 @@ export const budgetNoise = (test: ITimeBudgetCase): string | undefined => {
 	if (budget === undefined) return undefined;
 	const load = test.loadFactor ?? 1;
 	const stretched = budget * load;
-	if (test.tookMs <= stretched || budgetOverrun(test) !== undefined) {
+	// A re-measured test is reported once it passes its start budget.
+	const reportedFrom = budget * (test.loadFactorAtStart ?? load);
+	if (test.tookMs <= reportedFrom || budgetOverrun(test) !== undefined) {
 		return undefined;
 	}
-	return `e2e tier: took ${test.tookMs.toFixed(1)} ms, over its ${String(budget)} ms x load factor ${load.toFixed(2)} = ${stretched.toFixed(1)} ms but within the noise headroom of ${String(E2E_NOISE_HEADROOM)} (fails above ${(stretched * E2E_NOISE_HEADROOM).toFixed(1)} ms).`;
+	return `e2e tier: took ${test.tookMs.toFixed(1)} ms, over its start budget of ${String(budget)} ms x ${loadWords(test)} = ${stretched.toFixed(1)} ms but within the noise headroom of ${String(E2E_NOISE_HEADROOM)} (fails above ${(stretched * E2E_NOISE_HEADROOM).toFixed(1)} ms).`;
 };
 
 export { mayGoUnbudgeted } from './may-go-unbudgeted.helper';
