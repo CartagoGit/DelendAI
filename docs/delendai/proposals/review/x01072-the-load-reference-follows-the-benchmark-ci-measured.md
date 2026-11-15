@@ -2,14 +2,14 @@
 id: x01072
 title: "The load reference follows the benchmark CI measured"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-15
-last-transition-id: 1c17b6ba-50eb-4d16-b6db-7b528f3a055d
-last-correlation-id: 1c17b6ba-50eb-4d16-b6db-7b528f3a055d
-last-transition-from: ready
-last-transition-at: 2026-11-15T17:22:09.690Z
+last-transition-id: 91ebf436-16ec-4398-8191-d72c90f31c27
+last-correlation-id: 91ebf436-16ec-4398-8191-d72c90f31c27
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T17:24:54.654Z
 ---
 
 # x01072 — The load reference follows the benchmark CI measured
@@ -31,11 +31,14 @@ The committed 44.7 ms reference is older than the runners' current 42.8 ms media
 - global_gate: none
 
 ### S1 — S1
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/test/test-load-reference.json`
 - **Gate**: none
 - acceptance:
   - "test-load-reference.json holds the median benchmark of develop's last CI runs (42.8 ms, run 43717290248)"
+- shipped-in: `1574b6a7bcd4`
+- review-state: in_review
+- review-implementer: claude-haiku-5-5
 
 ## acceptance
 
