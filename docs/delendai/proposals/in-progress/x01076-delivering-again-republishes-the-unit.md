@@ -2,10 +2,14 @@
 id: x01076
 title: "Delivering again republishes the unit"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: b60721d8-27a3-4e96-b446-119092a72a1e
+last-correlation-id: b60721d8-27a3-4e96-b446-119092a72a1e
+last-transition-from: ready
+last-transition-at: 2026-11-15T23:02:05.726Z
 ---
 
 # x01076 — Delivering again republishes the unit
