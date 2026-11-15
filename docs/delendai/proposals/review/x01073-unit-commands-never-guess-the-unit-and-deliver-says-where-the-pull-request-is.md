@@ -2,14 +2,14 @@
 id: x01073
 title: "Unit commands never guess the unit, and deliver says where the pull request is"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-15
-last-transition-id: cc66165e-4594-491f-9d44-83be51ec4a1f
-last-correlation-id: cc66165e-4594-491f-9d44-83be51ec4a1f
-last-transition-from: ready
-last-transition-at: 2026-11-15T18:10:55.656Z
+last-transition-id: 3461ac64-ca5f-4230-a266-fbd27161fbe8
+last-correlation-id: 3461ac64-ca5f-4230-a266-fbd27161fbe8
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T18:14:47.417Z
 ---
 
 # x01073 — Unit commands never guess the unit, and deliver says where the pull request is
@@ -34,39 +34,51 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - global_gate: none
 
 ### S1 — Deliver outside the worktree finds the agent's one live unit or refuses
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-live-unit.service.ts`, `packages/cli/src/lib/work-live-unit.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "When work deliver has no unit flag and cwd holds no unit, it looks up the agent's live units of that proposal and uses the only one."
   - "With none or several it refuses, lists them and prints the exact command; it never falls back to slice all."
   - "A spec proves the one, none and several cases."
+- shipped-in: `7a4c3fc74448`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A publication carries the unit's slice
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The publication started by the review transition of a deliver names the slice of the unit, not all."
   - "The cause of the lost slice is stated in the commit body."
   - "A spec proves a unit of S1 on a branch named all reports slice S1 and the note."
+- shipped-in: `7a4c3fc74448`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Enter with an implement slice and no kind never hands out a review unit
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/review-kind.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "work enter with an implement slice and no --kind on a proposal in review follows the documented reopen rule or refuses naming --kind=implement and --kind=review."
   - "The commit body states which of the two was chosen and why."
   - "A spec proves no review unit is returned."
+- shipped-in: `7a4c3fc74448`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Deliver says where the pull request is
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The deliver result includes the pull request number and URL, or states publication pushed, pull request pending, with the branch."
   - "A spec proves both outputs."
+- shipped-in: `7a4c3fc74448`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
