@@ -2,10 +2,14 @@
 id: x01074
 title: "Entering a unit never changes the lockfile"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 4dbfff1c-cb54-43b6-a5cc-e68e5cc87304
+last-correlation-id: 4dbfff1c-cb54-43b6-a5cc-e68e5cc87304
+last-transition-from: ready
+last-transition-at: 2026-11-15T18:31:40.681Z
 ---
 
 # x01074 — Entering a unit never changes the lockfile
