@@ -192,7 +192,7 @@ export default class TimeBudgetRunner extends TestRunner {
 			tookMs,
 			softOverrun:
 				process.env[SOFT_OVERRUN_ENV] === '1' ||
-				(tierOf(test) === 'unit' && untouched(test)),
+				(tierOf(test) !== undefined && untouched(test)),
 			fresh: isFresh(test),
 		};
 		const failure = budgetFailure(measured);

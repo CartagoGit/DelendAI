@@ -26,9 +26,13 @@ export const budgetInName = (name: string): number | undefined => {
 	return hit?.[1] === undefined ? undefined : Number(hit[1]);
 };
 
-/** A file on the migration list, or one no tier is known for, is judged by its name alone, as before tiers. */
+/**
+ * A unit file on the migration list, or a test no tier is known for, is judged
+ * by its name alone, as before tiers. An e2e test with a declared budget is
+ * always judged by the e2e rule, so its load factors apply and are reported.
+ */
 const byNameAlone = (test: ITimeBudgetCase): boolean =>
-	test.migrating || test.tier === undefined;
+	test.tier === undefined || (test.migrating && test.tier !== 'e2e');
 
 /** The two load factors of a re-measured test, for a message; nothing otherwise. */
 const loadWords = (test: ITimeBudgetCase): string => {

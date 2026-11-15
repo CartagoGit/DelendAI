@@ -241,6 +241,44 @@ describe('time budget', () => {
 			).toContain('declared budget of 5 ms');
 		});
 
+		describe('an e2e test the change does or does not touch', () => {
+			const over = {
+				name: '[<100ms] x',
+				tookMs: 500,
+				migrating: false,
+				tier: 'e2e' as const,
+				loadFactor: 1,
+				loadFactorAtStart: 1,
+				loadFactorNow: 1,
+			};
+
+			it('[<20ms] fails a touched spec strictly, naming both factors', () => {
+				const failure = budgetFailure(over);
+				expect(failure).toContain('took 500.0 ms');
+				expect(failure).toContain('1.00 at the start');
+			});
+
+			it('[<20ms] only reports an untouched spec, with time, budget and both factors', () => {
+				const untouched = {
+					...over,
+					softOverrun: true,
+					migrating: true,
+				};
+				expect(budgetFailure(untouched)).toBeUndefined();
+				const reported = budgetOverrun(untouched);
+				expect(reported).toContain('took 500.0 ms');
+				expect(reported).toContain('100 ms');
+				expect(reported).toContain('1.00 measured');
+			});
+
+			it('[<20ms] keeps a fresh budget on its strict reporting path', () => {
+				expect(budgetFailure({ ...over, fresh: true })).toBeUndefined();
+				expect(budgetOverrun({ ...over, fresh: true })).toContain(
+					'e2e tier',
+				);
+			});
+		});
+
 		it('[<20ms] only reports a unit overrun when told to', () => {
 			expect(
 				budgetFailure({
