@@ -146,7 +146,7 @@ export const runScenario = async (
 			branch: integration,
 			parents: [ctx.tip],
 			message: `rehearsal(${scenario.id}): set up run ${ctx.runId}`,
-			changes: ctx.setup.files(integration),
+			changes: await ctx.setup.files(integration),
 		});
 		for (const step of scenario.steps) {
 			ctx.log(`${scenario.id}: ${step.kind}`);

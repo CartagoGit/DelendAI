@@ -55,6 +55,8 @@ interface IFake {
 	removed: string[];
 }
 
+const both = (ids: readonly string[]) => ({ fast: ids, real: ids });
+
 const fake = (over: Partial<IActivationPorts> = {}): IFake => {
 	const config = { text: CONFIG };
 	const files = new Map<string, string>();
@@ -63,7 +65,7 @@ const fake = (over: Partial<IActivationPorts> = {}): IFake => {
 		tipOf: async () => TIP,
 		reportOf: async () => report(),
 		knownRed: [],
-		scenarioIds: ['F1'],
+		scenarioIds: both(['F1']),
 		doctor: async () => ({ ok: true, checks: [] }),
 		readConfig: async () => config.text,
 		writeConfig: async (text) => {
@@ -134,7 +136,7 @@ describe('integration activation', () => {
 			scenarios: [{ ...report().scenarios[0]!, id: 'F9', ok: false }],
 		});
 		const reasons = await refused({
-			scenarioIds: ['F9'],
+			scenarioIds: both(['F9']),
 			reportOf: async () => red,
 		});
 		expect(reasons).toEqual([
@@ -155,7 +157,7 @@ describe('integration activation', () => {
 
 	it('[<50ms] refuses a subset report, naming the scenarios it lacks', async () => {
 		const reasons = await refused({
-			scenarioIds: ['F1', 'F2', 'F3'],
+			scenarioIds: both(['F1', 'F2', 'F3']),
 			reportOf: async (mode) =>
 				mode === 'fast'
 					? report()
@@ -172,9 +174,19 @@ describe('integration activation', () => {
 		]);
 	});
 
+	it('[<50ms] requires of each mode only the scenarios that run in it', async () => {
+		const reasons = await refused({
+			scenarioIds: { fast: ['F1', 'F2'], real: ['F1'] },
+			reportOf: async () => report(),
+		});
+		expect(reasons).toEqual([
+			'the fast rehearsal report does not cover the whole catalogue: missing F2',
+		]);
+	});
+
 	it('[<50ms] refuses a report that measured nothing', async () => {
 		const reasons = await refused({
-			scenarioIds: [],
+			scenarioIds: both([]),
 			reportOf: async () => report({ scenarios: [], targets: [] }),
 		});
 		expect(reasons).toHaveLength(2);

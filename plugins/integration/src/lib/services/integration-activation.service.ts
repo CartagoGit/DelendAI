@@ -64,11 +64,16 @@ export const activationRefusals = (input: {
 	>;
 	readonly knownRed: readonly IRehearsalKnownRed[];
 	readonly doctor: IDoctorReport;
-	/** The scenario ids `--scenarios=all` plays: a report must hold every one. */
-	readonly scenarioIds: readonly string[];
+	/** The scenario ids `--scenarios=all` plays in each mode: that mode's report must hold every one. */
+	readonly scenarioIds: Readonly<Record<IActivationMode, readonly string[]>>;
 }): readonly string[] => [
 	...ACTIVATION_MODES.flatMap((mode) =>
-		reportRefusals(mode, input.tip, input.reports[mode], input.scenarioIds),
+		reportRefusals(
+			mode,
+			input.tip,
+			input.reports[mode],
+			input.scenarioIds[mode],
+		),
 	),
 	...input.knownRed.map(
 		(red) =>

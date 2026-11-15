@@ -2,14 +2,14 @@
 id: q00048
 title: "The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin"
 kind: plan
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: 20ab3109-d951-44cd-ab5e-6268a9734cfd
-last-correlation-id: 20ab3109-d951-44cd-ab5e-6268a9734cfd
-last-transition-from: ready
-last-transition-at: 2026-11-13T13:48:21.055Z
+last-transition-id: 8900f418-b336-4065-bf7a-777d8589f613
+last-correlation-id: 8900f418-b336-4065-bf7a-777d8589f613
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T12:31:31.791Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -225,17 +225,20 @@ Nothing of this repository is emitted into the other project.
 - global_gate: none
 
 ### S1 — Integration paused until the rehearsal is green
-- **Status**: pending
-- **Files**: `delendai.config.json`, `.github/workflows/land.yml`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-cutover.spec.ts`
+- **Status**: review
+- **Files**: `delendai.config.json`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-cutover.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "develop's policy sets `development.integration.engine` to `none`; the land workflow is not rendered (`land-workflow.script.ts --check` passes with the file absent), and no workflow, schedule or host step merges, labels or pushes a pull request"
   - "Every open pull request except #1904 and #1905 (handled under 'kept, changed or superseded') is a draft labelled `delendai:paused` (on 2026-11-11: #1894, #1895, #1897, #1906, #1907); the label, not a file, is the list the activation slice resumes"
   - "land-cutover.spec asserts that with engine `none` no workflow, script or host module merges, labels or pushes"
   - "While the engine is `none` the owner merges this plan's own slices; each such merge is listed as a pre-activation manual step in the activation report"
+- shipped-in: `8e49a547a1f0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The rehearsal harness on real GitHub
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `plugins/integration/package.json`, `plugins/integration/plugin.manifest.ts`, `plugins/integration/src/index.ts`, `plugins/integration/src/lib/services/rehearsal-run.service.ts`, `plugins/integration/src/lib/services/rehearsal-cleanup.service.ts`, `plugins/integration/src/lib/services/rehearsal-report.service.ts`, `plugins/integration/src/lib/services/rehearsal-ci-workflow.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-report.service.spec.ts`, `.github/workflows/rehearsal.yml`
 - **Gate**: none
@@ -247,9 +250,12 @@ Nothing of this repository is emitted into the other project.
   - "Every log of every run the rehearsal started is downloaded and scanned for token shapes and secret values; a hit fails the run"
   - "`.github/workflows/rehearsal.yml` is rendered from the plugin's template, runs on demand and on every pull request touching the integration code, concurrency 1, and always reports a status"
   - "The plugin has its logo, publish order entry, build, file roles and contracts like every plugin"
+- shipped-in: `1fd67e07a1fc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Every case and every production failure is a scenario, red where production failed
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `plugins/integration/src/lib/contracts/constants/rehearsal-scenarios.constant.ts`, `plugins/integration/src/lib/contracts/constants/rehearsal-known-red.constant.ts`, `plugins/integration/tests/src/lib/services/rehearsal-scenarios.spec.ts`
 - **Gate**: none
@@ -258,9 +264,12 @@ Nothing of this repository is emitted into the other project.
   - "Scenarios F1 to F9 reproduce the nine production failures against today's land, rendered unchanged onto the rehearsal branch, and the run against it is red on exactly those"
   - "The known-red list names each red scenario and the slice that fixes it; it may only shrink, and activation requires it empty"
   - "Where today's triggers cannot fire from a non-default branch, the harness dispatches the pass and counts each such wake as a manual step, so F4 shows as red"
+- shipped-in: `1fd67e07a1fc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — `delendai integration pass`: a project that adopts the flow runs the integrator without this repository's tools
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Decision (2026-11-14)**: the land workflow does not use `pull_request_target`. Since 2025-12-08 GitHub reads that workflow from the default branch whatever the PR's base, so a land on the integration branch never started on PR events (rehearsal run 43595171791: 15 land runs, all `push`, every scenario timed out), and from 2026-12-02 public repositories without an event policy block it by default. PR events and CI completion wake the land by `workflow_dispatch` at the PR's base ref, sent by `land-signal.yml` and the CI's signal job, which hold only the workflow token with `actions: write`.
 - **Decision (2026-11-14)**: the rehearsal proves batches and wakes. (A) The harness reads the integration branch's first-parent commits only as tips. (B) The pass batches when development.integration.batching is overlap, and the rehearsal policy sets it. (C) The overlapping and red-batch pairs change one shared file on different lines, so they overlap whatever the zones. (D) The rehearsal policy lists the derived-conflict file in derived.paths with an empty derived.command. (E) The land workflow has no workflow-level concurrency: each job has its own group (<group> for the pass, <group>-<job> for the others), so a skipped dispatch never displaces a pending pass. (F) The promotion scenario lands one green pull request.
@@ -277,9 +286,12 @@ Nothing of this repository is emitted into the other project.
   - "The composition builds its ports from `development.integration` (`derived`, `zones`, and the optional `commands.jobs` and `commands.normalizeBatch`), each with a default, so a project with no tools of its own needs only configuration; the plugin imports nothing from `tools/`"
   - "`tools/scripts/forge/land.script.ts` is a thin caller of the same function, and a spec with the in-memory forge shows the script and `integration pass` make the same decisions and the same forge calls, in order"
   - "The land workflow renderer emits the command that runs `integration pass`, and the committed file equals the renderer's output; the engine stays `none` and `land.yml` stays absent while integration is paused"
+- shipped-in: `8e49a547a1f0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — The integration options in the policy
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S4]
 - **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/plugins/development-delivery-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/integration-engine.interface.ts`
 - **Gate**: none
@@ -287,11 +299,14 @@ Nothing of this repository is emitted into the other project.
   - "`development.integration` gains `identity` (`app` with an app-id variable and key secret name, or `pat` with a token secret name), `batching`, `labels` (prefix), `derived` (paths and command), `zones`, `signalWorkflows`, `scanWorkflows`, `watchdog` and `rehearsal` (secret names, scenario set); every value has a schema, a per-profile default and a row in the documented table"
   - "`batchOpener` is removed and old configs migrate by the shipped config migration"
   - "With no block the engine is `none` and nothing of the plugin acts or renders"
+- shipped-in: `8e49a547a1f0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — The integrator acts as an identity the forge builds, woken only by events
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S5]
-- **Files**: `plugins/integration/src/lib/land/land-workflow.helper.ts`, `packages/core/src/lib/integration/land/land-follow-ups.helper.ts`, `plugins/integration/src/lib/services/integration-doctor.service.ts`, `.github/workflows/ci.yml`
+- **Files**: `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `plugins/integration/src/lib/services/integration-doctor.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
 - acceptance:
   - "Every merge, push, pull request and label the integrator makes uses the token minted from `identity`; `github.token` only reads, and a spec over the rendered workflow refuses any write through it. The same rule binds every automation: a lint over `.github/workflows/` refuses a workflow that opens a pull request or pushes a branch with `github.token` (today `test-budget-calibration.yml` of #1906 and the forward sync); each takes the identity's token, or the host role with the person's credentials where a project has no identity. Scenario F1b (an automation-opened pull request, such as the weekly budget calibration) is green: its CI starts and it lands with no step"
@@ -300,22 +315,28 @@ Nothing of this repository is emitted into the other project.
   - "ci.yml ends with an `integration-signal` job (always, after every job) that dispatches the integrator for its pull request; integration-branch push runs keep only the newest tip; the `scan-the-integration-branch` dispatch job and `land-follow-ups.helper.ts` are deleted; ci.yml accepts a `zones` dispatch input"
   - "`delendai integration doctor` refuses activation when the identity, its secrets or its permissions are missing, and prints the app manifest the owner installs once"
   - "Scenarios F1, F2 and F4 and the one-PR and N-non-overlapping cases are green and leave the known-red list"
+- shipped-in: `edd7b73cd055`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — Verdicts are reconciled, never flipped
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S6]
-- **Files**: `plugins/integration/src/lib/land/land-verdict.helper.ts`, `plugins/integration/src/lib/land/land.helper.ts`
+- **Files**: `packages/core/src/lib/integration/land/land-verdict.helper.ts`, `packages/core/src/lib/integration/land/land.helper.ts`
 - **Gate**: none
 - acceptance:
   - "A pass judges every pull request on its fresh read first, then applies the difference between wanted and present labels; nothing is removed before judging"
   - "A label stays while its reason holds for the current head; it goes only in the pass that judges a new head clear; one comment per head and reason"
   - "Every pass prints one reason line for every open pull request"
   - "Scenario F3 is green: across at least three passes the authored-conflict pull request has exactly one `labeled` and no `unlabeled` event until its head changes"
+- shipped-in: `edd7b73cd055`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S8 — One CI per overlapping group, and the integrator brings heads forward
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S7]
-- **Files**: `plugins/integration/src/lib/land/land-batch-merge.helper.ts`, `plugins/integration/src/lib/land/land-batch-record.helper.ts`, `plugins/integration/src/lib/land/land-bring-forward.helper.ts`, `plugins/integration/src/lib/land/land-batch-assembly.helper.ts`, `packages/core/src/lib/integration/decisions/overlap.helper.ts`
+- **Files**: `packages/core/src/lib/integration/land/land-batch-merge.helper.ts`, `packages/core/src/lib/integration/land/land-batch-record.helper.ts`, `packages/core/src/lib/integration/land/land-bring-forward.helper.ts`, `packages/core/src/lib/integration/land/land-batch-assembly.helper.ts`, `packages/core/src/lib/integration/decisions/overlap.helper.ts`, `plugins/integration/src/lib/services/land-bring-forward.helper.ts`
 - **Gate**: none
 - acceptance:
   - "Each overlapping ready group gets one batch pull request opened by the integrator; its CI is the only run for the group, and no member is updated or re-run on its own"
@@ -325,9 +346,12 @@ Nothing of this repository is emitted into the other project.
   - "A derived-file conflict is resolved in two jobs: a tokenless job merges the integration branch and runs the project's `derived.command`, refusing any change outside `derived.paths`; a second job pushes the result with the identity, without force, and pushes nothing if the head moved"
   - "A head the forge did not build (no run, or `action_required`) is brought forward once by the integrator; a cross-repository head is never built, pushed or batched"
   - "Scenarios F5, N-overlapping, red batch, derived conflict, bot head and develop-moving-mid-batch are green"
+- shipped-in: `edd7b73cd055`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S9 — The integration branch is scanned after every merge
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S6]
 - **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/promotion-alerts.script.ts`
 - **Gate**: none
@@ -335,9 +359,12 @@ Nothing of this repository is emitted into the other project.
   - "A push to the integration branch, now made by the identity, runs the full scan; runs keep only the newest tip, and every merged commit is covered within 30 minutes by a completed analysis of itself or a descendant"
   - "promotion-alerts gates the promotion on no open alert on the integration branch"
   - "Scenario F9 is green: in fast mode each tip has its push-started scan workflow, in real mode a completed CodeQL analysis"
+- shipped-in: `edd7b73cd055`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S10 — Test budgets never block integration by noise
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**: `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/test/test-load-reference.json`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts`, `vitest.shared.ts`
 - **Gate**: none
@@ -347,9 +374,12 @@ Nothing of this repository is emitted into the other project.
   - "The calibration writes e2e budgets as the larger of ceil(1.5 x) and 4 ms more than the longest CI time taken to the reference (divided by its shard's load factor), and never writes a budget into a unit spec. Files on the migration list stay exempt as before; the runner corrected by #1906 measures fake-timer tests on the real clock; an over-limit unit test fails only a change that touches its spec file, and is reported otherwise"
   - "A failure names the tier, the limit, the load factor and the measured time"
   - "Scenario F6 is green"
+- shipped-in: `1fd67e07a1fc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S11a — The host does no integration write and tells sessions what they missed
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S6]
 - **Files**: `tools/scripts/host/integration-follow-ups.script.ts`, `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-cursor.service.ts`, `plugins/github/src/lib/catch-up-source.service.ts`, `plugins/integration/src/lib/contracts/constants/rehearsal-scenarios.constant.ts`
 - **Gate**: none
@@ -358,9 +388,11 @@ Nothing of this repository is emitted into the other project.
   - "The follow-up list is read from the checkout at each run, and a process with an older integration protocol refuses every integration action and says to restart"
   - "The host persists the last forge event it delivered per pull request; on connect it asks the forge once for what it missed (merged, failed required check, needs-update, culprit) and delivers each missed notification once to subscribed sessions through the f00814 bridge; a second reconnect with nothing new delivers nothing"
   - "Scenario host-offline is green: one pull request lands while no receiver runs, then a receiver connects and is told of the merge once; the session-notified target reports not measured, and does not fail, while no real-time transport ran"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S11b — Sessions are told within 10 s p95 through a relay transport
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S11a]
 - **Files**: none yet
 - **Gate**: none
@@ -368,9 +400,11 @@ Nothing of this repository is emitted into the other project.
   - "Sessions are told within 10 s p95 through a relay transport behind the f00814 port; gh webhook forward stays a development transport (one forwarder per repository, unsupported in production per GitHub docs)"
   - "Scenario F7 is green and the session-notified-p95 target is measured"
 - **Decision (2026-11-15)**: real-time delivery needs a relay transport; deferred, no service or account is assumed. S11 is split because GitHub documents that gh webhook forward allows one forwarder per repository and is not supported in production. S11a delivers the local-only follow-ups and the offline catch-up; S14 depends on S11a, not on S11b.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S12 — Real CI timing mode, and the same targets measured in production
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S8]
 - **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`
 - **Gate**: none
@@ -379,9 +413,13 @@ Nothing of this repository is emitted into the other project.
   - "The report and the weekly production KPIs compute every target with the same metric functions and thresholds"
   - "Real mode is green on every scenario and every target"
 - **Decision (2026-11-15)**: real mode renders the branch filters by replacing only the project's integration branch name with the rehearsal branch in each trigger list and keeping every other entry, so a list that also names the release branch still does and the project's no-duplicate-release-triggers lint stays green on the rehearsal branch. The project's integration branch name is passed in from its policy, never assumed, and no lint or governance script changes.
+- **Decision (2026-11-15)**: the rehearsal tree satisfies the project's lints; none is relaxed. (1) Each scenario may declare the modes it runs in (modes, default both); bot-head and automation-opened, which need the workflow-token workflow, are fast only. Real mode plays only real-capable scenarios and its setup commit does not write rehearsal-token.yml; the activation coverage check requires of each mode's report the ids that run in that mode. (2) The policy option development.integration.rehearsal.setupCommand (string, default empty) is run by a real-mode rehearsal in a temporary worktree of the commit under test with the rehearsal's files written, and every file it changed joins the single setup commit; this repository sets the forge-settings write command, so the generated settings match the rehearsal policy. A failing command fails the scenario before any pull request opens, naming the command. (3) Not implemented: heads under the publication prefix would lose the protection of the rehearsal namespace, which the ref reconciler never reaps (reconcile.service.ts:135-139), and would be read as publications by the reaper (reconcile.service.ts:194-213 and ref-lifecycle-guard.script.ts:625 reap, :654 retire, :199 unit identity), by publication-superseding (superseded-publication.service.ts:234), by orphaned-work and the queue hydrator (orphaned-work.service.ts:154, 258), by finished-units-end (finished-units-end.service.ts:199) and by slice-reservation (slice-reservation.service.ts:234), and would share the unit identity of the real q00048 S12 units; the owner decides how a rehearsal head is shaped. (4) The report names the mode the run used.
+- shipped-in: `9d43622e6ae4`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S13 — Another project adopts the plugin with its own validations
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S12]
 - **Files**: `plugins/integration/src/lib/services/integration-adoption.service.ts`, `plugins/integration/README.md`, `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`
 - **Gate**: none
@@ -389,9 +427,12 @@ Nothing of this repository is emitted into the other project.
   - "`delendai integration adopt` renders the integrator workflow, the CI signal job and the rehearsal workflow from the policy; validations are the project's own required checks and CI, never delendai's scripts or paths"
   - "A spec renders them for a fixture project (integration branch `main`, its own zones and derived command) and a grep finds no delendai path, script or proposal id beyond the version pin and header"
   - "The README documents the options, the one-time identity setup and how to run the rehearsal; q00047's integration part (S1, S2 for land) is delivered here"
+- shipped-in: `ccbd2639c82f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S14 — Activation and resume
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S8, S9, S10, S11a, S12, S13]
 - **Files**: `plugins/integration/src/lib/services/integration-activation.service.ts`, `plugins/integration/tests/src/lib/services/integration-activation.service.spec.ts`
 - **Gate**: none
@@ -399,6 +440,9 @@ Nothing of this repository is emitted into the other project.
   - "`delendai integration activate` refuses unless the last fast and real rehearsal reports on develop's tip are green on every scenario and target, the known-red list is empty and the doctor is green; it then writes `engine: land` in delendai.config.json and renders the workflow in one commit"
   - "After that commit merges, `delendai integration resume` marks every `delendai:paused` pull request ready and removes the label; the integrator lands them with no further step"
   - "`delendai integration deactivate` returns to engine `none` in one command, and the first week's KPIs are reported against every target"
+- shipped-in: `ccbd2639c82f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

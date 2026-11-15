@@ -8,6 +8,7 @@
  */
 import type {
 	IRehearsalEvidence,
+	IRehearsalMode,
 	IRehearsalReport,
 	IRehearsalScenario,
 	IRehearseInput,
@@ -37,6 +38,18 @@ export const selectScenarios = <T extends { readonly id: string }>(
 		);
 	return catalogue.filter((one) => ids.includes(one.id));
 };
+
+/** Whether `scenario` runs in `mode`; one that names no modes runs in both. */
+export const runsInMode = (
+	scenario: Pick<IRehearsalScenario, 'modes'>,
+	mode: IRehearsalMode,
+): boolean => scenario.modes === undefined || scenario.modes.includes(mode);
+
+/** The scenarios of `catalogue` that run in `mode`, in its order. */
+export const scenariosForMode = <T extends Pick<IRehearsalScenario, 'modes'>>(
+	catalogue: readonly T[],
+	mode: IRehearsalMode,
+): readonly T[] => catalogue.filter((one) => runsInMode(one, mode));
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
@@ -152,6 +165,7 @@ export const rehearse = async (
 		startedAt: iso(startedMs),
 		finishedAt: iso(input.clock.now()),
 		scenarios: input.scenarios,
+		...(input.mode === undefined ? {} : { mode: input.mode }),
 		evidence,
 		leftovers,
 		secretHits,

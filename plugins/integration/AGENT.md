@@ -13,6 +13,7 @@
 - rehearsalPolicy
 - renderRehearsalWorkflow
 - rehearse
+- scenariosForMode
 - selectScenarios
 - buildReport
 - renderReportTable
@@ -20,7 +21,6 @@
 - diagnoseIdentity
 - renderAppManifest
 - renderDoctorTable
-- judgePrCiWall
 
 ## Depends on
 

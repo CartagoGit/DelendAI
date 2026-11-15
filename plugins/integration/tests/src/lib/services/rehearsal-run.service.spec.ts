@@ -133,7 +133,7 @@ const memoryForge = () => {
 const ctxOf = (forge: IRehearsalForge, clock: IRehearsalClock) => ({
 	forge,
 	clock,
-	setup: { files: () => [{ path: 'x', content: 'y' }] },
+	setup: { files: async () => [{ path: 'x', content: 'y' }] },
 	runId: 'r20261112-100000',
 	tip: 'sha0',
 	branchPrefix: 'ns/rehearsal/',

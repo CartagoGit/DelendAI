@@ -24,8 +24,10 @@ import {
 	rehearse,
 	renderReportTable,
 	rehearsalReportPath,
+	scenariosForMode,
 	selectScenarios,
 	type IRehearsalCommandResult,
+	type IRehearsalMode,
 	type IRehearsalCommandRunner,
 } from '@delendai/integration/public';
 
@@ -47,6 +49,7 @@ import {
 import { runIntegrationAdopt } from './integration-adopt.command';
 import { runIntegrationDoctor } from './integration-doctor.command';
 import { runIntegrationPassCommand } from './integration-pass.command';
+import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
@@ -111,6 +114,9 @@ const readRealWorkflows = async (
 		),
 	);
 
+const isRehearsalMode = (mode: string): mode is IRehearsalMode =>
+	(INTEGRATION_REHEARSAL_MODES as readonly string[]).includes(mode);
+
 /** The command over the program that runs `gh`; the real one spawns it, a spec gives it answers. */
 export const createIntegrationCommand = (
 	runGh: IRehearsalCommandRunner,
@@ -128,8 +134,7 @@ export const createIntegrationCommand = (
 		if (sub === 'pass') return runIntegrationPassCommand(ctx, runGh);
 		if (sub !== 'rehearse') return usage(USAGE);
 		const mode = scalarArg(rest, 'mode') ?? 'fast';
-		if (!(INTEGRATION_REHEARSAL_MODES as readonly string[]).includes(mode))
-			return usage(USAGE);
+		if (!isRehearsalMode(mode)) return usage(USAGE);
 		const ids = (scalarArg(rest, 'scenarios') ?? REHEARSAL_ALL_SCENARIOS)
 			.split(',')
 			.filter((id) => id !== '');
@@ -167,6 +172,13 @@ export const createIntegrationCommand = (
 									realWorkflows,
 									projectIntegration:
 										policy.branches.integration,
+									setupCommand:
+										policy.integration.rehearsal
+											.setupCommand,
+									materialise: createSetupMaterialiser(
+										ctx.cwd,
+										baseCommit,
+									),
 								}),
 						integratorWorkflow: (integration, concurrencyGroup) =>
 							landIntegratorWorkflow(
@@ -184,8 +196,9 @@ export const createIntegrationCommand = (
 				branchPrefix,
 				baseBranch: policy.branches.integration,
 				baseCommit,
+				mode,
 				scenarios: selectScenarios(
-					REHEARSAL_CATALOGUE,
+					scenariosForMode(REHEARSAL_CATALOGUE, mode),
 					ids,
 					REHEARSAL_ALL_SCENARIOS,
 				),

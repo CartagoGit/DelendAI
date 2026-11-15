@@ -88,7 +88,7 @@ describe('cleanup and setup', () => {
 		expect(token).toContain('github.token');
 	});
 
-	it('[<100ms] makes the setup commit of workflows, policy and run marker', () => {
+	it('[<100ms] makes the setup commit of workflows, policy and run marker', async () => {
 		const setup = createRehearsalSetup({
 			runId: 'r1',
 			branchPrefix: 'ns/rehearsal/',
@@ -100,19 +100,21 @@ describe('cleanup and setup', () => {
 					identity: DEFAULT_INTEGRATION_OPTIONS.identity,
 				}),
 		});
-		const paths = setup
-			.files('ns/rehearsal/r1/s-integration')
-			.map((f) => f.path);
+		const paths = (await setup.files('ns/rehearsal/r1/s-integration')).map(
+			(f) => f.path,
+		);
 		expect(paths).toContain('.github/workflows/land.yml');
 		expect(
-			setup.files('i').find((f) => f.path.endsWith('land.yml'))?.content,
+			(await setup.files('i')).find((f) => f.path.endsWith('land.yml'))
+				?.content,
 		).toContain('group: land-rehearsal-r1');
 		expect(paths).toContain('delendai.config.json');
 		expect(paths).toContain('rehearsal/r1/.keep');
 		// The token workflow opens its branch under the run's own root, where the harness and cleanup look.
 		expect(
-			setup.files('i').find((f) => f.path.endsWith('rehearsal-token.yml'))
-				?.content,
+			(await setup.files('i')).find((f) =>
+				f.path.endsWith('rehearsal-token.yml'),
+			)?.content,
 		).toContain('BRANCH_PREFIX: ns/rehearsal/r1/');
 	});
 });

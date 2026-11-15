@@ -1,4 +1,5 @@
 export type * from '../lib/contracts/interfaces/rehearsal.interface';
+export type * from '../lib/contracts/interfaces/rehearsal-setup-materialiser.interface';
 export * from '../lib/contracts/constants/rehearsal.constant';
 export { createGithubRehearsalForge } from '../lib/services/rehearsal-github-forge.service';
 export {
@@ -7,7 +8,11 @@ export {
 	rehearsalPolicy,
 } from '../lib/services/rehearsal-setup.helper';
 export { renderRehearsalWorkflow } from '../lib/services/rehearsal-ci-workflow.helper';
-export { rehearse, selectScenarios } from '../lib/services/rehearsal.service';
+export {
+	rehearse,
+	scenariosForMode,
+	selectScenarios,
+} from '../lib/services/rehearsal.service';
 export {
 	buildReport,
 	renderReportTable,

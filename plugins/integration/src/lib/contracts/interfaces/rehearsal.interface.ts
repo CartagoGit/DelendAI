@@ -1,3 +1,12 @@
+export type {
+	IRehearsalEvidence,
+	IRehearsalExpectationResult,
+	IRehearsalReport,
+	IRehearsalScenarioResult,
+	IRehearsalTargetResult,
+} from './rehearsal-evidence.interface';
+import type { IRehearsalSetupMaterialiser } from './rehearsal-setup-materialiser.interface';
+
 /**
  * The shapes of a rehearsal of the pull request flow on the real forge:
  * what a synthetic pull request declares, the scenarios a run plays, the
@@ -105,9 +114,14 @@ export type IRehearsalExpectation =
 			readonly kind: 'sessions-notified';
 	  };
 
+/** How a rehearsal runs: on stand-in workflows, or under the project's own CI and scans. */
+export type IRehearsalMode = 'fast' | 'real';
+
 export interface IRehearsalScenario {
 	readonly id: string;
 	readonly title: string;
+	/** The modes it runs in; absent means both. A scenario that needs the workflow token runs in fast only. */
+	readonly modes?: readonly IRehearsalMode[];
 	/** The production failure it reproduces (F1 to F9, F1b), when it is one. */
 	readonly reproduces?: string;
 	readonly pulls: readonly IRehearsalPullSpec[];
@@ -225,80 +239,9 @@ export interface IRehearsalClock {
 /** What the integrator workflow and the project files of a branch are. */
 export interface IRehearsalSetup {
 	/** Files the setup commit writes, given the scenario's integration branch. */
-	readonly files: (integration: string) => readonly IRehearsalFileChange[];
-}
-
-/** Everything one scenario left on the forge, read back after it ran. */
-export interface IRehearsalEvidence {
-	readonly scenario: string;
-	readonly integration: string;
-	readonly pulls: Readonly<Record<string, IRehearsalPullState>>;
-	readonly events: Readonly<Record<string, readonly IRehearsalPullEvent[]>>;
-	/** Every run on the integration branch and on each pull request's head. */
-	readonly runs: readonly IRehearsalRun[];
-	/** Shas the integration branch held, in order, from the setup commit on. */
-	readonly tips: readonly string[];
-	/** Each wake or other action the harness took that a person would have had to. */
-	readonly manualSteps: readonly string[];
-	/** Notification receipts a subscribed session recorded, if a receiver ran. */
-	readonly notifications?: readonly {
-		readonly event: string;
-		readonly at: string;
-		readonly number?: number;
-	}[];
-	/**
-	 * Seconds from each change to its notification, measured only when a
-	 * real-time transport ran. Catch-up alone leaves it absent.
-	 */
-	readonly notifiedSeconds?: readonly number[];
-	/** Head shas the harness pushed with the workflow token, by key. */
-	readonly tokenHeads: Readonly<Record<string, readonly string[]>>;
-	/** Pull requests a workflow opened with the workflow token, by key. */
-	readonly tokenPulls: Readonly<Record<string, number>>;
-	/** When each group of overlapping pull requests was formed (all opened and ready). */
-	readonly startedAt: string;
-	readonly finishedAt: string;
-	/** Steps that could not be taken, with the reason. */
-	readonly failures: readonly string[];
-}
-
-export interface IRehearsalExpectationResult {
-	readonly expectation: string;
-	readonly ok: boolean;
-	readonly detail: string;
-}
-
-export interface IRehearsalScenarioResult {
-	readonly id: string;
-	readonly title: string;
-	readonly reproduces?: string;
-	readonly ok: boolean;
-	readonly expectations: readonly IRehearsalExpectationResult[];
-	readonly integration: string;
-	readonly pulls: Readonly<Record<string, number>>;
-}
-
-export interface IRehearsalTargetResult {
-	readonly id: string;
-	readonly value: number | undefined;
-	readonly threshold: number;
-	readonly unit: string;
-	readonly ok: boolean;
-	readonly detail: string;
-}
-
-export interface IRehearsalReport {
-	readonly runId: string;
-	readonly mode: 'fast';
-	readonly repository: string;
-	readonly tip: string;
-	readonly startedAt: string;
-	readonly finishedAt: string;
-	readonly scenarios: readonly IRehearsalScenarioResult[];
-	readonly targets: readonly IRehearsalTargetResult[];
-	readonly leftovers: readonly string[];
-	readonly secretHits: readonly string[];
-	readonly ok: boolean;
+	readonly files: (
+		integration: string,
+	) => Promise<readonly IRehearsalFileChange[]>;
 }
 
 /** What one `gh` call answered; a refusal is an exit code, never a throw. */
@@ -333,6 +276,8 @@ export interface IRehearseInput {
 	 */
 	readonly baseCommit?: string;
 	readonly scenarios: readonly IRehearsalScenario[];
+	/** The mode the run plays and its report names; absent means fast. */
+	readonly mode?: IRehearsalMode;
 	readonly log: (line: string) => void;
 }
 
@@ -355,6 +300,10 @@ export interface IRehearsalSetupInput {
 	readonly realWorkflows?: Readonly<Record<string, string>>;
 	/** Real mode: the project's integration branch name, the one the filters of those workflows name. */
 	readonly projectIntegration?: string;
+	/** Real mode: the policy's `rehearsal.setupCommand`; empty or absent runs nothing. */
+	readonly setupCommand?: string;
+	/** Real mode: runs `setupCommand`; required when there is one. */
+	readonly materialise?: IRehearsalSetupMaterialiser;
 }
 
 /** What a scenario run is given: the forge, the clock and the run's names. */
