@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { readWorkspacePolicy } from '@delendai/core/cli';
+import { parseJsonc, readWorkspacePolicy } from '@delendai/core/cli';
 import {
 	REHEARSAL_CATALOGUE,
 	REHEARSAL_KNOWN_RED,
@@ -88,6 +88,13 @@ const downloadReport = async (
 	}
 };
 
+const engineOfText = (text: string): unknown => {
+	const { value } = parseJsonc(text);
+	const integration = (value as { development?: { integration?: unknown } })
+		?.development?.integration as { engine?: unknown } | undefined;
+	return integration?.engine;
+};
+
 /** The workflow files a config text implies: the project's own generator when it has one, else the generic render. */
 export const renderWorkflows = async (
 	cwd: string,
@@ -110,7 +117,8 @@ export const renderWorkflows = async (
 			.map(({ path, expected }) => ({ path, content: expected }));
 	}
 	const policy = await readWorkspacePolicy(cwd);
-	if (policy.integration.engine !== 'land')
+	// the engine comes from the text being switched to: the file on disk still holds the old one
+	if (engineOfText(configText) !== 'land')
 		return GENERIC_PATHS.map((path) => ({ path, content: undefined }));
 	const adoption = renderAdoption({
 		integrationBranch: policy.branches.integration,
@@ -161,6 +169,15 @@ const portsOf = (
 		readConfig: () => readFile(join(ctx.cwd, CONFIG_FILE), 'utf8'),
 		writeConfig: (text) => writeFile(join(ctx.cwd, CONFIG_FILE), text),
 		renderWorkflows: (text) => renderWorkflows(ctx.cwd, text),
+		readWorkflow: async (path) => {
+			try {
+				return await readFile(join(ctx.cwd, path), 'utf8');
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+					return undefined;
+				throw error;
+			}
+		},
 		writeWorkflow: async (path, content) => {
 			await mkdir(dirname(join(ctx.cwd, path)), { recursive: true });
 			await writeFile(join(ctx.cwd, path), content);
