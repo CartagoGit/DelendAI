@@ -86,6 +86,8 @@ const spawnGh = (
 		child.on('close', (exitCode) =>
 			resolve({ exitCode: exitCode ?? undefined, stdout, stderr }),
 		);
+		// A gh that exits (or never starts) before reading its input is its answer, not a crash.
+		child.stdin.on('error', () => undefined);
 		child.stdin.end(input ?? '');
 	});
 
@@ -161,7 +163,11 @@ export const createIntegrationCommand = (
 						policyText,
 						...(realWorkflows === undefined
 							? {}
-							: { realWorkflows }),
+							: {
+									realWorkflows,
+									projectIntegration:
+										policy.branches.integration,
+								}),
 						integratorWorkflow: (integration, concurrencyGroup) =>
 							landIntegratorWorkflow(
 								integration,
