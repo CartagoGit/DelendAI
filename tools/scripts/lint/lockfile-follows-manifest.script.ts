@@ -38,9 +38,9 @@ const git = (args: readonly string[]): string =>
 	});
 
 const defaultBase = (): string =>
-	process.env['GITHUB_BASE_REF'] !== undefined &&
-	process.env['GITHUB_BASE_REF'] !== ''
-		? `origin/${process.env['GITHUB_BASE_REF']}`
+	process.env.GITHUB_BASE_REF !== undefined &&
+	process.env.GITHUB_BASE_REF !== ''
+		? `origin/${process.env.GITHUB_BASE_REF}`
 		: 'origin/develop';
 
 const changedPaths = (argv: readonly string[]): readonly string[] => {
