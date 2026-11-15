@@ -20,6 +20,10 @@ import {
 	wakeIntegratorStep,
 } from '@delendai/core/cli';
 
+import {
+	rehearsalDispatchTrigger,
+	rehearsalRunSteps,
+} from './rehearsal-dispatch-steps.helper';
 import type {
 	IAdoptionInput,
 	IAdoptionOutput,
@@ -78,7 +82,7 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 		'name: rehearsal',
 		'',
 		'on:',
-		'    workflow_dispatch:',
+		...rehearsalDispatchTrigger(),
 		'',
 		"# One rehearsal at a time: a second run would read the first one's branches.",
 		'concurrency:',
@@ -101,10 +105,10 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 			line === '' ? line : `            ${line}`,
 		),
 		`            - uses: ${CHECKOUT}`,
-		'            - name: Rehearse the pull request flow on the real forge',
-		'              env:',
-		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
-		`              run: ${cliCommand(input.version)} integration rehearse --mode=fast --scenarios=all`,
+		...rehearsalRunSteps({
+			token: tokenOf(input.identity),
+			command: cliCommand(input.version),
+		}),
 		'',
 	].join('\n');
 

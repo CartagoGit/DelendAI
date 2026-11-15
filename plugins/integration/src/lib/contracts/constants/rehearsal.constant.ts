@@ -71,6 +71,20 @@ export const REHEARSAL_PAGE_LIMIT = 50;
 export const REHEARSAL_WORKFLOW_NAME = 'rehearsal';
 export const REHEARSAL_WORKFLOW_PATH = '.github/workflows/rehearsal.yml';
 
+/** Where `rehearse` writes its report, and the artifact the workflow uploads it as: one per mode. */
+export const REHEARSAL_REPORT_DIR = '.cache/delendai/rehearsal';
+export const rehearsalReportPath = (mode: string): string =>
+	`${REHEARSAL_REPORT_DIR}/report-${mode}.json`;
+export const rehearsalReportArtifact = (mode: string): string =>
+	`rehearsal-report-${mode}`;
+
+/** Days the forge keeps a report artifact. */
+export const REHEARSAL_REPORT_RETENTION_DAYS = 30;
+
+/** The pinned action that uploads the report. */
+export const REHEARSAL_UPLOAD_ACTION =
+	'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7';
+
 /** What a rehearsal run is told to play: every scenario of the catalogue. */
 export const REHEARSAL_ALL_SCENARIOS = 'all';
 

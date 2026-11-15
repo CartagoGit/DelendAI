@@ -44,6 +44,15 @@ describe('integration adoption', () => {
 		);
 	});
 
+	it('[<20ms] renders a rehearsal that takes inputs and always uploads its report', () => {
+		const text = renderAdoption(FIXTURE).files[2]?.content ?? '';
+		expect(text).toContain('options: [fast, real]');
+		expect(text).toMatch(
+			/if: always\(\)\n\s+uses: actions\/upload-artifact@[0-9a-f]{40}/u,
+		);
+		expect(text).toContain('--mode="$REHEARSAL_MODE"');
+	});
+
 	it('[<20ms] makes the signal job wait on the project own jobs and wake the integrator', () => {
 		const { signalJob } = renderAdoption(FIXTURE);
 		expect(signalJob).toContain('needs: [build, unit-tests]');
@@ -62,7 +71,7 @@ describe('integration adoption', () => {
 		const names = text.match(/delendai[^\s'"`,)]*/giu) ?? [];
 		for (const name of names)
 			expect(name).toMatch(
-				/^(delendai\/cli@9\.9\.9|delendai-integrator|delendai:)/iu,
+				/^(delendai\/cli@9\.9\.9|delendai-integrator|delendai:|delendai\/rehearsal\/)/iu,
 			);
 	});
 });

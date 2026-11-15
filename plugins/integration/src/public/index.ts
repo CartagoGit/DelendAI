@@ -48,3 +48,19 @@ export {
 	discardTrain,
 	runGit,
 } from '../lib/services/land-train-assembly.helper';
+export type * from '../lib/contracts/interfaces/integration-activation.interface';
+export {
+	activateIntegration,
+	activationRefusals,
+	deactivateIntegration,
+	withEngine,
+} from '../lib/services/integration-activation.service';
+export { createRehearsalEvidence } from '../lib/services/rehearsal-evidence.service';
+export {
+	createGithubResumeForge,
+	pausedLabel,
+	resumeIntegration,
+} from '../lib/services/integration-resume.service';
+export { REHEARSAL_KNOWN_RED } from '../lib/contracts/constants/rehearsal-known-red.constant';
+export type * from '../lib/contracts/interfaces/integration-resume.interface';
+export * from '../lib/contracts/constants/integration-activation.constant';

@@ -21,6 +21,10 @@ import {
 } from '../contracts/constants/rehearsal.constant';
 
 import { renderSignalJob } from './integration-adoption.service';
+import {
+	rehearsalDispatchTrigger,
+	rehearsalRunSteps,
+} from './rehearsal-dispatch-steps.helper';
 
 const CI_TIMEOUT_MINUTES = 15;
 const WORKFLOW_TIMEOUT_MINUTES = 45;
@@ -192,7 +196,7 @@ export const renderRehearsalWorkflow = (input: {
 		"# GENERATED from the integration plugin's rehearsal template",
 		'# (renderRehearsalWorkflow); edit the template, not this file.',
 		'on:',
-		'    workflow_dispatch:',
+		...rehearsalDispatchTrigger(),
 		'    push:',
 		`        branches: ['${input.namespace}/pr/**']`,
 		'        paths:',
@@ -220,8 +224,8 @@ export const renderRehearsalWorkflow = (input: {
 		),
 		`            - uses: ${REHEARSAL_CHECKOUT_ACTION}`,
 		'            - uses: ./.github/actions/setup-bun-repo',
-		'            - name: Rehearse the pull request flow on the real forge',
-		'              env:',
-		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
-		'              run: bun run cli -- integration rehearse --mode=fast --scenarios=all',
+		...rehearsalRunSteps({
+			token: tokenOf(input.identity),
+			command: 'bun run cli --',
+		}),
 	);
