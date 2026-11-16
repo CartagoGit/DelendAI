@@ -15,13 +15,8 @@ describe('renderBranchFilters on the project ci.yml', () => {
 
 	it('[<20ms] conditions the signal job on the rehearsal branch and leaves every other develop-gated line alone', () => {
 		const out = renderBranchFilters(ci, 'ns/rehearsal/r1/x', 'develop');
-		const signal = out
-			.split('\n')
-			.slice(
-				out
-					.split('\n')
-					.findIndex((l) => l === '    integration-signal:'),
-			);
+		const lines = out.split('\n');
+		const signal = lines.slice(lines.indexOf('    integration-signal:'));
 		expect(signal.find((l) => l.includes('if:'))).toContain(
 			"github.ref == 'refs/heads/ns/rehearsal/r1/x'",
 		);

@@ -92,7 +92,7 @@ const renderGatedJobs = (
 						: undefined;
 			}
 			return jobIndent !== undefined && IF_KEY.test(line)
-				? line.replace(named, `refs/heads/${branch}`)
+				? line.replace(named, () => `refs/heads/${branch}`)
 				: line;
 		})
 		.join('\n');
