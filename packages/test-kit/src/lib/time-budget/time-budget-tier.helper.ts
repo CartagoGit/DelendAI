@@ -34,3 +34,15 @@ export const loadFactorFromEnv = (value: string | undefined): number => {
 		? Math.min(LOAD_FACTOR_MAX, factor)
 		: LOAD_FACTOR_MIN;
 };
+
+/**
+ * Whether a change leaves a spec file alone: the change set is known and does
+ * not hold the file. With no change set known nothing is untouched, so no
+ * file is let off for want of a diff; an empty set (no base to diff against,
+ * as on a push to the integration branch) leaves every file untouched.
+ * The test runner and the calibration check both ask this, and only this.
+ */
+export const isUntouchedSpec = (
+	file: string,
+	changed: ReadonlySet<string> | undefined,
+): boolean => changed !== undefined && !changed.has(file);
