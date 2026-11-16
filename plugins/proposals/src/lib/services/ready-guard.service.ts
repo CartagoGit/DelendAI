@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only existence probe of the paths a proposal declares, as the completeness guard does.
 /**
  * Guards the move to `ready`: a proposal is ready only when nothing is
  * left to work out. The rules are the ones the `proposal-readiness` lint
