@@ -95,11 +95,21 @@ const alreadyPast = (reason: string, to: string): boolean =>
  * review. That step is also what publishes the unit, so a delivery that
  * only logged the refusal left the pull request on its old head.
  */
-const alreadyInReview = (reason: string | undefined): boolean =>
-	reason?.includes('illegal transition: "review" → "review"') === true;
+const alreadyInReview = (answer: unknown): boolean =>
+	codeOf(answer) === ALREADY_IN_REVIEW_CODE;
 
 /** The tool's code for a proposal whose other slices have no delivering commit. */
 const UNDELIVERED_CODE = 'undelivered-slices';
+
+/** The tool's code for a transition to review of a proposal already in review. */
+const ALREADY_IN_REVIEW_CODE = 'already-in-review';
+
+/** The machine code of a refusal, at the top level or in its `error`. */
+const codeOf = (answer: unknown): string | undefined => {
+	if (!isRecord(answer) || answer.ok !== false) return undefined;
+	const detail = isRecord(answer.error) ? answer.error : answer;
+	return textOf(detail.code) ?? textOf(answer.code);
+};
 
 /**
  * The slices a refusal names as undelivered: the tool writes them first,
@@ -219,7 +229,7 @@ export const deliverUnit = async (
 	}
 	// Nothing to transition: the unit's new tip still has to reach its
 	// publication, so it is published here and the result says so.
-	if (alreadyInReview(handed)) {
+	if (alreadyInReview(answer)) {
 		const published = await ports.publish();
 		return published.code === 0
 			? {
