@@ -7,7 +7,10 @@ import { AgentCatalogService } from '../../src/lib/services/agent-catalog-servic
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
 
 const whole = {
-	tools: [{ name: 'd_alpha', summary: 'first', tags: ['one'] }],
+	tools: [
+		{ name: 'd_alpha', summary: 'first', tags: ['one'] },
+		{ name: 'd_beta_run', plugin: 'beta', effects: ['read'] },
+	],
 	skills: [
 		{
 			id: 'a-skill',
@@ -77,6 +80,16 @@ describe('the agent catalog by section', () => {
 		const { service } = harness();
 		expect(await service.getTools('alpha')).toHaveLength(1);
 		expect(await service.getTools('nothing')).toHaveLength(0);
+	});
+
+	it('[<30ms] keeps a tool plugin and effects, and a skill body path, when the server sends them', async () => {
+		const { service } = harness();
+		const [, beta] = await service.getTools();
+		expect(beta).toMatchObject({ plugin: 'beta', effects: ['read'] });
+		const [withPath] = await service.getSkills('one');
+		expect(withPath).toMatchObject({ id: 'a-skill', bodyPath: 'a' });
+		expect(await service.getSkills('nothing')).toHaveLength(0);
+		expect(await service.getTools('beta')).toHaveLength(1);
 	});
 
 	it('[<30ms] searches every section, each asked for once', async () => {
