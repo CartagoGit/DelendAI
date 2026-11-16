@@ -65,6 +65,19 @@ describe('deliverUnit', () => {
 		expect(calls).toEqual(['in-progress', 'prove', 'review']);
 	});
 
+	it('[<20ms] hands nothing over after a partial proof, which proves nothing', async () => {
+		const { calls, value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			prove: async () => ({
+				code: EXIT_CODE.OK,
+				data: { partial: true, proved: false },
+			}),
+		});
+		expect(result.code).toBe(EXIT_CODE.USAGE);
+		expect(calls).not.toContain('review');
+	});
+
 	it('[<20ms] hands nothing over when the proof fails', async () => {
 		const { calls, value } = ports({}, EXIT_CODE.VALIDATION);
 		expect(await deliverUnit(value)).toMatchObject({

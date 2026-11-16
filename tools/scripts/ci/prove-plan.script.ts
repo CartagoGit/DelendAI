@@ -30,6 +30,8 @@ import {
 } from 'node:fs';
 import { availableParallelism } from 'node:os';
 
+import { computeSlotPath, withComputeSlot } from '@delendai/core/runtime';
+
 import {
 	RUN_ALONE,
 	STATIC_CHECK_JOBS as STATIC_CHECK_FAMILIES,
@@ -55,6 +57,55 @@ const arg = (name: string): string | undefined =>
 	process.argv
 		.find((value) => value.startsWith(`--${name}=`))
 		?.slice(name.length + 3);
+
+/**
+ * The gate a step belongs to: its label before the first `: `, as a slug.
+ * `--only=<gate>` runs every step of that gate and no other; the names come
+ * from the labels the proof prints, so there is no second list to drift.
+ */
+export const gateOf = (label: string): string =>
+	(label.split(': ')[0] ?? label)
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/gu, '-')
+		.replace(/^-+|-+$/gu, '');
+
+/**
+ * The gates that spawn their own test workers and hold no compute slot of
+ * their own. `bun run typecheck` and the lints are wrapped by
+ * `with-compute-lock`, so a partial run of those queues behind nothing.
+ */
+export const HEAVY_GATES: ReadonlySet<string> = new Set([
+	'changed-file-coverage',
+	'tests',
+	'land-rehearsal',
+	'test-sqlite',
+]);
+
+/** The command that runs one gate alone, said under every failure. */
+export const rerunCommandOf = (gate: string): string =>
+	`delendai work prove --only=${gate}`;
+
+/** The gates named by `--only=<a>,<b>`, or undefined when it is absent. */
+export const onlyGatesOf = (
+	argv: readonly string[],
+): ReadonlySet<string> | undefined => {
+	const flag = argv.find((value) => value.startsWith('--only='));
+	return flag === undefined
+		? undefined
+		: new Set(
+				flag
+					.slice('--only='.length)
+					.split(',')
+					.map((name) => name.trim())
+					.filter(Boolean),
+			);
+};
+
+/** Whether a step is one the run was asked for (all, with no `--only`). */
+const wanted = (
+	label: string,
+	only: ReadonlySet<string> | undefined,
+): boolean => only === undefined || only.has(gateOf(label));
 
 /** What one matrix job runs, as the vitest arguments CI would pass. */
 export const vitestArgsOf = (
@@ -151,6 +202,12 @@ export const causeLinesOf = (output: string): readonly string[] =>
 
 const printCauses = (): void => {
 	for (const cause of causes) console.error(`prove: why ${cause}`);
+	// Last, so a caller that keeps the tail still reads how to run it again.
+	for (const gate of new Set(failed.map(gateOf))) {
+		console.error(
+			`prove: why re-run only this gate: ${rerunCommandOf(gate)}`,
+		);
+	}
 };
 
 /** How many lines of a failed check's output the proof prints. */
@@ -270,7 +327,10 @@ const runTogether = async (
  * the typecheck and the static checks together, then those that must run
  * alone.
  */
-const runChecks = async (base: string): Promise<boolean> => {
+const runChecks = async (
+	base: string,
+	only?: ReadonlySet<string>,
+): Promise<boolean> => {
 	// Deletions included, as plan-scope reads them: a deleted file can break
 	// what a family reads, and it widens the per-file lints to the repository.
 	const plan = planInputSince(base);
@@ -284,12 +344,14 @@ const runChecks = async (base: string): Promise<boolean> => {
 		declaredBranches().integration,
 	).filter(
 		(check) =>
+			wanted(check.job, only) &&
 			jobMustRun({ ...plan, job: check.job }) &&
 			(!isProposalOnly(changed) || PROPOSAL_CHECKS.has(check.job)),
 	);
 	const first = await runTogether(
 		[
-			...(jobMustRun({ ...plan, job: 'typecheck' })
+			...(wanted('typecheck', only) &&
+			jobMustRun({ ...plan, job: 'typecheck' })
 				? proveGatesOf(base)
 				: []
 			).map((command) => ['typecheck', command.join(' ')] as const),
@@ -405,7 +467,7 @@ export const fastSteps = (
 		? []
 		: ([
 				[
-					'tests: the specs nearest the change',
+					'changed-file coverage: the specs nearest the change',
 					[
 						// Not npx: it hands the command to `sh -c` as one string,
 						// and a change that reaches every spec (the shared test
@@ -473,6 +535,73 @@ const earlyStepsOfCode = (
 		: []),
 ];
 
+/**
+ * Every gate this proof can run for the change: the typecheck and the static
+ * checks of the forge's plan, then the steps `--fast` or the full plan adds.
+ * Read from the same definitions the proof runs, never from a list of its own.
+ */
+export const gateNamesOf = (
+	changed: readonly string[],
+	fast: boolean,
+	base: string,
+): readonly string[] => [
+	...new Set(
+		[
+			...earlySteps(changed).map(([label]) => label),
+			'typecheck',
+			...STATIC_CHECK_FAMILIES,
+			...(fast
+				? fastSteps(changed, ['*'], base).map(([label]) => label)
+				: ['tests']),
+		].map(gateOf),
+	),
+];
+
+/** The names in `only` that are no gate of this proof. Pure. */
+export const unknownGatesOf = (
+	only: ReadonlySet<string>,
+	valid: readonly string[],
+): readonly string[] => [...only].filter((name) => !valid.includes(name));
+
+/**
+ * Whether a partial run takes the machine's compute slot: only when it asked
+ * for a heavy gate. A full proof is held in the slot by whoever started it,
+ * and the commands a light gate runs wrap themselves.
+ */
+export const takesComputeSlot = (
+	only: ReadonlySet<string> | undefined,
+	labels: readonly string[],
+): boolean =>
+	only !== undefined &&
+	labels.some((label) => HEAVY_GATES.has(gateOf(label)));
+
+/** Run `run` in the compute slot when `heavy`, else at once. */
+const inSlot = <T>(
+	only: ReadonlySet<string> | undefined,
+	heavy: boolean,
+	run: () => T,
+): Promise<T> | T => {
+	const lockPath = heavy ? computeSlotPath(process.cwd()) : undefined;
+	return lockPath === undefined
+		? run()
+		: withComputeSlot({
+				lockPath,
+				label: `prove --only=${[...(only ?? [])].join(',')}`,
+				run,
+			});
+};
+
+/** The last line of a partial run: it proves nothing about the unit. */
+export const partialVerdictOf = (
+	ok: boolean,
+	only: ReadonlySet<string>,
+	seconds: number,
+): string =>
+	`prove: ${ok ? 'ok' : 'NOT OK'} --only=${[...only].join(',')} in ${String(seconds)}s; partial: the unit is not proved`;
+
+const secondsSince = (started: number): number =>
+	Math.round((Date.now() - started) / 1000);
+
 const main = async (): Promise<number> => {
 	const base = execFileSync(
 		'git',
@@ -480,40 +609,72 @@ const main = async (): Promise<number> => {
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();
+	const only = onlyGatesOf(process.argv);
+	const fast = process.argv.includes('--fast');
+	const root = process.cwd();
+	const changed = fast ? changedSince(root, base) : [];
+	if (only !== undefined) {
+		const valid = gateNamesOf(changed, fast, base);
+		const unknown = unknownGatesOf(only, valid);
+		if (only.size === 0 || unknown.length > 0) {
+			console.error(
+				`prove: unknown gate ${unknown.join(', ') || '(none named)'}; valid gates: ${valid.join(', ')}`,
+			);
+			return 2;
+		}
+	}
 	// The last proof's output: a check of it fails a proof run twice.
 	rmSync('build', { recursive: true, force: true });
-	if (process.argv.includes('--fast')) {
-		const root = process.cwd();
-		const changed = changedSince(root, base);
+	const conclude = (ok: boolean, how: string): number => {
+		const seconds = secondsSince(started);
+		saveTimings(base, seconds, ok && only === undefined);
+		printCauses();
+		const line =
+			only === undefined
+				? `prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (${how}) in ${String(seconds)}s against ${base.slice(0, 9)}`
+				: partialVerdictOf(ok, only, seconds);
+		(only === undefined && !fast ? console.log : console.error)(line);
+		return ok ? 0 : 1;
+	};
+	if (fast) {
 		let early = true;
-		for (const [label, command] of earlySteps(changed)) {
+		for (const [label, command] of earlySteps(changed).filter(([label]) =>
+			wanted(label, only),
+		)) {
 			early = step(label, command) && early;
 		}
 		if (!early) {
-			saveTimings(base, Math.round((Date.now() - started) / 1000), false);
+			saveTimings(base, secondsSince(started), false);
 			printCauses();
 			console.error(
-				`prove: NOT PROVED, failed: ${failed.join(', ')}; (early) in ${String(Math.round((Date.now() - started) / 1000))}s`,
+				only === undefined
+					? `prove: NOT PROVED, failed: ${failed.join(', ')}; (early) in ${String(secondsSince(started))}s`
+					: partialVerdictOf(false, only, secondsSince(started)),
 			);
 			return 1;
 		}
-		let ok = await runChecks(base);
+		const ok = await runChecks(base, only);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
-		for (const [label, command] of fastSteps(
+		const heavy = fastSteps(
 			changed,
 			nearSpecsSince(root, base),
 			base,
-		)) {
-			ok = step(label, command) && ok;
-		}
-		saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
-		printCauses();
-		console.error(
-			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
+		).filter(([label]) => wanted(label, only));
+		const heavyOk = await inSlot(
+			only,
+			takesComputeSlot(
+				only,
+				heavy.map(([label]) => label),
+			),
+			() =>
+				heavy.reduce(
+					(allOk, [label, command]) => step(label, command) && allOk,
+					true,
+				),
 		);
-		return ok ? 0 : 1;
+		return conclude(ok && heavyOk, 'fast');
 	}
 	const jobs = JSON.parse(
 		execFileSync(
@@ -526,25 +687,29 @@ const main = async (): Promise<number> => {
 			{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
 		),
 	) as readonly IProveJob[];
-	let ok = await runChecks(base);
-	for (const job of jobs) {
-		const args = vitestArgsOf(job, base);
-		if (args === undefined) continue;
-		ok =
-			step(`tests: ${job.name} (${job.filter})`, [
-				'npx',
-				'vitest',
-				'run',
-				...args,
-				'--passWithNoTests',
-			]) && ok;
+	let ok = await runChecks(base, only);
+	if (wanted('tests', only)) {
+		const testsOk = await inSlot(
+			only,
+			takesComputeSlot(only, ['tests']),
+			() =>
+				jobs.reduce((allOk, job) => {
+					const args = vitestArgsOf(job, base);
+					if (args === undefined) return allOk;
+					return (
+						step(`tests: ${job.name} (${job.filter})`, [
+							'npx',
+							'vitest',
+							'run',
+							...args,
+							'--passWithNoTests',
+						]) && allOk
+					);
+				}, true),
+		);
+		ok = ok && testsOk;
 	}
-	saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
-	printCauses();
-	console.log(
-		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
-	);
-	return ok ? 0 : 1;
+	return conclude(ok, 'plan');
 };
 
 if (import.meta.main) process.exit(await main());

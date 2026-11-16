@@ -7,7 +7,7 @@
 export const WORK_COMMAND = {
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|prove|deliver|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--urgent=<reason>] [--alongside] [--print-path] [--all] [--watch] [--agents] [--workspace=<path>]',
+	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|prove|deliver|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--urgent=<reason>] [--only=<gate>[,<gate>]] [--alongside] [--print-path] [--all] [--watch] [--agents] [--workspace=<path>]',
 	flags: [
 		'proposal',
 		'slice',
@@ -27,6 +27,8 @@ export const WORK_COMMAND = {
 		'keep-work-ref',
 		'reason',
 		'urgent',
+		// `work prove --only=<gate>` runs those gates of the proof, never proving the unit.
+		'only',
 		'drop',
 		'unowned',
 		'with-worktree',
