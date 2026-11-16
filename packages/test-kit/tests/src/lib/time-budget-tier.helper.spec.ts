@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	isE2eSpec,
+	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
 } from '../../../src/lib/time-budget/time-budget-tier.helper';
@@ -55,5 +56,16 @@ describe('the budget tiers', () => {
 		calls.length = 0;
 		expect(() => measureLoadBenchmark(failing)).toThrow('no git');
 		expect(calls).toEqual(['cleanup']);
+	});
+});
+
+describe('an untouched spec', () => {
+	it('[<20ms] is one a known change set does not hold; none known, nothing is untouched; an empty set leaves all', () => {
+		expect(isUntouchedSpec('a.spec.ts', new Set(['b.ts']))).toBe(true);
+		expect(isUntouchedSpec('a.spec.ts', new Set(['a.spec.ts']))).toBe(
+			false,
+		);
+		expect(isUntouchedSpec('a.spec.ts', undefined)).toBe(false);
+		expect(isUntouchedSpec('a.spec.ts', new Set())).toBe(true);
 	});
 });
