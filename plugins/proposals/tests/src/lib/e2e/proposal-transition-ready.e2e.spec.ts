@@ -99,7 +99,11 @@ describe('e2e: the move to ready', async () => {
 		);
 		expect(res.structured.ok).toBe(true);
 	});
-	const move = (id: string, to: string, extra: object = {}) =>
+	const move = (
+		id: string,
+		to: string,
+		extra: Record<string, unknown> = {},
+	) =>
 		harness.callTool<IOutput>('delendai_proposals_proposal_transition', {
 			id,
 			to,
@@ -158,7 +162,7 @@ describe('e2e: the move to ready', async () => {
 		expect((await move('f08106', 'retired')).structured.ok).toBeDefined();
 	});
 	it('[<6000ms] creates proposals in every shape the tool accepts', async () => {
-		const create = (args: object) =>
+		const create = (args: Record<string, unknown>) =>
 			harness.callTool<{ ok: boolean; id?: string }>(
 				'delendai_proposals_create_proposal',
 				args,
