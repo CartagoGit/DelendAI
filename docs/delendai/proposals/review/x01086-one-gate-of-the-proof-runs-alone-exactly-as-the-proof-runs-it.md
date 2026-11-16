@@ -2,14 +2,14 @@
 id: x01086
 title: "One gate of the proof runs alone, exactly as the proof runs it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: cd2af7fe-c0b3-4fc7-9ef1-8fb3a163ca8d
-last-correlation-id: cd2af7fe-c0b3-4fc7-9ef1-8fb3a163ca8d
-last-transition-from: ready
-last-transition-at: 2026-11-16T18:30:34.028Z
+last-transition-id: 87a48559-7c78-47f2-bc13-470641f7e1b0
+last-correlation-id: 87a48559-7c78-47f2-bc13-470641f7e1b0
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T18:42:31.353Z
 ---
 
 # x01086 — One gate of the proof runs alone, exactly as the proof runs it
@@ -32,7 +32,7 @@ Five deliveries failed in one day because workers ran their own approximation of
 - global_gate: none
 
 ### S1 — One gate of the proof runs alone, exactly as the proof runs it
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove-only.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.e2e.spec.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
 - acceptance:
@@ -44,6 +44,9 @@ Five deliveries failed in one day because workers ran their own approximation of
   - "gate = the step label before ': ', slugged, so the proof's printed labels are the only list of names"
   - "the script takes the compute slot itself, only when a selected gate is heavy (coverage, tests, land rehearsal, test:sqlite); typecheck and the lints already wrap themselves in with-compute-lock"
   - "the proof already ran its seconds-long steps and the typecheck beside the static checks before any test; the order is unchanged"
+- shipped-in: `525139a8e4b9`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
