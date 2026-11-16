@@ -19,6 +19,16 @@ export const REHEARSAL_DEFERRED_TARGETS: Readonly<Record<string, string>> = {
 	'session-notified-p95': 'the real-time transport is S11b',
 };
 
+/**
+ * The jobs whose `if:` names the integration branch and that a rehearsal
+ * branch renders for itself. Every other job gated on that branch stays as
+ * the project wrote it: some write to the forge, and must stay off rehearsal
+ * branches.
+ */
+export const REHEARSAL_BRANCH_GATED_JOBS: readonly string[] = [
+	'integration-signal',
+];
+
 /** The names the fast stand-in workflows list their runs under. */
 export const REHEARSAL_FAST_WORKFLOW_NAMES = {
 	ci: REHEARSAL_CI_CHECK,

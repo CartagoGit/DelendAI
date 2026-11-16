@@ -7,25 +7,21 @@
  * write goes under the run's namespace.
  */
 import type {
-	IRehearsalRun,
 	IRehearsalEvidence,
 	IRehearsalMode,
 	IRehearsalReport,
 	IRehearsalScenario,
 	IRehearseInput,
 } from '../contracts/interfaces/rehearsal.interface';
+import type { ILogScan } from '../contracts/interfaces/rehearsal-evidence.interface';
 
 import {
 	cleanRun,
 	newRunId,
-	secretHitsIn,
 	sweepStaleRuns,
 } from './rehearsal-cleanup.service';
-import {
-	REHEARSAL_DEFAULT_CONCURRENCY,
-	REHEARSAL_POLL_MS,
-	REHEARSAL_SETTLE_SECONDS,
-} from '../contracts/constants/rehearsal.constant';
+import { REHEARSAL_DEFAULT_CONCURRENCY } from '../contracts/constants/rehearsal.constant';
+import { scanLogs } from './rehearsal-log-scan.helper';
 import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
 import { runBranchRoot } from './rehearsal-names.helper';
@@ -87,62 +83,6 @@ const playOne = async (
 			],
 		};
 	}
-};
-
-interface ILogScan {
-	/** Lines of a log that carry a token shape. */
-	readonly hits: readonly string[];
-	/** Runs whose log could not be read, each with its run id and the forge's reason: not measured, neither a hit nor a pass. */
-	readonly unread: readonly string[];
-}
-
-/** Token shapes in every log the run started; a log that cannot be read is not measured, never a hit and never a pass. */
-const scanLogs = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<ILogScan> => {
-	try {
-		return await logHits(input, evidence);
-	} catch (error) {
-		return {
-			hits: [],
-			unread: [
-				`log scan failed: ${error instanceof Error ? error.message : String(error)}`,
-			],
-		};
-	}
-};
-
-const logHits = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<ILogScan> => {
-	const pending = new Map<number, IRehearsalRun>();
-	for (const one of evidence)
-		for (const run of one.runs) pending.set(run.id, run);
-	const hits: string[] = [];
-	const unread = new Map<number, string>();
-	// A run still in progress has no log yet: read again for as long as the
-	// settle window, then say which runs stayed unread.
-	const reads = Math.ceil(
-		(REHEARSAL_SETTLE_SECONDS * 1000) / REHEARSAL_POLL_MS,
-	);
-	for (let read = 1; pending.size > 0 && read <= reads; read += 1) {
-		if (read > 1) await input.clock.wait(REHEARSAL_POLL_MS);
-		for (const [id, run] of [...pending]) {
-			try {
-				hits.push(...secretHitsIn(run, await input.forge.runLog(id)));
-				pending.delete(id);
-				unread.delete(id);
-			} catch (error) {
-				unread.set(
-					id,
-					`${run.workflow} run ${String(id)}: ${error instanceof Error ? error.message : String(error)}`,
-				);
-			}
-		}
-	}
-	return { hits, unread: [...unread.values()] };
 };
 
 /** Runs the rehearsal and returns its report; cleanup runs even when a scenario stops. */

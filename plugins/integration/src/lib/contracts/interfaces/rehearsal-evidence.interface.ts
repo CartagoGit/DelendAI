@@ -85,3 +85,11 @@ export interface IRehearsalReport {
 	readonly unreadLogs?: readonly string[];
 	readonly ok: boolean;
 }
+
+/** What the secret scan of the logs found. */
+export interface ILogScan {
+	/** Lines of a log that carry a token shape. */
+	readonly hits: readonly string[];
+	/** Runs not measured, each with its run id and why. */
+	readonly unread: readonly string[];
+}
