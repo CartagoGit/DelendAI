@@ -85,6 +85,9 @@ export const extractPathCandidates = (block: string): string[] =>
 		.flatMap(pathsFromLine)
 		.map((path) => path.trim())
 		.filter((p) => {
+			// `new:<path>` declares a file the slice creates: it is checked once
+			// delivered, at review entry, not while the proposal waits.
+			if (p.startsWith('new:')) return false;
 			if (p.length < 4) return false;
 			if (!p.includes('/')) return false;
 			if (p.includes('*') || p.includes('<') || p.includes('{'))
