@@ -364,26 +364,5 @@ describe('proposal-completeness — proposal-completeness', () => {
 				'docs/delendai/proposals/ready/feats/f00010-nowhere.md',
 			]);
 		});
-		it('[<200ms] checks a new: file without its marker once delivered', async () => {
-			const written = [
-				'---',
-				'id: x00001',
-				'---',
-				'',
-				'### S1 — creates',
-				'- **Status**: done',
-				'- **Files**: `new:src/made.ts`',
-				'',
-			].join('\n');
-			expect(
-				collectSliceStatuses(written).map((slice) => slice.files),
-			).toEqual([['src/made.ts']]);
-			expect(await missingDeclaredFiles(written, workdir)).toEqual([
-				'src/made.ts',
-			]);
-			await mkdir(join(workdir, 'src'), { recursive: true });
-			await writeFile(join(workdir, 'src/made.ts'), 'export {};\n');
-			expect(await missingDeclaredFiles(written, workdir)).toEqual([]);
-		});
 	});
 });

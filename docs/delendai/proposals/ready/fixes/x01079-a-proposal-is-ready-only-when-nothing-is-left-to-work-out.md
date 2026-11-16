@@ -37,7 +37,7 @@ Slices reached work with guessed Files, acceptance nobody could run and decision
   - "`vitest run plugins/proposals/tests/src/lib/proposals/proposal-readiness.spec.ts` covers each of the five rules with pure inputs."
   - "`vitest run tools/scripts/lint/proposal-readiness.spec.ts` covers the baseline that only shrinks."
   - "A transition to ready of a proposal with a finding is refused with the finding named; `plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts` stays green."
-  - "A Files entry written new:path is accepted before delivery, and review entry checks the path without the marker once delivered, shown by `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`."
+  - "A Files entry written new:path is accepted before delivery, and review entry checks the path without the marker once delivered, shown by `plugins/proposals/tests/src/lib/services/proposal-completeness-new-marker.spec.ts`."
 
 ## acceptance
 
@@ -45,4 +45,4 @@ Slices reached work with guessed Files, acceptance nobody could run and decision
 - `vitest run plugins/proposals/tests/src/lib/proposals/proposal-readiness.spec.ts` covers each of the five rules with pure inputs.
 - `vitest run tools/scripts/lint/proposal-readiness.spec.ts` covers the baseline that only shrinks.
 - A transition to ready of a proposal with a finding is refused with the finding named; `plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts` stays green.
-- A Files entry written new:path is accepted before delivery, and review entry checks the path without the marker once delivered, shown by `plugins/proposals/tests/src/lib/services/proposal-completeness.spec.ts`.
+- A Files entry written new:path is accepted before delivery, and review entry checks the path without the marker once delivered, shown by `plugins/proposals/tests/src/lib/services/proposal-completeness-new-marker.spec.ts`.
