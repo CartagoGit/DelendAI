@@ -59,6 +59,7 @@ export {
 	budgetOverrun,
 	freshBudgetsOfDiff,
 	isE2eSpec,
+	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
 	mayGoUnbudgeted,

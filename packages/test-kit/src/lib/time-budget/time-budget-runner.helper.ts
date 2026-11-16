@@ -29,6 +29,7 @@ import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budge
 import { measureLoadBenchmark } from './load-benchmark.helper';
 import {
 	isE2eSpec,
+	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
 } from './time-budget-tier.helper';
@@ -114,8 +115,7 @@ const tierOf = (test: RunnerTestCase): 'unit' | 'e2e' | undefined => {
 
 const untouched = (test: RunnerTestCase): boolean => {
 	const file = fileOf(test);
-	const paths = changedList();
-	return file !== undefined && paths !== undefined && !paths.has(file);
+	return file !== undefined && isUntouchedSpec(file, changedList());
 };
 
 /**

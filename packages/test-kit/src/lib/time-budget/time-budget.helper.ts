@@ -127,6 +127,7 @@ export { mayGoUnbudgeted } from './may-go-unbudgeted.helper';
 export { freshBudgetsOfDiff } from './fresh-budget.helper';
 export {
 	isE2eSpec,
+	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
 } from './time-budget-tier.helper';

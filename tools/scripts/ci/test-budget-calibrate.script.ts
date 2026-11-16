@@ -16,9 +16,11 @@
  *
  *   bun run test:budgets:check   (--check=<blob-dir>)
  * is what the merge step runs: it fails, naming the calibrated number, for
- * every test CI measured over its declared budget. A budget the change itself
- * writes does not fail its shard (CI never measured it), so this is where
- * such a number is corrected.
+ * every test CI measured over its declared budget in a spec the change
+ * touches (its base is SCOPE_BASE, or --base=); an overrun in an untouched
+ * spec is only reported, and so is every spec on a push, which has no base.
+ * A budget the change itself writes does not fail its shard (CI never
+ * measured it), so this is where such a number is corrected.
  *
  *   bun run test:budgets:calibrate --from-develop=<n> [--update]
  * reads the last n integration-branch runs instead of one: the scheduled
@@ -26,6 +28,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
+	appendFileSync,
 	mkdirSync,
 	mkdtempSync,
 	readdirSync,
@@ -39,12 +42,12 @@ import { resolve } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 import { INTEGRATION_REF } from './declared-test-budget';
+import { checkBudgets } from './test-budget-check';
 import {
 	budgetChanges,
 	longestDurations,
 	measuredTestsOfBlob,
 	referenceOfDurations,
-	requiredCorrection,
 	type ITestDurations,
 	withCalibratedBudget,
 } from './test-budget-calibration';
@@ -127,14 +130,46 @@ const developRuns = (count: number): readonly string[] =>
 				.filter(Boolean)
 		: [];
 
-/** Fail, naming the number CI calls for, while a test runs over its declared budget. */
-const requireCalibrated = (blobs: string): number => {
-	const changes = budgetChanges(durationsOfBlobs(blobs));
-	for (const c of changes) console.error(requiredCorrection(c));
-	console.log(
-		`test-budget-calibrate: ${String(changes.length)} test(s) over their declared budget.`,
+/** The reports' longest times; a missing directory or no report at all is an error. */
+const reportedDurations = (blobs: string): ITestDurations => {
+	if (jsonFiles(blobs).length === 0)
+		throw new Error(`no report under ${blobs}`);
+	return durationsOfBlobs(blobs);
+};
+
+/** The files the change touches, from git: the base's diff to HEAD. */
+const filesChangedSince = (base: string): ReadonlySet<string> =>
+	new Set(
+		execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+			encoding: 'utf8',
+		})
+			.split('\n')
+			.filter(Boolean),
 	);
-	return changes.length === 0 ? 0 : 1;
+
+/**
+ * Fail, naming the number CI calls for, while a test runs over its declared
+ * budget in a spec the change touches; report one in an untouched spec.
+ */
+const requireCalibrated = (blobs: string): number => {
+	const { SCOPE_BASE: scopeBase, GITHUB_STEP_SUMMARY } = process.env;
+	const verdict = checkBudgets({
+		durations: () => reportedDurations(blobs),
+		base: arg('base') ?? scopeBase ?? '',
+		changedFiles: filesChangedSince,
+	});
+	for (const line of verdict.errors) console.error(line);
+	for (const line of verdict.warnings) console.warn(`warning: ${line}`);
+	if (GITHUB_STEP_SUMMARY !== undefined && verdict.warnings.length > 0) {
+		appendFileSync(
+			GITHUB_STEP_SUMMARY,
+			`### Budget overruns in specs this change does not touch\n${verdict.warnings.map((line) => `- ${line}`).join('\n')}\n`,
+		);
+	}
+	console.log(
+		`test-budget-calibrate: ${String(verdict.errors.length)} error(s) (touched specs over budget, or no verdict), ${String(verdict.warnings.length)} overrun(s) reported in untouched specs.`,
+	);
+	return verdict.code;
 };
 
 const main = (): number => {
