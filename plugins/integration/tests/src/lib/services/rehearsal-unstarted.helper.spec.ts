@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { IRehearsalRun } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import {
-	isNewestOfGroup,
+	coveringRun,
 	mergeUnstarted,
 	unstartedOf,
 } from '../../../../src/lib/services/rehearsal-unstarted.helper';
@@ -21,58 +21,43 @@ const run = (over: Partial<IRehearsalRun>): IRehearsalRun => ({
 });
 
 describe('unstarted runs', () => {
-	it('[<20ms] is newest when no later run of its workflow file exists on its branch, whatever each run is named', () => {
-		const stuck = run({ id: 1, workflowId: 7 });
-		expect(isNewestOfGroup(stuck, [stuck])).toBe(true);
-		expect(
-			isNewestOfGroup(stuck, [
-				stuck,
-				run({
-					id: 2,
-					workflowId: 7,
-					workflow: 'land-x-pass-b',
-					createdAt: '2026-11-16T10:00:05Z',
-				}),
-			]),
-		).toBe(false);
+	const stuck = run({
+		id: 1,
+		workflowId: 7,
+		createdAt: '2026-11-16T10:00:34Z',
+	});
+	const pass = (over: Partial<IRehearsalRun>): IRehearsalRun =>
+		run({
+			id: 2,
+			workflowId: 7,
+			status: 'completed',
+			conclusion: 'success',
+			createdAt: '2026-11-16T10:00:20Z',
+			updatedAt: '2026-11-16T10:01:09Z',
+			...over,
+		});
+
+	it('[<20ms] is covered by a pass that was already running and ended after it was created', () => {
+		expect(coveringRun(stuck, [stuck, pass({})])?.id).toBe(2);
 	});
 
-	it('[<20ms] is not replaced by a later run of another workflow or another branch', () => {
-		const stuck = run({ id: 1, workflowId: 7 });
-		const later = '2026-11-16T10:00:05Z';
-		expect(
-			isNewestOfGroup(stuck, [
-				run({ id: 2, workflowId: 8, createdAt: later }),
-				run({
-					id: 3,
-					workflowId: 7,
-					headBranch: 'c',
-					createdAt: later,
-				}),
-			]),
-		).toBe(true);
-	});
-
-	it('[<20ms] is not replaced by an earlier run', () => {
-		const stuck = run({ id: 5, workflowId: 7 });
-		expect(
-			isNewestOfGroup(stuck, [
-				run({
-					id: 4,
-					workflowId: 7,
-					createdAt: '2026-11-16T09:00:00Z',
-				}),
-			]),
-		).toBe(true);
+	it('[<20ms] is lost when no pass ended after it, or the pass failed, or it is another workflow or branch', () => {
+		for (const other of [
+			pass({ updatedAt: '2026-11-16T10:00:30Z' }),
+			pass({ conclusion: 'failure' }),
+			pass({ status: 'in_progress' }),
+			pass({ workflowId: 8 }),
+			pass({ headBranch: 'c' }),
+		])
+			expect(coveringRun(stuck, [stuck, other])).toBeUndefined();
+		expect(coveringRun(stuck, [stuck])).toBeUndefined();
 	});
 
 	it('[<20ms] falls back to the name when a run has no workflow id', () => {
-		const stuck = run({ id: 1 });
+		const bare = run({ id: 1, createdAt: '2026-11-16T10:00:34Z' });
 		expect(
-			isNewestOfGroup(stuck, [
-				run({ id: 2, createdAt: '2026-11-16T10:00:05Z' }),
-			]),
-		).toBe(false);
+			coveringRun(bare, [bare, pass({ workflowId: undefined })])?.id,
+		).toBe(2);
 	});
 
 	it('[<20ms] describes the run and lists each id once', () => {
@@ -81,7 +66,11 @@ describe('unstarted runs', () => {
 			id: 9,
 			workflow: 'land',
 			branch: 'b',
-			newest: true,
+			lost: true,
+		});
+		expect(unstartedOf(stuck, [pass({})])).toMatchObject({
+			lost: false,
+			coveredBy: 2,
 		});
 		expect(mergeUnstarted([one], [one, { ...one, id: 10 }])).toHaveLength(
 			2,

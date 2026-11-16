@@ -269,13 +269,19 @@ describe('the rehearsal report', () => {
 			leftovers: [],
 			secretHits: [],
 			unstarted: [
-				{ id: 42, workflow: 'land', branch: 'b', newest: false },
+				{
+					id: 42,
+					workflow: 'land',
+					branch: 'b',
+					lost: false,
+					coveredBy: 41,
+				},
 			],
 		});
 		const target = built.targets.find((t) => t.id === 'unstarted-runs');
 		expect(target?.ok).toBe(true);
 		expect(target?.detail).toContain('1 run(s)');
-		expect(target?.detail).toContain('42');
+		expect(target?.detail).toContain('42 (covered by pass 41)');
 		expect(
 			built.targets.find((t) => t.id === 'no-secrets-in-logs')
 				?.notMeasured,
@@ -283,7 +289,7 @@ describe('the rehearsal report', () => {
 		expect(built.unstartedRuns).toHaveLength(1);
 	});
 
-	it('[<50ms] fails the target when the unstarted run is the newest of its group: nothing replaced it, so its wake was lost', () => {
+	it('[<50ms] fails the target when no pass covers the unstarted run: its wake was lost', () => {
 		const built = buildReport({
 			runId: 'r1',
 			repository: 'o/r',
@@ -294,14 +300,12 @@ describe('the rehearsal report', () => {
 			evidence: [evidence()],
 			leftovers: [],
 			secretHits: [],
-			unstarted: [
-				{ id: 43, workflow: 'land', branch: 'b', newest: true },
-			],
+			unstarted: [{ id: 43, workflow: 'land', branch: 'b', lost: true }],
 		});
 		const target = built.targets.find((t) => t.id === 'unstarted-runs');
 		expect(target?.ok).toBe(false);
 		expect(target?.value).toBe(1);
-		expect(target?.detail).toContain('43 (newest: a lost wake)');
+		expect(target?.detail).toContain('43 (a lost wake)');
 		expect(built.ok).toBe(false);
 	});
 

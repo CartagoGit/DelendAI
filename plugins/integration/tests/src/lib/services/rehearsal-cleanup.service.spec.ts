@@ -252,7 +252,7 @@ describe('cleanup and setup', () => {
 		});
 		expect(cleaned.leftovers).toEqual([]);
 		expect(cleaned.unstarted).toEqual([
-			{ id: 4, workflow: 'land', branch: 'b', newest: false },
+			{ id: 4, workflow: 'land', branch: 'b', lost: true },
 		]);
 	});
 });

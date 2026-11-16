@@ -315,4 +315,22 @@ describe('the GitHub land forge', () => {
 		await expect(forge.pullRequest(7)).rejects.toThrow('(4 attempts)');
 		expect(waits).toEqual([1000, 3000, 9000]);
 	});
+
+	it('lists the land workflow runs of the integration branch', async () => {
+		const { forge, calls } = harness(() =>
+			json({
+				workflow_runs: [
+					{ id: 9, status: 'queued', name: 'x' },
+					{ id: 8, status: 'completed' },
+				],
+			}),
+		);
+		expect(await forge.landRuns()).toEqual([
+			{ id: 9, status: 'queued' },
+			{ id: 8, status: 'completed' },
+		]);
+		expect(calls[0]).toContain(
+			'actions/workflows/land.yml/runs?branch=develop',
+		);
+	});
 });

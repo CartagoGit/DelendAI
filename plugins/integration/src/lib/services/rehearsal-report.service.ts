@@ -156,17 +156,17 @@ const notifiedTarget = (
 
 /**
  * Runs the forge listed but never enqueued are reported by id and never fail
- * a run, except one that is the newest of its workflow on its branch: nothing
- * replaced it, so the wake it carried was lost.
+ * a run, except one no pass covers: no pass of its workflow on its branch
+ * completed successfully after it was created, so the wake it carried was lost.
  */
 const unstartedTarget = (
 	unstarted: readonly IUnstartedRun[],
 ): IRehearsalTargetResult => {
-	const lost = unstarted.filter((one) => one.newest);
+	const lost = unstarted.filter((one) => one.lost);
 	const ids = unstarted
 		.map(
 			(one) =>
-				`${String(one.id)}${one.newest ? ' (newest: a lost wake)' : ''}`,
+				`${String(one.id)}${one.lost ? ' (a lost wake)' : one.coveredBy === undefined ? '' : ` (covered by pass ${String(one.coveredBy)})`}`,
 		)
 		.join(', ');
 	return {

@@ -90,14 +90,16 @@ export interface IRehearsalReport {
 
 /**
  * A workflow run the forge lists as queued but never started (no jobs, no
- * log, not cancellable). `newest`: no later run of its workflow on its branch
- * was created, so nothing replaced it and the wake it carried was lost.
+ * log, not cancellable). `lost`: no pass of its workflow on its branch
+ * completed successfully after it was created, so no pass re-read the forge
+ * after it and the wake it carried was lost; otherwise `coveredBy` names that pass.
  */
 export interface IUnstartedRun {
 	readonly id: number;
 	readonly workflow: string;
 	readonly branch: string;
-	readonly newest: boolean;
+	readonly lost: boolean;
+	readonly coveredBy?: number;
 }
 
 /** What cleaning one run left on the forge, and the runs that never started. */

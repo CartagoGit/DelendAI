@@ -16,7 +16,11 @@ import type {
 } from './land.interface';
 import { runForgeRead } from './forge-read-retry.helper';
 import { LandBranchGoneError } from './land-branch-gone.helper';
-import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
+import {
+	LAND_MAX_PAGES,
+	LAND_PAGE_SIZE,
+	LAND_WORKFLOW_FILE,
+} from './land.constant';
 
 interface IRawPull {
 	number: number;
@@ -174,6 +178,12 @@ export const createGithubLandForge = (input: {
 						)
 					: [],
 			),
+		landRuns: async () =>
+			(
+				await ok<{ workflow_runs: { id: number; status: string }[] }>(
+					`actions/workflows/${encodeURIComponent(LAND_WORKFLOW_FILE)}/runs?branch=${encodeURIComponent(integration)}&per_page=${String(LAND_PAGE_SIZE)}`,
+				)
+			).workflow_runs.map(({ id, status }) => ({ id, status })),
 		openPullRequests: async () =>
 			Promise.all(
 				(await pulls('state=open'))

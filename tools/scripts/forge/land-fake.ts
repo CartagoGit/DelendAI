@@ -348,6 +348,7 @@ export const createFakeWorld = (
 			get(number).state = 'open';
 			return true;
 		},
+		landRuns: async () => [],
 		dispatchWorkflow: async (workflow, ref, inputs) => {
 			mutate();
 			dispatched.push(

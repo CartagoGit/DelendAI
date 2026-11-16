@@ -39,7 +39,16 @@ export interface ILandPullRequest {
 export type ILandMerge = 'merged' | 'head-moved' | 'refused';
 
 /** The forge calls land needs, and no others. */
+/** A run of the land workflow on the integration branch, as the forge lists it. */
+export interface ILandRun {
+	readonly id: number;
+	/** `completed`, or any state a run waits or works in. */
+	readonly status: string;
+}
+
 export interface ILandForge {
+	/** The recent land workflow runs on the integration branch, newest first. */
+	landRuns(): Promise<readonly ILandRun[]>;
 	integrationTip(): Promise<string>;
 	/** The checks the integration branch requires. */
 	requiredChecks(): Promise<readonly string[]>;

@@ -135,7 +135,7 @@ describe('the secret scan of a scenario', () => {
 		expect(state.logReadAt).toHaveLength(1);
 	});
 
-	it('[<20ms] lists a run queued with no job at the cap as unstarted, not unread, and judges it newest only when nothing later exists', async () => {
+	it('[<20ms] lists a run queued with no job at the cap as unstarted, not unread, and judges it lost when no pass covers it', async () => {
 		const { ports: p, state } = ports(
 			() => [
 				{ ...runOf(1, 'queued'), createdAt: '1' },
@@ -148,8 +148,8 @@ describe('the secret scan of a scenario', () => {
 		const scan = await scanLogs(p, [evidence]);
 		expect(scan.unread).toEqual([]);
 		expect(scan.unstarted).toEqual([
-			{ id: 1, workflow: 'CI', branch: 'b', newest: false },
-			{ id: 3, workflow: 'other', branch: 'b', newest: true },
+			{ id: 1, workflow: 'CI', branch: 'b', lost: true },
+			{ id: 3, workflow: 'other', branch: 'b', lost: true },
 		]);
 		expect(state.logReadAt).toHaveLength(1);
 	});
