@@ -2135,7 +2135,6 @@
 		"tools/scripts/ci/script-dependencies.spec.ts",
 		"tools/scripts/ci/spec-duration-budget.spec.ts",
 		"tools/scripts/ci/spec-timings.spec.ts",
-		"tools/scripts/ci/test-scope.spec.ts",
 		"tools/scripts/ci/test-zones.script.spec.ts",
 		"tools/scripts/ci/tier-budget.spec.ts",
 		"tools/scripts/ci/tier-trigger.spec.ts",
