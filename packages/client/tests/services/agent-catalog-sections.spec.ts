@@ -60,26 +60,26 @@ const harness = (at: () => number = () => 0) => {
 };
 
 describe('the agent catalog by section', () => {
-	it('asks only for the section it is asked about', async () => {
+	it('[<30ms] asks only for the section it is asked about', async () => {
 		const { service, asked } = harness();
 		expect(await service.getProposals()).toHaveLength(1);
 		expect(asked).toEqual([{ mode: 'full', section: 'proposals' }]);
 	});
 
-	it('fills what a skill row leaves out', async () => {
+	it('[<30ms] fills what a skill row leaves out', async () => {
 		const { service } = harness();
 		const [, bare] = await service.getSkills();
 		expect(bare).toMatchObject({ version: '0.0.0' });
 		expect(bare).not.toHaveProperty('bodyPath');
 	});
 
-	it('filters a section by query', async () => {
+	it('[<30ms] filters a section by query', async () => {
 		const { service } = harness();
 		expect(await service.getTools('alpha')).toHaveLength(1);
 		expect(await service.getTools('nothing')).toHaveLength(0);
 	});
 
-	it('searches every section, each asked for once', async () => {
+	it('[<30ms] searches every section, each asked for once', async () => {
 		const { service, asked } = harness();
 		const found = await service.search('alpha');
 		expect(found.tools).toHaveLength(1);
@@ -87,7 +87,7 @@ describe('the agent catalog by section', () => {
 		expect(asked).toHaveLength(3);
 	});
 
-	it('answers from its cache until it expires or is invalidated', async () => {
+	it('[<30ms] answers from its cache until it expires or is invalidated', async () => {
 		let now = 0;
 		const { service, asked } = harness(() => now);
 		await service.getSkills();
@@ -101,7 +101,7 @@ describe('the agent catalog by section', () => {
 		expect(asked).toHaveLength(3);
 	});
 
-	it('loads a skill body and refuses one with none', async () => {
+	it('[<30ms] loads a skill body and refuses one with none', async () => {
 		const { service } = harness();
 		expect(await service.getSkillBody('a-skill')).toBe('the body');
 		await expect(service.getSkillBody('none')).rejects.toThrow('body');

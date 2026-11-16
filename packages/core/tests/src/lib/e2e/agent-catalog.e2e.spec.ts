@@ -161,7 +161,7 @@ describe('e2e: agent catalog', async () => {
 			)) as Record<string, unknown>;
 	};
 
-	it('returns actionable proposals in compact mode and the full registry in full mode', async () => {
+	it('[<3000ms] returns actionable proposals in compact mode and the full registry in full mode', async () => {
 		const compact = await callCatalog({ mode: 'compact' });
 		const full = await callCatalog({ mode: 'full' });
 
@@ -179,7 +179,7 @@ describe('e2e: agent catalog', async () => {
 		).toBeGreaterThanOrEqual((compact.proposals as Array<unknown>).length);
 	});
 
-	it('lists every tool with a fully-qualified callable name and its real owning plugin', async () => {
+	it('[<3000ms] lists every tool with a fully-qualified callable name and its real owning plugin', async () => {
 		const full = await callCatalog({ mode: 'full' });
 		const tools = full.tools as Array<{ name: string; plugin: string }>;
 
@@ -212,7 +212,7 @@ describe('e2e: agent catalog', async () => {
 		expect(overview).not.toHaveProperty('plugin');
 	});
 
-	it('finds the catalog tool itself through section-scoped querying', async () => {
+	it('[<3000ms] finds the catalog tool itself through section-scoped querying', async () => {
 		const result = await callCatalog({
 			section: 'tools',
 			query: 'catalog',
@@ -236,7 +236,7 @@ describe('e2e: agent catalog', async () => {
 		) as Record<string, unknown>;
 	};
 
-	it('lists skills compactly with a derived when-to-use description and appliesTo (no body)', async () => {
+	it('[<3000ms] lists skills compactly with a derived when-to-use description and appliesTo (no body)', async () => {
 		const listed = await callSkill({});
 		const skills = listed.skills as Array<{
 			id: string;
@@ -256,14 +256,14 @@ describe('e2e: agent catalog', async () => {
 		);
 	});
 
-	it('loads a skill body on demand by id', async () => {
+	it('[<3000ms] loads a skill body on demand by id', async () => {
 		const loaded = await callSkill({
 			id: 'delendai-token-budget-playbook',
 		});
 		expect(loaded.body as string).toContain('# Token budget playbook');
 	});
 
-	it('errors for an unknown skill id', async () => {
+	it('[<3000ms] errors for an unknown skill id', async () => {
 		const res = await client.callTool({
 			name: 'delendai_skill',
 			arguments: { id: 'does-not-exist' },
