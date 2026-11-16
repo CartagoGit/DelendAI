@@ -43,6 +43,24 @@ describe('the real mode workflow names', () => {
 		expect(names).toEqual({ ci: 'CI', scan: 'CodeQL' });
 	});
 
+	it('[<5ms] reads quoted, bare and commented names, and a # inside quotes', () => {
+		const nameOf = (line: string) =>
+			realWorkflowNames({ 'ci.yml': `${line}\non:\n` }).ci;
+		expect(nameOf("name: 'My CI'")).toBe('My CI');
+		expect(nameOf('name: "My CI"  # c')).toBe('My CI');
+		expect(nameOf('name: Bare CI   # trailing')).toBe('Bare CI');
+		expect(nameOf('name: "CI #1"')).toBe('CI #1');
+		expect(nameOf('name:')).toBe('.github/workflows/ci.yml');
+		expect(nameOf('  name: indented')).toBe('.github/workflows/ci.yml');
+	});
+
+	it('[<20ms] returns at once on a line of 50,000 spaces after the key', () => {
+		const text = `name:!${' '.repeat(50_000)}x\n`;
+		expect(realWorkflowNames({ 'ci.yml': text }).ci).toBe(
+			`!${' '.repeat(50_000)}x`,
+		);
+	});
+
 	it('[<5ms] falls back to the file path for an unnamed workflow', () => {
 		expect(realWorkflowNames({}).scan).toBe('.github/workflows/codeql.yml');
 	});

@@ -9,12 +9,26 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 const WORKFLOWS_DIR = '.github/workflows';
-const NAME_LINE = /^name:\s*(?:'([^']*)'|"([^"]*)"|(\S.*?))\s*(?:#.*)?$/mu;
+const NAME_KEY = 'name:';
+
+/** The value of a `name:` line, by string operations only: quoted up to the closing quote, else up to a ` #` comment. */
+const nameValue = (afterKey: string): string => {
+	const value = afterKey.trim();
+	const quote = value.charAt(0);
+	if (quote === "'" || quote === '"') {
+		const close = value.indexOf(quote, 1);
+		return close < 0 ? value.slice(1) : value.slice(1, close);
+	}
+	const comment = value.indexOf(' #');
+	return (comment < 0 ? value : value.slice(0, comment)).trimEnd();
+};
 
 /** The name a workflow file lists its runs under: its `name:`, else its path. */
 const listedName = (file: string, text: string | undefined): string => {
-	const match = text === undefined ? null : NAME_LINE.exec(text);
-	return match?.[1] ?? match?.[2] ?? match?.[3] ?? `${WORKFLOWS_DIR}/${file}`;
+	const line = text?.split('\n').find((one) => one.startsWith(NAME_KEY));
+	const name =
+		line === undefined ? '' : nameValue(line.slice(NAME_KEY.length));
+	return name === '' ? `${WORKFLOWS_DIR}/${file}` : name;
 };
 
 /** The names of the project's CI and scan workflows, read from the files the run copies. */

@@ -52,7 +52,7 @@ export const wallSecondsOf = (
 					1000,
 			);
 
-const BRANCHES_INLINE = /^(\s*)branches:\s*\[(.*)\]\s*$/u;
+const BRANCHES_INLINE = /^(\s*)branches:\s*\[([^\]]*)\]\s*$/u;
 const BRANCHES_BLOCK = /^(\s*)branches:\s*$/u;
 const BLOCK_ITEM = /^(\s*-\s+)(['"]?)([^'"\s#]+)\2(\s*(?:#.*)?)$/u;
 const TOP_KEY = /^\S/u;
