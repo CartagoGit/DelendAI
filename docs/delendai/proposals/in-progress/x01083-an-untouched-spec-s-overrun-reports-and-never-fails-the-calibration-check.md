@@ -2,10 +2,14 @@
 id: x01083
 title: "An untouched spec's overrun reports and never fails the calibration check"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: 76aedaa5-639f-4b9b-ad33-2d82539fc216
+last-correlation-id: 76aedaa5-639f-4b9b-ad33-2d82539fc216
+last-transition-from: ready
+last-transition-at: 2026-11-16T13:18:49.088Z
 ---
 
 # x01083 — An untouched spec's overrun reports and never fails the calibration check
