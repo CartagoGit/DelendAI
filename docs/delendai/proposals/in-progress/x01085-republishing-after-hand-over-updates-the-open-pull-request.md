@@ -2,10 +2,14 @@
 id: x01085
 title: "Republishing after hand-over updates the open pull request"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: fa4ddfda-0960-46d0-ab85-d54bf0986a0f
+last-correlation-id: fa4ddfda-0960-46d0-ab85-d54bf0986a0f
+last-transition-from: ready
+last-transition-at: 2026-11-16T14:06:28.734Z
 ---
 
 # x01085 — Republishing after hand-over updates the open pull request
