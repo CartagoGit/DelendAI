@@ -5,7 +5,7 @@ the real forge before it runs.
 
 ```bash
 delendai --plugins=integration
-delendai integration rehearse --mode=fast --scenarios=<ids|all> [--concurrency=<n>]
+delendai integration rehearse --mode=fast --scenarios=<ids|all> [--concurrency=<n>] [--group=<n>/<total>] [--plan] [--merge]
 ```
 
 The rehearsal creates `<namespace>/rehearsal/<run>/…` branches from the tip

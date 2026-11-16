@@ -2,6 +2,7 @@ export type {
 	IRehearsalEvidence,
 	IRehearsalExpectationResult,
 	IRehearsalReport,
+	IRehearsalSamples,
 	IRehearsalScenarioResult,
 	IRehearsalTargetResult,
 } from './rehearsal-evidence.interface';
@@ -322,6 +323,8 @@ export interface IRehearseInput {
 	readonly mode?: IRehearsalMode;
 	/** How many scenarios play at once; absent means the default, 1 plays them one after another. */
 	readonly concurrency?: number;
+	/** The group of the mode's catalogue this run plays: its run root carries the number, so groups never read each other's branches. */
+	readonly group?: number;
 	readonly log: (line: string) => void;
 }
 
@@ -361,6 +364,9 @@ export interface IRehearsalRunContext {
 	/** `<namespace>/rehearsal/`, from the decisions module. */
 	readonly branchPrefix: string;
 	readonly log: (line: string) => void;
+	/** The longest one wait takes, and the most a scenario spends in all its waits; absent means the fast mode's. */
+	readonly awaitCapSeconds?: number;
+	readonly awaitBudgetSeconds?: number;
 }
 
 /** What a scenario run keeps while it plays its steps. */
@@ -374,6 +380,7 @@ export interface IScenarioState {
 	/** What each receiver that connected was told; `undefined` until one did. */
 	notifications: { event: string; at: string; number?: number }[] | undefined;
 	setupSha: string;
+	awaitedMs: number; // milliseconds spent in waits so far
 }
 
 /** A scenario that is red against today's land, and the slice that makes it green. */

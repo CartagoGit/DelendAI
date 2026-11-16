@@ -14,6 +14,13 @@ export {
 	scenariosForMode,
 	selectScenarios,
 } from '../lib/services/rehearsal.service';
+export type * from '../lib/contracts/interfaces/rehearsal-groups.interface';
+export { mergeGroupReports } from '../lib/services/rehearsal-merge.service';
+export {
+	parseGroupSpec,
+	partitionScenarios,
+	selectGroup,
+} from '../lib/services/rehearsal-groups.helper';
 export {
 	buildReport,
 	renderReportTable,

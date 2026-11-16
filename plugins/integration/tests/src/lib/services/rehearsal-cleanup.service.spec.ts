@@ -70,6 +70,33 @@ describe('cleanup and setup', () => {
 		expect(runStartOf('nope')).toBeUndefined();
 	});
 
+	it('[<50ms] names the group in the id of a run that plays one, and still reads its start', () => {
+		const id = newRunId(Date.parse('2026-11-12T10:00:00Z'), 2);
+		expect(id).toBe('r20261112-100000-g2');
+		expect(runStartOf(id)).toBe(Date.parse('2026-11-12T10:00:00Z'));
+	});
+
+	it('[<100ms] sweeps the roots of its own group and the stale ones, never a sibling group', async () => {
+		const branches = new Map<string, string>();
+		branches.set('ns/rehearsal/r20261112-095900-g1/x-integration', 's');
+		branches.set('ns/rehearsal/r20261112-095900-g2/y-integration', 's');
+		branches.set('ns/rehearsal/r20261112-060000-g3/z-integration', 's');
+		const swept = await sweepStaleRuns({
+			forge: branchesForge(branches),
+			clock: stepClock(),
+			branchPrefix: 'ns/rehearsal/',
+			now: Date.parse('2026-11-12T10:00:00Z'),
+			ownGroup: 1,
+		});
+		expect([...swept].sort()).toEqual([
+			'r20261112-060000-g3',
+			'r20261112-095900-g1',
+		]);
+		expect([...branches.keys()]).toEqual([
+			'ns/rehearsal/r20261112-095900-g2/y-integration',
+		]);
+	});
+
 	it('[<100ms] sweeps runs older than the stale age and keeps a fresh one', async () => {
 		const branches = new Map<string, string>();
 		const forge = branchesForge(branches);

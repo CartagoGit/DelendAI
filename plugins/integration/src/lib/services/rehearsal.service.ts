@@ -23,7 +23,7 @@ import {
 	newRunId,
 	sweepStaleRuns,
 } from './rehearsal-cleanup.service';
-import { REHEARSAL_DEFAULT_CONCURRENCY } from '../contracts/constants/rehearsal.constant';
+import { REHEARSAL_GROUPING } from '../contracts/constants/rehearsal.constant';
 import { scanLogs } from './rehearsal-log-scan.helper';
 import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
@@ -94,7 +94,7 @@ export const rehearse = async (
 	input: IRehearseInput,
 ): Promise<IRehearsalReport> => {
 	const startedMs = input.clock.now();
-	const runId = newRunId(startedMs);
+	const runId = newRunId(startedMs, input.group);
 	for (const swept of await sweepStaleRuns({
 		forge: input.forge,
 		clock: input.clock,
@@ -111,6 +111,10 @@ export const rehearse = async (
 		tip,
 		branchPrefix: input.branchPrefix,
 		log: input.log,
+		awaitCapSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitCapSeconds,
+		awaitBudgetSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitBudgetSeconds,
 	};
 	const evidence: IRehearsalEvidence[] = [];
 	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };
@@ -121,7 +125,7 @@ export const rehearse = async (
 		evidence.push(
 			...(await playPooled(
 				input.scenarios,
-				input.concurrency ?? REHEARSAL_DEFAULT_CONCURRENCY,
+				input.concurrency ?? input.scenarios.length,
 				async (scenario) => {
 					const played = await playOne(
 						context,

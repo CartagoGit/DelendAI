@@ -55,6 +55,36 @@ describe('the integration command', () => {
 		},
 	);
 
+	it('[<50ms] refuses a group out of range with exit 2, saying the valid range', async () => {
+		const result = await integrationCommand.run(
+			['rehearse', '--mode=fast', '--group=4/3'],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.USAGE);
+		expect(result.error).toContain('valid 1/3 to 3/3');
+	});
+
+	it('[<50ms] refuses a group that is not n/total', async () => {
+		const result = await integrationCommand.run(
+			['rehearse', '--group=first'],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.USAGE);
+	});
+
+	it('[<50ms] plans the groups: three of the catalogue in fast mode, all at once; real one at a time', async () => {
+		const fast = await integrationCommand.run(
+			['rehearse', '--plan', '--mode=fast'],
+			ctx,
+		);
+		expect(fast.text).toBe('matrix={"group":[1,2,3]}\ntotal=3\nparallel=3');
+		const real = await integrationCommand.run(
+			['rehearse', '--plan', '--mode=real'],
+			ctx,
+		);
+		expect(real.text).toBe('matrix={"group":[1,2,3]}\ntotal=3\nparallel=1');
+	});
+
 	it('[<50ms] declares the flags it reads and runs without a server', () => {
 		expect(integrationCommand.flags).toEqual(INTEGRATION_COMMAND.flags);
 		expect(integrationCommand.offline).toBe(true);

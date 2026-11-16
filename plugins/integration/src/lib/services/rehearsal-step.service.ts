@@ -4,7 +4,7 @@
  * integrator does not act, a wake is taken and counted as a manual step.
  */
 import {
-	REHEARSAL_AWAIT_CAP_SECONDS,
+	REHEARSAL_GROUPING,
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_TOKEN_OPEN_LABEL,
@@ -99,6 +99,43 @@ const satisfied = async (
 	return pending;
 };
 
+const MS_PER_SECOND = 1000;
+
+/** The longest the next wait of the scenario may take: the cap, and what its wait budget has left. */
+const allowedWait = (
+	ctx: IRehearsalRunContext,
+	state: IScenarioState,
+): { readonly ms: number; readonly text: string } => {
+	const capSeconds =
+		ctx.awaitCapSeconds ?? REHEARSAL_GROUPING.fast.awaitCapSeconds;
+	const budgetSeconds =
+		ctx.awaitBudgetSeconds ?? REHEARSAL_GROUPING.fast.awaitBudgetSeconds;
+	const leftMs = budgetSeconds * MS_PER_SECOND - state.awaitedMs;
+	return leftMs < capSeconds * MS_PER_SECOND
+		? {
+				ms: Math.max(0, leftMs),
+				text: `${String(Math.max(0, Math.floor(leftMs / MS_PER_SECOND)))} s left of the ${String(budgetSeconds)} s wait budget`,
+			}
+		: {
+				ms: capSeconds * MS_PER_SECOND,
+				text: `${String(capSeconds)} s cap`,
+			};
+};
+
+/** Runs `wait` and counts the time it took against the scenario's wait budget. */
+const spendingBudget = async (
+	ctx: IRehearsalRunContext,
+	state: IScenarioState,
+	wait: () => Promise<void>,
+): Promise<void> => {
+	const started = ctx.clock.now();
+	try {
+		await wait();
+	} finally {
+		state.awaitedMs += ctx.clock.now() - started;
+	}
+};
+
 /**
  * Waits for `step`. Its clock advances only while no workflow run is queued
  * or in progress on the scenario (the project's real CI takes as long as it
@@ -110,7 +147,16 @@ const awaitStep = async (
 	scenario: IRehearsalScenario,
 	state: IScenarioState,
 	step: Extract<IRehearsalStep, { kind: 'await' }>,
+): Promise<void> =>
+	spendingBudget(ctx, state, () => awaitUntil(ctx, scenario, state, step));
+
+const awaitUntil = async (
+	ctx: IRehearsalRunContext,
+	scenario: IRehearsalScenario,
+	state: IScenarioState,
+	step: Extract<IRehearsalStep, { kind: 'await' }>,
 ): Promise<void> => {
+	const allowed = allowedWait(ctx, state);
 	const started = ctx.clock.now();
 	let lastTick = started;
 	let lastWake = started;
@@ -137,9 +183,9 @@ const awaitStep = async (
 		const busy = running && !checks.concluded;
 		if (!busy) idleMs += now - lastTick;
 		lastTick = now;
-		if (now - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000) {
+		if (now - started >= allowed.ms) {
 			state.failures.push(
-				`${step.until} not reached within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap for ${pending.join(', ')}`,
+				`${step.until} not reached within the ${allowed.text} for ${pending.join(', ')}`,
 			);
 			return;
 		}
@@ -218,22 +264,22 @@ const STEPS: TSteps = {
 		}
 		// Members of one batch flip in one request, and only while no pass is
 		// mid-read: a pass that reads between two requests batches one of them.
+		const allowed = allowedWait(ctx, state);
 		const started = ctx.clock.now();
-		for (;;) {
-			const open = await workingRun(ctx, state);
-			if (open === undefined) break;
-			if (
-				ctx.clock.now() - started >=
-				REHEARSAL_AWAIT_CAP_SECONDS * 1000
-			) {
-				state.failures.push(
-					`ready ${step.keys.join(', ')}: run ${String(open.id)} still ${open.status} after the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
-				);
-				return;
+		await spendingBudget(ctx, state, async () => {
+			for (;;) {
+				const open = await workingRun(ctx, state);
+				if (open === undefined) break;
+				if (ctx.clock.now() - started >= allowed.ms) {
+					state.failures.push(
+						`ready ${step.keys.join(', ')}: run ${String(open.id)} still ${open.status} after the ${allowed.text}`,
+					);
+					return;
+				}
+				await ctx.clock.wait(REHEARSAL_POLL_MS);
 			}
-			await ctx.clock.wait(REHEARSAL_POLL_MS);
-		}
-		await ctx.forge.readyTogether(numbers);
+			await ctx.forge.readyTogether(numbers);
+		});
 		return;
 	},
 	await: async (ctx, scenario, state, step) => {

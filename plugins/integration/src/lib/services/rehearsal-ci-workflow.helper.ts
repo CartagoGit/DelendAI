@@ -15,7 +15,6 @@ import {
 	REHEARSAL_CHECKOUT_ACTION,
 	REHEARSAL_CI_CHECK,
 	REHEARSAL_DIR,
-	REHEARSAL_JOB_TIMEOUT_MINUTES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 	REHEARSAL_TOKEN_RUN_NAME,
@@ -23,10 +22,8 @@ import {
 } from '../contracts/constants/rehearsal.constant';
 
 import { renderSignalJob } from './integration-adoption.service';
-import {
-	rehearsalDispatchTrigger,
-	rehearsalRunSteps,
-} from './rehearsal-dispatch-steps.helper';
+import { rehearsalDispatchTrigger } from './rehearsal-dispatch-steps.helper';
+import { rehearsalGroupJobs } from './rehearsal-groups-workflow.helper';
 
 const CI_TIMEOUT_MINUTES = 15;
 /** The user id of the GitHub Actions bot: its commit email carries it. */
@@ -183,7 +180,9 @@ export const renderRehearsalTokenWorkflow = (input: {
 /**
  * The workflow that runs the rehearsal: on demand, and on a push to a
  * publication branch that touches the integration code. It never runs on the
- * integration or release branch, and its job reports whatever happens.
+ * integration or release branch. Three jobs: `plan` cuts the catalogue into
+ * groups, `play` plays one group per job, `report` merges their reports and
+ * reports whatever happened.
  */
 export const renderRehearsalWorkflow = (input: {
 	readonly namespace: string;
@@ -215,17 +214,8 @@ export const renderRehearsalWorkflow = (input: {
 		'    actions: read',
 		'',
 		'jobs:',
-		`    ${REHEARSAL_WORKFLOW_NAME}:`,
-		`        name: ${REHEARSAL_WORKFLOW_NAME}`,
-		'        runs-on: ubuntu-latest',
-		`        timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
-		'        steps:',
-		...identitySteps(input.identity).map((line) =>
-			line === '' ? line : `            ${line}`,
-		),
-		`            - uses: ${REHEARSAL_CHECKOUT_ACTION}`,
-		'            - uses: ./.github/actions/setup-bun-repo',
-		...rehearsalRunSteps({
+		...rehearsalGroupJobs({
+			identity: identitySteps(input.identity),
 			token: tokenOf(input.identity),
 			command: 'bun run cli --',
 		}),
