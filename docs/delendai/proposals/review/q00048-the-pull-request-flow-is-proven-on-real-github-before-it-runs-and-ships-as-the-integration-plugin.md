@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: 685a2ba8-1a9e-490f-bf88-25af9947c97e
-last-correlation-id: 685a2ba8-1a9e-490f-bf88-25af9947c97e
+last-transition-id: 5e01d1e5-bafd-4ebb-97ce-7c17083e22f7
+last-correlation-id: 5e01d1e5-bafd-4ebb-97ce-7c17083e22f7
 last-transition-from: in-progress
-last-transition-at: 2026-11-15T18:04:58.348Z
+last-transition-at: 2026-11-15T22:45:35.310Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -369,8 +369,8 @@ Nothing of this repository is emitted into the other project.
 - **Files**: `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/test/test-load-reference.json`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts`, `vitest.shared.ts`
 - **Gate**: none
 - acceptance:
-  - "Two tiers. A unit spec (any spec that is not `*.e2e.spec.ts` and not under `tests/e2e/`) fails a test only when its real-clock time exceeds 200 ms; a `[<Nms]` in its name is documentation the judge ignores, the lint no longer requires one and refuses one with N over 200 in a unit spec the change touches (rename the spec to `*.e2e.spec.ts` or make it pure). An e2e test declares `[<Nms]` and fails only when it takes more than N times its shard's load factor"
-  - "The load factor is measured once per shard in `vitest.shared.ts` by a fixed benchmark (fifteen `git --version` spawns and a hundred small files), divided by the one committed reference `tools/scripts/test/test-load-reference.json`, clamped to 1..4, and passed to the workers by environment. `test:budgets:calibrate --from-ci --update` rewrites the reference to the median benchmark of that run's shards; each shard's digest carries its benchmark time"
+  - "Two tiers. A unit spec (any spec that is not `*.e2e.spec.ts` and not under `tests/e2e/`) fails a test only when its real-clock time exceeds 200 ms; a `[<Nms]` in its name is documentation the judge ignores, the lint no longer requires one and refuses one with N over 200 in a unit spec the change touches (rename the spec to `*.e2e.spec.ts` or make it pure). An e2e test declares `[<Nms]`; in a spec file the change touches it fails only when it takes more than N times the larger of its shard's load factors, and in a spec file the change does not touch it is only reported"
+  - "The load factor is measured at the start of each shard in `vitest.shared.ts` by a fixed benchmark (fifteen `git --version` spawns and a hundred small files), divided by the one committed reference `tools/scripts/test/test-load-reference.json`, clamped to 1..4, and passed to the workers by environment; an e2e test that runs over `N x` that factor makes its runner measure the same benchmark again right then, is judged against the larger of the two factors, and a failure names both. An e2e test whose spec file the change does not touch (and every test of an integration-branch push run) is only reported in the overrun digest with its time, budget and both factors, never failed; one whose spec file the change touches is judged strictly, and a fresh budget keeps its existing path. `test:budgets:calibrate --from-ci --update` rewrites the reference to the median benchmark of that run's shards; each shard's digest carries its benchmark time"
   - "The calibration writes e2e budgets as the larger of ceil(1.5 x) and 4 ms more than the longest CI time taken to the reference (divided by its shard's load factor), and never writes a budget into a unit spec. Files on the migration list stay exempt as before; the runner corrected by #1906 measures fake-timer tests on the real clock; an over-limit unit test fails only a change that touches its spec file, and is reported otherwise"
   - "A failure names the tier, the limit, the load factor and the measured time"
   - "Scenario F6 is green"
@@ -406,7 +406,7 @@ Nothing of this repository is emitted into the other project.
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: review
 - **DependsOn**: [S8]
-- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`
+- **Files**: `plugins/integration/src/lib/services/rehearsal-real-ci.service.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `plugins/integration/src/lib/services/rehearsal-pool.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-pool.spec.ts`, `plugins/integration/src/lib/services/rehearsal-wait.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-wait.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`--mode=real` runs the real ci.yml (branch filters rendered for the rehearsal branch) on each synthetic pull request with its declared zones, and the real scan workflows on each tip"

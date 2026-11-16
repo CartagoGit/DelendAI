@@ -36,7 +36,10 @@ const asReviewUnit = (args: readonly string[]): readonly string[] => [
  * batch, or on a proposal waiting in review/, becomes a review unit; a
  * kind other than review on the batch is refused. An explicit kind on a
  * proposal in review/ stays the caller's: a fix after review is
- * implemented there, and independence is checked elsewhere.
+ * implemented there, and independence is checked elsewhere. A slice that
+ * names a slice of the proposal, with no kind, is neither: `--slice=S12`
+ * handed out a review unit where the agent meant to reopen the slice, and
+ * the commit guard refused its work (x01073). It is refused, naming both.
  */
 export const withReviewKind = async (
 	root: string,
@@ -69,7 +72,15 @@ export const withReviewKind = async (
 		docsDir: await readWorkspaceDocsDir(root),
 		proposal,
 	});
-	return path?.split('/').includes('review') === true
-		? { args: asReviewUnit(args) }
-		: { args };
+	if (path?.split('/').includes('review') !== true) return { args };
+	const slice = scalarArg(args, 'slice');
+	return slice !== undefined && slice !== 'all'
+		? {
+				args,
+				refusal: refused(
+					`${proposal} is in review, and \`--slice=${slice}\` names one of its slices without saying what kind of unit to enter: a review unit was handed out where a reopened slice was meant.`,
+					`Reopen the slice with --kind=implement, or review the proposal with --kind=review (delendai review next --agent=<you>).`,
+				),
+			}
+		: { args: asReviewUnit(args) };
 };

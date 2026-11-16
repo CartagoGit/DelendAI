@@ -128,3 +128,11 @@ export const REHEARSAL_RUNNING_STATUSES: ReadonlySet<string> = new Set([
 	'pending',
 	'requested',
 ]);
+
+/**
+ * The shape of a synthetic head under the run's root: the project's own
+ * publication shape (`<agent>/<kind>/<proposal>-<slice>-g<n>/<topic>`), so the
+ * project's head-shape lint judges it as it judges any publication. The
+ * run's policy names the root as its publication prefix.
+ */
+export const REHEARSAL_HEAD_UNIT = 'rehearsal/implement/x00000-S1-g1';

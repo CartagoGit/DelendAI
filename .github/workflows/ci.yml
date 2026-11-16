@@ -70,9 +70,12 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop') }}
 
 jobs:
-    # One runner and one setup for the static checks, instead of one each. Every
-    # step keeps the plan entry of the job it used to be (job-scope.constant.ts),
-    # and `static-checks` runs when any of them does.
+    # The static checks run side by side: three jobs, each with its own runner
+    # and setup, balanced by measured step time (x01075) so the slowest is
+    # about 36 s of work instead of the 85 s the one job took in series. Every
+    # step keeps the plan entry of the check it used to be (job-scope.constant.ts)
+    # and each job runs when any of its checks does. The list of checks is read
+    # from these steps by their plan entries, in whichever job holds them.
     static-checks:
         name: static-checks
         needs: plan-scope
@@ -128,6 +131,28 @@ jobs:
               run: |
                   set -euo pipefail
                   bun tools/scripts/lint/run-together.script.ts lint:job:docs
+
+    static-checks-b:
+        name: static-checks-b
+        needs: plan-scope
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks-b'] }}
+        runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
+        timeout-minutes: 30
+        steps:
+            # Bootstraps the local composite action - see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
 
 
             - name: Rebuild the proposal registry cache
@@ -270,6 +295,28 @@ jobs:
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
 
+    static-checks-c:
+        name: static-checks-c
+        needs: plan-scope
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks-c'] }}
+        runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
+        timeout-minutes: 30
+        steps:
+            # Bootstraps the local composite action - see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
 
             - name: Run governance and proposal lints
               if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-governance'] }}
@@ -308,12 +355,6 @@ jobs:
             - name: Verify generated artifacts stay in sync
               if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check'] }}
               run: bun run check:generated
-
-
-
-
-
-
 
     typecheck:
         name: typecheck
@@ -1290,6 +1331,8 @@ jobs:
         if: always()
         needs:
             - static-checks
+            - static-checks-b
+            - static-checks-c
             - typecheck
             - plan-scope
             - plan-tests
@@ -1487,7 +1530,7 @@ jobs:
     # token, and the integrator's own events settle it.
     integration-signal:
         name: integration-signal
-        needs: [static-checks, typecheck, plan-scope, plan-tests, tests-zone, tests, quality-gate, verify-runtime, tokens-budget-real, site, pack-smoke, metrics-gate, delendai-rebuild-digest, sqlite-cutover-ready, build-clean, delendai-validate, ref-lifecycle, develop-protection-live]
+        needs: [static-checks, static-checks-b, static-checks-c, typecheck, plan-scope, plan-tests, tests-zone, tests, quality-gate, verify-runtime, tokens-budget-real, site, pack-smoke, metrics-gate, delendai-rebuild-digest, sqlite-cutover-ready, build-clean, delendai-validate, ref-lifecycle, develop-protection-live]
         if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')) }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
