@@ -8,7 +8,6 @@
 import {
 	REHEARSAL_AWAIT_CAP_SECONDS,
 	REHEARSAL_POLL_MS,
-	REHEARSAL_RUNNING_STATUSES,
 } from '../contracts/constants/rehearsal.constant';
 import type { ILogScan } from '../contracts/interfaces/rehearsal-evidence.interface';
 import type {
@@ -19,6 +18,7 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { secretHitsIn } from './rehearsal-cleanup.service';
+import { openRuns } from './rehearsal-wait.helper';
 
 interface IScanPorts {
 	readonly forge: Pick<IRehearsalForge, 'runs' | 'runLog'>;
@@ -50,9 +50,7 @@ const concluded = async (
 	const started = ports.clock.now();
 	for (;;) {
 		const runs = await runsOf(ports, one);
-		const open = [...runs.values()].some((run) =>
-			REHEARSAL_RUNNING_STATUSES.has(run.status),
-		);
+		const open = openRuns([...runs.values()]).length > 0;
 		if (
 			!open ||
 			ports.clock.now() - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000
@@ -68,8 +66,10 @@ const scanScenario = async (
 ): Promise<ILogScan> => {
 	const hits: string[] = [];
 	const unread: string[] = [];
-	for (const run of (await concluded(ports, one)).values()) {
-		if (REHEARSAL_RUNNING_STATUSES.has(run.status)) {
+	const runs = [...(await concluded(ports, one)).values()];
+	const open = new Set(openRuns(runs).map((run) => run.id));
+	for (const run of runs) {
+		if (open.has(run.id)) {
 			unread.push(
 				`${run.workflow} run ${String(run.id)}: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
 			);

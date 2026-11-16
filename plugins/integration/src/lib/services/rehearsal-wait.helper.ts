@@ -9,6 +9,7 @@ import type {
 	IRehearsalRun,
 	IRehearsalScenario,
 } from '../contracts/interfaces/rehearsal.interface';
+import { REHEARSAL_RUNNING_STATUSES } from '../contracts/constants/rehearsal.constant';
 
 /** Workflows that are the integrator's own, not a check the pull request must pass. */
 const INTEGRATOR_WORKFLOWS: ReadonlySet<string> = new Set([
@@ -17,16 +18,49 @@ const INTEGRATOR_WORKFLOWS: ReadonlySet<string> = new Set([
 ]);
 const RED = new Set(['failure', 'timed_out', 'startup_failure']);
 
-/** The runs of the checks the head's own pull request started, on the head's current commit. */
+/**
+ * The newest run of each workflow on each commit, by `createdAt` and then by
+ * the higher id. An older run of the same workflow on the same commit is
+ * superseded: the forge judges the latest, so no wait, scan or gate reads an
+ * older one.
+ */
+export const latestRuns = (
+	runs: readonly IRehearsalRun[],
+): readonly IRehearsalRun[] => {
+	const newest = new Map<string, IRehearsalRun>();
+	for (const run of runs) {
+		const key = `${run.headSha}\n${run.workflow}`;
+		const held = newest.get(key);
+		if (
+			held === undefined ||
+			run.createdAt > held.createdAt ||
+			(run.createdAt === held.createdAt && run.id > held.id)
+		)
+			newest.set(key, run);
+	}
+	return [...newest.values()];
+};
+
+/** The latest runs that are queued or in progress. */
+export const openRuns = (
+	runs: readonly IRehearsalRun[],
+): readonly IRehearsalRun[] =>
+	latestRuns(runs).filter((run) =>
+		REHEARSAL_RUNNING_STATUSES.has(run.status),
+	);
+
+/** The latest run of each check the head's own pull request started, on the head's current commit. */
 export const checkRuns = (
 	runs: readonly IRehearsalRun[],
 	pull: Pick<IRehearsalPullState, 'headSha'>,
 ): readonly IRehearsalRun[] =>
-	runs.filter(
-		(run) =>
-			run.headSha === pull.headSha &&
-			run.event === 'pull_request' &&
-			!INTEGRATOR_WORKFLOWS.has(run.workflow),
+	latestRuns(
+		runs.filter(
+			(run) =>
+				run.headSha === pull.headSha &&
+				run.event === 'pull_request' &&
+				!INTEGRATOR_WORKFLOWS.has(run.workflow),
+		),
 	);
 
 /** Whether every check run of the head's current commit has finished, and at least one exists. */

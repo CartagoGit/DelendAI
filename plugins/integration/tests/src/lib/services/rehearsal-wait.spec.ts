@@ -36,11 +36,14 @@ const run = (over: Partial<IRehearsalRun>): IRehearsalRun => ({
 });
 
 /** A forge with the one pull request open and the given runs on every branch; a clock that moves only when waited on. */
-const world = (runs: (branch: string) => readonly IRehearsalRun[]) => {
+const world = (
+	runs: (branch: string) => readonly IRehearsalRun[],
+	pullAt: (now: number) => IRehearsalPullState = () => pull,
+) => {
 	let now = 0;
 	const ctx = fakePartial<IRehearsalRunContext>({
 		forge: fakePartial<IRehearsalRunContext['forge']>({
-			pulls: async () => [pull],
+			pulls: async () => [pullAt(now)],
 			runs: async (branch: string) => runs(branch),
 		}),
 		clock: {
@@ -130,5 +133,30 @@ describe('a wait for a merge', () => {
 		await runStep(ctx, scenario(false), state, merged);
 		expect(state.failures[0]).toContain('merged not reached');
 		expect(elapsed()).toBeLessThanOrEqual(BUDGET_SECONDS * 1000 + POLL_MS);
+	});
+
+	it('[<50ms] keeps waiting behind a superseded failure and then reports merged', async () => {
+		const stale = run({
+			id: 10,
+			conclusion: 'failure',
+			createdAt: '2026-11-16T04:28:05Z',
+		});
+		const fresh = run({
+			id: 11,
+			conclusion: 'success',
+			createdAt: '2026-11-16T04:28:33Z',
+		});
+		const { ctx, state } = world(
+			(branch) => (branch === 'h' ? [stale, fresh] : []),
+			(now) =>
+				now >= 30_000
+					? fakePartial<IRehearsalPullState>({
+							...pull,
+							mergedAt: 'done',
+						})
+					: pull,
+		);
+		await runStep(ctx, scenario(false), state, merged);
+		expect(state.failures).toEqual([]);
 	});
 });

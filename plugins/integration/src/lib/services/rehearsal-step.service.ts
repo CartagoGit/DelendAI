@@ -7,7 +7,6 @@ import {
 	REHEARSAL_AWAIT_CAP_SECONDS,
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
-	REHEARSAL_RUNNING_STATUSES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 } from '../contracts/constants/rehearsal.constant';
@@ -22,7 +21,7 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { receive } from './rehearsal-receive.helper';
-import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
+import { awaitedChecks, openRuns, redEndsWait } from './rehearsal-wait.helper';
 import {
 	pullChanges,
 	pullHead,
@@ -129,12 +128,7 @@ const somethingRuns = async (
 		...(await ctx.forge.pulls(state.integration)).map((pull) => pull.head),
 	]);
 	for (const head of heads)
-		if (
-			(await ctx.forge.runs(head)).some((run) =>
-				REHEARSAL_RUNNING_STATUSES.has(run.status),
-			)
-		)
-			return true;
+		if (openRuns(await ctx.forge.runs(head)).length > 0) return true;
 	return false;
 };
 
