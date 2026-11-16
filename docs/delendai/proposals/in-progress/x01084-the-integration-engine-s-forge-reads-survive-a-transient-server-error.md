@@ -2,10 +2,14 @@
 id: x01084
 title: "The integration engine's forge reads survive a transient server error"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: 293a8023-47e9-4343-a349-d3878a13584c
+last-correlation-id: 293a8023-47e9-4343-a349-d3878a13584c
+last-transition-from: ready
+last-transition-at: 2026-11-16T14:03:15.304Z
 ---
 
 # x01084 — The integration engine's forge reads survive a transient server error
