@@ -62,6 +62,9 @@ export const REHEARSAL_REAL_SCAN_FILE = 'codeql.yml';
 /** A workflow that writes with the workflow token, on a label, so the run can reproduce what such writes do. */
 export const REHEARSAL_TOKEN_WORKFLOW = 'rehearsal-token.yml';
 
+/** The name its runs carry (the workflow's `name`), by which the harness finds the run a label started. */
+export const REHEARSAL_TOKEN_RUN_NAME = 'rehearsal-token';
+
 /** Labels the token workflow reacts to, under the run's label prefix. */
 export const REHEARSAL_TOKEN_PUSH_LABEL = 'token-push';
 export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';

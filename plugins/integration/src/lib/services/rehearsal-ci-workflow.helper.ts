@@ -18,6 +18,7 @@ import {
 	REHEARSAL_JOB_TIMEOUT_MINUTES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
+	REHEARSAL_TOKEN_RUN_NAME,
 	REHEARSAL_WORKFLOW_NAME,
 } from '../contracts/constants/rehearsal.constant';
 
@@ -131,7 +132,7 @@ export const renderRehearsalTokenWorkflow = (input: {
 	const push = `${input.labelPrefix}${REHEARSAL_TOKEN_PUSH_LABEL}`;
 	const open = `${input.labelPrefix}${REHEARSAL_TOKEN_OPEN_LABEL}`;
 	return lines(
-		'name: rehearsal-token',
+		`name: ${REHEARSAL_TOKEN_RUN_NAME}`,
 		'',
 		'on:',
 		'    pull_request:',
