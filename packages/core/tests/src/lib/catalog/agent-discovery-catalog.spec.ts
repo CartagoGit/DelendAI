@@ -276,6 +276,60 @@ describe('buildCatalog', async () => {
 		expect(result.counts).toEqual({ tools: 2, skills: 2, proposals: 2 });
 	});
 
+	it('[<50ms] omits a core tool plugin in full mode but keeps every other plugin and every name', async () => {
+		const full = buildCatalog(sources, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+
+		expect(full.tools.map((entry) => entry.name)).toEqual(
+			tools.map((entry) => entry.name).sort(),
+		);
+		const core = full.tools.find(
+			(entry) => entry.name === 'delendai_agent_catalog',
+		);
+		const plugin = full.tools.find(
+			(entry) => entry.name === 'delendai_search_search',
+		);
+		expect(core).not.toHaveProperty('plugin');
+		expect(core?.summary).toBe('Unified catalog entrypoint');
+		expect(plugin?.plugin).toBe('search');
+	});
+
+	it('[<50ms] omits the skill body path in full mode but keeps every other skill field and id', async () => {
+		const full = buildCatalog(sources, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+		const compact = buildCatalog(sources, {
+			mode: 'compact',
+			now: fixedNow,
+			server,
+		});
+
+		expect(full.skills.map((entry) => entry.id)).toEqual(
+			skills.map((entry) => entry.id).sort(),
+		);
+		for (const skill of full.skills) {
+			expect(skill).not.toHaveProperty('bodyPath');
+			expect(Object.keys(skill)).toEqual(
+				expect.arrayContaining([
+					'id',
+					'version',
+					'minCoreVersion',
+					'summary',
+					'appliesTo',
+					'tags',
+				]),
+			);
+		}
+		expect(
+			compact.skills.every((skill) => skill.bodyPath !== undefined),
+		).toBe(true);
+	});
+
 	it('returns a compact text summary while keeping the full structured catalog', async () => {
 		const handler = await registerToolHandler();
 		const result = await handler({ mode: 'full' });

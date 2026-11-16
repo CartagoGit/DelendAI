@@ -581,7 +581,9 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 
 	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');
-		const catalogTextBytes = async (
+		// What the model receives is the structured payload; the text is a
+		// 34 B summary line, so measuring it let the catalog grow unchecked.
+		const catalogPayloadBytes = async (
 			name: string,
 			args: Record<string, unknown>,
 		): Promise<number> => {
@@ -589,16 +591,16 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				name,
 				arguments: args,
 			});
-			const text = (
-				res.content as Array<{ type: string; text: string }>
-			)[0]?.text;
-			return Buffer.byteLength(text ?? '', 'utf8');
+			return jsonBytes(res.structuredContent);
 		};
 		try {
-			const compact = await catalogTextBytes('delendai_agent_catalog', {
-				mode: 'compact',
-			});
-			const full = await catalogTextBytes('delendai_agent_catalog', {
+			const compact = await catalogPayloadBytes(
+				'delendai_agent_catalog',
+				{
+					mode: 'compact',
+				},
+			);
+			const full = await catalogPayloadBytes('delendai_agent_catalog', {
 				mode: 'full',
 			});
 

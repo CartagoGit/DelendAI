@@ -69,7 +69,8 @@ describe('the agent catalog by section', () => {
 	it('fills what a skill row leaves out', async () => {
 		const { service } = harness();
 		const [, bare] = await service.getSkills();
-		expect(bare).toMatchObject({ version: '0.0.0', bodyPath: '' });
+		expect(bare).toMatchObject({ version: '0.0.0' });
+		expect(bare).not.toHaveProperty('bodyPath');
 	});
 
 	it('filters a section by query', async () => {

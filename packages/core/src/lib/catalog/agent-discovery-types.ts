@@ -5,7 +5,7 @@ export type CatalogSection = 'tools' | 'skills' | 'proposals';
 
 export interface IToolSummary {
 	readonly name: string;
-	/** Omitted for core tools in compact responses (infer from namespace). */
+	/** Omitted for core tools (it equals `server.namespacePrefix`). */
 	readonly plugin?: string;
 	readonly summary?: string;
 	readonly tags?: readonly string[];
@@ -21,7 +21,8 @@ export interface ISkillSummary {
 	/** Plugin namespaces this skill applies to (`@delendai/*` for transversal). */
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
-	readonly bodyPath: string;
+	/** Omitted from `full` catalogs: the skill tool's listing returns it. */
+	readonly bodyPath?: string;
 	/** Plugin the skill belongs to, when its frontmatter names one. */
 	readonly plugin?: string;
 	/** Fully qualified names of the tools the skill explains. */

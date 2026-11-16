@@ -13,34 +13,51 @@ import {
 const sortBy = <T>(items: readonly T[], select: (item: T) => string): T[] =>
 	[...items].sort((left, right) => select(left).localeCompare(select(right)));
 
+/**
+ * A core tool's plugin is the namespace prefix the response already
+ * carries in `server.namespacePrefix`, so only a plugin that differs from
+ * it is worth its bytes — in either mode.
+ */
+const pluginField = (
+	tool: IToolSummary,
+	corePlugin: string,
+): Pick<IToolSummary, 'plugin'> =>
+	tool.plugin === undefined || tool.plugin === corePlugin
+		? {}
+		: { plugin: tool.plugin };
+
 const cloneTool = (
 	tool: IToolSummary,
 	mode: 'compact' | 'full',
 	corePlugin: string,
 ): IToolSummary => {
 	if (mode === 'compact') {
-		return {
-			name: tool.name,
-			...(tool.plugin === corePlugin ? {} : { plugin: tool.plugin }),
-		};
+		return { name: tool.name, ...pluginField(tool, corePlugin) };
 	}
 	return {
 		name: tool.name,
-		...(tool.plugin !== undefined ? { plugin: tool.plugin } : {}),
+		...pluginField(tool, corePlugin),
 		...(tool.summary !== undefined ? { summary: tool.summary } : {}),
 		...(tool.tags !== undefined ? { tags: [...tool.tags] } : {}),
 		...(tool.effects !== undefined ? { effects: [...tool.effects] } : {}),
 	};
 };
 
-const cloneSkill = (skill: ISkillSummary): ISkillSummary => ({
+/**
+ * `bodyPath` is where the skill tool loads the body from; the skill tool's
+ * own listing already returns it, so the full catalog does not repeat it.
+ */
+const cloneSkill = (
+	skill: ISkillSummary,
+	mode: 'compact' | 'full',
+): ISkillSummary => ({
 	id: skill.id,
 	version: skill.version,
 	minCoreVersion: skill.minCoreVersion,
 	summary: skill.summary,
 	appliesTo: [...skill.appliesTo],
 	tags: [...skill.tags],
-	bodyPath: skill.bodyPath,
+	...(mode === 'full' ? {} : { bodyPath: skill.bodyPath }),
 	...(skill.plugin !== undefined ? { plugin: skill.plugin } : {}),
 	...(skill.tools !== undefined ? { tools: [...skill.tools] } : {}),
 });
@@ -97,7 +114,7 @@ export const buildCatalog = (
 	const tools = allTools.map((tool) =>
 		cloneTool(tool, opts.mode, opts.server.namespacePrefix),
 	);
-	const skills = allSkills.map(cloneSkill);
+	const skills = allSkills.map((skill) => cloneSkill(skill, opts.mode));
 	const proposals = visibleProposals.map((proposal) =>
 		cloneProposal(proposal),
 	);

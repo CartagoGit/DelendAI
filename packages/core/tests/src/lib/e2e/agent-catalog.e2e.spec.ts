@@ -204,11 +204,12 @@ describe('e2e: agent catalog', async () => {
 		);
 		expect(agentLock?.plugin).toBe('proposals');
 
-		// Core tools keep the host namespace as their plugin.
+		// A core tool names no plugin: it equals the namespace prefix.
 		const overview = tools.find(
 			(tool) => tool.name === 'delendai_overview',
 		);
-		expect(overview?.plugin).toBe('delendai');
+		expect(overview).toBeDefined();
+		expect(overview).not.toHaveProperty('plugin');
 	});
 
 	it('finds the catalog tool itself through section-scoped querying', async () => {
