@@ -18,7 +18,9 @@ import {
 	withEphemeralExec,
 } from '@delendai/core/public';
 import type {
+	IArgvExec,
 	IExternalTool,
+	IExternalToolRun,
 	IMcpPluginContext,
 } from '@delendai/core/contracts';
 import type {
@@ -100,39 +102,58 @@ const keepCpuProfile = async (
 	return destination;
 };
 
+/**
+ * A failed step with the reason a reader needs: the deadline that expired
+ * is named, since a killed child writes nothing else to say so.
+ */
+const failedRun = (
+	run: IExternalToolRun,
+	step: string,
+	timeoutMs: number,
+): IPerfProfileExecution => {
+	const output = `${run.stderr}${run.stdout}`.trim();
+	const detail = run.timedOut
+		? `The ${step} passed its ${String(timeoutMs)} ms deadline.${output.length > 0 ? ` ${output}` : ''}`
+		: output;
+	return {
+		ok: false,
+		profiler: NODE_PROF.id,
+		code: run.code,
+		timedOut: run.timedOut,
+		...(detail.length > 0 ? { detail } : {}),
+	};
+};
+
 const runNodeProf = async (
 	ctx: IMcpPluginContext,
 	cwd: string,
 	timeoutMs: number,
 	format: PerfProfileFormat,
+	exec: IArgvExec | undefined,
 ): Promise<IPerfProfileExecution> => {
 	const stamp = randomUUID().slice(0, 8);
 	const tempDir = await ephemeralProfileDir(ctx, stamp);
 	try {
-		const profile = await runExternalTool({
-			tool: NODE_PROF,
-			args: [
-				'--prof',
-				...(format === 'flamegraph'
-					? ['--cpu-prof', `--cpu-prof-dir=${tempDir}`]
-					: []),
-				'-e',
-				inlineWorkload(),
-				cwd,
-			],
-			cwd: tempDir,
-			timeoutMs,
-			maxOutputBytes: 32 * 1024,
-		});
+		const profile = await runExternalTool(
+			{
+				tool: NODE_PROF,
+				args: [
+					'--prof',
+					...(format === 'flamegraph'
+						? ['--cpu-prof', `--cpu-prof-dir=${tempDir}`]
+						: []),
+					'-e',
+					inlineWorkload(),
+					cwd,
+				],
+				cwd: tempDir,
+				timeoutMs,
+				maxOutputBytes: 32 * 1024,
+			},
+			exec,
+		);
 		if (!profile.ok) {
-			const detail = `${profile.stderr}${profile.stdout}`.trim();
-			return {
-				ok: false,
-				profiler: NODE_PROF.id,
-				code: profile.code,
-				timedOut: profile.timedOut,
-				...(detail.length > 0 ? { detail } : {}),
-			};
+			return failedRun(profile, 'profiling run', timeoutMs);
 		}
 
 		const logs = (await readdir(tempDir)).filter((entry) =>
@@ -149,14 +170,19 @@ const runNodeProf = async (
 			};
 		}
 
-		const processed = await runExternalTool({
-			tool: NODE_PROF,
-			args: ['--prof-process', join(tempDir, logFile)],
-			cwd: tempDir,
-			timeoutMs,
-			maxOutputBytes: 128 * 1024,
-		});
-		const detail = `${processed.stderr}${processed.stdout}`.trim();
+		const processed = await runExternalTool(
+			{
+				tool: NODE_PROF,
+				args: ['--prof-process', join(tempDir, logFile)],
+				cwd: tempDir,
+				timeoutMs,
+				maxOutputBytes: 128 * 1024,
+			},
+			exec,
+		);
+		if (!processed.ok) {
+			return failedRun(processed, 'log processing', timeoutMs);
+		}
 		const flamegraph =
 			format === 'flamegraph'
 				? await keepCpuProfile(
@@ -171,7 +197,6 @@ const runNodeProf = async (
 			...(flamegraph === undefined ? {} : { flamegraph }),
 			code: processed.code,
 			timedOut: processed.timedOut,
-			...(!processed.ok && detail.length > 0 ? { detail } : {}),
 		};
 	} finally {
 		await rm(tempDir, { recursive: true, force: true }).catch(
@@ -198,6 +223,13 @@ export const realPerfProfileDeps = (
 		runProfiler: async (
 			_profilerId: string,
 			input: IPerfProfileCaptureInput,
-		) => runNodeProf(ctx, input.cwd, input.timeoutMs, input.format),
+		) =>
+			runNodeProf(
+				ctx,
+				input.cwd,
+				input.timeoutMs,
+				input.format,
+				options.exec,
+			),
 	};
 };
