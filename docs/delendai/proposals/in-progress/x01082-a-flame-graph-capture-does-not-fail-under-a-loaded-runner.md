@@ -2,10 +2,14 @@
 id: x01082
 title: "A flame-graph capture does not fail under a loaded runner"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: cff04a5b-48a1-4d8d-96bb-16e16c31d37d
+last-correlation-id: cff04a5b-48a1-4d8d-96bb-16e16c31d37d
+last-transition-from: ready
+last-transition-at: 2026-11-16T09:01:22.355Z
 ---
 
 # x01082 — A flame-graph capture does not fail under a loaded runner
