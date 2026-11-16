@@ -256,6 +256,7 @@ describe('unitHere', () => {
 			'delendai/wip/a/implement/x00001-S2-g2/the-fix',
 		);
 		expect(await unitHere(dir, 'x00001')).toEqual([
+			'--kind=implement',
 			'--slice=S2',
 			'--generation=2',
 			'--topic=the-fix',
@@ -288,6 +289,7 @@ describe('withUnitHere', () => {
 		const dir = inUnit();
 		expect(await withUnitHere(['--proposal=x00001'], dir)).toEqual([
 			'--proposal=x00001',
+			'--kind=implement',
 			'--slice=S2',
 			'--generation=2',
 			'--topic=fix',
