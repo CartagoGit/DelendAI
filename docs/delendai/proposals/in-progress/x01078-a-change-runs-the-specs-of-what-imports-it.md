@@ -42,7 +42,7 @@ Decisions (nothing is left undecided):
 
 ### S1 — The touched scope adds the mirrors of direct importers
 - **Status**: review
-- **Files**: `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`, `new:packages/cli/src/commands/work-enter.command.e2e.spec.ts`
+- **Files**: `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-enter.command.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`bunx vitest run tools/scripts/ci/test-scope.spec.ts` passes a case where the file set of #2231 selects `packages/cli/src/commands/work.command.spec.ts`."
