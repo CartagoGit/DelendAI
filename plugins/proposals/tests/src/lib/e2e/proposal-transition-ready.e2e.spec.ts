@@ -17,18 +17,26 @@ import {
 
 interface IOutput {
 	readonly ok: boolean;
+	readonly to?: string;
 	readonly error?: { readonly reason: string; readonly code?: string };
 }
 
-const seedPaused = async (
+const EVIDENCE = {
+	timestamp: new Date().toISOString(),
+	exitCode: 0,
+	logPath: '.cache/validate.log',
+};
+
+const seedIn = async (
 	server: IAssembledProposalsServer,
 	id: string,
 	decisions: string,
+	status = 'paused',
 ): Promise<string> => {
 	const dir = join(
 		server.workspace,
 		'docs/delendai/proposals',
-		proposalFolderFor('paused', 'feat'),
+		proposalFolderFor(status as 'paused', 'feat'),
 	);
 	mkdirSync(dir, { recursive: true });
 	const file = join(dir, `${id}-seed.md`);
@@ -37,7 +45,7 @@ const seedPaused = async (
 		[
 			'---',
 			`id: ${id}`,
-			'status: paused',
+			`status: ${status}`,
 			'type: proposal',
 			'kind: feat',
 			'title: seed',
@@ -72,7 +80,7 @@ describe('e2e: the move to ready', async () => {
 	});
 
 	it('[<3000ms] refuses a proposal whose Decisions leave a question open, and keeps the file', async () => {
-		const file = await seedPaused(harness, 'f08101', 'Which one?');
+		const file = await seedIn(harness, 'f08101', 'Which one?');
 		const res = await harness.callTool<IOutput>(
 			'delendai_proposals_proposal_transition',
 			{ id: 'f08101', to: 'ready', reason: 'plan is complete' },
@@ -84,11 +92,70 @@ describe('e2e: the move to ready', async () => {
 	});
 
 	it('[<3000ms] moves a proposal with nothing left to work out', async () => {
-		await seedPaused(harness, 'f08102', 'none');
+		await seedIn(harness, 'f08102', 'none');
 		const res = await harness.callTool<IOutput>(
 			'delendai_proposals_proposal_transition',
 			{ id: 'f08102', to: 'ready', reason: 'plan is complete' },
 		);
 		expect(res.structured.ok).toBe(true);
+	});
+	const move = (id: string, to: string, extra: object = {}) =>
+		harness.callTool<IOutput>('delendai_proposals_proposal_transition', {
+			id,
+			to,
+			reason: 'step',
+			...extra,
+		});
+
+	it('[<3000ms] walks ready, in-progress and review, and refuses the illegal moves', async () => {
+		await seedIn(harness, 'f08103', 'none', 'ready');
+		expect((await move('f08103', 'done')).structured.ok).toBe(false);
+		expect((await move('f08103', 'in-progress')).structured.ok).toBe(true);
+		expect((await move('f08103', 'ready')).structured.ok).toBe(false);
+		expect(
+			(await move('f08103', 'review', { validateEvidence: EVIDENCE }))
+				.structured.ok,
+		).toBe(false);
+		expect((await move('f08103', 'bogus')).structured.ok).toBe(false);
+		expect((await move('f08199', 'ready')).structured.ok).toBe(false);
+	});
+
+	it('[<3000ms] asks for a reason, replays an idempotent key and honours force', async () => {
+		await seedIn(harness, 'f08104', 'none', 'ready');
+		const empty = await harness.callTool<IOutput>(
+			'delendai_proposals_proposal_transition',
+			{ id: 'f08104', to: 'in-progress', reason: '  ' },
+		);
+		expect(empty.structured.ok).toBe(false);
+		const keyed = { idempotencyKey: 'key-f08104-0001' };
+		expect((await move('f08104', 'in-progress', keyed)).structured.ok).toBe(
+			true,
+		);
+		expect((await move('f08104', 'in-progress', keyed)).structured.ok).toBe(
+			true,
+		);
+		expect(
+			(await move('f08104', 'ready', { force: true })).structured.ok,
+		).toBeDefined();
+	});
+
+	it('[<6000ms] pauses, blocks on a dependency, and refuses the ready move with force off', async () => {
+		await seedIn(harness, 'f08105', 'none', 'ready');
+		expect((await move('f08105', 'paused')).structured.ok).toBe(true);
+		expect(
+			(await move('f08105', 'ready', { force: true })).structured.ok,
+		).toBeDefined();
+		await seedIn(harness, 'f08106', 'TBD', 'ready');
+		expect(
+			(
+				await harness.callTool<IOutput>(
+					'delendai_proposals_proposal_transition',
+					{ id: 'f08106', to: 'paused', reason: 'blocked by f08105' },
+				)
+			).structured.ok,
+		).toBeDefined();
+		const refused = await move('f08106', 'ready');
+		expect(refused.structured.ok).toBe(false);
+		expect((await move('f08106', 'retired')).structured.ok).toBeDefined();
 	});
 });
