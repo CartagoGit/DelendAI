@@ -2,10 +2,14 @@
 id: x01086
 title: "One gate of the proof runs alone, exactly as the proof runs it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: cd2af7fe-c0b3-4fc7-9ef1-8fb3a163ca8d
+last-correlation-id: cd2af7fe-c0b3-4fc7-9ef1-8fb3a163ca8d
+last-transition-from: ready
+last-transition-at: 2026-11-16T18:30:34.028Z
 ---
 
 # x01086 — One gate of the proof runs alone, exactly as the proof runs it
