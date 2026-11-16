@@ -12,6 +12,7 @@ import {
 	FRESH_ENV,
 	LOAD_BENCH_ENV,
 	LOAD_FACTOR_ENV,
+	LOAD_REFERENCE_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
@@ -186,6 +187,8 @@ if (process.env[LOAD_FACTOR_ENV] === undefined) {
 			),
 		) as { referenceMs: number }
 	).referenceMs;
+	// Kept for the workers: a test that runs over measures the load again.
+	process.env[LOAD_REFERENCE_ENV] = String(reference);
 	const benchMs = measureLoadBenchmark();
 	process.env[LOAD_BENCH_ENV] = benchMs.toFixed(1);
 	process.env[LOAD_FACTOR_ENV] = String(loadFactorOf(benchMs, reference));

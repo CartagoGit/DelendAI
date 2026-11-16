@@ -32,6 +32,8 @@ export interface IActivationPorts {
 	readonly renderWorkflows: (
 		configText: string,
 	) => Promise<readonly IActivationFile[]>;
+	/** A workflow file's current content, or undefined when it is absent. */
+	readonly readWorkflow: (path: string) => Promise<string | undefined>;
 	readonly writeWorkflow: (path: string, content: string) => Promise<void>;
 	readonly removeWorkflow: (path: string) => Promise<void>;
 }

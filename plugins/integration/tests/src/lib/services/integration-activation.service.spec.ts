@@ -81,11 +81,13 @@ const fake = (over: Partial<IActivationPorts> = {}): IFake => {
 						{ path: 'land.yml', content: undefined },
 						{ path: 'land-signal.yml', content: undefined },
 					],
+		readWorkflow: async (path) => files.get(path),
 		writeWorkflow: async (path, content) => {
 			files.set(path, content);
 		},
 		removeWorkflow: async (path) => {
 			removed.push(path);
+			files.delete(path);
 		},
 		...over,
 	};
@@ -233,5 +235,75 @@ describe('integration activation', () => {
 
 	it('[<50ms] never writes the engine into a config that does not parse', () => {
 		expect(() => withEngine('{ "a": ', 'land')).toThrow(/does not parse/u);
+	});
+
+	it('[<50ms] writes nothing when the render throws', async () => {
+		const f = fake({
+			renderWorkflows: async () => {
+				throw new Error('render boom');
+			},
+		});
+		await expect(activateIntegration(f.ports)).rejects.toThrow(
+			/render boom/u,
+		);
+		expect(f.config.text).toBe(CONFIG);
+		expect(f.files.size).toBe(0);
+	});
+
+	it('[<50ms] restores the first workflow and leaves the config when the second write fails', async () => {
+		const f = fake();
+		const base = f.ports.writeWorkflow;
+		const writes: string[] = [];
+		const failing: IActivationPorts = {
+			...f.ports,
+			writeWorkflow: async (path, content) => {
+				writes.push(path);
+				if (path === 'land-signal.yml') throw new Error('disk full');
+				await base(path, content);
+			},
+		};
+		await expect(activateIntegration(failing)).rejects.toThrow(
+			/land-signal\.yml: disk full; restored: land\.yml, land-signal\.yml/u,
+		);
+		expect(f.config.text).toBe(CONFIG);
+		expect(f.files.has('land.yml')).toBe(false);
+		expect(f.removed).toContain('land.yml');
+		// converges once the fault is gone
+		await activateIntegration(f.ports);
+		expect(f.files.get('land-signal.yml')).toBe('signal');
+	});
+
+	it('[<50ms] writes the config after every workflow', async () => {
+		const f = fake();
+		const order: string[] = [];
+		await activateIntegration({
+			...f.ports,
+			writeWorkflow: async (path, content) => {
+				order.push(path);
+				await f.ports.writeWorkflow(path, content);
+			},
+			writeConfig: async (text) => {
+				order.push('config');
+				await f.ports.writeConfig(text);
+			},
+		});
+		expect(order).toEqual(['land.yml', 'land-signal.yml', 'config']);
+	});
+
+	it('[<50ms] deactivate restores previous content and keeps the config when a removal fails', async () => {
+		const f = fake();
+		await activateIntegration(f.ports);
+		const activeText = f.config.text;
+		await expect(
+			deactivateIntegration({
+				...f.ports,
+				removeWorkflow: async (path) => {
+					if (path === 'land-signal.yml') throw new Error('locked');
+					f.files.delete(path);
+				},
+			}),
+		).rejects.toThrow(/land-signal\.yml: locked/u);
+		expect(f.config.text).toBe(activeText);
+		expect(f.files.get('land.yml')).toBe('land');
 	});
 });

@@ -66,6 +66,7 @@ export const unitFlagsOf = (
 	parse: (ref: string) =>
 		| {
 				readonly proposal: string;
+				readonly kind?: string | undefined;
 				readonly slice: string;
 				readonly generation: number;
 				readonly topic?: string | undefined;
@@ -77,6 +78,7 @@ export const unitFlagsOf = (
 	return unit === undefined || unit.proposal !== proposal
 		? []
 		: [
+				...(unit.kind === undefined ? [] : [`--kind=${unit.kind}`]),
 				`--slice=${unit.slice}`,
 				`--generation=${String(unit.generation)}`,
 				...(unit.topic === undefined ? [] : [`--topic=${unit.topic}`]),
@@ -87,6 +89,14 @@ export const unitFlagsOf = (
 const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&
 	!reason.includes(`"ready" → "${to}"`);
+
+/**
+ * A proposal that already stands in review refuses the transition to
+ * review. That step is also what publishes the unit, so a delivery that
+ * only logged the refusal left the pull request on its old head.
+ */
+const alreadyInReview = (reason: string | undefined): boolean =>
+	reason?.includes('illegal transition: "review" → "review"') === true;
 
 /** The tool's code for a proposal whose other slices have no delivering commit. */
 const UNDELIVERED_CODE = 'undelivered-slices';
@@ -106,6 +116,61 @@ export const undeliveredSlicesOf = (
 	const reason = refusalOf(answer) ?? '';
 	const listed = /^((?:[A-Za-z]\w*)(?:, [A-Za-z]\w*)*):/u.exec(reason)?.[1];
 	return listed?.split(', ');
+};
+
+/** The number a pull request URL ends in (`…/pull/12`). */
+const NUMBER_OF_URL = /\/pull\/(?<number>\d+)\/?$/u;
+
+/**
+ * Where the pull request of a delivery is: its number and URL when the
+ * publication answered with one, and otherwise that the publication was
+ * pushed and the pull request is pending, with the branch. A delivery
+ * that hands the proposal to review publishes apart from this command,
+ * so there it is pending; agents could not find their pull request.
+ */
+export const pullRequestOf = (
+	publication: unknown,
+	branch: unknown,
+	slice = 'all',
+): Record<string, unknown> => {
+	const answer = pullRequestAnswer(publication, branch);
+	// A small proposal is published whole, by the policy's publication rule
+	// (`integration.publication`), so its branch says `all` while the unit
+	// is its slice: say so rather than let the name read as a lost slice.
+	const whole =
+		slice !== 'all' &&
+		typeof answer.branch === 'string' &&
+		/-all-g\d+(?:\/|$)/u.test(answer.branch)
+			? {
+					slice,
+					sliceNote: `the proposal is published whole (policy integration.publication), so the branch says all; this unit's slice is ${slice}`,
+				}
+			: {};
+	return { ...answer, ...whole };
+};
+
+const pullRequestAnswer = (
+	publication: unknown,
+	branch: unknown,
+): Record<string, unknown> => {
+	const data = isRecord(publication) ? publication : {};
+	const request = isRecord(data.pullRequest) ? data.pullRequest : {};
+	const url = textOf(request.url);
+	if (url !== undefined) {
+		const number = NUMBER_OF_URL.exec(url)?.groups?.number;
+		return {
+			url,
+			...(number === undefined ? {} : { number: Number(number) }),
+		};
+	}
+	const where =
+		textOf(branch) ??
+		textOf(isRecord(data.publication) ? data.publication.ref : undefined);
+	return {
+		pending: true,
+		...(where === undefined ? {} : { branch: where }),
+		message: `publication pushed, pull request pending${where === undefined ? '' : `: ${where}`}`,
+	};
 };
 
 export const deliverUnit = async (
@@ -143,6 +208,31 @@ export const deliverUnit = async (
 						delivered: 'slice',
 						remaining,
 						publication: published.data,
+						pullRequest: pullRequestOf(
+							published.data,
+							unit.publication,
+						),
+						proved: proved.data,
+					},
+				}
+			: published;
+	}
+	// Nothing to transition: the unit's new tip still has to reach its
+	// publication, so it is published here and the result says so.
+	if (alreadyInReview(handed)) {
+		const published = await ports.publish();
+		return published.code === 0
+			? {
+					code: EXIT_CODE.OK,
+					data: {
+						delivered: 'review',
+						republished: true,
+						publication: published.data,
+						pullRequest: pullRequestOf(
+							published.data,
+							unit.publication,
+							ports.slice,
+						),
 						proved: proved.data,
 					},
 				}
@@ -154,6 +244,11 @@ export const deliverUnit = async (
 				data: {
 					delivered: 'review',
 					publication: unit.publication,
+					pullRequest: pullRequestOf(
+						undefined,
+						unit.publication,
+						ports.slice,
+					),
 					proved: proved.data,
 				},
 			}

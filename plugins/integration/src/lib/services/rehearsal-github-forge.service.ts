@@ -365,12 +365,5 @@ export const createGithubRehearsalForge = (input: {
 		deleteLabel: async (name) => {
 			await request('DELETE', `labels/${encodeURIComponent(name)}`);
 		},
-		hooks: async () =>
-			(
-				await pages<{ id: number; config?: { url?: string } }>('hooks')
-			).map((hook) => ({ id: hook.id, url: hook.config?.url ?? '' })),
-		deleteHook: async (id) => {
-			await request('DELETE', `hooks/${String(id)}`);
-		},
 	};
 };

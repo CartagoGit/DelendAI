@@ -20,6 +20,8 @@ import {
 	secretHitsIn,
 	sweepStaleRuns,
 } from './rehearsal-cleanup.service';
+import { REHEARSAL_DEFAULT_CONCURRENCY } from '../contracts/constants/rehearsal.constant';
+import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
 import { runBranchRoot } from './rehearsal-names.helper';
 import { runScenario } from './rehearsal-run.service';
@@ -137,13 +139,24 @@ export const rehearse = async (
 	let secretHits: readonly string[] = [];
 	let leftovers: readonly string[] = [];
 	try {
-		for (const scenario of input.scenarios) {
-			const played = await playOne(context, scenario, input.clock.now);
-			// A step that could not be taken is said at once, not only in the report.
-			for (const failure of played.failures)
-				input.log(`${scenario.id}: ${failure}`);
-			evidence.push(played);
-		}
+		// Scenarios share nothing but the read-only context, so they play at once; the evidence keeps the catalogue's order.
+		evidence.push(
+			...(await playPooled(
+				input.scenarios,
+				input.concurrency ?? REHEARSAL_DEFAULT_CONCURRENCY,
+				async (scenario) => {
+					const played = await playOne(
+						context,
+						scenario,
+						input.clock.now,
+					);
+					// A step that could not be taken is said at once, not only in the report.
+					for (const failure of played.failures)
+						input.log(`${scenario.id}: ${failure}`);
+					return played;
+				},
+			)),
+		);
 		secretHits = await scanLogs(input, evidence);
 	} finally {
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.

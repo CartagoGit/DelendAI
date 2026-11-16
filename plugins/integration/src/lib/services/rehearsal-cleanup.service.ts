@@ -3,7 +3,7 @@
  *
  * At the end of a run every pull request whose head or base lies under the
  * run's branch root is closed, every branch under it is deleted, every label
- * with the run's prefix and every webhook the run recorded is removed, and
+ * with the run's prefix is removed, and
  * the forge is read again: anything still there is a leftover and fails
  * the run. At a run's start, leftovers of runs older than the stale age are
  * swept the same way, so a run that died is cleaned by the next one.
@@ -42,7 +42,6 @@ export const cleanRun = async (input: {
 	readonly forge: IRehearsalForge;
 	readonly branchPrefix: string;
 	readonly runId: string;
-	readonly hookIds?: readonly number[];
 }): Promise<readonly string[]> => {
 	const { forge } = input;
 	const root = runBranchRoot(input.branchPrefix, input.runId);
@@ -61,16 +60,11 @@ export const cleanRun = async (input: {
 	for (const branch of branches) await forge.deleteBranch(branch);
 	for (const label of await forge.labels(runLabelPrefix(input.runId)))
 		await forge.deleteLabel(label);
-	for (const id of input.hookIds ?? []) await forge.deleteHook(id);
-	const hooks = new Set((await forge.hooks()).map((hook) => hook.id));
 	return [
 		...(await forge.listBranches(root)).map((branch) => `branch ${branch}`),
 		...(await forge.labels(runLabelPrefix(input.runId))).map(
 			(label) => `label ${label}`,
 		),
-		...(input.hookIds ?? [])
-			.filter((id) => hooks.has(id))
-			.map((id) => `webhook ${String(id)}`),
 	];
 };
 

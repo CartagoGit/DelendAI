@@ -149,6 +149,14 @@ export const IntegrationOptionsShape = {
 					'A command a real-mode rehearsal runs in a worktree holding its files; every file it changes joins the setup commit, so generated files match the rehearsal policy. Empty runs nothing.',
 				)
 				.optional(),
+			concurrency: z
+				.number()
+				.int()
+				.min(1)
+				.describe(
+					'How many scenarios a rehearsal plays at once; each has its own integration branch. 1 plays them one after another.',
+				)
+				.optional(),
 		})
 		.strict()
 		.describe('What the rehearsal of the pull request flow reads and runs.')

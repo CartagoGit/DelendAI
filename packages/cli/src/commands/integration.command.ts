@@ -53,7 +53,7 @@ import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const execFileAsync = promisify(execFile);
@@ -138,11 +138,18 @@ export const createIntegrationCommand = (
 		const ids = (scalarArg(rest, 'scenarios') ?? REHEARSAL_ALL_SCENARIOS)
 			.split(',')
 			.filter((id) => id !== '');
+		const concurrencyArg = scalarArg(rest, 'concurrency');
+		if (concurrencyArg !== undefined && !/^[1-9]\d*$/u.test(concurrencyArg))
+			return usage(USAGE);
 		const named = await repositorySlugOf(runGh);
 		if ('error' in named)
 			return { code: EXIT_CODE.RUNTIME, error: named.error };
 		const repository = named.slug;
 		const policy = await readWorkspacePolicy(ctx.cwd);
+		const concurrency =
+			concurrencyArg === undefined
+				? policy.integration.rehearsal.concurrency
+				: Number(concurrencyArg);
 		const policyText = await readFile(
 			join(ctx.cwd, 'delendai.config.json'),
 			'utf8',
@@ -202,6 +209,7 @@ export const createIntegrationCommand = (
 					ids,
 					REHEARSAL_ALL_SCENARIOS,
 				),
+				concurrency,
 				log: (line) => process.stderr.write(`${line}\n`),
 			});
 			const reportFile = join(ctx.cwd, rehearsalReportPath(mode));

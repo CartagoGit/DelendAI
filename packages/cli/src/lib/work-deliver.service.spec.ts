@@ -9,7 +9,12 @@ import {
 	type IExitCode,
 } from '../contracts/constants/exit-code.constant';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
-import { answerOf, deliverUnit, unitFlagsOf } from './work-deliver.service';
+import {
+	answerOf,
+	deliverUnit,
+	pullRequestOf,
+	unitFlagsOf,
+} from './work-deliver.service';
 
 const ports = (
 	answers: { 'in-progress'?: unknown; review?: unknown },
@@ -91,6 +96,57 @@ describe('deliverUnit', () => {
 		expect((await deliverUnit(ports({}).value)).data).toMatchObject({
 			publication: 'pr/unit',
 		});
+	});
+});
+
+describe('deliverUnit, a proposal already in review', () => {
+	it('[<20ms] publishes the new tip instead of failing on the transition', async () => {
+		const { calls, value } = ports({
+			review: illegal('review', 'review'),
+		});
+		const result = await deliverUnit(value);
+		expect(result).toMatchObject({
+			code: EXIT_CODE.OK,
+			data: {
+				delivered: 'review',
+				republished: true,
+				publication: 'pr/slice',
+				pullRequest: { pending: true, branch: 'pr/unit' },
+			},
+		});
+		expect(calls).toEqual(['in-progress', 'prove', 'review', 'publish']);
+	});
+
+	it('[<20ms] reports the pull request the publication answered with', async () => {
+		const { value } = ports({ review: illegal('review', 'review') });
+		const result = await deliverUnit({
+			...value,
+			publish: async () => ({
+				code: EXIT_CODE.OK,
+				data: { pullRequest: { url: 'https://x/o/r/pull/7' } },
+			}),
+		});
+		expect(result.data).toMatchObject({
+			republished: true,
+			pullRequest: { number: 7, url: 'https://x/o/r/pull/7' },
+		});
+	});
+
+	it('[<20ms] fails when the republication fails, and on any other refusal', async () => {
+		const { value } = ports({ review: illegal('review', 'review') });
+		const failed = await deliverUnit({
+			...value,
+			publish: async () => ({
+				code: EXIT_CODE.VALIDATION,
+				error: 'push refused',
+			}),
+		});
+		expect(failed).toMatchObject({ error: 'push refused' });
+		const other = ports({ review: illegal('ready', 'review') });
+		expect((await deliverUnit(other.value)).code).toBe(
+			EXIT_CODE.VALIDATION,
+		);
+		expect(other.calls).not.toContain('publish');
 	});
 });
 
@@ -179,6 +235,23 @@ describe('unitFlagsOf', () => {
 		).toEqual(['--slice=S2', '--generation=2', '--topic=the-fix']);
 	});
 
+	it('[<20ms] names the kind of a create unit, so deliver finds it', () => {
+		expect(
+			unitFlagsOf('delendai/wip/a/create/x1-all-g2/t', 'x1', () => ({
+				proposal: 'x1',
+				kind: 'create',
+				slice: 'all',
+				generation: 2,
+				topic: 't',
+			})),
+		).toEqual([
+			'--kind=create',
+			'--slice=all',
+			'--generation=2',
+			'--topic=t',
+		]);
+	});
+
 	it('[<20ms] names nothing off a unit, or on another proposal', () => {
 		expect(unitFlagsOf('develop', 'x1', parse)).toEqual([]);
 		expect(unitFlagsOf(undefined, 'x1', parse)).toEqual([]);
@@ -189,5 +262,49 @@ describe('unitFlagsOf', () => {
 				parse,
 			),
 		).toEqual([]);
+	});
+});
+
+describe('pullRequestOf', () => {
+	it('[<20ms] gives the number and URL the publication answered with', () => {
+		expect(
+			pullRequestOf(
+				{
+					pullRequest: {
+						status: 'opened',
+						url: 'https://h/o/r/pull/12',
+					},
+				},
+				'pr/b',
+			),
+		).toEqual({ url: 'https://h/o/r/pull/12', number: 12 });
+	});
+
+	it('[<20ms] says the pull request is pending, with the branch, when none answered', () => {
+		expect(pullRequestOf(undefined, 'pr/b')).toEqual({
+			pending: true,
+			branch: 'pr/b',
+			message: 'publication pushed, pull request pending: pr/b',
+		});
+	});
+
+	it('[<20ms] explains a whole-proposal branch named all for a unit of S1', () => {
+		expect(
+			pullRequestOf(undefined, 'pr/a/implement/x1-all-g1/work', 'S1'),
+		).toMatchObject({
+			slice: 'S1',
+			sliceNote: expect.stringContaining('S1'),
+		});
+		expect(
+			pullRequestOf(undefined, 'pr/a/implement/x1-S1-g1/work', 'S1'),
+		).not.toHaveProperty('sliceNote');
+	});
+
+	it('[<20ms] reaches a delivery that hands the proposal to review', async () => {
+		const { value } = ports({});
+		const result = await deliverUnit(value);
+		expect(result.data).toMatchObject({
+			pullRequest: { pending: true, branch: 'pr/unit' },
+		});
 	});
 });

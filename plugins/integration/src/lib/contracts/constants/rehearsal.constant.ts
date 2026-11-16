@@ -20,6 +20,9 @@ export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
 /** Leftovers of a run older than this are swept by the next run's start. */
 export const REHEARSAL_STALE_AFTER_MS = 2 * 60 * 60 * 1000;
 
+/** How many scenarios play at once when no option says: each has its own integration branch. */
+export const REHEARSAL_DEFAULT_CONCURRENCY = 4;
+
 /** How often the harness reads the forge while it waits on a step. */
 export const REHEARSAL_POLL_MS = 15_000;
 
@@ -125,3 +128,11 @@ export const REHEARSAL_RUNNING_STATUSES: ReadonlySet<string> = new Set([
 	'pending',
 	'requested',
 ]);
+
+/**
+ * The shape of a synthetic head under the run's root: the project's own
+ * publication shape (`<agent>/<kind>/<proposal>-<slice>-g<n>/<topic>`), so the
+ * project's head-shape lint judges it as it judges any publication. The
+ * run's policy names the root as its publication prefix.
+ */
+export const REHEARSAL_HEAD_UNIT = 'rehearsal/implement/x00000-S1-g1';

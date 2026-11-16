@@ -31,7 +31,12 @@ import {
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
 import { realModeFiles } from './rehearsal-real-ci.service';
-import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
+import {
+	runBranchRoot,
+	runLabelPrefix,
+	runPublicationPrefix,
+	scenarioLandGroup,
+} from './rehearsal-names.helper';
 
 const requireProjectIntegration = (input: IRehearsalSetupInput): string => {
 	if (input.projectIntegration === undefined)
@@ -76,7 +81,18 @@ export const rehearsalPolicy = (
 			...policy,
 			development: {
 				...development,
-				branches: { ...branches, integration },
+				branches: {
+					...branches,
+					integration,
+					// The run's heads are its publications: the project's head-shape
+					// lint reads this from the policy of the base it runs for.
+					...(runId === undefined
+						? {}
+						: {
+								publicationRefPrefix:
+									runPublicationPrefix(integration),
+							}),
+				},
 				integration: {
 					...integrationBlock,
 					engine: 'land',
@@ -175,7 +191,7 @@ const fastFiles = (
 		path: `${WORKFLOWS}/land.yml`,
 		content: input.integratorWorkflow(
 			integration,
-			`land-rehearsal-${input.runId}`,
+			scenarioLandGroup(input.runId, integration),
 		),
 	},
 	{
