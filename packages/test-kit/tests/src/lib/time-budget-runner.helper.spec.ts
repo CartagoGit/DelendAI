@@ -67,7 +67,8 @@ describe('the time budget runner', () => {
 	it('[<200ms] reports and passes an e2e overrun in a spec the change does not touch', async () => {
 		const { run, meta } = await runOver('other.ts', 500);
 		await expect(run).resolves.toBeUndefined();
-		expect(meta['budgetTookMs']).toBe(500);
+		const { budgetTookMs } = meta;
+		expect(budgetTookMs).toBe(500);
 	});
 
 	it('[<200ms] fails an e2e overrun in a spec the change touches', async () => {
