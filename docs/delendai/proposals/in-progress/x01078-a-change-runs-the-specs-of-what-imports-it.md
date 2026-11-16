@@ -22,6 +22,14 @@ The default `touched` test scope runs, for a changed source, its mirror or sibli
 
 PR #2231 changed `packages/cli/src/lib/work-deliver.service.ts`. `packages/cli/src/commands/work.command.ts` imports it, but its spec `work.command.spec.ts` imports only `work.command.ts`, so the touched scope (mirror plus direct spec importers) selected only `work-deliver.service.spec.ts`. The pull request was green and develop 133cb8a36 failed two `work.command.spec.ts` tests. The owner's standing rule is changed, mirror and direct-importer specs; the selector kept the spec of the changed file but not the spec of its direct importer.
 
+## why this design
+
+Decisions (nothing is left undecided):
+
+- The selector follows exactly one hop through non-barrel sources and takes the importer's mirror spec only; the importer's own importers are not followed.
+- Barrels are skipped on both sides: a changed barrel keeps its symbol-delta rule and a barrel importer adds nothing.
+- The default scope stays `touched`; `reach` and `all` are unchanged.
+
 ## non-goals
 
 - Following imports more than one hop, or moving to the `reach` scope.
@@ -45,9 +53,3 @@ PR #2231 changed `packages/cli/src/lib/work-deliver.service.ts`. `packages/cli/s
 
 - The two failing `work.command.spec.ts` cases pass under the contract that a unit's flags carry its kind.
 - `bun run lint:architecture` and `bun run proposal-hygiene` exit 0.
-
-## decisions
-
-- The selector follows exactly one hop through non-barrel sources and takes the importer's mirror spec only; the importer's own importers are not followed.
-- Barrels are skipped on both sides: a changed barrel keeps its symbol-delta rule and a barrel importer adds nothing.
-- The default scope stays `touched`; `reach` and `all` are unchanged.
