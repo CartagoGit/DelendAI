@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IRehearsalRun } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
-import { scanStarted } from '../../../../src/lib/services/rehearsal-scan.helper';
+import {
+	realWorkflowNames,
+	scanStarted,
+} from '../../../../src/lib/services/rehearsal-scan.helper';
 
 const run = (over: Partial<IRehearsalRun>): IRehearsalRun => ({
 	id: 1,
@@ -27,5 +30,27 @@ describe('scanStarted', () => {
 			false,
 		);
 		expect(scanStarted([run({ headSha: 'other' })], 'tip')).toBe(false);
+	});
+});
+
+describe('the real mode workflow names', () => {
+	const names = realWorkflowNames({
+		'ci.yml': 'name: CI\n\non:\n  push:\n',
+		'codeql.yml': "name: 'CodeQL'\n",
+	});
+
+	it('[<5ms] reads the name each project file lists its runs under', () => {
+		expect(names).toEqual({ ci: 'CI', scan: 'CodeQL' });
+	});
+
+	it('[<5ms] falls back to the file path for an unnamed workflow', () => {
+		expect(realWorkflowNames({}).scan).toBe('.github/workflows/codeql.yml');
+	});
+
+	it('[<5ms] finds the project scan run, and not the stand-in', () => {
+		expect(scanStarted([run({ workflow: 'CodeQL' })], 'tip', names)).toBe(
+			true,
+		);
+		expect(scanStarted([run({})], 'tip', names)).toBe(false);
 	});
 });

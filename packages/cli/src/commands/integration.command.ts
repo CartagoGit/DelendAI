@@ -19,6 +19,8 @@ import {
 	REHEARSAL_ALL_SCENARIOS,
 	createGithubRehearsalForge,
 	createRehearsalSetup,
+	REHEARSAL_REAL_CI_FILE,
+	REHEARSAL_REAL_SCAN_FILE,
 	landIntegratorWorkflow,
 	REHEARSAL_CATALOGUE,
 	rehearse,
@@ -95,7 +97,10 @@ const spawnGh = (
 	});
 
 /** The project's CI and scan workflows, by file name, for a real-mode rehearsal. */
-const REAL_WORKFLOW_FILES = ['ci.yml', 'codeql.yml'] as const;
+const REAL_WORKFLOW_FILES = [
+	REHEARSAL_REAL_CI_FILE,
+	REHEARSAL_REAL_SCAN_FILE,
+] as const;
 const readRealWorkflows = async (
 	cwd: string,
 ): Promise<Record<string, string>> =>

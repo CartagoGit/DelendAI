@@ -167,6 +167,26 @@ describe('an await step', () => {
 		expect(evidence.manualSteps).toEqual([]);
 	});
 
+	it("[<50ms] does not wake while the integrator runs after the head's own checks finished", async () => {
+		const { ctx, drafts } = world({}, [
+			fakePartial<IRehearsalRun>({
+				headSha: 'h1',
+				status: 'completed',
+				event: 'pull_request',
+				workflow: 'CI',
+			}),
+			fakePartial<IRehearsalRun>({
+				headSha: 'h1',
+				status: 'queued',
+				event: 'push',
+				workflow: 'land',
+			}),
+		]);
+		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
+		expect(drafts).toEqual([]);
+		expect(evidence.manualSteps).toEqual([]);
+	});
+
 	it('[<50ms] counts only idle time: runs for 20 minutes, then the merge, passes with no manual step', async () => {
 		const minute = 60_000;
 		const { ctx } = world(

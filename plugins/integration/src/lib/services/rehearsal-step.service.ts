@@ -171,7 +171,8 @@ const awaitStep = async (
 		}
 		// Once the awaited pull requests' own checks have finished, the integrator's
 		// runs no longer excuse the wait: its budget counts wall time.
-		const busy = (await somethingRuns(ctx, state)) && !checks.concluded;
+		const running = await somethingRuns(ctx, state);
+		const busy = running && !checks.concluded;
 		if (!busy) idleMs += now - lastTick;
 		lastTick = now;
 		if (now - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000) {
@@ -189,8 +190,10 @@ const awaitStep = async (
 		if (
 			step.wakeAfterSeconds !== undefined &&
 			now - lastWake >= step.wakeAfterSeconds * 1000 &&
-			// A wake is a manual step only when the system is idle.
-			!busy
+			// A wake is a manual step only when the system is idle: a run of the
+			// integrator that is queued or in progress is the signal arriving, and
+			// the pull requests' own checks having finished does not make it idle.
+			!running
 		) {
 			await wake(ctx, state, pending);
 			lastWake = now;

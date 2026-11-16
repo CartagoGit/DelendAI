@@ -3,6 +3,7 @@ import type {
 	IRehearsalPullEvent,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalWorkflowNames,
 } from './rehearsal.interface';
 
 /** Everything one scenario left on the forge, read back after it ran. */
@@ -13,6 +14,8 @@ export interface IRehearsalEvidence {
 	readonly events: Readonly<Record<string, readonly IRehearsalPullEvent[]>>;
 	/** Every run on the integration branch and on each pull request's head. */
 	readonly runs: readonly IRehearsalRun[];
+	/** The names of the CI and scan workflows the run judged; absent means the fast stand-ins. */
+	readonly workflows?: IRehearsalWorkflowNames;
 	/** Shas the integration branch held, in order, from the setup commit on. */
 	readonly tips: readonly string[];
 	/** Each wake or other action the harness took that a person would have had to. */
@@ -60,7 +63,10 @@ export interface IRehearsalTargetResult {
 	readonly value: number | undefined;
 	readonly threshold: number;
 	readonly unit: string;
+	/** True only when the target was measured and met. */
 	readonly ok: boolean;
+	/** True when nothing could be measured: `ok` is then false, and the detail says why. */
+	readonly notMeasured?: true;
 	readonly detail: string;
 }
 
@@ -75,5 +81,7 @@ export interface IRehearsalReport {
 	readonly targets: readonly IRehearsalTargetResult[];
 	readonly leftovers: readonly string[];
 	readonly secretHits: readonly string[];
+	/** Runs whose log could not be read, each with its run id: neither a hit nor a pass. */
+	readonly unreadLogs?: readonly string[];
 	readonly ok: boolean;
 }

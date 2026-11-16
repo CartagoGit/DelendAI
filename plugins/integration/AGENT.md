@@ -17,10 +17,10 @@
 - selectScenarios
 - buildReport
 - renderReportTable
+- REHEARSAL_REAL_CI_FILE
+- REHEARSAL_REAL_SCAN_FILE
 - REHEARSAL_CATALOGUE
 - diagnoseIdentity
-- renderAppManifest
-- renderDoctorTable
 
 ## Depends on
 

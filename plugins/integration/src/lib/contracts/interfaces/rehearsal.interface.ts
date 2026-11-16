@@ -233,7 +233,15 @@ export interface IRehearsalClock {
 }
 
 /** What the integrator workflow and the project files of a branch are. */
+/** The names the forge lists the CI and the scan workflow runs under. */
+export interface IRehearsalWorkflowNames {
+	readonly ci: string;
+	readonly scan: string;
+}
+
 export interface IRehearsalSetup {
+	/** The workflows the run judges; absent means the fast stand-ins. */
+	readonly workflows?: IRehearsalWorkflowNames;
 	/** Files the setup commit writes, given the scenario's integration branch. */
 	readonly files: (
 		integration: string,

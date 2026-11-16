@@ -31,6 +31,7 @@ import {
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
 import { realModeFiles } from './rehearsal-real-ci.service';
+import { realWorkflowNames } from './rehearsal-scan.helper';
 import {
 	runBranchRoot,
 	runLabelPrefix,
@@ -127,6 +128,9 @@ export const rehearsalPolicy = (
 export const createRehearsalSetup = (
 	input: IRehearsalSetupInput,
 ): IRehearsalSetup => ({
+	...(input.realWorkflows === undefined
+		? {}
+		: { workflows: realWorkflowNames(input.realWorkflows) }),
 	files: async (integration) => {
 		const all = fastFiles(input, integration);
 		if (input.realWorkflows === undefined) return all;

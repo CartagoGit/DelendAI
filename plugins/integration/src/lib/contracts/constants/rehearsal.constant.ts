@@ -10,6 +10,25 @@ export const REHEARSAL_CI_CHECK = 'rehearsal-ci';
 /** A workflow every push to the rehearsal integration branch starts: the stand-in for the scan. */
 export const REHEARSAL_SCAN_WORKFLOW = 'rehearsal-scan.yml';
 
+/**
+ * Targets that are reported as not measured and do not fail a run, each with
+ * the reason it is deferred. Activation refuses a not-measured target that
+ * is not listed here.
+ */
+export const REHEARSAL_DEFERRED_TARGETS: Readonly<Record<string, string>> = {
+	'session-notified-p95': 'the real-time transport is S11b',
+};
+
+/** The names the fast stand-in workflows list their runs under. */
+export const REHEARSAL_FAST_WORKFLOW_NAMES = {
+	ci: REHEARSAL_CI_CHECK,
+	scan: 'rehearsal-scan',
+} as const;
+
+/** The project's own CI and scan workflow files a real-mode rehearsal runs. */
+export const REHEARSAL_REAL_CI_FILE = 'ci.yml';
+export const REHEARSAL_REAL_SCAN_FILE = 'codeql.yml';
+
 /** A workflow that writes with the workflow token, on a label, so the run can reproduce what such writes do. */
 export const REHEARSAL_TOKEN_WORKFLOW = 'rehearsal-token.yml';
 

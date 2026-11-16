@@ -12,6 +12,7 @@ import {
 import {
 	buildReport,
 	renderReportTable,
+	targetClears,
 } from '../../../../src/lib/services/rehearsal-report.service';
 
 const pull = (
@@ -123,7 +124,9 @@ describe('the rehearsal report', () => {
 		const timing = built.targets.find(
 			(t) => t.id === 'session-notified-p95',
 		);
-		expect(timing?.ok).toBe(true);
+		expect(timing?.ok).toBe(false);
+		expect(timing?.notMeasured).toBe(true);
+		expect(targetClears(timing!)).toBe(true);
 		expect(timing?.value).toBeUndefined();
 		expect(timing?.detail).toBe(
 			'not measured: real-time transport is S11b',
@@ -228,6 +231,49 @@ describe('the rehearsal report', () => {
 				],
 				'aaa',
 			),
+		).toBe(false);
+	});
+
+	it('[<50ms] reports unreadable logs as not measured with their run ids, neither a hit nor ok', () => {
+		const built = buildReport({
+			runId: 'r1',
+			repository: 'o/r',
+			tip: 'abc',
+			startedAt: '2026-11-12T10:00:00Z',
+			finishedAt: '2026-11-12T10:06:00Z',
+			scenarios: [scenario],
+			evidence: [evidence()],
+			leftovers: [],
+			secretHits: [],
+			unreadLogs: ['CI run 42: still in progress'],
+		});
+		const secrets = built.targets.find(
+			(t) => t.id === 'no-secrets-in-logs',
+		);
+		expect(secrets?.ok).toBe(false);
+		expect(secrets?.notMeasured).toBe(true);
+		expect(secrets?.detail).toContain('run 42');
+		expect(built.secretHits).toEqual([]);
+		expect(built.ok).toBe(false);
+	});
+
+	it('[<50ms] clears a not-measured target only when it is a listed deferral', () => {
+		const base = { value: undefined, threshold: 1, unit: 'x', detail: 'd' };
+		expect(
+			targetClears({
+				...base,
+				id: 'session-notified-p95',
+				ok: false,
+				notMeasured: true,
+			}),
+		).toBe(true);
+		expect(
+			targetClears({
+				...base,
+				id: 'no-secrets-in-logs',
+				ok: false,
+				notMeasured: true,
+			}),
 		).toBe(false);
 	});
 });
