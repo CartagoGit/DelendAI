@@ -31,7 +31,7 @@ Why that test took 140 ms at load factor 1, from reading the test and the store:
 
 ### S1 — The calibration check reports an untouched spec and fails a touched one
 - **Status**: pending
-- **Files**: `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-check.ts`, `tools/scripts/ci/test-budget-check.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/core/tests/src/lib/forge-events/forge-event-store.service.e2e.spec.ts`, `.github/workflows/ci.yml`
+- **Files**: `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-check.ts`, `tools/scripts/ci/test-budget-check.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/core/tests/src/lib/forge-events/forge-event-store.service.e2e.spec.ts`, `packages/test-kit/src/public/index.ts`
 - **Gate**: none
 
 ## acceptance
