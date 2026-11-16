@@ -94,4 +94,30 @@ describe('the secret scan of a scenario', () => {
 			unread: ['CI run 1: expired'],
 		});
 	});
+
+	it('[<20ms] waits for an older run of the same workflow and commit that is still open behind a newer one, then reads both', async () => {
+		const done = 13 * 60_000;
+		const { ports: p, state } = ports((now) => [
+			{
+				...runOf(1, now < done ? 'in_progress' : 'completed'),
+				createdAt: '1',
+			},
+			{ ...runOf(2, 'completed'), createdAt: '2' },
+		]);
+		const scan = await scanLogs(p, [evidence]);
+		expect(scan).toEqual({ hits: [], unread: [] });
+		expect(state.logReadAt).toEqual([done, done]);
+	});
+
+	it('[<20ms] reports the older run that never concludes within the cap as not measured, and still reads the others', async () => {
+		const { ports: p, state } = ports(() => [
+			{ ...runOf(1, 'queued'), createdAt: '1' },
+			{ ...runOf(2, 'completed'), createdAt: '2' },
+		]);
+		const scan = await scanLogs(p, [evidence]);
+		expect(scan.unread).toEqual([
+			`CI run 1: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+		]);
+		expect(state.logReadAt).toHaveLength(1);
+	});
 });

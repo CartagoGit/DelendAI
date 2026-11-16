@@ -8,6 +8,7 @@
 import {
 	REHEARSAL_AWAIT_CAP_SECONDS,
 	REHEARSAL_POLL_MS,
+	REHEARSAL_RUNNING_STATUSES,
 } from '../contracts/constants/rehearsal.constant';
 import type { ILogScan } from '../contracts/interfaces/rehearsal-evidence.interface';
 import type {
@@ -18,12 +19,19 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { secretHitsIn } from './rehearsal-cleanup.service';
-import { openRuns } from './rehearsal-wait.helper';
 
 interface IScanPorts {
 	readonly forge: Pick<IRehearsalForge, 'runs' | 'runLog'>;
 	readonly clock: IRehearsalClock;
 }
+
+/**
+ * Every run counts here, not the newest per workflow and commit: the scan
+ * reads each run's log, so it waits for exactly the runs it will read (an
+ * older land run still queued behind a newer one has no log yet).
+ */
+const isOpen = (run: IRehearsalRun): boolean =>
+	REHEARSAL_RUNNING_STATUSES.has(run.status);
 
 const headsOf = (one: IRehearsalEvidence): ReadonlySet<string> =>
 	new Set([
@@ -50,7 +58,7 @@ const concluded = async (
 	const started = ports.clock.now();
 	for (;;) {
 		const runs = await runsOf(ports, one);
-		const open = openRuns([...runs.values()]).length > 0;
+		const open = [...runs.values()].some(isOpen);
 		if (
 			!open ||
 			ports.clock.now() - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000
@@ -67,9 +75,8 @@ const scanScenario = async (
 	const hits: string[] = [];
 	const unread: string[] = [];
 	const runs = [...(await concluded(ports, one)).values()];
-	const open = new Set(openRuns(runs).map((run) => run.id));
 	for (const run of runs) {
-		if (open.has(run.id)) {
+		if (isOpen(run)) {
 			unread.push(
 				`${run.workflow} run ${String(run.id)}: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
 			);
