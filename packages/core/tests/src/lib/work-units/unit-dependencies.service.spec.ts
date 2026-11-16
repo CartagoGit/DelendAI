@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { installUnitDependencies } from '../../../../src/lib/work-units/unit-dependencies.service';
+import {
+	dependenciesNote,
+	installUnitDependencies,
+} from '../../../../src/lib/work-units/unit-dependencies.service';
 
 describe('installUnitDependencies', () => {
 	const dirs: string[] = [];
@@ -82,5 +85,18 @@ describe('installUnitDependencies', () => {
 		expect(await installUnitDependencies(complete, {})).toEqual({
 			status: 'present',
 		});
+	});
+
+	it('[<150ms] tells the frozen install, and the bun mismatch when the running bun is not the pinned one', async () => {
+		const path = unit({
+			'package.json': JSON.stringify({ packageManager: 'bun@1.4.2' }),
+		});
+		const same = await dependenciesNote(path, '1.4.2');
+		expect(same).toContain('bun install --frozen-lockfile');
+		expect(same).toContain('Never run a bare');
+		expect(same).not.toContain('running bun');
+		const other = await dependenciesNote(path, '1.4.3');
+		expect(other).toContain('running bun is 1.4.3');
+		expect(other).toContain('bun@1.4.2');
 	});
 });
