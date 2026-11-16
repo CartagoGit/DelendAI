@@ -2,14 +2,14 @@
 id: x01085
 title: "Republishing after hand-over updates the open pull request"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: fa4ddfda-0960-46d0-ab85-d54bf0986a0f
-last-correlation-id: fa4ddfda-0960-46d0-ab85-d54bf0986a0f
-last-transition-from: ready
-last-transition-at: 2026-11-16T14:06:28.734Z
+last-transition-id: bbb6829e-0e8a-45dc-b1db-84eca1acfc37
+last-correlation-id: bbb6829e-0e8a-45dc-b1db-84eca1acfc37
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T14:21:01.468Z
 ---
 
 # x01085 — Republishing after hand-over updates the open pull request
@@ -45,7 +45,7 @@ Root cause: choosePublicationTarget only looks for remote publications whose ref
 - global_gate: none
 
 ### S1 — Republish to the open pull request of the same agent, proposal and slice
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/open-pull-request-republication.interface.ts`, `packages/core/src/lib/work-units/open-pull-request-republication.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/src/lib/contracts/interfaces/review-unit-publish-checks.interface.ts`, `packages/core/tests/src/lib/work-units/open-pull-request-republication.service.spec.ts`, `packages/core/tests/src/lib/work-units/review-unit-publish-checks.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -54,6 +54,9 @@ Root cause: choosePublicationTarget only looks for remote publications whose ref
   - "The same spec proves another agent's open pull request is ignored with no note, and that no open pull request leaves the target of choosePublicationTarget unchanged."
   - "The same spec proves an unreadable forge leaves the unit's own branch and adds one note saying the check was skipped."
   - "work-unit-publish.service.ts takes its target from resolvePublicationTarget and returns the notes in publication.notes and the number in pullRequest.number."
+- shipped-in: `204ffc5ae27d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
