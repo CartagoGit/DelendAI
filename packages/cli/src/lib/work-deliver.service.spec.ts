@@ -52,6 +52,12 @@ const illegal = (from: string, to: string) => ({
 	reason: `illegal transition: "${from}" → "${to}"`,
 });
 
+const inReview = {
+	...illegal('review', 'review'),
+	code: 'already-in-review',
+	error: { code: 'already-in-review', reason: 'x' },
+};
+
 describe('deliverUnit', () => {
 	it('[<20ms] opens the proposal, proves the unit, then hands it to review', async () => {
 		const { calls, value } = ports({});
@@ -102,7 +108,7 @@ describe('deliverUnit', () => {
 describe('deliverUnit, a proposal already in review', () => {
 	it('[<20ms] publishes the new tip instead of failing on the transition', async () => {
 		const { calls, value } = ports({
-			review: illegal('review', 'review'),
+			review: inReview,
 		});
 		const result = await deliverUnit(value);
 		expect(result).toMatchObject({
@@ -118,7 +124,7 @@ describe('deliverUnit, a proposal already in review', () => {
 	});
 
 	it('[<20ms] reports the pull request the publication answered with', async () => {
-		const { value } = ports({ review: illegal('review', 'review') });
+		const { value } = ports({ review: inReview });
 		const result = await deliverUnit({
 			...value,
 			publish: async () => ({
@@ -132,8 +138,8 @@ describe('deliverUnit, a proposal already in review', () => {
 		});
 	});
 
-	it('[<20ms] fails when the republication fails, and on any other refusal', async () => {
-		const { value } = ports({ review: illegal('review', 'review') });
+	it('[<20ms] fails when the republication fails, on the wording without the code, and on any other refusal', async () => {
+		const { value } = ports({ review: inReview });
 		const failed = await deliverUnit({
 			...value,
 			publish: async () => ({
@@ -142,6 +148,11 @@ describe('deliverUnit, a proposal already in review', () => {
 			}),
 		});
 		expect(failed).toMatchObject({ error: 'push refused' });
+		const worded = ports({ review: illegal('review', 'review') });
+		expect((await deliverUnit(worded.value)).code).toBe(
+			EXIT_CODE.VALIDATION,
+		);
+		expect(worded.calls).not.toContain('publish');
 		const other = ports({ review: illegal('ready', 'review') });
 		expect((await deliverUnit(other.value)).code).toBe(
 			EXIT_CODE.VALIDATION,

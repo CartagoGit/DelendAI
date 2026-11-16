@@ -2,10 +2,14 @@
 id: x01074
 title: "Entering a unit never changes the lockfile"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 74bef541-5385-4637-a46b-ffee3073f895
+last-correlation-id: 74bef541-5385-4637-a46b-ffee3073f895
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T22:21:37.211Z
 ---
 
 # x01074 — Entering a unit never changes the lockfile
@@ -30,16 +34,19 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
 - global_gate: none
 
 ### S1 — The committed lockfile is canonical for the pinned bun
-- **Status**: pending
+- **Status**: review
 - **Files**: `bun.lock`
 - **Gate**: none
 - acceptance:
   - "After bun install on develop with bun 1.4.2, git diff bun.lock is empty."
   - "bun install --frozen-lockfile still passes."
   - "The commit body states the dependency versions are unchanged apart from the removed duplicate vite and rolldown entries."
+- shipped-in: `b2d30e6435f3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A guard refuses a lockfile change without a manifest change
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/lockfile-follows-manifest.script.ts`, `tools/scripts/lint/lockfile-follows-manifest.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
@@ -47,15 +54,21 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "It exits 0 when both change or neither does."
   - "A spec proves the three cases."
   - "The guard runs in the pre-commit hook and in validate."
+- shipped-in: `b3cdb9dea54f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Entering a unit reports the exact install command and the bun mismatch
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/unit-dependencies.service.ts`, `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The enter answer states that dependencies come from the frozen lockfile and that a bare bun install must not be run."
   - "When the running bun differs from packageManager the answer says so with both versions."
   - "A spec proves the message and the mismatch case."
+- shipped-in: `b2d30e6435f3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

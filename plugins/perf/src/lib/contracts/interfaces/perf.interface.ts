@@ -3,7 +3,11 @@
  * under contracts/interfaces per the types-in-contracts convention.
  */
 import type { FindingSeverity } from '@delendai/core/public';
-import type { IProbeDeps, IToolProbeResult } from '@delendai/core/contracts';
+import type {
+	IArgvExec,
+	IProbeDeps,
+	IToolProbeResult,
+} from '@delendai/core/contracts';
 
 /** One measured file and its size in bytes. */
 export interface IFileSize {
@@ -106,6 +110,8 @@ export interface IRealPerfProfileDepsOptions {
 	readonly probeDeps?: IProbeDeps;
 	/** Override the scratch root (defaults to `<workspaceRootAbs>/.cache/delendai`). */
 	readonly pluginCacheDir?: string;
+	/** Run the profiler through this exec instead of spawning (tests). */
+	readonly exec?: IArgvExec;
 }
 
 /** Options for the `perf_profile` tool builder. */
