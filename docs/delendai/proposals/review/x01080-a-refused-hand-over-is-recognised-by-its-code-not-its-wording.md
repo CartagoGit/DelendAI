@@ -2,14 +2,14 @@
 id: x01080
 title: "A refused hand-over is recognised by its code, not its wording"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 13b5137f-f69a-4965-b2e2-8df662a4a2fe
-last-correlation-id: 13b5137f-f69a-4965-b2e2-8df662a4a2fe
-last-transition-from: ready
-last-transition-at: 2026-11-16T08:48:54.732Z
+last-transition-id: 283400b2-809e-4897-bf11-8c1861a2cb42
+last-correlation-id: 283400b2-809e-4897-bf11-8c1861a2cb42
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T08:56:52.338Z
 ---
 
 # x01080 — A refused hand-over is recognised by its code, not its wording
@@ -37,13 +37,16 @@ Decisions (nothing is left undecided):
 - global_gate: none
 
 ### S1 — The same-status refusal carries a code and work deliver reads it
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/contracts/constants/transition-refusal-code.constant.ts`, `plugins/proposals/src/lib/tools/transition/dfa.tool.ts`, `plugins/proposals/tests/src/lib/tools/transition/dfa.tool.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`bunx vitest run plugins/proposals/tests/src/lib/tools/transition/dfa.tool.spec.ts` passes a case where validateTransition from review to review returns the code `already-in-review` in structuredContent and in its error."
   - "`bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts` passes a case that republishes on the code `already-in-review`."
   - "The same spec proves the refusal text `illegal transition: "review" → "review"` with no code does not republish and fails the delivery."
+- shipped-in: `907ce2c2e992`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
