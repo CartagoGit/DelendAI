@@ -44,6 +44,7 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 	}
 	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
 	lines.push(`- **Gate**: ${s.gate ?? 'none'}`);
+	lines.push(`- **Decisions**: ${s.decisions ?? 'none'}`);
 	if (s.acceptance && s.acceptance.length > 0) {
 		lines.push('- acceptance:');
 		for (const a of s.acceptance) lines.push(`  - "${a}"`);
