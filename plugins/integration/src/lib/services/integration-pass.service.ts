@@ -38,6 +38,12 @@ export const runProjectCommand: IProjectCommandRunner = (cwd, commandLine) => {
 	return { ok: done.status === 0, stdout: done.stdout ?? '' };
 };
 
+/** The real clock, wired only here so every other caller injects its own. */
+const realWait = (ms: number): Promise<void> =>
+	new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+
 /** Runs one pass; the exit code the process should end with. */
 export const runIntegrationPass = async (
 	input: IIntegrationPassInput,
@@ -77,6 +83,7 @@ export const runIntegrationPass = async (
 			integration: config.integrationBranch,
 			mergeMethod: config.mergeMethod,
 			run: input.runGh,
+			wait: input.ports?.wait ?? realWait,
 		});
 	const report = await landPass({
 		forge,

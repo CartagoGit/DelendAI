@@ -11,6 +11,7 @@ type IReply = { exitCode: number; stdout?: string; stderr?: string };
 
 const harness = (answer: (call: string) => IReply) => {
 	const calls: string[] = [];
+	const waits: number[] = [];
 	const run: ILandCommandRunner = async (args) => {
 		const call = args
 			.filter((arg) => arg !== 'api' && arg !== '--method')
@@ -24,8 +25,11 @@ const harness = (answer: (call: string) => IReply) => {
 		integration: 'develop',
 		mergeMethod: 'squash',
 		run,
+		wait: async (ms) => {
+			waits.push(ms);
+		},
 	});
-	return { forge, calls };
+	return { forge, calls, waits };
 };
 
 const json = (value: unknown): IReply => ({
@@ -266,5 +270,38 @@ describe('the GitHub land forge', () => {
 		const done = harness(events('2026-11-14T11:00:00Z'));
 		expect(await done.forge.reopenPullRequest(7, 'abc')).toBe(false);
 		expect(done.calls.some((call) => call.includes('PATCH'))).toBe(false);
+	});
+
+	it('[<12ms] reads a pull request again after a 504, through the injected wait', async () => {
+		let reads = 0;
+		const { forge, waits } = harness((call) => {
+			if (call.includes('compare/'))
+				return json({ merge_base_commit: { sha: 'b' } });
+			reads += 1;
+			return reads === 1
+				? { exitCode: 1, stderr: 'gh: HTTP 504' }
+				: json(rawPull);
+		});
+		expect((await forge.pullRequest(7)).number).toBe(7);
+		expect(waits).toEqual([1000]);
+	});
+
+	it('[<12ms] never reads a write again after a 504', async () => {
+		const { forge, calls, waits } = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: HTTP 504',
+		}));
+		await expect(forge.addLabel(7, 'x')).resolves.toBeUndefined();
+		expect(calls).toHaveLength(1);
+		expect(waits).toEqual([]);
+	});
+
+	it('[<12ms] fails a read that stays 504, naming the 4 attempts and waiting 1000/3000/9000', async () => {
+		const { forge, waits } = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: HTTP 504',
+		}));
+		await expect(forge.pullRequest(7)).rejects.toThrow('(4 attempts)');
+		expect(waits).toEqual([1000, 3000, 9000]);
 	});
 });
