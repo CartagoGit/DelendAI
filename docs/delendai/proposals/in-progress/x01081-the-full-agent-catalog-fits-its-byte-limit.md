@@ -2,10 +2,14 @@
 id: x01081
 title: "The full agent catalog fits its byte limit"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: core
 date: 2026-11-16
+last-transition-id: d6739aa6-eaa4-47ff-b847-e5055882a8f4
+last-correlation-id: d6739aa6-eaa4-47ff-b847-e5055882a8f4
+last-transition-from: ready
+last-transition-at: 2026-11-16T09:01:12.835Z
 ---
 
 # x01081 — The full agent catalog fits its byte limit
