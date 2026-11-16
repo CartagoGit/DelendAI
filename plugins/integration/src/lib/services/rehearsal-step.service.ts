@@ -21,6 +21,7 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { somethingRuns, wake, workingRun } from './rehearsal-idle.helper';
+import { tokenPush } from './rehearsal-token.helper';
 import { receive } from './rehearsal-receive.helper';
 import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
 import {
@@ -189,22 +190,6 @@ const openPull = async (
 };
 
 /** Waits until the pull request's head moves off `from`; returns the new head, if any. */
-const nextHead = async (
-	ctx: IRehearsalRunContext,
-	state: IScenarioState,
-	key: string,
-	from: string,
-	seconds: number,
-): Promise<string | undefined> => {
-	const started = ctx.clock.now();
-	while (ctx.clock.now() - started < seconds * 1000) {
-		const pull = (await pullByKey(ctx, state)).get(key);
-		if (pull !== undefined && pull.headSha !== from) return pull.headSha;
-		await ctx.clock.wait(REHEARSAL_POLL_MS);
-	}
-	return undefined;
-};
-
 type TSteps = {
 	readonly [K in IRehearsalStep['kind']]: (
 		ctx: IRehearsalRunContext,
@@ -293,18 +278,10 @@ const STEPS: TSteps = {
 			pull.number,
 			`${runLabelPrefix(ctx.runId)}${REHEARSAL_TOKEN_PUSH_LABEL}`,
 		);
-		const head = await nextHead(
-			ctx,
-			state,
-			step.key,
-			pull.headSha,
-			REHEARSAL_TOKEN_WAIT_SECONDS,
-		);
-		if (head === undefined)
-			state.failures.push(
-				`token-push: the workflow token pushed nothing to ${step.key}`,
-			);
-		else state.tokenHeads.set(step.key, [head]);
+		const pushed = await tokenPush(ctx, pull);
+		if ('failure' in pushed)
+			state.failures.push(`token-push: ${pushed.failure}`);
+		else state.tokenHeads.set(step.key, [pushed.sha]);
 		return;
 	},
 	'token-open': async (ctx, scenario, state, step) => {

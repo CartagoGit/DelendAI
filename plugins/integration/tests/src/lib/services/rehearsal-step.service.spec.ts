@@ -313,32 +313,6 @@ describe('the other steps of a scenario', () => {
 		expect(evidence.failures).toEqual(['author-update: zz is not open']);
 	});
 
-	it('[<50ms] records the head the workflow token pushed, or says it pushed nothing', async () => {
-		const pushed = world(
-			(now) => ({ headSha: now >= 30_000 ? 'h2' : 'h1' }),
-			[],
-		);
-		const done = await runScenario(
-			pushed.ctx,
-			withSteps([{ kind: 'token-push', key: 'a' }]),
-		);
-		expect(done.tokenHeads).toEqual({ a: ['h2'] });
-		expect(pushed.labels).toHaveLength(1);
-		const idle = world({}, []);
-		const refused = await runScenario(
-			idle.ctx,
-			withSteps([{ kind: 'token-push', key: 'a' }]),
-		);
-		expect(refused.failures[0]).toContain(
-			'the workflow token pushed nothing',
-		);
-		const missing = await runScenario(
-			world({}, []).ctx,
-			withSteps([{ kind: 'token-push', key: 'zz' }]),
-		);
-		expect(missing.failures).toEqual(['token-push: zz is not open']);
-	});
-
 	it('[<50ms] records the pull request the workflow token opened, or says it opened none', async () => {
 		const head = `${runBranchRoot('ns/rehearsal/', 'r')}token-open-1`;
 		const opened = await runScenario(

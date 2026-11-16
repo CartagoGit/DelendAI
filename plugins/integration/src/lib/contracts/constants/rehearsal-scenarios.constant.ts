@@ -214,8 +214,10 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		pulls: [pullIn('a', 's1')],
 		steps: [
 			open('a'),
-			ready('a'),
+			// Before the pull request is ready: a ready one lets a pass merge it
+			// before the token run pushes, and the push would reach a closed pull.
 			{ kind: 'token-push', key: 'a' },
+			ready('a'),
 			// The integrator reopens the head the token wrote, and it lands.
 			merged('a'),
 		],
