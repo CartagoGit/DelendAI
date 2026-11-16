@@ -12,7 +12,9 @@ const script = (promote?: string): string =>
 describe('wakeIntegratorStep', () => {
 	it('[<50ms] skips the dispatch when a fresh pass is already queued for the branch', () => {
 		const text = script();
-		expect(text).toContain('--status queued');
+		expect(text).toContain(
+			'IN("queued", "pending", "waiting", "requested")',
+		);
 		expect(text).toContain('endswith("-pass-" + $ENV.BRANCH)');
 		expect(text).toContain(
 			`now - ${String(LAND_QUEUED_PASS_FRESH_SECONDS)}`,
@@ -25,7 +27,7 @@ describe('wakeIntegratorStep', () => {
 	it('[<50ms] counts only a queued run: one in progress may have read the forge before this event', () => {
 		const text = script();
 		expect(text).not.toContain('in_progress');
-		expect(text.match(/--status queued/gu)).toHaveLength(1);
+		expect(text.match(/IN\(/gu)).toHaveLength(1);
 	});
 
 	it('[<50ms] never skips a dispatch that carries the promote flag', () => {
