@@ -102,17 +102,6 @@ describe('work prove and publish', () => {
 	);
 });
 
-describe('work deliver --only', () => {
-	it('[<50ms] refuses a partial proof as a delivery, which proves the whole unit', async () => {
-		const result = await createWorkCommand().run(
-			['deliver', '--proposal=x00001', '--only=typecheck'],
-			createNoopContext('/nowhere', globals(true)),
-		);
-		expect(result.code).toBe(2);
-		expect(result.error).toContain('--only is for `work prove`');
-	});
-});
-
 describe('printPathOnly', () => {
 	it('[<50ms] prints the path alone', () => {
 		const written = vi

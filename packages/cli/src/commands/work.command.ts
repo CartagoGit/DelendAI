@@ -198,12 +198,6 @@ export const createWorkCommand = (): ICliCommand => ({
 					error: 'work deliver --proposal=<id> --agent=<you> [--slice=all] [--generation=<n>] [--topic=<text>] [--reason=<why>]',
 				};
 			}
-			if (scalarArg(unit, 'only') !== undefined) {
-				return {
-					code: EXIT_CODE.USAGE,
-					error: 'work deliver proves the whole unit: --only is for `work prove`, which never proves the unit.',
-				};
-			}
 			const agent = scalarArg(unit, 'agent');
 			const here = await withUnitHere(unit, ctx.cwd);
 			let withSlice = here;

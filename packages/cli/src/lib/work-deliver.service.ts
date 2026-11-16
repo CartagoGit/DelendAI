@@ -198,6 +198,13 @@ export const deliverUnit = async (
 	}
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
+	// `--only` runs gates of the proof and proves nothing: not a delivery.
+	if (isRecord(proved.data) && proved.data.partial === true) {
+		return {
+			code: EXIT_CODE.USAGE,
+			error: 'work deliver proves the whole unit: --only is for `work prove`, which never proves the unit.',
+		};
+	}
 	const answer = await ports.transition('review', checkout);
 	const handed = refusalOf(answer);
 	// A slice proved and delivered while the proposal's others are not:
