@@ -75,6 +75,9 @@ export const REHEARSAL_STALE_AFTER_MS = 45 * 60_000;
 /** How many scenarios play at once when no option says: each has its own integration branch. */
 export const REHEARSAL_DEFAULT_CONCURRENCY = 11;
 
+/** Seconds a run may stay queued with no job before it counts as unstarted, not as work in flight. */
+export const REHEARSAL_UNSTARTED_AFTER_SECONDS = 60;
+
 /** How often the harness reads the forge while it waits on a step. */
 export const REHEARSAL_POLL_MS = 15_000;
 

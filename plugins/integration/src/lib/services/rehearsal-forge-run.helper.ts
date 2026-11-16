@@ -15,6 +15,9 @@ import type {
 export const toRun = (entry: IRawRun): IRehearsalRun => ({
 	id: entry.id,
 	workflow: entry.name ?? '',
+	...(entry.workflow_id === undefined
+		? {}
+		: { workflowId: entry.workflow_id }),
 	event: entry.event,
 	headBranch: entry.head_branch ?? '',
 	headSha: entry.head_sha,

@@ -40,6 +40,7 @@ const world = (
 	pull: TOverTime<Partial<IRehearsalPullState>>,
 	runs: TOverTime<IRehearsalRun[]>,
 	checks: TOverTime<IRehearsalCheckRun[]> = [],
+	jobs = 1,
 ) => {
 	const drafts: boolean[] = [];
 	const wakes: string[] = [];
@@ -59,6 +60,7 @@ const world = (
 		tipOf: async () => 'tip',
 		openPull: async () => 1,
 		setDraft: async (_n: number, draft: boolean) => void drafts.push(draft),
+		jobCount: async () => jobs,
 		closePull: async () => void wakes.push('close'),
 		reopenPull: async () => void wakes.push('reopen'),
 		pulls: async () => [pullOf(at(pull, clock.at))],
@@ -173,6 +175,27 @@ describe('an await step', () => {
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
 		expect(wakes).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
+	});
+
+	it('[<50ms] wakes when the only run left is one the forge queued and never enqueued, once it is a minute old', async () => {
+		const stuck = {
+			...runOf('queued'),
+			createdAt: new Date(0).toISOString(),
+		};
+		const { ctx, wakes } = world({}, [stuck], [], 0);
+		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
+		expect(wakes.slice(0, 2)).toEqual(['close', 'reopen']);
+		expect(evidence.manualSteps.length).toBeGreaterThan(0);
+	});
+
+	it('[<50ms] keeps waiting for an old queued run that has jobs: it is working', async () => {
+		const slow = {
+			...runOf('queued'),
+			createdAt: new Date(0).toISOString(),
+		};
+		const { ctx, wakes } = world({}, [slow], [], 2);
+		await runScenario(ctx, scenario('merged', ['a'], 10));
+		expect(wakes).toEqual([]);
 	});
 
 	it("[<50ms] does not wake while the integrator runs after the head's own checks finished", async () => {

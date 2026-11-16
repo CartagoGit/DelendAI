@@ -7,6 +7,13 @@
 import type { IUnstartedRun } from '../contracts/interfaces/rehearsal-evidence.interface';
 import type { IRehearsalRun } from '../contracts/interfaces/rehearsal.interface';
 
+/** Whether two runs are of one workflow file (or, without ids, of one name) on one branch. */
+const sameGroup = (a: IRehearsalRun, b: IRehearsalRun): boolean =>
+	a.headBranch === b.headBranch &&
+	(a.workflowId !== undefined && b.workflowId !== undefined
+		? a.workflowId === b.workflowId
+		: a.workflow === b.workflow);
+
 /** Whether `run` is the last created of its workflow on its branch among `runs`. */
 export const isNewestOfGroup = (
 	run: IRehearsalRun,
@@ -15,8 +22,7 @@ export const isNewestOfGroup = (
 	runs.every(
 		(other) =>
 			other.id === run.id ||
-			other.workflow !== run.workflow ||
-			other.headBranch !== run.headBranch ||
+			!sameGroup(other, run) ||
 			other.createdAt < run.createdAt ||
 			(other.createdAt === run.createdAt && other.id < run.id),
 	);

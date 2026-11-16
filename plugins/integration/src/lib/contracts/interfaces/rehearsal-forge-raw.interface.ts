@@ -2,6 +2,7 @@
 
 export interface IRawRun {
 	id: number;
+	workflow_id?: number;
 	name?: string | null;
 	event: string;
 	head_branch?: string | null;

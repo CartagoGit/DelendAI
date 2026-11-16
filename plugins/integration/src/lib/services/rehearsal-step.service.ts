@@ -12,7 +12,6 @@ import {
 	REHEARSAL_TOKEN_PUSH_LABEL,
 } from '../contracts/constants/rehearsal.constant';
 import type {
-	IRehearsalClock,
 	IRehearsalPullSpec,
 	IRehearsalPullState,
 	IRehearsalRunContext,
@@ -21,17 +20,15 @@ import type {
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import { somethingRuns, wake } from './rehearsal-idle.helper';
 import { receive } from './rehearsal-receive.helper';
-import { awaitedChecks, openRuns, redEndsWait } from './rehearsal-wait.helper';
+import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
 import {
 	pullChanges,
 	pullHead,
 	runBranchRoot,
 	runLabelPrefix,
 } from './rehearsal-names.helper';
-
-const isoOf = (clock: IRehearsalClock): string =>
-	new Date(clock.now()).toISOString();
 
 const TOKEN_WAIT_MS = REHEARSAL_TOKEN_WAIT_SECONDS * 1000;
 
@@ -99,41 +96,6 @@ const satisfied = async (
 		}
 	}
 	return pending;
-};
-
-/**
- * Close a pull request and reopen it: the events the integrator wakes on,
- * the ones its own bring-forward makes. Converting to draft is refused to the
- * integrator's App (it never succeeded in a logged run), so it is not used.
- */
-const wake = async (
-	ctx: IRehearsalRunContext,
-	state: IScenarioState,
-	keys: readonly string[],
-): Promise<void> => {
-	for (const key of keys) {
-		const number = state.numbers.get(key);
-		if (number === undefined) continue;
-		await ctx.forge.closePull(number);
-		await ctx.forge.reopenPull(number);
-		state.manualSteps.push(
-			`woke the integrator for ${key} (#${String(number)}) at ${isoOf(ctx.clock)}`,
-		);
-	}
-};
-
-/** Whether any workflow run on the scenario's integration branch or its pull requests' heads is queued or in progress. */
-const somethingRuns = async (
-	ctx: IRehearsalRunContext,
-	state: IScenarioState,
-): Promise<boolean> => {
-	const heads = new Set([
-		state.integration,
-		...(await ctx.forge.pulls(state.integration)).map((pull) => pull.head),
-	]);
-	for (const head of heads)
-		if (openRuns(await ctx.forge.runs(head)).length > 0) return true;
-	return false;
 };
 
 /**

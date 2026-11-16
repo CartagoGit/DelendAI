@@ -157,7 +157,10 @@ export type IRehearsalCancel = 'cancelled' | 'ended' | 'unstarted';
 
 export interface IRehearsalRun {
 	readonly id: number;
+	/** The run's name: its `run-name` once the workflow evaluated it, else the workflow's name. */
 	readonly workflow: string;
+	/** The workflow file's id: the same for every run of it, however each is named. */
+	readonly workflowId?: number;
 	readonly event: string;
 	readonly headBranch: string;
 	readonly headSha: string;
