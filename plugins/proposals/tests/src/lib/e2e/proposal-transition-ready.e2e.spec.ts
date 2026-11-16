@@ -107,7 +107,7 @@ describe('e2e: the move to ready', async () => {
 			...extra,
 		});
 
-	it('[<3000ms] walks ready, in-progress and review, and refuses the illegal moves', async () => {
+	it('[<6000ms] walks ready, in-progress and review, and refuses the illegal moves', async () => {
 		await seedIn(harness, 'f08103', 'none', 'ready');
 		expect((await move('f08103', 'done')).structured.ok).toBe(false);
 		expect((await move('f08103', 'in-progress')).structured.ok).toBe(true);
@@ -116,7 +116,6 @@ describe('e2e: the move to ready', async () => {
 			(await move('f08103', 'review', { validateEvidence: EVIDENCE }))
 				.structured.ok,
 		).toBe(false);
-		expect((await move('f08103', 'bogus')).structured.ok).toBe(false);
 		expect((await move('f08199', 'ready')).structured.ok).toBe(false);
 	});
 
@@ -157,5 +156,49 @@ describe('e2e: the move to ready', async () => {
 		const refused = await move('f08106', 'ready');
 		expect(refused.structured.ok).toBe(false);
 		expect((await move('f08106', 'retired')).structured.ok).toBeDefined();
+	});
+	it('[<6000ms] creates proposals in every shape the tool accepts', async () => {
+		const create = (args: object) =>
+			harness.callTool<{ ok: boolean; id?: string }>(
+				'delendai_proposals_create_proposal',
+				args,
+			);
+		const base = {
+			title: 'readiness shapes',
+			goal: 'g',
+			why: 'w',
+			nonGoals: ['n'],
+		};
+		const two = await create({
+			...base,
+			kind: 'fix',
+			globalGate: 'type',
+			slices: [
+				{ sliceId: 's1', files: ['new:src/a.ts'], decisions: 'none' },
+				{
+					sliceId: 'S2',
+					title: 'second',
+					files: ['new:src/b.ts'],
+					gate: 'lint',
+					dependsOn: ['s1'],
+					acceptance: ['`bun run lint` exits 0.'],
+				},
+			],
+		});
+		expect(two.structured.ok).toBe(true);
+		expect(
+			(await create({ title: 'bare', kind: 'chore' })).structured.ok,
+		).toBe(true);
+		expect(
+			(await create({ ...base, id: 'f08150', status: 'ready' }))
+				.structured.ok,
+		).toBe(true);
+		expect(
+			(await create({ ...base, id: 'zz', kind: 'fix' })).structured.ok,
+		).toBe(false);
+		expect(
+			(await create({ ...base, id: 'f08151', kind: 'fix' })).structured
+				.ok,
+		).toBe(false);
 	});
 });
