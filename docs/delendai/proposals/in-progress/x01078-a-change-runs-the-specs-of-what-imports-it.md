@@ -2,10 +2,14 @@
 id: x01078
 title: "A change runs the specs of what imports it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: 3f70faa1-ff84-4f58-8afc-89ce1fe09acc
+last-correlation-id: 3f70faa1-ff84-4f58-8afc-89ce1fe09acc
+last-transition-from: ready
+last-transition-at: 2026-11-16T03:38:45.165Z
 ---
 
 # x01078 — A change runs the specs of what imports it
