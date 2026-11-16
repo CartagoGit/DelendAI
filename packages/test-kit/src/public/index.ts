@@ -55,6 +55,7 @@ export {
 	budgetFailure,
 	budgetInName,
 	budgetNoise,
+	withRemeasuredLoad,
 	budgetOverrun,
 	freshBudgetsOfDiff,
 	isE2eSpec,
