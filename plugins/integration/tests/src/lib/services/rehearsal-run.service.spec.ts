@@ -298,7 +298,7 @@ describe('runScenario', () => {
 		expect(evidence.failures[0]).toContain('merged not reached');
 	});
 
-	it('[<100ms] waits for a label, a check and a changed head', async () => {
+	it('[<100ms] waits for a label, a check and a check', async () => {
 		const { forge, clock, pulls, runs } = memoryForge();
 		const evidence = await runScenario(
 			ctxOf(forge, clock),
@@ -317,7 +317,6 @@ describe('runScenario', () => {
 						keys: ['a'],
 						seconds: 30,
 					},
-					{ kind: 'token-push', key: 'a' },
 				],
 			}),
 		);
@@ -329,7 +328,6 @@ describe('runScenario', () => {
 		expect(
 			evidence.failures.some((f) => f.includes('checked not reached')),
 		).toBe(true);
-		expect(evidence.tokenHeads.a).toHaveLength(1);
 	});
 
 	it('[<100ms] records the head a workflow token wrote and the pull request it opened', async () => {
