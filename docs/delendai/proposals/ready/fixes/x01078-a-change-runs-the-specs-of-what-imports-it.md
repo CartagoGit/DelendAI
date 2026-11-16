@@ -12,25 +12,38 @@ date: 2026-11-16
 
 ## goal
 
-TODO: describe the goal.
+The default `touched` test scope runs, for a changed source, its mirror or sibling spec, the specs that import it directly, and the mirror specs of the sources that import it directly. Nothing wider. A change to a module a command file imports then runs the command's own spec.
 
 ## why
 
-TODO: why this work matters now.
+PR #2231 changed `packages/cli/src/lib/work-deliver.service.ts`. `packages/cli/src/commands/work.command.ts` imports it, but its spec `work.command.spec.ts` imports only `work.command.ts`, so the touched scope (mirror plus direct spec importers) selected only `work-deliver.service.spec.ts`. The pull request was green and develop 133cb8a36 failed two `work.command.spec.ts` tests. The owner's standing rule is changed, mirror and direct-importer specs; the selector kept the spec of the changed file but not the spec of its direct importer.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Following imports more than one hop, or moving to the `reach` scope.
+- Changing the symbol analysis of `affected-specs.service`.
+- Following the importers of a barrel (`index.ts`), which would select every module behind it.
 
 ## slices
 
 - global_gate: none
 
-### S1 — TODO
+### S1 — The touched scope adds the mirrors of direct importers
 - **Status**: pending
-- **Files**: `TODO`
+- **Files**: `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
+- acceptance:
+  - "`bunx vitest run tools/scripts/ci/test-scope.spec.ts` passes a case where the file set of #2231 selects `packages/cli/src/commands/work.command.spec.ts`."
+  - "The same spec proves a barrel importer is not followed and a non-importer is not selected."
+  - "`bunx vitest run packages/cli/src/commands/work.command.spec.ts` passes with the `--kind` flag expected for implement and create branches."
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- The two failing `work.command.spec.ts` cases pass under the contract that a unit's flags carry its kind.
+- `bun run lint:architecture` and `bun run proposal-hygiene` exit 0.
+
+## decisions
+
+- The selector follows exactly one hop through non-barrel sources and takes the importer's mirror spec only; the importer's own importers are not followed.
+- Barrels are skipped on both sides: a changed barrel keeps its symbol-delta rule and a barrel importer adds nothing.
+- The default scope stays `touched`; `reach` and `all` are unchanged.
