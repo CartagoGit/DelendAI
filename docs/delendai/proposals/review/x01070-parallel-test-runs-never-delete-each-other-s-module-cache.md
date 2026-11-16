@@ -2,10 +2,14 @@
 id: x01070
 title: "Parallel test runs never delete each other's module cache"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-15
+last-transition-id: 4c436911-ca67-4c8f-bada-822a1566d7bf
+last-correlation-id: 4c436911-ca67-4c8f-bada-822a1566d7bf
+last-transition-from: in-progress
+last-transition-at: 2026-11-15T12:58:08.631Z
 ---
 
 # x01070 — Parallel test runs never delete each other's module cache
@@ -27,9 +31,12 @@ vitest's fsModuleCache clears node_modules/.vitest-cache when the stored bun.loc
 - global_gate: none
 
 ### S1 — Key the module cache directory by the lockfile
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `vitest.config.ts`, `tools/scripts/ci/vitest-cache-key.helper.ts`, `tools/scripts/ci/vitest-cache-key.helper.spec.ts`
 - **Gate**: none
+- shipped-in: `e63b5d239537`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
