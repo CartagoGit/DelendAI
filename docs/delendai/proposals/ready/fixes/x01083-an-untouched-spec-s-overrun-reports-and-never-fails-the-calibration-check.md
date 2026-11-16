@@ -16,11 +16,14 @@ The merge step's calibration check fails a change only for a budget overrun in a
 
 ## why
 
-TODO: why this work matters now.
+Develop CI went red on 42d1c4936 in "Require the CI-calibrated number of every budget overrun" (`test:budgets:check`) for `forge-event-store.service.e2e.spec.ts > [<50ms] reads nothing from a file that is not a list`: CI measured 139.8 ms at load factor 1 (benchmark 20.0 ms against 42.8). The two previous develop runs passed the same step, and the merge between them does not touch that spec. The judge already reports, never fails, an overrun in a spec the change does not touch; the check is a second, stricter judge of the same rule, so one sample on an untouched spec turned develop red.
+
+Why that test took 140 ms at load factor 1, from reading the test and the store: it calls `addForgeEventSubscription` only to create the directory, and that call is a durable write. It takes the file mutex, then `writeFileAtomic` creates a temporary file, writes it, fsyncs the data, renames it, fsyncs the directory, and sweeps orphan temporaries. There is no cold import in that path (every import is static, at module scope). The load benchmark is fifteen spawns and a hundred small writes with no fsync, so it cannot see the flush latency of the runner's disk, and a factor of 1 says nothing about it. The test asserts only that an unreadable subscriptions file reads as empty, so the durable write is not part of what it measures.
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- Raising the number of that test, or of any budget, to fit.
+- Changing how the judge in the test runner decides: it is the reference, and the check adopts its rule.
 
 ## slices
 
@@ -33,4 +36,10 @@ TODO: why this work matters now.
 
 ## acceptance
 
-- TODO: observable acceptance criteria.
+- One function, in `time-budget-tier.helper.ts`, says whether a spec file is untouched by a change (a known change set that does not hold the file); the test runner and the calibration check both call it, and neither keeps a copy.
+- `test:budgets:check` takes the change set from `git diff --name-only <base>...HEAD` for the base in `SCOPE_BASE`. An overrun in a spec file the change touches prints the calibrated number and the step exits 1.
+- An overrun in an untouched spec prints a warning line with the calibrated number, appends it to `GITHUB_STEP_SUMMARY` when that is set, and the step exits 0.
+- An empty base (a push to the integration branch) is an empty change set, so every spec is untouched and the step reports and exits 0. It is never read as "everything touched".
+- A missing or unreadable report directory, and a malformed report, exit 1 with a message.
+- `test-budget-check.spec.ts` injects the reports, the change set and the summary writer and covers: untouched overrun exits 0 with the warning and the summary line, touched overrun exits 1, empty base exits 0, missing reports exit 1.
+- The `reads nothing from a file that is not a list` test creates its directory with `mkdirSync` instead of a durable `addForgeEventSubscription`; its number stays `[<50ms]`.
