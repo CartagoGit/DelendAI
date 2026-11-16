@@ -2,14 +2,14 @@
 id: x01079
 title: "A proposal is ready only when nothing is left to work out"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 21c113f3-6075-445c-ad7e-126579d98ddf
-last-correlation-id: 21c113f3-6075-445c-ad7e-126579d98ddf
-last-transition-from: ready
-last-transition-at: 2026-11-16T04:10:35.588Z
+last-transition-id: fbb862db-ec9e-4151-885c-38bb24e058d0
+last-correlation-id: fbb862db-ec9e-4151-885c-38bb24e058d0
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T08:52:22.234Z
 ---
 
 # x01079 — A proposal is ready only when nothing is left to work out
@@ -32,7 +32,7 @@ Slices reached work with guessed Files, acceptance nobody could run and decision
 - global_gate: none
 
 ### S1 — One readiness function, a lint and a transition guard
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/transition/run-transition.tool.ts`, `plugins/proposals/src/lib/proposals/expand-declared-files.ts`, `plugins/proposals/src/lib/contracts/constants/create-proposal-schema.constant.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal-document.tool.ts`, `plugins/proposals/src/lib/resources/proposal-templates.resource.ts`, `package.json`, `new:plugins/proposals/tests/src/lib/proposals/proposal-readiness-reading.spec.ts`, `tools/scripts/migrate/rebrand-propagate.script.ts`, `new:plugins/proposals/tests/src/lib/e2e/proposal-transition-ready.e2e.spec.ts`, `new:plugins/proposals/src/lib/proposals/proposal-readiness.ts`, `new:plugins/proposals/src/lib/proposals/proposal-readiness-slices.ts`, `new:plugins/proposals/src/lib/services/ready-guard.service.ts`, `new:plugins/proposals/src/lib/contracts/interfaces/ready-guard.interface.ts`, `new:plugins/proposals/src/lib/contracts/constants/new-file-marker.constant.ts`, `new:plugins/proposals/src/lib/contracts/interfaces/proposal-readiness.interface.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `new:plugins/proposals/tests/src/lib/proposals/proposal-readiness.spec.ts`, `new:tools/scripts/lint/proposal-readiness.script.ts`, `new:tools/scripts/lint/proposal-readiness.spec.ts`, `new:tools/scripts/lint/proposal-readiness.baseline.json`
 - **Gate**: type
 - **Decisions**: Slices already delivered (review, done, retired) are not judged. The lint scans ready and in-progress, keys its baseline by proposal id, slice, rule and text, and its update flag only removes entries. The transition guard runs on every move to ready without force and also refuses a new: path that already exists; the lint accepts it, because a unit that carries its proposal and its code together has built the file. A new: path is stripped of its marker by the shared Files parser, so review entry checks the delivered path unchanged.
@@ -42,6 +42,9 @@ Slices reached work with guessed Files, acceptance nobody could run and decision
   - "`vitest run tools/scripts/lint/proposal-readiness.spec.ts` covers the baseline that only shrinks."
   - "A transition to ready of a proposal with a finding is refused with the finding named; `plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts` stays green."
   - "A Files entry written new:path is accepted before delivery, and review entry checks the path without the marker once delivered, shown by `plugins/proposals/tests/src/lib/services/proposal-completeness-new-marker.spec.ts`."
+- shipped-in: `f53099779c9c`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
