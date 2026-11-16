@@ -152,17 +152,17 @@ const filesChangedSince = (base: string): ReadonlySet<string> =>
  * budget in a spec the change touches; report one in an untouched spec.
  */
 const requireCalibrated = (blobs: string): number => {
+	const { SCOPE_BASE: scopeBase, GITHUB_STEP_SUMMARY } = process.env;
 	const verdict = checkBudgets({
 		durations: () => reportedDurations(blobs),
-		base: arg('base') ?? process.env['SCOPE_BASE'] ?? '',
+		base: arg('base') ?? scopeBase ?? '',
 		changedFiles: filesChangedSince,
 	});
 	for (const line of verdict.errors) console.error(line);
 	for (const line of verdict.warnings) console.warn(`warning: ${line}`);
-	const summary = process.env['GITHUB_STEP_SUMMARY'];
-	if (summary !== undefined && verdict.warnings.length > 0) {
+	if (GITHUB_STEP_SUMMARY !== undefined && verdict.warnings.length > 0) {
 		appendFileSync(
-			summary,
+			GITHUB_STEP_SUMMARY,
 			`### Budget overruns in specs this change does not touch\n${verdict.warnings.map((line) => `- ${line}`).join('\n')}\n`,
 		);
 	}

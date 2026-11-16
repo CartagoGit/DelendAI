@@ -38,9 +38,6 @@ const failed = (message: string): ITestBudgetCheckVerdict => ({
 	warnings: [],
 });
 
-const reason = (error: unknown): string =>
-	error instanceof Error ? error.message : String(error);
-
 /** Judge every measured overrun by whether the change touches its spec. */
 export const checkBudgets = (
 	input: ITestBudgetCheckInput,
@@ -50,7 +47,7 @@ export const checkBudgets = (
 		durations = input.durations();
 	} catch (error) {
 		return failed(
-			`test-budget-check: no readable reports: ${reason(error)}`,
+			`test-budget-check: no readable reports: ${String(error)}`,
 		);
 	}
 	let changed: ReadonlySet<string>;
@@ -60,7 +57,7 @@ export const checkBudgets = (
 			input.base === '' ? new Set() : input.changedFiles(input.base);
 	} catch (error) {
 		return failed(
-			`test-budget-check: cannot list the files ${input.base} changes: ${reason(error)}`,
+			`test-budget-check: cannot list the files ${input.base} changes: ${String(error)}`,
 		);
 	}
 	const errors: string[] = [];
