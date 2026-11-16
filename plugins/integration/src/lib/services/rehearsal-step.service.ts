@@ -221,7 +221,7 @@ const STEPS: TSteps = {
 			await openPull(ctx, scenario, state, specOf(key));
 		return;
 	},
-	ready: async (ctx, scenario, state, step) => {
+	ready: async (ctx, _scenario, state, step) => {
 		const numbers = step.keys.flatMap((key) => {
 			const number = state.numbers.get(key);
 			return number === undefined ? [] : [number];
