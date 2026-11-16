@@ -26,6 +26,7 @@ import type {
 	IRawPull,
 	IRawRun,
 } from '../contracts/interfaces/rehearsal-forge-raw.interface';
+import { markArgs } from './rehearsal-graphql.helper';
 
 const HTTP_OK = 200;
 const HTTP_NOT_FOUND = 404;
@@ -121,6 +122,20 @@ export const createGithubRehearsalForge = (input: {
 		if (status !== HTTP_OK)
 			throw new Error(`${method} ${path} answered ${String(status)}`);
 		return (text.trim() === '' ? {} : JSON.parse(text)) as T;
+	};
+	/** One GraphQL request applying `mutation` to every pull request, one alias each. */
+	const markPulls = async (
+		mutation: string,
+		numbers: readonly number[],
+	): Promise<void> => {
+		const ids = await Promise.all(
+			numbers.map(async (n) => (await rawPull(n)).node_id),
+		);
+		const result = await run(markArgs(mutation, ids));
+		if (result.exitCode !== 0)
+			throw new Error(
+				`${mutation} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+			);
 	};
 	const pages = async <T>(
 		path: string,
@@ -277,22 +292,9 @@ export const createGithubRehearsalForge = (input: {
 					},
 				})
 			).number,
-		setDraft: async (number, draft) => {
-			const { node_id: id } = await rawPull(number);
-			const mutation = DRAFT_MUTATIONS[draft ? 'draft' : 'ready'];
-			const result = await run([
-				'api',
-				'graphql',
-				'-f',
-				`query=mutation($id: ID!) { ${mutation}(input: {pullRequestId: $id}) { clientMutationId } }`,
-				'-f',
-				`id=${id}`,
-			]);
-			if (result.exitCode !== 0)
-				throw new Error(
-					`${mutation} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
-				);
-		},
+		setDraft: (number, draft) =>
+			markPulls(DRAFT_MUTATIONS[draft ? 'draft' : 'ready'], [number]),
+		readyTogether: (numbers) => markPulls(DRAFT_MUTATIONS.ready, numbers),
 		mergePull: async (number, sha) => {
 			await json('PUT', `pulls/${String(number)}/merge`, {
 				fields: { sha, merge_method: 'merge' },

@@ -8,7 +8,6 @@ import type {
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
 import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
-
 interface IMutablePull
 	extends Omit<
 		IRehearsalPullState,
@@ -86,6 +85,7 @@ const memoryForge = () => {
 			p.draft = draft;
 			if (!draft && p.mergedAt === undefined) p.mergedAt = iso();
 		},
+		readyTogether: async () => undefined,
 		mergePull: async (n) => {
 			pull(n).mergedAt = iso();
 		},

@@ -73,17 +73,23 @@ const isWorking = async (
 		(await ctx.forge.jobCount(run.id)) === 0
 	);
 
-/** Whether any workflow run on the scenario's integration branch or its pull requests' heads is queued or in progress. */
-export const somethingRuns = async (
+/** The first workflow run on the scenario's integration branch or its pull requests' heads that is queued or in progress. */
+export const workingRun = async (
 	ctx: IRehearsalRunContext,
 	state: IScenarioState,
-): Promise<boolean> => {
+): Promise<IRehearsalRun | undefined> => {
 	const heads = new Set([
 		state.integration,
 		...(await ctx.forge.pulls(state.integration)).map((pull) => pull.head),
 	]);
 	for (const head of heads)
 		for (const run of openRuns(await ctx.forge.runs(head)))
-			if (await isWorking(ctx, run)) return true;
-	return false;
+			if (await isWorking(ctx, run)) return run;
+	return undefined;
 };
+
+/** Whether any workflow run on the scenario's integration branch or its pull requests' heads is queued or in progress. */
+export const somethingRuns = async (
+	ctx: IRehearsalRunContext,
+	state: IScenarioState,
+): Promise<boolean> => (await workingRun(ctx, state)) !== undefined;

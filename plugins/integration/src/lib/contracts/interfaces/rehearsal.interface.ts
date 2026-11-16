@@ -39,7 +39,12 @@ export interface IRehearsalPullSpec {
 /** One step the harness takes, as the author or the environment. */
 export type IRehearsalStep =
 	| { readonly kind: 'open'; readonly keys: readonly string[] }
-	| { readonly kind: 'ready'; readonly keys: readonly string[] }
+	| {
+			readonly kind: 'ready';
+			readonly keys: readonly string[];
+			/** Members of one batch: made ready in one forge request, once no pass is open. */
+			readonly together?: boolean;
+	  }
 	| {
 			readonly kind: 'await';
 			readonly until: 'merged' | 'labelled' | 'checked';
@@ -229,6 +234,8 @@ export interface IRehearsalForge {
 		readonly draft: boolean;
 	}) => Promise<number>;
 	readonly setDraft: (number: number, draft: boolean) => Promise<void>;
+	/** Marks several draft pull requests ready in ONE request, so the forge emits their events together. */
+	readonly readyTogether: (numbers: readonly number[]) => Promise<void>;
 	readonly mergePull: (number: number, sha: string) => Promise<void>;
 	readonly closePull: (number: number) => Promise<void>;
 	readonly addLabel: (number: number, label: string) => Promise<void>;

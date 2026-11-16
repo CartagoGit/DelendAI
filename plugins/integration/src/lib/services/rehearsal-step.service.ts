@@ -20,7 +20,7 @@ import type {
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
-import { somethingRuns, wake } from './rehearsal-idle.helper';
+import { somethingRuns, wake, workingRun } from './rehearsal-idle.helper';
 import { receive } from './rehearsal-receive.helper';
 import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
 import {
@@ -222,11 +222,33 @@ const STEPS: TSteps = {
 		return;
 	},
 	ready: async (ctx, scenario, state, step) => {
-		const _specOf = specOfIn(scenario);
-		for (const key of step.keys) {
+		const numbers = step.keys.flatMap((key) => {
 			const number = state.numbers.get(key);
-			if (number !== undefined) await ctx.forge.setDraft(number, false);
+			return number === undefined ? [] : [number];
+		});
+		if (step.together !== true) {
+			for (const number of numbers)
+				await ctx.forge.setDraft(number, false);
+			return;
 		}
+		// Members of one batch flip in one request, and only while no pass is
+		// mid-read: a pass that reads between two requests batches one of them.
+		const started = ctx.clock.now();
+		for (;;) {
+			const open = await workingRun(ctx, state);
+			if (open === undefined) break;
+			if (
+				ctx.clock.now() - started >=
+				REHEARSAL_AWAIT_CAP_SECONDS * 1000
+			) {
+				state.failures.push(
+					`ready ${step.keys.join(', ')}: run ${String(open.id)} still ${open.status} after the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+				);
+				return;
+			}
+			await ctx.clock.wait(REHEARSAL_POLL_MS);
+		}
+		await ctx.forge.readyTogether(numbers);
 		return;
 	},
 	await: async (ctx, scenario, state, step) => {

@@ -63,6 +63,12 @@ const overlapPullIn = (
 
 const open = (...keys: string[]): IRehearsalStep => ({ kind: 'open', keys });
 const ready = (...keys: string[]): IRehearsalStep => ({ kind: 'ready', keys });
+/** Members of one batch: ready in one request, once no pass is open. */
+const readyTogether = (...keys: string[]): IRehearsalStep => ({
+	kind: 'ready',
+	keys,
+	together: true,
+});
 const merged = (...keys: string[]): IRehearsalStep => ({
 	kind: 'await',
 	until: 'merged',
@@ -127,7 +133,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		steps: [
 			open('a', 'b'),
 			checked('a', 'b'),
-			ready('a', 'b'),
+			readyTogether('a', 'b'),
 			merged('a', 'b'),
 		],
 		expect: [
@@ -146,7 +152,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		steps: [
 			open('a', 'b'),
 			checked('a', 'b'),
-			ready('a', 'b'),
+			readyTogether('a', 'b'),
 			labelled('a'),
 			merged('b'),
 		],

@@ -44,6 +44,7 @@ const world = (
 ) => {
 	const drafts: boolean[] = [];
 	const wakes: string[] = [];
+	let opened = 0;
 	const commits: { branch: string; parents: readonly string[] }[] = [];
 	const labels: string[] = [];
 	const clock = { at: 0 };
@@ -58,7 +59,7 @@ const world = (
 		},
 		addLabel: async (_n: number, label: string) => void labels.push(label),
 		tipOf: async () => 'tip',
-		openPull: async () => 1,
+		openPull: async () => (opened += 1),
 		setDraft: async (_n: number, draft: boolean) => void drafts.push(draft),
 		jobCount: async () => jobs,
 		closePull: async () => void wakes.push('close'),

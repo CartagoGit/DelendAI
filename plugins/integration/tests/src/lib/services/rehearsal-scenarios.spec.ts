@@ -332,3 +332,14 @@ describe('the host-offline scenario', () => {
 		expect(offline?.expect).toContainEqual({ kind: 'sessions-notified' });
 	});
 });
+
+describe('the scenarios of one batch', () => {
+	it('[<50ms] make their members ready in one request', () => {
+		for (const id of ['overlapping', 'red-batch']) {
+			const ready = REHEARSAL_SCENARIOS.find(
+				(s) => s.id === id,
+			)?.steps.find((step) => step.kind === 'ready');
+			expect(ready).toMatchObject({ together: true });
+		}
+	});
+});

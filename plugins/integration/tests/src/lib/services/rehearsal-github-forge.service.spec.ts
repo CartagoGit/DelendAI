@@ -112,7 +112,11 @@ describe('the GitHub rehearsal forge', () => {
 		await forge.setDraft(5, false);
 		const gql = calls.at(-1)?.args.join(' ') ?? '';
 		expect(gql).toContain('markPullRequestReadyForReview');
-		expect(gql).toContain('id=NODE');
+		expect(gql).toContain('i0=NODE');
+		await forge.readyTogether([5, 5]);
+		const both = calls.at(-1)?.args.join(' ') ?? '';
+		expect(both).toContain('m1: markPullRequestReadyForReview');
+		expect(both).toContain('i1=NODE');
 	});
 
 	it('[<50ms] treats a missing directory as no files', async () => {
