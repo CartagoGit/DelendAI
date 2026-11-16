@@ -18,6 +18,8 @@ import type {
 	IRehearsalRun,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import { isTransient, readWithRetry } from './rehearsal-forge-retry.helper';
+
 interface IRawPull {
 	number: number;
 	state: string;
@@ -69,10 +71,12 @@ export const createGithubRehearsalForge = (input: {
 	/** `owner/name`. */
 	readonly slug: string;
 	readonly run: IRehearsalCommandRunner;
+	/** Waits `ms` between the attempts of a retried read. */
+	readonly wait: (ms: number) => Promise<void>;
 }): IRehearsalForge => {
-	const { slug, run } = input;
+	const { slug, run, wait } = input;
 
-	const request = async (
+	const once = async (
 		method: string,
 		path: string,
 		options: {
@@ -80,7 +84,12 @@ export const createGithubRehearsalForge = (input: {
 			readonly body?: unknown;
 			readonly headers?: readonly string[];
 		} = {},
-	): Promise<{ readonly status: number; readonly text: string }> => {
+	): Promise<{
+		readonly status: number;
+		readonly text: string;
+		readonly failed?: boolean;
+		readonly transient?: boolean;
+	}> => {
 		const result = await run(
 			[
 				'api',
@@ -105,10 +114,26 @@ export const createGithubRehearsalForge = (input: {
 		);
 		if (status === HTTP_NOT_FOUND || status === HTTP_UNPROCESSABLE)
 			return { status, text: result.stdout };
-		throw new Error(
-			`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
-		);
+		return {
+			status: Number.isNaN(status) ? 0 : status,
+			failed: true,
+			text: `forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+			transient: isTransient(
+				status,
+				`${result.stderr}${result.spawnError ?? ''}`,
+			),
+		};
 	};
+	const request = (
+		method: string,
+		path: string,
+		options: Parameters<typeof once>[2] = {},
+	): Promise<{ readonly status: number; readonly text: string }> =>
+		readWithRetry({
+			method,
+			wait,
+			call: () => once(method, path, options),
+		});
 	const json = async <T>(
 		method: string,
 		path: string,

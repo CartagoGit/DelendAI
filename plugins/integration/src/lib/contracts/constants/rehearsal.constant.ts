@@ -19,6 +19,26 @@ export const REHEARSAL_DEFERRED_TARGETS: Readonly<Record<string, string>> = {
 	'session-notified-p95': 'the real-time transport is S11b',
 };
 
+const HTTP_BAD_GATEWAY = 502;
+const HTTP_SERVICE_UNAVAILABLE = 503;
+const HTTP_GATEWAY_TIMEOUT = 504;
+
+/**
+ * A read (GET) that fails with one of these statuses, or with a connection
+ * reset or timeout, is asked again after each delay in turn through the
+ * clock; the attempts are the first call plus one per delay. Writes and
+ * every other status are never retried.
+ */
+export const REHEARSAL_READ_RETRY = {
+	statuses: [
+		HTTP_BAD_GATEWAY,
+		HTTP_SERVICE_UNAVAILABLE,
+		HTTP_GATEWAY_TIMEOUT,
+	],
+	delaysMs: [1_000, 3_000, 9_000],
+	transientText: /ECONNRESET|ETIMEDOUT|connection reset|timed? ?out/iu,
+} as const;
+
 /**
  * The jobs whose `if:` names the integration branch and that a rehearsal
  * branch renders for itself. Every other job gated on that branch stays as

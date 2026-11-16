@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { IRehearsalCommandRunner } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { createGithubRehearsalForge } from '../../../../src/lib/services/rehearsal-github-forge.service';
 
+const noWait = async (): Promise<void> => undefined;
+
 interface ICall {
 	readonly args: readonly string[];
 	readonly input?: string | undefined;
@@ -19,7 +21,10 @@ const fake = (answers: Record<string, string>) => {
 			? { exitCode: 1, stdout: '', stderr: 'HTTP 404' }
 			: { exitCode: 0, stdout: answers[key] ?? '', stderr: '' };
 	};
-	return { calls, forge: createGithubRehearsalForge({ slug: 'o/r', run }) };
+	return {
+		calls,
+		forge: createGithubRehearsalForge({ slug: 'o/r', run, wait: noWait }),
+	};
 };
 
 describe('the GitHub rehearsal forge', () => {
@@ -121,7 +126,11 @@ describe('the GitHub rehearsal forge', () => {
 			stdout: '',
 			stderr: 'HTTP 500',
 		});
-		const forge = createGithubRehearsalForge({ slug: 'o/r', run });
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run,
+			wait: noWait,
+		});
 		await expect(forge.tipOf('b')).rejects.toThrow('failed');
 	});
 
@@ -240,11 +249,13 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run log through gh and says so when it cannot', async () => {
 		const ok = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: 'log text', stderr: '' }),
 		});
 		expect(await ok.runLog(5)).toBe('log text');
 		const bad = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 1, stdout: '', stderr: 'gone' }),
 		});
@@ -272,6 +283,7 @@ describe('the GitHub rehearsal forge', () => {
 			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async (args) => {
 				calls.push(args.join(' '));
@@ -297,6 +309,7 @@ describe('the GitHub rehearsal forge', () => {
 			{ sha: 'setup', parents: [{ sha: 'older' }] },
 		];
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({
 				exitCode: 0,
@@ -319,6 +332,7 @@ describe('the GitHub rehearsal forge', () => {
 			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: full, stderr: '' }),
 		});
@@ -329,6 +343,7 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run that has no log as an empty log', async () => {
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({
 				exitCode: 1,

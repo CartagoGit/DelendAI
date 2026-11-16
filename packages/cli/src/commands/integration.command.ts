@@ -168,6 +168,7 @@ export const createIntegrationCommand = (
 				forge: createGithubRehearsalForge({
 					slug: repository,
 					run: runGh,
+					wait: (ms) => new Promise((done) => setTimeout(done, ms)),
 				}),
 				clock: {
 					now: () => Date.now(),
