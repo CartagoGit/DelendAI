@@ -2,14 +2,14 @@
 id: x01084
 title: "The integration engine's forge reads survive a transient server error"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 293a8023-47e9-4343-a349-d3878a13584c
-last-correlation-id: 293a8023-47e9-4343-a349-d3878a13584c
-last-transition-from: ready
-last-transition-at: 2026-11-16T14:03:15.304Z
+last-transition-id: c3bc3edd-def1-4f27-aeb8-687fd3195b59
+last-correlation-id: c3bc3edd-def1-4f27-aeb8-687fd3195b59
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T14:06:07.856Z
 ---
 
 # x01084 — The integration engine's forge reads survive a transient server error
@@ -40,7 +40,7 @@ A rehearsal scenario died on `GET pulls?... failed: gh: HTTP 504`: the land clie
 - global_gate: type
 
 ### S1 — Retry idempotent forge reads on a transient error
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/forge-read-retry.constant.ts`, `packages/core/src/lib/integration/land/forge-read-retry.helper.ts`, `packages/core/src/lib/integration/land/github-land-forge.service.ts`, `packages/core/tests/src/lib/integration/land/forge-read-retry.helper.spec.ts`, `packages/core/tests/src/lib/integration/land/github-land-forge.service.spec.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `plugins/integration/src/lib/services/integration-pass.service.ts`
 - **Gate**: type
 - acceptance:
@@ -48,6 +48,9 @@ A rehearsal scenario died on `GET pulls?... failed: gh: HTTP 504`: the land clie
   - "github-land-forge.service.spec.ts proves the land client retries a 504 read through the injected wait and never retries a write."
   - "FORGE_READ_RETRY in contracts/constants/forge-read-retry.constant.ts is the one place that names the statuses (502, 503, 504), the 3 retries and the delays 1000/3000/9000 ms."
   - "integration-pass.service.ts is the composition root that supplies the real wait to createGithubLandForge; specs inject a fake and use no real timer."
+- shipped-in: `523240c88df6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
