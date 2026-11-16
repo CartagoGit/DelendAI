@@ -111,6 +111,39 @@ export const installUnitDependencies = async (
 	}
 };
 
+/** The version a `packageManager: "bun@x.y.z"` field pins, if it pins bun. */
+const pinnedBun = async (path: string): Promise<string | undefined> => {
+	try {
+		const manifest = JSON.parse(
+			await readFile(join(path, 'package.json'), 'utf8'),
+		) as { readonly packageManager?: unknown };
+		const match = /^bun@(\d+\.\d+\.\d+)/u.exec(
+			String(manifest.packageManager ?? ''),
+		);
+		return match?.[1];
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * What a unit's agent must know about installing: the dependencies come
+ * from the frozen lockfile, a bare `bun install` rewrites it (and has been
+ * committed by accident), and a bun other than the pinned one writes a
+ * different lockfile.
+ */
+export const dependenciesNote = async (
+	path: string,
+	running: string | undefined = process.versions.bun,
+): Promise<string> => {
+	const pinned = await pinnedBun(path);
+	const mismatch =
+		pinned !== undefined && running !== undefined && running !== pinned
+			? ` The running bun is ${running} but package.json pins bun@${pinned}: do not regenerate bun.lock with it.`
+			: '';
+	return `Dependencies come from the frozen lockfile. Never run a bare \`bun install\` here, it rewrites bun.lock; use \`bun install --frozen-lockfile\`.${mismatch}`;
+};
+
 /**
  * What entering a unit did about its dependencies, for the answer. A
  * unit entered again installs them too: a kept unit nobody worked on
@@ -118,7 +151,13 @@ export const installUnitDependencies = async (
  */
 export const enteredDependencies = async (
 	path: string | undefined,
-): Promise<{ readonly dependencies?: IUnitDependencies }> =>
+): Promise<{
+	readonly dependencies?: IUnitDependencies;
+	readonly dependenciesNote?: string;
+}> =>
 	path === undefined
 		? {}
-		: { dependencies: await installUnitDependencies(path) };
+		: {
+				dependencies: await installUnitDependencies(path),
+				dependenciesNote: await dependenciesNote(path),
+			};

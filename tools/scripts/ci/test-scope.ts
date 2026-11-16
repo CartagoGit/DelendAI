@@ -2,8 +2,10 @@
  * test-scope.ts — which specs an agent runs for a change, by setting.
  *
  * The default is `touched`: a changed spec, the spec that mirrors a changed
- * source, and a spec that imports a changed file directly. Nothing reached
- * through another module runs unless the project asks, in `delendai.config.json`:
+ * source, a spec that imports a changed file directly, and the mirror of a
+ * source that imports a changed file directly (its direct importer). Nothing
+ * reached through a second module runs unless the project asks, in
+ * `delendai.config.json`:
  *
  *   "testing": { "scope": "touched" | "reach" | "all" }
  *
@@ -105,6 +107,8 @@ export const touchedSpecs = (
 	specs: readonly string[],
 	importsOf: (spec: string) => readonly string[],
 	symbols?: ISymbolView,
+	/** The sources that import a source directly; absent, none are followed. */
+	importersOf?: (source: string) => readonly string[],
 ): readonly string[] => {
 	const out = new Set<string>();
 	const known = new Set(specs);
@@ -114,6 +118,13 @@ export const touchedSpecs = (
 	for (const file of changed) if (known.has(file)) out.add(file);
 	for (const source of sources)
 		for (const spec of mirrorsOf(source, specs)) out.add(spec);
+	// A source that imports a changed one runs its own mirror: #2231 changed
+	// `work-deliver.service.ts` and `work.command.ts`, which imports it, went
+	// unproved. A barrel is skipped: its importers are every module behind it.
+	for (const source of sources.filter((file) => stemOf(file) !== 'index'))
+		for (const importer of importersOf?.(source) ?? [])
+			if (stemOf(importer) !== 'index')
+				for (const spec of mirrorsOf(importer, specs)) out.add(spec);
 	const touchedSources = new Set(sources);
 	for (const spec of specs)
 		if (
@@ -176,6 +187,19 @@ export const touchedSpecsOf = (
 						return asked.includes('*') ? '*' : asked.flat();
 					},
 				};
+	const importers = new Map<string, string[]>();
+	for (const file of changed.filter(
+		(each) => !SPEC.test(each) && files.has(each),
+	))
+		importers.set(file, []);
+	if (importers.size > 0)
+		for (const file of files) {
+			if (SPEC.test(file)) continue;
+			for (const { target } of factsOf(read(file), (specifier) =>
+				resolve(file, specifier),
+			).imports)
+				importers.get(target)?.push(file);
+		}
 	return [
 		...new Set([
 			...touchedSpecs(
@@ -184,6 +208,7 @@ export const touchedSpecsOf = (
 				(spec) =>
 					importsFacts(spec).imports.map(({ target }) => target),
 				symbols,
+				(source) => importers.get(source) ?? [],
 			),
 			...testInfrastructureSpecsOf({
 				files: tracked,
