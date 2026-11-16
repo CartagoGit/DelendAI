@@ -2,14 +2,14 @@
 id: q00048
 title: "The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin"
 kind: plan
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: 438a9e04-f915-474b-acac-1e53758e6848
-last-correlation-id: 438a9e04-f915-474b-acac-1e53758e6848
-last-transition-from: in-progress
-last-transition-at: 2026-11-16T04:23:32.495Z
+last-transition-id: 7b297b4e-b6f1-4124-a9b6-6f28dfa4845e
+last-correlation-id: 7b297b4e-b6f1-4124-a9b6-6f28dfa4845e
+last-transition-from: review
+last-transition-at: 2026-11-16T08:20:49.416Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
