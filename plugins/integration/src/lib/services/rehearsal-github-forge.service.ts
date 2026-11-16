@@ -19,6 +19,11 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { isTransient, readWithRetry } from './rehearsal-forge-retry.helper';
+import { toCheckRun, toRun } from './rehearsal-forge-run.helper';
+import type {
+	IRawCheckRun,
+	IRawRun,
+} from '../contracts/interfaces/rehearsal-forge-raw.interface';
 
 interface IRawPull {
 	number: number;
@@ -38,19 +43,6 @@ interface IRawEvent {
 	created_at: string;
 	label?: { name?: string };
 	actor?: { login?: string } | null;
-}
-
-interface IRawRun {
-	id: number;
-	name?: string | null;
-	event: string;
-	head_branch?: string | null;
-	head_sha: string;
-	status?: string | null;
-	conclusion?: string | null;
-	actor?: { login?: string } | null;
-	created_at: string;
-	updated_at: string;
 }
 
 const HTTP_OK = 200;
@@ -354,18 +346,15 @@ export const createGithubRehearsalForge = (input: {
 					(page) =>
 						(page as { workflow_runs: IRawRun[] }).workflow_runs,
 				)
-			).map((entry) => ({
-				id: entry.id,
-				workflow: entry.name ?? '',
-				event: entry.event,
-				headBranch: entry.head_branch ?? '',
-				headSha: entry.head_sha,
-				status: entry.status ?? '',
-				...(entry.conclusion ? { conclusion: entry.conclusion } : {}),
-				actor: entry.actor?.login ?? '',
-				createdAt: entry.created_at,
-				updatedAt: entry.updated_at,
-			})),
+			).map(toRun),
+		checkRuns: async (sha) =>
+			(
+				await pages<IRawCheckRun>(
+					`commits/${encodeURIComponent(sha)}/check-runs`,
+					(page) =>
+						(page as { check_runs: IRawCheckRun[] }).check_runs,
+				)
+			).map(toCheckRun),
 		runLog: async (id) => {
 			const result = await run([
 				'run',

@@ -289,6 +289,32 @@ describe('today land on the rehearsal branch', () => {
 		).files('i');
 		expect(files.map((f) => f.path)).toContain(REHEARSAL_OVERLAP_FILE);
 	});
+
+	it("[<50ms] names the stand-in check as required in fast mode, and the policy's in real mode", () => {
+		const base = {
+			runId: 'r1',
+			branchPrefix: 'ns',
+			integratorWorkflow: () => '',
+		};
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText: '{}',
+				}),
+			).requiredChecks,
+		).toEqual(['rehearsal-ci']);
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText:
+						'{"development":{"integration":{"requiredChecks":["tests","lint"]}}}',
+					realWorkflows: {},
+				}),
+			).requiredChecks,
+		).toEqual(['tests', 'lint']);
+	});
 });
 
 describe('the host-offline scenario', () => {

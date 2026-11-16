@@ -165,6 +165,16 @@ export interface IRehearsalRun {
 	readonly updatedAt: string;
 }
 
+/** A check run of a commit: what branch protection judges, one per job a workflow started. */
+export interface IRehearsalCheckRun {
+	readonly id: number;
+	readonly name: string;
+	readonly headSha: string;
+	readonly status: string;
+	readonly conclusion?: string;
+	readonly startedAt: string;
+}
+
 /** A file written or deleted by one commit. */
 export interface IRehearsalFileChange {
 	readonly path: string;
@@ -222,6 +232,8 @@ export interface IRehearsalForge {
 	) => Promise<readonly IRehearsalPullEvent[]>;
 	readonly runs: (branch: string) => Promise<readonly IRehearsalRun[]>;
 	readonly runLog: (id: number) => Promise<string>;
+	/** The check runs of the commit `sha`; a workflow run with no job has none. */
+	readonly checkRuns: (sha: string) => Promise<readonly IRehearsalCheckRun[]>;
 	readonly labels: (prefix: string) => Promise<readonly string[]>;
 	readonly deleteLabel: (name: string) => Promise<void>;
 }
@@ -242,6 +254,8 @@ export interface IRehearsalWorkflowNames {
 export interface IRehearsalSetup {
 	/** The workflows the run judges; absent means the fast stand-ins. */
 	readonly workflows?: IRehearsalWorkflowNames;
+	/** The names of the checks branch protection requires on a pull request's head. */
+	readonly requiredChecks: readonly string[];
 	/** Files the setup commit writes, given the scenario's integration branch. */
 	readonly files: (
 		integration: string,

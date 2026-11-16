@@ -107,7 +107,10 @@ describe('rehearse with scenarios at once', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: async () => [] }),
+			setup: () => ({
+				files: async () => [],
+				requiredChecks: ['rehearsal-ci'],
+			}),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',

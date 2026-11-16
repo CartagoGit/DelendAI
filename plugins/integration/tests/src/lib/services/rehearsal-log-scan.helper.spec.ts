@@ -2,7 +2,7 @@ import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import {
-	REHEARSAL_AWAIT_CAP_SECONDS,
+	REHEARSAL_SCAN_WAIT_CAP_SECONDS,
 	REHEARSAL_POLL_MS,
 } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import type {
@@ -51,7 +51,7 @@ const ports = (runsAt: (now: number) => IRehearsalRun[], log = 'clean') => {
 
 describe('the secret scan of a scenario', () => {
 	it('[<20ms] reads no log until every run concluded, however long that takes', async () => {
-		const done = 20 * 60_000;
+		const done = 2 * 60_000;
 		const { ports: p, state } = ports((now) => [
 			runOf(1, now < done ? 'in_progress' : 'completed'),
 		]);
@@ -66,7 +66,7 @@ describe('the secret scan of a scenario', () => {
 		const scan = await scanLogs(p, [evidence]);
 		expect(scan.hits).toEqual([]);
 		expect(scan.unread).toEqual([
-			`CI run 1: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+			`CI run 1: not concluded within the ${String(REHEARSAL_SCAN_WAIT_CAP_SECONDS)} s cap`,
 		]);
 		expect(state.logReadAt).toEqual([]);
 	});
@@ -96,7 +96,7 @@ describe('the secret scan of a scenario', () => {
 	});
 
 	it('[<20ms] waits for an older run of the same workflow and commit that is still open behind a newer one, then reads both', async () => {
-		const done = 13 * 60_000;
+		const done = 90_000;
 		const { ports: p, state } = ports((now) => [
 			{
 				...runOf(1, now < done ? 'in_progress' : 'completed'),
@@ -116,7 +116,7 @@ describe('the secret scan of a scenario', () => {
 		]);
 		const scan = await scanLogs(p, [evidence]);
 		expect(scan.unread).toEqual([
-			`CI run 1: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+			`CI run 1: not concluded within the ${String(REHEARSAL_SCAN_WAIT_CAP_SECONDS)} s cap`,
 		]);
 		expect(state.logReadAt).toHaveLength(1);
 	});

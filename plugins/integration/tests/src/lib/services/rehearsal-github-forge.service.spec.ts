@@ -166,6 +166,38 @@ describe('the GitHub rehearsal forge', () => {
 		expect(joined).not.toContain('hooks');
 	});
 
+	it('[<100ms] reads the check runs of a commit, and none for a workflow run that started no job', async () => {
+		const { forge, calls } = fake({
+			'commits/abc/check-runs': JSON.stringify({
+				check_runs: [
+					{
+						id: 4,
+						name: 'rehearsal-ci',
+						head_sha: 'abc',
+						status: 'completed',
+						conclusion: 'success',
+						started_at: '2026-11-16T13:35:07Z',
+					},
+					{ id: 5, name: 'other', head_sha: 'abc' },
+				],
+			}),
+			'commits/none/check-runs': '{"check_runs":[]}',
+		});
+		expect(await forge.checkRuns('abc')).toEqual([
+			{
+				id: 4,
+				name: 'rehearsal-ci',
+				headSha: 'abc',
+				status: 'completed',
+				conclusion: 'success',
+				startedAt: '2026-11-16T13:35:07Z',
+			},
+			{ id: 5, name: 'other', headSha: 'abc', status: '', startedAt: '' },
+		]);
+		expect(await forge.checkRuns('none')).toEqual([]);
+		expect(calls[0]?.args.join(' ')).toContain('commits/abc/check-runs');
+	});
+
 	it('[<100ms] opens, merges, closes and labels a pull request and reads its timeline and runs', async () => {
 		const { forge, calls } = fake({
 			'--method POST repos/o/r/pulls': '{"number":11}',

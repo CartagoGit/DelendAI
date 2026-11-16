@@ -78,8 +78,27 @@ export const REHEARSAL_POLL_MS = 15_000;
 /** Seconds the harness keeps reading the forge, after the last step, for the push runs of every merged tip. */
 export const REHEARSAL_SETTLE_SECONDS = 120;
 
-/** The longest an await runs, idle or not: a ceiling over the project's slowest real CI. */
-export const REHEARSAL_AWAIT_CAP_SECONDS = 45 * 60;
+/**
+ * The longest one await step runs, idle or not. Every wait of the harness has
+ * its own cap from this block, and `rehearsalWorstCaseSeconds` proves the
+ * caps of the longest scenario path fit inside the job timeout.
+ */
+export const REHEARSAL_AWAIT_CAP_SECONDS = 210;
+
+/** The longest the log scan waits, once for all scenarios, for their runs to conclude. */
+export const REHEARSAL_SCAN_WAIT_CAP_SECONDS = 3 * 60;
+
+/** The longest a token step waits for what the workflow token does. */
+export const REHEARSAL_TOKEN_WAIT_SECONDS = 5 * 60;
+
+/** Allowance per step for the forge calls it makes around its wait. */
+export const REHEARSAL_STEP_OVERHEAD_SECONDS = 10;
+
+/** The job timeout of the rehearsal workflow, in minutes; the workflow file carries the same number. */
+export const REHEARSAL_JOB_TIMEOUT_MINUTES = 45;
+
+/** Minutes of the job timeout the worst case of every cap must leave unused. */
+export const REHEARSAL_JOB_MARGIN_MINUTES = 5;
 
 /** The pinned checkout action the rendered workflows use. */
 export const REHEARSAL_CHECKOUT_ACTION =

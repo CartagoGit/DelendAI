@@ -115,6 +115,7 @@ const memoryForge = () => {
 		pullEvents: async () => [],
 		runs: async () => runs,
 		runLog: async () => '',
+		checkRuns: async () => [],
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),
 		deleteLabel: async (name) => void labelNames.delete(name),
@@ -131,7 +132,7 @@ const memoryForge = () => {
 const ctxOf = (forge: IRehearsalForge, clock: IRehearsalClock) => ({
 	forge,
 	clock,
-	setup: { files: async () => [{ path: 'x', content: 'y' }] },
+	setup: { files: async () => [], requiredChecks: [] },
 	runId: 'r20261112-100000',
 	tip: 'sha0',
 	branchPrefix: 'ns/rehearsal/',

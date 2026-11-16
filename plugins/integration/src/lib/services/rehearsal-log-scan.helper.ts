@@ -1,12 +1,12 @@
 /**
  * rehearsal-log-scan.helper.ts — the secret scan of a scenario's logs. It
  * starts only when every workflow run of the scenario has concluded, which
- * it learns from the forge; it waits for that no longer than the await cap.
+ * it learns from the forge; it waits for that no longer than the scan wait cap.
  * A run that has not concluded by then is not measured, with its id: never
  * a hit and never a pass.
  */
 import {
-	REHEARSAL_AWAIT_CAP_SECONDS,
+	REHEARSAL_SCAN_WAIT_CAP_SECONDS,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_RUNNING_STATUSES,
 } from '../contracts/constants/rehearsal.constant';
@@ -61,7 +61,8 @@ const concluded = async (
 		const open = [...runs.values()].some(isOpen);
 		if (
 			!open ||
-			ports.clock.now() - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000
+			ports.clock.now() - started >=
+				REHEARSAL_SCAN_WAIT_CAP_SECONDS * 1000
 		)
 			return runs;
 		await ports.clock.wait(REHEARSAL_POLL_MS);
@@ -78,7 +79,7 @@ const scanScenario = async (
 	for (const run of runs) {
 		if (isOpen(run)) {
 			unread.push(
-				`${run.workflow} run ${String(run.id)}: not concluded within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+				`${run.workflow} run ${String(run.id)}: not concluded within the ${String(REHEARSAL_SCAN_WAIT_CAP_SECONDS)} s cap`,
 			);
 			continue;
 		}

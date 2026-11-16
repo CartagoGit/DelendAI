@@ -8,6 +8,7 @@ import {
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_TOKEN_OPEN_LABEL,
+	REHEARSAL_TOKEN_WAIT_SECONDS,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 } from '../contracts/constants/rehearsal.constant';
 import type {
@@ -32,8 +33,7 @@ import {
 const isoOf = (clock: IRehearsalClock): string =>
 	new Date(clock.now()).toISOString();
 
-const TOKEN_WAIT_SECONDS = 300;
-const TOKEN_WAIT_MS = TOKEN_WAIT_SECONDS * 1000;
+const TOKEN_WAIT_MS = REHEARSAL_TOKEN_WAIT_SECONDS * 1000;
 
 const specOfIn =
 	(scenario: IRehearsalScenario) =>
@@ -156,10 +156,11 @@ const awaitStep = async (
 			ctx.forge,
 			await pullByKey(ctx, state),
 			pending,
+			ctx.setup.requiredChecks,
 		);
 		if (step.until === 'merged' && redEndsWait(scenario) && checks.red) {
 			state.failures.push(
-				`${step.until} not reachable for ${checks.red.key}: ${checks.red.workflow} ended ${checks.red.conclusion} on its head (run ${String(checks.red.id)})`,
+				`${step.until} not reachable for ${checks.red.key}: ${checks.red.name} ended ${checks.red.conclusion} on its head (check run ${String(checks.red.id)})`,
 			);
 			return;
 		}
@@ -309,7 +310,7 @@ const STEPS: TSteps = {
 			state,
 			step.key,
 			pull.headSha,
-			TOKEN_WAIT_SECONDS,
+			REHEARSAL_TOKEN_WAIT_SECONDS,
 		);
 		if (head === undefined)
 			state.failures.push(

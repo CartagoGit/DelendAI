@@ -7,6 +7,7 @@ import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it } from 'vitest';
 
 import type {
+	IRehearsalCheckRun,
 	IRehearsalForge,
 	IRehearsalPullState,
 	IRehearsalRun,
@@ -38,6 +39,7 @@ const at = <T>(value: TOverTime<T>, now: number): T =>
 const world = (
 	pull: TOverTime<Partial<IRehearsalPullState>>,
 	runs: TOverTime<IRehearsalRun[]>,
+	checks: TOverTime<IRehearsalCheckRun[]> = [],
 ) => {
 	const drafts: boolean[] = [];
 	const commits: { branch: string; parents: readonly string[] }[] = [];
@@ -58,6 +60,7 @@ const world = (
 		setDraft: async (_n: number, draft: boolean) => void drafts.push(draft),
 		pulls: async () => [pullOf(at(pull, clock.at))],
 		runs: async () => at(runs, clock.at),
+		checkRuns: async () => at(checks, clock.at),
 		pullEvents: async () => [],
 		history: async () => [],
 	});
@@ -65,6 +68,7 @@ const world = (
 		drafts,
 		commits,
 		labels,
+		clock,
 		ctx: {
 			forge,
 			clock: {
@@ -73,7 +77,7 @@ const world = (
 					clock.at += ms;
 				},
 			},
-			setup: { files: async () => [] },
+			setup: { files: async () => [], requiredChecks: ['rehearsal-ci'] },
 			runId: 'r',
 			tip: 'tip',
 			branchPrefix: 'ns/rehearsal/',
@@ -187,20 +191,54 @@ describe('an await step', () => {
 		expect(evidence.manualSteps).toEqual([]);
 	});
 
-	it('[<50ms] counts only idle time: runs for 20 minutes, then the merge, passes with no manual step', async () => {
+	it('[<50ms] counts only idle time: runs for 3 minutes, then the merge, passes with no manual step', async () => {
 		const minute = 60_000;
 		const { ctx } = world(
-			(now) => (now >= 20 * minute ? { mergedAt: 'merged' } : {}),
-			(now) => [runOf(now < 20 * minute ? 'in_progress' : 'completed')],
+			(now) => (now >= 3 * minute ? { mergedAt: 'merged' } : {}),
+			(now) => [runOf(now < 3 * minute ? 'in_progress' : 'completed')],
 		);
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
 		expect(evidence.failures).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
 	});
 
+	it('[<50ms] keeps waiting behind a failed workflow run that started no job, then sees the merge', async () => {
+		const minute = 60_000;
+		const startUpFailure = fakePartial<IRehearsalRun>({
+			headSha: 'h1',
+			status: 'completed',
+			conclusion: 'failure',
+			event: 'pull_request',
+			workflow: 'rehearsal-ci',
+		});
+		const { ctx } = world(
+			(now) => (now >= minute ? { mergedAt: 'merged' } : {}),
+			[startUpFailure],
+		);
+		const evidence = await runScenario(ctx, scenario('merged', ['a']));
+		expect(evidence.failures).toEqual([]);
+	});
+
+	it('[<50ms] ends at once on a required check run that failed on the head', async () => {
+		const failed: IRehearsalCheckRun = {
+			id: 9,
+			name: 'rehearsal-ci',
+			headSha: 'h1',
+			status: 'completed',
+			conclusion: 'failure',
+			startedAt: '2026-11-16T13:35:06Z',
+		};
+		const { ctx, clock } = world({}, [], [failed]);
+		const evidence = await runScenario(ctx, scenario('merged', ['a']));
+		expect(evidence.failures).toEqual([
+			'merged not reachable for a: rehearsal-ci ended failure on its head (check run 9)',
+		]);
+		expect(clock.at).toBe(0);
+	});
+
 	it('[<50ms] fails once it has been idle for its seconds, whatever ran before', async () => {
 		const { ctx } = world({}, (now) => [
-			runOf(now < 600_000 ? 'queued' : 'completed'),
+			runOf(now < 150_000 ? 'queued' : 'completed'),
 		]);
 		const evidence = await runScenario(ctx, scenario('merged', ['a']));
 		expect(evidence.failures).toEqual(['merged not reached in 60 s for a']);
