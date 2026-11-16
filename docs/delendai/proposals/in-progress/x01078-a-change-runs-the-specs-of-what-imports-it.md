@@ -2,14 +2,14 @@
 id: x01078
 title: "A change runs the specs of what imports it"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: c1a058b7-3373-4e20-bdee-d60bdde7bcff
-last-correlation-id: c1a058b7-3373-4e20-bdee-d60bdde7bcff
-last-transition-from: in-progress
-last-transition-at: 2026-11-16T03:57:19.329Z
+last-transition-id: 6be27224-af4f-454d-9f4d-803feedc60c9
+last-correlation-id: 6be27224-af4f-454d-9f4d-803feedc60c9
+last-transition-from: review
+last-transition-at: 2026-11-16T04:07:47.435Z
 ---
 
 # x01078 — A change runs the specs of what imports it
