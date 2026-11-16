@@ -73,7 +73,7 @@ export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
 export const REHEARSAL_STALE_AFTER_MS = 45 * 60_000;
 
 /** How many scenarios play at once when no option says: each has its own integration branch. */
-export const REHEARSAL_DEFAULT_CONCURRENCY = 4;
+export const REHEARSAL_DEFAULT_CONCURRENCY = 11;
 
 /** How often the harness reads the forge while it waits on a step. */
 export const REHEARSAL_POLL_MS = 15_000;
@@ -84,9 +84,11 @@ export const REHEARSAL_SETTLE_SECONDS = 120;
 /**
  * The longest one await step runs, idle or not. Every wait of the harness has
  * its own cap from this block, and `rehearsalWorstCaseSeconds` proves the
- * caps of the longest scenario path fit inside the job timeout.
+ * caps of the longest scenario path fit inside the job timeout. The value and
+ * the default concurrency are the plan of `planRehearsalBudget`, which the
+ * budget spec recomputes.
  */
-export const REHEARSAL_AWAIT_CAP_SECONDS = 210;
+export const REHEARSAL_AWAIT_CAP_SECONDS = 423;
 
 /** The longest the log scan waits, once for all scenarios, for their runs to conclude. */
 export const REHEARSAL_SCAN_WAIT_CAP_SECONDS = 3 * 60;
@@ -102,6 +104,12 @@ export const REHEARSAL_JOB_TIMEOUT_MINUTES = 45;
 
 /** The stale age is the job timeout: a root older than it belongs to a run that cannot be alive. */
 export const REHEARSAL_JOB_TIMEOUT_MS = REHEARSAL_JOB_TIMEOUT_MINUTES * 60_000;
+
+/** The longest the cleanup waits, once for all branches, for a workflow run in progress before it deletes them. */
+export const REHEARSAL_CLEANUP_WAIT_SECONDS = 2 * 60;
+
+/** The least await cap, in seconds, that lets the slowest measured pull request (p95 204 s) merge with room. */
+export const REHEARSAL_AWAIT_MIN_SECONDS = 420;
 
 /** Minutes of the job timeout the worst case of every cap must leave unused. */
 export const REHEARSAL_JOB_MARGIN_MINUTES = 5;

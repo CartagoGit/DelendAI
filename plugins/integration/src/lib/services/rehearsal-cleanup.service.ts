@@ -11,17 +11,22 @@
  * The secret scan reads every log of every run the rehearsal started.
  */
 import {
-	REHEARSAL_AWAIT_CAP_SECONDS,
+	REHEARSAL_CLEANUP_WAIT_SECONDS,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_SECRET_SHAPES,
 	REHEARSAL_STALE_AFTER_MS,
 } from '../contracts/constants/rehearsal.constant';
+import type {
+	ICleanRunResult,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
 import type {
 	IRehearsalClock,
 	IRehearsalForge,
 	IRehearsalRun,
 } from '../contracts/interfaces/rehearsal.interface';
 import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
+import { unstartedOf } from './rehearsal-unstarted.helper';
 import { openRuns } from './rehearsal-wait.helper';
 
 /** A run id carries its start: `rYYYYMMDD-HHMMSS`, in UTC. */
@@ -47,28 +52,39 @@ const NOT_STARTED = new Set(['queued', 'waiting', 'pending', 'requested']);
 /**
  * Ends the workflow runs on `branches` before they are deleted: a run still
  * queued is cancelled (it would start after the branch is gone and fail on
- * the 404), one in progress is waited for, bounded by the await cap. Returns
- * the runs still open at the cap.
+ * the 404), one in progress is waited for, bounded by the cleanup cap. Returns
+ * the runs still in progress at the cap, and the runs the forge listed but
+ * never enqueued, which cannot be cancelled.
  */
 const settleRuns = async (input: {
 	readonly forge: IRehearsalForge;
 	readonly clock: IRehearsalClock;
 	readonly branches: readonly string[];
-}): Promise<readonly IRehearsalRun[]> => {
+}): Promise<{
+	readonly running: readonly IRehearsalRun[];
+	readonly unstarted: readonly IUnstartedRun[];
+}> => {
 	const { forge, clock } = input;
-	const openOn = async (): Promise<IRehearsalRun[]> => {
-		const open: IRehearsalRun[] = [];
+	const unstarted = new Map<number, IUnstartedRun>();
+	const read = async (): Promise<IRehearsalRun[]> => {
+		const all: IRehearsalRun[] = [];
 		for (const branch of input.branches)
-			open.push(...openRuns(await forge.runs(branch)));
-		return open;
+			all.push(...(await forge.runs(branch)));
+		return all;
 	};
-	const deadline = clock.now() + REHEARSAL_AWAIT_CAP_SECONDS * 1000;
-	for (let open = await openOn(); ; open = await openOn()) {
+	const deadline = clock.now() + REHEARSAL_CLEANUP_WAIT_SECONDS * 1000;
+	for (let all = await read(); ; all = await read()) {
+		const open = openRuns(all).filter((run) => !unstarted.has(run.id));
 		for (const run of open)
-			if (NOT_STARTED.has(run.status)) await forge.cancelRun(run.id);
-		const running = open.filter((run) => !NOT_STARTED.has(run.status));
-		if (running.length === 0 && open.length === 0) return [];
-		if (clock.now() >= deadline) return running;
+			if (
+				NOT_STARTED.has(run.status) &&
+				(await forge.cancelRun(run.id)) === 'unstarted'
+			)
+				unstarted.set(run.id, unstartedOf(run, all));
+		const waiting = open.filter((run) => !unstarted.has(run.id));
+		const running = waiting.filter((run) => !NOT_STARTED.has(run.status));
+		if (waiting.length === 0 || clock.now() >= deadline)
+			return { running, unstarted: [...unstarted.values()] };
 		await clock.wait(REHEARSAL_POLL_MS);
 	}
 };
@@ -79,12 +95,12 @@ export const cleanRun = async (input: {
 	readonly clock: IRehearsalClock;
 	readonly branchPrefix: string;
 	readonly runId: string;
-}): Promise<readonly string[]> => {
+}): Promise<ICleanRunResult> => {
 	const { forge } = input;
 	const root = runBranchRoot(input.branchPrefix, input.runId);
 	const branches = await forge.listBranches(root);
 	// No branch is deleted while a workflow run for it is queued or in progress.
-	const unsettled = await settleRuns({
+	const settled = await settleRuns({
 		forge,
 		clock: input.clock,
 		branches,
@@ -103,16 +119,21 @@ export const cleanRun = async (input: {
 	for (const branch of branches) await forge.deleteBranch(branch);
 	for (const label of await forge.labels(runLabelPrefix(input.runId)))
 		await forge.deleteLabel(label);
-	return [
-		...unsettled.map(
-			(run) =>
-				`run ${String(run.id)} (${run.workflow}) still in progress`,
-		),
-		...(await forge.listBranches(root)).map((branch) => `branch ${branch}`),
-		...(await forge.labels(runLabelPrefix(input.runId))).map(
-			(label) => `label ${label}`,
-		),
-	];
+	return {
+		leftovers: [
+			...settled.running.map(
+				(run) =>
+					`run ${String(run.id)} (${run.workflow}) still in progress`,
+			),
+			...(await forge.listBranches(root)).map(
+				(branch) => `branch ${branch}`,
+			),
+			...(await forge.labels(runLabelPrefix(input.runId))).map(
+				(label) => `label ${label}`,
+			),
+		],
+		unstarted: settled.unstarted,
+	};
 };
 
 /**

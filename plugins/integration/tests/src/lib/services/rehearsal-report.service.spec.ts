@@ -257,6 +257,54 @@ describe('the rehearsal report', () => {
 		expect(built.ok).toBe(false);
 	});
 
+	it('[<50ms] reports unstarted runs by id without failing the run, and does not make the log scan unmeasured', () => {
+		const built = buildReport({
+			runId: 'r1',
+			repository: 'o/r',
+			tip: 'abc',
+			startedAt: '2026-11-12T10:00:00Z',
+			finishedAt: '2026-11-12T10:06:00Z',
+			scenarios: [scenario],
+			evidence: [evidence()],
+			leftovers: [],
+			secretHits: [],
+			unstarted: [
+				{ id: 42, workflow: 'land', branch: 'b', newest: false },
+			],
+		});
+		const target = built.targets.find((t) => t.id === 'unstarted-runs');
+		expect(target?.ok).toBe(true);
+		expect(target?.detail).toContain('1 run(s)');
+		expect(target?.detail).toContain('42');
+		expect(
+			built.targets.find((t) => t.id === 'no-secrets-in-logs')
+				?.notMeasured,
+		).toBeUndefined();
+		expect(built.unstartedRuns).toHaveLength(1);
+	});
+
+	it('[<50ms] fails the target when the unstarted run is the newest of its group: nothing replaced it, so its wake was lost', () => {
+		const built = buildReport({
+			runId: 'r1',
+			repository: 'o/r',
+			tip: 'abc',
+			startedAt: '2026-11-12T10:00:00Z',
+			finishedAt: '2026-11-12T10:06:00Z',
+			scenarios: [scenario],
+			evidence: [evidence()],
+			leftovers: [],
+			secretHits: [],
+			unstarted: [
+				{ id: 43, workflow: 'land', branch: 'b', newest: true },
+			],
+		});
+		const target = built.targets.find((t) => t.id === 'unstarted-runs');
+		expect(target?.ok).toBe(false);
+		expect(target?.value).toBe(1);
+		expect(target?.detail).toContain('43 (newest: a lost wake)');
+		expect(built.ok).toBe(false);
+	});
+
 	it('[<50ms] clears a not-measured target only when it is a listed deferral', () => {
 		const base = { value: undefined, threshold: 1, unit: 'x', detail: 'd' };
 		expect(

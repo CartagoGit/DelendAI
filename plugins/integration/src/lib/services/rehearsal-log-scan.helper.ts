@@ -2,15 +2,19 @@
  * rehearsal-log-scan.helper.ts — the secret scan of a scenario's logs. It
  * starts only when every workflow run of the scenario has concluded, which
  * it learns from the forge; it waits for that no longer than the scan wait cap.
- * A run that has not concluded by then is not measured, with its id: never
- * a hit and never a pass.
+ * A run that started and has not concluded by then is not measured, with its
+ * id: never a hit and never a pass. A run queued with no job was never
+ * enqueued by the forge: it has no log, so it is listed as unstarted instead.
  */
 import {
 	REHEARSAL_SCAN_WAIT_CAP_SECONDS,
 	REHEARSAL_POLL_MS,
 	REHEARSAL_RUNNING_STATUSES,
 } from '../contracts/constants/rehearsal.constant';
-import type { ILogScan } from '../contracts/interfaces/rehearsal-evidence.interface';
+import type {
+	ILogScan,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
 import type {
 	IRehearsalClock,
 	IRehearsalEvidence,
@@ -19,9 +23,10 @@ import type {
 } from '../contracts/interfaces/rehearsal.interface';
 
 import { secretHitsIn } from './rehearsal-cleanup.service';
+import { unstartedOf } from './rehearsal-unstarted.helper';
 
 interface IScanPorts {
-	readonly forge: Pick<IRehearsalForge, 'runs' | 'runLog'>;
+	readonly forge: Pick<IRehearsalForge, 'runs' | 'runLog' | 'jobCount'>;
 	readonly clock: IRehearsalClock;
 }
 
@@ -75,9 +80,18 @@ const scanScenario = async (
 ): Promise<ILogScan> => {
 	const hits: string[] = [];
 	const unread: string[] = [];
+	const unstarted: IUnstartedRun[] = [];
 	const runs = [...(await concluded(ports, one)).values()];
 	for (const run of runs) {
 		if (isOpen(run)) {
+			// Queued at the cap with no job: the forge never enqueued it, so there is no log to read.
+			if (
+				run.status === 'queued' &&
+				(await ports.forge.jobCount(run.id)) === 0
+			) {
+				unstarted.push(unstartedOf(run, runs));
+				continue;
+			}
 			unread.push(
 				`${run.workflow} run ${String(run.id)}: not concluded within the ${String(REHEARSAL_SCAN_WAIT_CAP_SECONDS)} s cap`,
 			);
@@ -91,7 +105,7 @@ const scanScenario = async (
 			);
 		}
 	}
-	return { hits, unread };
+	return { hits, unread, unstarted };
 };
 
 /** Token shapes in the logs of every scenario's runs, each scenario scanned after its runs concluded. */
@@ -106,10 +120,12 @@ export const scanLogs = async (
 		return {
 			hits: scans.flatMap((scan) => scan.hits),
 			unread: scans.flatMap((scan) => scan.unread),
+			unstarted: scans.flatMap((scan) => scan.unstarted),
 		};
 	} catch (error) {
 		return {
 			hits: [],
+			unstarted: [],
 			unread: [
 				`log scan failed: ${error instanceof Error ? error.message : String(error)}`,
 			],

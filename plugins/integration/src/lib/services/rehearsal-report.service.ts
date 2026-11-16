@@ -21,6 +21,7 @@ import type {
 	IRehearsalTargetResult,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import type { IUnstartedRun } from '../contracts/interfaces/rehearsal-evidence.interface';
 import { judge, result } from './rehearsal-expectation.service';
 import { scanStarted } from './rehearsal-scan.helper';
 
@@ -153,6 +154,31 @@ const notifiedTarget = (
 	};
 };
 
+/**
+ * Runs the forge listed but never enqueued are reported by id and never fail
+ * a run, except one that is the newest of its workflow on its branch: nothing
+ * replaced it, so the wake it carried was lost.
+ */
+const unstartedTarget = (
+	unstarted: readonly IUnstartedRun[],
+): IRehearsalTargetResult => {
+	const lost = unstarted.filter((one) => one.newest);
+	const ids = unstarted
+		.map(
+			(one) =>
+				`${String(one.id)}${one.newest ? ' (newest: a lost wake)' : ''}`,
+		)
+		.join(', ');
+	return {
+		id: 'unstarted-runs',
+		value: lost.length,
+		threshold: 0,
+		unit: 'lost wake',
+		ok: lost.length === 0,
+		detail: `${String(unstarted.length)} run(s) the forge never enqueued${ids === '' ? '' : `: ${ids}`}`,
+	};
+};
+
 /** The targets of the pull request flow that the fast mode measures, across every scenario. */
 export const measureTargets = (
 	scenarios: readonly IRehearsalScenario[],
@@ -160,6 +186,7 @@ export const measureTargets = (
 	results: readonly IRehearsalScenarioResult[],
 	secretHits: number,
 	unreadLogs: readonly string[] = [],
+	unstarted: readonly IUnstartedRun[] = [],
 ): readonly IRehearsalTargetResult[] => {
 	// Only a pull request its scenario expects merged counts for the merge
 	// times: a culprit that stays open is the flow working.
@@ -248,6 +275,7 @@ export const measureTargets = (
 					'hit',
 					`${String(secretHits)} hit(s)`,
 				),
+		unstartedTarget(unstarted),
 	];
 };
 
@@ -265,6 +293,7 @@ export const buildReport = (input: {
 	readonly leftovers: readonly string[];
 	readonly secretHits: readonly string[];
 	readonly unreadLogs?: readonly string[];
+	readonly unstarted?: readonly IUnstartedRun[];
 }): IRehearsalReport => {
 	const results = input.scenarios.map((scenario) => {
 		const evidence = input.evidence.find(
@@ -289,6 +318,7 @@ export const buildReport = (input: {
 		results,
 		input.secretHits.length,
 		input.unreadLogs,
+		input.unstarted,
 	);
 	return {
 		runId: input.runId,
@@ -304,6 +334,9 @@ export const buildReport = (input: {
 		...(input.unreadLogs === undefined || input.unreadLogs.length === 0
 			? {}
 			: { unreadLogs: input.unreadLogs }),
+		...(input.unstarted === undefined || input.unstarted.length === 0
+			? {}
+			: { unstartedRuns: input.unstarted }),
 		ok:
 			results.every((one) => one.ok) &&
 			targets.every(targetClears) &&

@@ -42,6 +42,7 @@ const world = (
 	checks: TOverTime<IRehearsalCheckRun[]> = [],
 ) => {
 	const drafts: boolean[] = [];
+	const wakes: string[] = [];
 	const commits: { branch: string; parents: readonly string[] }[] = [];
 	const labels: string[] = [];
 	const clock = { at: 0 };
@@ -58,6 +59,8 @@ const world = (
 		tipOf: async () => 'tip',
 		openPull: async () => 1,
 		setDraft: async (_n: number, draft: boolean) => void drafts.push(draft),
+		closePull: async () => void wakes.push('close'),
+		reopenPull: async () => void wakes.push('reopen'),
 		pulls: async () => [pullOf(at(pull, clock.at))],
 		runs: async () => at(runs, clock.at),
 		checkRuns: async () => at(checks, clock.at),
@@ -66,6 +69,7 @@ const world = (
 	});
 	return {
 		drafts,
+		wakes,
 		commits,
 		labels,
 		clock,
@@ -147,32 +151,32 @@ describe('an await step', () => {
 	});
 
 	it('[<50ms] waits on a pull request that is not there, and never wakes for it', async () => {
-		const { ctx, drafts } = world({}, []);
+		const { ctx, wakes } = world({}, []);
 		const evidence = await runScenario(
 			ctx,
 			scenario('merged', ['ghost'], 10),
 		);
 		expect(evidence.failures[0]).toContain('ghost');
-		expect(drafts).toEqual([]);
+		expect(wakes).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
 	});
 
 	it('[<50ms] wakes an idle integrator once its time is up, and counts the step', async () => {
-		const { ctx, drafts } = world({}, [runOf('completed')]);
+		const { ctx, wakes } = world({}, [runOf('completed')]);
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
-		expect(drafts.slice(0, 2)).toEqual([true, false]);
+		expect(wakes.slice(0, 2)).toEqual(['close', 'reopen']);
 		expect(evidence.manualSteps.length).toBeGreaterThan(0);
 	});
 
 	it('[<50ms] does not wake while a run is queued', async () => {
-		const { ctx, drafts } = world({}, [runOf('queued')]);
+		const { ctx, wakes } = world({}, [runOf('queued')]);
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
-		expect(drafts).toEqual([]);
+		expect(wakes).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
 	});
 
 	it("[<50ms] does not wake while the integrator runs after the head's own checks finished", async () => {
-		const { ctx, drafts } = world({}, [
+		const { ctx, wakes } = world({}, [
 			fakePartial<IRehearsalRun>({
 				headSha: 'h1',
 				status: 'completed',
@@ -187,7 +191,7 @@ describe('an await step', () => {
 			}),
 		]);
 		const evidence = await runScenario(ctx, scenario('merged', ['a'], 10));
-		expect(drafts).toEqual([]);
+		expect(wakes).toEqual([]);
 		expect(evidence.manualSteps).toEqual([]);
 	});
 

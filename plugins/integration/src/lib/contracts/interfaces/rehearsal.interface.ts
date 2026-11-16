@@ -152,6 +152,9 @@ export interface IRehearsalPullEvent {
 }
 
 /** A workflow run as the forge reports it. */
+/** What cancelling a workflow run came to. */
+export type IRehearsalCancel = 'cancelled' | 'ended' | 'unstarted';
+
 export interface IRehearsalRun {
 	readonly id: number;
 	readonly workflow: string;
@@ -232,8 +235,17 @@ export interface IRehearsalForge {
 	) => Promise<readonly IRehearsalPullEvent[]>;
 	readonly runs: (branch: string) => Promise<readonly IRehearsalRun[]>;
 	readonly runLog: (id: number) => Promise<string>;
-	/** Cancels a workflow run that is queued or in progress; a run that already ended is not an error. */
-	readonly cancelRun: (id: number) => Promise<void>;
+	/**
+	 * Cancels a workflow run that is queued or in progress. `ended`: it had
+	 * already concluded. `unstarted`: the forge lists it as queued but has not
+	 * enqueued it ("has not been queued yet"), so it cannot be cancelled and
+	 * has no jobs or log.
+	 */
+	readonly cancelRun: (id: number) => Promise<IRehearsalCancel>;
+	/** How many jobs the forge has created for a workflow run. */
+	readonly jobCount: (id: number) => Promise<number>;
+	/** Reopens a closed pull request: with `closePull`, the event the integrator wakes on. */
+	readonly reopenPull: (number: number) => Promise<void>;
 	/** The check runs of the commit `sha`; a workflow run with no job has none. */
 	readonly checkRuns: (sha: string) => Promise<readonly IRehearsalCheckRun[]>;
 	readonly labels: (prefix: string) => Promise<readonly string[]>;

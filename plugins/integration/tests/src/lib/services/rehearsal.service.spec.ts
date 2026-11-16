@@ -28,7 +28,9 @@ const forgeThatRecords = () => {
 		labels: async () => [],
 		pullEvents: async () => [],
 		runLog: async () => '',
-		cancelRun: async () => undefined,
+		cancelRun: async () => 'cancelled' as const,
+		jobCount: async () => 1,
+		reopenPull: async () => undefined,
 		deleteLabel: async () => undefined,
 		closePull: async () => undefined,
 	});

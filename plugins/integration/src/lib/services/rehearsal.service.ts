@@ -13,7 +13,10 @@ import type {
 	IRehearsalScenario,
 	IRehearseInput,
 } from '../contracts/interfaces/rehearsal.interface';
-import type { ILogScan } from '../contracts/interfaces/rehearsal-evidence.interface';
+import type {
+	ILogScan,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
 
 import {
 	cleanRun,
@@ -26,6 +29,7 @@ import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
 import { runBranchRoot } from './rehearsal-names.helper';
 import { runScenario } from './rehearsal-run.service';
+import { mergeUnstarted } from './rehearsal-unstarted.helper';
 
 /** The scenarios `ids` name, in the catalogue's order; an unknown id is refused. */
 export const selectScenarios = <T extends { readonly id: string }>(
@@ -109,8 +113,9 @@ export const rehearse = async (
 		log: input.log,
 	};
 	const evidence: IRehearsalEvidence[] = [];
-	let scan: ILogScan = { hits: [], unread: [] };
+	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };
 	let leftovers: readonly string[] = [];
+	let unstartedByCleanup: readonly IUnstartedRun[] = [];
 	try {
 		// Scenarios share nothing but the read-only context, so they play at once; the evidence keeps the catalogue's order.
 		evidence.push(
@@ -133,14 +138,19 @@ export const rehearse = async (
 		scan = await scanLogs(input, evidence);
 	} finally {
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
-		leftovers = await cleanRun({
+		const cleaned = await cleanRun({
 			forge: input.forge,
 			clock: input.clock,
 			branchPrefix: input.branchPrefix,
 			runId,
-		}).catch((error: unknown) => [
-			`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
-		]);
+		}).catch((error: unknown) => ({
+			leftovers: [
+				`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+			],
+			unstarted: [],
+		}));
+		leftovers = cleaned.leftovers;
+		unstartedByCleanup = cleaned.unstarted;
 	}
 	input.log(
 		`run ${runId} cleaned under ${runBranchRoot(input.branchPrefix, runId)}`,
@@ -157,5 +167,6 @@ export const rehearse = async (
 		leftovers,
 		secretHits: scan.hits,
 		unreadLogs: scan.unread,
+		unstarted: mergeUnstarted(scan.unstarted, unstartedByCleanup),
 	});
 };

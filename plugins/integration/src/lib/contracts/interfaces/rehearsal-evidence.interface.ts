@@ -83,13 +83,35 @@ export interface IRehearsalReport {
 	readonly secretHits: readonly string[];
 	/** Runs whose log could not be read, each with its run id: neither a hit nor a pass. */
 	readonly unreadLogs?: readonly string[];
+	/** Runs that never started, from the scan and from the cleanup. */
+	readonly unstartedRuns?: readonly IUnstartedRun[];
 	readonly ok: boolean;
+}
+
+/**
+ * A workflow run the forge lists as queued but never started (no jobs, no
+ * log, not cancellable). `newest`: no later run of its workflow on its branch
+ * was created, so nothing replaced it and the wake it carried was lost.
+ */
+export interface IUnstartedRun {
+	readonly id: number;
+	readonly workflow: string;
+	readonly branch: string;
+	readonly newest: boolean;
+}
+
+/** What cleaning one run left on the forge, and the runs that never started. */
+export interface ICleanRunResult {
+	readonly leftovers: readonly string[];
+	readonly unstarted: readonly IUnstartedRun[];
 }
 
 /** What the secret scan of the logs found. */
 export interface ILogScan {
 	/** Lines of a log that carry a token shape. */
 	readonly hits: readonly string[];
-	/** Runs not measured, each with its run id and why. */
+	/** Runs that started and were not read, each with its run id and why. */
 	readonly unread: readonly string[];
+	/** Runs that never started: they have no log, so they are not unread. */
+	readonly unstarted: readonly IUnstartedRun[];
 }

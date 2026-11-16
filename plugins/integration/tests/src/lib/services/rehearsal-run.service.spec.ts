@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import type {
 	IRehearsalClock,
 	IRehearsalForge,
@@ -115,7 +114,9 @@ const memoryForge = () => {
 		pullEvents: async () => [],
 		runs: async () => runs,
 		runLog: async () => '',
-		cancelRun: async () => undefined,
+		cancelRun: async () => 'cancelled' as const,
+		jobCount: async () => 1,
+		reopenPull: async () => undefined,
 		checkRuns: async () => [],
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),

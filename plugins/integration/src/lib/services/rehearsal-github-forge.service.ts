@@ -22,28 +22,10 @@ import { isTransient, readWithRetry } from './rehearsal-forge-retry.helper';
 import { toCheckRun, toRun } from './rehearsal-forge-run.helper';
 import type {
 	IRawCheckRun,
+	IRawEvent,
+	IRawPull,
 	IRawRun,
 } from '../contracts/interfaces/rehearsal-forge-raw.interface';
-
-interface IRawPull {
-	number: number;
-	state: string;
-	draft?: boolean;
-	merged_at?: string | null;
-	created_at: string;
-	node_id: string;
-	user?: { login?: string } | null;
-	labels?: { name: string }[];
-	head: { ref: string; sha: string };
-	base: { ref: string };
-}
-
-interface IRawEvent {
-	event: string;
-	created_at: string;
-	label?: { name?: string };
-	actor?: { login?: string } | null;
-}
 
 const HTTP_OK = 200;
 const HTTP_NOT_FOUND = 404;
@@ -105,11 +87,10 @@ export const createGithubRehearsalForge = (input: {
 		const status = Number(
 			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
 		);
-		if (
-			status === HTTP_NOT_FOUND ||
-			status === HTTP_UNPROCESSABLE ||
-			status === HTTP_CONFLICT
-		)
+		// A conflict's message (which run state it names) is on stderr as well as in the body.
+		if (status === HTTP_CONFLICT)
+			return { status, text: `${result.stdout}${result.stderr}` };
+		if (status === HTTP_NOT_FOUND || status === HTTP_UNPROCESSABLE)
 			return { status, text: result.stdout };
 		return {
 			status: Number.isNaN(status) ? 0 : status,
@@ -361,8 +342,27 @@ export const createGithubRehearsalForge = (input: {
 				)
 			).map(toCheckRun),
 		cancelRun: async (id) => {
-			// A run that ended meanwhile answers 409: there is nothing left to cancel.
-			await request('POST', `actions/runs/${String(id)}/cancel`);
+			// A run that ended meanwhile answers 409; so does one the forge listed but has not enqueued.
+			const { status, text } = await request(
+				'POST',
+				`actions/runs/${String(id)}/cancel`,
+			);
+			if (status !== HTTP_CONFLICT) return 'cancelled';
+			return text.includes('has not been queued yet')
+				? 'unstarted'
+				: 'ended';
+		},
+		jobCount: async (id) =>
+			(
+				await json<{ total_count: number }>(
+					'GET',
+					`actions/runs/${String(id)}/jobs?per_page=1`,
+				)
+			).total_count,
+		reopenPull: async (number) => {
+			await json('PATCH', `pulls/${String(number)}`, {
+				fields: { state: 'open' },
+			});
 		},
 		runLog: async (id) => {
 			const result = await run([

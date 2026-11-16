@@ -18,7 +18,7 @@ import {
 	renderRehearsalScanWorkflow,
 	renderRehearsalTokenWorkflow,
 } from '../../../../src/lib/services/rehearsal-ci-workflow.helper';
-import { REHEARSAL_AWAIT_CAP_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
+import { REHEARSAL_CLEANUP_WAIT_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { runLabelPrefix } from '../../../../src/lib/services/rehearsal-names.helper';
 import {
 	createRehearsalSetup,
@@ -32,7 +32,7 @@ const branchesForge = (names: Map<string, string>) =>
 			[...names.keys()].filter((b) => b.startsWith(prefix)),
 		deleteBranch: async (name: string) => void names.delete(name),
 		runs: async () => [],
-		cancelRun: async () => undefined,
+		cancelRun: async () => 'cancelled' as const,
 		pulls: async () => [],
 		closePull: async () => undefined,
 		labels: async () => [],
@@ -169,13 +169,14 @@ describe('cleanup and setup', () => {
 			cancelRun: async (id: number) => {
 				order.push(`cancel ${String(id)}`);
 				queued = false;
+				return 'cancelled' as const;
 			},
 			deleteBranch: async (name: string) => {
 				order.push('delete');
 				branches.delete(name);
 			},
 		});
-		const leftovers = await cleanRun({
+		const { leftovers } = await cleanRun({
 			forge,
 			clock: stepClock(),
 			branchPrefix: 'ns/rehearsal/',
@@ -194,7 +195,10 @@ describe('cleanup and setup', () => {
 		const forge = fakePartial<IRehearsalForge>({
 			...branchesForge(branches),
 			runs: async () => (++polls < 3 ? [runWith(4, 'in_progress')] : []),
-			cancelRun: async () => void order.push('cancel'),
+			cancelRun: async () => {
+				order.push('cancel');
+				return 'cancelled' as const;
+			},
 			deleteBranch: async () => void order.push('delete'),
 		});
 		await cleanRun({
@@ -215,7 +219,7 @@ describe('cleanup and setup', () => {
 		});
 		const clock = stepClock();
 		const started = clock.now();
-		const leftovers = await cleanRun({
+		const { leftovers } = await cleanRun({
 			forge,
 			clock,
 			branchPrefix: 'ns/rehearsal/',
@@ -223,7 +227,32 @@ describe('cleanup and setup', () => {
 		});
 		expect(leftovers[0]).toContain('run 4 (land) still in progress');
 		expect(clock.now() - started).toBeLessThanOrEqual(
-			(REHEARSAL_AWAIT_CAP_SECONDS + 15) * 1000,
+			(REHEARSAL_CLEANUP_WAIT_SECONDS + 15) * 1000,
 		);
+	});
+
+	it('[<100ms] records a queued run the forge never enqueued, instead of hiding its 409', async () => {
+		const branches = new Map([['ns/rehearsal/r1/s-integration', 's']]);
+		const forge = fakePartial<IRehearsalForge>({
+			...branchesForge(branches),
+			runs: async () => [
+				{ ...runWith(4, 'queued'), createdAt: '2026-11-16T10:00:00Z' },
+				{
+					...runWith(5, 'completed'),
+					createdAt: '2026-11-16T10:00:09Z',
+				},
+			],
+			cancelRun: async () => 'unstarted' as const,
+		});
+		const cleaned = await cleanRun({
+			forge,
+			clock: stepClock(),
+			branchPrefix: 'ns/rehearsal/',
+			runId: 'r1',
+		});
+		expect(cleaned.leftovers).toEqual([]);
+		expect(cleaned.unstarted).toEqual([
+			{ id: 4, workflow: 'land', branch: 'b', newest: false },
+		]);
 	});
 });

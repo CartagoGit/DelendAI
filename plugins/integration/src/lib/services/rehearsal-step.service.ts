@@ -101,7 +101,11 @@ const satisfied = async (
 	return pending;
 };
 
-/** Mark a pull request draft and ready again: the event the integrator wakes on. */
+/**
+ * Close a pull request and reopen it: the events the integrator wakes on,
+ * the ones its own bring-forward makes. Converting to draft is refused to the
+ * integrator's App (it never succeeded in a logged run), so it is not used.
+ */
 const wake = async (
 	ctx: IRehearsalRunContext,
 	state: IScenarioState,
@@ -110,8 +114,8 @@ const wake = async (
 	for (const key of keys) {
 		const number = state.numbers.get(key);
 		if (number === undefined) continue;
-		await ctx.forge.setDraft(number, true);
-		await ctx.forge.setDraft(number, false);
+		await ctx.forge.closePull(number);
+		await ctx.forge.reopenPull(number);
 		state.manualSteps.push(
 			`woke the integrator for ${key} (#${String(number)}) at ${isoOf(ctx.clock)}`,
 		);

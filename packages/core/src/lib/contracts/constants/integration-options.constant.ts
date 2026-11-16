@@ -23,6 +23,6 @@ export const DEFAULT_INTEGRATION_OPTIONS: IPolicyIntegrationOptions = {
 		secrets: [],
 		scenarios: ['all'],
 		setupCommand: '',
-		concurrency: 4,
+		concurrency: 11,
 	},
 };

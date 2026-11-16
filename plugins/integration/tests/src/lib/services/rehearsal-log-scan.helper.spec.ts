@@ -27,7 +27,11 @@ const evidence = fakePartial<IRehearsalEvidence>({
 	runs: [runOf(1, 'in_progress')],
 });
 
-const ports = (runsAt: (now: number) => IRehearsalRun[], log = 'clean') => {
+const ports = (
+	runsAt: (now: number) => IRehearsalRun[],
+	log = 'clean',
+	jobs = 1,
+) => {
 	const state = { now: 0, logReadAt: [] as number[] };
 	return {
 		state,
@@ -40,6 +44,7 @@ const ports = (runsAt: (now: number) => IRehearsalRun[], log = 'clean') => {
 			},
 			forge: {
 				runs: async () => runsAt(state.now),
+				jobCount: async () => jobs,
 				runLog: async () => {
 					state.logReadAt.push(state.now);
 					return log;
@@ -56,13 +61,17 @@ describe('the secret scan of a scenario', () => {
 			runOf(1, now < done ? 'in_progress' : 'completed'),
 		]);
 		const scan = await scanLogs(p, [evidence]);
-		expect(scan).toEqual({ hits: [], unread: [] });
+		expect(scan).toEqual({ hits: [], unread: [], unstarted: [] });
 		expect(state.logReadAt).toEqual([done]);
 		expect(done % REHEARSAL_POLL_MS).toBe(0);
 	});
 
 	it('[<20ms] reports a run still open at the cap as not measured with its id, and reads nothing of it', async () => {
-		const { ports: p, state } = ports(() => [runOf(1, 'queued')]);
+		const { ports: p, state } = ports(
+			() => [runOf(1, 'queued')],
+			'clean',
+			3,
+		);
 		const scan = await scanLogs(p, [evidence]);
 		expect(scan.hits).toEqual([]);
 		expect(scan.unread).toEqual([
@@ -92,6 +101,7 @@ describe('the secret scan of a scenario', () => {
 		expect(await scanLogs(broken, [evidence])).toEqual({
 			hits: [],
 			unread: ['CI run 1: expired'],
+			unstarted: [],
 		});
 	});
 
@@ -105,18 +115,41 @@ describe('the secret scan of a scenario', () => {
 			{ ...runOf(2, 'completed'), createdAt: '2' },
 		]);
 		const scan = await scanLogs(p, [evidence]);
-		expect(scan).toEqual({ hits: [], unread: [] });
+		expect(scan).toEqual({ hits: [], unread: [], unstarted: [] });
 		expect(state.logReadAt).toEqual([done, done]);
 	});
 
 	it('[<20ms] reports the older run that never concludes within the cap as not measured, and still reads the others', async () => {
-		const { ports: p, state } = ports(() => [
-			{ ...runOf(1, 'queued'), createdAt: '1' },
-			{ ...runOf(2, 'completed'), createdAt: '2' },
-		]);
+		const { ports: p, state } = ports(
+			() => [
+				{ ...runOf(1, 'queued'), createdAt: '1' },
+				{ ...runOf(2, 'completed'), createdAt: '2' },
+			],
+			'clean',
+			2,
+		);
 		const scan = await scanLogs(p, [evidence]);
 		expect(scan.unread).toEqual([
 			`CI run 1: not concluded within the ${String(REHEARSAL_SCAN_WAIT_CAP_SECONDS)} s cap`,
+		]);
+		expect(state.logReadAt).toHaveLength(1);
+	});
+
+	it('[<20ms] lists a run queued with no job at the cap as unstarted, not unread, and judges it newest only when nothing later exists', async () => {
+		const { ports: p, state } = ports(
+			() => [
+				{ ...runOf(1, 'queued'), createdAt: '1' },
+				{ ...runOf(2, 'completed'), createdAt: '2' },
+				{ ...runOf(3, 'queued'), createdAt: '3', workflow: 'other' },
+			],
+			'clean',
+			0,
+		);
+		const scan = await scanLogs(p, [evidence]);
+		expect(scan.unread).toEqual([]);
+		expect(scan.unstarted).toEqual([
+			{ id: 1, workflow: 'CI', branch: 'b', newest: false },
+			{ id: 3, workflow: 'other', branch: 'b', newest: true },
 		]);
 		expect(state.logReadAt).toHaveLength(1);
 	});
