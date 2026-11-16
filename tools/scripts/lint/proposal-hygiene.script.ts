@@ -226,7 +226,7 @@ export const findDuplicates = (
 	return findings;
 };
 
-const collectProposals = (root: string): Map<string, string> => {
+export const collectProposals = (root: string): Map<string, string> => {
 	const out = new Map<string, string>();
 	const walk = (dir: string): void => {
 		let entries: readonly import('node:fs').Dirent[];
