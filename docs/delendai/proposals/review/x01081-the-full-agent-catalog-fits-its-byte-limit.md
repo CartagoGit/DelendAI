@@ -2,14 +2,14 @@
 id: x01081
 title: "The full agent catalog fits its byte limit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: core
 date: 2026-11-16
-last-transition-id: d6739aa6-eaa4-47ff-b847-e5055882a8f4
-last-correlation-id: d6739aa6-eaa4-47ff-b847-e5055882a8f4
-last-transition-from: ready
-last-transition-at: 2026-11-16T09:01:12.835Z
+last-transition-id: e1ff4aab-23ee-4d78-b483-4f954acc0276
+last-correlation-id: e1ff4aab-23ee-4d78-b483-4f954acc0276
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T09:18:27.255Z
 ---
 
 # x01081 — The full agent catalog fits its byte limit
@@ -43,12 +43,15 @@ Measured: 11,061 B before (tools 6,536, skills 4,145), 9,704 B after (tools 5,89
 - global_gate: none
 
 ### S1 — The full catalog drops the repeated plugin and skill body path
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/catalog/agent-discovery-catalog.ts`, `packages/core/src/lib/catalog/agent-discovery-types.ts`, `packages/client/src/lib/services/agent-catalog-service.ts`, `packages/core/tests/src/lib/catalog/agent-discovery-catalog.spec.ts`, `packages/core/tests/src/lib/e2e/agent-catalog.e2e.spec.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `packages/client/tests/services/agent-catalog-sections.spec.ts`, `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
 - acceptance:
   - "`bunx vitest run packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts -t 'agent catalog stays'` passes with the full payload at 9,704 B against the 10,500 B ceiling."
   - "`bunx vitest run packages/core/tests/src/lib/catalog/agent-discovery-catalog.spec.ts` proves the core tool plugin and the skill body path are absent in `full` while every tool name and skill id remains."
+- shipped-in: `a5fa31d9890e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
