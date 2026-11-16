@@ -15,7 +15,12 @@ import type {
 	ILandPullRequest,
 } from './land.interface';
 import { runForgeRead } from './forge-read-retry.helper';
-import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
+import { LandBranchGoneError } from './land-branch-gone.helper';
+import {
+	LAND_MAX_PAGES,
+	LAND_PAGE_SIZE,
+	LAND_WORKFLOW_FILE,
+} from './land.constant';
 
 interface IRawPull {
 	number: number;
@@ -26,6 +31,8 @@ interface IRawPull {
 	labels?: { name: string }[];
 	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
 }
+
+const NOT_FOUND = 404;
 
 export const createGithubLandForge = (input: {
 	readonly slug: string;
@@ -141,9 +148,19 @@ export const createGithubLandForge = (input: {
 	const pulls = (query: string): Promise<readonly IRawPull[]> =>
 		all<IRawPull>(`pulls?base=${integration}&${query}`);
 	return {
-		integrationTip: async () =>
-			(await ok<{ commit: { sha: string } }>(`branches/${integration}`))
-				.commit.sha,
+		integrationTip: async () => {
+			const { status, body } = await call(
+				'GET',
+				`branches/${integration}`,
+			);
+			if (status === NOT_FOUND)
+				throw new LandBranchGoneError(integration);
+			if (status !== 200)
+				throw new Error(
+					`GET branches/${integration} answered ${String(status)}`,
+				);
+			return (body as { commit: { sha: string } }).commit.sha;
+		},
 		requiredChecks: async () =>
 			(
 				await ok<
@@ -161,6 +178,12 @@ export const createGithubLandForge = (input: {
 						)
 					: [],
 			),
+		landRuns: async () =>
+			(
+				await ok<{ workflow_runs: { id: number; status: string }[] }>(
+					`actions/workflows/${encodeURIComponent(LAND_WORKFLOW_FILE)}/runs?branch=${encodeURIComponent(integration)}&per_page=${String(LAND_PAGE_SIZE)}`,
+				)
+			).workflow_runs.map(({ id, status }) => ({ id, status })),
 		openPullRequests: async () =>
 			Promise.all(
 				(await pulls('state=open'))

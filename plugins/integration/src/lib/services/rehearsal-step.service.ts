@@ -7,12 +7,11 @@ import {
 	REHEARSAL_AWAIT_CAP_SECONDS,
 	REHEARSAL_DIR,
 	REHEARSAL_POLL_MS,
-	REHEARSAL_RUNNING_STATUSES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
+	REHEARSAL_TOKEN_WAIT_SECONDS,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 } from '../contracts/constants/rehearsal.constant';
 import type {
-	IRehearsalClock,
 	IRehearsalPullSpec,
 	IRehearsalPullState,
 	IRehearsalRunContext,
@@ -21,6 +20,7 @@ import type {
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import { somethingRuns, wake, workingRun } from './rehearsal-idle.helper';
 import { receive } from './rehearsal-receive.helper';
 import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
 import {
@@ -30,11 +30,7 @@ import {
 	runLabelPrefix,
 } from './rehearsal-names.helper';
 
-const isoOf = (clock: IRehearsalClock): string =>
-	new Date(clock.now()).toISOString();
-
-const TOKEN_WAIT_SECONDS = 300;
-const TOKEN_WAIT_MS = TOKEN_WAIT_SECONDS * 1000;
+const TOKEN_WAIT_MS = REHEARSAL_TOKEN_WAIT_SECONDS * 1000;
 
 const specOfIn =
 	(scenario: IRehearsalScenario) =>
@@ -102,42 +98,6 @@ const satisfied = async (
 	return pending;
 };
 
-/** Mark a pull request draft and ready again: the event the integrator wakes on. */
-const wake = async (
-	ctx: IRehearsalRunContext,
-	state: IScenarioState,
-	keys: readonly string[],
-): Promise<void> => {
-	for (const key of keys) {
-		const number = state.numbers.get(key);
-		if (number === undefined) continue;
-		await ctx.forge.setDraft(number, true);
-		await ctx.forge.setDraft(number, false);
-		state.manualSteps.push(
-			`woke the integrator for ${key} (#${String(number)}) at ${isoOf(ctx.clock)}`,
-		);
-	}
-};
-
-/** Whether any workflow run on the scenario's integration branch or its pull requests' heads is queued or in progress. */
-const somethingRuns = async (
-	ctx: IRehearsalRunContext,
-	state: IScenarioState,
-): Promise<boolean> => {
-	const heads = new Set([
-		state.integration,
-		...(await ctx.forge.pulls(state.integration)).map((pull) => pull.head),
-	]);
-	for (const head of heads)
-		if (
-			(await ctx.forge.runs(head)).some((run) =>
-				REHEARSAL_RUNNING_STATUSES.has(run.status),
-			)
-		)
-			return true;
-	return false;
-};
-
 /**
  * Waits for `step`. Its clock advances only while no workflow run is queued
  * or in progress on the scenario (the project's real CI takes as long as it
@@ -162,16 +122,18 @@ const awaitStep = async (
 			ctx.forge,
 			await pullByKey(ctx, state),
 			pending,
+			ctx.setup.requiredChecks,
 		);
 		if (step.until === 'merged' && redEndsWait(scenario) && checks.red) {
 			state.failures.push(
-				`${step.until} not reachable for ${checks.red.key}: ${checks.red.workflow} ended ${checks.red.conclusion} on its head (run ${String(checks.red.id)})`,
+				`${step.until} not reachable for ${checks.red.key}: ${checks.red.name} ended ${checks.red.conclusion} on its head (check run ${String(checks.red.id)})`,
 			);
 			return;
 		}
 		// Once the awaited pull requests' own checks have finished, the integrator's
 		// runs no longer excuse the wait: its budget counts wall time.
-		const busy = (await somethingRuns(ctx, state)) && !checks.concluded;
+		const running = await somethingRuns(ctx, state);
+		const busy = running && !checks.concluded;
 		if (!busy) idleMs += now - lastTick;
 		lastTick = now;
 		if (now - started >= REHEARSAL_AWAIT_CAP_SECONDS * 1000) {
@@ -189,8 +151,10 @@ const awaitStep = async (
 		if (
 			step.wakeAfterSeconds !== undefined &&
 			now - lastWake >= step.wakeAfterSeconds * 1000 &&
-			// A wake is a manual step only when the system is idle.
-			!busy
+			// A wake is a manual step only when the system is idle: a run of the
+			// integrator that is queued or in progress is the signal arriving, and
+			// the pull requests' own checks having finished does not make it idle.
+			!running
 		) {
 			await wake(ctx, state, pending);
 			lastWake = now;
@@ -257,12 +221,34 @@ const STEPS: TSteps = {
 			await openPull(ctx, scenario, state, specOf(key));
 		return;
 	},
-	ready: async (ctx, scenario, state, step) => {
-		const _specOf = specOfIn(scenario);
-		for (const key of step.keys) {
+	ready: async (ctx, _scenario, state, step) => {
+		const numbers = step.keys.flatMap((key) => {
 			const number = state.numbers.get(key);
-			if (number !== undefined) await ctx.forge.setDraft(number, false);
+			return number === undefined ? [] : [number];
+		});
+		if (step.together !== true) {
+			for (const number of numbers)
+				await ctx.forge.setDraft(number, false);
+			return;
 		}
+		// Members of one batch flip in one request, and only while no pass is
+		// mid-read: a pass that reads between two requests batches one of them.
+		const started = ctx.clock.now();
+		for (;;) {
+			const open = await workingRun(ctx, state);
+			if (open === undefined) break;
+			if (
+				ctx.clock.now() - started >=
+				REHEARSAL_AWAIT_CAP_SECONDS * 1000
+			) {
+				state.failures.push(
+					`ready ${step.keys.join(', ')}: run ${String(open.id)} still ${open.status} after the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap`,
+				);
+				return;
+			}
+			await ctx.clock.wait(REHEARSAL_POLL_MS);
+		}
+		await ctx.forge.readyTogether(numbers);
 		return;
 	},
 	await: async (ctx, scenario, state, step) => {
@@ -312,7 +298,7 @@ const STEPS: TSteps = {
 			state,
 			step.key,
 			pull.headSha,
-			TOKEN_WAIT_SECONDS,
+			REHEARSAL_TOKEN_WAIT_SECONDS,
 		);
 		if (head === undefined)
 			state.failures.push(

@@ -120,6 +120,56 @@ describe('the integration command', () => {
 		}
 	});
 
+	it('[<100ms] sweeps every leftover root with --sweep and plays nothing', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'integration-cmd-'));
+		try {
+			writeFileSync(
+				join(dir, 'delendai.config.json'),
+				'{"development":{"branches":{"integration":"develop","release":"main","namespacePrefix":"ns"}}}',
+			);
+			const calls: string[] = [];
+			const run: IRehearsalCommandRunner = async (args) => {
+				const line = args.join(' ');
+				calls.push(line);
+				if (line.startsWith('repo view'))
+					return { exitCode: 0, stdout: 'o/r\n', stderr: '' };
+				if (line.includes('actions/runs'))
+					return {
+						exitCode: 0,
+						stdout: '{"workflow_runs":[]}',
+						stderr: '',
+					};
+				if (line.includes('matching-refs'))
+					return {
+						exitCode: 0,
+						stdout: '[{"ref":"refs/heads/ns/rehearsal/r20200101-000000/s-integration"}]',
+						stderr: '',
+					};
+				return { exitCode: 0, stdout: '[]', stderr: '' };
+			};
+			const result = await createIntegrationCommand(run).run(
+				['rehearse', '--sweep'],
+				fakePartial<ICliCommandContext>({ cwd: dir }),
+			);
+			expect(result.code).toBe(EXIT_CODE.OK);
+			expect(result.text).toContain('swept 1 run(s)');
+			expect(
+				calls.some(
+					(c) =>
+						c.includes('--method DELETE') &&
+						c.includes(
+							'ns/rehearsal/r20200101-000000/s-integration',
+						),
+				),
+			).toBe(true);
+			expect(calls.some((c) => c.includes('git/ref/heads/develop'))).toBe(
+				false,
+			);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
 	it('[<50ms] refuses a scenario id the catalogue does not have', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'integration-cmd-'));
 		try {

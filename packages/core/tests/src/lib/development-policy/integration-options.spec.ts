@@ -14,7 +14,7 @@ describe('the integration options', () => {
 		expect(integration.commands).toEqual({ jobs: '', normalizeBatch: '' });
 		expect(integration.watchdog.enabled).toBe(true);
 		expect(integration.rehearsal.scenarios).toEqual(['all']);
-		expect(integration.rehearsal.concurrency).toBe(4);
+		expect(integration.rehearsal.concurrency).toBe(11);
 	});
 
 	it('[<50ms] take a project value one field at a time and keep the rest', () => {

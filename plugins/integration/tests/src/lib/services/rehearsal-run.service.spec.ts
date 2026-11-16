@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import type {
 	IRehearsalClock,
 	IRehearsalForge,
@@ -9,7 +8,6 @@ import type {
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
 import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
-
 interface IMutablePull
 	extends Omit<
 		IRehearsalPullState,
@@ -87,6 +85,7 @@ const memoryForge = () => {
 			p.draft = draft;
 			if (!draft && p.mergedAt === undefined) p.mergedAt = iso();
 		},
+		readyTogether: async () => undefined,
 		mergePull: async (n) => {
 			pull(n).mergedAt = iso();
 		},
@@ -115,6 +114,10 @@ const memoryForge = () => {
 		pullEvents: async () => [],
 		runs: async () => runs,
 		runLog: async () => '',
+		cancelRun: async () => 'cancelled' as const,
+		jobCount: async () => 1,
+		reopenPull: async () => undefined,
+		checkRuns: async () => [],
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),
 		deleteLabel: async (name) => void labelNames.delete(name),
@@ -131,7 +134,7 @@ const memoryForge = () => {
 const ctxOf = (forge: IRehearsalForge, clock: IRehearsalClock) => ({
 	forge,
 	clock,
-	setup: { files: async () => [{ path: 'x', content: 'y' }] },
+	setup: { files: async () => [], requiredChecks: [] },
 	runId: 'r20261112-100000',
 	tip: 'sha0',
 	branchPrefix: 'ns/rehearsal/',

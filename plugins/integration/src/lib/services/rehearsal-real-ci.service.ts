@@ -8,7 +8,10 @@
  * rendered for the rehearsal branch, so the rehearsal runs the trigger
  * graph production runs.
  */
-import { PR_CI_WALL_TARGET_MINUTES } from '../contracts/constants/rehearsal.constant';
+import {
+	PR_CI_WALL_TARGET_MINUTES,
+	REHEARSAL_BRANCH_GATED_JOBS,
+} from '../contracts/constants/rehearsal.constant';
 import type {
 	IPrCiWallVerdict,
 	IRehearsalFileChange,
@@ -49,7 +52,7 @@ export const wallSecondsOf = (
 					1000,
 			);
 
-const BRANCHES_INLINE = /^(\s*)branches:\s*\[(.*)\]\s*$/u;
+const BRANCHES_INLINE = /^(\s*)branches:\s*\[([^\]]*)\]\s*$/u;
 const BRANCHES_BLOCK = /^(\s*)branches:\s*$/u;
 const BLOCK_ITEM = /^(\s*-\s+)(['"]?)([^'"\s#]+)\2(\s*(?:#.*)?)$/u;
 const TOP_KEY = /^\S/u;
@@ -57,6 +60,43 @@ const TOP_KEY = /^\S/u;
 /** An unquoted or quoted list entry's value. */
 const unquoted = (entry: string): string =>
 	entry.trim().replace(/^(['"])(.*)\1$/u, '$2');
+
+const IF_KEY = /^\s+if:/u;
+const escaped = (value: string): string =>
+	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+
+/**
+ * `text` with `refs/heads/<projectIntegration>` replaced by the rehearsal
+ * branch in the `if:` of the jobs `REHEARSAL_BRANCH_GATED_JOBS` lists, and
+ * nowhere else.
+ */
+const renderGatedJobs = (
+	text: string,
+	branch: string,
+	projectIntegration: string,
+): string => {
+	const named = new RegExp(
+		`refs/heads/${escaped(projectIntegration)}(?![\\w./-])`,
+		'gu',
+	);
+	let jobIndent: number | undefined;
+	return text
+		.split('\n')
+		.map((line) => {
+			const key = JOB_KEY.exec(line);
+			if (key !== null && key[2] !== undefined) {
+				const width = key[1]?.length ?? 0;
+				if (jobIndent === undefined || width <= jobIndent)
+					jobIndent = REHEARSAL_BRANCH_GATED_JOBS.includes(key[2])
+						? width
+						: undefined;
+			}
+			return jobIndent !== undefined && IF_KEY.test(line)
+				? line.replace(named, () => `refs/heads/${branch}`)
+				: line;
+		})
+		.join('\n');
+};
 
 /**
  * `text` with the project's integration branch, wherever a `branches` filter
@@ -105,7 +145,7 @@ export const renderBranchFilters = (
 		if (inBlockList && !/^\s*(#.*)?$/u.test(line)) inBlockList = false;
 		out.push(line);
 	}
-	return out.join('\n');
+	return renderGatedJobs(out.join('\n'), branch, projectIntegration);
 };
 
 /** The files a real-mode setup commit writes: the project's CI and scan workflows for the rehearsal branch. */

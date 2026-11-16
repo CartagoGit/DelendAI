@@ -1,3 +1,6 @@
+/** The most rounds one pass makes: a round re-reads the forge when a land run was created while it worked. */
+export const LAND_MAX_ROUNDS = 3;
+
 /** The remote a pass reads and pushes to. */
 export const LAND_REMOTE = 'origin';
 

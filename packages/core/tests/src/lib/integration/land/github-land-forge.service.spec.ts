@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { LandBranchGoneError } from '@delendai/core/lib/integration/land/land-branch-gone.helper';
 import { createGithubLandForge } from '@delendai/core/lib/integration/land/github-land-forge.service';
 import type { ILandCommandRunner } from '@delendai/core/lib/integration/land/land.interface';
 
@@ -143,6 +144,16 @@ describe('the GitHub land forge', () => {
 		expect(await forge.checks('abc')).toEqual([
 			{ name: 'ci', conclusion: 'success', url: 'u' },
 		]);
+	});
+
+	it('[<12ms] says the integration branch is gone when the forge answers 404, not that the pass failed', async () => {
+		const { forge } = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: Not Found (HTTP 404)',
+		}));
+		await expect(forge.integrationTip()).rejects.toBeInstanceOf(
+			LandBranchGoneError,
+		);
 	});
 
 	it('[<12ms] merges pinned to the head with the policy’s merge method', async () => {
@@ -303,5 +314,23 @@ describe('the GitHub land forge', () => {
 		}));
 		await expect(forge.pullRequest(7)).rejects.toThrow('(4 attempts)');
 		expect(waits).toEqual([1000, 3000, 9000]);
+	});
+
+	it('lists the land workflow runs of the integration branch', async () => {
+		const { forge, calls } = harness(() =>
+			json({
+				workflow_runs: [
+					{ id: 9, status: 'queued', name: 'x' },
+					{ id: 8, status: 'completed' },
+				],
+			}),
+		);
+		expect(await forge.landRuns()).toEqual([
+			{ id: 9, status: 'queued' },
+			{ id: 8, status: 'completed' },
+		]);
+		expect(calls[0]).toContain(
+			'actions/workflows/land.yml/runs?branch=develop',
+		);
 	});
 });

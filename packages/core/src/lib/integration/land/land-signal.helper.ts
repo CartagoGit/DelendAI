@@ -10,11 +10,35 @@
  */
 
 import {
+	LAND_QUEUED_PASS_FRESH_SECONDS,
 	LAND_SIGNAL_EVENTS,
 	LAND_SIGNAL_TIMEOUT_MINUTES,
 	LAND_SIGNAL_WORKFLOW_NAME,
 	LAND_WORKFLOW_FILE,
 } from './land.constant';
+
+/**
+ * A pass already queued (or pending behind the group's running one) for the
+ * branch reads everything when it starts, so a second dispatch adds nothing:
+ * skip it. A pass in progress does not count
+ * (it may have read the forge before this event), nor do the kinds that are
+ * not a pass, nor a queued pass older than a couple of minutes. A dispatch
+ * that carries `promote` is never skipped. The run's name ends with its group
+ * (see renderLandWorkflow): `<group>-pass-<branch>`.
+ */
+const waitingRunGuard = [
+	'      if [ -z "${PROMOTE:-}" ]; then',
+	'        QUEUED=$(gh run list --workflow ' +
+		LAND_WORKFLOW_FILE +
+		' --repo "${GITHUB_REPOSITORY}" \\',
+	'          --branch "${BRANCH}" --limit 30 --json status,displayTitle,createdAt --jq \\',
+	`          '[.[] | select(.status | IN("queued", "pending", "waiting", "requested")) | select(.displayTitle | endswith("-pass-" + $ENV.BRANCH)) | select((.createdAt | fromdateiso8601) > (now - ${String(LAND_QUEUED_PASS_FRESH_SECONDS)}))] | length') || QUEUED=0`,
+	'        if [ "${QUEUED:-0}" != "0" ]; then',
+	'          echo "a pass is already queued for ${BRANCH}; it reads everything when it starts"',
+	'          exit 0',
+	'        fi',
+	'      fi',
+];
 
 /**
  * The step that dispatches the integrator at `branch` (an expression or a
@@ -35,6 +59,7 @@ export const wakeIntegratorStep = (input: {
 		? []
 		: [`      PROMOTE: ${input.promoteExpression}`]),
 	'  run: |',
+	...waitingRunGuard,
 	`      gh workflow run ${LAND_WORKFLOW_FILE} \\`,
 	'        --ref "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \\',
 	input.promoteExpression === undefined

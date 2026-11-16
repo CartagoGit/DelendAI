@@ -19,10 +19,13 @@ import {
 	REHEARSAL_ALL_SCENARIOS,
 	createGithubRehearsalForge,
 	createRehearsalSetup,
+	REHEARSAL_REAL_CI_FILE,
+	REHEARSAL_REAL_SCAN_FILE,
 	landIntegratorWorkflow,
 	REHEARSAL_CATALOGUE,
 	rehearse,
 	renderReportTable,
+	sweepStaleRuns,
 	rehearsalReportPath,
 	scenariosForMode,
 	selectScenarios,
@@ -53,7 +56,7 @@ import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>] [--sweep]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const execFileAsync = promisify(execFile);
@@ -95,7 +98,10 @@ const spawnGh = (
 	});
 
 /** The project's CI and scan workflows, by file name, for a real-mode rehearsal. */
-const REAL_WORKFLOW_FILES = ['ci.yml', 'codeql.yml'] as const;
+const REAL_WORKFLOW_FILES = [
+	REHEARSAL_REAL_CI_FILE,
+	REHEARSAL_REAL_SCAN_FILE,
+] as const;
 const readRealWorkflows = async (
 	cwd: string,
 ): Promise<Record<string, string>> =>
@@ -157,17 +163,38 @@ export const createIntegrationCommand = (
 		const realWorkflows =
 			mode === 'real' ? await readRealWorkflows(ctx.cwd) : undefined;
 		const branchPrefix = ownedRehearsalPrefixes(policy.branches)[0] ?? '';
+		const clock = {
+			now: () => Date.now(),
+			wait: (ms: number) =>
+				new Promise<void>((done) => setTimeout(done, ms)),
+		};
+		if (rest.includes('--sweep')) {
+			// The workflow's last step, run even when the job timed out: only one rehearsal runs at a time, so every root left is dead.
+			const swept = await sweepStaleRuns({
+				forge: createGithubRehearsalForge({
+					slug: repository,
+					run: runGh,
+					wait: clock.wait,
+				}),
+				clock,
+				branchPrefix,
+				now: clock.now(),
+				olderThanMs: 0,
+			});
+			return {
+				code: EXIT_CODE.OK,
+				text: `swept ${String(swept.length)} run(s) of leftovers${swept.map((id) => ` ${id}`).join('')}`,
+			};
+		}
 		try {
 			const baseCommit = await commitOf(ctx.cwd, scalarArg(rest, 'base'));
 			const report = await rehearse({
 				forge: createGithubRehearsalForge({
 					slug: repository,
 					run: runGh,
+					wait: clock.wait,
 				}),
-				clock: {
-					now: () => Date.now(),
-					wait: (ms) => new Promise((done) => setTimeout(done, ms)),
-				},
+				clock,
 				setup: (runId) =>
 					createRehearsalSetup({
 						runId,

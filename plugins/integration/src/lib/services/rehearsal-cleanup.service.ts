@@ -11,14 +11,23 @@
  * The secret scan reads every log of every run the rehearsal started.
  */
 import {
+	REHEARSAL_CLEANUP_WAIT_SECONDS,
+	REHEARSAL_POLL_MS,
 	REHEARSAL_SECRET_SHAPES,
 	REHEARSAL_STALE_AFTER_MS,
 } from '../contracts/constants/rehearsal.constant';
 import type {
+	ICleanRunResult,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
+import type {
+	IRehearsalClock,
 	IRehearsalForge,
 	IRehearsalRun,
 } from '../contracts/interfaces/rehearsal.interface';
 import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
+import { unstartedOf } from './rehearsal-unstarted.helper';
+import { openRuns } from './rehearsal-wait.helper';
 
 /** A run id carries its start: `rYYYYMMDD-HHMMSS`, in UTC. */
 const DATE_END = 10;
@@ -37,15 +46,65 @@ export const runStartOf = (runId: string): number | undefined => {
 	return Date.parse(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
 };
 
+/** A workflow run the forge has accepted but no runner has taken: nothing in it has read the branch. */
+const NOT_STARTED = new Set(['queued', 'waiting', 'pending', 'requested']);
+
+/**
+ * Ends the workflow runs on `branches` before they are deleted: a run still
+ * queued is cancelled (it would start after the branch is gone and fail on
+ * the 404), one in progress is waited for, bounded by the cleanup cap. Returns
+ * the runs still in progress at the cap, and the runs the forge listed but
+ * never enqueued, which cannot be cancelled.
+ */
+const settleRuns = async (input: {
+	readonly forge: IRehearsalForge;
+	readonly clock: IRehearsalClock;
+	readonly branches: readonly string[];
+}): Promise<{
+	readonly running: readonly IRehearsalRun[];
+	readonly unstarted: readonly IUnstartedRun[];
+}> => {
+	const { forge, clock } = input;
+	const unstarted = new Map<number, IUnstartedRun>();
+	const read = async (): Promise<IRehearsalRun[]> => {
+		const all: IRehearsalRun[] = [];
+		for (const branch of input.branches)
+			all.push(...(await forge.runs(branch)));
+		return all;
+	};
+	const deadline = clock.now() + REHEARSAL_CLEANUP_WAIT_SECONDS * 1000;
+	for (let all = await read(); ; all = await read()) {
+		const open = openRuns(all).filter((run) => !unstarted.has(run.id));
+		for (const run of open)
+			if (
+				NOT_STARTED.has(run.status) &&
+				(await forge.cancelRun(run.id)) === 'unstarted'
+			)
+				unstarted.set(run.id, unstartedOf(run, all));
+		const waiting = open.filter((run) => !unstarted.has(run.id));
+		const running = waiting.filter((run) => !NOT_STARTED.has(run.status));
+		if (waiting.length === 0 || clock.now() >= deadline)
+			return { running, unstarted: [...unstarted.values()] };
+		await clock.wait(REHEARSAL_POLL_MS);
+	}
+};
+
 /** Removes everything one run created; returns what is still on the forge after. */
 export const cleanRun = async (input: {
 	readonly forge: IRehearsalForge;
+	readonly clock: IRehearsalClock;
 	readonly branchPrefix: string;
 	readonly runId: string;
-}): Promise<readonly string[]> => {
+}): Promise<ICleanRunResult> => {
 	const { forge } = input;
 	const root = runBranchRoot(input.branchPrefix, input.runId);
 	const branches = await forge.listBranches(root);
+	// No branch is deleted while a workflow run for it is queued or in progress.
+	const settled = await settleRuns({
+		forge,
+		clock: input.clock,
+		branches,
+	});
 	const integrations = branches.filter((branch) =>
 		branch.endsWith('-integration'),
 	);
@@ -60,20 +119,36 @@ export const cleanRun = async (input: {
 	for (const branch of branches) await forge.deleteBranch(branch);
 	for (const label of await forge.labels(runLabelPrefix(input.runId)))
 		await forge.deleteLabel(label);
-	return [
-		...(await forge.listBranches(root)).map((branch) => `branch ${branch}`),
-		...(await forge.labels(runLabelPrefix(input.runId))).map(
-			(label) => `label ${label}`,
-		),
-	];
+	return {
+		leftovers: [
+			...settled.running.map(
+				(run) =>
+					`run ${String(run.id)} (${run.workflow}) still in progress`,
+			),
+			...(await forge.listBranches(root)).map(
+				(branch) => `branch ${branch}`,
+			),
+			...(await forge.labels(runLabelPrefix(input.runId))).map(
+				(label) => `label ${label}`,
+			),
+		],
+		unstarted: settled.unstarted,
+	};
 };
 
-/** Sweeps every run under the prefix that started before `now - stale age`. */
+/**
+ * Sweeps every run under the prefix that started before `now - olderThanMs`
+ * (the stale age unless told). The rehearsal workflow runs one at a time, so
+ * its own final step sweeps with 0: nothing else can be alive.
+ */
 export const sweepStaleRuns = async (input: {
 	readonly forge: IRehearsalForge;
+	readonly clock: IRehearsalClock;
 	readonly branchPrefix: string;
 	readonly now: number;
+	readonly olderThanMs?: number;
 }): Promise<readonly string[]> => {
+	const staleAfter = input.olderThanMs ?? REHEARSAL_STALE_AFTER_MS;
 	const runs = new Set(
 		(await input.forge.listBranches(input.branchPrefix))
 			.map(
@@ -85,13 +160,10 @@ export const sweepStaleRuns = async (input: {
 	const swept: string[] = [];
 	for (const runId of runs) {
 		const started = runStartOf(runId);
-		if (
-			started !== undefined &&
-			input.now - started < REHEARSAL_STALE_AFTER_MS
-		)
-			continue;
+		if (started !== undefined && input.now - started < staleAfter) continue;
 		await cleanRun({
 			forge: input.forge,
+			clock: input.clock,
 			branchPrefix: input.branchPrefix,
 			runId,
 		});

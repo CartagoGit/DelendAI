@@ -7,6 +7,7 @@ export {
 	landIntegratorWorkflow,
 	rehearsalPolicy,
 } from '../lib/services/rehearsal-setup.helper';
+export { sweepStaleRuns } from '../lib/services/rehearsal-cleanup.service';
 export { renderRehearsalWorkflow } from '../lib/services/rehearsal-ci-workflow.helper';
 export {
 	rehearse,
@@ -17,6 +18,10 @@ export {
 	buildReport,
 	renderReportTable,
 } from '../lib/services/rehearsal-report.service';
+export {
+	REHEARSAL_REAL_CI_FILE,
+	REHEARSAL_REAL_SCAN_FILE,
+} from '../lib/contracts/constants/rehearsal.constant';
 export { REHEARSAL_CATALOGUE } from '../lib/contracts/constants/rehearsal-catalogue.constant';
 export type * from '../lib/contracts/interfaces/integration-doctor.interface';
 export {

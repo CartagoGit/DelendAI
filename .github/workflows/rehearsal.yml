@@ -53,6 +53,12 @@ jobs:
                   REHEARSAL_SCENARIOS: ${{ inputs.scenarios || 'all' }}
               run: bun run cli -- integration rehearse --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS"
 
+            - name: Remove what this run left on the forge
+              if: always()
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun run cli -- integration rehearse --sweep
+
             - name: Keep the report as evidence for this commit
               if: always()
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

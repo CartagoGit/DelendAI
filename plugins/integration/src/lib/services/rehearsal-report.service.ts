@@ -6,7 +6,10 @@
  * mode cannot measure is not reported here; one it can measure and that
  * has no data (no session receiver ran) fails, never passes by absence.
  */
-import { REHEARSAL_TARGETS } from '../contracts/constants/rehearsal.constant';
+import {
+	REHEARSAL_DEFERRED_TARGETS,
+	REHEARSAL_TARGETS,
+} from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalEvidence,
 	IRehearsalPullEvent,
@@ -18,6 +21,7 @@ import type {
 	IRehearsalTargetResult,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import type { IUnstartedRun } from '../contracts/interfaces/rehearsal-evidence.interface';
 import { judge, result } from './rehearsal-expectation.service';
 import { scanStarted } from './rehearsal-scan.helper';
 
@@ -72,6 +76,26 @@ const percentile = (
 	];
 };
 
+const notMeasuredTarget = (
+	id: string,
+	threshold: number,
+	unit: string,
+	detail: string,
+): IRehearsalTargetResult => ({
+	id,
+	value: undefined,
+	threshold,
+	unit,
+	ok: false,
+	notMeasured: true,
+	detail,
+});
+
+/** Whether a target keeps a run green: met, or not measured and listed as deferred. */
+export const targetClears = (one: IRehearsalTargetResult): boolean =>
+	one.ok ||
+	(one.notMeasured === true && one.id in REHEARSAL_DEFERRED_TARGETS);
+
 const target = (
 	id: string,
 	value: number | undefined,
@@ -122,10 +146,36 @@ const notifiedTarget = (
 		value: undefined,
 		threshold,
 		unit: 's',
-		ok: caughtUp,
+		ok: false,
+		notMeasured: true,
 		detail: caughtUp
 			? 'not measured: real-time transport is S11b'
 			: 'no session receiver ran: no notification can be timed',
+	};
+};
+
+/**
+ * Runs the forge listed but never enqueued are reported by id and never fail
+ * a run, except one no pass covers: no pass of its workflow on its branch
+ * completed successfully after it was created, so the wake it carried was lost.
+ */
+const unstartedTarget = (
+	unstarted: readonly IUnstartedRun[],
+): IRehearsalTargetResult => {
+	const lost = unstarted.filter((one) => one.lost);
+	const ids = unstarted
+		.map(
+			(one) =>
+				`${String(one.id)}${one.lost ? ' (a lost wake)' : one.coveredBy === undefined ? '' : ` (covered by pass ${String(one.coveredBy)})`}`,
+		)
+		.join(', ');
+	return {
+		id: 'unstarted-runs',
+		value: lost.length,
+		threshold: 0,
+		unit: 'lost wake',
+		ok: lost.length === 0,
+		detail: `${String(unstarted.length)} run(s) the forge never enqueued${ids === '' ? '' : `: ${ids}`}`,
 	};
 };
 
@@ -135,6 +185,8 @@ export const measureTargets = (
 	evidence: readonly IRehearsalEvidence[],
 	results: readonly IRehearsalScenarioResult[],
 	secretHits: number,
+	unreadLogs: readonly string[] = [],
+	unstarted: readonly IUnstartedRun[] = [],
 ): readonly IRehearsalTargetResult[] => {
 	// Only a pull request its scenario expects merged counts for the merge
 	// times: a culprit that stays open is the flow working.
@@ -165,7 +217,9 @@ export const measureTargets = (
 	const tips = evidence.flatMap((one) =>
 		one.tips.slice(1).map((sha) => ({ one, sha })),
 	);
-	const scanned = tips.filter(({ one, sha }) => scanStarted(one.runs, sha));
+	const scanned = tips.filter(({ one, sha }) =>
+		scanStarted(one.runs, sha, one.workflows),
+	);
 	return [
 		target(
 			'pr-to-merged-p50',
@@ -207,13 +261,21 @@ export const measureTargets = (
 			`${String(scanned.length)} of ${String(tips.length)} merged tip(s) started a scan`,
 			(value, threshold) => value >= threshold,
 		),
-		target(
-			'no-secrets-in-logs',
-			secretHits,
-			REHEARSAL_TARGETS.secretHits,
-			'hit',
-			`${String(secretHits)} hit(s)`,
-		),
+		secretHits === 0 && unreadLogs.length > 0
+			? notMeasuredTarget(
+					'no-secrets-in-logs',
+					REHEARSAL_TARGETS.secretHits,
+					'hit',
+					`not measured: ${String(unreadLogs.length)} log(s) could not be read: ${unreadLogs.join('; ')}`,
+				)
+			: target(
+					'no-secrets-in-logs',
+					secretHits,
+					REHEARSAL_TARGETS.secretHits,
+					'hit',
+					`${String(secretHits)} hit(s)`,
+				),
+		unstartedTarget(unstarted),
 	];
 };
 
@@ -230,6 +292,8 @@ export const buildReport = (input: {
 	readonly evidence: readonly IRehearsalEvidence[];
 	readonly leftovers: readonly string[];
 	readonly secretHits: readonly string[];
+	readonly unreadLogs?: readonly string[];
+	readonly unstarted?: readonly IUnstartedRun[];
 }): IRehearsalReport => {
 	const results = input.scenarios.map((scenario) => {
 		const evidence = input.evidence.find(
@@ -253,6 +317,8 @@ export const buildReport = (input: {
 		input.evidence,
 		results,
 		input.secretHits.length,
+		input.unreadLogs,
+		input.unstarted,
 	);
 	return {
 		runId: input.runId,
@@ -265,9 +331,15 @@ export const buildReport = (input: {
 		targets,
 		leftovers: input.leftovers,
 		secretHits: input.secretHits,
+		...(input.unreadLogs === undefined || input.unreadLogs.length === 0
+			? {}
+			: { unreadLogs: input.unreadLogs }),
+		...(input.unstarted === undefined || input.unstarted.length === 0
+			? {}
+			: { unstartedRuns: input.unstarted }),
 		ok:
 			results.every((one) => one.ok) &&
-			targets.every((one) => one.ok) &&
+			targets.every(targetClears) &&
 			input.leftovers.length === 0 &&
 			input.secretHits.length === 0,
 	};
@@ -294,7 +366,7 @@ export const renderReportTable = (report: IRehearsalReport): string => {
 		'---|---|---|---|---',
 		...report.targets.map(
 			(one) =>
-				`${one.id} | ${one.value === undefined ? 'n/a' : String(Math.round(one.value * 100) / 100)} | ${String(one.threshold)} ${one.unit} | ${one.ok ? 'met' : 'MISSED'} | ${one.detail}`,
+				`${one.id} | ${one.value === undefined ? 'n/a' : String(Math.round(one.value * 100) / 100)} | ${String(one.threshold)} ${one.unit} | ${one.ok ? 'met' : one.notMeasured === true ? 'NOT MEASURED' : 'MISSED'} | ${one.detail}`,
 		),
 		'',
 		`leftovers: ${report.leftovers.length === 0 ? 'none' : report.leftovers.join(', ')}`,

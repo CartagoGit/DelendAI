@@ -11,6 +11,7 @@
  * request, whatever opened it, with core's parser for the project's own
  * template.
  */
+import { ownedBatchPrefixes } from '@delendai/core/cli';
 import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
 import {
 	isHostApplicationId,
@@ -42,6 +43,27 @@ export const isBranchModelMove = (
 		branches.release !== branches.integration) ||
 		(base === branches.integration && isForwardSyncRef(head)));
 
+/**
+ * A batch `land` opened under the policy's own batch namespace
+ * (`<ns>/queue/`): the integrator's pull request, nobody's publication, and
+ * its CI run is how a batch is judged. The prefix is the one the guard and
+ * the forge ruleset read.
+ */
+const isLandBatch = (
+	head: string,
+	branches: Parameters<typeof prHeadProblem>[1],
+): boolean => {
+	const { namespacePrefix } = branches;
+	return (
+		namespacePrefix !== undefined &&
+		ownedBatchPrefixes({
+			...branches,
+			namespacePrefix,
+			workRefVisibility: branches.workRefVisibility ?? 'visible',
+		}).some((prefix) => head.startsWith(prefix))
+	);
+};
+
 /** Why `head` is not a well-shaped publication ref, or `undefined`. */
 export const prHeadProblem = (
 	head: string,
@@ -58,6 +80,7 @@ export const prHeadProblem = (
 	base?: string,
 ): string | undefined => {
 	if (isBranchModelMove(head, base, branches)) return undefined;
+	if (isLandBatch(head, branches)) return undefined;
 	return headProblemIn(head, ownBranchesOf(branches, head));
 };
 

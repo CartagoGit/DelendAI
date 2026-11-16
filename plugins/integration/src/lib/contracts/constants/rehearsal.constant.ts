@@ -10,6 +10,55 @@ export const REHEARSAL_CI_CHECK = 'rehearsal-ci';
 /** A workflow every push to the rehearsal integration branch starts: the stand-in for the scan. */
 export const REHEARSAL_SCAN_WORKFLOW = 'rehearsal-scan.yml';
 
+/**
+ * Targets that are reported as not measured and do not fail a run, each with
+ * the reason it is deferred. Activation refuses a not-measured target that
+ * is not listed here.
+ */
+export const REHEARSAL_DEFERRED_TARGETS: Readonly<Record<string, string>> = {
+	'session-notified-p95': 'the real-time transport is S11b',
+};
+
+const HTTP_BAD_GATEWAY = 502;
+const HTTP_SERVICE_UNAVAILABLE = 503;
+const HTTP_GATEWAY_TIMEOUT = 504;
+
+/**
+ * A read (GET) that fails with one of these statuses, or with a connection
+ * reset or timeout, is asked again after each delay in turn through the
+ * clock; the attempts are the first call plus one per delay. Writes and
+ * every other status are never retried.
+ */
+export const REHEARSAL_READ_RETRY = {
+	statuses: [
+		HTTP_BAD_GATEWAY,
+		HTTP_SERVICE_UNAVAILABLE,
+		HTTP_GATEWAY_TIMEOUT,
+	],
+	delaysMs: [1_000, 3_000, 9_000],
+	transientText: /ECONNRESET|ETIMEDOUT|connection reset|timed? ?out/iu,
+} as const;
+
+/**
+ * The jobs whose `if:` names the integration branch and that a rehearsal
+ * branch renders for itself. Every other job gated on that branch stays as
+ * the project wrote it: some write to the forge, and must stay off rehearsal
+ * branches.
+ */
+export const REHEARSAL_BRANCH_GATED_JOBS: readonly string[] = [
+	'integration-signal',
+];
+
+/** The names the fast stand-in workflows list their runs under. */
+export const REHEARSAL_FAST_WORKFLOW_NAMES = {
+	ci: REHEARSAL_CI_CHECK,
+	scan: 'rehearsal-scan',
+} as const;
+
+/** The project's own CI and scan workflow files a real-mode rehearsal runs. */
+export const REHEARSAL_REAL_CI_FILE = 'ci.yml';
+export const REHEARSAL_REAL_SCAN_FILE = 'codeql.yml';
+
 /** A workflow that writes with the workflow token, on a label, so the run can reproduce what such writes do. */
 export const REHEARSAL_TOKEN_WORKFLOW = 'rehearsal-token.yml';
 
@@ -17,11 +66,17 @@ export const REHEARSAL_TOKEN_WORKFLOW = 'rehearsal-token.yml';
 export const REHEARSAL_TOKEN_PUSH_LABEL = 'token-push';
 export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
 
-/** Leftovers of a run older than this are swept by the next run's start. */
-export const REHEARSAL_STALE_AFTER_MS = 2 * 60 * 60 * 1000;
+/**
+ * Leftovers of a run older than the job timeout are swept by the next run's
+ * start: a run that old was ended by the timeout, so its cleanup never ran.
+ */
+export const REHEARSAL_STALE_AFTER_MS = 45 * 60_000;
 
 /** How many scenarios play at once when no option says: each has its own integration branch. */
-export const REHEARSAL_DEFAULT_CONCURRENCY = 4;
+export const REHEARSAL_DEFAULT_CONCURRENCY = 11;
+
+/** Seconds a run may stay queued with no job before it counts as unstarted, not as work in flight. */
+export const REHEARSAL_UNSTARTED_AFTER_SECONDS = 60;
 
 /** How often the harness reads the forge while it waits on a step. */
 export const REHEARSAL_POLL_MS = 15_000;
@@ -29,8 +84,38 @@ export const REHEARSAL_POLL_MS = 15_000;
 /** Seconds the harness keeps reading the forge, after the last step, for the push runs of every merged tip. */
 export const REHEARSAL_SETTLE_SECONDS = 120;
 
-/** The longest an await runs, idle or not: a ceiling over the project's slowest real CI. */
-export const REHEARSAL_AWAIT_CAP_SECONDS = 45 * 60;
+/**
+ * The longest one await step runs, idle or not. Every wait of the harness has
+ * its own cap from this block, and `rehearsalWorstCaseSeconds` proves the
+ * caps of the longest scenario path fit inside the job timeout. The value and
+ * the default concurrency are the plan of `planRehearsalBudget`, which the
+ * budget spec recomputes.
+ */
+export const REHEARSAL_AWAIT_CAP_SECONDS = 423;
+
+/** The longest the log scan waits, once for all scenarios, for their runs to conclude. */
+export const REHEARSAL_SCAN_WAIT_CAP_SECONDS = 3 * 60;
+
+/** The longest a token step waits for what the workflow token does. */
+export const REHEARSAL_TOKEN_WAIT_SECONDS = 5 * 60;
+
+/** Allowance per step for the forge calls it makes around its wait. */
+export const REHEARSAL_STEP_OVERHEAD_SECONDS = 10;
+
+/** The job timeout of the rehearsal workflow, in minutes; the workflow file carries the same number. */
+export const REHEARSAL_JOB_TIMEOUT_MINUTES = 45;
+
+/** The stale age is the job timeout: a root older than it belongs to a run that cannot be alive. */
+export const REHEARSAL_JOB_TIMEOUT_MS = REHEARSAL_JOB_TIMEOUT_MINUTES * 60_000;
+
+/** The longest the cleanup waits, once for all branches, for a workflow run in progress before it deletes them. */
+export const REHEARSAL_CLEANUP_WAIT_SECONDS = 2 * 60;
+
+/** The least await cap, in seconds, that lets the slowest measured pull request (p95 204 s) merge with room. */
+export const REHEARSAL_AWAIT_MIN_SECONDS = 420;
+
+/** Minutes of the job timeout the worst case of every cap must leave unused. */
+export const REHEARSAL_JOB_MARGIN_MINUTES = 5;
 
 /** The pinned checkout action the rendered workflows use. */
 export const REHEARSAL_CHECKOUT_ACTION =

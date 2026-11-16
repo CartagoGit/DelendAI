@@ -39,7 +39,12 @@ export interface IRehearsalPullSpec {
 /** One step the harness takes, as the author or the environment. */
 export type IRehearsalStep =
 	| { readonly kind: 'open'; readonly keys: readonly string[] }
-	| { readonly kind: 'ready'; readonly keys: readonly string[] }
+	| {
+			readonly kind: 'ready';
+			readonly keys: readonly string[];
+			/** Members of one batch: made ready in one forge request, once no pass is open. */
+			readonly together?: boolean;
+	  }
 	| {
 			readonly kind: 'await';
 			readonly until: 'merged' | 'labelled' | 'checked';
@@ -152,9 +157,15 @@ export interface IRehearsalPullEvent {
 }
 
 /** A workflow run as the forge reports it. */
+/** What cancelling a workflow run came to. */
+export type IRehearsalCancel = 'cancelled' | 'ended' | 'unstarted';
+
 export interface IRehearsalRun {
 	readonly id: number;
+	/** The run's name: its `run-name` once the workflow evaluated it, else the workflow's name. */
 	readonly workflow: string;
+	/** The workflow file's id: the same for every run of it, however each is named. */
+	readonly workflowId?: number;
 	readonly event: string;
 	readonly headBranch: string;
 	readonly headSha: string;
@@ -163,6 +174,16 @@ export interface IRehearsalRun {
 	readonly actor: string;
 	readonly createdAt: string;
 	readonly updatedAt: string;
+}
+
+/** A check run of a commit: what branch protection judges, one per job a workflow started. */
+export interface IRehearsalCheckRun {
+	readonly id: number;
+	readonly name: string;
+	readonly headSha: string;
+	readonly status: string;
+	readonly conclusion?: string;
+	readonly startedAt: string;
 }
 
 /** A file written or deleted by one commit. */
@@ -213,6 +234,8 @@ export interface IRehearsalForge {
 		readonly draft: boolean;
 	}) => Promise<number>;
 	readonly setDraft: (number: number, draft: boolean) => Promise<void>;
+	/** Marks several draft pull requests ready in ONE request, so the forge emits their events together. */
+	readonly readyTogether: (numbers: readonly number[]) => Promise<void>;
 	readonly mergePull: (number: number, sha: string) => Promise<void>;
 	readonly closePull: (number: number) => Promise<void>;
 	readonly addLabel: (number: number, label: string) => Promise<void>;
@@ -222,6 +245,19 @@ export interface IRehearsalForge {
 	) => Promise<readonly IRehearsalPullEvent[]>;
 	readonly runs: (branch: string) => Promise<readonly IRehearsalRun[]>;
 	readonly runLog: (id: number) => Promise<string>;
+	/**
+	 * Cancels a workflow run that is queued or in progress. `ended`: it had
+	 * already concluded. `unstarted`: the forge lists it as queued but has not
+	 * enqueued it ("has not been queued yet"), so it cannot be cancelled and
+	 * has no jobs or log.
+	 */
+	readonly cancelRun: (id: number) => Promise<IRehearsalCancel>;
+	/** How many jobs the forge has created for a workflow run. */
+	readonly jobCount: (id: number) => Promise<number>;
+	/** Reopens a closed pull request: with `closePull`, the event the integrator wakes on. */
+	readonly reopenPull: (number: number) => Promise<void>;
+	/** The check runs of the commit `sha`; a workflow run with no job has none. */
+	readonly checkRuns: (sha: string) => Promise<readonly IRehearsalCheckRun[]>;
 	readonly labels: (prefix: string) => Promise<readonly string[]>;
 	readonly deleteLabel: (name: string) => Promise<void>;
 }
@@ -233,7 +269,17 @@ export interface IRehearsalClock {
 }
 
 /** What the integrator workflow and the project files of a branch are. */
+/** The names the forge lists the CI and the scan workflow runs under. */
+export interface IRehearsalWorkflowNames {
+	readonly ci: string;
+	readonly scan: string;
+}
+
 export interface IRehearsalSetup {
+	/** The workflows the run judges; absent means the fast stand-ins. */
+	readonly workflows?: IRehearsalWorkflowNames;
+	/** The names of the checks branch protection requires on a pull request's head. */
+	readonly requiredChecks: readonly string[];
 	/** Files the setup commit writes, given the scenario's integration branch. */
 	readonly files: (
 		integration: string,

@@ -289,6 +289,32 @@ describe('today land on the rehearsal branch', () => {
 		).files('i');
 		expect(files.map((f) => f.path)).toContain(REHEARSAL_OVERLAP_FILE);
 	});
+
+	it("[<50ms] names the stand-in check as required in fast mode, and the policy's in real mode", () => {
+		const base = {
+			runId: 'r1',
+			branchPrefix: 'ns',
+			integratorWorkflow: () => '',
+		};
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText: '{}',
+				}),
+			).requiredChecks,
+		).toEqual(['rehearsal-ci']);
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText:
+						'{"development":{"integration":{"requiredChecks":["tests","lint"]}}}',
+					realWorkflows: {},
+				}),
+			).requiredChecks,
+		).toEqual(['tests', 'lint']);
+	});
 });
 
 describe('the host-offline scenario', () => {
@@ -304,5 +330,16 @@ describe('the host-offline scenario', () => {
 			'receive',
 		]);
 		expect(offline?.expect).toContainEqual({ kind: 'sessions-notified' });
+	});
+});
+
+describe('the scenarios of one batch', () => {
+	it('[<50ms] make their members ready in one request', () => {
+		for (const id of ['overlapping', 'red-batch']) {
+			const ready = REHEARSAL_SCENARIOS.find(
+				(s) => s.id === id,
+			)?.steps.find((step) => step.kind === 'ready');
+			expect(ready).toMatchObject({ together: true });
+		}
 	});
 });

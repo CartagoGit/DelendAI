@@ -15,6 +15,7 @@ import {
 	REHEARSAL_CHECKOUT_ACTION,
 	REHEARSAL_CI_CHECK,
 	REHEARSAL_DIR,
+	REHEARSAL_JOB_TIMEOUT_MINUTES,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
 	REHEARSAL_WORKFLOW_NAME,
@@ -27,7 +28,6 @@ import {
 } from './rehearsal-dispatch-steps.helper';
 
 const CI_TIMEOUT_MINUTES = 15;
-const WORKFLOW_TIMEOUT_MINUTES = 45;
 /** The user id of the GitHub Actions bot: its commit email carries it. */
 const BOT_USER_ID = 41898282;
 
@@ -217,7 +217,7 @@ export const renderRehearsalWorkflow = (input: {
 		`    ${REHEARSAL_WORKFLOW_NAME}:`,
 		`        name: ${REHEARSAL_WORKFLOW_NAME}`,
 		'        runs-on: ubuntu-latest',
-		`        timeout-minutes: ${String(WORKFLOW_TIMEOUT_MINUTES)}`,
+		`        timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
 		'        steps:',
 		...identitySteps(input.identity).map((line) =>
 			line === '' ? line : `            ${line}`,
