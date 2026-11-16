@@ -1,0 +1,8 @@
+{
+	"result": "success",
+	"seconds": 20,
+	"sections": [
+		"s1"
+	],
+	"batch": "failure"
+}
