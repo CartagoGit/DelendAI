@@ -56,7 +56,15 @@ describe('unstarted runs', () => {
 	it('[<20ms] falls back to the name when a run has no workflow id', () => {
 		const bare = run({ id: 1, createdAt: '2026-11-16T10:00:34Z' });
 		expect(
-			coveringRun(bare, [bare, pass({ workflowId: undefined })])?.id,
+			coveringRun(bare, [
+				bare,
+				run({
+					id: 2,
+					status: 'completed',
+					conclusion: 'success',
+					updatedAt: '2026-11-16T10:01:09Z',
+				}),
+			])?.id,
 		).toBe(2);
 	});
 
