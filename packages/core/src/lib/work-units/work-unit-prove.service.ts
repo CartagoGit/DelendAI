@@ -15,6 +15,7 @@ import type {
 import { scalarArg } from './command-args.helper';
 import { publicationRefFromWorkRef } from './work-publish.service';
 import { worktreeOfRef } from './unit-removal.service';
+import { asksForOneGate, provedOnly } from './work-unit-prove-only.service';
 import { existingWorkRef } from './work-unit-generation.service';
 import { describeFailedProof, proveUnit } from './work-unit-proof.service';
 import {
@@ -30,6 +31,7 @@ export const proved = async (
 	args: readonly string[],
 	ctx: IWorkUnitContext,
 ): Promise<IWorkUnitResult> => {
+	if (asksForOneGate(args)) return provedOnly(args, ctx);
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { policy } = opened;
