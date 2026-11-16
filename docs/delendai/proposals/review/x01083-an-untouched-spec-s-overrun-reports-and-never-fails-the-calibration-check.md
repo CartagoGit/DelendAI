@@ -2,14 +2,14 @@
 id: x01083
 title: "An untouched spec's overrun reports and never fails the calibration check"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 76aedaa5-639f-4b9b-ad33-2d82539fc216
-last-correlation-id: 76aedaa5-639f-4b9b-ad33-2d82539fc216
-last-transition-from: ready
-last-transition-at: 2026-11-16T13:18:49.088Z
+last-transition-id: 2434a228-2cf8-41e8-9d2a-e5eacaf90525
+last-correlation-id: 2434a228-2cf8-41e8-9d2a-e5eacaf90525
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T13:52:26.797Z
 ---
 
 # x01083 — An untouched spec's overrun reports and never fails the calibration check
@@ -34,9 +34,12 @@ Why that test took 140 ms at load factor 1, from reading the test and the store:
 - global_gate: none
 
 ### S1 — The calibration check reports an untouched spec and fails a touched one
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-check.ts`, `tools/scripts/ci/test-budget-check.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/core/tests/src/lib/forge-events/forge-event-store.service.e2e.spec.ts`, `packages/test-kit/src/public/index.ts`
 - **Gate**: none
+- shipped-in: `e4ed995bc0f8`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
