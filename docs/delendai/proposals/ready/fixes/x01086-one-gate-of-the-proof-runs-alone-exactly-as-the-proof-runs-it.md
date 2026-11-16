@@ -29,7 +29,7 @@ Five deliveries failed in one day because workers ran their own approximation of
 
 ### S1 — One gate of the proof runs alone, exactly as the proof runs it
 - **Status**: pending
-- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove-only.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
+- **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove-only.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.e2e.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
 - acceptance:
   - "prove-plan.script.spec.ts asserts that the changed-file-coverage gate is exactly the vitest --coverage step over the near specs followed by changed-file-coverage.script.ts --base=<base>, and that an unknown gate is listed against the gates the proof defines; run with: bunx vitest run tools/scripts/ci/prove-plan.script.spec.ts"
