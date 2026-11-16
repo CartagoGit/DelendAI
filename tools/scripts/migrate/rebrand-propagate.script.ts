@@ -116,6 +116,8 @@ const SKIP_PATHS = [
 	'llm-subject-substitutions.json',
 	'rewrite-llm-attribution',
 	'proposal-files-exist.baseline',
+	// Same category: the readiness baseline quotes historical proposal text.
+	'proposal-readiness.baseline',
 	// Proposal-slice-completeness baseline carries historical proposal
 	// slugs from pre-rebrand audits (\`mcp-vertex-…\` audit titles); they
 	// are file names, not product references, and renaming them would
