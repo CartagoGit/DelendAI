@@ -23,6 +23,14 @@ A rehearsal scenario died on `GET pulls?... failed: gh: HTTP 504`: the land clie
 - The rehearsal harness keeps its own copy until PR #2270 merges. Follow-up: after #2270 merges, the rehearsal harness (plugins/integration rehearsal-forge-retry.helper.ts) should import this core helper and delete its own copy; this proposal does not touch it.
 - No retry of writes (POST/PATCH/PUT/DELETE) and none of 4xx.
 
+## decisions
+
+- The retry lives in core next to the land client (`forge-read-retry.helper.ts`); the statuses, retries and delays live in one constant, `FORGE_READ_RETRY`.
+- Only a GET is retried: on 502, 503, 504, or a connection reset or timeout. Writes and 4xx answers are never retried.
+- After the last attempt the original error is thrown with "(4 attempts)" in its message.
+- The wait is a required port of `createGithubLandForge`; the real clock is supplied only by `runIntegrationPass`, which the CLI command and the repository script both call. Specs inject a fake.
+- Nothing is undecided.
+
 ## slices
 
 - global_gate: type

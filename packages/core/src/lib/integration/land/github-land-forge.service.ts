@@ -14,6 +14,7 @@ import type {
 	ILandMerge,
 	ILandPullRequest,
 } from './land.interface';
+import { runForgeRead } from './forge-read-retry.helper';
 import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
 
 interface IRawPull {
@@ -30,6 +31,8 @@ export const createGithubLandForge = (input: {
 	readonly slug: string;
 	readonly integration: string;
 	readonly run: ILandCommandRunner;
+	/** Pauses between read attempts; the composition root supplies the clock. */
+	readonly wait: (ms: number) => Promise<void>;
 	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
 }): ILandForge => {
 	const { slug, integration, run } = input;
@@ -38,13 +41,25 @@ export const createGithubLandForge = (input: {
 		path: string,
 		fields: Readonly<Record<string, string>> = {},
 	): Promise<{ status: number; body: unknown }> => {
-		const result = await run([
-			'api',
-			'--method',
+		const { result, attempts, exhausted } = await runForgeRead({
 			method,
-			`repos/${slug}/${path}`,
-			...Object.entries(fields).flatMap(([k, v]) => ['-f', `${k}=${v}`]),
-		]);
+			wait: input.wait,
+			once: () =>
+				run([
+					'api',
+					'--method',
+					method,
+					`repos/${slug}/${path}`,
+					...Object.entries(fields).flatMap(([k, v]) => [
+						'-f',
+						`${k}=${v}`,
+					]),
+				]),
+		});
+		if (exhausted)
+			throw new Error(
+				`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'} (${String(attempts)} attempts)`,
+			);
 		if (result.exitCode === 0) {
 			return {
 				status: 200,
