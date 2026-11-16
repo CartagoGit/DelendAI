@@ -2,14 +2,14 @@
 id: x01078
 title: "A change runs the specs of what imports it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 3f70faa1-ff84-4f58-8afc-89ce1fe09acc
-last-correlation-id: 3f70faa1-ff84-4f58-8afc-89ce1fe09acc
-last-transition-from: ready
-last-transition-at: 2026-11-16T03:38:45.165Z
+last-transition-id: c1a058b7-3373-4e20-bdee-d60bdde7bcff
+last-correlation-id: c1a058b7-3373-4e20-bdee-d60bdde7bcff
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T03:57:19.329Z
 ---
 
 # x01078 — A change runs the specs of what imports it
@@ -41,13 +41,16 @@ Decisions (nothing is left undecided):
 - global_gate: none
 
 ### S1 — The touched scope adds the mirrors of direct importers
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - acceptance:
   - "`bunx vitest run tools/scripts/ci/test-scope.spec.ts` passes a case where the file set of #2231 selects `packages/cli/src/commands/work.command.spec.ts`."
   - "The same spec proves a barrel importer is not followed and a non-importer is not selected."
   - "`bunx vitest run packages/cli/src/commands/work.command.spec.ts` passes with the `--kind` flag expected for implement and create branches."
+- shipped-in: `0b4a8ff3e397`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
