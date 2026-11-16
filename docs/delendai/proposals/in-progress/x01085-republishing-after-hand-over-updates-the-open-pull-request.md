@@ -22,7 +22,7 @@ A unit that publishes work for a proposal and slice that already has an open pul
 
 Root cause: choosePublicationTarget only looks for remote publications whose ref matches the unit's own kind and generation. A proposal created from a create unit (x01079, PR #2311, branch delendai/pr/claude-sonnet-5-5/create/x01079-all-g2/proposal-readiness-lint) that needs a CI fix after hand-over is re-entered as an implement unit at generation 1. Its publication name differs in kind and generation, so work deliver exited 0 three times and pushed delendai/pr/claude-sonnet-5-5/implement/x01079-all-g1/work, opening PR #2354 while #2311 stayed open, conflicting and never updated, and nothing said so. Ruled out: the push failing (it succeeded), the pull-request step (it found no open pull request for the new branch, correctly).
 
-## Decisions
+## why this design
 
 - Same agent means the same agent id segment of the publication ref; another agent's open pull request is never touched.
 - The open pull request must have the same proposal and the same slice (the slice of the ref the policy chose, so a whole-proposal publication matches slice all), in any kind, generation and topic.
@@ -44,7 +44,7 @@ Root cause: choosePublicationTarget only looks for remote publications whose ref
 
 - global_gate: none
 
-### all — Republish to the open pull request of the same agent, proposal and slice
+### S1 — Republish to the open pull request of the same agent, proposal and slice
 - **Status**: pending
 - **Files**: `packages/core/src/lib/contracts/interfaces/open-pull-request-republication.interface.ts`, `packages/core/src/lib/work-units/open-pull-request-republication.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/tests/src/lib/work-units/open-pull-request-republication.service.spec.ts`
 - **Gate**: type
