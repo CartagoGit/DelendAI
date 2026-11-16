@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe('withSlicesView', () => {
-	it('names the slices view in the payload of a unit that was entered', () => {
+	it('[<200ms] names the slices view in the payload of a unit that was entered', () => {
 		const written = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
 		const result = withSlicesView(
 			{ code: 0, data: { ref: 'refs/heads/work/a', path: '/work/a' } },
@@ -53,7 +53,7 @@ describe('withSlicesView', () => {
 		expect(written).not.toHaveBeenCalled();
 	});
 
-	it('says it in words to a person', () => {
+	it('[<200ms] says it in words to a person', () => {
 		const written = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
 		withSlicesView(
 			{ code: 0, data: { ref: 'refs/heads/work/a' } },
@@ -64,7 +64,7 @@ describe('withSlicesView', () => {
 		);
 	});
 
-	it('adds nothing to an entry that was refused', () => {
+	it('[<200ms] adds nothing to an entry that was refused', () => {
 		const refused = { code: 2 as const, error: 'held by another' };
 		expect(
 			withSlicesView(refused, createNoopContext('/work', globals(true))),
@@ -75,7 +75,7 @@ describe('withSlicesView', () => {
 describe('work deliver', () => {
 	const command = createWorkCommand();
 
-	it('says what it needs', async () => {
+	it('[<200ms] says what it needs', async () => {
 		const result = await command.run(
 			['deliver'],
 			createNoopContext('/work', globals(true)),
@@ -128,7 +128,7 @@ describe('work deliver', () => {
 		return root;
 	};
 
-	it('moves the proposal as the agent named, from wherever it stands', async () => {
+	it('[<200ms] moves the proposal as the agent named, from wherever it stands', async () => {
 		const root = await unitRepo();
 		const asked: unknown[] = [];
 		const ctx = {
@@ -157,7 +157,7 @@ describe('work deliver', () => {
 		]);
 	});
 
-	it('goes on to the proof, with the whole unit by default', async () => {
+	it('[<200ms] goes on to the proof, with the whole unit by default', async () => {
 		const ctx = {
 			...createNoopContext('/nowhere', globals(true)),
 			request: async <TOut>() => ({ ok: true }) as TOut,
@@ -175,7 +175,7 @@ describe('work deliver', () => {
 describe('work prove and publish', () => {
 	const command = createWorkCommand();
 	it.each(['prove', 'publish'])(
-		'%s looks for its unit from where it runs',
+		'[<200ms] %s looks for its unit from where it runs',
 		async (action) => {
 			const ctx = createNoopContext('/nowhere', globals(true));
 			const result = await command.run(
@@ -189,7 +189,7 @@ describe('work prove and publish', () => {
 });
 
 describe('entering a unit from the CLI', () => {
-	it('prints no path when the entry is refused', async () => {
+	it('[<200ms] prints no path when the entry is refused', async () => {
 		const result = await createWorkCommand().run(
 			['enter', '--proposal=x00001', '--print-path'],
 			createNoopContext('/nowhere', globals(true)),
@@ -197,7 +197,7 @@ describe('entering a unit from the CLI', () => {
 		expect(result.code).not.toBe(0);
 	});
 
-	it('asks the planning plugin, which knows no such proposal here', async () => {
+	it('[<200ms] asks the planning plugin, which knows no such proposal here', async () => {
 		const worktree = mkdtempSync(join(tmpdir(), 'work-briefing-'));
 		await briefOnEntering();
 		const task = await taskBriefingFor({
@@ -211,7 +211,7 @@ describe('entering a unit from the CLI', () => {
 });
 
 describe('printPathOnly', () => {
-	it('prints the path alone', () => {
+	it('[<200ms] prints the path alone', () => {
 		const written = vi
 			.spyOn(process.stdout, 'write')
 			.mockImplementation(() => true);
@@ -222,18 +222,18 @@ describe('printPathOnly', () => {
 		written.mockRestore();
 	});
 
-	it('fails an answer with no path, so a script cannot carry on', () => {
+	it('[<200ms] fails an answer with no path, so a script cannot carry on', () => {
 		expect(printPathOnly({ code: 0, data: {} }).code).not.toBe(0);
 	});
 
-	it('keeps a refusal as it came', () => {
+	it('[<200ms] keeps a refusal as it came', () => {
 		const refused = { code: 4 as const, error: 'held' };
 		expect(printPathOnly(refused)).toEqual(refused);
 	});
 });
 
 describe('unitHere', () => {
-	it('reads the unit from the branch a worktree stands on, for that proposal only', async () => {
+	it('[<200ms] reads the unit from the branch a worktree stands on, for that proposal only', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'unit-here-'));
 		const git = (...args: string[]) =>
 			execFileSync(
@@ -285,7 +285,7 @@ describe('withUnitHere', () => {
 		return dir;
 	};
 
-	it('adds the unit of the branch when the args name none', async () => {
+	it('[<200ms] adds the unit of the branch when the args name none', async () => {
 		const dir = inUnit();
 		expect(await withUnitHere(['--proposal=x00001'], dir)).toEqual([
 			'--proposal=x00001',
@@ -297,7 +297,7 @@ describe('withUnitHere', () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('leaves args that name a unit flag, or no proposal, as they are', async () => {
+	it('[<200ms] leaves args that name a unit flag, or no proposal, as they are', async () => {
 		const dir = inUnit();
 		const named = ['--proposal=x00001', '--generation=1'];
 		expect(await withUnitHere(named, dir)).toEqual(named);
