@@ -7,7 +7,10 @@ import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import { resolvePublicationTarget } from '@delendai/core/lib/work-units/open-pull-request-republication.service';
+import {
+	resolvePublicationTarget,
+	unitPublicationPattern,
+} from '@delendai/core/lib/work-units/open-pull-request-republication.service';
 import type { IPublicationTargetRequest } from '@delendai/core/lib/contracts/interfaces/publication-target.interface';
 
 const policy = resolveDevelopmentPolicy({
@@ -159,6 +162,55 @@ describe('resolvePublicationTarget', () => {
 			chooseOwn,
 		);
 		expect(calls.map((call) => call[0])).toContain('fetch');
+	});
+
+	it("[<20ms] keeps the policy's choice when the project does not land by pull request", () => {
+		const direct = resolveDevelopmentPolicy({
+			development: { profile: 'shared-checkout-merge' },
+		});
+		const target = resolvePublicationTarget(
+			{ ...request, policy: direct },
+			{ git: () => '', gh: () => '[]' },
+			chooseOwn,
+		);
+		expect(target).toEqual({ ...chooseOwn(), notes: [] });
+	});
+
+	it("[<20ms] keeps the policy's choice when the work ref resolves to no commit", () => {
+		const target = resolvePublicationTarget(
+			request,
+			{ git: () => undefined, gh: () => '[]' },
+			chooseOwn,
+		);
+		expect(target).toEqual({ ...chooseOwn(), notes: [] });
+	});
+
+	it.each(['not json', '{"number":1}'])(
+		'[<20ms] says the check was skipped when the forge answers %s',
+		(answer) => {
+			const { target } = {
+				target: resolvePublicationTarget(
+					request,
+					{ git: () => TIP, gh: () => answer },
+					chooseOwn,
+				),
+			};
+			expect(notesOf(target)).toEqual([
+				expect.stringContaining('skipped'),
+			]);
+		},
+	);
+
+	it('[<20ms] has no pattern for a project whose work has no work ref', () => {
+		const direct = resolveDevelopmentPolicy({
+			development: { profile: 'shared-direct' },
+		});
+		expect(
+			unitPublicationPattern(direct, {
+				agent: AGENT,
+				proposal: 'x01079',
+			}),
+		).toBe(undefined);
 	});
 
 	it('[<20ms] passes a refusal through', () => {

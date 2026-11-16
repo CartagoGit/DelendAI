@@ -46,7 +46,7 @@ Root cause: choosePublicationTarget only looks for remote publications whose ref
 
 ### S1 — Republish to the open pull request of the same agent, proposal and slice
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/open-pull-request-republication.interface.ts`, `packages/core/src/lib/work-units/open-pull-request-republication.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/tests/src/lib/work-units/open-pull-request-republication.service.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/open-pull-request-republication.interface.ts`, `packages/core/src/lib/work-units/open-pull-request-republication.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/src/lib/contracts/interfaces/review-unit-publish-checks.interface.ts`, `packages/core/tests/src/lib/work-units/open-pull-request-republication.service.spec.ts`, `packages/core/tests/src/lib/work-units/review-unit-publish-checks.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "open-pull-request-republication.service.spec.ts proves: an open pull request of the same agent, proposal and slice whose head is an ancestor of the unit tip makes the target that pull request's branch with its number and no note."
