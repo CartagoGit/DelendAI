@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import {
 	createGithubLandForge,
 	integrationProtocolRefusal,
+	LandBranchGoneError,
 	LAND_WORKFLOW_FILE,
 	landConfigFromPolicy,
 	landPass,
@@ -85,7 +86,7 @@ export const runIntegrationPass = async (
 			run: input.runGh,
 			wait: input.ports?.wait ?? realWait,
 		});
-	const report = await landPass({
+	const outcome = await landPass({
 		forge,
 		git:
 			input.ports?.git ??
@@ -115,7 +116,16 @@ export const runIntegrationPass = async (
 					derived: String(pr.number),
 				},
 			),
+	}).catch((cause: unknown) => {
+		// A rehearsal's cleanup, or a deleted branch: the run this pass served is over.
+		if (cause instanceof LandBranchGoneError) return cause;
+		throw cause;
 	});
+	if (outcome instanceof LandBranchGoneError) {
+		log(`land: ${outcome.message}; nothing to settle.`);
+		return 0;
+	}
+	const report = outcome;
 	for (const line of report.actions) log(`land: ${line}`);
 	// Every open pull request, every pass: "0 merged" is never silent.
 	for (const [number, reason] of [...report.reasons].sort(

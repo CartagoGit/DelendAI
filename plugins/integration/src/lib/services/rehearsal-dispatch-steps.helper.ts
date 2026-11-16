@@ -41,6 +41,13 @@ export const rehearsalRunSteps = (input: {
 	`                  REHEARSAL_SCENARIOS: \${{ inputs.scenarios || '${REHEARSAL_ALL_SCENARIOS}' }}`,
 	`              run: ${input.command} integration rehearse --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS"`,
 	'',
+	// The in-process cleanup does not run when the job is cancelled or times out: this step does.
+	'            - name: Remove what this run left on the forge',
+	'              if: always()',
+	'              env:',
+	`                  GH_TOKEN: ${input.token}`,
+	`              run: ${input.command} integration rehearse --sweep`,
+	'',
 	'            - name: Keep the report as evidence for this commit',
 	'              if: always()',
 	`              uses: ${REHEARSAL_UPLOAD_ACTION}`,

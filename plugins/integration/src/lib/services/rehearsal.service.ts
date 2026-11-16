@@ -93,6 +93,7 @@ export const rehearse = async (
 	const runId = newRunId(startedMs);
 	for (const swept of await sweepStaleRuns({
 		forge: input.forge,
+		clock: input.clock,
 		branchPrefix: input.branchPrefix,
 		now: startedMs,
 	}))
@@ -134,6 +135,7 @@ export const rehearse = async (
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
 		leftovers = await cleanRun({
 			forge: input.forge,
+			clock: input.clock,
 			branchPrefix: input.branchPrefix,
 			runId,
 		}).catch((error: unknown) => [

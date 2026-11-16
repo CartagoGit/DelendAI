@@ -232,6 +232,8 @@ export interface IRehearsalForge {
 	) => Promise<readonly IRehearsalPullEvent[]>;
 	readonly runs: (branch: string) => Promise<readonly IRehearsalRun[]>;
 	readonly runLog: (id: number) => Promise<string>;
+	/** Cancels a workflow run that is queued or in progress; a run that already ended is not an error. */
+	readonly cancelRun: (id: number) => Promise<void>;
 	/** The check runs of the commit `sha`; a workflow run with no job has none. */
 	readonly checkRuns: (sha: string) => Promise<readonly IRehearsalCheckRun[]>;
 	readonly labels: (prefix: string) => Promise<readonly string[]>;

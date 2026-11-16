@@ -5,7 +5,9 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { IRehearsalForge } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 
+import type { IRehearsalRun } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import {
+	cleanRun,
 	newRunId,
 	runStartOf,
 	secretHitsIn,
@@ -16,6 +18,7 @@ import {
 	renderRehearsalScanWorkflow,
 	renderRehearsalTokenWorkflow,
 } from '../../../../src/lib/services/rehearsal-ci-workflow.helper';
+import { REHEARSAL_AWAIT_CAP_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { runLabelPrefix } from '../../../../src/lib/services/rehearsal-names.helper';
 import {
 	createRehearsalSetup,
@@ -28,11 +31,36 @@ const branchesForge = (names: Map<string, string>) =>
 		listBranches: async (prefix: string) =>
 			[...names.keys()].filter((b) => b.startsWith(prefix)),
 		deleteBranch: async (name: string) => void names.delete(name),
+		runs: async () => [],
+		cancelRun: async () => undefined,
 		pulls: async () => [],
 		closePull: async () => undefined,
 		labels: async () => [],
 		deleteLabel: async () => undefined,
 	});
+
+/** A clock that never sleeps: waiting advances it. */
+const stepClock = () => {
+	let at = Date.parse('2026-11-12T10:00:00Z');
+	return {
+		now: () => at,
+		wait: async (ms: number) => {
+			at += ms;
+		},
+	};
+};
+
+const runWith = (id: number, status: string): IRehearsalRun => ({
+	id,
+	workflow: 'land',
+	event: 'workflow_dispatch',
+	headBranch: 'b',
+	headSha: 's',
+	status,
+	actor: 'a',
+	createdAt: '',
+	updatedAt: '',
+});
 
 describe('cleanup and setup', () => {
 	it('[<50ms] reads the start of a run from its id and refuses other names', () => {
@@ -49,6 +77,7 @@ describe('cleanup and setup', () => {
 		branches.set('ns/rehearsal/r20261112-095900/y-integration', 's');
 		const swept = await sweepStaleRuns({
 			forge,
+			clock: stepClock(),
 			branchPrefix: 'ns/rehearsal/',
 			now: Date.parse('2026-11-12T10:00:00Z'),
 		});
@@ -114,5 +143,87 @@ describe('cleanup and setup', () => {
 				f.path.endsWith('rehearsal-token.yml'),
 			)?.content,
 		).toContain('BRANCH_PREFIX: ns/rehearsal/r1/');
+	});
+
+	it("[<100ms] sweeps a root of any age when told, as the workflow's last step does", async () => {
+		const branches = new Map<string, string>();
+		branches.set('ns/rehearsal/r20261112-095900/y-integration', 's');
+		const swept = await sweepStaleRuns({
+			forge: branchesForge(branches),
+			clock: stepClock(),
+			branchPrefix: 'ns/rehearsal/',
+			now: Date.parse('2026-11-12T10:00:00Z'),
+			olderThanMs: 0,
+		});
+		expect(swept).toEqual(['r20261112-095900']);
+		expect(branches.size).toBe(0);
+	});
+
+	it('[<100ms] cancels a queued land run and deletes the branch only after it is gone', async () => {
+		const branches = new Map([['ns/rehearsal/r1/s-integration', 's']]);
+		const order: string[] = [];
+		let queued = true;
+		const forge = fakePartial<IRehearsalForge>({
+			...branchesForge(branches),
+			runs: async () => (queued ? [runWith(9, 'queued')] : []),
+			cancelRun: async (id: number) => {
+				order.push(`cancel ${String(id)}`);
+				queued = false;
+			},
+			deleteBranch: async (name: string) => {
+				order.push('delete');
+				branches.delete(name);
+			},
+		});
+		const leftovers = await cleanRun({
+			forge,
+			clock: stepClock(),
+			branchPrefix: 'ns/rehearsal/',
+			runId: 'r1',
+		});
+		expect(order).toEqual(['cancel 9', 'delete']);
+		expect(leftovers).toEqual([]);
+	});
+
+	it('[<100ms] waits for a run in progress and never cancels it', async () => {
+		const branches = new Map([['ns/rehearsal/r1/s-integration', 's']]);
+		const clock = stepClock();
+		const started = clock.now();
+		let polls = 0;
+		const order: string[] = [];
+		const forge = fakePartial<IRehearsalForge>({
+			...branchesForge(branches),
+			runs: async () => (++polls < 3 ? [runWith(4, 'in_progress')] : []),
+			cancelRun: async () => void order.push('cancel'),
+			deleteBranch: async () => void order.push('delete'),
+		});
+		await cleanRun({
+			forge,
+			clock,
+			branchPrefix: 'ns/rehearsal/',
+			runId: 'r1',
+		});
+		expect(order).toEqual(['delete']);
+		expect(clock.now()).toBeGreaterThan(started);
+	});
+
+	it('[<100ms] stops waiting at the cap and says which run was still in progress', async () => {
+		const branches = new Map([['ns/rehearsal/r1/s-integration', 's']]);
+		const forge = fakePartial<IRehearsalForge>({
+			...branchesForge(branches),
+			runs: async () => [runWith(4, 'in_progress')],
+		});
+		const clock = stepClock();
+		const started = clock.now();
+		const leftovers = await cleanRun({
+			forge,
+			clock,
+			branchPrefix: 'ns/rehearsal/',
+			runId: 'r1',
+		});
+		expect(leftovers[0]).toContain('run 4 (land) still in progress');
+		expect(clock.now() - started).toBeLessThanOrEqual(
+			(REHEARSAL_AWAIT_CAP_SECONDS + 15) * 1000,
+		);
 	});
 });

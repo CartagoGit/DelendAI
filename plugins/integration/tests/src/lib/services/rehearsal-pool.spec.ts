@@ -98,6 +98,7 @@ describe('rehearse with scenarios at once', () => {
 			labels: async () => [],
 			pullEvents: async () => [],
 			runLog: async () => '',
+			cancelRun: async () => undefined,
 			deleteLabel: async () => undefined,
 			closePull: async () => undefined,
 		});

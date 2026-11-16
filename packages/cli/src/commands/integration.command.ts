@@ -25,6 +25,7 @@ import {
 	REHEARSAL_CATALOGUE,
 	rehearse,
 	renderReportTable,
+	sweepStaleRuns,
 	rehearsalReportPath,
 	scenariosForMode,
 	selectScenarios,
@@ -55,7 +56,7 @@ import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>]`;
+const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>] [--sweep]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const execFileAsync = promisify(execFile);
@@ -162,18 +163,38 @@ export const createIntegrationCommand = (
 		const realWorkflows =
 			mode === 'real' ? await readRealWorkflows(ctx.cwd) : undefined;
 		const branchPrefix = ownedRehearsalPrefixes(policy.branches)[0] ?? '';
+		const clock = {
+			now: () => Date.now(),
+			wait: (ms: number) =>
+				new Promise<void>((done) => setTimeout(done, ms)),
+		};
+		if (rest.includes('--sweep')) {
+			// The workflow's last step, run even when the job timed out: only one rehearsal runs at a time, so every root left is dead.
+			const swept = await sweepStaleRuns({
+				forge: createGithubRehearsalForge({
+					slug: repository,
+					run: runGh,
+					wait: clock.wait,
+				}),
+				clock,
+				branchPrefix,
+				now: clock.now(),
+				olderThanMs: 0,
+			});
+			return {
+				code: EXIT_CODE.OK,
+				text: `swept ${String(swept.length)} run(s) of leftovers${swept.map((id) => ` ${id}`).join('')}`,
+			};
+		}
 		try {
 			const baseCommit = await commitOf(ctx.cwd, scalarArg(rest, 'base'));
 			const report = await rehearse({
 				forge: createGithubRehearsalForge({
 					slug: repository,
 					run: runGh,
-					wait: (ms) => new Promise((done) => setTimeout(done, ms)),
+					wait: clock.wait,
 				}),
-				clock: {
-					now: () => Date.now(),
-					wait: (ms) => new Promise((done) => setTimeout(done, ms)),
-				},
+				clock,
 				setup: (runId) =>
 					createRehearsalSetup({
 						runId,

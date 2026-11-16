@@ -48,6 +48,7 @@ interface IRawEvent {
 const HTTP_OK = 200;
 const HTTP_NOT_FOUND = 404;
 const HTTP_UNPROCESSABLE = 422;
+const HTTP_CONFLICT = 409;
 /** A regular, non-executable file in a git tree. */
 const BLOB_FILE_MODE = 100644;
 
@@ -104,7 +105,11 @@ export const createGithubRehearsalForge = (input: {
 		const status = Number(
 			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
 		);
-		if (status === HTTP_NOT_FOUND || status === HTTP_UNPROCESSABLE)
+		if (
+			status === HTTP_NOT_FOUND ||
+			status === HTTP_UNPROCESSABLE ||
+			status === HTTP_CONFLICT
+		)
 			return { status, text: result.stdout };
 		return {
 			status: Number.isNaN(status) ? 0 : status,
@@ -355,6 +360,10 @@ export const createGithubRehearsalForge = (input: {
 						(page as { check_runs: IRawCheckRun[] }).check_runs,
 				)
 			).map(toCheckRun),
+		cancelRun: async (id) => {
+			// A run that ended meanwhile answers 409: there is nothing left to cancel.
+			await request('POST', `actions/runs/${String(id)}/cancel`);
+		},
 		runLog: async (id) => {
 			const result = await run([
 				'run',

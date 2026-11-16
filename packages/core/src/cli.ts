@@ -147,6 +147,7 @@ export {
 	pushDerived,
 } from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
+export { LandBranchGoneError } from './lib/integration/land/land-branch-gone.helper';
 export {
 	indentLines,
 	renderLandSignalWorkflow,

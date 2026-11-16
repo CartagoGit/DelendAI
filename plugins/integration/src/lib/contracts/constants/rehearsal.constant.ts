@@ -66,8 +66,11 @@ export const REHEARSAL_TOKEN_WORKFLOW = 'rehearsal-token.yml';
 export const REHEARSAL_TOKEN_PUSH_LABEL = 'token-push';
 export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
 
-/** Leftovers of a run older than this are swept by the next run's start. */
-export const REHEARSAL_STALE_AFTER_MS = 2 * 60 * 60 * 1000;
+/**
+ * Leftovers of a run older than the job timeout are swept by the next run's
+ * start: a run that old was ended by the timeout, so its cleanup never ran.
+ */
+export const REHEARSAL_STALE_AFTER_MS = 45 * 60_000;
 
 /** How many scenarios play at once when no option says: each has its own integration branch. */
 export const REHEARSAL_DEFAULT_CONCURRENCY = 4;
@@ -96,6 +99,9 @@ export const REHEARSAL_STEP_OVERHEAD_SECONDS = 10;
 
 /** The job timeout of the rehearsal workflow, in minutes; the workflow file carries the same number. */
 export const REHEARSAL_JOB_TIMEOUT_MINUTES = 45;
+
+/** The stale age is the job timeout: a root older than it belongs to a run that cannot be alive. */
+export const REHEARSAL_JOB_TIMEOUT_MS = REHEARSAL_JOB_TIMEOUT_MINUTES * 60_000;
 
 /** Minutes of the job timeout the worst case of every cap must leave unused. */
 export const REHEARSAL_JOB_MARGIN_MINUTES = 5;

@@ -115,6 +115,7 @@ const memoryForge = () => {
 		pullEvents: async () => [],
 		runs: async () => runs,
 		runLog: async () => '',
+		cancelRun: async () => undefined,
 		checkRuns: async () => [],
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),
