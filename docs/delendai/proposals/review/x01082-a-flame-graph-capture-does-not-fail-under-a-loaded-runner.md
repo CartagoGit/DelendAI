@@ -2,14 +2,14 @@
 id: x01082
 title: "A flame-graph capture does not fail under a loaded runner"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: cff04a5b-48a1-4d8d-96bb-16e16c31d37d
-last-correlation-id: cff04a5b-48a1-4d8d-96bb-16e16c31d37d
-last-transition-from: ready
-last-transition-at: 2026-11-16T09:01:22.355Z
+last-transition-id: c8accf53-0508-4f14-9c36-ccfa88121588
+last-correlation-id: c8accf53-0508-4f14-9c36-ccfa88121588
+last-transition-from: in-progress
+last-transition-at: 2026-11-16T09:15:53.042Z
 ---
 
 # x01082 — A flame-graph capture does not fail under a loaded runner
@@ -38,7 +38,7 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
 - global_gate: none
 
 ### S1 — Injected exec seam, deadline reason, real-process spec in the e2e tier
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/perf/src/lib/profile/real-perf-profile-deps.ts`, `plugins/perf/src/lib/contracts/interfaces/perf.interface.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps-deadline.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -47,6 +47,8 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
   - "real-perf-profile-deps-deadline.spec.ts proves with an injected exec that a timeout gives ok false, timedOut true and a deadline detail, and that a successful run keeps the .cpuprofile it recorded, with no process and no timer."
   - "The real-process capture is real-perf-profile-deps.e2e.spec.ts, in the e2e tier whose budget stretches with the runner load, and asserts on the whole result so a red run shows why."
 - shipped-in: `7891a84831a5`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
