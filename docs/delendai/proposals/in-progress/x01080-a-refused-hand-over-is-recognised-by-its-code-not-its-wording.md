@@ -2,10 +2,14 @@
 id: x01080
 title: "A refused hand-over is recognised by its code, not its wording"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
+last-transition-id: 13b5137f-f69a-4965-b2e2-8df662a4a2fe
+last-correlation-id: 13b5137f-f69a-4965-b2e2-8df662a4a2fe
+last-transition-from: ready
+last-transition-at: 2026-11-16T08:48:54.732Z
 ---
 
 # x01080 — A refused hand-over is recognised by its code, not its wording
