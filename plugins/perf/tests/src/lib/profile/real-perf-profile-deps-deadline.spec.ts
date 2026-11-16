@@ -79,4 +79,121 @@ describe('a flame-graph capture with an injected exec', () => {
 			);
 		});
 	});
+
+	it('[<200ms] reports a failing run by its output when no deadline passed', async () => {
+		await withRoot(async (root) => {
+			const deps = realPerfProfileDeps(root, {
+				pluginCacheDir: join(root, 'cache'),
+				exec: async () => ({
+					code: 1,
+					stdout: '',
+					stderr: 'boom',
+					timedOut: false,
+				}),
+			});
+			expect(await deps.runProfiler('node-prof', input)).toMatchObject({
+				ok: false,
+				code: 1,
+				timedOut: false,
+				detail: 'boom',
+			});
+		});
+	});
+
+	it('[<200ms] keeps the output of a run killed at its deadline', async () => {
+		await withRoot(async (root) => {
+			const deps = realPerfProfileDeps(root, {
+				pluginCacheDir: join(root, 'cache'),
+				exec: async () => ({
+					code: -1,
+					stdout: 'partial',
+					stderr: '',
+					timedOut: true,
+				}),
+			});
+			expect(await deps.runProfiler('node-prof', input)).toMatchObject({
+				ok: false,
+				timedOut: true,
+				detail: 'The profiling run passed its 20000 ms deadline. partial',
+			});
+		});
+	});
+
+	it('[<200ms] says so when the run left no isolate log', async () => {
+		await withRoot(async (root) => {
+			const deps = realPerfProfileDeps(root, {
+				pluginCacheDir: join(root, 'cache'),
+				exec: async () => ({
+					code: 0,
+					stdout: '',
+					stderr: '',
+					timedOut: false,
+				}),
+			});
+			expect(
+				await deps.runProfiler('node-prof', {
+					...input,
+					format: 'hotspots',
+				}),
+			).toMatchObject({
+				ok: false,
+				detail: 'Node CPU profiler did not emit an isolate log.',
+			});
+		});
+	});
+
+	it('[<200ms] names the deadline when the log processing is killed', async () => {
+		await withRoot(async (root) => {
+			const exec: IArgvExec = async (argv, options) => {
+				if (argv.includes('--prof-process')) {
+					return { code: -1, stdout: '', stderr: '', timedOut: true };
+				}
+				await writeFile(
+					join(options?.cwd ?? '', 'isolate-0x1-v8.log'),
+					'log',
+				);
+				return { code: 0, stdout: '', stderr: '', timedOut: false };
+			};
+			const deps = realPerfProfileDeps(root, {
+				pluginCacheDir: join(root, 'cache'),
+				exec,
+			});
+			expect(
+				await deps.runProfiler('node-prof', {
+					...input,
+					format: 'hotspots',
+				}),
+			).toMatchObject({
+				ok: false,
+				timedOut: true,
+				detail: 'The log processing passed its 20000 ms deadline.',
+			});
+		});
+	});
+
+	it('[<200ms] returns no flame graph when the run recorded no CPU profile', async () => {
+		await withRoot(async (root) => {
+			const exec: IArgvExec = async (argv, options) => {
+				if (!argv.includes('--prof-process')) {
+					await writeFile(
+						join(options?.cwd ?? '', 'isolate-0x1-v8.log'),
+						'log',
+					);
+				}
+				return {
+					code: 0,
+					stdout: 'ticks',
+					stderr: '',
+					timedOut: false,
+				};
+			};
+			const deps = realPerfProfileDeps(root, {
+				pluginCacheDir: join(root, 'cache'),
+				exec,
+			});
+			const run = await deps.runProfiler('node-prof', input);
+			expect(run).toMatchObject({ ok: true, report: 'ticks' });
+			expect(run.flamegraph).toBeUndefined();
+		});
+	});
 });
