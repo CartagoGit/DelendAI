@@ -20,6 +20,7 @@ import {
 } from '../../services/lifecycle-outcome';
 import type { IProposalTransitionArgs } from '../../contracts/proposal-transition-input.contract';
 import type { IProposalTransitionSourceStatus } from '../../contracts/interfaces/proposal-transition-tool.interface';
+import { ALREADY_IN_REVIEW_CODE } from '../../contracts/constants/transition-refusal-code.constant';
 import { KNOWN_KINDS } from '../../contracts/constants/proposal-transition-schema.constant';
 
 export const isKnownStatus = (value: string): value is IProposalStatus =>
@@ -143,10 +144,16 @@ export const validateTransition = (
 	// Surface nextHops as a machine-readable field so agents do
 	// not have to re-parse the prose. toolError only takes reason/nextAction,
 	// so we build the envelope manually (same shape + structuredContent).
+	const refusalCode =
+		from === 'review' && to === 'review'
+			? { code: ALREADY_IN_REVIEW_CODE }
+			: {};
 	const envelope = {
 		ok: false as const,
 		...lifecycle,
+		...refusalCode,
 		error: {
+			...refusalCode,
 			reason: lifecycle.reason,
 			nextAction,
 			nextHops,

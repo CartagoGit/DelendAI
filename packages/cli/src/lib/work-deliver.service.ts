@@ -66,6 +66,7 @@ export const unitFlagsOf = (
 	parse: (ref: string) =>
 		| {
 				readonly proposal: string;
+				readonly kind?: string | undefined;
 				readonly slice: string;
 				readonly generation: number;
 				readonly topic?: string | undefined;
@@ -77,6 +78,7 @@ export const unitFlagsOf = (
 	return unit === undefined || unit.proposal !== proposal
 		? []
 		: [
+				...(unit.kind === undefined ? [] : [`--kind=${unit.kind}`]),
 				`--slice=${unit.slice}`,
 				`--generation=${String(unit.generation)}`,
 				...(unit.topic === undefined ? [] : [`--topic=${unit.topic}`]),
@@ -88,8 +90,26 @@ const alreadyPast = (reason: string, to: string): boolean =>
 	reason.includes('illegal transition') &&
 	!reason.includes(`"ready" → "${to}"`);
 
+/**
+ * A proposal that already stands in review refuses the transition to
+ * review. That step is also what publishes the unit, so a delivery that
+ * only logged the refusal left the pull request on its old head.
+ */
+const alreadyInReview = (answer: unknown): boolean =>
+	codeOf(answer) === ALREADY_IN_REVIEW_CODE;
+
 /** The tool's code for a proposal whose other slices have no delivering commit. */
 const UNDELIVERED_CODE = 'undelivered-slices';
+
+/** The tool's code for a transition to review of a proposal already in review. */
+const ALREADY_IN_REVIEW_CODE = 'already-in-review';
+
+/** The machine code of a refusal, at the top level or in its `error`. */
+const codeOf = (answer: unknown): string | undefined => {
+	if (!isRecord(answer) || answer.ok !== false) return undefined;
+	const detail = isRecord(answer.error) ? answer.error : answer;
+	return textOf(detail.code) ?? textOf(answer.code);
+};
 
 /**
  * The slices a refusal names as undelivered: the tool writes them first,
@@ -108,6 +128,78 @@ export const undeliveredSlicesOf = (
 	return listed?.split(', ');
 };
 
+/**
+ * Whether a refusal only says other slices are undelivered, with the slice
+ * this unit was entered for delivered: the proposal is not for review
+ * yet, and this unit publishes alone.
+ */
+const othersRemaining = (
+	answer: unknown,
+	slice: string,
+): readonly string[] | undefined => {
+	const undelivered = undeliveredSlicesOf(answer);
+	return undelivered !== undefined &&
+		slice !== 'all' &&
+		!undelivered.includes(slice)
+		? undelivered
+		: undefined;
+};
+
+/** The number a pull request URL ends in (`…/pull/12`). */
+const NUMBER_OF_URL = /\/pull\/(?<number>\d+)\/?$/u;
+
+/**
+ * Where the pull request of a delivery is: its number and URL when the
+ * publication answered with one, and otherwise that the publication was
+ * pushed and the pull request is pending, with the branch. A delivery
+ * that hands the proposal to review publishes apart from this command,
+ * so there it is pending; agents could not find their pull request.
+ */
+export const pullRequestOf = (
+	publication: unknown,
+	branch: unknown,
+	slice = 'all',
+): Record<string, unknown> => {
+	const answer = pullRequestAnswer(publication, branch);
+	// A small proposal is published whole, by the policy's publication rule
+	// (`integration.publication`), so its branch says `all` while the unit
+	// is its slice: say so rather than let the name read as a lost slice.
+	const whole =
+		slice !== 'all' &&
+		typeof answer.branch === 'string' &&
+		/-all-g\d+(?:\/|$)/u.test(answer.branch)
+			? {
+					slice,
+					sliceNote: `the proposal is published whole (policy integration.publication), so the branch says all; this unit's slice is ${slice}`,
+				}
+			: {};
+	return { ...answer, ...whole };
+};
+
+const pullRequestAnswer = (
+	publication: unknown,
+	branch: unknown,
+): Record<string, unknown> => {
+	const data = isRecord(publication) ? publication : {};
+	const request = isRecord(data.pullRequest) ? data.pullRequest : {};
+	const url = textOf(request.url);
+	if (url !== undefined) {
+		const number = NUMBER_OF_URL.exec(url)?.groups?.number;
+		return {
+			url,
+			...(number === undefined ? {} : { number: Number(number) }),
+		};
+	}
+	const where =
+		textOf(branch) ??
+		textOf(isRecord(data.publication) ? data.publication.ref : undefined);
+	return {
+		pending: true,
+		...(where === undefined ? {} : { branch: where }),
+		message: `publication pushed, pull request pending${where === undefined ? '' : `: ${where}`}`,
+	};
+};
+
 export const deliverUnit = async (
 	ports: IWorkDeliverPorts,
 ): Promise<ICliCommandResult> => {
@@ -121,20 +213,35 @@ export const deliverUnit = async (
 	if (started !== undefined && !alreadyPast(started, 'in-progress')) {
 		return { code: EXIT_CODE.VALIDATION, error: started };
 	}
+	// What the hand-over would refuse is refused now, in seconds, not after
+	// the proof: the same checks, run by the tool that makes the transition.
+	const expected = await ports.preflight(checkout);
+	const unmet = refusalOf(expected);
+	let remaining = othersRemaining(expected, ports.slice);
+	if (unmet !== undefined && remaining === undefined) {
+		return { code: EXIT_CODE.VALIDATION, error: unmet };
+	}
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
-	const answer = await ports.transition('review', checkout);
-	const handed = refusalOf(answer);
-	// A slice proved and delivered while the proposal's others are not:
-	// the proposal is not for review yet, and a refusal after the proof
-	// would waste it. Only this slice's work is published; the slice that
-	// completes the proposal hands it over.
-	const remaining = undeliveredSlicesOf(answer);
-	if (
-		remaining !== undefined &&
-		ports.slice !== 'all' &&
-		!remaining.includes(ports.slice)
-	) {
+	// `--only` runs gates of the proof and proves nothing: not a delivery.
+	if (isRecord(proved.data) && proved.data.partial === true) {
+		return {
+			code: EXIT_CODE.USAGE,
+			error: 'work deliver proves the whole unit: --only is for `work prove`, which never proves the unit.',
+		};
+	}
+	let answer: unknown;
+	let handed: string | undefined;
+	if (remaining === undefined) {
+		answer = await ports.transition('review', checkout);
+		handed = refusalOf(answer);
+		// Another slice landed or went missing since the preflight.
+		remaining = othersRemaining(answer, ports.slice);
+	}
+	// A slice proved and delivered while the proposal's others are not: the
+	// proposal is not for review yet. Only this slice's work is published;
+	// the slice that completes the proposal hands it over.
+	if (remaining !== undefined) {
 		const published = await ports.publish();
 		return published.code === 0
 			? {
@@ -143,6 +250,31 @@ export const deliverUnit = async (
 						delivered: 'slice',
 						remaining,
 						publication: published.data,
+						pullRequest: pullRequestOf(
+							published.data,
+							unit.publication,
+						),
+						proved: proved.data,
+					},
+				}
+			: published;
+	}
+	// Nothing to transition: the unit's new tip still has to reach its
+	// publication, so it is published here and the result says so.
+	if (alreadyInReview(answer)) {
+		const published = await ports.publish();
+		return published.code === 0
+			? {
+					code: EXIT_CODE.OK,
+					data: {
+						delivered: 'review',
+						republished: true,
+						publication: published.data,
+						pullRequest: pullRequestOf(
+							published.data,
+							unit.publication,
+							ports.slice,
+						),
 						proved: proved.data,
 					},
 				}
@@ -154,6 +286,11 @@ export const deliverUnit = async (
 				data: {
 					delivered: 'review',
 					publication: unit.publication,
+					pullRequest: pullRequestOf(
+						undefined,
+						unit.publication,
+						ports.slice,
+					),
 					proved: proved.data,
 				},
 			}

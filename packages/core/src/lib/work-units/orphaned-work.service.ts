@@ -33,7 +33,11 @@ import {
 	ABANDONED_AFTER_LEASE_WINDOWS,
 	SECONDS_PER_MINUTE,
 } from './unit-lease.constant';
-import type { IUnitLease, IUnitStandingEntry } from './unit-lease.interface';
+import type {
+	IMachineLife,
+	IUnitLease,
+	IUnitStandingEntry,
+} from './unit-lease.interface';
 import { listUnitLeases } from './unit-lease.store';
 import { gitCommonDirOf } from './unit-lease.service';
 import { ownActivityAt } from './unit-activity.helper';
@@ -180,6 +184,8 @@ export const publicationPresence = async (input: {
 	 */
 	readonly tips?: ReadonlyMap<string, string> | undefined;
 	readonly now?: number | undefined;
+	/** How the machine's processes are read; the real scan by default. */
+	readonly readMachine?: (() => Promise<IMachineLife>) | undefined;
 }): Promise<
 	ReadonlyMap<string, IAuthorPresence & { readonly agent: string }>
 > => {
@@ -197,7 +203,12 @@ export const publicationPresence = async (input: {
 		policy.coordination.leaseTtlMinutes,
 	);
 	// An author still on the unit is no orphan, whatever its lease says.
-	const lifeOf = unitLifeReader({ root, policy, now });
+	const lifeOf = unitLifeReader({
+		root,
+		policy,
+		now,
+		readMachine: input.readMachine,
+	});
 	const presence = new Map<
 		string,
 		IAuthorPresence & { readonly agent: string }

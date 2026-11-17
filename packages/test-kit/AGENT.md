@@ -19,8 +19,8 @@
 - stubAbortSignalTimeout
 - skipLockPauses
 - createGitRepoTemplate
-- createInMemoryGit
-- clearAmbientEnvironment
+- createSharedGitFixture
+- createSharedGitRepoTemplate
 
 ## Depends on
 

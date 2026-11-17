@@ -75,6 +75,14 @@ for them one way, once:
 - Do not start a second `prove`, `deliver` or `publish` of a unit that is already
   waiting; it queues a second proof.
 
+## Running one gate of the proof
+
+A failed proof ends each failure with `delendai work prove --only=<gate>`. Run that from the
+unit's worktree to repeat just that gate, with the inputs, commands and order the proof uses
+(`--only=a,b` for several); an unknown name exits 2 and lists the valid ones. It takes the
+machine's compute slot only for the test and coverage gates. It never proves the unit: the
+last line says "partial: the unit is not proved", and `work deliver` still runs the whole proof.
+
 ## Checkpoint advisories
 
 When any delendai tool result carries `checkpointAdvisory` in the result

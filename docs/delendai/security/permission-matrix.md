@@ -62,10 +62,11 @@
 | git | public | changelog | git-read |
 | git | public | commit | git-write |
 | git | public | push | git-write |
-| github | public | * | filesystem-write, network, env-read |
+| github | public | * | filesystem-write, network, env-read, process |
 | gitlab | public | * | filesystem-write, network, env-read |
 | i18n | public | * | filesystem-read |
 | impact-analysis | public | * | filesystem-read |
+| integration | public | * | filesystem-read, process, env-read |
 | issues | public | issues_list | forge-read, network |
 | issues | public | issues_fetch | forge-read, network |
 | issues | public | issues_analyze | forge-read |

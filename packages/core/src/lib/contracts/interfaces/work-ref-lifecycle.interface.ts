@@ -12,6 +12,8 @@ export interface IWorkRefFacts {
 	readonly landed: boolean;
 	/** The forge has the ref. */
 	readonly onForge: boolean;
+	/** The forge holds `refs/delendai/retired/<the unit's path>`: the forge retired this unit. */
+	readonly retiredOnForge: boolean;
 	/** Its proposal is in progress at the ref's own tip. */
 	readonly openAtTip: boolean;
 	/** Its proposal is in progress on the integration branch. */
