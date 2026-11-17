@@ -2,14 +2,14 @@
 id: x00996
 title: "A file a proposal shipped still names what it shipped after a later change deletes it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 8cdaceec-9a5f-448c-9008-720a5488e63e
-last-correlation-id: 8cdaceec-9a5f-448c-9008-720a5488e63e
-last-transition-from: ready
-last-transition-at: 2026-11-17T07:37:43.890Z
+last-transition-id: bac9b344-6464-45fa-8724-55badc6d4ed8
+last-correlation-id: bac9b344-6464-45fa-8724-55badc6d4ed8
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T07:39:17.160Z
 ---
 
 # x00996 — A file a proposal shipped still names what it shipped after a later change deletes it
@@ -31,15 +31,14 @@ On 2026-10-29 #1538 (c00534, which removes the unused `roadmap-sqlite` package) 
 - global_gate: type
 
 ### S1 — Files are judged at the commit that shipped them
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`, `tools/scripts/lint/proposal-files-exist.script.spec.ts`, `tools/scripts/lint/proposal-files-exist.baseline.json`
 - **Gate**: type
 - acceptance:
   - "A missing `Files` path passes when `git cat-file -e <sha>:<path>` succeeds for one of the proposal's `shipped-in` commits (frontmatter or slice lines); a path no shipped commit held still fails (proposal-files-exist.script.spec.ts); the baseline shrinks from 421 to 367."
 - shipped-in: `39b6241b0eef`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 39b6241b0eef is stale: slice files changed afterward (e.g. a96f3ca43, 0e3efa4d6, 3bfa1e39c). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and baseline evidence.
 
 ## acceptance
