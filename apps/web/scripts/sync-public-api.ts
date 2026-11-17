@@ -15,6 +15,12 @@
  *
  *       apps/web/public/api  ->  ../../build/docs-api
  *
+ * x00980 S3 (G50, D33): the link is not enough. After linking, the API docs
+ * must exist (`index.html`) and be at least as new as the newest package
+ * source. A missing or older copy is regenerated with `bun run docs:api`;
+ * if it is still missing or older afterwards the script exits non-zero, so
+ * dev, preview and build never serve an empty or stale /api.
+ *
  * Idempotent. Safe to run before every `astro dev` / `astro build`.
  *
  * All path math is delegated to `tools/scripts/lib/monorepo-paths.ts`,
@@ -22,9 +28,12 @@
  * NOT hard-code paths here — if you need a new path, add a helper to
  * that module.
  */
+import { spawnSync } from 'node:child_process';
 import {
 	lstatSync,
 	mkdirSync,
+	readdirSync,
+	statSync,
 	readlinkSync,
 	renameSync,
 	symlinkSync,
@@ -82,6 +91,72 @@ const isSymlinkToTarget = (p: string, want: string): boolean => {
 	}
 };
 
+/** Newest mtime (ms) of any .ts file under `dir`; 0 when there is none. */
+export const newestSourceMtime = (dir: string): number => {
+	let newest = 0;
+	for (const e of readdirSync(dir, { withFileTypes: true })) {
+		if (e.name === 'node_modules' || e.name === 'dist') continue;
+		const p = join(dir, e.name);
+		const t = e.isDirectory()
+			? newestSourceMtime(p)
+			: e.name.endsWith('.ts')
+				? statSync(p).mtimeMs
+				: 0;
+		if (t > newest) newest = t;
+	}
+	return newest;
+};
+
+/** Why the API docs cannot be served, or null when they are present and current. */
+export const apiDocsProblem = (
+	indexMtimeMs: number | null,
+	sourceMtimeMs: number,
+): string | null => {
+	if (indexMtimeMs === null) return 'API docs are missing (no index.html)';
+	if (indexMtimeMs < sourceMtimeMs) return 'API docs are older than the code';
+	return null;
+};
+
+const packagesSrcNewest = (): number => {
+	const pkgs = join(repoRoot(), 'packages');
+	return Math.max(
+		0,
+		...readdirSync(pkgs).map((n) => {
+			try {
+				return newestSourceMtime(join(pkgs, n, 'src'));
+			} catch {
+				return 0;
+			}
+		}),
+	);
+};
+
+const indexMtime = (): number | null => {
+	try {
+		return statSync(join(TARGET_ABS, 'index.html')).mtimeMs;
+	} catch {
+		return null;
+	}
+};
+
+const ensureFreshApiDocs = (): void => {
+	const src = packagesSrcNewest();
+	let problem = apiDocsProblem(indexMtime(), src);
+	if (problem === null) return;
+	console.warn(`! ${problem}; running \`bun run docs:api\``);
+	spawnSync('bun', ['run', 'docs:api'], {
+		cwd: repoRoot(),
+		stdio: 'inherit',
+	});
+	problem = apiDocsProblem(indexMtime(), src);
+	if (problem !== null) {
+		console.error(
+			`✗ ${problem} even after \`bun run docs:api\` (${TARGET_ABS})`,
+		);
+		process.exit(1);
+	}
+};
+
 const main = (): void => {
 	mkdirSync(dirname(LINK), { recursive: true });
 	mkdirSync(TARGET_ABS, { recursive: true });
@@ -114,4 +189,7 @@ const main = (): void => {
 	console.log(`✓ ${LINK} -> ${relTarget}`);
 };
 
-main();
+if (import.meta.main) {
+	main();
+	ensureFreshApiDocs();
+}
