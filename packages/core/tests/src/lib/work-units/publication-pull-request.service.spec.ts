@@ -508,6 +508,7 @@ describe('openUnitPullRequest (x01051)', () => {
 			...input,
 			args: [],
 			urgent: 'integration is red',
+			ports: portsWith({}),
 		});
 		expect(opened?.status).toBe('skipped');
 	});

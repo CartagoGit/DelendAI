@@ -239,6 +239,8 @@ export const openUnitPullRequest = async (input: {
 	readonly integrationBase: string;
 	readonly fallbackTitle: string;
 	readonly urgent?: string | undefined;
+	/** What git and the forges answer; the real ones when not given. */
+	readonly ports?: IPullRequestPorts | undefined;
 }): Promise<IPublicationPullRequest | undefined> => {
 	if (
 		!landsByPullRequest(input.policy) ||
@@ -254,6 +256,6 @@ export const openUnitPullRequest = async (input: {
 		integrationBase: input.integrationBase,
 		fallbackTitle: input.fallbackTitle,
 		urgent: input.urgent,
-		ports: await pullRequestPorts(input.root),
+		ports: input.ports ?? (await pullRequestPorts(input.root)),
 	});
 };
