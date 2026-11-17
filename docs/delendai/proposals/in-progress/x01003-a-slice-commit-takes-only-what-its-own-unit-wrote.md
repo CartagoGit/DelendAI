@@ -2,14 +2,14 @@
 id: x01003
 title: "A slice commit takes only what its own unit wrote"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 6c809bc2-5058-4e37-9fe3-b9c378cf94ae
-last-correlation-id: 6c809bc2-5058-4e37-9fe3-b9c378cf94ae
-last-transition-from: review
-last-transition-at: 2026-11-04T22:21:09.691Z
+last-transition-id: 4c2dc626-69ed-4625-9e3b-9c14ae278803
+last-correlation-id: 4c2dc626-69ed-4625-9e3b-9c14ae278803
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:47:57.610Z
 ---
 
 # x01003 — A slice commit takes only what its own unit wrote
