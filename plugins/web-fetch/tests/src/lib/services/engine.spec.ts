@@ -55,7 +55,7 @@ const streamResponse = (
 const encode = (s: string): Uint8Array => new TextEncoder().encode(s);
 
 describe('webFetch streaming byte cap (x00097 S4)', () => {
-	it('caps in real octets and cancels the reader mid-stream', async () => {
+	it('[<5ms] caps in real octets and cancels the reader mid-stream', async () => {
 		let cancelled = false;
 		let pulls = 0;
 		// An endless body: only an in-flight cancel can terminate the fetch.
@@ -90,7 +90,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(pulls).toBeLessThanOrEqual(8);
 	});
 
-	it('decodes multi-byte UTF-8 split across chunk boundaries', async () => {
+	it('[<5ms] decodes multi-byte UTF-8 split across chunk boundaries', async () => {
 		// '€' is E2 82 AC — split it across two chunks.
 		const euro = encode('€');
 		const fetcher: IFetchLike = async () =>
@@ -112,7 +112,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(result.truncated).toBe(false);
 	});
 
-	it('a cap that lands inside a multi-byte char yields no mojibake', async () => {
+	it('[<5ms] a cap that lands inside a multi-byte char yields no mojibake', async () => {
 		// 'aa' + '€': cap at 3 bytes cuts the euro after its first byte.
 		const fetcher: IFetchLike = async () => streamResponse([encode('aa€')]);
 
@@ -128,7 +128,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(result.body).toBe('aa�');
 	});
 
-	it('counts octets, not UTF-16 units (the audited contract bug)', async () => {
+	it('[<5ms] counts octets, not UTF-16 units (the audited contract bug)', async () => {
 		// 10 × '€' = 10 UTF-16 units but 30 bytes. A 30-byte cap must NOT
 		// truncate; the old length-based check would have sliced at 30
 		// "characters" but flagged nothing — and a 29-byte cap must.
@@ -151,7 +151,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(capped.body).toBe(`${'€'.repeat(9)}�`);
 	});
 
-	it('body-less fetchers (test doubles) fall back to text(), still byte-capped', async () => {
+	it('[<5ms] body-less fetchers (test doubles) fall back to text(), still byte-capped', async () => {
 		const fetcher: IFetchLike = async () => ({
 			ok: true,
 			status: 200,
@@ -170,7 +170,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(result.body).toBe('€€');
 	});
 
-	it('the timeout covers a trickling body, not just the headers', async () => {
+	it('[<100ms] the timeout covers a trickling body, not just the headers', async () => {
 		// Headers arrive instantly; the body never does. The engine must
 		// resolve with a timeout instead of hanging past the deadline.
 		let ctl: ReadableStreamDefaultController<Uint8Array> | undefined;
@@ -210,7 +210,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 });
 
 describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
-	it('sanitizeBounds falls back to defaults for non-positive / non-finite input', () => {
+	it('[<5ms] sanitizeBounds falls back to defaults for non-positive / non-finite input', () => {
 		// timeoutMs:0 previously made setTimeout(abort, 0) fire and every
 		// fetch time out; negative/NaN/Infinity are equally nonsensical.
 		expect(sanitizeBounds({ url: 'x', allowList: [] })).toEqual({
@@ -238,7 +238,7 @@ describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
 		).toEqual({ maxBytes: 50 * 1024, timeoutMs: 8000, maxRedirects: 5 });
 	});
 
-	it('sanitizeBounds honours valid small values and clamps to ceilings', () => {
+	it('[<5ms] sanitizeBounds honours valid small values and clamps to ceilings', () => {
 		expect(
 			sanitizeBounds({
 				url: 'x',
@@ -261,7 +261,7 @@ describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
 		expect(huge.maxRedirects).toBe(20);
 	});
 
-	it('maxBytes:0 no longer empties the body — it uses the safe default', async () => {
+	it('[<5ms] maxBytes:0 no longer empties the body — it uses the safe default', async () => {
 		const fetcher: IFetchLike = async () =>
 			streamResponse([encode('hello world')]);
 		const result = await webFetch(
@@ -279,7 +279,7 @@ describe('webFetch numeric bounds sanitization (a00065 S6)', () => {
 });
 
 describe('webFetch allow-list port enforcement (x00233)', () => {
-	it('rejects a non-default port when only the host is allow-listed', async () => {
+	it('[<5ms] rejects a non-default port when only the host is allow-listed', async () => {
 		const result = await webFetch(
 			{
 				url: 'http://example.com:6379/data',
@@ -295,7 +295,7 @@ describe('webFetch allow-list port enforcement (x00233)', () => {
 		});
 	});
 
-	it('accepts the default web ports when the allow-list names only the host', async () => {
+	it('[<5ms] accepts the default web ports when the allow-list names only the host', async () => {
 		const result = await webFetch(
 			{
 				url: 'https://example.com/data',
@@ -307,7 +307,7 @@ describe('webFetch allow-list port enforcement (x00233)', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('accepts an explicit host:port allow-list entry', async () => {
+	it('[<5ms] accepts an explicit host:port allow-list entry', async () => {
 		const result = await webFetch(
 			{
 				url: 'http://example.com:6379/data',
@@ -319,7 +319,7 @@ describe('webFetch allow-list port enforcement (x00233)', () => {
 		expect(result.ok).toBe(true);
 	});
 
-	it('keeps wildcard support, including wildcard + explicit port entries', async () => {
+	it('[<5ms] keeps wildcard support, including wildcard + explicit port entries', async () => {
 		const wildcard = await webFetch(
 			{
 				url: 'https://docs.example.com/data',
