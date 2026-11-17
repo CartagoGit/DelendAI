@@ -36,6 +36,10 @@ import {
 	answerCommittingWrites,
 	toolCommitSubject,
 } from '../lib/work-deliver-commit.service';
+import type {
+	IDeliverRun,
+	IWorkDeliverPorts,
+} from '../contracts/interfaces/work-deliver.interface';
 import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
 import {
 	chooseLiveUnit,
@@ -67,6 +71,57 @@ export const withSlicesView = (
 
 /** The tool whose write a delivery commits. */
 const TRANSITION_TOOL = 'delendai_proposals_proposal_transition';
+
+/** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
+export const deliverPortsOf = (
+	ctx: ICliCommandContext,
+	run: IDeliverRun,
+): IWorkDeliverPorts => {
+	const { id, reason, agent, urgent, unitFlags } = run;
+	return {
+		slice: scalarArg(unitFlags, 'slice') ?? 'all',
+		publish: () => runWorkUnit(['publish', ...unitFlags], ctx),
+		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
+		preflight: (checkout) =>
+			answerOf(
+				request(ctx, TRANSITION_TOOL, {
+					id,
+					to: 'review',
+					reason,
+					preflight: true,
+					...(agent === undefined ? {} : { agent }),
+					checkout: checkout ?? ctx.cwd,
+				}),
+			),
+		prove: () => runWorkUnit(['prove', ...unitFlags], ctx),
+		transition: async (to, checkout) => {
+			// The transition to review publishes the unit, apart from this
+			// command: the reason is noted for it.
+			if (to === 'review' && urgent !== undefined) {
+				await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
+			}
+			const where = checkout ?? ctx.cwd;
+			const git: IGitInCheckout = (gitArgs) =>
+				runGitCommand(where, gitArgs);
+			// The tool's write is committed by the tool's flow, before the
+			// proof reads the tree or anything else commits it.
+			return answerCommittingWrites(
+				git,
+				toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
+				() =>
+					answerOf(
+						request(ctx, TRANSITION_TOOL, {
+							id,
+							to,
+							reason,
+							...(agent === undefined ? {} : { agent }),
+							checkout: where,
+						}),
+					),
+			);
+		},
+	};
+};
 
 /** The flag that makes `work enter` print the worktree's path and nothing else. */
 const PRINT_PATH_FLAG = '--print-path';
@@ -219,51 +274,15 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
-			return deliverUnit({
-				slice: scalarArg(withSlice, 'slice') ?? 'all',
-				publish: () => runWorkUnit(['publish', ...withSlice], ctx),
-				locate: () =>
-					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
-				preflight: (checkout) =>
-					answerOf(
-						request(ctx, TRANSITION_TOOL, {
-							id,
-							to: 'review',
-							reason,
-							preflight: true,
-							...(agent === undefined ? {} : { agent }),
-							checkout: checkout ?? ctx.cwd,
-						}),
-					),
-				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
-				transition: async (to, checkout) => {
-					// The transition to review publishes the unit, apart
-					// from this command: the reason is noted for it.
-					const urgent = scalarArg(unit, 'urgent');
-					if (to === 'review' && urgent !== undefined) {
-						await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
-					}
-					const where = checkout ?? ctx.cwd;
-					const git: IGitInCheckout = (gitArgs) =>
-						runGitCommand(where, gitArgs);
-					// The tool's write is committed by the tool's flow, before
-					// the proof reads the tree or anything else commits it.
-					return answerCommittingWrites(
-						git,
-						toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
-						() =>
-							answerOf(
-								request(ctx, TRANSITION_TOOL, {
-									id,
-									to,
-									reason,
-									...(agent === undefined ? {} : { agent }),
-									checkout: where,
-								}),
-							),
-					);
-				},
-			});
+			return deliverUnit(
+				deliverPortsOf(ctx, {
+					id,
+					reason,
+					agent,
+					urgent: scalarArg(unit, 'urgent'),
+					unitFlags: withSlice,
+				}),
+			);
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {
 			return printPathOnly(
