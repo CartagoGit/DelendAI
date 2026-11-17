@@ -2,10 +2,14 @@
 id: f00800
 title: "the VS Code extension shows delendai's live state"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: extension
 date: 2026-11-01
+last-transition-id: ab15bb93-1b3b-4d10-a3e6-80099b789b22
+last-correlation-id: ab15bb93-1b3b-4d10-a3e6-80099b789b22
+last-transition-from: ready
+last-transition-at: 2026-11-17T10:24:39.308Z
 ---
 
 # f00800 — the VS Code extension shows delendai's live state
