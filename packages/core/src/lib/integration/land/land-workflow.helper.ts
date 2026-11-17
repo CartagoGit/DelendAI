@@ -9,7 +9,8 @@
  * release branch, and the upkeep on its schedule. It acts as the project's
  * identity (a GitHub App's installation token, or a personal access token),
  * because a push or merge made with the workflow token starts no workflow.
- * The workflow token is never used: nothing here writes through it.
+ * Nothing here writes through the workflow token; only an upkeep step that
+ * declares what it reads (`readsWithWorkflowToken`) runs with it.
  *
  * It wakes on events only: a push to the integration branch, and a dispatch
  * at its base ref from the signal (see land-signal.helper) on a pull request
@@ -66,6 +67,19 @@ export const tokenOf = (identity: ILandWorkflowIdentity): string =>
 		? `\${{ steps.${IDENTITY_STEP_ID}.outputs.token }}`
 		: `\${{ secrets.${identity.tokenSecret} }}`;
 
+/** What the workflow token reads, rendered at the top level and in a job that adds to it. */
+const WORKFLOW_READ_PERMISSIONS = [
+	'contents',
+	'pull-requests',
+	'checks',
+	'actions',
+] as const;
+
+const permissionLines = (
+	names: readonly string[],
+	indentation: number,
+): string[] => names.map((name) => `${' '.repeat(indentation)}${name}: read`);
+
 /** A job that mints the identity, prepares a runner, then runs `steps`. */
 const job = (
 	input: {
@@ -74,6 +88,8 @@ const job = (
 		readonly timeout: number;
 		readonly setup: readonly string[];
 		readonly steps: readonly string[];
+		/** Reads the job adds to the workflow's; no block when none. */
+		readonly extraReads?: readonly string[];
 	},
 	identity: ILandWorkflowIdentity,
 ): string[] => [
@@ -82,6 +98,15 @@ const job = (
 	`        if: \${{ ${input.condition} }}`,
 	'        runs-on: ubuntu-latest',
 	`        timeout-minutes: ${String(input.timeout)}`,
+	...(input.extraReads === undefined || input.extraReads.length === 0
+		? []
+		: [
+				'        permissions:',
+				...permissionLines(
+					[...WORKFLOW_READ_PERMISSIONS, ...input.extraReads],
+					12,
+				),
+			]),
 	'        steps:',
 	...indent(identitySteps(identity), 12),
 	...indent(input.setup, 12),
@@ -96,7 +121,12 @@ const upkeepStep = (
 ): string[] => [
 	`- name: ${step.name}`,
 	'  if: always()',
-	...envLines({ ...token, ...step.env }),
+	...envLines({
+		...(step.readsWithWorkflowToken === undefined
+			? token
+			: { GH_TOKEN: '${{ github.token }}' }),
+		...step.env,
+	}),
 	`  run: ${step.run}`,
 ];
 
@@ -297,6 +327,13 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 					id: 'upkeep',
 					condition: `github.event_name == 'schedule'`,
 					timeout: 15,
+					extraReads: [
+						...new Set(
+							input.upkeep.flatMap(
+								(step) => step.readsWithWorkflowToken ?? [],
+							),
+						),
+					],
 					setup: input.setupSteps,
 					steps: input.upkeep.flatMap((step, index) => [
 						...(index === 0 ? [] : ['']),
@@ -345,10 +382,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'',
 		'# The workflow token only reads; every write uses the identity.',
 		'permissions:',
-		'    contents: read',
-		'    pull-requests: read',
-		'    checks: read',
-		'    actions: read',
+		...permissionLines(WORKFLOW_READ_PERMISSIONS, 4),
 		'',
 		...workflowConcurrencyLines(baseGroup, input),
 		'',
