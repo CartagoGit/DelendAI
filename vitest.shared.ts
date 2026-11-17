@@ -3,13 +3,23 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { changedFiles } from './tools/scripts/ci/declared-test-budget.ts';
+import {
+	changedFiles,
+	freshBudgets,
+} from './tools/scripts/ci/declared-test-budget.ts';
 import {
 	CHANGED_ENV,
+	FRESH_ENV,
+	LOAD_BENCH_ENV,
+	LOAD_FACTOR_ENV,
+	LOAD_REFERENCE_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import { measureLoadBenchmark } from './packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts';
+import { loadFactorOf } from './packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
+import { vitestModuleCachePath } from './tools/scripts/ci/vitest-cache-key.helper.ts';
 import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
@@ -114,6 +124,12 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
+	// One directory per lockfile: vitest clears the whole cache directory
+	// when the lockfile changed, and parallel runs in one worktree did it
+	// at once (ENOTEMPTY). A new lockfile gets a new empty directory.
+	fsModuleCachePath: vitestModuleCachePath(
+		dirname(fileURLToPath(import.meta.url)),
+	),
 	// Every test declares its maximum time and the run fails one that
 	// exceeds it. It lives in the options every project spreads, so no
 	// project and no spec opts out (`lint:test-time-budget` and the shared
@@ -153,6 +169,50 @@ if (process.env[CHANGED_ENV] === undefined) {
 	if (changed !== undefined) {
 		process.env[CHANGED_ENV] = [...changed].join('\n');
 	}
+}
+
+// The machine running this shard is as loaded as the fixed benchmark says
+// (spawns and small files, what e2e tests do) against the committed
+// reference; an e2e budget stretches by that factor. Measured once for the
+// shard (every worker inherits it), never on a run that was handed one.
+if (process.env[LOAD_FACTOR_ENV] === undefined) {
+	const reference = (
+		JSON.parse(
+			readFileSync(
+				resolve(
+					dirname(fileURLToPath(import.meta.url)),
+					'tools/scripts/test/test-load-reference.json',
+				),
+				'utf8',
+			),
+		) as { referenceMs: number }
+	).referenceMs;
+	// Kept for the workers: a test that runs over measures the load again.
+	process.env[LOAD_REFERENCE_ENV] = String(reference);
+	const benchMs = measureLoadBenchmark();
+	process.env[LOAD_BENCH_ENV] = benchMs.toFixed(1);
+	process.env[LOAD_FACTOR_ENV] = String(loadFactorOf(benchMs, reference));
+	console.log(
+		`time budget: load benchmark ${benchMs.toFixed(1)} ms against ${String(reference)} ms, load factor ${process.env[LOAD_FACTOR_ENV]}`,
+	);
+}
+
+// A budget the change writes was never measured by CI, so its overrun is
+// reported with the calibrated number and required by the merge step
+// (`test:budgets:check`) instead of failing the shard.
+if (process.env[FRESH_ENV] === undefined) {
+	const root = dirname(fileURLToPath(import.meta.url));
+	const fresh = freshBudgets(
+		(args) =>
+			execFileSync('git', [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				maxBuffer: 256 * 1024 * 1024,
+				stdio: ['ignore', 'pipe', 'ignore'],
+			}),
+		(path) => readFileSync(join(root, path), 'utf8'),
+	);
+	if (fresh !== undefined) process.env[FRESH_ENV] = fresh.join('\n');
 }
 
 /**
@@ -375,6 +435,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const perf = resolve(workspaceRoot, 'plugins/perf/src');
 	const techDebt = resolve(workspaceRoot, 'plugins/tech-debt/src');
 	const linkCheck = resolve(workspaceRoot, 'plugins/link-check/src');
+	const integration = resolve(workspaceRoot, 'plugins/integration/src');
 	const logs = resolve(workspaceRoot, 'plugins/logs/src');
 	const audit = resolve(workspaceRoot, 'plugins/audit/src');
 	const browser = resolve(workspaceRoot, 'plugins/browser/src');
@@ -998,6 +1059,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@delendai/link-check',
 			replacement: resolve(linkCheck, 'index.ts'),
+		},
+		{
+			find: '@delendai/integration/public',
+			replacement: resolve(integration, 'public/index.ts'),
+		},
+		{
+			find: /^@delendai\/integration\/lib\/(.*)$/,
+			replacement: `${resolve(integration, 'lib')}/$1`,
+		},
+		{
+			find: '@delendai/integration',
+			replacement: resolve(integration, 'index.ts'),
 		},
 		{
 			find: '@delendai/logs/public',

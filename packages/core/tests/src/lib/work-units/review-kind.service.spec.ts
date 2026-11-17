@@ -31,7 +31,7 @@ beforeEach(() => {
 });
 
 describe('withReviewKind', () => {
-	it('makes the batch a review unit when no kind, or review, is given', async () => {
+	it('[<20ms] makes the batch a review unit when no kind, or review, is given', async () => {
 		for (const given of [
 			['--proposal=batch', '--slice=all'],
 			['--proposal=batch', '--slice=all', '--kind=review'],
@@ -46,7 +46,7 @@ describe('withReviewKind', () => {
 		}
 	});
 
-	it('refuses another kind on the batch, naming review next', async () => {
+	it('[<20ms] refuses another kind on the batch, naming review next', async () => {
 		const { refusal } = await withReviewKind('/r', policy, [
 			'--proposal=batch',
 			'--slice=all',
@@ -55,11 +55,11 @@ describe('withReviewKind', () => {
 		expect(JSON.stringify(refusal)).toContain('delendai review next');
 	});
 
-	it("turns a proposal waiting in review/ into the reviewer's batch", async () => {
+	it("[<20ms] turns a proposal waiting in review/ into the reviewer's batch", async () => {
 		lookup.path = 'docs/delendai/proposals/review/x00900-waiting.md';
 		const { args } = await withReviewKind('/r', policy, [
 			'--proposal=x00900',
-			'--slice=S1',
+			'--slice=all',
 			'--agent=a',
 		]);
 		expect(args).toEqual([
@@ -70,7 +70,20 @@ describe('withReviewKind', () => {
 		]);
 	});
 
-	it('leaves an explicit kind, an open proposal, an unknown one and a missing base alone', async () => {
+	it('[<20ms] refuses a named slice without a kind on a proposal in review/, naming both kinds', async () => {
+		lookup.path = 'docs/delendai/proposals/review/x00900-waiting.md';
+		const { args, refusal } = await withReviewKind('/r', policy, [
+			'--proposal=x00900',
+			'--slice=S12',
+			'--generation=3',
+		]);
+		expect(args.some((arg) => arg === '--kind=review')).toBe(false);
+		const said = JSON.stringify(refusal);
+		expect(said).toContain('--kind=implement');
+		expect(said).toContain('--kind=review');
+	});
+
+	it('[<20ms] leaves an explicit kind, an open proposal, an unknown one and a missing base alone', async () => {
 		const given = ['--proposal=x00900', '--slice=S1'];
 		lookup.path = 'docs/delendai/proposals/review/x00900-waiting.md';
 		const explicit = [...given, '--kind=implement'];

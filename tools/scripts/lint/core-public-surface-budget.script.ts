@@ -208,7 +208,11 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // One of the eighty-six came back: a scaffolded host imports
 // `buildStandaloneCoreToolRegistrations` from the barrel, a consumer the
 // scan could not see while it skipped the templates core generates.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 423;
+//
+// Raised to 424 (2026-11-17, f00809 S1): the one pull request and issue
+// text template, `renderChangeText`, which
+// the issues and error-reporting plugins (S4) import from the barrel.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 424;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

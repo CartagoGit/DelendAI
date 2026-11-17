@@ -25,7 +25,21 @@ const requestedTranslation = (
 // When that happens we render the English source and show an in-page notice.
 const translation = requestedTranslation ?? page.translations.en;
 const isFallback = lang !== 'en' && requestedTranslation === undefined;
-const renderedBody = markdown.render(translation.body);
+// The header above owns the page's single <h1>. A leading body h1 repeating the
+// title is dropped; any other body h1 is demoted so the page keeps exactly one.
+const bodyTokens = markdown.parse(translation.body, {});
+const [first, second] = bodyTokens;
+if (
+	first?.type === 'heading_open' &&
+	first.tag === 'h1' &&
+	second?.content.trim() === translation.frontmatter.title.trim()
+) {
+	bodyTokens.splice(0, 3);
+}
+for (const token of bodyTokens) {
+	if (token.tag === 'h1') token.tag = 'h2';
+}
+const renderedBody = markdown.renderer.render(bodyTokens, markdown.options, {});
 ---
 
 <article class="md-page">

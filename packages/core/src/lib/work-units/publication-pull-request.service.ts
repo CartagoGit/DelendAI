@@ -14,64 +14,16 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { landsByPullRequest } from '../development-policy/branch-rules';
 import { pullRequestPorts } from './change-request-forges.service';
-import { urgentLine, urgentReasonOfBody } from './pull-request-urgency.service';
+import { pullRequestText } from './pull-request-text.service';
+import { urgentReasonOfBody } from './pull-request-urgency.service';
 import type { IChangeRequestRef } from '../contracts/interfaces/change-request-forge.interface';
 import type {
 	IPublicationPullRequest,
 	IPullRequestPorts,
 } from '../contracts/interfaces/publication-pull-request.interface';
 
-/** Commits that say what the work is not: claims and hand-offs. */
-const BOOKKEEPING =
-	/^chore\(review\): claim\b|^docs\(proposals\): .*\bto review$/u;
-
-/**
- * Commits that are not the work either: the record a tool commits for
- * itself, regenerated files, and merges. Pull requests were titled by a
- * tool's record when it was a unit's oldest commit.
- */
-const HOUSEKEEPING = /^(?:Merge\b|chore\((?:delendai|generated)\):)/u;
-
-const isBookkeeping = (subject: string): boolean =>
-	BOOKKEEPING.test(subject) || HOUSEKEEPING.test(subject);
-
-/** A subject that delivers something rather than tidying around it. */
-const DELIVERY =
-	/^(?:feat|fix|refactor|perf|test|docs|build|ci|revert)(?:\([^)]*\))?!?:/u;
-
-/** The commit a recorded verdict leaves: which proposal it was on. */
-const VERDICT =
-	/proposal_review (?<proposal>[a-z]\d{5,}) \S+ (?:approve|request_changes|submit)\b/iu;
-
-const CLAIM = /^chore\(review\): claim (?<proposal>[a-z]\d{5,})\b/iu;
-
-/**
- * The title of a pack of verdicts, or `undefined` for anything else. A
- * pack has no delivery to be named after, and was titled by whichever of
- * its bookkeeping commits came first: approvals of one proposal went out
- * as "release" of another.
- */
-const verdictTitle = (
-	subjects: readonly string[],
-	branch: string,
-): string | undefined => {
-	const judged = subjects.flatMap(
-		(subject) => VERDICT.exec(subject)?.groups?.proposal ?? [],
-	);
-	const ids = (list: readonly string[]): string =>
-		[...new Set(list.map((id) => id.toLowerCase()))].join(', ');
-	if (judged.length > 0) {
-		return `review: ${String(judged.length)} verdict(s) on ${ids(judged)}`;
-	}
-	// A pack of a review unit is never "implement batch" (x01032): before
-	// its first verdict it is named for what it has claimed.
-	const claimed = subjects.flatMap(
-		(subject) => CLAIM.exec(subject)?.groups?.proposal ?? [],
-	);
-	return branch.includes('/review/') && claimed.length > 0
-		? `review: claim(s) on ${ids(claimed)}`
-		: undefined;
-};
+/** The text of a publication's pull request is the template's. */
+export { pullRequestText };
 
 /**
  * A GitHub remote, with the host anchored: `https://github.com/…`,
@@ -81,75 +33,8 @@ const verdictTitle = (
 const GITHUB_REMOTE =
 	/^(?:(?:https?|ssh|git):\/\/(?:[^@/]+@)?|[^@/:]+@)github\.com[:/]/u;
 
-/** The proposal and slice a unit's branch names (`…/x00875-S23-g1/…`). */
-const UNIT_OF_BRANCH =
-	/(?:^|\/)(?<proposal>[a-z]\d{5,})-(?<slice>[^/]+?)-g\d+(?:\/|$)/iu;
-
-/**
- * Whether `subject` cites the unit `branch` names. A unit that merged
- * another unit's publication carries its commits too, and was titled by
- * them when they were the oldest.
- */
-const citesUnitOf = (subject: string, branch: string): boolean => {
-	const unit = UNIT_OF_BRANCH.exec(branch)?.groups;
-	if (unit?.proposal === undefined || unit.slice === undefined) return false;
-	const cited = subject.toLowerCase();
-	const proposal = unit.proposal.toLowerCase();
-	return unit.slice.toLowerCase() === 'all'
-		? cited.includes(proposal)
-		: cited.includes(`${proposal} ${unit.slice.toLowerCase()}`);
-};
-
-export const pullRequestText = (
-	subjects: readonly string[],
-	branch: string,
-	fallback: string,
-	urgent?: string,
-): { readonly title: string; readonly body: string } => {
-	const oldestFirst = [...subjects].reverse();
-	const meaningful = oldestFirst.filter((subject) => !isBookkeeping(subject));
-	// One delivery titles its pull request; several are counted, so a
-	// pull request of ten slices is not read as its oldest commit alone.
-	// The unit's own deliveries come first: another unit's, merged in, are
-	// that unit's pull request's to name.
-	const delivering = meaningful.filter((subject) => DELIVERY.test(subject));
-	const own = delivering.filter((subject) => citesUnitOf(subject, branch));
-	const deliveries = own.length > 0 ? own : delivering;
-	// A pack of verdicts is named for them even when its reviewer also
-	// touched a document: "docs(…): x names y" titled a pack that closed
-	// three proposals.
-	const verdicts = deliveries.every((subject) => subject.startsWith('docs'))
-		? verdictTitle(oldestFirst, branch)
-		: undefined;
-	const first = verdicts ?? deliveries[0] ?? meaningful[0] ?? fallback;
-	const title =
-		verdicts === undefined && deliveries.length > 1
-			? `${first} (+${String(deliveries.length - 1)} more)`
-			: first;
-	const listed = oldestFirst
-		.filter((subject) => !subject.startsWith('Merge '))
-		.map((subject) => `- ${subject}`)
-		.join('\n');
-	return {
-		title,
-		body: `Opened by \`delendai work publish\` for \`${branch}\`.${urgent === undefined ? '' : `\n\n${urgentLine(urgent)}`}\n\n${listed}`,
-	};
-};
-
 /** The number a pull request URL ends in (`…/pull/12`). */
 const NUMBER_OF_URL = /\/(?<number>\d+)\/?$/u;
-
-/**
- * The slices a unit's subjects cite, as `x01023 S1` (x01023-all: the
- * proposal alone), in the order they first appear.
- */
-const slicesCited = (subjects: readonly string[]): readonly string[] => [
-	...new Set(
-		subjects.flatMap(
-			(subject) => /\b[a-z]\d{5,} S\d+\b/iu.exec(subject)?.[0] ?? [],
-		),
-	),
-];
 
 /**
  * A republished pull request says what it ships now (x01023): the title
@@ -183,26 +68,9 @@ const refreshOpenPullRequest = (
 		input.branch,
 		input.fallbackTitle,
 		urgent,
+		changedFiles(input),
 	);
-	const files = (
-		ports.git([
-			'diff',
-			'--name-only',
-			`${input.integrationBase}...${input.tip}`,
-		]) ?? ''
-	)
-		.split('\n')
-		.filter((line) => line.length > 0);
-	const slices = slicesCited(subjects);
-	const shipped = [
-		...(slices.length === 0 ? [] : [`Ships: ${slices.join(', ')}.`]),
-		`Final diff: ${String(files.length)} file(s) changed.`,
-		...files.slice(0, 40).map((file) => `- \`${file}\``),
-		...(files.length > 40
-			? [`- … and ${String(files.length - 40)} more`]
-			: []),
-	].join('\n');
-	const next = { title: text.title, body: `${text.body}\n\n${shipped}` };
+	const next = { title: text.title, body: text.body };
 	if (current?.title === next.title && current.body === next.body) {
 		return { status: 'existing', url: ref.url };
 	}
@@ -222,6 +90,17 @@ const subjectsOf = (input: IOpenInput): readonly string[] =>
 			'--no-merges',
 			'--format=%s',
 			`${input.integrationBase}..${input.tip}`,
+		]) ?? ''
+	)
+		.split('\n')
+		.filter((line) => line.length > 0);
+
+const changedFiles = (input: IOpenInput): readonly string[] =>
+	(
+		input.ports.git([
+			'diff',
+			'--name-only',
+			`${input.integrationBase}...${input.tip}`,
 		]) ?? ''
 	)
 		.split('\n')
@@ -300,6 +179,7 @@ export const openPublicationPullRequest = (input: {
 		input.branch,
 		input.fallbackTitle,
 		input.urgent,
+		changedFiles(input),
 	);
 	const created = ports.gh([
 		'pr',
@@ -359,6 +239,8 @@ export const openUnitPullRequest = async (input: {
 	readonly integrationBase: string;
 	readonly fallbackTitle: string;
 	readonly urgent?: string | undefined;
+	/** What git and the forges answer; the real ones when not given. */
+	readonly ports?: IPullRequestPorts | undefined;
 }): Promise<IPublicationPullRequest | undefined> => {
 	if (
 		!landsByPullRequest(input.policy) ||
@@ -374,6 +256,6 @@ export const openUnitPullRequest = async (input: {
 		integrationBase: input.integrationBase,
 		fallbackTitle: input.fallbackTitle,
 		urgent: input.urgent,
-		ports: await pullRequestPorts(input.root),
+		ports: input.ports ?? (await pullRequestPorts(input.root)),
 	});
 };

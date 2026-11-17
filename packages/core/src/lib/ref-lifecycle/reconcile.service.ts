@@ -53,6 +53,7 @@ import type {
 } from './reconcile.interface';
 import {
 	ownedBatchPrefixes,
+	ownedRehearsalPrefixes,
 	retiredMachineryPrefixes,
 	shortName as shortenRef,
 } from '../integration/decisions/namespaces.helper';
@@ -127,6 +128,12 @@ const roleOf = (
 		return {
 			role: 'foreign',
 			reason: 'created by automation delendai does not own — reported, never reaped',
+		};
+	}
+	if (ownedRehearsalPrefixes(branches).some((p) => name.startsWith(p))) {
+		return {
+			role: 'rehearsal',
+			reason: 'a rehearsal of the pull request flow: its run deletes it at cleanup, and a run that died is swept by the next one',
 		};
 	}
 	if (retiredMachineryPrefixes(branches).some((p) => name.startsWith(p))) {

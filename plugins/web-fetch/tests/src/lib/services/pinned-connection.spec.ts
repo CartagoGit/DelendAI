@@ -51,7 +51,7 @@ const hostEcho = async (): Promise<number> => {
 };
 
 describe('pinnedRequestOptions', () => {
-	it('connects to the address and keeps the host as Host header and TLS name', () => {
+	it('[<5ms] connects to the address and keeps the host as Host header and TLS name', () => {
 		const options = pinnedRequestOptions(
 			new URL('https://example.com/data?q=1'),
 			'93.184.216.34',
@@ -67,7 +67,7 @@ describe('pinnedRequestOptions', () => {
 		});
 	});
 
-	it('gives no TLS name for an address literal, and reads an IPv6 address', () => {
+	it('[<5ms] gives no TLS name for an address literal, and reads an IPv6 address', () => {
 		const options = pinnedRequestOptions(
 			new URL('https://[2001:db8::1]:8443/'),
 			'[2001:db8::1]',
@@ -82,7 +82,7 @@ describe('pinnedRequestOptions', () => {
 });
 
 describe('pinnedFetch', () => {
-	it('reaches the address for a name that resolves nowhere, with that name as Host', async () => {
+	it('[<50ms] reaches the address for a name that resolves nowhere, with that name as Host', async () => {
 		const port = await hostEcho();
 		const res = await pinnedFetch('127.0.0.1')(
 			`http://not-resolvable.invalid:${String(port)}/`,
@@ -94,7 +94,7 @@ describe('pinnedFetch', () => {
 		);
 	});
 
-	it('fails rather than resolve when the address does not answer', async () => {
+	it('[<50ms] fails rather than resolve when the address does not answer', async () => {
 		await expect(
 			pinnedFetch('127.0.0.1')('http://example.com:1/'),
 		).rejects.toThrow();
@@ -102,7 +102,7 @@ describe('pinnedFetch', () => {
 });
 
 describe('webFetch over the network, against a rebinding resolver', () => {
-	it('connects to the first, validated answer and never asks the resolver again', async () => {
+	it('[<50ms] connects to the first, validated answer and never asks the resolver again', async () => {
 		const port = await hostEcho();
 		const answers = [['127.0.0.1'], ['10.255.255.1']];
 		let calls = 0;
@@ -138,7 +138,7 @@ describe('webFetch connects to the address it validated (x01028)', () => {
 		};
 	};
 
-	it('hands the connection the validated address, never a second answer', async () => {
+	it('[<5ms] hands the connection the validated address, never a second answer', async () => {
 		const dns = rebinding();
 		const seen: (string | undefined)[] = [];
 		const fetcher: IFetchLike = async (_url, init) => {
@@ -155,7 +155,7 @@ describe('webFetch connects to the address it validated (x01028)', () => {
 		expect(dns.calls()).toBe(1);
 	});
 
-	it('cannot reach the private address a rebinding resolver answers next', async () => {
+	it('[<5ms] cannot reach the private address a rebinding resolver answers next', async () => {
 		const dns = rebinding();
 		const seen: (string | undefined)[] = [];
 		const fetcher: IFetchLike = async (_url, init) => {

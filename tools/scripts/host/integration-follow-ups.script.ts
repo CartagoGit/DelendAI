@@ -18,14 +18,17 @@
  * work run. Nothing calls it on a timer: the forge-event receiver runs it,
  * so the work happens when the forge says, not when a poll notices.
  *
- * Each step needs this machine's credential: a pull request opened, or a
- * branch pushed, with a workflow token starts no CI.
+ * Local only: the host fetches and fast-forwards, reads the forge, and
+ * records what it read. It does no integration write: bringing a head
+ * forward and opening batches are the integrator's, as the App identity,
+ * and a publication's pull request is opened by `work publish`.
  */
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
+import { integrationProtocolRefusal } from '@delendai/core/cli';
 import { backgroundEnv, lowPriority } from '@delendai/core/runtime';
 
 /** One follow-up: its script, its timeout, and whether a forge event runs it. */
@@ -44,18 +47,6 @@ export const INTEGRATION_FOLLOW_UPS: readonly IFollowUp[] = [
 		onEvent: false,
 	},
 	{
-		// Every publication gets its pull request.
-		script: 'tools/scripts/forge/open-publication-prs.script.ts',
-		timeoutMs: 180_000,
-		onEvent: false,
-	},
-	{
-		// What land labels "needs update", pushed by this machine.
-		script: 'tools/scripts/forge/bring-forward.script.ts',
-		timeoutMs: 1_800_000,
-		onEvent: true,
-	},
-	{
 		// A proposal whose every slice is approved closes.
 		script: 'tools/scripts/proposals/close-approved-proposals.script.ts',
 		timeoutMs: 600_000,
@@ -63,12 +54,54 @@ export const INTEGRATION_FOLLOW_UPS: readonly IFollowUp[] = [
 	},
 ];
 
+/**
+ * Why a process may not run the follow-ups: it speaks an older integration
+ * protocol than the repository records, so every integration action is
+ * refused until it restarts. `undefined` when it may run them.
+ */
+export const followUpsRefusal = (
+	recorded: number,
+	spoken?: number,
+): string | undefined => {
+	const stale = integrationProtocolRefusal(recorded, spoken);
+	return stale === undefined ? undefined : `${stale.reason} ${stale.remedy}`;
+};
+
 /** The steps one occasion runs. Pure. */
 export const followUpsFor = (
 	on: 'move' | 'event',
 	steps: readonly IFollowUp[] = INTEGRATION_FOLLOW_UPS,
 ): readonly IFollowUp[] =>
 	on === 'move' ? steps : steps.filter((step) => step.onEvent);
+
+/**
+ * What the follow-ups may touch: whether a script exists and running one
+ * locally. There is no port that writes to a forge, so a follow-up cannot.
+ */
+export interface IFollowUpPorts {
+	readonly exists: (script: string) => boolean;
+	readonly run: (step: IFollowUp) => Promise<void>;
+	readonly report: (line: string) => void;
+}
+
+/** Run the steps of one occasion; a step that fails is reported, never fatal. */
+export const runFollowUps = async (
+	on: 'move' | 'event',
+	ports: IFollowUpPorts,
+	steps: readonly IFollowUp[] = INTEGRATION_FOLLOW_UPS,
+): Promise<void> => {
+	for (const step of followUpsFor(on, steps)) {
+		if (!ports.exists(step.script)) continue;
+		try {
+			await ports.run(step);
+		} catch (error) {
+			// Never fatal: the next occasion runs it again.
+			ports.report(
+				`[delendai] ${step.script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+			);
+		}
+	}
+};
 
 const main = async (): Promise<number> => {
 	const on = process.argv
@@ -81,23 +114,19 @@ const main = async (): Promise<number> => {
 		return 2;
 	}
 	const root = process.cwd();
-	const run = promisify(execFile);
-	for (const step of followUpsFor(on)) {
-		if (!existsSync(join(root, step.script))) continue;
-		const command = lowPriority('bun', [step.script, '--apply']);
-		try {
-			await run(command.command, [...command.args], {
+	const exec = promisify(execFile);
+	await runFollowUps(on, {
+		exists: (script) => existsSync(join(root, script)),
+		run: async (step) => {
+			const command = lowPriority('bun', [step.script, '--apply']);
+			await exec(command.command, [...command.args], {
 				cwd: root,
 				timeout: step.timeoutMs,
 				env: backgroundEnv(),
 			});
-		} catch (error) {
-			// Never fatal: the next occasion runs it again.
-			process.stderr.write(
-				`[delendai] ${step.script} did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
-			);
-		}
-	}
+		},
+		report: (line) => process.stderr.write(line),
+	});
 	return 0;
 };
 

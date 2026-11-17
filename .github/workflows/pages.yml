@@ -5,7 +5,9 @@ name: Pages
 # mode, so an undocumented tool fails the build and the web can never silently
 # drift behind the code.
 #
-# One-time setup: repo Settings → Pages → Source = "GitHub Actions".
+# One-time setup (the owner's step, stated in the PR): repo Settings → Pages →
+# Source = "GitHub Actions". After each deploy the `verify` job requires the
+# published root and three deep routes to answer 200.
 #
 # Until that is done the site is still built in strict mode, which is the
 # check, and the publishing steps are skipped with a notice. They used to
@@ -87,7 +89,31 @@ jobs:
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
+        outputs:
+            page_url: ${{ steps.deployment.outputs.page_url }}
         steps:
             - name: Deploy to GitHub Pages
               id: deployment
               uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+
+    verify:
+        name: published routes answer 200
+        needs: deploy
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # G136: the root and three deep routes of the published site must
+            # answer 200. Pages can lag the deploy by seconds, so each route is
+            # retried; a route that never answers fails the run.
+            - name: Check the root and three deep routes
+              env:
+                  SITE: ${{ needs.deploy.outputs.page_url }}
+              run: |
+                  base="${SITE%/}"
+                  for route in "" "/tools/" "/capabilities/" "/guide/"; do
+                    code=$(curl -s -o /dev/null -w '%{http_code}' --retry 6 --retry-delay 10 --retry-all-errors "${base}${route}")
+                    echo "${base}${route} -> ${code}"
+                    [ "${code}" = "200" ] || exit 1
+                  done
