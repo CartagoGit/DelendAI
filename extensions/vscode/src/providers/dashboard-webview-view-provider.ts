@@ -104,9 +104,11 @@ interface IDashboardLiveState {
 	readonly blocked: readonly string[];
 }
 
-const asRecord = (value: unknown): Record<string, unknown> =>
+const asRecord = <TKey extends string = string>(
+	value: unknown,
+): Partial<Record<TKey, unknown>> =>
 	typeof value === 'object' && value !== null
-		? (value as Record<string, unknown>)
+		? (value as Partial<Record<TKey, unknown>>)
 		: {};
 
 const asArray = (value: unknown): readonly unknown[] =>
@@ -124,49 +126,57 @@ const asCount = (value: unknown): number =>
  * failing the whole section.
  */
 export const toLiveState = (data: unknown): IDashboardLiveState => {
-	const payload = asRecord(data);
-	const slot = asRecord(payload['computeSlot']);
+	const payload = asRecord<
+		| 'computeSlot'
+		| 'units'
+		| 'waitingOnAuthor'
+		| 'anchorRefusal'
+		| 'undurable'
+		| 'orphans'
+		| 'publications'
+	>(data);
+	const slot = asRecord<'holder' | 'urgent'>(payload.computeSlot);
 	const units: Record<string, number> = {};
-	for (const [name, count] of Object.entries(asRecord(payload['units']))) {
+	for (const [name, count] of Object.entries(asRecord(payload.units))) {
 		units[name] = asCount(count);
 	}
-	const waiting = asArray(payload['waitingOnAuthor']).map((entry) => {
+	const waiting = asArray(payload.waitingOnAuthor).map((entry) => {
 		const each = asRecord(entry);
 		return {
-			ref:
-				asText(each['headRef']) ||
-				`#${String(asCount(each['number']))}`,
-			why: asText(each['why']),
+			ref: asText(each.headRef) || `#${String(asCount(each.number))}`,
+			why: asText(each.why),
 		};
 	});
 	const blocked = [
-		...(asText(payload['anchorRefusal']) === ''
+		...(asText(payload.anchorRefusal) === ''
 			? []
-			: [asText(payload['anchorRefusal'])]),
-		...asArray(payload['undurable']).map(
+			: [asText(payload.anchorRefusal)]),
+		...asArray(payload.undurable).map(
 			(path) => `undurable edit: ${asText(path)}`,
 		),
-		...asArray(payload['orphans']).map((entry) => {
-			const each = asRecord(entry);
-			return `${asText(each['ref'])}: ${asText(each['reason'])}`;
+		...asArray(payload.orphans).map((entry) => {
+			const each = asRecord<'ref' | 'reason'>(entry);
+			return `${asText(each.ref)}: ${asText(each.reason)}`;
 		}),
 		...waiting.map((entry) => `${entry.ref}: ${entry.why}`),
 	];
 	return {
 		units,
-		publications: asArray(payload['publications']).map((entry) => {
-			const each = asRecord(entry);
+		publications: asArray(payload.publications).map((entry) => {
+			const each = asRecord<
+				'ref' | 'behind' | 'overlapping' | 'ownerAlive'
+			>(entry);
 			return {
-				ref: asText(each['ref']),
-				behind: asCount(each['behind']),
-				overlapping: asCount(each['overlapping']),
-				ownerAlive: each['ownerAlive'] !== false,
+				ref: asText(each.ref),
+				behind: asCount(each.behind),
+				overlapping: asCount(each.overlapping),
+				ownerAlive: each.ownerAlive !== false,
 			};
 		}),
 		waitingOnAuthor: waiting,
-		computeHolder: asText(slot['holder']) || null,
-		urgent: asArray(slot['urgent']).map((ticket) =>
-			asText(asRecord(ticket)['label']),
+		computeHolder: asText(slot.holder) || null,
+		urgent: asArray(slot.urgent).map((ticket) =>
+			asText(asRecord<'label'>(ticket).label),
 		),
 		blocked,
 	};

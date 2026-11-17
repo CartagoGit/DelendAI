@@ -82,7 +82,7 @@ describe('dashboard live state', () => {
 		expect(html).not.toContain('<script>');
 	});
 
-	it('[<500ms] an event re-reads the live state once and re-renders', async () => {
+	it('[<200ms] an event re-reads the live state once and re-renders', async () => {
 		let workCalls = 0;
 		let subscribed = 0;
 		const client = McpStdioClient.fromTransport({
