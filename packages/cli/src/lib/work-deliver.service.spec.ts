@@ -142,7 +142,13 @@ describe('deliverUnit, a proposal already in review', () => {
 				pullRequest: { pending: true, branch: 'pr/unit' },
 			},
 		});
-		expect(calls).toEqual(['in-progress', 'prove', 'review', 'publish']);
+		expect(calls).toEqual([
+			'in-progress',
+			'preflight',
+			'prove',
+			'review',
+			'publish',
+		]);
 	});
 
 	it('[<20ms] reports the pull request the publication answered with', async () => {
