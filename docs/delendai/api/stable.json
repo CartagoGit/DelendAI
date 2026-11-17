@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.3.0",
-		"generatedAt": "2026-11-16T04:05:03.140Z"
+		"generatedAt": "2026-11-17T21:17:08.108Z"
 	},
 	"tools": [
 		{
@@ -1243,6 +1243,9 @@
 						"type": "string",
 						"minLength": 1,
 						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
+					},
+					"preflight": {
+						"type": "boolean"
 					}
 				},
 				"required": [
