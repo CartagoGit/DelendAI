@@ -2,10 +2,14 @@
 id: v00156
 title: "work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)"
 kind: perf
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-17
+last-transition-id: c6d93333-5565-4586-b9b4-e04f6ab60242
+last-correlation-id: c6d93333-5565-4586-b9b4-e04f6ab60242
+last-transition-from: ready
+last-transition-at: 2026-11-17T13:48:07.632Z
 ---
 
 # v00156 — work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)
