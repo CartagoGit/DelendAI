@@ -201,8 +201,8 @@ describe('the known-red list', () => {
 		}
 	});
 
-	it('[<50ms] holds only what real GitHub still showed red: the real-mode scenario', () => {
-		expect(REHEARSAL_KNOWN_RED.map((r) => r.scenario)).toEqual(['F6']);
+	it('[<50ms] is empty: real GitHub showed every scenario green on both modes', () => {
+		expect(REHEARSAL_KNOWN_RED).toEqual([]);
 	});
 });
 
