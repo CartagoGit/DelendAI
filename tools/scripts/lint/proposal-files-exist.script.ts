@@ -28,6 +28,7 @@
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 
+import { withoutNewMarker } from '../../../plugins/proposals/src/lib/proposals/expand-declared-files';
 import { declaredPathExists } from './lib/declared-path-exists.lib';
 import { join, relative } from 'node:path';
 
@@ -160,6 +161,32 @@ export const isInsidePendingSlice = (
 		.some((line) => PENDING_SLICE_STATUS_RE.test(line));
 };
 
+/** The id and status of the slice a Files block sits in, when it has its own. */
+export const sliceOfBlock = (
+	text: string,
+	blockIndex: number,
+): { readonly id: string; readonly status: string | undefined } => {
+	const before = text.slice(0, blockIndex);
+	const start = before.lastIndexOf('\n### ');
+	const body = before.slice(start === -1 ? 0 : start + 1);
+	return {
+		id: /^### (\S+)/u.exec(body)?.[1] ?? 'proposal',
+		status: /\*\*Status\*\*:\s*([a-z-]+)/iu.exec(body)?.[1]?.toLowerCase(),
+	};
+};
+
+/**
+ * Whether the work a block declares is delivered. The slice's own status
+ * wins; a slice with none takes its proposal's folder.
+ */
+export const isDelivered = (
+	sliceStatus: string | undefined,
+	folder: string,
+): boolean =>
+	sliceStatus === undefined
+		? folder === 'review' || folder === 'done'
+		: sliceStatus === 'review' || sliceStatus === 'done';
+
 /** The commits a proposal records as what delivered it (frontmatter and slice lines). */
 export const shippedInCommits = (text: string): readonly string[] => [
 	...new Set(
@@ -213,7 +240,14 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 					missing.push(
 						`${pattern} (a pattern, not the files that shipped)`,
 					);
-				for (const p of extractPathCandidates(m[1] ?? '')) {
+				const slice = sliceOfBlock(text, m.index ?? 0);
+				const delivered = isDelivered(slice.status, dir);
+				for (const marked of extractPathCandidates(m[1] ?? '')) {
+					// `new:` says the slice creates the file: until it is
+					// delivered the file may be absent; after, it may not.
+					const created = marked !== withoutNewMarker(marked);
+					const p = withoutNewMarker(marked);
+					if (created && !delivered) continue;
 					if (p.startsWith(`${PROPOSALS_ROOT}/ready/`)) continue;
 					// Runtime state under the cache dir is generated at
 					// use time and is gitignored, so it exists on the
@@ -227,7 +261,11 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 						!declaredPathExists(root, base) &&
 						!existedWhenShipped(root, shipped, base)
 					)
-						missing.push(p);
+						missing.push(
+							created
+								? `${p} (${slice.id} creates it with new:, but it was never created)`
+								: p,
+						);
 				}
 			}
 			if (missing.length > 0) {
