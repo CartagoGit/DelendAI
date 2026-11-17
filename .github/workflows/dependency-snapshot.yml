@@ -1,0 +1,43 @@
+name: dependency-snapshot
+
+# GitHub's automatic dependency graph does not refresh from this
+# repository's bun.lock: on 2026-10-23 it still read a 1.31.0 SDK two weeks
+# after main pinned 1.32.0, and Dependabot kept six alerts open (x00957).
+# Each push to main submits what main resolves, so the alerts open and close
+# on that.
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+concurrency:
+    group: dependency-snapshot
+    cancel-in-progress: true
+
+jobs:
+    submit:
+        name: submit the bun.lock snapshot
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+              with:
+                  bun-version: 1.4.2
+
+            - name: Submit the snapshot
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/release/dependency-snapshot.script.ts \
+                      --sha="$GITHUB_SHA" --ref="$GITHUB_REF" --run-id="$GITHUB_RUN_ID" \
+                      --repository-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" > snapshot.json
+                  gh api -X POST "repos/$GITHUB_REPOSITORY/dependency-graph/snapshots" \
+                      --input snapshot.json --jq '"snapshot \(.id): \(.result) — \(.message)"'

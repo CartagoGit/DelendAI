@@ -1,0 +1,347 @@
+import { carriesNothingBeyond } from './landed-work.service';
+import { argumentsRefused } from './work-arguments.helper';
+import { reviewUnitRefusal } from './review-unit-publish-checks.service';
+import type { IPublicationPullRequest } from '../contracts/interfaces/publication-pull-request.interface';
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import type {
+	IWorkUnitContext,
+	IWorkUnitResult,
+} from '../contracts/interfaces/work-unit-context.interface';
+import {
+	publicationRefFromWorkRef,
+	publishWorkUnitExclusively,
+} from './work-publish.service';
+import { proposalInProgress } from './publication-target.service';
+import { resolvePublicationTarget } from './open-pull-request-republication.service';
+import { openUnitPullRequest } from './publication-pull-request.service';
+import { pullRequestNumberOf } from './superseded-publication.service';
+import { pullRequestPorts } from './change-request-forges.service';
+import { subscribeAgentToPullRequest } from '../forge-events/forge-event-store.service';
+import { urgencyOfUnit } from './pull-request-urgency.service';
+import { landWorkUnit } from './work-unit-land.service';
+import { scalarArg } from './command-args.helper';
+import { isReviewUnitBranch } from '../development-policy/git-guard-review-scope';
+import { journalWorkEvent } from './work-event-journal.service';
+import { unitDepartures } from './unit-departures.service';
+import { endCarriedUnits } from './carried-units.service';
+
+import {
+	agentFor,
+	readGit,
+	integrationBase,
+	integrationRemote,
+	kindFor,
+	kindInAgent,
+	mainWorktreeOf,
+	openWork,
+	refused,
+	unknownKind,
+} from './work-unit-shared.service';
+import { ambiguousUnit, existingWorkRef } from './work-unit-generation.service';
+import { readSupersedingUnit } from './unit-fence.service';
+import { worktreeOfRef } from './unit-removal.service';
+import {
+	describeFailedProof,
+	proofSummary,
+	provesBeforePublishing,
+	proveUnit,
+} from './work-unit-proof.service';
+
+/** The generation a work ref names (`…-g<n>/…`), if it names one. */
+const generationOfWorkRef = (ref: string): number | undefined => {
+	const found = /-g(\d+)\//u.exec(ref)?.[1];
+	return found === undefined ? undefined : Number(found);
+};
+
+/** The pull request with its number, from the target or from its URL. */
+const withNumber = (
+	pullRequest: IPublicationPullRequest,
+	known: number | undefined,
+): IPublicationPullRequest & { readonly number?: number } => {
+	const number =
+		known ??
+		('url' in pullRequest
+			? pullRequestNumberOf(pullRequest.url)
+			: undefined);
+	return number === undefined ? pullRequest : { ...pullRequest, number };
+};
+
+/**
+ * Hand the work over: the publication ref carries it — or, under a
+ * profile that integrates by merge, the integration branch does — and
+ * the work ref stops existing. The two halves belong together — doing only the first
+ * is what fills a namespace with `wip/` branches that look alive.
+ */
+export const published = async (
+	args: readonly string[],
+	ctx: IWorkUnitContext,
+): Promise<IWorkUnitResult> => {
+	const opened = await openWork(ctx);
+	if (!('engine' in opened)) return opened;
+	const { policy } = opened;
+	// Publishing removes the unit's worktree, which is where this command
+	// may be standing: everything asked of git and the forge is asked from
+	// the repository's own checkout, which stays.
+	const root = mainWorktreeOf(opened.root);
+	const proposal = scalarArg(args, 'proposal');
+	const slice = scalarArg(args, 'slice');
+	const agent = agentFor(args, root, policy.identity);
+	if (proposal === undefined || slice === undefined || agent.length === 0) {
+		return argumentsRefused('publish');
+	}
+	if (scalarArg(args, 'as') !== undefined) {
+		return refused(
+			'A publication is not named separately from the work it publishes.',
+			'Drop `--as=`: the publication ref is derived from the work ref, so both carry the same name and the shape is stated once.',
+		);
+	}
+	if (policy.branches.workRefTemplate.length === 0) {
+		return refused(
+			`The \`${policy.profile}\` profile has no work-ref model: it commits to \`${policy.branches.integration}\` directly.`,
+			'There is nothing to publish from; this profile integrates without a work ref.',
+		);
+	}
+	const badKind = unknownKind(args) ?? kindInAgent(agent);
+	if (badKind !== undefined) return badKind;
+	const ambiguous = ambiguousUnit(root, args, policy, agent, proposal, slice);
+	if (ambiguous !== undefined) return ambiguous;
+	const workRef = existingWorkRef(root, args, policy, agent, proposal, slice);
+	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
+		return refused(
+			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
+			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
+		);
+	}
+	// A review pack is one of many a model may hold at once, each its own
+	// generation; a slice of work has one holder, and its generation says
+	// which.
+	const taken = isReviewUnitBranch(
+		policy,
+		workRef.replace(/^refs\/heads\//u, ''),
+	)
+		? undefined
+		: readSupersedingUnit(root, policy, workRef);
+	if (taken !== undefined) {
+		return refused(
+			`\`${workRef}\` was taken over: generation ${String(taken.generation)} of this slice exists at \`${taken.ref}\`.`,
+			'Its commits stay on this branch; nothing is lost. Hand what the newer unit lacks to whoever holds it (cherry-pick into that unit), or retire this one with `work retire --ref=<this ref> --reason=<why>`.',
+		);
+	}
+	// `--remote` is global: the parser hands it over as `globals.remote`.
+	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
+	const base = integrationBase(root, policy);
+	if (base === undefined) {
+		return refused(
+			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
+			'Fetch it (git fetch), or correct development.branches.integration.',
+		);
+	}
+	const reviewRefusal = await reviewUnitRefusal({
+		root,
+		policy,
+		workRef,
+		base,
+		agent,
+	});
+	if (reviewRefusal !== undefined) return reviewRefusal;
+	// A proposal's one wip branch outlives every publication while the
+	// proposal is in progress: its next work is committed on it.
+	const inProgress = proposalInProgress(root, proposal, workRef);
+	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
+	const keepWorkRefBecause =
+		inProgress && !args.includes('--keep-work-ref')
+			? `${proposal} is in progress, and its next work is committed on this branch`
+			: undefined;
+	// A profile that integrates by merge has no pull request to publish
+	// into: the unit lands here, certified by the local gate, or not at all.
+	if (policy.integration.strategy === 'merge') {
+		return landWorkUnit({
+			root,
+			cwd: ctx.cwd,
+			policy,
+			remote,
+			workRef,
+			keepWorkRef,
+			keepWorkRefBecause,
+		});
+	}
+	// Whether this slice is published alone or joins its proposal's pull
+	// request is the policy's decision (integration.publication).
+	const target = resolvePublicationTarget(
+		{
+			root,
+			policy,
+			remote,
+			agent,
+			proposal,
+			slice,
+			// The generation of the ref being published, not the one the
+			// arguments default to: a second unit of one agent was otherwise
+			// published into the first unit's pull request.
+			generation:
+				generationOfWorkRef(workRef) ??
+				Number(scalarArg(args, 'generation') ?? '1'),
+			topic: scalarArg(args, 'topic'),
+			kind: kindFor(args, slice),
+			base,
+			workRef,
+		},
+		await pullRequestPorts(root),
+	);
+	if ('refusal' in target) {
+		return refused(
+			target.refusal,
+			'Publish from a work ref under the policy prefix.',
+		);
+	}
+	// A unit whose commits the integration branch already holds (merges of
+	// it, or work that landed through another pull request) has nothing to
+	// publish. Republishing such a unit after its pull request merged opened
+	// a second pull request with an empty diff (#1563).
+	const tipOfUnit = readGit(root, ['rev-parse', '-q', '--verify', workRef]);
+	if (
+		tipOfUnit !== undefined &&
+		(readGit(root, ['merge-base', '--is-ancestor', tipOfUnit, base]) !==
+			undefined ||
+			carriesNothingBeyond(root, tipOfUnit, base))
+	) {
+		return refused(
+			`${workRef} holds nothing ${policy.branches.integration} lacks: its work already landed.`,
+			'Nothing to publish. End the unit with `delendai work retire --ref=<ref> --reason=landed` (its tip is kept), or commit the work it is meant to carry.',
+		);
+	}
+	// The proof every agent is told to run, run here: a pull request is only
+	// opened for work that passed it. A review proves nothing; no proof declared, told how.
+	const proof =
+		tipOfUnit !== undefined &&
+		provesBeforePublishing(policy) &&
+		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
+			? await proveUnit({
+					root,
+					agent,
+					worktree: worktreeOfRef(
+						root,
+						workRef.replace(/^refs\/heads\//u, ''),
+					),
+					tipSha: tipOfUnit,
+					integrationSha: base,
+					urgency: { args, proposal, policy },
+				})
+			: undefined;
+	if (proof !== undefined && !proof.passed) {
+		return refused(
+			describeFailedProof(proof),
+			'Fix what failed, commit it in the unit, and publish again. `delendai work prove` runs the same proof without publishing.',
+		);
+	}
+	const urgent = await urgencyOfUnit(args, root, workRef);
+	const outcome = await publishWorkUnitExclusively({
+		root,
+		cwd: ctx.cwd,
+		workRef,
+		publicationRef: target.publicationRef,
+		remote,
+		keepWorkRef,
+		...(keepWorkRefBecause === undefined ? {} : { keepWorkRefBecause }),
+	});
+	// The other units of this agent and proposal it carried end with it.
+	const carried =
+		outcome.published && outcome.tip !== null
+			? await endCarriedUnits({
+					root,
+					cwd: ctx.cwd,
+					policy,
+					workRef,
+					tip: outcome.tip,
+					remote,
+				})
+			: [];
+	const publication = {
+		unit: target.unit,
+		reason: target.reason,
+		ref: target.publicationRef,
+		...(target.notes.length === 0 ? {} : { notes: target.notes }),
+		// A publication moves only by fast-forward; nothing is forced over
+		// work already proposed. It moves on without this work when it
+		// carries the proposal's earlier slices, or when the queue brought
+		// an open pull request level with the integration branch.
+		...(!outcome.published && (target.unit === 'proposal' || keepWorkRef)
+			? {
+					nextAction: `If ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} has commits this work lacks (the proposal's earlier slices, or the queue's refresh of its open pull request), merge it into this work, then publish again.`,
+				}
+			: {}),
+	};
+	// The publication becomes a pull request here, by the machine that
+	// holds the forge credential (x00677), when the branch takes PRs.
+	const pullRequest =
+		outcome.published && outcome.tip !== null
+			? await openUnitPullRequest({
+					root,
+					policy,
+					args,
+					remote,
+					publicationRef: target.publicationRef,
+					tip: outcome.tip,
+					integrationBase: base,
+					fallbackTitle: `${kindFor(args, slice)} ${proposal}`,
+					urgent,
+				})
+			: undefined;
+	// The agent that published waits for the outcome, not by asking.
+	const subscribed = await subscribeAgentToPullRequest({
+		root,
+		agent,
+		pullRequest,
+	});
+	// Published but not cleaned up is not a success: the namespace is
+	// left carrying a ref that looks like live work.
+	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
+	// A failure says so in words, first. The reason used to sit only in
+	// the list of steps, and a caller reading the summary took an
+	// unpublished unit for a published one.
+	const failed = outcome.steps.find((step) => !step.ok);
+	const failure = landed
+		? undefined
+		: [
+				outcome.published
+					? `${workRef} was published, but its work ref was not removed.`
+					: `${workRef} was NOT published.`,
+				...(failed === undefined
+					? []
+					: [`${failed.name}: ${failed.detail}`]),
+				...('nextAction' in publication
+					? [publication.nextAction]
+					: []),
+			].join('\n');
+	if (outcome.published) {
+		await journalWorkEvent(root, {
+			kind: 'slice_submitted',
+			proposal,
+			slice,
+			actor: agent,
+			detail: { unitKind: kindFor(args, slice), via: 'publish' },
+		});
+	}
+	// Advice only: what the unit changed that no slice of its proposal names.
+	const departures = unitDepartures({ root, proposal, workRef, base });
+	return {
+		code: landed ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		...(failure === undefined ? {} : { error: failure }),
+		data: {
+			...outcome,
+			...(carried.length === 0 ? {} : { carried }),
+			...(departures.length === 0 ? {} : { departures }),
+			publication,
+			...(pullRequest === undefined
+				? {}
+				: {
+						pullRequest: withNumber(
+							pullRequest,
+							target.pullRequestNumber,
+						),
+					}),
+			...(subscribed ? { subscribed: true } : {}),
+			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
+		},
+	};
+};

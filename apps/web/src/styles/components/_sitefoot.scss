@@ -1,0 +1,9 @@
+// Shim — the real file lives at
+// apps/shared/src/styles/components/_site-footer.scss (f00102 S3.2).
+// The shared partial was renamed `.sitefooter → _site-footer.scss`
+// to mirror the TypeScript `site-footer.ts` filename; the import
+// path `@use "components/sitefoot"` in apps/web/src/styles/styles.scss
+// is kept stable so the 7-1 wiring doesn't change while the source
+// of truth moves to `apps/shared`.
+
+@forward '../../../../shared/src/styles/components/_site-footer.scss';

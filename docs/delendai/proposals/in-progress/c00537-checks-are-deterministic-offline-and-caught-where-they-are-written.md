@@ -1,0 +1,150 @@
+---
+id: c00537
+title: "Checks are deterministic, offline and caught where they are written"
+kind: chore
+status: in-progress
+type: proposal
+track: general
+date: 2026-11-08
+last-transition-id: af278677-a3dd-47d5-9cd3-b7a4bacd6c6e
+last-correlation-id: af278677-a3dd-47d5-9cd3-b7a4bacd6c6e
+last-transition-from: ready
+last-transition-at: 2026-11-10T02:08:56.031Z
+---
+
+# c00537 — Checks are deterministic, offline and caught where they are written
+
+## goal
+
+CI stops being red for reasons that are not the change: specs do not wait on real clocks, the PR run needs no network, and proposal hygiene is refused by the tools that write proposals instead of by CI.
+
+## why
+
+Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h open-to-merge at p50 and 19 h at p90, the tail being queue blocking. develop was red 81 of 141 h (57%), almost always a timing or concurrency spec (compute-slot x7, maintenance-lease race, reclaim-worktrees, record-buffer time window, concurrent work enter x01048) plus one CI config error (vitest groupOrder). lint-governance failed 23 PR runs, mostly proposal hygiene; one proof failed on bun audit because of the network. 55 specs use a real setTimeout or sleep without a fake clock, of 161 that use timers.
+
+## non-goals
+
+- The gate model (sectioned PRs and trains, full suite only at promotion, per-section health) is q00045 S7, owned by another agent. Do not touch tools/scripts/forge.
+- Never fix a flaky spec by running it N times; every fix names the cause.
+
+## slices
+
+- global_gate: none
+
+### S1 — A lint refuses real timers, sleeps and wall-clock waits in specs; fix the offenders
+- **Status**: pending
+- **Files**: `tools/scripts/lint/no-sleep-in-specs.script.ts`, `tools/scripts/lint/no-sleep-in-specs.constant.ts`, `tools/scripts/lint/no-sleep-in-specs.interface.ts`, `tools/scripts/lint/no-sleep-in-specs.script.spec.ts`, `tools/scripts/lint/no-sleep-in-specs.baseline.json`
+- **Gate**: none
+- acceptance:
+  - "The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier"
+  - "Specs that turned develop red are fixed first, each commit stating the cause"
+  - "The baseline only shrinks"
+
+### S2 — No network in prove or the PR run; network gates run at promotion and on a schedule
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `tools/scripts/lint/dependency-advisories.script.ts`, `package.json`
+- **Gate**: none
+- acceptance:
+  - "bun audit and any other network gate do not run in prove or the PR run"
+  - "They run at the develop to main promotion and on a schedule"
+
+### S3 — Proposal-writing tools refuse what the governance and hygiene lints refuse
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
+- **Gate**: none
+- acceptance:
+  - "Scaffold TODOs and the other hygiene findings are refused at write time, so they never reach CI"
+
+### S4 — pr-ci-cost reports weekly develop red hours, PR open-to-merge p50/p90, runs per PR and top failure causes
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`
+- **Gate**: none
+- acceptance:
+  - "The report prints these numbers per week"
+
+### S5 — Coverage instruments only the changed source files
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `vitest.shared.ts`, `tools/scripts/ci/changed-file-coverage.script.ts`
+- **Gate**: none
+- acceptance:
+  - "Every shard collects v8 coverage only over the source files the change touches (coverage.include from the change), since the gate is changed-file coverage"
+  - "Shard time is measured before and after and both numbers are in the commit body"
+
+### S6 — The slowest specs become near-instant with test-kit
+- **Status**: pending
+- **DependsOn**: [S7]
+- **Files**: `packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts`, `packages/core/tests/src/public/deprecation.spec.ts`, `packages/core/tests/src/lib/cli/state-registry-is-chosen.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/startup-gate/start-checkout-hydration.spec.ts`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`, `plugins/proposals/tests/src/lib/services/review-claim-timeout.e2e.spec.ts`
+- **Gate**: none
+- acceptance:
+  - "The slowest specs of a CI shard (full list with durations from the vitest JSON reporter) use in-memory git or repo templates, a fake clock and no tsc spawn"
+  - "The over-budget list of S7 shrinks with each fix; no budget is raised to make a test pass"
+
+### S7 — Every test declares a maximum time, enforced by code
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/README.md`, `packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `.github/workflows/ci.yml`, `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/test/test-time-budget.migration.json`, `vitest.shared.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Gate**: none
+- acceptance:
+  - "Every test carries its maximum at the front of its name, "[<7ms] does X"; the runner reads it from the name, so reporters show it with nothing injected. A missing or malformed prefix fails the test"
+  - "A test that exceeds its budget fails; the test-kit runner is loaded for every project from sharedTestOptions in vitest.shared.ts with no opt-out, and adds one clock read before and after each test"
+  - "Only the test body is measured, not hooks or the file import. The number is absolute, with no hidden multiplier. CI is where it is enforced and where it is calibrated: a budget is ceil(1.5 x the longest time CI measured for that test), at least 4 ms above it, read from the per-test times every shard uploads (`bun run test:budgets:calibrate --from-ci=<run-id>`)"
+  - "tools/scripts/ci/spec-duration-budget.script.ts gains the declared-budget check (no second lint); a lint and a spec of the shared config prove every vitest project loads the runner"
+  - "Spec files still holding tests with no budget are on tools/scripts/test/test-time-budget.migration.json, which may only shrink; a spec file the change edits must leave it and comply in full (checked with the changed-files input of the other gates); renaming the rest follows in batches"
+  - "A test without a budget fails only in a spec file the change touches (the changed-files input the declared check uses), so a test an older branch lands cannot turn develop or another change red; with the change unknown every file is held to it"
+  - "An over-budget test fails on CI. A run anywhere else reports over-budget tests as one summary of warnings and never fails on them (wall time there measures that machine); a missing or malformed budget fails everywhere. Local detection is GITHUB_ACTIONS until the shared isRunningInProjectCi reader (i00005) lands"
+  - "The rule is documented in the bootstrap (within its byte budget) and the test-kit README, with the config line a consuming project adds"
+
+### S8 — init renders its config in linear time, once per process
+- **Status**: pending
+- **Files**: `packages/core/src/lib/config/jsonc-document.ts`, `packages/core/src/lib/plugins/config-block-docs.ts`, `packages/core/tests/src/lib/config/jsonc-document.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "applyJsoncEdits inserts every leading comment from one parse after the value edits, not one parse per comment, and each comment stays above its own member"
+  - "A comment queued for a member a later edit removed is not written"
+  - "The config-block comments are derived from the schema once per process"
+  - "Profiled over six init runs, renderInitBundle no longer appears among the costly frames; what remains of an init run is file I/O (atomic writes, fsync, file mutex), which is S6's"
+
+### S9 — The slow-spec issue closes when no offender is left
+- **Status**: pending
+- **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/slow-spec-issue.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "When the integration run finds no spec over its budget, the CI step closes the open slow-spec issue with a comment naming the run, instead of refreshing it with an empty list; while offenders remain it still refreshes or opens the issue (slow-spec-issue.spec.ts)."
+
+### S10 — A budget the change sets is corrected from CI, not failed; develop's budgets follow CI
+- **Status**: pending
+- **DependsOn**: [S7]
+- **Files**: `packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/contracts/constants/time-budget.constant.ts`, `packages/test-kit/src/contracts/interfaces/time-budget.interface.ts`, `packages/test-kit/src/public/index.ts`, `packages/test-kit/tests/src/lib/time-budget.helper.spec.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/ci/declared-test-budget.spec.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibration.spec.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `vitest.shared.ts`, `package.json`, `.github/workflows/ci.yml`, `.github/workflows/test-budget-calibration.yml`
+- **Gate**: type
+- acceptance:
+  - "On CI, a test whose budget the change declares or changes (a budgeted name on a line the diff adds) and that runs over it does not fail its shard; every other overrun fails exactly as before"
+  - "The merge step (bun run test:budgets:check) fails the change for every test CI measured over its declared budget, naming ceil(1.5 x measured) as the number the spec must declare"
+  - "A weekly workflow reads the last N develop runs' duration artifacts (test:budgets:calibrate --from-develop=N --update) and opens or refreshes one pull request raising the budgets CI measured over"
+
+### S11 — Test helpers build their repository once per worker, and the git-init rule sees them
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `packages/test-kit/src/lib/template-git-repo.helper.ts`, `packages/test-kit/src/public/index.ts`, `packages/test-kit/tests/src/lib/test-time-and-git.helper.spec.ts`, `packages/core/tests/src/lib/work-units/unit-repo.helper.ts`, `tools/scripts/lint/spec-git-init.helper.ts`, `tools/scripts/lint/spec-git-init.script.ts`, `tools/scripts/lint/spec-git-init.helper.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/test/test-time-budget.migration.json`, `packages/test-kit/tests/src/lib/shared-git-repo-template.helper.spec.ts`, `packages/core/tests/src/lib/integration-engine/integration-repo.ts`, `packages/core/tests/src/lib/startup-reconciler/startup-workspace.ts`, `packages/core/tests/src/lib/wip-engine/wip-repo.ts`, `plugins/commit-policy/tests/integration/_fixtures/git-tmp.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver-harness.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`
+- **Gate**: type
+- acceptance:
+  - "lint:spec-git-init also scans the modules specs import for setup outside the e2e tier, and baselines the helpers that still run git init per call"
+  - "createSharedGitRepoTemplate builds a repository once per worker with no vitest hook, so a helper shared across files under isolate: false copies it per case"
+  - "unit-repo.helper.ts copies the shared template instead of running git init per case"
+  - "The six helpers the wider scan found build their repositories once per worker (createSharedGitFixture) and leave the baseline"
+
+## acceptance
+
+- The lint refuses a spec that waits on a real timer or sleep unless it goes through @delendai/test-kit (useFakeClock and its peers) or a declared deterministic barrier
+- Specs that turned develop red are fixed first, each commit stating the cause
+- The baseline only shrinks
+- bun audit and any other network gate do not run in prove or the PR run
+- They run at the develop to main promotion and on a schedule
+- Scaffold TODOs and the other hygiene findings are refused at write time, so they never reach CI
+- The report prints these numbers per week
+- Coverage instruments only changed source files and shard time is measured before and after
+- The slowest specs are made fast and the over-budget list shrinks
+- Every test names its maximum at the front, and exceeding it fails the run; the list of tests without one only shrinks
