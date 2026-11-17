@@ -123,3 +123,23 @@ describe('printPathOnly', () => {
 		expect(printPathOnly(refused)).toEqual(refused);
 	});
 });
+
+describe('work offline', () => {
+	it('[<50ms] starts no server for any subcommand but deliver', () => {
+		const { offline } = createWorkCommand();
+		const isOffline = (args: readonly string[]): boolean =>
+			typeof offline === 'function' ? offline(args) : offline === true;
+		for (const sub of [
+			'status',
+			'enter',
+			'checkpoint',
+			'swarm',
+			'prove',
+			'publish',
+			'retire',
+		]) {
+			expect(isOffline([sub])).toBe(true);
+		}
+		expect(isOffline(['deliver', '--proposal=x1'])).toBe(false);
+	});
+});
