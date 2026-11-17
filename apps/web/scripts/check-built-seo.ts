@@ -29,35 +29,41 @@ export const seoProblems = (
 	return problems;
 };
 
-const htmlFiles = (dir: string): string[] =>
+export const htmlFiles = (dir: string): string[] =>
 	readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
 		e.isDirectory()
-			? htmlFiles(join(dir, e.name))
+			? e.name === 'pagefind' || e.name === 'api'
+				? []
+				: htmlFiles(join(dir, e.name))
 			: e.name.endsWith('.html')
 				? [join(dir, e.name)]
 				: [],
 	);
 
-const main = (): void => {
+/** Checks every built page under `root`; returns the page count and one line per failing page. */
+export const checkBuiltSeo = (
+	root: string,
+	locales: readonly string[],
+): { readonly pages: number; readonly failures: string[] } => {
+	const files = htmlFiles(root);
+	const failures = files.flatMap((f) => {
+		const p = seoProblems(readFileSync(f, 'utf8'), locales);
+		return p.length > 0 ? [`${f}: ${p.join(', ')}`] : [];
+	});
+	return { pages: files.length, failures };
+};
+
+if (import.meta.main) {
 	const root = WELL_KNOWN.webApp();
-	const locales = languages.map((l) => l.code);
-	const files = htmlFiles(root).filter(
-		(f) => !f.includes('/pagefind/') && !f.includes('/api/'),
+	const { pages, failures } = checkBuiltSeo(
+		root,
+		languages.map((l) => l.code),
 	);
-	if (files.length === 0) {
+	if (pages === 0) {
 		console.error(`check-built-seo: no built pages under ${root}`);
 		process.exit(1);
 	}
-	let failed = 0;
-	for (const f of files) {
-		const p = seoProblems(readFileSync(f, 'utf8'), locales);
-		if (p.length > 0) {
-			failed++;
-			console.error(`${f}: ${p.join(', ')}`);
-		}
-	}
-	if (failed > 0) process.exit(1);
-	console.log(`check-built-seo: ${files.length} pages ok`);
-};
-
-if (import.meta.main) main();
+	for (const f of failures) console.error(f);
+	if (failures.length > 0) process.exit(1);
+	console.log(`check-built-seo: ${pages} pages ok`);
+}

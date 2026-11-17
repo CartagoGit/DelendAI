@@ -117,44 +117,42 @@ export const apiDocsProblem = (
 	return null;
 };
 
-const packagesSrcNewest = (): number => {
-	const pkgs = join(repoRoot(), 'packages');
-	return Math.max(
+/** Newest .ts mtime across every `packages/<name>/src`. */
+export const packagesSrcNewest = (packagesDir: string): number =>
+	Math.max(
 		0,
-		...readdirSync(pkgs).map((n) => {
+		...readdirSync(packagesDir).map((n) => {
 			try {
-				return newestSourceMtime(join(pkgs, n, 'src'));
+				return newestSourceMtime(join(packagesDir, n, 'src'));
 			} catch {
 				return 0;
 			}
 		}),
 	);
-};
 
-const indexMtime = (): number | null => {
+export const indexMtime = (docsDir: string): number | null => {
 	try {
-		return statSync(join(TARGET_ABS, 'index.html')).mtimeMs;
+		return statSync(join(docsDir, 'index.html')).mtimeMs;
 	} catch {
 		return null;
 	}
 };
 
-const ensureFreshApiDocs = (): void => {
-	const src = packagesSrcNewest();
-	let problem = apiDocsProblem(indexMtime(), src);
-	if (problem === null) return;
-	console.warn(`! ${problem}; running \`bun run docs:api\``);
-	spawnSync('bun', ['run', 'docs:api'], {
-		cwd: repoRoot(),
-		stdio: 'inherit',
-	});
-	problem = apiDocsProblem(indexMtime(), src);
-	if (problem !== null) {
-		console.error(
-			`✗ ${problem} even after \`bun run docs:api\` (${TARGET_ABS})`,
-		);
-		process.exit(1);
-	}
+/**
+ * Returns null when the docs are current; otherwise regenerates once via
+ * `regenerate` and returns the remaining problem (null when it fixed it).
+ */
+export const ensureFreshApiDocs = (
+	docsDir: string,
+	packagesDir: string,
+	regenerate: () => void,
+): string | null => {
+	const src = packagesSrcNewest(packagesDir);
+	const first = apiDocsProblem(indexMtime(docsDir), src);
+	if (first === null) return null;
+	console.warn(`! ${first}; running \`bun run docs:api\``);
+	regenerate();
+	return apiDocsProblem(indexMtime(docsDir), src);
 };
 
 const main = (): void => {
@@ -191,5 +189,20 @@ const main = (): void => {
 
 if (import.meta.main) {
 	main();
-	ensureFreshApiDocs();
+	const problem = ensureFreshApiDocs(
+		TARGET_ABS,
+		join(repoRoot(), 'packages'),
+		() => {
+			spawnSync('bun', ['run', 'docs:api'], {
+				cwd: repoRoot(),
+				stdio: 'inherit',
+			});
+		},
+	);
+	if (problem !== null) {
+		console.error(
+			`✗ ${problem} even after \`bun run docs:api\` (${TARGET_ABS})`,
+		);
+		process.exit(1);
+	}
 }

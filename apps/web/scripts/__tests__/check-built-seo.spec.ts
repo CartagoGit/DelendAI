@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { seoProblems } from '../check-built-seo.ts';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { checkBuiltSeo, seoProblems } from '../check-built-seo.ts';
 
 const page = (
 	h1s: number,
@@ -36,5 +39,24 @@ describe('seoProblems', () => {
 		expect(
 			seoProblems('<meta http-equiv="refresh" content="0">', ['en']),
 		).toEqual([]);
+	});
+});
+
+describe('checkBuiltSeo [<100ms]', () => {
+	it('lists failing pages and skips pagefind and api output [<100ms]', () => {
+		const root = mkdtempSync(join(tmpdir(), 'cbs-'));
+		mkdirSync(join(root, 'bad'));
+		mkdirSync(join(root, 'pagefind'));
+		mkdirSync(join(root, 'api'));
+		writeFileSync(join(root, 'index.html'), page(1, true, ['en']));
+		writeFileSync(join(root, 'bad', 'index.html'), page(0, true, ['en']));
+		writeFileSync(join(root, 'pagefind', 'x.html'), '');
+		writeFileSync(join(root, 'api', 'x.html'), '');
+		writeFileSync(join(root, 'note.txt'), '');
+		const r = checkBuiltSeo(root, ['en']);
+		expect(r.pages).toBe(2);
+		expect(r.failures).toEqual([
+			`${join(root, 'bad', 'index.html')}: 0 h1 (want 1)`,
+		]);
 	});
 });
