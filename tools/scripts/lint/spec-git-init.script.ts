@@ -22,7 +22,11 @@ import {
 	countBaselineGrowth,
 	refuseBaselineGrowth,
 } from './baseline-growth.helper';
-import { countGitInits, isFastSpec } from './spec-git-init.helper';
+import {
+	countGitInits,
+	isFastSpec,
+	isFastTestSupport,
+} from './spec-git-init.helper';
 
 /** This lint's own spec quotes the patterns it looks for. */
 const SELF_SPEC = 'tools/scripts/lint/spec-git-init.helper.spec.ts';
@@ -42,13 +46,16 @@ const main = (): number => {
 		])
 	)
 		return 1;
-	const files = execFileSync('git', ['ls-files', '*.spec.ts', '*.spec.tsx'], {
+	const files = execFileSync('git', ['ls-files', '*.ts', '*.tsx'], {
 		cwd: root,
 		encoding: 'utf8',
 	})
 		.split('\n')
 		.filter(
-			(file) => file !== '' && isFastSpec(file) && file !== SELF_SPEC,
+			(file) =>
+				file !== '' &&
+				(isFastSpec(file) || isFastTestSupport(file)) &&
+				file !== SELF_SPEC,
 		);
 	const current: Record<string, number> = {};
 	for (const file of files) {
