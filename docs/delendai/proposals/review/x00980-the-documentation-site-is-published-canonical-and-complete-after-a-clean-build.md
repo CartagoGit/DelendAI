@@ -2,10 +2,14 @@
 id: x00980
 title: "The documentation site is published, canonical and complete after a clean build"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
+last-transition-id: e2688ed5-cb49-4b8c-8fda-14ca35732fec
+last-correlation-id: e2688ed5-cb49-4b8c-8fda-14ca35732fec
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T20:26:04.621Z
 ---
 
 # x00980 — The documentation site is published, canonical and complete after a clean build
@@ -27,25 +31,34 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - global_gate: type
 
 ### S1 — Pages publishes the site
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/pages.yml`, `apps/web/astro.config.mjs`
 - **Gate**: type
 - acceptance:
   - "A push to main deploys Pages; the published root and three deep routes answer 200 (G136). Enabling Pages in the repo settings is the owner's step and is stated in the PR."
+- shipped-in: `ae10a17064dc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Canonical, hreflang, one h1
-- **Status**: pending
+- **Status**: review
 - **Files**: `apps/web/src/layouts/Base.astro`, `apps/web/src/pages/capabilities.astro`, `apps/web/src/pages/[lang]/capabilities.astro`
 - **Gate**: type
 - acceptance:
   - "Every built page has one h1, a canonical and hreflang for each locale; a built-output check fails otherwise (D12, G137)."
+- shipped-in: `fb363c7ec614`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — /api is built, not linked
-- **Status**: pending
+- **Status**: review
 - **Files**: `apps/web/scripts/sync-public-api.ts`, `apps/web/package.json`
 - **Gate**: type
 - acceptance:
   - "dev, preview and build generate or copy the API docs and fail when the source is missing or older than the code (G50, D33)."
+- shipped-in: `3638714938ca`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
