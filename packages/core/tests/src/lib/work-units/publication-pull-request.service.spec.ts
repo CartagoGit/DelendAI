@@ -56,7 +56,7 @@ const portsWith = (answers: {
 };
 
 describe('openPublicationPullRequest', () => {
-	it('opens the pull request, titled by the work and not by its bookkeeping', () => {
+	it('[<10ms] opens the pull request, titled by the work and not by its bookkeeping', () => {
 		const ports = portsWith({
 			url: 'git@github.com:owner/repo.git',
 			created: 'https://github.com/owner/repo/pull/7',
@@ -72,14 +72,14 @@ describe('openPublicationPullRequest', () => {
 		});
 		const args = ports.created[0] ?? [];
 		expect(args[args.indexOf('--title') + 1]).toBe(
-			'fix(core): the real change',
+			'fix(repo): the real change',
 		);
 		expect(args[args.indexOf('--base') + 1]).toBe('develop');
 		expect(args[args.indexOf('--head') + 1]).toBe(INPUT.branch);
 		expect(args).not.toContain('--auto');
 	});
 
-	it('reuses the pull request already open', () => {
+	it('[<10ms] reuses the pull request already open', () => {
 		const ports = portsWith({
 			url: 'https://github.com/owner/repo',
 			existing: 'https://github.com/owner/repo/pull/3',
@@ -135,7 +135,7 @@ describe('openPublicationPullRequest', () => {
 			});
 		};
 
-		it('retitles a pull request whose scope shrank between two publishes', () => {
+		it('[<10ms] retitles a pull request whose scope shrank between two publishes', () => {
 			const store = { title: '', body: '' };
 			const github = fakeForge('github', 'github.com', store);
 			const remote = 'https://github.com/owner/repo';
@@ -146,19 +146,18 @@ describe('openPublicationPullRequest', () => {
 			expect(result).toEqual({
 				status: 'updated',
 				url: open,
-				title: 'feat(x): one x00001 S1',
+				title: 'feat(repo): one x00001 S1',
 			});
-			expect(github.writes[0]).toContain('(+1 more)');
-			expect(store.body).toContain('Ships: x00001 S1.');
+			expect(store.body).toContain('- x00001 S1');
 			expect(store.body).not.toContain('S2');
-			expect(store.body).toContain('Final diff: 1 file(s)');
+			expect(store.body).toContain('## Files and zones');
 			// Nothing to say the third time: nothing is rewritten.
 			expect(
 				publish(remote, 'feat(x): one x00001 S1', [github]).status,
 			).toBe('existing');
 		});
 
-		it('refreshes a GitLab merge request through the GitLab adapter', () => {
+		it('[<10ms] refreshes a GitLab merge request through the GitLab adapter', () => {
 			const store = { title: 'old', body: 'old' };
 			const gitlab = fakeForge('gitlab', 'gitlab.com', store);
 			const result = publish(
@@ -170,10 +169,10 @@ describe('openPublicationPullRequest', () => {
 				status: 'updated',
 				url: 'https://gitlab.com/o/r/-/mr/4',
 			});
-			expect(store.title).toBe('fix(x): done x00002 S1');
+			expect(store.title).toBe('fix(repo): done x00002 S1');
 		});
 
-		it('lists a long diff briefly and reports a forge that refuses', () => {
+		it('[<10ms] lists a long diff briefly and reports a forge that refuses', () => {
 			const refusing: IChangeRequestForge = {
 				...fakeForge('github', 'github.com', { title: '', body: '' }),
 				update: () => false,
@@ -204,7 +203,7 @@ describe('openPublicationPullRequest', () => {
 			});
 		});
 
-		it('leaves a pull request whose URL carries no number as it is', () => {
+		it('[<10ms] leaves a pull request whose URL carries no number as it is', () => {
 			const ports = portsWith({
 				url: 'https://github.com/owner/repo',
 				existing: 'https://github.com/owner/repo/pulls',
@@ -215,7 +214,7 @@ describe('openPublicationPullRequest', () => {
 			});
 		});
 
-		it('skips another forge when no adapter finds a change request there', () => {
+		it('[<10ms] skips another forge when no adapter finds a change request there', () => {
 			const ports = portsWith({ url: 'git@gitlab.com:o/r.git' });
 			const none: IChangeRequestForge = {
 				...fakeForge('gitlab', 'gitlab.com', { title: '', body: '' }),
@@ -233,7 +232,7 @@ describe('openPublicationPullRequest', () => {
 			).toMatchObject({ status: 'skipped' });
 		});
 
-		it('says plainly that no forge plugin can rewrite the text', () => {
+		it('[<10ms] says plainly that no forge plugin can rewrite the text', () => {
 			expect(
 				publish('https://github.com/owner/repo', 'feat(x): a', []),
 			).toMatchObject({
@@ -243,7 +242,7 @@ describe('openPublicationPullRequest', () => {
 		});
 	});
 
-	it('says what to do on another forge, or without its CLI', () => {
+	it('[<10ms] says what to do on another forge, or without its CLI', () => {
 		expect(
 			openPublicationPullRequest({
 				...INPUT,
@@ -275,7 +274,7 @@ describe('openPublicationPullRequest', () => {
 		).not.toContain('gh pr create');
 	});
 
-	it("opens it through the REST API when the CLI's own create fails", () => {
+	it("[<10ms] opens it through the REST API when the CLI's own create fails", () => {
 		const ports = portsWith({
 			url: 'git@github.com:o/r.git',
 			created: '',
@@ -296,7 +295,7 @@ describe('openPublicationPullRequest', () => {
 		);
 	});
 
-	it('reports a create that did not open anything', () => {
+	it('[<10ms] reports a create that did not open anything', () => {
 		expect(
 			openPublicationPullRequest({
 				...INPUT,
@@ -310,17 +309,17 @@ describe('openPublicationPullRequest', () => {
 });
 
 describe('pullRequestText', () => {
-	it('falls back to the unit when every commit is bookkeeping', () => {
+	it('[<10ms] falls back to the unit when every commit is bookkeeping', () => {
 		expect(
 			pullRequestText(
 				['chore(review): claim x00001'],
 				'b',
 				'review batch',
 			).title,
-		).toBe('review batch');
+		).toBe('chore(repo): review batch');
 	});
 
-	it('names a review unit by what it claimed and judged, never implement batch (x01032)', () => {
+	it('[<10ms] names a review unit by what it claimed and judged, never implement batch (x01032)', () => {
 		const branch = 'delendai/pr/gpt-5.3-codex/review/batch-all-g1/verdicts';
 		expect(
 			pullRequestText(
@@ -328,7 +327,7 @@ describe('pullRequestText', () => {
 				branch,
 				'implement batch',
 			).title,
-		).toBe('review: claim(s) on x01016, d00418');
+		).toBe('review(repo): claim(s) on x01016, d00418 (x01016+d00418)');
 		expect(
 			pullRequestText(
 				[
@@ -338,10 +337,10 @@ describe('pullRequestText', () => {
 				branch,
 				'implement batch',
 			).title,
-		).toBe('review: 1 verdict(s) on x01004');
+		).toBe('review(repo): 1 verdict(s) on x01004 (x01004)');
 	});
 
-	it('titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
+	it('[<10ms] titles a pack of verdicts by what it judged, not by its bookkeeping', () => {
 		// Newest first, as git lists them: the pack that went out as
 		// "chore(review): release r00040" carried approvals of f00643.
 		expect(
@@ -357,10 +356,10 @@ describe('pullRequestText', () => {
 				'delendai/pr/gpt-5.4/review/batch-all-g3/review-pack',
 				'review batch',
 			).title,
-		).toBe('review: 3 verdict(s) on q00010, f00643');
+		).toBe('review(repo): 3 verdict(s) on q00010, f00643 (q00010+f00643)');
 	});
 
-	it('titles a pack by its verdicts even when its reviewer touched a document', () => {
+	it('[<10ms] titles a pack by its verdicts even when its reviewer touched a document', () => {
 		expect(
 			pullRequestText(
 				[
@@ -371,10 +370,10 @@ describe('pullRequestText', () => {
 				'delendai/pr/glm-5.3-max/review/batch-all-g3/verdicts',
 				'review batch',
 			).title,
-		).toBe('review: 1 verdict(s) on x00835');
+		).toBe('review(repo): 1 verdict(s) on x00835 (x00835)');
 	});
 
-	it('is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
+	it('[<10ms] is titled by the oldest commit that delivers, past tool records, regeneration and merges', () => {
 		// Newest first, as `git log` lists them.
 		const text = pullRequestText(
 			[
@@ -388,12 +387,12 @@ describe('pullRequestText', () => {
 			'unit',
 		);
 		expect(text.title).toBe(
-			'fix(release): release tooling follows the configured branches',
+			'fix(repo): release tooling follows the configured branches',
 		);
 		expect(text.body).not.toContain('Merge ');
 	});
 
-	it('is titled by its own slice when it carries another unit merged in', () => {
+	it('[<10ms] is titled by its own slice when it carries another unit merged in', () => {
 		// Newest first, as `git log` lists them: S39's commit came in with
 		// the publication this unit merged, and is the oldest.
 		const { title } = pullRequestText(
@@ -406,32 +405,59 @@ describe('pullRequestText', () => {
 			'fallback',
 		);
 		expect(title).toBe(
-			'fix(proposals): the queue offers no reviewer a slice its own unit delivered (x00875 S23)',
+			'fix(repo): the queue offers no reviewer a slice its own unit delivered (x00875 S23) (x00875-S23)',
 		);
 	});
 
-	it('keeps the oldest delivery when none cites the unit', () => {
+	it('[<10ms] keeps the oldest delivery when none cites the unit', () => {
 		const { title } = pullRequestText(
 			['fix: second', 'fix: first'],
 			'delendai/pr/agent/implement/x00001-S1-g1/topic',
 			'fallback',
 		);
-		expect(title).toBe('fix: first (+1 more)');
+		expect(title).toBe('fix(repo): first (x00001-S1)');
 	});
 
-	it('takes the oldest meaningful commit when none follows the delivery types', () => {
+	it('[<10ms] takes the oldest meaningful commit when none follows the delivery types', () => {
 		expect(
 			pullRequestText(
 				['chore(deps): bump zod', 'chore(delendai): a tool record'],
 				'b',
 				'unit',
 			).title,
-		).toBe('chore(deps): bump zod');
+		).toBe('chore(repo): bump zod');
+	});
+});
+
+describe('the pull request text follows the one template (f00809)', () => {
+	it('[<10ms] renders a pack of verdicts with a Verdicts section and no count suffix', () => {
+		const text = pullRequestText(
+			[
+				'chore(delendai): delendai_proposals_proposal_review f00643 S3 approve',
+				'chore(delendai): delendai_proposals_proposal_review f00643 S2 approve',
+			],
+			'delendai/pr/a/review/batch-all-g1/pack',
+			'review batch',
+		);
+		expect(text.body).toContain('## Verdicts');
+		expect(text.body).toContain('- f00643: approve');
+		expect(text.body).not.toContain('## Slices shipped');
+		expect(text.title).not.toContain('more)');
+	});
+
+	it('[<10ms] titles several deliveries by the oldest, with the work sections', () => {
+		const text = pullRequestText(
+			['fix: second', 'fix: first'],
+			'delendai/pr/a/implement/x1-S1-g1/t',
+			'fallback',
+		);
+		expect(text.title).not.toContain('more)');
+		expect(text.body).toContain('## Slices shipped');
 	});
 });
 
 describe('the urgent mark on a pull request (x01051)', () => {
-	it('puts one Urgent line in the body and reads it back', () => {
+	it('[<10ms] puts one Urgent line in the body and reads it back', () => {
 		const text = pullRequestText(
 			['fix: a thing'],
 			'delendai/pr/a/implement/x1-all-g1/t',
@@ -446,7 +472,7 @@ describe('the urgent mark on a pull request (x01051)', () => {
 		);
 	});
 
-	it('carries no mark when nobody said it was urgent', () => {
+	it('[<10ms] carries no mark when nobody said it was urgent', () => {
 		const text = pullRequestText(['fix: a thing'], 'b', 'fallback');
 		expect(text.body).not.toContain('Urgent:');
 		expect(urgentReasonOfBody(text.body)).toBeUndefined();
@@ -468,7 +494,7 @@ describe('openUnitPullRequest (x01051)', () => {
 		fallbackTitle: 'fix x1',
 	};
 
-	it('opens nothing when the caller asked for none', async () => {
+	it('[<10ms] opens nothing when the caller asked for none', async () => {
 		expect(
 			await openUnitPullRequest({
 				...input,
@@ -477,11 +503,12 @@ describe('openUnitPullRequest (x01051)', () => {
 		).toBeUndefined();
 	});
 
-	it('reports a remote it does not recognise rather than opening a pull request', async () => {
+	it('[<10ms] reports a remote it does not recognise rather than opening a pull request', async () => {
 		const opened = await openUnitPullRequest({
 			...input,
 			args: [],
 			urgent: 'integration is red',
+			ports: portsWith({}),
 		});
 		expect(opened?.status).toBe('skipped');
 	});
