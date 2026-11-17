@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { dictsByLang } from '@delendai/shared/i18n';
 
 import {

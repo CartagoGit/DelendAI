@@ -143,3 +143,30 @@ export {
 	lowPriority,
 } from '../lib/platform/background-load.service';
 export { currentHostMaintenance } from '../lib/development-policy/maintenance-lease.service';
+
+// The workspace's shared forge event store: the server that hears the forge
+// writes each event, every server's notification bridge reads it.
+export {
+	addForgeEventSubscription,
+	appendForgeEventRecord,
+	forgeEventRecordsDir,
+	forgeEventsDir,
+	readForgeEventRecord,
+	readForgeEventSubscriptions,
+} from '../lib/forge-events/forge-event-store.service';
+export {
+	catchUpForgeEvents,
+	forgeEventKey,
+} from '../lib/forge-events/forge-event-catch-up.service';
+export type {
+	IForgeCatchUpCursor,
+	IForgeCatchUpEvent,
+	IForgeCatchUpInput,
+	IForgeCatchUpSource,
+	IForgeCatchUpTarget,
+} from '../lib/contracts/interfaces/forge-catch-up.interface';
+export {
+	forgeCursorTarget,
+	markForgeEventDelivered,
+	readForgeEventCursor,
+} from '../lib/forge-events/forge-event-cursor.service';

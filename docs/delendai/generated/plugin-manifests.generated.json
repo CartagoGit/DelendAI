@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-03T01:24:49.458Z",
+	"generatedAt": "2026-11-15T02:43:42.348Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1210,7 +1210,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"presets": [
 				"everything"
@@ -1343,6 +1344,43 @@
 			"capabilities": [
 				"impact-analysis",
 				"test-selection"
+			]
+		},
+		{
+			"id": "integration",
+			"package": "@delendai/integration",
+			"version": "0.3.0",
+			"visibility": "public",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read",
+				"process",
+				"env-read"
+			],
+			"presets": [
+				"everything"
+			],
+			"tokenBudget": {
+				"staticBytes": 120,
+				"caps": {
+					"hard": 400,
+					"warning": 300
+				},
+				"measuredAt": "2026-11-12",
+				"source": "token-budget-real"
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": [
+				"integration"
 			]
 		},
 		{
@@ -1610,12 +1648,12 @@
 				"dogfood"
 			],
 			"tokenBudget": {
-				"staticBytes": 1872,
+				"staticBytes": 3429,
 				"caps": {
-					"hard": 2160,
-					"warning": 1970
+					"hard": 3960,
+					"warning": 3610
 				},
-				"measuredAt": "2026-11-01",
+				"measuredAt": "2026-11-11",
 				"source": "token-budget-real"
 			},
 			"dependencies": [
@@ -3344,7 +3382,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -3392,6 +3431,23 @@
 				"filesystem-read"
 			],
 			"tokenBudgetBytes": 1904
+		},
+		{
+			"origin": "first-party",
+			"id": "integration",
+			"package": "@delendai/integration",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"permissions": [
+				"filesystem-read",
+				"process",
+				"env-read"
+			],
+			"tokenBudgetBytes": 120
 		},
 		{
 			"origin": "first-party",
@@ -3526,7 +3582,7 @@
 				"filesystem-read",
 				"filesystem-write"
 			],
-			"tokenBudgetBytes": 1872
+			"tokenBudgetBytes": 3429
 		},
 		{
 			"origin": "first-party",
@@ -4902,7 +4958,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			],
 			"tokenBudget": {
 				"warning": 2700,
@@ -4992,6 +5049,34 @@
 			"tokenBudget": {
 				"warning": 2000,
 				"hard": 2190,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
+			"id": "integration",
+			"package": "@delendai/integration",
+			"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+			"tags": [
+				"integration",
+				"pull-request",
+				"rehearsal"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [
+				"everything"
+			],
+			"capabilities": [
+				"integration"
+			],
+			"permissions": [
+				"filesystem-read",
+				"process",
+				"env-read"
+			],
+			"tokenBudget": {
+				"warning": 300,
+				"hard": 400,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -5144,8 +5229,8 @@
 				"filesystem-write"
 			],
 			"tokenBudget": {
-				"warning": 1970,
-				"hard": 2160,
+				"warning": 3610,
+				"hard": 3960,
 				"releaseRelativePercent": 20
 			}
 		},
@@ -6035,6 +6120,12 @@
 			"releaseRelativePercent": 20
 		},
 		{
+			"id": "integration",
+			"warning": 300,
+			"hard": 400,
+			"releaseRelativePercent": 20
+		},
+		{
 			"id": "issues",
 			"warning": 870,
 			"hard": 950,
@@ -6066,8 +6157,8 @@
 		},
 		{
 			"id": "notification",
-			"warning": 1970,
-			"hard": 2160,
+			"warning": 3610,
+			"hard": 3960,
 			"releaseRelativePercent": 20
 		},
 		{
@@ -6576,7 +6667,8 @@
 			"permissions": [
 				"filesystem-write",
 				"network",
-				"env-read"
+				"env-read",
+				"process"
 			]
 		},
 		{
@@ -6597,6 +6689,14 @@
 			"id": "impact-analysis",
 			"permissions": [
 				"filesystem-read"
+			]
+		},
+		{
+			"id": "integration",
+			"permissions": [
+				"filesystem-read",
+				"process",
+				"env-read"
 			]
 		},
 		{
@@ -8643,6 +8743,62 @@
 			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "solo",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "team-pr",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "everything",
+			"declared": true,
+			"catalogMember": true,
+			"matches": true
+		},
+		{
+			"pluginId": "integration",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
 			"matches": true
 		},
 		{

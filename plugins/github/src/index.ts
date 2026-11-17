@@ -48,6 +48,20 @@ const OptionsSchema = z
 export { createGitHubHttpClient } from './lib/client';
 export { resolveGitHubProviderContext } from './lib/config';
 export { diagnoseGitHubWorkflow } from './lib/diagnostics';
+export {
+	createGitHubEventAdapter,
+	mapGitHubEvent,
+	verifyGitHubSignature,
+} from './lib/webhook-events.service';
+export { createGitHubCatchUpSource } from './lib/catch-up-source.service';
+export type {
+	IGitHubCatchUpInput,
+	IGitHubCatchUpRun,
+} from './lib/contracts/interfaces/catch-up-source.interface';
+export {
+	createGhWebhookForwardTransport,
+	ghForwardArgs,
+} from './lib/webhook-forward.service';
 export type { IGitHubPluginOptions } from './lib/config';
 export type {
 	IGitHubWorkflowDiagnosticInput,

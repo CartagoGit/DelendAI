@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
 import { documentedEnum } from './config-schema-docs';
 import { PUBLICATION_GRANULARITY_DOCS } from '../contracts/constants/config-schema-docs.constant';
+import { IntegrationOptionsShape } from './integration-options-schema.constant';
 import { strategy, wholeNumber } from './development-axis-helpers';
 
 export const IntegrationAxis = z
@@ -104,6 +105,7 @@ export const IntegrationAxis = z
 				'Who integrates ready work: `land`, the one stateless integrator that merges what does not overlap and batches what does, or `none` (the default) when the forge or a person merges.',
 			)
 			.optional(),
+		...IntegrationOptionsShape,
 		protocol: z
 			.number()
 			.int()
@@ -116,6 +118,12 @@ export const IntegrationAxis = z
 			.boolean()
 			.describe(
 				'Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands.',
+			)
+			.optional(),
+		forgeEvents: z
+			.boolean()
+			.describe(
+				'Whether the server that maintains this workspace receives forge events (pushes, pull requests, checks, reviews, issues) over a connection it opens out, and follows the integration branch and brings labelled pull requests forward the moment they arrive, instead of looking every minute. Off by default. For GitHub it needs the `gh` extension `cli/gh-webhook` and a login that may create repository webhooks; while no connection is up the server falls back to looking on its timer.',
 			)
 			.optional(),
 		mergeMethod: z
