@@ -2,14 +2,14 @@
 id: x01065
 title: "The first-call cold import and the per-test git init leave the CLI entry spec, and the real host boot is named an e2e spec"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-13
-last-transition-id: 17b150e4-2b10-4a4b-9a0a-88794b24ab51
-last-correlation-id: 17b150e4-2b10-4a4b-9a0a-88794b24ab51
-last-transition-from: ready
-last-transition-at: 2026-11-17T21:28:38.427Z
+last-transition-id: 50311de5-6258-4918-8709-8b819c82eccc
+last-correlation-id: 50311de5-6258-4918-8709-8b819c82eccc
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T21:54:43.164Z
 ---
 
 # x01065 — The first-call cold import and the per-test git init leave the CLI entry spec, and the real host boot is named an e2e spec
@@ -33,9 +33,12 @@ CI measured the CLI entry spec's first test at several seconds because the first
 - global_gate: none
 
 ### S1 — Warm the CLI entry import once, copy repository templates, name the host boot e2e
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/index.e2e.spec.ts`, `tools/scripts/host/host-boot-journal.e2e.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/ci/spec-duration-budget.baseline.json`
 - **Gate**: none
+- shipped-in: `121532481c51`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
