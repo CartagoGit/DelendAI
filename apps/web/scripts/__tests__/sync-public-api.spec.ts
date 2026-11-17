@@ -1,8 +1,21 @@
-import { mkdirSync, mkdtempSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+	lstatSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readlinkSync,
+	symlinkSync,
+	utimesSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { apiDocsProblem, ensureFreshApiDocs } from '../sync-public-api.ts';
+import {
+	apiDocsProblem,
+	ensureFreshApiDocs,
+	syncLink,
+} from '../sync-public-api.ts';
 
 describe('apiDocsProblem', () => {
 	it('fails when the docs are missing [<20ms]', () => {
@@ -66,5 +79,39 @@ describe('ensureFreshApiDocs [<100ms]', () => {
 		expect(ensureFreshApiDocs(docs, pk, () => {})).toBe(
 			'API docs are older than the code',
 		);
+	});
+});
+
+describe('syncLink [<100ms]', () => {
+	const setup = () => {
+		const root = mkdtempSync(join(tmpdir(), 'sl-'));
+		return {
+			link: join(root, 'public', 'api'),
+			target: join(root, 'build', 'docs-api'),
+			root,
+		};
+	};
+	it('creates the link, then leaves it alone [<100ms]', () => {
+		const { link, target } = setup();
+		syncLink(link, target);
+		expect(lstatSync(link).isSymbolicLink()).toBe(true);
+		syncLink(link, target);
+		expect(lstatSync(link).isSymbolicLink()).toBe(true);
+	});
+	it('moves a legacy real directory aside [<100ms]', () => {
+		const { link, target } = setup();
+		mkdirSync(link, { recursive: true });
+		syncLink(link, target);
+		expect(lstatSync(link).isSymbolicLink()).toBe(true);
+		expect(
+			readdirSync(dirname(link)).some((n) => n.startsWith('api.legacy-')),
+		).toBe(true);
+	});
+	it('replaces a wrong symlink [<100ms]', () => {
+		const { link, target, root } = setup();
+		mkdirSync(dirname(link), { recursive: true });
+		symlinkSync(join(root, 'elsewhere'), link, 'dir');
+		syncLink(link, target);
+		expect(readlinkSync(link)).not.toContain('elsewhere');
 	});
 });

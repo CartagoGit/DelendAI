@@ -49,8 +49,6 @@ import {
 const LINK = join(repoRoot(), 'apps', 'web', 'public', 'api');
 const TARGET_ABS = WELL_KNOWN.docsApi();
 
-const relTarget = relativeFrom(LINK, TARGET_ABS);
-
 /**
  * Replace Bun's `existsSync` (which can lie about dangling or
  * just-resolved symlinks by reporting false when lstat sees them). A
@@ -74,7 +72,11 @@ const isDir = (p: string): boolean => {
 	}
 };
 
-const isSymlinkToTarget = (p: string, want: string): boolean => {
+const isSymlinkToTarget = (
+	p: string,
+	want: string,
+	relTarget: string,
+): boolean => {
 	try {
 		const s = lstatSync(p);
 		if (!s.isSymbolicLink()) return false;
@@ -155,40 +157,35 @@ export const ensureFreshApiDocs = (
 	return apiDocsProblem(indexMtime(docsDir), src);
 };
 
-const main = (): void => {
-	mkdirSync(dirname(LINK), { recursive: true });
-	mkdirSync(TARGET_ABS, { recursive: true });
+export const syncLink = (link: string, targetAbs: string): void => {
+	const relTarget = relativeFrom(link, targetAbs);
+	mkdirSync(dirname(link), { recursive: true });
+	mkdirSync(targetAbs, { recursive: true });
 
-	if (pathExists(LINK)) {
-		if (isSymlinkToTarget(LINK, TARGET_ABS)) {
-			console.log(`✓ ${LINK} -> ${relTarget} (already in place)`);
+	if (pathExists(link)) {
+		if (isSymlinkToTarget(link, targetAbs, relTarget)) {
+			console.log(`✓ ${link} -> ${relTarget} (already in place)`);
 			return;
 		}
-		if (isDir(LINK)) {
+		if (isDir(link)) {
 			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-			const moved = join(
-				repoRoot(),
-				'apps',
-				'web',
-				'public',
-				`api.legacy-${stamp}`,
-			);
-			renameSync(LINK, moved);
+			const moved = join(dirname(link), `api.legacy-${stamp}`);
+			renameSync(link, moved);
 			console.warn(
-				`! ${LINK} was a real directory (legacy). Moved to ${moved}. ` +
+				`! ${link} was a real directory (legacy). Moved to ${moved}. ` +
 					`Creating the symlink now.`,
 			);
 		} else {
-			unlinkSync(LINK);
+			unlinkSync(link);
 		}
 	}
 
-	symlinkSync(relTarget, LINK, 'dir');
-	console.log(`✓ ${LINK} -> ${relTarget}`);
+	symlinkSync(relTarget, link, 'dir');
+	console.log(`✓ ${link} -> ${relTarget}`);
 };
 
 if (import.meta.main) {
-	main();
+	syncLink(LINK, TARGET_ABS);
 	const problem = ensureFreshApiDocs(
 		TARGET_ABS,
 		join(repoRoot(), 'packages'),
