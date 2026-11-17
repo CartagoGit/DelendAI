@@ -2,14 +2,14 @@
 id: x01063
 title: "The review-claim timeout spec runs no git process, so its time is the same every run"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: default
 date: 2026-11-13
-last-transition-id: da41d5ba-134b-4420-bd6b-cb759848bda1
-last-correlation-id: da41d5ba-134b-4420-bd6b-cb759848bda1
-last-transition-from: ready
-last-transition-at: 2026-11-17T19:43:19.426Z
+last-transition-id: 332defce-9f6d-4d00-bee8-0c5dca69d46c
+last-correlation-id: 332defce-9f6d-4d00-bee8-0c5dca69d46c
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T20:30:24.554Z
 ---
 
 # x01063 — The review-claim timeout spec runs no git process, so its time is the same every run
@@ -32,9 +32,12 @@ Cause: the timeout under test is already an answer the runner gives, not a clock
 - global_gate: none
 
 ### S1 — Replace the git-backed unit with an in-memory runner
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/tests/src/lib/services/review-claim-timeout.spec.ts`
 - **Gate**: none
+- shipped-in: `4902b74f3f8c`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
