@@ -11,6 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { DEFAULT_INTEGRATION_OPTIONS } from '@delendai/core/cli';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(import.meta.dirname, '../../..');
@@ -57,6 +58,13 @@ const PULL_REQUEST_WRITE =
 /** The engine `delendai.config.json` records. */
 const engineOf = (config: string): string | undefined =>
 	/"engine": "(\w+)"/u.exec(config)?.[1];
+
+/** The repository variable holding the App id: the policy's, else the default; none for a PAT identity. */
+const appIdVariableOf = (config: string): string | undefined =>
+	/"kind": "pat"/u.test(config)
+		? undefined
+		: (/"appIdVariable": "(\w+)"/u.exec(config)?.[1] ??
+			DEFAULT_INTEGRATION_OPTIONS.identity.appIdVariable);
 
 const escapeRegExp = (text: string): string =>
 	text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
@@ -150,8 +158,16 @@ describe('the cutover to land', () => {
 		expect(config).toMatch(/"protocol": \d+/u);
 		const land = join(ROOT, '.github/workflows/land.yml');
 		expect(existsSync(land)).toBe(engineOf(config) === 'land');
-		if (existsSync(land))
-			expect(readFileSync(land, 'utf8')).not.toContain('vars.');
+		// The only repository variable the land may read is the identity's
+		// app id the policy names; every other value is a secret or policy.
+		if (existsSync(land)) {
+			const appId = appIdVariableOf(config);
+			expect(
+				new Set(
+					readFileSync(land, 'utf8').match(/vars\.[\w-]+/gu) ?? [],
+				),
+			).toEqual(new Set(appId === undefined ? [] : [`vars.${appId}`]));
+		}
 	});
 
 	it('[<50ms] while the engine is not land, nothing merges, labels or pushes a pull request', () => {

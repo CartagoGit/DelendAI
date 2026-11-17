@@ -23,7 +23,7 @@ import type {
 import { somethingRuns, wake, workingRun } from './rehearsal-idle.helper';
 import { tokenPush } from './rehearsal-token.helper';
 import { receive } from './rehearsal-receive.helper';
-import { awaitedChecks, redEndsWait } from './rehearsal-wait.helper';
+import { awaitedChecks, idleLimit, redEndsWait } from './rehearsal-wait.helper';
 import {
 	pullChanges,
 	pullHead,
@@ -157,6 +157,7 @@ const awaitUntil = async (
 	step: Extract<IRehearsalStep, { kind: 'await' }>,
 ): Promise<void> => {
 	const allowed = allowedWait(ctx, state);
+	const idleSeconds = idleLimit(ctx, step);
 	const started = ctx.clock.now();
 	let lastTick = started;
 	let lastWake = started;
@@ -189,9 +190,9 @@ const awaitUntil = async (
 			);
 			return;
 		}
-		if (idleMs >= step.seconds * 1000) {
+		if (idleMs >= idleSeconds * 1000) {
 			state.failures.push(
-				`${step.until} not reached in ${String(step.seconds)} s for ${pending.join(', ')}`,
+				`${step.until} not reached in ${String(idleSeconds)} s for ${pending.join(', ')}`,
 			);
 			return;
 		}
@@ -223,7 +224,7 @@ const openPull = async (
 		branch: head,
 		parents: [tip],
 		message: `rehearsal(${scenario.id}): ${spec.key}`,
-		changes: pullChanges(ctx.runId, scenario.id, spec),
+		changes: pullChanges(ctx.runId, scenario.id, spec, {}, ctx.mode),
 	});
 	const number = await ctx.forge.openPull({
 		head,

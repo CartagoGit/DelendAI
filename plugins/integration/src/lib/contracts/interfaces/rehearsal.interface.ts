@@ -33,6 +33,8 @@ export interface IRehearsalPullSpec {
 	readonly declaration: IRehearsalDeclaration;
 	/** Files under `rehearsal/` it writes, path to content. */
 	readonly files: Readonly<Record<string, string>>;
+	/** Written in real mode only, path to content; may sit outside `rehearsal/`, where the project's CI looks for specs. */
+	readonly realFiles?: Readonly<Record<string, string>>;
 	/** Opened as a draft and marked ready by a later step. */
 	readonly draft?: boolean;
 }
@@ -339,11 +341,7 @@ export interface IRehearsalSetupInput {
 	) => string;
 	/** The project's policy file text; the setup points its integration branch at the rehearsal one. */
 	readonly policyText: string;
-	/**
-	 * Real mode: the project's own CI and scan workflows (file name to text)
-	 * replace the fast stand-ins, with their branch filters rendered for the
-	 * rehearsal branch, and the project's required checks stay as they are.
-	 */
+	/** Real mode: the project's CI and scan workflows (name to text) replace the stand-ins, branch filters rendered for the rehearsal branch. */
 	readonly realWorkflows?: Readonly<Record<string, string>>;
 	/** Real mode: the project's integration branch name, the one the filters of those workflows name. */
 	readonly projectIntegration?: string;
@@ -367,6 +365,7 @@ export interface IRehearsalRunContext {
 	/** The longest one wait takes, and the most a scenario spends in all its waits; absent means the fast mode's. */
 	readonly awaitCapSeconds?: number;
 	readonly awaitBudgetSeconds?: number;
+	readonly mode?: IRehearsalMode;
 }
 
 /** What a scenario run keeps while it plays its steps. */
