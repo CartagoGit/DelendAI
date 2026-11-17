@@ -4,16 +4,21 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { openAlertsOf, promotionAlertReport } from './promotion-alerts.script';
+import {
+	analysisCoversTip,
+	openAlertsOf,
+	promotionAlertReport,
+	uncoveredReport,
+} from './promotion-alerts.script';
 
 describe('promotionAlertReport', () => {
-	it('passes a branch with no open alert', () => {
+	it('[<5ms] passes a branch with no open alert', () => {
 		const report = promotionAlertReport('develop', []);
 		expect(report.ok).toBe(true);
 		expect(report.lines.join('\n')).toContain('no open alert on develop');
 	});
 
-	it('refuses a branch with one, naming the rule and where it is', () => {
+	it('[<5ms] refuses a branch with one, naming the rule and where it is', () => {
 		const report = promotionAlertReport('develop', [
 			{
 				number: 439,
@@ -30,7 +35,7 @@ describe('promotionAlertReport', () => {
 });
 
 describe('openAlertsOf', () => {
-	it('reads the rule and the location of each row', () => {
+	it('[<5ms] reads the rule and the location of each row', () => {
 		expect(
 			openAlertsOf([
 				{
@@ -44,9 +49,27 @@ describe('openAlertsOf', () => {
 		).toEqual([{ number: 7, rule: 'js/x', path: 'p.ts', line: 3 }]);
 	});
 
-	it('still lists a row the forge left incomplete', () => {
+	it('[<5ms] still lists a row the forge left incomplete', () => {
 		expect(openAlertsOf([{ number: 8 }])).toEqual([
 			{ number: 8, rule: 'unknown rule', path: 'unknown file', line: 0 },
 		]);
+	});
+});
+
+describe('the analysis that covers a tip', () => {
+	it('[<5ms] covers the tip when it is the analysed commit or an ancestor of it', () => {
+		expect(analysisCoversTip('identical')).toBe(true);
+		expect(analysisCoversTip('ahead')).toBe(true);
+		expect(analysisCoversTip('behind')).toBe(false);
+		expect(analysisCoversTip('diverged')).toBe(false);
+	});
+
+	it('[<5ms] says what is missing when no analysis covers the tip', () => {
+		expect(uncoveredReport('develop', 'a'.repeat(40), undefined)).toContain(
+			'none yet',
+		);
+		expect(
+			uncoveredReport('develop', 'a'.repeat(40), 'b'.repeat(40)),
+		).toContain(`latest is ${'b'.repeat(12)}`);
 	});
 });

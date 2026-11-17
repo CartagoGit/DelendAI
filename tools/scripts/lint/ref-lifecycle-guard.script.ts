@@ -369,44 +369,103 @@ export const closedPublicationRetirement = (
 	return onForge.has(plan.workBranch) ? undefined : plan.retiredRef;
 };
 
+/** Runs a command and answers its trimmed output; throws when it fails. */
+export type ICommandRunner = (
+	file: 'gh' | 'git',
+	args: readonly string[],
+) => string;
+
+const runCommand: ICommandRunner = (file, args) =>
+	execFileSync(file, [...args], {
+		encoding: 'utf8',
+		stdio: ['ignore', 'pipe', 'ignore'],
+	}).trim();
+
 /**
- * Keep `sha` at `retiredRef` on the forge, then delete the publication.
- * A retired ref already there with another tip is left, and so is the
- * publication: nothing is overwritten to make room.
+ * Create `ref` at `sha` on the forge. True when it now holds `sha`: made
+ * here, or already there. Never forced.
  */
-const retireOnForge = (
+const keepAt = (ref: string, sha: string, run: ICommandRunner): boolean => {
+	try {
+		run('gh', [
+			'api',
+			'-X',
+			'POST',
+			`repos/${REPOSITORY_SLUG}/git/refs`,
+			'-f',
+			`ref=${ref}`,
+			'-f',
+			`sha=${sha}`,
+		]);
+		return true;
+	} catch {
+		return readRefTip(ref, run) === sha;
+	}
+};
+
+const readRefTip = (ref: string, run: ICommandRunner): string => {
+	try {
+		return run('gh', [
+			'api',
+			`repos/${REPOSITORY_SLUG}/git/ref/${ref.replace(/^refs\//u, '')}`,
+			'--jq',
+			'.object.sha',
+		]);
+	} catch {
+		// Not there: the forge refused for another reason.
+		return '';
+	}
+};
+
+/**
+ * Keep `sha` on the forge, then delete the publication. When the retired
+ * slot already holds another tip, that tip is moved forward (a plain,
+ * non-forced PATCH) if it is an ancestor of `sha`; otherwise `sha` is
+ * kept beside it at `<retiredRef>-<12 hex>`. Nothing is forced and no tip
+ * that is not an ancestor is overwritten.
+ */
+export const retireOnForge = (
 	name: string,
 	sha: string,
 	retiredRef: string,
+	run: ICommandRunner = runCommand,
 ): boolean => {
-	try {
-		execFileSync(
-			'gh',
-			[
-				'api',
-				'-X',
-				'POST',
-				`repos/${REPOSITORY_SLUG}/git/refs`,
-				'-f',
-				`ref=${retiredRef}`,
-				'-f',
-				`sha=${sha}`,
-			],
-			{ stdio: 'ignore' },
-		);
-	} catch {
-		let kept = '';
+	if (!keepAt(retiredRef, sha, run)) {
+		const kept = readRefTip(retiredRef, run);
+		if (kept === '') return false;
+		let ancestor = false;
 		try {
-			kept = ghScalar(
-				`repos/${REPOSITORY_SLUG}/git/ref/${retiredRef.replace(/^refs\//u, '')}`,
-				'.object.sha',
-			);
+			run('git', ['merge-base', '--is-ancestor', kept, sha]);
+			ancestor = true;
 		} catch {
-			// Not there either: the forge refused for another reason.
+			// Not an ancestor, or an object this clone lacks: keep it beside.
 		}
-		if (kept !== sha) return false;
+		if (ancestor) {
+			try {
+				run('gh', [
+					'api',
+					'-X',
+					'PATCH',
+					`repos/${REPOSITORY_SLUG}/git/${retiredRef}`,
+					'-f',
+					`sha=${sha}`,
+				]);
+			} catch {
+				return false;
+			}
+		} else if (!keepAt(`${retiredRef}-${sha.slice(0, 12)}`, sha, run)) {
+			return false;
+		}
 	}
-	return deleteForgeBranch(name) !== 'failed';
+	return (
+		deleteForgeBranch(
+			name,
+			(args) => {
+				run('gh', args);
+			},
+			(branch) => readRefTip(`refs/heads/${branch}`, run) !== '',
+		) !== 'failed'
+	);
 };
 
 /**
@@ -445,8 +504,9 @@ export const deleteForgeBranch = (
 };
 
 /**
- * Whether every commit `sha` reaches is also reached by one of `holders`,
- * read in this clone; false when it cannot tell (an object it lacks), so
+ * Whether every authored commit `sha` reaches (merge commits aside: the
+ * machinery merged only without conflicts, so they carry no change) is
+ * also reached by one of `holders`, read in this clone; false when it cannot tell (an object it lacks), so
  * a ref that cannot be checked is kept and reported.
  */
 export const holdsNothingOfItsOwn = (
@@ -459,10 +519,48 @@ export const holdsNothingOfItsOwn = (
 		}).trim(),
 ): boolean => {
 	try {
-		return run(['rev-list', '--count', sha, '--not', ...holders]) === '0';
+		return (
+			run([
+				'rev-list',
+				'--count',
+				'--no-merges',
+				sha,
+				'--not',
+				...holders,
+			]) === '0'
+		);
 	} catch {
 		return false;
 	}
+};
+
+/**
+ * What the reap step reports once its passes are done. A ref kept, retired
+ * or deleted in this pass is resolved, so it is judged once and never also
+ * printed as needing attention; what is left fails only when it is not a
+ * published copy.
+ */
+export const reapVerdict = <TVerdict extends { readonly name: string }>(
+	needsAttention: readonly TVerdict[],
+	resolved: ReadonlySet<string>,
+	reapable: readonly { readonly name: string }[],
+	run: Parameters<typeof failingFor>[1],
+): {
+	readonly outstanding: readonly TVerdict[];
+	readonly failing: readonly TVerdict[];
+	readonly reported: readonly TVerdict[];
+	readonly ok: boolean;
+} => {
+	const outstanding = needsAttention.filter(
+		(verdict) => !resolved.has(verdict.name),
+	);
+	const judged = failingFor(blockingRefs(outstanding, reapable), run);
+	return {
+		outstanding,
+		failing: judged.failing,
+		reported: judged.reported,
+		ok: judged.failing.length === 0,
+	};
 };
 
 const main = (): void => {
@@ -622,6 +720,7 @@ const main = (): void => {
 	}
 
 	const deleted = new Set<string>();
+	const resolved = new Set<string>(kept.map((verdict) => verdict.name));
 	for (const verdict of reapable) {
 		const evidence =
 			verdict.pullRequest === undefined
@@ -667,6 +766,7 @@ const main = (): void => {
 			continue;
 		}
 		if (retireOnForge(verdict.name, sha, retiredRef)) {
+			resolved.add(verdict.name);
 			console.log(
 				`ref-lifecycle: retired ${verdict.name} to ${retiredRef} (${evidence}).`,
 			);
@@ -742,8 +842,10 @@ const main = (): void => {
 			);
 			continue;
 		}
+		const retired = retireOnForge(ref.name, sha, plan.retiredRef);
+		if (retired) resolved.add(ref.name);
 		console.log(
-			retireOnForge(ref.name, sha, plan.retiredRef)
+			retired
 				? `ref-lifecycle: retired ${ref.name} to ${plan.retiredRef} (${evidence}).`
 				: `ref-lifecycle: ${ref.name} left: ${plan.retiredRef} already holds another tip.`,
 		);
@@ -752,9 +854,18 @@ const main = (): void => {
 	// A ref this pass just reaped is resolved, not outstanding: reporting it
 	// as needing attention — and exiting 1 — right after deleting it told
 	// the operator the opposite of what happened.
-	const outstanding = result.needsAttention.filter(
-		(verdict) => !deleted.has(verdict.name),
+	for (const name of deleted) resolved.add(name);
+	const verdictOf = reapVerdict(
+		result.needsAttention,
+		resolved,
+		result.reapable,
+		{
+			scope: process.env.REF_LIFECYCLE_SCOPE,
+			event: process.env.GITHUB_EVENT_NAME,
+			head: process.env.GITHUB_HEAD_REF,
+		},
 	);
+	const outstanding = verdictOf.outstanding;
 	if (outstanding.length === 0) {
 		console.log(
 			`ref-lifecycle: ${result.verdicts.length - deleted.size} ref(s); every one of them belongs to somebody ✓`,
@@ -762,17 +873,12 @@ const main = (): void => {
 		return;
 	}
 
-	const judged = failingFor(blockingRefs(outstanding, result.reapable), {
-		scope: process.env.REF_LIFECYCLE_SCOPE,
-		event: process.env.GITHUB_EVENT_NAME,
-		head: process.env.GITHUB_HEAD_REF,
-	});
-	for (const verdict of judged.reported) {
+	for (const verdict of verdictOf.reported) {
 		console.log(
 			`ref-lifecycle: ${verdict.name} — ${verdict.reason} (not this tree's: reported here, judged by the queue job)`,
 		);
 	}
-	const blocking = judged.failing;
+	const blocking = verdictOf.failing;
 	if (blocking.length === 0) {
 		// Every ref left is a copy of work already published: nothing can
 		// be lost, and the queue's own `--reap` pass deletes it. Failing

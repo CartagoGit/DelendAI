@@ -12,6 +12,7 @@
  *   - `delendai_plan_mcp_project`({ serverName?, namespacePrefix?, tests? })
  *   - `delendai_create_project`  ({ kind, ... })
  */
+import { INTEGRATION_COMMAND } from '../../contracts/constants/integration-command.constant';
 import { REVIEW_COMMAND } from '../../contracts/constants/review-command.constant';
 import { WORK_COMMAND } from '../../contracts/constants/work-command.constant';
 import { createWorkspacePathProvider } from '@delendai/core/public';
@@ -332,6 +333,18 @@ const lazyReviewCommand: ICliCommand = {
 	},
 };
 
+/** The pull request flow proven on the real forge; the plugin loads when it runs. */
+const lazyIntegrationCommand: ICliCommand = {
+	name: 'integration',
+	...INTEGRATION_COMMAND,
+	async run(args, ctx) {
+		const { integrationCommand: integration } = await import(
+			'../integration.command'
+		);
+		return integration.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -342,6 +355,7 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectCreateCommand,
 	buildPluginNewCommand(),
 	lazyGuardCommand,
+	lazyIntegrationCommand,
 	lazyRepairCommand,
 	lazyReleasePromoteCommand,
 	lazyReleaseFollowCommand,

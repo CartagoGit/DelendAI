@@ -21,13 +21,15 @@ import {
 	failingFor,
 	publishedInFor,
 	deleteForgeBranch,
+	reapVerdict,
+	retireOnForge,
 } from './ref-lifecycle-guard.script';
 
 const work = { name: 'delendai/wip/m/x1-S1-g1-topic', sha: 'aaa' };
 const never = () => false;
 
 describe('publishedInFor', () => {
-	it('[<940ms] finds a publication ref at the same commit without asking the forge', () => {
+	it('[<50ms] finds a publication ref at the same commit without asking the forge', () => {
 		let asked = false;
 		expect(
 			publishedInFor(
@@ -443,7 +445,7 @@ describe('ownedUnitReader in a namespace transition (f00808)', () => {
 });
 
 describe('holdsNothingOfItsOwn', () => {
-	it('[<5ms] is true only when no commit of the ref is outside every holder', () => {
+	it('[<50ms] is true only when no authored commit of the ref is outside every holder (--no-merges)', () => {
 		const asked: string[][] = [];
 		const answer = (count: string) => (args: readonly string[]) => {
 			asked.push([...args]);
@@ -454,6 +456,7 @@ describe('holdsNothingOfItsOwn', () => {
 		expect(asked[0]).toEqual([
 			'rev-list',
 			'--count',
+			'--no-merges',
 			't',
 			'--not',
 			'd',
@@ -467,5 +470,69 @@ describe('holdsNothingOfItsOwn', () => {
 				throw new Error('bad object');
 			}),
 		).toBe(false);
+	});
+});
+
+describe('reapVerdict', () => {
+	it('[<50ms] judges a ref both kept and reported as a published copy once: it does not fail', () => {
+		const verdict = { name: 'delendai/wip/m/x1-S1-g1-t', reason: 'copy' };
+		const result = reapVerdict(
+			[verdict],
+			new Set([verdict.name]),
+			[{ name: verdict.name }],
+			{ scope: 'repository', event: undefined, head: undefined },
+		);
+		expect(result.outstanding).toEqual([]);
+		expect(result.failing).toEqual([]);
+		expect(result.ok).toBe(true);
+	});
+});
+
+describe('retireOnForge into a taken slot', () => {
+	const RETIRED = 'refs/delendai/retired/p/x1-S1-g1';
+	const SHA = 'a'.repeat(40);
+	const KEPT = 'b'.repeat(40);
+	const fake = (ancestor: boolean) => {
+		const calls: string[][] = [];
+		const run = (file: string, args: readonly string[]): string => {
+			calls.push([file, ...args]);
+			const line = args.join(' ');
+			if (args.includes('POST') && line.includes(`ref=${RETIRED}`)) {
+				if (!line.includes(`${RETIRED}-`)) throw new Error('exists');
+			}
+			if (args.includes('--jq')) {
+				if (line.includes(RETIRED.replace('refs/', 'ref/')))
+					return KEPT;
+			}
+			if (file === 'git' && !ancestor) throw new Error('not ancestor');
+			return '';
+		};
+		return { calls, run };
+	};
+	const count = (calls: string[][], needle: string) =>
+		calls.filter((call) => call.includes(needle)).length;
+
+	it('[<50ms] moves an ancestor tip forward with one plain PATCH and deletes the branch', () => {
+		const { calls, run } = fake(true);
+		expect(retireOnForge('wip/x', SHA, RETIRED, run)).toBe(true);
+		expect(count(calls, 'PATCH')).toBe(1);
+		expect(
+			calls.find((call) => call.includes('PATCH'))?.join(' '),
+		).toContain(`git/${RETIRED}`);
+		expect(count(calls, 'DELETE')).toBe(1);
+		expect(calls.flat().some((arg) => /force/u.test(arg))).toBe(false);
+	});
+
+	it('[<50ms] keeps a tip that is not an ancestor beside it and deletes the branch', () => {
+		const { calls, run } = fake(false);
+		expect(retireOnForge('wip/x', SHA, RETIRED, run)).toBe(true);
+		expect(count(calls, 'PATCH')).toBe(0);
+		expect(
+			calls.some((call) =>
+				call.includes(`ref=${RETIRED}-${SHA.slice(0, 12)}`),
+			),
+		).toBe(true);
+		expect(count(calls, 'DELETE')).toBe(1);
+		expect(calls.flat().some((arg) => /force/u.test(arg))).toBe(false);
 	});
 });

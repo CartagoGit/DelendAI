@@ -8,6 +8,7 @@ import {
 	footprintFromReach,
 	groupByOverlap,
 	overlapBetween,
+	staleAgainstTip,
 } from '@delendai/core/lib/integration/decisions/overlap.helper';
 import type { IChangeFootprint } from '@delendai/core/lib/integration/decisions/overlap.interface';
 
@@ -76,5 +77,15 @@ describe('groupByOverlap', () => {
 
 	it('[<5ms] an empty list has no group', () => {
 		expect(groupByOverlap([])).toEqual([]);
+	});
+});
+
+describe('staleAgainstTip', () => {
+	it('[<5ms] stands when the branch moved apart from the batch, stale when it moved in its zone', () => {
+		const batch = zones(['a'], ['a/x.ts']);
+		expect(
+			staleAgainstTip(batch, zones(['b'], ['b/y.ts'])),
+		).toBeUndefined();
+		expect(staleAgainstTip(batch, zones(['a'], ['a/z.ts']))).toContain('a');
 	});
 });

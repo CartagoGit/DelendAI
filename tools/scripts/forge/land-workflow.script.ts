@@ -10,19 +10,26 @@
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 import {
+	DEFAULT_INTEGRATION_OPTIONS,
 	INTEGRATION_PROTOCOL_VERSION,
+	landWorkflowInputOf,
+	renderLandSignalWorkflow,
 	renderLandWorkflow,
 	type ILandWorkflowInput,
 } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import { readDevelopmentConfig } from './land-policy';
+import { developmentConfigOf, readDevelopmentConfig } from './land-policy';
 
 export const LAND_WORKFLOW_PATH = '.github/workflows/land.yml';
+export const LAND_SIGNAL_WORKFLOW_PATH = '.github/workflows/land-signal.yml';
 
 const SETUP_STEPS = [
 	'- name: Checkout (required to resolve the local composite action)',
 	'  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7',
+	'  with:',
+	'      # The integrator pushes as its identity, never with this token.',
+	'      persist-credentials: false',
 	'',
 	'- name: Setup repo (checkout + bun + install)',
 	'  uses: ./.github/actions/setup-bun-repo',
@@ -30,15 +37,14 @@ const SETUP_STEPS = [
 	'      # Full history: a batch merges members onto the tip, and the',
 	'      # promotion and the forward sync ask ancestry questions.',
 	"      fetch-depth: '0'",
+	"      persist-credentials: 'false'",
 ];
 
-/** This repository's values for the template. */
-export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
+/** This repository's values for the template, apart from what the policy sets. */
+const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 	integrationBranch: 'develop',
 	releaseBranch: 'main',
-	checkWorkflows: ['CI', 'CodeQL'],
-	cron: '*/15 * * * *',
-	passCommand: 'bun tools/scripts/forge/land.script.ts',
+	passCommand: 'bun packages/cli/src/index.ts integration pass',
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',
@@ -60,17 +66,67 @@ export const REPO_LAND_WORKFLOW: ILandWorkflowInput = {
 		{
 			name: 'Fail while a code scanning alert is open on the integration branch',
 			run: 'bun run forge:promotion-alerts -- --branch=develop',
+			readsWithWorkflowToken: ['security-events'],
 		},
 	],
 };
 
+/** This repository's values for the template. */
+export const REPO_LAND_WORKFLOW: ILandWorkflowInput = landWorkflowInputOf(
+	REPO_VALUES,
+	{
+		identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+		cron: DEFAULT_INTEGRATION_OPTIONS.watchdog.cron,
+	},
+);
+
 /** What the committed file must be: the render, or absent when the engine is not `land`. */
 export const expectedLandWorkflow = (
 	development: ReturnType<typeof readDevelopmentConfig>,
+): string | undefined => {
+	const { integration } = resolveDevelopmentPolicy(development);
+	return integration.engine === 'land'
+		? renderLandWorkflow(
+				landWorkflowInputOf(REPO_VALUES, {
+					identity: integration.identity,
+					cron: integration.watchdog.cron,
+				}),
+			)
+		: undefined;
+};
+
+/** The signal that wakes the integrator: written beside the land workflow, absent with it. */
+export const expectedLandSignalWorkflow = (
+	development: ReturnType<typeof readDevelopmentConfig>,
 ): string | undefined =>
 	resolveDevelopmentPolicy(development).integration.engine === 'land'
-		? renderLandWorkflow(REPO_LAND_WORKFLOW)
+		? renderLandSignalWorkflow({
+				integrationBranch: REPO_LAND_WORKFLOW.integrationBranch,
+			})
 		: undefined;
+
+/** The files the engine switch decides: each one's content, or none while the engine is not `land`. */
+export const landWorkflowFiles = (
+	development: ReturnType<typeof readDevelopmentConfig>,
+): readonly {
+	readonly path: string;
+	readonly expected: string | undefined;
+}[] => [
+	{
+		path: LAND_WORKFLOW_PATH,
+		expected: expectedLandWorkflow(development),
+	},
+	{
+		path: LAND_SIGNAL_WORKFLOW_PATH,
+		expected: expectedLandSignalWorkflow(development),
+	},
+];
+
+/** The same files for a config text: what `integration activate` and `deactivate` write. */
+export const landWorkflowFilesOf = (
+	configText: string,
+): ReturnType<typeof landWorkflowFiles> =>
+	landWorkflowFiles(developmentConfigOf(configText));
 
 /** The committed file, or `undefined` when there is none: one read, no check before it. */
 const readCommitted = (path: string): string | undefined => {
@@ -92,16 +148,18 @@ if (import.meta.main) {
 		);
 		process.exit(1);
 	}
-	const expected = expectedLandWorkflow(development);
-	const committed = readCommitted(LAND_WORKFLOW_PATH);
+	const files = landWorkflowFiles(development);
 	if (process.argv.includes('--check')) {
-		const same = committed === expected;
-		if (!same)
+		const stale = files.filter(
+			({ path, expected }) => readCommitted(path) !== expected,
+		);
+		for (const { path } of stale)
 			console.error(
-				`${LAND_WORKFLOW_PATH} differs from its template and the policy's engine; run land-workflow.script.ts`,
+				`${path} differs from its template and the policy's engine; run land-workflow.script.ts`,
 			);
-		process.exit(same ? 0 : 1);
+		process.exit(stale.length === 0 ? 0 : 1);
 	}
-	if (expected === undefined) rmSync(LAND_WORKFLOW_PATH, { force: true });
-	else writeFileSync(LAND_WORKFLOW_PATH, expected);
+	for (const { path, expected } of files)
+		if (expected === undefined) rmSync(path, { force: true });
+		else writeFileSync(path, expected);
 }

@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 import {
 	compileWorkRefParser,
 	noteUnitUrgency,
+	readUnitStandings,
 	readWorkspacePolicy,
 	runWorkUnit,
 } from '@delendai/core/cli';
@@ -30,6 +31,21 @@ import {
 	deliverUnit,
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
+import { runGitCommand } from '@delendai/core/runtime';
+import {
+	answerCommittingWrites,
+	toolCommitSubject,
+} from '../lib/work-deliver-commit.service';
+import type {
+	IDeliverRun,
+	IWorkDeliverPorts,
+} from '../contracts/interfaces/work-deliver.interface';
+import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
+import {
+	chooseLiveUnit,
+	flagsOfLiveUnit,
+	liveUnitsOf,
+} from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -51,6 +67,60 @@ export const withSlicesView = (
 		process.stdout.write(`read             ${SLICES_VIEW_HINT}\n`);
 	}
 	return { ...result, data: { ...result.data, read: SLICES_VIEW_HINT } };
+};
+
+/** The tool whose write a delivery commits. */
+const TRANSITION_TOOL = 'delendai_proposals_proposal_transition';
+
+/** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
+export const deliverPortsOf = (
+	ctx: ICliCommandContext,
+	run: IDeliverRun,
+): IWorkDeliverPorts => {
+	const { id, reason, agent, urgent, unitFlags } = run;
+	return {
+		slice: scalarArg(unitFlags, 'slice') ?? 'all',
+		publish: () => runWorkUnit(['publish', ...unitFlags], ctx),
+		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
+		preflight: (checkout) =>
+			answerOf(
+				request(ctx, TRANSITION_TOOL, {
+					id,
+					to: 'review',
+					reason,
+					preflight: true,
+					...(agent === undefined ? {} : { agent }),
+					checkout: checkout ?? ctx.cwd,
+				}),
+			),
+		prove: () => runWorkUnit(['prove', ...unitFlags], ctx),
+		transition: async (to, checkout) => {
+			// The transition to review publishes the unit, apart from this
+			// command: the reason is noted for it.
+			if (to === 'review' && urgent !== undefined) {
+				await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
+			}
+			const where = checkout ?? ctx.cwd;
+			const git: IGitInCheckout = (gitArgs) =>
+				runGitCommand(where, gitArgs);
+			// The tool's write is committed by the tool's flow, before the
+			// proof reads the tree or anything else commits it.
+			return answerCommittingWrites(
+				git,
+				toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
+				() =>
+					answerOf(
+						request(ctx, TRANSITION_TOOL, {
+							id,
+							to,
+							reason,
+							...(agent === undefined ? {} : { agent }),
+							checkout: where,
+						}),
+					),
+			);
+		},
+	};
 };
 
 /** The flag that makes `work enter` print the worktree's path and nothing else. */
@@ -115,6 +185,46 @@ export const unitHere = async (
 	);
 };
 
+/**
+ * The unit flags of the agent's one live unit of `proposal`, when the
+ * command named no unit and the directory holds none; the refusal that
+ * lists the candidates otherwise. Never a guessed slice.
+ */
+export const liveUnitFlags = async (
+	args: readonly string[],
+	cwd: string,
+	input: {
+		readonly proposal: string;
+		readonly agent: string | undefined;
+		readonly verb: string;
+	},
+): Promise<
+	| { readonly flags: readonly string[] }
+	| { readonly refusal: ICliCommandResult }
+> => {
+	const agent = input.agent ?? process.env.DELENDAI_AGENT_ID ?? '';
+	const policy = await readWorkspacePolicy(cwd);
+	const parser = compileWorkRefParser(
+		policy.branches.workRefTemplate,
+		policy.branches.workRefPrefix,
+		{ requireKind: false },
+	);
+	const kind = scalarArg(args, 'kind');
+	const units = liveUnitsOf(
+		await readUnitStandings({ root: cwd, policy }),
+		{ agent, proposal: input.proposal },
+		(ref) => parser?.parse(ref),
+	).filter((unit) => kind === undefined || unit.kind === kind);
+	const chosen = chooseLiveUnit(units, { ...input, agent });
+	return 'unit' in chosen
+		? {
+				flags: flagsOfLiveUnit(chosen.unit).filter(
+					(f) => !f.startsWith('--kind='),
+				),
+			}
+		: chosen;
+};
+
 const UNIT_FLAGS = ['--slice=', '--generation=', '--topic='] as const;
 
 /**
@@ -154,33 +264,25 @@ export const createWorkCommand = (): ICliCommand => ({
 			}
 			const agent = scalarArg(unit, 'agent');
 			const here = await withUnitHere(unit, ctx.cwd);
-			const withSlice = here.some((arg) => arg.startsWith('--slice='))
-				? here
-				: [...here, '--slice=all'];
-			return deliverUnit({
-				slice: scalarArg(withSlice, 'slice') ?? 'all',
-				publish: () => runWorkUnit(['publish', ...withSlice], ctx),
-				locate: () =>
-					runWorkUnit(['prove', ...withSlice, '--locate'], ctx),
-				prove: () => runWorkUnit(['prove', ...withSlice], ctx),
-				transition: async (to, checkout) => {
-					// The transition to review publishes the unit, apart
-					// from this command: the reason is noted for it.
-					const urgent = scalarArg(unit, 'urgent');
-					if (to === 'review' && urgent !== undefined) {
-						await noteUnitUrgency(checkout ?? ctx.cwd, urgent);
-					}
-					return answerOf(
-						request(ctx, 'delendai_proposals_proposal_transition', {
-							id,
-							to,
-							reason,
-							...(agent === undefined ? {} : { agent }),
-							checkout: checkout ?? ctx.cwd,
-						}),
-					);
-				},
-			});
+			let withSlice = here;
+			if (!here.some((arg) => arg.startsWith('--slice='))) {
+				const found = await liveUnitFlags(here, ctx.cwd, {
+					proposal: id,
+					agent,
+					verb: 'deliver',
+				});
+				if ('refusal' in found) return found.refusal;
+				withSlice = [...here, ...found.flags];
+			}
+			return deliverUnit(
+				deliverPortsOf(ctx, {
+					id,
+					reason,
+					agent,
+					urgent: scalarArg(unit, 'urgent'),
+					unitFlags: withSlice,
+				}),
+			);
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {
 			return printPathOnly(

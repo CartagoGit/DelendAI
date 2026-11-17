@@ -270,7 +270,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/github',
 			summary: 'GitHub read-only provider context, HTTP client and remote resource tools.',
 			tags: ['github', 'provider'],
-			permissions: ['filesystem-write', 'network', 'env-read'],
+			permissions: ['filesystem-write', 'network', 'env-read', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{
@@ -299,6 +299,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['impact', 'tests', 'f00169'],
 			permissions: ['filesystem-read'],
 			tokenBudgetBytes: 1904,
+		},
+		{
+			origin: 'first-party',
+			id: 'integration',
+			package: '@delendai/integration',
+			summary: 'The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.',
+			tags: ['integration', 'pull-request', 'rehearsal'],
+			permissions: ['filesystem-read', 'process', 'env-read'],
+			tokenBudgetBytes: 120,
 		},
 		{
 			origin: 'first-party',
@@ -361,7 +370,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			summary: 'Notification + lock-await primitives.',
 			tags: ['notification', 'concurrency'],
 			permissions: ['filesystem-read', 'filesystem-write'],
-			tokenBudgetBytes: 1872,
+			tokenBudgetBytes: 3429,
 		},
 		{
 			origin: 'first-party',

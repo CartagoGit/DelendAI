@@ -16,8 +16,10 @@
 import { execFileSync } from 'node:child_process';
 
 import { LAND_LABEL_NEEDS_UPDATE } from '@delendai/core/cli';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { declaredBranches } from '../lib/declared-branches';
+import { readDevelopmentConfig } from './land-policy';
 import { throwawayClone } from './land-rehearsal-clone';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -49,9 +51,25 @@ export const toBringForward = (
 	pulls: readonly ILabelledPull[],
 ): readonly ILabelledPull[] => pulls.filter((pull) => !pull.isCrossRepository);
 
+/**
+ * Only the `land` engine labels pull requests for an update, so only under
+ * it does this push anything: with integration paused (`none`) a label
+ * left from before is not a reason to move a pull request.
+ */
+export const bringsForward = (
+	development: ReturnType<typeof readDevelopmentConfig>,
+): boolean =>
+	resolveDevelopmentPolicy(development).integration.engine === 'land';
+
 const main = (): number => {
 	const root = process.cwd();
 	const apply = process.argv.includes('--apply');
+	if (!bringsForward(readDevelopmentConfig())) {
+		console.log(
+			"bring-forward: the policy's integration engine is not `land`; nothing is brought forward.",
+		);
+		return 0;
+	}
 	const integration = declaredBranches(root).integration;
 	const pulls = toBringForward(
 		JSON.parse(

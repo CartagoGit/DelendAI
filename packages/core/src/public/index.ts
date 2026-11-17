@@ -864,3 +864,7 @@ export type { IUnitAdoption } from '../lib/contracts/interfaces/unit-adoption.in
 // proposals plugin has just allocated, so the unit is named after it.
 export { adoptProposalId } from '../lib/work-units/unit-adoption.service';
 export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.interface';
+
+// One title and body for every pull request and issue, whoever made the
+// work: the type, scope and section order are derived, never passed.
+export { renderChangeText } from '../lib/change-text/change-text-template.service';

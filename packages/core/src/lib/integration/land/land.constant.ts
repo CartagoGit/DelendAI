@@ -1,3 +1,5 @@
+import type { ILandWorkflowInput } from './land.interface';
+
 /** Labels and markers `land` leaves on the forge. */
 export const LAND_LABEL_CULPRIT = 'delendai:culprit';
 export const LAND_LABEL_NEEDS_UPDATE = 'delendai:needs-update';
@@ -18,3 +20,38 @@ export const LAND_WORKFLOW_TOKEN_ACTOR = 'github-actions[bot]';
 
 /** The integrator's workflow name: what `workflow_run` lists it as. */
 export const LAND_WORKFLOW_NAME = 'land';
+/** The integrator's workflow file: what a dispatch names. */
+export const LAND_WORKFLOW_FILE = 'land.yml';
+/** The signal workflow's file: it wakes the integrator on pull request events. */
+export const LAND_SIGNAL_WORKFLOW_FILE = 'land-signal.yml';
+/** The signal workflow's name, and the name of its one job. */
+export const LAND_SIGNAL_WORKFLOW_NAME = 'land-signal';
+/** Minutes a signal may run: it only sends a dispatch. */
+export const LAND_SIGNAL_TIMEOUT_MINUTES = 5;
+/** A queued pass older than this may be stuck: it no longer excuses a new dispatch. */
+export const LAND_QUEUED_PASS_FRESH_SECONDS = 120;
+/** The pull request events that change what the integrator has to settle. */
+export const LAND_SIGNAL_EVENTS = [
+	'opened',
+	'reopened',
+	'synchronize',
+	'ready_for_review',
+	'labeled',
+	'unlabeled',
+	'converted_to_draft',
+	'closed',
+] as const;
+
+/** The two jobs of a derived-file conflict: the project's own scripts, which read the policy's derived paths and command. */
+export const LAND_DERIVED_JOBS: NonNullable<ILandWorkflowInput['derived']> = {
+	prepareCommand:
+		'mkdir -p derived-out && bun tools/scripts/forge/derived-resolve.script.ts --phase=prepare --pr="${DERIVED_PR}" --out=derived-out',
+	pushCommand:
+		'bun tools/scripts/forge/derived-resolve.script.ts --phase=push --pr="${DERIVED_PR}" --in=derived-out',
+};
+
+/** What the pass notes when it made the forge build a head. */
+export const BRING_NOTES = {
+	brought: 'brought forward to the tip',
+	reopened: 'reopened so its head is built',
+} as const;

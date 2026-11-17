@@ -774,7 +774,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"permissions": [
 			"filesystem-write",
 			"network",
-			"env-read"
+			"env-read",
+			"process"
 		],
 		"tokenBudget": {
 			"warning": 2700,
@@ -864,6 +865,34 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"tokenBudget": {
 			"warning": 2000,
 			"hard": 2190,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
+		"id": "integration",
+		"package": "@delendai/integration",
+		"summary": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+		"tags": [
+			"integration",
+			"pull-request",
+			"rehearsal"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [
+			"everything"
+		],
+		"capabilities": [
+			"integration"
+		],
+		"permissions": [
+			"filesystem-read",
+			"process",
+			"env-read"
+		],
+		"tokenBudget": {
+			"warning": 300,
+			"hard": 400,
 			"releaseRelativePercent": 20
 		}
 	},
@@ -1016,8 +1045,8 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"filesystem-write"
 		],
 		"tokenBudget": {
-			"warning": 1970,
-			"hard": 2160,
+			"warning": 3610,
+			"hard": 3960,
 			"releaseRelativePercent": 20
 		}
 	},
