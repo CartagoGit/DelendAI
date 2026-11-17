@@ -11,6 +11,7 @@ import {
 	workRefFate,
 	workRefLanded,
 } from '../integration/decisions/landed.helper';
+import { planRetirement } from '../work-units/work-retire.service';
 import { workRefIntegrationRef } from '../work-units/work-ref-lifecycle.service';
 import {
 	recordWorkRefMove,
@@ -48,6 +49,24 @@ const landedOn = async (
 	});
 };
 
+/** Whether the forge holds the retired ref the reaper wrote for this unit's path. */
+const forgeHoldsRetired = async (
+	run: IGitRunner,
+	policy: IResolvedDevelopmentPolicy,
+	remote: string,
+	ref: string,
+): Promise<boolean> => {
+	const plan = planRetirement({
+		branch: ref.replace(/^refs\/heads\//u, ''),
+		namespace: policy.branches.namespacePrefix,
+		workRefPrefix: policy.branches.workRefPrefix,
+		publicationRefPrefix: policy.branches.publicationRefPrefix,
+	});
+	if (plan === undefined) return false;
+	const listed = await run(['ls-remote', '--', remote, plan.retiredRef]);
+	return listed.ok && firstField(listed.output) !== undefined;
+};
+
 /**
  * Settle a work ref whose checkout has nothing of its own: the work-ref
  * rule says whether the forge keeps it, gets it back, or loses it.
@@ -82,10 +101,14 @@ export const settleLanded = async (
 		).ok,
 	);
 	const sha = remoteSha ?? firstField((await run(['rev-parse', ref])).output);
+	const retiredOnForge =
+		remoteSha === undefined &&
+		(await forgeHoldsRetired(run, policy, remote, ref));
 	const landed = sha === undefined || (await landedOn(run, integration, sha));
 	const verdict = workRefFate({
 		landed,
 		onForge: remoteSha !== undefined,
+		retiredOnForge,
 		...(await workRefOpennessOf(run, policy, ref, { integration })),
 		worktree: 'in-use',
 	});

@@ -29,6 +29,7 @@ import {
 const facts = (over: Partial<IWorkRefFacts>): IWorkRefFacts => ({
 	landed: false,
 	onForge: true,
+	retiredOnForge: false,
 	openAtTip: false,
 	openOnIntegration: false,
 	worktree: 'none',
