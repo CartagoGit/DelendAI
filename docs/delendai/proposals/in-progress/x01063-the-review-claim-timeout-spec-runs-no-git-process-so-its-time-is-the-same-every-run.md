@@ -33,7 +33,7 @@ Cause: the timeout under test is already an answer the runner gives, not a clock
 
 ### S1 — Replace the git-backed unit with an in-memory runner
 - **Status**: pending
-- **Files**: `plugins/proposals/tests/src/lib/services/review-claim-timeout.e2e.spec.ts`, `plugins/proposals/tests/src/lib/services/review-claim-timeout.spec.ts`
+- **Files**: `plugins/proposals/tests/src/lib/services/review-claim-timeout.spec.ts`
 - **Gate**: none
 
 ## acceptance
