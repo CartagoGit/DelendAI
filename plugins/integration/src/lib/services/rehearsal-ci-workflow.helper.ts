@@ -185,7 +185,7 @@ export const renderRehearsalTokenWorkflow = (input: {
  * reports whatever happened.
  */
 export const renderRehearsalWorkflow = (input: {
-	readonly namespace: string;
+	readonly integration: string;
 	readonly codePaths: readonly string[];
 	/** Who the rehearsal acts as: the workflow token cannot write trees. */
 	readonly identity: ILandWorkflowIdentity;
@@ -197,8 +197,9 @@ export const renderRehearsalWorkflow = (input: {
 		'# (renderRehearsalWorkflow); edit the template, not this file.',
 		'on:',
 		...rehearsalDispatchTrigger(),
-		'    push:',
-		`        branches: ['${input.namespace}/pr/**']`,
+		'    pull_request:',
+		'        types: [opened, synchronize, reopened, ready_for_review]',
+		`        branches: ['${input.integration}']`,
 		'        paths:',
 		...input.codePaths.map((path) => `            - '${path}'`),
 		'',

@@ -14,8 +14,9 @@ on:
                 description: 'scenario ids separated by commas, or all'
                 type: string
                 default: all
-    push:
-        branches: ['delendai/pr/**']
+    pull_request:
+        types: [opened, synchronize, reopened, ready_for_review]
+        branches: ['develop']
         paths:
             - 'plugins/integration/**'
             - '.github/workflows/rehearsal.yml'

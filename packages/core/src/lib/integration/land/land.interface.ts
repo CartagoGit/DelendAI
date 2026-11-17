@@ -244,6 +244,12 @@ export interface ILandUpkeepStep {
 	readonly name: string;
 	readonly run: string;
 	readonly env?: Readonly<Record<string, string>>;
+	/**
+	 * The GitHub permission names this step reads (`security-events`): it
+	 * runs with the workflow token, and the job is granted exactly those
+	 * reads beside the workflow's own. Absent: the step uses the identity.
+	 */
+	readonly readsWithWorkflowToken?: readonly string[];
 }
 
 /**
