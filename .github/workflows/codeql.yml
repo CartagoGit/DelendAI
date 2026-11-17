@@ -15,11 +15,11 @@ on:
   # was analysed, so 48 alerts reached the owner long after their code
   # landed on develop.
   push:
-    branches: [main, develop]
+    branches: [main, 'delendai/rehearsal/r20261117-104505-g2/derived-conflict-integration']
   # Into develop only: the push run already analyses a develop → main
   # candidate's commit, and a second run would report it twice.
   pull_request:
-    branches: [develop]
+    branches: ['delendai/rehearsal/r20261117-104505-g2/derived-conflict-integration']
   workflow_dispatch:
 
 # One run per ref, and only the newest tip waits behind it. A pull request's
@@ -93,3 +93,34 @@ jobs:
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           category: "/language:${{ matrix.language }}"
+
+  integration-signal:
+    name: integration-signal
+    needs: [analyze]
+    if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/delendai/rehearsal/r20261117-104505-g2/derived-conflict-integration')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Wake the integrator
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.base.ref || github.ref_name }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+          PROMOTE: ${{ github.event_name == 'push' && 'true' || '' }}
+        run: |
+          if [ -z "${PROMOTE:-}" ]; then
+            QUEUED=$(gh run list --workflow land.yml --repo "${GITHUB_REPOSITORY}" \
+                --branch "${BRANCH}" --limit 30 --json status,displayTitle,createdAt --jq \
+                '[.[] | select(.status | IN("queued", "pending", "waiting", "requested")) | select(.displayTitle | endswith("-pass-" + $ENV.BRANCH)) | select((.createdAt | fromdateiso8601) > (now - 120))] | length') || QUEUED=0
+            if [ "${QUEUED:-0}" != "0" ]; then
+                echo "a pass is already queued for ${BRANCH}; it reads everything when it starts"
+                exit 0
+            fi
+          fi
+          gh workflow run land.yml \
+            --ref "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+            -f pr="${PULL_REQUEST}" -f promote="${PROMOTE}" \
+            || echo "::warning::could not wake the integrator"
