@@ -382,6 +382,8 @@ export {
 	RETIRED_PRESET_ID,
 	resolveStackPackMembers,
 } from './lib/plugins/preset-catalog';
+export { RUNTIME_STATE_ENV } from './lib/contracts/constants/runtime-state.constant';
+export type { IRuntimeState } from './lib/contracts/interfaces/runtime-state.interface';
 export {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
