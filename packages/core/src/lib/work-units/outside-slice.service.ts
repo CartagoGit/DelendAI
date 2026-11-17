@@ -49,7 +49,7 @@ export const isNamed = (path: string, named: readonly string[]): boolean =>
 		return new RegExp(`^${pattern}$`, 'u').test(path);
 	});
 
-/** Each implement unit that changed files its slice does not name. */
+/** Each implement or create unit that changed files its slice does not name. */
 export const unitsOutsideTheirSlice = (input: {
 	readonly root: string;
 	readonly docsDir: string;
@@ -63,7 +63,11 @@ export const unitsOutsideTheirSlice = (input: {
 	);
 	return input.units.flatMap((unit) => {
 		const identity = parser?.parse(`refs/heads/${unit.ref}`);
-		if (identity === undefined || identity.kind !== 'implement') return [];
+		if (
+			identity === undefined ||
+			(identity.kind !== 'implement' && identity.kind !== 'create')
+		)
+			return [];
 		// The proposal as the unit holds it: a unit names the files it
 		// needs in its own proposal, and one unit carries a whole proposal.
 		const where = {

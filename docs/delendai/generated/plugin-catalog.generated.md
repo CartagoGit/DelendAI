@@ -38,6 +38,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `gitlab` | `@delendai/gitlab` | GitLab read-only provider context, HTTP client and resource tools. | manifest |
 | `i18n` | `@delendai/i18n` | i18n key/interpolation validation across locale JSON files. | manifest |
 | `impact-analysis` | `@delendai/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. | manifest |
+| `integration` | `@delendai/integration` | The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did. | manifest |
 | `issues` | `@delendai/issues` | Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve. | manifest |
 | `issues-triage` | `@delendai/issues-triage` | INTERNAL-ONLY issue triage bot for the delendai repository: reads GitHub issues, classifies them mechanically, drafts fix proposals and replies automatically with a machine-disclosure notice. Never published to npm. | manifest |
 | `link-check` | `@delendai/link-check` | Markdown link checker. | manifest |
@@ -104,6 +105,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `gitlab` | `@delendai/gitlab` | 0.3.0 | manifest |
 | `i18n` | `@delendai/i18n` | 0.3.0 | manifest |
 | `impact-analysis` | `@delendai/impact-analysis` | 0.3.0 | manifest |
+| `integration` | `@delendai/integration` | 0.3.0 | manifest |
 | `issues` | `@delendai/issues` | 0.3.0 | manifest |
 | `issues-triage` | `@delendai/issues-triage` | 0.1.0 | manifest |
 | `link-check` | `@delendai/link-check` | 0.3.0 | manifest |
@@ -170,6 +172,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `gitlab` | none | everything |
 | `i18n` | none | docs-web, everything, dogfood |
 | `impact-analysis` | none | audit, everything, dogfood |
+| `integration` | none | everything |
 | `issues` | none | everything |
 | `issues-triage` | none | none |
 | `link-check` | none | audit, docs-web, everything, dogfood |
@@ -236,6 +239,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `gitlab` | manifest | gitlab, remote-provider |
 | `i18n` | manifest | i18n, l10n |
 | `impact-analysis` | manifest | impact-analysis, test-selection |
+| `integration` | manifest | integration |
 | `issues` | manifest | issues, forge, triage |
 | `issues-triage` | manifest | github, issues, triage, bot, internal |
 | `link-check` | manifest | docs, links |

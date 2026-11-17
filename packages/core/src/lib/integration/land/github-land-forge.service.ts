@@ -14,7 +14,13 @@ import type {
 	ILandMerge,
 	ILandPullRequest,
 } from './land.interface';
-import { LAND_MAX_PAGES, LAND_PAGE_SIZE } from './land.constant';
+import { runForgeRead } from './forge-read-retry.helper';
+import { LandBranchGoneError } from './land-branch-gone.helper';
+import {
+	LAND_MAX_PAGES,
+	LAND_PAGE_SIZE,
+	LAND_WORKFLOW_FILE,
+} from './land.constant';
 
 interface IRawPull {
 	number: number;
@@ -23,13 +29,17 @@ interface IRawPull {
 	merged?: boolean;
 	body?: string | null;
 	labels?: { name: string }[];
-	head: { ref: string; sha: string };
+	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
 }
+
+const NOT_FOUND = 404;
 
 export const createGithubLandForge = (input: {
 	readonly slug: string;
 	readonly integration: string;
 	readonly run: ILandCommandRunner;
+	/** Pauses between read attempts; the composition root supplies the clock. */
+	readonly wait: (ms: number) => Promise<void>;
 	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
 }): ILandForge => {
 	const { slug, integration, run } = input;
@@ -38,13 +48,25 @@ export const createGithubLandForge = (input: {
 		path: string,
 		fields: Readonly<Record<string, string>> = {},
 	): Promise<{ status: number; body: unknown }> => {
-		const result = await run([
-			'api',
-			'--method',
+		const { result, attempts, exhausted } = await runForgeRead({
 			method,
-			`repos/${slug}/${path}`,
-			...Object.entries(fields).flatMap(([k, v]) => ['-f', `${k}=${v}`]),
-		]);
+			wait: input.wait,
+			once: () =>
+				run([
+					'api',
+					'--method',
+					method,
+					`repos/${slug}/${path}`,
+					...Object.entries(fields).flatMap(([k, v]) => [
+						'-f',
+						`${k}=${v}`,
+					]),
+				]),
+		});
+		if (exhausted)
+			throw new Error(
+				`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'} (${String(attempts)} attempts)`,
+			);
 		if (result.exitCode === 0) {
 			return {
 				status: 200,
@@ -116,15 +138,29 @@ export const createGithubLandForge = (input: {
 		merged: pr.merged === true,
 		labels: (pr.labels ?? []).map((l) => l.name),
 		body: pr.body ?? '',
+		...(pr.head.repo?.full_name !== undefined &&
+		pr.head.repo.full_name.toLowerCase() !== slug.toLowerCase()
+			? { crossRepository: true }
+			: {}),
 		testedBase: await baseOf(pr),
 		...(await headAuthorOf(pr.head.sha)),
 	});
 	const pulls = (query: string): Promise<readonly IRawPull[]> =>
 		all<IRawPull>(`pulls?base=${integration}&${query}`);
 	return {
-		integrationTip: async () =>
-			(await ok<{ commit: { sha: string } }>(`branches/${integration}`))
-				.commit.sha,
+		integrationTip: async () => {
+			const { status, body } = await call(
+				'GET',
+				`branches/${integration}`,
+			);
+			if (status === NOT_FOUND)
+				throw new LandBranchGoneError(integration);
+			if (status !== 200)
+				throw new Error(
+					`GET branches/${integration} answered ${String(status)}`,
+				);
+			return (body as { commit: { sha: string } }).commit.sha;
+		},
 		requiredChecks: async () =>
 			(
 				await ok<
@@ -142,6 +178,12 @@ export const createGithubLandForge = (input: {
 						)
 					: [],
 			),
+		landRuns: async () =>
+			(
+				await ok<{ workflow_runs: { id: number; status: string }[] }>(
+					`actions/workflows/${encodeURIComponent(LAND_WORKFLOW_FILE)}/runs?branch=${encodeURIComponent(integration)}&per_page=${String(LAND_PAGE_SIZE)}`,
+				)
+			).workflow_runs.map(({ id, status }) => ({ id, status })),
 		openPullRequests: async () =>
 			Promise.all(
 				(await pulls('state=open'))
@@ -224,6 +266,12 @@ export const createGithubLandForge = (input: {
 				body: text,
 			});
 		},
+		comments: async (number) =>
+			(
+				await all<{ body?: string }>(
+					`issues/${String(number)}/comments`,
+				)
+			).map((entry) => entry.body ?? ''),
 		openPullRequest: async ({ head, title, body }) =>
 			(
 				(
@@ -243,12 +291,45 @@ export const createGithubLandForge = (input: {
 		closePullRequest: async (number) => {
 			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
 		},
-		dispatchWorkflow: async (workflow, ref) =>
+		reopenPullRequest: async (number, headSha) => {
+			const [events, commit] = await Promise.all([
+				all<{ event?: string; created_at?: string }>(
+					`issues/${String(number)}/events`,
+				),
+				ok<{ commit: { committer?: { date?: string } } }>(
+					`commits/${headSha}`,
+				),
+			]);
+			const pushedAt = Date.parse(commit.commit.committer?.date ?? '');
+			// A reopen after the head's commit is this head's one reopen.
+			if (
+				events.some(
+					(event) =>
+						event.event === 'reopened' &&
+						Date.parse(event.created_at ?? '') >= pushedAt,
+				)
+			)
+				return false;
+			await call('PATCH', `pulls/${String(number)}`, {
+				state: 'closed',
+			});
+			await call('PATCH', `pulls/${String(number)}`, { state: 'open' });
+			return true;
+		},
+		dispatchWorkflow: async (workflow, ref, inputs = {}) =>
 			(
 				await call(
 					'POST',
 					`actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
-					{ ref },
+					{
+						ref,
+						...Object.fromEntries(
+							Object.entries(inputs).map(([k, v]) => [
+								`inputs[${k}]`,
+								v,
+							]),
+						),
+					},
 				)
 			).status === 200,
 	};

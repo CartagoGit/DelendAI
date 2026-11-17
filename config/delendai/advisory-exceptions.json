@@ -12,6 +12,12 @@
 			"package": "deepmerge",
 			"reason": "No version of deepmerge is patched (4.3.1 is the latest and is affected). It reaches the tree only through webfont, which builds the VS Code extension's icon font from the repository's own SVGs and configuration.",
 			"until": "2026-11-27"
+		},
+		{
+			"advisory": "GHSA-fc5q-39xc-vjpf",
+			"package": "picomatch",
+			"reason": "No version of picomatch is patched (4.0.7 is the latest and is affected). It reaches the tree only through build, site-generation and test tooling (astro, vite, vitest, tinyglobby, micromatch, anymatch, @parcel/watcher), where every glob pattern is the repository's own, never user input.",
+			"until": "2026-12-01"
 		}
 	]
 }

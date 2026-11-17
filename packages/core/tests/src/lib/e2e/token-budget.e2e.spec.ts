@@ -339,7 +339,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	 * (`token-budgets.constant.ts`), not a redefinition of the existing
 	 * `managed` ones.
 	 */
-	it('native overview listing stays under its own dedicated budget', async () => {
+	it('[<8000ms] native overview listing stays under its own dedicated budget', async () => {
 		const listed = await client.callTool({
 			name: 'delendai_overview',
 			arguments: {},
@@ -370,7 +370,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(compact).toBeLessThan(full);
 	});
 
-	it('cold-start overview stays under budget; compact is much cheaper', async () => {
+	it('[<4000ms] cold-start overview stays under budget; compact is much cheaper', async () => {
 		const adaptive = await connectClient(
 			TOKEN_BUDGETS.fixturePluginIds.join(','),
 			false,
@@ -424,7 +424,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		}
 	});
 
-	it('swarm preset keeps its real static and resume surfaces bounded', async () => {
+	it('[<12000ms] swarm preset keeps its real static and resume surfaces bounded', async () => {
 		const swarmOverviewCompactBudget =
 			TOKEN_BUDGETS.presets.swarm.overviewCompact;
 		const swarmRoundContextBudget =
@@ -492,7 +492,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		}
 	});
 
-	it('solo preset stays within its budget and minimal remains materially smaller than the collaboration surface', async () => {
+	it('[<6000ms] solo preset stays within its budget and minimal remains materially smaller than the collaboration surface', async () => {
 		for (const presetId of ['minimal', 'solo'] as const) {
 			const connection = await connectClient(presetId, true, {
 				clientInfo: modernClientInfo,
@@ -550,7 +550,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	 * only carries the canonical key).
 	 */
 	it.each(['team-pr', 'audit', 'docs-web', 'everything', 'dogfood'] as const)(
-		'%s preset keeps its marginal plugin ceiling honest',
+		'[<12000ms] %s preset keeps its marginal plugin ceiling honest',
 		async (presetId) => {
 			// Native, pinned: the marginal ceiling governs the static
 			// surface, the only one on which plugin tools are listed.
@@ -579,9 +579,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		},
 	);
 
-	it('agent catalog stays under budget; compact is materially cheaper than full', async () => {
+	it('[<3000ms] agent catalog stays under budget; compact is materially cheaper than full', async () => {
 		const catalogOnly = await connectClient('');
-		const catalogTextBytes = async (
+		// What the model receives is the structured payload; the text is a
+		// 34 B summary line, so measuring it let the catalog grow unchecked.
+		const catalogPayloadBytes = async (
 			name: string,
 			args: Record<string, unknown>,
 		): Promise<number> => {
@@ -589,16 +591,16 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 				name,
 				arguments: args,
 			});
-			const text = (
-				res.content as Array<{ type: string; text: string }>
-			)[0]?.text;
-			return Buffer.byteLength(text ?? '', 'utf8');
+			return jsonBytes(res.structuredContent);
 		};
 		try {
-			const compact = await catalogTextBytes('delendai_agent_catalog', {
-				mode: 'compact',
-			});
-			const full = await catalogTextBytes('delendai_agent_catalog', {
+			const compact = await catalogPayloadBytes(
+				'delendai_agent_catalog',
+				{
+					mode: 'compact',
+				},
+			);
+			const full = await catalogPayloadBytes('delendai_agent_catalog', {
 				mode: 'full',
 			});
 
@@ -618,7 +620,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		}
 	});
 
-	it('auto_work returns a tight action plan, not prose', async () => {
+	it('[<3000ms] auto_work returns a tight action plan, not prose', async () => {
 		const proposalDir = join(
 			workspace,
 			'docs',
@@ -663,7 +665,7 @@ title: token budget fixture
 		);
 	});
 
-	it('bootstrap discovery and planning are bounded BY DEFAULT (x00101)', async () => {
+	it('[<3000ms] bootstrap discovery and planning are bounded BY DEFAULT (x00101)', async () => {
 		// Bare calls — the compact summary is the default since x00101;
 		// the exhaustive payload (205 963 B measured against this repo)
 		// requires full:true.
@@ -681,7 +683,7 @@ title: token budget fixture
 		);
 	});
 
-	it('read-only long-session surfaces stay on bounded compact paths', async () => {
+	it('[<3000ms] read-only long-session surfaces stay on bounded compact paths', async () => {
 		const extra = await connectClient('proposals,memory,search,docs,logs');
 		const extraTextBytes = async (
 			name: string,
@@ -762,7 +764,7 @@ title: token budget fixture
 	 * `decideSurfaceModeFromCapabilities`'s default cannot silently move a
 	 * fixture-gated row onto a different surface ever again.
 	 */
-	it('an explicit surfaceMode overrides capability-based inference (AUD-B06 regression)', async () => {
+	it('[<4000ms] an explicit surfaceMode overrides capability-based inference (AUD-B06 regression)', async () => {
 		// No capabilities at all would infer `native` (AUD-C01's fixed
 		// behaviour); pinning `managed` here must still win.
 		const managedNoCapabilities = await connectClient(
@@ -829,12 +831,12 @@ describe('overview native ceilings measure rows, not roster size (v00136)', () =
 	const full = TOKEN_BUDGETS.toolPayloads.overviewFullNative;
 	const compact = TOKEN_BUDGETS.toolPayloads.overviewCompactNative;
 
-	it("passes today's measurement", () => {
+	it("[<7ms] passes today's measurement", () => {
 		expect(itemBudgetVerdict(13_786, 87, full)).toBe('ok');
 		expect(itemBudgetVerdict(2_185, 87, compact)).toBe('ok');
 	});
 
-	it('does not flip when the roster grows at the same row cost', () => {
+	it('[<7ms] does not flip when the roster grows at the same row cost', () => {
 		// 120 tools at today's 158.5 B/tool: a flat 14,475 B ceiling would
 		// have failed here, and the only fix would have been another bump.
 		expect(itemBudgetVerdict(Math.round(120 * 158.5), 120, full)).toBe(
@@ -845,7 +847,7 @@ describe('overview native ceilings measure rows, not roster size (v00136)', () =
 		);
 	});
 
-	it('fails when every row grows by 40 B', () => {
+	it('[<7ms] fails when every row grows by 40 B', () => {
 		expect(itemBudgetVerdict(Math.round(87 * 198.5), 87, full)).toBe(
 			'hard',
 		);
@@ -854,7 +856,7 @@ describe('overview native ceilings measure rows, not roster size (v00136)', () =
 		);
 	});
 
-	it('still stops unbounded growth through the absolute safety net', () => {
+	it('[<7ms] still stops unbounded growth through the absolute safety net', () => {
 		expect(itemBudgetVerdict(full.hard + 1, 1_000, full)).toBe('hard');
 	});
 });

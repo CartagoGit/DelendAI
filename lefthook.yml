@@ -261,6 +261,13 @@ pre-commit:
             env: *hook-locale
             run: bun run lint:commit-branch -- --staged {staged_files}
 
+        # A lockfile change needs a package.json change; a bare
+        # `bun install` rewrote it unasked. BLOCKING.
+        lockfile-follows-manifest:
+            glob: 'bun.lock'
+            env: *hook-locale
+            run: bun run lint:lockfile-follows-manifest -- --staged
+
         # f00083: anti-duplication guard for the universal bootstrap.
         # BLOCKING (no `|| true`). Runs the canonical-scaffold lint
         # against docs/delendai/AGENT-BOOTSTRAP.md only when that

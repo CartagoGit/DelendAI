@@ -4,7 +4,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { parentsOutsideMerges } from '@delendai/core/lib/integration/decisions/landed.helper';
+import {
+	parentsOutsideMerges,
+	workRefFate,
+} from '@delendai/core/lib/integration/decisions/landed.helper';
 
 describe('parentsOutsideMerges', () => {
 	it('[<6ms] names the parents outside the merges, for the caller to check against the base', () => {
@@ -38,5 +41,25 @@ describe('pullRequestLanded', () => {
 		expect(pullRequestLanded({ merged: false, headContained: false })).toBe(
 			false,
 		);
+	});
+});
+
+describe('workRefFate for an open proposal the forge lost', () => {
+	const facts = (retiredOnForge: boolean) => ({
+		landed: false,
+		onForge: false,
+		retiredOnForge,
+		openAtTip: true,
+		openOnIntegration: true,
+		worktree: 'in-use' as const,
+	});
+
+	it('[<50ms] withdraws a unit the forge retired and restores one it lost', () => {
+		const retired = workRefFate(facts(true));
+		expect(retired.fate).toBe('withdraw');
+		expect(retired.reason).toBe(
+			'the forge retired this unit: it is not put back; its next commit of its own publishes it again',
+		);
+		expect(workRefFate(facts(false)).fate).toBe('restore');
 	});
 });

@@ -175,6 +175,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "quality"
 	},
 	{
+		"slug": "integration",
+		"displayName": "Integration",
+		"purpose": "The pull request flow proven on real GitHub: a rehearsal of every case and production failure, with a report of what the forge did.",
+		"category": "code-intelligence"
+	},
+	{
 		"slug": "issues",
 		"displayName": "Issues",
 		"purpose": "Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.",

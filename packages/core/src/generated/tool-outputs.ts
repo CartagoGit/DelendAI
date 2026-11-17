@@ -1408,6 +1408,17 @@ export interface DelendaiStatusOutput {
 		id: string;
 		error: string;
 	}[];
+	runtime?: {
+		kind: "tag" | "branch";
+		tag?: string;
+		branch?: string;
+		sha12?: string;
+		ahead: number;
+		behind: number;
+		dirty: boolean;
+		follow?: string;
+		summary: string;
+	};
 }
 
 export interface DelendaiTechDebtDebtScanOutput {

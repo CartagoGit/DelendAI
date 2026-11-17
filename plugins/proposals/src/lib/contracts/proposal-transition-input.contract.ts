@@ -44,6 +44,12 @@ export interface IProposalTransitionArgs {
 	 * checkout already is.
 	 */
 	readonly checkout?: string | undefined;
+	/**
+	 * With `to: review`: run the hand-over checks (declared files exist,
+	 * each slice names its delivering commit) and answer, moving and
+	 * writing nothing. A delivery asks before its proof, not after it.
+	 */
+	readonly preflight?: boolean | undefined;
 }
 
 export type ValidationEvidenceScope = 'scoped' | 'global';
@@ -62,5 +68,6 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 		validationScope: z.enum(['scoped', 'global']).optional(),
 		checkout: callerCheckout.arg.optional(),
+		preflight: z.boolean().optional(),
 	})
 	.strict();

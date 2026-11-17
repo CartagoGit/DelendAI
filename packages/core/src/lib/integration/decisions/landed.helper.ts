@@ -76,10 +76,16 @@ export const takesOff = (verdict: IWorkRefVerdict): boolean =>
 /** What to do with a work ref, from what is known about it. */
 export const workRefFate = (facts: IWorkRefFacts): IWorkRefVerdict => {
 	if (workRefProposalOpen(facts)) {
-		return facts.onForge
+		if (facts.onForge) {
+			return {
+				fate: 'keep',
+				reason: 'its proposal is in progress: the ref is the unit the forge shows for it',
+			};
+		}
+		return facts.retiredOnForge
 			? {
-					fate: 'keep',
-					reason: 'its proposal is in progress: the ref is the unit the forge shows for it',
+					fate: 'withdraw',
+					reason: 'the forge retired this unit: it is not put back; its next commit of its own publishes it again',
 				}
 			: {
 					fate: 'restore',

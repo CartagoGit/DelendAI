@@ -83,8 +83,13 @@ export interface ICliCommand {
 	/**
 	 * The command never calls the server (it reads the machine and the
 	 * workspace itself): it runs without starting one, which costs seconds.
+	 * A predicate of the command's arguments, for a command only some of
+	 * whose subcommands call the server.
 	 */
-	readonly offline?: boolean | undefined;
+	readonly offline?:
+		| boolean
+		| ((args: readonly string[]) => boolean)
+		| undefined;
 	/**
 	 * The command only reads, for these arguments: in a project with no
 	 * delendai cache yet, the cache its server creates is removed when it
