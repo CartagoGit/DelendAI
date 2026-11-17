@@ -2,14 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
-last-correlation-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
-last-transition-from: review
-last-transition-at: 2026-11-04T22:20:10.943Z
+last-transition-id: 3ffc319f-5427-451d-86e7-6e3b6c79c187
+last-correlation-id: 3ffc319f-5427-451d-86e7-6e3b6c79c187
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:17:47.867Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
