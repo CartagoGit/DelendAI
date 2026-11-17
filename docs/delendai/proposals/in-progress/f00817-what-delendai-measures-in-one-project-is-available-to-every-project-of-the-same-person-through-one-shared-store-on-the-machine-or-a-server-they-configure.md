@@ -2,10 +2,14 @@
 id: f00817
 title: "What delendai measures in one project is available to every project of the same person, through one shared store on the machine or a server they configure"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-13
+last-transition-id: d6931f5d-f374-4409-a6ee-94e461978426
+last-correlation-id: d6931f5d-f374-4409-a6ee-94e461978426
+last-transition-from: ready
+last-transition-at: 2026-11-17T21:58:23.508Z
 ---
 
 # f00817 — What delendai measures in one project is available to every project of the same person, through one shared store on the machine or a server they configure
