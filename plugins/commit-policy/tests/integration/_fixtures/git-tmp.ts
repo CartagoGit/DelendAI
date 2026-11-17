@@ -1,10 +1,11 @@
-import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { execFile, execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { createWriteGitRunner } from '@delendai/core/public';
+import { createSharedGitFixture } from '@delendai/test-kit';
 import type { IGitRunner } from '@delendai/core/contracts';
 
 const execFileAsync = promisify(execFile);
@@ -40,6 +41,40 @@ const runGit = async (
 	return stdout.trim();
 };
 
+/** One seeded repository per distinct seed, built once per worker. */
+const fixtures = new Map<string, { readonly copy: () => string }>();
+
+const fixtureFor = (seed: {
+	readonly branch: string;
+	readonly userName: string;
+	readonly userEmail: string;
+	readonly seedFile: string;
+	readonly seedContents: string;
+	readonly seedCommitMessage: string;
+}): { readonly copy: () => string } => {
+	const key = JSON.stringify(seed);
+	const known = fixtures.get(key);
+	if (known !== undefined) return known;
+	const made = createSharedGitFixture((cwd) => {
+		const git = (...args: string[]): void => {
+			execFileSync('git', args, { cwd, stdio: 'ignore' });
+		};
+		git('init', '-q', '-b', seed.branch);
+		git('config', 'user.email', seed.userEmail);
+		git('config', 'user.name', seed.userName);
+		writeFileSync(join(cwd, seed.seedFile), seed.seedContents, 'utf8');
+		git('add', '--', seed.seedFile);
+		git('commit', '-q', '-m', seed.seedCommitMessage);
+	});
+	fixtures.set(key, made);
+	return made;
+};
+
+/**
+ * A seeded repository, copied from one built once per worker for the same
+ * seed: built per call it was five git processes. `prefix` no longer names
+ * the directory; it is kept so callers need not change.
+ */
 export const createTempGitRepo = async (
 	options: ICreateTempGitRepoOptions = {},
 ): Promise<ITempGitRepo> => {
@@ -50,18 +85,17 @@ export const createTempGitRepo = async (
 		seedFile = 'README.md',
 		seedContents = '# init\n',
 		seedCommitMessage = 'chore: init',
-		prefix = 'commit-policy-real-git-',
 	} = options;
-	const cwd = await mkdtemp(join(tmpdir(), prefix));
+	const cwd = fixtureFor({
+		branch,
+		userName,
+		userEmail,
+		seedFile,
+		seedContents,
+		seedCommitMessage,
+	}).copy();
 
 	try {
-		await runGit(cwd, ['init', '-q', '-b', branch]);
-		await runGit(cwd, ['config', 'user.email', userEmail]);
-		await runGit(cwd, ['config', 'user.name', userName]);
-		await writeFile(join(cwd, seedFile), seedContents, 'utf8');
-		await runGit(cwd, ['add', '--', seedFile]);
-		await runGit(cwd, ['commit', '-q', '-m', seedCommitMessage]);
-
 		return {
 			cwd,
 			runner: createWriteGitRunner(cwd),

@@ -34,6 +34,8 @@ import { readGit } from '@delendai/core/runtime';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import { branchInHand } from '../lib/rehearsed-branch';
+
 const BASELINE = 'tools/scripts/lint/proposal-hygiene.baseline.json';
 
 /**
@@ -279,7 +281,7 @@ const main = (): number => {
 	}
 
 	const findings: IProposalHygieneFinding[] = [];
-	const inHand = unitProposalOf(currentBranch());
+	const inHand = unitProposalOf(branchInHand(currentBranch(), process.env));
 	for (const [file, text] of proposals)
 		findings.push(...checkProposal(file, text, inHand));
 	findings.push(...findDuplicates(proposals));

@@ -8,6 +8,7 @@ import {
 	INTEGRATION_FOLLOW_UPS_SCRIPT,
 	createStopHandler,
 	describeMigrationRun,
+	followUpInBackground,
 	hasHelpFlag,
 	HYDRATION_INTERVAL_ENV,
 	hydrationIntervalMs,
@@ -205,13 +206,16 @@ describe('createStopHandler', () => {
 		const shutdown = vi.fn();
 		const maintenance = { stop: vi.fn() };
 		const hydration = { stop: vi.fn() };
+		const forgeEvents = { stop: vi.fn() };
 		const targets: Parameters<typeof createStopHandler>[0] = {};
 		const handler = createStopHandler(targets, shutdown);
 		targets.maintenance = maintenance;
 		targets.hydration = hydration;
+		targets.forgeEvents = forgeEvents;
 		handler(130);
 		expect(maintenance.stop).toHaveBeenCalledOnce();
 		expect(hydration.stop).toHaveBeenCalledOnce();
+		expect(forgeEvents.stop).toHaveBeenCalledOnce();
 		expect(shutdown).toHaveBeenCalledWith(130);
 	});
 });
@@ -249,6 +253,60 @@ describe('catchUpAtBoot', () => {
 		expect(followUp).not.toHaveBeenCalled();
 		expect(report).toHaveBeenCalledWith(
 			'follow-ups not caught up at boot: Server h#1#a maintains this workspace.',
+		);
+	});
+});
+
+describe('followUpInBackground', () => {
+	const deps = (protocol: number) => {
+		const runScript = vi.fn(async () => undefined);
+		const report = vi.fn();
+		return {
+			runScript,
+			report,
+			ports: {
+				scriptExists: () => true,
+				recordedProtocol: async () => protocol,
+				runScript,
+				report,
+			},
+		};
+	};
+
+	it('[<20ms] a process older than the recorded protocol refuses every run and says to restart', async () => {
+		const { ports, runScript, report } = deps(Number.MAX_SAFE_INTEGER);
+		await followUpInBackground('/r', 'move', ports);
+		await followUpInBackground('/r', 'event', ports);
+		expect(runScript).not.toHaveBeenCalled();
+		expect(report).toHaveBeenCalledTimes(2);
+		expect(String(report.mock.calls[0]?.[0])).toContain('Restart');
+	});
+
+	it('[<20ms] spawns the checkout script at each run, so the list is read afresh', async () => {
+		const { ports, runScript } = deps(0);
+		await followUpInBackground('/r', 'event', ports);
+		await followUpInBackground('/r', 'event', ports);
+		expect(runScript).toHaveBeenCalledTimes(2);
+		expect(runScript).toHaveBeenCalledWith('/r', 'event');
+	});
+
+	it('[<20ms] runs nothing when the checkout has no follow-up script', async () => {
+		const { ports, runScript } = deps(0);
+		await followUpInBackground('/r', 'move', {
+			...ports,
+			scriptExists: () => false,
+		});
+		expect(runScript).not.toHaveBeenCalled();
+	});
+
+	it('[<20ms] reports a script that fails and carries on', async () => {
+		const { ports, report } = deps(0);
+		await followUpInBackground('/r', 'move', {
+			...ports,
+			runScript: () => Promise.reject(new Error('boom')),
+		});
+		expect(String(report.mock.calls[0]?.[0])).toContain(
+			'did not complete: boom',
 		);
 	});
 });

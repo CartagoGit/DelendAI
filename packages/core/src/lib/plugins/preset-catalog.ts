@@ -296,6 +296,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'gitlab' },
 			{ plugin: 'i18n' },
 			{ plugin: 'impact-analysis' },
+			{ plugin: 'integration' },
 			{ plugin: 'issues', hostOnly: true },
 			{ plugin: 'link-check' },
 			{ plugin: 'logs' },

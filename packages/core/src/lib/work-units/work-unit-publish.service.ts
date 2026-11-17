@@ -1,12 +1,7 @@
 import { carriesNothingBeyond } from './landed-work.service';
 import { argumentsRefused } from './work-arguments.helper';
-import { deletedDocuments } from './review-pack-deletions.service';
-import {
-	describeCarriedPacks,
-	otherReviewPacks,
-	packsCarried,
-} from './review-pack-scope.service';
-import { readSwarm } from './work-swarm.service';
+import { reviewUnitRefusal } from './review-unit-publish-checks.service';
+import type { IPublicationPullRequest } from '../contracts/interfaces/publication-pull-request.interface';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -16,19 +11,16 @@ import {
 	publicationRefFromWorkRef,
 	publishWorkUnitExclusively,
 } from './work-publish.service';
-import {
-	choosePublicationTarget,
-	proposalInProgress,
-} from './publication-target.service';
+import { proposalInProgress } from './publication-target.service';
+import { resolvePublicationTarget } from './open-pull-request-republication.service';
 import { openUnitPullRequest } from './publication-pull-request.service';
+import { pullRequestNumberOf } from './superseded-publication.service';
+import { pullRequestPorts } from './change-request-forges.service';
+import { subscribeAgentToPullRequest } from '../forge-events/forge-event-store.service';
 import { urgencyOfUnit } from './pull-request-urgency.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
-import { readWorkspaceDocsDir } from './development-policy.service';
-import {
-	isReviewUnitBranch,
-	outsideReviewScope,
-} from '../development-policy/git-guard-review-scope';
+import { isReviewUnitBranch } from '../development-policy/git-guard-review-scope';
 import { journalWorkEvent } from './work-event-journal.service';
 import { unitDepartures } from './unit-departures.service';
 import { endCarriedUnits } from './carried-units.service';
@@ -59,6 +51,19 @@ import {
 const generationOfWorkRef = (ref: string): number | undefined => {
 	const found = /-g(\d+)\//u.exec(ref)?.[1];
 	return found === undefined ? undefined : Number(found);
+};
+
+/** The pull request with its number, from the target or from its URL. */
+const withNumber = (
+	pullRequest: IPublicationPullRequest,
+	known: number | undefined,
+): IPublicationPullRequest & { readonly number?: number } => {
+	const number =
+		known ??
+		('url' in pullRequest
+			? pullRequestNumberOf(pullRequest.url)
+			: undefined);
+	return number === undefined ? pullRequest : { ...pullRequest, number };
 };
 
 /**
@@ -131,81 +136,14 @@ export const published = async (
 			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
 	}
-	// A review records verdicts. What it changes beyond the project's
-	// documents is not a review's to publish, however it was committed.
-	if (isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))) {
-		const outside = outsideReviewScope(
-			(
-				readGit(root, [
-					'diff',
-					'--name-only',
-					'--no-renames',
-					`${base}...${workRef}`,
-				]) ?? ''
-			)
-				.split('\n')
-				.filter((path) => path.length > 0),
-			await readWorkspaceDocsDir(root),
-		);
-		if (outside.length > 0) {
-			return refused(
-				`\`${workRef}\` is a unit that records verdicts, and it changes ${outside.join(', ')}: verdicts do not change the product.`,
-				'Take those changes out of the unit (revert the commits that made them). A change the product needs is a proposal of its own, implemented in an `implement` unit.',
-			);
-		}
-		const deleted = deletedDocuments(
-			(
-				readGit(root, [
-					'diff',
-					'--name-status',
-					'--no-renames',
-					`${base}...${workRef}`,
-				]) ?? ''
-			)
-				.split('\n')
-				.filter((line) => line.length > 0),
-			await readWorkspaceDocsDir(root),
-		);
-		if (deleted.length > 0) {
-			return refused(
-				`\`${workRef}\` is a unit that records verdicts, and it deletes ${deleted.join(', ')}: a review moves a document, it never removes one.`,
-				`Restore them from the integration branch (\`git checkout ${policy.branches.integration} -- ${deleted.join(' ')}\`), commit, and publish again.`,
-			);
-		}
-		const commitsOver = (tip: string): readonly string[] =>
-			(
-				readGit(root, ['rev-list', '--no-merges', `${base}..${tip}`]) ??
-				''
-			)
-				.split('\n')
-				.filter((commit) => commit.length > 0);
-		const own = commitsOver(workRef);
-		// Judged by what it changes, not by its commits: a claim is a commit
-		// with no change, and a unit holding only a claim was published as a
-		// pull request that delivered nothing and sat red in the queue.
-		const changes =
-			readGit(root, ['diff', '--name-only', `${base}...${workRef}`]) ??
-			'';
-		if (own.length === 0 || changes.trim().length === 0) {
-			return refused(
-				`\`${workRef}\` records no verdict of its own: it changes nothing over \`${policy.branches.integration}\`.`,
-				'There is nothing to publish. Record a verdict in this unit; a unit that will record none is removed with its worktree and its branch.',
-			);
-		}
-		const swarm = readSwarm({ root, policy });
-		const carried = packsCarried(
-			own,
-			otherReviewPacks([...swarm.units, ...swarm.published], agent).map(
-				(pack) => ({ ref: pack.ref, commits: commitsOver(pack.tip) }),
-			),
-		);
-		if (carried.length > 0) {
-			return refused(
-				`\`${workRef}\` carries another reviewer's pack: one verdict in two pull requests conflicts with itself when the first one lands.`,
-				describeCarriedPacks(carried, policy.branches.integration),
-			);
-		}
-	}
+	const reviewRefusal = await reviewUnitRefusal({
+		root,
+		policy,
+		workRef,
+		base,
+		agent,
+	});
+	if (reviewRefusal !== undefined) return reviewRefusal;
 	// A proposal's one wip branch outlives every publication while the
 	// proposal is in progress: its next work is committed on it.
 	const inProgress = proposalInProgress(root, proposal, workRef);
@@ -229,24 +167,27 @@ export const published = async (
 	}
 	// Whether this slice is published alone or joins its proposal's pull
 	// request is the policy's decision (integration.publication).
-	const target = choosePublicationTarget({
-		root,
-		policy,
-		remote,
-		agent,
-		proposal,
-		slice,
-		// The generation of the ref being published, not the one the
-		// arguments default to: a second unit of one agent was otherwise
-		// published into the first unit's pull request.
-		generation:
-			generationOfWorkRef(workRef) ??
-			Number(scalarArg(args, 'generation') ?? '1'),
-		topic: scalarArg(args, 'topic'),
-		kind: kindFor(args, slice),
-		base,
-		workRef,
-	});
+	const target = resolvePublicationTarget(
+		{
+			root,
+			policy,
+			remote,
+			agent,
+			proposal,
+			slice,
+			// The generation of the ref being published, not the one the
+			// arguments default to: a second unit of one agent was otherwise
+			// published into the first unit's pull request.
+			generation:
+				generationOfWorkRef(workRef) ??
+				Number(scalarArg(args, 'generation') ?? '1'),
+			topic: scalarArg(args, 'topic'),
+			kind: kindFor(args, slice),
+			base,
+			workRef,
+		},
+		await pullRequestPorts(root),
+	);
 	if ('refusal' in target) {
 		return refused(
 			target.refusal,
@@ -319,6 +260,7 @@ export const published = async (
 		unit: target.unit,
 		reason: target.reason,
 		ref: target.publicationRef,
+		...(target.notes.length === 0 ? {} : { notes: target.notes }),
 		// A publication moves only by fast-forward; nothing is forced over
 		// work already proposed. It moves on without this work when it
 		// carries the proposal's earlier slices, or when the queue brought
@@ -345,6 +287,12 @@ export const published = async (
 					urgent,
 				})
 			: undefined;
+	// The agent that published waits for the outcome, not by asking.
+	const subscribed = await subscribeAgentToPullRequest({
+		root,
+		agent,
+		pullRequest,
+	});
 	// Published but not cleaned up is not a success: the namespace is
 	// left carrying a ref that looks like live work.
 	const landed = outcome.published && (outcome.workRefRemoved || keepWorkRef);
@@ -384,7 +332,15 @@ export const published = async (
 			...(carried.length === 0 ? {} : { carried }),
 			...(departures.length === 0 ? {} : { departures }),
 			publication,
-			...(pullRequest === undefined ? {} : { pullRequest }),
+			...(pullRequest === undefined
+				? {}
+				: {
+						pullRequest: withNumber(
+							pullRequest,
+							target.pullRequestNumber,
+						),
+					}),
+			...(subscribed ? { subscribed: true } : {}),
 			...(proof === undefined ? {} : { proof: proofSummary(proof) }),
 		},
 	};

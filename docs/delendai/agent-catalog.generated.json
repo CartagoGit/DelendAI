@@ -491,6 +491,14 @@
 			"plugin": "notification"
 		},
 		{
+			"name": "delendai_notification_forge_await",
+			"plugin": "notification"
+		},
+		{
+			"name": "delendai_notification_forge_subscribe",
+			"plugin": "notification"
+		},
+		{
 			"name": "delendai_notification_notify_status",
 			"plugin": "notification"
 		},

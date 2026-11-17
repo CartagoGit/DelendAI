@@ -13,6 +13,8 @@
 
 import { execFileSync } from 'node:child_process';
 
+import { judgePrCiWall, wallSecondsOf } from '@delendai/integration';
+
 import type { IGhJob, IJobCost, IPrCiCost } from './pr-ci-cost.interface';
 
 const SLOWEST = 5;
@@ -44,17 +46,20 @@ export const summarize = (jobs: readonly IGhJob[]): IPrCiCost => {
 		.filter((each): each is IJobCost => each !== undefined);
 	if (costs.length === 0)
 		return { jobs: 0, runnerSeconds: 0, wallSeconds: 0, slowest: [] };
-	const wallMs =
-		Math.max(...costs.map((each) => each.endMs)) -
-		Math.min(...costs.map((each) => each.startMs));
 	return {
 		jobs: costs.length,
 		runnerSeconds: costs.reduce((sum, each) => sum + each.seconds, 0),
-		wallSeconds: Math.round(wallMs / 1000),
+		wallSeconds: wallSecondsOf(costs),
 		slowest: [...costs]
 			.sort((a, b) => b.seconds - a.seconds)
 			.slice(0, SLOWEST),
 	};
+};
+
+/** The same verdict the rehearsal report gives, against the target for a plain pull request. */
+const wallVerdict = (wallSeconds: number): string => {
+	const verdict = judgePrCiWall(wallSeconds, false);
+	return `${verdict.ok ? 'within' : 'over'} the ${String(verdict.thresholdMinutes)} min target`;
 };
 
 export const formatCost = (pr: string, cost: IPrCiCost): string =>
@@ -83,7 +88,8 @@ const costOf = (pr: string): string => {
 		.split('\n')
 		.filter((line) => line !== '')
 		.map((line) => JSON.parse(line) as IGhJob);
-	return formatCost(pr, summarize(jobs));
+	const cost = summarize(jobs);
+	return `${formatCost(pr, cost)}\n  wall time: ${wallVerdict(cost.wallSeconds)}`;
 };
 
 const main = (): number => {
