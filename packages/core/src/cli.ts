@@ -67,6 +67,7 @@ export {
 export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
 export { rescueAfterShell } from './lib/work-units/shared-checkout-shell-rescue.service';
 export { agentFor } from './lib/work-units/work-unit-shared.service';
+export { resolveUnitsDirectory } from './lib/work-units/units-directory.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
 // whose budget is full — because the CLI resolves and reports agent

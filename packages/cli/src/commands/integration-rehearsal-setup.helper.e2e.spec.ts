@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	realpathSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -50,6 +56,15 @@ describe('the rehearsal setup materialiser', () => {
 		]);
 		expect(git(repo, 'worktree', 'list').split('\n')).toHaveLength(1);
 		expect(existsSync(join(repo, 'made.txt'))).toBe(false);
+	});
+
+	it('[<2000ms] runs the command in a worktree under the repository root', async () => {
+		const where = await createSetupMaterialiser(repo, base)(
+			'pwd > where.txt',
+			[],
+		);
+		const seen = where.find((file) => file.path === 'where.txt');
+		expect(seen?.content?.startsWith(realpathSync(repo))).toBe(true);
 	});
 
 	it('[<2000ms] fails naming the command when it fails', async () => {
