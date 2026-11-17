@@ -9,7 +9,8 @@
  * release branch, and the upkeep on its schedule. It acts as the project's
  * identity (a GitHub App's installation token, or a personal access token),
  * because a push or merge made with the workflow token starts no workflow.
- * The workflow token is never used: nothing here writes through it.
+ * Nothing here writes through the workflow token; only an upkeep step that
+ * declares what it reads (`readsWithWorkflowToken`) runs with it.
  *
  * It wakes on events only: a push to the integration branch, and a dispatch
  * at its base ref from the signal (see land-signal.helper) on a pull request
