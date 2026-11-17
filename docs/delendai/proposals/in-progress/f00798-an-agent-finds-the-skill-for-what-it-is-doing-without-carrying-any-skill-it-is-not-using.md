@@ -2,14 +2,14 @@
 id: f00798
 title: "an agent finds the skill for what it is doing without carrying any skill it is not using"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-11-01
-last-transition-id: 3cbd219b-0afd-4d3d-b6c6-32193052ee4d
-last-correlation-id: 3cbd219b-0afd-4d3d-b6c6-32193052ee4d
-last-transition-from: review
-last-transition-at: 2026-11-04T18:59:51.482Z
+last-transition-id: 6a796aa9-0bf2-4d30-a213-1b8dc36d4085
+last-correlation-id: 6a796aa9-0bf2-4d30-a213-1b8dc36d4085
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:28:51.448Z
 ---
 
 # f00798 — an agent finds the skill for what it is doing without carrying any skill it is not using
