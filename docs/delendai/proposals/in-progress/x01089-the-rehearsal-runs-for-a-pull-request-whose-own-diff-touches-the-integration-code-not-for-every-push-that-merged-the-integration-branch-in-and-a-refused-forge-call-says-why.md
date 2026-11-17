@@ -2,10 +2,14 @@
 id: x01089
 title: "The rehearsal runs for a pull request whose own diff touches the integration code, not for every push that merged the integration branch in, and a refused forge call says why"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-11-17
+last-transition-id: cf2d7803-f750-41b8-8b68-5430e9166af2
+last-correlation-id: cf2d7803-f750-41b8-8b68-5430e9166af2
+last-transition-from: ready
+last-transition-at: 2026-11-17T21:27:51.908Z
 ---
 
 # x01089 — The rehearsal runs for a pull request whose own diff touches the integration code, not for every push that merged the integration branch in, and a refused forge call says why
