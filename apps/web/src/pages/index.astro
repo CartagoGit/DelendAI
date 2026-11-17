@@ -41,6 +41,7 @@ const alternateLocales = languages.filter((l) => l.code !== defaultLang);
 <Base lang={defaultLang} title="@delendai/core — agnostic MCP server core">
 	{/* hreflang — one tag per supported locale, plus the x-default. */}
 	<link slot="head" rel="alternate" hreflang="x-default" href={`${base}/`} />
+	<link slot="head" rel="alternate" hreflang={defaultLang} href={`${base}/`} />
 	{
 		alternateLocales.map((l) => (
 			<link
