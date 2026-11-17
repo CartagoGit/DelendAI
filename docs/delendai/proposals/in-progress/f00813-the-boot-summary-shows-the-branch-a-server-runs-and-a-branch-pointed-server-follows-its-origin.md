@@ -2,10 +2,14 @@
 id: f00813
 title: "The boot summary shows the branch a server runs, and a branch-pointed server follows its origin"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-09
+last-transition-id: 26e93c30-d854-4959-a802-df0b532e8678
+last-correlation-id: 26e93c30-d854-4959-a802-df0b532e8678
+last-transition-from: ready
+last-transition-at: 2026-11-17T10:54:25.981Z
 ---
 
 # f00813 — The boot summary shows the branch a server runs, and a branch-pointed server follows its origin
