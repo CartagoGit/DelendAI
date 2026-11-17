@@ -183,19 +183,6 @@ export const prepareReviewEntry = async (input: {
 	readonly refShape?: IWorkRefShape;
 }): Promise<IReviewEntry> => {
 	const slices = collectSliceStatuses(input.markdown);
-	const missing = await missingDeclaredFiles(
-		input.markdown,
-		input.workspaceRoot,
-	);
-	if (missing.length > 0) {
-		return {
-			ok: false,
-			code: 'missing-declared-files',
-			reason: `declared files do not exist: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ` and ${String(missing.length - 5)} more` : ''}. A reviewer could approve the slice, and the proposal could then never close.`,
-			nextAction:
-				'Deliver those files, or correct the slice’s Files to what was delivered, then hand the proposal to review again.',
-		};
-	}
 	const base = await baseOf(input.run, input.integration);
 	const proposalShipped = listShippedIn(input.markdown).length > 0;
 	let markdown = input.markdown;
@@ -260,6 +247,21 @@ export const prepareReviewEntry = async (input: {
 			reason: `${undelivered.join(', ')}: no commit on this branch changes the slice’s declared files, and nothing records which commit delivered it. A reviewer would have nothing to judge.`,
 			nextAction:
 				'Commit the slice’s work on this branch first, or, when it was delivered earlier, record `- shipped-in: `<sha>`` on the slice; then hand the proposal to review again.',
+		};
+	}
+	// After the delivery check: a slice nobody has delivered has files that
+	// do not exist yet, and saying so first buried the real answer.
+	const missing = await missingDeclaredFiles(
+		input.markdown,
+		input.workspaceRoot,
+	);
+	if (missing.length > 0) {
+		return {
+			ok: false,
+			code: 'missing-declared-files',
+			reason: `declared files do not exist: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ` and ${String(missing.length - 5)} more` : ''}. A reviewer could approve the slice, and the proposal could then never close.`,
+			nextAction:
+				'Deliver those files, or correct the slice’s Files to what was delivered, then hand the proposal to review again.',
 		};
 	}
 	return { ok: true, markdown, recorded };
