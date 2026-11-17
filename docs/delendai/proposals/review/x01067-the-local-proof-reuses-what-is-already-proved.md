@@ -2,14 +2,14 @@
 id: x01067
 title: "The local proof reuses what is already proved"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-13
-last-transition-id: c07312da-17cb-4cc3-8221-4598ed9ca83c
-last-correlation-id: c07312da-17cb-4cc3-8221-4598ed9ca83c
-last-transition-from: review
-last-transition-at: 2026-11-17T21:58:38.129Z
+last-transition-id: 79f153c7-95a9-4b74-9aeb-c19a7722ad4a
+last-correlation-id: 79f153c7-95a9-4b74-9aeb-c19a7722ad4a
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T22:13:24.429Z
 ---
 
 # x01067 — The local proof reuses what is already proved
