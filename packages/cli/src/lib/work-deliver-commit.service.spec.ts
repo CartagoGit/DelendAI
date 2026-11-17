@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	answerCommittingWrites,
 	commitToolWrites,
 	dirtyPathsOf,
 	toolCommitSubject,
@@ -78,5 +79,43 @@ describe('commitToolWrites', () => {
 		expect(commitToolWrites(git, new Set(), SUBJECT)).toBe(
 			'commit refused',
 		);
+	});
+});
+
+describe('answerCommittingWrites', () => {
+	/** A checkout clean before the call and dirty with `a.md` after it. */
+	const writtenByCall = (failOn?: string) => {
+		const calls: string[] = [];
+		let statuses = 0;
+		const git: IGitInCheckout = (args) => {
+			calls.push(args[0] ?? '');
+			if (args[0] === 'status') {
+				statuses += 1;
+				return { ok: true, out: statuses > 1 ? ' M a.md\0' : '' };
+			}
+			return args[0] === failOn
+				? { ok: false, out: 'commit refused' }
+				: { ok: true, out: '' };
+		};
+		return { calls, git };
+	};
+
+	it('[<20ms] gives the tool its answer after committing what the call wrote', async () => {
+		const { calls, git } = writtenByCall();
+		expect(
+			await answerCommittingWrites(git, SUBJECT, async () => ({
+				ok: true,
+			})),
+		).toEqual({ ok: true });
+		expect(calls).toEqual(['status', 'status', 'add', 'commit']);
+	});
+
+	it('[<20ms] answers with the commit refusal when the commit fails', async () => {
+		const { git } = writtenByCall('commit');
+		expect(
+			await answerCommittingWrites(git, SUBJECT, async () => ({
+				ok: true,
+			})),
+		).toEqual({ ok: false, reason: 'commit refused' });
 	});
 });

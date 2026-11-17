@@ -51,3 +51,18 @@ export const commitToolWrites = (
 	const committed = git(['commit', '-q', '-m', subject, '--', ...written]);
 	return committed.ok ? undefined : committed.out || 'git commit failed';
 };
+
+/**
+ * Run a tool call and commit what it wrote: the tool's answer, or a
+ * refusal carrying the commit's reason when the commit failed.
+ */
+export const answerCommittingWrites = async (
+	git: IGitInCheckout,
+	subject: string,
+	call: () => Promise<unknown>,
+): Promise<unknown> => {
+	const dirtyBefore = dirtyPathsOf(git);
+	const answer = await call();
+	const refusal = commitToolWrites(git, dirtyBefore, subject);
+	return refusal === undefined ? answer : { ok: false, reason: refusal };
+};

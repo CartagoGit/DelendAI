@@ -33,8 +33,7 @@ import {
 } from '../lib/work-deliver.service';
 import { runGitCommand } from '@delendai/core/runtime';
 import {
-	commitToolWrites,
-	dirtyPathsOf,
+	answerCommittingWrites,
 	toolCommitSubject,
 } from '../lib/work-deliver-commit.service';
 import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
@@ -247,26 +246,22 @@ export const createWorkCommand = (): ICliCommand => ({
 					const where = checkout ?? ctx.cwd;
 					const git: IGitInCheckout = (gitArgs) =>
 						runGitCommand(where, gitArgs);
-					const dirtyBefore = dirtyPathsOf(git);
-					const answer = await answerOf(
-						request(ctx, TRANSITION_TOOL, {
-							id,
-							to,
-							reason,
-							...(agent === undefined ? {} : { agent }),
-							checkout: where,
-						}),
-					);
 					// The tool's write is committed by the tool's flow, before
 					// the proof reads the tree or anything else commits it.
-					const refusal = commitToolWrites(
+					return answerCommittingWrites(
 						git,
-						dirtyBefore,
 						toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
+						() =>
+							answerOf(
+								request(ctx, TRANSITION_TOOL, {
+									id,
+									to,
+									reason,
+									...(agent === undefined ? {} : { agent }),
+									checkout: where,
+								}),
+							),
 					);
-					return refusal === undefined
-						? answer
-						: { ok: false, reason: refusal };
 				},
 			});
 		}
