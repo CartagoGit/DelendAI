@@ -102,6 +102,8 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
             # G136: the root and three deep routes of the published site must
             # answer 200. Pages can lag the deploy by seconds, so each route is
             # retried; a route that never answers fails the run.
