@@ -3,7 +3,6 @@
  * means on the forge's evidence: one judge per kind, found by the kind
  * itself. Pure over the evidence.
  */
-import { REHEARSAL_CI_CHECK } from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalEvidence,
 	IRehearsalExpectation,
@@ -11,7 +10,9 @@ import type {
 	IRehearsalPullEvent,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalWorkflowNames,
 } from '../contracts/interfaces/rehearsal.interface';
+import { REHEARSAL_FAST_WORKFLOW_NAMES } from '../contracts/constants/rehearsal.constant';
 import { scanStarted } from './rehearsal-scan.helper';
 
 const SHORT_SHA = 12;
@@ -46,17 +47,20 @@ export const labelFlips = (
 	return flips;
 };
 
-const isCiRun = (run: IRehearsalRun): boolean =>
-	run.workflow === REHEARSAL_CI_CHECK;
+const isCiRun = (
+	run: IRehearsalRun,
+	names: IRehearsalWorkflowNames = REHEARSAL_FAST_WORKFLOW_NAMES,
+): boolean => run.workflow === names.ci;
 
 /** Whether the forge built a head: a CI run exists for it and was not held for approval. */
 export const headBuilt = (
 	runs: readonly IRehearsalRun[],
 	sha: string,
+	names?: IRehearsalWorkflowNames,
 ): boolean =>
 	runs.some(
 		(run) =>
-			isCiRun(run) &&
+			isCiRun(run, names) &&
 			run.headSha === sha &&
 			run.conclusion !== 'action_required' &&
 			run.status !== 'action_required',
@@ -142,7 +146,9 @@ const JUDGES: TJudges = {
 				? []
 				: [pull(`${expectation.key}:token-open`)?.headSha ?? '']),
 		];
-		const unbuilt = heads.filter((sha) => !headBuilt(evidence.runs, sha));
+		const unbuilt = heads.filter(
+			(sha) => !headBuilt(evidence.runs, sha, evidence.workflows),
+		);
 		return result(
 			`${expectation.key} heads built`,
 			heads.length > 0 && unbuilt.length === 0,
@@ -161,7 +167,7 @@ const JUDGES: TJudges = {
 		);
 		const memberRuns = evidence.runs.filter(
 			(run) =>
-				isCiRun(run) &&
+				isCiRun(run, evidence.workflows) &&
 				run.event === 'pull_request' &&
 				members.has(run.headBranch),
 		);
@@ -176,7 +182,7 @@ const JUDGES: TJudges = {
 		);
 		const groupRuns = evidence.runs.filter(
 			(run) =>
-				isCiRun(run) &&
+				isCiRun(run, evidence.workflows) &&
 				run.event === 'pull_request' &&
 				!firstRuns.has(run.id) &&
 				run.headBranch !== evidence.integration,
@@ -192,7 +198,7 @@ const JUDGES: TJudges = {
 
 		const merged = evidence.tips.slice(1);
 		const unscanned = merged.filter(
-			(sha) => !scanStarted(evidence.runs, sha),
+			(sha) => !scanStarted(evidence.runs, sha, evidence.workflows),
 		);
 		return result(
 			'every integration tip started its push workflows',

@@ -157,6 +157,33 @@ describe('integration activation', () => {
 		expect(reasons).toEqual(['fast target T1 is red: slow']);
 	});
 
+	it('[<50ms] refuses a target that was not measured unless it is a listed deferral', async () => {
+		const unmeasured = (id: string) =>
+			report({
+				targets: [
+					{
+						...report().targets[0]!,
+						id,
+						ok: false,
+						notMeasured: true,
+						detail: 'unread',
+					},
+				],
+			});
+		expect(
+			await refused({
+				reportOf: async (mode) =>
+					mode === 'fast'
+						? unmeasured('no-secrets-in-logs')
+						: report(),
+			}),
+		).toEqual(['fast target no-secrets-in-logs was not measured: unread']);
+		const f = fake({
+			reportOf: async () => unmeasured('session-notified-p95'),
+		});
+		expect((await activateIntegration(f.ports)).refusals).toEqual([]);
+	});
+
 	it('[<50ms] refuses a subset report, naming the scenarios it lacks', async () => {
 		const reasons = await refused({
 			scenarioIds: both(['F1', 'F2', 'F3']),

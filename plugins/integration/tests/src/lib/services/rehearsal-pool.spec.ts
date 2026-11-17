@@ -98,6 +98,9 @@ describe('rehearse with scenarios at once', () => {
 			labels: async () => [],
 			pullEvents: async () => [],
 			runLog: async () => '',
+			cancelRun: async () => 'cancelled' as const,
+			jobCount: async () => 1,
+			reopenPull: async () => undefined,
 			deleteLabel: async () => undefined,
 			closePull: async () => undefined,
 		});
@@ -107,7 +110,10 @@ describe('rehearse with scenarios at once', () => {
 				now: () => Date.parse('2026-11-12T10:00:00Z'),
 				wait: async () => undefined,
 			},
-			setup: () => ({ files: async () => [] }),
+			setup: () => ({
+				files: async () => [],
+				requiredChecks: ['rehearsal-ci'],
+			}),
 			repository: 'o/r',
 			branchPrefix: 'delendai/rehearsal/',
 			baseBranch: 'develop',

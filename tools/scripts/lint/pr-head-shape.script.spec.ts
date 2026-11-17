@@ -112,3 +112,18 @@ describe('prHeadProblem under the policy of a base branch', () => {
 		expect(prHeadProblem(head, project)).toContain('outside');
 	});
 });
+
+describe('prHeadProblem for a batch land opened', () => {
+	const { branches } = {
+		branches: resolveDevelopmentPolicy({
+			development: { branches: { namespacePrefix: 'delendai' } },
+		}).branches,
+	};
+
+	it('[<20ms] accepts a head under the batch namespace and still refuses a stray branch', () => {
+		expect(
+			prHeadProblem('delendai/queue/batch-2236+2240', branches),
+		).toBeUndefined();
+		expect(prHeadProblem('feature/batch-1', branches)).toContain('outside');
+	});
+});

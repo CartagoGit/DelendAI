@@ -7,6 +7,7 @@
  */
 import { applyJsoncEdits, parseJsonc } from '@delendai/core/cli';
 
+import { REHEARSAL_DEFERRED_TARGETS } from '../contracts/constants/rehearsal.constant';
 import { ACTIVATION_MODES } from '../contracts/constants/integration-activation.constant';
 import type {
 	IActivationFile,
@@ -49,11 +50,20 @@ const reportRefusals = (
 	for (const scenario of report.scenarios)
 		if (!scenario.ok)
 			reasons.push(`${mode} scenario ${scenario.id} is red`);
-	for (const target of report.targets)
+	for (const target of report.targets) {
+		if (target.notMeasured === true) {
+			const deferred = REHEARSAL_DEFERRED_TARGETS[target.id];
+			if (deferred === undefined)
+				reasons.push(
+					`${mode} target ${target.id} was not measured: ${target.detail}`,
+				);
+			continue;
+		}
 		if (!target.ok)
 			reasons.push(
 				`${mode} target ${target.id} is red: ${target.detail}`,
 			);
+	}
 	return reasons;
 };
 

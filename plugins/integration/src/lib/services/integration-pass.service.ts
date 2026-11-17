@@ -10,10 +10,12 @@ import { spawnSync } from 'node:child_process';
 import {
 	createGithubLandForge,
 	integrationProtocolRefusal,
+	LandBranchGoneError,
 	LAND_WORKFLOW_FILE,
 	landConfigFromPolicy,
 	landPass,
 } from '@delendai/core/cli';
+import type { ILandReport } from '@delendai/core/cli';
 
 import { LAND_REMOTE } from '../contracts/constants/integration-pass.constant';
 import type {
@@ -24,6 +26,7 @@ import type {
 import { createBringForward } from './land-bring-forward.helper';
 import { createLandGit } from './land-git.service';
 import { landProjectPorts } from './land-project-ports.helper';
+import { runLandRounds } from './land-rounds.helper';
 import { runGit } from './land-train-assembly.helper';
 
 /** A project's command line through the shell, in `cwd`, with no input. */
@@ -37,6 +40,12 @@ export const runProjectCommand: IProjectCommandRunner = (cwd, commandLine) => {
 	});
 	return { ok: done.status === 0, stdout: done.stdout ?? '' };
 };
+
+/** The real clock, wired only here so every other caller injects its own. */
+const realWait = (ms: number): Promise<void> =>
+	new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
 
 /** Runs one pass; the exit code the process should end with. */
 export const runIntegrationPass = async (
@@ -77,38 +86,64 @@ export const runIntegrationPass = async (
 			integration: config.integrationBranch,
 			mergeMethod: config.mergeMethod,
 			run: input.runGh,
+			wait: input.ports?.wait ?? realWait,
 		});
-	const report = await landPass({
+	const round = () =>
+		landPass({
+			forge,
+			git:
+				input.ports?.git ??
+				createLandGit({
+					root,
+					remote: LAND_REMOTE,
+					ports,
+					exec,
+					token: env.GH_TOKEN ?? '',
+				}),
+			config,
+			// Its pushes are the identity's, so the forge builds what it moves.
+			bringForward:
+				input.ports?.bringForward ??
+				createBringForward({
+					root,
+					remote: LAND_REMOTE,
+					token: env.GH_TOKEN ?? '',
+					normalize: ports.normalizeBatch,
+				}),
+			// A derived conflict is two jobs of the land workflow, never this pass.
+			resolveDerived: (pr) =>
+				forge.dispatchWorkflow(
+					LAND_WORKFLOW_FILE,
+					config.integrationBranch,
+					{
+						derived: String(pr.number),
+					},
+				),
+		}).catch((cause: unknown) => {
+			// A rehearsal's cleanup, or a deleted branch: the run this pass served is over.
+			if (cause instanceof LandBranchGoneError) return cause;
+			throw cause;
+		});
+	const { reports, notes } = await runLandRounds(
 		forge,
-		git:
-			input.ports?.git ??
-			createLandGit({
-				root,
-				remote: LAND_REMOTE,
-				ports,
-				exec,
-				token: env.GH_TOKEN ?? '',
-			}),
-		config,
-		// Its pushes are the identity's, so the forge builds what it moves.
-		bringForward:
-			input.ports?.bringForward ??
-			createBringForward({
-				root,
-				remote: LAND_REMOTE,
-				token: env.GH_TOKEN ?? '',
-				normalize: ports.normalizeBatch,
-			}),
-		// A derived conflict is two jobs of the land workflow, never this pass.
-		resolveDerived: (pr) =>
-			forge.dispatchWorkflow(
-				LAND_WORKFLOW_FILE,
-				config.integrationBranch,
-				{
-					derived: String(pr.number),
-				},
-			),
-	});
+		round,
+		(outcome) => outcome instanceof LandBranchGoneError,
+	);
+	for (const note of notes) log(`land: ${note}`);
+	let acted = 0;
+	for (const outcome of reports) {
+		if (outcome instanceof LandBranchGoneError) {
+			log(`land: ${outcome.message}; nothing to settle.`);
+			return 0;
+		}
+		acted += outcome.actions.length;
+		logReport(outcome, log);
+	}
+	return finish(env, acted, error);
+};
+
+/** What one round did, one line each. */
+const logReport = (report: ILandReport, log: (line: string) => void): void => {
 	for (const line of report.actions) log(`land: ${line}`);
 	// Every open pull request, every pass: "0 merged" is never silent.
 	for (const [number, reason] of [...report.reasons].sort(
@@ -118,11 +153,17 @@ export const runIntegrationPass = async (
 	log(
 		`land: ${String(report.mergedCount)} merged${report.mergedPRs.length > 0 ? ` (${report.mergedPRs.map((n) => `#${String(n)}`).join(', ')})` : ''}; tip ${report.tipSha.slice(0, 12)}`,
 	);
-	// The watchdog runs the same pass on a timer: work it finds is work no
-	// event started, so it fails the run and the workflow files the evidence.
-	if (env.LAND_WATCHDOG === '1' && report.actions.length > 0) {
+};
+
+/** The watchdog runs the same pass on a timer: work it finds is work no event started, so it fails the run and the workflow files the evidence. */
+const finish = (
+	env: Readonly<Record<string, string | undefined>>,
+	acted: number,
+	error: (line: string) => void,
+): number => {
+	if (env.LAND_WATCHDOG === '1' && acted > 0) {
 		error(
-			`land: the watchdog acted ${String(report.actions.length)} time(s): an event was missed.`,
+			`land: the watchdog acted ${String(acted)} time(s): an event was missed.`,
 		);
 		return 1;
 	}

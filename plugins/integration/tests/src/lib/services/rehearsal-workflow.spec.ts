@@ -5,7 +5,11 @@ import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_INTEGRATION_OPTIONS } from '@delendai/core/cli';
 
-import { REHEARSAL_WORKFLOW_PATH } from '../../../../src/lib/contracts/constants/rehearsal.constant';
+import {
+	REHEARSAL_GROUPING,
+	REHEARSAL_JOB_TIMEOUT_MINUTES,
+	REHEARSAL_WORKFLOW_PATH,
+} from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { renderRehearsalWorkflow } from '../../../../src/lib/services/rehearsal-ci-workflow.helper';
 
 const render = () =>
@@ -34,18 +38,50 @@ describe('the rehearsal workflow', () => {
 		expect(text).toContain("branches: ['delendai/pr/**']");
 	});
 
-	it('[<50ms] takes the mode and the scenarios, and always keeps the report as an artifact', () => {
+	it('[<50ms] takes the mode and the scenarios, and keeps the merged report as an artifact', () => {
 		const text = render();
 		expect(text).toContain('mode:');
 		expect(text).toContain('options: [fast, real]');
 		expect(text).toContain('scenarios:');
 		expect(text).toContain('--mode="$REHEARSAL_MODE"');
 		expect(text).toMatch(
-			/if: always\(\)\n\s+uses: actions\/upload-artifact@[0-9a-f]{40}/u,
+			/if: always\(\)\n\s+uses: actions\/upload-artifact@[0-9a-f]{40}[^\n]*\n\s+with:\n\s+name: rehearsal-report-\$\{\{ inputs.mode \|\| 'fast' \}\}\n/u,
 		);
-		expect(text).toContain(
-			"name: rehearsal-report-${{ inputs.mode || 'fast' }}",
+	});
+
+	it('[<50ms] has the three jobs plan, play and report, in that order', () => {
+		const text = render();
+		const jobs = [...text.matchAll(/^ {4}([a-z]+):$/gmu)].map((m) => m[1]);
+		expect(jobs.slice(-3)).toEqual(['plan', 'play', 'report']);
+		expect(text).toContain('needs: plan');
+		expect(text).toMatch(
+			/report:[\s\S]*needs: \[plan, play\][\s\S]*if: always\(\)/u,
 		);
+	});
+
+	it('[<50ms] plays the groups as a matrix that does not stop at the first red one, as wide as the plan says', () => {
+		const play =
+			render().split('    play:')[1]?.split('    report:')[0] ?? '';
+		expect(play).toContain('fail-fast: false');
+		expect(play).toContain(
+			'max-parallel: ${{ fromJSON(needs.plan.outputs.parallel) }}',
+		);
+		expect(play).toContain(
+			'matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}',
+		);
+		expect(play).toContain(
+			`timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
+		);
+		expect(play).toContain('--group="$REHEARSAL_GROUP"');
+		expect(play).toMatch(/if: always\(\)\n[\s\S]*--sweep --group=/u);
+		expect(play).toContain(
+			"name: rehearsal-report-${{ inputs.mode || 'fast' }}-${{ matrix.group }}",
+		);
+	});
+
+	it('[<50ms] runs all fast groups at once and the real groups one at a time', () => {
+		expect(REHEARSAL_GROUPING.fast.maxParallel).toBe('all');
+		expect(REHEARSAL_GROUPING.real.maxParallel).toBe(1);
 	});
 
 	it('[<50ms] runs one at a time', () => {

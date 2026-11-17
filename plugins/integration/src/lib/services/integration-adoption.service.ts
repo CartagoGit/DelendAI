@@ -20,6 +20,7 @@ import {
 	wakeIntegratorStep,
 } from '@delendai/core/cli';
 
+import { REHEARSAL_JOB_TIMEOUT_MINUTES } from '../contracts/constants/rehearsal.constant';
 import {
 	rehearsalDispatchTrigger,
 	rehearsalRunSteps,
@@ -35,7 +36,6 @@ const REHEARSAL_FILE = 'rehearsal.yml';
 const SIGNAL_STEP_INDENT = 12;
 const CHECKOUT =
 	'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7';
-const REHEARSAL_TIMEOUT_MINUTES = 45;
 
 /** The command a runner uses to run the delendai CLI at the pinned version. */
 const cliCommand = (version: string): string =>
@@ -99,7 +99,7 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 		'    rehearsal:',
 		'        name: rehearsal',
 		'        runs-on: ubuntu-latest',
-		`        timeout-minutes: ${String(REHEARSAL_TIMEOUT_MINUTES)}`,
+		`        timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
 		'        steps:',
 		...identitySteps(input.identity).map((line) =>
 			line === '' ? line : `            ${line}`,

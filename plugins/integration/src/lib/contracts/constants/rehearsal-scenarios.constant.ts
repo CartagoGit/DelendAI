@@ -7,7 +7,10 @@ import type {
 
 import {
 	REHEARSAL_OVERLAP_FILE,
+	REHEARSAL_RAW_TEXT_TYPES,
+	REHEARSAL_REAL_SPEC_DIR,
 	rehearsalOverlapContent,
+	rehearsalUntouchedLineSpec,
 } from './rehearsal.constant';
 
 /**
@@ -56,13 +59,22 @@ const overlapPullIn = (
 	key: string,
 	line: number,
 	declaration: IRehearsalDeclaration = passing,
-): IRehearsalPullSpec =>
-	pullIn(key, 's1', declaration, {
+	realFiles: Readonly<Record<string, string>> = {},
+): IRehearsalPullSpec => ({
+	...pullIn(key, 's1', declaration, {
 		[REHEARSAL_OVERLAP_FILE]: rehearsalOverlapContent({ line, key }),
-	});
+	}),
+	...(Object.keys(realFiles).length > 0 ? { realFiles } : {}),
+});
 
 const open = (...keys: string[]): IRehearsalStep => ({ kind: 'open', keys });
 const ready = (...keys: string[]): IRehearsalStep => ({ kind: 'ready', keys });
+/** Members of one batch: ready in one request, once no pass is open. */
+const readyTogether = (...keys: string[]): IRehearsalStep => ({
+	kind: 'ready',
+	keys,
+	together: true,
+});
 const merged = (...keys: string[]): IRehearsalStep => ({
 	kind: 'await',
 	until: 'merged',
@@ -127,7 +139,7 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		steps: [
 			open('a', 'b'),
 			checked('a', 'b'),
-			ready('a', 'b'),
+			readyTogether('a', 'b'),
 			merged('a', 'b'),
 		],
 		expect: [
@@ -140,13 +152,18 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'red-batch',
 		title: 'A red batch names its culprit and lands the rest',
 		pulls: [
-			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch),
+			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch, {
+				[`${REHEARSAL_REAL_SPEC_DIR}/overlap-far-line.spec.ts`]:
+					rehearsalUntouchedLineSpec(OVERLAP_FAR_LINE),
+				[`${REHEARSAL_REAL_SPEC_DIR}/raw-text.d.ts`]:
+					REHEARSAL_RAW_TEXT_TYPES,
+			}),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
 		steps: [
 			open('a', 'b'),
 			checked('a', 'b'),
-			ready('a', 'b'),
+			readyTogether('a', 'b'),
 			labelled('a'),
 			merged('b'),
 		],
@@ -208,8 +225,10 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		pulls: [pullIn('a', 's1')],
 		steps: [
 			open('a'),
-			ready('a'),
+			// Before the pull request is ready: a ready one lets a pass merge it
+			// before the token run pushes, and the push would reach a closed pull.
 			{ kind: 'token-push', key: 'a' },
+			ready('a'),
 			// The integrator reopens the head the token wrote, and it lands.
 			merged('a'),
 		],

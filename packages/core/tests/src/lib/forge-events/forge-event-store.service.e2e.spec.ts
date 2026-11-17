@@ -4,7 +4,13 @@
  * timer, and one file of subscriptions that `work publish` adds to.
  */
 
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -87,12 +93,7 @@ describe('forge event subscriptions', () => {
 
 	it('[<50ms] reads nothing from a file that is not a list', async () => {
 		const dir = forgeEventsDir(scratch(), 'cache');
-		await addForgeEventSubscription(dir, {
-			agent: 'a',
-			repository: 'o/r',
-			number: 1,
-			since: 1,
-		});
+		mkdirSync(dir, { recursive: true });
 		writeFileSync(join(dir, 'subscriptions.json'), '{"not":"a list"}');
 		expect(await readForgeEventSubscriptions(dir)).toEqual([]);
 		writeFileSync(join(dir, 'subscriptions.json'), '[{"agent":1},null]');

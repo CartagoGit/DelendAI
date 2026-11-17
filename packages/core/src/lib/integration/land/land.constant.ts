@@ -28,6 +28,8 @@ export const LAND_SIGNAL_WORKFLOW_FILE = 'land-signal.yml';
 export const LAND_SIGNAL_WORKFLOW_NAME = 'land-signal';
 /** Minutes a signal may run: it only sends a dispatch. */
 export const LAND_SIGNAL_TIMEOUT_MINUTES = 5;
+/** A queued pass older than this may be stuck: it no longer excuses a new dispatch. */
+export const LAND_QUEUED_PASS_FRESH_SECONDS = 120;
 /** The pull request events that change what the integrator has to settle. */
 export const LAND_SIGNAL_EVENTS = [
 	'opened',

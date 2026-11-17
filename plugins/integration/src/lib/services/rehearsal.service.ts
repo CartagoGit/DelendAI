@@ -13,18 +13,23 @@ import type {
 	IRehearsalScenario,
 	IRehearseInput,
 } from '../contracts/interfaces/rehearsal.interface';
+import type {
+	ILogScan,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
 
 import {
 	cleanRun,
 	newRunId,
-	secretHitsIn,
 	sweepStaleRuns,
 } from './rehearsal-cleanup.service';
-import { REHEARSAL_DEFAULT_CONCURRENCY } from '../contracts/constants/rehearsal.constant';
+import { REHEARSAL_GROUPING } from '../contracts/constants/rehearsal.constant';
+import { scanLogs } from './rehearsal-log-scan.helper';
 import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
 import { runBranchRoot } from './rehearsal-names.helper';
 import { runScenario } from './rehearsal-run.service';
+import { mergeUnstarted } from './rehearsal-unstarted.helper';
 
 /** The scenarios `ids` name, in the catalogue's order; an unknown id is refused. */
 export const selectScenarios = <T extends { readonly id: string }>(
@@ -84,43 +89,15 @@ const playOne = async (
 	}
 };
 
-/** Token shapes in every log the run started; a log that cannot be read is a hit, never a pass. */
-const scanLogs = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<readonly string[]> => {
-	try {
-		return await logHits(input, evidence);
-	} catch (error) {
-		return [
-			`log scan failed: ${error instanceof Error ? error.message : String(error)}`,
-		];
-	}
-};
-
-const logHits = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<readonly string[]> => {
-	const seen = new Set<number>();
-	const hits: string[] = [];
-	for (const one of evidence)
-		for (const run of one.runs) {
-			if (seen.has(run.id)) continue;
-			seen.add(run.id);
-			hits.push(...secretHitsIn(run, await input.forge.runLog(run.id)));
-		}
-	return hits;
-};
-
 /** Runs the rehearsal and returns its report; cleanup runs even when a scenario stops. */
 export const rehearse = async (
 	input: IRehearseInput,
 ): Promise<IRehearsalReport> => {
 	const startedMs = input.clock.now();
-	const runId = newRunId(startedMs);
+	const runId = newRunId(startedMs, input.group);
 	for (const swept of await sweepStaleRuns({
 		forge: input.forge,
+		clock: input.clock,
 		branchPrefix: input.branchPrefix,
 		now: startedMs,
 	}))
@@ -134,16 +111,22 @@ export const rehearse = async (
 		tip,
 		branchPrefix: input.branchPrefix,
 		log: input.log,
+		awaitCapSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitCapSeconds,
+		awaitBudgetSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitBudgetSeconds,
+		mode: input.mode ?? 'fast',
 	};
 	const evidence: IRehearsalEvidence[] = [];
-	let secretHits: readonly string[] = [];
+	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };
 	let leftovers: readonly string[] = [];
+	let unstartedByCleanup: readonly IUnstartedRun[] = [];
 	try {
 		// Scenarios share nothing but the read-only context, so they play at once; the evidence keeps the catalogue's order.
 		evidence.push(
 			...(await playPooled(
 				input.scenarios,
-				input.concurrency ?? REHEARSAL_DEFAULT_CONCURRENCY,
+				input.concurrency ?? input.scenarios.length,
 				async (scenario) => {
 					const played = await playOne(
 						context,
@@ -157,16 +140,29 @@ export const rehearse = async (
 				},
 			)),
 		);
-		secretHits = await scanLogs(input, evidence);
+		scan = await scanLogs(
+			{
+				forge: input.forge,
+				clock: input.clock,
+				branchRoot: runBranchRoot(input.branchPrefix, runId),
+			},
+			evidence,
+		);
 	} finally {
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
-		leftovers = await cleanRun({
+		const cleaned = await cleanRun({
 			forge: input.forge,
+			clock: input.clock,
 			branchPrefix: input.branchPrefix,
 			runId,
-		}).catch((error: unknown) => [
-			`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
-		]);
+		}).catch((error: unknown) => ({
+			leftovers: [
+				`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+			],
+			unstarted: [],
+		}));
+		leftovers = cleaned.leftovers;
+		unstartedByCleanup = cleaned.unstarted;
 	}
 	input.log(
 		`run ${runId} cleaned under ${runBranchRoot(input.branchPrefix, runId)}`,
@@ -181,6 +177,8 @@ export const rehearse = async (
 		...(input.mode === undefined ? {} : { mode: input.mode }),
 		evidence,
 		leftovers,
-		secretHits,
+		secretHits: scan.hits,
+		unreadLogs: scan.unread,
+		unstarted: mergeUnstarted(scan.unstarted, unstartedByCleanup),
 	});
 };

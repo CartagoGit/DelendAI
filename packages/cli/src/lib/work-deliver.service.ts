@@ -128,6 +128,23 @@ export const undeliveredSlicesOf = (
 	return listed?.split(', ');
 };
 
+/**
+ * Whether a refusal only says other slices are undelivered, with the slice
+ * this unit was entered for delivered: the proposal is not for review
+ * yet, and this unit publishes alone.
+ */
+const othersRemaining = (
+	answer: unknown,
+	slice: string,
+): readonly string[] | undefined => {
+	const undelivered = undeliveredSlicesOf(answer);
+	return undelivered !== undefined &&
+		slice !== 'all' &&
+		!undelivered.includes(slice)
+		? undelivered
+		: undefined;
+};
+
 /** The number a pull request URL ends in (`…/pull/12`). */
 const NUMBER_OF_URL = /\/pull\/(?<number>\d+)\/?$/u;
 
@@ -196,20 +213,35 @@ export const deliverUnit = async (
 	if (started !== undefined && !alreadyPast(started, 'in-progress')) {
 		return { code: EXIT_CODE.VALIDATION, error: started };
 	}
+	// What the hand-over would refuse is refused now, in seconds, not after
+	// the proof: the same checks, run by the tool that makes the transition.
+	const expected = await ports.preflight(checkout);
+	const unmet = refusalOf(expected);
+	let remaining = othersRemaining(expected, ports.slice);
+	if (unmet !== undefined && remaining === undefined) {
+		return { code: EXIT_CODE.VALIDATION, error: unmet };
+	}
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
-	const answer = await ports.transition('review', checkout);
-	const handed = refusalOf(answer);
-	// A slice proved and delivered while the proposal's others are not:
-	// the proposal is not for review yet, and a refusal after the proof
-	// would waste it. Only this slice's work is published; the slice that
-	// completes the proposal hands it over.
-	const remaining = undeliveredSlicesOf(answer);
-	if (
-		remaining !== undefined &&
-		ports.slice !== 'all' &&
-		!remaining.includes(ports.slice)
-	) {
+	// `--only` runs gates of the proof and proves nothing: not a delivery.
+	if (isRecord(proved.data) && proved.data.partial === true) {
+		return {
+			code: EXIT_CODE.USAGE,
+			error: 'work deliver proves the whole unit: --only is for `work prove`, which never proves the unit.',
+		};
+	}
+	let answer: unknown;
+	let handed: string | undefined;
+	if (remaining === undefined) {
+		answer = await ports.transition('review', checkout);
+		handed = refusalOf(answer);
+		// Another slice landed or went missing since the preflight.
+		remaining = othersRemaining(answer, ports.slice);
+	}
+	// A slice proved and delivered while the proposal's others are not: the
+	// proposal is not for review yet. Only this slice's work is published;
+	// the slice that completes the proposal hands it over.
+	if (remaining !== undefined) {
 		const published = await ports.publish();
 		return published.code === 0
 			? {

@@ -15,7 +15,10 @@ import {
 	REHEARSAL_SCENARIOS,
 } from '../../../../src/lib/contracts/constants/rehearsal-scenarios.constant';
 import type { IRehearsalSetupInput } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
-import { REHEARSAL_OVERLAP_FILE } from '../../../../src/lib/contracts/constants/rehearsal.constant';
+import {
+	REHEARSAL_OVERLAP_FILE,
+	REHEARSAL_REAL_SPEC_DIR,
+} from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { createRehearsalSetup } from '../../../../src/lib/services/rehearsal-setup.helper';
 import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
 import {
@@ -110,6 +113,37 @@ describe('the scenario catalogue', () => {
 		expect(changed.map((c) => c.path)).toContain('rehearsal/r1/x.txt');
 	});
 
+	it('[<50ms] red-batch adds the far-line spec to a in real mode only, and not to b', () => {
+		const redBatch = REHEARSAL_SCENARIOS.find((s) => s.id === 'red-batch');
+		const [a, b] = ['a', 'b'].map((key) =>
+			redBatch?.pulls.find((spec) => spec.key === key),
+		);
+		const specPath = `${REHEARSAL_REAL_SPEC_DIR}/overlap-far-line.spec.ts`;
+		const paths = (
+			spec: typeof a,
+			mode: 'fast' | 'real',
+		): readonly string[] =>
+			spec === undefined
+				? []
+				: pullChanges('r1', 'red-batch', spec, {}, mode).map(
+						(change) => change.path,
+					);
+		expect(paths(a, 'real')).toContain(specPath);
+		expect(paths(a, 'real')).toContain(
+			`${REHEARSAL_REAL_SPEC_DIR}/raw-text.d.ts`,
+		);
+		expect(paths(b, 'real')).not.toContain(specPath);
+		expect(paths(a, 'fast')).not.toContain(specPath);
+		expect(paths(a, 'fast')).toEqual(
+			paths(a, 'fast').filter((p) => p.startsWith('rehearsal/')),
+		);
+		const content = (
+			a === undefined ? [] : pullChanges('r1', 'red-batch', a, {}, 'real')
+		).find((change) => change.path === specPath)?.content;
+		expect(content).toContain('const LINE = 25;');
+		expect(content).toContain(`${REHEARSAL_OVERLAP_FILE}?raw`);
+	});
+
 	it('[<50ms] opens pull requests as drafts so a ready event follows', () => {
 		for (const spec of REHEARSAL_SCENARIOS.flatMap((s) => s.pulls))
 			expect(spec.draft).toBe(true);
@@ -167,8 +201,8 @@ describe('the known-red list', () => {
 		}
 	});
 
-	it('[<50ms] holds only what real GitHub still showed red: the real-mode scenario', () => {
-		expect(REHEARSAL_KNOWN_RED.map((r) => r.scenario)).toEqual(['F6']);
+	it('[<50ms] is empty: real GitHub showed every scenario green on both modes', () => {
+		expect(REHEARSAL_KNOWN_RED).toEqual([]);
 	});
 });
 
@@ -289,6 +323,32 @@ describe('today land on the rehearsal branch', () => {
 		).files('i');
 		expect(files.map((f) => f.path)).toContain(REHEARSAL_OVERLAP_FILE);
 	});
+
+	it("[<50ms] names the stand-in check as required in fast mode, and the policy's in real mode", () => {
+		const base = {
+			runId: 'r1',
+			branchPrefix: 'ns',
+			integratorWorkflow: () => '',
+		};
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText: '{}',
+				}),
+			).requiredChecks,
+		).toEqual(['rehearsal-ci']);
+		expect(
+			createRehearsalSetup(
+				fakePartial<IRehearsalSetupInput>({
+					...base,
+					policyText:
+						'{"development":{"integration":{"requiredChecks":["tests","lint"]}}}',
+					realWorkflows: {},
+				}),
+			).requiredChecks,
+		).toEqual(['tests', 'lint']);
+	});
 });
 
 describe('the host-offline scenario', () => {
@@ -304,5 +364,16 @@ describe('the host-offline scenario', () => {
 			'receive',
 		]);
 		expect(offline?.expect).toContainEqual({ kind: 'sessions-notified' });
+	});
+});
+
+describe('the scenarios of one batch', () => {
+	it('[<50ms] make their members ready in one request', () => {
+		for (const id of ['overlapping', 'red-batch']) {
+			const ready = REHEARSAL_SCENARIOS.find(
+				(s) => s.id === id,
+			)?.steps.find((step) => step.kind === 'ready');
+			expect(ready).toMatchObject({ together: true });
+		}
 	});
 });

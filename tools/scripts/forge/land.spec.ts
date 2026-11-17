@@ -450,11 +450,11 @@ describe('the land workflow template', () => {
 			...REPO_LAND_WORKFLOW,
 			concurrencyGroup: 'land-rehearsal-r1',
 		});
-		// Every job's group takes the name: the pass's and each job's own.
+		// Every job's group and the run's name take it: the pass's and each job's own.
 		expect(own).toBe(
 			base.replaceAll(
-				/group: land(?=\n|-)/gu,
-				'group: land-rehearsal-r1',
+				/(group|run-name): land(?=\n|-)/gu,
+				'$1: land-rehearsal-r1',
 			),
 		);
 	});

@@ -210,7 +210,7 @@ one has a default, and with `engine: none` nothing integrates.
 | `commands` | Project commands the pass runs: `jobs` prints the zones a change reaches (one per line, `*` for all; both revisions are appended), `normalizeBatch` runs in a batch tree before its derived files are regenerated. Empty means none. |
 | `signalWorkflows`, `scanWorkflows` | The workflows whose end wakes the integrator, and those that scan the integration branch. |
 | `watchdog` | The hourly alarm on the default branch. |
-| `rehearsal` | `secrets` and `scenarios` a rehearsal reads and runs, and `setupCommand`: a command a real-mode rehearsal runs in a worktree holding its files, so every file it changes (generated files that follow the policy) joins the setup commit. Empty runs nothing. `concurrency`: how many scenarios play at once (default 4; 1 plays them one after another). |
+| `rehearsal` | `secrets` and `scenarios` a rehearsal reads and runs, and `setupCommand`: a command a real-mode rehearsal runs in a worktree holding its files, so every file it changes (generated files that follow the policy) joins the setup commit. Empty runs nothing. `concurrency`: the most scenarios that play at once in a job (default 11; a job plays its group of 4 scenarios in fast mode or 3 in real mode, all at once, so the number only ever lowers that; 1 plays them one after another). |
 
 `delendai integration adopt` renders the integrator, the rehearsal and the CI
 signal job from these values; see the plugin README for the steps.

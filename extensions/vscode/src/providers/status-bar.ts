@@ -9,6 +9,8 @@ import {
 import { OPEN_DASHBOARD_COMMAND } from '../commands/open-dashboard';
 import { SHOW_OVERVIEW_COMMAND } from '../extension';
 
+const BASE_TOOLTIP = 'delendai Dashboard (click to open)';
+
 export interface IStatusBarItem {
 	text: string;
 	tooltip?: string;
@@ -104,7 +106,7 @@ export class DelendaiStatusBar {
 	start(): void {
 		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
-		this.item.tooltip = 'delendai Dashboard (click to open)';
+		this.item.tooltip = BASE_TOOLTIP;
 		this.item.text = '$(delendai) delendai';
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
@@ -135,6 +137,24 @@ export class DelendaiStatusBar {
 		if (tokenSummary !== undefined) segments.push(tokenSummary);
 		if (agentCount !== undefined) segments.push(`${agentCount} agents`);
 		this.item.text = segments.join(' • ');
+		const runtime = await this.runtimeSummary();
+		this.item.tooltip =
+			runtime === undefined
+				? BASE_TOOLTIP
+				: `${BASE_TOOLTIP}\n${runtime}`;
+	}
+
+	/** What the server runs, exactly as the status tool words it: the bar adds no formatting. */
+	private async runtimeSummary(): Promise<string | undefined> {
+		try {
+			const status = await this.client.request<
+				Record<string, never>,
+				{ readonly runtime?: { readonly summary?: string } }
+			>(formatToolName(this.namespacePrefix, 'status'), {});
+			return status.runtime?.summary;
+		} catch {
+			return undefined;
+		}
 	}
 
 	dispose(): void {

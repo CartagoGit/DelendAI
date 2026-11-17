@@ -10,11 +10,15 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { IRehearsalCommandRunner } from '@delendai/integration/public';
+import type {
+	IRehearsalCommandRunner,
+	IRehearsalScenarioResult,
+} from '@delendai/integration/public';
 
 import {
 	createIntegrationCommand,
 	integrationCommand,
+	rehearsalExitOk,
 } from './integration.command';
 
 const ctx = fakePartial<ICliCommandContext>({
@@ -54,6 +58,36 @@ describe('the integration command', () => {
 			expect(result.code).toBe(EXIT_CODE.USAGE);
 		},
 	);
+
+	it('[<50ms] refuses a group out of range with exit 2, saying the valid range', async () => {
+		const result = await integrationCommand.run(
+			['rehearse', '--mode=fast', '--group=4/3'],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.USAGE);
+		expect(result.error).toContain('valid 1/3 to 3/3');
+	});
+
+	it('[<50ms] refuses a group that is not n/total', async () => {
+		const result = await integrationCommand.run(
+			['rehearse', '--group=first'],
+			ctx,
+		);
+		expect(result.code).toBe(EXIT_CODE.USAGE);
+	});
+
+	it('[<50ms] plans the groups: three of the catalogue in fast mode, all at once; real one at a time', async () => {
+		const fast = await integrationCommand.run(
+			['rehearse', '--plan', '--mode=fast'],
+			ctx,
+		);
+		expect(fast.text).toBe('matrix={"group":[1,2,3]}\ntotal=3\nparallel=3');
+		const real = await integrationCommand.run(
+			['rehearse', '--plan', '--mode=real'],
+			ctx,
+		);
+		expect(real.text).toBe('matrix={"group":[1,2,3]}\ntotal=3\nparallel=1');
+	});
 
 	it('[<50ms] declares the flags it reads and runs without a server', () => {
 		expect(integrationCommand.flags).toEqual(INTEGRATION_COMMAND.flags);
@@ -120,6 +154,56 @@ describe('the integration command', () => {
 		}
 	});
 
+	it('[<100ms] sweeps every leftover root with --sweep and plays nothing', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'integration-cmd-'));
+		try {
+			writeFileSync(
+				join(dir, 'delendai.config.json'),
+				'{"development":{"branches":{"integration":"develop","release":"main","namespacePrefix":"ns"}}}',
+			);
+			const calls: string[] = [];
+			const run: IRehearsalCommandRunner = async (args) => {
+				const line = args.join(' ');
+				calls.push(line);
+				if (line.startsWith('repo view'))
+					return { exitCode: 0, stdout: 'o/r\n', stderr: '' };
+				if (line.includes('actions/runs'))
+					return {
+						exitCode: 0,
+						stdout: '{"workflow_runs":[]}',
+						stderr: '',
+					};
+				if (line.includes('matching-refs'))
+					return {
+						exitCode: 0,
+						stdout: '[{"ref":"refs/heads/ns/rehearsal/r20200101-000000/s-integration"}]',
+						stderr: '',
+					};
+				return { exitCode: 0, stdout: '[]', stderr: '' };
+			};
+			const result = await createIntegrationCommand(run).run(
+				['rehearse', '--sweep'],
+				fakePartial<ICliCommandContext>({ cwd: dir }),
+			);
+			expect(result.code).toBe(EXIT_CODE.OK);
+			expect(result.text).toContain('swept 1 run(s)');
+			expect(
+				calls.some(
+					(c) =>
+						c.includes('--method DELETE') &&
+						c.includes(
+							'ns/rehearsal/r20200101-000000/s-integration',
+						),
+				),
+			).toBe(true);
+			expect(calls.some((c) => c.includes('git/ref/heads/develop'))).toBe(
+				false,
+			);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
 	it('[<50ms] refuses a scenario id the catalogue does not have', async () => {
 		const dir = mkdtempSync(join(tmpdir(), 'integration-cmd-'));
 		try {
@@ -161,5 +245,21 @@ describe('the integration command', () => {
 		);
 		expect(result.code).toBe(EXIT_CODE.RUNTIME);
 		expect(result.error).toContain('not logged in');
+	});
+
+	it('[<50ms] exits 0 for a group whose scenarios are green although a target fails, and not for a red scenario', () => {
+		const scenario = (ok: boolean) =>
+			fakePartial<IRehearsalScenarioResult>({ ok });
+		const report = (scenarioOk: boolean) => ({
+			ok: false,
+			scenarios: [scenario(true), scenario(scenarioOk)],
+			secretHits: [] as readonly string[],
+		});
+		expect(rehearsalExitOk(report(true), 2)).toBe(true);
+		expect(rehearsalExitOk(report(false), 2)).toBe(false);
+		expect(rehearsalExitOk(report(true), undefined)).toBe(false);
+		expect(rehearsalExitOk({ ...report(true), secretHits: ['x'] }, 2)).toBe(
+			false,
+		);
 	});
 });

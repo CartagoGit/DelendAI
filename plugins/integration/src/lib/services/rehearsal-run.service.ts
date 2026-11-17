@@ -16,6 +16,7 @@ import type {
 	IRehearsalPullEvent,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalWorkflowNames,
 	IRehearsalRunContext,
 	IRehearsalScenario,
 	IScenarioState,
@@ -44,7 +45,8 @@ const runsOf = async (
 const missingPush = (
 	runs: readonly IRehearsalRun[],
 	tips: readonly string[],
-): boolean => tips.slice(1).some((sha) => !scanStarted(runs, sha));
+	names: IRehearsalWorkflowNames | undefined,
+): boolean => tips.slice(1).some((sha) => !scanStarted(runs, sha, names));
 
 /**
  * The runs of `heads`, read again until every merged tip has its scan run:
@@ -61,7 +63,11 @@ const settledRuns = async (
 		(REHEARSAL_SETTLE_SECONDS * 1000) / REHEARSAL_POLL_MS,
 	);
 	let runs = await runsOf(ctx, heads);
-	for (let read = 1; read < reads && missingPush(runs, tips); read += 1) {
+	for (
+		let read = 1;
+		read < reads && missingPush(runs, tips, ctx.setup.workflows);
+		read += 1
+	) {
 		await ctx.clock.wait(REHEARSAL_POLL_MS);
 		runs = await runsOf(ctx, heads);
 	}
@@ -106,6 +112,9 @@ const collect = async (
 		pulls,
 		events,
 		runs,
+		...(ctx.setup.workflows === undefined
+			? {}
+			: { workflows: ctx.setup.workflows }),
 		tips,
 		manualSteps: state.manualSteps,
 		tokenHeads: Object.fromEntries(state.tokenHeads),
@@ -139,6 +148,7 @@ export const runScenario = async (
 		tokenPulls: new Map(),
 		notifications: undefined,
 		setupSha: ctx.tip,
+		awaitedMs: 0,
 	};
 	try {
 		await ctx.forge.createBranch(integration, ctx.tip);

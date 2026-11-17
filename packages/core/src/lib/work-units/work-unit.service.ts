@@ -14,6 +14,7 @@ import { entered } from './work-unit-enter.service';
 import { published } from './work-unit-publish.service';
 import { publishedSupersedingOld } from './superseded-publication.service';
 import { proved } from './work-unit-prove.service';
+import { asksForOneGate } from './work-unit-prove-only.service';
 import { claimed } from './work-unit-claim.service';
 import { retiredDropped } from './work-retired-drop.service';
 import { retired, retiredListed } from './work-unit-retire.service';
@@ -133,6 +134,8 @@ const missingArguments = (
 		WORK_ARGUMENT_RULES;
 	const rule = rules[args[0] ?? ''];
 	if (rule === undefined) return undefined;
+	// One gate of the proof runs in the unit's worktree: it names no unit.
+	if (args[0] === 'prove' && asksForOneGate(args)) return undefined;
 	return rule.required.every(
 		(flag) => (scalarArg(args, flag) ?? '').trim().length > 0,
 	)

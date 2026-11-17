@@ -5,14 +5,12 @@
  * forge, keyed by the commit the run is for.
  */
 import {
+	MODE_EXPRESSION,
 	REHEARSAL_ALL_SCENARIOS,
 	REHEARSAL_UPLOAD_ACTION,
 	REHEARSAL_REPORT_DIR,
 	REHEARSAL_REPORT_RETENTION_DAYS,
 } from '../contracts/constants/rehearsal.constant';
-
-/** The mode a run plays when nobody chose: a push has no inputs. */
-const MODE_EXPRESSION = "${{ inputs.mode || 'fast' }}";
 
 /** The `on:` lines of a dispatch that takes a mode and the scenarios to play. */
 export const rehearsalDispatchTrigger = (): readonly string[] => [
@@ -40,6 +38,13 @@ export const rehearsalRunSteps = (input: {
 	`                  REHEARSAL_MODE: ${MODE_EXPRESSION}`,
 	`                  REHEARSAL_SCENARIOS: \${{ inputs.scenarios || '${REHEARSAL_ALL_SCENARIOS}' }}`,
 	`              run: ${input.command} integration rehearse --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS"`,
+	'',
+	// The in-process cleanup does not run when the job is cancelled or times out: this step does.
+	'            - name: Remove what this run left on the forge',
+	'              if: always()',
+	'              env:',
+	`                  GH_TOKEN: ${input.token}`,
+	`              run: ${input.command} integration rehearse --sweep`,
 	'',
 	'            - name: Keep the report as evidence for this commit',
 	'              if: always()',

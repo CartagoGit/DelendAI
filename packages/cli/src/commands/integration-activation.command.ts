@@ -142,7 +142,11 @@ const portsOf = (
 	slug: string,
 	policy: Awaited<ReturnType<typeof readWorkspacePolicy>>,
 ): IActivationPorts => {
-	const forge = createGithubRehearsalForge({ slug, run: runGh });
+	const forge = createGithubRehearsalForge({
+		slug,
+		run: runGh,
+		wait: (ms) => new Promise((done) => setTimeout(done, ms)),
+	});
 	const evidence = createRehearsalEvidence({
 		slug,
 		run: runGh,

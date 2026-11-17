@@ -31,6 +31,7 @@ import {
 	renderRehearsalTokenWorkflow,
 } from './rehearsal-ci-workflow.helper';
 import { realModeFiles } from './rehearsal-real-ci.service';
+import { realWorkflowNames } from './rehearsal-scan.helper';
 import {
 	runBranchRoot,
 	runLabelPrefix,
@@ -123,10 +124,29 @@ export const rehearsalPolicy = (
 	)}\n`;
 };
 
+/**
+ * The checks branch protection requires on a head: the stand-in's check, or
+ * in real mode the ones the project's policy names.
+ */
+export const requiredChecksOf = (input: IRehearsalSetupInput): string[] => {
+	if (input.realWorkflows === undefined) return [REHEARSAL_CI_CHECK];
+	const policy = parseJsonc(input.policyText).value as {
+		development?: { integration?: { requiredChecks?: unknown } };
+	} | null;
+	const names = policy?.development?.integration?.requiredChecks;
+	return Array.isArray(names)
+		? names.filter((name): name is string => typeof name === 'string')
+		: [];
+};
+
 /** The files of the setup commit for each scenario's integration branch. */
 export const createRehearsalSetup = (
 	input: IRehearsalSetupInput,
 ): IRehearsalSetup => ({
+	requiredChecks: requiredChecksOf(input),
+	...(input.realWorkflows === undefined
+		? {}
+		: { workflows: realWorkflowNames(input.realWorkflows) }),
 	files: async (integration) => {
 		const all = fastFiles(input, integration);
 		if (input.realWorkflows === undefined) return all;

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { IRehearsalCommandRunner } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { createGithubRehearsalForge } from '../../../../src/lib/services/rehearsal-github-forge.service';
 
+const noWait = async (): Promise<void> => undefined;
+
 interface ICall {
 	readonly args: readonly string[];
 	readonly input?: string | undefined;
@@ -19,7 +21,10 @@ const fake = (answers: Record<string, string>) => {
 			? { exitCode: 1, stdout: '', stderr: 'HTTP 404' }
 			: { exitCode: 0, stdout: answers[key] ?? '', stderr: '' };
 	};
-	return { calls, forge: createGithubRehearsalForge({ slug: 'o/r', run }) };
+	return {
+		calls,
+		forge: createGithubRehearsalForge({ slug: 'o/r', run, wait: noWait }),
+	};
 };
 
 describe('the GitHub rehearsal forge', () => {
@@ -107,7 +112,11 @@ describe('the GitHub rehearsal forge', () => {
 		await forge.setDraft(5, false);
 		const gql = calls.at(-1)?.args.join(' ') ?? '';
 		expect(gql).toContain('markPullRequestReadyForReview');
-		expect(gql).toContain('id=NODE');
+		expect(gql).toContain('i0=NODE');
+		await forge.readyTogether([5, 5]);
+		const both = calls.at(-1)?.args.join(' ') ?? '';
+		expect(both).toContain('m1: markPullRequestReadyForReview');
+		expect(both).toContain('i1=NODE');
 	});
 
 	it('[<50ms] treats a missing directory as no files', async () => {
@@ -121,7 +130,11 @@ describe('the GitHub rehearsal forge', () => {
 			stdout: '',
 			stderr: 'HTTP 500',
 		});
-		const forge = createGithubRehearsalForge({ slug: 'o/r', run });
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run,
+			wait: noWait,
+		});
 		await expect(forge.tipOf('b')).rejects.toThrow('failed');
 	});
 
@@ -155,6 +168,38 @@ describe('the GitHub rehearsal forge', () => {
 		expect(joined).toContain('git/refs/heads/ns/rehearsal/r1/b');
 		expect(joined).toContain('labels/rehearsal-r1%3Ax');
 		expect(joined).not.toContain('hooks');
+	});
+
+	it('[<100ms] reads the check runs of a commit, and none for a workflow run that started no job', async () => {
+		const { forge, calls } = fake({
+			'commits/abc/check-runs': JSON.stringify({
+				check_runs: [
+					{
+						id: 4,
+						name: 'rehearsal-ci',
+						head_sha: 'abc',
+						status: 'completed',
+						conclusion: 'success',
+						started_at: '2026-11-16T13:35:07Z',
+					},
+					{ id: 5, name: 'other', head_sha: 'abc' },
+				],
+			}),
+			'commits/none/check-runs': '{"check_runs":[]}',
+		});
+		expect(await forge.checkRuns('abc')).toEqual([
+			{
+				id: 4,
+				name: 'rehearsal-ci',
+				headSha: 'abc',
+				status: 'completed',
+				conclusion: 'success',
+				startedAt: '2026-11-16T13:35:07Z',
+			},
+			{ id: 5, name: 'other', headSha: 'abc', status: '', startedAt: '' },
+		]);
+		expect(await forge.checkRuns('none')).toEqual([]);
+		expect(calls[0]?.args.join(' ')).toContain('commits/abc/check-runs');
 	});
 
 	it('[<100ms] opens, merges, closes and labels a pull request and reads its timeline and runs', async () => {
@@ -240,11 +285,13 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run log through gh and says so when it cannot', async () => {
 		const ok = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: 'log text', stderr: '' }),
 		});
 		expect(await ok.runLog(5)).toBe('log text');
 		const bad = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 1, stdout: '', stderr: 'gone' }),
 		});
@@ -272,6 +319,7 @@ describe('the GitHub rehearsal forge', () => {
 			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async (args) => {
 				calls.push(args.join(' '));
@@ -297,6 +345,7 @@ describe('the GitHub rehearsal forge', () => {
 			{ sha: 'setup', parents: [{ sha: 'older' }] },
 		];
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({
 				exitCode: 0,
@@ -319,6 +368,7 @@ describe('the GitHub rehearsal forge', () => {
 			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: full, stderr: '' }),
 		});
@@ -329,6 +379,7 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run that has no log as an empty log', async () => {
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({
 				exitCode: 1,

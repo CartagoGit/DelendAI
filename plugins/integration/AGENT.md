@@ -11,16 +11,16 @@
 - createRehearsalSetup
 - landIntegratorWorkflow
 - rehearsalPolicy
+- sweepStaleRuns
 - renderRehearsalWorkflow
 - rehearse
 - scenariosForMode
 - selectScenarios
+- mergeGroupReports
+- parseGroupSpec
+- partitionScenarios
+- selectGroup
 - buildReport
-- renderReportTable
-- REHEARSAL_CATALOGUE
-- diagnoseIdentity
-- renderAppManifest
-- renderDoctorTable
 
 ## Depends on
 
