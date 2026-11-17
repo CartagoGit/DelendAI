@@ -2,10 +2,14 @@
 id: x01058
 title: "The delivery flow hands over what it proved, writes through the tool, and refuses early"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-10
+last-transition-id: f45f16f5-07ba-43e2-86fe-816241fd1977
+last-correlation-id: f45f16f5-07ba-43e2-86fe-816241fd1977
+last-transition-from: ready
+last-transition-at: 2026-11-17T20:36:20.160Z
 ---
 
 # x01058 — The delivery flow hands over what it proved, writes through the tool, and refuses early
