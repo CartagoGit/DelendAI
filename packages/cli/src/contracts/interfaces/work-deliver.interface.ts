@@ -15,3 +15,12 @@ export interface IWorkDeliverPorts {
 		checkout: string | undefined,
 	) => Promise<unknown>;
 }
+
+/** What one `work deliver` runs on: the proposal, the reason, the unit's flags. */
+export interface IDeliverRun {
+	readonly id: string;
+	readonly reason: string;
+	readonly agent: string | undefined;
+	readonly urgent: string | undefined;
+	readonly unitFlags: readonly string[];
+}
