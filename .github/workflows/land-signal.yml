@@ -8,7 +8,7 @@ name: land-signal
 on:
     pull_request:
         types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]
-        branches: [develop]
+        branches: [delendai/rehearsal/r20261117-203718-g3/host-offline-integration]
 
 permissions:
     actions: write
