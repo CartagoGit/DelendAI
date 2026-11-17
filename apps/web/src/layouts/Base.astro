@@ -6,7 +6,13 @@ import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
 import { renderRuntime } from '@delendai/ui-extension/components/runtime';
-import { dictsByLang, languages, rtlLangs, type Lang } from '#I18N/ui';
+import {
+	dictsByLang,
+	languages,
+	rtlLangs,
+	defaultLang,
+	type Lang,
+} from '#I18N/ui';
 
 interface Props {
 	lang: Lang;
@@ -21,6 +27,26 @@ const {
 } = Astro.props;
 const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// x00980 S2 (D12, G137): every page declares a canonical and an hreflang per
+// locale (+ x-default), derived from its own path so no page can forget them.
+// The root `index.astro` emits its own set through the head slot.
+const origin = (Astro.site?.origin ?? '').replace(/\/$/, '');
+const localeCodes = languages.map((l) => l.code);
+let rest = Astro.url.pathname;
+if (base && rest.startsWith(base)) rest = rest.slice(base.length);
+const firstSegment = rest.split('/')[1] ?? '';
+if (
+	firstSegment !== defaultLang &&
+	localeCodes.includes(firstSegment as Lang)
+) {
+	rest = rest.slice(firstSegment.length + 1);
+}
+if (!rest.startsWith('/')) rest = `/${rest}`;
+const localeUrl = (code: string): string =>
+	`${origin}${base}${code === defaultLang ? '' : `/${code}`}${rest}`;
+const emitsOwnSeo =
+	Astro.url.pathname === `${base}/` || Astro.url.pathname === '/';
 
 // a00084 F33: NAV_BY_LANG/FOOTER_BY_LANG used to be a hand-duplicated
 // 12-language literal in the client-side <script> below — any future
@@ -89,6 +115,17 @@ const FOOTER_BY_LANG = Object.fromEntries(
 		    root negotiator). Pages that don't pass `slot="head"` content
 		    simply skip this — no marker element is rendered. */}
 		<slot name="head" />
+		{
+			!emitsOwnSeo && (
+				<>
+					<link rel="canonical" href={localeUrl(lang)} />
+					{localeCodes.map((code) => (
+						<link rel="alternate" hreflang={code} href={localeUrl(code)} />
+					))}
+					<link rel="alternate" hreflang="x-default" href={localeUrl(defaultLang)} />
+				</>
+			)
+		}
 		{/* Enable the View Transitions API. The header, footer and settings
 		    modal are mounted once in this layout and persist across navigations
 		    via `transition:persist`, so they never remount and never "jump". */}
