@@ -127,6 +127,7 @@ const fateOf = async (
 	workRefFate({
 		landed: true,
 		onForge: facts.onForge,
+		retiredOnForge: false,
 		worktree: facts.inUse ? 'in-use' : 'none',
 		...(await workRefOpennessOf(run, policy, ref, {
 			tip: facts.tip,
