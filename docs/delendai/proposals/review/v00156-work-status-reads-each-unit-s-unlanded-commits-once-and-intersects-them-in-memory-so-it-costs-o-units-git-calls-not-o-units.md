@@ -2,14 +2,14 @@
 id: v00156
 title: "work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)"
 kind: perf
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-17
-last-transition-id: c6d93333-5565-4586-b9b4-e04f6ab60242
-last-correlation-id: c6d93333-5565-4586-b9b4-e04f6ab60242
-last-transition-from: ready
-last-transition-at: 2026-11-17T13:48:07.632Z
+last-transition-id: d55652b1-be06-4563-91dc-8f185012842f
+last-correlation-id: d55652b1-be06-4563-91dc-8f185012842f
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T13:50:27.922Z
 ---
 
 # v00156 — work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)
@@ -34,7 +34,7 @@ Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e 
 - global_gate: none
 
 ### S1 — Read each unit's unlanded commits once; intersect in memory
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
 - acceptance:
@@ -43,6 +43,9 @@ Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e 
   - "The relations output (shared counts per pair) is identical to today's for a fixture with overlapping and disjoint units."
   - "Measured: git process count and wall time of `work status` in this repo before and after are written in the proposal's why and in the commit body."
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage`."
+- shipped-in: `41c340ab115a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
