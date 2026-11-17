@@ -2,14 +2,14 @@
 id: x01079
 title: "A proposal is ready only when nothing is left to work out"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 6346fb2b-2085-4917-b454-086d2fa41040
-last-correlation-id: 6346fb2b-2085-4917-b454-086d2fa41040
-last-transition-from: in-progress
-last-transition-at: 2026-11-16T13:36:28.596Z
+last-transition-id: bd976c74-d79e-427e-8cf0-ead05b910fde
+last-correlation-id: bd976c74-d79e-427e-8cf0-ead05b910fde
+last-transition-from: review
+last-transition-at: 2026-11-17T21:22:42.315Z
 ---
 
 # x01079 — A proposal is ready only when nothing is left to work out
