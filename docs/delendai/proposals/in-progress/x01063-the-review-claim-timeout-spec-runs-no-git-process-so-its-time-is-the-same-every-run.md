@@ -2,10 +2,14 @@
 id: x01063
 title: "The review-claim timeout spec runs no git process, so its time is the same every run"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: default
 date: 2026-11-13
+last-transition-id: da41d5ba-134b-4420-bd6b-cb759848bda1
+last-correlation-id: da41d5ba-134b-4420-bd6b-cb759848bda1
+last-transition-from: ready
+last-transition-at: 2026-11-17T19:43:19.426Z
 ---
 
 # x01063 — The review-claim timeout spec runs no git process, so its time is the same every run
