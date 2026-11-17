@@ -4,7 +4,7 @@
 # `delendai.config.json`. Change the policy, then run:
 #   bun tools/scripts/governance/forge-settings.script.ts --write
 branches:
-    - name: develop
+    - name: delendai/rehearsal/r20261117-112505-g1/overlapping-integration
       protection:
           required_status_checks:
               strict: false
