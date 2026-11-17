@@ -16,7 +16,9 @@ Make `work status` cost O(live units) git calls. Today relationsOf (packages/cor
 
 ## why
 
-Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,627 merge-base, of which 1,568 pairwise), 30.1 s wall plain. The after numbers (git process count and wall time of `work status` in this repo) are recorded here and in the commit body once the slice is implemented.
+Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,627 merge-base, of which 1,568 pairwise), 30.1 s wall plain. The after numbers (git process count and wall time of `work status` in this repo) are below and in the commit body.
+
+Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e trace=execve` count 2062 before (1627 merge-base) and 528 after (70 merge-base); `work status` wall time 29.7 s before and 7.3 s after.
 
 ## non-goals
 
