@@ -2,14 +2,14 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
-last-correlation-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
-last-transition-from: review
-last-transition-at: 2026-11-04T22:17:32.891Z
+last-transition-id: 0ca53564-fbad-4b11-bb30-630f3ba70a87
+last-correlation-id: 0ca53564-fbad-4b11-bb30-630f3ba70a87
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T07:21:58.988Z
 ---
 
 # x01028 — The governed fetch connects to the address it validated
@@ -31,7 +31,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The connection uses the validated address
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/pinned-connection.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/README.md`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`, `plugins/web-fetch/tests/src/lib/services/pinned-connection.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,9 +39,8 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A resolver that answers a public address first and a private one second cannot reach the private one (spec)."
   - "The comment that admits the second resolution is removed because it is no longer true."
 - shipped-in: `7f77000da636`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
