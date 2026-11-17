@@ -77,6 +77,7 @@ const world = (
 		tokenPulls: new Map(),
 		notifications: undefined,
 		setupSha: 's',
+		awaitedMs: 0,
 	};
 	return { ctx, state, elapsed: () => now };
 };

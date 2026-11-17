@@ -75,9 +75,6 @@ export const REHEARSAL_TOKEN_OPEN_LABEL = 'token-open';
  */
 export const REHEARSAL_STALE_AFTER_MS = 45 * 60_000;
 
-/** How many scenarios play at once when no option says: each has its own integration branch. */
-export const REHEARSAL_DEFAULT_CONCURRENCY = 11;
-
 /** Seconds a run may stay queued with no job before it counts as unstarted, not as work in flight. */
 export const REHEARSAL_UNSTARTED_AFTER_SECONDS = 60;
 
@@ -88,14 +85,43 @@ export const REHEARSAL_POLL_MS = 15_000;
 export const REHEARSAL_SETTLE_SECONDS = 120;
 
 /**
- * The longest one await step runs, idle or not. Every wait of the harness has
- * its own cap from this block, and `rehearsalWorstCaseSeconds` proves the
- * caps of the longest scenario path fit inside the job timeout. The value and
- * the default concurrency are the plan of `planRehearsalBudget`, which the
- * budget spec recomputes.
+ * How the catalogue is played, per mode. The catalogue is cut into groups of
+ * `size` scenarios in its own order; each group is one job of the rehearsal
+ * workflow (`maxParallel`: how many groups run at once, `all` for every
+ * group), and its scenarios play at once inside it.
+ *
+ * `awaitBudgetSeconds` is the most one scenario spends in all its waits
+ * together and `awaitCapSeconds` the most one wait takes; both are the plan
+ * of `planGroupBudget`, which the budget spec recomputes, so the worst case
+ * of the longest group fits the job timeout.
  */
-export const REHEARSAL_AWAIT_CAP_SECONDS = 423;
-
+const FAST_GROUP_SIZE = 4;
+const REAL_GROUP_SIZE = 3;
+const FAST_AWAIT_MIN_SECONDS = 600;
+const REAL_AWAIT_MIN_SECONDS = 900;
+const FAST_AWAIT_BUDGET_SECONDS = 1640;
+const REAL_AWAIT_BUDGET_SECONDS = 1920;
+const FAST_AWAIT_CAP_SECONDS = 820;
+const REAL_AWAIT_CAP_SECONDS = 960;
+export const REHEARSAL_GROUPING = {
+	fast: {
+		size: FAST_GROUP_SIZE,
+		maxParallel: 'all',
+		awaitMinSeconds: FAST_AWAIT_MIN_SECONDS,
+		awaitBudgetSeconds: FAST_AWAIT_BUDGET_SECONDS,
+		awaitCapSeconds: FAST_AWAIT_CAP_SECONDS,
+	},
+	// Real CI queues behind the account's runners: one group at a time.
+	real: {
+		size: REAL_GROUP_SIZE,
+		maxParallel: 1,
+		awaitMinSeconds: REAL_AWAIT_MIN_SECONDS,
+		awaitBudgetSeconds: REAL_AWAIT_BUDGET_SECONDS,
+		awaitCapSeconds: REAL_AWAIT_CAP_SECONDS,
+	},
+} as const;
+/** The waits of a scenario that may each take the full cap; the later ones share what the budget has left. */
+export const REHEARSAL_AWAITS_AT_CAP = 2;
 /** The longest the log scan waits, once for all scenarios, for their runs to conclude. */
 export const REHEARSAL_SCAN_WAIT_CAP_SECONDS = 3 * 60;
 
@@ -113,9 +139,6 @@ export const REHEARSAL_JOB_TIMEOUT_MS = REHEARSAL_JOB_TIMEOUT_MINUTES * 60_000;
 
 /** The longest the cleanup waits, once for all branches, for a workflow run in progress before it deletes them. */
 export const REHEARSAL_CLEANUP_WAIT_SECONDS = 2 * 60;
-
-/** The least await cap, in seconds, that lets the slowest measured pull request (p95 204 s) merge with room. */
-export const REHEARSAL_AWAIT_MIN_SECONDS = 420;
 
 /** Minutes of the job timeout the worst case of every cap must leave unused. */
 export const REHEARSAL_JOB_MARGIN_MINUTES = 5;
@@ -168,10 +191,22 @@ export const rehearsalReportPath = (mode: string): string =>
 	`${REHEARSAL_REPORT_DIR}/report-${mode}.json`;
 export const rehearsalReportArtifact = (mode: string): string =>
 	`rehearsal-report-${mode}`;
+/** The partial report of one group of a mode, and the artifact the group's job uploads it as. */
+export const rehearsalGroupReportPath = (mode: string, group: number): string =>
+	`${REHEARSAL_REPORT_DIR}/report-${mode}-${String(group)}.json`;
+export const rehearsalGroupReportArtifact = (
+	mode: string,
+	group: number,
+): string => `rehearsal-report-${mode}-${String(group)}`;
+/** Where the report job puts the partial reports it downloads. */
+export const REHEARSAL_GROUP_REPORTS_DIR = `${REHEARSAL_REPORT_DIR}/groups`;
 
 /** Days the forge keeps a report artifact. */
 export const REHEARSAL_REPORT_RETENTION_DAYS = 30;
 
+/** The pinned action that downloads the partial reports of a mode's groups. */
+export const REHEARSAL_DOWNLOAD_ACTION =
+	'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8';
 /** The pinned action that uploads the report. */
 export const REHEARSAL_UPLOAD_ACTION =
 	'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7';
@@ -224,3 +259,6 @@ export const REHEARSAL_RUNNING_STATUSES: ReadonlySet<string> = new Set([
  * run's policy names the root as its publication prefix.
  */
 export const REHEARSAL_HEAD_UNIT = 'rehearsal/implement/x00000-S1-g1';
+
+/** The mode a run plays when nobody chose: a push has no inputs. */
+export const MODE_EXPRESSION = "${{ inputs.mode || 'fast' }}";

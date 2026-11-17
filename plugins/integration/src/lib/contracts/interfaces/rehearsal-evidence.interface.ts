@@ -70,6 +70,28 @@ export interface IRehearsalTargetResult {
 	readonly detail: string;
 }
 
+/**
+ * What the targets are computed from, kept in the report so that the reports
+ * of several groups merge into targets over all their pull requests.
+ */
+export interface IRehearsalSamples {
+	/** Minutes from ready to merged, one per pull request expected merged that merged. */
+	readonly mergeMinutes: readonly number[];
+	/** Pull requests expected merged. */
+	readonly expectedMerged: number;
+	readonly manualSteps: number;
+	readonly notifiedSeconds: readonly number[];
+	/** Whether any scenario had a receiver connected. */
+	readonly caughtUp: boolean;
+	/** Merged tips, and how many of them started a scan. */
+	readonly tips: number;
+	readonly scanned: number;
+	readonly groupChecks: readonly {
+		readonly ok: boolean;
+		readonly detail: string;
+	}[];
+}
+
 export interface IRehearsalReport {
 	readonly runId: string;
 	readonly mode: IRehearsalMode;
@@ -85,6 +107,8 @@ export interface IRehearsalReport {
 	readonly unreadLogs?: readonly string[];
 	/** Runs that never started, from the scan and from the cleanup. */
 	readonly unstartedRuns?: readonly IUnstartedRun[];
+	/** The measurements behind `targets`; reports with them merge. */
+	readonly samples?: IRehearsalSamples;
 	readonly ok: boolean;
 }
 

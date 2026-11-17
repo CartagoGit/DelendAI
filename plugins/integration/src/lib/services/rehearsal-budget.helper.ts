@@ -1,11 +1,11 @@
 /**
- * rehearsal-budget.helper.ts — the longest a rehearsal run can take with
- * every wait at its cap, and the await cap and concurrency that keep it
- * inside the job timeout. The constants the harness runs with are checked
- * against this plan by a spec, so no number is picked by hand.
+ * rehearsal-budget.helper.ts — the longest a group of scenarios can take with
+ * every wait at its cap, and the await budget and cap that keep it inside the
+ * job timeout. The constants the harness runs with are checked against this
+ * plan by a spec, so no number is picked by hand.
  */
 import {
-	REHEARSAL_AWAIT_MIN_SECONDS,
+	REHEARSAL_AWAITS_AT_CAP,
 	REHEARSAL_CLEANUP_WAIT_SECONDS,
 	REHEARSAL_JOB_MARGIN_MINUTES,
 	REHEARSAL_JOB_TIMEOUT_MINUTES,
@@ -21,77 +21,91 @@ import type {
 
 const SECONDS_PER_MINUTE = 60;
 
+type IBudgetScenario = Pick<IRehearsalScenario, 'steps'>;
+
 /** The seconds of the job timeout a run's worst case may use. */
 export const allowedRunSeconds = (): number =>
 	(REHEARSAL_JOB_TIMEOUT_MINUTES - REHEARSAL_JOB_MARGIN_MINUTES) *
 	SECONDS_PER_MINUTE;
 
-/** The longest a step can take: its own wait cap plus the allowance for its forge calls. */
-const stepCapSeconds = (step: IRehearsalStep, awaitCap: number): number =>
-	REHEARSAL_STEP_OVERHEAD_SECONDS +
-	(step.kind === 'await'
-		? awaitCap
-		: step.kind === 'token-push' || step.kind === 'token-open'
-			? REHEARSAL_TOKEN_WAIT_SECONDS
-			: 0);
+/** Whether a step waits on the forge under the await cap and the scenario's budget. */
+export const isAwaiting = (step: IRehearsalStep): boolean =>
+	step.kind === 'await' || (step.kind === 'ready' && step.together === true);
 
-/** The longest a scenario can take: every step at its cap, then the settle read. */
+/** What a step takes whatever the forge does: its forge calls, and the token wait of a token step. */
+const stepFixedSeconds = (step: IRehearsalStep): number =>
+	REHEARSAL_STEP_OVERHEAD_SECONDS +
+	(step.kind === 'token-push' || step.kind === 'token-open'
+		? REHEARSAL_TOKEN_WAIT_SECONDS
+		: 0);
+
+/** The seconds of a scenario outside its waits: its steps' own time, then the settle read. */
+const scenarioFixedSeconds = (scenario: IBudgetScenario): number =>
+	scenario.steps.reduce((sum, step) => sum + stepFixedSeconds(step), 0) +
+	REHEARSAL_SETTLE_SECONDS;
+
+const awaitCount = (scenario: IBudgetScenario): number =>
+	scenario.steps.filter(isAwaiting).length;
+
+/** The longest a scenario can take: its fixed time, and its waits at the cap but never past the budget. */
 const scenarioCapSeconds = (
-	scenario: Pick<IRehearsalScenario, 'steps'>,
+	scenario: IBudgetScenario,
 	awaitCap: number,
+	awaitBudget: number,
 ): number =>
-	scenario.steps.reduce(
-		(sum, step) => sum + stepCapSeconds(step, awaitCap),
-		0,
-	) + REHEARSAL_SETTLE_SECONDS;
+	scenarioFixedSeconds(scenario) +
+	Math.min(awaitCount(scenario) * awaitCap, awaitBudget);
 
 /**
- * The longest a run can take with every wait at its cap: `limit` workers
- * list-scheduling the scenarios take at most the mean load plus the longest
- * job's share (Graham's bound), then the one log scan, then the cleanup that
- * waits for the runs in progress.
+ * The longest a run can take with every wait at its cap: with a worker for
+ * every scenario the longest scenario, otherwise `limit` workers
+ * list-scheduling take at most the mean load plus the longest job's share
+ * (Graham's bound); then the one log scan, then the cleanup that waits for
+ * the runs in progress.
  */
 export const runCapSeconds = (
-	scenarios: readonly Pick<IRehearsalScenario, 'steps'>[],
+	scenarios: readonly IBudgetScenario[],
 	limit: number,
 	awaitCap: number,
+	awaitBudget: number,
 ): number => {
-	const caps = scenarios.map((one) => scenarioCapSeconds(one, awaitCap));
+	const caps = scenarios.map((one) =>
+		scenarioCapSeconds(one, awaitCap, awaitBudget),
+	);
 	const sum = caps.reduce((total, one) => total + one, 0);
-	const width = Math.min(limit, scenarios.length);
+	const longest = Math.max(...caps);
+	const played =
+		limit >= scenarios.length
+			? longest
+			: sum / limit + longest * (1 - 1 / limit);
 	return (
-		sum / width +
-		Math.max(...caps) * (1 - 1 / width) +
+		played +
 		REHEARSAL_SCAN_WAIT_CAP_SECONDS +
 		REHEARSAL_CLEANUP_WAIT_SECONDS
 	);
 };
 
-/** The largest await cap, in whole seconds, whose worst case fits the allowance at `limit` workers. */
-export const largestAwaitCap = (
-	scenarios: readonly Pick<IRehearsalScenario, 'steps'>[],
-	limit: number,
-): number => {
-	let cap = 0;
-	while (runCapSeconds(scenarios, limit, cap + 1) <= allowedRunSeconds())
-		cap += 1;
-	return cap;
-};
-
 /**
- * The await cap and the concurrency: the largest cap at `start` workers, or,
- * when that is under the least cap a pull request needs to merge, the
- * fewest workers that allow the least cap, with the largest cap they allow.
+ * The largest await budget, in whole seconds, every scenario of the group
+ * can spend in all its waits and still end inside the allowance, and the
+ * cap of one wait: the budget shared by the waits that may each take it.
  */
-export const planRehearsalBudget = (
-	scenarios: readonly Pick<IRehearsalScenario, 'steps'>[],
-	start: number,
-): { readonly concurrency: number; readonly awaitCap: number } => {
-	let concurrency = start;
-	while (
-		largestAwaitCap(scenarios, concurrency) < REHEARSAL_AWAIT_MIN_SECONDS &&
-		concurrency < scenarios.length
-	)
-		concurrency += 1;
-	return { concurrency, awaitCap: largestAwaitCap(scenarios, concurrency) };
+export const planGroupBudget = (
+	group: readonly IBudgetScenario[],
+): { readonly awaitBudget: number; readonly awaitCap: number } => {
+	const awaitBudget = Math.floor(
+		Math.min(
+			...group.map(
+				(one) =>
+					allowedRunSeconds() -
+					REHEARSAL_SCAN_WAIT_CAP_SECONDS -
+					REHEARSAL_CLEANUP_WAIT_SECONDS -
+					scenarioFixedSeconds(one),
+			),
+		),
+	);
+	return {
+		awaitBudget,
+		awaitCap: Math.floor(awaitBudget / REHEARSAL_AWAITS_AT_CAP),
+	};
 };

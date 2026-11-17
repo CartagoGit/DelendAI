@@ -26,12 +26,15 @@ import {
 	rehearse,
 	renderReportTable,
 	sweepStaleRuns,
+	rehearsalGroupReportPath,
 	rehearsalReportPath,
 	scenariosForMode,
 	selectScenarios,
 	type IRehearsalCommandResult,
 	type IRehearsalMode,
+	type IRehearsalScenario,
 	type IRehearsalCommandRunner,
+	type IRehearsalReport,
 } from '@delendai/integration/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -49,6 +52,11 @@ import {
 	runIntegrationDeactivate,
 	runIntegrationResume,
 } from './integration-activation.command';
+import {
+	chooseGroup,
+	mergeGroups,
+	planGroups,
+} from './integration-rehearsal-groups.command';
 import { runIntegrationAdopt } from './integration-adopt.command';
 import { runIntegrationDoctor } from './integration-doctor.command';
 import { runIntegrationPassCommand } from './integration-pass.command';
@@ -56,7 +64,20 @@ import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
 
-const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>] [--sweep]`;
+/**
+ * Whether the run exits 0. A played group is judged by its scenarios and the
+ * secret scan; the targets belong to the whole mode, which `--merge` judges.
+ */
+export const rehearsalExitOk = (
+	report: Pick<IRehearsalReport, 'ok' | 'scenarios' | 'secretHits'>,
+	group: number | undefined,
+): boolean =>
+	group === undefined
+		? report.ok
+		: report.scenarios.every((scenario) => scenario.ok) &&
+			report.secretHits.length === 0;
+
+const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>] [--group=<n>/<total>] [--plan] [--merge] [--sweep]`;
 
 /** `gh` as whoever is signed in; a token is never read or passed here. */
 const execFileAsync = promisify(execFile);
@@ -144,6 +165,29 @@ export const createIntegrationCommand = (
 		const ids = (scalarArg(rest, 'scenarios') ?? REHEARSAL_ALL_SCENARIOS)
 			.split(',')
 			.filter((id) => id !== '');
+		let selected: readonly IRehearsalScenario[];
+		try {
+			selected = selectScenarios(
+				scenariosForMode(REHEARSAL_CATALOGUE, mode),
+				ids,
+				REHEARSAL_ALL_SCENARIOS,
+			);
+		} catch (error) {
+			return {
+				code: EXIT_CODE.RUNTIME,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+		if (rest.includes('--plan')) return planGroups(mode, selected);
+		if (rest.includes('--merge'))
+			return mergeGroups(ctx.cwd, mode, selected);
+		const choice = chooseGroup(
+			scalarArg(rest, 'group'),
+			mode,
+			selected,
+			USAGE,
+		);
+		if ('refusal' in choice) return choice.refusal;
 		const concurrencyArg = scalarArg(rest, 'concurrency');
 		if (concurrencyArg !== undefined && !/^[1-9]\d*$/u.test(concurrencyArg))
 			return usage(USAGE);
@@ -152,10 +196,13 @@ export const createIntegrationCommand = (
 			return { code: EXIT_CODE.RUNTIME, error: named.error };
 		const repository = named.slug;
 		const policy = await readWorkspacePolicy(ctx.cwd);
-		const concurrency =
+		// Every scenario of the group plays at once; the policy's number only ever lowers that.
+		const concurrency = Math.min(
 			concurrencyArg === undefined
 				? policy.integration.rehearsal.concurrency
-				: Number(concurrencyArg);
+				: Number(concurrencyArg),
+			choice.scenarios.length,
+		);
 		const policyText = await readFile(
 			join(ctx.cwd, 'delendai.config.json'),
 			'utf8',
@@ -179,7 +226,10 @@ export const createIntegrationCommand = (
 				clock,
 				branchPrefix,
 				now: clock.now(),
-				olderThanMs: 0,
+				// Alone, every root left is dead; as a group, only its own and the stale ones are.
+				...(choice.n === undefined
+					? { olderThanMs: 0 }
+					: { ownGroup: choice.n }),
 			});
 			return {
 				code: EXIT_CODE.OK,
@@ -231,19 +281,23 @@ export const createIntegrationCommand = (
 				baseBranch: policy.branches.integration,
 				baseCommit,
 				mode,
-				scenarios: selectScenarios(
-					scenariosForMode(REHEARSAL_CATALOGUE, mode),
-					ids,
-					REHEARSAL_ALL_SCENARIOS,
-				),
+				scenarios: choice.scenarios,
+				...(choice.n === undefined ? {} : { group: choice.n }),
 				concurrency,
 				log: (line) => process.stderr.write(`${line}\n`),
 			});
-			const reportFile = join(ctx.cwd, rehearsalReportPath(mode));
+			const reportFile = join(
+				ctx.cwd,
+				choice.n === undefined
+					? rehearsalReportPath(mode)
+					: rehearsalGroupReportPath(mode, choice.n),
+			);
 			await mkdir(dirname(reportFile), { recursive: true });
 			await writeFile(reportFile, JSON.stringify(report, null, '\t'));
 			return {
-				code: report.ok ? EXIT_CODE.OK : EXIT_CODE.RUNTIME,
+				code: rehearsalExitOk(report, choice.n)
+					? EXIT_CODE.OK
+					: EXIT_CODE.RUNTIME,
 				data: report,
 				text: renderReportTable(report),
 			};
