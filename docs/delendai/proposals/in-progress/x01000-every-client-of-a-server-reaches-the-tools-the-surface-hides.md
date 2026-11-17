@@ -2,14 +2,14 @@
 id: x01000
 title: "every client of a server reaches the tools the surface hides"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: extension
 date: 2026-11-01
-last-transition-id: 011466eb-8768-4dd1-b610-4dded3be6ee6
-last-correlation-id: 011466eb-8768-4dd1-b610-4dded3be6ee6
-last-transition-from: review
-last-transition-at: 2026-11-04T18:38:56.747Z
+last-transition-id: 17bfdaf8-9140-4bfc-a7fe-7c4102d939ee
+last-correlation-id: 17bfdaf8-9140-4bfc-a7fe-7c4102d939ee
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:44:29.893Z
 ---
 
 # x01000 — every client of a server reaches the tools the surface hides
