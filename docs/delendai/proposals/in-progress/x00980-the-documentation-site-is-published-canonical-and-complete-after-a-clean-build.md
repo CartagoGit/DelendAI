@@ -2,14 +2,14 @@
 id: x00980
 title: "The documentation site is published, canonical and complete after a clean build"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 6cd0a1cf-c098-4f05-af30-477e4a87359a
-last-correlation-id: 6cd0a1cf-c098-4f05-af30-477e4a87359a
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T10:02:32.837Z
+last-transition-id: 21f5d53b-bf86-4a29-9caa-b2294ead7d08
+last-correlation-id: 21f5d53b-bf86-4a29-9caa-b2294ead7d08
+last-transition-from: review
+last-transition-at: 2026-11-17T19:47:57.758Z
 ---
 
 # x00980 — The documentation site is published, canonical and complete after a clean build
