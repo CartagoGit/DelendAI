@@ -36,7 +36,7 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 	branches: [
 		{
 			// The integration branch: where certified work lands.
-			name: 'develop',
+			name: 'delendai/rehearsal/r20261117-102603-g1/one-pr-integration',
 			protected: true,
 			required_checks: ['delendai-validate', 'CodeQL'],
 		},
