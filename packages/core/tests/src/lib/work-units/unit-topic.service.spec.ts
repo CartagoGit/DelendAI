@@ -9,7 +9,7 @@ import { pullRequestText } from '@delendai/core/lib/work-units/publication-pull-
 import { derivedTopic } from '@delendai/core/lib/work-units/unit-topic.service';
 
 describe('derivedTopic', () => {
-	it('names every review pack the same, whatever it reviews', () => {
+	it('[<10ms] names every review pack the same, whatever it reviews', () => {
 		expect(
 			derivedTopic({
 				kind: 'review',
@@ -19,7 +19,7 @@ describe('derivedTopic', () => {
 		).toBe('verdicts');
 	});
 
-	it("takes the words of the proposal's title for any other unit", () => {
+	it("[<10ms] takes the words of the proposal's title for any other unit", () => {
 		expect(
 			derivedTopic({
 				kind: 'implement',
@@ -29,7 +29,7 @@ describe('derivedTopic', () => {
 		).toBe('a-thing-that-works');
 	});
 
-	it('cuts a long title between words', () => {
+	it('[<10ms] cuts a long title between words', () => {
 		const topic = derivedTopic({
 			kind: 'implement',
 			proposal: 'x00001',
@@ -40,7 +40,7 @@ describe('derivedTopic', () => {
 		expect(topic).toBe('a-review-swarm-leaves-verdicts-that-can-be');
 	});
 
-	it('falls back to the plain word when the proposal has no document', () => {
+	it('[<10ms] falls back to the plain word when the proposal has no document', () => {
 		expect(
 			derivedTopic({
 				kind: 'implement',
@@ -52,7 +52,7 @@ describe('derivedTopic', () => {
 });
 
 describe('the title of a pull request with several deliveries', () => {
-	it('counts them instead of naming only the oldest', () => {
+	it('[<10ms] names them by the oldest delivery, with no count', () => {
 		const text = pullRequestText(
 			[
 				'fix(work): third',
@@ -63,12 +63,12 @@ describe('the title of a pull request with several deliveries', () => {
 			'branch',
 			'fallback',
 		);
-		expect(text.title).toBe('fix(cli): first (+2 more)');
+		expect(text.title).toBe('fix(repo): first');
 	});
 
-	it('keeps a single delivery as it is', () => {
+	it('[<10ms] keeps a single delivery as it is', () => {
 		expect(
 			pullRequestText(['fix(cli): only'], 'branch', 'fallback').title,
-		).toBe('fix(cli): only');
+		).toBe('fix(repo): only');
 	});
 });
