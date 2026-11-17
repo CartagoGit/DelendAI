@@ -44,7 +44,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 ### S2 — Deliver runs the hand-over preflight before the proof
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/cli/src/lib/work-deliver-preflight.service.ts`, `packages/cli/src/lib/work-deliver-preflight.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Declared-files existence and undelivered-slice checks (prepareReviewEntry) run before `prove`; a refusal arrives in seconds with the proof not started."
