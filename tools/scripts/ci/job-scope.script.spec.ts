@@ -536,6 +536,8 @@ describe('the jobs the real scopes run, by kind of change', () => {
 			'lint-security',
 			'lint-governance',
 			'static-checks',
+			'static-checks-b',
+			'static-checks-c',
 			'plan-scope',
 			'quality-gate',
 			'delendai-validate',
@@ -669,7 +671,7 @@ describe('the packaging jobs judge a published surface by the names it exports',
 	});
 });
 
-describe('the static checks share one job', () => {
+describe('the static checks share three jobs', () => {
 	const STATIC = JOB_SCOPES.find((scope) => scope.job === 'static-checks');
 	const plan = (
 		changed: readonly string[],
@@ -683,7 +685,7 @@ describe('the static checks share one job', () => {
 
 	it('[<50ms] is made of checks that each keep their own entry', () => {
 		const names = JOB_SCOPES.map((scope) => scope.job);
-		expect(STATIC?.group?.length).toBe(8);
+		expect(STATIC?.group?.length).toBe(4);
 		for (const member of STATIC?.group ?? [])
 			expect(names).toContain(member);
 	});

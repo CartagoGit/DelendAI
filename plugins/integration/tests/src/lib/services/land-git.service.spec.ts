@@ -29,6 +29,7 @@ const landGit = (exec: IGitExec) =>
 		root: '/clone',
 		remote: 'origin',
 		exec,
+		token: 'identity-token',
 		ports: fakePartial<ILandProjectPorts>({
 			derivedPaths: new Set(),
 			footprintOf: () => FOOTPRINT,

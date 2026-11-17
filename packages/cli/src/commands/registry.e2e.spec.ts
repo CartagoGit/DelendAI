@@ -2,10 +2,26 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import { registerAllCommands } from './registry';
+
+// The gate runner spawns a real shell per declared command, so its time
+// followed the machine's load. The command is checked against a fake
+// shell (`false` fails, everything else passes); the real spawn stays
+// proven by validate-run.service.spec.ts.
+vi.mock('../lib/validate-run.service', async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import('../lib/validate-run.service')>();
+	return {
+		...actual,
+		runValidate: (workspace: string) =>
+			actual.runValidate(workspace, (command) =>
+				command === 'false' ? 1 : 0,
+			),
+	};
+});
 
 /** Minimal fake context: `request` answers with a canned `delendai_overview`
  * snapshot regardless of the tool name, matching how every command here

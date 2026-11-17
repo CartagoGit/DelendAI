@@ -5,7 +5,9 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+
+import { createSharedGitRepoTemplate } from '@delendai/test-kit';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
@@ -38,26 +40,28 @@ export interface IUnitRepo {
 	readonly commit: (worktree: string, file: string) => void;
 }
 
-export const unitRepo = (): IUnitRepo => {
-	const parent = mkdtempSync(join(tmpdir(), 'unit-'));
-	roots.push(parent);
-	const root = join(parent, 'repo');
-	execFileSync('git', ['init', '-q', '-b', 'develop', root]);
-	git(root, 'config', 'user.email', 'unit@example.com');
-	git(root, 'config', 'user.name', 'Unit');
-	git(root, 'config', 'commit.gpgsign', 'false');
-	writeFileSync(join(root, 'base.ts'), 'export const base = 0;\n');
-	writeFileSync(
-		join(root, 'delendai.config.json'),
-		JSON.stringify({
+/**
+ * The repository every unit case starts from: built once per worker and
+ * copied per case. Built per case it was six git processes before the case
+ * did anything (14 spec files share this helper).
+ */
+const template = createSharedGitRepoTemplate({
+	trunk: 'develop',
+	files: {
+		'base.ts': 'export const base = 0;\n',
+		'delendai.config.json': JSON.stringify({
 			development: {
 				profile: 'shared-checkout-pr',
 				branches: { namespacePrefix: 'delendai' },
 			},
 		}),
-	);
-	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', 'base');
+	},
+});
+
+export const unitRepo = (): IUnitRepo => {
+	const { root } = template.copy();
+	const parent = dirname(root);
+	roots.push(parent);
 	let count = 0;
 	return {
 		root,

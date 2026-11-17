@@ -748,6 +748,16 @@
 										"description": "A scenario id, or `all`."
 									},
 									"description": "The scenarios a rehearsal runs by default."
+								},
+								"setupCommand": {
+									"type": "string",
+									"description": "A command a real-mode rehearsal runs in a worktree holding its files; every file it changes joins the setup commit, so generated files match the rehearsal policy. Empty runs nothing."
+								},
+								"concurrency": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 9007199254740991,
+									"description": "How many scenarios a rehearsal plays at once; each has its own integration branch. 1 plays them one after another."
 								}
 							},
 							"additionalProperties": false,
@@ -762,6 +772,10 @@
 						"landWithoutChecks": {
 							"type": "boolean",
 							"description": "Whether `land` may merge a pull request when no check is required. Off by default: with no required check nothing was proved, so nothing lands."
+						},
+						"forgeEvents": {
+							"type": "boolean",
+							"description": "Whether the server that maintains this workspace receives forge events (pushes, pull requests, checks, reviews, issues) over a connection it opens out, and follows the integration branch and brings labelled pull requests forward the moment they arrive, instead of looking every minute. Off by default. For GitHub it needs the `gh` extension `cli/gh-webhook` and a login that may create repository webhooks; while no connection is up the server falls back to looking on its timer."
 						},
 						"mergeMethod": {
 							"type": "string",

@@ -91,7 +91,7 @@ const cloneSkills = (skills: readonly ISkillSummary[]): ISkillSummary[] =>
 		summary: skill.summary,
 		appliesTo: [...skill.appliesTo],
 		tags: [...skill.tags],
-		bodyPath: skill.bodyPath,
+		...(skill.bodyPath === undefined ? {} : { bodyPath: skill.bodyPath }),
 	}));
 
 const cloneProposals = (
@@ -297,7 +297,9 @@ export class AgentCatalogService {
 				summary: skill.summary ?? '',
 				appliesTo: skill.appliesTo ?? [],
 				tags: skill.tags,
-				bodyPath: skill.bodyPath ?? '',
+				...(skill.bodyPath === undefined
+					? {}
+					: { bodyPath: skill.bodyPath }),
 			})),
 		};
 		this.cache.set(section, { snapshot, fetchedAt: this.now() });

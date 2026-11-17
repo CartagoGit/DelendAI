@@ -276,9 +276,9 @@ describe('withComputeSlot across processes', () => {
 	 * it uses no CPU, and the pipe closes when the parent dies, so a child
 	 * never outlives the spec that started it. A joiner raises no notice, so the asker
 	 * says ASKING as it calls; the holder is released only after that, and
-	 * the joiner's one read of the claim comes before the holder can have
-	 * finished (it still has the release, its result and its claim to
-	 * write). That ordering is the one thing here not enforced by a flag.
+	 * the call stamps its start in the same tick as ASKING, so the holder's
+	 * finish is always later than the call: a joiner that reads the claim
+	 * after the holder is done still joins its recorded result.
 	 */
 	const child = (lockPath: string, tip: string, marker: string) => {
 		const script = `
@@ -416,6 +416,46 @@ describe('withComputeSlot unit turns, failures', () => {
 			});
 		expect(await ask()).toBe(1);
 		expect(await ask()).toBe(2);
+	});
+});
+
+describe('withComputeSlot joins a proof that finished during the call', () => {
+	const plant = (lockPath: string, finishedAt: number): void => {
+		const unitHash = createHash('sha1')
+			.update('u6')
+			.digest('hex')
+			.slice(0, 16);
+		const dir = `${lockPath}.units/${unitHash}`;
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(
+			join(dir, 'fff.done'),
+			JSON.stringify({ pid: process.pid, id: 'first', finishedAt }),
+		);
+		writeFileSync(
+			join(dir, 'fff.first.result'),
+			JSON.stringify({ value: 'first-proof' }),
+		);
+	};
+	const ask = (lockPath: string) =>
+		withComputeSlot({
+			lockPath,
+			label: 'proof',
+			unit: 'u6',
+			tip: 'fff',
+			notify: () => undefined,
+			run: () => 'second-proof',
+		});
+
+	it('[<120ms] answers with a proof whose claim is already gone but which finished after the call began', async () => {
+		const lockPath = lockIn();
+		plant(lockPath, performance.timeOrigin + performance.now() + 60_000);
+		await expect(ask(lockPath)).resolves.toBe('first-proof');
+	});
+
+	it('[<120ms] proves again when the finished proof ended before the call began', async () => {
+		const lockPath = lockIn();
+		plant(lockPath, 0);
+		await expect(ask(lockPath)).resolves.toBe('second-proof');
 	});
 });
 

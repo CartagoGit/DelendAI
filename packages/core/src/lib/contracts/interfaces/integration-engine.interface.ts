@@ -53,10 +53,14 @@ export interface IIntegrationWatchdog {
 	readonly cron: string;
 }
 
-/** What the rehearsal reads: the secret names it needs and the scenarios it runs. */
+/** What the rehearsal reads: the secret names it needs, the scenarios it runs and the command that regenerates its tree. */
 export interface IIntegrationRehearsal {
 	readonly secrets: readonly string[];
 	readonly scenarios: readonly string[];
+	/** Real mode: run in a worktree holding the rehearsal's files, and every file it changes joins the setup commit; empty runs nothing. */
+	readonly setupCommand: string;
+	/** How many scenarios play at once; each has its own integration branch, so they never wait on each other. 1 plays them one after another. */
+	readonly concurrency: number;
 }
 
 /** The options of the integration plugin; every one has a default, and with engine `none` none acts. */
@@ -92,4 +96,10 @@ export interface IPolicyIntegrationEngine extends IPolicyIntegrationOptions {
 	 * check. Off, an empty `requiredChecks` lands nothing: nothing was proved.
 	 */
 	readonly landWithoutChecks: boolean;
+	/**
+	 * True when the server that maintains the workspace receives the forge's
+	 * events over a connection it opens out, and follows the integration
+	 * branch when they arrive. Off, it looks on a timer.
+	 */
+	readonly forgeEvents: boolean;
 }

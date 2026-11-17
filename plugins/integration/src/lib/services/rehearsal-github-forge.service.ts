@@ -18,42 +18,20 @@ import type {
 	IRehearsalRun,
 } from '../contracts/interfaces/rehearsal.interface';
 
-interface IRawPull {
-	number: number;
-	state: string;
-	draft?: boolean;
-	merged_at?: string | null;
-	created_at: string;
-	node_id: string;
-	user?: { login?: string } | null;
-	labels?: { name: string }[];
-	head: { ref: string; sha: string };
-	base: { ref: string };
-}
-
-interface IRawEvent {
-	event: string;
-	created_at: string;
-	label?: { name?: string };
-	actor?: { login?: string } | null;
-}
-
-interface IRawRun {
-	id: number;
-	name?: string | null;
-	event: string;
-	head_branch?: string | null;
-	head_sha: string;
-	status?: string | null;
-	conclusion?: string | null;
-	actor?: { login?: string } | null;
-	created_at: string;
-	updated_at: string;
-}
+import { isTransient, readWithRetry } from './rehearsal-forge-retry.helper';
+import { toCheckRun, toRun } from './rehearsal-forge-run.helper';
+import type {
+	IRawCheckRun,
+	IRawEvent,
+	IRawPull,
+	IRawRun,
+} from '../contracts/interfaces/rehearsal-forge-raw.interface';
+import { markArgs } from './rehearsal-graphql.helper';
 
 const HTTP_OK = 200;
 const HTTP_NOT_FOUND = 404;
 const HTTP_UNPROCESSABLE = 422;
+const HTTP_CONFLICT = 409;
 /** A regular, non-executable file in a git tree. */
 const BLOB_FILE_MODE = 100644;
 
@@ -69,10 +47,12 @@ export const createGithubRehearsalForge = (input: {
 	/** `owner/name`. */
 	readonly slug: string;
 	readonly run: IRehearsalCommandRunner;
+	/** Waits `ms` between the attempts of a retried read. */
+	readonly wait: (ms: number) => Promise<void>;
 }): IRehearsalForge => {
-	const { slug, run } = input;
+	const { slug, run, wait } = input;
 
-	const request = async (
+	const once = async (
 		method: string,
 		path: string,
 		options: {
@@ -80,7 +60,12 @@ export const createGithubRehearsalForge = (input: {
 			readonly body?: unknown;
 			readonly headers?: readonly string[];
 		} = {},
-	): Promise<{ readonly status: number; readonly text: string }> => {
+	): Promise<{
+		readonly status: number;
+		readonly text: string;
+		readonly failed?: boolean;
+		readonly transient?: boolean;
+	}> => {
 		const result = await run(
 			[
 				'api',
@@ -103,12 +88,31 @@ export const createGithubRehearsalForge = (input: {
 		const status = Number(
 			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
 		);
+		// A conflict's message (which run state it names) is on stderr as well as in the body.
+		if (status === HTTP_CONFLICT)
+			return { status, text: `${result.stdout}${result.stderr}` };
 		if (status === HTTP_NOT_FOUND || status === HTTP_UNPROCESSABLE)
 			return { status, text: result.stdout };
-		throw new Error(
-			`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
-		);
+		return {
+			status: Number.isNaN(status) ? 0 : status,
+			failed: true,
+			text: `forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+			transient: isTransient(
+				status,
+				`${result.stderr}${result.spawnError ?? ''}`,
+			),
+		};
 	};
+	const request = (
+		method: string,
+		path: string,
+		options: Parameters<typeof once>[2] = {},
+	): Promise<{ readonly status: number; readonly text: string }> =>
+		readWithRetry({
+			method,
+			wait,
+			call: () => once(method, path, options),
+		});
 	const json = async <T>(
 		method: string,
 		path: string,
@@ -118,6 +122,20 @@ export const createGithubRehearsalForge = (input: {
 		if (status !== HTTP_OK)
 			throw new Error(`${method} ${path} answered ${String(status)}`);
 		return (text.trim() === '' ? {} : JSON.parse(text)) as T;
+	};
+	/** One GraphQL request applying `mutation` to every pull request, one alias each. */
+	const markPulls = async (
+		mutation: string,
+		numbers: readonly number[],
+	): Promise<void> => {
+		const ids = await Promise.all(
+			numbers.map(async (n) => (await rawPull(n)).node_id),
+		);
+		const result = await run(markArgs(mutation, ids));
+		if (result.exitCode !== 0)
+			throw new Error(
+				`${mutation} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+			);
 	};
 	const pages = async <T>(
 		path: string,
@@ -230,19 +248,33 @@ export const createGithubRehearsalForge = (input: {
 			return text;
 		},
 		history: async (branch, until) => {
-			// Newest first, and the walk ends at `until`: a branch cut from a long
-			// history is never read past the commit the run made it from.
-			const shas: string[] = [];
+			// First parent only: a merge push starts workflows for its new head, so
+			// the commits a merged pull request carried are not tips. The walk ends
+			// at `until`, and a branch cut from a long history is never read past it.
+			const firstParent = new Map<string, string | undefined>();
+			let head: string | undefined;
 			for (let page = 1; page <= REHEARSAL_PAGE_LIMIT; page += 1) {
-				const got = await json<{ sha: string }[]>(
+				const got = await json<
+					{ sha: string; parents?: { sha: string }[] }[]
+				>(
 					'GET',
 					`commits?sha=${encodeURIComponent(branch)}&per_page=${String(REHEARSAL_PAGE_SIZE)}&page=${String(page)}`,
 				);
 				for (const entry of got) {
-					shas.push(entry.sha);
-					if (entry.sha === until) return shas;
+					head ??= entry.sha;
+					firstParent.set(entry.sha, entry.parents?.[0]?.sha);
 				}
-				if (got.length < REHEARSAL_PAGE_SIZE) return shas;
+				if (firstParent.has(until) || got.length < REHEARSAL_PAGE_SIZE)
+					break;
+			}
+			const shas: string[] = [];
+			for (
+				let at = head;
+				at !== undefined && firstParent.has(at);
+				at = firstParent.get(at)
+			) {
+				shas.push(at);
+				if (at === until) return shas;
 			}
 			throw new Error(
 				`${until} is not in the last ${String(REHEARSAL_PAGE_LIMIT * REHEARSAL_PAGE_SIZE)} commits of ${branch}`,
@@ -260,22 +292,9 @@ export const createGithubRehearsalForge = (input: {
 					},
 				})
 			).number,
-		setDraft: async (number, draft) => {
-			const { node_id: id } = await rawPull(number);
-			const mutation = DRAFT_MUTATIONS[draft ? 'draft' : 'ready'];
-			const result = await run([
-				'api',
-				'graphql',
-				'-f',
-				`query=mutation($id: ID!) { ${mutation}(input: {pullRequestId: $id}) { clientMutationId } }`,
-				'-f',
-				`id=${id}`,
-			]);
-			if (result.exitCode !== 0)
-				throw new Error(
-					`${mutation} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
-				);
-		},
+		setDraft: (number, draft) =>
+			markPulls(DRAFT_MUTATIONS[draft ? 'draft' : 'ready'], [number]),
+		readyTogether: (numbers) => markPulls(DRAFT_MUTATIONS.ready, numbers),
 		mergePull: async (number, sha) => {
 			await json('PUT', `pulls/${String(number)}/merge`, {
 				fields: { sha, merge_method: 'merge' },
@@ -315,18 +334,38 @@ export const createGithubRehearsalForge = (input: {
 					(page) =>
 						(page as { workflow_runs: IRawRun[] }).workflow_runs,
 				)
-			).map((entry) => ({
-				id: entry.id,
-				workflow: entry.name ?? '',
-				event: entry.event,
-				headBranch: entry.head_branch ?? '',
-				headSha: entry.head_sha,
-				status: entry.status ?? '',
-				...(entry.conclusion ? { conclusion: entry.conclusion } : {}),
-				actor: entry.actor?.login ?? '',
-				createdAt: entry.created_at,
-				updatedAt: entry.updated_at,
-			})),
+			).map(toRun),
+		checkRuns: async (sha) =>
+			(
+				await pages<IRawCheckRun>(
+					`commits/${encodeURIComponent(sha)}/check-runs`,
+					(page) =>
+						(page as { check_runs: IRawCheckRun[] }).check_runs,
+				)
+			).map(toCheckRun),
+		cancelRun: async (id) => {
+			// A run that ended meanwhile answers 409; so does one the forge listed but has not enqueued.
+			const { status, text } = await request(
+				'POST',
+				`actions/runs/${String(id)}/cancel`,
+			);
+			if (status !== HTTP_CONFLICT) return 'cancelled';
+			return text.includes('has not been queued yet')
+				? 'unstarted'
+				: 'ended';
+		},
+		jobCount: async (id) =>
+			(
+				await json<{ total_count: number }>(
+					'GET',
+					`actions/runs/${String(id)}/jobs?per_page=1`,
+				)
+			).total_count,
+		reopenPull: async (number) => {
+			await json('PATCH', `pulls/${String(number)}`, {
+				fields: { state: 'open' },
+			});
+		},
 		runLog: async (id) => {
 			const result = await run([
 				'run',
@@ -350,13 +389,6 @@ export const createGithubRehearsalForge = (input: {
 				.filter((name) => name.startsWith(prefix)),
 		deleteLabel: async (name) => {
 			await request('DELETE', `labels/${encodeURIComponent(name)}`);
-		},
-		hooks: async () =>
-			(
-				await pages<{ id: number; config?: { url?: string } }>('hooks')
-			).map((hook) => ({ id: hook.id, url: hook.config?.url ?? '' })),
-		deleteHook: async (id) => {
-			await request('DELETE', `hooks/${String(id)}`);
 		},
 	};
 };

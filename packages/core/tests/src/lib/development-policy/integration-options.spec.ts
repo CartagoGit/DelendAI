@@ -14,6 +14,7 @@ describe('the integration options', () => {
 		expect(integration.commands).toEqual({ jobs: '', normalizeBatch: '' });
 		expect(integration.watchdog.enabled).toBe(true);
 		expect(integration.rehearsal.scenarios).toEqual(['all']);
+		expect(integration.rehearsal.concurrency).toBe(11);
 	});
 
 	it('[<50ms] take a project value one field at a time and keep the rest', () => {
@@ -27,7 +28,7 @@ describe('the integration options', () => {
 					signalWorkflows: ['ci'],
 					scanWorkflows: ['scan'],
 					watchdog: { enabled: false },
-					rehearsal: { secrets: ['S'] },
+					rehearsal: { secrets: ['S'], concurrency: 2 },
 					labels: { prefix: 'x' },
 					batching: 'off',
 				},
@@ -52,6 +53,7 @@ describe('the integration options', () => {
 			cron: '17 * * * *',
 		});
 		expect(integration.rehearsal.secrets).toEqual(['S']);
+		expect(integration.rehearsal.concurrency).toBe(2);
 		expect(integration.labels.prefix).toBe('x');
 		expect(integration.batching).toBe('off');
 	});

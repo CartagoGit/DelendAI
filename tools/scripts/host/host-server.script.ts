@@ -14,11 +14,13 @@ import { fileURLToPath } from 'node:url';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
-	branchHostScript,
+	branchHostRun,
 	branchLabel,
+	hostTree,
 	malformedVersionReason,
 	runtimePin,
 	runtimeReport,
+	runtimeState,
 	versionHostScript,
 	withoutRuntimeFlags,
 } from './branch-runtime.helper';
@@ -29,8 +31,10 @@ import {
 } from '@delendai/core/public';
 import { parseCliArgs } from '@delendai/core/plugin';
 import {
+	appendForgeEventRecord,
 	applyGitOptionalLocksDefault,
 	backgroundEnv,
+	forgeEventsDir,
 	lowPriority,
 } from '@delendai/core/runtime';
 import {
@@ -41,12 +45,24 @@ import {
 	hasExplicitPluginSurfaceSelection,
 } from '@delendai/core/cli';
 import {
+	RUNTIME_STATE_ENV,
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
 } from '@delendai/core/cli';
 import { createWriteGitRunner } from '@delendai/core/public';
 import { workspaceForgeSlug } from './workspace-forge-slug.helper';
+import {
+	createSwitchableSchedule,
+	forgeEventReceiverFor,
+	startForgeEventFollow,
+} from './forge-event-follow.service';
+import type { IForgeEventFollow } from './forge-event-follow.interface';
+import { detectForgeProvider } from '@delendai/forge/public';
+import {
+	createHostCatchUp,
+	forgeCatchUpSourceFor,
+} from './forge-event-catch-up.service';
 import { followUpsRefusal } from './integration-follow-ups.script';
 import { createForgeCliRunner, createForgeSeam } from './forge-seam.service';
 import {
@@ -58,6 +74,8 @@ import {
 import {
 	holdToolCalls,
 	integrationProtocolRefusal,
+	LAND_LABEL_CULPRIT,
+	LAND_LABEL_NEEDS_UPDATE,
 	readWorkspacePolicy,
 	startCheckoutHydration,
 	startServerLogIn,
@@ -140,34 +158,31 @@ export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 export const INTEGRATION_FOLLOW_UPS_SCRIPT =
 	'tools/scripts/host/integration-follow-ups.script.ts';
 
-/** One run at a time per occasion: a run still going skips the next. */
-const followingUp = { move: false, event: false };
-
 /**
- * Run the follow-ups without making the watch wait for the forge.
- * Detached and never fatal.
+ * One run at a time per occasion. One asked for while one runs is kept and
+ * runs once after it, however many were asked: an event that arrived while
+ * the last run had already listed the pull requests would otherwise wait
+ * for the next one.
  */
-const followUpInBackground = async (
-	root: string,
-	on: 'move' | 'event',
-): Promise<void> => {
-	if (
-		followingUp[on] ||
-		!existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT))
-	)
-		return;
-	// A server older than the repository's integration protocol refuses.
-	const refusal = followUpsRefusal(
+const followingUp = { move: false, event: false };
+const followAgain = { move: false, event: false };
+
+/** What running the follow-ups touches. No port writes to a forge. */
+export interface IFollowUpDeps {
+	readonly scriptExists: (root: string) => boolean;
+	/** The integration protocol the repository records, read at each run. */
+	readonly recordedProtocol: (root: string) => Promise<number>;
+	/** Run the follow-up script once, in the checkout. */
+	readonly runScript: (root: string, on: 'move' | 'event') => Promise<void>;
+	readonly report: (line: string) => void;
+}
+
+const realFollowUpDeps: IFollowUpDeps = {
+	scriptExists: (root) =>
+		existsSync(join(root, INTEGRATION_FOLLOW_UPS_SCRIPT)),
+	recordedProtocol: async (root) =>
 		(await readWorkspacePolicy(root)).integration.protocol,
-	);
-	if (refusal !== undefined) {
-		process.stderr.write(
-			`[delendai] follow-ups (${on}) refused: ${refusal}\n`,
-		);
-		return;
-	}
-	followingUp[on] = true;
-	try {
+	runScript: async (root, on) => {
 		const { execFile } = await import('node:child_process');
 		const { promisify } = await import('node:util');
 		const step = lowPriority('bun', [
@@ -177,14 +192,146 @@ const followUpInBackground = async (
 		await promisify(execFile)(step.command, [...step.args], {
 			cwd: root,
 			env: backgroundEnv(),
-		}).catch((error: unknown) => {
-			process.stderr.write(
-				`[delendai] follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}\n`,
+		});
+	},
+	report: (line) => {
+		process.stderr.write(`[delendai] ${line}\n`);
+	},
+};
+
+/**
+ * Run the follow-ups without making the watch wait for the forge.
+ * Detached and never fatal. The list is the checkout's own script, spawned
+ * at every run, and a server older than the repository's integration
+ * protocol refuses.
+ */
+export const followUpInBackground = async (
+	root: string,
+	on: 'move' | 'event',
+	deps: IFollowUpDeps = realFollowUpDeps,
+): Promise<void> => {
+	if (!deps.scriptExists(root)) return;
+	if (followingUp[on]) {
+		followAgain[on] = true;
+		return;
+	}
+	const refusal = followUpsRefusal(await deps.recordedProtocol(root));
+	if (refusal !== undefined) {
+		deps.report(`follow-ups (${on}) refused: ${refusal}`);
+		return;
+	}
+	followingUp[on] = true;
+	try {
+		await deps.runScript(root, on).catch((error: unknown) => {
+			deps.report(
+				`follow-ups (${on}) did not complete: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		});
 	} finally {
 		followingUp[on] = false;
+		if (followAgain[on]) {
+			followAgain[on] = false;
+			void followUpInBackground(root, on, deps);
+		}
 	}
+};
+
+/**
+ * Hear the forge, when the project opted in and its forge can be heard:
+ * events drive the follow and the timer is only the fallback. Returns the
+ * running follow, or `undefined` when the timer stays the only way.
+ */
+const startForgeEvents = async (input: {
+	readonly root: string;
+	readonly cacheDir: string;
+	readonly repository: string | undefined;
+	readonly integrationBranch: string;
+	readonly schedule: ReturnType<typeof createSwitchableSchedule>;
+	readonly standDown: () => Promise<string | undefined>;
+}): Promise<IForgeEventFollow | undefined> => {
+	const say = (line: string): void => {
+		process.stderr.write(`[delendai] ${line}\n`);
+	};
+	if (input.repository === undefined) {
+		say(
+			'forge events: origin names no forge repository; following on the timer',
+		);
+		return undefined;
+	}
+	const detected = await detectForgeProvider(input.root);
+	const receiver = detected.ok
+		? forgeEventReceiverFor(detected.provider, input.repository, say)
+		: undefined;
+	if (receiver === undefined) {
+		say(
+			'forge events: this forge cannot be heard yet; following on the timer',
+		);
+		return undefined;
+	}
+	// Every server's notification bridge reads what this one hears.
+	const store = forgeEventsDir(input.root, input.cacheDir);
+	const source = detected.ok
+		? forgeCatchUpSourceFor(detected.provider, [
+				LAND_LABEL_NEEDS_UPDATE,
+				LAND_LABEL_CULPRIT,
+			])
+		: undefined;
+	const hostCatchUp =
+		source === undefined
+			? undefined
+			: createHostCatchUp({
+					dir: store,
+					repository: input.repository,
+					source,
+				});
+	receiver.subscribe({
+		onEvent: (event) => {
+			appendForgeEventRecord(store, event)
+				.then(() => hostCatchUp?.noteLive(event))
+				.catch((error: unknown) => {
+					say(
+						`forge events: an event was not stored: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				});
+		},
+		// Each (re)connection asks the forge once what sessions missed; only
+		// the server that maintains the workspace does.
+		onGap: async () => {
+			if (
+				hostCatchUp === undefined ||
+				(await input.standDown()) !== undefined
+			)
+				return;
+			try {
+				const told = await hostCatchUp.catchUp();
+				if (told > 0)
+					say(
+						`forge events: ${String(told)} missed notification(s) delivered`,
+					);
+			} catch (error) {
+				say(
+					`forge events: catch-up failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			}
+		},
+	});
+	const follow = startForgeEventFollow({
+		receiver,
+		scope: {
+			repository: input.repository,
+			integrationBranch: input.integrationBranch,
+			needsUpdateLabel: LAND_LABEL_NEEDS_UPDATE,
+		},
+		follow: input.schedule.runNow,
+		followUp: () => {
+			void followUpInBackground(input.root, 'event');
+		},
+		fallback: input.schedule,
+		standDown: input.standDown,
+		report: say,
+	});
+	await follow.reconsider();
+	return follow;
 };
 
 /**
@@ -254,6 +401,7 @@ export const hasHelpFlag = (argv: readonly string[]): boolean =>
 export interface IStopTargets {
 	hydration?: { stop(): unknown } | undefined;
 	maintenance?: { stop(): unknown } | undefined;
+	forgeEvents?: { stop(): unknown } | undefined;
 }
 
 /**
@@ -267,6 +415,8 @@ export const createStopHandler =
 	): ((code: number) => void) =>
 	(code) => {
 		targets.hydration?.stop();
+		// The forwarder's webhook goes with it.
+		void targets.forgeEvents?.stop();
 		// Another server takes the workspace over at once, not after the
 		// lease runs out.
 		void targets.maintenance?.stop();
@@ -373,11 +523,15 @@ const run = async (): Promise<void> => {
 	// before `connect()` resolves, so the reference is always live by
 	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	let hydration: ReturnType<typeof startCheckoutHydration> | undefined;
+	let forgeEvents: IForgeEventFollow | undefined;
 	let maintenance: typeof config.maintenance;
 	const onSignal = createStopHandler(
 		{
 			get hydration() {
 				return hydration;
+			},
+			get forgeEvents() {
+				return forgeEvents;
 			},
 			get maintenance() {
 				return maintenance;
@@ -533,6 +687,15 @@ const run = async (): Promise<void> => {
 		return runtimeStandDown?.();
 	};
 	const hydrationInterval = hydrationIntervalMs(process.env);
+	// With forge events on, events trigger the passes and the timer runs
+	// only while no event connection is up; each of its ticks also asks
+	// whether this server has taken the maintenance lease over.
+	const eventsWanted = policy?.integration.forgeEvents === true;
+	const schedule = createSwitchableSchedule({
+		onTick: () => {
+			void forgeEvents?.reconsider();
+		},
+	});
 	hydration =
 		policy === undefined || hydrationInterval === 0
 			? undefined
@@ -542,6 +705,7 @@ const run = async (): Promise<void> => {
 					...(hydrationInterval === undefined
 						? {}
 						: { intervalMs: hydrationInterval }),
+					...(eventsWanted ? { schedule: schedule.schedule } : {}),
 					standDown,
 					// Finished units end here, in every project, not only
 					// where the repository ships its own maintenance.
@@ -562,6 +726,17 @@ const run = async (): Promise<void> => {
 			standDown,
 			followUp: () => followUpInBackground(config.workspace.root, 'move'),
 			report: (line) => process.stderr.write(`[delendai] ${line}\n`),
+		});
+	}
+
+	if (eventsWanted && hydration !== undefined && policy !== undefined) {
+		forgeEvents = await startForgeEvents({
+			root: config.workspace.root,
+			cacheDir: config.corePaths?.cacheDir ?? '.cache/delendai',
+			repository: forgeSlug,
+			integrationBranch: policy.branches.integration,
+			schedule,
+			standDown,
 		});
 	}
 
@@ -631,12 +806,36 @@ if (import.meta.main) {
 		dirname(fileURLToPath(import.meta.url)),
 		'../../..',
 	);
-	const runChild = (script: string, label: string): void => {
+	// What the server runs travels in its environment: the boot summary and
+	// the status tool both read it from there.
+	const stateEnv = (
+		tree: string,
+		branch?: string,
+		note?: string,
+	): NodeJS.ProcessEnv => {
+		const state = runtimeState(tree, branch, undefined, note);
+		return state === undefined
+			? {}
+			: { [RUNTIME_STATE_ENV]: JSON.stringify(state) };
+	};
+	const runChild = (
+		script: string,
+		label: string,
+		branch?: string,
+		note?: string,
+	): void => {
 		process.stderr.write(runtimeReport(label));
+		if (note !== undefined) process.stderr.write(`[delendai] ${note}\n`);
 		const child = spawn(
 			process.execPath,
 			[script, ...withoutRuntimeFlags(process.argv.slice(2))],
-			{ stdio: 'inherit' },
+			{
+				stdio: 'inherit',
+				env: {
+					...process.env,
+					...stateEnv(hostTree(script), branch, note),
+				},
+			},
 		);
 		for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
 			process.on(signal, () => child.kill(signal));
@@ -655,17 +854,24 @@ if (import.meta.main) {
 		if (resolved.ok) runChild(resolved.script, resolved.label);
 		else refuse(resolved.reason);
 	} else if (pin.kind === 'branch') {
-		const script = await branchHostScript(repository, pin.branch);
-		if (script !== undefined) {
-			runChild(script, branchLabel(pin.branch, script));
+		const run = await branchHostRun(repository, pin.branch);
+		if (run !== undefined) {
+			runChild(
+				run.script,
+				branchLabel(pin.branch, run.script),
+				pin.branch,
+				run.note,
+			);
 		} else {
 			process.stderr.write(
 				`[delendai] no branch "${pin.branch}": running this checkout's code.\n`,
 			);
 			process.argv = [...withoutRuntimeFlags(process.argv)];
+			Object.assign(process.env, stateEnv(repository));
 			startHost();
 		}
 	} else {
+		Object.assign(process.env, stateEnv(repository));
 		startHost();
 	}
 }

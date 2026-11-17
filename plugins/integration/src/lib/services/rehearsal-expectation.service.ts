@@ -3,7 +3,6 @@
  * means on the forge's evidence: one judge per kind, found by the kind
  * itself. Pure over the evidence.
  */
-import { REHEARSAL_CI_CHECK } from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalEvidence,
 	IRehearsalExpectation,
@@ -11,7 +10,10 @@ import type {
 	IRehearsalPullEvent,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalWorkflowNames,
 } from '../contracts/interfaces/rehearsal.interface';
+import { REHEARSAL_FAST_WORKFLOW_NAMES } from '../contracts/constants/rehearsal.constant';
+import { scanStarted } from './rehearsal-scan.helper';
 
 const SHORT_SHA = 12;
 
@@ -45,17 +47,20 @@ export const labelFlips = (
 	return flips;
 };
 
-const isCiRun = (run: IRehearsalRun): boolean =>
-	run.workflow === REHEARSAL_CI_CHECK;
+const isCiRun = (
+	run: IRehearsalRun,
+	names: IRehearsalWorkflowNames = REHEARSAL_FAST_WORKFLOW_NAMES,
+): boolean => run.workflow === names.ci;
 
 /** Whether the forge built a head: a CI run exists for it and was not held for approval. */
 export const headBuilt = (
 	runs: readonly IRehearsalRun[],
 	sha: string,
+	names?: IRehearsalWorkflowNames,
 ): boolean =>
 	runs.some(
 		(run) =>
-			isCiRun(run) &&
+			isCiRun(run, names) &&
 			run.headSha === sha &&
 			run.conclusion !== 'action_required' &&
 			run.status !== 'action_required',
@@ -141,7 +146,9 @@ const JUDGES: TJudges = {
 				? []
 				: [pull(`${expectation.key}:token-open`)?.headSha ?? '']),
 		];
-		const unbuilt = heads.filter((sha) => !headBuilt(evidence.runs, sha));
+		const unbuilt = heads.filter(
+			(sha) => !headBuilt(evidence.runs, sha, evidence.workflows),
+		);
 		return result(
 			`${expectation.key} heads built`,
 			heads.length > 0 && unbuilt.length === 0,
@@ -160,7 +167,7 @@ const JUDGES: TJudges = {
 		);
 		const memberRuns = evidence.runs.filter(
 			(run) =>
-				isCiRun(run) &&
+				isCiRun(run, evidence.workflows) &&
 				run.event === 'pull_request' &&
 				members.has(run.headBranch),
 		);
@@ -175,7 +182,7 @@ const JUDGES: TJudges = {
 		);
 		const groupRuns = evidence.runs.filter(
 			(run) =>
-				isCiRun(run) &&
+				isCiRun(run, evidence.workflows) &&
 				run.event === 'pull_request' &&
 				!firstRuns.has(run.id) &&
 				run.headBranch !== evidence.integration,
@@ -191,13 +198,7 @@ const JUDGES: TJudges = {
 
 		const merged = evidence.tips.slice(1);
 		const unscanned = merged.filter(
-			(sha) =>
-				!evidence.runs.some(
-					(run) =>
-						run.event === 'push' &&
-						run.headSha === sha &&
-						run.workflow === 'rehearsal-scan',
-				),
+			(sha) => !scanStarted(evidence.runs, sha, evidence.workflows),
 		);
 		return result(
 			'every integration tip started its push workflows',
@@ -221,13 +222,28 @@ const JUDGES: TJudges = {
 	},
 	'sessions-notified': (evidence, _expectation) => {
 		const _pull = pullOf(evidence);
+		const told = evidence.notifications;
+		if (told === undefined)
+			return result(
+				'sessions notified',
+				false,
+				'no session receiver ran: nobody was told',
+			);
+		const counts = new Map<string, number>();
+		for (const one of told) {
+			const key = `${one.event}#${String(one.number)}`;
+			counts.set(key, (counts.get(key) ?? 0) + 1);
+		}
+		const repeated = [...counts].filter(([, count]) => count > 1);
+		const merges = told.filter((one) => one.event === 'pr.merged').length;
 		return result(
-			'sessions notified',
-			evidence.notifications !== undefined &&
-				evidence.notifications.length > 0,
-			evidence.notifications === undefined
-				? 'no session receiver ran: nobody was told'
-				: `${String(evidence.notifications.length)} notification(s)`,
+			'sessions notified exactly once',
+			merges > 0 && repeated.length === 0,
+			repeated.length > 0
+				? `told more than once: ${repeated.map(([key]) => key).join(', ')}`
+				: merges === 0
+					? `${String(told.length)} notification(s), none of a merge`
+					: `${String(told.length)} notification(s), each once`,
 		);
 	},
 };

@@ -11,16 +11,16 @@
 - createRehearsalSetup
 - landIntegratorWorkflow
 - rehearsalPolicy
+- sweepStaleRuns
 - renderRehearsalWorkflow
 - rehearse
+- scenariosForMode
 - selectScenarios
+- mergeGroupReports
+- parseGroupSpec
+- partitionScenarios
+- selectGroup
 - buildReport
-- renderReportTable
-- REHEARSAL_CATALOGUE
-- diagnoseIdentity
-- renderAppManifest
-- renderDoctorTable
-- judgePrCiWall
 
 ## Depends on
 
@@ -38,10 +38,10 @@
 
 ## Tests
 
+- plugins/integration/tests/src/lib/services/integration-activation.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-adoption.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-doctor.service.spec.ts
 - plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts
-- plugins/integration/tests/src/lib/services/land-git.service.spec.ts
 
 ## Do not
 

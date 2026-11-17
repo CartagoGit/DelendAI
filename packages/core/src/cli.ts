@@ -67,6 +67,7 @@ export {
 export { editOutsideUnitRefusal } from './lib/work-units/unit-edit-fence.service';
 export { rescueAfterShell } from './lib/work-units/shared-checkout-shell-rescue.service';
 export { agentFor } from './lib/work-units/work-unit-shared.service';
+export { resolveUnitsDirectory } from './lib/work-units/units-directory.service';
 // The model a chat provider observed serving this conversation, read
 // from the provider bridge. Exported here — not from the public barrel,
 // whose budget is full — because the CLI resolves and reports agent
@@ -147,6 +148,7 @@ export {
 	pushDerived,
 } from './lib/integration/land/land-bring-forward.helper';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
+export { LandBranchGoneError } from './lib/integration/land/land-branch-gone.helper';
 export {
 	indentLines,
 	renderLandSignalWorkflow,
@@ -154,6 +156,7 @@ export {
 } from './lib/integration/land/land-signal.helper';
 export {
 	identitySteps,
+	landWorkflowInputOf,
 	renderLandWorkflow,
 	tokenOf,
 } from './lib/integration/land/land-workflow.helper';
@@ -163,6 +166,7 @@ export { DEFAULT_INTEGRATION_OPTIONS } from './lib/contracts/constants/integrati
 export { INTEGRATION_PROTOCOL_VERSION } from './lib/contracts/constants/integration-protocol.constant';
 export { createGithubLandForge } from './lib/integration/land/github-land-forge.service';
 export {
+	LAND_DERIVED_JOBS,
 	LAND_LABEL_CULPRIT,
 	LAND_LABEL_NEEDS_UPDATE,
 	LAND_SIGNAL_EVENTS,
@@ -178,10 +182,12 @@ export type {
 	ILandCheck,
 	ILandCommandRunner,
 	ILandConfig,
+	ILandBringResult,
 	ILandConflict,
 	ILandDeps,
 	ILandForward,
 	ILandForge,
+	ILandRun,
 	ILandGit,
 	ILandMerge,
 	ILandPullRequest,
@@ -376,6 +382,8 @@ export {
 	RETIRED_PRESET_ID,
 	resolveStackPackMembers,
 } from './lib/plugins/preset-catalog';
+export { RUNTIME_STATE_ENV } from './lib/contracts/constants/runtime-state.constant';
+export type { IRuntimeState } from './lib/contracts/interfaces/runtime-state.interface';
 export {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,

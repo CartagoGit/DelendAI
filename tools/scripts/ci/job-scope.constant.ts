@@ -202,9 +202,9 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'measured: its proposal, branch and agent lints read every top-level entry and judge refs that change without a file changing.',
 	},
 	{
-		// One runner and one setup for the static checks that used to be a job
-		// each. Every member keeps its entry above and gates its own steps in
-		// ci.yml; the job runs when any of them does.
+		// The static checks run side by side, three jobs balanced by measured
+		// time (x01075). Every member keeps its entry above and gates its own
+		// steps in ci.yml; each job runs when any of its members does.
 		job: 'static-checks',
 		touches: [],
 		group: [
@@ -212,13 +212,23 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'manifests-check',
 			'lint-architecture',
 			'lint-docs',
-			'lint-presets',
-			'lint-security',
-			'lint-governance',
-			'generated-artifacts-check',
 		],
 		because:
-			'it is the runner of the eight static checks that used to run one per job; its verdict is theirs, so it runs when any of them can be affected.',
+			'it is the runner of the four lightest static checks, which used to share one job with the rest; its verdict is theirs, so it runs when any of them can be affected.',
+	},
+	{
+		job: 'static-checks-b',
+		touches: [],
+		group: ['lint-presets', 'lint-security'],
+		because:
+			'it is the runner of the preset and security checks, which used to share one job with the rest; its verdict is theirs, so it runs when either can be affected.',
+	},
+	{
+		job: 'static-checks-c',
+		touches: [],
+		group: ['lint-governance', 'generated-artifacts-check'],
+		because:
+			'it is the runner of the governance and generated-artifact checks, which used to share one job with the rest; its verdict is theirs, so it runs when either can be affected.',
 	},
 	{
 		job: 'typecheck',

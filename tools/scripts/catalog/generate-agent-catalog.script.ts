@@ -58,7 +58,7 @@ export interface IArtifactSkill {
 	readonly summary: string;
 	readonly appliesTo: readonly string[];
 	readonly tags: readonly string[];
-	readonly bodyPath: string;
+	readonly bodyPath?: string;
 }
 
 export interface IGeneratedAgentCatalogArtifact {

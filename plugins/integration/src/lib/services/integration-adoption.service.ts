@@ -20,6 +20,11 @@ import {
 	wakeIntegratorStep,
 } from '@delendai/core/cli';
 
+import { REHEARSAL_JOB_TIMEOUT_MINUTES } from '../contracts/constants/rehearsal.constant';
+import {
+	rehearsalDispatchTrigger,
+	rehearsalRunSteps,
+} from './rehearsal-dispatch-steps.helper';
 import type {
 	IAdoptionInput,
 	IAdoptionOutput,
@@ -31,7 +36,6 @@ const REHEARSAL_FILE = 'rehearsal.yml';
 const SIGNAL_STEP_INDENT = 12;
 const CHECKOUT =
 	'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7';
-const REHEARSAL_TIMEOUT_MINUTES = 45;
 
 /** The command a runner uses to run the delendai CLI at the pinned version. */
 const cliCommand = (version: string): string =>
@@ -78,7 +82,7 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 		'name: rehearsal',
 		'',
 		'on:',
-		'    workflow_dispatch:',
+		...rehearsalDispatchTrigger(),
 		'',
 		"# One rehearsal at a time: a second run would read the first one's branches.",
 		'concurrency:',
@@ -95,16 +99,16 @@ export const renderAdoptedRehearsalWorkflow = (input: {
 		'    rehearsal:',
 		'        name: rehearsal',
 		'        runs-on: ubuntu-latest',
-		`        timeout-minutes: ${String(REHEARSAL_TIMEOUT_MINUTES)}`,
+		`        timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
 		'        steps:',
 		...identitySteps(input.identity).map((line) =>
 			line === '' ? line : `            ${line}`,
 		),
 		`            - uses: ${CHECKOUT}`,
-		'            - name: Rehearse the pull request flow on the real forge',
-		'              env:',
-		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
-		`              run: ${cliCommand(input.version)} integration rehearse --mode=fast --scenarios=all`,
+		...rehearsalRunSteps({
+			token: tokenOf(input.identity),
+			command: cliCommand(input.version),
+		}),
 		'',
 	].join('\n');
 
@@ -123,6 +127,7 @@ export const renderAdoption = (input: IAdoptionInput): IAdoptionOutput => ({
 					`- uses: ${CHECKOUT}`,
 					'  with:',
 					"      fetch-depth: '0'",
+					'      persist-credentials: false',
 				],
 			}),
 		},

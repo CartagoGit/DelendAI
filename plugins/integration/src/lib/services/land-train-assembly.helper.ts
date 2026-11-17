@@ -20,46 +20,49 @@ import {
 } from '../contracts/constants/integration-pass.constant';
 import type { IGitExec } from '../contracts/interfaces/integration-pass.interface';
 
+import { gitFailureText, landGitArgs } from './land-git-process.helper';
+import { identityFetchEnv, pushAsIdentity } from './land-identity-push.helper';
+
 /** Git in `cwd`, trimmed; throws when git fails. */
 export const runGit: IGitExec = (cwd, args, env) =>
-	execFileSync('git', [...args], {
+	execFileSync('git', landGitArgs(args), {
 		cwd,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
 		...(env === undefined ? {} : { env: { ...process.env, ...env } }),
 	}).trim();
 
-const run = (cwd: string, args: readonly string[]): string | undefined => {
+const run = (
+	cwd: string,
+	args: readonly string[],
+	env?: NodeJS.ProcessEnv,
+): string | undefined => {
 	try {
-		return execFileSync('git', [...args], {
+		return execFileSync('git', landGitArgs(args), {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
+			...(env === undefined ? {} : { env: { ...process.env, ...env } }),
 		}).trim();
 	} catch {
 		return undefined;
 	}
 };
 
-/** `undefined` when git succeeded, else its stderr (or the error text). */
+/** `undefined` when git succeeded, else what it said (stdout and stderr). */
 const failureOf = (
 	cwd: string,
 	args: readonly string[],
 ): string | undefined => {
 	try {
-		execFileSync('git', [...args], {
+		execFileSync('git', landGitArgs(args), {
 			cwd,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'pipe'],
 		});
 		return undefined;
 	} catch (error) {
-		const stderr = (error as { stderr?: unknown }).stderr;
-		const text =
-			typeof stderr === 'string' || Buffer.isBuffer(stderr)
-				? String(stderr).trim()
-				: '';
-		return text.length > 0 ? text : String(error);
+		return gitFailureText(error);
 	}
 };
 
@@ -78,8 +81,12 @@ const mergeMember = (
 	remote: string,
 	member: ITrainCandidate,
 	derived: ReadonlySet<string>,
+	fetchEnv?: NodeJS.ProcessEnv,
 ): 'clean' | 'derived' | 'conflict' => {
-	if (run(dir, ['fetch', '-q', '--', remote, member.headSha]) === undefined) {
+	if (
+		run(dir, ['fetch', '-q', '--', remote, member.headSha], fetchEnv) ===
+		undefined
+	) {
 		return 'conflict';
 	}
 	const message = `Merge pull request #${String(member.number)} from ${member.headRef}`;
@@ -142,12 +149,14 @@ export const assembleTrain = (input: {
 	 * calls `discardTrain`. Nothing reaches the remote.
 	 */
 	readonly rehearsal?: boolean;
+	/** The identity's token: the push and the fetches are made as it. Without one nothing is pushed. */
+	readonly identityToken?: string;
 }): {
 	/** The kept worktree of a rehearsal. */
 	readonly scratch?: string;
 	readonly conflicting: readonly number[];
 	readonly regenerated: readonly number[];
-	/** Git's stderr when the push was declined: nothing is on the forge. */
+	/** What git said when the push was declined: nothing is on the forge. */
 	readonly pushFailure?: string;
 } => {
 	const scratch = execFileSync(
@@ -183,6 +192,7 @@ export const assembleTrain = (input: {
 				input.remote,
 				member,
 				input.derived,
+				identityFetchEnv(input.identityToken ?? ''),
 			);
 			if (outcome === 'conflict') conflicting.push(member.number);
 			if (outcome === 'derived') regenerated.push(member.number);
@@ -235,13 +245,13 @@ export const assembleTrain = (input: {
 			kept = true;
 			return { conflicting, regenerated, scratch };
 		}
-		const pushFailure = failureOf(scratch, [
-			'push',
-			'-q',
-			'--force',
-			input.remote,
-			`HEAD:refs/heads/${input.ref}`,
-		]);
+		const pushFailure = pushAsIdentity({
+			cwd: scratch,
+			remote: input.remote,
+			refspec: `HEAD:refs/heads/${input.ref}`,
+			token: input.identityToken ?? '',
+			force: true,
+		});
 		return pushFailure === undefined
 			? { conflicting, regenerated }
 			: { conflicting, regenerated, pushFailure };

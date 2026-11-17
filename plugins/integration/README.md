@@ -5,14 +5,14 @@ the real forge before it runs.
 
 ```bash
 delendai --plugins=integration
-delendai integration rehearse --mode=fast --scenarios=<ids|all>
+delendai integration rehearse --mode=fast --scenarios=<ids|all> [--concurrency=<n>] [--group=<n>/<total>] [--plan] [--merge]
 ```
 
 The rehearsal creates `<namespace>/rehearsal/<run>/…` branches from the tip
 of the integration branch, opens synthetic pull requests that touch only
 `rehearsal/**`, reads back what the forge did and prints a JSON report and a
 short table. It never writes to the integration or release branch, and its
-cleanup deletes every branch, label and webhook it made.
+cleanup deletes every branch and label it made.
 
 `gh` acts as whatever it is already signed in as; the plugin never reads or
 prints a token.
@@ -37,7 +37,30 @@ validations are your own required checks and your own CI.
    runs your own `ci.yml` and `codeql.yml` on the rehearsal branch). It
    plays every scenario on `<namespace>/rehearsal/<run>/…` branches and
    cleans up after itself.
-5. Activate once the rehearsal is green on every scenario and target.
+5. Activate once the rehearsal is green on every scenario and target
+   (below).
+
+### Activation, deactivation and resume
+
+The rehearsal workflow takes a `mode` (`fast` or `real`) and `scenarios`
+(`all` by default) when dispatched, and always uploads its report as the
+artifact `rehearsal-report-<mode>`, so the evidence lives on the forge, keyed
+by the commit it ran on. `rehearse` also writes the report to
+`.cache/delendai/rehearsal/report-<mode>.json`.
+
+- `delendai integration activate` reads the integration branch's tip from the
+  forge, takes the latest completed `rehearsal` run of that exact commit for
+  each mode and downloads its report. It refuses, listing every reason,
+  unless both reports exist for the tip, every scenario and target is green
+  in both, the known-red list is empty and `integration doctor` is green.
+  When all hold it writes `development.integration.engine: "land"` and the
+  land workflows. It never commits or pushes: publish the change as a pull
+  request.
+- `delendai integration deactivate` writes engine `none` and removes the
+  generated land workflows. It has no gate.
+- `delendai integration resume` marks every open pull request into the
+  integration branch labelled `<labels.prefix>:paused` ready for review and
+  removes the label. It refuses while the engine is `none`.
 
 ### How the land is woken
 
@@ -60,6 +83,12 @@ the full pass. A push to the integration branch and the watchdog schedule
 still wake it too.
 
 ### The identity
+
+Every git command the land runs (its merges, commits and pushes, and the
+derived jobs') runs with client-side hooks turned off
+(`-c core.hooksPath=/dev/null`), whatever hook manager the project uses:
+hooks guard people and agents, and what the integrator produces is judged by
+the required checks.
 
 The integrator acts as a GitHub App, never as the workflow token (GitHub
 starts no workflow for what that token pushes). Run

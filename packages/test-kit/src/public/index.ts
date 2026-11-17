@@ -33,7 +33,11 @@ export type { IFakeClock } from '../contracts/interfaces/fake-clock.interface';
 export { stubAbortSignalTimeout } from '../lib/abort-signal-timeout.helper';
 export type { IAbortSignalTimeoutStub } from '../contracts/interfaces/abort-signal-timeout.interface';
 export { skipLockPauses } from '../lib/lock-pause.helper';
-export { createGitRepoTemplate } from '../lib/template-git-repo.helper';
+export {
+	createGitRepoTemplate,
+	createSharedGitFixture,
+	createSharedGitRepoTemplate,
+} from '../lib/template-git-repo.helper';
 export type {
 	IGitRepoCopy,
 	IGitRepoTemplate,
@@ -54,9 +58,12 @@ export type { IAmbientEnvironmentMarkers } from '../contracts/interfaces/hermeti
 export {
 	budgetFailure,
 	budgetInName,
+	budgetNoise,
+	withRemeasuredLoad,
 	budgetOverrun,
 	freshBudgetsOfDiff,
 	isE2eSpec,
+	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
 	mayGoUnbudgeted,

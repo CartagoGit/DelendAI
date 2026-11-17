@@ -39,7 +39,16 @@ export interface ILandPullRequest {
 export type ILandMerge = 'merged' | 'head-moved' | 'refused';
 
 /** The forge calls land needs, and no others. */
+/** A run of the land workflow on the integration branch, as the forge lists it. */
+export interface ILandRun {
+	readonly id: number;
+	/** `completed`, or any state a run waits or works in. */
+	readonly status: string;
+}
+
 export interface ILandForge {
+	/** The recent land workflow runs on the integration branch, newest first. */
+	landRuns(): Promise<readonly ILandRun[]>;
 	integrationTip(): Promise<string>;
 	/** The checks the integration branch requires. */
 	requiredChecks(): Promise<readonly string[]>;
@@ -63,6 +72,13 @@ export interface ILandForge {
 	}): Promise<number>;
 	updatePullRequest(number: number, body: string): Promise<void>;
 	closePullRequest(number: number): Promise<void>;
+	/**
+	 * Close and reopen the pull request as the integrator: the `reopened`
+	 * event starts its CI on the same head, with no new commit. At most once
+	 * per head, read from the forge itself: false when this head was already
+	 * reopened.
+	 */
+	reopenPullRequest(number: number, headSha: string): Promise<boolean>;
 	/**
 	 * Start `workflow` on `ref`, as a person's push there would have; whether
 	 * the forge took it. The integrator's own merges start no workflow, so it
@@ -125,7 +141,10 @@ export interface ILandGit {
 }
 
 /** What bringing a head up to the tip came to. */
-export type ILandForward = 'brought' | 'conflict' | 'moved';
+export type ILandForward = 'brought' | 'conflict' | 'moved' | 'current';
+
+/** What a pass made of a head nobody built: the forward result, or the reopen or refusal that stands for it. */
+export type ILandBringResult = ILandForward | 'reopened' | 'skipped';
 
 /**
  * Everything project-specific a pass reads. `landConfigFromPolicy` fills
@@ -168,7 +187,8 @@ export interface ILandDeps {
 	readonly config: ILandConfig;
 	/**
 	 * Merge the tip into a head the forge never built and push it as the
-	 * identity, so the forge builds the new head. No generator runs. Absent
+	 * identity, so the forge builds the new head. No generator runs. `current`:
+	 * the head already holds the tip, so there is nothing to push. Absent
 	 * where the actor's pushes are not built: the author then updates it.
 	 */
 	readonly bringForward?:

@@ -16,16 +16,63 @@ import type {
 	IRehearsalPullEvent,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalWorkflowNames,
 	IRehearsalRunContext,
 	IRehearsalScenario,
 	IScenarioState,
 } from '../contracts/interfaces/rehearsal.interface';
 
+import {
+	REHEARSAL_POLL_MS,
+	REHEARSAL_SETTLE_SECONDS,
+} from '../contracts/constants/rehearsal.constant';
+import { scanStarted } from './rehearsal-scan.helper';
 import { scenarioIntegration } from './rehearsal-names.helper';
 import { runStep } from './rehearsal-step.service';
 
 const isoOf = (clock: IRehearsalClock): string =>
 	new Date(clock.now()).toISOString();
+
+const runsOf = async (
+	ctx: IRehearsalRunContext,
+	heads: ReadonlySet<string>,
+): Promise<IRehearsalRun[]> => {
+	const runs: IRehearsalRun[] = [];
+	for (const head of heads) runs.push(...(await ctx.forge.runs(head)));
+	return runs;
+};
+
+const missingPush = (
+	runs: readonly IRehearsalRun[],
+	tips: readonly string[],
+	names: IRehearsalWorkflowNames | undefined,
+): boolean => tips.slice(1).some((sha) => !scanStarted(runs, sha, names));
+
+/**
+ * The runs of `heads`, read again until every merged tip has its scan run:
+ * the forge lists a tip's scan run some time after the merge, and after the
+ * integrator's own push run. Bounded: what is
+ * still missing at the deadline is evidence of a run that never started.
+ */
+const settledRuns = async (
+	ctx: IRehearsalRunContext,
+	heads: ReadonlySet<string>,
+	tips: readonly string[],
+): Promise<IRehearsalRun[]> => {
+	const reads = Math.ceil(
+		(REHEARSAL_SETTLE_SECONDS * 1000) / REHEARSAL_POLL_MS,
+	);
+	let runs = await runsOf(ctx, heads);
+	for (
+		let read = 1;
+		read < reads && missingPush(runs, tips, ctx.setup.workflows);
+		read += 1
+	) {
+		await ctx.clock.wait(REHEARSAL_POLL_MS);
+		runs = await runsOf(ctx, heads);
+	}
+	return runs;
+};
 
 /** Everything the forge holds about the scenario once it ran. */
 const collect = async (
@@ -55,17 +102,19 @@ const collect = async (
 			.filter((pull) => !Object.values(pulls).includes(pull))
 			.map((pull) => pull.head),
 	]);
-	const runs: IRehearsalRun[] = [];
-	for (const head of heads) runs.push(...(await ctx.forge.runs(head)));
 	const tips = [
 		...(await ctx.forge.history(state.integration, state.setupSha)),
 	].reverse();
+	const runs = await settledRuns(ctx, heads, tips);
 	return {
 		scenario: scenario.id,
 		integration: state.integration,
 		pulls,
 		events,
 		runs,
+		...(ctx.setup.workflows === undefined
+			? {}
+			: { workflows: ctx.setup.workflows }),
 		tips,
 		manualSteps: state.manualSteps,
 		tokenHeads: Object.fromEntries(state.tokenHeads),
@@ -73,6 +122,9 @@ const collect = async (
 		startedAt,
 		finishedAt: isoOf(ctx.clock),
 		failures: state.failures,
+		...(state.notifications === undefined
+			? {}
+			: { notifications: state.notifications }),
 	};
 };
 
@@ -94,7 +146,9 @@ export const runScenario = async (
 		failures: [],
 		tokenHeads: new Map(),
 		tokenPulls: new Map(),
+		notifications: undefined,
 		setupSha: ctx.tip,
+		awaitedMs: 0,
 	};
 	try {
 		await ctx.forge.createBranch(integration, ctx.tip);
@@ -102,7 +156,7 @@ export const runScenario = async (
 			branch: integration,
 			parents: [ctx.tip],
 			message: `rehearsal(${scenario.id}): set up run ${ctx.runId}`,
-			changes: ctx.setup.files(integration),
+			changes: await ctx.setup.files(integration),
 		});
 		for (const step of scenario.steps) {
 			ctx.log(`${scenario.id}: ${step.kind}`);

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { IRehearsalCommandRunner } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { createGithubRehearsalForge } from '../../../../src/lib/services/rehearsal-github-forge.service';
 
+const noWait = async (): Promise<void> => undefined;
+
 interface ICall {
 	readonly args: readonly string[];
 	readonly input?: string | undefined;
@@ -19,7 +21,10 @@ const fake = (answers: Record<string, string>) => {
 			? { exitCode: 1, stdout: '', stderr: 'HTTP 404' }
 			: { exitCode: 0, stdout: answers[key] ?? '', stderr: '' };
 	};
-	return { calls, forge: createGithubRehearsalForge({ slug: 'o/r', run }) };
+	return {
+		calls,
+		forge: createGithubRehearsalForge({ slug: 'o/r', run, wait: noWait }),
+	};
 };
 
 describe('the GitHub rehearsal forge', () => {
@@ -107,7 +112,11 @@ describe('the GitHub rehearsal forge', () => {
 		await forge.setDraft(5, false);
 		const gql = calls.at(-1)?.args.join(' ') ?? '';
 		expect(gql).toContain('markPullRequestReadyForReview');
-		expect(gql).toContain('id=NODE');
+		expect(gql).toContain('i0=NODE');
+		await forge.readyTogether([5, 5]);
+		const both = calls.at(-1)?.args.join(' ') ?? '';
+		expect(both).toContain('m1: markPullRequestReadyForReview');
+		expect(both).toContain('i1=NODE');
 	});
 
 	it('[<50ms] treats a missing directory as no files', async () => {
@@ -121,7 +130,11 @@ describe('the GitHub rehearsal forge', () => {
 			stdout: '',
 			stderr: 'HTTP 500',
 		});
-		const forge = createGithubRehearsalForge({ slug: 'o/r', run });
+		const forge = createGithubRehearsalForge({
+			slug: 'o/r',
+			run,
+			wait: noWait,
+		});
 		await expect(forge.tipOf('b')).rejects.toThrow('failed');
 	});
 
@@ -135,14 +148,12 @@ describe('the GitHub rehearsal forge', () => {
 		);
 	});
 
-	it('[<100ms] makes, lists and deletes branches, labels and hooks through the matching calls', async () => {
+	it('[<100ms] makes, lists and deletes branches, and labels through the matching calls', async () => {
 		const { forge, calls } = fake({
 			'git/matching-refs/heads/ns/rehearsal/':
 				'[{"ref":"refs/heads/ns/rehearsal/r1/a"}]',
 			'--method GET repos/o/r/labels':
 				'[{"name":"rehearsal-r1:x"},{"name":"bug"}]',
-			'--method GET repos/o/r/hooks':
-				'[{"id":9,"config":{"url":"https://h"}}]',
 			'--method POST repos/o/r/git/refs': '{}',
 			'--method DELETE': '{}',
 		});
@@ -153,12 +164,42 @@ describe('the GitHub rehearsal forge', () => {
 		await forge.deleteBranch('ns/rehearsal/r1/b');
 		expect(await forge.labels('rehearsal-r1:')).toEqual(['rehearsal-r1:x']);
 		await forge.deleteLabel('rehearsal-r1:x');
-		expect(await forge.hooks()).toEqual([{ id: 9, url: 'https://h' }]);
-		await forge.deleteHook(9);
 		const joined = calls.map((c) => c.args.join(' ')).join('\n');
 		expect(joined).toContain('git/refs/heads/ns/rehearsal/r1/b');
 		expect(joined).toContain('labels/rehearsal-r1%3Ax');
-		expect(joined).toContain('hooks/9');
+		expect(joined).not.toContain('hooks');
+	});
+
+	it('[<100ms] reads the check runs of a commit, and none for a workflow run that started no job', async () => {
+		const { forge, calls } = fake({
+			'commits/abc/check-runs': JSON.stringify({
+				check_runs: [
+					{
+						id: 4,
+						name: 'rehearsal-ci',
+						head_sha: 'abc',
+						status: 'completed',
+						conclusion: 'success',
+						started_at: '2026-11-16T13:35:07Z',
+					},
+					{ id: 5, name: 'other', head_sha: 'abc' },
+				],
+			}),
+			'commits/none/check-runs': '{"check_runs":[]}',
+		});
+		expect(await forge.checkRuns('abc')).toEqual([
+			{
+				id: 4,
+				name: 'rehearsal-ci',
+				headSha: 'abc',
+				status: 'completed',
+				conclusion: 'success',
+				startedAt: '2026-11-16T13:35:07Z',
+			},
+			{ id: 5, name: 'other', headSha: 'abc', status: '', startedAt: '' },
+		]);
+		expect(await forge.checkRuns('none')).toEqual([]);
+		expect(calls[0]?.args.join(' ')).toContain('commits/abc/check-runs');
 	});
 
 	it('[<100ms] opens, merges, closes and labels a pull request and reads its timeline and runs', async () => {
@@ -192,7 +233,8 @@ describe('the GitHub rehearsal forge', () => {
 					},
 				],
 			}),
-			'commits?sha=': '[{"sha":"n"},{"sha":"u"},{"sha":"older"}]',
+			'commits?sha=':
+				'[{"sha":"n","parents":[{"sha":"u"}]},{"sha":"u","parents":[{"sha":"older"}]},{"sha":"older","parents":[]}]',
 		});
 		expect(
 			await forge.openPull({
@@ -243,11 +285,13 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run log through gh and says so when it cannot', async () => {
 		const ok = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: 'log text', stderr: '' }),
 		});
 		expect(await ok.runLog(5)).toBe('log text');
 		const bad = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 1, stdout: '', stderr: 'gone' }),
 		});
@@ -271,9 +315,11 @@ describe('the GitHub rehearsal forge', () => {
 		const page = JSON.stringify(
 			Array.from({ length: 100 }, (_, i) => ({
 				sha: i === 3 ? 'stop' : `c${String(i)}`,
+				parents: [{ sha: i === 2 ? 'stop' : `c${String(i + 1)}` }],
 			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async (args) => {
 				calls.push(args.join(' '));
@@ -289,11 +335,40 @@ describe('the GitHub rehearsal forge', () => {
 		expect(calls).toHaveLength(1);
 	});
 
+	it('[<100ms] keeps the first-parent commits only, not the ones a merged pull request carried', async () => {
+		const commits = [
+			{ sha: 'merge2', parents: [{ sha: 'merge1' }, { sha: 'pr2b' }] },
+			{ sha: 'pr2b', parents: [{ sha: 'pr2a' }] },
+			{ sha: 'pr2a', parents: [{ sha: 'merge1' }] },
+			{ sha: 'merge1', parents: [{ sha: 'setup' }, { sha: 'pr1a' }] },
+			{ sha: 'pr1a', parents: [{ sha: 'setup' }] },
+			{ sha: 'setup', parents: [{ sha: 'older' }] },
+		];
+		const forge = createGithubRehearsalForge({
+			wait: noWait,
+			slug: 'o/r',
+			run: async () => ({
+				exitCode: 0,
+				stdout: JSON.stringify(commits),
+				stderr: '',
+			}),
+		});
+		expect(await forge.history('b', 'setup')).toEqual([
+			'merge2',
+			'merge1',
+			'setup',
+		]);
+	});
+
 	it('[<100ms] refuses a history that never reaches the commit', async () => {
 		const full = JSON.stringify(
-			Array.from({ length: 100 }, (_, i) => ({ sha: `c${String(i)}` })),
+			Array.from({ length: 100 }, (_, i) => ({
+				sha: `c${String(i)}`,
+				parents: [{ sha: `c${String(i + 1)}` }],
+			})),
 		);
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({ exitCode: 0, stdout: full, stderr: '' }),
 		});
@@ -304,6 +379,7 @@ describe('the GitHub rehearsal forge', () => {
 
 	it('[<100ms] reads a run that has no log as an empty log', async () => {
 		const forge = createGithubRehearsalForge({
+			wait: noWait,
 			slug: 'o/r',
 			run: async () => ({
 				exitCode: 1,

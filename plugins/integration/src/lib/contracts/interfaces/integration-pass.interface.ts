@@ -55,5 +55,13 @@ export interface IIntegrationPassInput {
 		readonly bringForward?: ILandDeps['bringForward'];
 		readonly gitExec?: IGitExec;
 		readonly runProjectCommand?: IProjectCommandRunner;
+		/** The pause between forge read attempts; the real clock when absent. */
+		readonly wait?: (ms: number) => Promise<void>;
 	};
+}
+
+/** The reports of every round and what the rounds did not settle. */
+export interface ILandRounds<T> {
+	readonly reports: readonly T[];
+	readonly notes: readonly string[];
 }

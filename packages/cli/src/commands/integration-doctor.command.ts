@@ -19,6 +19,7 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
+import { repositorySlugOf } from './integration-repository.helper';
 
 const names = async (
 	runGh: IRehearsalCommandRunner,
@@ -73,20 +74,10 @@ export const runIntegrationDoctor = async (
 	ctx: ICliCommandContext,
 	runGh: IRehearsalCommandRunner,
 ): Promise<ICliCommandResult> => {
-	const named = await runGh([
-		'repo',
-		'view',
-		'--json',
-		'nameWithOwner',
-		'--jq',
-		'.nameWithOwner',
-	]);
-	const repository = named.stdout.trim();
-	if (named.exitCode !== 0 || repository === '')
-		return {
-			code: EXIT_CODE.RUNTIME,
-			error: `gh could not name the repository: ${named.stderr.trim() || named.spawnError || 'no answer'}`,
-		};
+	const named = await repositorySlugOf(runGh);
+	if ('error' in named)
+		return { code: EXIT_CODE.RUNTIME, error: named.error };
+	const repository = named.slug;
 	const manifest = renderAppManifest({
 		name: `${repository.split('/')[1] ?? 'project'}-integrator`,
 		url: `https://github.com/${repository}`,

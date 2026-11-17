@@ -43,12 +43,25 @@ export const UNIT_LIMIT_MS = 200;
 export const LOAD_FACTOR_MIN = 1;
 export const LOAD_FACTOR_MAX = 4;
 
+/**
+ * An e2e test's time also follows momentary contention from the shard's other
+ * workers, which the once-a-shard load factor cannot see: an overrun fails
+ * only above budget x load factor x this headroom, and between the two it is
+ * reported.
+ */
+export const E2E_NOISE_HEADROOM = 2;
+
 /** Holds the shard's load factor (this shard's benchmark time over the reference, clamped), for the workers. */
 export const LOAD_FACTOR_ENV = 'DELENDAI_TEST_BUDGET_LOAD';
 
 /** Holds the shard's benchmark time in ms, so a report carries what the factor came from. */
 export const LOAD_BENCH_ENV = 'DELENDAI_TEST_BUDGET_BENCH_MS';
 
+/** Holds the committed reference benchmark time in ms, so a worker can measure the load again when a test runs over. */
+export const LOAD_REFERENCE_ENV = 'DELENDAI_TEST_BUDGET_REFERENCE_MS';
+
 /** Meta keys the runner leaves beside the measured time. */
 export const MEASURED_LOAD_META_KEY = 'budgetLoadFactor';
+/** The factor measured again when the test ran over; absent when it was not. */
+export const MEASURED_LOAD_NOW_META_KEY = 'budgetLoadFactorNow';
 export const MEASURED_BENCH_META_KEY = 'budgetBenchMs';

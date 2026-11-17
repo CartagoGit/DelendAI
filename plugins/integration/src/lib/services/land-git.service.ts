@@ -24,15 +24,20 @@ import {
 	discardTrain,
 	runGit,
 } from './land-train-assembly.helper';
+import { identityFetchEnv } from './land-identity-push.helper';
 
 export const createLandGit = (input: {
 	readonly root: string;
 	readonly remote: string;
 	readonly ports: ILandProjectPorts;
 	readonly exec?: IGitExec;
+	/** The identity's token: every push and fetch of a batch is made as it. */
+	readonly token: string;
 }): ILandGit => {
-	const { root, remote, ports } = input;
-	const git = input.exec ?? runGit;
+	const { root, remote, ports, token } = input;
+	const fetchEnv = identityFetchEnv(token);
+	const exec = input.exec ?? runGit;
+	const git: IGitExec = (cwd, args, env) => exec(cwd, args, env ?? fetchEnv);
 	const normalizing = { normalize: ports.normalizeBatch };
 	const have = (sha: string): void => {
 		try {
@@ -136,6 +141,7 @@ export const createLandGit = (input: {
 				members,
 				derived: ports.derivedPaths,
 				regenerate: ports.regenerate,
+				identityToken: token,
 				...normalizing,
 			});
 			if (

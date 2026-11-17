@@ -8,6 +8,8 @@ export interface IWorkDeliverPorts {
 	readonly publish: () => Promise<ICliCommandResult>;
 	readonly locate: () => Promise<ICliCommandResult>;
 	readonly prove: () => Promise<ICliCommandResult>;
+	/** Ask the tool whether the hand-over would be accepted; nothing is moved. */
+	readonly preflight: (checkout: string | undefined) => Promise<unknown>;
 	readonly transition: (
 		to: 'in-progress' | 'review',
 		checkout: string | undefined,

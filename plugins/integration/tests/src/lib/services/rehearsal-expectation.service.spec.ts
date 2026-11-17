@@ -206,4 +206,20 @@ describe('judging an expectation', () => {
 		});
 		expect(verdict(told, { kind: 'sessions-notified' })).toBe(true);
 	});
+
+	it('[<50ms] sessions-notified fails when a merge was told twice or never', () => {
+		const twice = evidence({
+			notifications: [
+				{ event: 'pr.merged', at: 't', number: 1 },
+				{ event: 'pr.merged', at: 'u', number: 1 },
+			],
+		});
+		expect(judge(twice, { kind: 'sessions-notified' }).detail).toContain(
+			'more than once',
+		);
+		const noMerge = evidence({
+			notifications: [{ event: 'pr.closed', at: 't', number: 1 }],
+		});
+		expect(verdict(noMerge, { kind: 'sessions-notified' })).toBe(false);
+	});
 });

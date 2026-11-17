@@ -19,8 +19,12 @@
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0,
-			"engine": "none",
+			"engine": "land",
+			"rehearsal": {
+				"setupCommand": "bun tools/scripts/governance/forge-settings.script.ts --write"
+			},
 			"protocol": 1,
+			"forgeEvents": true,
 			"derived": {
 				"paths": [
 					"docs/delendai/generated/plugin-manifests.generated.json",

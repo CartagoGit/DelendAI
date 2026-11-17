@@ -31,4 +31,13 @@ export interface ITimeBudgetCase {
 	readonly tier?: 'unit' | 'e2e' | undefined;
 	/** This shard's load factor, 1 to 4; 1 when unknown. */
 	readonly loadFactor?: number;
+	/**
+	 * Set when the test ran over its stretched budget and the load was
+	 * measured again right then: the factor measured at the shard's start.
+	 * `loadFactor` is then the larger of the two, the one the test is
+	 * judged against.
+	 */
+	readonly loadFactorAtStart?: number | undefined;
+	/** The factor measured again when the test ran over; see `loadFactorAtStart`. */
+	readonly loadFactorNow?: number | undefined;
 }

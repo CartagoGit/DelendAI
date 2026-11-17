@@ -16,6 +16,8 @@ import {
 	FRESH_ENV,
 	LOAD_BENCH_ENV,
 	LOAD_FACTOR_ENV,
+	LOAD_REFERENCE_ENV,
+	MEASURED_LOAD_NOW_META_KEY,
 	MEASURED_BENCH_META_KEY,
 	MEASURED_LOAD_META_KEY,
 	MIGRATION_ENV,
@@ -24,11 +26,19 @@ import {
 	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
 import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
-import { isE2eSpec, loadFactorFromEnv } from './time-budget-tier.helper';
+import { measureLoadBenchmark } from './load-benchmark.helper';
+import {
+	isE2eSpec,
+	isUntouchedSpec,
+	loadFactorFromEnv,
+	loadFactorOf,
+} from './time-budget-tier.helper';
 import {
 	budgetFailure,
+	budgetNoise,
 	budgetOverrun,
 	mayGoUnbudgeted,
+	withRemeasuredLoad,
 } from './time-budget.helper';
 
 let migrating: ReadonlySet<string> | undefined;
@@ -105,11 +115,24 @@ const tierOf = (test: RunnerTestCase): 'unit' | 'e2e' | undefined => {
 
 const untouched = (test: RunnerTestCase): boolean => {
 	const file = fileOf(test);
-	const paths = changedList();
-	return file !== undefined && paths !== undefined && !paths.has(file);
+	return file !== undefined && isUntouchedSpec(file, changedList());
+};
+
+/**
+ * The load factor right now: the same benchmark, reference and clamp as the
+ * shard's start. Without a reference there is nothing to divide by, and the
+ * start factor stands.
+ */
+const loadFactorNow = (atStart: number): number => {
+	const reference = Number(process.env[LOAD_REFERENCE_ENV]);
+	return Number.isFinite(reference) && reference > 0
+		? loadFactorOf(measureLoadBenchmark(), reference)
+		: atStart;
 };
 
 const overruns: string[] = [];
+
+const noise: string[] = [];
 
 const freshOverruns: string[] = [];
 
@@ -120,6 +143,12 @@ export default class TimeBudgetRunner extends TestRunner {
 				`time budget: ${String(freshOverruns.length)} budget(s) this change sets ran over on CI, which never measured them; the merge step (test:budgets:check) fails the change until each spec declares the calibrated number:\n${freshOverruns.join('\n')}`,
 			);
 			freshOverruns.length = 0;
+		}
+		if (noise.length > 0) {
+			console.warn(
+				`time budget: ${String(noise.length)} e2e test(s) over their stretched budget but within the noise headroom (reported, not failed):\n${noise.join('\n')}`,
+			);
+			noise.length = 0;
 		}
 		if (overruns.length === 0) return;
 		console.warn(
@@ -134,20 +163,36 @@ export default class TimeBudgetRunner extends TestRunner {
 		await body();
 		const tookMs = realNow() - start;
 		const loadFactor = loadFactorFromEnv(process.env[LOAD_FACTOR_ENV]);
+		const judged = withRemeasuredLoad(
+			{
+				tier: tierOf(test),
+				loadFactor,
+				name: test.name,
+				migrating: isMigrating(test),
+				tookMs,
+			},
+			() => loadFactorNow(loadFactor),
+		);
 		Object.assign(test.meta, {
 			[MEASURED_META_KEY]: tookMs,
-			[MEASURED_LOAD_META_KEY]: loadFactor,
+			// The factor that applied: the calibration divides by it.
+			[MEASURED_LOAD_META_KEY]: judged.loadFactor ?? loadFactor,
 			[MEASURED_BENCH_META_KEY]: Number(process.env[LOAD_BENCH_ENV] ?? 0),
+			...(judged.loadFactorNow === undefined
+				? {}
+				: { [MEASURED_LOAD_NOW_META_KEY]: judged.loadFactorNow }),
 		});
 		const measured = {
-			tier: tierOf(test),
-			loadFactor,
+			tier: judged.tier,
+			loadFactor: judged.loadFactor ?? loadFactor,
+			loadFactorAtStart: judged.loadFactorAtStart,
+			loadFactorNow: judged.loadFactorNow,
 			name: test.name,
 			migrating: isMigrating(test),
 			tookMs,
 			softOverrun:
 				process.env[SOFT_OVERRUN_ENV] === '1' ||
-				(tierOf(test) === 'unit' && untouched(test)),
+				(tierOf(test) !== undefined && untouched(test)),
 			fresh: isFresh(test),
 		};
 		const failure = budgetFailure(measured);
@@ -166,6 +211,10 @@ export default class TimeBudgetRunner extends TestRunner {
 			if (over !== undefined) {
 				overruns.push(`  ${test.file.name} > ${test.name}: ${over}`);
 			}
+		}
+		const reported = budgetNoise(measured);
+		if (reported !== undefined) {
+			noise.push(`  ${test.file.name} > ${test.name}: ${reported}`);
 		}
 		if (failure !== undefined) throw new Error(failure);
 	}

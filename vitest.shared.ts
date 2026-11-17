@@ -12,12 +12,14 @@ import {
 	FRESH_ENV,
 	LOAD_BENCH_ENV,
 	LOAD_FACTOR_ENV,
+	LOAD_REFERENCE_ENV,
 	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
 import { measureLoadBenchmark } from './packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts';
 import { loadFactorOf } from './packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
+import { vitestModuleCachePath } from './tools/scripts/ci/vitest-cache-key.helper.ts';
 import { timeBudgetRunnerPath } from './packages/test-kit/src/lib/time-budget/time-budget-runner-path.helper.ts';
 
 /**
@@ -122,6 +124,12 @@ export const bunOwnedExcludes = (projectDir: string): string[] => {
  */
 export const sharedTestOptions = {
 	fsModuleCache: true,
+	// One directory per lockfile: vitest clears the whole cache directory
+	// when the lockfile changed, and parallel runs in one worktree did it
+	// at once (ENOTEMPTY). A new lockfile gets a new empty directory.
+	fsModuleCachePath: vitestModuleCachePath(
+		dirname(fileURLToPath(import.meta.url)),
+	),
 	// Every test declares its maximum time and the run fails one that
 	// exceeds it. It lives in the options every project spreads, so no
 	// project and no spec opts out (`lint:test-time-budget` and the shared
@@ -179,6 +187,8 @@ if (process.env[LOAD_FACTOR_ENV] === undefined) {
 			),
 		) as { referenceMs: number }
 	).referenceMs;
+	// Kept for the workers: a test that runs over measures the load again.
+	process.env[LOAD_REFERENCE_ENV] = String(reference);
 	const benchMs = measureLoadBenchmark();
 	process.env[LOAD_BENCH_ENV] = benchMs.toFixed(1);
 	process.env[LOAD_FACTOR_ENV] = String(loadFactorOf(benchMs, reference));

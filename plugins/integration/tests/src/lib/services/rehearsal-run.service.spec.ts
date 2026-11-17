@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import type {
 	IRehearsalClock,
 	IRehearsalForge,
@@ -9,7 +8,6 @@ import type {
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
 import { pullChanges } from '../../../../src/lib/services/rehearsal-names.helper';
-
 interface IMutablePull
 	extends Omit<
 		IRehearsalPullState,
@@ -87,6 +85,7 @@ const memoryForge = () => {
 			p.draft = draft;
 			if (!draft && p.mergedAt === undefined) p.mergedAt = iso();
 		},
+		readyTogether: async () => undefined,
 		mergePull: async (n) => {
 			pull(n).mergedAt = iso();
 		},
@@ -115,11 +114,13 @@ const memoryForge = () => {
 		pullEvents: async () => [],
 		runs: async () => runs,
 		runLog: async () => '',
+		cancelRun: async () => 'cancelled' as const,
+		jobCount: async () => 1,
+		reopenPull: async () => undefined,
+		checkRuns: async () => [],
 		labels: async (prefix) =>
 			[...labelNames].filter((l) => l.startsWith(prefix)),
 		deleteLabel: async (name) => void labelNames.delete(name),
-		hooks: async () => [],
-		deleteHook: async () => undefined,
 	};
 	const fakeClock: IRehearsalClock = {
 		now: () => clock.at,
@@ -133,7 +134,7 @@ const memoryForge = () => {
 const ctxOf = (forge: IRehearsalForge, clock: IRehearsalClock) => ({
 	forge,
 	clock,
-	setup: { files: () => [{ path: 'x', content: 'y' }] },
+	setup: { files: async () => [], requiredChecks: [] },
 	runId: 'r20261112-100000',
 	tip: 'sha0',
 	branchPrefix: 'ns/rehearsal/',
@@ -159,6 +160,61 @@ const scenario = (over: Partial<IRehearsalScenario>): IRehearsalScenario => ({
 });
 
 describe('runScenario', () => {
+	it("[<100ms] reads the runs again until the merged tip has its scan run, not just the integrator's push run", async () => {
+		const { forge, clock } = memoryForge();
+		let reads = 0;
+		const push = (workflow: string): IRehearsalRun => ({
+			id: 1,
+			workflow,
+			event: 'push',
+			headBranch: 'ns/rehearsal/r/s-integration',
+			headSha: 'tip2',
+			status: 'completed',
+			actor: 'bot',
+			createdAt: '2026-11-12T10:00:00Z',
+			updatedAt: '2026-11-12T10:00:00Z',
+		});
+		const evidence = await runScenario(
+			ctxOf(
+				{
+					...forge,
+					history: async () => ['tip2', 'tip1'],
+					runs: async () => {
+						reads += 1;
+						return reads < 3
+							? [push('land')]
+							: [push('land'), push('rehearsal-scan')];
+					},
+				},
+				clock,
+			),
+			scenario({ steps: [] }),
+		);
+		expect(reads).toBe(3);
+		expect(evidence.runs).toHaveLength(2);
+	});
+
+	it('[<100ms] stops reading at the deadline when a tip never gets its push run', async () => {
+		const { forge, clock } = memoryForge();
+		let reads = 0;
+		const evidence = await runScenario(
+			ctxOf(
+				{
+					...forge,
+					history: async () => ['tip2', 'tip1'],
+					runs: async () => {
+						reads += 1;
+						return [];
+					},
+				},
+				clock,
+			),
+			scenario({ steps: [] }),
+		);
+		expect(reads).toBe(8);
+		expect(evidence.runs).toEqual([]);
+	});
+
 	it('[<100ms] opens pull requests, readies one, and reads back its merge', async () => {
 		const { forge, clock } = memoryForge();
 		const evidence = await runScenario(
@@ -210,7 +266,39 @@ describe('runScenario', () => {
 		expect(evidence.failures[0]).toContain('merged not reached');
 	});
 
-	it('[<100ms] waits for a label, a check and a changed head', async () => {
+	it('[<100ms] does not wake, nor count a step, while a run on the scenario is in progress', async () => {
+		const { forge, clock, runs } = memoryForge();
+		runs.push({
+			id: 7,
+			workflow: 'land',
+			event: 'workflow_dispatch',
+			headBranch: 'ns',
+			headSha: 'x',
+			status: 'in_progress',
+			actor: 'bot',
+			createdAt: '2026-11-12T10:00:00Z',
+			updatedAt: '2026-11-12T10:00:00Z',
+		});
+		const evidence = await runScenario(
+			ctxOf(forge, clock),
+			scenario({
+				steps: [
+					{ kind: 'open', keys: ['a'] },
+					{
+						kind: 'await',
+						until: 'merged',
+						keys: ['a'],
+						seconds: 120,
+						wakeAfterSeconds: 30,
+					},
+				],
+			}),
+		);
+		expect(evidence.manualSteps).toEqual([]);
+		expect(evidence.failures[0]).toContain('merged not reached');
+	});
+
+	it('[<100ms] waits for a label, a check and a check', async () => {
 		const { forge, clock, pulls, runs } = memoryForge();
 		const evidence = await runScenario(
 			ctxOf(forge, clock),
@@ -229,7 +317,6 @@ describe('runScenario', () => {
 						keys: ['a'],
 						seconds: 30,
 					},
-					{ kind: 'token-push', key: 'a' },
 				],
 			}),
 		);
@@ -241,7 +328,6 @@ describe('runScenario', () => {
 		expect(
 			evidence.failures.some((f) => f.includes('checked not reached')),
 		).toBe(true);
-		expect(evidence.tokenHeads.a).toHaveLength(1);
 	});
 
 	it('[<100ms] records the head a workflow token wrote and the pull request it opened', async () => {

@@ -12,6 +12,13 @@ import {
 	proveGatesOf,
 	timingTableOf,
 	fastSteps,
+	gateNamesOf,
+	gateOf,
+	onlyGatesOf,
+	partialVerdictOf,
+	rerunCommandOf,
+	takesComputeSlot,
+	unknownGatesOf,
 	vitestArgsOf,
 } from './prove-plan.script';
 
@@ -115,7 +122,7 @@ describe('fastSteps', () => {
 			'b',
 		);
 		expect(steps.map(([label]) => label)).toEqual([
-			'tests: the specs nearest the change',
+			'changed-file coverage: the specs nearest the change',
 			'changed-file coverage',
 		]);
 		expect(steps[0]?.[1]).toContain('plugins/x/a.spec.ts');
@@ -223,6 +230,79 @@ describe('the sectioned checks', () => {
 		);
 		expect(lines.find((line) => line.includes(' lint-biome — '))).toBe(
 			'prove: skip lint-biome — the change is prose only, which this job does not read',
+		);
+	});
+});
+
+describe('--only', () => {
+	it('[<20ms] names a gate by its label before the colon, as a slug', () => {
+		expect(
+			gateOf('changed-file coverage: the specs nearest the change'),
+		).toBe('changed-file-coverage');
+		expect(gateOf('changed-file coverage')).toBe('changed-file-coverage');
+		expect(gateOf('test:sqlite')).toBe('test-sqlite');
+		expect(gateOf('typecheck')).toBe('typecheck');
+	});
+
+	it('[<20ms] reads the gates from the flag, and none without it', () => {
+		expect(onlyGatesOf(['--fast'])).toBeUndefined();
+		expect([
+			...(onlyGatesOf(['--only=typecheck, lint-docs']) ?? []),
+		]).toEqual(['typecheck', 'lint-docs']);
+	});
+
+	it('[<20ms] lists the gates the proof itself defines and names the unknown ones', () => {
+		const valid = gateNamesOf(['plugins/x/src/a.ts'], true, 'b');
+		expect(valid).toContain('typecheck');
+		expect(valid).toContain('lint-architecture');
+		expect(valid).toContain('changed-file-coverage');
+		expect(valid).toContain('tool-budgets');
+		expect(unknownGatesOf(new Set(['typecheck', 'nope']), valid)).toEqual([
+			'nope',
+		]);
+	});
+
+	it('[<20ms] runs the coverage gate with the arguments the full proof builds', () => {
+		const steps = fastSteps(
+			['plugins/x/src/a.ts'],
+			['plugins/x/a.spec.ts'],
+			'b',
+		).filter(([label]) => gateOf(label) === 'changed-file-coverage');
+		expect(steps.map(([, command]) => command)).toEqual([
+			[
+				'bunx',
+				'vitest',
+				'run',
+				'--coverage',
+				'--passWithNoTests',
+				'plugins/x/a.spec.ts',
+			],
+			[
+				'bun',
+				'tools/scripts/ci/changed-file-coverage.script.ts',
+				'--base=b',
+			],
+		]);
+	});
+
+	it('[<20ms] asks for the compute slot only for a heavy gate of a partial run', () => {
+		const lint = new Set(['lint-biome', 'typecheck']);
+		const coverage = new Set(['changed-file-coverage']);
+		expect(takesComputeSlot(lint, ['lint-biome', 'typecheck'])).toBe(false);
+		expect(takesComputeSlot(coverage, ['changed-file coverage'])).toBe(
+			true,
+		);
+		expect(takesComputeSlot(undefined, ['changed-file coverage'])).toBe(
+			false,
+		);
+	});
+
+	it('[<20ms] says how to run a failed gate alone, and that a partial run proves nothing', () => {
+		expect(rerunCommandOf('lint-docs')).toBe(
+			'delendai work prove --only=lint-docs',
+		);
+		expect(partialVerdictOf(true, new Set(['typecheck']), 3)).toBe(
+			'prove: ok --only=typecheck in 3s; partial: the unit is not proved',
 		);
 	});
 });

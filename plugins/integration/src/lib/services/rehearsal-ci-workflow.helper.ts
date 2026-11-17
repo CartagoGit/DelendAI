@@ -17,13 +17,15 @@ import {
 	REHEARSAL_DIR,
 	REHEARSAL_TOKEN_OPEN_LABEL,
 	REHEARSAL_TOKEN_PUSH_LABEL,
+	REHEARSAL_TOKEN_RUN_NAME,
 	REHEARSAL_WORKFLOW_NAME,
 } from '../contracts/constants/rehearsal.constant';
 
 import { renderSignalJob } from './integration-adoption.service';
+import { rehearsalDispatchTrigger } from './rehearsal-dispatch-steps.helper';
+import { rehearsalGroupJobs } from './rehearsal-groups-workflow.helper';
 
 const CI_TIMEOUT_MINUTES = 15;
-const WORKFLOW_TIMEOUT_MINUTES = 45;
 /** The user id of the GitHub Actions bot: its commit email carries it. */
 const BOT_USER_ID = 41898282;
 
@@ -32,7 +34,9 @@ const lines = (...rows: readonly string[]): string => `${rows.join('\n')}\n`;
 /**
  * The fast CI: on a pull request it reads `rehearsal/<run>/<key>.json`
  * (the key is the last segment of the head branch), sleeps the declared
- * seconds and concludes as declared; on a push to the integration branch it
+ * seconds and concludes as declared; a head with no declaration is a batch,
+ * which concludes red when a declaration of the run in its tree says its
+ * batch fails; on a push to the integration branch it
  * concludes green at once.
  */
 export const renderRehearsalCiWorkflow = (input: {
@@ -66,7 +70,13 @@ export const renderRehearsalCiWorkflow = (input: {
 		'              run: |',
 		'                  if [ -z "$HEAD_REF" ]; then echo "push: nothing declared"; exit 0; fi',
 		'                  declaration="$RUN_DIR/${HEAD_REF##*/}.json"',
-		'                  if [ ! -f "$declaration" ]; then echo "no declaration at $declaration"; exit 1; fi',
+		'                  if [ ! -f "$declaration" ]; then',
+		'                      # Not a declared member: a batch, red when any declaration in its tree says so.',
+		`                      failing=$(find "$RUN_DIR" -name '*.json' -exec cat {} + | jq -s '[.[] | select(.batch == "failure")] | length')`,
+		'                      echo "batch: $failing declaration(s) fail a batch"',
+		'                      [ "$failing" = 0 ]',
+		'                      exit $?',
+		'                  fi',
 		`                  seconds=$(jq -r '.seconds' "$declaration")`,
 		`                  result=$(jq -r '.result' "$declaration")`,
 		'                  echo "declared: $result after ${seconds}s"',
@@ -119,7 +129,7 @@ export const renderRehearsalTokenWorkflow = (input: {
 	const push = `${input.labelPrefix}${REHEARSAL_TOKEN_PUSH_LABEL}`;
 	const open = `${input.labelPrefix}${REHEARSAL_TOKEN_OPEN_LABEL}`;
 	return lines(
-		'name: rehearsal-token',
+		`name: ${REHEARSAL_TOKEN_RUN_NAME}`,
 		'',
 		'on:',
 		'    pull_request:',
@@ -170,7 +180,9 @@ export const renderRehearsalTokenWorkflow = (input: {
 /**
  * The workflow that runs the rehearsal: on demand, and on a push to a
  * publication branch that touches the integration code. It never runs on the
- * integration or release branch, and its job reports whatever happens.
+ * integration or release branch. Three jobs: `plan` cuts the catalogue into
+ * groups, `play` plays one group per job, `report` merges their reports and
+ * reports whatever happened.
  */
 export const renderRehearsalWorkflow = (input: {
 	readonly namespace: string;
@@ -184,7 +196,7 @@ export const renderRehearsalWorkflow = (input: {
 		"# GENERATED from the integration plugin's rehearsal template",
 		'# (renderRehearsalWorkflow); edit the template, not this file.',
 		'on:',
-		'    workflow_dispatch:',
+		...rehearsalDispatchTrigger(),
 		'    push:',
 		`        branches: ['${input.namespace}/pr/**']`,
 		'        paths:',
@@ -202,18 +214,9 @@ export const renderRehearsalWorkflow = (input: {
 		'    actions: read',
 		'',
 		'jobs:',
-		`    ${REHEARSAL_WORKFLOW_NAME}:`,
-		`        name: ${REHEARSAL_WORKFLOW_NAME}`,
-		'        runs-on: ubuntu-latest',
-		`        timeout-minutes: ${String(WORKFLOW_TIMEOUT_MINUTES)}`,
-		'        steps:',
-		...identitySteps(input.identity).map((line) =>
-			line === '' ? line : `            ${line}`,
-		),
-		`            - uses: ${REHEARSAL_CHECKOUT_ACTION}`,
-		'            - uses: ./.github/actions/setup-bun-repo',
-		'            - name: Rehearse the pull request flow on the real forge',
-		'              env:',
-		`                  GH_TOKEN: ${tokenOf(input.identity)}`,
-		'              run: bun run cli -- integration rehearse --mode=fast --scenarios=all',
+		...rehearsalGroupJobs({
+			identity: identitySteps(input.identity),
+			token: tokenOf(input.identity),
+			command: 'bun run cli --',
+		}),
 	);

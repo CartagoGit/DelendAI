@@ -44,5 +44,9 @@ export const resolveIntegrationOptions = (
 		scenarios: [
 			...(input?.rehearsal?.scenarios ?? base.rehearsal.scenarios),
 		],
+		setupCommand:
+			input?.rehearsal?.setupCommand ?? base.rehearsal.setupCommand,
+		concurrency:
+			input?.rehearsal?.concurrency ?? base.rehearsal.concurrency,
 	},
 });

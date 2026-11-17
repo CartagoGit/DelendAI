@@ -2,25 +2,34 @@
  * rehearsal.service.ts — one run of the rehearsal: sweep what an earlier
  * run left, play each scenario on its own branch, read every log the run
  * started for secrets, clean up, and judge. Nothing here writes to the
- * integration or release branch: the base is read for its tip and every
+ * integration or release branch: the base is read for its tip (or is the
+ * commit the code runs at) and every
  * write goes under the run's namespace.
  */
 import type {
 	IRehearsalEvidence,
+	IRehearsalMode,
 	IRehearsalReport,
 	IRehearsalScenario,
 	IRehearseInput,
 } from '../contracts/interfaces/rehearsal.interface';
+import type {
+	ILogScan,
+	IUnstartedRun,
+} from '../contracts/interfaces/rehearsal-evidence.interface';
 
 import {
 	cleanRun,
 	newRunId,
-	secretHitsIn,
 	sweepStaleRuns,
 } from './rehearsal-cleanup.service';
+import { REHEARSAL_GROUPING } from '../contracts/constants/rehearsal.constant';
+import { scanLogs } from './rehearsal-log-scan.helper';
+import { playPooled } from './rehearsal-pool.helper';
 import { buildReport } from './rehearsal-report.service';
 import { runBranchRoot } from './rehearsal-names.helper';
 import { runScenario } from './rehearsal-run.service';
+import { mergeUnstarted } from './rehearsal-unstarted.helper';
 
 /** The scenarios `ids` name, in the catalogue's order; an unknown id is refused. */
 export const selectScenarios = <T extends { readonly id: string }>(
@@ -36,6 +45,18 @@ export const selectScenarios = <T extends { readonly id: string }>(
 		);
 	return catalogue.filter((one) => ids.includes(one.id));
 };
+
+/** Whether `scenario` runs in `mode`; one that names no modes runs in both. */
+export const runsInMode = (
+	scenario: Pick<IRehearsalScenario, 'modes'>,
+	mode: IRehearsalMode,
+): boolean => scenario.modes === undefined || scenario.modes.includes(mode);
+
+/** The scenarios of `catalogue` that run in `mode`, in its order. */
+export const scenariosForMode = <T extends Pick<IRehearsalScenario, 'modes'>>(
+	catalogue: readonly T[],
+	mode: IRehearsalMode,
+): readonly T[] => catalogue.filter((one) => runsInMode(one, mode));
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
@@ -68,48 +89,20 @@ const playOne = async (
 	}
 };
 
-/** Token shapes in every log the run started; a log that cannot be read is a hit, never a pass. */
-const scanLogs = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<readonly string[]> => {
-	try {
-		return await logHits(input, evidence);
-	} catch (error) {
-		return [
-			`log scan failed: ${error instanceof Error ? error.message : String(error)}`,
-		];
-	}
-};
-
-const logHits = async (
-	input: IRehearseInput,
-	evidence: readonly IRehearsalEvidence[],
-): Promise<readonly string[]> => {
-	const seen = new Set<number>();
-	const hits: string[] = [];
-	for (const one of evidence)
-		for (const run of one.runs) {
-			if (seen.has(run.id)) continue;
-			seen.add(run.id);
-			hits.push(...secretHitsIn(run, await input.forge.runLog(run.id)));
-		}
-	return hits;
-};
-
 /** Runs the rehearsal and returns its report; cleanup runs even when a scenario stops. */
 export const rehearse = async (
 	input: IRehearseInput,
 ): Promise<IRehearsalReport> => {
 	const startedMs = input.clock.now();
-	const runId = newRunId(startedMs);
+	const runId = newRunId(startedMs, input.group);
 	for (const swept of await sweepStaleRuns({
 		forge: input.forge,
+		clock: input.clock,
 		branchPrefix: input.branchPrefix,
 		now: startedMs,
 	}))
 		input.log(`swept the leftovers of ${swept}`);
-	const tip = await input.forge.tipOf(input.baseBranch);
+	const tip = input.baseCommit ?? (await input.forge.tipOf(input.baseBranch));
 	const context = {
 		forge: input.forge,
 		clock: input.clock,
@@ -118,28 +111,58 @@ export const rehearse = async (
 		tip,
 		branchPrefix: input.branchPrefix,
 		log: input.log,
+		awaitCapSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitCapSeconds,
+		awaitBudgetSeconds:
+			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitBudgetSeconds,
+		mode: input.mode ?? 'fast',
 	};
 	const evidence: IRehearsalEvidence[] = [];
-	let secretHits: readonly string[] = [];
+	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };
 	let leftovers: readonly string[] = [];
+	let unstartedByCleanup: readonly IUnstartedRun[] = [];
 	try {
-		for (const scenario of input.scenarios) {
-			const played = await playOne(context, scenario, input.clock.now);
-			// A step that could not be taken is said at once, not only in the report.
-			for (const failure of played.failures)
-				input.log(`${scenario.id}: ${failure}`);
-			evidence.push(played);
-		}
-		secretHits = await scanLogs(input, evidence);
+		// Scenarios share nothing but the read-only context, so they play at once; the evidence keeps the catalogue's order.
+		evidence.push(
+			...(await playPooled(
+				input.scenarios,
+				input.concurrency ?? input.scenarios.length,
+				async (scenario) => {
+					const played = await playOne(
+						context,
+						scenario,
+						input.clock.now,
+					);
+					// A step that could not be taken is said at once, not only in the report.
+					for (const failure of played.failures)
+						input.log(`${scenario.id}: ${failure}`);
+					return played;
+				},
+			)),
+		);
+		scan = await scanLogs(
+			{
+				forge: input.forge,
+				clock: input.clock,
+				branchRoot: runBranchRoot(input.branchPrefix, runId),
+			},
+			evidence,
+		);
 	} finally {
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
-		leftovers = await cleanRun({
+		const cleaned = await cleanRun({
 			forge: input.forge,
+			clock: input.clock,
 			branchPrefix: input.branchPrefix,
 			runId,
-		}).catch((error: unknown) => [
-			`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
-		]);
+		}).catch((error: unknown) => ({
+			leftovers: [
+				`cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+			],
+			unstarted: [],
+		}));
+		leftovers = cleaned.leftovers;
+		unstartedByCleanup = cleaned.unstarted;
 	}
 	input.log(
 		`run ${runId} cleaned under ${runBranchRoot(input.branchPrefix, runId)}`,
@@ -151,8 +174,11 @@ export const rehearse = async (
 		startedAt: iso(startedMs),
 		finishedAt: iso(input.clock.now()),
 		scenarios: input.scenarios,
+		...(input.mode === undefined ? {} : { mode: input.mode }),
 		evidence,
 		leftovers,
-		secretHits,
+		secretHits: scan.hits,
+		unreadLogs: scan.unread,
+		unstarted: mergeUnstarted(scan.unstarted, unstartedByCleanup),
 	});
 };

@@ -1,3 +1,6 @@
+/** The most rounds one pass makes: a round re-reads the forge when a land run was created while it worked. */
+export const LAND_MAX_ROUNDS = 3;
+
 /** The remote a pass reads and pushes to. */
 export const LAND_REMOTE = 'origin';
 
@@ -27,3 +30,9 @@ export const BATCH_COMMIT_IDENTITY = [
 	'-c',
 	'core.hooksPath=/dev/null',
 ] as const;
+
+/** `-c core.hooksPath` pointing at no directory: git finds no hook of any hook manager. */
+export const LAND_NO_HOOKS_ARGS: readonly string[] = [
+	'-c',
+	'core.hooksPath=/dev/null',
+];

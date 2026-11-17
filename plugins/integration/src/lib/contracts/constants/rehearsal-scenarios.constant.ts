@@ -5,6 +5,14 @@ import type {
 	IRehearsalStep,
 } from '../interfaces/rehearsal.interface';
 
+import {
+	REHEARSAL_OVERLAP_FILE,
+	REHEARSAL_RAW_TEXT_TYPES,
+	REHEARSAL_REAL_SPEC_DIR,
+	rehearsalOverlapContent,
+	rehearsalUntouchedLineSpec,
+} from './rehearsal.constant';
+
 /**
  * Every case of the pull request flow and every production failure as data:
  * what each scenario sets up, the events it causes and the end state the
@@ -17,6 +25,9 @@ import type {
 const CI_SECONDS = 20;
 const AWAIT_SECONDS = 360;
 const WAKE_AFTER_SECONDS = 150;
+/** The lines of the shared file the two overlapping pull requests edit, far apart. */
+const OVERLAP_NEAR_LINE = 2;
+const OVERLAP_FAR_LINE = 25;
 
 const passing: IRehearsalDeclaration = {
 	result: 'success',
@@ -24,7 +35,8 @@ const passing: IRehearsalDeclaration = {
 	sections: [],
 };
 
-const failing: IRehearsalDeclaration = { ...passing, result: 'failure' };
+/** Green on its own pull request, red in any batch that holds it. */
+const redInBatch: IRehearsalDeclaration = { ...passing, batch: 'failure' };
 
 /** A draft pull request writing one file under a section. */
 const pullIn = (
@@ -39,14 +51,47 @@ const pullIn = (
 	draft: true,
 });
 
+/**
+ * A pull request of a pair that must overlap: both change the one shared
+ * file, far enough apart to merge without a conflict.
+ */
+const overlapPullIn = (
+	key: string,
+	line: number,
+	declaration: IRehearsalDeclaration = passing,
+	realFiles: Readonly<Record<string, string>> = {},
+): IRehearsalPullSpec => ({
+	...pullIn(key, 's1', declaration, {
+		[REHEARSAL_OVERLAP_FILE]: rehearsalOverlapContent({ line, key }),
+	}),
+	...(Object.keys(realFiles).length > 0 ? { realFiles } : {}),
+});
+
 const open = (...keys: string[]): IRehearsalStep => ({ kind: 'open', keys });
 const ready = (...keys: string[]): IRehearsalStep => ({ kind: 'ready', keys });
+/** Members of one batch: ready in one request, once no pass is open. */
+const readyTogether = (...keys: string[]): IRehearsalStep => ({
+	kind: 'ready',
+	keys,
+	together: true,
+});
 const merged = (...keys: string[]): IRehearsalStep => ({
 	kind: 'await',
 	until: 'merged',
 	keys,
 	seconds: AWAIT_SECONDS,
 	wakeAfterSeconds: WAKE_AFTER_SECONDS,
+});
+/**
+ * Every head's own check has finished. Pull requests meant for one batch are
+ * made ready only after this: the integrator acts on the first ready one, so
+ * a peer whose check is still running would be left behind the merge.
+ */
+const checked = (...keys: string[]): IRehearsalStep => ({
+	kind: 'await',
+	until: 'checked',
+	keys,
+	seconds: AWAIT_SECONDS,
 });
 const labelled = (...keys: string[]): IRehearsalStep => ({
 	kind: 'await',
@@ -87,8 +132,16 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'overlapping',
 		title: 'Two pull requests in one section are built once, as a batch',
 		reproduces: 'F5',
-		pulls: [pullIn('a', 's1'), pullIn('b', 's1')],
-		steps: [open('a', 'b'), ready('a', 'b'), merged('a', 'b')],
+		pulls: [
+			overlapPullIn('a', OVERLAP_NEAR_LINE),
+			overlapPullIn('b', OVERLAP_FAR_LINE),
+		],
+		steps: [
+			open('a', 'b'),
+			checked('a', 'b'),
+			readyTogether('a', 'b'),
+			merged('a', 'b'),
+		],
 		expect: [
 			{ kind: 'merged', keys: ['a', 'b'] },
 			{ kind: 'group-ci-runs', keys: ['a', 'b'], exactly: 1 },
@@ -98,8 +151,22 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	{
 		id: 'red-batch',
 		title: 'A red batch names its culprit and lands the rest',
-		pulls: [pullIn('a', 's1', failing), pullIn('b', 's1')],
-		steps: [open('a', 'b'), ready('a', 'b'), labelled('a')],
+		pulls: [
+			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch, {
+				[`${REHEARSAL_REAL_SPEC_DIR}/overlap-far-line.spec.ts`]:
+					rehearsalUntouchedLineSpec(OVERLAP_FAR_LINE),
+				[`${REHEARSAL_REAL_SPEC_DIR}/raw-text.d.ts`]:
+					REHEARSAL_RAW_TEXT_TYPES,
+			}),
+			overlapPullIn('b', OVERLAP_FAR_LINE),
+		],
+		steps: [
+			open('a', 'b'),
+			checked('a', 'b'),
+			readyTogether('a', 'b'),
+			labelled('a'),
+			merged('b'),
+		],
 		expect: [
 			{ kind: 'labelled', key: 'a', label: 'culprit' },
 			{ kind: 'merged', keys: ['b'] },
@@ -152,10 +219,19 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	},
 	{
 		id: 'bot-head',
+		modes: ['fast'],
 		title: 'A head the workflow token pushed is built by the forge',
 		reproduces: 'F1',
 		pulls: [pullIn('a', 's1')],
-		steps: [open('a'), ready('a'), { kind: 'token-push', key: 'a' }],
+		steps: [
+			open('a'),
+			// Before the pull request is ready: a ready one lets a pass merge it
+			// before the token run pushes, and the push would reach a closed pull.
+			{ kind: 'token-push', key: 'a' },
+			ready('a'),
+			// The integrator reopens the head the token wrote, and it lands.
+			merged('a'),
+		],
 		expect: [
 			{ kind: 'heads-built', key: 'a' },
 			{ kind: 'no-manual-steps' },
@@ -177,16 +253,31 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'host-offline',
 		title: 'A subscribed session is told of every merge and failure whether or not the host was up',
 		reproduces: 'F8',
-		pulls: [],
-		steps: [],
-		expect: [{ kind: 'sessions-notified' }],
+		pulls: [pullIn('a', 's1')],
+		// One pull request lands while no receiver runs; a receiver then connects.
+		steps: [
+			open('a'),
+			ready('a'),
+			merged('a'),
+			{ kind: 'receive', keys: ['a'] },
+		],
+		expect: [
+			{ kind: 'merged', keys: ['a'] },
+			{ kind: 'sessions-notified' },
+		],
 	},
 	{
 		id: 'automation-opened',
+		modes: ['fast'],
 		title: 'A pull request a workflow opens with the workflow token is built',
 		reproduces: 'F1b',
 		pulls: [pullIn('a', 's1')],
-		steps: [open('a'), ready('a'), { kind: 'token-open', key: 'a' }],
+		steps: [
+			open('a'),
+			ready('a'),
+			{ kind: 'token-open', key: 'a' },
+			merged('a:token-open'),
+		],
 		expect: [
 			{ kind: 'heads-built', key: 'a' },
 			{ kind: 'no-manual-steps' },
@@ -195,8 +286,8 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 	{
 		id: 'promotion',
 		title: 'After a green integration branch, the promotion is opened and built',
-		pulls: [],
-		steps: [],
+		pulls: [pullIn('a', 's1')],
+		steps: [open('a'), ready('a'), merged('a')],
 		expect: [{ kind: 'tips-built' }],
 	},
 ];

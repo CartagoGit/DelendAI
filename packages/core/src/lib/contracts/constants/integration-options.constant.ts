@@ -19,5 +19,10 @@ export const DEFAULT_INTEGRATION_OPTIONS: IPolicyIntegrationOptions = {
 	signalWorkflows: [],
 	scanWorkflows: [],
 	watchdog: { enabled: true, cron: '17 * * * *' },
-	rehearsal: { secrets: [], scenarios: ['all'] },
+	rehearsal: {
+		secrets: [],
+		scenarios: ['all'],
+		setupCommand: '',
+		concurrency: 11,
+	},
 };

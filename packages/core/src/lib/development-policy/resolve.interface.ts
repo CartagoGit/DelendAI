@@ -83,6 +83,7 @@ export interface IDevelopmentConfigInput {
 				readonly engine?: string | undefined;
 				readonly protocol?: number | undefined;
 				readonly landWithoutChecks?: boolean | undefined;
+				readonly forgeEvents?: boolean | undefined;
 				readonly identity?:
 					| {
 							readonly kind?: string | undefined;
@@ -120,6 +121,8 @@ export interface IDevelopmentConfigInput {
 					| {
 							readonly secrets?: readonly string[] | undefined;
 							readonly scenarios?: readonly string[] | undefined;
+							readonly setupCommand?: string | undefined;
+							readonly concurrency?: number | undefined;
 					  }
 					| undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;

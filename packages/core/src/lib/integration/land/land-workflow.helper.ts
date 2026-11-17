@@ -23,8 +23,9 @@ import type {
 	ILandWorkflowIdentity,
 	ILandWorkflowInput,
 } from './land.interface';
-import { LAND_WORKFLOW_NAME } from './land.constant';
+import { LAND_DERIVED_JOBS, LAND_WORKFLOW_NAME } from './land.constant';
 import { indentLines as indent } from './land-signal.helper';
+import { workflowConcurrencyLines } from './land-workflow-concurrency.helper';
 
 const envLines = (env: Readonly<Record<string, string>>): string[] =>
 	Object.keys(env).length === 0
@@ -99,7 +100,44 @@ const upkeepStep = (
 	`  run: ${step.run}`,
 ];
 
+/**
+ * The workflow input for a project's integration policy: the identity and
+ * the schedule come from the policy, the derived jobs are always present.
+ * This repository's generator and the rehearsal both build their input
+ * here, so the rehearsal's workflow has what the real one has.
+ */
+export const landWorkflowInputOf = (
+	values: Omit<ILandWorkflowInput, 'identity' | 'cron' | 'derived'>,
+	policy: {
+		readonly identity: ILandWorkflowIdentity;
+		readonly cron: string;
+	},
+): ILandWorkflowInput => ({
+	...values,
+	identity: policy.identity,
+	cron: policy.cron,
+	derived: LAND_DERIVED_JOBS,
+});
+
+/**
+ * Every checkout the workflow renders must drop the workflow token from the
+ * clone: the integrator pushes as its identity or not at all, so a push that
+ * forgot its credential fails instead of falling back to a read-only token.
+ */
+const refuseKeptCredentials = (setupSteps: readonly string[]): void => {
+	const steps = setupSteps
+		.join('\n')
+		.split(/\n(?=\s*- )/u)
+		.filter((step) => step.includes('actions/checkout'));
+	for (const step of steps)
+		if (!/persist-credentials:\s*['"]?false['"]?/u.test(step))
+			throw new Error(
+				'the land workflow renders a checkout that keeps the workflow token: set persist-credentials: false on it',
+			);
+};
+
 export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
+	refuseKeptCredentials(input.setupSteps);
 	const release = `'${input.releaseBranch}'`;
 	const token = { GH_TOKEN: tokenOf(input.identity) };
 	const dispatched = (flag: string): string =>
@@ -111,6 +149,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		...derivedDispatch.map((d) => `!(${d})`),
 		`!(github.event_name == 'push' && github.ref_name == ${release})`,
 	].join(' && ');
+	const baseGroup = input.concurrencyGroup ?? LAND_WORKFLOW_NAME;
 	const jobs: string[] = [
 		'    # A dispatch for a pull request event or its CI ending (an empty `pr`',
 		'    # included), or a push to the integration branch: re-read the forge and',
@@ -304,18 +343,14 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 		'                required: false',
 		"                default: ''",
 		'',
-		'# Concurrency 1; a waiting pass is kept, since the next reads what the',
-		'# cancelled one would have.',
-		'concurrency:',
-		`    group: ${input.concurrencyGroup ?? LAND_WORKFLOW_NAME}`,
-		'    cancel-in-progress: false',
-		'',
 		'# The workflow token only reads; every write uses the identity.',
 		'permissions:',
 		'    contents: read',
 		'    pull-requests: read',
 		'    checks: read',
 		'    actions: read',
+		'',
+		...workflowConcurrencyLines(baseGroup, input),
 		'',
 		'jobs:',
 		...jobs,
