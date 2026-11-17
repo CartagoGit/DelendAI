@@ -10,11 +10,15 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { IRehearsalCommandRunner } from '@delendai/integration/public';
+import type {
+	IRehearsalCommandRunner,
+	IRehearsalScenarioResult,
+} from '@delendai/integration/public';
 
 import {
 	createIntegrationCommand,
 	integrationCommand,
+	rehearsalExitOk,
 } from './integration.command';
 
 const ctx = fakePartial<ICliCommandContext>({
@@ -241,5 +245,21 @@ describe('the integration command', () => {
 		);
 		expect(result.code).toBe(EXIT_CODE.RUNTIME);
 		expect(result.error).toContain('not logged in');
+	});
+
+	it('[<50ms] exits 0 for a group whose scenarios are green although a target fails, and not for a red scenario', () => {
+		const scenario = (ok: boolean) =>
+			fakePartial<IRehearsalScenarioResult>({ ok });
+		const report = (scenarioOk: boolean) => ({
+			ok: false,
+			scenarios: [scenario(true), scenario(scenarioOk)],
+			secretHits: [] as readonly string[],
+		});
+		expect(rehearsalExitOk(report(true), 2)).toBe(true);
+		expect(rehearsalExitOk(report(false), 2)).toBe(false);
+		expect(rehearsalExitOk(report(true), undefined)).toBe(false);
+		expect(rehearsalExitOk({ ...report(true), secretHits: ['x'] }, 2)).toBe(
+			false,
+		);
 	});
 });

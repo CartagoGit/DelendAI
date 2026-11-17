@@ -34,6 +34,7 @@ import {
 	type IRehearsalMode,
 	type IRehearsalScenario,
 	type IRehearsalCommandRunner,
+	type IRehearsalReport,
 } from '@delendai/integration/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -62,6 +63,19 @@ import { runIntegrationPassCommand } from './integration-pass.command';
 import { createSetupMaterialiser } from './integration-rehearsal-setup.helper';
 import { repositorySlugOf } from './integration-repository.helper';
 import { usage } from './groups/group-helpers';
+
+/**
+ * Whether the run exits 0. A played group is judged by its scenarios and the
+ * secret scan; the targets belong to the whole mode, which `--merge` judges.
+ */
+export const rehearsalExitOk = (
+	report: Pick<IRehearsalReport, 'ok' | 'scenarios' | 'secretHits'>,
+	group: number | undefined,
+): boolean =>
+	group === undefined
+		? report.ok
+		: report.scenarios.every((scenario) => scenario.ok) &&
+			report.secretHits.length === 0;
 
 const USAGE = `integration doctor [--manifest] | integration pass | integration activate | integration deactivate | integration resume | integration adopt [--needs=<job,job>] | integration rehearse [--mode=${INTEGRATION_REHEARSAL_MODES.join('|')}] [--scenarios=<id,id|${REHEARSAL_ALL_SCENARIOS}>] [--base=<sha|ref>] [--concurrency=<n>] [--group=<n>/<total>] [--plan] [--merge] [--sweep]`;
 
@@ -281,7 +295,9 @@ export const createIntegrationCommand = (
 			await mkdir(dirname(reportFile), { recursive: true });
 			await writeFile(reportFile, JSON.stringify(report, null, '\t'));
 			return {
-				code: report.ok ? EXIT_CODE.OK : EXIT_CODE.RUNTIME,
+				code: rehearsalExitOk(report, choice.n)
+					? EXIT_CODE.OK
+					: EXIT_CODE.RUNTIME,
 				data: report,
 				text: renderReportTable(report),
 			};
