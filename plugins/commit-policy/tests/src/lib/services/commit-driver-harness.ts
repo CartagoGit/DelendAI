@@ -7,13 +7,14 @@
  * disagree about what git does, and the spec that disagrees quietly is
  * the one that stops protecting anything.
  */
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { execFile } from 'node:child_process';
-import { tmpdir } from 'node:os';
+import { rm } from 'node:fs/promises';
+import { writeFileSync } from 'node:fs';
+import { execFile, execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { createWriteGitRunner } from '@delendai/core/public';
+import { createSharedGitFixture } from '@delendai/test-kit';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/contracts';
 
 import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
@@ -202,6 +203,22 @@ export const runGit = async (
 	return stdout.trim();
 };
 
+/**
+ * The seeded repository, built once per worker and copied per call: built
+ * per call it was five git processes.
+ */
+const seeded = createSharedGitFixture((repoDir) => {
+	const git = (...args: string[]): void => {
+		execFileSync('git', args, { cwd: repoDir, stdio: 'ignore' });
+	};
+	git('init', '-b', 'develop');
+	git('config', 'user.name', 'Cartago');
+	git('config', 'user.email', 'cartago@example.com');
+	writeFileSync(join(repoDir, 'slice-a.ts'), 'export const value = 1;\n');
+	git('add', '--', 'slice-a.ts');
+	git('commit', '-m', 'feat: seed');
+});
+
 export const withTempRepo = async (
 	run: (ctx: {
 		repoDir: string;
@@ -210,15 +227,9 @@ export const withTempRepo = async (
 		lockPath: string;
 	}) => Promise<void>,
 ): Promise<void> => {
-	const repoDir = await mkdtemp(join(tmpdir(), 'commit-driver-spec-'));
+	const repoDir = seeded.copy();
 	const trackedFile = join(repoDir, 'slice-a.ts');
 	try {
-		await runGit(repoDir, ['init', '-b', 'develop']);
-		await runGit(repoDir, ['config', 'user.name', 'Cartago']);
-		await runGit(repoDir, ['config', 'user.email', 'cartago@example.com']);
-		await writeFile(trackedFile, 'export const value = 1;\n');
-		await runGit(repoDir, ['add', '--', 'slice-a.ts']);
-		await runGit(repoDir, ['commit', '-m', 'feat: seed']);
 		await run({
 			repoDir,
 			git: createWriteGitRunner(repoDir),
