@@ -6,6 +6,7 @@ import {
 	REHEARSAL_POLL_MS,
 } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import type {
+	IRehearsalCancel,
 	IRehearsalEvidence,
 	IRehearsalRun,
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
@@ -31,11 +32,17 @@ const ports = (
 	runsAt: (now: number) => IRehearsalRun[],
 	log = 'clean',
 	jobs = 1,
+	cancel: IRehearsalCancel = 'cancelled',
 ) => {
-	const state = { now: 0, logReadAt: [] as number[] };
+	const state = {
+		now: 0,
+		logReadAt: [] as number[],
+		cancelled: [] as number[],
+	};
 	return {
 		state,
 		ports: {
+			branchRoot: 'ns/',
 			clock: {
 				now: () => state.now,
 				wait: async (ms: number) => {
@@ -45,6 +52,10 @@ const ports = (
 			forge: {
 				runs: async () => runsAt(state.now),
 				jobCount: async () => jobs,
+				cancelRun: async (id: number) => {
+					state.cancelled.push(id);
+					return cancel;
+				},
 				runLog: async () => {
 					state.logReadAt.push(state.now);
 					return log;
@@ -152,5 +163,71 @@ describe('the secret scan of a scenario', () => {
 			{ id: 3, workflow: 'other', branch: 'b', lost: true },
 		]);
 		expect(state.logReadAt).toHaveLength(1);
+	});
+
+	const own = (id: number, status: string): IRehearsalRun => ({
+		...runOf(id, status),
+		headBranch: 'ns/head',
+	});
+
+	it('[<20ms] cancels a run of its own in progress, waits for it to complete, then scans its log', async () => {
+		let cancelledAt: number | undefined;
+		const { ports: p, state } = ports(() => []);
+		const world = {
+			...p,
+			forge: {
+				...p.forge,
+				runs: async () => [
+					own(
+						1,
+						cancelledAt === undefined ? 'in_progress' : 'completed',
+					),
+				],
+				cancelRun: async (id: number) => {
+					state.cancelled.push(id);
+					cancelledAt = state.now + REHEARSAL_POLL_MS;
+					return 'cancelled' as const;
+				},
+			},
+		};
+		const scan = await scanLogs(world, [evidence]);
+		expect(state.cancelled).toEqual([1]);
+		expect(scan).toEqual({ hits: [], unread: [], unstarted: [] });
+		expect(state.logReadAt).toHaveLength(1);
+	});
+
+	it('[<20ms] never cancels a run outside the rehearsal branches', async () => {
+		const { ports: p, state } = ports(() => [runOf(1, 'in_progress')]);
+		await scanLogs(p, [evidence]);
+		expect(state.cancelled).toEqual([]);
+	});
+
+	it('[<20ms] leaves a run the forge has not queued yet as unstarted', async () => {
+		const { ports: p, state } = ports(
+			() => [own(1, 'queued')],
+			'clean',
+			0,
+			'unstarted',
+		);
+		const scan = await scanLogs(p, [evidence]);
+		expect(state.cancelled).toEqual([1]);
+		expect(scan.unstarted).toHaveLength(1);
+		expect(scan.unread).toEqual([]);
+	});
+
+	it('[<20ms] keeps a cancelled run whose log cannot be read as not measured', async () => {
+		const { ports: p } = ports(() => [own(1, 'completed')]);
+		const broken = {
+			...p,
+			forge: {
+				...p.forge,
+				runLog: async () => {
+					throw new Error('gone');
+				},
+			},
+		};
+		expect((await scanLogs(broken, [evidence])).unread).toEqual([
+			'CI run 1: gone',
+		]);
 	});
 });

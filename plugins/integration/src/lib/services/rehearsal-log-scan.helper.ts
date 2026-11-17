@@ -1,7 +1,10 @@
 /**
- * rehearsal-log-scan.helper.ts — the secret scan of a scenario's logs. It
- * starts only when every workflow run of the scenario has concluded, which
- * it learns from the forge; it waits for that no longer than the scan wait cap.
+ * rehearsal-log-scan.helper.ts — the secret scan of a scenario's logs. The
+ * scenarios are judged by then, so the runs the rehearsal started on its own
+ * branches that are still queued or in progress are cancelled: their results
+ * are not needed, only their logs. The scan starts when every run has
+ * concluded, which it learns from the forge; it waits for that no longer than
+ * the scan wait cap. A run outside the rehearsal's branches is never cancelled.
  * A run that started and has not concluded by then is not measured, with its
  * id: never a hit and never a pass. A run queued with no job was never
  * enqueued by the forge: it has no log, so it is listed as unstarted instead.
@@ -26,8 +29,13 @@ import { secretHitsIn } from './rehearsal-cleanup.service';
 import { unstartedOf } from './rehearsal-unstarted.helper';
 
 interface IScanPorts {
-	readonly forge: Pick<IRehearsalForge, 'runs' | 'runLog' | 'jobCount'>;
+	readonly forge: Pick<
+		IRehearsalForge,
+		'runs' | 'runLog' | 'jobCount' | 'cancelRun'
+	>;
 	readonly clock: IRehearsalClock;
+	/** `<prefix><runId>/`: the only branches whose runs the scan may cancel. */
+	readonly branchRoot: string;
 }
 
 /**
@@ -55,14 +63,33 @@ const runsOf = async (
 	return latest;
 };
 
+/** Cancels each open run of the rehearsal's own branches once; a run the forge has not queued yet stays as it is, listed unstarted at the cap. */
+const cancelOwn = async (
+	ports: IScanPorts,
+	runs: ReadonlyMap<number, IRehearsalRun>,
+	asked: Set<number>,
+): Promise<void> => {
+	for (const run of runs.values())
+		if (
+			isOpen(run) &&
+			!asked.has(run.id) &&
+			run.headBranch.startsWith(ports.branchRoot)
+		) {
+			asked.add(run.id);
+			await ports.forge.cancelRun(run.id);
+		}
+};
+
 /** The scenario's runs once none is queued or in progress, or as they stand at the cap. */
 const concluded = async (
 	ports: IScanPorts,
 	one: IRehearsalEvidence,
 ): Promise<ReadonlyMap<number, IRehearsalRun>> => {
 	const started = ports.clock.now();
+	const asked = new Set<number>();
 	for (;;) {
 		const runs = await runsOf(ports, one);
+		await cancelOwn(ports, runs, asked);
 		const open = [...runs.values()].some(isOpen);
 		if (
 			!open ||
