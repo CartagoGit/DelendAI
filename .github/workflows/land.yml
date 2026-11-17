@@ -249,6 +249,12 @@ jobs:
         if: ${{ github.event_name == 'schedule' }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        permissions:
+            contents: read
+            pull-requests: read
+            checks: read
+            actions: read
+            security-events: read
         steps:
             - name: Mint the integrator identity token
               id: identity
@@ -293,5 +299,5 @@ jobs:
             - name: Fail while a code scanning alert is open on the integration branch
               if: always()
               env:
-                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+                  GH_TOKEN: ${{ github.token }}
               run: bun run forge:promotion-alerts -- --branch=develop
