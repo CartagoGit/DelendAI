@@ -2,14 +2,14 @@
 id: x00996
 title: "A file a proposal shipped still names what it shipped after a later change deletes it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: ab992a51-a4a0-485a-bd76-fe4e3702a507
-last-correlation-id: ab992a51-a4a0-485a-bd76-fe4e3702a507
-last-transition-from: review
-last-transition-at: 2026-11-04T19:04:23.109Z
+last-transition-id: 8cdaceec-9a5f-448c-9008-720a5488e63e
+last-correlation-id: 8cdaceec-9a5f-448c-9008-720a5488e63e
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:37:43.890Z
 ---
 
 # x00996 — A file a proposal shipped still names what it shipped after a later change deletes it
