@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-10
-last-transition-id: 9d636962-1c08-412f-b904-13b2ed9c054f
-last-correlation-id: 9d636962-1c08-412f-b904-13b2ed9c054f
+last-transition-id: e4803861-948b-4fb8-bcb3-bb700e72291b
+last-correlation-id: e4803861-948b-4fb8-bcb3-bb700e72291b
 last-transition-from: in-progress
-last-transition-at: 2026-11-17T20:57:50.660Z
+last-transition-at: 2026-11-17T22:09:39.463Z
 ---
 
 # x01058 — The delivery flow hands over what it proved, writes through the tool, and refuses early

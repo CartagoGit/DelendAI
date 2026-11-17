@@ -36,7 +36,12 @@ import type {
 	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
-import { readWorkspacePolicy, UNIT_SESSION_VARIABLE } from '@delendai/core/cli';
+import {
+	readWorkspacePolicy,
+	UNIT_SESSION_VARIABLE,
+	worktreeAgent,
+	worktreeSession,
+} from '@delendai/core/cli';
 import { data, request, scalarArg } from '../lib/helpers/cli-command.helper';
 import type {
 	IQueue,
@@ -74,6 +79,40 @@ const agentOf = (args: readonly string[]): string | undefined =>
 
 const sessionOf = (args: readonly string[]): string | undefined =>
 	scalarArg(args, 'session') ?? process.env[UNIT_SESSION_VARIABLE];
+
+/**
+ * The session of this agent's open review unit, when one stands in this
+ * clone. A verdict or a release given with no `--session` entered another
+ * unit, empty, and left the first one behind: each call without it read as
+ * a different session.
+ */
+const openReviewSession = (
+	agent: string,
+	ctx: ICliCommandContext,
+): string | undefined => {
+	const listed = runGitCommand(ctx.cwd, ['worktree', 'list', '--porcelain']);
+	if (!listed.ok) return undefined;
+	const sessions = listed.out
+		.split('\n\n')
+		.flatMap((block) => {
+			const path = /^worktree (.+)$/mu.exec(block)?.[1];
+			const branch = /^branch (.+)$/mu.exec(block)?.[1];
+			return path !== undefined &&
+				branch?.includes(`/${agent}/review/`) === true &&
+				worktreeAgent(path) === agent
+				? [worktreeSession(path)]
+				: [];
+		})
+		.filter((session): session is string => session !== undefined);
+	return sessions.at(-1);
+};
+
+/** `--session`, or the one of the agent's open review unit. */
+const reviewSessionOf = (
+	args: readonly string[],
+	agent: string,
+	ctx: ICliCommandContext,
+): string | undefined => sessionOf(args) ?? openReviewSession(agent, ctx);
 
 const quiet = (ctx: ICliCommandContext): ICliCommandContext => ({
 	...ctx,
@@ -350,7 +389,7 @@ const verdict = async (
 			`review ${sub} <proposalId> <sliceId> --agent=<you> --session=<s> --note="<why>"${action === 'approve' ? ' --commit=<sha> --validate-exit=<n> --tests-passing=<n> --tests-total=<n>' : ''}`,
 		);
 	}
-	const unit = await unitOf(agent, sessionOf(args), ctx);
+	const unit = await unitOf(agent, reviewSessionOf(args, agent, ctx), ctx);
 	if (!isUnit(unit)) return unit;
 	const evidence = action === 'approve' ? evidenceArgs(args) : undefined;
 	const commit = scalarArg(args, 'commit');
@@ -387,7 +426,7 @@ const release = async (
 			'review release <proposalId> --agent=<you> --session=<s> --note="<why you could not judge it>"',
 		);
 	}
-	const unit = await unitOf(agent, sessionOf(args), ctx);
+	const unit = await unitOf(agent, reviewSessionOf(args, agent, ctx), ctx);
 	if (!isUnit(unit)) return unit;
 	const answer = await request<Record<string, unknown>>(ctx, CLAIM_TOOL, {
 		proposalId,
