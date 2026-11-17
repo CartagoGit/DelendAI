@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 423
+Total exports: 426
 
 | Maturity | Count |
 | --- | --- |
-| stable | 420 |
+| stable | 423 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -60,6 +60,8 @@ Total exports: 423
 | `ICacheEvictionRule` | type | stable | `../contracts` |
 | `ICapturedError` | type | stable | `../lib/error-collection/types` |
 | `ICatalogSnapshot` | type | stable | `../contracts` |
+| `IChangeText` | type | stable | `../lib/contracts/interfaces/change-text.interface` |
+| `IChangeTextInput` | type | stable | `../lib/contracts/interfaces/change-text.interface` |
 | `ICheckpointAdvisory` | type | stable | `../contracts` |
 | `ICommitAndPushResult` | type | stable | `../contracts` |
 | `ICommitAuthorResolution` | type | stable | `../contracts` |
@@ -368,6 +370,7 @@ Total exports: 423
 | `registerWorkflowContribution` | const | stable | `../lib/cli/workflow-contribution-assembly` |
 | `releaseBranch` | const | stable | `../lib/contracts/release` |
 | `releaseStatusCompact` | const | stable | `../lib/contracts/release-state` |
+| `renderChangeText` | const | stable | `../lib/change-text/change-text-template.service` |
 | `renderCrossProjectGuide` | const | stable | `../lib/setup/cross-project-guide` |
 | `renderWorkflowDeclaration` | const | stable | `../lib/development-policy/declare-workflow` |
 | `resolveAgainstRoots` | const | stable | `../lib/shared/contain-path` |
