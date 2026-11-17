@@ -2,14 +2,14 @@
 id: x01008
 title: "project_plugins_create dry run returns no dry-run plan"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: f1ab564e-2b71-4cb5-8602-f90a6fe49b14
-last-correlation-id: f1ab564e-2b71-4cb5-8602-f90a6fe49b14
-last-transition-from: ready
-last-transition-at: 2026-11-17T08:01:28.441Z
+last-transition-id: 85ee41c8-a0b4-4750-b539-16a295371416
+last-correlation-id: 85ee41c8-a0b4-4750-b539-16a295371416
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T08:03:18.622Z
 ---
 
 # x01008 — project_plugins_create dry run returns no dry-run plan
@@ -31,13 +31,12 @@ A consumer reported that the dry run of project-plugin create writes files. The 
 - global_gate: none
 
 ### S1 — Return the dry-run plan from project_plugins_create
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/scaffold/project-plugins.ts`, `packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: none
 - shipped-in: `6747b9bb94c5`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
