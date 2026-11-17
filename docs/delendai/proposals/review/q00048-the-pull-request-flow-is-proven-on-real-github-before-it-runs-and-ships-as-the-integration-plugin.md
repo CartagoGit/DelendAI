@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: cf295a85-a947-4328-b44f-f10f8497f072
-last-correlation-id: cf295a85-a947-4328-b44f-f10f8497f072
+last-transition-id: 717fa0d4-034d-4d7c-bd43-af0305e0838d
+last-correlation-id: 717fa0d4-034d-4d7c-bd43-af0305e0838d
 last-transition-from: in-progress
-last-transition-at: 2026-11-17T10:14:44.045Z
+last-transition-at: 2026-11-17T13:05:12.647Z
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
