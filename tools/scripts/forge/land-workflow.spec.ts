@@ -15,11 +15,16 @@ const app = REPO_LAND_WORKFLOW.identity;
 const pat = { ...app, kind: 'pat', tokenSecret: 'MY_PAT' } as const;
 
 describe('the land workflow acts as its identity', () => {
-	it('[<10ms] never names the workflow token, so nothing is written through it', () => {
+	it('[<10ms] names the workflow token only for the steps that declare a read with it, so nothing is written through it', () => {
+		const reading = (REPO_LAND_WORKFLOW.upkeep ?? []).filter(
+			(step) => step.readsWithWorkflowToken !== undefined,
+		);
 		for (const identity of [app, pat])
 			expect(
-				renderLandWorkflow({ ...REPO_LAND_WORKFLOW, identity }),
-			).not.toContain('github.token');
+				renderLandWorkflow({ ...REPO_LAND_WORKFLOW, identity }).split(
+					'github.token',
+				).length - 1,
+			).toBe(reading.length);
 	});
 
 	it('[<10ms] mints an App installation token per job and hands it to every write step', () => {

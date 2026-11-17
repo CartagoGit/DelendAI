@@ -86,6 +86,7 @@ export const landedForgeRefKept = (
 		workRefFate({
 			landed: true,
 			onForge: true,
+			retiredOnForge: false,
 			worktree: 'none',
 			...workRefOpenness(
 				root,
