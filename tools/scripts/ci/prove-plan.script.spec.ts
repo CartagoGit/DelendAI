@@ -139,7 +139,9 @@ describe('fastSteps', () => {
 		const sqlite = steps.find(([label]) => label === 'test:sqlite');
 		expect(sqlite?.[1]).toContain('packages/state-sqlite/src/a.spec.ts');
 		expect(sqlite?.[1]).not.toContain('plugins/x/a.spec.ts');
-		const vitest = steps.find(([label]) => label.startsWith('tests:'));
+		const vitest = steps.find(([label]) =>
+			label.startsWith('changed-file coverage: the specs'),
+		);
 		expect(vitest?.[1]).not.toContain(
 			'packages/state-sqlite/src/a.spec.ts',
 		);
