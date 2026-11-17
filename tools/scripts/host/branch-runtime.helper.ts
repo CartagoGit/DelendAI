@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { type IRuntimeState } from '@delendai/core/cli';
 import { withFileMutex } from '@delendai/core/runtime';
 
 const BRANCH_FLAG = '--branch=';
@@ -32,7 +33,7 @@ const RELEASE_TREE_PREFIX = 'release@';
 const NEAREST_TAGS_EACH_SIDE = 2;
 const SAFE_BRANCH = /^[\w][\w./-]*$/u;
 
-type TRun = (
+export type TRun = (
 	command: string,
 	args: readonly string[],
 	cwd: string,
@@ -270,6 +271,57 @@ export const versionHostScript = async (
 				reason: `--version=${version}: tag ${tag} holds no ${HOST_SCRIPT}, so it cannot be run.`,
 			}
 		: { ok: true, script, label: `release ${tag} (${shortSha(sha)})` };
+};
+
+const SHA_LENGTH = 12;
+
+/**
+ * What the tree at `tree` runs, read from git once: its release tag when
+ * HEAD is exactly a release, else the branch (`branch` when the tree is
+ * detached on a pinned branch) at its commit, how far it is from
+ * `origin/<branch>`, and whether it holds uncommitted changes. This is the
+ * only reader of git state for the boot summary, the status tool and the
+ * editor tooltip.
+ */
+export const runtimeState = (
+	tree: string,
+	pinnedBranch: string | undefined,
+	run: TRun = runQuietly,
+	follow?: string,
+): IRuntimeState | undefined => {
+	const sha = run('git', ['rev-parse', 'HEAD'], tree);
+	if (sha === undefined || sha.length === 0) return undefined;
+	const tag = run(
+		'git',
+		['describe', '--exact-match', '--tags', 'HEAD'],
+		tree,
+	);
+	if (tag !== undefined && tag.startsWith(RELEASE_TAG_PREFIX))
+		return { kind: 'tag', tag, ahead: 0, behind: 0, dirty: false };
+	const current = run('git', ['symbolic-ref', '-q', '--short', 'HEAD'], tree);
+	const branch =
+		current !== undefined && current.length > 0 ? current : pinnedBranch;
+	const counts = run(
+		'git',
+		[
+			'rev-list',
+			'--left-right',
+			'--count',
+			`HEAD...origin/${branch ?? ''}`,
+		],
+		tree,
+	)?.split(/\s+/u);
+	const dirty =
+		(run('git', ['status', '--porcelain'], tree) ?? '').length > 0;
+	return {
+		kind: 'branch',
+		...(branch === undefined ? {} : { branch }),
+		sha12: sha.slice(0, SHA_LENGTH),
+		ahead: Number(counts?.[0] ?? 0),
+		behind: Number(counts?.[1] ?? 0),
+		dirty,
+		...(follow === undefined ? {} : { follow }),
+	};
 };
 
 /** What the server says it runs, once, on stderr at startup. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IStartupReportInput } from '@delendai/core/lib/startup-report/model';
+import { RUNTIME_STATE_ENV } from '@delendai/core/lib/contracts/constants/runtime-state.constant';
 import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
 import {
 	computePluginCostSnapshot,
@@ -346,6 +347,29 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			});
 			const plain = renderStartupReportPlain(report);
 			expect(off).toBe(plain);
+		});
+	});
+
+	describe('the runtime state line [<50ms]', () => {
+		it('prints the state and the follow note in the boot summary', () => {
+			const out = renderStartupReportPlain(
+				buildStartupReport(baseInput(), 'medium'),
+				{
+					[RUNTIME_STATE_ENV]: JSON.stringify({
+						kind: 'branch',
+						branch: 'develop',
+						sha12: 'abcdef123456',
+						ahead: 1,
+						behind: 0,
+						dirty: false,
+						follow: 'not fast-forwarded',
+					}),
+				},
+			);
+			expect(out).toContain(
+				'running        develop@abcdef123456 ahead 1',
+			);
+			expect(out).toContain('follow: not fast-forwarded');
 		});
 	});
 });

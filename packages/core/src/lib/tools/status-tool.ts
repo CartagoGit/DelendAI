@@ -2,6 +2,11 @@ import z from 'zod';
 
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IStatusCollector } from '../contracts/interfaces/status-collector.interface';
+import type { IRuntimeState } from '../contracts/interfaces/runtime-state.interface';
+import {
+	describeRuntimeState,
+	readRuntimeState,
+} from '../startup-report/runtime-state.helper';
 import { toolJson } from '../shared/tool-response';
 
 export interface IStatusResult {
@@ -10,6 +15,8 @@ export interface IStatusResult {
 		readonly id: string;
 		readonly error: string;
 	}>;
+	/** What this server runs: the tag, or the branch at its commit; absent when the host did not say. */
+	readonly runtime?: IRuntimeState & { readonly summary: string };
 }
 
 /**
@@ -41,9 +48,29 @@ export const collectStatus = async (
 	return { collectors: out, errors };
 };
 
+const runtimeStatus = (
+	state: IRuntimeState | undefined,
+): Pick<IStatusResult, 'runtime'> =>
+	state === undefined
+		? {}
+		: { runtime: { ...state, summary: describeRuntimeState(state) } };
+
+const runtimeSchema = z.object({
+	kind: z.enum(['tag', 'branch']),
+	tag: z.string().optional(),
+	branch: z.string().optional(),
+	sha12: z.string().optional(),
+	ahead: z.number(),
+	behind: z.number(),
+	dirty: z.boolean(),
+	follow: z.string().optional(),
+	summary: z.string(),
+});
+
 export const buildStatusToolRegistration = (
 	namespacePrefix: string,
 	collectors: readonly IStatusCollector[],
+	readState: () => IRuntimeState | undefined = readRuntimeState,
 ): IToolRegistration => ({
 	id: 'status',
 	summary:
@@ -62,9 +89,14 @@ export const buildStatusToolRegistration = (
 					errors: z.array(
 						z.object({ id: z.string(), error: z.string() }),
 					),
+					runtime: runtimeSchema.optional(),
 				}),
 			},
-			async () => toolJson(await collectStatus(collectors)),
+			async () =>
+				toolJson({
+					...(await collectStatus(collectors)),
+					...runtimeStatus(readState()),
+				}),
 		);
 	},
 });
