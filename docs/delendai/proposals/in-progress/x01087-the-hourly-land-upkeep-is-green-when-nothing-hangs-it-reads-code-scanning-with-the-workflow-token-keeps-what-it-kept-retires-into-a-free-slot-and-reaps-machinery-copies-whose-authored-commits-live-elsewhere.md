@@ -2,10 +2,14 @@
 id: x01087
 title: "The hourly land upkeep is green when nothing hangs: it reads code scanning with the workflow token, keeps what it kept, retires into a free slot and reaps machinery copies whose authored commits live elsewhere"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-11-17
+last-transition-id: 4274f4cd-5033-4843-81e8-6d52c150f4df
+last-correlation-id: 4274f4cd-5033-4843-81e8-6d52c150f4df
+last-transition-from: ready
+last-transition-at: 2026-11-17T20:38:18.479Z
 ---
 
 # x01087 — The hourly land upkeep is green when nothing hangs: it reads code scanning with the workflow token, keeps what it kept, retires into a free slot and reaps machinery copies whose authored commits live elsewhere

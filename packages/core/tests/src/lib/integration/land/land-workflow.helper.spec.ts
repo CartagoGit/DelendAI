@@ -97,3 +97,52 @@ describe('renderLandWorkflow setup', () => {
 			expect(job, job.split(':')[0]).toContain('- uses: checkout');
 	});
 });
+
+const renderUpkeep = (reads: boolean): string =>
+	renderLandWorkflow({
+		integrationBranch: 'develop',
+		releaseBranch: 'main',
+		identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+		cron: '*/15 * * * *',
+		passCommand: 'pass',
+		upkeep: [
+			{ name: 'writes', run: 'w' },
+			{
+				name: 'reads',
+				run: 'r',
+				...(reads
+					? { readsWithWorkflowToken: ['security-events'] }
+					: {}),
+			},
+		],
+		setupSteps: ['- uses: checkout'],
+	});
+
+const upkeepJob = (text: string): string =>
+	text.slice(text.indexOf('    upkeep:'));
+
+describe('renderLandWorkflow upkeep reads', () => {
+	it('[<50ms] gives a reading step the workflow token and the job exactly the reads it names', () => {
+		const job = upkeepJob(renderUpkeep(true));
+		const reading = job.slice(job.indexOf('- name: reads'));
+		const writing = job.slice(
+			job.indexOf('- name: writes'),
+			job.indexOf('- name: reads'),
+		);
+		expect(reading).toContain('GH_TOKEN: ${{ github.token }}');
+		expect(writing).toContain('steps.identity.outputs.token');
+		expect(writing).not.toContain('github.token');
+		const permissions = job.slice(
+			job.indexOf('permissions:'),
+			job.indexOf('steps:'),
+		);
+		expect(permissions.match(/: read/gu)).toHaveLength(5);
+		expect(permissions).toContain('security-events: read');
+		for (const name of ['contents', 'pull-requests', 'checks', 'actions'])
+			expect(permissions).toContain(`${name}: read`);
+	});
+
+	it('[<50ms] renders no job-level permissions block when no step reads with the workflow token', () => {
+		expect(upkeepJob(renderUpkeep(false))).not.toContain('permissions:');
+	});
+});

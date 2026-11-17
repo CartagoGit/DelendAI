@@ -66,6 +66,7 @@ const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 		{
 			name: 'Fail while a code scanning alert is open on the integration branch',
 			run: 'bun run forge:promotion-alerts -- --branch=develop',
+			readsWithWorkflowToken: ['security-events'],
 		},
 	],
 };
