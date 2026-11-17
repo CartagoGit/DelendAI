@@ -2,10 +2,14 @@
 id: x01035
 title: "Every CLI command pays about 1 s before it starts: a server child and an eager command registry"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-05
+last-transition-id: 12b893f2-232e-4fcf-b7ea-6ed985b760a1
+last-correlation-id: 12b893f2-232e-4fcf-b7ea-6ed985b760a1
+last-transition-from: ready
+last-transition-at: 2026-11-17T10:40:06.731Z
 ---
 
 # x01035 — Every CLI command pays about 1 s before it starts: a server child and an eager command registry
