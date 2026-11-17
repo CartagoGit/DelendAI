@@ -16,6 +16,5 @@
 	"plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
 	"plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts",
-	"plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts",
-	"tools/scripts/host/host-boot-journal.spec.ts"
+	"plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts"
 ]
