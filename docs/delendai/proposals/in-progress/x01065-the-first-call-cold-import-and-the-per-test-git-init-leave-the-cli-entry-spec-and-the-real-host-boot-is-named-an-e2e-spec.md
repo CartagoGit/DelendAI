@@ -34,7 +34,7 @@ CI measured the CLI entry spec's first test at several seconds because the first
 
 ### S1 — Warm the CLI entry import once, copy repository templates, name the host boot e2e
 - **Status**: pending
-- **Files**: `packages/cli/src/index.spec.ts`, `tools/scripts/host/host-boot-journal.e2e.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/ci/spec-duration-budget.baseline.json`
+- **Files**: `packages/cli/src/index.e2e.spec.ts`, `tools/scripts/host/host-boot-journal.e2e.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/ci/spec-duration-budget.baseline.json`
 - **Gate**: none
 
 ## acceptance
