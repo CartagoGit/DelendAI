@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createNoopContext } from '../lib/noop-context.factory';
 import {
 	createWorkCommand,
+	deliverPortsOf,
 	printPathOnly,
 	withSlicesView,
 } from './work.command';
@@ -141,5 +142,61 @@ describe('work offline', () => {
 			expect(isOffline([sub])).toBe(true);
 		}
 		expect(isOffline(['deliver', '--proposal=x1'])).toBe(false);
+	});
+});
+
+describe('deliverPortsOf', () => {
+	const asked: unknown[] = [];
+	const ctx = {
+		...createNoopContext('/nowhere', globals(true)),
+		request: async <TOut>(_tool: string, input: unknown) => {
+			asked.push(input);
+			return { ok: true } as TOut;
+		},
+	};
+	const run = {
+		id: 'x1',
+		reason: 'done',
+		agent: 'me',
+		urgent: undefined,
+		unitFlags: ['--proposal=x1', '--slice=S2'],
+	};
+
+	it('[<200ms] names the slice of the flags, and `all` without one', () => {
+		expect(deliverPortsOf(ctx, run).slice).toBe('S2');
+		expect(
+			deliverPortsOf(ctx, { ...run, unitFlags: ['--proposal=x1'] }).slice,
+		).toBe('all');
+	});
+
+	it('[<200ms] asks the tool for a preflight that moves nothing', async () => {
+		await deliverPortsOf(ctx, run).preflight(undefined);
+		expect(asked.at(-1)).toMatchObject({
+			id: 'x1',
+			to: 'review',
+			preflight: true,
+			agent: 'me',
+			checkout: '/nowhere',
+		});
+	});
+
+	it('[<200ms] runs the transition in the checkout it is given', async () => {
+		await deliverPortsOf(ctx, { ...run, agent: undefined }).transition(
+			'in-progress',
+			'/nonexistent',
+		);
+		const last = asked.at(-1) as Record<string, unknown>;
+		expect(last).toMatchObject({
+			to: 'in-progress',
+			checkout: '/nonexistent',
+		});
+		expect(last).not.toHaveProperty('agent');
+	});
+
+	it('[<200ms] runs the unit engine for locate, prove and publish', async () => {
+		const ports = deliverPortsOf(ctx, run);
+		for (const port of [ports.locate, ports.prove, ports.publish]) {
+			expect((await port()).code).not.toBe(0);
+		}
 	});
 });
