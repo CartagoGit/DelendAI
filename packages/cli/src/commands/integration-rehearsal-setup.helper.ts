@@ -6,10 +6,10 @@
  */
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
+import { resolveUnitsDirectory } from '@delendai/core/cli';
 import type {
 	IRehearsalFileChange,
 	IRehearsalSetupMaterialiser,
@@ -84,7 +84,10 @@ export const createSetupMaterialiser =
 		run: IProgramRunner = runProgram,
 	): IRehearsalSetupMaterialiser =>
 	async (command, files) => {
-		const dir = await mkdtemp(join(tmpdir(), 'rehearsal-setup-'));
+		// Inside the ignored units folder, so module resolution reaches the repository's node_modules as a unit worktree's does.
+		const unitsDir = resolve(cwd, await resolveUnitsDirectory(cwd));
+		await mkdir(unitsDir, { recursive: true });
+		const dir = await mkdtemp(join(unitsDir, 'rehearsal-setup-'));
 		let attached = false;
 		try {
 			await run(

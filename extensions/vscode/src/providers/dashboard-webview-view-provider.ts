@@ -14,6 +14,7 @@ import {
 import type { IDashboardAllModels } from '@delendai/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import {
+	escapeHtml,
 	renderDashboard,
 	type IHostAdapter,
 	type IWebviewPanel,
@@ -82,6 +83,155 @@ export interface IDashboardDetailBroker {
 	) => Promise<boolean>;
 	readonly hide: () => Promise<boolean>;
 }
+
+const MAX_LIVE_ROWS = 10;
+
+/** What is happening now: one `work status` read, flattened. */
+interface IDashboardLiveState {
+	readonly units: Readonly<Record<string, number>>;
+	readonly publications: ReadonlyArray<{
+		readonly ref: string;
+		readonly behind: number;
+		readonly overlapping: number;
+		readonly ownerAlive: boolean;
+	}>;
+	readonly waitingOnAuthor: ReadonlyArray<{
+		readonly ref: string;
+		readonly why: string;
+	}>;
+	readonly computeHolder: string | null;
+	readonly urgent: readonly string[];
+	readonly blocked: readonly string[];
+}
+
+const asRecord = <TKey extends string = string>(
+	value: unknown,
+): Partial<Record<TKey, unknown>> =>
+	typeof value === 'object' && value !== null
+		? (value as Partial<Record<TKey, unknown>>)
+		: {};
+
+const asArray = (value: unknown): readonly unknown[] =>
+	Array.isArray(value) ? value : [];
+
+const asText = (value: unknown): string =>
+	typeof value === 'string' ? value : '';
+
+const asCount = (value: unknown): number =>
+	typeof value === 'number' && Number.isFinite(value) ? value : 0;
+
+/**
+ * Flatten the `work` tool's `status` payload. Every field is read
+ * defensively: an older server that lacks one leaves it empty instead of
+ * failing the whole section.
+ */
+export const toLiveState = (data: unknown): IDashboardLiveState => {
+	const payload = asRecord<
+		| 'computeSlot'
+		| 'units'
+		| 'waitingOnAuthor'
+		| 'anchorRefusal'
+		| 'undurable'
+		| 'orphans'
+		| 'publications'
+	>(data);
+	const slot = asRecord<'holder' | 'urgent'>(payload.computeSlot);
+	const units: Record<string, number> = {};
+	for (const [name, count] of Object.entries(asRecord(payload.units))) {
+		units[name] = asCount(count);
+	}
+	const waiting = asArray(payload.waitingOnAuthor).map((entry) => {
+		const each = asRecord(entry);
+		return {
+			ref: asText(each.headRef) || `#${String(asCount(each.number))}`,
+			why: asText(each.why),
+		};
+	});
+	const blocked = [
+		...(asText(payload.anchorRefusal) === ''
+			? []
+			: [asText(payload.anchorRefusal)]),
+		...asArray(payload.undurable).map(
+			(path) => `undurable edit: ${asText(path)}`,
+		),
+		...asArray(payload.orphans).map((entry) => {
+			const each = asRecord<'ref' | 'reason'>(entry);
+			return `${asText(each.ref)}: ${asText(each.reason)}`;
+		}),
+		...waiting.map((entry) => `${entry.ref}: ${entry.why}`),
+	];
+	return {
+		units,
+		publications: asArray(payload.publications).map((entry) => {
+			const each = asRecord<
+				'ref' | 'behind' | 'overlapping' | 'ownerAlive'
+			>(entry);
+			return {
+				ref: asText(each.ref),
+				behind: asCount(each.behind),
+				overlapping: asCount(each.overlapping),
+				ownerAlive: each.ownerAlive !== false,
+			};
+		}),
+		waitingOnAuthor: waiting,
+		computeHolder: asText(slot.holder) || null,
+		urgent: asArray(slot.urgent).map((ticket) =>
+			asText(asRecord<'label'>(ticket).label),
+		),
+		blocked,
+	};
+};
+
+const listItems = (items: readonly string[]): string =>
+	items.length === 0
+		? '<p>none</p>'
+		: `<ul>${items
+				.slice(0, MAX_LIVE_ROWS)
+				.map((item) => `<li>${escapeHtml(item)}</li>`)
+				.join('')}</ul>`;
+
+/** The "happening now" section, escaped, ready to sit in the dashboard. */
+export const renderLiveSection = (
+	live: IDashboardLiveState | undefined,
+	models: IDashboardAllModels,
+): string => {
+	const queue = models.health.queue;
+	const tokens = models.tokens;
+	const body =
+		live === undefined
+			? '<p>Live state unavailable.</p>'
+			: [
+					`<h3>Units</h3>${listItems(Object.entries(live.units).map(([name, count]) => `${name}: ${String(count)}`))}`,
+					`<h3>Publications</h3>${listItems(
+						live.publications.map(
+							(each) =>
+								`${each.ref}: ${String(each.behind)} behind, ${String(each.overlapping)} overlapping, owner ${each.ownerAlive ? 'alive' : 'gone'}`,
+						),
+					)}`,
+					`<h3>Queue</h3>${listItems([
+						`compute slot: ${live.computeHolder ?? 'free'}`,
+						...live.urgent.map((label) => `urgent: ${label}`),
+						...(queue === null
+							? []
+							: [
+									`waiting: ${String(queue.queued)} of ${String(queue.length)}, oldest ${String(queue.oldestAgeMinutes)} min`,
+								]),
+					])}`,
+					`<h3>Blocked</h3>${listItems(live.blocked)}`,
+				].join('');
+	return `<section id="delendai-live" class="card"><h2>Now</h2>${body}<h3>Tokens</h3>${listItems(
+		[
+			`used: ${String(tokens.tokensUsed)}`,
+			`saved: ${String(tokens.tokensSaved)} (${String(tokens.savingsPercent)}%)`,
+		],
+	)}</section>`;
+};
+
+/** The section goes right after the opening body tag, or leads the page. */
+const withLiveSection = (html: string, section: string): string =>
+	/<body[^>]*>/iu.test(html)
+		? html.replace(/<body[^>]*>/iu, (open) => `${open}${section}`)
+		: `${section}${html}`;
 
 const unavailableDashboard = (error: unknown): IDashboardAllModels => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -234,6 +384,11 @@ export class DashboardWebviewViewProvider {
 	private view: IWebviewPanel | undefined;
 	private refreshToken = 0;
 	private logsAbort: AbortController | undefined;
+	private liveAbort: AbortController | undefined;
+	private liveModels: IDashboardAllModels | undefined;
+	private liveSerialized = '';
+	private liveInFlight = false;
+	private liveDirty = false;
 	private logsFilter: {
 		source?: string;
 		outcome?: ILogOutcome;
@@ -301,12 +456,15 @@ export class DashboardWebviewViewProvider {
 		view.onDidDispose(() => {
 			this.logsAbort?.abort();
 			this.logsAbort = undefined;
+			this.liveAbort?.abort();
+			this.liveAbort = undefined;
 			if (this.view === view) this.view = undefined;
 		});
 		view.webview.onDidReceiveMessage?.((message: unknown) =>
 			this.handleMessage(message),
 		);
 		await this.refresh();
+		void this.watchLive();
 	}
 
 	async refresh(): Promise<void> {
@@ -325,7 +483,18 @@ export class DashboardWebviewViewProvider {
 		} catch (error) {
 			models = unavailableDashboard(error);
 		}
+		const live = await this.readLive();
 		if (token !== this.refreshToken || this.view !== view) return;
+		this.liveModels = models;
+		this.liveSerialized = JSON.stringify(live ?? null);
+		await this.render(view, models, live);
+	}
+
+	private async render(
+		view: IWebviewPanel,
+		models: IDashboardAllModels,
+		live: IDashboardLiveState | undefined,
+	): Promise<void> {
 		const lang = resolveLang(this.deps);
 		const settings = this.deps.settingsStore
 			? await new SettingsService(this.deps.settingsStore).get()
@@ -333,15 +502,79 @@ export class DashboardWebviewViewProvider {
 		view.webview.setHtml(
 			withCsp(
 				'dashboard',
-				renderDashboard(models, {
-					docsUrl: resolveDocsUrl(this.deps.getConfig),
-					refreshCommand: REFRESH_COMMAND,
-					openDocsCommand: OPEN_DOCS_COMMAND,
-					lang: dictsByLang[lang],
-					settings,
-				}),
+				withLiveSection(
+					renderDashboard(models, {
+						docsUrl: resolveDocsUrl(this.deps.getConfig),
+						refreshCommand: REFRESH_COMMAND,
+						openDocsCommand: OPEN_DOCS_COMMAND,
+						lang: dictsByLang[lang],
+						settings,
+					}),
+					renderLiveSection(live, models),
+				),
 			),
 		);
+	}
+
+	private async readLive(): Promise<IDashboardLiveState | undefined> {
+		try {
+			const out = await this.deps.client.request<
+				{ action: string },
+				{ ok?: boolean; data?: unknown }
+			>(`${this.deps.namespacePrefix ?? 'delendai'}_work`, {
+				action: 'status',
+			});
+			return out.ok === false ? undefined : toLiveState(out.data);
+		} catch {
+			return undefined;
+		}
+	}
+
+	/**
+	 * One live read per burst of events, never one per event: an event
+	 * that lands while a read is in flight asks for exactly one more.
+	 */
+	private async onLiveEvent(): Promise<void> {
+		if (this.liveInFlight) {
+			this.liveDirty = true;
+			return;
+		}
+		this.liveInFlight = true;
+		try {
+			do {
+				this.liveDirty = false;
+				const view = this.view;
+				const models = this.liveModels;
+				if (view === undefined || models === undefined) return;
+				const live = await this.readLive();
+				const serialized = JSON.stringify(live ?? null);
+				if (this.view !== view || serialized === this.liveSerialized) {
+					continue;
+				}
+				this.liveSerialized = serialized;
+				await this.render(view, models, live);
+			} while (this.liveDirty);
+		} finally {
+			this.liveInFlight = false;
+		}
+	}
+
+	/** The server's event stream drives the section; panels are not polled. */
+	private async watchLive(): Promise<void> {
+		if (this.view === undefined) return;
+		this.liveAbort?.abort();
+		const controller = new AbortController();
+		this.liveAbort = controller;
+		try {
+			for await (const _event of new LogsService(
+				this.deps.client,
+			).subscribe({ signal: controller.signal })) {
+				if (controller.signal.aborted) return;
+				await this.onLiveEvent();
+			}
+		} catch {
+			// The events plugin may be absent; the section keeps its last read.
+		}
 	}
 
 	private async handleMessage(message: unknown): Promise<void> {

@@ -19,7 +19,7 @@
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
 			"requiredApprovals": 0,
 			"releaseRequiredApprovals": 0,
-			"engine": "none",
+			"engine": "land",
 			"rehearsal": {
 				"setupCommand": "bun tools/scripts/governance/forge-settings.script.ts --write"
 			},

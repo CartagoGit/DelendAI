@@ -2,14 +2,14 @@
 id: x01010
 title: "The maintenance lease lives in the shared checkout, not in a worktree"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: 57aad74a-a3b5-4562-a1ac-d28996bd500a
-last-correlation-id: 57aad74a-a3b5-4562-a1ac-d28996bd500a
-last-transition-from: review
-last-transition-at: 2026-11-04T19:17:47.664Z
+last-transition-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
+last-correlation-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T08:08:32.409Z
 ---
 
 # x01010 — The maintenance lease lives in the shared checkout, not in a worktree
@@ -36,13 +36,12 @@ The CLI assembly (`cli/assemble.ts`) resolved the lease path against the workspa
 - global_gate: none
 
 ### S1 — Put the maintenance lease in the shared checkout
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease-path.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease-path.spec.ts`
 - **Gate**: none
 - shipped-in: `56655a4722e2`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 56655a4722e2 is stale: slice files changed afterward (e.g. 1921c42fa). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ## acceptance

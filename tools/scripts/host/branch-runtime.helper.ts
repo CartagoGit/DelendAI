@@ -18,6 +18,8 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { followBranch } from './branch-follow.helper';
+import type { IRuntimeState } from '@delendai/core/cli';
 import { withFileMutex } from '@delendai/core/runtime';
 
 const BRANCH_FLAG = '--branch=';
@@ -32,13 +34,13 @@ const RELEASE_TREE_PREFIX = 'release@';
 const NEAREST_TAGS_EACH_SIDE = 2;
 const SAFE_BRANCH = /^[\w][\w./-]*$/u;
 
-type TRun = (
+export type IRun = (
 	command: string,
 	args: readonly string[],
 	cwd: string,
 ) => string | undefined;
 
-const runQuietly: TRun = (command, args, cwd) => {
+const runQuietly: IRun = (command, args, cwd) => {
 	try {
 		return execFileSync(command, [...args], {
 			cwd,
@@ -153,7 +155,7 @@ const tagsNear = (near: readonly string[], lead: string): string =>
 		? 'This clone has no release tags.'
 		: `${lead} ${near.join(', ')}.`;
 
-const releaseTagNames = (root: string, run: TRun): readonly string[] =>
+const releaseTagNames = (root: string, run: IRun): readonly string[] =>
 	(run('git', ['tag', '--list', `${RELEASE_TAG_PREFIX}*`], root) ?? '')
 		.split('\n')
 		.filter((name) => name.length > 0);
@@ -162,7 +164,7 @@ const releaseTagNames = (root: string, run: TRun): readonly string[] =>
 export const malformedVersionReason = (
 	root: string,
 	version: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): string =>
 	`--version="${version}" is not a semantic version. Write it as MAJOR.MINOR.PATCH, for example --version=0.3.0. ${tagsNear(
 		newestReleaseTags(releaseTagNames(root, run)),
@@ -178,10 +180,12 @@ const prepareTree = (
 	root: string,
 	tree: string,
 	sha: string,
-	run: TRun,
+	run: IRun,
+	keep = false,
 ): string | undefined => {
 	if (existsSync(tree)) {
-		run('git', ['checkout', '--quiet', '--detach', sha], tree);
+		// `keep`: the tree already followed origin (or refused to) and is not moved again.
+		if (!keep) run('git', ['checkout', '--quiet', '--detach', sha], tree);
 	} else {
 		run('git', ['worktree', 'add', '--quiet', '--detach', tree, sha], root);
 	}
@@ -234,7 +238,7 @@ export const npmVersionHostScript = (
 export const versionHostScript = async (
 	root: string,
 	version: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): Promise<IRuntimeResolution> => {
 	const tag = releaseTag(version);
 	if (!existsSync(join(root, '.git'))) {
@@ -272,18 +276,71 @@ export const versionHostScript = async (
 		: { ok: true, script, label: `release ${tag} (${shortSha(sha)})` };
 };
 
+const SHA_LENGTH = 12;
+
+/**
+ * What the tree at `tree` runs, read from git once: its release tag when
+ * HEAD is exactly a release, else the branch (`branch` when the tree is
+ * detached on a pinned branch) at its commit, how far it is from
+ * `origin/<branch>`, and whether it holds uncommitted changes. This is the
+ * only reader of git state for the boot summary, the status tool and the
+ * editor tooltip.
+ */
+export const runtimeState = (
+	tree: string,
+	pinnedBranch: string | undefined,
+	run: IRun = runQuietly,
+	follow?: string,
+): IRuntimeState | undefined => {
+	const sha = run('git', ['rev-parse', 'HEAD'], tree);
+	if (sha === undefined || sha.length === 0) return undefined;
+	const tag = run(
+		'git',
+		['describe', '--exact-match', '--tags', 'HEAD'],
+		tree,
+	);
+	if (tag?.startsWith(RELEASE_TAG_PREFIX) === true)
+		return { kind: 'tag', tag, ahead: 0, behind: 0, dirty: false };
+	const current = run('git', ['symbolic-ref', '-q', '--short', 'HEAD'], tree);
+	const branch = (current?.length ?? 0) > 0 ? current : pinnedBranch;
+	const counts = run(
+		'git',
+		[
+			'rev-list',
+			'--left-right',
+			'--count',
+			`HEAD...origin/${branch ?? ''}`,
+		],
+		tree,
+	)?.split(/\s+/u);
+	const dirty =
+		(run('git', ['status', '--porcelain'], tree) ?? '').length > 0;
+	return {
+		kind: 'branch',
+		...(branch === undefined ? {} : { branch }),
+		sha12: sha.slice(0, SHA_LENGTH),
+		ahead: Number(counts?.[0] ?? 0),
+		behind: Number(counts?.[1] ?? 0),
+		dirty,
+		...(follow === undefined ? {} : { follow }),
+	};
+};
+
 /** What the server says it runs, once, on stderr at startup. */
 export const runtimeReport = (label: string): string =>
 	`[delendai] running ${label}\n`;
+
+/** The tree a host script belongs to. */
+export const hostTree = (script: string): string =>
+	script.slice(0, script.length - HOST_SCRIPT.length - 1);
 
 /** The label of a branch run: the branch and the commit its tree holds. */
 export const branchLabel = (
 	branch: string,
 	script: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): string => {
-	const tree = script.slice(0, script.length - HOST_SCRIPT.length - 1);
-	const sha = run('git', ['rev-parse', 'HEAD'], tree);
+	const sha = run('git', ['rev-parse', 'HEAD'], hostTree(script));
 	return `branch ${branch}${sha === undefined || sha.length === 0 ? '' : ` (${shortSha(sha)})`}`;
 };
 
@@ -291,28 +348,51 @@ export const branchLabel = (
 const updatedHostScript = (
 	root: string,
 	branch: string,
-	run: TRun,
-): string | undefined => {
+	run: IRun,
+): IBranchRun | undefined => {
 	// Offline a project still starts, on what this clone last saw.
-	run('git', ['fetch', '--quiet', 'origin', branch], root);
+	const fetched =
+		run('git', ['fetch', '--quiet', 'origin', branch], root) !== undefined;
 	const sha =
 		run('git', ['rev-parse', '-q', '--verify', `origin/${branch}`], root) ??
 		run('git', ['rev-parse', '-q', '--verify', branch], root);
 	if (sha === undefined || sha.length === 0) return undefined;
 	const tree = join(root, RUNTIME_DIR, branch.replaceAll('/', '-'));
-	return prepareTree(root, tree, sha, run);
+	// A tree that exists follows origin by fast-forward only; a new one starts at it.
+	const follow = existsSync(tree)
+		? followBranch(tree, branch, sha, fetched, run)
+		: fetched
+			? {}
+			: {
+					note: 'fetching origin failed: serving what this clone last saw',
+				};
+	const script = prepareTree(root, tree, sha, run, existsSync(tree));
+	return script === undefined
+		? undefined
+		: {
+				script,
+				tree,
+				...(follow.note === undefined ? {} : { note: follow.note }),
+			};
 };
+
+export interface IBranchRun {
+	readonly script: string;
+	readonly tree: string;
+	/** Loud text for the boot summary when following origin was not a plain success. */
+	readonly note?: string;
+}
 
 /**
  * Projects on different branches never meet: each branch has its own tree.
  * Two on one branch can start together, and one of them must not run a tree
  * the other is still installing, so a branch is prepared by one at a time.
  */
-export const branchHostScript = async (
+export const branchHostRun = async (
 	root: string,
 	branch: string,
-	run: TRun = runQuietly,
-): Promise<string | undefined> => {
+	run: IRun = runQuietly,
+): Promise<IBranchRun | undefined> => {
 	if (!SAFE_BRANCH.test(branch)) return undefined;
 	mkdirSync(join(root, RUNTIME_DIR), { recursive: true });
 	return withFileMutex(
@@ -320,3 +400,11 @@ export const branchHostScript = async (
 		async () => updatedHostScript(root, branch, run),
 	);
 };
+
+/** The host script of `branch`, up to date; `undefined` when there is no such branch. */
+export const branchHostScript = async (
+	root: string,
+	branch: string,
+	run: IRun = runQuietly,
+): Promise<string | undefined> =>
+	(await branchHostRun(root, branch, run))?.script;

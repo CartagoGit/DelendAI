@@ -157,7 +157,7 @@ const registerToolHandler = async () => {
 };
 
 describe('buildCatalog', async () => {
-	it('sorts every section deterministically by stable ids', async () => {
+	it('[<80ms] sorts every section deterministically by stable ids', async () => {
 		const snapshot = buildCatalog(
 			{
 				tools: () => [tools[0]!, tools[1]!],
@@ -182,7 +182,7 @@ describe('buildCatalog', async () => {
 		]);
 	});
 
-	it('filters proposals in compact mode but keeps the full archive in full mode', async () => {
+	it('[<30ms] filters proposals in compact mode but keeps the full archive in full mode', async () => {
 		const compact = buildCatalog(sources, {
 			mode: 'compact',
 			now: fixedNow,
@@ -219,7 +219,7 @@ describe('buildCatalog', async () => {
 		]);
 	});
 
-	it('keeps count invariants for visible entries and full status counts', async () => {
+	it('[<30ms] keeps count invariants for visible entries and full status counts', async () => {
 		const snapshot = buildCatalog(sources, {
 			mode: 'compact',
 			now: fixedNow,
@@ -239,7 +239,7 @@ describe('buildCatalog', async () => {
 		});
 	});
 
-	it('filters queries case-insensitively across name, summary, tag, id and title', async () => {
+	it('[<30ms] filters queries case-insensitively across name, summary, tag, id and title', async () => {
 		const handler = await registerToolHandler();
 		const toolResult = parseTextResult(
 			await handler({ section: 'tools', query: 'CATALOG' }),
@@ -262,7 +262,7 @@ describe('buildCatalog', async () => {
 		);
 	});
 
-	it('returns ok:true with matches:0 and the snapshot shape when a query has no matches', async () => {
+	it('[<30ms] returns ok:true with matches:0 and the snapshot shape when a query has no matches', async () => {
 		const handler = await registerToolHandler();
 		const result = parseTextResult(
 			await handler({ query: 'zzz-no-match' }),
@@ -276,7 +276,61 @@ describe('buildCatalog', async () => {
 		expect(result.counts).toEqual({ tools: 2, skills: 2, proposals: 2 });
 	});
 
-	it('returns a compact text summary while keeping the full structured catalog', async () => {
+	it('[<50ms] omits a core tool plugin in full mode but keeps every other plugin and every name', async () => {
+		const full = buildCatalog(sources, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+
+		expect(full.tools.map((entry) => entry.name)).toEqual(
+			tools.map((entry) => entry.name).sort(),
+		);
+		const core = full.tools.find(
+			(entry) => entry.name === 'delendai_agent_catalog',
+		);
+		const plugin = full.tools.find(
+			(entry) => entry.name === 'delendai_search_search',
+		);
+		expect(core).not.toHaveProperty('plugin');
+		expect(core?.summary).toBe('Unified catalog entrypoint');
+		expect(plugin?.plugin).toBe('search');
+	});
+
+	it('[<50ms] omits the skill body path in full mode but keeps every other skill field and id', async () => {
+		const full = buildCatalog(sources, {
+			mode: 'full',
+			now: fixedNow,
+			server,
+		});
+		const compact = buildCatalog(sources, {
+			mode: 'compact',
+			now: fixedNow,
+			server,
+		});
+
+		expect(full.skills.map((entry) => entry.id)).toEqual(
+			skills.map((entry) => entry.id).sort(),
+		);
+		for (const skill of full.skills) {
+			expect(skill).not.toHaveProperty('bodyPath');
+			expect(Object.keys(skill)).toEqual(
+				expect.arrayContaining([
+					'id',
+					'version',
+					'minCoreVersion',
+					'summary',
+					'appliesTo',
+					'tags',
+				]),
+			);
+		}
+		expect(
+			compact.skills.every((skill) => skill.bodyPath !== undefined),
+		).toBe(true);
+	});
+
+	it('[<30ms] returns a compact text summary while keeping the full structured catalog', async () => {
 		const handler = await registerToolHandler();
 		const result = await handler({ mode: 'full' });
 		const summary = JSON.parse(textOf(result));
@@ -287,7 +341,7 @@ describe('buildCatalog', async () => {
 		expect(textOf(result)).not.toBe(JSON.stringify(structured));
 	});
 
-	it('surfaces the provider roster in full mode, sorted by id with lean fields only', async () => {
+	it('[<30ms] surfaces the provider roster in full mode, sorted by id with lean fields only', async () => {
 		const snapshot = buildCatalog(sourcesWithProviders, {
 			mode: 'full',
 			now: fixedNow,
@@ -316,7 +370,7 @@ describe('buildCatalog', async () => {
 		]);
 	});
 
-	it('omits providers entirely in compact mode even when a roster is configured', async () => {
+	it('[<30ms] omits providers entirely in compact mode even when a roster is configured', async () => {
 		const snapshot = buildCatalog(sourcesWithProviders, {
 			mode: 'compact',
 			now: fixedNow,
@@ -326,7 +380,7 @@ describe('buildCatalog', async () => {
 		expect(snapshot).not.toHaveProperty('providers');
 	});
 
-	it('omits the providers field when the source is absent or returns an empty roster', async () => {
+	it('[<30ms] omits the providers field when the source is absent or returns an empty roster', async () => {
 		const absent = buildCatalog(sources, {
 			mode: 'full',
 			now: fixedNow,
@@ -341,7 +395,7 @@ describe('buildCatalog', async () => {
 		expect(empty).not.toHaveProperty('providers');
 	});
 
-	it('returns provider clones, immune to mutation of the first result', async () => {
+	it('[<30ms] returns provider clones, immune to mutation of the first result', async () => {
 		const first = buildCatalog(sourcesWithProviders, {
 			mode: 'full',
 			now: fixedNow,
@@ -373,7 +427,7 @@ describe('buildCatalog', async () => {
 		]);
 	});
 
-	it('stays pure across calls even if the first returned arrays are mutated', async () => {
+	it('[<30ms] stays pure across calls even if the first returned arrays are mutated', async () => {
 		const first = buildCatalog(sources, {
 			mode: 'full',
 			now: fixedNow,

@@ -5,6 +5,4 @@ import type { IRehearsalKnownRed } from '../interfaces/rehearsal.interface';
  * that makes it green. The list may only shrink; activation requires it
  * empty.
  */
-export const REHEARSAL_KNOWN_RED: readonly IRehearsalKnownRed[] = [
-	{ scenario: 'F6', fixedBy: 'S10', realModeOnly: true },
-];
+export const REHEARSAL_KNOWN_RED: readonly IRehearsalKnownRed[] = [];
