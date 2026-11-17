@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { followBranch } from './branch-follow.helper';
 import { type IRuntimeState } from '@delendai/core/cli';
 import { withFileMutex } from '@delendai/core/runtime';
 
@@ -180,9 +181,11 @@ const prepareTree = (
 	tree: string,
 	sha: string,
 	run: TRun,
+	keep = false,
 ): string | undefined => {
 	if (existsSync(tree)) {
-		run('git', ['checkout', '--quiet', '--detach', sha], tree);
+		// `keep`: the tree already followed origin (or refused to) and is not moved again.
+		if (!keep) run('git', ['checkout', '--quiet', '--detach', sha], tree);
 	} else {
 		run('git', ['worktree', 'add', '--quiet', '--detach', tree, sha], root);
 	}
@@ -328,14 +331,17 @@ export const runtimeState = (
 export const runtimeReport = (label: string): string =>
 	`[delendai] running ${label}\n`;
 
+/** The tree a host script belongs to. */
+export const hostTree = (script: string): string =>
+	script.slice(0, script.length - HOST_SCRIPT.length - 1);
+
 /** The label of a branch run: the branch and the commit its tree holds. */
 export const branchLabel = (
 	branch: string,
 	script: string,
 	run: TRun = runQuietly,
 ): string => {
-	const tree = script.slice(0, script.length - HOST_SCRIPT.length - 1);
-	const sha = run('git', ['rev-parse', 'HEAD'], tree);
+	const sha = run('git', ['rev-parse', 'HEAD'], hostTree(script));
 	return `branch ${branch}${sha === undefined || sha.length === 0 ? '' : ` (${shortSha(sha)})`}`;
 };
 
@@ -344,27 +350,50 @@ const updatedHostScript = (
 	root: string,
 	branch: string,
 	run: TRun,
-): string | undefined => {
+): IBranchRun | undefined => {
 	// Offline a project still starts, on what this clone last saw.
-	run('git', ['fetch', '--quiet', 'origin', branch], root);
+	const fetched =
+		run('git', ['fetch', '--quiet', 'origin', branch], root) !== undefined;
 	const sha =
 		run('git', ['rev-parse', '-q', '--verify', `origin/${branch}`], root) ??
 		run('git', ['rev-parse', '-q', '--verify', branch], root);
 	if (sha === undefined || sha.length === 0) return undefined;
 	const tree = join(root, RUNTIME_DIR, branch.replaceAll('/', '-'));
-	return prepareTree(root, tree, sha, run);
+	// A tree that exists follows origin by fast-forward only; a new one starts at it.
+	const follow = existsSync(tree)
+		? followBranch(root, tree, branch, sha, fetched, run)
+		: fetched
+			? {}
+			: {
+					note: 'fetching origin failed: serving what this clone last saw',
+				};
+	const script = prepareTree(root, tree, sha, run, existsSync(tree));
+	return script === undefined
+		? undefined
+		: {
+				script,
+				tree,
+				...(follow.note === undefined ? {} : { note: follow.note }),
+			};
 };
+
+export interface IBranchRun {
+	readonly script: string;
+	readonly tree: string;
+	/** Loud text for the boot summary when following origin was not a plain success. */
+	readonly note?: string;
+}
 
 /**
  * Projects on different branches never meet: each branch has its own tree.
  * Two on one branch can start together, and one of them must not run a tree
  * the other is still installing, so a branch is prepared by one at a time.
  */
-export const branchHostScript = async (
+export const branchHostRun = async (
 	root: string,
 	branch: string,
 	run: TRun = runQuietly,
-): Promise<string | undefined> => {
+): Promise<IBranchRun | undefined> => {
 	if (!SAFE_BRANCH.test(branch)) return undefined;
 	mkdirSync(join(root, RUNTIME_DIR), { recursive: true });
 	return withFileMutex(
@@ -372,3 +401,11 @@ export const branchHostScript = async (
 		async () => updatedHostScript(root, branch, run),
 	);
 };
+
+/** The host script of `branch`, up to date; `undefined` when there is no such branch. */
+export const branchHostScript = async (
+	root: string,
+	branch: string,
+	run: TRun = runQuietly,
+): Promise<string | undefined> =>
+	(await branchHostRun(root, branch, run))?.script;
