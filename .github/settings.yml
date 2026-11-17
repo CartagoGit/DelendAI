@@ -4,7 +4,7 @@
 # `delendai.config.json`. Change the policy, then run:
 #   bun tools/scripts/governance/forge-settings.script.ts --write
 branches:
-    - name: develop
+    - name: delendai/rehearsal/r20261117-114331-g2/red-batch-integration
       protection:
           required_status_checks:
               strict: false
