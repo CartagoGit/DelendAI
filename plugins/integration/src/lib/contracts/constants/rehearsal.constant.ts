@@ -243,6 +243,45 @@ export const rehearsalOverlapContent = (edit?: {
 			: `line ${String(index)}`,
 	).join('\n')}\n`;
 
+/**
+ * Where a real-mode pull request puts a spec, so the project's own CI runs it:
+ * the project's test runner collects specs under `tools/scripts/`, and
+ * nothing under `rehearsal/`. The file lives on the rehearsal branches only,
+ * which the run deletes at cleanup.
+ */
+export const REHEARSAL_REAL_SPEC_DIR = 'tools/scripts/rehearsal';
+
+/** Types the `?raw` import the spec below reads the overlap file with, so it needs no file-system access. */
+export const REHEARSAL_RAW_TEXT_TYPES = [
+	"declare module '*?raw' {",
+	'\tconst text: string;',
+	'\texport default text;',
+	'}',
+	'',
+].join('\n');
+
+/**
+ * A spec asserting that `line` (0-based) of the overlap file still has the
+ * content the setup commit gave it. It passes on its own pull request and
+ * fails in a batch holding the pull request that edits that line, which is
+ * how a real-mode batch goes red through the project's real CI.
+ */
+export const rehearsalUntouchedLineSpec = (line: number): string =>
+	[
+		"import { describe, expect, it } from 'vitest';",
+		'',
+		`import overlap from '../../../${REHEARSAL_OVERLAP_FILE}?raw';`,
+		'',
+		`const LINE = ${String(line)};`,
+		'',
+		"describe('the rehearsal overlap file', () => {",
+		"\tit('[<50ms] keeps the content the setup gave the line no pull request of this one is meant to change', () => {",
+		"\t\texpect(overlap.split('\\n')[LINE]).toBe(`line ${String(LINE)}`);",
+		'\t});',
+		'});',
+		'',
+	].join('\n');
+
 /** Run statuses of work still in flight: the system is not idle. */
 export const REHEARSAL_RUNNING_STATUSES: ReadonlySet<string> = new Set([
 	'queued',

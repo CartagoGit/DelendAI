@@ -115,6 +115,7 @@ export const rehearse = async (
 			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitCapSeconds,
 		awaitBudgetSeconds:
 			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitBudgetSeconds,
+		mode: input.mode ?? 'fast',
 	};
 	const evidence: IRehearsalEvidence[] = [];
 	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };

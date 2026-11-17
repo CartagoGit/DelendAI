@@ -7,7 +7,10 @@ import type {
 
 import {
 	REHEARSAL_OVERLAP_FILE,
+	REHEARSAL_RAW_TEXT_TYPES,
+	REHEARSAL_REAL_SPEC_DIR,
 	rehearsalOverlapContent,
+	rehearsalUntouchedLineSpec,
 } from './rehearsal.constant';
 
 /**
@@ -56,10 +59,13 @@ const overlapPullIn = (
 	key: string,
 	line: number,
 	declaration: IRehearsalDeclaration = passing,
-): IRehearsalPullSpec =>
-	pullIn(key, 's1', declaration, {
+	realFiles: Readonly<Record<string, string>> = {},
+): IRehearsalPullSpec => ({
+	...pullIn(key, 's1', declaration, {
 		[REHEARSAL_OVERLAP_FILE]: rehearsalOverlapContent({ line, key }),
-	});
+	}),
+	...(Object.keys(realFiles).length > 0 ? { realFiles } : {}),
+});
 
 const open = (...keys: string[]): IRehearsalStep => ({ kind: 'open', keys });
 const ready = (...keys: string[]): IRehearsalStep => ({ kind: 'ready', keys });
@@ -146,7 +152,12 @@ export const REHEARSAL_SCENARIOS: readonly IRehearsalScenario[] = [
 		id: 'red-batch',
 		title: 'A red batch names its culprit and lands the rest',
 		pulls: [
-			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch),
+			overlapPullIn('a', OVERLAP_NEAR_LINE, redInBatch, {
+				[`${REHEARSAL_REAL_SPEC_DIR}/overlap-far-line.spec.ts`]:
+					rehearsalUntouchedLineSpec(OVERLAP_FAR_LINE),
+				[`${REHEARSAL_REAL_SPEC_DIR}/raw-text.d.ts`]:
+					REHEARSAL_RAW_TEXT_TYPES,
+			}),
 			overlapPullIn('b', OVERLAP_FAR_LINE),
 		],
 		steps: [

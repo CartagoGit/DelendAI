@@ -9,6 +9,7 @@ import {
 } from '../contracts/constants/rehearsal.constant';
 import type {
 	IRehearsalFileChange,
+	IRehearsalMode,
 	IRehearsalPullSpec,
 } from '../contracts/interfaces/rehearsal.interface';
 
@@ -59,6 +60,7 @@ export const pullChanges = (
 	scenario: string,
 	spec: IRehearsalPullSpec,
 	extra: Readonly<Record<string, string>> = {},
+	mode: IRehearsalMode = 'fast',
 ): readonly IRehearsalFileChange[] => {
 	// A scenario names a path before the run exists: `{run}` is the run's id.
 	const files = Object.fromEntries(
@@ -78,5 +80,8 @@ export const pullChanges = (
 			content: `${JSON.stringify(spec.declaration, null, '\t')}\n`,
 		},
 		...Object.entries(files).map(([path, content]) => ({ path, content })),
+		...Object.entries(mode === 'real' ? (spec.realFiles ?? {}) : {}).map(
+			([path, content]) => ({ path, content }),
+		),
 	];
 };

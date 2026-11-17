@@ -10,9 +10,14 @@ import type {
 	IRehearsalForge,
 	IRehearsalPullState,
 	IRehearsalRun,
+	IRehearsalRunContext,
 	IRehearsalScenario,
+	IRehearsalStep,
 } from '../contracts/interfaces/rehearsal.interface';
-import { REHEARSAL_RUNNING_STATUSES } from '../contracts/constants/rehearsal.constant';
+import {
+	REHEARSAL_GROUPING,
+	REHEARSAL_RUNNING_STATUSES,
+} from '../contracts/constants/rehearsal.constant';
 
 const RED = new Set(['failure', 'timed_out', 'cancelled', 'action_required']);
 
@@ -97,3 +102,17 @@ export const awaitedChecks = async (
 	}
 	return { concluded };
 };
+
+/**
+ * How long the step may idle before it fails. A batch's CI in real mode runs
+ * the project's whole pipeline after the awaited pull requests' own checks
+ * ended, so a wait for a label that depends on it takes at least the mode's
+ * cap, which `allowedWait` still bounds.
+ */
+export const idleLimit = (
+	ctx: IRehearsalRunContext,
+	step: Extract<IRehearsalStep, { kind: 'await' }>,
+): number =>
+	ctx.mode === 'real' && step.until === 'labelled'
+		? Math.max(step.seconds, REHEARSAL_GROUPING.real.awaitCapSeconds)
+		: step.seconds;
