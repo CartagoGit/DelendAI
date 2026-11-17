@@ -2,10 +2,14 @@
 id: f00813
 title: "The boot summary shows the branch a server runs, and a branch-pointed server follows its origin"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-09
+last-transition-id: d7e56d6d-4385-4625-8609-7d015954aaad
+last-correlation-id: d7e56d6d-4385-4625-8609-7d015954aaad
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T11:20:31.281Z
 ---
 
 # f00813 — The boot summary shows the branch a server runs, and a branch-pointed server follows its origin
@@ -29,16 +33,19 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
 - global_gate: type
 
 ### S1 — One resolver says what a server runs
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `packages/core/src/lib/startup-report/renderer.ts`, `packages/core/src/lib/tools/status-tool.ts`
 - **Gate**: type
 - acceptance:
   - "On a tag the boot summary prints the tag; on a branch it prints <branch>@<sha12> with its level, ahead N or behind N against origin/<branch>, and dirty."
   - "The status tool returns the same fields, declared in its outputSchema."
   - "The resolver is the branch-runtime helper of f00810, extended; no second reader of git state exists."
+- shipped-in: `ff8ddc1d16a7`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A branch-pointed runtime fast-forwards before serving
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/host/branch-follow.helper.ts`, `tools/scripts/host/branch-follow.helper.spec.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
@@ -46,14 +53,20 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
   - "A runtime configured to follow a branch fetches and fast-forwards to origin/<branch> before it serves, every start."
   - "A checkout with local commits or that cannot fast-forward is never reset or rebased; the boot summary says so loudly with the ahead and behind counts."
   - "With no network the server serves what it has and says the fetch failed."
+- shipped-in: `6ac0984beab6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The editor tooltip shows the same state
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `extensions/vscode/src/providers/status-bar.ts`, `extensions/vscode/src/test/status-bar.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The status-bar tooltip of f00800 S7 shows the version or branch state read from the status tool, with no formatting of its own."
+- shipped-in: `6ac0984beab6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
