@@ -14,7 +14,7 @@ import { renderRehearsalWorkflow } from '../../../../src/lib/services/rehearsal-
 
 const render = () =>
 	renderRehearsalWorkflow({
-		namespace: 'delendai',
+		integration: 'develop',
 		codePaths: [
 			'plugins/integration/**',
 			'.github/workflows/rehearsal.yml',
@@ -33,9 +33,19 @@ describe('the rehearsal workflow', () => {
 
 	it('[<50ms] never triggers on the integration or release branch', () => {
 		const text = render();
-		expect(text).not.toMatch(/branches:.*\b(develop|main)\b/u);
 		expect(text).not.toContain('pull_request_target');
-		expect(text).toContain("branches: ['delendai/pr/**']");
+	});
+
+	it('[<50ms] triggers on the pull request own diff into the integration branch, not on push', () => {
+		const text = render();
+		expect(text).toContain('    pull_request:');
+		expect(text).toContain("branches: ['develop']");
+		expect(text).toContain(
+			'types: [opened, synchronize, reopened, ready_for_review]',
+		);
+		expect(text).toContain("- 'plugins/integration/**'");
+		expect(text).toContain("- '.github/workflows/rehearsal.yml'");
+		expect(text).not.toContain('push:');
 	});
 
 	it('[<50ms] takes the mode and the scenarios, and keeps the merged report as an artifact', () => {
@@ -98,7 +108,7 @@ describe('the rehearsal workflow', () => {
 
 	it('[<50ms] rehearses with the token secret when the identity is a personal token', () => {
 		const text = renderRehearsalWorkflow({
-			namespace: 'delendai',
+			integration: 'develop',
 			codePaths: [],
 			identity: { ...DEFAULT_INTEGRATION_OPTIONS.identity, kind: 'pat' },
 		});
