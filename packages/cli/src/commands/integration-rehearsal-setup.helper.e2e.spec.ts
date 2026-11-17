@@ -75,4 +75,50 @@ describe('the rehearsal setup materialiser', () => {
 		);
 		expect(git(repo, 'worktree', 'list').split('\n')).toHaveLength(1);
 	});
+
+	it('[<2000ms] fails with the error text when a failing command printed nothing', async () => {
+		await expect(
+			createSetupMaterialiser(repo, base)('exit 4', []),
+		).rejects.toThrow('the rehearsal setup command `exit 4` failed: ');
+	});
+
+	it('[<2000ms] fails with the error text when the runner throws something that is not an error', async () => {
+		const run = async (program: string, args: readonly string[]) => {
+			if (args[0] === 'worktree' && args[1] === 'add')
+				return execFileSync(program, [...args], {
+					cwd: repo,
+					encoding: 'utf8',
+				});
+			if (args[0] === 'worktree') return '';
+			if (program === '/bin/bash') throw 'plain refusal';
+			return '';
+		};
+		await expect(
+			createSetupMaterialiser(repo, base, run)('true', []),
+		).rejects.toThrow('failed: plain refusal');
+	});
+
+	it('[<2000ms] rethrows a read that fails for a reason other than a missing file', async () => {
+		const run = async (
+			program: string,
+			args: readonly string[],
+			cwd: string,
+		) => {
+			if (args[0] === 'worktree' && args[1] === 'add')
+				return execFileSync(program, [...args], {
+					cwd: repo,
+					encoding: 'utf8',
+				});
+			if (program === '/bin/bash')
+				return execFileSync(program, [...args], {
+					cwd,
+					encoding: 'utf8',
+				});
+			if (args[0] === 'diff') return 'sub\0';
+			return '';
+		};
+		await expect(
+			createSetupMaterialiser(repo, base, run)('mkdir sub', []),
+		).rejects.toThrow('EISDIR');
+	});
 });
