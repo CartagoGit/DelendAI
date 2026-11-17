@@ -2,14 +2,14 @@
 id: x01005
 title: "delendai reports the version it is"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: fd23f68b-323d-420e-983e-ef77d9ba4826
-last-correlation-id: fd23f68b-323d-420e-983e-ef77d9ba4826
-last-transition-from: review
-last-transition-at: 2026-11-04T19:39:48.751Z
+last-transition-id: f3741c72-d239-4fb6-9a17-fb00d0fd375f
+last-correlation-id: f3741c72-d239-4fb6-9a17-fb00d0fd375f
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:55:00.119Z
 ---
 
 # x01005 — delendai reports the version it is
