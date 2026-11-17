@@ -67,6 +67,7 @@ export const proposalScope = (
 export const zoneScope = (files: readonly string[] = []): string => {
 	const counts = new Map<string, number>();
 	for (const file of files) {
+		if (!file.includes('/')) continue;
 		const [top, second] = file.split('/');
 		const zone =
 			(top === 'packages' || top === 'plugins' || top === 'apps') &&
@@ -107,6 +108,19 @@ const list = (items: readonly string[] | undefined): string =>
 		? items.map((item) => `- ${item}`).join('\n')
 		: CHANGE_TEXT_EMPTY_SECTION;
 
+const FILE_LIST_LIMIT = 40;
+
+/** A long file list shortened to its first entries and a count. */
+const shortList = (
+	items: readonly string[] | undefined,
+): readonly string[] | undefined =>
+	items && items.length > FILE_LIST_LIMIT
+		? [
+				...items.slice(0, FILE_LIST_LIMIT),
+				`... and ${String(items.length - FILE_LIST_LIMIT)} more`,
+			]
+		: items;
+
 const proof = (steps: readonly IChangeTextProofStep[] | undefined): string =>
 	steps && steps.length > 0
 		? steps.map((s) => `- ${s.step}: ${s.durationMs} ms`).join('\n')
@@ -133,7 +147,7 @@ const renderBody = (input: IChangeTextInput): string => {
 	const shared = {
 		What: text(input.what ?? input.summary),
 		Why: text(input.why),
-		'Files and zones': list(input.files),
+		'Files and zones': list(shortList(input.files)),
 		Proof: proof(input.proof),
 		'Review notes': text(input.reviewNotes),
 	};

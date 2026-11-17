@@ -1,10 +1,10 @@
 # `@delendai/core` public API inventory
 
-Total exports: 426
+Total exports: 424
 
 | Maturity | Count |
 | --- | --- |
-| stable | 423 |
+| stable | 421 |
 | experimental | 0 |
 | internal | 2 |
 | deprecated | 1 |
@@ -60,8 +60,6 @@ Total exports: 426
 | `ICacheEvictionRule` | type | stable | `../contracts` |
 | `ICapturedError` | type | stable | `../lib/error-collection/types` |
 | `ICatalogSnapshot` | type | stable | `../contracts` |
-| `IChangeText` | type | stable | `../lib/contracts/interfaces/change-text.interface` |
-| `IChangeTextInput` | type | stable | `../lib/contracts/interfaces/change-text.interface` |
 | `ICheckpointAdvisory` | type | stable | `../contracts` |
 | `ICommitAndPushResult` | type | stable | `../contracts` |
 | `ICommitAuthorResolution` | type | stable | `../contracts` |

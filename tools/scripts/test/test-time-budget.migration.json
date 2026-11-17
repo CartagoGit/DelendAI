@@ -797,7 +797,6 @@
 		"packages/core/tests/src/lib/work-units/profile-branches.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/proposal-branch.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-dispositions.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/publication-target.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/review-pack-deletions.service.spec.ts",

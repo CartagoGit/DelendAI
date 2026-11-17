@@ -868,7 +868,3 @@ export type { IWorkflowKpis } from '../lib/contracts/interfaces/workflow-kpis.in
 // One title and body for every pull request and issue, whoever made the
 // work: the type, scope and section order are derived, never passed.
 export { renderChangeText } from '../lib/change-text/change-text-template.service';
-export type {
-	IChangeText,
-	IChangeTextInput,
-} from '../lib/contracts/interfaces/change-text.interface';
