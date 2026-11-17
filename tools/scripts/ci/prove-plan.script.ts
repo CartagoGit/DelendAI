@@ -25,10 +25,12 @@ import {
 	appendFileSync,
 	mkdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
 import { availableParallelism } from 'node:os';
+import { dirname, join } from 'node:path';
 
 import { computeSlotPath, withComputeSlot } from '@delendai/core/runtime';
 
@@ -43,6 +45,7 @@ import {
 } from '../lib/declared-branches';
 import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
 import {
+	changedSince as changedWithDeletionsSince,
 	explainJobs,
 	type IPlanInput,
 	jobMustRun,
@@ -52,6 +55,20 @@ import {
 import { touchesIntegrationMachinery } from '../forge/land-rehearsal';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
+import { bunSuiteCommand, splitByRunner } from './bun-near-specs';
+import { chooseSelectionBase } from './proved-ancestors';
+import {
+	proofGitReader,
+	proofStorePath,
+	readProofs,
+	recordPassedProof,
+} from './proved-ancestors.store';
+import {
+	createStepReuse,
+	type IStepReuse,
+	reusedLine,
+	reuseForbidden,
+} from './step-reuse';
 
 const arg = (name: string): string | undefined =>
 	process.argv
@@ -142,6 +159,54 @@ export const familyPlanOf = (input: IPlanInput): readonly string[] => {
 				`prove: ${each.runs ? 'run ' : 'skip'} ${each.job} — ${each.why}`,
 		);
 };
+
+/** The store of passed steps, beside the proved commits every worktree shares. */
+const stepStorePath = (root: string): string | undefined => {
+	const proved = proofStorePath(root);
+	return proved === undefined
+		? undefined
+		: join(dirname(proved), 'passed-steps.json');
+};
+
+/** Reuse of this proof's steps, over this checkout and its machine-level store. */
+const stepReuse: IStepReuse = ((): IStepReuse => {
+	const root = process.cwd();
+	const path = stepStorePath(root);
+	return createStepReuse(
+		{
+			git: (args) =>
+				execFileSync('git', [...args], {
+					cwd: root,
+					encoding: 'utf8',
+					maxBuffer: 256 * 1024 * 1024,
+					stdio: ['ignore', 'pipe', 'ignore'],
+				}).trim(),
+			read: () => {
+				try {
+					return path === undefined
+						? undefined
+						: readFileSync(path, 'utf8');
+				} catch {
+					return undefined;
+				}
+			},
+			write: (text) => {
+				if (path === undefined) return false;
+				try {
+					mkdirSync(dirname(path), { recursive: true });
+					const scratch = `${path}.${String(process.pid)}.tmp`;
+					writeFileSync(scratch, text);
+					renameSync(scratch, path);
+					return true;
+				} catch {
+					return false;
+				}
+			},
+			now: () => new Date(),
+		},
+		reuseForbidden(process.argv, process.env),
+	);
+})();
 
 /** What failed, said last: a caller keeps only the tail of the output. */
 const failed: string[] = [];
@@ -255,6 +320,12 @@ const runTogether = async (
 		) {
 			const [label, script] = next;
 			const started = Date.now();
+			const earlier = stepReuse.attempt(label, script, changedFiles);
+			if (earlier !== undefined) {
+				timings.push({ label, seconds: 0, ok: true });
+				console.log(`prove: ${reusedLine(earlier)}`);
+				continue;
+			}
 			const { code, output } = await new Promise<{
 				code: number | null;
 				output: string;
@@ -294,6 +365,7 @@ const runTogether = async (
 				ok: passed,
 			});
 			ok = passed && ok;
+			if (passed) stepReuse.record(label, script, changedFiles);
 			if (!passed) {
 				failed.push(label);
 				causes.push(...causeLinesOf(output));
@@ -329,12 +401,22 @@ const runTogether = async (
  */
 const runChecks = async (
 	base: string,
+<<<<<<< HEAD
 	only?: ReadonlySet<string>,
+=======
+	selectionBase: string = base,
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 ): Promise<boolean> => {
 	// Deletions included, as plan-scope reads them: a deleted file can break
 	// what a family reads, and it widens the per-file lints to the repository.
 	const plan = planInputSince(base);
 	const { changed } = plan;
+	// The lints that judge files one by one judge what changed since the
+	// selection base; which checks run, and the whole-repo ones, keep `base`.
+	const lintChanged =
+		selectionBase === base
+			? changed
+			: changedWithDeletionsSince(selectionBase);
 	for (const line of familyPlanOf(plan)) console.log(line);
 	// What the forge would run for this change: a check it skips proves
 	// nothing here either.
@@ -360,20 +442,27 @@ const runChecks = async (
 				.map((check) => [check.job, check.script] as const),
 		],
 		Number(process.env.PROVE_PARALLEL) || availableParallelism(),
-		changed,
+		lintChanged,
 	);
 	const alone = await runTogether(
 		checks
 			.filter((check) => RUN_ALONE.has(check.job))
 			.map((check) => [check.job, check.script] as const),
 		1,
-		changed,
+		lintChanged,
 	);
 	return first && alone;
 };
 
 const step = (label: string, command: readonly string[]): boolean => {
 	const started = Date.now();
+	const text = command.join(' ');
+	const earlier = stepReuse.attempt(label, text, []);
+	if (earlier !== undefined) {
+		timings.push({ label, seconds: 0, ok: true });
+		console.log(`prove: ${reusedLine(earlier)}`);
+		return true;
+	}
 	const [bin = 'bun', ...rest] = command;
 	const result = spawnSync(bin, rest, {
 		stdio: ['ignore', 'pipe', 'pipe'],
@@ -383,6 +472,7 @@ const step = (label: string, command: readonly string[]): boolean => {
 	});
 	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;
+	if (ok) stepReuse.record(label, text, []);
 	timings.push({
 		label,
 		seconds: Math.round((Date.now() - started) / 1000),
@@ -453,56 +543,66 @@ const PROPOSAL_GENERATORS: readonly (readonly [string, readonly string[]])[] = [
 /** A file that can change what a tool tells the site. */
 const TOOL_SOURCE = /^(plugins|packages)\/.*\.tool\.ts$/u;
 
-/** Where a change needs the bun-only suite, which vitest never runs. */
-const BUN_SUITE =
-	/^(plugins\/proposals|packages\/proposals-sqlite|packages\/state-sqlite)\//u;
-
 /** The fast proof's test steps, for the paths a change touched. */
 export const fastSteps = (
 	changed: readonly string[],
 	specs: readonly string[],
 	base: string,
+<<<<<<< HEAD
 ): readonly (readonly [string, readonly string[]])[] => [
 	...(specs.length === 0
 		? []
 		: ([
 				[
 					'changed-file coverage: the specs nearest the change',
+=======
+): readonly (readonly [string, readonly string[]])[] => {
+	// vitest never runs the bun-owned specs: `bun test` runs those near the change.
+	const { vitest, bun } = splitByRunner(specs);
+	const bunSuite = bunSuiteCommand(changed, bun);
+	return [
+		...(vitest.length === 0
+			? []
+			: ([
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 					[
-						// Not npx: it hands the command to `sh -c` as one string,
-						// and a change that reaches every spec (the shared test
-						// config) names more than the 128 KB one argument allows.
-						'bunx',
-						'vitest',
-						'run',
-						'--coverage',
-						'--passWithNoTests',
-						...specs,
+						'tests: the specs nearest the change',
+						[
+							// Not npx: it hands the command to `sh -c` as one string,
+							// and a change that reaches every spec (the shared test
+							// config) names more than the 128 KB one argument allows.
+							'bunx',
+							'vitest',
+							'run',
+							'--coverage',
+							'--passWithNoTests',
+							...vitest,
+						],
 					],
-				],
-				[
-					'changed-file coverage',
 					[
-						'bun',
-						'tools/scripts/ci/changed-file-coverage.script.ts',
-						`--base=${base}`,
+						'changed-file coverage',
+						[
+							'bun',
+							'tools/scripts/ci/changed-file-coverage.script.ts',
+							`--base=${base}`,
+						],
 					],
-				],
-			] as const)),
-	// The machinery that builds, pushes and judges a batch is rehearsed on
-	// one, so the layer that would fail land live fails here first.
-	...(touchesIntegrationMachinery(changed)
-		? ([
-				[
-					'land rehearsal',
-					['bun', 'tools/scripts/forge/land-rehearsal.script.ts'],
-				],
-			] as const)
-		: []),
-	...(changed.some((path) => BUN_SUITE.test(path))
-		? ([['test:sqlite', ['bun', 'run', 'test:sqlite']]] as const)
-		: []),
-];
+				] as const)),
+		// The machinery that builds, pushes and judges a batch is rehearsed on
+		// one, so the layer that would fail land live fails here first.
+		...(touchesIntegrationMachinery(changed)
+			? ([
+					[
+						'land rehearsal',
+						['bun', 'tools/scripts/forge/land-rehearsal.script.ts'],
+					],
+				] as const)
+			: []),
+		...(bunSuite === undefined
+			? []
+			: ([['test:sqlite', bunSuite]] as const)),
+	];
+};
 
 /**
  * What fails in seconds runs first and ends the proof: a budget overshot by 27
@@ -625,6 +725,7 @@ const main = async (): Promise<number> => {
 	}
 	// The last proof's output: a check of it fails a proof run twice.
 	rmSync('build', { recursive: true, force: true });
+<<<<<<< HEAD
 	const conclude = (ok: boolean, how: string): number => {
 		const seconds = secondsSince(started);
 		saveTimings(base, seconds, ok && only === undefined);
@@ -641,6 +742,22 @@ const main = async (): Promise<number> => {
 		for (const [label, command] of earlySteps(changed).filter(([label]) =>
 			wanted(label, only),
 		)) {
+=======
+	if (process.argv.includes('--fast')) {
+		const root = process.cwd();
+		// A proof that passed narrows what the next one selects by; the
+		// whole-repo steps (early steps, typecheck) keep the merge base.
+		const choice = chooseSelectionBase(
+			base,
+			readProofs(root),
+			proofGitReader(root),
+		);
+		console.log(`prove: selecting by ${choice.message}`);
+		const selectionBase = choice.base;
+		const changed = changedSince(root, selectionBase);
+		let early = true;
+		for (const [label, command] of earlySteps(changedSince(root, base))) {
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 			early = step(label, command) && early;
 		}
 		if (!early) {
@@ -653,12 +770,17 @@ const main = async (): Promise<number> => {
 			);
 			return 1;
 		}
+<<<<<<< HEAD
 		const ok = await runChecks(base, only);
+=======
+		let ok = await runChecks(base, selectionBase);
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
 		process.env.VITEST_COVERAGE_FILES = changed.join('\n');
 		const heavy = fastSteps(
 			changed,
+<<<<<<< HEAD
 			nearSpecsSince(root, base),
 			base,
 		).filter(([label]) => wanted(label, only));
@@ -673,6 +795,18 @@ const main = async (): Promise<number> => {
 					(allOk, [label, command]) => step(label, command) && allOk,
 					true,
 				),
+=======
+			nearSpecsSince(root, selectionBase),
+			selectionBase,
+		)) {
+			ok = step(label, command) && ok;
+		}
+		saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
+		printCauses();
+		if (ok) recordPassedProof(root, base, 'fast');
+		console.error(
+			`prove: ${ok ? 'PROVED' : `NOT PROVED, failed: ${failed.join(', ')};`} (fast) in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 		);
 		return conclude(ok && heavyOk, 'fast');
 	}
@@ -709,7 +843,17 @@ const main = async (): Promise<number> => {
 		);
 		ok = ok && testsOk;
 	}
+<<<<<<< HEAD
 	return conclude(ok, 'plan');
+=======
+	saveTimings(base, Math.round((Date.now() - started) / 1000), ok);
+	printCauses();
+	if (ok) recordPassedProof(process.cwd(), base, 'full');
+	console.log(
+		`prove: ${ok ? 'PROVED' : 'NOT PROVED'} in ${String(Math.round((Date.now() - started) / 1000))}s against ${base.slice(0, 9)}`,
+	);
+	return ok ? 0 : 1;
+>>>>>>> origin/delendai/pr/claude-sonnet-5-5/implement/x01067-all-g1/work
 };
 
 if (import.meta.main) process.exit(await main());
