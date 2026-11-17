@@ -14,11 +14,13 @@ import { fileURLToPath } from 'node:url';
 import { STARTUP_CACHE_DIR } from '../lib/startup-cache-dir.constant';
 import { runSupervised, shouldSupervise } from './host-supervisor-process';
 import {
-	branchHostScript,
+	branchHostRun,
 	branchLabel,
+	hostTree,
 	malformedVersionReason,
 	runtimePin,
 	runtimeReport,
+	runtimeState,
 	versionHostScript,
 	withoutRuntimeFlags,
 } from './branch-runtime.helper';
@@ -43,6 +45,7 @@ import {
 	hasExplicitPluginSurfaceSelection,
 } from '@delendai/core/cli';
 import {
+	RUNTIME_STATE_ENV,
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
@@ -803,12 +806,36 @@ if (import.meta.main) {
 		dirname(fileURLToPath(import.meta.url)),
 		'../../..',
 	);
-	const runChild = (script: string, label: string): void => {
+	// What the server runs travels in its environment: the boot summary and
+	// the status tool both read it from there.
+	const stateEnv = (
+		tree: string,
+		branch?: string,
+		note?: string,
+	): NodeJS.ProcessEnv => {
+		const state = runtimeState(tree, branch, undefined, note);
+		return state === undefined
+			? {}
+			: { [RUNTIME_STATE_ENV]: JSON.stringify(state) };
+	};
+	const runChild = (
+		script: string,
+		label: string,
+		branch?: string,
+		note?: string,
+	): void => {
 		process.stderr.write(runtimeReport(label));
+		if (note !== undefined) process.stderr.write(`[delendai] ${note}\n`);
 		const child = spawn(
 			process.execPath,
 			[script, ...withoutRuntimeFlags(process.argv.slice(2))],
-			{ stdio: 'inherit' },
+			{
+				stdio: 'inherit',
+				env: {
+					...process.env,
+					...stateEnv(hostTree(script), branch, note),
+				},
+			},
 		);
 		for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const)
 			process.on(signal, () => child.kill(signal));
@@ -827,17 +854,24 @@ if (import.meta.main) {
 		if (resolved.ok) runChild(resolved.script, resolved.label);
 		else refuse(resolved.reason);
 	} else if (pin.kind === 'branch') {
-		const script = await branchHostScript(repository, pin.branch);
-		if (script !== undefined) {
-			runChild(script, branchLabel(pin.branch, script));
+		const run = await branchHostRun(repository, pin.branch);
+		if (run !== undefined) {
+			runChild(
+				run.script,
+				branchLabel(pin.branch, run.script),
+				pin.branch,
+				run.note,
+			);
 		} else {
 			process.stderr.write(
 				`[delendai] no branch "${pin.branch}": running this checkout's code.\n`,
 			);
 			process.argv = [...withoutRuntimeFlags(process.argv)];
+			Object.assign(process.env, stateEnv(repository));
 			startHost();
 		}
 	} else {
+		Object.assign(process.env, stateEnv(repository));
 		startHost();
 	}
 }
