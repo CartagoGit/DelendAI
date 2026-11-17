@@ -5,13 +5,15 @@
  * Shared by the review specs so each stays about one behaviour.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { createFakeToolServer } from '@delendai/test-kit/public';
+import {
+	createFakeToolServer,
+	createSharedGitFixture,
+} from '@delendai/test-kit/public';
 import {
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
@@ -90,10 +92,17 @@ export interface IReviewRepo {
 	readonly cleanup: () => void;
 }
 
-export const createReviewRepo = (): IReviewRepo => {
-	const root = mkdtempSync(join(tmpdir(), 'review-repo-'));
-	const git = (...args: string[]): string =>
+const gitAt =
+	(root: string) =>
+	(...args: string[]): string =>
 		execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+
+/**
+ * The project with its first commit, built once per worker and copied per
+ * call: built per call it was seven git processes.
+ */
+const fixture = createSharedGitFixture((root) => {
+	const git = gitAt(root);
 	git('init', '-q', '-b', 'develop');
 	git('config', 'user.email', 'owner@example.com');
 	git('config', 'user.name', 'Owner');
@@ -102,6 +111,11 @@ export const createReviewRepo = (): IReviewRepo => {
 	writeFileSync(join(root, 'README.md'), '# project\n');
 	git('add', '.');
 	git('commit', '-q', '--no-verify', '-m', 'base');
+});
+
+export const createReviewRepo = (): IReviewRepo => {
+	const root = fixture.copy();
+	const git = gitAt(root);
 	mkdirSync(join(root, 'docs/delendai/proposals/review'), {
 		recursive: true,
 	});

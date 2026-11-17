@@ -1,6 +1,6 @@
 # Capability Matrix
 
-> Generated 2026-10-11 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
+> Generated 2026-11-12 from plugin manifests + the `lint:capabilities` static analysis. Regenerate with `bun tools/scripts/gen/capability-matrix.script.ts`.
 
 Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not declared · ⚪ absent
 
@@ -36,6 +36,7 @@ Legend: ✅ declared & used · 🟡 declared but unused · 🔴 used but not dec
 | gitlab | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | i18n | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | impact-analysis | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
+| integration | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | issues | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | issues-triage | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | link-check | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |

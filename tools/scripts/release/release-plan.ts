@@ -67,6 +67,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/github',
 	'plugins/gitlab',
 	'plugins/i18n',
+	'plugins/integration',
 	'plugins/issues',
 	'plugins/link-check',
 	'plugins/logs',

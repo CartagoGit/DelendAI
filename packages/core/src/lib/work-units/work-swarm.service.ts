@@ -142,25 +142,50 @@ const changedPaths = (
 };
 
 /**
- * Commits two tips share that the integration branch does not have —
- * non-zero exactly when one was built on the other's unlanded work.
+ * The unlanded commits of each tip, read once and kept for the run: the
+ * non-merge commits the integration branch does not have.
  */
-const sharedUnlandedCommits = (
+const unlandedOf = (
 	root: string,
 	integration: string,
-	left: string,
-	right: string,
-): number => {
-	const base = git(root, ['merge-base', left, right]);
-	if (base.length === 0) return 0;
-	return Number(
-		git(root, [
-			'rev-list',
-			'--count',
-			'--no-merges',
-			`${integration}..${base}`,
-		]) || '0',
-	);
+	tip: string,
+): readonly string[] =>
+	git(root, ['rev-list', '--no-merges', `${integration}..${tip}`])
+		.split('\n')
+		.filter((line) => line.length > 0);
+
+/**
+ * Commits two units share that the integration branch does not have —
+ * non-zero exactly when one was built on the other's unlanded work.
+ *
+ * Each unit's unlanded commits are read once, on first use, and the pairs
+ * are intersected in memory: git is asked once per unit, never once per
+ * pair. A unit with no commits of its own is not asked at all. The memo
+ * belongs to the returned function, so nothing outlives one swarm read.
+ */
+export const sharedUnlandedCounter = (
+	unlandedOfTip: (tip: string) => readonly string[],
+): ((left: ISwarmUnit, right: ISwarmUnit) => number) => {
+	const memo = new Map<string, ReadonlySet<string>>();
+	const setOf = (unit: ISwarmUnit): ReadonlySet<string> => {
+		if (unit.ahead === 0) return new Set();
+		const known = memo.get(unit.tip);
+		if (known !== undefined) return known;
+		const read = new Set(unlandedOfTip(unit.tip));
+		memo.set(unit.tip, read);
+		return read;
+	};
+	return (left, right) => {
+		const leftSet = setOf(left);
+		const rightSet = setOf(right);
+		const [small, large] =
+			leftSet.size <= rightSet.size
+				? [leftSet, rightSet]
+				: [rightSet, leftSet];
+		let shared = 0;
+		for (const commit of small) if (large.has(commit)) shared += 1;
+		return shared;
+	};
 };
 
 /** How far a unit of work is from the integration branch, both ways. */
@@ -232,8 +257,9 @@ export const readSwarm = (input: {
 		relations: relationsOf({
 			units,
 			published,
-			sharedUnlanded: (left, right) =>
-				sharedUnlandedCommits(root, integration, left.tip, right.tip),
+			sharedUnlanded: sharedUnlandedCounter((tip) =>
+				unlandedOf(root, integration, tip),
+			),
 		}),
 	};
 };

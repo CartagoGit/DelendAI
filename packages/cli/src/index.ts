@@ -39,6 +39,7 @@ import { loadCommandsFor } from './lib/command-loader.service';
 import { createLazyContext, serverOpener } from './lib/lazy-context.factory';
 import { leaveNoTrace } from './lib/leave-no-trace.service';
 import { formatJson } from './lib/stable-json.service';
+import { writeStdoutSync } from './lib/stdout-sync.service';
 
 export {
 	CANONICAL_CLI_BIN,
@@ -156,7 +157,9 @@ export const runHumanCli = async (
 	// it used to start ran the migration guard as it booted, so `migrate
 	// status` and `--dry-run` found everything already applied.
 	const isOffline =
-		command.offline === true ||
+		(typeof command.offline === 'function'
+			? command.offline(commandArgs)
+			: command.offline === true) ||
 		command.name === 'init' ||
 		command.name === 'init:default' ||
 		command.name === 'guard' ||
@@ -216,10 +219,10 @@ export const runHumanCli = async (
 			const emitStructured =
 				parsed.globals.json || parsed.globals.format === 'json';
 			if (emitStructured || !result.suppressDefaultPrint) {
-				process.stdout.write(formatJson(result.data));
+				writeStdoutSync(formatJson(result.data));
 			}
 		} else if (result.text !== undefined) {
-			process.stdout.write(result.text);
+			writeStdoutSync(result.text);
 		}
 		return result.code;
 	} catch (error) {
