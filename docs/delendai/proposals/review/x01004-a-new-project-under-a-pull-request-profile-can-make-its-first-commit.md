@@ -2,14 +2,14 @@
 id: x01004
 title: "A new project under a pull-request profile can make its first commit"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: c6a115f5-8e18-4551-8edd-552c2e3f41b2
-last-correlation-id: c6a115f5-8e18-4551-8edd-552c2e3f41b2
-last-transition-from: paused
-last-transition-at: 2026-11-04T15:56:41.162Z
+last-transition-id: cc3f336e-a6cb-44d6-a3ad-c230d0b8ce1d
+last-correlation-id: cc3f336e-a6cb-44d6-a3ad-c230d0b8ce1d
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T07:53:04.522Z
 paused-reason: "Paused 2026-11-04: temporary hop to repair canonical folder placement after force transition"
 ---
 

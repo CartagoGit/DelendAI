@@ -29,18 +29,21 @@ import { runBranchRoot, runLabelPrefix } from './rehearsal-names.helper';
 import { unstartedOf } from './rehearsal-unstarted.helper';
 import { openRuns } from './rehearsal-wait.helper';
 
-/** A run id carries its start: `rYYYYMMDD-HHMMSS`, in UTC. */
+/** A run id carries its start, `rYYYYMMDD-HHMMSS` in UTC, and the group it plays when it plays one: `-g<n>`. */
 const DATE_END = 10;
 const TIME_START = 11;
 const TIME_END = 19;
-export const newRunId = (now: number): string => {
+export const newRunId = (now: number, group?: number): string => {
 	const iso = new Date(now).toISOString();
-	return `r${iso.slice(0, DATE_END).replaceAll('-', '')}-${iso.slice(TIME_START, TIME_END).replaceAll(':', '')}`;
+	return `r${iso.slice(0, DATE_END).replaceAll('-', '')}-${iso.slice(TIME_START, TIME_END).replaceAll(':', '')}${group === undefined ? '' : groupSuffix(group)}`;
 };
+
+const groupSuffix = (group: number): string => `-g${String(group)}`;
 
 /** When a run id says its run started, or `undefined` for a name that is not one. */
 export const runStartOf = (runId: string): number | undefined => {
-	const match = /^r(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/u.exec(runId);
+	const match =
+		/^r(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})(?:-g\d+)?$/u.exec(runId);
 	if (match === null) return undefined;
 	const [, y, mo, d, h, mi, s] = match;
 	return Date.parse(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
@@ -138,8 +141,10 @@ export const cleanRun = async (input: {
 
 /**
  * Sweeps every run under the prefix that started before `now - olderThanMs`
- * (the stale age unless told). The rehearsal workflow runs one at a time, so
- * its own final step sweeps with 0: nothing else can be alive.
+ * (the stale age unless told), and the runs of group `ownGroup` whatever
+ * their age: the groups of one rehearsal play at once, so a group's final
+ * step sweeps its own root and the stale ones, never a sibling's. With no
+ * group the rehearsal is alone and its final step sweeps with 0.
  */
 export const sweepStaleRuns = async (input: {
 	readonly forge: IRehearsalForge;
@@ -147,6 +152,7 @@ export const sweepStaleRuns = async (input: {
 	readonly branchPrefix: string;
 	readonly now: number;
 	readonly olderThanMs?: number;
+	readonly ownGroup?: number;
 }): Promise<readonly string[]> => {
 	const staleAfter = input.olderThanMs ?? REHEARSAL_STALE_AFTER_MS;
 	const runs = new Set(
@@ -160,7 +166,11 @@ export const sweepStaleRuns = async (input: {
 	const swept: string[] = [];
 	for (const runId of runs) {
 		const started = runStartOf(runId);
-		if (started !== undefined && input.now - started < staleAfter) continue;
+		const own =
+			input.ownGroup !== undefined &&
+			runId.endsWith(groupSuffix(input.ownGroup));
+		if (!own && started !== undefined && input.now - started < staleAfter)
+			continue;
 		await cleanRun({
 			forge: input.forge,
 			clock: input.clock,

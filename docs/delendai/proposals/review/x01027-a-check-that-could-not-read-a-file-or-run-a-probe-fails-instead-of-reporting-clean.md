@@ -2,14 +2,14 @@
 id: x01027
 title: "A check that could not read a file or run a probe fails instead of reporting clean"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
-last-correlation-id: 9f6f65ae-50b8-4c1e-bc1c-69c347e74354
-last-transition-from: review
-last-transition-at: 2026-11-04T22:20:10.943Z
+last-transition-id: 14efd34d-10c5-40cb-bffa-d59c95b928ac
+last-correlation-id: 14efd34d-10c5-40cb-bffa-d59c95b928ac
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T07:19:31.110Z
 ---
 
 # x01027 — A check that could not read a file or run a probe fails instead of reporting clean
@@ -31,42 +31,39 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — An unreadable file fails the control-byte lint
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-control-bytes.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A tracked source file that cannot be read makes the lint fail and names the file."
   - "A spec makes one file unreadable and expects exit 1."
 - shipped-in: `4079bdb2efdd`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — A failed secrets listing is reported unknown, not empty
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/tests/src/lib/secrets/real-deps.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A git listing that fails makes the scan report unknown or failed, never zero files."
   - "A spec fails the listing and expects the unknown state."
 - shipped-in: `4079bdb2efdd`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S3 — A probe that did not exit is not an accepted run
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/lib/empty-root-probe.lib.ts`, `tools/scripts/lint/lib/empty-root-probe.lib.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A probe whose status is null (timeout or failed start) makes the check fail with the cause."
   - "A spec returns status null and expects a failure."
 - shipped-in: `c424cb36ad51`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance

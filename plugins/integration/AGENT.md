@@ -16,11 +16,11 @@
 - rehearse
 - scenariosForMode
 - selectScenarios
+- mergeGroupReports
+- parseGroupSpec
+- partitionScenarios
+- selectGroup
 - buildReport
-- renderReportTable
-- REHEARSAL_REAL_CI_FILE
-- REHEARSAL_REAL_SCAN_FILE
-- REHEARSAL_CATALOGUE
 
 ## Depends on
 

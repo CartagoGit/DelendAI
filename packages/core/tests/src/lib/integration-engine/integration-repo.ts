@@ -18,10 +18,10 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
+import { createSharedGitFixture } from '@delendai/test-kit';
 
 /** The branch the specs integrate into — the policy's, not the forge's. */
 export const INTEGRATION_BRANCH = 'develop';
@@ -73,34 +73,52 @@ const configure = (git: (...args: readonly string[]) => string): void => {
 	git('config', 'commit.gpgsign', 'false');
 };
 
-export const createIntegrationTestRepo = (): IIntegrationTestRepo => {
-	const serverDir = createTestWorkspace('delendai-integration-server-');
-	const dir = createTestWorkspace('delendai-integration-clone-');
+/** Write `content` at `path` inside the repository `dir`. */
+const writeIn = (dir: string, path: string, content: string): void => {
+	mkdirSync(dirname(join(dir, path)), { recursive: true });
+	writeFileSync(join(dir, path), content, 'utf8');
+};
+
+/** Commit everything in `dir` and answer the new HEAD. */
+const commitAllIn = (dir: string, message: string): string => {
+	const git = gitIn(dir);
+	git('add', '-A');
+	git('commit', '--quiet', '--no-verify', '-m', message);
+	return git('rev-parse', 'HEAD');
+};
+
+/**
+ * The server and its clone with one pushed commit, built once per worker
+ * and copied per call: built per call it was a dozen git processes.
+ */
+const fixture = createSharedGitFixture((root) => {
+	const serverDir = join(root, 'server');
+	const dir = join(root, 'clone');
+	mkdirSync(serverDir);
+	mkdirSync(dir);
 	const server = gitIn(serverDir);
 	const git = gitIn(dir);
-
 	server('init', '--quiet', '--initial-branch', '__server__', '.');
 	configure(server);
 	server('config', 'receive.denyCurrentBranch', 'ignore');
-
 	git('init', '--quiet', '--initial-branch', INTEGRATION_BRANCH);
 	configure(git);
 	git('config', 'core.hooksPath', join(dir, '.no-hooks'));
 	git('remote', 'add', REMOTE, serverDir);
-
-	const write = (path: string, content: string): void => {
-		mkdirSync(dirname(join(dir, path)), { recursive: true });
-		writeFileSync(join(dir, path), content, 'utf8');
-	};
-	const commitAll = (message: string): string => {
-		git('add', '-A');
-		git('commit', '--quiet', '--no-verify', '-m', message);
-		return git('rev-parse', 'HEAD');
-	};
-
-	write('README.md', '# base\n');
-	commitAll('base');
+	writeIn(dir, 'README.md', '# base\n');
+	commitAllIn(dir, 'base');
 	git('push', '--quiet', REMOTE, INTEGRATION_BRANCH);
+});
+
+export const createIntegrationTestRepo = (): IIntegrationTestRepo => {
+	const root = fixture.copy();
+	const serverDir = join(root, 'server');
+	const dir = join(root, 'clone');
+	const server = gitIn(serverDir);
+	const git = gitIn(dir);
+	const write = (path: string, content: string): void =>
+		writeIn(dir, path, content);
+	const commitAll = (message: string): string => commitAllIn(dir, message);
 
 	const revision = (
 		run: (...args: readonly string[]) => string,
@@ -128,8 +146,7 @@ export const createIntegrationTestRepo = (): IIntegrationTestRepo => {
 			branch: git('rev-parse', '--abbrev-ref', 'HEAD'),
 		}),
 		cleanup: () => {
-			removeTestWorkspace(dir);
-			removeTestWorkspace(serverDir);
+			rmSync(root, { recursive: true, force: true });
 		},
 	};
 };

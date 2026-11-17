@@ -13,7 +13,7 @@ import type {
 	IRehearsalRun,
 	IRehearsalScenario,
 } from '../../../../src/lib/contracts/interfaces/rehearsal.interface';
-import { REHEARSAL_AWAIT_CAP_SECONDS } from '../../../../src/lib/contracts/constants/rehearsal.constant';
+import { REHEARSAL_GROUPING } from '../../../../src/lib/contracts/constants/rehearsal.constant';
 import { runBranchRoot } from '../../../../src/lib/services/rehearsal-names.helper';
 import { judge } from '../../../../src/lib/services/rehearsal-expectation.service';
 import { runScenario } from '../../../../src/lib/services/rehearsal-run.service';
@@ -276,7 +276,27 @@ describe('an await step', () => {
 		const { ctx } = world({}, [runOf('in_progress')]);
 		const evidence = await runScenario(ctx, scenario('merged', ['a']));
 		expect(evidence.failures).toEqual([
-			`merged not reached within the ${String(REHEARSAL_AWAIT_CAP_SECONDS)} s cap for a`,
+			`merged not reached within the ${String(REHEARSAL_GROUPING.fast.awaitCapSeconds)} s cap for a`,
+		]);
+	});
+
+	it('[<50ms] shares one wait budget between the waits of a scenario, so a later wait gets what is left', async () => {
+		const { ctx } = world({}, [runOf('in_progress')]);
+		const two: IRehearsalScenario = {
+			...scenario('merged', ['a']),
+			steps: [
+				{ kind: 'open', keys: ['a'] },
+				{ kind: 'await', until: 'merged', keys: ['a'], seconds: 60 },
+				{ kind: 'await', until: 'merged', keys: ['a'], seconds: 60 },
+			],
+		};
+		const evidence = await runScenario(
+			{ ...ctx, awaitCapSeconds: 100, awaitBudgetSeconds: 150 },
+			two,
+		);
+		expect(evidence.failures).toEqual([
+			'merged not reached within the 100 s cap for a',
+			'merged not reached within the 45 s left of the 150 s wait budget for a',
 		]);
 	});
 });

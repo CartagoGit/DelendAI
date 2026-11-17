@@ -148,6 +148,7 @@ export const runScenario = async (
 		tokenPulls: new Map(),
 		notifications: undefined,
 		setupSha: ctx.tip,
+		awaitedMs: 0,
 	};
 	try {
 		await ctx.forge.createBranch(integration, ctx.tip);

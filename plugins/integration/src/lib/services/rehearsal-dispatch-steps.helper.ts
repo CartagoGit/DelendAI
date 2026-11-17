@@ -5,14 +5,12 @@
  * forge, keyed by the commit the run is for.
  */
 import {
+	MODE_EXPRESSION,
 	REHEARSAL_ALL_SCENARIOS,
 	REHEARSAL_UPLOAD_ACTION,
 	REHEARSAL_REPORT_DIR,
 	REHEARSAL_REPORT_RETENTION_DAYS,
 } from '../contracts/constants/rehearsal.constant';
-
-/** The mode a run plays when nobody chose: a push has no inputs. */
-const MODE_EXPRESSION = "${{ inputs.mode || 'fast' }}";
 
 /** The `on:` lines of a dispatch that takes a mode and the scenarios to play. */
 export const rehearsalDispatchTrigger = (): readonly string[] => [

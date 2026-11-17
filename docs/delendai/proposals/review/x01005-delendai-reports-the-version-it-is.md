@@ -2,14 +2,14 @@
 id: x01005
 title: "delendai reports the version it is"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: fd23f68b-323d-420e-983e-ef77d9ba4826
-last-correlation-id: fd23f68b-323d-420e-983e-ef77d9ba4826
-last-transition-from: review
-last-transition-at: 2026-11-04T19:39:48.751Z
+last-transition-id: 1c7200c9-dc2b-4128-ace4-429bcff3e989
+last-correlation-id: 1c7200c9-dc2b-4128-ace4-429bcff3e989
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T07:56:40.016Z
 ---
 
 # x01005 — delendai reports the version it is
@@ -32,7 +32,7 @@ delendai --version, the help header and the server startup report printed 0.1.0 
 - global_gate: none
 
 ### S1 — Read each version from its own package.json and guard it
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/contracts/constants/version.constant.ts`, `packages/cli/src/contracts/constants/version.constant.spec.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/scaffold/standalone-core-tools.ts`, `packages/core/src/lib/version.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -40,9 +40,8 @@ delendai --version, the help header and the server startup report printed 0.1.0 
   - "DEFAULT_CLI_ARGS.serverVersion equals packages/core/package.json version"
   - "a spec fails when a version-defining source holds a literal semver string"
 - shipped-in: `0ba3b22bf10f`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 0ba3b22bf10f is stale: slice files changed afterward (e.g. 53c5f4fb0). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
 
 ## acceptance

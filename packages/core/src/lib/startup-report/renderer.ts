@@ -19,6 +19,7 @@
  * increases monotonically from `off` to `full`.
  */
 
+import { describeRuntimeState, readRuntimeState } from './runtime-state.helper';
 import type { IStartupReportLevel } from './level';
 import type { IStartupReport } from './model';
 
@@ -92,15 +93,22 @@ const formatTokens = (tokens: number): string =>
  * Render the report. Pure: takes the model + env, returns a string.
  * Empty string for `off`.
  */
-export const renderStartupReportPlain = (report: IStartupReport): string =>
-	renderInternal(report, false);
+export const renderStartupReportPlain = (
+	report: IStartupReport,
+	env: NodeJS.ProcessEnv = process.env,
+): string => renderInternal(report, false, env);
 
 export const renderStartupReportAnsi = (
 	report: IStartupReport,
 	env: NodeJS.ProcessEnv = process.env,
-): string => renderInternal(report, shouldUseAnsiColors(env));
+): string => renderInternal(report, shouldUseAnsiColors(env), env);
 
-const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
+const renderInternal = (
+	report: IStartupReport,
+	useAnsi: boolean,
+	env: NodeJS.ProcessEnv,
+): string => {
+	const runtimeState = readRuntimeState(env);
 	const level = report.identity.startupReportLevel;
 	if (level === 'off') return '';
 
@@ -110,6 +118,12 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 	const idLines: string[] = [
 		colourise('[info] DelendAI ready', 'ready', useAnsi),
 		`version        ${report.identity.version}`,
+		...(runtimeState === undefined
+			? []
+			: [`running        ${describeRuntimeState(runtimeState)}`]),
+		...(runtimeState?.follow === undefined
+			? []
+			: [`  follow: ${runtimeState.follow}`]),
 		`workspace      ${report.identity.workspace}`,
 		`preset         ${report.identity.preset}`,
 		// "Lazy" only when modules are loaded lazily: a start that fell back to

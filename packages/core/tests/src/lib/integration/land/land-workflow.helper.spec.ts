@@ -72,3 +72,28 @@ describe('renderLandWorkflow concurrency', () => {
 		);
 	});
 });
+
+describe('renderLandWorkflow setup', () => {
+	/**
+	 * Every job runs a repository script that imports the workspace packages
+	 * (derived-push: derived-resolve.script.ts --phase=push; promote:
+	 * open-promotion.script.ts; forward-sync: forward-sync-release.script.ts),
+	 * so each needs the project's install and carries its setup steps.
+	 */
+	it('[<50ms] gives every job that runs a project script the project setup, derived-push, promote and forward-sync included', () => {
+		const jobs = render()
+			.split('\njobs:\n')[1]
+			?.split(/^ {4}(?=[a-z-]+:$)/mu)
+			.filter((job) => /^[a-z-]+:/u.test(job));
+		expect(jobs?.map((job) => job.split(':')[0])).toEqual([
+			'land',
+			'derived-prepare',
+			'derived-push',
+			'promote',
+			'forward-sync',
+			'upkeep',
+		]);
+		for (const job of jobs ?? [])
+			expect(job, job.split(':')[0]).toContain('- uses: checkout');
+	});
+});
