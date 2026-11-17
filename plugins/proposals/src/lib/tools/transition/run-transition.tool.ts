@@ -30,6 +30,7 @@ import {
 } from '../../services/proposal-state';
 import { checkTransitionEvidence } from '../../services/transition-evidence';
 import { guardTransitionToDone } from '../../services/proposal-completeness';
+import { guardTransitionToReady } from '../../services/ready-guard.service';
 import { withShippedInFromSlices } from '../../services/shipped-in-from-slices.service';
 import { openReviewRounds } from '../../services/review-handoff';
 import {
@@ -390,6 +391,22 @@ export const runProposalTransition = async (
 				`slice-completeness gate: ${completenessGuard.code}; ` +
 					`pendingSlices=[${completenessGuard.pendingSlices.join(',')}] ` +
 					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`,
+			);
+		}
+	}
+
+	// A proposal is ready only when nothing is left to work out: the same
+	// rules the proposal-readiness lint applies to the tree.
+	if (finalTo === 'ready' && args.force !== true) {
+		const ready = await guardTransitionToReady({
+			markdown: raw,
+			workspaceRoot: options.workspaceRoot,
+		});
+		if (!ready.ok) {
+			return buildCodeError(
+				'proposal-not-ready',
+				ready.reason,
+				'Fix what the refusal names in the proposal, then move it to ready again.',
 			);
 		}
 	}
