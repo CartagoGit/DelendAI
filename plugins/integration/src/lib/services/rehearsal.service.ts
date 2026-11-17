@@ -115,6 +115,7 @@ export const rehearse = async (
 			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitCapSeconds,
 		awaitBudgetSeconds:
 			REHEARSAL_GROUPING[input.mode ?? 'fast'].awaitBudgetSeconds,
+		mode: input.mode ?? 'fast',
 	};
 	const evidence: IRehearsalEvidence[] = [];
 	let scan: ILogScan = { hits: [], unread: [], unstarted: [] };
@@ -139,7 +140,14 @@ export const rehearse = async (
 				},
 			)),
 		);
-		scan = await scanLogs(input, evidence);
+		scan = await scanLogs(
+			{
+				forge: input.forge,
+				clock: input.clock,
+				branchRoot: runBranchRoot(input.branchPrefix, runId),
+			},
+			evidence,
+		);
 	} finally {
 		// A cleanup that fails is a leftover, said in the report: it never ends the run without one.
 		const cleaned = await cleanRun({
