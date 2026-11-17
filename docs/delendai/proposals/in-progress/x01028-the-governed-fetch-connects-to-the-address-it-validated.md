@@ -2,14 +2,14 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
-last-correlation-id: f60668a8-c3d2-42fc-95f3-7da8b2d0f2d9
-last-transition-from: review
-last-transition-at: 2026-11-04T22:17:32.891Z
+last-transition-id: 3a92bf3d-03c2-4158-9274-935268bc2bd0
+last-correlation-id: 3a92bf3d-03c2-4158-9274-935268bc2bd0
+last-transition-from: ready
+last-transition-at: 2026-11-17T07:18:48.632Z
 ---
 
 # x01028 — The governed fetch connects to the address it validated
