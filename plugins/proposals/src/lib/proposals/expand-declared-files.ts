@@ -8,6 +8,8 @@
  * single source of truth both callers now import from.
  */
 
+import { NEW_FILE_MARKER } from '../contracts/constants/new-file-marker.constant';
+
 /**
  * A trailing file extension. The bound is generous enough for the long
  * ones this repository actually uses (`.generated.json` is matched by
@@ -19,6 +21,11 @@ const FILE_EXTENSION = new RegExp(
 	`\\.[A-Za-z0-9]{1,${MAX_EXTENSION_LENGTH}}$`,
 	'u',
 );
+
+export const withoutNewMarker = (token: string): string =>
+	token.startsWith(NEW_FILE_MARKER)
+		? token.slice(NEW_FILE_MARKER.length)
+		: token;
 
 /** Matches one backtick-delimited path/glob token in a `Files:` line. */
 export const BACKTICKED = /`([^`]+)`/g;
@@ -68,7 +75,7 @@ export const expandDeclaredFiles = (text: string): ReadonlyArray<string> => {
 		// Split on commas not inside braces.
 		const parts = inside.split(/,\s*(?![^{}]*\})/);
 		for (const raw of parts) {
-			const trimmed = raw.trim();
+			const trimmed = withoutNewMarker(raw.trim());
 			if (trimmed === '') continue;
 			const brace = BRACE_PATTERN.exec(trimmed);
 			if (brace) {
@@ -131,6 +138,7 @@ export const normalizeFileToken = (value: string): string => {
 	raw = raw
 		.replace(/^\s*[-*]\s+/gu, '')
 		.replace(/`/gu, '')
+		.replace(/^new:/u, '')
 		.replace(/\s*\(.*$/u, '')
 		.replace(/\s*—.*$/u, '')
 		.replace(/[),.;:]+$/gu, '')
