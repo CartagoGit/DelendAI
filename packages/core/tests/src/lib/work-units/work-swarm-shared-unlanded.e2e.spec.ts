@@ -59,16 +59,6 @@ afterEach(() => {
 	}
 });
 
-const swarmUnit = (tip: string, ahead = 1): ISwarmUnit => ({
-	ref: `ref-${tip}`,
-	agent: 'a',
-	subject: 's',
-	tip,
-	ahead,
-	behind: 0,
-	paths: [],
-});
-
 describe('the unlanded commits two units share, against a repository (v00156)', () => {
 	it('[<2000ms] reports the same relations as the pair-by-pair merge-base did', () => {
 		const root = swarmRepo();
