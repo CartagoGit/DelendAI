@@ -5,7 +5,7 @@ name: CI
 # required status check declared in `.github/settings.yml`.
 on:
     push:
-        branches: [develop, main]
+        branches: ['delendai/rehearsal/r20261117-112505-g1/non-overlapping-integration', main]
     # Pull requests into `develop`, and the promotion into `main`.
     #
     # The promotion's head IS `develop`, so this used to rely on the push
@@ -23,7 +23,7 @@ on:
     # refused by `release-pr-gate`; the matrix running on it changes that
     # in no way.
     pull_request:
-        branches: [develop, main]
+        branches: ['delendai/rehearsal/r20261117-112505-g1/non-overlapping-integration', main]
     # The merge queue runs this same matrix against the batch it intends
     # to merge, which is the only place the "up to date" requirement can
     # be satisfied without somebody refreshing every candidate by hand.
@@ -1531,7 +1531,7 @@ jobs:
     integration-signal:
         name: integration-signal
         needs: [static-checks, static-checks-b, static-checks-c, typecheck, plan-scope, plan-tests, tests-zone, tests, quality-gate, verify-runtime, tokens-budget-real, site, pack-smoke, metrics-gate, delendai-rebuild-digest, sqlite-cutover-ready, build-clean, delendai-validate, ref-lifecycle, develop-protection-live]
-        if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')) }}
+        if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/delendai/rehearsal/r20261117-112505-g1/non-overlapping-integration')) }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:
