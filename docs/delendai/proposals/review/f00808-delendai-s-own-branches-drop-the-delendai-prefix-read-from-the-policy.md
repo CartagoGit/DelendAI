@@ -2,14 +2,14 @@
 id: f00808
 title: "delendai's own branches drop the delendai/ prefix, read from the policy"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 89ee18be-45cf-4ac7-a3ff-47679cc3d07d
-last-correlation-id: 89ee18be-45cf-4ac7-a3ff-47679cc3d07d
-last-transition-from: review
-last-transition-at: 2026-11-10T02:13:33.712Z
+last-transition-id: c005ab96-ff0f-4fd6-838f-cc91a39255fa
+last-correlation-id: c005ab96-ff0f-4fd6-838f-cc91a39255fa
+last-transition-from: in-progress
+last-transition-at: 2026-11-10T19:42:40.285Z
 ---
 
 # f00808 — delendai's own branches drop the delendai/ prefix, read from the policy
@@ -130,7 +130,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - review-implementer: claude-opus-5-5
 
 ### S8 — This repository switches, and q00040 learns the current namespace
-- **Status**: in-progress
+- **Status**: review
 - **DependsOn**: [S2, S3, S4, S5, S9]
 - **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`, `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
