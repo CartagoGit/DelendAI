@@ -8,7 +8,7 @@
  * loudly. With no network the server serves what it has and says the
  * fetch failed. The git runner is injected, so no spec touches a network.
  */
-import type { TRun } from './branch-runtime.helper';
+import type { IRun } from './branch-runtime.helper';
 
 export interface IBranchFollow {
 	/** What the boot summary says when the follow step was not a plain success. */
@@ -20,7 +20,7 @@ const FETCH_FAILED = 'fetching origin failed: serving what this tree holds';
 const distance = (
 	tree: string,
 	sha: string,
-	run: TRun,
+	run: IRun,
 ): { readonly ahead: number; readonly behind: number } | undefined => {
 	const counts = run(
 		'git',
@@ -31,14 +31,13 @@ const distance = (
 	return { ahead: Number(counts[0]), behind: Number(counts[1]) };
 };
 
-/** Fetches `branch` into `root`, then fast-forwards `tree` to it when that is the only move needed. */
+/** Fast-forwards `tree` to `sha` (the fetched `origin/<branch>`) when that is the only move needed. */
 export const followBranch = (
-	root: string,
 	tree: string,
 	branch: string,
 	sha: string,
 	fetched: boolean,
-	run: TRun,
+	run: IRun,
 ): IBranchFollow => {
 	const stale = fetched ? '' : `${FETCH_FAILED}. `;
 	const gap = distance(tree, sha, run);

@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { followBranch } from './branch-follow.helper';
-import { type IRuntimeState } from '@delendai/core/cli';
+import type { IRuntimeState } from '@delendai/core/cli';
 import { withFileMutex } from '@delendai/core/runtime';
 
 const BRANCH_FLAG = '--branch=';
@@ -34,13 +34,13 @@ const RELEASE_TREE_PREFIX = 'release@';
 const NEAREST_TAGS_EACH_SIDE = 2;
 const SAFE_BRANCH = /^[\w][\w./-]*$/u;
 
-export type TRun = (
+export type IRun = (
 	command: string,
 	args: readonly string[],
 	cwd: string,
 ) => string | undefined;
 
-const runQuietly: TRun = (command, args, cwd) => {
+const runQuietly: IRun = (command, args, cwd) => {
 	try {
 		return execFileSync(command, [...args], {
 			cwd,
@@ -155,7 +155,7 @@ const tagsNear = (near: readonly string[], lead: string): string =>
 		? 'This clone has no release tags.'
 		: `${lead} ${near.join(', ')}.`;
 
-const releaseTagNames = (root: string, run: TRun): readonly string[] =>
+const releaseTagNames = (root: string, run: IRun): readonly string[] =>
 	(run('git', ['tag', '--list', `${RELEASE_TAG_PREFIX}*`], root) ?? '')
 		.split('\n')
 		.filter((name) => name.length > 0);
@@ -164,7 +164,7 @@ const releaseTagNames = (root: string, run: TRun): readonly string[] =>
 export const malformedVersionReason = (
 	root: string,
 	version: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): string =>
 	`--version="${version}" is not a semantic version. Write it as MAJOR.MINOR.PATCH, for example --version=0.3.0. ${tagsNear(
 		newestReleaseTags(releaseTagNames(root, run)),
@@ -180,7 +180,7 @@ const prepareTree = (
 	root: string,
 	tree: string,
 	sha: string,
-	run: TRun,
+	run: IRun,
 	keep = false,
 ): string | undefined => {
 	if (existsSync(tree)) {
@@ -238,7 +238,7 @@ export const npmVersionHostScript = (
 export const versionHostScript = async (
 	root: string,
 	version: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): Promise<IRuntimeResolution> => {
 	const tag = releaseTag(version);
 	if (!existsSync(join(root, '.git'))) {
@@ -289,7 +289,7 @@ const SHA_LENGTH = 12;
 export const runtimeState = (
 	tree: string,
 	pinnedBranch: string | undefined,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 	follow?: string,
 ): IRuntimeState | undefined => {
 	const sha = run('git', ['rev-parse', 'HEAD'], tree);
@@ -302,8 +302,7 @@ export const runtimeState = (
 	if (tag !== undefined && tag.startsWith(RELEASE_TAG_PREFIX))
 		return { kind: 'tag', tag, ahead: 0, behind: 0, dirty: false };
 	const current = run('git', ['symbolic-ref', '-q', '--short', 'HEAD'], tree);
-	const branch =
-		current !== undefined && current.length > 0 ? current : pinnedBranch;
+	const branch = (current?.length ?? 0) > 0 ? current : pinnedBranch;
 	const counts = run(
 		'git',
 		[
@@ -339,7 +338,7 @@ export const hostTree = (script: string): string =>
 export const branchLabel = (
 	branch: string,
 	script: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): string => {
 	const sha = run('git', ['rev-parse', 'HEAD'], hostTree(script));
 	return `branch ${branch}${sha === undefined || sha.length === 0 ? '' : ` (${shortSha(sha)})`}`;
@@ -349,7 +348,7 @@ export const branchLabel = (
 const updatedHostScript = (
 	root: string,
 	branch: string,
-	run: TRun,
+	run: IRun,
 ): IBranchRun | undefined => {
 	// Offline a project still starts, on what this clone last saw.
 	const fetched =
@@ -361,7 +360,7 @@ const updatedHostScript = (
 	const tree = join(root, RUNTIME_DIR, branch.replaceAll('/', '-'));
 	// A tree that exists follows origin by fast-forward only; a new one starts at it.
 	const follow = existsSync(tree)
-		? followBranch(root, tree, branch, sha, fetched, run)
+		? followBranch(tree, branch, sha, fetched, run)
 		: fetched
 			? {}
 			: {
@@ -392,7 +391,7 @@ export interface IBranchRun {
 export const branchHostRun = async (
 	root: string,
 	branch: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): Promise<IBranchRun | undefined> => {
 	if (!SAFE_BRANCH.test(branch)) return undefined;
 	mkdirSync(join(root, RUNTIME_DIR), { recursive: true });
@@ -406,6 +405,6 @@ export const branchHostRun = async (
 export const branchHostScript = async (
 	root: string,
 	branch: string,
-	run: TRun = runQuietly,
+	run: IRun = runQuietly,
 ): Promise<string | undefined> =>
 	(await branchHostRun(root, branch, run))?.script;

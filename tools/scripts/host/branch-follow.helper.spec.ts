@@ -17,23 +17,19 @@ const git = (counts: string | undefined, mergeWorks = true) => {
 describe('followBranch [<50ms]', () => {
 	it('fast-forwards a tree that is only behind, saying nothing', () => {
 		const { run, calls } = git('0\t3');
-		expect(followBranch('/r', '/t', 'develop', 'abc', true, run)).toEqual(
-			{},
-		);
+		expect(followBranch('/t', 'develop', 'abc', true, run)).toEqual({});
 		expect(calls).toContain('merge --ff-only --quiet abc');
 	});
 
 	it('leaves a tree that is level alone', () => {
 		const { run, calls } = git('0\t0');
-		expect(followBranch('/r', '/t', 'develop', 'abc', true, run)).toEqual(
-			{},
-		);
+		expect(followBranch('/t', 'develop', 'abc', true, run)).toEqual({});
 		expect(calls.some((c) => c.startsWith('merge'))).toBe(false);
 	});
 
 	it('never resets or rebases a tree with local commits, and says the counts', () => {
 		const { run, calls } = git('2\t3');
-		const { note } = followBranch('/r', '/t', 'develop', 'abc', true, run);
+		const { note } = followBranch('/t', 'develop', 'abc', true, run);
 		expect(note).toContain('ahead 2, behind 3');
 		expect(note).toContain('NOT reset or rebased');
 		expect(
@@ -43,7 +39,7 @@ describe('followBranch [<50ms]', () => {
 
 	it('reports a fast-forward that git refuses, without forcing it', () => {
 		const { run, calls } = git('0\t2', false);
-		const { note } = followBranch('/r', '/t', 'develop', 'abc', true, run);
+		const { note } = followBranch('/t', 'develop', 'abc', true, run);
 		expect(note).toContain('could not fast-forward 2 commit(s)');
 		expect(calls.filter((c) => c.startsWith('merge'))).toEqual([
 			'merge --ff-only --quiet abc',
@@ -52,14 +48,14 @@ describe('followBranch [<50ms]', () => {
 
 	it('serves what it has and says the fetch failed when offline', () => {
 		const { run } = git('0\t0');
-		const { note } = followBranch('/r', '/t', 'develop', 'abc', false, run);
+		const { note } = followBranch('/t', 'develop', 'abc', false, run);
 		expect(note).toContain('fetching origin failed');
 	});
 
 	it('says so when the tree cannot be compared', () => {
 		const { run } = git(undefined);
-		expect(
-			followBranch('/r', '/t', 'develop', 'abc', true, run).note,
-		).toContain('could not compare');
+		expect(followBranch('/t', 'develop', 'abc', true, run).note).toContain(
+			'could not compare',
+		);
 	});
 });
