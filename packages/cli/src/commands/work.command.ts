@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 import {
 	compileWorkRefParser,
 	noteUnitUrgency,
+	readUnitStandings,
 	readWorkspacePolicy,
 	runWorkUnit,
 } from '@delendai/core/cli';
@@ -30,6 +31,11 @@ import {
 	deliverUnit,
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
+import {
+	chooseLiveUnit,
+	flagsOfLiveUnit,
+	liveUnitsOf,
+} from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -115,6 +121,46 @@ export const unitHere = async (
 	);
 };
 
+/**
+ * The unit flags of the agent's one live unit of `proposal`, when the
+ * command named no unit and the directory holds none; the refusal that
+ * lists the candidates otherwise. Never a guessed slice.
+ */
+export const liveUnitFlags = async (
+	args: readonly string[],
+	cwd: string,
+	input: {
+		readonly proposal: string;
+		readonly agent: string | undefined;
+		readonly verb: string;
+	},
+): Promise<
+	| { readonly flags: readonly string[] }
+	| { readonly refusal: ICliCommandResult }
+> => {
+	const agent = input.agent ?? process.env.DELENDAI_AGENT_ID ?? '';
+	const policy = await readWorkspacePolicy(cwd);
+	const parser = compileWorkRefParser(
+		policy.branches.workRefTemplate,
+		policy.branches.workRefPrefix,
+		{ requireKind: false },
+	);
+	const kind = scalarArg(args, 'kind');
+	const units = liveUnitsOf(
+		await readUnitStandings({ root: cwd, policy }),
+		{ agent, proposal: input.proposal },
+		(ref) => parser?.parse(ref),
+	).filter((unit) => kind === undefined || unit.kind === kind);
+	const chosen = chooseLiveUnit(units, { ...input, agent });
+	return 'unit' in chosen
+		? {
+				flags: flagsOfLiveUnit(chosen.unit).filter(
+					(f) => !f.startsWith('--kind='),
+				),
+			}
+		: chosen;
+};
+
 const UNIT_FLAGS = ['--slice=', '--generation=', '--topic='] as const;
 
 /**
@@ -154,9 +200,16 @@ export const createWorkCommand = (): ICliCommand => ({
 			}
 			const agent = scalarArg(unit, 'agent');
 			const here = await withUnitHere(unit, ctx.cwd);
-			const withSlice = here.some((arg) => arg.startsWith('--slice='))
-				? here
-				: [...here, '--slice=all'];
+			let withSlice = here;
+			if (!here.some((arg) => arg.startsWith('--slice='))) {
+				const found = await liveUnitFlags(here, ctx.cwd, {
+					proposal: id,
+					agent,
+					verb: 'deliver',
+				});
+				if ('refusal' in found) return found.refusal;
+				withSlice = [...here, ...found.flags];
+			}
 			return deliverUnit({
 				slice: scalarArg(withSlice, 'slice') ?? 'all',
 				publish: () => runWorkUnit(['publish', ...withSlice], ctx),

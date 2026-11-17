@@ -49,36 +49,33 @@ on:
                 description: The commit this run is judged since; empty runs everything.
                 required: false
                 default: ''
-    # What follows a merge. `land` merges with the workflow token, whose
-    # push starts no workflow, so the integration branch's CI runs when a
-    # `land` run finishes, judged since the tip that run started from: the
-    # sections the merge reached, not the whole suite. A run whose tip did
-    # not move merged nothing and cancels itself (its first job).
-    workflow_run:
-        workflows: [land]
-        types: [completed]
-
+            zones:
+                description: The zones this run judges, comma separated; empty judges what the change touches.
+                required: false
+                default: ''
 # The commit a run is judged since: the jobs and tests it runs are what the
 # change touches after it (job-scope, test-zones). A pull request into
-# develop is judged since its base, and the run after a `land` merge since
-# the tip the pass started from. The promotion into main, a push and a
+# develop is judged since its base. The promotion into main, a push and a
 # dispatch without a base run everything: the full suite runs only on the
 # promotion.
 env:
-    SCOPE_BASE: ${{ (github.event_name == 'pull_request' && github.base_ref != 'main') && github.event.pull_request.base.sha || (github.event_name == 'workflow_run' && github.event.workflow_run.head_sha) || inputs.base || '' }}
+    SCOPE_BASE: ${{ (github.event_name == 'pull_request' && github.base_ref != 'main') && github.event.pull_request.base.sha || inputs.base || '' }}
 
-# Pull requests may be superseded, but pushes to develop are never cancelled:
-# a cancelled required job is not evidence of a green branch. A run after
-# `land` has a group per tip, so a run that merged nothing never displaces
-# a pending run of a tip that did move.
+# A pull request and the integration branch keep only their newest run: every
+# merged commit is covered by a run of itself or of a descendant, and a
+# cancelled run is superseded by one that includes it. The integrator
+# starts a run for every push it makes, so nothing is left unbuilt.
 concurrency:
-  group: ci-${{ github.ref }}${{ github.event_name == 'workflow_run' && format('-{0}', github.sha) || '' }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop') }}
 
 jobs:
-    # One runner and one setup for the static checks, instead of one each. Every
-    # step keeps the plan entry of the job it used to be (job-scope.constant.ts),
-    # and `static-checks` runs when any of them does.
+    # The static checks run side by side: three jobs, each with its own runner
+    # and setup, balanced by measured step time (x01075) so the slowest is
+    # about 36 s of work instead of the 85 s the one job took in series. Every
+    # step keeps the plan entry of the check it used to be (job-scope.constant.ts)
+    # and each job runs when any of its checks does. The list of checks is read
+    # from these steps by their plan entries, in whichever job holds them.
     static-checks:
         name: static-checks
         needs: plan-scope
@@ -134,6 +131,28 @@ jobs:
               run: |
                   set -euo pipefail
                   bun tools/scripts/lint/run-together.script.ts lint:job:docs
+
+    static-checks-b:
+        name: static-checks-b
+        needs: plan-scope
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks-b'] }}
+        runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
+        timeout-minutes: 30
+        steps:
+            # Bootstraps the local composite action - see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
 
 
             - name: Rebuild the proposal registry cache
@@ -276,6 +295,28 @@ jobs:
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
 
+    static-checks-c:
+        name: static-checks-c
+        needs: plan-scope
+        if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['static-checks-c'] }}
+        runs-on: ubuntu-latest
+        # The lints that judge files one by one judge these, not the
+        # repository; empty on a push, where every lint judges everything.
+        env:
+            DELENDAI_CHANGED_FILES: ${{ needs.plan-scope.outputs.changed }}
+        timeout-minutes: 30
+        steps:
+            # Bootstraps the local composite action - see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # Full history: candidate-delivers and the proposal lints diff against
+            # the base commit, which a depth-1 clone does not have.
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
 
             - name: Run governance and proposal lints
               if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['lint-governance'] }}
@@ -314,12 +355,6 @@ jobs:
             - name: Verify generated artifacts stay in sync
               if: ${{ !cancelled() && fromJSON(needs.plan-scope.outputs.plan)['generated-artifacts-check'] }}
               run: bun run check:generated
-
-
-
-
-
-
 
     typecheck:
         name: typecheck
@@ -394,18 +429,6 @@ jobs:
             not-applicable: ${{ steps.plan.outputs.not-applicable }}
             changed: ${{ steps.plan.outputs.changed }}
         steps:
-            # A `land` run that merged nothing left the tip where it started:
-            # this run has nothing to judge, and cancels itself before it plans.
-            - name: Cancel a run that follows no merge
-              if: ${{ github.event_name == 'workflow_run' && github.sha == github.event.workflow_run.head_sha }}
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              # The cancellation reaches this job too; until it does, nothing
-              # after this step may start.
-              run: |
-                  gh run cancel "${{ github.run_id }}" --repo "${GITHUB_REPOSITORY}"
-                  sleep 240
-
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -463,18 +486,6 @@ jobs:
         outputs:
             zones: ${{ steps.plan.outputs.zones }}
         steps:
-            # A `land` run that merged nothing left the tip where it started:
-            # this run has nothing to judge, and cancels itself before it plans.
-            - name: Cancel a run that follows no merge
-              if: ${{ github.event_name == 'workflow_run' && github.sha == github.event.workflow_run.head_sha }}
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              # The cancellation reaches this job too; until it does, nothing
-              # after this step may start.
-              run: |
-                  gh run cancel "${{ github.run_id }}" --repo "${GITHUB_REPOSITORY}"
-                  sleep 240
-
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -873,6 +884,14 @@ jobs:
                     mkdir -p .cache/spec-timings
                     VITEST_TIMINGS_OUT=.cache/spec-timings/report.json bun run test:merged
                   fi
+
+            # c00537: a budget the change writes was never measured by CI,
+            # so its overrun does not fail the shard. Here every test CI
+            # measured over its declared budget fails the run, naming the
+            # calibrated number the spec must carry.
+            - name: Require the CI-calibrated number of every budget overrun
+              if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
+              run: bun run test:budgets:check
 
             - name: Record how long each spec took
               if: steps.planned.outputs.none != 'true' && steps.planned.outputs.red != 'true'
@@ -1312,6 +1331,8 @@ jobs:
         if: always()
         needs:
             - static-checks
+            - static-checks-b
+            - static-checks-c
             - typecheck
             - plan-scope
             - plan-tests
@@ -1501,24 +1522,30 @@ jobs:
                   fi
                   bun tools/scripts/lint/branch-protection-guard.script.ts --live
 
-    # `land` merges with the workflow token, and a push made with it starts
-    # no workflow: CodeQL never analysed a merged develop (x00879 S7). The
-    # certified tip is analysed here instead. A failed dispatch warns: a
-    # green certification must not turn red because a scan could not start.
-    scan-the-integration-branch:
-        name: scan-the-integration-branch
-        needs: [delendai-validate]
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' }}
+    # The last job, whatever the others concluded: it tells the integrator
+    # this run is over, so the pass that merges the pull request (or the
+    # promotion of the integration branch) starts the moment it can. It
+    # writes nothing else to the forge; a dispatch is the one event the
+    # workflow token may start. A pull request from a fork has a read-only
+    # token, and the integrator's own events settle it.
+    integration-signal:
+        name: integration-signal
+        needs: [static-checks, static-checks-b, static-checks-c, typecheck, plan-scope, plan-tests, tests-zone, tests, quality-gate, verify-runtime, tokens-budget-real, site, pack-smoke, metrics-gate, delendai-rebuild-digest, sqlite-cutover-ready, build-clean, delendai-validate, ref-lifecycle, develop-protection-live]
+        if: ${{ always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')) }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:
             actions: write
             contents: read
         steps:
-            - name: Dispatch code scanning on the integration branch
+            - name: Wake the integrator
               env:
                   GH_TOKEN: ${{ github.token }}
+                  BRANCH: ${{ github.event.pull_request.base.ref || github.ref_name }}
+                  PULL_REQUEST: ${{ github.event.pull_request.number }}
+                  PROMOTE: ${{ github.event_name == 'push' && 'true' || '' }}
               run: |
-                  gh workflow run codeql.yml \
-                    --ref develop --repo "${GITHUB_REPOSITORY}" \
-                    || echo "::warning::could not dispatch code scanning on develop"
+                  gh workflow run land.yml \
+                    --ref "${BRANCH}" --repo "${GITHUB_REPOSITORY}" \
+                    -f pr="${PULL_REQUEST}" -f promote="${PROMOTE}" \
+                    || echo "::warning::could not wake the integrator"

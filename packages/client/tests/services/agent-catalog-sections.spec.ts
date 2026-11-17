@@ -7,7 +7,10 @@ import { AgentCatalogService } from '../../src/lib/services/agent-catalog-servic
 import { McpStdioClient } from '../../src/lib/transport/mcp-stdio-client';
 
 const whole = {
-	tools: [{ name: 'd_alpha', summary: 'first', tags: ['one'] }],
+	tools: [
+		{ name: 'd_alpha', summary: 'first', tags: ['one'] },
+		{ name: 'd_beta_run', plugin: 'beta', effects: ['read'] },
+	],
 	skills: [
 		{
 			id: 'a-skill',
@@ -60,25 +63,36 @@ const harness = (at: () => number = () => 0) => {
 };
 
 describe('the agent catalog by section', () => {
-	it('asks only for the section it is asked about', async () => {
+	it('[<30ms] asks only for the section it is asked about', async () => {
 		const { service, asked } = harness();
 		expect(await service.getProposals()).toHaveLength(1);
 		expect(asked).toEqual([{ mode: 'full', section: 'proposals' }]);
 	});
 
-	it('fills what a skill row leaves out', async () => {
+	it('[<30ms] fills what a skill row leaves out', async () => {
 		const { service } = harness();
 		const [, bare] = await service.getSkills();
-		expect(bare).toMatchObject({ version: '0.0.0', bodyPath: '' });
+		expect(bare).toMatchObject({ version: '0.0.0' });
+		expect(bare).not.toHaveProperty('bodyPath');
 	});
 
-	it('filters a section by query', async () => {
+	it('[<30ms] filters a section by query', async () => {
 		const { service } = harness();
 		expect(await service.getTools('alpha')).toHaveLength(1);
 		expect(await service.getTools('nothing')).toHaveLength(0);
 	});
 
-	it('searches every section, each asked for once', async () => {
+	it('[<30ms] keeps a tool plugin and effects, and a skill body path, when the server sends them', async () => {
+		const { service } = harness();
+		const [, beta] = await service.getTools();
+		expect(beta).toMatchObject({ plugin: 'beta', effects: ['read'] });
+		const [withPath] = await service.getSkills('one');
+		expect(withPath).toMatchObject({ id: 'a-skill', bodyPath: 'a' });
+		expect(await service.getSkills('nothing')).toHaveLength(0);
+		expect(await service.getTools('beta')).toHaveLength(1);
+	});
+
+	it('[<30ms] searches every section, each asked for once', async () => {
 		const { service, asked } = harness();
 		const found = await service.search('alpha');
 		expect(found.tools).toHaveLength(1);
@@ -86,7 +100,7 @@ describe('the agent catalog by section', () => {
 		expect(asked).toHaveLength(3);
 	});
 
-	it('answers from its cache until it expires or is invalidated', async () => {
+	it('[<30ms] answers from its cache until it expires or is invalidated', async () => {
 		let now = 0;
 		const { service, asked } = harness(() => now);
 		await service.getSkills();
@@ -100,7 +114,7 @@ describe('the agent catalog by section', () => {
 		expect(asked).toHaveLength(3);
 	});
 
-	it('loads a skill body and refuses one with none', async () => {
+	it('[<30ms] loads a skill body and refuses one with none', async () => {
 		const { service } = harness();
 		expect(await service.getSkillBody('a-skill')).toBe('the body');
 		await expect(service.getSkillBody('none')).rejects.toThrow('body');

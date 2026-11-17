@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * `extensions/vscode/src/dev/pages/dashboard.ts` —
  * dashboard view, lazily loaded.

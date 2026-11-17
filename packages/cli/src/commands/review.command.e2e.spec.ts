@@ -577,7 +577,8 @@ describe('delendai review', () => {
 	});
 
 	it('[<80ms] asks for what it needs before doing anything', async () => {
-		const root = repo();
+		const root = mkdtempSync(join(tmpdir(), 'review-cmd-'));
+		roots.push(root);
 		const { ctx, calls } = contextFor(root, []);
 		const previous = process.env.DELENDAI_AGENT_ID;
 		delete process.env.DELENDAI_AGENT_ID;
