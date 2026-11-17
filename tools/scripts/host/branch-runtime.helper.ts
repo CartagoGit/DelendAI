@@ -299,7 +299,7 @@ export const runtimeState = (
 		['describe', '--exact-match', '--tags', 'HEAD'],
 		tree,
 	);
-	if (tag !== undefined && tag.startsWith(RELEASE_TAG_PREFIX))
+	if (tag?.startsWith(RELEASE_TAG_PREFIX) === true)
 		return { kind: 'tag', tag, ahead: 0, behind: 0, dirty: false };
 	const current = run('git', ['symbolic-ref', '-q', '--short', 'HEAD'], tree);
 	const branch = (current?.length ?? 0) > 0 ? current : pinnedBranch;
