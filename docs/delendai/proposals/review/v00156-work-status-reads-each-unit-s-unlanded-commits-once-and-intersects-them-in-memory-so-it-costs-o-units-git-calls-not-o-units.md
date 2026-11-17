@@ -2,10 +2,14 @@
 id: v00156
 title: "work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)"
 kind: perf
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-17
+last-transition-id: d55652b1-be06-4563-91dc-8f185012842f
+last-correlation-id: d55652b1-be06-4563-91dc-8f185012842f
+last-transition-from: in-progress
+last-transition-at: 2026-11-17T13:50:27.922Z
 ---
 
 # v00156 — work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)
@@ -16,7 +20,9 @@ Make `work status` cost O(live units) git calls. Today relationsOf (packages/cor
 
 ## why
 
-Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,627 merge-base, of which 1,568 pairwise), 30.1 s wall plain. The after numbers (git process count and wall time of `work status` in this repo) are recorded here and in the commit body once the slice is implemented.
+Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,627 merge-base, of which 1,568 pairwise), 30.1 s wall plain. The after numbers (git process count and wall time of `work status` in this repo) are below and in the commit body.
+
+Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e trace=execve` count 2062 before (1627 merge-base) and 528 after (70 merge-base); `work status` wall time 29.7 s before and 7.3 s after.
 
 ## non-goals
 
@@ -28,7 +34,7 @@ Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,62
 - global_gate: none
 
 ### S1 — Read each unit's unlanded commits once; intersect in memory
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
 - acceptance:
@@ -37,6 +43,9 @@ Measured before (this repo, 60ish live units, nice -n 19): 2,044 git execs (1,62
   - "The relations output (shared counts per pair) is identical to today's for a fixture with overlapping and disjoint units."
   - "Measured: git process count and wall time of `work status` in this repo before and after are written in the proposal's why and in the commit body."
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage`."
+- shipped-in: `41c340ab115a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
