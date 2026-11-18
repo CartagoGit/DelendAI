@@ -2,14 +2,14 @@
 id: x01095
 title: "A dependency version reaches the tree only after a cooldown, from the registry, with its integrity hash"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: 1843bf26-a6d6-4bd1-bc35-618963fbd3b2
-last-correlation-id: 1843bf26-a6d6-4bd1-bc35-618963fbd3b2
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T08:17:09.464Z
+last-transition-id: 088816aa-ed52-4fa1-862f-a2364f4d712c
+last-correlation-id: 088816aa-ed52-4fa1-862f-a2364f4d712c
+last-transition-from: review
+last-transition-at: 2026-11-18T08:57:33.607Z
 ---
 
 # x01095 — A dependency version reaches the tree only after a cooldown, from the registry, with its integrity hash
