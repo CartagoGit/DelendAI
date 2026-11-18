@@ -62,10 +62,10 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S3 — Hidden refs and proposal tools stop spelling refs/delendai
 - **Status**: review
 - **DependsOn**: [S2]
-- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
 - **Gate**: type
 - acceptance:
-  - "`refs/${namespacePrefix}/retired/*` (unit-reaper, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix."
+  - "`refs/${namespacePrefix}/retired/*` (clone-forge, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix."
   - "stranded-edits with an empty prefix scans only the owned roots, never every ref under refs/remotes/origin."
   - "The id allocator, retired-tip, claim and review-reservation readers look under every owned root, so a tip kept under refs/delendai/retired stays found and an id reserved under refs/delendai/ids is never issued twice."
   - "publish-proposal and create_proposal take the publication prefix from the policy; no `delendai/pr/` fallback remains."
@@ -203,7 +203,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes).
 - namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers.
 - Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused.
-- `refs/${namespacePrefix}/retired/*` (unit-reaper, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix.
+- `refs/${namespacePrefix}/retired/*` (clone-forge, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix.
 - stranded-edits with an empty prefix scans only the owned roots, never every ref under refs/remotes/origin.
 - The id allocator, retired-tip, claim and review-reservation readers look under every owned root, so a tip kept under refs/delendai/retired stays found and an id reserved under refs/delendai/ids is never issued twice.
 - publish-proposal and create_proposal take the publication prefix from the policy; no `delendai/pr/` fallback remains.
