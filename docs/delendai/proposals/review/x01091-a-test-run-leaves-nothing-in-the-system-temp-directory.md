@@ -2,14 +2,14 @@
 id: x01091
 title: "A test run leaves nothing in the system temp directory"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: a3be2978-9327-4ae5-b738-2e72dd32fcd9
-last-correlation-id: a3be2978-9327-4ae5-b738-2e72dd32fcd9
-last-transition-from: ready
-last-transition-at: 2026-11-18T01:31:27.418Z
+last-transition-id: f1e3610e-49b0-428d-b870-6903086e52cc
+last-correlation-id: f1e3610e-49b0-428d-b870-6903086e52cc
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T02:58:15.811Z
 ---
 
 # x01091 — A test run leaves nothing in the system temp directory
@@ -33,7 +33,7 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
 - global_gate: lint
 
 ### S1 — One run-scoped temp root for vitest and bun test runs
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `tools/scripts/test/run-temp-root.global-setup.ts`, `tools/scripts/test/run-temp-root.global-setup.spec.ts`, `tools/scripts/test/bun-owned-specs.script.ts`, `packages/test-kit/src/lib/hermetic-environment.helper.ts`
 - **Gate**: e2e
 - acceptance:
@@ -42,9 +42,12 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
   - "forgeConfigDir in hermetic-environment.helper.ts creates its directory under the run root, so it is removed with it."
   - "run-temp-root.global-setup.spec.ts runs a child vitest over a fixture spec that calls mkdtempSync(join(tmpdir(), 'leak-')) and asserts the system temp directory holds the same entry names before and after the child run."
   - "No spec file outside S1 changes."
+- shipped-in: `4bd2b1c6e289`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A lint refuses a test helper that writes outside the run root
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/lint/test-temp-root.script.ts`, `tools/scripts/lint/test-temp-root.spec.ts`, `package.json`
 - **Gate**: lint
@@ -52,6 +55,9 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
   - "lint:test-temp-root fails on a spec or test helper that passes a literal absolute /tmp path to mkdtemp or mkdtempSync instead of a path under tmpdir(), naming file and line."
   - "The lint is wired into lint:architecture so CI runs it."
   - "It passes on the current tree and fails on a fixture with mkdtempSync('/tmp/x-')."
+- shipped-in: `8e80c0426110`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
