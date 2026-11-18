@@ -71,7 +71,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('names the landing route when the checkout left the integration branch', () => {
-		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
+		const work = 'wip/implement/gpt-5-codex/x00056-S1/tetris-mock';
 		const merge = judgeGitOperation(policy, commit(work), AGENT);
 		const pr = judgeGitOperation(
 			expandProfile('shared-checkout-pr'),
@@ -107,7 +107,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
+		const work = 'wip/implement/gpt-5-codex/x00056-S1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`), AGENT)
 				.refused,
@@ -172,7 +172,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/implement/x00549-S1-g1/guard',
+					'refs/heads/delendai/wip/implement/claude-opus-5/x00549-S1/guard',
 				),
 				AGENT,
 			).refused,
@@ -181,7 +181,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				push(
-					'refs/heads/delendai/pr/claude-opus-5/implement/x00549-S1-g1/guard',
+					'refs/heads/delendai/pr/implement/claude-opus-5/x00549-S1/guard',
 				),
 				AGENT,
 			).refused,
@@ -204,7 +204,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		const verdict = judgeGitOperation(
 			policy,
 			create(
-				'refs/heads/delendai/wip/github-copilot-review-20260926/review/c00528-S1-g1/review',
+				'refs/heads/delendai/wip/review/github-copilot-review-20260926/c00528-S1/review',
 			),
 			AGENT,
 		);
@@ -215,7 +215,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 	it('refuses an agent id that names the program it runs in, and accepts a model (x00694)', () => {
 		const verdict = judgeGitOperation(
 			policy,
-			create('refs/heads/delendai/wip/copilot/review/batch-all-g1/close'),
+			create('refs/heads/delendai/wip/review/copilot/x00558/close'),
 			AGENT,
 		);
 		expect(verdict.refused).toBe(true);
@@ -225,7 +225,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 				judgeGitOperation(
 					policy,
 					create(
-						`refs/heads/delendai/wip/${model}/review/batch-all-g1/close`,
+						`refs/heads/delendai/wip/review/${model}/x00558/close`,
 					),
 					AGENT,
 				).refused,
@@ -285,7 +285,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/MiniMax-m3/review/x00553-all-g1/review',
+					'refs/heads/delendai/wip/review/MiniMax-m3/x00553/review',
 				),
 				PERSON,
 			).reason,
@@ -295,7 +295,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 	it('refuses a commit on a delendai branch authored as somebody else (f00644)', () => {
 		const commit = {
 			kind: 'commit' as const,
-			branch: 'delendai/wip/minimax-m3/review/x00553-all-g1/review',
+			branch: 'delendai/wip/review/minimax-m3/x00553/review',
 			isMerge: false,
 			inMainWorktree: false,
 			author: 'MiniMax-m3-review-20260926 <m@MiniMax-m3.invalid>',
@@ -352,8 +352,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		const deletion = (deletedTipKept: boolean | undefined) =>
 			({
 				kind: 'push',
-				remoteRef:
-					'refs/heads/delendai/wip/agent/review/x00001-S1-g1/t',
+				remoteRef: 'refs/heads/delendai/wip/review/agent/x00001-S1/t',
 				deleting: true,
 				deletedTipKept,
 			}) as const;
@@ -438,7 +437,7 @@ describe('no commit while the shared checkout holds loose edits (x01003)', () =>
 		resolveDevelopmentPolicy({
 			development: { profile, branches: { namespacePrefix: 'delendai' } },
 		});
-	const work = 'delendai/wip/claude-opus-5-5/implement/x01003-all-g1/clean';
+	const work = 'delendai/wip/implement/claude-opus-5-5/x01003/clean';
 	const loose = { root: '/repo', paths: ['stray.ts'] };
 
 	it("refuses an agent's commit in its own worktree, naming work rescue", () => {
@@ -572,7 +571,7 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation',
+					'refs/heads/delendai/wip/implement/claude-opus-5/x00563-S1/the-explanation',
 				),
 				AGENT,
 			).refused,

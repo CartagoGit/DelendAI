@@ -204,9 +204,9 @@ describe('agentsOfMerges', () => {
 			agentsOfMerges(
 				[
 					'Merge pull request #1 from o/delendai/pr/a-topic-with-no-agent',
-					'Merge pull request #2 from o/delendai/pr/claude-opus-5-5/implement/x00001-S1-g1/t',
-					'Merge develop into delendai/pr/minimax-m3/review/batch-all-g1/v',
-					'Merge pull request #3 from o/delendai/pr/claude-opus-5-5/review/batch-all-g2/v',
+					'Merge pull request #2 from o/delendai/pr/implement/claude-opus-5-5/x00001-S1/t',
+					'Merge develop into delendai/pr/review/minimax-m3/batch-all/v',
+					'Merge pull request #3 from o/delendai/pr/review/claude-opus-5-5/batch-all-G2/v',
 					'feat: not a merge of a publication',
 				],
 				'refs/heads/delendai/pr/',

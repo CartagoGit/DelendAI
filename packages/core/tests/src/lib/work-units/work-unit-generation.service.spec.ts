@@ -39,8 +39,8 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
-const OLD = 'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/topic';
-const NEW = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/topic';
+const OLD = 'refs/heads/delendai/wip/implement/agent-a/x00001-S1/topic';
+const NEW = 'refs/heads/wip/implement/agent-a/x00001-S1/topic';
 const ARGS = ['--kind=implement', '--topic=topic'];
 
 const template = createGitRepoTemplate({

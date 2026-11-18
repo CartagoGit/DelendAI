@@ -19,6 +19,7 @@ import { execGitFileSync, gitVerbatim } from '../shared/git-read.helper';
 import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
+import { ownedTemplates } from './owned-work-ref-parser';
 import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
 import { worktreeSession } from '../work-units/worktree-agent.service';
 import { readFile } from 'node:fs/promises';
@@ -258,7 +259,7 @@ export const callerUnitCheckout = async (
 	// Two instances of one model share its name: the unit a sibling holds
 	// is not the caller's, and a verdict written there is in the wrong pack.
 	const units = liveUnitsOfProposal(
-		policy.branches.workRefTemplate,
+		ownedTemplates(policy.branches),
 		listing,
 		wanted,
 	).filter((unit) => {

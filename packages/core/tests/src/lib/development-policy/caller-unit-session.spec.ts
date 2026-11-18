@@ -46,7 +46,7 @@ describe('callerUnitCheckout with a session', () => {
 			'add',
 			'-q',
 			'-b',
-			'delendai/wip/agent-a/implement/x00001-all-g1/topic',
+			'delendai/wip/implement/agent-a/x00001/topic',
 			unit,
 		);
 		stampWorktreeAgent(unit, 'agent-a', 's1');

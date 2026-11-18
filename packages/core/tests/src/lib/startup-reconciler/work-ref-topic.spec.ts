@@ -36,7 +36,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'configurable-ref-namespace',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/configurable-ref-namespace',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1/configurable-ref-namespace',
 		);
 	});
 
@@ -77,7 +77,7 @@ describe('work refs carry the model and what the work is', () => {
 				generation: 2,
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g2/work',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1-G2/work',
 		);
 	});
 
@@ -91,7 +91,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'fix the ref guard: namespaces!',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/fix-the-ref-guard-namespaces',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1/fix-the-ref-guard-namespaces',
 		);
 	});
 
@@ -111,7 +111,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'the explanation of what was done',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation-of-what-was-done',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00563-S1/the-explanation-of-what-was-done',
 		);
 	});
 

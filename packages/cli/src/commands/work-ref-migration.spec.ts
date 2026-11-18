@@ -33,7 +33,7 @@ const PREVIOUS_SHAPES: readonly string[] = [
 	// Until f00644: no kind segment.
 	'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}',
 	// Until f00808 S8: agent first, proposal-slice-generation scope.
-	'heads/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+	'heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
 ];
 
 const UNIT = {

@@ -15,6 +15,7 @@
  * Two agents can then decide between themselves, which is what a hive
  * does and a lock does not.
  */
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { readGit } from '../shared/git-read.helper';
 import { shortName } from '../integration/decisions/namespaces.helper';
 
@@ -87,10 +88,15 @@ export const identityOf = (
 	const tail = logicalName.startsWith(prefix)
 		? logicalName.slice(prefix.length)
 		: logicalName;
-	const [agent, ...rest] = tail.split('/');
+	// The agent sits wherever the shape puts it (f00808): the parser says
+	// which segment it is, and the subject is the name without it.
+	const segments = tail.split('/');
+	const named = unitOfName(tail)?.agent;
+	const at = named === undefined ? 0 : Math.max(segments.indexOf(named), 0);
+	const [agent] = segments.splice(at, 1);
 	return {
 		agent: agent ?? 'unknown',
-		subject: rest.join('/'),
+		subject: segments.join('/'),
 	};
 };
 

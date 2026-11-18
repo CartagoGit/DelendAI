@@ -90,7 +90,7 @@ const PR_MODEL = {
 	},
 };
 
-const PUBLICATION = 'delendai/pr/agent-a/implement/x00001-S1-g1/topic';
+const PUBLICATION = 'delendai/pr/implement/agent-a/x00001-S1/topic';
 
 describe('work claim of an orphaned publication', () => {
 	it('adopts a publication whose unit ended, keeps it, and names both agents', async () => {
@@ -124,7 +124,7 @@ describe('work claim of an orphaned publication', () => {
 			),
 		);
 		expect(out).toContain('was agent-a, now agent-b');
-		const adopted = 'delendai/wip/agent-b/implement/x00001-S1-g2/topic';
+		const adopted = 'delendai/wip/implement/agent-b/x00001-S1-G2/topic';
 		expect(git(root, 'rev-parse', adopted)).toBe(tip);
 		expect(git(root, 'rev-parse', PUBLICATION)).toBe(tip);
 		const lease = await readUnitLease(

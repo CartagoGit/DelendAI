@@ -35,19 +35,15 @@ describe('otherReviewPacks', () => {
 	it("keeps other agents' packs that still hold work, and nothing else", () => {
 		const packs = otherReviewPacks(
 			[
-				unit('gpt-5.4', 'review/batch-all-g1/work'),
-				unit('gemini-3.8-flash', 'review/batch-all-g1/work'),
-				unit('gemini-3.8-flash', 'implement/x1-S1-g1/work'),
-				unit(
-					'minimax-m3.1-flash-preview',
-					'review/batch-all-g1/work',
-					0,
-				),
+				unit('gpt-5.4', 'review/batch-all/work'),
+				unit('gemini-3.8-flash', 'review/batch-all/work'),
+				unit('gemini-3.8-flash', 'implement/x1-S1/work'),
+				unit('minimax-m3.1-flash-preview', 'review/batch-all/work', 0),
 			],
 			'gpt-5.4',
 		);
 		expect(packs.map((pack) => pack.agent)).toEqual(['gemini-3.8-flash']);
-		expect(packs[0]?.subject).toBe('review/batch-all-g1/work');
+		expect(packs[0]?.subject).toBe('review/batch-all/work');
 	});
 });
 

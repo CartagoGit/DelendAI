@@ -16,7 +16,7 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
-const UNIT = 'delendai/wip/claude-sonnet-5-5/create/x00799-all-g1';
+const UNIT = 'delendai/wip/create/claude-sonnet-5-5/x00799';
 const REAL = `${UNIT}/derived-files-merge`;
 const SCRATCH = `${UNIT}/sim-a`;
 const AGENT = { agentMarker: 'CLAUDECODE' } as const;
@@ -86,7 +86,7 @@ describe('pushing into a unit', () => {
 			workUnitKeyOf(policy, SCRATCH),
 		);
 		expect(workUnitKeyOf(policy, REAL)).not.toBe(
-			workUnitKeyOf(policy, REAL.replace('-g1', '-g2')),
+			workUnitKeyOf(policy, REAL.replace('x00799', 'x00799-G2')),
 		);
 	});
 });

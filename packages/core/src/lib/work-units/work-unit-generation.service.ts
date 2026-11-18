@@ -1,5 +1,6 @@
 import { ownedRootsOf } from './namespaced-ref.helper';
 import {
+	ownedTemplates,
 	ownedWorkRefShapes,
 	unitOfName,
 } from '../development-policy/owned-work-ref-parser';
@@ -307,7 +308,7 @@ export const existingWorkRef = (
 	// for one kind may be the branch entered for the other, unless another
 	// session works in it.
 	const continued = liveProposalBranch(
-		policy.branches.workRefTemplate,
+		ownedTemplates(policy.branches),
 		ref,
 		readGit(root, ['worktree', 'list', '--porcelain']) ?? '',
 	)?.ref;

@@ -158,7 +158,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 				readonly branch: string;
 			};
 			expect(data.branch).toBe(
-				'delendai/wip/claude-sonnet-5-5/implement/x1-S1-g1/probe',
+				'delendai/wip/implement/claude-sonnet-5-5/x1-S1/probe',
 			);
 			expect(existsSync(data.path)).toBe(true);
 			expect(git(data.path, 'symbolic-ref', '--short', 'HEAD')).toBe(
@@ -182,7 +182,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(
 				git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
 			).toContain(
-				'refs/heads/delendai/pr/claude-sonnet-5-5/implement/x1-S1-g1/probe',
+				'refs/heads/delendai/pr/implement/claude-sonnet-5-5/x1-S1/probe',
 			);
 		});
 

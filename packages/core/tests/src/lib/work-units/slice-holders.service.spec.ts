@@ -55,7 +55,7 @@ const asking = {
 
 describe('holdersOfSlice', () => {
 	it("leaves a slice free that only the proposal's create unit names", () => {
-		const writer = unit('opus', 'create/x00001-all-g1/the-document');
+		const writer = unit('opus', 'create/x00001-all/the-document');
 		expect(holdersOfSlice({ ...asking, view: view([], [writer]) })).toEqual(
 			[],
 		);
@@ -72,8 +72,8 @@ describe('holdersOfSlice', () => {
 		const held = holdersOfSlice({
 			...asking,
 			view: view(
-				[unit('codex', 'implement/x00001-S1-g1/t')],
-				[unit('glm', 'implement/x00001-S1-g2/t')],
+				[unit('codex', 'implement/x00001-S1/t')],
+				[unit('glm', 'implement/x00001-S1-G2/t')],
 			),
 		});
 		expect(held.map((entry) => entry.agent)).toEqual(['codex', 'glm']);
@@ -83,14 +83,14 @@ describe('holdersOfSlice', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
-				view: view([unit('codex', 'implement/x00001-all-g1/t')]),
+				view: view([unit('codex', 'implement/x00001-all/t')]),
 			}),
 		).toHaveLength(1);
 		expect(
 			holdersOfSlice({
 				...asking,
 				slice: 'all',
-				view: view([unit('codex', 'implement/x00001-S3-g1/t')]),
+				view: view([unit('codex', 'implement/x00001-S3/t')]),
 			}),
 		).toHaveLength(1);
 	});
@@ -101,24 +101,24 @@ describe('holdersOfSlice', () => {
 				...asking,
 				view: view(
 					[
-						unit('codex', 'implement/x00001-S2-g1/t'),
-						unit('codex', 'implement/x00002-S1-g1/t'),
+						unit('codex', 'implement/x00001-S2/t'),
+						unit('codex', 'implement/x00002-S1/t'),
 						unit('codex', 'no-generation'),
 					],
-					[unit('glm', 'implement/x00001-S1-g1/t', 0)],
+					[unit('glm', 'implement/x00001-S1/t', 0)],
 				),
 			}),
 		).toEqual([]);
 	});
 
 	it('neither keeps a review out nor lets a review hold a slice', () => {
-		const reviewing = view([unit('codex', 'review/x00001-S1-g1/t')]);
+		const reviewing = view([unit('codex', 'review/x00001-S1/t')]);
 		expect(holdersOfSlice({ ...asking, view: reviewing })).toEqual([]);
 		expect(
 			holdersOfSlice({
 				...asking,
 				kind: 'review',
-				view: view([unit('codex', 'implement/x00001-S1-g1/t')]),
+				view: view([unit('codex', 'implement/x00001-S1/t')]),
 			}),
 		).toEqual([]);
 	});
@@ -128,8 +128,8 @@ describe('holdersOfSlice', () => {
 			holdersOfSlice({
 				...asking,
 				view: view([
-					unit('me', 'implement/x00001-S1-g1/t'),
-					unit('codex', 'implement/x00001-S1-g1/t'),
+					unit('me', 'implement/x00001-S1/t'),
+					unit('codex', 'implement/x00001-S1/t'),
 				]),
 			}),
 		).toEqual([]);
@@ -143,8 +143,8 @@ describe('holdersOfSlice', () => {
 				proposal: 'new',
 				slice: 'all',
 				view: view(
-					[unit('codex', 'create/new-all-g1/one-proposal')],
-					[unit('glm', 'create/new-all-g1/another-proposal')],
+					[unit('codex', 'create/new-all/one-proposal')],
+					[unit('glm', 'create/new-all/another-proposal')],
 				),
 			}),
 		).toEqual([]);
@@ -152,10 +152,10 @@ describe('holdersOfSlice', () => {
 
 	it('says who holds it and what can be done about it', () => {
 		const lines = describeSliceHolders([
-			unit('codex', 'implement/x00001-S1-g1/t'),
+			unit('codex', 'implement/x00001-S1/t'),
 		]);
 		expect(lines[0]).toContain(
-			'codex holds it in ns/wip/codex/implement/x00001-S1-g1/t',
+			'codex holds it in ns/wip/implement/codex/x00001-S1/t',
 		);
 		expect(lines.join('\n')).toContain('--alongside');
 		expect(lines.join('\n')).toContain('work claim');
@@ -272,8 +272,6 @@ describe('readSliceOwnership', () => {
 		]);
 		expect(stranger.own).toBeUndefined();
 		expect(holder.others).toEqual([]);
-		expect(holder.own).toContain(
-			'claude-opus-5/implement/x00001-S1-g1/probe',
-		);
+		expect(holder.own).toContain('claude-opus-5/implement/x00001-S1/probe');
 	});
 });

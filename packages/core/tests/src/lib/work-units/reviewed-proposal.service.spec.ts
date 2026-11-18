@@ -169,7 +169,7 @@ describe('work enter by the reviewer of the proposal', () => {
 		git('checkout', '-q', '--', '.');
 		git(
 			'update-ref',
-			'refs/heads/delendai/wip/claude-opus-5-5/implement/x00001-S1-g9/s9',
+			'refs/heads/delendai/wip/implement/claude-opus-5-5/x00001-S1-G9/s9',
 			unlanded,
 		);
 		expect((await enter(root, 'minimax-m3', 'implement', 'S9')).code).toBe(

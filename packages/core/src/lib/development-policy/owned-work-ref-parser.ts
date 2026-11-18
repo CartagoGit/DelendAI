@@ -47,6 +47,12 @@ export const ownedWorkRefShapes = (
 	}));
 };
 
+/** Every owned work template, current first; the declared one when none. */
+export const ownedTemplates = (branches: IShapeBranches): readonly string[] => {
+	const shapes = ownedWorkRefShapes(branches).map((shape) => shape.template);
+	return shapes.length > 0 ? shapes : [branches.workRefTemplate];
+};
+
 /** The owned work shape a branch (short or qualified) lives under. */
 export const ownedWorkRefShapeOf = (
 	branches: IShapeBranches,

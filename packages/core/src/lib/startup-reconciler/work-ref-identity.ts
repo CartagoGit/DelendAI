@@ -230,7 +230,7 @@ const compileOneParser = (
 };
 
 /** The other spelling of `template`: the scope grammar and `-g{n}`. */
-const alternateTemplate = (template: string): string | undefined => {
+export const alternateTemplate = (template: string): string | undefined => {
 	if (template.endsWith(WORK_REF_SHAPE)) {
 		return `${template.slice(0, -WORK_REF_SHAPE.length)}${LEGACY_WORK_REF_SHAPE}`;
 	}

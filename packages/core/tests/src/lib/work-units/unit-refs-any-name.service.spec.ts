@@ -37,15 +37,14 @@ const policy = resolveDevelopmentPolicy({
 describe('unitRefsAnyName', () => {
 	it('[<200ms] finds a unit under both namespaces, whatever its topic', () => {
 		const root = template.copy().root;
-		const old =
-			'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/one';
-		const fresh = 'refs/heads/wip/agent-a/implement/x00001-S1-g2/two';
+		const old = 'refs/heads/delendai/wip/implement/agent-a/x00001-S1/one';
+		const fresh = 'refs/heads/wip/implement/agent-a/x00001-S1-G2/two';
 		git(root, 'update-ref', old, 'HEAD');
 		git(root, 'update-ref', fresh, 'HEAD');
 		git(
 			root,
 			'update-ref',
-			'refs/heads/wip/agent-b/implement/x00001-S1-g1/one',
+			'refs/heads/wip/implement/agent-b/x00001-S1/one',
 			'HEAD',
 		);
 		expect(
@@ -113,7 +112,7 @@ describe('unitRefsAnyName under the scope grammar (f00808)', () => {
 
 	it('[<200ms] finds a generation-1 unit under the old shape too', () => {
 		const root = template.copy().root;
-		const old = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/one';
+		const old = 'refs/heads/wip/implement/agent-a/x00001-S1/one';
 		git(root, 'update-ref', old, 'HEAD');
 		expect([...find(root, policy)]).toEqual([old]);
 	});

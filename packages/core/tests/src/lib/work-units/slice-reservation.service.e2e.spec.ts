@@ -348,7 +348,7 @@ describe('a slice reservation whose unit is gone', () => {
 			'-p',
 			parent,
 			'-m',
-			'review claim x00001 1\n\nUnit: refs/heads/delendai/wip/agent-c/review/batch-all-g1/verdicts\nAgent: agent-c',
+			'review claim x00001 1\n\nUnit: refs/heads/delendai/wip/review/agent-c/batch-all/verdicts\nAgent: agent-c',
 		);
 		first.git(
 			'push',

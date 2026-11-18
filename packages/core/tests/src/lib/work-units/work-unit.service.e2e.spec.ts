@@ -37,8 +37,8 @@ import { commitOnRef } from './unit-repo.helper';
 const roots: string[] = [];
 const command = { run: runWorkUnit };
 /** The unit these cases work in, and another agent's beside it. */
-const MINE = 'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe';
-const THEIRS = 'delendai/wip/gpt-5/implement/x00553-S9-g1/their-own-slice';
+const MINE = 'delendai/wip/implement/claude-opus-5/x00553-S1/probe';
+const THEIRS = 'delendai/wip/implement/gpt-5/x00553-S9/their-own-slice';
 
 /** A verdict written in a review unit: the change that makes it a pack. */
 const recordVerdict = (unit: string, name: string): void => {
@@ -499,7 +499,7 @@ describe('delendai work (x00553)', () => {
 		);
 		expect(created.code).toBe(0);
 		expect(created.data).toMatchObject({
-			branch: 'delendai/wip/claude-opus-5/implement/x00553-S2-g1/isolated',
+			branch: 'delendai/wip/implement/claude-opus-5/x00553-S2/isolated',
 			created: true,
 		});
 		// The shared checkout is untouched.
@@ -653,7 +653,7 @@ describe('delendai work (x00553)', () => {
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
 		).toContain(
-			'refs/heads/delendai/pr/claude-opus-5/implement/x00553-S1-g1/probe',
+			'refs/heads/delendai/pr/implement/claude-opus-5/x00553-S1/probe',
 		);
 	});
 
@@ -875,7 +875,7 @@ describe('delendai work (x00553)', () => {
 			contextFor(root),
 		);
 		expect(entered.data).toMatchObject({
-			branch: 'delendai/wip/claude-opus-5/review/batch-all-g1/sweep',
+			branch: 'delendai/wip/review/claude-opus-5/batch-all/sweep',
 		});
 		const unit = join(root, 'batch-wt');
 		for (const id of ['x00001', 'x00002']) {
@@ -908,7 +908,7 @@ describe('delendai work (x00553)', () => {
 		expect(published.data).toMatchObject({
 			published: true,
 			publication: {
-				ref: 'refs/heads/delendai/pr/claude-opus-5/review/batch-all-g1/sweep',
+				ref: 'refs/heads/delendai/pr/review/claude-opus-5/batch-all/sweep',
 			},
 		});
 		expect(
@@ -1032,7 +1032,7 @@ describe('delendai work (x00553)', () => {
 		expect(published.data).toMatchObject({
 			published: true,
 			publication: {
-				ref: 'refs/heads/delendai/pr/claude-opus-5/review/batch-all-g1/sweep',
+				ref: 'refs/heads/delendai/pr/review/claude-opus-5/batch-all/sweep',
 			},
 		});
 	});
@@ -1044,7 +1044,7 @@ describe('delendai work (x00553)', () => {
 			git(
 				root,
 				'update-ref',
-				`refs/heads/delendai/wip/claude-opus-5/implement/x00553-S1-g1/${topic}`,
+				`refs/heads/delendai/wip/implement/claude-opus-5/x00553-S1/${topic}`,
 				head,
 			);
 		}
@@ -1100,9 +1100,9 @@ describe('delendai work (x00553)', () => {
 			);
 		}
 		expect(units.map((unit) => unit.branch)).toEqual([
-			'delendai/wip/minimax-m3/review/batch-all-g1/a',
-			'delendai/wip/minimax-m3/review/batch-all-g2/b',
-			'delendai/wip/minimax-m3/review/batch-all-g3/c',
+			'delendai/wip/review/minimax-m3/batch-all/a',
+			'delendai/wip/review/minimax-m3/batch-all-G2/b',
+			'delendai/wip/review/minimax-m3/batch-all-G3/c',
 		]);
 		expect(new Set(units.map((unit) => unit.path)).size).toBe(3);
 		expect(new Set(units.map((unit) => unit.session)).size).toBe(3);
@@ -1129,7 +1129,7 @@ describe('delendai work (x00553)', () => {
 			data: {
 				published: true,
 				publication: {
-					ref: 'refs/heads/delendai/pr/minimax-m3/review/batch-all-g2/b',
+					ref: 'refs/heads/delendai/pr/review/minimax-m3/batch-all-G2/b',
 				},
 			},
 		});
@@ -1158,7 +1158,7 @@ describe('delendai work (x00553)', () => {
 			session: string;
 		};
 		expect(second.branch).toBe(
-			'delendai/wip/minimax-m3/review/batch-all-g2/b',
+			'delendai/wip/review/minimax-m3/batch-all-G2/b',
 		);
 		// The first unit is given up: its generation is free again.
 		execFileSync('git', ['worktree', 'remove', '--force', first.path], {
@@ -1216,7 +1216,7 @@ describe('delendai work (x00553)', () => {
 			data: {
 				published: true,
 				publication: {
-					ref: 'refs/heads/delendai/pr/minimax-m3/review/batch-all-g2/b',
+					ref: 'refs/heads/delendai/pr/review/minimax-m3/batch-all-G2/b',
 				},
 			},
 		});
@@ -1378,7 +1378,7 @@ describe('delendai work, as a person reads it', () => {
 
 	it('prints the swarm, naming the paths more than one unit is changing', async () => {
 		const root = repoWith(PINNED);
-		commitOnRef(root, 'delendai/wip/gpt-5/implement/x00553-S9-g1/theirs', {
+		commitOnRef(root, 'delendai/wip/implement/gpt-5/x00553-S9/theirs', {
 			'a.ts': 'export const a = 1;\n',
 		});
 		const out = await printed(() =>
@@ -1441,8 +1441,8 @@ describe('instances entering at once each get a unit (x00731)', () => {
 			.map((result) => (result.data as { ref: string }).ref)
 			.sort();
 		expect(refs).toEqual([
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g1/verdicts',
-			'refs/heads/delendai/wip/minimax-m3/review/batch-all-g2/verdicts',
+			'refs/heads/delendai/wip/review/minimax-m3/batch-all/verdicts',
+			'refs/heads/delendai/wip/review/minimax-m3/batch-all-G2/verdicts',
 		]);
 		// The path it reports is the worktree's own, even for an absolute
 		// --dir, so the session is stamped where the next instance reads it.
