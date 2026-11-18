@@ -16,11 +16,17 @@ const state = vi.hoisted(() => {
 		workRef: string;
 		taken: { generation: number; ref: string } | undefined;
 		base: string | undefined;
+		review: { code: number } | undefined;
+		land: { code: number; error: string };
+		target: object;
 	} = {
 		policy: undefined,
 		workRef: 'refs/heads/delendai/wip/a/implement/x00001-S1-g1/t',
 		taken: undefined,
 		base: 'abc',
+		review: undefined,
+		land: { code: 7, error: 'landed' },
+		target: { refusal: 'no target' },
 	};
 	return initial;
 });
@@ -39,6 +45,27 @@ vi.mock(
 vi.mock('@delendai/core/lib/work-units/work-unit-generation.service', () => ({
 	ambiguousUnit: () => undefined,
 	existingWorkRef: () => state.workRef,
+}));
+vi.mock(
+	'@delendai/core/lib/work-units/review-unit-publish-checks.service',
+	() => ({
+		reviewUnitRefusal: () => Promise.resolve(state.review),
+	}),
+);
+vi.mock('@delendai/core/lib/work-units/work-unit-land.service', () => ({
+	landWorkUnit: () => Promise.resolve(state.land),
+}));
+vi.mock(
+	'@delendai/core/lib/work-units/open-pull-request-republication.service',
+	() => ({
+		resolvePublicationTarget: () => state.target,
+	}),
+);
+vi.mock('@delendai/core/lib/work-units/change-request-forges.service', () => ({
+	pullRequestPorts: () => Promise.resolve({}),
+}));
+vi.mock('@delendai/core/lib/work-units/publication-target.service', () => ({
+	proposalInProgress: () => false,
 }));
 vi.mock('@delendai/core/lib/work-units/unit-fence.service', () => ({
 	readSupersedingUnit: () => state.taken,
@@ -71,6 +98,8 @@ describe('published', () => {
 		state.workRef = 'refs/heads/delendai/wip/a/implement/x00001-S1-g1/t';
 		state.taken = undefined;
 		state.base = 'abc';
+		state.review = undefined;
+		state.target = { refusal: 'no target' };
 	});
 
 	it('[<200ms] names the arguments it needs', async () => {
@@ -113,5 +142,20 @@ describe('published', () => {
 		state.base = undefined;
 		const result = await published(UNIT, ctx);
 		expect(result.error).toContain('resolves to no commit');
+	});
+
+	it("[<200ms] returns the review unit's own refusal", async () => {
+		state.review = { code: 9 };
+		expect(await published(UNIT, ctx)).toEqual({ code: 9 });
+	});
+
+	it('[<200ms] lands the unit itself under a profile that integrates by merge', async () => {
+		state.policy = policyFor('shared-checkout-merge');
+		expect((await published(UNIT, ctx)).error).toBe('landed');
+	});
+
+	it('[<200ms] refuses when no publication target resolves', async () => {
+		const result = await published(UNIT, ctx);
+		expect(result.error).toContain('no target');
 	});
 });
