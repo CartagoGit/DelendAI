@@ -2,10 +2,14 @@
 id: x01098
 title: "The workflow defects of 2026-11-18 are fixed at their roots"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-18
+last-transition-id: 1565720d-ba6d-4c29-be06-753a2d0751d2
+last-correlation-id: 1565720d-ba6d-4c29-be06-753a2d0751d2
+last-transition-from: ready
+last-transition-at: 2026-11-18T17:07:47.566Z
 ---
 
 # x01098 — The workflow defects of 2026-11-18 are fixed at their roots
