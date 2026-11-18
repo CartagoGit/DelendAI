@@ -10,6 +10,8 @@ last-transition-id: 67c14cae-f3f4-41a3-9cce-a76f2df68fac
 last-correlation-id: 67c14cae-f3f4-41a3-9cce-a76f2df68fac
 last-transition-from: in-progress
 last-transition-at: 2026-11-10T02:57:28.714Z
+shipped-in:
+  - "26aa84e29054cace69e611675dbf6a6c84789c3a"
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -36,15 +38,17 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - global_gate: type
 
 ### S1 — The nearest specs are the product's
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "`near-specs.ts` returns, for a diff against a base, each changed spec, the spec named after each changed source, the specs that import a changed file by path, and the specs the read map records reading one (near-specs.spec.ts), and `bun run prove` runs typecheck, biome-baseline, lint:architecture, lint:proposals, those specs with changed-file coverage and `test:sqlite` when state or proposals code changed, printing each step's time and exiting non-zero on any failure (prove-plan.script.spec.ts)."
 - shipped-in: `b8f7509b6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — The shipped-in commit for S1 is 4bd7c10993ec, but it does not include the declared S1 evidence surface (`tools/scripts/ci/near-specs.ts`, `tools/scripts/ci/near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`). The acceptance for S1 explicitly depends on those artifacts. Repro: `git show --name-only 4bd7c10993ec` and compare with the S1 Files + acceptance section in f00796.
+- review-log: approved by mai-code-2 — verified at 26aa84e29054, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) near-specs.spec.ts covers changed specs, mirrors, direct importers, source-importer fallback and read-map readers; prove-plan.script.spec.ts covers nearest-spe… — Reviewed the delivered commit and the later proof-plan evolutions listed by the queue. The five named suites pass 59/59 and the current 80-workspace typecheck is green. Near-spec selection still covers changed specs, mirrors, path importers and read-map readers; later x01067 work narrows bun-owned execution but does not invalidate the delivered selector/proof foundation.
 
 ### S2 — This repository declares its proof
 - **Status**: review
