@@ -26,6 +26,7 @@ import {
 	type IToolDetail,
 	withCsp,
 } from '@delendai/ui-extension/webview';
+import { SIDE_BAR_LAYOUT_CSS } from '../contracts/constants/side-bar-layout-css.constant';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
 import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';
@@ -226,6 +227,14 @@ export const renderLiveSection = (
 		],
 	)}</section>`;
 };
+
+const withSideBarLayout = (html: string): string =>
+	/<\/head>/iu.test(html)
+		? html.replace(
+				/<\/head>/iu,
+				() => `<style>${SIDE_BAR_LAYOUT_CSS}</style></head>`,
+			)
+		: `<style>${SIDE_BAR_LAYOUT_CSS}</style>${html}`;
 
 /** The section goes right after the opening body tag, or leads the page. */
 const withLiveSection = (html: string, section: string): string =>
@@ -503,13 +512,15 @@ export class DashboardWebviewViewProvider {
 			withCsp(
 				'dashboard',
 				withLiveSection(
-					renderDashboard(models, {
-						docsUrl: resolveDocsUrl(this.deps.getConfig),
-						refreshCommand: REFRESH_COMMAND,
-						openDocsCommand: OPEN_DOCS_COMMAND,
-						lang: dictsByLang[lang],
-						settings,
-					}),
+					withSideBarLayout(
+						renderDashboard(models, {
+							docsUrl: resolveDocsUrl(this.deps.getConfig),
+							refreshCommand: REFRESH_COMMAND,
+							openDocsCommand: OPEN_DOCS_COMMAND,
+							lang: dictsByLang[lang],
+							settings,
+						}),
+					),
 					renderLiveSection(live, models),
 				),
 			),
