@@ -2,14 +2,14 @@
 id: x01097
 title: "work revalidate hands over an in-progress proposal whose live slices all shipped and that has no unit"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-18
-last-transition-id: 0a1edee2-7696-4728-8122-fbeb72098180
-last-correlation-id: 0a1edee2-7696-4728-8122-fbeb72098180
-last-transition-from: review
-last-transition-at: 2026-11-18T12:56:28.790Z
+last-transition-id: b0fcc6cd-fa5b-412a-97e3-301d497703a3
+last-correlation-id: b0fcc6cd-fa5b-412a-97e3-301d497703a3
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T12:59:22.952Z
 ---
 
 # x01097 — work revalidate hands over an in-progress proposal whose live slices all shipped and that has no unit
