@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.3.0",
-		"generatedAt": "2026-11-17T21:17:08.108Z"
+		"generatedAt": "2026-11-18T18:28:52.106Z"
 	},
 	"tools": [
 		{
@@ -761,7 +761,7 @@
 					"checkout": {
 						"type": "string",
 						"minLength": 1,
-						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or it lands in the server’s checkout, on the integration branch. Must be a working tree of this repository. Omit for the server’s root."
 					}
 				},
 				"required": [
@@ -1188,6 +1188,10 @@
 						"type": "string",
 						"minLength": 1
 					},
+					"superseded_by": {
+						"type": "string",
+						"pattern": "^[a-z]\\d{5}$"
+					},
 					"transitionId": {
 						"type": "string",
 						"minLength": 1
@@ -1242,7 +1246,7 @@
 					"checkout": {
 						"type": "string",
 						"minLength": 1,
-						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or it lands in the server’s checkout, on the integration branch. Must be a working tree of this repository. Omit for the server’s root."
 					},
 					"preflight": {
 						"type": "boolean"

@@ -12,7 +12,7 @@
 import z from 'zod';
 
 export const CHECKOUT_ARG_DESCRIPTION =
-	'Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server\u2019s checkout \u2014 on the integration branch. Must be a working tree of this same repository. Omit for the server\u2019s root.';
+	'Absolute path to the working tree this write belongs in. Pass your own worktree, or it lands in the server\u2019s checkout, on the integration branch. Must be a working tree of this repository. Omit for the server\u2019s root.';
 
 export const CHECKOUT_ARG_SCHEMA = z
 	.string()
