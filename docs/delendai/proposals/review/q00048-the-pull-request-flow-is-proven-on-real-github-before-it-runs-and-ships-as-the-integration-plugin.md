@@ -16,6 +16,7 @@ shipped-in:
   - "7c5f13a76a7af86544450905fc2de3094e1390c3"
   - "7a9c228afcfe476c531812a286cf84bef2d2bb68"
   - "edd7b73cd055"
+  - "4d676221b5f5a68724ac3f4a8076da3039736b8e"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -388,7 +389,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at edd7b73cd055, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) CodeQL/rehearsal scan workflow specs cover integration-branch push triggers, newest-tip concurrency and per-tip completed scan coverage. (2) Promotion alert and rehearsal workflow tests pass with open-alert blocking. (3) F9 scenario and scan-helper expectations pass; known-red contains no F9 entry. — Reviewed scan-after-merge and promotion alert gating; focused integration suite passed 564/564.
 
 ### S10 — Test budgets never block integration by noise
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `tools/scripts/ci/spec-duration-budget.script.ts`, `tools/scripts/ci/declared-test-budget.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/test/test-load-reference.json`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/test-kit/src/lib/time-budget/load-benchmark.helper.ts`, `vitest.shared.ts`
 - **Gate**: none
@@ -399,8 +400,10 @@ Nothing of this repository is emitted into the other project.
   - "A failure names the tier, the limit, the load factor and the measured time"
   - "Scenario F6 is green"
 - shipped-in: `1fd67e07a1fc`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 4d676221b5f5, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 5/5: (1) Time-budget runner/tier specs and the 564-test integration run validate the two-tier decision, 200ms unit cap and touched-spec-only failure. (2) Load benchmark/helper, spec-duration budget and calibration tests pass; vitest.shared wiring emits the benchmark reference and environment factors. (3) Calibration/time-budget fixtures and focused specs cover the formula, no-unit-write rule, migration exemptions and real-clock fake-timer behavior. (4) Time-budget failure output assertions pass and include tier, limit, factors and duration. (5) The scenario catalogue has no F6 known-red and the focused integration suite passed 564/564. — Reviewed unit/e2e tiering, load benchmark, reporting and calibration; focused integration suite passed 564/564 and the project typecheck had already passed 80 workspaces.
 
 ### S11a — The host does no integration write and tells sessions what they missed
 - **Status**: review
