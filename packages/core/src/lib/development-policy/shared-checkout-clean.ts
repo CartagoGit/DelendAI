@@ -17,6 +17,13 @@ import { persistenceRouteKind } from './resolve';
 
 const LISTED_PATHS = 5;
 
+/** Files a pager (`less` run as a command) leaves behind: its prompt text. */
+const PAGER_OUTPUT_NAMES: ReadonlySet<string> = new Set(['on']);
+
+/** True when a loose path is a file named as pager output, not an edit. */
+export const isPagerOutput = (path: string): boolean =>
+	PAGER_OUTPUT_NAMES.has(path.split('/').pop() ?? path);
+
 /**
  * True when `work enter` gives every unit a worktree of its own: every
  * policy whose work persists to work refs. Files reach a unit's ref from
@@ -49,6 +56,6 @@ export const looseEditsRefusal = (
 	sharedRoot: string,
 	paths: readonly string[],
 ): { readonly reason: string; readonly remedy: string } => ({
-	reason: `The shared checkout at ${sharedRoot} holds ${String(paths.length)} loose edit(s): ${listedPaths(paths)}. Nothing is edited there: every unit has its own worktree, so no work command and no commit runs while the shared checkout holds edits nobody will commit.`,
+	reason: `${paths.some(isPagerOutput) ? `A file named ${paths.filter(isPagerOutput).join(', ')} is pager output (a command run with PAGER=less), not an edit. ` : ''}The shared checkout at ${sharedRoot} holds ${String(paths.length)} loose edit(s): ${listedPaths(paths)}. Nothing is edited there: every unit has its own worktree, so no work command and no commit runs while the shared checkout holds edits nobody will commit.`,
 	remedy: `Run \`${RESCUE_COMMAND}\`: it keeps them under a ref, says which, and restores the shared checkout; their owner takes them into a unit's worktree from that ref. Never discard another agent's edits by hand.`,
 });
