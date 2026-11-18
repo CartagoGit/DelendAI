@@ -2260,7 +2260,6 @@
 		"tools/scripts/lint/proposal-files-exist.script.spec.ts",
 		"tools/scripts/lint/proposal-files-follow-conventions.script.spec.ts",
 		"tools/scripts/lint/proposal-frontmatter-yaml.script.spec.ts",
-		"tools/scripts/lint/proposal-hygiene.spec.ts",
 		"tools/scripts/lint/proposal-ready-to-close.script.spec.ts",
 		"tools/scripts/lint/proposal-slice-completeness.script.spec.ts",
 		"tools/scripts/lint/proposal-uniqueness.script.spec.ts",

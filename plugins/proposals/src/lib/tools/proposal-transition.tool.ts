@@ -29,6 +29,20 @@ export type { IProposalTransitionArgs } from '../contracts/proposal-transition-i
 // Tool registration.
 // ---------------------------------------------------------------------------
 
+/**
+ * The typed `superseded_by` leads the reason, the form every reader of an
+ * old record still parses; a reason that already leads with it is kept.
+ */
+export const withSupersededReason = (
+	args: IProposalTransitionArgs,
+): IProposalTransitionArgs => {
+	const { superseded_by: by, ...rest } = args;
+	if (by === undefined) return args;
+	return rest.reason.startsWith(`superseded_by ${by}`)
+		? rest
+		: { ...rest, reason: `superseded_by ${by}: ${rest.reason}` };
+};
+
 /** Registration for `<prefix>_proposal_transition`. */
 export const buildProposalTransitionRegistration = (
 	options: IProposalTransitionToolOptions,
@@ -36,7 +50,7 @@ export const buildProposalTransitionRegistration = (
 	id: 'proposal_transition',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
-	summary: 'Move a proposal to a new status; its folder follows.',
+	summary: 'Move a proposal to a new status.',
 	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(
@@ -63,13 +77,15 @@ export const buildProposalTransitionRegistration = (
 				if (refusal !== undefined) {
 					return toolError(refusal.reason, refusal.nextAction);
 				}
-				return runProposalTransitionCompat(args, options).then(
-					(result) =>
-						result.ok
-							? result.payload
-							: toolError(
-									`invalid input: ${JSON.stringify(result.error.issues)}`,
-								),
+				return runProposalTransitionCompat(
+					withSupersededReason(args),
+					options,
+				).then((result) =>
+					result.ok
+						? result.payload
+						: toolError(
+								`invalid input: ${JSON.stringify(result.error.issues)}`,
+							),
 				);
 			},
 		);

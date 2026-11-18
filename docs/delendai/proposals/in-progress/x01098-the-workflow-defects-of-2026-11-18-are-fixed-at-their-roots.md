@@ -59,7 +59,7 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 
 ### S4 — Typed superseded_by and no duplicate flag across a DependsOn chain
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-transition-schema.constant.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/lint/proposal-hygiene.spec.ts`
+- **Files**: `plugins/proposals/src/lib/contracts/proposal-transition-input.contract.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/lint/proposal-hygiene.spec.ts`
 - **Gate**: lint
 - **Decisions**: superseded_by is an optional proposal id string; the reason prefix keeps being read for old records.
 - acceptance:
