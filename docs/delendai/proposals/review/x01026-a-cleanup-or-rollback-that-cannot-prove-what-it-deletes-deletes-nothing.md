@@ -2,14 +2,14 @@
 id: x01026
 title: "A cleanup or rollback that cannot prove what it deletes deletes nothing"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
-last-correlation-id: a6501a17-b50e-4f2f-9ab2-a12a880c54f6
-last-transition-from: review
-last-transition-at: 2026-11-04T22:22:52.936Z
+last-transition-id: 55877da7-1f6e-450f-bd58-9f781862b041
+last-correlation-id: 55877da7-1f6e-450f-bd58-9f781862b041
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T08:20:10.305Z
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -32,7 +32,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The reaper keeps a worktree it could not read
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -40,13 +40,12 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "git worktree remove --force is used only on a worktree whose clean state was read, not assumed."
   - "A spec simulates the failing git status."
 - shipped-in: `f52293358229`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ### S2 — The rollback reverts only what the transaction wrote
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/rollback.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -54,9 +53,8 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A file written by another process after the backup and before the rollback is still there afterwards."
   - "A spec writes such a file between the backup and the rollback."
 - shipped-in: `569c1d67f766`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
 
 ## acceptance
