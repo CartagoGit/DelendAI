@@ -79,15 +79,17 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-log: approved by mai-code-2 — verified at e72f2e167a8f, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 3/3: (1) withReviewKind leaves explicit implement/review kinds alone and refuses a kind-less named slice in review, with both commands in the remedy. (2) The shipped commit body says `S3 chosen: refuse` because a named slice without a kind is ambiguous, and names --kind=implement versus --kind=review. (3) review-kind.service.spec.ts asserts the returned args contain no --kind=review and the refusal names both kinds; all 5 cases pass. — Reviewed the review-kind decision and commit history. The 5 review-kind cases pass, a named slice on a proposal in review is refused when kind is absent, and the commit body records that refusal was chosen over silently creating a review unit.
 
 ### S4 — Deliver says where the pull request is
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "The deliver result includes the pull request number and URL, or states publication pushed, pull request pending, with the branch."
   - "A spec proves both outputs."
 - shipped-in: `7a4c3fc74448`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at ac65f6381d25, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 2/2: (1) pullRequestOf parses the terminal URL number, while pullRequestWithLookup resolves an existing PR or returns pending:true, branch and an explanatory message. (2) work-deliver.service.spec.ts asserts URL/number from publication, URL/number from forge lookup, pending+branch when absent, and pending without throwing on loo… — Reviewed deliver's pull-request output and later pending-lookup fix. All 24 work-deliver specs pass. A publication-provided URL yields number+URL; otherwise the service performs one forge lookup and returns URL/number or an explicit pending branch answer.
 
 ### S5 — A small fix travels with its proposal in one unit and one pull request
 - **Status**: review
