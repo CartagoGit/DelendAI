@@ -10,6 +10,8 @@ last-transition-id: c568c88b-b4b8-4e33-82f5-4517402c7dca
 last-correlation-id: c568c88b-b4b8-4e33-82f5-4517402c7dca
 last-transition-from: in-progress
 last-transition-at: 2026-11-15T22:32:46.732Z
+shipped-in:
+  - "e72f2e167a8f8a109b442e6cf4e6e173194353ca"
 ---
 
 # x01073 — Unit commands never guess the unit, and deliver says where the pull request is
@@ -34,7 +36,7 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - global_gate: none
 
 ### S1 — Deliver outside the worktree finds the agent's one live unit or refuses
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-live-unit.service.ts`, `packages/cli/src/lib/work-live-unit.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -42,8 +44,10 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
   - "With none or several it refuses, lists them and prints the exact command; it never falls back to slice all."
   - "A spec proves the one, none and several cases."
 - shipped-in: `7a4c3fc74448`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e72f2e167a8f, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 3/3: (1) liveUnitsOf filters active units by agent/proposal and chooseLiveUnit returns the sole unit; the one-unit spec verifies kind/slice/generation flags. (2) The no-unit case refuses with `no live unit`, and the several-unit case prints full cd/work-deliver commands for each exact slice; no all flag is synthesized. (3) work-live-unit.service.spec.ts contains and passes all three cases plus filtering of ended/foreign units. — Reviewed the live-unit resolver and the CLI wiring. The 4 dedicated cases pass, and the later command refactors preserve the behavior: outside a unit, the one live unit is selected; none or several are refused with exact commands and no `all` fallback.
 
 ### S2 — A publication carries the unit's slice
 - **Status**: review
