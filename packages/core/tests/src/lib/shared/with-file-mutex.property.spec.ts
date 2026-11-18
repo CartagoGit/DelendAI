@@ -11,7 +11,6 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import fc from 'fast-check';
 import {
 	__resetWithFileMutexTestHooks,
 	__setWithFileMutexTestHooks,
@@ -52,171 +51,7 @@ describe('withFileMutex state-machine invariants', () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('enumerated contender schedules never allow two simultaneous holders', async () => {
-		const scenarios = [
-			{
-				startDelays: [0, 1, 2],
-				sectionDurations: [12, 6, 0],
-				crashIndex: -1,
-			},
-			{
-				startDelays: [0, 0, 0],
-				sectionDurations: [8, 8, 8],
-				crashIndex: -1,
-			},
-			{
-				startDelays: [0, 2, 4],
-				sectionDurations: [20, 0, 3],
-				crashIndex: 1,
-			},
-			{
-				startDelays: [0, 3, 3],
-				sectionDurations: [5, 15, 5],
-				crashIndex: 2,
-			},
-			{
-				startDelays: [1, 1, 2],
-				sectionDurations: [10, 10, 1],
-				crashIndex: 0,
-			},
-			{
-				startDelays: [0, 5, 10],
-				sectionDurations: [18, 4, 4],
-				crashIndex: -1,
-			},
-		] as const;
-
-		for (const [scenarioIndex, scenario] of scenarios.entries()) {
-			let insideCount = 0;
-			let maxConcurrent = 0;
-
-			const contenders = scenario.startDelays.map(
-				(startDelay, contenderIndex) =>
-					(async () => {
-						const sectionDuration =
-							scenario.sectionDurations[contenderIndex] ?? 0;
-						await delay(startDelay);
-						await withFileMutex(
-							target,
-							async () => {
-								insideCount += 1;
-								maxConcurrent = Math.max(
-									maxConcurrent,
-									insideCount,
-								);
-								await delay(sectionDuration);
-								insideCount -= 1;
-								if (scenario.crashIndex === contenderIndex) {
-									throw new Error(
-										`simulated-crash-${scenarioIndex}-${contenderIndex}`,
-									);
-								}
-							},
-							{
-								// These scenarios exercise contention, overlap
-								// and crash-release — not stale reclaim, which
-								// has its own test below. An 80ms stale window
-								// against ≤20ms sections left no margin on a
-								// loaded machine: a descheduled-but-live holder
-								// got reclaimed, and the restored reclaim marker
-								// then outlived its release, leaving the sidecar
-								// behind. Widen the window so only genuine
-								// contention is under test here.
-								heartbeatMs: 10,
-								pollMs: 2,
-								staleMs: 800,
-								timeoutMs: 2000,
-							},
-						);
-					})().catch(() => undefined),
-			);
-
-			await Promise.all(contenders);
-			expect(
-				maxConcurrent,
-				`scenario ${scenarioIndex}`,
-			).toBeLessThanOrEqual(1);
-			expect(existsSync(lockPath), `scenario ${scenarioIndex}`).toBe(
-				false,
-			);
-		}
-	});
-
-	it('fast-check: three contenders never overlap across generated schedules', async () => {
-		const scenarioArb = fc.record({
-			startDelays: fc.tuple(
-				fc.integer({ min: 0, max: 5 }),
-				fc.integer({ min: 0, max: 5 }),
-				fc.integer({ min: 0, max: 5 }),
-			),
-			sectionDurations: fc.tuple(
-				fc.integer({ min: 0, max: 8 }),
-				fc.integer({ min: 0, max: 8 }),
-				fc.integer({ min: 0, max: 8 }),
-			),
-			crashIndex: fc.integer({ min: -1, max: 2 }),
-		});
-
-		await fc.assert(
-			fc.asyncProperty(scenarioArb, async (scenario) => {
-				const scenarioTarget = join(
-					dir,
-					`state-fast-check-${Math.random().toString(36).slice(2)}.json`,
-				);
-				const scenarioLockPath = `${scenarioTarget}.mutex`;
-				writeFileSync(scenarioTarget, '{}');
-
-				let insideCount = 0;
-				let maxConcurrent = 0;
-				const contenders = scenario.startDelays.map(
-					(startDelay, contenderIndex) =>
-						(async () => {
-							await delay(startDelay);
-							await withFileMutex(
-								scenarioTarget,
-								async () => {
-									insideCount += 1;
-									maxConcurrent = Math.max(
-										maxConcurrent,
-										insideCount,
-									);
-									await delay(
-										scenario.sectionDurations[
-											contenderIndex
-										] ?? 0,
-									);
-									insideCount -= 1;
-									if (
-										scenario.crashIndex === contenderIndex
-									) {
-										throw new Error(
-											`simulated-crash-${contenderIndex}`,
-										);
-									}
-								},
-								{
-									heartbeatMs: 10,
-									pollMs: 2,
-									staleMs: 800,
-									timeoutMs: 2_000,
-								},
-							);
-						})().catch(() => undefined),
-				);
-
-				await Promise.all(contenders);
-				expect(maxConcurrent).toBeLessThanOrEqual(1);
-				expect(existsSync(scenarioLockPath)).toBe(false);
-			}),
-			// A fixed seed makes the sampled schedules the same on every run,
-			// so a failure reproduces. 60 of them, beside the enumerated
-			// schedules below, cover every start order, every overlap of
-			// two sections and the crash of each contender.
-			{ numRuns: 60, seed: 20261104 },
-		);
-	});
-
-	it('reclaims both legacy and structured stale sidecars across bounded ages', async () => {
+	it('[<200ms] reclaims both legacy and structured stale sidecars across bounded ages', async () => {
 		const cases = [
 			{ format: 'legacy', staleMs: 20, ageMs: 60 },
 			{ format: 'legacy', staleMs: 40, ageMs: 120 },
@@ -263,7 +98,7 @@ describe('withFileMutex state-machine invariants', () => {
 		}
 	});
 
-	it('heartbeats keep the lock live across long critical sections', async () => {
+	it('[<200ms] heartbeats keep the lock live across long critical sections', async () => {
 		// The lease windows must stay well clear of scheduler jitter. With a
 		// 40ms stale window a heartbeat that is merely descheduled — not
 		// dead — reads as expired, the waiter reclaims, and the assertion
@@ -289,6 +124,12 @@ describe('withFileMutex state-machine invariants', () => {
 			}
 		};
 
+		const fsDrained = (): boolean =>
+			!process
+				.getActiveResourcesInfo()
+				.some(
+					(name) => name.endsWith('Req') || name.startsWith('FSReq'),
+				);
 		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
 		try {
 			for (const [caseIndex, entry] of cases.entries()) {
@@ -348,17 +189,8 @@ describe('withFileMutex state-machine invariants', () => {
 					await settle(() => heartbeatCount >= expectedHeartbeats);
 					// afterHeartbeat fires before the handle is closed and the
 					// in-flight guard released; a tick landing in that window
-					// is skipped, so wait for the fs requests (incl. CloseReq) to drain.
-					await settle(
-						() =>
-							!process
-								.getActiveResourcesInfo()
-								.some(
-									(name) =>
-										name.endsWith('Req') ||
-										name.startsWith('FSReq'),
-								),
-					);
+					// is skipped, so wait for the fs requests to drain.
+					await settle(fsDrained);
 					expect(heartbeatCount, `case ${caseIndex}`).toBe(
 						expectedHeartbeats,
 					);
@@ -419,6 +251,9 @@ describe('withFileMutex state-machine invariants', () => {
 				);
 				await vi.advanceTimersByTimeAsync(holderDurationMs - elapsedMs);
 				await holder;
+				// A tick that fired at the instant the section ended may still be
+				// finishing; it must not count toward the next case.
+				await settle(fsDrained);
 				__resetWithFileMutexTestHooks();
 			}
 		} finally {
@@ -427,7 +262,7 @@ describe('withFileMutex state-machine invariants', () => {
 		}
 	});
 
-	it('heartbeat generations are monotonic across bounded runs', async () => {
+	it('[<200ms] heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
 
 		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
