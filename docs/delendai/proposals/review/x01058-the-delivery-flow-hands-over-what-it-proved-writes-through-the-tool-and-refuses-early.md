@@ -119,7 +119,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S7 — Entering a unit installs what the worktree lacks
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-dependencies.service.ts`, `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -127,8 +127,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "The install command table is the one the proof's temporary worktree uses; no second list."
   - "[<Nms] spec: complete modules are left alone, incomplete ones installed, no lockfile skipped."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
