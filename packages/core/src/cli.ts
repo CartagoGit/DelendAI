@@ -260,7 +260,7 @@ export {
 	unitVerdictOf,
 } from './lib/work-units/unit-standings.service';
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
-export { endDeliveredUnits } from './lib/ref-reconciler/clone-forge.service';
+export { endDeliveredUnits } from './lib/ref-reconciler/clone-forge-ports.service';
 export { compileWorkRefParser } from './lib/startup-reconciler/work-ref-identity';
 export { isRevalidationIdentity } from './lib/work-units/unit-topic.service';
 export { readSwarm } from './lib/work-units/work-swarm.service';

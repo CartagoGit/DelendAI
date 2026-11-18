@@ -51,11 +51,11 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 
 ### S3 — Reap respects the idle threshold and retires spent publications
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/src/lib/work-units/retired-landed.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
 - **Gate**: lint
 - **Decisions**: The existing 30 minute idle threshold is reused; no new setting.
 - acceptance:
-  - "`bunx vitest run packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts` proves an empty clean unit inside the 30 minute heartbeat window is not a would-remove and a landed spent publication is retired by reap"
+  - "`bunx vitest run packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts` proves an empty clean unit inside the 30 minute heartbeat window is not a would-remove and a landed spent publication is retired by reap"
 
 ### S4 — Typed superseded_by and no duplicate flag across a DependsOn chain
 - **Status**: pending
@@ -104,7 +104,7 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - `bunx vitest run tools/scripts/forge/land-workflow.spec.ts` proves a failure already present on the base certifying result names no batch member as culprit
 - `bunx vitest run packages/core/tests/src/lib/integration/land/land-workflow.helper.spec.ts` stays green
 - `bunx vitest run packages/core/tests/src/lib/development-policy/shared-checkout-clean.spec.ts` proves spawned git gets PAGER=cat and GIT_PAGER=cat and a loose file named `on` is reported as pager output
-- `bunx vitest run packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts` proves an empty clean unit inside the 30 minute heartbeat window is not a would-remove and a landed spent publication is retired by reap
+- `bunx vitest run packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts` proves an empty clean unit inside the 30 minute heartbeat window is not a would-remove and a landed spent publication is retired by reap
 - `bunx vitest run tools/scripts/lint/proposal-hygiene.spec.ts` proves a follow-up proposal chained by DependsOn is not flagged duplicate
 - `bunx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts` stays green with an optional superseded_by field
 - `bunx vitest run packages/cli/src/lib/work-revalidate.service.spec.ts` proves a delivered slice whose file was renamed or deleted by a merged change does not block the hand-over of another slice
