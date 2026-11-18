@@ -125,6 +125,16 @@ describe('printPathOnly', () => {
 	});
 });
 
+describe('work revalidate', () => {
+	it('[<200ms] chooses none in a project with no ready proposals and exits 0', async () => {
+		const result = await createWorkCommand().run(
+			['revalidate'],
+			createNoopContext('/nonexistent-project', globals(true)),
+		);
+		expect(result.code).toBe(0);
+	});
+});
+
 describe('work offline', () => {
 	it('[<50ms] starts no server for any subcommand but deliver', () => {
 		const { offline } = createWorkCommand();
@@ -142,6 +152,7 @@ describe('work offline', () => {
 			expect(isOffline([sub])).toBe(true);
 		}
 		expect(isOffline(['deliver', '--proposal=x1'])).toBe(false);
+		expect(isOffline(['revalidate'])).toBe(false);
 	});
 });
 
