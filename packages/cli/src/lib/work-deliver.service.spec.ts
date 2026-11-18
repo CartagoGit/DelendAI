@@ -24,6 +24,8 @@ const ports = (
 	},
 	proveCode: IExitCode = EXIT_CODE.OK,
 	slice = 'all',
+	readPullRequest: IWorkDeliverPorts['readOpenPullRequest'] = async () =>
+		undefined,
 ) => {
 	const calls: string[] = [];
 	const value: IWorkDeliverPorts = {
@@ -37,6 +39,7 @@ const ports = (
 			calls.push('publish');
 			return { code: EXIT_CODE.OK, data: 'pr/slice' };
 		},
+		readOpenPullRequest: readPullRequest,
 		locate: async () => ({
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
@@ -339,7 +342,9 @@ describe('pullRequestOf', () => {
 		expect(pullRequestOf(undefined, 'pr/b')).toEqual({
 			pending: true,
 			branch: 'pr/b',
-			message: 'publication pushed, pull request pending: pr/b',
+			message: expect.stringContaining(
+				'the forge opens the pull request',
+			),
 		});
 	});
 
@@ -361,5 +366,31 @@ describe('pullRequestOf', () => {
 		expect(result.data).toMatchObject({
 			pullRequest: { pending: true, branch: 'pr/unit' },
 		});
+	});
+
+	it('[<20ms] names the pull request the forge read finds when publication had none', async () => {
+		const { value } = ports({}, EXIT_CODE.OK, 'all', async (branch) => {
+			expect(branch).toBe('pr/unit');
+			return 'https://h/o/r/pull/7';
+		});
+		const result = await deliverUnit(value);
+		expect(result.data).toMatchObject({
+			pullRequest: { url: 'https://h/o/r/pull/7', number: 7 },
+		});
+	});
+
+	it('[<20ms] answers pending without a publish command when the forge has none or the read fails', async () => {
+		const failing = ports({}, EXIT_CODE.OK, 'all', async () => {
+			throw new Error('gh failed');
+		});
+		for (const { value } of [ports({}), failing]) {
+			const result = await deliverUnit(value);
+			const request = (result.data as Record<string, unknown>)
+				.pullRequest as Record<string, unknown>;
+			expect(request).toMatchObject({ pending: true, branch: 'pr/unit' });
+			expect(request.message).toContain('delendai work status');
+			expect(request.message).toContain('nothing is left to do');
+			expect(request.message).not.toContain('work publish');
+		}
 	});
 });
