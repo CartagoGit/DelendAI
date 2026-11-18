@@ -238,10 +238,10 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S7 — Weekly KPIs
 - **Status**: pending
 - **DependsOn**: [S6]
-- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`
+- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`
 - **Gate**: none
 - acceptance:
-  - "pr-ci-cost reports weekly: ready to merged p50, human merges = 0, unexplained waits over 30 minutes = 0, bookkeeping commits under 10%"
+  - "`bun run ci:cost -- --weekly` reports per week ready-to-merged p50, human merges, unexplained waits over 30 minutes and the bookkeeping commit share (targets: 0 human merges, 0 waits, under 10%), proved by tools/scripts/ci/pr-ci-cost.script.spec.ts"
   - "A KPI over its threshold is shown by name with the number, not hidden"
 
 ## acceptance
