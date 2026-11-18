@@ -65,7 +65,7 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-log: approved by mai-code-2 — verified at ac65f6381d25, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 3/3: (1) pullRequestOf is passed ports.slice except only on a separate slice publication; an S1 unit against an all publication returns slice S1 and the explanatory sli… (2) The shipped S1-to-S4 commit body states: the branch named all is not a lost slice; integration.publication publishes a small proposal whole with all in the pub… (3) work-deliver.service.spec.ts asserts pullRequestOf(...all,S1) has slice S1 and a sliceNote containing S1, while an S1 publication branch has no note; the full … — Reviewed the slice-bearing publication answer and commit history. All 24 work-deliver specs pass, and the delivery commit body explicitly explains why policy can publish a small proposal under an `all` branch while the work ref retains S1.
 
 ### S3 — Enter with an implement slice and no kind never hands out a review unit
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/tests/src/lib/work-units/review-kind.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -73,8 +73,10 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
   - "The commit body states which of the two was chosen and why."
   - "A spec proves no review unit is returned."
 - shipped-in: `7a4c3fc74448`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e72f2e167a8f, validate exit 0 and tests 5/5 claimed, no recorded run cited; acceptance 3/3: (1) withReviewKind leaves explicit implement/review kinds alone and refuses a kind-less named slice in review, with both commands in the remedy. (2) The shipped commit body says `S3 chosen: refuse` because a named slice without a kind is ambiguous, and names --kind=implement versus --kind=review. (3) review-kind.service.spec.ts asserts the returned args contain no --kind=review and the refusal names both kinds; all 5 cases pass. — Reviewed the review-kind decision and commit history. The 5 review-kind cases pass, a named slice on a proposal in review is refused when kind is absent, and the commit body records that refusal was chosen over silently creating a review unit.
 
 ### S4 — Deliver says where the pull request is
 - **Status**: review
