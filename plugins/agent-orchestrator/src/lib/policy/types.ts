@@ -93,6 +93,16 @@ export interface IBudgetPolicy {
 	readonly maxTokensPerSubagent: number;
 	/** Hard wall-clock timeout for the task in ms. 0 = no timeout. */
 	readonly timeoutMs: number;
+	/** Max calls to a provider for the whole task. Absent or 0 = unlimited. */
+	readonly maxCalls?: number | undefined;
+	/** Max conversation turns for the whole task. Absent or 0 = unlimited. */
+	readonly maxTurns?: number | undefined;
+	/** Max retries for the whole task. Absent or 0 = unlimited. */
+	readonly maxRetries?: number | undefined;
+	/** Max subagents running at once. Absent or 0 = unlimited. */
+	readonly maxConcurrency?: number | undefined;
+	/** Stop after this many consecutive turns with no progress. Absent or 0 = off. */
+	readonly maxBarrenTurns?: number | undefined;
 }
 
 export const DEFAULT_BUDGET_POLICY: IBudgetPolicy = {

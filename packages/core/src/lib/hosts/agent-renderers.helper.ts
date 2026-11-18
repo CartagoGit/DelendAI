@@ -8,8 +8,11 @@
 import type {
 	IAgentFileFormat,
 	IAgentHost,
+	ICompactionPolicy,
+	ICompactionRendering,
 	IHostNeutralAgent,
 } from '../contracts/interfaces/agent-host.interface';
+import { renderCompactionFor } from './compaction-policy.helper';
 
 const frontMatterOf = (lines: readonly string[]): string =>
 	['---', ...lines, '---'].join('\n');
@@ -67,3 +70,10 @@ export const renderAgentForHosts = (
 		const file = renderAgentFor(host, agent);
 		return file === undefined ? [] : [file];
 	});
+
+/** The compaction setup of every host, from the one policy. */
+export const renderCompactionForHosts = (
+	hosts: readonly IAgentHost[],
+	policy: ICompactionPolicy,
+): readonly ICompactionRendering[] =>
+	hosts.map((host) => renderCompactionFor(host, policy));
