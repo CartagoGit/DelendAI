@@ -75,7 +75,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S4 — --urgent travels onto the pull request and the queue leads with it
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S3]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/work.command.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
@@ -85,8 +85,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "queueOrder sorts urgent candidates first, then by number; the train composition in queue-order.ts is untouched"
   - "A spec shows an urgent later pull request ahead of an earlier plain one, and the note is read back by the publication"
 - shipped-in: `ad0565d8f4a9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
 - **Status**: review
