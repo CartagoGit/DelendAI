@@ -26,6 +26,7 @@ import { checkHostServerHandshake } from './doctor-checks/host-server-handshake'
 import { checkPermissions } from './doctor-checks/permissions';
 import { checkPluginGraph } from './doctor-checks/plugin-graph';
 import { checkPorts } from './doctor-checks/ports';
+import { checkRecurringToolFailures } from './doctor-checks/recurring-tool-failures.check';
 import { checkRuntime } from './doctor-checks/runtime';
 import { checkSchemas } from './doctor-checks/schemas';
 import { checkStaleDocs } from './doctor-checks/stale-docs';
@@ -64,6 +65,7 @@ export const defaultDoctorChecks: readonly IDoctorCommandCheck[] = [
 	checkPorts,
 	checkPermissions,
 	checkCiStatus,
+	checkRecurringToolFailures,
 ];
 
 const createDoctorFs = (workspace: string): IDoctorFs => ({

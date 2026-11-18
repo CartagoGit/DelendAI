@@ -22,6 +22,8 @@ import {
 	conformErrorStructuredContent,
 	resolveOutputParser,
 } from './conform-error-structured-content.helper';
+import { toolCancellationContext } from './tool-cancellation-context.helper';
+import { failureField } from '../observability/tool-failure-class.helper';
 import { sdkObjectOutputSchema } from './sdk-object-output-schema.helper';
 import { DECLARED_OUTPUT_SCHEMA } from '../contracts/constants/declared-output-schema.constant';
 
@@ -111,25 +113,6 @@ export const instrumentToolHandlers = (
 		return async (...args: unknown[]): Promise<unknown> =>
 			asToolCall(async (nested) => {
 				await toolCallsReleased();
-				const cancellationContext = (
-					signal: AbortSignal | undefined,
-				) => {
-					const error =
-						signal?.reason ?? new Error('tool invocation aborted');
-					const reason =
-						typeof error === 'object' &&
-						error !== null &&
-						typeof (error as { message?: unknown }).message ===
-							'string'
-							? (error as { message: string }).message
-							: String(error).replace(/^Error:\s*/u, '');
-					return {
-						reason: reason || 'tool invocation aborted',
-						nextAction:
-							'Retry the operation or resume from the latest persisted checkpoint.',
-						error,
-					};
-				};
 				const emitHookError = (info: {
 					readonly hookName: PluginHookName;
 					readonly toolName: string;
@@ -197,7 +180,7 @@ export const instrumentToolHandlers = (
 									name,
 									hookArgs,
 									performance.now() - start,
-									cancellationContext(signal),
+									toolCancellationContext(signal),
 								),
 							performance.now() - start,
 						);
@@ -244,7 +227,7 @@ export const instrumentToolHandlers = (
 					}
 					result = await invoke(args);
 					if (wasCancelled) {
-						const cancellation = cancellationContext(signal);
+						const cancellation = toolCancellationContext(signal);
 						result = toolError(
 							cancellation.reason,
 							cancellation.nextAction,
@@ -305,7 +288,7 @@ export const instrumentToolHandlers = (
 					isError = true;
 					error = err;
 					if (wasCancelled) {
-						const cancellation = cancellationContext(signal);
+						const cancellation = toolCancellationContext(signal);
 						result = toolError(
 							cancellation.reason,
 							cancellation.nextAction,
@@ -344,6 +327,12 @@ export const instrumentToolHandlers = (
 								toolName: name,
 								elapsedMs: ms,
 								error: isError,
+								...failureField(
+									isError,
+									result,
+									error,
+									wasCancelled,
+								),
 								estimatedTokens4B: isError
 									? estimateErrorCost(result, error)
 											.estimatedTokens.estimatedTokens4B

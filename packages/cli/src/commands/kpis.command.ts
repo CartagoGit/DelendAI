@@ -21,6 +21,8 @@ import {
 import {
 	renderKpiCliReport,
 	renderKpiCliReportJsonLine,
+	renderToolFailures,
+	summariseToolFailures,
 	type IKpiCliReport,
 	type IKpiRenderedMetric,
 	type IKpiRenderedTable,
@@ -1358,6 +1360,30 @@ const buildReport = (
 const resultCodeFor = (report: IKpiCliReport): ICliCommandResult['code'] =>
 	report.thresholds.breached ? EXIT_CODE.VALIDATION : EXIT_CODE.OK;
 
+const DEFAULT_FAILURE_SINCE_DAYS = 7;
+
+const runFailuresView = async (
+	options: IKpiCliOptions,
+	ctx: ICliCommandContext,
+	runtime: IKpiCommandRuntime,
+): Promise<ICliCommandResult> => {
+	const path = join(
+		ctx.globals.workspace,
+		options.cacheDir,
+		'runtime',
+		'events.jsonl',
+	);
+	const text = (runtime.pathExists ?? existsSync)(path)
+		? await (runtime.readTextFile ?? ((p) => readFile(p, 'utf8')))(path)
+		: '';
+	const sinceMs =
+		(runtime.now ?? (() => new Date()))().getTime() -
+		(options.sinceDays ?? DEFAULT_FAILURE_SINCE_DAYS) * DAY_MS;
+	const rows = summariseToolFailures(text, sinceMs);
+	if (options.emitJson) return data({ rows }, EXIT_CODE.OK);
+	return { code: EXIT_CODE.OK, text: renderToolFailures(rows) };
+};
+
 export const runKpisCommandBody = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -1371,6 +1397,7 @@ export const runKpisCommandBody = async (
 		};
 	}
 	const options = parsed.value;
+	if (options.failures) return runFailuresView(options, ctx, runtime);
 	const write =
 		runtime.write ?? ((chunk: string) => process.stdout.write(chunk));
 	const wait =
