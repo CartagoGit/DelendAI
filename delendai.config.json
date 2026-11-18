@@ -308,6 +308,9 @@
 		"project-kpis": {
 			"options": {}
 		},
+		"self-learning": {
+			"options": {}
+		},
 		"orchestrator-runner": {
 			"options": {}
 		},

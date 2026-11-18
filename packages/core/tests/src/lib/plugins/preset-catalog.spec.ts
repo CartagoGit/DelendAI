@@ -13,6 +13,7 @@ import {
 	PACK_IDS,
 	STACK_PACKS,
 } from '@delendai/core/lib/plugins/pack-defaults-overlay';
+import { enabledPlugins } from '@delendai/core/lib/plugins/preset-migration';
 import apiPlugin from '../../../../../../plugins/api/src/index';
 
 const repoRootFromSpec = (): string => {
@@ -95,6 +96,32 @@ describe('PRESET_CATALOG', async () => {
 				'refactor',
 			].sort(),
 		);
+	});
+
+	it('[<50ms] has team-pr, swarm and dogfood learn by default, minimal and solo not', () => {
+		for (const id of ['team-pr', 'swarm', 'dogfood']) {
+			expect(resolvePresetMembers(id), id).toContain('self-learning');
+			expect(resolvePresetMembers(id), id).toContain('project-kpis');
+		}
+		for (const id of ['minimal', 'solo']) {
+			expect(resolvePresetMembers(id), id).not.toContain('self-learning');
+			expect(resolvePresetMembers(id), id).not.toContain('project-kpis');
+		}
+	});
+
+	it('[<50ms] drops self-learning only when the policy disables the plugin', () => {
+		const plugins = Object.fromEntries(
+			resolvePresetMembers('team-pr').map((plugin) => [plugin, {}]),
+		);
+		expect(enabledPlugins(plugins)).toContain('self-learning');
+		expect(
+			enabledPlugins({ ...plugins, 'self-learning': { enabled: false } }),
+		).not.toContain('self-learning');
+	});
+
+	it('[<50ms] resolves self-learning for this repository through the dogfood pack', async () => {
+		expect(await publishedConfigPlugins()).toContain('self-learning');
+		expect(resolvePresetMembers('dogfood')).toContain('self-learning');
 	});
 
 	it('keeps team-pr a superset of solo and swarm the multi-agent pack', async () => {
