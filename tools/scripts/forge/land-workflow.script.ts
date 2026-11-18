@@ -45,6 +45,8 @@ const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 	integrationBranch: 'develop',
 	releaseBranch: 'main',
 	passCommand: 'bun packages/cli/src/index.ts integration pass',
+	reconcileCommand:
+		'bun tools/scripts/forge/reconcile-refs.script.ts --apply --trigger=land-merge',
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',
