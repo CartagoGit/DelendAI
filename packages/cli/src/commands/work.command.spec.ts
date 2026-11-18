@@ -7,12 +7,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
+import { revalidatePortsOf } from '../lib/work-revalidate-ports.service';
 import { createNoopContext } from '../lib/noop-context.factory';
 import {
 	createWorkCommand,
 	deliverPortsOf,
 	printPathOnly,
-	revalidatePortsOf,
 	withSlicesView,
 } from './work.command';
 
@@ -254,7 +254,12 @@ describe('revalidatePortsOf', () => {
 				return { ok: true };
 			}) as ICliCommandContext['request'],
 		};
-		const ports = revalidatePortsOf(ctx, 'claude-sonnet-5-5', () => git);
+		const ports = revalidatePortsOf(
+			ctx,
+			'claude-sonnet-5-5',
+			'tool',
+			() => git,
+		);
 		const mark = ports.mark('/unit');
 		expect(mark).toBe('base');
 		const answer = await ports.transition({
@@ -278,6 +283,7 @@ describe('revalidatePortsOf', () => {
 		revalidatePortsOf(
 			createNoopContext('/work', globals(true)),
 			undefined,
+			'tool',
 		).print('f1');
 		expect(write).toHaveBeenCalledWith('f1\n');
 	});
@@ -286,6 +292,7 @@ describe('revalidatePortsOf', () => {
 		const ports = revalidatePortsOf(
 			createNoopContext('/nonexistent-project', globals(true)),
 			'claude-sonnet-5-5',
+			'tool',
 		);
 		await expect(ports.enter()).rejects.toThrow();
 	});

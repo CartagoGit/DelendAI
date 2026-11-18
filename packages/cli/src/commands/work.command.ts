@@ -47,11 +47,6 @@ import {
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
-import {
-	readReadyProposals,
-	revalidateBatch,
-} from '../lib/work-revalidate.service';
-import type { IWorkRevalidatePorts } from '../contracts/interfaces/work-revalidate.interface';
 
 /**
  * Where an agent that just entered a unit reads what its slice asks for.
@@ -251,78 +246,6 @@ export const withUnitHere = async (
 	return [...args, ...(await unitHere(cwd, proposal))];
 };
 
-/** The unit of a revalidation batch: the review batch under its own topic. */
-const REVALIDATION_UNIT_FLAGS = [
-	'--proposal=batch',
-	'--slice=all',
-	'--kind=review',
-	'--topic=revalidation',
-] as const;
-
-/** The ports `revalidateBatch` runs on, wired to the unit engine and the proposals tool. */
-export const revalidatePortsOf = (
-	ctx: ICliCommandContext,
-	agent: string | undefined,
-	gitIn: (where: string) => IGitInCheckout = (where) => (gitArgs) =>
-		runGitCommand(where, gitArgs),
-): IWorkRevalidatePorts => {
-	return {
-		proposals: () => readReadyProposals(ctx.cwd),
-		print: (line) => process.stdout.write(`${line}\n`),
-		enter: async () => {
-			const entered = await runWorkUnit(
-				[
-					'enter',
-					...REVALIDATION_UNIT_FLAGS,
-					...(agent === undefined ? [] : [`--agent=${agent}`]),
-				],
-				{ ...ctx, globals: { ...ctx.globals, json: true } },
-			);
-			const path = isRecord(entered.data) ? entered.data.path : undefined;
-			if (entered.code !== 0 || typeof path !== 'string' || path === '') {
-				throw new Error(
-					entered.error ??
-						'work enter answered without a worktree path',
-				);
-			}
-			return path;
-		},
-		developSha: async (worktree) => {
-			const policy = await readWorkspacePolicy(ctx.cwd).catch(
-				() => undefined,
-			);
-			if (policy === undefined) return undefined;
-			const sha = gitIn(worktree)([
-				'rev-parse',
-				`origin/${policy.branches.integration}`,
-			]);
-			return sha.ok ? sha.out.trim() : undefined;
-		},
-		mark: (worktree) => {
-			const head = gitIn(worktree)(['rev-parse', 'HEAD']);
-			return head.ok ? head.out.trim() : undefined;
-		},
-		undo: (worktree, mark) => {
-			gitIn(worktree)(['reset', '--hard', mark]);
-		},
-		transition: ({ id, to, reason, worktree }) =>
-			answerCommittingWrites(
-				gitIn(worktree),
-				toolCommitSubject(TRANSITION_TOOL, `${id} ${to}`),
-				() =>
-					answerOf(
-						request(ctx, TRANSITION_TOOL, {
-							id,
-							to,
-							reason,
-							...(agent === undefined ? {} : { agent }),
-							checkout: worktree,
-						}),
-					),
-			),
-	};
-};
-
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
@@ -331,8 +254,18 @@ export const createWorkCommand = (): ICliCommand => ({
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
 		if (args[0] === 'revalidate') {
 			const flags = args.slice(1);
+			// Loaded here, not at start-up: only this subcommand needs it.
+			const [{ revalidateBatch }, { revalidatePortsOf }] =
+				await Promise.all([
+					import('../lib/work-revalidate.service'),
+					import('../lib/work-revalidate-ports.service'),
+				]);
 			return revalidateBatch(
-				revalidatePortsOf(ctx, scalarArg(flags, 'agent')),
+				revalidatePortsOf(
+					ctx,
+					scalarArg(flags, 'agent'),
+					TRANSITION_TOOL,
+				),
 				scalarArg(flags, 'proposals'),
 			);
 		}
