@@ -2,14 +2,14 @@
 id: c00535
 title: "Actions are pinned by SHA, packages by exact version, and provenance reaches npm"
 kind: chore
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 8bfd2f56-a330-49a4-9c0d-015cf24410e9
-last-correlation-id: 8bfd2f56-a330-49a4-9c0d-015cf24410e9
-last-transition-from: ready
-last-transition-at: 2026-11-18T08:44:29.868Z
+last-transition-id: f613f102-d2aa-4767-bfbd-57b21156a81b
+last-correlation-id: f613f102-d2aa-4767-bfbd-57b21156a81b
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T08:45:11.581Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
@@ -31,40 +31,37 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 - global_gate: type
 
 ### S1 — Actions by SHA
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/dependabot.yml`, `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.github/workflows/setup-bun.yml`, `tools/scripts/lint/workflow-yaml.script.ts`
 - **Gate**: type
 - acceptance:
   - "Every `uses:` names a 40-hex SHA with the tag in a comment; a lint fails on a tag reference; Dependabot updates github-actions weekly (G130)."
 - shipped-in: `51fbac099a82`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S2 — Exact external servers and npm provenance
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/external-mcps/src/lib/options-schema.ts`, `plugins/external-mcps/src/lib/subprocess/server-registry.ts`, `plugins/external-mcps/skills/external-mcps/SKILL.md`, `tools/scripts/release/publish-tarballs.ts`, `tools/scripts/release/release.script.ts`
 - **Gate**: type
 - acceptance:
   - "A server entry with a version runs `pkg@<version>` exactly (EXT-02)."
   - "--provenance reaches npm publish when requested; a spec on the argv proves it (ORCH-04)."
 - shipped-in: `6a9105675c79`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ### S3 — One zod range
-- **Status**: pending
-- **Files**: `docs/delendai/proposals/in-progress/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
+- **Status**: review
+- **Files**: `docs/delendai/proposals/review/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
 - **Gate**: type
 - acceptance:
   - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45). Already true at c00535: both declare ^4.6.6, and the lint governs zod; no manifest change was needed."
 - shipped-in: `00dc0104b1f5`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale review round: rebase this slice on current develop and provide fresh validation evidence before approval.
 
 ## acceptance
