@@ -91,7 +91,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S5 — Review approve and release reuse the open review unit
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -99,8 +99,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "No empty review unit is left behind by a command that finds one."
   - "e2e spec: two calls without --session use one unit."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S6 — carried-work reads the owned namespaces from the decisions module
 - **Status**: review
