@@ -62,7 +62,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — Deliver commits its own writes before the proof
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/work-deliver-commit.service.ts`, `packages/cli/src/lib/work-deliver-commit.service.spec.ts`
 - **Gate**: type
@@ -71,8 +71,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "Nothing but the tool's own write is committed; a foreign dirty file is left and the proof refuses it as before."
   - "[<Nms] spec covers a clean write, a foreign dirty file, and nothing written."
 - shipped-in: `7567b784e1cd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S4 — A reconciler keep commit may carry a tool-recorded verdict
 - **Status**: review
