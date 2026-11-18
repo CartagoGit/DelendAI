@@ -2,16 +2,6 @@
 id: x01089
 title: "The rehearsal runs for a pull request whose own diff touches the integration code, not for every push that merged the integration branch in, and a refused forge call says why"
 kind: fix
-<<<<<<<< HEAD:docs/delendai/proposals/in-progress/x01089-the-rehearsal-runs-for-a-pull-request-whose-own-diff-touches-the-integration-code-not-for-every-push-that-merged-the-integration-branch-in-and-a-refused-forge-call-says-why.md
-status: in-progress
-type: proposal
-track: architecture
-date: 2026-11-17
-last-transition-id: 6ddcb18f-3694-44e9-be93-23fe9c03931f
-last-correlation-id: 6ddcb18f-3694-44e9-be93-23fe9c03931f
-last-transition-from: ready
-last-transition-at: 2026-11-17T21:15:40.914Z
-========
 status: review
 type: proposal
 track: architecture
@@ -20,7 +10,6 @@ last-transition-id: ef1e1f75-71c2-49f3-b4ee-43243700a636
 last-correlation-id: ef1e1f75-71c2-49f3-b4ee-43243700a636
 last-transition-from: in-progress
 last-transition-at: 2026-11-17T21:31:06.309Z
->>>>>>>> 8e26d43e4:docs/delendai/proposals/review/x01089-the-rehearsal-runs-for-a-pull-request-whose-own-diff-touches-the-integration-code-not-for-every-push-that-merged-the-integration-branch-in-and-a-refused-forge-call-says-why.md
 ---
 
 # x01089 — The rehearsal runs for a pull request whose own diff touches the integration code, not for every push that merged the integration branch in, and a refused forge call says why
