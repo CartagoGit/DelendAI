@@ -225,6 +225,21 @@ describe('land', () => {
 		).toHaveLength(1);
 	});
 
+	it('[<9ms] names no culprit for a failure the base certifying result already has', async () => {
+		const { world, pass, lone } = setup();
+		world.requiredNames = ['tests: a', 'tests: b'];
+		const one = world.addPull({ 'a/1.ts': '1' });
+		const two = world.addPull({ 'b/2.ts': '2' });
+		world.certifyTip(['tests: a']);
+		world.failBatch = () => ['tests: a'];
+		world.ci();
+		await pass();
+		world.ci();
+		await pass();
+		expect(lone(one).labels).not.toContain(LAND_LABEL_CULPRIT);
+		expect(lone(two).labels).not.toContain(LAND_LABEL_CULPRIT);
+	});
+
 	it('[<7ms] sends only the suspects alone when nobody owns the failure, and never repeats the set', async () => {
 		const { world, pass, open, batches, lone } = setup();
 		const one = world.addPull({ 'a/1.ts': '1' });
