@@ -13,6 +13,7 @@ last-transition-at: 2026-11-17T13:05:12.647Z
 shipped-in:
   - "acf8cfdd116a9a0ada6b55093b0c96cd54aa6897"
   - "1b14a507545dfb58193eb3854974f3075906f25c"
+  - "7c5f13a76a7af86544450905fc2de3094e1390c3"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -302,7 +303,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) Integration pass command/service and land-project ports tests pass; plugin depends on core in the allowed direction. (2) Integration pass specs and project-ports helper cover configuration defaults and external-project operation; no tools/ import remains in plugin production code. (3) land-pass-equivalence.spec.ts passed in the focused 564-test run and checks ordered decisions/calls. (4) land-workflow.spec and land-pass tests passed, including paused engine-none rendering and committed-template parity. — Reviewed plugin composition, generic land ports, CLI and legacy script equivalence. Focused integration suite passed 564/564.
 
 ### S5 — The integration options in the policy
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S4]
 - **Files**: `packages/core/src/lib/development-policy/profiles.ts`, `packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/src/lib/plugins/development-delivery-schema.constant.ts`, `packages/core/src/lib/contracts/interfaces/integration-engine.interface.ts`
 - **Gate**: none
@@ -311,8 +312,10 @@ Nothing of this repository is emitted into the other project.
   - "`batchOpener` is removed and old configs migrate by the shipped config migration"
   - "With no block the engine is `none` and nothing of the plugin acts or renders"
 - shipped-in: `8e49a547a1f0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 7c5f13a76a7a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) integration-options schema/constant/resolve specs cover each option and profile default; configuration guide documents the block. (2) Policy resolve/migration assertions pass and no production batchOpener option remains. (3) Integration-options and workflow-render specs verify the absent-block engine-none path and no rendered action. — Reviewed policy schema/defaults/validation and migration of batchOpener. Focused integration suite passed 564/564.
 
 ### S6 — The integrator acts as an identity the forge builds, woken only by events
 - **Status**: pending
