@@ -10,6 +10,8 @@ last-transition-id: d7e56d6d-4385-4625-8609-7d015954aaad
 last-correlation-id: d7e56d6d-4385-4625-8609-7d015954aaad
 last-transition-from: in-progress
 last-transition-at: 2026-11-17T11:20:31.281Z
+shipped-in:
+  - "6c4c43f6f39cbf06e060e07dddb715923a12b31f"
 ---
 
 # f00813 — The boot summary shows the branch a server runs, and a branch-pointed server follows its origin
@@ -33,7 +35,7 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
 - global_gate: type
 
 ### S1 — One resolver says what a server runs
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `packages/core/src/lib/startup-report/renderer.ts`, `packages/core/src/lib/tools/status-tool.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +43,10 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
   - "The status tool returns the same fields, declared in its outputSchema."
   - "The resolver is the branch-runtime helper of f00810, extended; no second reader of git state exists."
 - shipped-in: `ff8ddc1d16a7`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 6c4c43f6f39c, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 3/3: (1) runtimeState reads HEAD/tag, branch, rev-list counts and porcelain; describeRuntimeState renders tag or branch@sha12 level/ahead/behind/dirty. Focused runtime-… (2) status-tool adds runtime with raw fields and the same describeRuntimeState summary; runtimeSchema declares kind/tag/branch/sha12/ahead/behind/dirty/follow/summ… (3) branch-runtime.helper.ts owns runtimeState's git reads; startup renderer and status tool consume serialized runtime state rather than running git. Specs and ex… — Reviewed the resolver, startup renderer and status tool. The 31 focused host/status specs pass and all 80 workspaces typecheck. Tag/branch state is produced once from git, passed through the same env-backed formatter to boot and status, with ahead/behind/dirty and schema fields intact.
 
 ### S2 — A branch-pointed runtime fast-forwards before serving
 - **Status**: review
