@@ -88,7 +88,7 @@ Each rename or layout change migrates the repository and leaves the user's machi
 ### S5 — A spec per migrator with fixture configs
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `packages/core/tests/src/lib/workspace-migration/migrators/host-config.migrator.spec.ts`
+- **Files**: `packages/core/tests/src/lib/workspace-migration/host-scope/host-migration-spec.helper.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.claude.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.codex.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.vscode.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.migrator.spec.ts`
 - **Gate**: type
 - acceptance:
   - "New files declared in prose: one spec per host migrator under packages/core/tests/src/lib/workspace-migration/host-scope/ with fixture configs for the old name, the old launch shape, a mixed file with foreign entries, and a clean file."
