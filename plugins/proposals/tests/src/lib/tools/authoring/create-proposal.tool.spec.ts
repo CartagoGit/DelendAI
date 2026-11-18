@@ -14,7 +14,10 @@ import type { IToolRegistration } from '@delendai/core/contracts';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
-import { buildCreateProposalRegistration } from '@delendai/proposals/lib/tools/authoring/create-proposal.tool';
+import {
+	buildCreateProposalRegistration,
+	scaffoldGaps,
+} from '@delendai/proposals/lib/tools/authoring/create-proposal.tool';
 
 type IHandler = (args: unknown) => Promise<{
 	content: Array<{ text: string }>;
@@ -121,5 +124,49 @@ describe('create_proposal', () => {
 		expect(refused.isError).toBe(true);
 		expect(refused.content[0]?.text).toContain('goal');
 		expect(refused.content[0]?.text).toContain('S1 acceptance');
+	});
+});
+
+describe('scaffoldGaps', () => {
+	const whole = {
+		goal: 'g',
+		why: 'w',
+		nonGoals: ['n'],
+		slices: [{ sliceId: 'S1', files: ['a.ts'], acceptance: ['a'] }],
+	};
+
+	it('[<50ms] finds nothing in a proposal written out in full', () => {
+		expect(scaffoldGaps(whole)).toEqual([]);
+	});
+
+	it('[<50ms] names every placeholder, blank and missing part', () => {
+		expect(
+			scaffoldGaps({
+				goal: ' ',
+				why: 'TODO: why',
+				nonGoals: ['- TODO: skip'],
+				slices: [
+					{
+						sliceId: 'S1',
+						title: 'TODO',
+						files: ['TODO'],
+						acceptance: ['TODO: x'],
+					},
+				],
+			}),
+		).toEqual([
+			'goal',
+			'why',
+			'nonGoals',
+			'S1 acceptance',
+			'S1 files or title',
+		]);
+		expect(scaffoldGaps({ ...whole, nonGoals: [], slices: [] })).toEqual([
+			'nonGoals',
+			'slices',
+		]);
+		expect(
+			scaffoldGaps({ ...whole, nonGoals: undefined, slices: undefined }),
+		).toEqual(['nonGoals', 'slices']);
 	});
 });
