@@ -43,12 +43,12 @@ describe('the status-bar tooltip runtime state', () => {
 
 		await bar.update();
 
-		expect(item.tooltip).toBe(
-			'delendai Dashboard (click to open)\ndevelop@abcdef123456 behind 2',
-		);
+		expect(item.tooltip).toMatchObject({
+			markdown: expect.stringContaining('develop@abcdef123456 behind 2'),
+		});
 	});
 
-	it('keeps the plain tooltip when the server states no runtime [<50ms]', async () => {
+	it('says the version is unknown when the server states no runtime [<50ms]', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(
 			item,
@@ -66,6 +66,8 @@ describe('the status-bar tooltip runtime state', () => {
 
 		await bar.update();
 
-		expect(item.tooltip).toBe('delendai Dashboard (click to open)');
+		expect(item.tooltip).toMatchObject({
+			markdown: expect.stringContaining('Version: unknown'),
+		});
 	});
 });
