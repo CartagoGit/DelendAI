@@ -13,6 +13,7 @@ last-transition-at: 2026-11-10T02:57:28.714Z
 shipped-in:
   - "26aa84e29054cace69e611675dbf6a6c84789c3a"
   - "e51eaf2d8c7fd0bcea14ac06305ae5cbdbd0b836"
+  - "f1476fe6c7fd146a8d9e471cf832a6c285c00302"
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -64,14 +65,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: approved by mai-code-2 — verified at e51eaf2d8c7f, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) package.json declares prove as the local prove-plan runner with --fast and prove:plan as the full runner; candidateProofSteps reads package.json from the integ… — Reviewed the delivered repository scripts and current package.json. The five focused proof suites pass 59/59 and the all-workspaces typecheck passes; the fast `prove` and full `prove:plan` commands are declared in the repository rather than inferred from a home-directory script.
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-land.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "On the pull-request route with `requiresLocalCertification`, `work publish` runs the proof before pushing; so does the publication that `proposal_transition to=review` makes. The proof is read from the integration head: its `prove` script, else its declared gate. It runs in the unit's worktree on its committed tip, refused when the tree has uncommitted edits, or in a temporary worktree when the unit has none. Publishing refuses to push when a step fails and names the step, its output and the fix. A project that declares no proof publishes, with the declaration to add. The workflow sentence every agent receives says so (work-unit-publish-proof.spec.ts, work-unit-proof.service.spec.ts, work-unit-land.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at f1476fe6c7fd, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) published() calls proveUnit before publishWorkUnitExclusively on PR routes; proveUnit reads candidateProofSteps from integrationSha and enforces a clean tip/wo… — Reviewed the delivered proof/publication path and the later extensions. The 59 focused proof, publish and real-git land specs pass plus full typecheck. Pull-request publication and proposal hand-over run the integration-declared proof at the unit tip and refuse before push with the failed step/output.
 
 ### S4 — A proved tree is not proved twice
 - **Status**: review
