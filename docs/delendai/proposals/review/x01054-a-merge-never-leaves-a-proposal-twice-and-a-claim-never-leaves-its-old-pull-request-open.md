@@ -49,7 +49,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A claim retires the publication it superseded
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/contracts/interfaces/superseded-publication.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -57,8 +57,10 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "after the new publication is published the old one is retired with the reason superseded by #N, only when git merge-base --is-ancestor says the new publication contains the old tip"
   - "otherwise the old publication stays and the answer says why; both cases are specced"
 - shipped-in: `fb53bd97e7ac`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — The land rehearsal's gates judge for the branch they rehearse
 - **Status**: review
