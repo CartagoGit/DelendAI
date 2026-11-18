@@ -74,6 +74,7 @@ delendai work enter --kind=create --proposal=new --slice=all --agent=<you> --top
 
 ### Authoring rules
 
+- Readiness: name each file a slice creates as `new:<path>`; each acceptance line names a command, a `.spec.ts` or a Scenario; close every Decision. Check with `bun tools/scripts/lint/proposal-readiness.script.ts`.
 - One source of truth per fact: before proposing a setting, read the development policy and its profiles for a field that already says it. If it exists and nothing happens, the missing act is the defect, not the missing setting.
 - A change to an existing path, file name, config key or record format ships its migration in the same proposal: it runs at server start, detects the old form, rewrites once, is journalled, and the acceptance lists it.
 - Host support goes through the host registry (hosts are chosen or detected per project), never a new list of hosts.

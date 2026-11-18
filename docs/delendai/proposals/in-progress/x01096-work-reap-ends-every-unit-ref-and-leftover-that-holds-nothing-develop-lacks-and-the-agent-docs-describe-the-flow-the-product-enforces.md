@@ -2,10 +2,14 @@
 id: x01096
 title: "work reap ends every unit, ref and leftover that holds nothing develop lacks, and the agent docs describe the flow the product enforces"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
+last-transition-id: 71954227-59b6-477e-a583-cc307c42f503
+last-correlation-id: 71954227-59b6-477e-a583-cc307c42f503
+last-transition-from: ready
+last-transition-at: 2026-11-18T07:52:26.865Z
 ---
 
 # x01096 — work reap ends every unit, ref and leftover that holds nothing develop lacks, and the agent docs describe the flow the product enforces
@@ -30,7 +34,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 
 ### S1 — reap ends a landed unit of an idle owner
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper-landed.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
@@ -39,7 +43,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 
 ### S2 — stranded and rescued refs whose patches are on develop are removed
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
@@ -48,7 +52,8 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 
 ### S3 — leftovers outside units: stray files in the worktrees directory and the old test temp directories
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `new:packages/core/src/lib/work-units/test-temp-leftovers.service.ts`, `new:packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`
+- **DependsOn**: [S1]
+- **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `new:packages/core/src/lib/work-units/test-temp-leftovers.service.ts`, `new:packages/core/src/lib/contracts/constants/test-temp-prefixes.constant.ts`, `new:packages/core/src/lib/contracts/interfaces/test-temp-leftovers.interface.ts`, `new:packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:

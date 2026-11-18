@@ -17,7 +17,7 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { realpathContained } from '@delendai/core/public';
+import { realpathContained, renderChangeText } from '@delendai/core/public';
 import { writeFileAtomic } from '@delendai/core/runtime';
 import type { ICapturedError, IErrorSink } from '@delendai/core/public';
 
@@ -142,7 +142,10 @@ const buildDraftContent = (event: ICapturedError): string => {
 	].join('\n');
 };
 
-const buildIssueBody = (event: ICapturedError): string => {
+/** The issue the template renders for one captured incident (f00809). */
+const buildIssue = (
+	event: ICapturedError,
+): { readonly title: string; readonly body: string } => {
 	const table = [
 		'| Field | Value |',
 		'| --- | --- |',
@@ -156,13 +159,19 @@ const buildIssueBody = (event: ICapturedError): string => {
 		`| summary | ${escapeCell(event.summary)} |`,
 	].join('\n');
 
-	return [
-		'## Incident report',
-		'',
-		table,
-		'',
-		'> **Disable**: set `plugins.issues.options.autoReport: false` in your config file to stop live issue creation.',
-	].join('\n');
+	return renderChangeText({
+		kind: 'issue',
+		summary: `incident ${event.toolName}: ${event.severity}`,
+		files: [`plugins/${event.pluginName}/`],
+		where: `${event.pluginName} (${event.packageId}), tool ${event.toolName}`,
+		evidence: [
+			table,
+			'',
+			'> **Disable**: set `plugins.issues.options.autoReport: false` in your config file to stop live issue creation.',
+		].join('\n'),
+		expected: `${event.toolName} completes without a ${event.severity} incident`,
+		actual: `${event.classification} ${event.errorCode}`,
+	});
 };
 
 // ---------------------------------------------------------------------------
@@ -240,9 +249,10 @@ export const createIssuesErrorSinkAdapter = (
 
 			// Open the live issue.
 			try {
+				const issue = buildIssue(event);
 				await options.githubClient.createIssue({
-					title: `incident: ${event.toolName} — ${event.severity}`,
-					body: buildIssueBody(event),
+					title: issue.title,
+					body: issue.body,
 					labels: ['incident'],
 				});
 				liveIssuesOpened++;
