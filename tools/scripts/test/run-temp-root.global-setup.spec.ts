@@ -32,6 +32,22 @@ describe('run temp root (x01091)', () => {
 		expect(env).toEqual({ TMPDIR: '/before' });
 	});
 
+	it('lets a second setup in the same process reuse the first root', () => {
+		const base = mkdtempSync(join(tmpdir(), 'twice-'));
+		const env: NodeJS.ProcessEnv = {};
+		const first = enterRunTempRoot(env, runTempRootPath(process.pid, base));
+		const second = enterRunTempRoot(
+			env,
+			runTempRootPath(process.pid, first.root),
+		);
+		expect(second.root).toBe(first.root);
+		second.leave();
+		expect(existsSync(first.root)).toBe(true);
+		first.leave();
+		expect(existsSync(first.root)).toBe(false);
+		expect(env).toEqual({});
+	});
+
 	describe('a child vitest run over a spec that leaks a directory', () => {
 		let before: string[] = [];
 		let after: string[] = [];

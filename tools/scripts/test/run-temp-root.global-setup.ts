@@ -17,6 +17,9 @@ import { join } from 'node:path';
 /** The variables `os.tmpdir()` reads. */
 export const TEMP_VARIABLES = ['TMPDIR', 'TMP', 'TEMP'] as const;
 
+/** Names the pid that made the run root, so a second setup in that process reuses it. */
+export const RUN_ROOT_OWNER_VARIABLE = 'DELENDAI_TEST_RUN_ROOT_OWNER';
+
 /** The run root a process owns, under `base`. */
 export const runTempRootPath = (
 	pid: number = process.pid,
@@ -31,9 +34,18 @@ export const enterRunTempRoot = (
 	env: NodeJS.ProcessEnv = process.env,
 	root: string = runTempRootPath(),
 ): { readonly root: string; readonly leave: () => void } => {
+	// Vitest runs one global setup per project in the same process: the
+	// first makes the root, the others find it and leave it to the first.
+	const reusable = env[RUN_ROOT_OWNER_VARIABLE] === String(process.pid);
+	if (reusable && env.TMPDIR !== undefined) {
+		return { root: env.TMPDIR, leave: () => undefined };
+	}
 	mkdirSync(root, { recursive: true });
-	const previous = TEMP_VARIABLES.map((name) => [name, env[name]] as const);
+	const previous = [...TEMP_VARIABLES, RUN_ROOT_OWNER_VARIABLE].map(
+		(name) => [name, env[name]] as const,
+	);
 	for (const name of TEMP_VARIABLES) env[name] = root;
+	env[RUN_ROOT_OWNER_VARIABLE] = String(process.pid);
 	return {
 		root,
 		leave: () => {

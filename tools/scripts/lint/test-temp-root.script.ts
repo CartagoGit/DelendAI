@@ -13,6 +13,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
+
 /** A `mkdtemp`/`mkdtempSync` call whose first argument is a literal `/tmp` path. */
 const LITERAL_TMP_MKDTEMP =
 	/\bmkdtemp(?:Sync)?\s*\(\s*(?:`|'|")\/(?:var\/)?tmp(?:\/|`|'|")/u;
@@ -56,6 +58,14 @@ export const findLiteralTmpMkdtemps = (
 	files.flatMap((file) => literalTmpMkdtemps(file.path, file.text));
 
 if (import.meta.main) {
+	if (
+		refuseMissingScanRoots(
+			'test-temp-root',
+			lintRepoRoot(import.meta.url),
+			['packages', 'tools'],
+		)
+	)
+		process.exit(1);
 	const root = process.cwd();
 	const files = execFileSync('git', ['ls-files', '-z'], {
 		cwd: root,
