@@ -2,14 +2,14 @@
 id: x01059
 title: "What an older delendai left behind is migrated wherever it lives"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-11
-last-transition-id: ecda7c8e-7eb3-4821-97c1-c8e60769366b
-last-correlation-id: ecda7c8e-7eb3-4821-97c1-c8e60769366b
-last-transition-from: ready
-last-transition-at: 2026-11-18T02:11:06.710Z
+last-transition-id: ed5ad96e-c20c-4471-9eb6-5ec8838fd294
+last-correlation-id: ed5ad96e-c20c-4471-9eb6-5ec8838fd294
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T13:29:58.431Z
 ---
 
 # x01059 — What an older delendai left behind is migrated wherever it lives
@@ -39,7 +39,7 @@ Each rename or layout change migrates the repository and leaves the user's machi
 - global_gate: none
 
 ### S1 — Legacy-residue registry and detectors
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/workspace-migration/migration-registry.ts`
 - **Gate**: type
 - acceptance:
@@ -49,9 +49,11 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "Running detect then migrate twice reports changes the first time and none the second."
   - "The registry is exported once and DEFAULT_MIGRATIONS consumes it, so workspace and user-level residue share one list."
 - shipped-in: `f5ae0e7873bc`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — User-level host-config migrators
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`
 - **Gate**: type
@@ -61,9 +63,12 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "An old-name mcp server entry that matches a registry entry is removed or rewritten to the current launch shape; an entry that does not match is left byte for byte and listed as a question."
   - "Before the first write to a user file a timestamped backup is written and its path is in the report; a failed backup aborts the edit."
   - "Comments and unrelated keys survive the rewrite (JSONC and TOML)."
+- shipped-in: `db15660a94ce`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Boot hook and its report
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2]
 - **Files**: `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
@@ -74,9 +79,12 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "A machine-scope run is recorded in the user state directory and not repeated until the registry changes."
   - "A project policy key turns the run off for that project, and a user setting turns it off for the machine; both are read from the existing configuration, not a new file."
   - "The boot never fails because a user file is unreadable: it reports and continues."
+- shipped-in: `db15660a94ce`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — doctor and init integration
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**: `packages/cli/src/commands/doctor.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: type
@@ -85,9 +93,12 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "delendai doctor lists residue found and not yet migrated, including old clones (by path or remote) and stale processes, with the exact command for each."
   - "delendai doctor --fix and init apply the migrations that need no question; those that need one prompt, and in a non-interactive run they only report."
   - "The CLI help summary and the i18n entries for the new output exist."
+- shipped-in: `db15660a94ce`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — A spec per migrator with fixture configs
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `packages/core/tests/src/lib/workspace-migration/host-scope/host-migration-spec.helper.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.claude.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.codex.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.vscode.spec.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/user-host-config.migrator.spec.ts`
 - **Gate**: type
@@ -96,9 +107,12 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "Each spec proves idempotence, the backup, the untouched foreign entry and the not-covered report."
   - "Fixtures that spell the old product name carry the legacy-name exemption."
   - "Each test names its max time and uses no real timers."
+- shipped-in: `5bcb74186c91`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S6 — Lint: a rename ships its registry entry
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `package.json`, `tools/scripts/lint/legacy-residue-registry.script.ts`, `tools/scripts/lint/legacy-residue-registry.script.spec.ts`, `tools/scripts/lint/legacy-residue-registry.snapshot.json`
 - **Gate**: lint
@@ -107,6 +121,9 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "When a diff against the integration branch renames or removes a product name, a config key, a generated file name or a launch shape that the previous release emitted, the lint fails unless a registry entry names it."
   - "The lint reads the previous release's emitted names from a committed snapshot, like the cache-layout ratchet, so it needs no network."
   - "The lint states what it measured and fails on an empty scan, so it cannot pass over nothing."
+- shipped-in: `f009d8903119`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
