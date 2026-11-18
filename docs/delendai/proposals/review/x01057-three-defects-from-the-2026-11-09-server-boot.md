@@ -32,7 +32,7 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - global_gate: type
 
 ### S1 — A lease held by a dead pid on this host is taken over
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -40,8 +40,10 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
   - "A lease held by a live pid, or by another host, is never taken over."
   - "The refusal line never names a dead pid as the maintainer."
 - shipped-in: `d6d8d0b09b50`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver S1 with fresh, explicit scoped evidence for this review round. This proposal is old and multi-slice; before approval we need a current-head hand-in that re-attests the dead-pid takeover behavior and refusal semantics under the present branch state.
 
 ### S2 — Every proof names its agent and the waiter follows the holder
 - **Status**: review
