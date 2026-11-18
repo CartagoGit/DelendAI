@@ -2,10 +2,12 @@
  * promotion-alerts.script.spec.ts — a promotion is refused while the
  * integration branch has an alert open, and says which.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
 	analysisCoversTip,
+	judge,
+	type IForgeAsk,
 	openAlertsOf,
 	promotionAlertReport,
 	uncoveredReport,
@@ -71,5 +73,60 @@ describe('the analysis that covers a tip', () => {
 		expect(
 			uncoveredReport('develop', 'a'.repeat(40), 'b'.repeat(40)),
 		).toContain(`latest is ${'b'.repeat(12)}`);
+	});
+});
+
+describe('judging a tip the latest analysis does not cover', () => {
+	const tip = 'a'.repeat(40);
+	const analysed = 'b'.repeat(40);
+	const forge =
+		(alerts: readonly object[]): IForgeAsk =>
+		(path) => {
+			if (path.startsWith('commits/'))
+				return JSON.stringify({ sha: tip });
+			if (path.startsWith('code-scanning/analyses'))
+				return JSON.stringify([{ commit_sha: analysed }]);
+			if (path.startsWith('compare/'))
+				return JSON.stringify({ status: 'behind' });
+			return JSON.stringify(alerts);
+		};
+
+	it('[<50ms] passes at the latest analysed commit with --latest-analysed, and refuses without it', () => {
+		const log = vi
+			.spyOn(console, 'log')
+			.mockImplementation(() => undefined);
+		const error = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => undefined);
+		expect(judge('develop', forge([]), true)).toBe(0);
+		expect(log).toHaveBeenCalledWith(
+			`promotion-alerts: ${tip.slice(0, 12)} is not analysed yet; judged at the latest analysed commit ${analysed.slice(0, 12)}`,
+		);
+		expect(judge('develop', forge([]), false)).toBe(1);
+		expect(error).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'no completed code scanning analysis covers',
+			),
+		);
+		log.mockRestore();
+		error.mockRestore();
+	});
+
+	it('[<50ms] still fails with --latest-analysed when a high alert is open', () => {
+		const log = vi
+			.spyOn(console, 'log')
+			.mockImplementation(() => undefined);
+		const error = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => undefined);
+		expect(
+			judge(
+				'develop',
+				forge([{ number: 7, rule: { id: 'js/x' } }]),
+				true,
+			),
+		).toBe(1);
+		log.mockRestore();
+		error.mockRestore();
 	});
 });

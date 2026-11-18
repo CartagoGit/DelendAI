@@ -2,10 +2,14 @@
 id: x01090
 title: "The hourly upkeep judges code scanning at the latest analysed commit, and the CI tests job says the zones did not run instead of crashing on a missing report folder"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-11-17
+last-transition-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
+last-correlation-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T01:21:51.288Z
 ---
 
 # x01090 — The hourly upkeep judges code scanning at the latest analysed commit, and the CI tests job says the zones did not run instead of crashing on a missing report folder
@@ -28,7 +32,7 @@ Measured 2026-11-17. (1) Upkeep run 44188822302 (22:19 UTC): `✖ promotion-aler
 - global_gate: none
 
 ### S1 — The upkeep judges code scanning at the latest analysed commit
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `tools/scripts/forge/land-workflow.script.ts`, `.github/workflows/land.yml`
 - **Gate**: none
 - acceptance:
@@ -37,15 +41,21 @@ Measured 2026-11-17. (1) Upkeep run 44188822302 (22:19 UTC): `✖ promotion-aler
   - "A spec with fake forge answers (latest analysis on an ancestor of the tip, no open alert) expects exit 0 and the 'judged at the latest analysed commit' line with --latest-analysed, and the existing refusal without it [<50ms]"
   - "A spec with the same answers plus one open high alert expects exit 1 with --latest-analysed [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
+- shipped-in: `0cc850c1f90e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — The CI tests job says the zones did not run
-- **Status**: pending
+- **Status**: review
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: none
 - acceptance:
   - "Decision: in the `tests` job step 'Check whether the plan ran any zone', when PLAN_RESULT is not success, or ZONES_RESULT is cancelled or skipped while the plan listed at least one zone to run, the step prints `tests: the plan (<PLAN_RESULT>) or its zones (<ZONES_RESULT>) did not run; nothing was tested — re-run the workflow` and exits 1; the existing no-zone and red-zone branches are unchanged and run first"
   - "`bun run lint:workflows` (or the repository's workflow lint, if named otherwise) passes on the changed ci.yml, and actionlint reports nothing new"
   - "Pre-check: `delendai work prove --only=lint-security,lint-governance` passes before the slice is handed over"
+- shipped-in: `0f92615fb13f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

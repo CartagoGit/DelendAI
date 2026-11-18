@@ -798,8 +798,10 @@ jobs:
                   ZONES: ${{ needs.plan-tests.outputs.zones }}
               run: |
                   set -euo pipefail
+                  NONE=false
                   if [ "$PLAN_RESULT" = success ] && [ "$ZONES_RESULT" = success ] \
                     && printf '%s' "$ZONES" | jq -e 'length > 0 and all(.[]; .run == false)' >/dev/null; then
+                    NONE=true
                     echo "tests: the plan reaches no zone from this change; nothing ran, so there is nothing to merge."
                     echo "none=true" >> "$GITHUB_OUTPUT"
                   else
@@ -814,6 +816,14 @@ jobs:
                     echo "red=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "red=false" >> "$GITHUB_OUTPUT"
+                  fi
+                  # A plan or its zones that were cancelled or skipped ran
+                  # nothing: say so instead of crashing on a missing report
+                  # folder, which reads as a test failure of the change.
+                  if [ "$ZONES_RESULT" != failure ] && [ "$NONE" = false ] \
+                    && { [ "$PLAN_RESULT" != success ] || [ "$ZONES_RESULT" = cancelled ] || [ "$ZONES_RESULT" = skipped ]; }; then
+                    echo "tests: the plan ($PLAN_RESULT) or its zones ($ZONES_RESULT) did not run; nothing was tested — re-run the workflow"
+                    exit 1
                   fi
 
             - name: Collect every shard's blob report
