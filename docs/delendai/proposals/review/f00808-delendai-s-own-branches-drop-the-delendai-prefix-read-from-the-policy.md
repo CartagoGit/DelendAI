@@ -2,14 +2,14 @@
 id: f00808
 title: "delendai's own branches drop the delendai/ prefix, read from the policy"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 00946786-73bd-40d6-8037-ddf11c999d10
-last-correlation-id: 00946786-73bd-40d6-8037-ddf11c999d10
-last-transition-from: ready
-last-transition-at: 2026-11-04T15:10:26.035Z
+last-transition-id: ac1d81f5-5c50-4c79-a5fc-33f4745dea6f
+last-correlation-id: ac1d81f5-5c50-4c79-a5fc-33f4745dea6f
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T16:03:19.634Z
 ---
 
 # f00808 — delendai's own branches drop the delendai/ prefix, read from the policy
@@ -33,27 +33,34 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - global_gate: type
 
 ### S1 — Former prefixes are part of the policy
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`, `packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/resolve.interface.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/development-policy/resolve.spec.ts`
 - **Gate**: type
 - acceptance:
   - "No setting covers the transition today (checked: namespacePrefix, workRefTemplate, workRefPrefix, publicationRefPrefix, foreignRefPrefixes), so one is added: `development.branches.formerNamespacePrefixes` (default []), documented as transition-only."
   - "The resolved policy exposes, once, the owned work-ref and publication prefixes: the current ones composed from namespacePrefix, then the same shapes for each former prefix. Every later slice reads these lists and nothing else."
   - "Spec: `namespacePrefix: ""` resolves to `heads/wip/`, `pr/` and `refs/<x>`; `"delendai"` to `heads/delendai/wip/` and `delendai/pr/`; a former `delendai` beside an empty current yields both, current first."
+- shipped-in: `a4f7f8b7875e`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Guards and ref identity recognise both prefixes
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Files**: `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Notes**: packages/core/src/lib/development-policy/git-guard-namespaces.ts was deleted by 12dc112 (q00046 cutover)
 - **Gate**: type
 - acceptance:
   - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only."
   - "Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes)."
   - "namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers."
   - "Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused."
+- shipped-in: `e0fd6569569d`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Hidden refs and proposal tools stop spelling refs/delendai
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/stranded-edits.service.ts`, `packages/core/tests/src/lib/work-units/stranded-edits.service.spec.ts`, `plugins/proposals/src/lib/proposals/proposal-id-sources.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-sources.spec.ts`, `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-reservation.constant.ts`, `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`
 - **Gate**: type
@@ -62,28 +69,42 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "stranded-edits with an empty prefix scans only the owned roots, never every ref under refs/remotes/origin."
   - "The id allocator, retired-tip, claim and review-reservation readers look under every owned root, so a tip kept under refs/delendai/retired stays found and an id reserved under refs/delendai/ids is never issued twice."
   - "publish-proposal and create_proposal take the publication prefix from the policy; no `delendai/pr/` fallback remains."
+- shipped-in: `03c5e8351d1c`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Queue, publications and reapers take the prefix from the policy
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`
+- **Files**: `packages/core/src/lib/integration/decisions/readiness.helper.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`
+- **Notes**: tools/scripts/forge/keep-the-queue-moving.script.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/forge/keep-the-queue-moving.script.spec.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/forge/candidate-disposition.spec.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/git/maintain-ref-namespace.script.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/git/maintain-ref-namespace.script.spec.ts was deleted by d0616ff (q00046 cutover)
 - **Gate**: type
 - acceptance:
   - "The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix."
   - "maintain-ref-namespace, ref-lifecycle --reap and agent-claims treat refs under a former prefix as delendai's (reaped or kept by the same rules), and refs outside every owned prefix as foreign."
   - "Spec per script: a fixture with one `delendai/pr/...` and one `pr/...` publication under `namespacePrefix: ""` + former `delendai` handles both."
+- shipped-in: `204692a92482`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5 — Forge rules and CI filters follow the policy
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `.github/branch-protection.yml`, `.github/branch-protection.ts`, `.github/workflows/ci.yml`, `lefthook.yml`, `tools/scripts/lint/branch-protection-guard.script.ts`
 - **Gate**: type
 - acceptance:
   - "Rendered rulesets and branch protection cover the work and publication refs of every owned prefix."
   - "ci.yml's two `delendai/pr/` head filters (publication dispatch and the queue job) accept each owned publication prefix; YAML cannot read the policy, so branch-protection-guard fails when the prefixes ci.yml names differ from the resolved policy's owned publication prefixes."
+- shipped-in: `13e4bdf24871`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3, S4]
 - **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
 - **Gate**: type
@@ -93,9 +114,12 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "Each ref is renamed by pushing the new name at the same tip, verifying it, keeping the old tip under the retired root, then deleting the old name. The forge rename API is never called."
   - "When no ref is left under a former prefix it says so and names the config line to remove."
   - "Spec: no rename of a ref with an open pull request; tips identical before and after."
+- shipped-in: `ea1911092ba4`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S9 — Branch names a person can read at a glance: grammar, render and parse core
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/work-ref-shape.service.ts`, `packages/core/tests/src/lib/wip-engine/ref-name.spec.ts`, `packages/core/tests/src/lib/work-units/work-ref-shape.service.spec.ts`
 - **Gate**: type
@@ -105,9 +129,12 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "ref-name.spec.ts asserts action is implement, review, create or fix; scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`); only `-` and `+` join parts. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships."
   - "work-ref-shape.service.spec.ts parses and renders the scope grammar both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`; `compileWorkRefParser` (work-ref-identity.ts) reads both the old `-g{n}` template and the new grammar."
   - "ref-name.spec.ts asserts `withScopeTrailers` (scope.ts) writes the machine identity (agent, kind, proposal, slices, generation) in the `Delendai-Wip-Ref` trailer and a new reader in scope.ts returns it; a message without it returns undefined."
+- shipped-in: `3ad7644922c9`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S9b — Core parsers read the trailer identity first and the name second
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S9, S3]
 - **Files**: `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/pull-request-text.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.spec.ts`
 - **Gate**: type
@@ -115,9 +142,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - acceptance:
   - "work-unit-generation.service.spec.ts asserts `chooseGeneration` and `endedGenerations` recognise a unit under the old `-g{n}` name and under the new `-G{n}` scope, reading the `Delendai-Wip-Ref` trailer identity first and the name only when the trailer is absent."
   - "`bun run lint:architecture` passes and no module in this slice's Files keeps its own `-g\\d+` regex: each calls the parser of S9."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S9c — CLI and plugin call sites follow the new grammar
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S9, S7]
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`
 - **Gate**: type
@@ -125,25 +154,45 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - acceptance:
   - "work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES: a unit under it still enters, checkpoints and publishes under its own name; no ref with an open pull request is ever renamed."
   - "work-ref-mention.spec.ts finds a mention of a ref in the old and in the new grammar; `pullRequestOf` (work-deliver.service.ts) and `agentOfWorkBranch` (group-helpers.ts) read both."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S9d — Checkpoint and rebase write the structured trailer
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S9]
 - **Files**: `packages/core/src/lib/wip-engine/checkpoint.ts`, `packages/core/src/lib/wip-engine/rebase.ts`, `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`, `packages/core/tests/src/lib/wip-engine/rebase.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "checkpoint.spec.ts and rebase.spec.ts assert every checkpoint and rebased commit carries the structured `Delendai-Wip-Ref` identity S9 defines, read back by S9's reader."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+### S9e — The remaining parsers read the unit through the one parser
+- **Status**: review
+- **DependsOn**: [S9b]
+- **Files**: `packages/core/src/lib/work-units/unit-fence.service.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/unit-refs-any-name.service.ts`, `packages/core/tests/src/lib/work-units/unit-refs-any-name.service.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "`git grep -nE \"-g\\\\d\\+\" -- packages/core/src` finds no work-ref name regex outside work-ref-identity.ts/work-ref-placeholders.ts"
+  - "unit-refs-any-name.service.spec.ts finds a generation-1 unit under the old and the new shape"
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S8 — This repository switches, and q00040 learns the current namespace
-- **Status**: pending
-- **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d]
-- **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
+- **Status**: review
+- **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d, S9e]
+- **Files**: `delendai.config.json`, `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
   - "delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed."
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
+  - "WORK_REF_SHAPE defaults to the readable shape and work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
+- shipped-in: `014e23ff50ec`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
