@@ -5,7 +5,7 @@
  *
  * Usage: `bun run ci:cost -- <pr> [<pr>…]`, or `-- --weekly` for the weekly
  * report: develop red hours, open-to-merge p50/p90, runs per PR, top failure
- * causes.
+ * causes and the land KPIs, each over-threshold one named with its number.
  *
  * A job is measured from its first step's start to its last step's end.
  * GitHub sometimes records a job as complete minutes after its last step
@@ -17,10 +17,13 @@ import { execFileSync } from 'node:child_process';
 
 import { judgePrCiWall, wallSecondsOf } from '@delendai/integration';
 
+import { coordinationCostOf } from '@delendai/core/lib/work-units/coordination-cost.service';
+
 import type {
 	IFailureCause,
 	IGhJob,
 	IJobCost,
+	IKpiBreach,
 	IMergedPr,
 	IPrCiCost,
 	IPrRun,
@@ -32,6 +35,16 @@ const SLOWEST = 5;
 const TOP_FAILURES = 5;
 const HOUR_MS = 3_600_000;
 const WEEK_MS = 7 * 24 * HOUR_MS;
+const UNEXPLAINED_WAIT_MS = 30 * 60_000;
+
+/** The thresholds of the weekly KPIs (q00046 S7). */
+export const KPI_THRESHOLDS = {
+	readyToMergedP50Minutes: 30,
+	humanMerges: 0,
+	unexplainedWaits: 0,
+	bookkeepingShare: 0.1,
+} as const;
+
 /** One job's cost, or undefined when no step ran. */
 export const jobCost = (job: IGhJob): IJobCost | undefined => {
 	const starts: number[] = [];
@@ -151,6 +164,33 @@ export const redHoursByWeek = (
 	return hours;
 };
 
+/** Milliseconds of `[from, to]` that no run interval covers. */
+const uncoveredMs = (
+	from: number,
+	to: number,
+	runs: readonly IPrRun[],
+): number => {
+	const spans = runs
+		.map(
+			(each) =>
+				[Date.parse(each.startedAt), Date.parse(each.endedAt)] as const,
+		)
+		.sort((a, b) => a[0] - b[0]);
+	let covered = 0;
+	let cursor = from;
+	for (const [start, end] of spans) {
+		const lo = Math.max(start, cursor);
+		const hi = Math.min(end, to);
+		if (hi > lo) {
+			covered += hi - lo;
+			cursor = hi;
+		}
+	}
+	return Math.max(0, to - from - covered);
+};
+
+const isHumanMerge = (pr: IMergedPr): boolean => !pr.mergedBy.endsWith('[bot]');
+
 const topFailures = (runs: readonly IPrRun[]): readonly IFailureCause[] => {
 	const counts = new Map<string, number>();
 	for (const run of runs)
@@ -170,6 +210,16 @@ export const weeklyCost = (input: IWeeklyInput): readonly IWeeklyCost[] => {
 		const week = weekOf(Date.parse(pr.mergedAt));
 		prsByWeek.set(week, [...(prsByWeek.get(week) ?? []), pr]);
 	}
+	const linesByWeek = new Map<string, string[]>();
+	for (const line of input.commitLog.split('\n')) {
+		const [date = '', ...rest] = line.split('\t');
+		if (date === '') continue;
+		const week = weekOf(Date.parse(date));
+		linesByWeek.set(week, [
+			...(linesByWeek.get(week) ?? []),
+			rest.join('\t'),
+		]);
+	}
 	const weeks = [...new Set([...red.keys(), ...prsByWeek.keys()])].sort();
 	return weeks.map((week): IWeeklyCost => {
 		const prs = prsByWeek.get(week) ?? [];
@@ -177,6 +227,10 @@ export const weeklyCost = (input: IWeeklyInput): readonly IWeeklyCost[] => {
 		const runs = input.prRuns.filter((each) => numbers.has(each.pr));
 		const ms = (from: string, to: string): number =>
 			Date.parse(to) - Date.parse(from);
+		const commits = coordinationCostOf(
+			(linesByWeek.get(week) ?? []).join('\n'),
+			7,
+		);
 		return {
 			week,
 			developRedHours: round(red.get(week) ?? 0, 1),
@@ -198,15 +252,65 @@ export const weeklyCost = (input: IWeeklyInput): readonly IWeeklyCost[] => {
 			runsPerPr:
 				prs.length === 0 ? 0 : round(runs.length / prs.length, 2),
 			topFailures: topFailures(runs),
+			readyToMergedP50Minutes: round(
+				percentile(
+					prs.map((p) => ms(p.readyAt, p.mergedAt) / 60_000),
+					50,
+				),
+				1,
+			),
+			humanMerges: prs.filter(isHumanMerge).length,
+			unexplainedWaits: prs.filter(
+				(p) =>
+					uncoveredMs(
+						Date.parse(p.readyAt),
+						Date.parse(p.mergedAt),
+						runs.filter((r) => r.pr === p.number),
+					) > UNEXPLAINED_WAIT_MS,
+			).length,
+			bookkeepingShare:
+				commits.commits === 0
+					? 0
+					: round(commits.bookkeeping / commits.commits, 3),
 		};
 	});
 };
+
+/** Every KPI of `row` over its threshold, by name with the number. */
+export const kpiBreaches = (row: IWeeklyCost): readonly IKpiBreach[] =>
+	(
+		[
+			[
+				'ready-to-merged p50 (minutes)',
+				row.readyToMergedP50Minutes,
+				KPI_THRESHOLDS.readyToMergedP50Minutes,
+			],
+			['human merges', row.humanMerges, KPI_THRESHOLDS.humanMerges],
+			[
+				'unexplained waits over 30 minutes',
+				row.unexplainedWaits,
+				KPI_THRESHOLDS.unexplainedWaits,
+			],
+			[
+				'bookkeeping commit share',
+				row.bookkeepingShare,
+				KPI_THRESHOLDS.bookkeepingShare,
+			],
+		] as const
+	)
+		.filter(([, value, threshold]) => value > threshold)
+		.map(([name, value, threshold]) => ({ name, value, threshold }));
 
 export const formatWeekly = (rows: readonly IWeeklyCost[]): string =>
 	rows
 		.flatMap((row) => [
 			`week ${row.week}: develop red ${row.developRedHours} h; ${row.merged} merged, open-to-merge p50 ${row.openToMergeP50Hours} h, p90 ${row.openToMergeP90Hours} h; ${row.runsPerPr} runs per PR`,
 			`  top failures: ${row.topFailures.length === 0 ? 'none' : row.topFailures.map((f) => `${f.name} x${f.count}`).join(', ')}`,
+			`  ready-to-merged p50 ${row.readyToMergedP50Minutes} min; human merges ${row.humanMerges}; unexplained waits over 30 min ${row.unexplainedWaits}; bookkeeping ${round(row.bookkeepingShare * 100, 1)}%`,
+			...kpiBreaches(row).map(
+				(b) =>
+					`  OVER THRESHOLD: ${b.name} = ${b.value} (limit ${b.threshold})`,
+			),
 		])
 		.join('\n');
 
@@ -312,8 +416,19 @@ const weekly = (): string => {
 		createdAt: run.created_at,
 		conclusion: run.conclusion ?? 'unknown',
 	}));
+	const commitLog = execFileSync(
+		'git',
+		[
+			'log',
+			'--first-parent',
+			'--since=8 weeks ago',
+			'--format=%aI%x09%P%x09%s',
+			'origin/develop',
+		],
+		{ encoding: 'utf8', maxBuffer: 64 << 20 },
+	);
 	return formatWeekly(
-		weeklyCost({ prs, prRuns, developRuns, nowMs: Date.now() }),
+		weeklyCost({ prs, prRuns, developRuns, commitLog, nowMs: Date.now() }),
 	);
 };
 

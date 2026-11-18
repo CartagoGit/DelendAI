@@ -52,6 +52,8 @@ export interface IWeeklyInput {
 	readonly prs: readonly IMergedPr[];
 	readonly prRuns: readonly IPrRun[];
 	readonly developRuns: readonly IDevelopRun[];
+	/** Integration-branch commits, one per line: `<iso date>\t<parents>\t<subject>`. */
+	readonly commitLog: string;
 	readonly nowMs: number;
 }
 
@@ -69,4 +71,16 @@ export interface IWeeklyCost {
 	readonly openToMergeP90Hours: number;
 	readonly runsPerPr: number;
 	readonly topFailures: readonly IFailureCause[];
+	readonly readyToMergedP50Minutes: number;
+	readonly humanMerges: number;
+	readonly unexplainedWaits: number;
+	/** Bookkeeping commits over all commits, three decimals. */
+	readonly bookkeepingShare: number;
+}
+
+/** A KPI over its threshold, by name with the number. */
+export interface IKpiBreach {
+	readonly name: string;
+	readonly value: number;
+	readonly threshold: number;
 }
