@@ -9,6 +9,7 @@ import {
 	approvalsAdded,
 	kindOfRef,
 	approvalsNotBy,
+	isRevalidationRef,
 	labelsInEvent,
 	linesAddedPerProposal,
 	OWNER_RECONCILE_LABEL,
@@ -121,6 +122,28 @@ describe('an approval enters through a review unit (x00729)', () => {
 		).toBe('implement');
 		expect(kindOfRef('delendai/pr/glm-5', prefixes)).toBeUndefined();
 		expect(kindOfRef('feature/owner-work', prefixes)).toBeUndefined();
+	});
+
+	it('tells a revalidation batch from a reviewer pack (f00819)', () => {
+		expect(
+			isRevalidationRef(
+				'delendai/wip/glm-5/review/batch-all-g10/revalidation',
+				['delendai/wip/'],
+			),
+		).toBe(true);
+		expect(
+			isRevalidationRef(
+				'delendai/pr/glm-5/review/batch-all-g3/verdicts',
+				prefixes,
+			),
+		).toBe(false);
+		expect(
+			isRevalidationRef(
+				'delendai/pr/glm-5/implement/batch-all-g1/revalidation',
+				prefixes,
+			),
+		).toBe(false);
+		expect(isRevalidationRef('feature/owner-work', prefixes)).toBe(false);
 	});
 
 	it('names every approval a diff adds, and nothing else', () => {
