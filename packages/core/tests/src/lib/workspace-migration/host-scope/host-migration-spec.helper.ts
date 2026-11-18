@@ -26,10 +26,13 @@ export interface IHostFixtures {
 
 const env = { platform: 'linux', home: '/h' } as const;
 
-const run = async (files: Map<string, string>) => {
+const run = async (files: Map<string, string>, failBackup = false) => {
 	const io: ILegacyResidueIO = {
 		readText: async (path) => files.get(path),
 		writeText: async (path, text) => {
+			if (failBackup && path.startsWith('/h/state/backups')) {
+				throw new Error('disk full');
+			}
 			files.set(path, text);
 		},
 	};
@@ -57,6 +60,14 @@ export const describeHostMigration = (fixtures: IHostFixtures): void => {
 				expect((await run(files)).changes).toEqual([]);
 			});
 		}
+
+		it('[<20ms] aborts the edit and reports the failure when the backup cannot be written', async () => {
+			const files = new Map([[fixtures.file, fixtures.oldName]]);
+			const report = await run(files, true);
+			expect(files.get(fixtures.file)).toBe(fixtures.oldName);
+			expect(report.changes).toEqual([]);
+			expect(report.failures[0]?.reason).toBe('disk full');
+		});
 
 		it('[<20ms] leaves the foreign entry of a mixed file untouched and asks about it', async () => {
 			const files = new Map([[fixtures.file, fixtures.mixed]]);
