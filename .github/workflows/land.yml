@@ -300,4 +300,4 @@ jobs:
               if: always()
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: bun run forge:promotion-alerts -- --branch=develop
+              run: bun run forge:promotion-alerts -- --branch=develop --latest-analysed
