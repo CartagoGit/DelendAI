@@ -10,6 +10,8 @@ last-transition-id: 937dede0-7015-4a8c-a6b9-f064b385d464
 last-correlation-id: 937dede0-7015-4a8c-a6b9-f064b385d464
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T03:00:24.770Z
+shipped-in:
+  - "35723ce338a13f619124b23d4bf85d1018541017"
 ---
 
 # x01089 — The rehearsal runs for a pull request whose own diff touches the integration code, not for every push that merged the integration branch in, and a refused forge call says why
@@ -48,7 +50,7 @@ Measured 2026-11-17 20:13-20:44 UTC: five rehearsal runs started on push (runs f
 - review-log: requested_changes by mai-code-2 — Acceptance is not fully delivered. The trigger output and committed workflow look correct, but the required production wiring is absent: a repository search for `renderRehearsalWorkflow(` finds only the spec and the proposal text, not a caller in `integration-adoption.service.ts` or a generator. That service renders a different `renderAdoptedRehearsalWorkflow`, and `rehearsal-ci-workflow.helper.ts` still documents the main renderer as push-started. Reproduce by grepping all non-test callers of `renderRehearsalWorkflow`, or inspect the helper and integration-adoption service. To approve, wire the declared renderer into the command that writes this repository's `.github/workflows/rehearsal.yml`, pass the policy integration branch and code paths, update the stale doc comment, and test the generation path (not only direct renderer equality).
 
 ### S2 — A refused forge call keeps GitHub's message
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/integration/land/github-land-forge.service.ts`, `packages/core/tests/src/lib/integration/land/github-land-forge.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -56,8 +58,10 @@ Measured 2026-11-17 20:13-20:44 UTC: five rehearsal runs started on push (runs f
   - "A spec with a fake gh run answering exit 1 and stderr `gh: API rate limit exceeded for installation ID 1 (HTTP 403)` expects integrationTip to throw an error whose message contains both `answered 403` and `API rate limit exceeded` [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
 - shipped-in: `8bcdfcee93d6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 35723ce338a1, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 3/3: (1) createGithubLandForge.call extracts HTTP status, first non-empty stderr line and strips `gh:`; ok and integrationTip both use answered(what,status,message). Ex… (2) The first github-land-forge.service.spec.ts case supplies exactly that stderr and asserts `/answered 403: API rate limit exceeded/`; it passes at 6ms. (3) The slice's own 28 focused tests pass and the current worktree typecheck passed 0 errors; the candidate's change does not alter status or retry behavior, and t… — Reviewed the delivered diff and current implementation; no later change touches these slice files. Both focused spec files pass 28/28 and typecheck passes in this worktree. The gh stderr message survives only as error context and does not change statuses, retries, or exit behavior.
 
 ## acceptance
 
