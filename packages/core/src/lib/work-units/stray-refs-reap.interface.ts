@@ -6,5 +6,9 @@ export interface IReapedStrayRef {
 	readonly ref: string;
 	readonly outcome: 'removed' | 'would-remove' | 'kept';
 	/** Why it may go: it holds no work, or the forge already holds it. */
-	readonly reason?: 'no-work' | 'on-the-forge';
+	readonly reason?: 'no-work' | 'on-the-forge' | 'patch-landed';
+	/** A kept stranded or rescued ref: seconds since its tip was committed. */
+	readonly ageSeconds?: number;
+	/** A kept stranded or rescued ref: the files it changes beyond the integration branch. */
+	readonly files?: readonly string[];
 }
