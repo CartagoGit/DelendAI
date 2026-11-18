@@ -72,6 +72,31 @@ export const withSlicesView = (
 /** The tool whose write a delivery commits. */
 const TRANSITION_TOOL = 'delendai_proposals_proposal_transition';
 
+/** One forge read: the open pull request of a branch; undefined when none or the read failed. */
+const readOpenPullRequestUrl = (
+	cwd: string,
+	branch: string,
+): string | undefined => {
+	const read = spawnSync(
+		'gh',
+		[
+			'pr',
+			'list',
+			'--head',
+			branch.replace(/^refs\/heads\//u, ''),
+			'--state',
+			'open',
+			'--json',
+			'url',
+			'--jq',
+			'.[0].url // ""',
+		],
+		{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+	);
+	const url = read.status === 0 ? read.stdout.trim() : '';
+	return url === '' ? undefined : url;
+};
+
 /** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
 export const deliverPortsOf = (
 	ctx: ICliCommandContext,
@@ -81,6 +106,8 @@ export const deliverPortsOf = (
 	return {
 		slice: scalarArg(unitFlags, 'slice') ?? 'all',
 		publish: () => runWorkUnit(['publish', ...unitFlags], ctx),
+		readOpenPullRequest: async (branch) =>
+			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
 		preflight: (checkout) =>
 			answerOf(
