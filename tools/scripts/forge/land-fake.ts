@@ -163,6 +163,15 @@ export const createFakeWorld = (
 		},
 		/** CI finishes for every head that has no result yet. */
 		ci(): void {
+			// The integration tip is certified green unless a spec set it.
+			if (!results.has(tip))
+				results.set(
+					tip,
+					world.requiredNames.map((name) => ({
+						name,
+						conclusion: 'success',
+					})),
+				);
 			for (const pr of pulls.values()) {
 				if (pr.state !== 'open' || results.has(pr.headSha)) continue;
 				// The forge builds nothing the workflow token pushed, unless the
@@ -196,6 +205,16 @@ export const createFakeWorld = (
 					})),
 				);
 			}
+		},
+		/** The check results of the integration tip, as the base certified them. */
+		certifyTip(failing: readonly string[]): void {
+			results.set(
+				tip,
+				world.requiredNames.map((name) => ({
+					name,
+					conclusion: failing.includes(name) ? 'failure' : 'success',
+				})),
+			);
 		},
 		since: (base: string): { sha: string; files: string[] }[] => {
 			const at = log.findIndex((entry) => entry.sha === base);
