@@ -2,14 +2,14 @@
 id: x01014
 title: "Project rules go to the host's project-scoped memory"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 6be6905d-0193-424f-af6b-b14bbd56a9ea
-last-correlation-id: 6be6905d-0193-424f-af6b-b14bbd56a9ea
-last-transition-from: review
-last-transition-at: 2026-11-04T22:13:12.606Z
+last-transition-id: 4de81914-846e-48cc-bf31-da1d0f9f8f2e
+last-correlation-id: 4de81914-846e-48cc-bf31-da1d0f9f8f2e
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:33:44.791Z
 ---
 
 # x01014 — Project rules go to the host's project-scoped memory
