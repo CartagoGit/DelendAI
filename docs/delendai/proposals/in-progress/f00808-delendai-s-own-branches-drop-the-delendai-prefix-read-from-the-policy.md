@@ -44,7 +44,8 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S2 — Guards and ref identity recognise both prefixes
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Files**: `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/namespaced-ref.helper.ts`, `packages/core/tests/src/lib/work-units/namespaced-ref.helper.spec.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
+- **Notes**: packages/core/src/lib/development-policy/git-guard-namespaces.ts was deleted by 12dc112 (q00046 cutover)
 - **Gate**: type
 - acceptance:
   - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only."
@@ -66,7 +67,12 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S4 — Queue, publications and reapers take the prefix from the policy
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `tools/scripts/git/maintain-ref-namespace.script.spec.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`
+- **Files**: `packages/core/src/lib/integration/decisions/readiness.helper.ts`, `tools/scripts/forge/forward-sync-release.script.ts`, `tools/scripts/forge/forward-sync-release.script.spec.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `tools/scripts/lint/agent-claims.script.ts`, `tools/scripts/lint/closed-with-independent-approval.script.ts`, `packages/cli/src/lib/review/review-releases.service.ts`
+- **Notes**: tools/scripts/forge/keep-the-queue-moving.script.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/forge/keep-the-queue-moving.script.spec.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/forge/candidate-disposition.spec.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/git/maintain-ref-namespace.script.ts was deleted by d0616ff (q00046 cutover)
+- **Notes**: tools/scripts/git/maintain-ref-namespace.script.spec.ts was deleted by d0616ff (q00046 cutover)
 - **Gate**: type
 - acceptance:
   - "The queue arms, and candidate-disposition disposes, publications under every owned publication prefix; FORWARD_SYNC_REF_PREFIX is derived from the current publicationRefPrefix."
