@@ -143,7 +143,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) Invocation record/interfaces and usage-rollup tests cover every metric field and derive outcomes only from a gate result. (2) buildCostPerCorrect spec asserts task-class/model grouping, cost per correct and sample count. (3) usage-rollup compatibility spec reads records created before the new ledger fields. — Reviewed invocation ledger shape, gate-derived outcomes, compatibility and cost-per-correct rollups. Focused f00816 suite passed 86/86.
 
 ### S5b — Cost limits and the no-progress stop
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`
 - **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts`
@@ -151,8 +151,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "The budget policy limits calls, turns, retries and concurrency; exceeding one returns a blocker naming the limit."
   - "A run with N consecutive turns and no progress signal stops, using the progress signal the orchestrator already has."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) budget-tracker.spec passes each call/turn/retry/concurrency overrun and asserts a blocker names the exact limit. (2) Budget tracker spec stops after the configured barren-turn count via the orchestrator progress signal. — Reviewed budget limit blockers, concurrency release and no-progress stop. Focused f00816 suite passed 86/86.
 
 ### S5c — Proof reuse and duplicate-work detection
 - **Status**: review
