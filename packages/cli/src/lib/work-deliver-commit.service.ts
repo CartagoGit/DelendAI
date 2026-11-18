@@ -21,12 +21,22 @@ export const dirtyPathsOf = (git: IGitInCheckout): ReadonlySet<string> => {
 		'--untracked-files=all',
 	]);
 	if (!status.ok) return new Set();
-	return new Set(
-		status.out
-			.split('\0')
-			.filter((entry) => entry.length > 3)
-			.map((entry) => entry.slice(3)),
-	);
+	const entries = status.out.split('\0');
+	const paths = new Set<string>();
+	for (let index = 0; index < entries.length; index += 1) {
+		const entry = entries[index] ?? '';
+		if (entry.length <= 3) continue;
+		paths.add(entry.slice(3));
+		// Under -z a rename or copy is followed by its source path, bare:
+		// a proposal transition is a rename, and slicing that entry too
+		// turned docs/… into s/….
+		if (entry[0] === 'R' || entry[0] === 'C') {
+			const source = entries[index + 1];
+			if (source !== undefined && source.length > 0) paths.add(source);
+			index += 1;
+		}
+	}
+	return paths;
 };
 
 /** The subject a tool's own commit carries. */
