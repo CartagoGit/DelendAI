@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	formatCost,
 	formatWeekly,
+	kpiBreaches,
 	jobCost,
 	percentile,
 	redHoursByWeek,
@@ -104,6 +105,7 @@ describe('pr-ci-cost', () => {
 				run(3, ['unit']),
 			],
 			developRuns: [],
+			commitLog: '',
 			nowMs: Date.parse('2026-11-12T00:00:00Z'),
 		});
 		expect(row?.merged).toBe(4);
@@ -116,6 +118,64 @@ describe('pr-ci-cost', () => {
 		]);
 		expect(formatWeekly(row === undefined ? [] : [row])).toContain(
 			'p90 10 h',
+		);
+	});
+
+	it('[<50ms] names each KPI over its threshold with the number', () => {
+		const at = (minutes: number) =>
+			new Date(
+				Date.parse('2026-11-10T00:00:00Z') + minutes * 60_000,
+			).toISOString();
+		const pr = (
+			number: number,
+			mergedBy: string,
+			readyMin: number,
+			mergedMin: number,
+		) => ({
+			number,
+			createdAt: at(0),
+			readyAt: at(readyMin),
+			mergedAt: at(mergedMin),
+			mergedBy,
+		});
+		const [row] = weeklyCost({
+			prs: [pr(1, 'land[bot]', 0, 10), pr(2, 'someone', 0, 120)],
+			prRuns: [
+				{
+					pr: 1,
+					startedAt: at(0),
+					endedAt: at(9),
+					conclusion: 'success',
+					failedJobs: [],
+				},
+				{
+					pr: 2,
+					startedAt: at(0),
+					endedAt: at(5),
+					conclusion: 'success',
+					failedJobs: [],
+				},
+			],
+			developRuns: [],
+			commitLog: [
+				'2026-11-10T01:00:00Z\tp1\tfeat: a',
+				'2026-11-10T02:00:00Z\tp1\tchore(generated): refresh',
+				'2026-11-10T03:00:00Z\tp1\tfeat: b',
+			].join('\n'),
+			nowMs: Date.parse('2026-11-12T00:00:00Z'),
+		});
+		expect(row?.humanMerges).toBe(1);
+		expect(row?.unexplainedWaits).toBe(1);
+		expect(row?.bookkeepingShare).toBe(0.333);
+		expect(row?.readyToMergedP50Minutes).toBe(10);
+		const names = kpiBreaches(row ?? ({} as never)).map((b) => b.name);
+		expect(names).toEqual([
+			'human merges',
+			'unexplained waits over 30 minutes',
+			'bookkeeping commit share',
+		]);
+		expect(formatWeekly(row === undefined ? [] : [row])).toContain(
+			'OVER THRESHOLD: human merges = 1 (limit 0)',
 		);
 	});
 });
