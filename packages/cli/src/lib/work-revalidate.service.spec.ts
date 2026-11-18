@@ -54,6 +54,7 @@ const okPorts = (
 ): IWorkRevalidatePorts => ({
 	proposals: async () => proposals,
 	heldByUnits: async () => new Set<string>(),
+	handoverRefusal: async () => undefined,
 	print: () => undefined,
 	enter: async () => '/unit',
 	developSha: async () => 'abcdef0123456789',
@@ -180,6 +181,7 @@ describe('revalidateBatch units and transitions', () => {
 		const ports: IWorkRevalidatePorts = {
 			proposals: async () => THREE,
 			heldByUnits: async () => new Set<string>(),
+			handoverRefusal: async () => undefined,
 			print: () => undefined,
 			enter: async () => {
 				calls.enter += 1;
@@ -430,13 +432,13 @@ describe('in-progress proposals', () => {
 		expect(revalidateRefusalOf(finished('i1'))).toBeUndefined();
 	});
 
-	it('[<50ms] refuses one with an unshipped slice, naming it', () => {
-		const open = proposal(
+	it('[<50ms] accepts one whose slice lines say pending with no shipped-in, leaving delivery to the preflight', () => {
+		const pending = proposal(
 			'i2',
-			[slice({ shippedIn: undefined })],
+			[slice({ shippedIn: undefined, status: 'pending' })],
 			'in-progress',
 		);
-		expect(revalidateRefusalOf(open)).toContain('S1 has no shipped-in');
+		expect(revalidateRefusalOf(pending)).toBeUndefined();
 	});
 
 	it('[<50ms] refuses one a live unit holds, naming the unit', () => {
@@ -457,6 +459,30 @@ describe('in-progress proposals', () => {
 		const result = await revalidateBatch(ports, undefined);
 		expect(result.data.transitioned).toEqual(['i1', 'r1']);
 		expect(steps).toEqual(['i1:review', 'r1:in-progress', 'r1:review']);
+	});
+
+	it('[<100ms] leaves out and prints an in-progress proposal the preflight refuses, with no --proposals', async () => {
+		const lines: string[] = [];
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i1'), finished('i2')]),
+			print: (line) => lines.push(line),
+			handoverRefusal: async (id) =>
+				id === 'i2' ? 'S2 is undelivered' : undefined,
+		};
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.transitioned).toEqual(['i1']);
+		expect(lines).toContain('left out i2: S2 is undelivered');
+	});
+
+	it('[<100ms] prints a held in-progress proposal left out when no --proposals is given', async () => {
+		const lines: string[] = [];
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i3')]),
+			print: (line) => lines.push(line),
+			heldByUnits: async () => new Set(['i3']),
+		};
+		await revalidateBatch(ports, undefined);
+		expect(lines).toContain('left out i3: a live unit holds it');
 	});
 
 	it('[<100ms] leaves a held proposal out of the batch', async () => {
