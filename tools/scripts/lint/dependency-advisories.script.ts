@@ -261,10 +261,10 @@ export const networkAllowed = (
 	argv: readonly string[],
 ): boolean => {
 	if (argv.includes('--network')) return true;
-	const event = env['GITHUB_EVENT_NAME'];
+	const event = env.GITHUB_EVENT_NAME;
 	if (event === 'schedule' || event === 'workflow_dispatch') return true;
-	if (event === 'pull_request') return env['GITHUB_BASE_REF'] === 'main';
-	if (event === 'push') return env['GITHUB_REF'] === 'refs/heads/main';
+	if (event === 'pull_request') return env.GITHUB_BASE_REF === 'main';
+	if (event === 'push') return env.GITHUB_REF === 'refs/heads/main';
 	return false;
 };
 

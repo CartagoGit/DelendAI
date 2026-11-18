@@ -31,7 +31,7 @@ const exception = (until: string) => ({
 });
 
 describe('judgeAdvisories', () => {
-	it('blocks an advisory of every severity, low included', () => {
+	it('[<200ms] blocks an advisory of every severity, low included', () => {
 		// The forge lists low alerts on the release branch too.
 		for (const severity of ['low', 'moderate', 'high', 'critical']) {
 			expect(
@@ -44,7 +44,7 @@ describe('judgeAdvisories', () => {
 		}
 	});
 
-	it('waives an advisory excepted for that package until a later date', () => {
+	it('[<200ms] waives an advisory excepted for that package until a later date', () => {
 		const verdict = judgeAdvisories(
 			{ braces: [advisory('high')] },
 			[exception('2026-11-07')],
@@ -54,7 +54,7 @@ describe('judgeAdvisories', () => {
 		expect(verdict.excepted).toHaveLength(1);
 	});
 
-	it('fails an exception once its date has passed', () => {
+	it('[<200ms] fails an exception once its date has passed', () => {
 		expect(
 			judgeAdvisories(
 				{ braces: [advisory('high')] },
@@ -64,7 +64,7 @@ describe('judgeAdvisories', () => {
 		).toHaveLength(1);
 	});
 
-	it('does not stretch an exception to another package', () => {
+	it('[<200ms] does not stretch an exception to another package', () => {
 		expect(
 			judgeAdvisories(
 				{ micromatch: [advisory('high')] },
@@ -76,7 +76,7 @@ describe('judgeAdvisories', () => {
 });
 
 describe('the floor of a published range', () => {
-	it('is the lowest version the range admits', () => {
+	it('[<200ms] is the lowest version the range admits', () => {
 		expect(rangeFloor('^1.31.0')).toBe('1.31.0');
 		expect(rangeFloor('>=1.40.0')).toBe('1.40.0');
 		expect(rangeFloor('>=1.2.0 <2.0.0')).toBe('1.2.0');
@@ -84,7 +84,7 @@ describe('the floor of a published range', () => {
 		expect(rangeFloor('latest')).toBeUndefined();
 	});
 
-	it('is asked about for every published range but a workspace one', () => {
+	it('[<200ms] is asked about for every published range but a workspace one', () => {
 		const floors = declaredFloors([
 			{
 				path: 'plugins/a/package.json',
@@ -114,7 +114,7 @@ describe('the floor of a published range', () => {
 		]);
 	});
 
-	it('fails a floor inside an advisory and names the range and the version that clears it', () => {
+	it('[<200ms] fails a floor inside an advisory and names the range and the version that clears it', () => {
 		const floors = declaredFloors([
 			{
 				path: 'plugins/a/package.json',
@@ -147,7 +147,7 @@ describe('the floor of a published range', () => {
 });
 
 describe('asking about the floors', () => {
-	it('sends each package its floor versions once, and reads the answer', async () => {
+	it('[<200ms] sends each package its floor versions once, and reads the answer', async () => {
 		let sent: unknown;
 		const answer = await askFloors(
 			[
@@ -173,13 +173,13 @@ describe('asking about the floors', () => {
 		expect(answer).toEqual({ sdk: [] });
 	});
 
-	it('fails when the database does not answer', async () => {
+	it('[<200ms] fails when the database does not answer', async () => {
 		await expect(
 			askFloors([], async () => new Response('', { status: 503 })),
 		).rejects.toThrow('answered 503');
 	});
 
-	it('reads the manifests under packages/ and plugins/, skipping one that is not JSON', () => {
+	it('[<200ms] reads the manifests under packages/ and plugins/, skipping one that is not JSON', () => {
 		const root = mkdtempSync(join(tmpdir(), 'floors-'));
 		for (const dir of ['packages/a', 'plugins/b', 'plugins/c'])
 			mkdirSync(join(root, dir), { recursive: true });
