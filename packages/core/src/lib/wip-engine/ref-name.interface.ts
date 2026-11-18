@@ -16,6 +16,11 @@ export interface IWorkRefVariables {
 	readonly kind?: string | undefined;
 	readonly generation: number | string;
 	/**
+	 * The scope component, rendered by `renderWorkScope` (f00808). When
+	 * absent it is derived from proposal, slice and generation.
+	 */
+	readonly scope?: string | undefined;
+	/**
 	 * What the work is about, as a short slug (`configurable-ref-namespace`).
 	 * Lets a person reading a Git client tell two work refs apart without
 	 * opening them. Optional: a caller that does not know it gets `work`.
