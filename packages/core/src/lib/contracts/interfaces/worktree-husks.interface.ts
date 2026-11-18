@@ -22,3 +22,12 @@ export interface IReapedHusk {
 	/** Why it is still there, when it was kept. */
 	readonly reason?: string | undefined;
 }
+
+/** A file in the units' folder that is no worktree, and where it went. */
+export interface IKeptStrayFile {
+	readonly name: string;
+	readonly from: string;
+	/** Where it was moved to under the cache root; nothing is deleted. */
+	readonly to: string;
+	readonly outcome: 'moved' | 'would-move';
+}
