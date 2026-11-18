@@ -47,15 +47,17 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - review-log: requested_changes by gpt-5.3-codex — S1 review evidence is stale: shipped-in is 5a9224bac, but vitest.shared.ts changed on develop after that delivery. Please redeliver S1 on current HEAD with a fresh shipped-in and updated evidence for the isolate behavior before re-review.
 
 ### S2 — A failed zone still uploads the coverage it measured
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/blob-upload-on-failure.spec.ts`
 - **Gate**: none
 - shipped-in: `9b0900152`
 - acceptance:
   - "The step that uploads a zone's coverage blob runs even when the zone failed, so the merge judges the run from every zone that ran; a spec reads ci.yml and says so."
   - "A zone that produced no report at all does not fail the upload: the merge already names the zone that is missing."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S2 review evidence is stale: shipped-in is 9b0900152, but both .github/workflows/ci.yml and tools/scripts/ci/blob-upload-on-failure.spec.ts changed on develop afterward. Please redeliver S2 on current HEAD with a fresh shipped-in and refreshed evidence before re-review.
 
 ## acceptance
 
