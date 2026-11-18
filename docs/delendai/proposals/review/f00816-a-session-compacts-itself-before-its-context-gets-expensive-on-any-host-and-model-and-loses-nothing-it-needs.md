@@ -68,7 +68,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) task-class-tier.service.spec maps mechanical to small, coding to mid, blocks unauthorized top and reads configured tiers. (2) run-with-escalation/auto-run specs show unauthorized tiers become blockers and a failed first rung is not automatically escalated. (3) modelMismatch specs pass for a real model outside the requested set and remain silent for matching/unknown inputs. — Reviewed tier mapping, authorization, blocker behavior and model mismatch detection. Focused f00816 suite passed 86/86.
 
 ### S2 — Closed worker contract
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/closed-contract.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`
@@ -78,8 +78,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "The worker receives only that contract and is told it cannot redesign, widen scope or launch agents; each contract is bound to one isolated unit."
   - "A contract missing a section is refused."
 - shipped-in: `64a1d01af0d0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) renderTaskPack/renderClosedContract tests enumerate every required section and limits. (2) Closed-contract renderer spec checks the no-redesign/no-widen/no-agents instruction and the unit reference in the contract. (3) task-pack.spec passes the refusal case and verifies the named missing sections. — Reviewed the closed contract shape, renderer, unit binding and missing-section refusal. Focused f00816 suite passed 86/86.
 
 ### S3 — Session handover from delendai's own stores
 - **Status**: review
