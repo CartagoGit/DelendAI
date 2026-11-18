@@ -23,6 +23,49 @@ import { workUnitBranch } from './close-slice-support.tool';
 import { createProposalDocument } from './create-proposal-document.tool';
 export { createProposalDocument } from './create-proposal-document.tool';
 
+const isPlaceholder = (text: string): boolean =>
+	/^\s*(?:-\s+)?TODO\b/u.test(text);
+
+/**
+ * What the scaffold would have to invent: a Goal, a Why, Non-goals or an
+ * acceptance the caller did not write, or one still reading `TODO`. The
+ * hygiene lint refuses each of these in CI; refusing them here keeps them
+ * from ever reaching it.
+ */
+export const scaffoldGaps = (args: {
+	readonly goal?: string | undefined;
+	readonly why?: string | undefined;
+	readonly nonGoals?: readonly string[] | undefined;
+	readonly slices?: ReadonlyArray<z.infer<typeof SLICE_IN>> | undefined;
+}): readonly string[] => {
+	const gaps: string[] = [];
+	const text = (name: string, value: string | undefined): void => {
+		if (value === undefined || value.trim() === '' || isPlaceholder(value))
+			gaps.push(name);
+	};
+	text('goal', args.goal);
+	text('why', args.why);
+	if (
+		args.nonGoals === undefined ||
+		args.nonGoals.length === 0 ||
+		args.nonGoals.some(isPlaceholder)
+	)
+		gaps.push('nonGoals');
+	if (args.slices === undefined || args.slices.length === 0)
+		gaps.push('slices');
+	for (const slice of args.slices ?? []) {
+		if (
+			slice.acceptance === undefined ||
+			slice.acceptance.length === 0 ||
+			slice.acceptance.some(isPlaceholder)
+		)
+			gaps.push(`${slice.sliceId} acceptance`);
+		if (slice.files.some(isPlaceholder) || isPlaceholder(slice.title ?? ''))
+			gaps.push(`${slice.sliceId} files or title`);
+	}
+	return gaps;
+};
+
 /**
  * `create_proposal` — author a proposal markdown (frontmatter + Goal +
  * a parseable `## Slices` section) so multi-agent slice work is correct
@@ -76,6 +119,13 @@ export const buildCreateProposalRegistration = (
 					return toolError(
 						forCheckout.refusal,
 						'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+					);
+				}
+				const gaps = scaffoldGaps(args);
+				if (gaps.length > 0) {
+					return toolError(
+						`Refused: the scaffold would write placeholders for ${gaps.join(', ')}, and the proposal hygiene lint refuses a proposal that carries one.`,
+						'Pass a real goal, why, nonGoals and, for every slice, its files and acceptance; then call create_proposal again.',
 					);
 				}
 				// A create unit delivers one proposal; a second would be
