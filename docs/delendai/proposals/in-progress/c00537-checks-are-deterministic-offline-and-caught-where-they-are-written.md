@@ -60,10 +60,10 @@ Nov 2-8 CI data: PR runs take 4 min (median), full runs 7. Merged PRs took 0.2 h
 ### S4 — pr-ci-cost reports weekly develop red hours, PR open-to-merge p50/p90, runs per PR and top failure causes
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`
+- **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`
 - **Gate**: none
 - acceptance:
-  - "The report prints these numbers per week"
+  - "The report prints these numbers per week: `bun run ci:cost -- --weekly` prints develop red hours, open-to-merge p50 and p90, runs per PR and the top failure causes, proved by tools/scripts/ci/pr-ci-cost.script.spec.ts"
 
 ### S5 — Coverage instruments only the changed source files
 - **Status**: pending
