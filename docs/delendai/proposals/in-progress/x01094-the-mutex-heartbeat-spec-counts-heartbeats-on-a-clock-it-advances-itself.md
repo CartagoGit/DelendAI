@@ -33,7 +33,7 @@ On 2026-11-18 develop's certifying run b2db72a8f (run 44231434720, job 134557779
 
 ### S1 — Fake timers for the heartbeat case
 - **Status**: pending
-- **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`, `packages/core/tests/src/lib/shared/with-file-mutex.property.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Files**: `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`, `packages/core/tests/src/lib/shared/with-file-mutex.property.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`, `tools/scripts/lint/no-sleep-in-specs.baseline.json`
 - **Gate**: lint
 - acceptance:
   - "The heartbeat test calls vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] }) and restores real timers in a finally or afterEach."
