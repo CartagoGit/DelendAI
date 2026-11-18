@@ -80,7 +80,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - acceptance:
   - "`bun tools/scripts/lint/no-forge-polling.script.ts` lists every recurring timer that sits next to a forge or remote call, each with its reason, and exits non-zero on one that is unexplained, on a stale entry, or when it scanned nothing."
   - "`tools/scripts/lint/no-forge-polling.script.spec.ts` proves the three outcomes and the empty scan."
-  - "`watcher.ts` and `handoff-watcher.ts` stay: they watch the local lock file and handoff directory for `notify_status`, never the forge, and no event serves that consumer."
+  - "`plugins/notification/tests/src/lib/notification.e2e.spec.ts` keeps passing: `watcher.ts` and `handoff-watcher.ts` stay, because they watch the local lock file and handoff directory for `notify_status`, never the forge, and no event serves that consumer."
 
 ### S6 — The host follows the integration branch and brings labelled pull requests forward on forge events, not on a timer
 - **Status**: pending
