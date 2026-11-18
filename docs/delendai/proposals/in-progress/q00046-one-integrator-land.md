@@ -222,12 +222,13 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5b — The branch flow, part 2: events and land's upkeep run the reconciler
 - **Status**: pending
 - **DependsOn**: [S5]
-- **Files**: `new:packages/core/src/lib/ref-reconciler/reconciler-run.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/reconciler-run.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `tools/scripts/host/integration-follow-ups.script.ts`, `.github/workflows/land.yml`
+- **Files**: `new:packages/core/src/lib/ref-reconciler/reconciler-run.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/reconciler-run.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `tools/scripts/host/integration-follow-ups.script.ts`, `new:tools/scripts/forge/reconcile-refs.script.ts`, `new:tools/scripts/forge/reconcile-refs.script.spec.ts`, `.github/workflows/land.yml`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "reconciler-run.service.spec.ts: a land merge, a pull request closing, `work retire` and `work deliver` each run exactly one reconciler pass."
   - "land.yml's upkeep runs the reconciler as its periodic safety pass, and `lint:ref-lifecycle -- --reap` and close-unpublished-prs leave the upkeep; `bun run lint:workflows` passes."
+  - "reconcile-refs.script.spec.ts: the script maps IRefForge onto gh and git, reusing the exported helpers of ref-lifecycle-guard.script.ts, and land.yml's upkeep calls it."
 
 ### S5c — The branch flow, part 3: reap, husks, stray refs and retired machinery move onto the reconciler and go
 - **Status**: pending
