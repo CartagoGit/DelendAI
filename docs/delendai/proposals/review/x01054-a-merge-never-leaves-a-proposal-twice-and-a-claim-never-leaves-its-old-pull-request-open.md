@@ -35,7 +35,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - global_gate: none
 
 ### S1 — Merges keep one copy of each proposal id
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/src/lib/contracts/constants/status-progress.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-copy.interface.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.e2e.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/proposals/keep-one-proposal-copy.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: type
 - acceptance:
@@ -43,8 +43,10 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "land's train assembly (the candidate refresh and the post-merge hook were deleted with the queue) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
   - "the survivor is placed by the existing folder reconciler, and a spec with two branches that move one proposal proves it"
 - shipped-in: `3a7dfd098e7f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A claim retires the publication it superseded
 - **Status**: review
