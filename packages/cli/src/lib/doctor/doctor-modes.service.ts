@@ -19,6 +19,7 @@ export const parseDoctorModes = (args: readonly string[]): IDoctorModes => ({
 	ci: hasFlag(args, 'ci'),
 	offline: hasFlag(args, 'offline'),
 	deep: hasFlag(args, 'deep'),
+	fix: hasFlag(args, 'fix'),
 });
 
 /**
