@@ -38,8 +38,7 @@ export const buildCreateProposalRegistration = (
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
 	refusedWriteNextStep: CREATE_PROPOSAL_REFUSED_NEXT_STEP,
-	summary:
-		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
+	summary: 'Author a proposal (disjoint slices, overlap checked, indexed).',
 	tags: ['proposals'],
 	register: async (server) => {
 		server.registerTool(
