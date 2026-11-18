@@ -135,6 +135,14 @@ export const sharedTestOptions = {
 	// project and no spec opts out (`lint:test-time-budget` and the shared
 	// config's spec prove each project loads it).
 	runner: timeBudgetRunnerPath(),
+	// One temp root for the run, removed when it ends: no spec leaves an
+	// entry in the system temp directory (x01091).
+	globalSetup: [
+		resolve(
+			dirname(fileURLToPath(import.meta.url)),
+			'tools/scripts/test/run-temp-root.global-setup.ts',
+		),
+	],
 } as const;
 
 /** The spec files still allowed tests with no budget. It only shrinks. */

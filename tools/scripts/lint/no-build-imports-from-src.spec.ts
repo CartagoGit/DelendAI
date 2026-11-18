@@ -1,4 +1,5 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -17,7 +18,7 @@ afterEach(async () => {
 });
 
 const createFixture = async (source: string): Promise<string> => {
-	const directory = await mkdtemp('/tmp/delendai-build-src-test-');
+	const directory = await mkdtemp(join(tmpdir(), 'delendai-build-src-test-'));
 	temporaryDirectories.push(directory);
 	await writeFile(join(directory, 'index.js'), source, 'utf8');
 	return directory;
