@@ -2,14 +2,14 @@
 id: f00799
 title: "the context an agent receives is the size of its task"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-11-01
-last-transition-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
-last-correlation-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
-last-transition-from: ready
-last-transition-at: 2026-11-01T18:36:31.061Z
+last-transition-id: 77e91777-9857-48c0-8128-c7d509be2f5d
+last-correlation-id: 77e91777-9857-48c0-8128-c7d509be2f5d
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T13:18:21.682Z
 ---
 
 # f00799 — the context an agent receives is the size of its task
@@ -45,6 +45,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - **Gate**: type
 - acceptance:
   - "Through a port core declares and the proposals plugin fills, `work enter` returns the slice's goal, acceptance, files with their sizes and nearest specs, by reference and not by body; a project with no proposals plugin enters as before."
+- shipped-in: `934acb34d785`
 
 ### S2 — Context scales with the change
 - **Status**: pending
@@ -52,6 +53,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - **Gate**: type
 - acceptance:
   - "`context_for_change` takes its reach from what it was given: a symbol returns that symbol's lines, a slice of many files returns all of them; anything left out is named with how to get it, and no fixed cap decides silently."
+- shipped-in: `3c069fa82953`
 
 ### S3 — The always-read rules are the rules this host needs
 - **Status**: pending
@@ -59,6 +61,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - **Gate**: type
 - acceptance:
   - "A host reads only its own appendix, and rules that apply to one activity load with that activity; the always-read part has a measured budget a gate holds, and no rule is lost."
+- shipped-in: `ac60b74441f6`
 
 ### S4 — A self-contained playbook runs apart
 - **Status**: pending
@@ -66,6 +69,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - **Gate**: type
 - acceptance:
   - "On a host that can run a skill in its own context, a long self-contained skill does so and only its result reaches the main thread; a host that cannot reads it as before."
+- shipped-in: `1732168de934`
 
 ### S5 — The saving is measured per finished task
 - **Status**: pending
@@ -73,6 +77,7 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - **Gate**: type
 - acceptance:
   - "Usage reports tokens per finished unit, with reads, retries and failed proofs, so a change that shrinks a response and adds rework shows as a loss."
+- shipped-in: `1e3086c2f5bb`
 
 ## acceptance
 
