@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import fc from 'fast-check';
 import {
@@ -276,46 +276,106 @@ describe('withFileMutex state-machine invariants', () => {
 			{ heartbeatMs: 40, staleMs: 800 },
 		] as const;
 
-		for (const [caseIndex, entry] of cases.entries()) {
-			let heartbeatCount = 0;
-			let waiterEntered = false;
-			const targetCase = join(dir, `state-heartbeat-${caseIndex}.json`);
-			const lockPathCase = `${targetCase}.mutex`;
-			writeFileSync(targetCase, '{}');
-			const holderDurationMs = Math.max(
-				entry.heartbeatMs * 8,
-				entry.staleMs + 20,
-			);
-			const waiterTimeoutMs = Math.max(15, entry.heartbeatMs * 3);
+		// Fake clock: the heartbeat is a setInterval, so its count is a pure
+		// function of how far the clock is advanced. Only timers and Date are
+		// faked; the lock file I/O stays real, so after each advance the test
+		// yields to the real event loop until that heartbeat's write settled.
+		const settle = async (
+			predicate: () => boolean,
+			maxYields = 10_000,
+		): Promise<void> => {
+			for (let i = 0; i < maxYields && !predicate(); i += 1) {
+				await new Promise<void>((resolve) => setImmediate(resolve));
+			}
+		};
 
-			__setWithFileMutexTestHooks({
-				// This scenario models a live holder whose heartbeats keep the
-				// lease fresh across a long critical section, so reclaim must
-				// continue to see the pid as alive for the lifetime of the test.
-				isPidAlive: () => true,
-				afterHeartbeat: () => {
-					heartbeatCount += 1;
-				},
-			});
+		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		try {
+			for (const [caseIndex, entry] of cases.entries()) {
+				let heartbeatCount = 0;
+				let waiterEntered = false;
+				const targetCase = join(
+					dir,
+					`state-heartbeat-${caseIndex}.json`,
+				);
+				const lockPathCase = `${targetCase}.mutex`;
+				writeFileSync(targetCase, '{}');
+				const holderDurationMs = Math.max(
+					entry.heartbeatMs * 8,
+					entry.staleMs + 20,
+				);
 
-			const holder = withFileMutex(
-				targetCase,
-				async () => {
-					await delay(holderDurationMs);
-				},
-				{
-					heartbeatMs: entry.heartbeatMs,
-					pollMs: 2,
-					staleMs: entry.staleMs,
-					timeoutMs: 2000,
-				},
-			);
+				__setWithFileMutexTestHooks({
+					// A live holder whose heartbeats keep the lease fresh:
+					// reclaim must keep seeing the pid as alive.
+					isPidAlive: () => true,
+					afterHeartbeat: () => {
+						heartbeatCount += 1;
+					},
+				});
 
-			await waitFor(() => existsSync(lockPathCase), 2000);
-			await waitFor(() => heartbeatCount >= 2, entry.heartbeatMs * 20);
+				const armedBaseline = vi.getTimerCount();
+				const holder = withFileMutex(
+					targetCase,
+					async () => {
+						await delay(holderDurationMs);
+					},
+					{
+						heartbeatMs: entry.heartbeatMs,
+						pollMs: 2,
+						staleMs: entry.staleMs,
+						timeoutMs: 2000,
+					},
+				);
 
-			await expect(
-				withFileMutex(
+				// Holder delay + heartbeat interval both armed.
+				await settle(
+					() =>
+						existsSync(lockPathCase) &&
+						vi.getTimerCount() >= armedBaseline + 2,
+				);
+				expect(existsSync(lockPathCase), `case ${caseIndex}`).toBe(
+					true,
+				);
+
+				// Advance past the whole stale window, one heartbeat at a time.
+				let elapsedMs = 0;
+				let expectedHeartbeats = 0;
+				while (elapsedMs < entry.staleMs) {
+					await vi.advanceTimersByTimeAsync(entry.heartbeatMs);
+					elapsedMs += entry.heartbeatMs;
+					expectedHeartbeats += 1;
+					await settle(() => heartbeatCount >= expectedHeartbeats);
+					// afterHeartbeat fires before the handle is closed and the
+					// in-flight guard released; a tick landing in that window
+					// is skipped, so wait for the fs requests (incl. CloseReq) to drain.
+					await settle(
+						() =>
+							!process
+								.getActiveResourcesInfo()
+								.some(
+									(name) =>
+										name.endsWith('Req') ||
+										name.startsWith('FSReq'),
+								),
+					);
+					expect(heartbeatCount, `case ${caseIndex}`).toBe(
+						expectedHeartbeats,
+					);
+				}
+				// One more millisecond: strictly past the stale window, still
+				// before the holder's section (and next heartbeat) ends.
+				await vi.advanceTimersByTimeAsync(1);
+				elapsedMs += 1;
+				expect(elapsedMs, `case ${caseIndex}`).toBeGreaterThan(
+					entry.staleMs,
+				);
+
+				// The waiter's poll sleeps are fake too: advance in poll-sized
+				// steps until it gives up. Its 5ms budget ends before the
+				// holder's section and the next heartbeat.
+				const holderTimers = vi.getTimerCount();
+				const waiterOutcome = withFileMutex(
 					targetCase,
 					async () => {
 						waiterEntered = true;
@@ -325,18 +385,45 @@ describe('withFileMutex state-machine invariants', () => {
 						heartbeatMs: entry.heartbeatMs,
 						pollMs: 2,
 						staleMs: entry.staleMs,
-						timeoutMs: waiterTimeoutMs,
+						timeoutMs: 5,
 					},
-				),
-			).rejects.toBeInstanceOf(LockContentionError);
+				).then(
+					() => undefined,
+					(error: unknown) => error,
+				);
+				let waiterDone = false;
+				void waiterOutcome.then(() => {
+					waiterDone = true;
+				});
+				for (let step = 0; step < 10 && !waiterDone; step += 1) {
+					// Real fs round trips happen between two fake sleeps: wait
+					// until the waiter is parked on its next one (or is done).
+					await settle(
+						() => waiterDone || vi.getTimerCount() > holderTimers,
+					);
+					if (waiterDone) break;
+					await vi.advanceTimersByTimeAsync(2);
+					elapsedMs += 2;
+				}
+				expect(await waiterOutcome, `case ${caseIndex}`).toBeInstanceOf(
+					LockContentionError,
+				);
 
-			expect(waiterEntered, `case ${caseIndex}`).toBe(false);
-			expect(heartbeatCount, `case ${caseIndex}`).toBeGreaterThanOrEqual(
-				2,
-			);
+				expect(waiterEntered, `case ${caseIndex}`).toBe(false);
+				expect(heartbeatCount, `case ${caseIndex}`).toBe(
+					expectedHeartbeats,
+				);
 
-			await holder;
+				expect(elapsedMs, `case ${caseIndex}`).toBeLessThan(
+					holderDurationMs,
+				);
+				await vi.advanceTimersByTimeAsync(holderDurationMs - elapsedMs);
+				await holder;
+				__resetWithFileMutexTestHooks();
+			}
+		} finally {
 			__resetWithFileMutexTestHooks();
+			vi.useRealTimers();
 		}
 	});
 
