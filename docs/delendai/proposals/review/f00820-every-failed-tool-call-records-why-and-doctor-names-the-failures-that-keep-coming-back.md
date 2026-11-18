@@ -10,6 +10,8 @@ last-transition-id: fae49456-46db-48a5-95be-a5ca4eb85e93
 last-correlation-id: fae49456-46db-48a5-95be-a5ca4eb85e93
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T03:21:52.633Z
+shipped-in:
+  - "64d614baf4ee024c4a9ed2396f26533bfdcd0cbd"
 ---
 
 # f00820 — Every failed tool call records why, and doctor names the failures that keep coming back
@@ -33,7 +35,7 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
 - global_gate: lint
 
 ### S1 — tool.failed carries a failure class and a stable code
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/runtime-event.interface.ts`, `packages/core/src/lib/observability/tool-failure-class.helper.ts`, `packages/core/tests/src/lib/observability/tool-failure-class.helper.spec.ts`, `packages/core/src/lib/project/instrument-tool-handlers.helper.ts`
 - **Gate**: lint
 - acceptance:
@@ -42,8 +44,10 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
   - "instrument-tool-handlers.helper.ts writes `failure` on every tool.failed event and on no other event."
   - "The spec asserts the class and code for each class, that two refusals differing only in an id produce the same code, and that a secret-shaped value never appears in the code."
 - shipped-in: `88021e7c2f23`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 64d614baf4ee, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 4/4: (1) runtime-event.interface.ts exports IToolFailure with the exact class union and string code, and IRuntimeEvent has optional failure with a failed-event-only com… (2) deriveToolFailure implements the four classes, prefers structuredContent.error.code, generalises first-sentence dynamic values, redacts secrets, and slices to … (3) The final runtime-event emit selects tool.failed when isError and spreads failureField only there; other events receive no failure. The helper spec asserts fai… (4) tool-failure-class.helper.spec.ts has explicit schema/refused/thrown/cancelled assertions, stable-code equality across IDs, and a ghp-shaped secret non-retenti… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The 28 focused specs for this proposal pass and the lint gate exits 0. Failure classification, stable redacted/bounded codes, and event-only instrumentation meet the acceptance criteria.
 
 ### S2 — kpis groups failures by tool, class and code
 - **Status**: review
