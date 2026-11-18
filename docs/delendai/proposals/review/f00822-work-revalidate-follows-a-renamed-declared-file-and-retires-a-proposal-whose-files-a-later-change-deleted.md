@@ -2,10 +2,14 @@
 id: f00822
 title: "work revalidate follows a renamed declared file and retires a proposal whose files a later change deleted"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: feats
 date: 2026-11-18
+last-transition-id: bea137f8-dec3-412d-ac58-2c286d226bda
+last-correlation-id: bea137f8-dec3-412d-ac58-2c286d226bda
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T10:51:37.932Z
 ---
 
 # f00822 — work revalidate follows a renamed declared file and retires a proposal whose files a later change deleted
@@ -29,7 +33,7 @@ On 2026-11-18 two revalidation runs left out 12 shipped proposals for 'declared 
 - global_gate: lint
 
 ### S1 — renamed paths are rewritten and superseded proposals retired, in the batch
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-revalidate.service.ts`, `packages/cli/src/lib/work-revalidate.service.spec.ts`, `packages/cli/src/lib/work-revalidate-ports.service.ts`
 - **Gate**: lint
 - **Decisions**: none
@@ -37,6 +41,9 @@ On 2026-11-18 two revalidation runs left out 12 shipped proposals for 'declared 
   - "For each declared path that does not exist, `delendai work revalidate` asks git for the rename that removed it on the integration branch (`git log -M --diff-filter=R --name-status -1 -- <path>`); when one exists and its target exists, it rewrites the path in that slice's Files line in the batch unit, commits it with the proposal's transitions, and keeps the proposal in the batch."
   - "When every remaining missing path of a proposal was deleted (`--diff-filter=D`) by merged commits that all name one proposal id in their subject, `delendai work revalidate` transitions it to retired through the transition service with superseded_by that id and a reason naming the deleting commit, and reports it as retired, not failed; with no id or several ids it leaves the proposal out and names each missing path with the commit that deleted it."
   - "work-revalidate.service.spec.ts covers: a renamed path (rewritten, kept); a rename whose target was later deleted (judged as deleted); a path git never knew (left out, named); one superseding id (retired); no id (left out, commit named); two ids (left out)."
+- shipped-in: `27aec7ee8f2b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
