@@ -146,6 +146,31 @@ describe('DelendaiStatusBar', async () => {
 	});
 });
 
+describe('the status-bar tooltip class', () => {
+	it('[<50ms] is built by the host MarkdownString factory when one is given', async () => {
+		const item = createItem();
+		const built: string[] = [];
+		const bar = new DelendaiStatusBar(
+			item,
+			overview,
+			serverAnswering(),
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			(value) => {
+				built.push(value);
+				return { value, isTrusted: false };
+			},
+		);
+
+		await bar.update();
+
+		expect(built.length).toBeGreaterThan(0);
+		expect(tooltipOf(item)).toBe(built.at(-1));
+	});
+});
+
 describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
 	it('[<50ms] subscribes to every union event and removes them on dispose', async () => {
 		const subscribed: string[] = [];
