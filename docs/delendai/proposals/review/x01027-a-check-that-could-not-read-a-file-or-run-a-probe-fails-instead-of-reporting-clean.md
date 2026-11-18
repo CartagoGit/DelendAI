@@ -47,16 +47,18 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - review-log: approved by mai-code-2 — verified at 6d32d7ab0fe0, validate exit 0 and tests 7/7 claimed, no recorded run cited; acceptance 2/2: (1) main reports unreadable count/names and returns 1; the scoped spec passed. (2) no-control-bytes.script.spec.ts unlinks tracked b.ts and asserts code 1 with its name; 7/7 passed. — Verified 6d32d7ab: scanForControlBytes records unreadable files, main returns 1 and names each one, and the real-spec path deletes a tracked source file to assert failure. The scoped no-control-bytes spec passed.
 
 ### S2 — A failed secrets listing is reported unknown, not empty
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/security/src/lib/secrets/real-deps.ts`, `plugins/security/tests/src/lib/secrets/real-deps.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A git listing that fails makes the scan report unknown or failed, never zero files."
   - "A spec fails the listing and expects the unknown state."
 - shipped-in: `4079bdb2efdd`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+- review-log: approved by mai-code-2 — verified at 6d32d7ab0fe0, validate exit 0 and tests 2/2 claimed, no recorded run cited; acceptance 2/2: (1) listFiles and listIgnored throw listingFailure with the git command and cause when the tool is not ok. (2) real-deps.spec.ts invokes both listings outside a repository and asserts rejection; 2/2 passed. — Verified 6d32d7ab: realScanDeps throws a named git-listing error whenever runExternalTool is not ok, for tracked/changed and ignored listings, instead of returning an empty list. The security regression spec passed.
 
 ### S3 — A probe that did not exit is not an accepted run
 - **Status**: review
