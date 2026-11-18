@@ -99,7 +99,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) session-handover.service.spec reads all 12 sections from store ports and persists/reloads the snapshot. (2) Index/detail spec bounds entries and summaries and fetches one full record by section/id. (3) Resume specs rebuild every available section, fall back only to the persisted store artifact for missing sections and assert nothing is invented when neither a… — Reviewed store rebuild, persistence, bounded index, selective detail and no-invention fallback. Focused f00816 suite passed 86/86.
 
 ### S4 — Compaction threshold rendered per host from one policy
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Extends**: `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/hosts/host-capability-profile.ts`
 - **Files**: `packages/core/src/lib/hosts/compaction-policy.helper.ts`, `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
@@ -108,8 +108,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One policy value renders per host: Claude Code gets CLAUDE_AUTOCOMPACT_PCT_OVERRIDE plus PreCompact and SessionStart hooks that run S3."
   - "A host with a native setting gets it; any other host gets a compact-now directive from the MCP server."
 - shipped-in: `d16f4e651030`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) compaction-policy/helper and host constant specs render the native threshold variable plus before-compaction/session-start handover commands. (2) Renderer specs cover variable-only, hooks-only and directive hosts across the full host list. — Reviewed host-neutral compaction rendering, native hooks and MCP fallback directive. Focused f00816 suite passed 86/86.
 
 ### S1b — Task-class tier policy wired to plugin config
 - **Status**: review
