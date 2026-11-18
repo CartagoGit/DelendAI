@@ -31,7 +31,7 @@ Every CLI command pays for what only some use. On a fixture repo `work status` t
 - global_gate: none
 
 ### S1 — Lazy server context, per-command loading and a startup budget spec
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/lib/lazy-context.factory.ts`, `packages/cli/src/contracts/interfaces/lazy-context.interface.ts`, `packages/cli/src/lib/lazy-context.factory.spec.ts`, `packages/cli/src/lib/command-loader.service.ts`, `packages/cli/src/lib/command-loader.service.spec.ts`, `packages/cli/src/lib/startup-budget.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +39,10 @@ Every CLI command pays for what only some use. On a fixture repo `work status` t
   - "work, guard and proposals load their own command module and not the registry of every command"
   - "a spec bounds the static import graph of the work, guard and proposals entries and fails if the registry or a server spawn returns to them"
 - shipped-in: `b15ea7d9ffa4`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
