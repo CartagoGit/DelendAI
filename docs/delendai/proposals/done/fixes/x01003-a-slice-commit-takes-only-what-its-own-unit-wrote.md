@@ -2,14 +2,16 @@
 id: x01003
 title: "A slice commit takes only what its own unit wrote"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: fcfefafb-b4cc-4c66-8da9-c9bdaa3a484f
-last-correlation-id: fcfefafb-b4cc-4c66-8da9-c9bdaa3a484f
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:49:33.792Z
+last-transition-id: 61b583b1-4c39-44c1-acb1-c2f7fddd22bf
+last-correlation-id: 61b583b1-4c39-44c1-acb1-c2f7fddd22bf
+last-transition-from: review
+last-transition-at: 2026-11-18T03:10:49.119Z
+shipped-in:
+  - "174f53d28e85939d67124c54d85f734be9210c2c"
 ---
 
 # x01003 — A slice commit takes only what its own unit wrote
@@ -46,7 +48,7 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
 - global_gate: none
 
 ### S1 — Nothing reaches a work ref from the shared checkout, which stays clean
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/shared-checkout-clean.ts`, `plugins/commit-policy/src/lib/tools/work-ref.tool.ts`, `packages/core/src/lib/work-units/unit-edit-fence.service.ts`, `packages/cli/src/lib/pre-edit-guard.service.ts`, `packages/cli/src/lib/init/init-claude-settings.ts`, `packages/core/src/lib/work-units/shared-checkout-clean.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/src/lib/development-policy/git-guard.ts`, `packages/cli/src/commands/guard.command.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/engine.ts`, `packages/core/src/lib/development-policy/declare-workflow.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: none
 - acceptance:
@@ -58,9 +60,11 @@ Git cannot say who wrote which hunk of a file, and a checkpoint from the shared 
   - "commit-policy's `work_ref` checkpoint and materialize refuse from the shared checkout under every work-ref profile with `work checkpoint`'s message and move nothing; a spec covers it."
   - "`delendai guard pre-edit` blocks Edit and Write outside the agent's unit worktree with exit 2 and lets its own worktree through; `init` writes the hook for Claude Code projects and keeps the person's settings; specs cover both."
 - shipped-in: `ef203ed1fd27`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+- review-log: approved by mai-code-2 — verified at 174f53d28e85, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 7/7: (1) sharedCheckoutCheckpointRefusal splits dirty/clean files, takes no path, names worktree; focused unit/work-ref tests 58/58. (2) looseSharedCheckoutRefusal is invoked by guarded work commands; service/guard specs and workflow tests cover refusal while read-only status/rescue remain allow… (3) git-guard applies loose-edit refusal only when sharedCheckoutStaysClean; the scoped git-guard spec passed. (4) wip-persistence calls checkoutRefusal and leftInSharedCheckout before checkpoint mutation; unit/work-ref tests passed. (5) declare-workflow renders work enter/edit/commit in own worktree and contains no shared-checkout checkpoint invitation. (6) work-ref tool calls sharedCheckoutCheckpointRefusal for every non-recover action and returns before mutation; scoped work-ref specs passed. (7) pre-edit service maps refusal to usage exit 2; fence allows own tree; init-claude-settings/pre-edit specs passed. — Verified 174f53d2 across the worktree boundary, WIP persistence, commit guard and editor fence. Shared-checkout checkpoint paths are refused with per-file reasons, work commands and work_ref routes preserve the real checkout, slice events terminally leave foreign edits, workflow text has no shared-checkout checkpoint escape, and Claude Edit/Write hooks block outside the unit while init preserves existing settings. Focused specs passed.
 
 ## acceptance
 
