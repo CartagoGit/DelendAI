@@ -92,7 +92,7 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-log: approved by mai-code-2 — verified at ac65f6381d25, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 2/2: (1) pullRequestOf parses the terminal URL number, while pullRequestWithLookup resolves an existing PR or returns pending:true, branch and an explanatory message. (2) work-deliver.service.spec.ts asserts URL/number from publication, URL/number from forge lookup, pending+branch when absent, and pending without throwing on loo… — Reviewed deliver's pull-request output and later pending-lookup fix. All 24 work-deliver specs pass. A publication-provided URL yields number+URL; otherwise the service performs one forge lookup and returns URL/number or an explicit pending branch answer.
 
 ### S5 — A small fix travels with its proposal in one unit and one pull request
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/core/src/lib/work-units/outside-slice.service.ts`, `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`
 - **Gate**: none
 - acceptance:
@@ -100,8 +100,10 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
   - "The outside-slice report covers create units."
   - "The skill and the publish next-action say a small fix may be delivered from the create unit."
 - shipped-in: `18990d7333dd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — Create-unit location and outside-slice coverage work, but the publish next-action does not meet the acceptance for this repository's pull-request profile. `proposalPublishNextAction` mentions a small fix in the same create unit only inside `workRefTemplate.length > 0 && !requiresPullRequest`; for `shared-checkout-pr` it returns only the generic landing instructions, so create_proposal never says the allowed same-unit delivery. Reproduce with policyFor('shared-checkout-pr') and assert for `small fix`/`work deliver --kind=create`. To approve, add the create-unit small-fix sentence for PR workflows too (without changing how they publish), and extend the next-action spec to cover that profile; keep the skill text and outside-slice coverage as-is.
 
 ## acceptance
 
