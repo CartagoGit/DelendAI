@@ -142,7 +142,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S10 — The repository-wide lints cost only what the change changes
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/lib/content-hash.ts`, `tools/scripts/lib/content-hash.spec.ts`, `tools/scripts/compile/build.script.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/lint/check-generated-artifacts.script.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-report-lib.ts`, `tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/generate/preset-metadata.script.ts`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/proposal-cited-commits.script.ts`, `tools/scripts/lint/proposal-cited-commits.script.spec.ts`, `tools/scripts/lint/json-entry-collision.script.ts`, `tools/scripts/lint/no-silent-gates.script.ts`, `tools/scripts/gen-all.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -150,8 +150,10 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A lint that judges files one by one judges the changed files (`DELENDAI_CHANGED_FILES`); a lint whose verdict depends on repository-wide inputs keeps its last verdict under a hash of exactly what it reads, and reruns when that hash changes."
   - "CI and the local proof run the same code."
 - shipped-in: `7698da8c9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ## acceptance
 
