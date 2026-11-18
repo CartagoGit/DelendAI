@@ -34,7 +34,7 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
 - global_gate: none
 
 ### S1 — The committed lockfile is canonical for the pinned bun
-- **Status**: review
+- **Status**: pending
 - **Files**: `bun.lock`
 - **Gate**: none
 - acceptance:
@@ -42,8 +42,10 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "bun install --frozen-lockfile still passes."
   - "The commit body states the dependency versions are unchanged apart from the removed duplicate vite and rolldown entries."
 - shipped-in: `b2d30e6435f3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A guard refuses a lockfile change without a manifest change
 - **Status**: review
