@@ -63,10 +63,15 @@ describe('create_proposal', () => {
 	const proposal = {
 		id: 'f00001',
 		title: 'Create me',
-		slices: [{ sliceId: 'S1', files: ['src/a.ts'] }],
+		goal: 'A goal.',
+		why: 'A reason.',
+		nonGoals: ['Nothing else.'],
+		slices: [
+			{ sliceId: 'S1', files: ['src/a.ts'], acceptance: ['It works'] },
+		],
 	};
 
-	it('writes the document and, with no git runner, names the step that publishes it', async () => {
+	it('[<1000ms] writes the document and, with no git runner, names the step that publishes it', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
 		const created = parse(await create(proposal));
 		expect(created.id).toBe('f00001');
@@ -74,7 +79,7 @@ describe('create_proposal', () => {
 		expect(String(created.publishReason)).toContain('no git runner');
 	});
 
-	it('names the publication ref of the policy, with no namespace of its own', async () => {
+	it('[<1000ms] names the publication ref of the policy, with no namespace of its own', async () => {
 		const create = await capture(
 			buildCreateProposalRegistration({
 				...options,
@@ -91,7 +96,7 @@ describe('create_proposal', () => {
 		expect(String(created.nextAction)).not.toContain('delendai/pr/');
 	});
 
-	it('refuses a checkout that is not a working tree of the repository', async () => {
+	it('[<200ms] refuses a checkout that is not a working tree of the repository', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
 		const refused = await create({
 			...proposal,
@@ -100,9 +105,21 @@ describe('create_proposal', () => {
 		expect(refused.isError).toBe(true);
 	});
 
-	it('refuses a document it cannot write', async () => {
+	it('[<200ms] refuses a document it cannot write', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
 		const refused = await create({ ...proposal, id: 'not an id' });
 		expect(refused.isError).toBe(true);
+	});
+
+	it('[<200ms] refuses what the scaffold would fill with a placeholder', async () => {
+		const create = await capture(buildCreateProposalRegistration(options));
+		const refused = await create({
+			id: 'f00002',
+			title: 'No goal',
+			slices: [{ sliceId: 'S1', files: ['src/a.ts'] }],
+		});
+		expect(refused.isError).toBe(true);
+		expect(refused.content[0]?.text).toContain('goal');
+		expect(refused.content[0]?.text).toContain('S1 acceptance');
 	});
 });
