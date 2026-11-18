@@ -2,10 +2,14 @@
 id: x01096
 title: "work reap ends every unit, ref and leftover that holds nothing develop lacks, and the agent docs describe the flow the product enforces"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
+last-transition-id: 7cc08b9b-3362-4dc2-8b12-ff1a12305016
+last-correlation-id: 7cc08b9b-3362-4dc2-8b12-ff1a12305016
+last-transition-from: ready
+last-transition-at: 2026-11-18T08:21:03.582Z
 ---
 
 # x01096 — work reap ends every unit, ref and leftover that holds nothing develop lacks, and the agent docs describe the flow the product enforces
