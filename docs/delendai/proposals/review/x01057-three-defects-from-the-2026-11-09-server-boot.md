@@ -123,14 +123,16 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver S7 with fresh scoped evidence for this review round so the timeout-claim behavior can be verified on current HEAD before approval.
 
 ### S8 — A failed proof step keeps its whole output
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every step a proof runs that fails writes its whole output to a file of its own under .cache/delendai/results/logs/prove-failed/, and the proof names that file among its causes, so a failure seen once can be read again: the cause lines name a failing test without its assertion, and a caller keeps only the tail of the proof."
 - shipped-in: `737a7d85e9da`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S8 evidence is stale: shipped-in is 737a7d85e9da, but both tools/scripts/ci/prove-plan.script.ts and tools/scripts/ci/prove-plan.script.spec.ts changed afterward on develop. Please redeliver S8 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S9 — ref-lifecycle reads the pull requests it needs, not their bodies
 - **Status**: review
