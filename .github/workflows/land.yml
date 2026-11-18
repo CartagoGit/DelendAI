@@ -277,18 +277,11 @@ jobs:
                   fetch-depth: '0'
                   persist-credentials: 'false'
 
-            - name: Reap the refs whose pull requests are finished
+            - name: Reconcile the refs, the periodic safety pass
               if: always()
               env:
                   GH_TOKEN: ${{ steps.identity.outputs.token }}
-                  REF_LIFECYCLE_SCOPE: repository
-              run: bun run lint:ref-lifecycle -- --reap
-
-            - name: Close the pull requests not opened from a publication
-              if: always()
-              env:
-                  GH_TOKEN: ${{ steps.identity.outputs.token }}
-              run: bun tools/scripts/forge/close-unpublished-prs.script.ts --apply
+              run: bun tools/scripts/forge/reconcile-refs.script.ts --apply --trigger=upkeep
 
             - name: Fail while something hangs on the forge
               if: always()

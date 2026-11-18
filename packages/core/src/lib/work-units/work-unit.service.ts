@@ -11,6 +11,7 @@ import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.in
 
 import { doctored, statusOf, swarm } from './work-unit-status.service';
 import { entered } from './work-unit-enter.service';
+import { startReconcilerPass } from '../ref-reconciler/reconciler-run.service';
 import { published } from './work-unit-publish.service';
 import { publishedSupersedingOld } from './superseded-publication.service';
 import { proved } from './work-unit-prove.service';
@@ -178,13 +179,23 @@ const runWorkUnitOnce = async (
 	if (sub === 'publish') {
 		const result = await publishedSupersedingOld(args, ctx, published);
 		await pruneEndedLeases(ctx);
+		// One reconciler pass settles whatever the hand-over left behind.
+		if (result.code === EXIT_CODE.OK) {
+			await startReconcilerPass('work-deliver', workspaceOf(ctx));
+		}
 		return result;
 	}
 	if (sub === 'prove') return proved(args, ctx);
 	if (sub === 'swarm') return swarm(ctx, args);
 	if (sub === 'doctor') return doctored(args, ctx);
 	if (sub === 'claim') return claimed(args, ctx);
-	if (sub === 'retire') return retired(args, ctx);
+	if (sub === 'retire') {
+		const result = await retired(args, ctx);
+		if (result.code === EXIT_CODE.OK) {
+			await startReconcilerPass('work-retire', workspaceOf(ctx));
+		}
+		return result;
+	}
 	if (sub === 'retired') {
 		return args.some((arg) => arg.startsWith('--drop'))
 			? retiredDropped(args, ctx)

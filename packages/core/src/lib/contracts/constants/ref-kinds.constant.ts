@@ -28,3 +28,15 @@ export const REF_KINDS: readonly IRefKind[] = [
 
 /** An empty unit with a clean worktree is retired after this long, unless the project's policy says otherwise. */
 export const DEFAULT_EMPTY_UNIT_GRACE_SECONDS = 1800;
+
+/** What starts a reconciler pass: each event runs exactly one. */
+export const RECONCILE_TRIGGERS = [
+	'land-merge',
+	'pull-request-closed',
+	'work-retire',
+	'work-deliver',
+	'upkeep',
+] as const;
+
+/** The repository's own script that runs one pass against the forge. */
+export const RECONCILER_SCRIPT = 'tools/scripts/forge/reconcile-refs.script.ts';
