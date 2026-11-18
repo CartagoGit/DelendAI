@@ -56,14 +56,16 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S3 — The train's scratch worktree has the shared dependencies
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/link-train-dependencies.script.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
   - "Assembling a train whose members touch generated files pushes a tree whose generated files equal a fresh regeneration; the scratch worktree is linked to the shared dependencies with linkSharedDependencies before the generators run (train-assembly.spec.ts)."
 - shipped-in: `a6660aac29c5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S4 — A train that cannot run leaves its riders to the individual path
 - **Status**: review
