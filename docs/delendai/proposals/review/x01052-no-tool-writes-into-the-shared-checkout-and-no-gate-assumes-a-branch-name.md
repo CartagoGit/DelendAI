@@ -32,7 +32,7 @@ A subagent wrote files into the shared checkout with Bash heredocs and python op
 - global_gate: none
 
 ### S1 — A host hook after every shell command rescues loose edits in the shared checkout
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/shared-checkout-shell-rescue.service.ts`, `packages/core/src/lib/work-units/shared-checkout-shell-rescue.interface.ts`, `packages/core/tests/src/lib/work-units/shared-checkout-shell-rescue.service.spec.ts`, `packages/core/src/lib/work-units/unit-edit-fence.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/lib/post-shell-guard.service.ts`, `packages/cli/src/lib/post-shell-guard.service.spec.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/constants/pre-edit-guard.constant.ts`, `packages/cli/src/lib/init/init-claude-settings.ts`, `packages/cli/src/lib/init/init-claude-settings.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -41,8 +41,10 @@ A subagent wrote files into the shared checkout with Bash heredocs and python op
   - "init writes the PostToolUse hook on Bash beside the PreToolUse one, merged into an existing settings file without touching other keys, twice changes nothing."
   - "Hosts without hooks keep the existing refusal at the next delendai command."
 - shipped-in: `d0ddaedb1765`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — The rescue behavior, hook merge, and silent branches are covered, but the explicit clean-path cost is not met. `rescueAfterShell` calls `sharedCheckoutLooseEdits`, which first runs `mainWorktreeOf(cwd)` (`git worktree list --porcelain`) and only then `looseEditsOf` (`git status`). The clean-path spec itself asserts `git.calls` has length 2. Acceptance says one `git status --porcelain` with optional locks off and nothing else. To approve, avoid the worktree-list read when cwd already identifies the shared/main checkout (or carry the root into the hook/resolver), add a spec asserting exactly one git call on the clean path, and preserve the dirty-rescue behavior.
 
 ### S2 — Gates read the integration branch from the development policy
 - **Status**: review
