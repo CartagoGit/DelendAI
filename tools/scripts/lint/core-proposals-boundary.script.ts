@@ -5,6 +5,11 @@ import { isAbsolute, join, relative } from 'node:path';
 
 import { isRunningInProjectCi, walkTsFiles } from '@delendai/core/cli';
 
+import {
+	renderInventoryMarkdown,
+	scanCoreProposalsBoundary,
+} from '../inspect/core-proposals-boundary.script';
+
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
 // r00046 S2: the shared walker (`@delendai/core/public#walkTsFiles`)
@@ -623,7 +628,46 @@ export const formatExpiryWarnings = (
 			: `core-proposals-boundary: warning: ${text}`;
 	});
 
+const INVENTORY_DOC = 'docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md';
+const INVENTORY_REGENERATE =
+	'bun tools/scripts/inspect/core-proposals-boundary.script.ts > docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md';
+
+/**
+ * The facts the architecture spec checks on the same tree: no unclassified
+ * proposal-domain line, no classified finding that vanished, and a committed
+ * inventory equal to the rendered one. One message per failure.
+ */
+export const checkInventoryBoundary = async (
+	root: string = REPO_ROOT,
+): Promise<readonly string[]> => {
+	const result = await scanCoreProposalsBoundary(root);
+	const failures: string[] = [];
+	for (const entry of result.unclassified) {
+		failures.push(
+			`${entry.file}:${entry.line} unclassified proposal-domain line: ${JSON.stringify(entry.content)}; classify it in INVENTORY_RULES (tools/scripts/inspect/core-proposals-boundary.script.ts).`,
+		);
+	}
+	for (const rule of result.missing) {
+		failures.push(
+			`${rule.file} missing finding ${JSON.stringify(rule.symbolOrLiteral)}: no line contains ${JSON.stringify(rule.needle)} any more; update or remove the rule.`,
+		);
+	}
+	const committed = await readFile(join(root, INVENTORY_DOC), 'utf8').catch(
+		() => '',
+	);
+	if (renderInventoryMarkdown(result) !== committed) {
+		failures.push(
+			`${INVENTORY_DOC} is stale; regenerate it with: ${INVENTORY_REGENERATE}`,
+		);
+	}
+	return failures;
+};
+
 export const main = async (): Promise<number> => {
+	const inventoryFailures = await checkInventoryBoundary();
+	for (const failure of inventoryFailures) {
+		process.stderr.write(`core-proposals-boundary: ${failure}\n`);
+	}
 	const result = await scanCoreProposalsBoundaryLint();
 	for (const line of formatExpiryWarnings(
 		expiringSoon(result.allowed, new Date()),
@@ -632,7 +676,11 @@ export const main = async (): Promise<number> => {
 		process.stdout.write(`${line}\n`);
 	}
 	const report = formatReport(result);
-	if (result.violations.length === 0 && (result.stale ?? []).length === 0) {
+	if (
+		inventoryFailures.length === 0 &&
+		result.violations.length === 0 &&
+		(result.stale ?? []).length === 0
+	) {
 		process.stdout.write(report);
 		return 0;
 	}
