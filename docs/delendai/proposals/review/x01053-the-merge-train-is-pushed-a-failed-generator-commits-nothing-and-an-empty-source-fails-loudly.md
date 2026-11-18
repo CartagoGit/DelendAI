@@ -43,15 +43,17 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S2 — A generator with nothing to generate from fails loudly
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/generate/managed-lazy-catalog.script.ts`, `tools/scripts/generate/managed-lazy-catalog.script.spec.ts`, `tools/scripts/generate/from-manifests.script.ts`, `tools/scripts/generate/from-manifests.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The managed-lazy catalog generator throws when no plugin loaded in a repository whose first-party index has plugins, and writes no file (managed-lazy-catalog.script.spec.ts)."
   - "The manifests generator throws when plugin packages exist and no manifest loaded (from-manifests.script.spec.ts)."
 - shipped-in: `a6660aac29c5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S3 — The train's scratch worktree has the shared dependencies
 - **Status**: review
