@@ -93,14 +93,16 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S4 — The saving is measured
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `package.json`
 - **Gate**: type
 - acceptance:
   - "Runner minutes and wall time per pull request are reported before and after each slice."
 - shipped-in: `99b81cec3806`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S5 — Tools are verified for the plugins the change reaches
 - **Status**: done
