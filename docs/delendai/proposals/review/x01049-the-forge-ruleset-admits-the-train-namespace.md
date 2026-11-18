@@ -31,12 +31,14 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - global_gate: none
 
 ### S1 — Allow the train namespace and report a declined push
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/publication-prefixes.ts`
 - **Gate**: none
 - shipped-in: `9fd05bfa54c1`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Requesting a fresh submission bound to current HEAD: review has high drift (age and touched files), so prior evidence is no longer sufficient to approve safely.
 
 ### S2 — The pre-push guard admits the train namespace, from one source
 - **Status**: review
