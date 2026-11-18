@@ -19,7 +19,8 @@ import {
 	mainWorktreeOf,
 	openWork,
 } from './work-unit-shared.service';
-import { reapHusks } from './worktree-husks.service';
+import { keepStrayFiles, reapHusks } from './worktree-husks.service';
+import { reapTestTempLeftovers } from './test-temp-leftovers.service';
 import { reapStrayRefs } from './stray-refs-reap.service';
 import { reapRetiredMachinery } from './retired-machinery-reap.service';
 
@@ -110,6 +111,16 @@ export const reaped = async (
 		apply: args.includes('--apply'),
 		now: Math.floor(Date.now() / 1000),
 	});
+	// Files in the units' folder that are no worktree are kept, not
+	// deleted; the old test temp directories are removed when empty.
+	const strayFiles = await keepStrayFiles({
+		root,
+		apply: args.includes('--apply'),
+		now: Math.floor(Date.now() / 1000),
+	});
+	const testTemp = await reapTestTempLeftovers({
+		apply: args.includes('--apply'),
+	});
 	const retired = reapLandedRetired({
 		root,
 		policy: opened.policy,
@@ -145,6 +156,8 @@ export const reaped = async (
 			advanced,
 			dependencies,
 			husks,
+			strayFiles,
+			testTemp,
 			retired,
 			reservations,
 			strays,
