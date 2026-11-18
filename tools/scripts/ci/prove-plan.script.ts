@@ -663,6 +663,39 @@ export const gateNamesOf = (
 	),
 ];
 
+/** The alias `work deliver` runs before the compute slot: the cheap static gates. */
+export const PRECHECK_ALIAS = 'precheck';
+
+/**
+ * The cheap static gates the proof would run for this change, scoped to it:
+ * the forge's static check families that read files one by one, taken from
+ * the plan's own gate names, never from a list of their own. The typecheck,
+ * the tests and the check that rebuilds `build/` are the proof's to run.
+ */
+export const precheckGatesOf = (
+	changed: readonly string[],
+	base: string,
+): readonly string[] =>
+	gateNamesOf(changed, false, base).filter(
+		(gate) =>
+			(STATIC_CHECK_FAMILIES as readonly string[]).includes(gate) &&
+			!RUN_ALONE.has(gate) &&
+			staticJobRuns(changed, gate),
+	);
+
+/** `--only=precheck` stands for the gates `precheckGatesOf` names. */
+export const expandPrecheck = (
+	only: ReadonlySet<string> | undefined,
+	gates: () => readonly string[],
+): ReadonlySet<string> | undefined =>
+	only?.has(PRECHECK_ALIAS) === true
+		? new Set(
+				[...only]
+					.filter((name) => name !== PRECHECK_ALIAS)
+					.concat(gates()),
+			)
+		: only;
+
 /** The names in `only` that are no gate of this proof. Pure. */
 export const unknownGatesOf = (
 	only: ReadonlySet<string>,
@@ -715,9 +748,11 @@ const main = async (): Promise<number> => {
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();
-	const only = onlyGatesOf(process.argv);
 	const fast = process.argv.includes('--fast');
 	const root = process.cwd();
+	const only = expandPrecheck(onlyGatesOf(process.argv), () =>
+		precheckGatesOf(changedSince(root, base), base),
+	);
 	const changed = fast ? changedSince(root, base) : [];
 	if (only !== undefined) {
 		const valid = gateNamesOf(changed, fast, base);

@@ -26,6 +26,7 @@ const ports = (
 	slice = 'all',
 	readPullRequest: IWorkDeliverPorts['readOpenPullRequest'] = async () =>
 		undefined,
+	precheckCode: IExitCode = EXIT_CODE.OK,
 ) => {
 	const calls: string[] = [];
 	const value: IWorkDeliverPorts = {
@@ -44,6 +45,15 @@ const ports = (
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
 		}),
+		precheck: async () => {
+			calls.push('precheck');
+			return precheckCode === EXIT_CODE.OK
+				? { code: precheckCode, data: { partial: true } }
+				: {
+						code: precheckCode,
+						error: 'lint-presets: spec over budget',
+					};
+		},
 		prove: async () => {
 			calls.push('prove');
 			return proveCode === EXIT_CODE.OK
@@ -71,10 +81,30 @@ const inReview = {
 };
 
 describe('deliverUnit', () => {
+	it("[<20ms] refuses with the proof's message before the proof takes its slot when a static gate fails", async () => {
+		const { calls, value } = ports(
+			{},
+			EXIT_CODE.OK,
+			'all',
+			async () => undefined,
+			EXIT_CODE.VALIDATION,
+		);
+		const result = await deliverUnit(value);
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('lint-presets: spec over budget');
+		expect(calls).toEqual(['in-progress', 'preflight', 'precheck']);
+	});
+
 	it('[<20ms] opens the proposal, proves the unit, then hands it to review', async () => {
 		const { calls, value } = ports({});
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.OK);
-		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'review']);
+		expect(calls).toEqual([
+			'in-progress',
+			'preflight',
+			'precheck',
+			'prove',
+			'review',
+		]);
 	});
 
 	it('[<20ms] hands nothing over after a partial proof, which proves nothing', async () => {
@@ -95,7 +125,12 @@ describe('deliverUnit', () => {
 		expect(await deliverUnit(value)).toMatchObject({
 			error: 'its proof failed',
 		});
-		expect(calls).toEqual(['in-progress', 'preflight', 'prove']);
+		expect(calls).toEqual([
+			'in-progress',
+			'preflight',
+			'precheck',
+			'prove',
+		]);
 	});
 
 	it('[<20ms] goes on from a proposal already in progress', async () => {
@@ -103,7 +138,13 @@ describe('deliverUnit', () => {
 			'in-progress': illegal('in-progress', 'in-progress'),
 		});
 		expect((await deliverUnit(value)).code).toBe(EXIT_CODE.OK);
-		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'review']);
+		expect(calls).toEqual([
+			'in-progress',
+			'preflight',
+			'precheck',
+			'prove',
+			'review',
+		]);
 	});
 
 	it('[<20ms] stops with the reason of any other refusal', async () => {
@@ -148,6 +189,7 @@ describe('deliverUnit, a proposal already in review', () => {
 		expect(calls).toEqual([
 			'in-progress',
 			'preflight',
+			'precheck',
 			'prove',
 			'review',
 			'publish',
@@ -211,7 +253,13 @@ describe('deliverUnit, one slice of several', () => {
 			code: EXIT_CODE.OK,
 			data: { delivered: 'slice', remaining: ['S3', 'S4', 'S6'] },
 		});
-		expect(calls).toEqual(['in-progress', 'preflight', 'prove', 'publish']);
+		expect(calls).toEqual([
+			'in-progress',
+			'preflight',
+			'precheck',
+			'prove',
+			'publish',
+		]);
 	});
 
 	it('[<20ms] refuses when the slice it proved is itself undelivered', async () => {

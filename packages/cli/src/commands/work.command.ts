@@ -172,6 +172,8 @@ export const deliverPortsOf = (
 					checkout: checkout ?? ctx.cwd,
 				}),
 			),
+		precheck: () =>
+			runWorkUnit(['prove', ...unitFlags, '--only=precheck'], ctx),
 		prove: () => runWorkUnit(['prove', ...unitFlags], ctx),
 		transition: async (to, checkout) => {
 			// The transition to review publishes the unit, apart from this
