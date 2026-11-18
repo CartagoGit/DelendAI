@@ -233,51 +233,110 @@ type IFilesVerdict =
 
 const PROPOSAL_ID = /\b[a-z]\d{5}\b/g;
 
-/** The commit (`sha<TAB>subject`) the latest deletion of `path`, when any. */
-const commitOf = (
+/** One git answer's non-empty lines, none when git refused. */
+const linesOf = (
+	ports: IWorkRevalidatePorts,
+	worktree: string,
+	args: readonly string[],
+): readonly string[] => {
+	const answer = ports.git(worktree, args);
+	return answer.ok
+		? answer.out.split('\n').filter((line) => line.trim() !== '')
+		: [];
+};
+
+/** The commit (`sha<TAB>subject`) that removed `path` from the branch, when any. */
+const removalOf = (
 	ports: IWorkRevalidatePorts,
 	worktree: string,
 	path: string,
 ): { readonly sha: string; readonly subject: string } | undefined => {
-	const answer = ports.git(worktree, [
+	const [header] = linesOf(ports, worktree, [
 		'log',
-		'-M',
 		'--diff-filter=D',
-		'--name-status',
 		'-1',
-		'--format=%h%x09%s',
+		'--format=%H%x09%s',
 		'--',
 		path,
 	]);
-	if (!answer.ok) return undefined;
-	const header = answer.out.split('\n').find((line) => line.trim() !== '');
 	if (header === undefined) return undefined;
 	const [sha = '', ...subject] = header.split('\t');
 	return { sha, subject: subject.join('\t') };
 };
 
-/** The renamed target of `path` when git recorded one that exists; its absence otherwise. */
-const renameTargetOf = (
+/**
+ * Where a commit that removed `path` moved it: git pairs a rename only in
+ * the commit's whole diff, never under a pathspec that names the old path.
+ */
+const renamedBy = (
+	ports: IWorkRevalidatePorts,
+	worktree: string,
+	sha: string,
+	path: string,
+): string | undefined =>
+	linesOf(ports, worktree, ['show', '-M', '--name-status', '--format=', sha])
+		.map((line) => line.split('\t'))
+		.find((cells) => cells[0]?.startsWith('R') && cells[1] === path)?.[2];
+
+/** The subject of the merge that brought `sha` into the branch, when it has one. */
+const mergeSubjectOf = (
+	ports: IWorkRevalidatePorts,
+	worktree: string,
+	sha: string,
+): string => {
+	const merges = linesOf(ports, worktree, [
+		'log',
+		'--ancestry-path',
+		'--merges',
+		'--first-parent',
+		'--format=%H%x09%s',
+		`${sha}..HEAD`,
+	]);
+	return (merges.at(-1) ?? '').split('\t').slice(1).join('\t');
+};
+
+/** What became of a declared path that is gone. */
+type IPathFate =
+	| { readonly kind: 'moved'; readonly to: string }
+	| {
+			readonly kind: 'deleted';
+			readonly sha: string;
+			readonly ids: readonly string[];
+	  }
+	| { readonly kind: 'unknown' };
+
+const MAX_HOPS = 10;
+
+/** Follow `path` through the renames that removed it until it exists, was deleted, or is unknown. */
+const fateOf = (
 	ports: IWorkRevalidatePorts,
 	worktree: string,
 	path: string,
-): string | undefined => {
-	const answer = ports.git(worktree, [
-		'log',
-		'-M',
-		'--diff-filter=R',
-		'--name-status',
-		'-1',
-		'--format=',
-		'--',
-		path,
-	]);
-	if (!answer.ok) return undefined;
-	const row = answer.out
-		.split('\n')
-		.map((line) => line.split('\t'))
-		.find((cells) => cells[0]?.startsWith('R') && cells[1] === path);
-	return row?.[2];
+): IPathFate => {
+	let current = path;
+	for (let hop = 0; hop < MAX_HOPS; hop += 1) {
+		const removal = removalOf(ports, worktree, current);
+		if (removal === undefined) return { kind: 'unknown' };
+		const target = renamedBy(ports, worktree, removal.sha, current);
+		if (target === undefined) {
+			const own = removal.subject.match(PROPOSAL_ID) ?? [];
+			const ids =
+				own.length > 0
+					? own
+					: (mergeSubjectOf(ports, worktree, removal.sha).match(
+							PROPOSAL_ID,
+						) ?? []);
+			return {
+				kind: 'deleted',
+				sha: removal.sha.slice(0, 9),
+				ids: [...new Set(ids)],
+			};
+		}
+		if (ports.exists(worktree, target))
+			return { kind: 'moved', to: target };
+		current = target;
+	}
+	return { kind: 'unknown' };
 };
 
 /**
@@ -292,27 +351,23 @@ const judgeFiles = (
 	proposal: IRevalidateProposal,
 ): IFilesVerdict => {
 	const renames: IRenamedPath[] = [];
-	const deleted: { path: string; sha: string; subject: string }[] = [];
+	const deleted: { path: string; sha: string; ids: readonly string[] }[] = [];
 	const unknown: string[] = [];
 	for (const slice of proposal.slices.filter(isLive)) {
 		for (const path of slice.files ?? []) {
 			if (path.includes('*') || ports.exists(worktree, path)) continue;
-			const target = renameTargetOf(ports, worktree, path);
-			if (target !== undefined && ports.exists(worktree, target)) {
-				renames.push({ sliceId: slice.id, from: path, to: target });
-				continue;
-			}
-			const gone = commitOf(ports, worktree, target ?? path);
-			if (gone === undefined) unknown.push(path);
-			else deleted.push({ path, ...gone });
+			const fate = fateOf(ports, worktree, path);
+			if (fate.kind === 'moved') {
+				renames.push({ sliceId: slice.id, from: path, to: fate.to });
+			} else if (fate.kind === 'deleted') {
+				deleted.push({ path, sha: fate.sha, ids: fate.ids });
+			} else unknown.push(path);
 		}
 	}
 	if (unknown.length === 0 && deleted.length === 0) {
 		return { kind: 'ok', renames };
 	}
-	const ids = new Set(
-		deleted.flatMap(({ subject }) => subject.match(PROPOSAL_ID) ?? []),
-	);
+	const ids = new Set(deleted.flatMap(({ ids: named }) => named));
 	const [only] = [...ids];
 	if (unknown.length === 0 && ids.size === 1 && only !== undefined) {
 		return {
