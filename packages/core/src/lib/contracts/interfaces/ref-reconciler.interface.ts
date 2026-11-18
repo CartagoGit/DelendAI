@@ -2,6 +2,7 @@
  * ref-reconciler.interface.ts — what the reconciler observes, what it
  * decides and the port through which it acts.
  */
+import type { RECONCILE_TRIGGERS } from '../constants/ref-kinds.constant';
 import type {
 	IObservedPullRequest,
 	IObservedRef,
@@ -89,4 +90,13 @@ export interface IRefKind {
 	readonly kind: string;
 	/** The first path segment under `<namespace>/`. */
 	readonly segment: string;
+}
+
+/** What starts a reconciler pass. */
+export type IReconcileTrigger = (typeof RECONCILE_TRIGGERS)[number];
+
+/** What starting a pass may touch: whether the script exists, and launching it. */
+export interface IReconcilerRunPorts {
+	readonly exists: (script: string) => Promise<boolean>;
+	readonly spawn: (script: string, args: readonly string[]) => void;
 }
