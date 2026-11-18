@@ -2,14 +2,14 @@
 id: x01011
 title: "Callers in one process take the compute slot in call order"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 092b3077-7331-4d22-adb0-513c0efcab15
-last-correlation-id: 092b3077-7331-4d22-adb0-513c0efcab15
-last-transition-from: review
-last-transition-at: 2026-11-04T22:00:59.270Z
+last-transition-id: a80a6f28-d145-420e-b8ca-8d189cee608a
+last-correlation-id: a80a6f28-d145-420e-b8ca-8d189cee608a
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T11:40:44.009Z
 ---
 
 # x01011 — Callers in one process take the compute slot in call order
@@ -33,7 +33,7 @@ Develop's CI failed `compute-slot.service.spec.ts` (two concurrent proofs one af
 
 ### S1 — One process queues for the slot in call order
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
+- **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Callers of withComputeSlot in one process take the slot in the order they asked; the spec for two concurrent proofs passes in 20 shuffled runs under load."
