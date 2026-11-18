@@ -2,14 +2,14 @@
 id: f00819
 title: "Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-11-17
-last-transition-id: be7a8488-999a-4a94-b8a5-7b338e647c03
-last-correlation-id: be7a8488-999a-4a94-b8a5-7b338e647c03
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T07:10:57.484Z
+last-transition-id: 3917a39d-e574-4719-8200-08f22835d21f
+last-correlation-id: 3917a39d-e574-4719-8200-08f22835d21f
+last-transition-from: review
+last-transition-at: 2026-11-18T08:17:10.903Z
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
