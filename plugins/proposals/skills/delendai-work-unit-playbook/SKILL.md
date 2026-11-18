@@ -59,6 +59,8 @@ edited there.
 - A write that replaces a file destroys the existing one without a trace. List the path first; create only what is absent.
 - Anything that departs from this workflow (naming drift, a claim that did not exclude, a unit nobody ended) is evidence of a system defect: record it with its evidence in a proposal so it becomes a refusal, and do not just work around it.
 
+Shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, one unit and one pull request for the batch, not one unit each; approving the batch is a later review batch.
+
 ## Waiting on long work
 
 `prove`, `deliver` and `publish` can wait their turn for the machine's proof slot. Wait

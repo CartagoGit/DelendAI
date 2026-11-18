@@ -1367,7 +1367,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					proposals_close_plan:
 						'Close a `type: plan` proposal; refuses with blockers until every child, sub-plan and own slice is done and peer-reviewed.',
 					create_proposal:
-						'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
+						'Author a proposal (disjoint slices, overlap checked, indexed).',
 					close_slice:
 						'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 					proposal_review:

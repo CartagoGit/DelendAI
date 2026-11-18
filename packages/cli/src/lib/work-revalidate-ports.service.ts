@@ -65,6 +65,15 @@ export const revalidatePortsOf = (
 		undo: (worktree, mark) => {
 			gitIn(worktree)(['reset', '--hard', mark]);
 		},
+		publish: () =>
+			runWorkUnit(
+				[
+					'publish',
+					...REVALIDATION_UNIT_FLAGS,
+					...(agent === undefined ? [] : [`--agent=${agent}`]),
+				],
+				ctx,
+			),
 		transition: ({ id, to, reason, worktree }) =>
 			answerCommittingWrites(
 				gitIn(worktree),
