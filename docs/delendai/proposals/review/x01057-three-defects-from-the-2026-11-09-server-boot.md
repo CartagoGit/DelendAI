@@ -86,15 +86,17 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — S4 evidence is stale: shipped-in is dfd2c2c9fb2e, but packages/core/tests/src/lib/shared/compute-slot.service.spec.ts changed afterward on develop. Please redeliver S4 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S5 — The launcher reaches its fallback from a deleted directory
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/alias-manager.spec.ts`
 - **Gate**: type
 - acceptance:
   - "With an empty or relative PWD, as a hook started in a deleted directory sees it, the POSIX launcher walks from / and reaches its fallback instead of looping on dirname forever."
   - "A spec runs the rendered launcher in bash with an empty PWD and sees it reach the fallback."
 - shipped-in: `c3f8c52e085c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver S5 with fresh scoped evidence for this review round (including the deleted-directory launcher fallback path) so this old hand-in can be verified against current branch context before approval.
 
 ### S6 — review next fits its queue request in the response budget
 - **Status**: review
