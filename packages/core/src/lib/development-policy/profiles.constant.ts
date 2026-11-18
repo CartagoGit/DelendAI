@@ -66,6 +66,8 @@ export const WORK_KINDS = [
 	'implement',
 	'review',
 	'create',
+	// A change that repairs something already integrated (f00808).
+	'fix',
 	'revise',
 	'audit',
 	'retire',
@@ -100,6 +102,10 @@ export const WORK_REF_PLACEHOLDERS = [
 	'proposal',
 	'slice',
 	'generation',
+	// The unit's scope as one readable component: `x01003`, `x01003-S2`,
+	// `x01003-S1-S3`, `x01003-S1+S4`, `x01004+x01016`, `-G2` from the
+	// second generation on (f00808).
+	'scope',
 	'topic',
 ] as const;
 
@@ -113,6 +119,14 @@ export const WORK_REF_PLACEHOLDERS = [
  */
 export const WORK_REF_SHAPE =
 	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+/**
+ * The readable shape (f00808): action, model, scope, then what it is
+ * about. Readers recognise it next to `WORK_REF_SHAPE` already; a project
+ * writes it by setting `workRefTemplate` to `wip/` plus this, and the
+ * default follows when the repository's own cutover lands.
+ */
+export const READABLE_WORK_REF_SHAPE = '${kind}/${agent}/${scope}/${topic}';
 
 /**
  * Programs an agent runs inside, which are not agents (x00694). The agent
