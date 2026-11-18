@@ -1,5 +1,5 @@
 /**
- * unit-edits-kept.service.spec.ts — an abandoned unit's uncommitted edits
+ * clone-forge-edits-kept.service.e2e.spec.ts — an abandoned unit's uncommitted edits
  * are kept on the forge and the unit removed; nothing is left standing.
  */
 import { existsSync, writeFileSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
-import { reapDeliveredUnits } from '@delendai/core/lib/work-units/unit-reaper.service';
+import { endDeliveredUnits } from '@delendai/core/lib/ref-reconciler/clone-forge.service';
 
 import {
 	cleanUnitRepos,
@@ -16,7 +16,7 @@ import {
 	unitPolicy,
 	unitRef,
 	unitRepo,
-} from './unit-repo.helper';
+} from '../work-units/unit-repo.helper';
 
 afterEach(cleanUnitRepos);
 
@@ -45,7 +45,7 @@ const draftedUnit = async (agent: string, silentMinutes: number) => {
 };
 
 const reap = (unit: Awaited<ReturnType<typeof draftedUnit>>, apply: boolean) =>
-	reapDeliveredUnits({
+	endDeliveredUnits({
 		root: unit.repo.root,
 		policy: unitPolicy,
 		apply,
@@ -53,7 +53,7 @@ const reap = (unit: Awaited<ReturnType<typeof draftedUnit>>, apply: boolean) =>
 	});
 
 describe('an abandoned unit holding edits nobody committed', () => {
-	it('is removed, its edits kept on the forge as a retired ref', async () => {
+	it('[<2000ms] is removed, its edits kept on the forge as a retired ref', async () => {
 		const unit = await draftedUnit('drafted', 600);
 		const [reaped] = await reap(unit, true);
 		expect(reaped?.outcome).toBe('retired');
@@ -70,7 +70,7 @@ describe('an abandoned unit holding edits nobody committed', () => {
 		);
 	});
 
-	it('is only reported without --apply', async () => {
+	it('[<2000ms] is only reported without --apply', async () => {
 		const unit = await draftedUnit('dry', 600);
 		const [reaped] = await reap(unit, false);
 		expect(reaped?.outcome).toBe('would-retire');
@@ -79,7 +79,7 @@ describe('an abandoned unit holding edits nobody committed', () => {
 		expect(git(unit.remote, 'for-each-ref')).toBe('');
 	});
 
-	it('stays where it is when the edits could not be kept', async () => {
+	it('[<2000ms] stays where it is when the edits could not be kept', async () => {
 		const unit = await draftedUnit('offline', 600);
 		git(unit.repo.root, 'remote', 'set-url', 'origin', '/nowhere.git');
 		const [reaped] = await reap(unit, true);

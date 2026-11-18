@@ -8,7 +8,7 @@ import { reapLandedRetired } from './retired-landed.service';
 import { reapSpentReservations } from './slice-reservation-reap.service';
 import { hydrateKeptUnits } from './kept-unit-hydration.service';
 import { releaseIdleDependencies } from './idle-unit-dependencies.service';
-import { reapDeliveredUnits } from './unit-reaper.service';
+import { endDeliveredUnits } from '../ref-reconciler/clone-forge.service';
 import { endFinishedUnits } from './finished-units-end.service';
 import { worktreeOfRef } from './unit-removal.service';
 import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
@@ -46,7 +46,7 @@ export const reaped = async (
 ): Promise<IWorkUnitResult> => {
 	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
-	const units = await reapDeliveredUnits({
+	const units = await endDeliveredUnits({
 		root: opened.root,
 		policy: opened.policy,
 		apply: args.includes('--apply'),
