@@ -6,10 +6,10 @@ status: in-progress
 type: proposal
 track: general
 date: 2026-11-18
-last-transition-id: 1565720d-ba6d-4c29-be06-753a2d0751d2
-last-correlation-id: 1565720d-ba6d-4c29-be06-753a2d0751d2
+last-transition-id: 8901b516-0ef9-4f90-b1b0-cbca667346ce
+last-correlation-id: 8901b516-0ef9-4f90-b1b0-cbca667346ce
 last-transition-from: ready
-last-transition-at: 2026-11-18T17:07:47.566Z
+last-transition-at: 2026-11-18T16:56:39.520Z
 ---
 
 # x01098 — The workflow defects of 2026-11-18 are fixed at their roots
