@@ -35,14 +35,16 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - global_gate: none
 
 ### S1 — A spec that boots real plugins gets a worker of its own
-- **Status**: review
+- **Status**: pending
 - **Files**: `vitest.shared.ts`, `tools/scripts/report/token-budget-dashboard.e2e.spec.ts`
 - **Gate**: none
 - shipped-in: `5a9224bac`
 - acceptance:
   - "A spec carrying the @delendai-isolate pragma is listed by isolatedSpecs and runs in the isolated project; the token budget e2e spec carries it and passes in the full tools 2/4 spec list with 125 swarm tools."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S1 review evidence is stale: shipped-in is 5a9224bac, but vitest.shared.ts changed on develop after that delivery. Please redeliver S1 on current HEAD with a fresh shipped-in and updated evidence for the isolate behavior before re-review.
 
 ### S2 — A failed zone still uploads the coverage it measured
 - **Status**: review
