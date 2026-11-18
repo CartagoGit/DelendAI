@@ -10,6 +10,8 @@ last-transition-id: bbe1d511-ce3d-4be3-8582-f6572bdd44b6
 last-correlation-id: bbe1d511-ce3d-4be3-8582-f6572bdd44b6
 last-transition-from: in-progress
 last-transition-at: 2026-11-15T22:43:41.442Z
+shipped-in:
+  - "54ea53d9c5b76ee1403cff83b57fa204272bead6"
 ---
 
 # x01075 — Static checks run side by side
@@ -81,15 +83,17 @@ How the constraints hold:
 - review-log: requested_changes by mai-code-2 — The three-job behavior is delivered, but one explicit acceptance identifier is wrong. Acceptance and the chosen design require jobs `static-checks-a`, `static-checks-b`, and `static-checks-c`; the delivered workflow, scope table, and test expect `static-checks`, `static-checks-b`, `static-checks-c`. Reproduce by inspecting ci.yml and the assertion in ci-static-steps.spec.ts, which both name `static-checks` as the first group; the PR timing evidence otherwise shows concurrency. To approve, either rename the first job to `static-checks-a` everywhere (workflow, JOB_SCOPES, aggregate needs, specs) or revise the proposal acceptance/design in the same unit to name the canonical preserved `static-checks` job; the code and acceptance must agree exactly.
 
 ### S2 — Prove the wall clock
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/ci-static-steps.spec.ts`
 - **Gate**: none
 - acceptance:
   - "A spec asserts that every plan entry of `STATIC_CHECK_JOBS` gates a step in exactly one static job."
   - "The CI run of this slice's pull request shows the longest static job under 70 s of steps and the three running at once."
 - shipped-in: `4da0a548e36b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 54ea53d9c5b7, validate exit 0 and tests 66/66 claimed, no recorded run cited; acceptance 2/2: (1) ci-static-steps.spec.ts parses ci.yml and for every grouped member computes all jobs with that plan-entry if, requiring one holder equal to its declared group;… (2) Run 43771032391 for PR #2232 started static-checks, static-checks-b and static-checks-c at 22:45:57 concurrently. Their non-trivial step work was about 48s, 40… — Reviewed the spec and the delivery PR's real CI run 43771032391. All 66 focused CI-scope/static-step specs and workflow parsing pass; the three jobs started at the same second and each completed successfully with the longest work group under 70 seconds of steps.
 
 ## acceptance
 
