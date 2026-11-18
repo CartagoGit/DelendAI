@@ -1845,7 +1845,6 @@
 		"plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/agents-lock-diagnose.spec.ts",
-		"plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/auto-fix-queue.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/auto-work-persist.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/auto-work/planning.tool.spec.ts",
