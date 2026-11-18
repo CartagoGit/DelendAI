@@ -6,7 +6,7 @@
 import { spawnSync } from 'node:child_process';
 
 import {
-	compileWorkRefParser,
+	compileOwnedWorkRefParser,
 	gitNamespaceRenamePorts,
 	noteUnitUrgency,
 	renameNamespace,
@@ -246,11 +246,9 @@ export const unitHere = async (
 ): Promise<readonly string[]> => {
 	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
 	if (policy === undefined) return [];
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const branch = spawnSync(
 		'git',
 		['symbolic-ref', '--quiet', '--short', 'HEAD'],
@@ -285,11 +283,9 @@ export const liveUnitFlags = async (
 > => {
 	const agent = input.agent ?? process.env.DELENDAI_AGENT_ID ?? '';
 	const policy = await readWorkspacePolicy(cwd);
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const kind = scalarArg(args, 'kind');
 	const units = liveUnitsOf(
 		await readUnitStandings({ root: cwd, policy }),

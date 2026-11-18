@@ -7,6 +7,7 @@ import {
 	ownedWorkRefShapes,
 	unitOfName,
 } from '../development-policy/owned-work-ref-parser';
+import { alternateTemplate } from '../startup-reconciler/work-ref-identity';
 import { sanitizeRefComponent, resolveWorkRef } from '../wip-engine/ref-name';
 import { scalarArg } from './command-args.helper';
 import { kindFor, readGit } from './work-unit-shared.service';
@@ -31,9 +32,22 @@ export const unitRefsAnyName = (
 ): readonly string[] =>
 	// Under every owned namespace: a unit entered before a namespace
 	// change is still the same unit (f00808).
-	ownedWorkRefShapes(policy.branches).flatMap(({ template }) =>
-		unitRefsUnder(root, args, template, agent, proposal, slice),
-	);
+	[
+		...new Set(
+			ownedWorkRefShapes(policy.branches)
+				.flatMap(({ template }) => {
+					// A unit entered before the default changed carries the
+					// shape it replaced, whichever namespace holds it.
+					const replaced = alternateTemplate(template);
+					return replaced === undefined
+						? [template]
+						: [template, replaced];
+				})
+				.flatMap((template) =>
+					unitRefsUnder(root, args, template, agent, proposal, slice),
+				),
+		),
+	];
 
 const unitRefsUnder = (
 	root: string,
@@ -50,7 +64,7 @@ const unitRefsUnder = (
 	// unit not asked for by generation is found in any of them.
 	if (scalarArg(args, 'generation') === undefined)
 		open.generation = ANY_GENERATION;
-	if (Object.keys(open).length === 0) return [];
+	const asked = Object.keys(open).length === 0;
 	const rendered = resolveWorkRef(template, {
 		agent,
 		kind: open.kind ?? kindFor(args, slice),
@@ -61,6 +75,13 @@ const unitRefsUnder = (
 			? { topic: scalarArg(args, 'topic') ?? '' }
 			: { topic: open.topic }),
 	});
+	// Everything named: the one ref this namespace would hold, when it does.
+	if (asked) {
+		return readGit(root, ['rev-parse', '-q', '--verify', rendered]) ===
+			undefined
+			? []
+			: [rendered];
+	}
 	const sentinels = Object.values(open);
 	const firstOpen = Math.min(
 		...sentinels.map((s) => rendered.indexOf(s)).filter((i) => i >= 0),
