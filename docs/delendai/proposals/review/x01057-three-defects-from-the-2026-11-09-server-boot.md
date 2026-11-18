@@ -59,15 +59,17 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — S2 evidence is stale: shipped-in is dfd2c2c9fb2e, but key S2 files changed on develop afterward (work-unit-prove.service.ts and work-unit-publish.service.ts). Please redeliver S2 on current HEAD with fresh shipped-in and updated scoped type-gate evidence.
 
 ### S3 — The compute-slot waiter re-prints when the holder changes
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`
 - **Gate**: type
 - acceptance:
   - "While a proof waits, a notice is printed when the holder changes, once per holder, and not again for the same holder."
   - "The notice still ends with 'got its turn' when the wait ends."
 - shipped-in: `dfd2c2c9fb2e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S3 evidence is stale: shipped-in is dfd2c2c9fb2e, but packages/core/src/lib/shared/compute-slot.service.ts changed afterward on develop. Please redeliver S3 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S4 — The compute-slot spec leaves no child running and never busy-loops
 - **Status**: review
