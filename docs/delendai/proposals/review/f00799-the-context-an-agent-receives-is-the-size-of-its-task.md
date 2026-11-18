@@ -2,14 +2,14 @@
 id: f00799
 title: "the context an agent receives is the size of its task"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-11-01
-last-transition-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
-last-correlation-id: 197942f1-4d4f-4f05-8bf7-c1a929bf582c
-last-transition-from: ready
-last-transition-at: 2026-11-01T18:36:31.061Z
+last-transition-id: 724e0f94-2368-49bb-b095-d2ce88c32443
+last-correlation-id: 724e0f94-2368-49bb-b095-d2ce88c32443
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T13:57:30.570Z
 ---
 
 # f00799 — the context an agent receives is the size of its task
@@ -40,39 +40,54 @@ A shorter answer that sends the agent back for more spends more. The measure of 
 - global_gate: type
 
 ### S1 — A unit starts with its task
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/core/src/cli.ts`, `packages/core/src/contracts/index.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/src/lib/work-units/task-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-enter-briefing.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/task-briefing.service.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/services/task-briefing.service.ts`, `plugins/proposals/src/public/index.ts`, `plugins/proposals/tests/src/lib/services/task-briefing.service.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Through a port core declares and the proposals plugin fills, `work enter` returns the slice's goal, acceptance, files with their sizes and nearest specs, by reference and not by body; a project with no proposals plugin enters as before."
+- shipped-in: `934acb34d785`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — Context scales with the change
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/context-for-change/src/lib/services/context-for-change-format.service.ts`, `plugins/context-for-change/tests/src/context-for-change.tool.spec.ts`, `plugins/context-for-change/tests/src/context-for-change-reach.tool.spec.ts`, `plugins/context-for-change/tests/src/lib/services/context-for-change-format.service.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/dispatch/change-context-reader.helper.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`context_for_change` takes its reach from what it was given: a symbol returns that symbol's lines, a slice of many files returns all of them; anything left out is named with how to get it, and no fixed cap decides silently."
+- shipped-in: `3c069fa82953`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The always-read rules are the rules this host needs
-- **Status**: pending
+- **Status**: review
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `docs/delendai/host-appendices/copilot-chat.md`, `docs/delendai/host-appendices/claude-code.md`, `docs/delendai/host-appendices/codex-cli.md`, `docs/delendai/host-appendices/generic-hosts.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `plugins/quality/skills/quality-and-rules-gates/SKILL.md`, `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`, `tools/scripts/lint/system-prompt-size.script.ts`
 - **Gate**: type
 - acceptance:
   - "A host reads only its own appendix, and rules that apply to one activity load with that activity; the always-read part has a measured budget a gate holds, and no rule is lost."
+- shipped-in: `ac60b74441f6`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — A self-contained playbook runs apart
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/hosts/plugin-skills.service.ts`, `packages/core/tests/src/lib/hosts/plugin-skills.service.spec.ts`, `plugins/audit/skills/delendai-audit-playbook/SKILL.md`, `docs/delendai/host-appendices/claude-code.md`
 - **Gate**: type
 - acceptance:
   - "On a host that can run a skill in its own context, a long self-contained skill does so and only its result reaches the main thread; a host that cannot reads it as before."
+- shipped-in: `1732168de934`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S5 — The saving is measured per finished task
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/usage-tracking/src/lib/contracts/host-session-tokens.interface.ts`, `plugins/usage-tracking/src/lib/services/host-session-tokens.service.ts`, `plugins/usage-tracking/src/public/index.ts`, `plugins/usage-tracking/tests/src/lib/host-session-tokens.spec.ts`, `packages/cli/src/commands/usage-host-sessions.command.ts`, `packages/cli/src/commands/usage-host-sessions.command.spec.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/contracts/constants/help-translation.constant.ts`, `packages/cli/package.json`, `bun.lock`
 - **Gate**: type
 - acceptance:
   - "Usage reports tokens per finished unit, with reads, retries and failed proofs, so a change that shrinks a response and adds rework shows as a loss."
+- shipped-in: `1e3086c2f5bb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 

@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.constant';
 
 import {
+	batchAgentOf,
 	parseRevalidateProposal,
 	revalidateRefusalOf,
 	rewriteDeclaredPath,
@@ -55,6 +56,7 @@ const okPorts = (
 	proposals: async () => proposals,
 	heldByUnits: async () => new Set<string>(),
 	handoverRefusal: async () => undefined,
+	release: async () => undefined,
 	print: () => undefined,
 	enter: async () => '/unit',
 	developSha: async () => 'abcdef0123456789',
@@ -182,6 +184,7 @@ describe('revalidateBatch units and transitions', () => {
 			proposals: async () => THREE,
 			heldByUnits: async () => new Set<string>(),
 			handoverRefusal: async () => undefined,
+			release: async () => undefined,
 			print: () => undefined,
 			enter: async () => {
 				calls.enter += 1;
@@ -481,6 +484,30 @@ describe('in-progress proposals', () => {
 		expect(lines).toContain('left out i2: S2 is undelivered');
 	});
 
+	it('[<100ms] runs the preflight in the unit worktree, entered once, and retires the unit when nothing is chosen', async () => {
+		const seen: string[] = [];
+		let released = 0;
+		let entries = 0;
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i1')]),
+			enter: async () => {
+				entries += 1;
+				return '/unit';
+			},
+			handoverRefusal: async (_id, worktree) => {
+				seen.push(worktree);
+				return 'refused';
+			},
+			release: async () => {
+				released += 1;
+			},
+		};
+		await revalidateBatch(ports, undefined);
+		expect(seen).toEqual(['/unit']);
+		expect(entries).toBe(1);
+		expect(released).toBe(1);
+	});
+
 	it('[<100ms] prints a held in-progress proposal left out when no --proposals is given', async () => {
 		const lines: string[] = [];
 		const ports: IWorkRevalidatePorts = {
@@ -505,7 +532,35 @@ describe('in-progress proposals', () => {
 	});
 });
 
+describe('batch agent', () => {
+	it('[<50ms] takes the flag, else the declared environment agent, else none', () => {
+		expect(batchAgentOf('a', { DELENDAI_AGENT_ID: 'b' })).toBe('a');
+		expect(batchAgentOf(undefined, { DELENDAI_AGENT_ID: 'b' })).toBe('b');
+		expect(batchAgentOf(undefined, {})).toBeUndefined();
+		expect(
+			batchAgentOf(undefined, { DELENDAI_AGENT_ID: '' }),
+		).toBeUndefined();
+	});
+});
+
 describe('declared paths', () => {
+	const CREATED = [
+		'id: g2',
+		'## slices',
+		'### S1 — a',
+		'- **Files**: `new:a/made.ts`, `a/b.ts`',
+	].join('\n');
+
+	it('[<50ms] reads a `new:` path as the file it creates', () => {
+		const read = parseRevalidateProposal(CREATED, 'ready');
+		expect(read?.slices[0]?.files).toEqual(['a/made.ts', 'a/b.ts']);
+	});
+
+	it('[<50ms] rewrites a renamed `new:` path keeping its marker', () => {
+		const next = rewriteDeclaredPath(CREATED, 'S1', 'a/made.ts', 'a/m.ts');
+		expect(next).toContain('`new:a/m.ts`, `a/b.ts`');
+	});
+
 	const DOC = [
 		'id: g1',
 		'## slices',
