@@ -19,6 +19,8 @@ export interface IProposalTransitionArgs {
 	readonly id: string;
 	readonly to: string;
 	readonly reason: string;
+	/** The proposal that replaces this one; read as the reason's prefix by old records. */
+	readonly superseded_by?: string | undefined;
 	readonly transitionId?: string | undefined;
 	readonly correlationId?: string | undefined;
 	readonly idempotencyKey?: string | undefined;
@@ -59,6 +61,7 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		id: z.string().min(1),
 		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
 		reason: z.string().min(1),
+		superseded_by: z.string().optional(),
 		transitionId: z.string().min(1).optional(),
 		correlationId: z.string().min(1).optional(),
 		idempotencyKey: z.string().min(1).optional(),

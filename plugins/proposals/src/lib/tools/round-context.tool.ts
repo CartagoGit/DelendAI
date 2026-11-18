@@ -161,7 +161,7 @@ export const buildRoundContextRegistration = (
 	// a00083 F33: summary is the cold-path token surface. Description
 	// already covers persistence + staleness + forceRefresh in detail
 	// (see below); keep the summary to the *purpose* only.
-	summary: 'Persisted multi-agent round digest for resumed swarm work.',
+	summary: 'Persisted round digest for resumed swarm work.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(

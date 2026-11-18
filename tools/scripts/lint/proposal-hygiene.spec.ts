@@ -100,6 +100,24 @@ describe('duplicates', () => {
 		expect(findings[0]?.detail).toContain('a.md');
 	});
 
+	it('[<20ms] does not flag a follow-up proposal chained by DependsOn', () => {
+		const withId = (id: string, extra: string) =>
+			proposal(
+				`## Slices\n\n### S1 — x\n- **Files**: \`src/a.ts\`\n${extra}`,
+			).replace('id: x00001', `id: ${id}`);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', withId('f00822', '')],
+					[
+						'b.md',
+						withId('x01097', '- **DependsOn**: [f00822 S1]\n'),
+					],
+				]),
+			),
+		).toEqual([]);
+	});
+
 	it('reports the later one, so fixing it does not move the finding', () => {
 		const findings = findDuplicates(
 			new Map([

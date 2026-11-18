@@ -198,6 +198,24 @@ export const unitProposalOf = (branch: string): string | undefined =>
 const currentBranch = (): string =>
 	readGit(process.cwd(), ['rev-parse', '--abbrev-ref', 'HEAD']) ?? '';
 
+/** Every proposal id a slice's `DependsOn` line names, whole-proposal or `id Sn`. */
+const dependsOnIds = (text: string): ReadonlySet<string> =>
+	new Set(
+		[...text.matchAll(/^- \*\*DependsOn\*\*:(.*)$/gmu)].flatMap((line) =>
+			[...(line[1] ?? '').matchAll(/\b[a-z]\d{5}\b/gu)].map((m) => m[0]),
+		),
+	);
+
+/** True when either proposal is chained to the other by `DependsOn`. */
+const chainedByDependsOn = (a: string, b: string): boolean => {
+	const idA = frontmatterId(a);
+	const idB = frontmatterId(b);
+	return (
+		(idB !== undefined && dependsOnIds(a).has(idB)) ||
+		(idA !== undefined && dependsOnIds(b).has(idA))
+	);
+};
+
 /** Cross-file rule: two open proposals that describe the same work. */
 export const findDuplicates = (
 	proposals: ReadonlyMap<string, string>,
@@ -216,12 +234,23 @@ export const findDuplicates = (
 		const sorted = [...bucket].sort();
 		// Report the later ones against the first, so resolving the
 		// duplicate does not shift the finding onto the survivor.
-		for (const file of sorted.slice(1))
+		const first = sorted[0] ?? '';
+		for (const file of sorted.slice(1)) {
+			// A follow-up that declares itself dependent on the other is
+			// the next step of the work, not a second copy of it.
+			if (
+				chainedByDependsOn(
+					proposals.get(first) ?? '',
+					proposals.get(file) ?? '',
+				)
+			)
+				continue;
 			findings.push({
 				file,
 				rule: 'duplicate',
 				detail: `same slice files as ${sorted[0] ?? ''}`,
 			});
+		}
 	}
 	return findings;
 };

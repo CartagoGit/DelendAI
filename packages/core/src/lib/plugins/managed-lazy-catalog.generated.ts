@@ -1352,7 +1352,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Read proposal workflow conventions and template.',
 					proposal_get: 'Read a proposal or list them with filters.',
 					round_context:
-						'Persisted multi-agent round digest for resumed swarm work.',
+						'Persisted round digest for resumed swarm work.',
 					agent_names:
 						'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
 					continue_proposal:
@@ -1387,15 +1387,15 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					auto_fix_queue:
 						'Queue reproducible low/medium incident drafts for auto-fix; optionally write them as proposals.',
 					state_health:
-						'Read-only swarm health: locks, livelocks, backpressure, orphans.',
+						'Read-only swarm health: locks, livelocks, orphans.',
 					state_repair:
 						'Heal stale locks, due queue entries and orphans. Dry-run by default.',
 					compact_status:
 						'One-call low-token snapshot of the swarm: active locks, queue backpressure and proposal board counts.',
 					proposals_db_doctor:
-						'Read-only diagnostics for the proposals SQLite database.',
+						'Read-only diagnostics of the proposals database.',
 					proposals_search:
-						'Search proposals, plans, and slices with SQLite FTS5.',
+						'Search proposals, plans and slices (FTS5).',
 					proposals_compile_context:
 						'Compile minimal token-budgeted proposal context.',
 				},

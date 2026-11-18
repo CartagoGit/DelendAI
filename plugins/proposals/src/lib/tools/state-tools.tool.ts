@@ -539,7 +539,7 @@ export const buildStateHealthRegistration = (
 	options: IStateToolOptions,
 ): IToolRegistration => ({
 	id: 'state_health',
-	summary: 'Read-only swarm health: locks, livelocks, backpressure, orphans.',
+	summary: 'Read-only swarm health: locks, livelocks, orphans.',
 	tags: ['coordination', 'lazy'],
 	register: async (server) => {
 		server.registerTool(

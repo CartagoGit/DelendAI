@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.3.0",
-		"generatedAt": "2026-11-17T21:17:08.108Z"
+		"generatedAt": "2026-11-18T17:51:00.482Z"
 	},
 	"tools": [
 		{
@@ -1187,6 +1187,9 @@
 					"reason": {
 						"type": "string",
 						"minLength": 1
+					},
+					"superseded_by": {
+						"type": "string"
 					},
 					"transitionId": {
 						"type": "string",

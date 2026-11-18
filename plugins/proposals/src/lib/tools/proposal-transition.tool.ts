@@ -29,6 +29,20 @@ export type { IProposalTransitionArgs } from '../contracts/proposal-transition-i
 // Tool registration.
 // ---------------------------------------------------------------------------
 
+/**
+ * The typed `superseded_by` leads the reason, the form every reader of an
+ * old record still parses; a reason that already leads with it is kept.
+ */
+export const withSupersededReason = (
+	args: IProposalTransitionArgs,
+): IProposalTransitionArgs => {
+	const { superseded_by: by, ...rest } = args;
+	if (by === undefined) return args;
+	return rest.reason.startsWith(`superseded_by ${by}`)
+		? rest
+		: { ...rest, reason: `superseded_by ${by}: ${rest.reason}` };
+};
+
 /** Registration for `<prefix>_proposal_transition`. */
 export const buildProposalTransitionRegistration = (
 	options: IProposalTransitionToolOptions,
@@ -49,6 +63,13 @@ export const buildProposalTransitionRegistration = (
 			async (args: IProposalTransitionArgs) => {
 				// A verdict is the move: the reviewer that recorded one does
 				// not move the proposal by hand afterwards.
+				if (
+					args.superseded_by !== undefined &&
+					!/^[a-z]\d{5}$/u.test(args.superseded_by)
+				)
+					return toolError(
+						`superseded_by must be a proposal id, got "${args.superseded_by}"`,
+					);
 				const scoped = scopeToCaller(options);
 				const refusal = await reviewerMoveRefusalFor({
 					id: args.id,
@@ -63,13 +84,15 @@ export const buildProposalTransitionRegistration = (
 				if (refusal !== undefined) {
 					return toolError(refusal.reason, refusal.nextAction);
 				}
-				return runProposalTransitionCompat(args, options).then(
-					(result) =>
-						result.ok
-							? result.payload
-							: toolError(
-									`invalid input: ${JSON.stringify(result.error.issues)}`,
-								),
+				return runProposalTransitionCompat(
+					withSupersededReason(args),
+					options,
+				).then((result) =>
+					result.ok
+						? result.payload
+						: toolError(
+								`invalid input: ${JSON.stringify(result.error.issues)}`,
+							),
 				);
 			},
 		);

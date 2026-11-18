@@ -103,7 +103,7 @@ export const buildSearchToolRegistration = (
 ): IToolRegistration => ({
 	id: PROPOSALS_SEARCH_REGISTRATION_ID,
 	disclosure: 'administrative',
-	summary: 'Search proposals, plans, and slices with SQLite FTS5.',
+	summary: 'Search proposals, plans and slices (FTS5).',
 	tags: ['proposals', 'read', 'search'],
 	register: async (server) => {
 		server.registerTool(
