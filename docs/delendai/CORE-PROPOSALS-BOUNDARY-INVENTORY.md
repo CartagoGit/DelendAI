@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 91
+- Findings: 98
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 41
@@ -13,7 +13,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - import: 1
 - path: 5
 - plugin-name: 12
-- type: 54
+- type: 61
 - message: 19
 - index-access: 0
 
@@ -56,6 +56,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/catalog/agent-discovery-types.ts | ProposalStatus | type | contract | 1 | El resumen publico del workflow fija el vocabulario de estados de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | proposalStatusCounts | type | contract | 1 | El snapshot compacto expone contadores del workflow con nombre de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | readonly status: ProposalStatus | type | contract | 1 | El DTO del workflow sigue exponiendo ProposalStatus en el core. |
+| packages/core/src/lib/change-text/change-text-template.service.ts | input.proposals | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposals: () => proposalSummaries | type | composition | 1 | La fuente del catalogo sigue cableada con el nombre proposals. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposalSummaries | type | composition | 1 | La composicion del catalogo inyecta proposalSummaries de forma nominal. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | TSkillsPhase['proposalSummaries'] | type | composition | 1 | La fase de ensamblado superior todavia transporta proposalSummaries. |
@@ -77,6 +78,8 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/contracts/constants/preset-migration.constant.ts | retired full preset includes proposals | plugin-name | composition | 1 | El preset full retirado incluia proposals; reconocer su mapa de plugins necesita ese id. |
 | packages/core/src/lib/contracts/constants/token-budgets.constant.ts | fixturePluginIds: ['proposals', 'memory'] | plugin-name | intentional-compat | 1 | Los fixtures de presupuesto siguen nombrando proposals como plugin representativo. |
 | packages/core/src/lib/contracts/file-conventions.contract.ts | folderRule('proposal', 'proposals') | path | contract | 1 | La convencion de ficheros publica el plural proposals como layout nominal. |
+| packages/core/src/lib/contracts/interfaces/change-text.interface.ts | readonly proposals: readonly IChangeTextProposalRef[] | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
+| packages/core/src/lib/contracts/interfaces/change-text.interface.ts | readonly proposals?: readonly IChangeTextProposalRef[] | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
@@ -105,9 +108,13 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals filter | type | intentional-compat | 1 | La consulta filtrada conserva proposals como clave publica. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | snapshot.proposals.length | type | intentional-compat | 1 | El contador de coincidencias sigue calculando sobre snapshot.proposals. |
 | packages/core/src/lib/tools/overview-tool.ts | tools grouped by plugin proposals | message | intentional-compat | 1 | La documentacion del overview conserva proposals como ejemplo contractual visible. |
-| packages/core/src/lib/work-units/publication-pull-request.service.ts | docs(proposals): … to review | message | adapter | 1 | The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin. |
 | packages/core/src/lib/work-units/publication-target.service.ts | /proposals/in-progress/ | path | adapter | 1 | The unit-of-work engine (x00735) asks whether a proposal is in progress by its folder, the one state that keeps its wip branch; the status belongs behind an adapter the plugin provides. |
 | packages/core/src/lib/work-units/publication-target.service.ts | file.includes('/proposals/') | path | adapter | 1 | The unit-of-work engine (x00735) finds the proposal a unit belongs to by its path; the proposals layout belongs behind an adapter the plugin provides. |
+| packages/core/src/lib/work-units/pull-request-text.service.ts | docs(proposals): … to review | message | adapter | 1 | The unit-of-work engine (x00735) recognises the claim and hand-off commits the proposals workflow writes; the patterns belong to the plugin. |
+| packages/core/src/lib/work-units/pull-request-text.service.ts | pack.proposals.map | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
+| packages/core/src/lib/work-units/pull-request-text.service.ts | proposals: ids | type | contract | 2 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
+| packages/core/src/lib/work-units/pull-request-text.service.ts | proposals: proposalsOfBranch(branch) | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
+| packages/core/src/lib/work-units/pull-request-text.service.ts | readonly proposals: readonly string[] | type | contract | 1 | The generic change-text model (f00809) lists the work ids a change refers to in a `proposals` field; the field name is the plugin vocabulary and belongs in a neutral contract name. |
 | packages/core/src/public/index.ts | ../lib/proposals/validate-evidence.schema | path | contract | 1 | El barrel publico reexporta un schema desde un subpath proposals interno del core. |
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
