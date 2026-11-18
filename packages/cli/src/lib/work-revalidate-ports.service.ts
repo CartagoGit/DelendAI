@@ -18,7 +18,7 @@ import type { ICliCommandContext } from '../contracts/interfaces/cli-command.int
 import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
 import type { IWorkRevalidatePorts } from '../contracts/interfaces/work-revalidate.interface';
 import { isRecord, request } from './helpers/cli-command.helper';
-import { answerOf } from './work-deliver.service';
+import { answerOf, refusalOf } from './work-deliver.service';
 import {
 	answerCommittingWrites,
 	toolCommitSubject,
@@ -38,6 +38,19 @@ export const revalidatePortsOf = (
 ): IWorkRevalidatePorts => {
 	return {
 		proposals: () => readRevalidationProposals(ctx.cwd),
+		handoverRefusal: async (id) =>
+			refusalOf(
+				await answerOf(
+					request(ctx, transitionTool, {
+						id,
+						to: 'review',
+						reason: 'Preflight of the revalidation hand-over.',
+						preflight: true,
+						...(agent === undefined ? {} : { agent }),
+						checkout: ctx.cwd,
+					}),
+				),
+			),
 		heldByUnits: async () => {
 			const policy = await readWorkspacePolicy(ctx.cwd).catch(
 				() => undefined,
