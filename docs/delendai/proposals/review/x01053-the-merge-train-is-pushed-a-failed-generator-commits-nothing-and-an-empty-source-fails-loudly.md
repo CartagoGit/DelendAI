@@ -80,14 +80,16 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S5 — Every train regenerates its derived files once, conflict or not
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`
 - **Gate**: none
 
 With S1–S4 on develop the train was still declined: a member that left the integration branch long ago merges cleanly, yet leaves derived files (the skill copies under .github, .claude, .agents) stale against the tip, and the push's drift check refused the train. The regeneration ran only after a derived conflict. It now runs once on every train after all its members are in; a failed link or regeneration pushes nothing and says why.
 - shipped-in: `20f1648e8c51`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S6 — A train's CI run passes the commit-branch lint
 - **Status**: review
