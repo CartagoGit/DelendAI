@@ -36,15 +36,17 @@ Fix design. Stamp the time a call starts (`askedAt`, taken synchronously at entr
 - global_gate: type
 
 ### S1 — Join the proof that finished during the call
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A caller that asked before a proof of the same unit and tip finished returns that proof's answer even when its first claim read happens after the claimant removed its claim; a call made after the finish proves again."
   - "The compute-slot e2e spec has a test where the claimant has finished before the second caller's first claim read (done record planted with finishedAt after askedAt), and it passes deterministically."
 - shipped-in: `98d10cd17288`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S1 evidence is stale: shipped-in is 98d10cd17288, but packages/core/src/lib/shared/compute-slot.service.ts changed afterward on develop. Please redeliver S1 on current HEAD with fresh shipped-in and updated scoped type-gate evidence before re-review.
 
 ## acceptance
 
