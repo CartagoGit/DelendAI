@@ -2,14 +2,14 @@
 id: x01061
 title: "runCli awaits its post-boot blueprint write"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-13
-last-transition-id: 6bbb5423-6360-4898-bd39-93ab3e0c9349
-last-correlation-id: 6bbb5423-6360-4898-bd39-93ab3e0c9349
-last-transition-from: ready
-last-transition-at: 2026-11-18T03:35:15.923Z
+last-transition-id: 7d5ef2e1-6a7d-4c22-9174-bd7d197b61fe
+last-correlation-id: 7d5ef2e1-6a7d-4c22-9174-bd7d197b61fe
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T03:39:18.290Z
 ---
 
 # x01061 — runCli awaits its post-boot blueprint write
@@ -32,9 +32,12 @@ last-transition-at: 2026-11-18T03:35:15.923Z
 - global_gate: none
 
 ### S1 — await the blueprint write at the end of runCli
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/cli/run-cli.e2e.spec.ts`
 - **Gate**: none
+- shipped-in: `db3ca1b1be6b`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
