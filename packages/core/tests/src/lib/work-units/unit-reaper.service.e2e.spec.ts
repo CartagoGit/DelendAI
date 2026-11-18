@@ -48,7 +48,7 @@ const deliveredUnit = async (agent: string) => {
 };
 
 describe('reapDeliveredUnits', () => {
-	it('judges a merged, quiet unit delivered, and a fresh empty one not', async () => {
+	it('[<1500ms] judges a merged, quiet unit delivered, and a fresh empty one not', async () => {
 		const { repo, ref, start } = await deliveredUnit('done');
 		const fresh = unitRef('fresh');
 		await recordUnitEntered({
@@ -68,7 +68,7 @@ describe('reapDeliveredUnits', () => {
 		).toEqual({ [ref]: 'delivered', [fresh]: 'idle' });
 	});
 
-	it('removes the worktree and branch of a clean delivered unit', async () => {
+	it('[<1500ms] removes the worktree and branch of a clean delivered unit', async () => {
 		const { repo, ref, worktree, start } = await deliveredUnit('clean');
 		const [reaped] = await reapDeliveredUnits({
 			root: repo.root,
@@ -81,7 +81,7 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
 	});
 
-	it('never reaps a delivered unit whose lease beat a minute ago', async () => {
+	it('[<1500ms] never reaps a delivered unit whose lease beat a minute ago', async () => {
 		const { repo, ref, worktree, start } = await deliveredUnit('beating');
 		await recordUnitEntered({
 			cwd: repo.root,
@@ -101,7 +101,7 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
-	it('never reaps a delivered unit in the middle of its proof', async () => {
+	it('[<1500ms] never reaps a delivered unit in the middle of its proof', async () => {
 		const { repo, ref, worktree, start } = await deliveredUnit('proving');
 		const tip = git(repo.root, 'rev-parse', ref);
 		const reaped = await withComputeSlot({
@@ -123,7 +123,7 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'rev-parse', ref)).toBe(tip);
 	});
 
-	it('removes a unit that only regenerable files keep dirty', async () => {
+	it('[<1500ms] removes a unit that only regenerable files keep dirty', async () => {
 		const { repo, worktree, start } = await deliveredUnit('regen');
 		mkdirSync(join(worktree, 'docs'), { recursive: true });
 		writeFileSync(join(worktree, 'docs/catalog.generated.json'), '{}');
@@ -140,7 +140,7 @@ describe('reapDeliveredUnits', () => {
 		expect(existsSync(worktree)).toBe(false);
 	});
 
-	it('keeps a unit holding a real edit and says which', async () => {
+	it('[<1500ms] keeps a unit holding a real edit and says which', async () => {
 		const { repo, ref, worktree, start } = await deliveredUnit('edited');
 		writeFileSync(
 			join(worktree, 'feature.ts'),
@@ -158,7 +158,7 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
-	it('removes a delivered unit that merged the integration branch in afterwards', async () => {
+	it('[<1500ms] removes a delivered unit that merged the integration branch in afterwards', async () => {
 		const { repo, ref, worktree, start } = await deliveredUnit('caught-up');
 		repo.commit(repo.root, 'later.ts');
 		git(
@@ -180,7 +180,7 @@ describe('reapDeliveredUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
 	});
 
-	it('only reports without --apply', async () => {
+	it('[<1500ms] only reports without --apply', async () => {
 		const { repo, worktree, start } = await deliveredUnit('dry');
 		const [reaped] = await reapDeliveredUnits({
 			root: repo.root,
@@ -224,7 +224,7 @@ describe('a unit kept for continuation', () => {
 			})
 		).find((entry) => entry.ref === input.ref)?.standing;
 
-	it('is waited for while its owner may continue, and not reaped', async () => {
+	it('[<1500ms] is waited for while its owner may continue, and not reaped', async () => {
 		const unit = await publishedUnit('keeper', 40);
 		expect(await standingOf(unit)).toBe('idle');
 		const reaped = await reapDeliveredUnits({
@@ -237,7 +237,7 @@ describe('a unit kept for continuation', () => {
 		expect(existsSync(unit.worktree)).toBe(true);
 	});
 
-	it('is reaped after hours without a sign of life, leaving its publication alone', async () => {
+	it('[<1500ms] is reaped after hours without a sign of life, leaving its publication alone', async () => {
 		const unit = await publishedUnit('forgotten', 600);
 		expect(await standingOf(unit)).toBe('delivered');
 		const [reaped] = await reapDeliveredUnits({
@@ -254,7 +254,7 @@ describe('a unit kept for continuation', () => {
 		).toContain(unit.publication);
 	});
 
-	it('is reaped at once when another agent holds the proposal', async () => {
+	it('[<1500ms] is reaped at once when another agent holds the proposal', async () => {
 		const unit = await publishedUnit('overtaken', 40);
 		git(
 			unit.repo.root,
@@ -267,7 +267,7 @@ describe('a unit kept for continuation', () => {
 });
 
 describe('a publication that moved ahead of its unit', () => {
-	it('is reported until the publication is merged into the unit', async () => {
+	it('[<1500ms] is reported until the publication is merged into the unit', async () => {
 		const repo = unitRepo();
 		const ref = unitRef('ahead');
 		const worktree = repo.enter(ref);
@@ -305,7 +305,7 @@ describe('a publication that moved ahead of its unit', () => {
 });
 
 describe('a landed unit whose proposal awaits its hand-off', () => {
-	it('is kept while the proposal is in progress, and reaped once it leaves', async () => {
+	it('[<1500ms] is kept while the proposal is in progress, and reaped once it leaves', async () => {
 		const repo = unitRepo();
 		const start = wall();
 		const ref = unitRef('handoff', 'x7-S1-g1');
@@ -372,7 +372,7 @@ describe('a unit whose owner left before committing anything', () => {
 		return { repo, ref, worktree, start };
 	};
 
-	it('is removed once it is abandoned: its branch holds nothing', async () => {
+	it('[<1500ms] is removed once it is abandoned: its branch holds nothing', async () => {
 		const { repo, ref, worktree, start } = await emptyUnit('gone', 600);
 		const [reaped] = await reapDeliveredUnits({
 			root: repo.root,
@@ -385,7 +385,7 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
 	});
 
-	it('is left while it is only idle: its owner may still start', async () => {
+	it('[<1500ms] is left while it is only idle: its owner may still start', async () => {
 		const { repo, worktree, start } = await emptyUnit('quiet', 90);
 		const reaped = await reapDeliveredUnits({
 			root: repo.root,
@@ -397,7 +397,7 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(existsSync(worktree)).toBe(true);
 	});
 
-	it('is left when it carries a commit of its own, however long it is quiet', async () => {
+	it('[<1500ms] is left when it carries a commit of its own, however long it is quiet', async () => {
 		const { repo, ref, worktree, start } = await emptyUnit('wrote', 600);
 		repo.commit(worktree, 'unmerged.ts');
 		const reaped = await reapDeliveredUnits({
@@ -410,7 +410,7 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
-	it('is removed, commit and all, once the remote keeps its tip as retired', async () => {
+	it('[<1500ms] is removed, commit and all, once the remote keeps its tip as retired', async () => {
 		const { repo, ref, worktree, start } = await emptyUnit('retired', 600);
 		repo.commit(worktree, 'unmerged.ts');
 		const remote = join(repo.root, '..', 'origin.git');
@@ -434,7 +434,7 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
 	});
 
-	it('keeps an edit its owner left uncommitted, and says which', async () => {
+	it('[<1500ms] keeps an edit its owner left uncommitted, and says which', async () => {
 		const { repo, worktree, start } = await emptyUnit('drafted', 600);
 		writeFileSync(join(worktree, 'draft.ts'), 'export {};\n');
 		const [reaped] = await reapDeliveredUnits({
@@ -446,5 +446,91 @@ describe('a unit whose owner left before committing anything', () => {
 		expect(reaped?.outcome).toBe('kept');
 		expect(reaped?.edited).toContain('draft.ts');
 		expect(existsSync(worktree)).toBe(true);
+	});
+});
+
+/** A unit whose proposal is still in progress for other slices: landed, quiet, standing idle. */
+const landedInProgressUnit = async (agent: string) => {
+	const repo = unitRepo();
+	const start = wall();
+	const ref = unitRef(agent);
+	const worktree = repo.enter(ref);
+	await recordUnitEntered({
+		cwd: repo.root,
+		ref,
+		owner: { agent, session: 's' },
+		worktree,
+		now: start - 600 * MINUTE,
+	});
+	mkdirSync(join(worktree, 'docs/delendai/proposals/in-progress'), {
+		recursive: true,
+	});
+	repo.commit(worktree, 'docs/delendai/proposals/in-progress/x1-demo.md');
+	git(repo.root, 'merge', '-q', '--no-ff', '-m', 'merge unit', ref);
+	return { repo, ref, worktree, start };
+};
+
+describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
+	it('[<1500ms] is idle, not delivered, while its proposal is in progress', async () => {
+		const { repo, ref, start } = await landedInProgressUnit('another');
+		const standings = await readUnitStandings({
+			root: repo.root,
+			policy: unitPolicy,
+			now: start,
+		});
+		expect(standings.find((e) => e.ref === ref)?.standing).toBe('idle');
+	});
+
+	it('[<1500ms] is ended whatever agent owns it once the owner is idle', async () => {
+		const { repo, ref, worktree, start } =
+			await landedInProgressUnit('another');
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('removed');
+		expect(existsSync(worktree)).toBe(false);
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+	});
+
+	it('[<1500ms] is only listed without --apply', async () => {
+		const { repo, worktree, start } = await landedInProgressUnit('another');
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: false,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('would-remove');
+		expect(existsSync(worktree)).toBe(true);
+	});
+
+	it('[<1500ms] is kept when one commit is not on the integration branch', async () => {
+		const { repo, ref, worktree, start } =
+			await landedInProgressUnit('another');
+		repo.commit(worktree, 'unmerged.ts');
+		const reaped = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped).toEqual([]);
+		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
+	});
+
+	it('[<1500ms] is kept, edits named, when its worktree holds an uncommitted edit', async () => {
+		const { repo, worktree, start } = await landedInProgressUnit('another');
+		writeFileSync(join(worktree, 'draft.ts'), 'export {};\n');
+		const [reaped] = await reapDeliveredUnits({
+			root: repo.root,
+			policy: unitPolicy,
+			apply: true,
+			now: start,
+		});
+		expect(reaped?.outcome).toBe('kept');
+		expect(reaped?.edited).toContain('draft.ts');
 	});
 });

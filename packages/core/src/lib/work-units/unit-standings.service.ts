@@ -200,6 +200,7 @@ export const readUnitStandings = async (
 				ref,
 				worktree: lease?.worktree ?? null,
 				publicationRef: delivery.publication?.ref ?? null,
+				delivered: delivery.delivered,
 				publicationAhead:
 					publicationSha !== undefined &&
 					publicationSha !== sha &&

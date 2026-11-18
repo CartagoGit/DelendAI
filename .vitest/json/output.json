@@ -1,0 +1,409 @@
+{
+	"numTotalTestSuites": 7,
+	"numPassedTestSuites": 7,
+	"numFailedTestSuites": 0,
+	"numPendingTestSuites": 0,
+	"numTotalTests": 23,
+	"numPassedTests": 23,
+	"numFailedTests": 0,
+	"numPendingTests": 0,
+	"numTodoTests": 0,
+	"snapshot": {
+		"added": 0,
+		"failure": false,
+		"filesAdded": 0,
+		"filesRemoved": 0,
+		"filesRemovedList": [],
+		"filesUnmatched": 0,
+		"filesUpdated": 0,
+		"matched": 0,
+		"total": 0,
+		"unchecked": 0,
+		"uncheckedKeysByFile": [],
+		"unmatched": 0,
+		"updated": 0,
+		"didUpdate": false
+	},
+	"startTime": 1794988187728,
+	"success": true,
+	"testResults": [
+		{
+			"assertionResults": [
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits judges a merged, quiet unit delivered, and a fresh empty one not",
+					"status": "passed",
+					"title": "judges a merged, quiet unit delivered, and a fresh empty one not",
+					"duration": 322.0929369999999,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 316.4158560000001,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits removes the worktree and branch of a clean delivered unit",
+					"status": "passed",
+					"title": "removes the worktree and branch of a clean delivered unit",
+					"duration": 423.9169939999997,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 421.4409649999998,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits never reaps a delivered unit whose lease beat a minute ago",
+					"status": "passed",
+					"title": "never reaps a delivered unit whose lease beat a minute ago",
+					"duration": 194.51693299999988,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 191.16655900000023,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits never reaps a delivered unit in the middle of its proof",
+					"status": "passed",
+					"title": "never reaps a delivered unit in the middle of its proof",
+					"duration": 266.37938299999996,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 264.2201110000001,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits removes a unit that only regenerable files keep dirty",
+					"status": "passed",
+					"title": "removes a unit that only regenerable files keep dirty",
+					"duration": 455.62307899999996,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 453.77677200000016,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits keeps a unit holding a real edit and says which",
+					"status": "passed",
+					"title": "keeps a unit holding a real edit and says which",
+					"duration": 314.3800000000001,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 311.7498050000004,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits removes a delivered unit that merged the integration branch in afterwards",
+					"status": "passed",
+					"title": "removes a delivered unit that merged the integration branch in afterwards",
+					"duration": 460.7404660000002,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 458.80749300000025,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["reapDeliveredUnits"],
+					"fullName": "reapDeliveredUnits only reports without --apply",
+					"status": "passed",
+					"title": "only reports without --apply",
+					"duration": 275.75139600000057,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 273.6002320000007,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a unit kept for continuation"],
+					"fullName": "a unit kept for continuation is waited for while its owner may continue, and not reaped",
+					"status": "passed",
+					"title": "is waited for while its owner may continue, and not reaped",
+					"duration": 414.50591299999996,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 412.10591399999976,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a unit kept for continuation"],
+					"fullName": "a unit kept for continuation is reaped after hours without a sign of life, leaving its publication alone",
+					"status": "passed",
+					"title": "is reaped after hours without a sign of life, leaving its publication alone",
+					"duration": 580.442763,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 578.3643729999994,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": ["a unit kept for continuation"],
+					"fullName": "a unit kept for continuation is reaped at once when another agent holds the proposal",
+					"status": "passed",
+					"title": "is reaped at once when another agent holds the proposal",
+					"duration": 264.29861900000014,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 261.3610150000004,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a publication that moved ahead of its unit"
+					],
+					"fullName": "a publication that moved ahead of its unit is reported until the publication is merged into the unit",
+					"status": "passed",
+					"title": "is reported until the publication is merged into the unit",
+					"duration": 691.7407929999999,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 689.1948499999999,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a landed unit whose proposal awaits its hand-off"
+					],
+					"fullName": "a landed unit whose proposal awaits its hand-off is kept while the proposal is in progress, and reaped once it leaves",
+					"status": "passed",
+					"title": "is kept while the proposal is in progress, and reaped once it leaves",
+					"duration": 382.4280799999997,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 379.8506640000005,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a unit whose owner left before committing anything"
+					],
+					"fullName": "a unit whose owner left before committing anything is removed once it is abandoned: its branch holds nothing",
+					"status": "passed",
+					"title": "is removed once it is abandoned: its branch holds nothing",
+					"duration": 377.8470010000001,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 376.5587679999999,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a unit whose owner left before committing anything"
+					],
+					"fullName": "a unit whose owner left before committing anything is left while it is only idle: its owner may still start",
+					"status": "passed",
+					"title": "is left while it is only idle: its owner may still start",
+					"duration": 215.782956,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 213.77581999999984,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a unit whose owner left before committing anything"
+					],
+					"fullName": "a unit whose owner left before committing anything is left when it carries a commit of its own, however long it is quiet",
+					"status": "passed",
+					"title": "is left when it carries a commit of its own, however long it is quiet",
+					"duration": 274.93920799999887,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 273.11963900000046,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a unit whose owner left before committing anything"
+					],
+					"fullName": "a unit whose owner left before committing anything is removed, commit and all, once the remote keeps its tip as retired",
+					"status": "passed",
+					"title": "is removed, commit and all, once the remote keeps its tip as retired",
+					"duration": 478.2901099999999,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 475.6544870000016,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"a unit whose owner left before committing anything"
+					],
+					"fullName": "a unit whose owner left before committing anything keeps an edit its owner left uncommitted, and says which",
+					"status": "passed",
+					"title": "keeps an edit its owner left uncommitted, and says which",
+					"duration": 338.48949600000014,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 336.64319199999954,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"reapDeliveredUnits, a landed unit of an in-progress proposal"
+					],
+					"fullName": "reapDeliveredUnits, a landed unit of an in-progress proposal is idle, not delivered, while its proposal is in progress",
+					"status": "passed",
+					"title": "is idle, not delivered, while its proposal is in progress",
+					"duration": 213.46773500000018,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 211.30418800000007,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"reapDeliveredUnits, a landed unit of an in-progress proposal"
+					],
+					"fullName": "reapDeliveredUnits, a landed unit of an in-progress proposal is ended whatever agent owns it once the owner is idle",
+					"status": "passed",
+					"title": "is ended whatever agent owns it once the owner is idle",
+					"duration": 463.1497010000003,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 461.43791500000043,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"reapDeliveredUnits, a landed unit of an in-progress proposal"
+					],
+					"fullName": "reapDeliveredUnits, a landed unit of an in-progress proposal is only listed without --apply",
+					"status": "passed",
+					"title": "is only listed without --apply",
+					"duration": 286.1246039999987,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 282.4169439999987,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"reapDeliveredUnits, a landed unit of an in-progress proposal"
+					],
+					"fullName": "reapDeliveredUnits, a landed unit of an in-progress proposal is kept when one commit is not on the integration branch",
+					"status": "passed",
+					"title": "is kept when one commit is not on the integration branch",
+					"duration": 293.251416000001,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 290.7570480000013,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				},
+				{
+					"ancestorTitles": [
+						"reapDeliveredUnits, a landed unit of an in-progress proposal"
+					],
+					"fullName": "reapDeliveredUnits, a landed unit of an in-progress proposal is kept, edits named, when its worktree holds an uncommitted edit",
+					"status": "passed",
+					"title": "is kept, edits named, when its worktree holds an uncommitted edit",
+					"duration": 298.45719100000133,
+					"failureMessages": [],
+					"meta": {
+						"budgetTookMs": 295.73315300000104,
+						"budgetLoadFactor": 1.2345999299065415,
+						"budgetBenchMs": 52.8
+					},
+					"tags": [],
+					"benchmarks": []
+				}
+			],
+			"startTime": 1794988190286,
+			"endTime": 1794988197068.4573,
+			"status": "passed",
+			"message": "",
+			"name": "/home/cartago/_projects/delendai/.cache/delendai/.worktrees/claude-sonnet-5-5-x01096-S1/packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts"
+		}
+	]
+}

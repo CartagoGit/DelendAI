@@ -52,6 +52,15 @@ const carriesNothing = (
 ): boolean =>
 	base !== undefined && carriesNothingBeyond(root, `refs/heads/${ref}`, base);
 
+/** Whether every commit of `sha` is an ancestor of the integration branch. */
+const isLanded = (
+	root: string,
+	base: string | undefined,
+	sha: string,
+): boolean =>
+	base !== undefined &&
+	readGit(root, ['merge-base', '--is-ancestor', sha, base]) !== undefined;
+
 export const reapDeliveredUnits = async (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
@@ -103,8 +112,17 @@ export const reapDeliveredUnits = async (input: {
 			`refs/heads/${unit.ref}`,
 		]);
 		if (judgedTip === undefined) continue;
+		// Landed whoever owns it: an idle owner (no heartbeat inside the
+		// window, nobody on it) holds nothing the integration branch lacks,
+		// even while its proposal is still in progress for other slices.
+		const landedAndIdle =
+			unit.standing === 'idle' &&
+			unit.delivered === true &&
+			(isLanded(root, integration, judgedTip) ||
+				carriesNothing(root, integration, unit.ref));
 		const spent =
 			unit.standing === 'delivered' ||
+			landedAndIdle ||
 			(unit.standing === 'abandoned' &&
 				(carriesNothing(root, integration, unit.ref) ||
 					keptOnRemote(unit.ref)));
