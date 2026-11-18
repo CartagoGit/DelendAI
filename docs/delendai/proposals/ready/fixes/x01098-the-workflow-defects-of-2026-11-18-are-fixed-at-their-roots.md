@@ -78,13 +78,14 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - acceptance:
   - "`bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees"
 
-### S7 — work enter creates its ref without the intermittent failure
+### S7 — work enter and the stray-ref reap write refs under one lock
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/unit-start-point.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/tests/src/lib/work-units/unit-start-point.service.spec.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `new: packages/core/src/lib/work-units/ref-writer-lock.helper.ts`
 - **Gate**: lint
-- **Decisions**: The cause is found first in the ref-creation path (concurrent packed-refs or ref lock); the fix is a bounded retry on lock conflict only, stated in the commit body.
+- **Decisions**: No retry: the ref creation is serialised with the writer it races. The competing writer is the stray-ref reap (`update-ref -d` under the same refs/heads namespace); creation and reap take the same withFileMutex from ref-writer-lock.helper.ts, so `createUnitRef` becomes async.
 - acceptance:
-  - "`bunx vitest run packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts` proves a ref-creation lock conflict is retried deterministically and the refusal names the git error"
+  - "`bunx vitest run packages/core/tests/src/lib/work-units/unit-start-point.service.spec.ts` runs `work enter` ref creation concurrently with the stray-ref reap deleting under the same namespace; the spec reproduces `Could not create refs/heads/...` without the lock and passes with it"
+  - "`bunx vitest run packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts` proves the reap and the creation take the same withFileMutex"
 
 ### S8 — Specs that skip proposals also skip files derived from them
 - **Status**: pending
