@@ -2,14 +2,14 @@
 id: f00816
 title: "A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-12
-last-transition-id: 48dea51d-2234-422e-9959-cd102e24574d
-last-correlation-id: 48dea51d-2234-422e-9959-cd102e24574d
-last-transition-from: review
-last-transition-at: 2026-11-18T02:11:51.315Z
+last-transition-id: 121f096c-7fdf-4185-bddc-859025088f44
+last-correlation-id: 121f096c-7fdf-4185-bddc-859025088f44
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T02:42:43.711Z
 ---
 
 # f00816 — A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs
