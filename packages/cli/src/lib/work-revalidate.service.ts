@@ -308,15 +308,33 @@ const mergeSubjectOf = (
 	worktree: string,
 	sha: string,
 ): string => {
+	// The first-parent merges after `sha`, oldest first: once one contains
+	// the commit every later one does, so the first is found by bisection.
 	const merges = linesOf(ports, worktree, [
-		'log',
-		'--ancestry-path',
-		'--merges',
+		'rev-list',
 		'--first-parent',
-		'--format=%H%x09%s',
+		'--merges',
+		'--reverse',
 		`${sha}..HEAD`,
 	]);
-	return (merges.at(-1) ?? '').split('\t').slice(1).join('\t');
+	let low = 0;
+	let high = merges.length;
+	while (low < high) {
+		const middle = Math.floor((low + high) / 2);
+		const contains = ports.git(worktree, [
+			'merge-base',
+			'--is-ancestor',
+			sha,
+			merges[middle] ?? '',
+		]).ok;
+		if (contains) high = middle;
+		else low = middle + 1;
+	}
+	const first = merges[low];
+	if (first === undefined) return '';
+	return linesOf(ports, worktree, ['log', '-1', '--format=%s', first]).join(
+		' ',
+	);
 };
 
 /** What became of a declared path that is gone. */

@@ -316,7 +316,14 @@ describe('revalidateBatch declared files', () => {
 		(args: readonly string[]): string => {
 			if (args[0] === 'show')
 				return history.shown?.[args.at(-1) ?? ''] ?? '';
-			if (args.includes('--merges')) return history.merge ?? '';
+			const [mergeSha = '', ...mergeSubject] = (
+				history.merge ?? ''
+			).split('\t');
+			if (args[0] === 'rev-list') return mergeSha;
+			if (args[0] === 'merge-base') return '';
+			if (args[0] === 'log' && args.includes('--format=%s')) {
+				return mergeSubject.join('\t');
+			}
 			const removal = history.removed[args.at(-1) ?? ''];
 			return removal === undefined
 				? ''
