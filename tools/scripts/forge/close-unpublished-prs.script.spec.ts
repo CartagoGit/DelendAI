@@ -22,13 +22,13 @@ describe('unpublishedPullRequests', () => {
 				{
 					number: 514,
 					headRefName:
-						'delendai/wip/minimax-3/review/f00553-review-g1/review',
+						'delendai/wip/review/minimax-3/f00553-review/review',
 					isCrossRepository: false,
 				},
 				{
 					number: 520,
 					headRefName:
-						'delendai/pr/claude-opus-5-5/implement/x00681-all-g1/a-refused-close-says-why-in-the-test',
+						'delendai/pr/implement/claude-opus-5-5/x00681-all/a-refused-close-says-why-in-the-test',
 					isCrossRepository: false,
 				},
 				{ number: 9, headRefName: 'feature', isCrossRepository: true },
@@ -50,7 +50,7 @@ describe('unpublishedPullRequests', () => {
 				{
 					number: 1018,
 					headRefName:
-						'delendai/pr/glm-5.3-max/review/batch-all-g5/verdicts',
+						'delendai/pr/review/glm-5.3-max/batch-all-G5/verdicts',
 					baseRefName: 'develop',
 					isCrossRepository: false,
 					changedFiles: 0,
@@ -58,7 +58,7 @@ describe('unpublishedPullRequests', () => {
 				{
 					number: 1017,
 					headRefName:
-						'delendai/pr/glm-5.3-max/review/batch-all-g4/verdicts',
+						'delendai/pr/review/glm-5.3-max/batch-all-G4/verdicts',
 					baseRefName: 'develop',
 					isCrossRepository: false,
 					changedFiles: 2,

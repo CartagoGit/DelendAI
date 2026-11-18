@@ -12,7 +12,10 @@
  * template.
  */
 import { ownedBatchPrefixes } from '@delendai/core/cli';
-import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
+import {
+	alternateTemplate,
+	compileWorkRefParser,
+} from '@delendai/core/lib/startup-reconciler/work-ref-identity';
 import {
 	isHostApplicationId,
 	kindsInAgentId,
@@ -120,9 +123,17 @@ const headProblemIn = (
 		branches.workRefPrefix,
 		{ strict: true, requireKind: false },
 	);
-	const identity = parser?.parse(
-		`refs/heads/${work}${head.slice(publication.length)}`,
-	);
+	const asWork = `refs/heads/${work}${head.slice(publication.length)}`;
+	// A publication in flight in the shape the default replaced (f00808).
+	const replaced = alternateTemplate(branches.workRefTemplate);
+	const identity =
+		parser?.parse(asWork) ??
+		(replaced === undefined
+			? undefined
+			: compileWorkRefParser(replaced, branches.workRefPrefix, {
+					strict: true,
+					requireKind: false,
+				})?.parse(asWork));
 	if (identity === undefined) {
 		return `\`${head}\` does not have the shape of the work it publishes (\`${branches.workRefTemplate}\` under \`${publication}\`).`;
 	}
