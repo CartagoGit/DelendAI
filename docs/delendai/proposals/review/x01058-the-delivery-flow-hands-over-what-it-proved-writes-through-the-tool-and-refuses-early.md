@@ -105,7 +105,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S6 — carried-work reads the owned namespaces from the decisions module
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/tests/src/lib/services/carried-work.service.spec.ts`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `tools/scripts/lint/integration-decisions-single-owner.script.ts`, `tools/scripts/lint/integration-decisions-single-owner.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -113,8 +113,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "lint:integration-decisions refuses code that builds retired roots or namespace-derived `refs/<namespace>/…` prefixes outside the module."
   - "[<Nms] spec: the lint flags the old carried-work shape and passes the new one."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S7 — Entering a unit installs what the worktree lacks
 - **Status**: review
