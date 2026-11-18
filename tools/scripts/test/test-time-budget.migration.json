@@ -2212,7 +2212,6 @@
 		"tools/scripts/lint/core-public-surface-budget.spec.ts",
 		"tools/scripts/lint/core-runtime-deps.spec.ts",
 		"tools/scripts/lint/core-version-pin.spec.ts",
-		"tools/scripts/lint/dependency-advisories.script.spec.ts",
 		"tools/scripts/lint/detail-levels-coverage.script.spec.ts",
 		"tools/scripts/lint/doc-links.script.spec.ts",
 		"tools/scripts/lint/dry-run-coverage.script.spec.ts",
