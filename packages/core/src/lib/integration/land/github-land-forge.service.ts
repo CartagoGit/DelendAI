@@ -43,11 +43,22 @@ export const createGithubLandForge = (input: {
 	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
 }): ILandForge => {
 	const { slug, integration, run } = input;
+	const firstLine = (text: string): string =>
+		text
+			.split('\n')
+			.find((line) => line.trim() !== '')
+			?.trim() ?? '';
+	const answered = (
+		what: string,
+		status: number,
+		message: string | undefined,
+	): string =>
+		`${what} answered ${String(status)}${message ? `: ${message}` : ''}`;
 	const call = async (
 		method: string,
 		path: string,
 		fields: Readonly<Record<string, string>> = {},
-	): Promise<{ status: number; body: unknown }> => {
+	): Promise<{ status: number; body: unknown; message?: string }> => {
 		const { result, attempts, exhausted } = await runForgeRead({
 			method,
 			wait: input.wait,
@@ -79,15 +90,20 @@ export const createGithubLandForge = (input: {
 		const status = Number(
 			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
 		);
-		if (Number.isInteger(status)) return { status, body: undefined };
+		if (Number.isInteger(status))
+			return {
+				status,
+				body: undefined,
+				message: firstLine(result.stderr).replace(/^gh: /u, ''),
+			};
 		throw new Error(
 			`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
 		);
 	};
 	const ok = async <T>(path: string): Promise<T> => {
-		const { status, body } = await call('GET', path);
+		const { status, body, message } = await call('GET', path);
 		if (status !== 200)
-			throw new Error(`GET ${path} answered ${String(status)}`);
+			throw new Error(answered(`GET ${path}`, status, message));
 		return body as T;
 	};
 	/**
@@ -149,7 +165,7 @@ export const createGithubLandForge = (input: {
 		all<IRawPull>(`pulls?base=${integration}&${query}`);
 	return {
 		integrationTip: async () => {
-			const { status, body } = await call(
+			const { status, body, message } = await call(
 				'GET',
 				`branches/${integration}`,
 			);
@@ -157,7 +173,7 @@ export const createGithubLandForge = (input: {
 				throw new LandBranchGoneError(integration);
 			if (status !== 200)
 				throw new Error(
-					`GET branches/${integration} answered ${String(status)}`,
+					answered(`GET branches/${integration}`, status, message),
 				);
 			return (body as { commit: { sha: string } }).commit.sha;
 		},
