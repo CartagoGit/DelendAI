@@ -2,10 +2,14 @@
 id: x01091
 title: "A test run leaves nothing in the system temp directory"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
+last-transition-id: a3be2978-9327-4ae5-b738-2e72dd32fcd9
+last-correlation-id: a3be2978-9327-4ae5-b738-2e72dd32fcd9
+last-transition-from: ready
+last-transition-at: 2026-11-18T01:31:27.418Z
 ---
 
 # x01091 — A test run leaves nothing in the system temp directory
