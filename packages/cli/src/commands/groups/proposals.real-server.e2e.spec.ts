@@ -39,7 +39,7 @@ const CLI = join(REPOSITORY, 'packages/cli/src/index.ts');
 
 const PROPOSAL = 'x00001';
 const AGENT = 'claude-sonnet-5-5';
-const UNIT_BRANCH = `wip/${AGENT}/implement/${PROPOSAL}-S1-g1/the-topic`;
+const UNIT_BRANCH = `wip/implement/${AGENT}/${PROPOSAL}-S1/the-topic`;
 const PROPOSAL_FILE = `docs/delendai/proposals/in-progress/fixes/${PROPOSAL}-demo.md`;
 
 const PROPOSAL_TEXT = `---
