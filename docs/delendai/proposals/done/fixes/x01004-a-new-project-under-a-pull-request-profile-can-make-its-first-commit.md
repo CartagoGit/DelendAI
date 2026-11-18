@@ -2,15 +2,17 @@
 id: x01004
 title: "A new project under a pull-request profile can make its first commit"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: cc3f336e-a6cb-44d6-a3ad-c230d0b8ce1d
-last-correlation-id: cc3f336e-a6cb-44d6-a3ad-c230d0b8ce1d
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:53:04.522Z
+last-transition-id: db80b9b3-b1a0-492a-8d54-ca4b9d870567
+last-correlation-id: db80b9b3-b1a0-492a-8d54-ca4b9d870567
+last-transition-from: review
+last-transition-at: 2026-11-18T02:57:56.098Z
 paused-reason: "Paused 2026-11-04: temporary hop to repair canonical folder placement after force transition"
+shipped-in:
+  - "2791c0015b5ac861d8069184eb1804283448d1bc"
 ---
 
 # x01004 — A new project under a pull-request profile can make its first commit
@@ -33,14 +35,16 @@ Reported by the owner on 2026-11-02: a project started with a profile that lands
 - global_gate: none
 
 ### S1 — The founding commit and its first push are allowed
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/development-policy/git-guard.ts`, `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`, `packages/cli/src/commands/guard.command.spec.ts`
 - **Gate**: none
 - acceptance:
   - "In a fresh repository under shared-checkout-pr, the first commit on the integration branch succeeds and the push that creates it on an empty forge succeeds; a second direct commit on it is refused as before. A spec covers each."
 - shipped-in: `03de08ec0861`
-- review-state: in_review
+- review-state: done
 - review-implementer: gpt-5.3-codex
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 2791c0015b5a, validate exit 0 and tests 78/78 claimed, no recorded run cited; acceptance 1/1: (1) git-guard.spec.ts asserts founding commit and creating push are allowed while subsequent direct commit/push are refused; guard.command.spec.ts covers hook extr… — Verified 2791c001 independently of implementer gpt-5.3-codex: the guard carries founding/creating facts from real git hooks, permits only the founding commit and the first protected-branch push, and still refuses the next direct commit/push. Both scoped guard specs passed.
 
 ## acceptance
 
