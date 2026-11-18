@@ -308,7 +308,7 @@ Nothing of this repository is emitted into the other project.
 - review-implementer: claude-sonnet-5-5
 
 ### S6 — The integrator acts as an identity the forge builds, woken only by events
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S5]
 - **Files**: `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `plugins/integration/src/lib/services/integration-doctor.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: none
@@ -320,8 +320,10 @@ Nothing of this repository is emitted into the other project.
   - "`delendai integration doctor` refuses activation when the identity, its secrets or its permissions are missing, and prints the app manifest the owner installs once"
   - "Scenarios F1, F2 and F4 and the one-PR and N-non-overlapping cases are green and leave the known-red list"
 - shipped-in: `edd7b73cd055`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — Acceptance still requires a pull_request_target integrator on opened/reopened/synchronize/ready_for_review/labeled/unlabeled/converted_to_draft/closed, but the recorded 2026-11-14 design decision explicitly removes pull_request_target and the rendered workflow uses push plus workflow_dispatch/land-signal. The focused workflow spec confirms that implementation. Bring the acceptance criterion and trigger contract into agreement before approval: either retain the decision and rewrite acceptance, or restore the required trigger. Evidence: q00048 S6 acceptance vs S6 Decision (2026-11-14); tools/scripts/forge/land-workflow.spec.ts passes with land-signal dispatching at the base ref.
 
 ### S7 — Verdicts are reconciled, never flipped
 - **Status**: review
