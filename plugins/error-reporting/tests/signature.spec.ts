@@ -255,6 +255,54 @@ describe('buildIssueTitle / buildIssueBody', () => {
 	});
 });
 
+describe('buildIssueTitle / buildIssueBody optional parts', () => {
+	const bare = {
+		reporterVersion: '0.1.0',
+		delendaiVersion: '0.1.0',
+		packageId: '@delendai/core',
+		toolOwner: 'host-project',
+		toolCategory: 'host-specific',
+		failureClass: 'INTERNAL_TIMEOUT',
+		classification: 'PERFORMANCE',
+		fingerprint: 'abc123',
+		mcpFrames: [],
+	} as const;
+
+	it('[<200ms] omits the error code and renders empty evidence parts', () => {
+		expect(buildIssueTitle(bare)).toBe(
+			'fix(core): PERFORMANCE @delendai/core',
+		);
+		const body = buildIssueBody(bare);
+		expect(body).not.toContain('Error code');
+		expect(body).not.toContain('DelendAI frames');
+		expect(body).not.toContain('Synthetic example');
+		expect(body).toContain('Actual: INTERNAL_TIMEOUT');
+	});
+
+	it('[<200ms] names the safe tool, environment and frame details when known', () => {
+		const body = buildIssueBody({
+			...bare,
+			safeToolId: 'quality_run_quality',
+			errorCode: 'PROCESS_TIMEOUT',
+			environmentClass: { runtime: 'bun', platformFamily: 'linux' },
+			mcpFrames: [{ file: '@delendai/core/src/a.ts', fn: 'run' }],
+		});
+		expect(body).toContain('tool `quality_run_quality`');
+		expect(body).toContain('| Safe tool |');
+		expect(body).toContain('runtime=bun, platform=linux');
+		expect(body).toContain('@delendai/core/src/a.ts run');
+		expect(body).toContain('Actual: INTERNAL_TIMEOUT (PROCESS_TIMEOUT)');
+	});
+
+	it('[<200ms] bounds a title the template left over the limit', () => {
+		const title = buildIssueTitle({
+			...bare,
+			packageId: `@delendai/${'x'.repeat(300)}`,
+		});
+		expect(title.length).toBeLessThanOrEqual(180);
+	});
+});
+
 describe('buildSyntheticExample', () => {
 	it('[<200ms] builds deterministic fixture fallback examples without real payload input', () => {
 		const left = buildSyntheticExample({
