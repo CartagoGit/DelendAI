@@ -21,6 +21,7 @@ import { urgencyOfUnit } from './pull-request-urgency.service';
 import { landWorkUnit } from './work-unit-land.service';
 import { scalarArg } from './command-args.helper';
 import { isReviewUnitBranch } from '../development-policy/git-guard-review-scope';
+import { isRevalidationBranch } from './unit-topic.service';
 import { journalWorkEvent } from './work-event-journal.service';
 import { unitDepartures } from './unit-departures.service';
 import { endCarriedUnits } from './carried-units.service';
@@ -215,7 +216,11 @@ export const published = async (
 	const proof =
 		tipOfUnit !== undefined &&
 		provesBeforePublishing(policy) &&
-		!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, ''))
+		(!isReviewUnitBranch(policy, workRef.replace(/^refs\/heads\//u, '')) ||
+			isRevalidationBranch(
+				policy,
+				workRef.replace(/^refs\/heads\//u, ''),
+			))
 			? await proveUnit({
 					root,
 					agent,

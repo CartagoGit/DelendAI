@@ -47,10 +47,6 @@ import {
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
-import {
-	readReadyProposals,
-	revalidateBatch,
-} from '../lib/work-revalidate.service';
 
 /**
  * Where an agent that just entered a unit reads what its slice asks for.
@@ -258,11 +254,18 @@ export const createWorkCommand = (): ICliCommand => ({
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
 		if (args[0] === 'revalidate') {
 			const flags = args.slice(1);
+			// Loaded here, not at start-up: only this subcommand needs it.
+			const [{ revalidateBatch }, { revalidatePortsOf }] =
+				await Promise.all([
+					import('../lib/work-revalidate.service'),
+					import('../lib/work-revalidate-ports.service'),
+				]);
 			return revalidateBatch(
-				{
-					proposals: () => readReadyProposals(ctx.cwd),
-					print: (line) => process.stdout.write(`${line}\n`),
-				},
+				revalidatePortsOf(
+					ctx,
+					scalarArg(flags, 'agent'),
+					TRANSITION_TOOL,
+				),
 				scalarArg(flags, 'proposals'),
 			);
 		}
