@@ -6,10 +6,10 @@ status: in-progress
 type: proposal
 track: general
 date: 2026-11-18
-last-transition-id: 0f9a7084-affb-4ec9-9492-f32652e08bd6
-last-correlation-id: 0f9a7084-affb-4ec9-9492-f32652e08bd6
+last-transition-id: 8901b516-0ef9-4f90-b1b0-cbca667346ce
+last-correlation-id: 8901b516-0ef9-4f90-b1b0-cbca667346ce
 last-transition-from: ready
-last-transition-at: 2026-11-18T16:59:57.022Z
+last-transition-at: 2026-11-18T16:56:39.520Z
 ---
 
 # x01098 — The workflow defects of 2026-11-18 are fixed at their roots
@@ -76,11 +76,11 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 
 ### S6 — Doctor accepts the branch-runtime worktrees
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: The exemption is the two branch-runtime worktree names for the integration and release branches, nothing broader.
 - acceptance:
-  - "`bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees"
+  - "`bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees"
 
 ### S7 — work enter and the stray-ref reap write refs under one lock
 - **Status**: pending
@@ -108,6 +108,6 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - `bunx vitest run tools/scripts/lint/proposal-hygiene.spec.ts` proves a follow-up proposal chained by DependsOn is not flagged duplicate
 - `bunx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts` stays green with an optional superseded_by field
 - `bunx vitest run packages/cli/src/lib/work-revalidate.service.spec.ts` proves a delivered slice whose file was renamed or deleted by a merged change does not block the hand-over of another slice
-- `bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees
+- `bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees
 - `bunx vitest run packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts` proves a ref-creation lock conflict is retried deterministically and the refusal names the git error
 - `bunx vitest run tools/scripts/forge/land-cutover.e2e.spec.ts` reads the derived-from-proposals list from the single exported constant in proposal-readiness.script.ts

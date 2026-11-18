@@ -14,6 +14,8 @@ import { join } from 'node:path';
 import { DEFAULT_INTEGRATION_OPTIONS } from '@delendai/core/cli';
 import { describe, expect, it } from 'vitest';
 
+import { DERIVED_FROM_PROPOSALS } from '../lint/proposal-readiness.script';
+
 const ROOT = join(import.meta.dirname, '../../..');
 
 /** The modules, workflows and scripts the cutover removed. */
@@ -97,9 +99,9 @@ const UNSCANNED = new Set([
 	'tools/scripts/ci/zone-reads.generated.json',
 	'tools/scripts/test/test-time-budget.migration.json',
 	'tools/scripts/lint/spec-git-init.baseline.json',
-	// Quotes open proposals' slice lines, which may name the removed
+	// Quote open proposals' slice lines, which may name the removed
 	// mechanism; the proposals themselves are outside the scanned roots.
-	'tools/scripts/lint/proposal-readiness.baseline.json',
+	...DERIVED_FROM_PROPOSALS,
 ]);
 
 const tracked = (): readonly string[] =>

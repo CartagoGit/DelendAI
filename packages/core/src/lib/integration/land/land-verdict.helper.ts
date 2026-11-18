@@ -52,14 +52,27 @@ export const markRedBatch = async (input: {
 }): Promise<ILandBatchRecord> => {
 	const { deps, batch, record, checks, note } = input;
 	const { forge, git } = deps;
-	const failing = checks.filter((c) => FAILED.has(c.conclusion ?? ''));
+	// A failure the base already has is not the batch's: only what fails
+	// beyond the base's own certifying result can name a culprit. With no
+	// certifying result on the base yet, nobody is named.
+	const baseChecks = await forge.checks(await forge.integrationTip());
+	const baseFailing = new Set(
+		baseChecks
+			.filter((c) => FAILED.has(c.conclusion ?? ''))
+			.map((c) => c.name),
+	);
+	const failing = checks.filter(
+		(c) => FAILED.has(c.conclusion ?? '') && !baseFailing.has(c.name),
+	);
+	const attributable = baseChecks.length > 0 && failing.length > 0;
 	const open: ILandPullRequest[] = [];
 	for (const member of record.members) {
 		const pr = await forge.pullRequest(member.number);
 		if (pr.state === 'open' && pr.headSha === member.sha) open.push(pr);
 	}
-	const attribution =
-		open.length === 1
+	const attribution = !attributable
+		? { suspects: [] as readonly number[] }
+		: open.length === 1
 			? { culprit: open[0]?.number, suspects: [open[0]?.number ?? 0] }
 			: attributeCulprit({
 					failingZones: new Set(

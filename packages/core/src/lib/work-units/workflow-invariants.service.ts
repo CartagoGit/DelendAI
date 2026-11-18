@@ -219,7 +219,16 @@ export const checkWorkflowInvariants = (input: {
 		.filter((line) => line.startsWith('worktree '))
 		.map((line) => line.slice('worktree '.length))
 		.filter((path) => path !== root);
+	// The two runtime trees servers run from (`branch-runtime/<branch>`, one
+	// for the integration and one for the release branch) are not leftovers.
+	const runtimeTrees = new Set(
+		[policy.branches.integration, policy.branches.release].map(
+			(branch) => `branch-runtime/${branch}`,
+		),
+	);
 	const leftover = worktreePaths.filter((path) => {
+		if ([...runtimeTrees].some((tree) => path.endsWith(`/${tree}`)))
+			return false;
 		const branch = git(path, ['symbolic-ref', '--short', 'HEAD']);
 		return branch === '' || !branch.startsWith(workPrefix);
 	});
