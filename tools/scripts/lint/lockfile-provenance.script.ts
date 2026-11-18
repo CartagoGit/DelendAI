@@ -53,7 +53,7 @@ export interface IProvenanceException {
 }
 
 /** Asks the registry when `name@version` was published (ISO time), `undefined` when it does not say. */
-export type PublishTimeReader = (
+export type IPublishTimeReader = (
 	name: string,
 	version: string,
 ) => Promise<string | undefined>;
@@ -169,7 +169,7 @@ export const youngEntries = async (
 	changed: readonly ILockEntry[],
 	cooldownSeconds: number,
 	now: Date,
-	read: PublishTimeReader,
+	read: IPublishTimeReader,
 ): Promise<readonly { name: string; version: string; problem: string }[]> => {
 	const found: { name: string; version: string; problem: string }[] = [];
 	for (const entry of changed) {
@@ -193,7 +193,7 @@ export const youngEntries = async (
 /** The registry read: one packument per package, its `time` map. */
 export const registryPublishTime = (
 	fetchFn: (url: string) => Promise<Response> = fetch,
-): PublishTimeReader => {
+): IPublishTimeReader => {
 	const cache = new Map<string, Promise<Record<string, string>>>();
 	return async (name, version) => {
 		let times = cache.get(name);
@@ -223,7 +223,7 @@ export const registryPublishTime = (
 const BASE_REF = 'origin/develop';
 
 export const main = async (
-	read: PublishTimeReader = registryPublishTime(),
+	read: IPublishTimeReader = registryPublishTime(),
 	now: Date = new Date(),
 ): Promise<number> => {
 	const root = lintRepoRoot(import.meta.url);
