@@ -2,14 +2,14 @@
 id: x01007
 title: "Specs pass on a loaded machine"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: 78fae0a8-8d40-44f0-937b-e26e922d79a1
-last-correlation-id: 78fae0a8-8d40-44f0-937b-e26e922d79a1
-last-transition-from: ready
-last-transition-at: 2026-11-18T06:21:32.278Z
+last-transition-id: db7d3e0a-858e-48f7-8323-ccd629696e3c
+last-correlation-id: db7d3e0a-858e-48f7-8323-ccd629696e3c
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T06:22:15.192Z
 ---
 
 # x01007 — Specs pass on a loaded machine
@@ -40,33 +40,30 @@ Every PR pays for these specs in proof retries, and each passes alone, so the re
 - global_gate: none
 
 ### S1 — Close gate and lock chaos specs wait on the work, not the clock
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `plugins/proposals/tests/src/lib/chaos/coordination-chaos.spec.ts`
 - **Gate**: none
 - shipped-in: `34c7e62db9e2`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: slice files changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus evidence.
 
 ### S2 — Process-spawning and measuring specs get ceilings a loaded machine fits under
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/guard.command.spec.ts`, `tools/scripts/report/token-budget-dashboard.spec.ts`, `tests/e2e/routing/full-pipeline.e2e.spec.ts`
 - **Gate**: none
 - shipped-in: `34c7e62db9e2`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: S2 files changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S2 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S3 — Latency overhead is measured in CPU time
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/usage-tracking/tests/e2e/1000-calls-latency.e2e.spec.ts`
 - **Gate**: none
 - shipped-in: `34c7e62db9e2`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 34c7e62db9e2 is stale: S3 file changed afterward (e.g. 5b0b2b860, ef203ed1f). Redeliver S3 on current HEAD and resubmit with fresh shipped-in and evidence.
 
 ## acceptance
