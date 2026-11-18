@@ -2,14 +2,14 @@
 id: f00822
 title: "work revalidate follows a renamed declared file and retires a proposal whose files a later change deleted"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: feats
 date: 2026-11-18
-last-transition-id: 270169b3-9df6-4009-8e20-31cccb518edc
-last-correlation-id: 270169b3-9df6-4009-8e20-31cccb518edc
-last-transition-from: review
-last-transition-at: 2026-11-18T11:51:30.100Z
+last-transition-id: 49149051-3b9e-42f0-a9d9-b740ecb4cef0
+last-correlation-id: 49149051-3b9e-42f0-a9d9-b740ecb4cef0
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T11:54:27.044Z
 ---
 
 # f00822 — work revalidate follows a renamed declared file and retires a proposal whose files a later change deleted
