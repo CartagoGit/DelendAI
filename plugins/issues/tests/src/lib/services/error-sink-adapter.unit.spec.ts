@@ -56,7 +56,7 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('draft-mode (autoReport: false)', () => {
-	it('writes a draft file with correct frontmatter and never calls createIssue', async () => {
+	it('[<200ms] writes a draft file with correct frontmatter and never calls createIssue', async () => {
 		const createIssue = vi.fn();
 		const adapter = createIssuesErrorSinkAdapter({
 			githubClient: { createIssue } as IGithubClient,
@@ -97,7 +97,7 @@ describe('draft-mode (autoReport: false)', () => {
 // ---------------------------------------------------------------------------
 
 describe('live-mode (autoReport: true, severity: critical)', () => {
-	it('writes a draft AND calls createIssue once with correct title', async () => {
+	it('[<200ms] writes a draft AND calls createIssue once with correct title', async () => {
 		const createIssue = vi.fn().mockResolvedValue({
 			issueNumber: 42,
 			issueUrl: 'https://example.com/issues/42',
@@ -123,7 +123,12 @@ describe('live-mode (autoReport: true, severity: critical)', () => {
 		expect(createIssue).toHaveBeenCalledTimes(1);
 		expect(createIssue).toHaveBeenCalledWith(
 			expect.objectContaining({
-				title: 'incident: test_tool — critical',
+				title: expect.stringMatching(
+					/^fix\([a-z-]+\): incident test_tool: critical$/u,
+				) as string,
+				body: expect.stringMatching(
+					/^## Summary[\s\S]*## Where[\s\S]*## Evidence[\s\S]*## Expected and Actual[\s\S]*## Proposal link/u,
+				) as string,
 			}),
 		);
 
@@ -138,7 +143,7 @@ describe('live-mode (autoReport: true, severity: critical)', () => {
 // ---------------------------------------------------------------------------
 
 describe('severity gate', () => {
-	it('does NOT call createIssue when severity is warning even with autoReport: true', async () => {
+	it('[<200ms] does NOT call createIssue when severity is warning even with autoReport: true', async () => {
 		const createIssue = vi.fn();
 		const adapter = createIssuesErrorSinkAdapter({
 			githubClient: { createIssue } as IGithubClient,
@@ -163,7 +168,7 @@ describe('severity gate', () => {
 // ---------------------------------------------------------------------------
 
 describe('rate-limit cap', () => {
-	it('drops the second live issue when maxReportsPerHour is 1', async () => {
+	it('[<200ms] drops the second live issue when maxReportsPerHour is 1', async () => {
 		const createIssue = vi.fn().mockResolvedValue({
 			issueNumber: 1,
 			issueUrl: 'https://example.com/issues/1',
@@ -195,7 +200,7 @@ describe('rate-limit cap', () => {
 // ---------------------------------------------------------------------------
 
 describe('fingerprint dedup', () => {
-	it('calls createIssue only once for the same fingerprint', async () => {
+	it('[<200ms] calls createIssue only once for the same fingerprint', async () => {
 		const now = Date.now();
 		const createIssue = vi.fn().mockResolvedValue({
 			issueNumber: 7,
@@ -229,7 +234,7 @@ describe('fingerprint dedup', () => {
 // ---------------------------------------------------------------------------
 
 describe('network failure', () => {
-	it('resolves without throwing and counts githubFailures when createIssue throws', async () => {
+	it('[<200ms] resolves without throwing and counts githubFailures when createIssue throws', async () => {
 		const stderrChunks: string[] = [];
 		const _originalWrite = process.stderr.write.bind(process.stderr);
 		const spy = vi
@@ -276,7 +281,7 @@ describe('network failure', () => {
 // ---------------------------------------------------------------------------
 
 describe('redaction proof', () => {
-	it('does not write raw secret into the draft (core already redacted the summary)', async () => {
+	it('[<200ms] does not write raw secret into the draft (core already redacted the summary)', async () => {
 		const adapter = createIssuesErrorSinkAdapter({
 			githubClient: undefined,
 			scaffoldDir: tmpDir,
@@ -309,7 +314,7 @@ describe('physical containment', () => {
 	 * named another tree. This adapter must never throw, so the refusal
 	 * is a counted, logged skip rather than an exception.
 	 */
-	it('refuses to write a draft through a scaffold dir symlinked out of the workspace', async () => {
+	it('[<200ms] refuses to write a draft through a scaffold dir symlinked out of the workspace', async () => {
 		const parent = mkdtempSync(join(os.tmpdir(), 'issues-escape-'));
 		const root = join(parent, 'root');
 		const outside = join(parent, 'outside');
@@ -353,7 +358,7 @@ describe('physical containment', () => {
 		}
 	});
 
-	it('still writes the draft when the scaffold dir stays inside the workspace', async () => {
+	it('[<200ms] still writes the draft when the scaffold dir stays inside the workspace', async () => {
 		const adapter = createIssuesErrorSinkAdapter({
 			githubClient: undefined,
 			scaffoldDir: tmpDir,
