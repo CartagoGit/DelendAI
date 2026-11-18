@@ -49,7 +49,7 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
 - review-log: approved by mai-code-2 — verified at 6c4c43f6f39c, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 3/3: (1) runtimeState reads HEAD/tag, branch, rev-list counts and porcelain; describeRuntimeState renders tag or branch@sha12 level/ahead/behind/dirty. Focused runtime-… (2) status-tool adds runtime with raw fields and the same describeRuntimeState summary; runtimeSchema declares kind/tag/branch/sha12/ahead/behind/dirty/follow/summ… (3) branch-runtime.helper.ts owns runtimeState's git reads; startup renderer and status tool consume serialized runtime state rather than running git. Specs and ex… — Reviewed the resolver, startup renderer and status tool. The 31 focused host/status specs pass and all 80 workspaces typecheck. Tag/branch state is produced once from git, passed through the same env-backed formatter to boot and status, with ahead/behind/dirty and schema fields intact.
 
 ### S2 — A branch-pointed runtime fast-forwards before serving
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/host/branch-follow.helper.ts`, `tools/scripts/host/branch-follow.helper.spec.ts`, `tools/scripts/host/host-server.script.ts`
 - **Gate**: type
@@ -58,8 +58,10 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
   - "A checkout with local commits or that cannot fast-forward is never reset or rebased; the boot summary says so loudly with the ahead and behind counts."
   - "With no network the server serves what it has and says the fetch failed."
 - shipped-in: `6ac0984beab6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 6c4c43f6f39c, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 3/3: (1) branchHostRun/updatedHostScript fetch origin branch, resolves origin/<branch>, and calls followBranch before prepare/serve; branch runtime real-repo specs prov… (2) followBranch only issues merge --ff-only. Specs assert no merge/reset/rebase/checkout with ahead>0 and assert a refused ff reports ahead/behind counts plus NOT… (3) When fetch returns undefined, updatedHostScript falls back to the known origin/local sha and followBranch receives fetched=false; its offline spec asserts `fet… — Reviewed the branch follow path and its host wiring. All 31 focused specs pass and all workspaces typecheck. Each branch-host start fetches the requested branch, fast-forwards only a behind-only tree, and otherwise reports ahead/behind or the offline fetch failure without reset/rebase.
 
 ### S3 — The editor tooltip shows the same state
 - **Status**: review
