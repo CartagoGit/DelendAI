@@ -32,7 +32,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - global_gate: none
 
 ### S1 — One predicate for a work ref's landed reading: publisher and ref-maintenance cannot disagree
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`, `tools/scripts/git/work-ref-fate-agreement.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -40,8 +40,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "A spec on a real repository gives the checkout publisher (settleLanded) and maintainRefNamespace the same ref in each state (at the integration tip, contained in it, ahead of it, no net change, local develop lagging the forge's) and asserts that one never withdraws what the other restores"
   - "A ref sitting exactly at the integration tip is never landed, whichever caller reads it"
 - shipped-in: `2569ce8f73b7`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S2 — A delivered publication waiting for its pull request is not orphaned
 - **Status**: review
