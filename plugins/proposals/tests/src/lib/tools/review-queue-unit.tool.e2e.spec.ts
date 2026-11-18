@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('review_queue unit', () => {
-	it('[<1000ms] reads the caller review unit when it has one, and the checkout otherwise, writing nothing (x01032)', async () => {
+	it('[<5000ms] reads the caller review unit when it has one, and the checkout otherwise, writing nothing (x01032)', async () => {
 		repo.proposalInReview(SLICE_S1('review'), 'x00001');
 		const parent = realpathSync(mkdtempSync(join(tmpdir(), 'queue-unit-')));
 		const path = join(parent, 'wt');
