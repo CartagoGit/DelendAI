@@ -6,6 +6,8 @@ export interface IRevalidateSlice {
 	readonly status: string;
 	readonly shippedIn: string | undefined;
 	readonly reviewState: string | undefined;
+	/** The literal paths the slice's Files line declares. */
+	readonly files?: readonly string[] | undefined;
 }
 
 /** One proposal, as far as the selection reads it. */
@@ -14,6 +16,8 @@ export interface IRevalidateProposal {
 	/** The folder stage the document sits in (`ready`, `in-progress`, ...). */
 	readonly stage: string;
 	readonly slices: readonly IRevalidateSlice[];
+	/** The document's path relative to the project root, when read from disk. */
+	readonly file?: string;
 }
 
 /** A proposal left out, and why. */
@@ -53,16 +57,35 @@ export interface IRevalidateUnitPorts {
 	/** One transition of the proposals service, committed by the flow. */
 	readonly transition: (input: {
 		readonly id: string;
-		readonly to: 'in-progress' | 'review';
+		readonly to: 'in-progress' | 'review' | 'retired';
 		readonly reason: string;
 		readonly worktree: string;
+		/** The proposal whose change made this one obsolete, when retiring. */
+		readonly supersededBy?: string;
 	}) => Promise<unknown>;
+	/** Whether `path` exists in the unit's checkout. */
+	readonly exists: (worktree: string, path: string) => boolean;
+	/** One git command in the unit's checkout. */
+	readonly git: (
+		worktree: string,
+		args: readonly string[],
+	) => { readonly ok: boolean; readonly out: string };
+	/** Rewrites `from` to `to` in one slice's Files line and commits it; the refusal, if any. */
+	readonly rewriteDeclared: (input: {
+		readonly worktree: string;
+		readonly file: string;
+		readonly sliceId: string;
+		readonly from: string;
+		readonly to: string;
+	}) => string | undefined;
 }
 
 /** What the batch did. */
 export interface IRevalidateOutcome extends IRevalidateSelection {
 	readonly worktree?: string;
 	readonly transitioned: readonly string[];
+	/** Proposals moved to retired because a later change deleted their files. */
+	readonly retired?: readonly string[];
 	readonly failed: readonly IRevalidateRefusal[];
 	/** What publishing the batch answered; absent when nothing was transitioned. */
 	readonly publication?: unknown;

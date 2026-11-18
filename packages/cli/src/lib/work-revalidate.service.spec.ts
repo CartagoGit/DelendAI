@@ -12,6 +12,7 @@ import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.cons
 
 import {
 	parseRevalidateProposal,
+	rewriteDeclaredPath,
 	readReadyProposals,
 	revalidateBatch,
 	selectRevalidation,
@@ -58,6 +59,9 @@ const okPorts = (
 	undo: () => undefined,
 	publish: async () => ({ code: 0 }),
 	transition: async () => ({ ok: true }),
+	exists: () => true,
+	git: () => ({ ok: true, out: '' }),
+	rewriteDeclared: () => undefined,
 });
 
 describe('selectRevalidation', () => {
@@ -187,6 +191,9 @@ describe('revalidateBatch units and transitions', () => {
 			undo: () => {
 				calls.undo += 1;
 			},
+			exists: () => true,
+			git: () => ({ ok: true, out: '' }),
+			rewriteDeclared: () => undefined,
 			transition: async ({ id, to, reason }) => {
 				calls.transitions.push(`${id}:${to}`);
 				expect(reason).toContain('abcdef012345');
@@ -252,6 +259,159 @@ describe('revalidateBatch units and transitions', () => {
 			undefined,
 		);
 		expect(calls.enter).toBe(0);
+	});
+});
+
+describe('revalidateBatch declared files', () => {
+	const OLD = 'packages/a/old.ts';
+	const NEW = 'packages/a/old.e2e.ts';
+	const withFiles = (id = 'g1'): IRevalidateProposal =>
+		proposal(id, [slice({ files: [OLD] })]);
+
+	/** Ports where only the paths in `present` exist and `log` answers git. */
+	const filesUnit = (
+		present: readonly string[],
+		log: (args: readonly string[]) => string,
+	) => {
+		const calls = {
+			rewrites: [] as string[],
+			transitions: [] as string[],
+			reasons: [] as string[],
+			supersededBy: [] as (string | undefined)[],
+			lines: [] as string[],
+		};
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([{ ...withFiles(), file: 'docs/g1.md' }]),
+			print: (line) => calls.lines.push(line),
+			exists: (_worktree, path) => present.includes(path),
+			git: (_worktree, args) => ({ ok: true, out: log(args) }),
+			rewriteDeclared: ({ from, to }) => {
+				calls.rewrites.push(`${from}>${to}`);
+				return undefined;
+			},
+			transition: async ({ to, reason, supersededBy }) => {
+				calls.transitions.push(to);
+				calls.reasons.push(reason);
+				calls.supersededBy.push(supersededBy);
+				return { ok: true };
+			},
+		};
+		return { calls, ports };
+	};
+
+	const renameLog = (args: readonly string[]): string =>
+		args.includes('--diff-filter=R') ? `R100\t${OLD}\t${NEW}\n` : '';
+
+	it('[<100ms] rewrites a renamed path and keeps the proposal in the batch', async () => {
+		const { calls, ports } = filesUnit([NEW], renameLog);
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.rewrites).toEqual([`${OLD}>${NEW}`]);
+		expect(result.data.transitioned).toEqual(['g1']);
+		expect(calls.transitions).toEqual(['in-progress', 'review']);
+	});
+
+	it('[<100ms] judges a rename whose target was later deleted as deleted', async () => {
+		const { calls, ports } = filesUnit([], (args) =>
+			args.includes('--diff-filter=R')
+				? renameLog(args)
+				: args.at(-1) === NEW
+					? 'abc1234\tdelete the thing (x00001)\n\nD\tpackages/a/old.e2e.ts\n'
+					: '',
+		);
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.rewrites).toEqual([]);
+		expect(result.data.retired).toEqual(['g1']);
+	});
+
+	it('[<100ms] leaves out and names a path git never knew', async () => {
+		const { calls, ports } = filesUnit([], () => '');
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.transitioned).toEqual([]);
+		expect(result.data.refused[0]?.reason).toContain(
+			`${OLD} is not known to git`,
+		);
+		expect(calls.transitions).toEqual([]);
+	});
+
+	const deletion = (subject: string) => (args: readonly string[]) =>
+		args.includes('--diff-filter=D')
+			? `abc1234\t${subject}\n\nD\t${OLD}\n`
+			: '';
+
+	it('[<100ms] retires a proposal whose files one proposal id deleted', async () => {
+		const { calls, ports } = filesUnit(
+			[],
+			deletion('refactor(land): delete the queue (x00995)'),
+		);
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.retired).toEqual(['g1']);
+		expect(result.data.failed).toEqual([]);
+		expect(calls.transitions).toEqual(['retired']);
+		expect(calls.supersededBy).toEqual(['x00995']);
+		expect(calls.reasons[0]).toContain('abc1234');
+	});
+
+	it('[<100ms] leaves out a deletion whose commit names no proposal, naming the commit', async () => {
+		const { calls, ports } = filesUnit([], deletion('delete the queue'));
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.transitions).toEqual([]);
+		expect(result.data.refused[0]?.reason).toContain(
+			`${OLD} was deleted by abc1234`,
+		);
+	});
+
+	it('[<100ms] leaves out a deletion whose commit names two proposals', async () => {
+		const { calls, ports } = filesUnit(
+			[],
+			deletion('delete the queue (x00995, x01015)'),
+		);
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.transitions).toEqual([]);
+		expect(result.data.retired).toEqual([]);
+	});
+});
+
+describe('declared paths', () => {
+	const DOC = [
+		'id: g1',
+		'## slices',
+		'### S1 — a',
+		'- **Files**: `a/old.ts`, `a/b.ts`',
+		'### S2 — b',
+		'- **Files**: `a/old.ts`',
+	].join('\n');
+
+	it('[<50ms] parses the backticked paths of a Files line', () => {
+		const read = parseRevalidateProposal(DOC, 'ready', 'docs/g1.md');
+		expect(read?.file).toBe('docs/g1.md');
+		expect(read?.slices[0]?.files).toEqual(['a/old.ts', 'a/b.ts']);
+	});
+
+	it('[<50ms] rewrites the path in the named slice only', () => {
+		const next = rewriteDeclaredPath(DOC, 'S1', 'a/old.ts', 'a/new.ts');
+		expect(next).toContain('`a/new.ts`, `a/b.ts`');
+		expect(next?.split('\n').at(-1)).toBe('- **Files**: `a/old.ts`');
+	});
+
+	it('[<50ms] answers undefined when the slice does not declare the path', () => {
+		expect(rewriteDeclaredPath(DOC, 'S1', 'zzz', 'y')).toBeUndefined();
+		expect(rewriteDeclaredPath(DOC, 'S9', 'a/old.ts', 'y')).toBeUndefined();
+	});
+
+	it('[<100ms] refuses the proposal when the rewrite is refused', async () => {
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([
+				{
+					...proposal('g1', [slice({ files: ['a/old.ts'] })]),
+					file: 'docs/g1.md',
+				},
+			]),
+			exists: (_w, path) => path === 'a/new.ts',
+			git: () => ({ ok: true, out: 'R100\ta/old.ts\ta/new.ts\n' }),
+			rewriteDeclared: () => 'no',
+		};
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.failed).toEqual([{ id: 'g1', reason: 'no' }]);
 	});
 });
 
