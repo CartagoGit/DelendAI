@@ -9,6 +9,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
 	enterRunTempRoot,
+	RUN_ROOT_OWNER_VARIABLE,
+	TEMP_VARIABLES,
 	runTempRootPath,
 } from './run-temp-root.global-setup';
 
@@ -56,6 +58,10 @@ describe('run temp root (x01091)', () => {
 		// The child run is the slow part; it is made once, outside any
 		// test body, and the tests below only read what it left.
 		beforeAll(() => {
+			// The system temp directory of the child is a directory of its
+			// own, so no other process on the machine can change what the
+			// child is compared against.
+			const system = mkdtempSync(join(tmpdir(), 'system-tmp-'));
 			const work = mkdtempSync(join(tmpdir(), 'child-'));
 			writeFileSync(
 				join(work, 'leak.spec.ts'),
@@ -73,14 +79,16 @@ describe('run temp root (x01091)', () => {
 				),
 				'vitest.mjs',
 			);
-			before = readdirSync(tmpdir()).sort();
+			const env: NodeJS.ProcessEnv = { ...process.env };
+			delete env[RUN_ROOT_OWNER_VARIABLE];
+			for (const name of TEMP_VARIABLES) env[name] = system;
+			before = readdirSync(system).sort();
 			status = spawnSync(
 				process.execPath,
 				[vitest, 'run', '--config', 'vitest.config.mjs'],
-				{ cwd: work, encoding: 'utf8' },
+				{ cwd: work, encoding: 'utf8', env },
 			).status;
-			after = readdirSync(tmpdir()).sort();
-			expect(before).toContain(work.slice(tmpdir().length + 1));
+			after = readdirSync(system).sort();
 		}, 60_000);
 
 		it('runs the leaking spec to a pass', () => {
