@@ -3,6 +3,11 @@
  * answer when an agent enters a unit. The tests that load a plugin or run a
  * real repository are in work-enter.command.e2e.spec.ts.
  */
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createNoopContext } from '../lib/noop-context.factory';
@@ -10,6 +15,7 @@ import {
 	createWorkCommand,
 	deliverPortsOf,
 	printPathOnly,
+	revalidatePortsOf,
 	withSlicesView,
 } from './work.command';
 
@@ -209,5 +215,72 @@ describe('deliverPortsOf', () => {
 		for (const port of [ports.locate, ports.prove, ports.publish]) {
 			expect((await port()).code).not.toBe(0);
 		}
+	});
+});
+
+describe('revalidatePortsOf', () => {
+	const git = (cwd: string, ...args: string[]): string =>
+		execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+
+	const repo = (): string => {
+		const dir = mkdtempSync(join(tmpdir(), 'revalidate-ports-'));
+		git(dir, 'init', '-q');
+		git(dir, 'config', 'user.email', 'a@b.c');
+		git(dir, 'config', 'user.name', 'a');
+		git(dir, 'config', 'commit.gpgsign', 'false');
+		writeFileSync(join(dir, 'a.md'), 'one');
+		git(dir, 'add', '.');
+		git(dir, 'commit', '-q', '-m', 'one');
+		return dir;
+	};
+
+	it('[<2000ms] commits what a transition wrote, marks the unit and undoes back to the mark', async () => {
+		const dir = repo();
+		try {
+			const ctx = {
+				...createNoopContext(dir, globals(true)),
+				request: async () => {
+					mkdirSync(join(dir, 'docs'), { recursive: true });
+					writeFileSync(join(dir, 'docs', 'p.md'), 'moved');
+					return { ok: true };
+				},
+			};
+			const ports = revalidatePortsOf(ctx, 'claude-sonnet-5-5');
+			const mark = ports.mark(dir);
+			expect(mark).toHaveLength(40);
+			const answer = await ports.transition({
+				id: 'f1',
+				to: 'review',
+				reason: 'why',
+				worktree: dir,
+			});
+			expect(answer).toEqual({ ok: true });
+			expect(git(dir, 'rev-list', '--count', 'HEAD')).toBe('2');
+			ports.undo(dir, mark ?? '');
+			expect(git(dir, 'rev-list', '--count', 'HEAD')).toBe('1');
+			expect(await ports.developSha(dir)).toBeUndefined();
+			expect(await ports.proposals()).toEqual([]);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it('[<50ms] prints a line to stdout', () => {
+		const write = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		revalidatePortsOf(
+			createNoopContext('/work', globals(true)),
+			undefined,
+		).print('f1');
+		expect(write).toHaveBeenCalledWith('f1\n');
+	});
+
+	it('[<50ms] refuses to enter the unit when the engine answers no path', async () => {
+		const ports = revalidatePortsOf(
+			createNoopContext('/nonexistent-project', globals(true)),
+			'claude-sonnet-5-5',
+		);
+		await expect(ports.enter()).rejects.toThrow();
 	});
 });

@@ -2,10 +2,17 @@
  * work-revalidate.service.spec.ts — which proposals the batch selects,
  * and that it prints before it changes anything.
  */
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
+import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.constant';
 
 import {
 	parseRevalidateProposal,
+	readReadyProposals,
 	revalidateBatch,
 	selectRevalidation,
 } from './work-revalidate.service';
@@ -211,5 +218,26 @@ describe('revalidateBatch units and transitions', () => {
 			undefined,
 		);
 		expect(calls.enter).toBe(0);
+	});
+});
+
+describe('readReadyProposals', () => {
+	it('[<500ms] reads the ready proposals of a project and skips what has no id', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'revalidate-read-'));
+		try {
+			const dir = join(root, READY_PROPOSALS_DIR, 'feats');
+			mkdirSync(dir, { recursive: true });
+			writeFileSync(
+				join(dir, 'f1-a.md'),
+				'---\nid: f1\n---\n## slices\n### S1 — a\n- shipped-in: `abc`\n',
+			);
+			writeFileSync(join(dir, 'note.md'), 'no frontmatter');
+			writeFileSync(join(dir, 'x.txt'), 'ignored');
+			const read = await readReadyProposals(root);
+			expect(read.map((proposal) => proposal.id)).toEqual(['f1']);
+			expect(await readReadyProposals(join(root, 'none'))).toEqual([]);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
