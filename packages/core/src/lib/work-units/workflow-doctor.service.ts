@@ -19,7 +19,10 @@ import { liveUnitRefs } from './unit-liveness.service';
 import { listWorkRefs } from './work-swarm.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 import { workRefLoopsInvariant } from './work-ref-moves.service';
-import { huskDirectories, husksInvariant } from './worktree-husks.service';
+import {
+	huskDirectories,
+	husksInvariant,
+} from '../ref-reconciler/husk-directories.service';
 import { shortName } from '../integration/decisions/namespaces.helper';
 
 /**

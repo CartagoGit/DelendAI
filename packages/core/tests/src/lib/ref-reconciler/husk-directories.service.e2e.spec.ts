@@ -1,5 +1,5 @@
 /**
- * worktree-husks.service.spec.ts — a directory beside the units that is
+ * husk-directories.service.e2e.spec.ts — a directory beside the units that is
  * no unit is removed, and what it held is kept first.
  */
 import { execFileSync } from 'node:child_process';
@@ -19,7 +19,7 @@ import {
 	huskDirectories,
 	husksInvariant,
 	reapHusks,
-} from '@delendai/core/lib/work-units/worktree-husks.service';
+} from '@delendai/core/lib/ref-reconciler/husk-directories.service';
 
 const UNITS = '.cache/delendai/.worktrees';
 const WINDOW = 60;
@@ -75,7 +75,7 @@ const reap = (root: string, apply: boolean, now = LATER) =>
 	});
 
 describe('a directory beside the units', () => {
-	it('is a husk when git has no worktree for it, and a unit is not', async () => {
+	it('[<1000ms] is a husk when git has no worktree for it, and a unit is not', async () => {
 		const { root } = repo();
 		write(root, 'gone/.cache/results/validate.jsonl', '{}\n');
 
@@ -86,7 +86,7 @@ describe('a directory beside the units', () => {
 		expect(husksInvariant(husks, WINDOW).observed).toBe('1: gone');
 	});
 
-	it('is not counted while something is still writing to it', async () => {
+	it('[<1000ms] is not counted while something is still writing to it', async () => {
 		const { root } = repo();
 		write(root, 'gone/.cache/results/validate.jsonl', '{}\n');
 		const now = Math.floor(Date.now() / 1000);
@@ -98,7 +98,7 @@ describe('a directory beside the units', () => {
 		expect(existsSync(join(root, UNITS, 'gone'))).toBe(true);
 	});
 
-	it('is only reported until the reap is applied', async () => {
+	it('[<1000ms] is only reported until the reap is applied', async () => {
 		const { root } = repo();
 		write(root, 'gone/.cache/results/validate.jsonl', '{}\n');
 
@@ -108,7 +108,7 @@ describe('a directory beside the units', () => {
 		expect(existsSync(join(root, UNITS, 'gone'))).toBe(true);
 	});
 
-	it('goes when it holds only what git ignores, and nothing is kept', async () => {
+	it('[<1000ms] goes when it holds only what git ignores, and nothing is kept', async () => {
 		const { root, forge } = repo();
 		write(root, 'gone/.cache/results/validate.jsonl', '{}\n');
 		write(root, 'gone/plugins/a/node_modules/x/index.js', '\n');
@@ -121,7 +121,7 @@ describe('a directory beside the units', () => {
 		expect(git(forge, 'for-each-ref', 'refs/delendai')).toBe('');
 	});
 
-	it('keeps nothing of a checkout whose files a commit already has', async () => {
+	it('[<1000ms] keeps nothing of a checkout whose files a commit already has', async () => {
 		const { root, forge } = repo();
 		const inner = 'gone/.cache/.worktrees/inner';
 		write(root, `${inner}/.git`, 'gitdir: /nowhere/any/more\n');
@@ -134,7 +134,7 @@ describe('a directory beside the units', () => {
 		expect(git(forge, 'for-each-ref', 'refs/delendai')).toBe('');
 	});
 
-	it('keeps on the forge the files of a checkout no commit has, then goes', async () => {
+	it('[<1000ms] keeps on the forge the files of a checkout no commit has, then goes', async () => {
 		const { root, forge } = repo();
 		const inner = 'gone/.cache/.worktrees/inner';
 		write(root, `${inner}/.git`, 'gitdir: /nowhere/any/more\n');
@@ -158,7 +158,7 @@ describe('a directory beside the units', () => {
 		);
 	});
 
-	it('keeps a checkout that is not under an ignored path apart from the husk around it', async () => {
+	it('[<1000ms] keeps a checkout that is not under an ignored path apart from the husk around it', async () => {
 		const { root, forge } = repo();
 		write(root, 'gone/notes.md', 'left by somebody\n');
 		write(root, 'gone/inner/.git', 'gitdir: /nowhere/any/more\n');
@@ -176,7 +176,7 @@ describe('a directory beside the units', () => {
 		).toBe('notes.md');
 	});
 
-	it('stays, and says why, when the forge does not take its files', async () => {
+	it('[<1000ms] stays, and says why, when the forge does not take its files', async () => {
 		const { root } = repo();
 		write(root, 'gone/notes.md', 'left by somebody\n');
 		git(root, 'remote', 'set-url', 'origin', join(root, 'no-such-forge'));
