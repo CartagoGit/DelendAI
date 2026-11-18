@@ -48,6 +48,16 @@ const rawPull = {
 };
 
 describe('the GitHub land forge', () => {
+	it('[<50ms] keeps the forge message in a refused call', async () => {
+		const { forge } = harness(() => ({
+			exitCode: 1,
+			stderr: 'gh: API rate limit exceeded for installation ID 1 (HTTP 403)\n',
+		}));
+		await expect(forge.integrationTip()).rejects.toThrow(
+			/answered 403: API rate limit exceeded/u,
+		);
+	});
+
 	it('[<12ms] reads a pull request with its tested base and labels', async () => {
 		const { forge } = harness((call) =>
 			call.includes('compare/')

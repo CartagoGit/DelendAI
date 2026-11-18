@@ -269,6 +269,7 @@ const measureProjectContextBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 	label: string,
 	options: { readonly strictEnvelope?: boolean },
+	workspace: string,
 ): Promise<number> => {
 	const result = (await client.callTool({
 		name: 'delendai_compact_router',
@@ -294,24 +295,56 @@ const measureProjectContextBytes = async (
 				)}. Pass --strict-envelope to make this exit 1.\n`,
 		);
 	}
-	return measureToolResultPayloadBytes(result);
+	return pathIndependentBytes(result, workspace);
+};
+
+/**
+ * The length of the fixture workspace path the published numbers were
+ * measured with (`/tmp/tok-report-XXXXXX`). A payload that names the
+ * workspace grows with the machine's temp path, which a test run roots
+ * under its own directory, so the bytes are counted as if the path had
+ * this length.
+ */
+const REFERENCE_WORKSPACE_PATH_LENGTH = '/tmp/tok-report-XXXXXX'.length;
+
+const pathIndependentBytes = (
+	result: IToolResultLike,
+	workspace: string,
+): number => {
+	const bytes = measureToolResultPayloadBytes(result);
+	const payload =
+		result.structuredContent !== undefined
+			? JSON.stringify(result.structuredContent)
+			: (result.content ?? [])
+					.map((entry) =>
+						typeof entry.text === 'string' ? entry.text : '',
+					)
+					.join('\n');
+	const mentions = payload.split(workspace).length - 1;
+	return (
+		bytes -
+		mentions *
+			(Buffer.byteLength(workspace) - REFERENCE_WORKSPACE_PATH_LENGTH)
+	);
 };
 
 const measureToolResultBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 	name: string,
 	args: Record<string, unknown>,
+	workspace: string,
 ): Promise<number> => {
 	const result = (await client.callTool({
 		name,
 		arguments: args,
 	})) as unknown as IToolResultLike;
-	return measureToolResultPayloadBytes(result);
+	return pathIndependentBytes(result, workspace);
 };
 
 const measureTaskContextCost = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 	options: { readonly strictEnvelope?: boolean },
+	workspace: string,
 ): Promise<ITaskContextCostMeasurement> => {
 	const samples: ITaskContextSample[] = [];
 	for (const step of TASK_CONTEXT_CORPUS) {
@@ -325,6 +358,7 @@ const measureTaskContextCost = async (
 			client,
 			step.label,
 			options,
+			workspace,
 		);
 		samples.push({
 			label: step.label,
@@ -367,17 +401,19 @@ export const measureCatalogAndTaskContextCost = async (
 			nativeCore.client,
 			'delendai_agent_catalog',
 			{ mode: 'compact' },
+			workspace,
 		);
 		const fullBytes = await measureToolResultBytes(
 			nativeCore.client,
 			'delendai_agent_catalog',
 			{ mode: 'full' },
+			workspace,
 		);
 		const [nativeCoreMetrics, swarmNativeMetrics, taskContext] =
 			await Promise.all([
 				listToolsMetrics(nativeCore.client, nativeCore.pluginIds),
 				listToolsMetrics(swarmNative.client, swarmNative.pluginIds),
-				measureTaskContextCost(swarmManaged.client, options),
+				measureTaskContextCost(swarmManaged.client, options, workspace),
 			]);
 		return {
 			catalog: {
