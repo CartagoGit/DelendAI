@@ -101,7 +101,7 @@
 		"memory": {
 			"ui": {
 				"kind": "vscode-view",
-				"id": "delendai.memory"
+				"id": "delendai.dashboard"
 			}
 		},
 		"metrics": {
@@ -132,7 +132,7 @@
 		"proposals": {
 			"ui": {
 				"kind": "vscode-view",
-				"id": "delendai.proposals"
+				"id": "delendai.dashboard"
 			}
 		},
 		"quality": {
