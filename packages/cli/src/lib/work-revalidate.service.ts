@@ -39,14 +39,16 @@ export const revalidateRefusalOf = (
 	if (proposal.stage !== 'ready' && proposal.stage !== 'in-progress') {
 		return `it is in ${proposal.stage}, not ready or in-progress`;
 	}
+	// An in-progress proposal's delivery is judged by the hand-over's own
+	// preflight, from commits: its slice lines may still say pending.
+	if (proposal.stage === 'in-progress') {
+		return held.has(proposal.id) ? 'a live unit holds it' : undefined;
+	}
 	const live = proposal.slices.filter(isLive);
 	if (live.length === 0) return 'it has no live slice';
 	const unshipped = live.find((slice) => slice.shippedIn === undefined);
 	if (unshipped !== undefined) {
 		return `slice ${unshipped.id} has no shipped-in`;
-	}
-	if (proposal.stage === 'in-progress') {
-		return held.has(proposal.id) ? 'a live unit holds it' : undefined;
 	}
 	const other = live.find(
 		(slice) => slice.reviewState !== 'changes_requested',
@@ -68,15 +70,16 @@ export const selectRevalidation = (
 	held: ReadonlySet<string> = new Set(),
 ): IRevalidateSelection => {
 	if (named === undefined) {
-		return {
-			chosen: proposals
-				.filter(
-					(proposal) =>
-						revalidateRefusalOf(proposal, held) === undefined,
-				)
-				.map((proposal) => proposal.id),
-			refused: [],
-		};
+		const refused: IRevalidateRefusal[] = [];
+		const chosen: string[] = [];
+		for (const proposal of proposals) {
+			const reason = revalidateRefusalOf(proposal, held);
+			if (reason === undefined) chosen.push(proposal.id);
+			else if (proposal.stage === 'in-progress') {
+				refused.push({ id: proposal.id, reason });
+			}
+		}
+		return { chosen, refused };
 	}
 	const chosen: string[] = [];
 	const refused: IRevalidateRefusal[] = [];
@@ -501,6 +504,32 @@ const retireProposal = async (
 	}
 };
 
+/** Drop the in-progress proposals the hand-over's preflight refuses, with its reason. */
+const settleHandovers = async (
+	ports: IWorkRevalidatePorts,
+	selection: IRevalidateSelection,
+	proposals: readonly IRevalidateProposal[],
+): Promise<IRevalidateSelection> => {
+	const chosen: string[] = [];
+	const refused = [...selection.refused];
+	for (const id of selection.chosen) {
+		const stage = proposals.find((candidate) => candidate.id === id)?.stage;
+		if (stage !== 'in-progress') {
+			chosen.push(id);
+			continue;
+		}
+		let reason: string | undefined;
+		try {
+			reason = await ports.handoverRefusal(id);
+		} catch (error) {
+			reason = error instanceof Error ? error.message : String(error);
+		}
+		if (reason === undefined) chosen.push(id);
+		else refused.push({ id, reason });
+	}
+	return { chosen, refused };
+};
+
 /**
  * Select, print what was chosen before anything changes, then enter one
  * unit for the batch and move each proposal through the transition
@@ -512,10 +541,14 @@ export const revalidateBatch = async (
 	proposalsFlag: string | undefined,
 ): Promise<ICliCommandResult & { readonly data: IRevalidateOutcome }> => {
 	const proposals = await ports.proposals();
-	const selection = selectRevalidation(
+	const selection = await settleHandovers(
+		ports,
+		selectRevalidation(
+			proposals,
+			namedProposalsOf(proposalsFlag),
+			await ports.heldByUnits(),
+		),
 		proposals,
-		namedProposalsOf(proposalsFlag),
-		await ports.heldByUnits(),
 	);
 	for (const { id, reason } of selection.refused) {
 		ports.print(`left out ${id}: ${reason}`);

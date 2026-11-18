@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-18
-last-transition-id: fc56c3e7-0bd8-4c7c-9c9a-8bcd75d981cf
-last-correlation-id: fc56c3e7-0bd8-4c7c-9c9a-8bcd75d981cf
+last-transition-id: 8007e827-9b4d-4e4a-8a68-05e1add51c08
+last-correlation-id: 8007e827-9b4d-4e4a-8a68-05e1add51c08
 last-transition-from: in-progress
-last-transition-at: 2026-11-18T11:32:40.578Z
+last-transition-at: 2026-11-18T12:11:31.516Z
 ---
 
 # x01097 — work revalidate hands over an in-progress proposal whose live slices all shipped and that has no unit
