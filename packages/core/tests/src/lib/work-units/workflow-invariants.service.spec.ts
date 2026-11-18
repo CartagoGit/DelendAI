@@ -108,6 +108,43 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.observed).toContain('stray');
 	});
 
+	it('[<400ms] accepts the branch-runtime worktrees of the integration and release branches', () => {
+		const { root } = repo();
+		const twoBranch = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: {
+					namespacePrefix: 'delendai',
+					integration: 'develop',
+					release: 'main',
+				},
+			},
+		});
+		const leftover = () =>
+			checkWorkflowInvariants({ root, policy: twoBranch }).results.find(
+				(r) => r.id === 'no-leftover-worktrees',
+			);
+		for (const branch of ['develop', 'main'])
+			git(
+				root,
+				'worktree',
+				'add',
+				'-q',
+				'--detach',
+				join(root, 'branch-runtime', branch),
+			);
+		expect(leftover()?.holds).toBe(true);
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			'--detach',
+			join(root, 'branch-runtime', 'other'),
+		);
+		expect(leftover()?.holds).toBe(false);
+	});
+
 	it('refuses a publication ref with no agent, slice or generation in it', () => {
 		const { root, remote } = repo();
 		git(
