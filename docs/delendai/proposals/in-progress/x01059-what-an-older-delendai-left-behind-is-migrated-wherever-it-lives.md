@@ -48,6 +48,7 @@ Each rename or layout change migrates the repository and leaves the user's machi
   - "The entry for the mcp-vertex name and the mcp-vertex.config.json launch shape exists and is detected in a fixture."
   - "Running detect then migrate twice reports changes the first time and none the second."
   - "The registry is exported once and DEFAULT_MIGRATIONS consumes it, so workspace and user-level residue share one list."
+- shipped-in: `f5ae0e7873bc`
 
 ### S2 — User-level host-config migrators
 - **Status**: pending
