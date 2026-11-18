@@ -2,14 +2,14 @@
 id: f00809
 title: "One generated format for pull request and issue text"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 5a8070e6-2a7c-4f05-b37c-16b521ca414d
-last-correlation-id: 5a8070e6-2a7c-4f05-b37c-16b521ca414d
-last-transition-from: ready
-last-transition-at: 2026-11-04T20:09:12.870Z
+last-transition-id: c216f525-9303-4f2a-8d99-87c5ac343983
+last-correlation-id: c216f525-9303-4f2a-8d99-87c5ac343983
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T07:47:36.872Z
 ---
 
 # f00809 — One generated format for pull request and issue text
@@ -43,7 +43,7 @@ Titles and bodies differ by agent and path, so history, review and triage cannot
 ### S1 — Core template service
 
 New files (declared here in prose, as a proposal may name only existing paths): packages/core/src/lib/change-text/change-text-template.service.ts, its spec, and packages/core/src/lib/work-units/publication-pull-request.service.spec.ts.
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/public/index.ts`
 - **Gate**: type
 - acceptance:
@@ -51,15 +51,21 @@ New files (declared here in prose, as a proposal may name only existing paths): 
   - "The title is at most 72 characters in its summary and the proposal-scope follows the branch grammar."
   - "Caller-supplied fields can only set the summary text; type, scope and section order cannot be overridden."
   - "A spec per kind, and a check that two different agent ids get identical shape."
+- shipped-in: `048d139f6eca`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Work publish and republish use the template
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`
 - **Gate**: type
 - acceptance:
   - "work publish opens and republish (x01023 forge contract, GitHub and GitLab) updates the pull request with the template title and body."
   - "Review packs are rendered with Verdicts; no more '(+N more)' or 'review batch' titles."
+- shipped-in: `51831b3051d9`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Queue close-approved batches use the template
 - **Status**: retired
@@ -69,14 +75,19 @@ New files (declared here in prose, as a proposal may name only existing paths): 
 - acceptance:
   - "Batch-close pull requests are titled and bodied by the template."
 - retired-reason: superseded by q00046 S4. The batch-close pull requests come from `hydrate-candidates-after-merge`, the only caller of `close-approved-proposals.script.ts`, and q00046 S4 deletes that module with the rest of the old queue; `land` opens no close-approved batch, and a review or close pull request reaches the forge through work publish, which S2 covers. The script has no other caller, so q00046 S1's recount must list it as DELETED with its spec.
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Issue openers use the template
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `plugins/issues/src/lib/services/error-sink-adapter.ts`, `plugins/issues/src/lib/services/github-client-port.service.ts`, `plugins/error-reporting/src/lib/report-builder.helper.ts`
 - **Gate**: type
 - acceptance:
   - "Issues from both plugins carry the template title and the Summary, Where, Evidence, Expected and Actual, Proposal link body."
+- shipped-in: `56f754056363`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
