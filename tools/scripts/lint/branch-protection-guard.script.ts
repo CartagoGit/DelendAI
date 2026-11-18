@@ -254,6 +254,41 @@ export const compareLive = (
 		throw new Error('live develop allow_deletions differs');
 };
 
+/**
+ * The publication prefixes a workflow names, such as `delendai/pr/` in a
+ * head-ref filter. YAML cannot read the policy, so a workflow that spells
+ * one must spell exactly the policy's owned prefixes. Comment lines are
+ * ignored.
+ */
+export const workflowPublicationPrefixes = (
+	text: string,
+): readonly string[] => {
+	const named = new Set<string>();
+	for (const line of text.split('\n')) {
+		if (line.trimStart().startsWith('#')) continue;
+		for (const match of line.matchAll(
+			/(?:^|[\s'"(])((?:[\w.-]+\/)*pr\/)/gu,
+		))
+			if (match[1] !== undefined) named.add(match[1]);
+	}
+	return [...named].sort();
+};
+
+/** Throws when the prefixes a workflow names differ from the owned ones; naming none is fine. */
+export const assertWorkflowPrefixes = (
+	workflow: string,
+	owned: readonly string[],
+	file = '.github/workflows/ci.yml',
+): void => {
+	const named = workflowPublicationPrefixes(workflow);
+	if (named.length === 0) return;
+	const expected = [...owned].sort();
+	if (JSON.stringify(named) !== JSON.stringify(expected))
+		throw new Error(
+			`${file} names publication prefixes [${named.join(', ')}], the policy owns [${expected.join(', ')}]; make the filters match, then run forge-settings --write`,
+		);
+};
+
 export const run = (
 	argv: readonly string[] = process.argv.slice(2),
 ): number => {
@@ -262,6 +297,10 @@ export const run = (
 			readFileSync(SETTINGS_PATH, 'utf8'),
 		);
 		assertDeclaration(declaration);
+		assertWorkflowPrefixes(
+			readFileSync(join(repoRoot(), '.github/workflows/ci.yml'), 'utf8'),
+			BRANCH_PROTECTION.publication_prefixes,
+		);
 		if (argv.includes('--live')) {
 			const repo = process.env.GITHUB_REPOSITORY ?? REPOSITORY_SLUG;
 			let raw: string;
