@@ -207,7 +207,7 @@ const compileOneParser = (
 			if (values.scope !== undefined) {
 				const scope = parseWorkScope(values.scope);
 				if (scope === undefined) return undefined;
-				proposal = scope.proposals.join('+');
+				proposal = scope.ids.join('+');
 				slice = scope.slices.join(scope.range ? '-' : '+');
 				generation = scope.generation;
 			}
@@ -240,7 +240,7 @@ const alternateTemplate = (template: string): string | undefined => {
 	if (template.includes('${scope}')) {
 		return template.replace(
 			'${scope}',
-			'${proposal}-${slice}-g${generation}',
+			'${proposal}-${slice}-g${generation}', // work-ref-shape: alternative
 		);
 	}
 	return undefined;
@@ -249,7 +249,7 @@ const alternateTemplate = (template: string): string | undefined => {
 /**
  * Compile `branches.workRefTemplate` into a parser. A reader recognises
  * both spellings of a unit's identity (the scope grammar and the former
- * `{proposal}-{slice}-g{n}`), so work entered before the change keeps
+ * generation-suffixed one), so work entered before the change keeps
  * attributing (f00808); a `strict` writer-side check reads the template
  * as written. Returns `undefined` for an empty template.
  */

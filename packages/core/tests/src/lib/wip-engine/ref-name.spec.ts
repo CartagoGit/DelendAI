@@ -23,7 +23,7 @@ import {
 const DEFAULT_TEMPLATE = 'wip/${agent}/${proposal}-${slice}-g${generation}'; // work-ref-shape: alternative
 
 describe('resolveWorkRef', () => {
-	it('expands every placeholder of the shipped default template', () => {
+	it('[<50ms] expands every placeholder of the shipped default template', () => {
 		expect(
 			resolveWorkRef(DEFAULT_TEMPLATE, {
 				agent: 'implementation-runner',
@@ -34,7 +34,7 @@ describe('resolveWorkRef', () => {
 		).toBe('refs/wip/implementation-runner/f00418-s3-g2');
 	});
 
-	it('keeps a fully-qualified template as it is', () => {
+	it('[<50ms] keeps a fully-qualified template as it is', () => {
 		expect(
 			resolveWorkRef('refs/delendai/wip/${agent}-g${generation}', {
 				agent: 'a',
@@ -45,7 +45,7 @@ describe('resolveWorkRef', () => {
 		).toBe('refs/delendai/wip/a-g1');
 	});
 
-	it('never places a work ref under refs/heads — a WIP ref is not a branch', () => {
+	it('[<50ms] never places a work ref under refs/heads — a WIP ref is not a branch', () => {
 		expect(
 			resolveWorkRef(DEFAULT_TEMPLATE, {
 				agent: 'a',
@@ -56,7 +56,7 @@ describe('resolveWorkRef', () => {
 		).toBe(false);
 	});
 
-	it('sanitises values git would reject', () => {
+	it('[<50ms] sanitises values git would reject', () => {
 		expect(sanitizeRefComponent('feature/one two~three')).toBe(
 			'feature-one-two-three',
 		);
@@ -75,7 +75,7 @@ describe('resolveWorkRef', () => {
 		).toBe('refs/wip/agent-one/f-1-slice-2-g1');
 	});
 
-	it('leaves an unknown placeholder visible instead of blanking it', () => {
+	it('[<50ms] leaves an unknown placeholder visible instead of blanking it', () => {
 		expect(
 			expandWorkRefTemplate('wip/${agent}/${unknown}', {
 				agent: 'a',
@@ -128,7 +128,7 @@ describe('the readable branch shape (f00808)', () => {
 				generation: 1,
 				topic: 'verdicts',
 				scope: renderWorkScope({
-					proposals: ['x01004', 'x01016'],
+					ids: ['x01004', 'x01016'],
 					slices: [],
 					range: false,
 					generation: 1,
@@ -140,7 +140,7 @@ describe('the readable branch shape (f00808)', () => {
 	it('[<50ms] the generation is spelled -G only from the second on', () => {
 		const scope = (generation: number): string =>
 			renderWorkScope({
-				proposals: ['x01003'],
+				ids: ['x01003'],
 				slices: [],
 				range: false,
 				generation,

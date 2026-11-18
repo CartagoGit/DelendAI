@@ -90,7 +90,7 @@ export const isScopeProposal = (value: string): boolean =>
  * `-` and `+` join parts, so the result is a legal ref component.
  */
 export const renderWorkScope = (scope: IWorkScope): string => {
-	const head = scope.proposals.join('+');
+	const head = scope.ids.join('+');
 	const slices =
 		scope.slices.length === 0
 			? ''
@@ -106,7 +106,7 @@ export const parseWorkScope = (value: string): IWorkScope | undefined => {
 	const body = found === null ? value : value.slice(0, found.index);
 	const tokens = body.split('+');
 	if (tokens.every((token) => PROPOSAL_TOKEN.test(token))) {
-		return { proposals: tokens, slices: [], range: false, generation };
+		return { ids: tokens, slices: [], range: false, generation };
 	}
 	const [first, ...rest] = tokens;
 	if (first === undefined || !rest.every((t) => SLICE_TOKEN.test(t))) {
@@ -125,7 +125,7 @@ export const parseWorkScope = (value: string): IWorkScope | undefined => {
 	const range = firstSlices.length === 2;
 	if (range && rest.length > 0) return undefined;
 	return {
-		proposals: [proposal],
+		ids: [proposal],
 		slices: [...firstSlices, ...rest],
 		range,
 		generation,
@@ -144,7 +144,7 @@ export const scopeOfUnit = (
 ): string => {
 	if (isScopeProposal(proposal) && isScopeSlice(slice)) {
 		return renderWorkScope({
-			proposals: [proposal],
+			ids: [proposal],
 			slices: [slice],
 			range: false,
 			generation,
