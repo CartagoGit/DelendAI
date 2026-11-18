@@ -10,6 +10,8 @@ last-transition-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
 last-correlation-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T04:02:32.048Z
+shipped-in:
+  - "1466311d6921d578e8502dc205164aadfb2b8346"
 ---
 
 # x01093 — work deliver names the pull request it published, and never sends the agent to publish again
@@ -32,7 +34,7 @@ Twice on 2026-11-18 (x01090 #2905, x01091 #2919) deliver answered 'publication p
 - global_gate: lint
 
 ### S1 — deliver reads the pull request by head branch before answering pending
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -40,8 +42,10 @@ Twice on 2026-11-18 (x01090 #2905, x01091 #2919) deliver answered 'publication p
   - "When none is found, the answer is { pending: true, branch, message } with a message saying the branch is pushed, the forge opens the pull request, nothing is left to do in this unit, and `delendai work status` shows its number; the message names no publish command."
   - "work-deliver.service.spec.ts covers: publication with a pull request; publication without one and the forge read finding it; neither; and a forge read that fails, which answers pending without throwing."
 - shipped-in: `e550ed211370`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 1466311d6921, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 3/3: (1) pullRequestWithLookup calls ports.readOpenPullRequest exactly once for a pending answer, catches any error, and feeds a found URL through pullRequestOf, yieldi… (2) pullRequestOf returns pending/branch/message and the spec asserts the exact status reference, `nothing is left to do`, and absence of `work publish` for both n… (3) Dedicated tests cover publication-provided URL, lookup-found URL, missing PR pending, and thrown forge read pending; all 24 tests in the file pass. — Reviewed the delivered diff and current implementation. The 24 focused specs pass and the lint gate exits 0. A single forge lookup resolves an already-open PR; failures and absence produce an actionable pending message that explicitly says nothing remains and never tells the agent to publish again.
 
 ## acceptance
 
