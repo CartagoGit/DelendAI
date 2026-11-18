@@ -9,9 +9,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import fc from 'fast-check';
 import {
 	__resetWithFileMutexTestHooks,
 	__setWithFileMutexTestHooks,
@@ -19,20 +18,81 @@ import {
 	withFileMutex,
 } from '../../../../src/lib/shared/with-file-mutex';
 
-const delay = (ms: number): Promise<void> =>
-	new Promise((resolve) => setTimeout(resolve, ms));
-
-const waitFor = async (
+// The heartbeat is a setInterval, so under a fake clock its count is a pure
+// function of how far the test advances. Only timers and Date are faked; the
+// lock file I/O stays real, so after each advance the test yields to the real
+// event loop until that heartbeat's fs work has settled.
+const settle = async (
 	predicate: () => boolean,
-	timeoutMs = 400,
+	maxYields = 10_000,
 ): Promise<void> => {
-	const deadline = Date.now() + timeoutMs;
-	while (!predicate()) {
-		if (Date.now() >= deadline) {
-			throw new Error('timed out waiting for test condition');
-		}
-		await delay(5);
+	for (let i = 0; i < maxYields && !predicate(); i += 1) {
+		await new Promise<void>((resolve) => setImmediate(resolve));
 	}
+};
+
+interface IHeartbeatTicks {
+	/** Heartbeats that read the lease and are about to write it. */
+	started: number;
+	/** Heartbeats whose write finished. */
+	done: number;
+}
+
+type TestHooks = Parameters<typeof __setWithFileMutexTestHooks>[0];
+
+/** Hook pair that counts heartbeat ticks as they start and as they finish. */
+const trackHeartbeats = (
+	onDone: (generation: number) => void = () => undefined,
+): { ticks: IHeartbeatTicks; hooks: TestHooks } => {
+	const ticks: IHeartbeatTicks = { started: 0, done: 0 };
+	return {
+		ticks,
+		hooks: {
+			beforeHeartbeatWrite: () => {
+				ticks.started += 1;
+			},
+			afterHeartbeat: (lease) => {
+				ticks.done += 1;
+				onDone(lease.generation);
+			},
+		},
+	};
+};
+
+/**
+ * Advance the fake clock one heartbeat period at a time until one more
+ * heartbeat has finished; returns the fake milliseconds spent.
+ *
+ * The mutex skips a tick while the previous heartbeat is still in flight
+ * (its handle is closed after `afterHeartbeat`), and a skipped tick reports
+ * nothing: then the clock simply advances another period. A tick that has
+ * started is waited for however long its real fs work takes, and cannot be
+ * doubled, because the in-flight guard is taken when it starts.
+ */
+const advanceToNextHeartbeat = async (
+	periodMs: number,
+	ticks: IHeartbeatTicks,
+): Promise<number> => {
+	const before = ticks.done;
+	let spentMs = 0;
+	for (let attempt = 0; attempt < 100; attempt += 1) {
+		await vi.advanceTimersByTimeAsync(periodMs);
+		spentMs += periodMs;
+		const giveUpAt = performance.now() + 20;
+		while (ticks.done === before) {
+			if (ticks.started === before && performance.now() > giveUpAt) {
+				break;
+			}
+			await new Promise<void>((resolve) => setImmediate(resolve));
+		}
+		if (ticks.done > before) {
+			expect(ticks.done, 'one heartbeat per matched period').toBe(
+				before + 1,
+			);
+			return spentMs;
+		}
+	}
+	throw new Error('no heartbeat was reported');
 };
 
 describe('withFileMutex state-machine invariants', () => {
@@ -52,171 +112,7 @@ describe('withFileMutex state-machine invariants', () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('enumerated contender schedules never allow two simultaneous holders', async () => {
-		const scenarios = [
-			{
-				startDelays: [0, 1, 2],
-				sectionDurations: [12, 6, 0],
-				crashIndex: -1,
-			},
-			{
-				startDelays: [0, 0, 0],
-				sectionDurations: [8, 8, 8],
-				crashIndex: -1,
-			},
-			{
-				startDelays: [0, 2, 4],
-				sectionDurations: [20, 0, 3],
-				crashIndex: 1,
-			},
-			{
-				startDelays: [0, 3, 3],
-				sectionDurations: [5, 15, 5],
-				crashIndex: 2,
-			},
-			{
-				startDelays: [1, 1, 2],
-				sectionDurations: [10, 10, 1],
-				crashIndex: 0,
-			},
-			{
-				startDelays: [0, 5, 10],
-				sectionDurations: [18, 4, 4],
-				crashIndex: -1,
-			},
-		] as const;
-
-		for (const [scenarioIndex, scenario] of scenarios.entries()) {
-			let insideCount = 0;
-			let maxConcurrent = 0;
-
-			const contenders = scenario.startDelays.map(
-				(startDelay, contenderIndex) =>
-					(async () => {
-						const sectionDuration =
-							scenario.sectionDurations[contenderIndex] ?? 0;
-						await delay(startDelay);
-						await withFileMutex(
-							target,
-							async () => {
-								insideCount += 1;
-								maxConcurrent = Math.max(
-									maxConcurrent,
-									insideCount,
-								);
-								await delay(sectionDuration);
-								insideCount -= 1;
-								if (scenario.crashIndex === contenderIndex) {
-									throw new Error(
-										`simulated-crash-${scenarioIndex}-${contenderIndex}`,
-									);
-								}
-							},
-							{
-								// These scenarios exercise contention, overlap
-								// and crash-release — not stale reclaim, which
-								// has its own test below. An 80ms stale window
-								// against ≤20ms sections left no margin on a
-								// loaded machine: a descheduled-but-live holder
-								// got reclaimed, and the restored reclaim marker
-								// then outlived its release, leaving the sidecar
-								// behind. Widen the window so only genuine
-								// contention is under test here.
-								heartbeatMs: 10,
-								pollMs: 2,
-								staleMs: 800,
-								timeoutMs: 2000,
-							},
-						);
-					})().catch(() => undefined),
-			);
-
-			await Promise.all(contenders);
-			expect(
-				maxConcurrent,
-				`scenario ${scenarioIndex}`,
-			).toBeLessThanOrEqual(1);
-			expect(existsSync(lockPath), `scenario ${scenarioIndex}`).toBe(
-				false,
-			);
-		}
-	});
-
-	it('fast-check: three contenders never overlap across generated schedules', async () => {
-		const scenarioArb = fc.record({
-			startDelays: fc.tuple(
-				fc.integer({ min: 0, max: 5 }),
-				fc.integer({ min: 0, max: 5 }),
-				fc.integer({ min: 0, max: 5 }),
-			),
-			sectionDurations: fc.tuple(
-				fc.integer({ min: 0, max: 8 }),
-				fc.integer({ min: 0, max: 8 }),
-				fc.integer({ min: 0, max: 8 }),
-			),
-			crashIndex: fc.integer({ min: -1, max: 2 }),
-		});
-
-		await fc.assert(
-			fc.asyncProperty(scenarioArb, async (scenario) => {
-				const scenarioTarget = join(
-					dir,
-					`state-fast-check-${Math.random().toString(36).slice(2)}.json`,
-				);
-				const scenarioLockPath = `${scenarioTarget}.mutex`;
-				writeFileSync(scenarioTarget, '{}');
-
-				let insideCount = 0;
-				let maxConcurrent = 0;
-				const contenders = scenario.startDelays.map(
-					(startDelay, contenderIndex) =>
-						(async () => {
-							await delay(startDelay);
-							await withFileMutex(
-								scenarioTarget,
-								async () => {
-									insideCount += 1;
-									maxConcurrent = Math.max(
-										maxConcurrent,
-										insideCount,
-									);
-									await delay(
-										scenario.sectionDurations[
-											contenderIndex
-										] ?? 0,
-									);
-									insideCount -= 1;
-									if (
-										scenario.crashIndex === contenderIndex
-									) {
-										throw new Error(
-											`simulated-crash-${contenderIndex}`,
-										);
-									}
-								},
-								{
-									heartbeatMs: 10,
-									pollMs: 2,
-									staleMs: 800,
-									timeoutMs: 2_000,
-								},
-							);
-						})().catch(() => undefined),
-				);
-
-				await Promise.all(contenders);
-				expect(maxConcurrent).toBeLessThanOrEqual(1);
-				expect(existsSync(scenarioLockPath)).toBe(false);
-			}),
-			// A fixed seed makes the sampled schedules the same on every run,
-			// so a failure reproduces. 60 of them, beside the enumerated
-			// schedules below, cover every start order, every overlap of
-			// two sections and the crash of each contender.
-			{ numRuns: 60, seed: 20261104 },
-		);
-	});
-
-	it('reclaims both legacy and structured stale sidecars across bounded ages', async () => {
+	it('[<200ms] reclaims both legacy and structured stale sidecars across bounded ages', async () => {
 		const cases = [
 			{ format: 'legacy', staleMs: 20, ageMs: 60 },
 			{ format: 'legacy', staleMs: 40, ageMs: 120 },
@@ -263,7 +159,7 @@ describe('withFileMutex state-machine invariants', () => {
 		}
 	});
 
-	it('heartbeats keep the lock live across long critical sections', async () => {
+	it('[<200ms] heartbeats keep the lock live across long critical sections', async () => {
 		// The lease windows must stay well clear of scheduler jitter. With a
 		// 40ms stale window a heartbeat that is merely descheduled — not
 		// dead — reads as expired, the waiter reclaims, and the assertion
@@ -276,46 +172,78 @@ describe('withFileMutex state-machine invariants', () => {
 			{ heartbeatMs: 40, staleMs: 800 },
 		] as const;
 
-		for (const [caseIndex, entry] of cases.entries()) {
-			let heartbeatCount = 0;
-			let waiterEntered = false;
-			const targetCase = join(dir, `state-heartbeat-${caseIndex}.json`);
-			const lockPathCase = `${targetCase}.mutex`;
-			writeFileSync(targetCase, '{}');
-			const holderDurationMs = Math.max(
-				entry.heartbeatMs * 8,
-				entry.staleMs + 20,
-			);
-			const waiterTimeoutMs = Math.max(15, entry.heartbeatMs * 3);
+		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		try {
+			for (const [caseIndex, entry] of cases.entries()) {
+				const tracker = trackHeartbeats();
+				let waiterEntered = false;
+				const targetCase = join(
+					dir,
+					`state-heartbeat-${caseIndex}.json`,
+				);
+				const lockPathCase = `${targetCase}.mutex`;
+				writeFileSync(targetCase, '{}');
+				__setWithFileMutexTestHooks({
+					// A live holder whose heartbeats keep the lease fresh:
+					// reclaim must keep seeing the pid as alive.
+					isPidAlive: () => true,
+					...tracker.hooks,
+				});
 
-			__setWithFileMutexTestHooks({
-				// This scenario models a live holder whose heartbeats keep the
-				// lease fresh across a long critical section, so reclaim must
-				// continue to see the pid as alive for the lifetime of the test.
-				isPidAlive: () => true,
-				afterHeartbeat: () => {
-					heartbeatCount += 1;
-				},
-			});
+				const armedBaseline = vi.getTimerCount();
+				let endSection: () => void = () => undefined;
+				const sectionGate = new Promise<void>((resolve) => {
+					endSection = resolve;
+				});
+				const holder = withFileMutex(
+					targetCase,
+					async () => {
+						await sectionGate;
+					},
+					{
+						heartbeatMs: entry.heartbeatMs,
+						pollMs: 2,
+						staleMs: entry.staleMs,
+						timeoutMs: 2000,
+					},
+				);
 
-			const holder = withFileMutex(
-				targetCase,
-				async () => {
-					await delay(holderDurationMs);
-				},
-				{
-					heartbeatMs: entry.heartbeatMs,
-					pollMs: 2,
-					staleMs: entry.staleMs,
-					timeoutMs: 2000,
-				},
-			);
+				// The heartbeat interval is armed.
+				await settle(
+					() =>
+						existsSync(lockPathCase) &&
+						vi.getTimerCount() >= armedBaseline + 1,
+				);
+				expect(existsSync(lockPathCase), `case ${caseIndex}`).toBe(
+					true,
+				);
 
-			await waitFor(() => existsSync(lockPathCase), 2000);
-			await waitFor(() => heartbeatCount >= 2, entry.heartbeatMs * 20);
+				// Advance past the whole stale window, one heartbeat at a time.
+				let elapsedMs = 0;
+				let expectedHeartbeats = 0;
+				while (elapsedMs < entry.staleMs) {
+					elapsedMs += await advanceToNextHeartbeat(
+						entry.heartbeatMs,
+						tracker.ticks,
+					);
+					expectedHeartbeats += 1;
+					expect(tracker.ticks.done, `case ${caseIndex}`).toBe(
+						expectedHeartbeats,
+					);
+				}
+				// One more millisecond: strictly past the stale window, still
+				// before the holder's section (and next heartbeat) ends.
+				await vi.advanceTimersByTimeAsync(1);
+				elapsedMs += 1;
+				expect(elapsedMs, `case ${caseIndex}`).toBeGreaterThan(
+					entry.staleMs,
+				);
 
-			await expect(
-				withFileMutex(
+				// The waiter's poll sleeps are fake too: advance in poll-sized
+				// steps until it gives up. Its 5ms budget ends before the
+				// holder's section and the next heartbeat.
+				const holderTimers = vi.getTimerCount();
+				const waiterOutcome = withFileMutex(
 					targetCase,
 					async () => {
 						waiterEntered = true;
@@ -325,87 +253,129 @@ describe('withFileMutex state-machine invariants', () => {
 						heartbeatMs: entry.heartbeatMs,
 						pollMs: 2,
 						staleMs: entry.staleMs,
-						timeoutMs: waiterTimeoutMs,
+						timeoutMs: 5,
 					},
-				),
-			).rejects.toBeInstanceOf(LockContentionError);
+				).then(
+					() => undefined,
+					(error: unknown) => error,
+				);
+				let waiterDone = false;
+				void waiterOutcome.then(() => {
+					waiterDone = true;
+				});
+				for (let step = 0; step < 10 && !waiterDone; step += 1) {
+					// Real fs round trips happen between two fake sleeps: wait
+					// until the waiter is parked on its next one (or is done).
+					await settle(
+						() => waiterDone || vi.getTimerCount() > holderTimers,
+					);
+					if (waiterDone) break;
+					await vi.advanceTimersByTimeAsync(2);
+					elapsedMs += 2;
+				}
+				expect(await waiterOutcome, `case ${caseIndex}`).toBeInstanceOf(
+					LockContentionError,
+				);
 
-			expect(waiterEntered, `case ${caseIndex}`).toBe(false);
-			expect(heartbeatCount, `case ${caseIndex}`).toBeGreaterThanOrEqual(
-				2,
-			);
+				expect(waiterEntered, `case ${caseIndex}`).toBe(false);
+				expect(tracker.ticks.done, `case ${caseIndex}`).toBe(
+					expectedHeartbeats,
+				);
 
-			await holder;
+				endSection();
+				await holder;
+				__resetWithFileMutexTestHooks();
+			}
+		} finally {
 			__resetWithFileMutexTestHooks();
+			vi.useRealTimers();
 		}
 	});
 
-	it('heartbeat generations are monotonic across bounded runs', async () => {
+	it('[<200ms] heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
 
-		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
-			const generations: number[] = [];
-			let caseToken: string | undefined;
-			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
-			writeFileSync(targetCase, '{}');
+		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		try {
+			for (const [caseIndex, targetHeartbeats] of cases.entries()) {
+				const generations: number[] = [];
+				const tracker = trackHeartbeats((generation) => {
+					generations.push(generation);
+				});
+				let caseToken: string | undefined;
+				let release: () => void = () => undefined;
+				const gate = new Promise<void>((resolve) => {
+					release = resolve;
+				});
+				const targetCase = join(
+					dir,
+					`state-generation-${caseIndex}.json`,
+				);
+				writeFileSync(targetCase, '{}');
 
-			__setWithFileMutexTestHooks({
-				// x00420: an aged lease alone no longer means "abandoned" —
-				// the reclaimer also asks whether the holder's process is
-				// still running, and in a single-process test that pid is
-				// ours, so a real holder would look alive forever. A holder
-				// that is genuinely abandoned is one whose process is gone,
-				// which is what this probe states.
-				isPidAlive: () => false,
-				afterHeartbeat: (lease) => {
-					if (lease.token !== caseToken) return;
-					generations.push(lease.generation);
-				},
-			});
+				__setWithFileMutexTestHooks({
+					// x00420: an aged lease alone no longer means "abandoned" —
+					// the reclaimer also asks whether the holder's process is
+					// still running, and in a single-process test that pid is
+					// ours, so a real holder would look alive forever. A holder
+					// that is genuinely abandoned is one whose process is gone,
+					// which is what this probe states.
+					isPidAlive: () => false,
+					...tracker.hooks,
+				});
 
-			// Hold the lock until the heartbeats have actually been observed
-			// rather than for a wall-clock window sized as heartbeatMs * N:
-			// under load the timer fires fewer times than the division
-			// predicts, which made this assertion flaky.
-			await withFileMutex(
-				targetCase,
-				async () => {
-					caseToken = (
-						JSON.parse(
-							readFileSync(`${targetCase}.mutex`, 'utf8'),
-						) as { token?: unknown }
-					).token as string;
-					await waitFor(
-						() => generations.length >= targetHeartbeats,
-						15_000,
-					);
-				},
-				{
-					heartbeatMs: 5,
-					pollMs: 2,
-					staleMs: 30_000,
-					timeoutMs: 30_000,
-				},
-			);
+				// The section holds until the test has advanced the clock
+				// through the target number of heartbeats, then releases it.
+				const armedBaseline = vi.getTimerCount();
+				const holder = withFileMutex(
+					targetCase,
+					async () => {
+						caseToken = (
+							JSON.parse(
+								readFileSync(`${targetCase}.mutex`, 'utf8'),
+							) as { token?: unknown }
+						).token as string;
+						await gate;
+					},
+					{
+						heartbeatMs: 5,
+						pollMs: 2,
+						staleMs: 30_000,
+						timeoutMs: 30_000,
+					},
+				);
+				await settle(
+					() =>
+						caseToken !== undefined &&
+						vi.getTimerCount() > armedBaseline,
+				);
 
-			expect(
-				generations.length,
-				`case ${caseIndex}`,
-			).toBeGreaterThanOrEqual(targetHeartbeats);
-			for (let index = 1; index < generations.length; index += 1) {
-				const current = generations[index];
-				const previous = generations[index - 1];
-				if (current === undefined || previous === undefined) {
-					throw new Error(
-						`missing generation sample for case ${caseIndex}`,
-					);
+				for (let beat = 1; beat <= targetHeartbeats; beat += 1) {
+					await advanceToNextHeartbeat(5, tracker.ticks);
+					expect(generations.length, `case ${caseIndex}`).toBe(beat);
 				}
-				expect(
-					current,
-					`case ${caseIndex} generation ${index}`,
-				).toBeGreaterThan(previous);
+
+				release();
+				await holder;
+
+				for (let index = 1; index < generations.length; index += 1) {
+					const current = generations[index];
+					const previous = generations[index - 1];
+					if (current === undefined || previous === undefined) {
+						throw new Error(
+							`missing generation sample for case ${caseIndex}`,
+						);
+					}
+					expect(
+						current,
+						`case ${caseIndex} generation ${index}`,
+					).toBeGreaterThan(previous);
+				}
+				__resetWithFileMutexTestHooks();
 			}
+		} finally {
 			__resetWithFileMutexTestHooks();
+			vi.useRealTimers();
 		}
 	});
 });

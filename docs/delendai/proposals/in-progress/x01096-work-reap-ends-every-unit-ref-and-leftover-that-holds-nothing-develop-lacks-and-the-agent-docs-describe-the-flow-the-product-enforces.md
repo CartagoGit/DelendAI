@@ -6,10 +6,10 @@ status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: 7cc08b9b-3362-4dc2-8b12-ff1a12305016
-last-correlation-id: 7cc08b9b-3362-4dc2-8b12-ff1a12305016
+last-transition-id: 71954227-59b6-477e-a583-cc307c42f503
+last-correlation-id: 71954227-59b6-477e-a583-cc307c42f503
 last-transition-from: ready
-last-transition-at: 2026-11-18T08:21:03.582Z
+last-transition-at: 2026-11-18T07:52:26.865Z
 ---
 
 # x01096 — work reap ends every unit, ref and leftover that holds nothing develop lacks, and the agent docs describe the flow the product enforces

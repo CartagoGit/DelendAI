@@ -6,6 +6,8 @@
  */
 import { createHash } from 'node:crypto';
 
+import { renderChangeText } from '@delendai/core/public';
+
 import type { ISafeDelendaiReport } from './contracts/interfaces/reporter.interface';
 import type { ISafeFingerprintInput } from './contracts/interfaces/signature.interface';
 export {
@@ -77,20 +79,34 @@ export const signatureOf = (input: ISafeFingerprintInput): string => {
 const truncate = (value: string, max: number): string =>
 	value.length > max ? `${value.slice(0, max - 1)}…` : value;
 
-/** Issue title built only from controlled, internal-safe vocabulary. */
+/**
+ * The issue text, rendered by the one template (f00809) and built only
+ * from the controlled, internal-safe vocabulary of the safe DTO.
+ */
+const renderIssue = (report: ISafeDelendaiReport) =>
+	renderChangeText({
+		kind: 'issue',
+		summary: `${report.classification} ${report.packageId}${report.errorCode !== undefined ? `: ${report.errorCode}` : ''}`,
+		files: [`packages/${report.packageId.replace(/^@delendai\//u, '')}/`],
+		where: `\`${report.packageId}\`${report.safeToolId !== undefined ? `, tool \`${report.safeToolId}\`` : ''}`,
+		evidence: issueEvidence(report),
+		expected: 'The operation completes without an internal failure.',
+		actual: `${report.failureClass}${report.errorCode !== undefined ? ` (${report.errorCode})` : ''}`,
+	});
+
+/** Issue title: the one template's, truncated to the plugin's bound. */
 export const buildIssueTitle = (report: ISafeDelendaiReport): string =>
-	truncate(
-		`[auto] ${report.classification} ${report.packageId}${report.errorCode !== undefined ? `: ${report.errorCode}` : ''}`,
-		MAX_TITLE_LENGTH,
-	);
+	truncate(renderIssue(report).title, MAX_TITLE_LENGTH);
 
 /** Full markdown body built from the safe DTO only. */
-export const buildIssueBody = (report: ISafeDelendaiReport): string => {
+export const buildIssueBody = (report: ISafeDelendaiReport): string =>
+	`${renderIssue(report).body.trim()}\n`;
+
+const issueEvidence = (report: ISafeDelendaiReport): string => {
 	const lines: string[] = [
-		'## Automatic error report',
-		'',
-		'This issue was opened automatically by `@delendai/error-reporting` ' +
-			'after an delendai internal failure was reduced to a safe DTO.',
+		'Automatic error report: this issue was opened automatically by ' +
+			'`@delendai/error-reporting` after an delendai internal failure ' +
+			'was reduced to a safe DTO.',
 		'',
 		'| Field | Value |',
 		'| --- | --- |',
@@ -117,7 +133,7 @@ export const buildIssueBody = (report: ISafeDelendaiReport): string => {
 	if (report.mcpFrames.length > 0) {
 		lines.push(
 			'',
-			'## DelendAI frames',
+			'### DelendAI frames',
 			'',
 			'```text',
 			...report.mcpFrames.map((frame) => {
@@ -133,7 +149,7 @@ export const buildIssueBody = (report: ISafeDelendaiReport): string => {
 	if (report.syntheticExample !== undefined) {
 		lines.push(
 			'',
-			'## Synthetic example',
+			'### Synthetic example',
 			'',
 			'```json',
 			JSON.stringify(report.syntheticExample, null, 2),
@@ -142,17 +158,17 @@ export const buildIssueBody = (report: ISafeDelendaiReport): string => {
 	}
 	lines.push(
 		'',
-		'## Safe report payload',
+		'### Safe report payload',
 		'',
 		'```json',
 		JSON.stringify(report, null, 2),
 		'```',
 		'',
-		'## How to enable',
+		'### How to enable',
 		'',
 		'```jsonc',
 		'{ "plugins": { "error-reporting": { "options": { "enabled": true } } } }',
 		'```',
 	);
-	return `${lines.join('\n').trim()}\n`;
+	return lines.join('\n').trim();
 };
