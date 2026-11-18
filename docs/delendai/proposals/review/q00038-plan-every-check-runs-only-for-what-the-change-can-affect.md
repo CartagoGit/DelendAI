@@ -52,7 +52,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - global_gate: type
 
 ### S1 — Tests run what the change reaches, by symbol
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/ci/affected-specs.service.ts`, `tools/scripts/ci/affected-specs.interface.ts`, `tools/scripts/ci/affected-specs.service.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/near-specs.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -60,8 +60,10 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A zone the change reaches no spec of starts no job."
   - "The local proof runs the same specs the forge would, from the same analysis."
 - shipped-in: `3d7174504930`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S2 — Every lint runs only for the files it reads
 - **Status**: done
