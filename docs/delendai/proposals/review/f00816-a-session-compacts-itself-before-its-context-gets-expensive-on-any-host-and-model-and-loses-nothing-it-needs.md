@@ -10,6 +10,8 @@ last-transition-id: 121f096c-7fdf-4185-bddc-859025088f44
 last-correlation-id: 121f096c-7fdf-4185-bddc-859025088f44
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T02:42:43.711Z
+shipped-in:
+  - "83d022a1235b6764b1d9b0fd50d0b287bca47438"
 ---
 
 # f00816 — A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs
@@ -51,7 +53,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - global_gate: lint
 
 ### S1 — Model-selection policy from config
-- **Status**: review
+- **Status**: done
 - **Extends**: `plugins/auto-agent-selector` (`routing/task-mode.service.ts`, `escalate/run-with-escalation.ts`)
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/src/lib/escalate/run-with-escalation.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/task-class-tier.service.spec.ts`
 - **Gate**: type
@@ -60,8 +62,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "A worker that needs more capacity returns a blocker; nothing escalates automatically."
   - "The model actually used is recorded and a mismatch with the requested one is reported."
 - shipped-in: `1b07857f5f92`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) task-class-tier.service.spec maps mechanical to small, coding to mid, blocks unauthorized top and reads configured tiers. (2) run-with-escalation/auto-run specs show unauthorized tiers become blockers and a failed first rung is not automatically escalated. (3) modelMismatch specs pass for a real model outside the requested set and remain silent for matching/unknown inputs. — Reviewed tier mapping, authorization, blocker behavior and model mismatch detection. Focused f00816 suite passed 86/86.
 
 ### S2 — Closed worker contract
 - **Status**: review
