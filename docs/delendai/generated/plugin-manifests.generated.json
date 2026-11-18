@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-18T18:05:57.791Z",
+	"generatedAt": "2026-11-18T18:23:37.217Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2444,7 +2444,10 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"everything"
+				"team-pr",
+				"swarm",
+				"everything",
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -5695,7 +5698,10 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"everything"
+				"team-pr",
+				"swarm",
+				"everything",
+				"dogfood"
 			],
 			"capabilities": [
 				"self-learning"
@@ -9379,25 +9385,25 @@
 			"pluginId": "project-kpis",
 			"presetId": "team-pr",
 			"declared": false,
-			"catalogMember": true,
-			"matches": false
+			"catalogMember": false,
+			"matches": true
 		},
 		{
 			"pluginId": "project-kpis",
 			"presetId": "swarm",
-			"declared": false,
-			"catalogMember": true,
-			"matches": false
-		},
-		{
-			"pluginId": "project-kpis",
-			"presetId": "audit",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "project-kpis",
+			"presetId": "audit",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
 			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
@@ -10050,16 +10056,16 @@
 		{
 			"pluginId": "self-learning",
 			"presetId": "team-pr",
-			"declared": false,
+			"declared": true,
 			"catalogMember": true,
-			"matches": false
+			"matches": true
 		},
 		{
 			"pluginId": "self-learning",
 			"presetId": "swarm",
-			"declared": false,
+			"declared": true,
 			"catalogMember": true,
-			"matches": false
+			"matches": true
 		},
 		{
 			"pluginId": "self-learning",
@@ -10085,9 +10091,9 @@
 		{
 			"pluginId": "self-learning",
 			"presetId": "dogfood",
-			"declared": false,
+			"declared": true,
 			"catalogMember": true,
-			"matches": false
+			"matches": true
 		},
 		{
 			"pluginId": "skills-pack",

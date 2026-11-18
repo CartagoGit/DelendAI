@@ -183,7 +183,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `orchestrator-runner` | none | everything, dogfood |
 | `perf` | none | everything, dogfood |
 | `project-health` | none | audit, everything, dogfood |
-| `project-kpis` | none | team-pr, swarm, everything, dogfood |
+| `project-kpis` | none | everything, dogfood |
 | `prompt-eval` | none | everything |
 | `prompts-pack` | none | everything |
 | `proposals` | none | swarm, everything, dogfood |

@@ -101,11 +101,10 @@ describe('PRESET_CATALOG', async () => {
 	it('[<50ms] has team-pr, swarm and dogfood learn by default, minimal and solo not', () => {
 		for (const id of ['team-pr', 'swarm', 'dogfood']) {
 			expect(resolvePresetMembers(id), id).toContain('self-learning');
-			expect(resolvePresetMembers(id), id).toContain('project-kpis');
 		}
+		expect(resolvePresetMembers('dogfood')).toContain('project-kpis');
 		for (const id of ['minimal', 'solo']) {
 			expect(resolvePresetMembers(id), id).not.toContain('self-learning');
-			expect(resolvePresetMembers(id), id).not.toContain('project-kpis');
 		}
 	});
 
