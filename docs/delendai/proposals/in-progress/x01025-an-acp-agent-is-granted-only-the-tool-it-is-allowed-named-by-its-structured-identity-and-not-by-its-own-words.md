@@ -2,14 +2,14 @@
 id: x01025
 title: "An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
-last-correlation-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
-last-transition-from: review
-last-transition-at: 2026-11-04T21:32:13.899Z
+last-transition-id: 9e61bf05-74d0-4a8d-9724-4cbcd616193b
+last-correlation-id: 9e61bf05-74d0-4a8d-9724-4cbcd616193b
+last-transition-from: ready
+last-transition-at: 2026-11-18T11:34:58.172Z
 ---
 
 # x01025 — An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words
