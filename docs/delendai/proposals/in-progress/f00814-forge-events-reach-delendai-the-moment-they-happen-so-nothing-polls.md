@@ -72,14 +72,15 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
   - "A notification names the outcome: merged, a check failed with its name, a label, or the reason `land` gave."
   - "An agent waits for an outcome in one blocking call (`forge_await`) that costs it nothing until the forge speaks."
 
-### S5 — The remaining polling watchers are removed
+### S5 — No product code asks the forge on a timer, and a lint keeps it so
 - **Status**: pending
 - **DependsOn**: [S3, S4]
-- **Files**: `plugins/notification/src/lib/services/watcher.ts`, `plugins/notification/src/lib/services/handoff-watcher.ts`
+- **Files**: `new:tools/scripts/lint/no-forge-polling.script.ts`, `new:tools/scripts/lint/no-forge-polling.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
-  - "An inventory lists every product watcher that asks the forge on a timer; each one is replaced by an event subscription or deleted."
-  - "With events flowing, no product code path polls the forge, and a lint fails if one is added."
+  - "`bun tools/scripts/lint/no-forge-polling.script.ts` lists every recurring timer that sits next to a forge or remote call, each with its reason, and exits non-zero on one that is unexplained, on a stale entry, or when it scanned nothing."
+  - "`tools/scripts/lint/no-forge-polling.script.spec.ts` proves the three outcomes and the empty scan."
+  - "`plugins/notification/tests/src/lib/notification.e2e.spec.ts` keeps passing: `watcher.ts` and `handoff-watcher.ts` stay, because they watch the local lock file and handoff directory for `notify_status`, never the forge, and no event serves that consumer."
 
 ### S6 — The host follows the integration branch and brings labelled pull requests forward on forge events, not on a timer
 - **Status**: pending
