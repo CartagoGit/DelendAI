@@ -6,6 +6,7 @@
  * publications and overlaps are decided here, where a test can ask any
  * question without a repository.
  */
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import type {
 	ISwarmRelation,
 	ISwarmUnit,
@@ -29,14 +30,16 @@ const LISTED_OVERLAPS = 10;
 
 /**
  * The proposal slice and generation a unit's subject names, when it
- * follows `<kind>/<proposal>-<slice>-g<n>/<topic>`.
+ * follows either spelling of a unit's name.
  */
 export const unitKeyOf = (
 	subject: string,
 ): { readonly slice: string; readonly generation: string } | undefined => {
-	const match = /(?:^|\/)([^/]+)-g(\d+)(?:\/|$)/u.exec(subject);
-	if (match?.[1] === undefined || match[2] === undefined) return undefined;
-	return { slice: match[1], generation: match[2] };
+	const unit = unitOfName(subject);
+	if (unit === undefined) return undefined;
+	const slice =
+		unit.slice === '' ? unit.proposal : `${unit.proposal}-${unit.slice}`;
+	return { slice, generation: String(unit.generation) };
 };
 
 /** Unit kinds that read work rather than do it: they do not duplicate. */
