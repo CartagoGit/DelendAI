@@ -32,7 +32,7 @@ Re-delivering a unit of a proposal in review logged `illegal transition: "review
 - global_gate: none
 
 ### S1 — Deliver republishes when the proposal is already in review
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +41,10 @@ Re-delivering a unit of a proposal in review logged `illegal transition: "review
   - "A refusal other than already-in-review still fails the delivery; a first delivery behaves as before."
   - "The behaviour is covered by specs with injected ports."
 - shipped-in: `c02f198ae128`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit with fresh evidence on current tip (shipped-in commit, validate result, and scoped criteria evidence). Current review context has drift and cannot be approved safely.
 
 ## acceptance
 
