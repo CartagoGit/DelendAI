@@ -66,7 +66,7 @@ How the constraints hold:
 - global_gate: none
 
 ### S1 — Split static-checks into three jobs
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -75,8 +75,10 @@ How the constraints hold:
   - "`staticChecksOf` returns the same checks, with the same scripts, as before the split."
   - "No job uses `github.token` beyond the read use it already had."
 - shipped-in: `8f553abaf27d`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — The three-job behavior is delivered, but one explicit acceptance identifier is wrong. Acceptance and the chosen design require jobs `static-checks-a`, `static-checks-b`, and `static-checks-c`; the delivered workflow, scope table, and test expect `static-checks`, `static-checks-b`, `static-checks-c`. Reproduce by inspecting ci.yml and the assertion in ci-static-steps.spec.ts, which both name `static-checks` as the first group; the PR timing evidence otherwise shows concurrency. To approve, either rename the first job to `static-checks-a` everywhere (workflow, JOB_SCOPES, aggregate needs, specs) or revise the proposal acceptance/design in the same unit to name the canonical preserved `static-checks` job; the code and acceptance must agree exactly.
 
 ### S2 — Prove the wall clock
 - **Status**: review
