@@ -2,14 +2,14 @@
 id: v00138
 title: "CI transforms each module once and keeps its caches between runs"
 kind: perf
-status: ready
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 8569bb10-fd78-4322-b796-55cf94d5d2ee
-last-correlation-id: 8569bb10-fd78-4322-b796-55cf94d5d2ee
-last-transition-from: review
-last-transition-at: 2026-11-04T18:31:07.964Z
+last-transition-id: 5ddacbfd-57a6-4116-93a5-525bb8ef5a15
+last-correlation-id: 5ddacbfd-57a6-4116-93a5-525bb8ef5a15
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T08:47:51.228Z
 ---
 
 # v00138 — CI transforms each module once and keeps its caches between runs
@@ -32,28 +32,26 @@ Joint audit a00095. G12: a PR run takes about 16 minutes; vitest reports the pro
 - global_gate: type
 
 ### S1 — The transform cache persists in CI
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.config.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "vitest runs with fsModuleCache and CI restores and saves its directory keyed on the lockfile and the vitest config; a second run of the same commit reports a lower transform time, recorded in the closing evidence (G86)."
 - shipped-in: `93abaae43aed`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 93abaae43aed is stale: S1 files changed in many newer commits (e.g. f44c79120, 51fbac099, da3d5a486, b0cb32841). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence.
 
 ### S2 — proposals evaluates each module once where state allows
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/report/vitest-module-evaluations.script.ts`, `tools/tests/report/vitest-module-evaluations.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A report script prints module evaluations per project from a vitest run (G12)."
   - "The G12 discrepancy is answered with evidence: proposals run without isolation fails specs that depend on module state, so isolation stays until each such module resets its state, and the evidence names them."
 - shipped-in: `93abaae43aed`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 93abaae43aed is stale: S2 files changed in newer commits (e.g. 6a7cbf607 and later CI/perf updates). Redeliver S2 on current HEAD and resubmit with fresh shipped-in plus gate evidence.
 
 ## acceptance
