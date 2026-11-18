@@ -13,6 +13,7 @@ import {
 	declaredFloors,
 	floorAdvisories,
 	judgeAdvisories,
+	networkAllowed,
 	publishableManifests,
 	rangeFloor,
 } from './dependency-advisories.script';
@@ -187,5 +188,39 @@ describe('asking about the floors', () => {
 		expect(publishableManifests(root)).toEqual([
 			{ path: 'packages/a/package.json', json: { name: 'a' } },
 		]);
+	});
+});
+
+describe('networkAllowed', () => {
+	it('[<50ms] refuses a proof and a pull request into develop', () => {
+		expect(networkAllowed({}, [])).toBe(false);
+		expect(
+			networkAllowed(
+				{
+					GITHUB_EVENT_NAME: 'pull_request',
+					GITHUB_BASE_REF: 'develop',
+				},
+				[],
+			),
+		).toBe(false);
+		expect(
+			networkAllowed(
+				{ GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/heads/develop' },
+				[],
+			),
+		).toBe(false);
+	});
+
+	it('[<50ms] allows the promotion, the schedule and an explicit ask', () => {
+		expect(
+			networkAllowed(
+				{ GITHUB_EVENT_NAME: 'pull_request', GITHUB_BASE_REF: 'main' },
+				[],
+			),
+		).toBe(true);
+		expect(networkAllowed({ GITHUB_EVENT_NAME: 'schedule' }, [])).toBe(
+			true,
+		);
+		expect(networkAllowed({}, ['--network'])).toBe(true);
 	});
 });
