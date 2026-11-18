@@ -193,4 +193,40 @@ describe('rebaseWipOntoNewBase', () => {
 		expect(result.commit).toBe(wip);
 		expect(repo.git('rev-parse', REF)).toBe(wip);
 	});
+
+	it('[<200ms] refuses what it cannot read and says which part', async () => {
+		await checkpointAlpha(numbered('// header', '// agent a'));
+		repo.write('src/other.ts', 'export const other = 3;\n');
+		const newBase = repo.commitAll('integration moves on');
+		const run = (over: Record<string, string>) =>
+			engine.rebaseWipOntoNewBase({
+				ref: REF,
+				oldBase,
+				newBase,
+				...over,
+			});
+
+		expect((await run({ ref: 'refs/wip/none' })).reason).toContain(
+			'unknown ref',
+		);
+		expect((await run({ oldBase: 'nope' })).reason).toContain(
+			'unknown old base',
+		);
+		expect((await run({ newBase: 'nope' })).reason).toContain(
+			'unknown new base',
+		);
+	});
+
+	it('[<200ms] refuses a ref the engine did not write', async () => {
+		repo.git('update-ref', 'refs/wip/foreign', oldBase);
+		repo.write('src/other.ts', 'export const other = 3;\n');
+		const newBase = repo.commitAll('integration moves on');
+		const result = await engine.rebaseWipOntoNewBase({
+			ref: 'refs/wip/foreign',
+			oldBase,
+			newBase,
+		});
+		expect(result.status).toBe('failed');
+		expect(result.reason).toContain('records no scope');
+	});
 });
