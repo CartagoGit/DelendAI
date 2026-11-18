@@ -2,14 +2,14 @@
 id: f00795
 title: "The promotion to the release branch opens by itself when the next roadmap milestone is ready"
 kind: feat
-status: ready
+status: retired
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
-last-correlation-id: 7b8283fa-8756-4d78-be01-0281eda82c1d
-last-transition-from: review
-last-transition-at: 2026-11-04T18:28:10.694Z
+last-transition-id: a1bb40f0-ed42-442b-814d-f980ea0c1eef
+last-correlation-id: a1bb40f0-ed42-442b-814d-f980ea0c1eef
+last-transition-from: ready
+last-transition-at: 2026-11-18T12:19:55.642Z
 ---
 
 # f00795 — The promotion to the release branch opens by itself when the next roadmap milestone is ready
