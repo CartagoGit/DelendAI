@@ -2,14 +2,14 @@
 id: f00813
 title: "The boot summary shows the branch a server runs, and a branch-pointed server follows its origin"
 kind: feat
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-09
-last-transition-id: d7e56d6d-4385-4625-8609-7d015954aaad
-last-correlation-id: d7e56d6d-4385-4625-8609-7d015954aaad
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T11:20:31.281Z
+last-transition-id: 5f22732e-46e2-4414-b39b-b40ca1686935
+last-correlation-id: 5f22732e-46e2-4414-b39b-b40ca1686935
+last-transition-from: review
+last-transition-at: 2026-11-18T04:56:06.950Z
 shipped-in:
   - "6c4c43f6f39cbf06e060e07dddb715923a12b31f"
 ---
@@ -64,15 +64,17 @@ Today the boot summary prints `version 0.3.0` while the server runs develop, so 
 - review-log: approved by mai-code-2 — verified at 6c4c43f6f39c, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 3/3: (1) branchHostRun/updatedHostScript fetch origin branch, resolves origin/<branch>, and calls followBranch before prepare/serve; branch runtime real-repo specs prov… (2) followBranch only issues merge --ff-only. Specs assert no merge/reset/rebase/checkout with ahead>0 and assert a refused ff reports ahead/behind counts plus NOT… (3) When fetch returns undefined, updatedHostScript falls back to the known origin/local sha and followBranch receives fetched=false; its offline spec asserts `fet… — Reviewed the branch follow path and its host wiring. All 31 focused specs pass and all workspaces typecheck. Each branch-host start fetches the requested branch, fast-forwards only a behind-only tree, and otherwise reports ahead/behind or the offline fetch failure without reset/rebase.
 
 ### S3 — The editor tooltip shows the same state
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `extensions/vscode/src/providers/status-bar.ts`, `extensions/vscode/src/test/status-bar.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The status-bar tooltip of f00800 S7 shows the version or branch state read from the status tool, with no formatting of its own."
 - shipped-in: `6ac0984beab6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 6c4c43f6f39c, validate exit 0 and tests 31/31 claimed, no recorded run cited; acceptance 1/1: (1) runtimeSummary requests the status tool and returns status.runtime.summary verbatim; update only appends a newline plus that string to the base tooltip. The st… — Reviewed the VS Code status bar path. All 31 focused specs pass and all workspaces typecheck. The tooltip appends the exact `status.runtime.summary` string from the status tool; the bar performs no branch/tag rendering of its own and falls back to the base tooltip when status is unavailable.
 
 ## acceptance
 
