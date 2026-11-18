@@ -135,14 +135,25 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - acceptance:
   - "checkpoint.spec.ts and rebase.spec.ts assert every checkpoint and rebased commit carries the structured `Delendai-Wip-Ref` identity S9 defines, read back by S9's reader."
 
+### S9e — The remaining parsers read the unit through the one parser
+- **Status**: pending
+- **DependsOn**: [S9b]
+- **Files**: `packages/core/src/lib/work-units/unit-fence.service.ts`, `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/unit-refs-any-name.service.ts`, `packages/core/tests/src/lib/work-units/unit-refs-any-name.service.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "`git grep -nE \"-g\\\\d\\+\" -- packages/core/src` finds no work-ref name regex outside work-ref-identity.ts/work-ref-placeholders.ts"
+  - "unit-refs-any-name.service.spec.ts finds a generation-1 unit under the old and the new shape"
+
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: pending
-- **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d]
-- **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
+- **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d, S9e]
+- **Files**: `delendai.config.json`, `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
   - "delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed."
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
+  - "WORK_REF_SHAPE defaults to the readable shape and work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
 
 ## acceptance
