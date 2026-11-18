@@ -1,3 +1,4 @@
+import { startReconcilerPass } from '../ref-reconciler/reconciler-run.service';
 import { carriesNothingBeyond } from './landed-work.service';
 import { argumentsRefused } from './work-arguments.helper';
 import { reviewUnitRefusal } from './review-unit-publish-checks.service';
@@ -319,6 +320,7 @@ export const published = async (
 					: []),
 			].join('\n');
 	if (outcome.published) {
+		await startReconcilerPass('work-deliver', root);
 		await journalWorkEvent(root, {
 			kind: 'slice_submitted',
 			proposal,

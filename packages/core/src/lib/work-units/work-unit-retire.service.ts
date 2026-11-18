@@ -6,6 +6,7 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
 import { readWorktreeStatus } from '../shared/worktree-status.helper';
+import { startReconcilerPass } from '../ref-reconciler/reconciler-run.service';
 import { scalarArg } from './command-args.helper';
 import { releaseSlices } from './slice-reservation.service';
 import { retireStrayRef } from './stray-ref-retire.service';
@@ -321,6 +322,8 @@ export const retired = async (
 			unit: plan.unit,
 		});
 	}
+	// One reconciler pass sweeps whatever this retirement left behind.
+	await startReconcilerPass('work-retire', root);
 	const outcome: IRetirementOutcome = {
 		unit: plan.unit,
 		reason,
