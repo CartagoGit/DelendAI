@@ -1,0 +1,114 @@
+// _guide.scss — layout for the /guide wiki page.
+//
+// BEM root: .guide. Children:
+//   - .guide__toc   (sidebar with anchor links)
+//   - .guide__body  (article body, full-width on mobile)
+//   - .guide__notice (translation-pending banner)
+
+.guide {
+	display: grid;
+	grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+	gap: 2.5rem;
+	align-items: start;
+
+	@media (max-width: 820px) {
+		grid-template-columns: 1fr;
+		gap: 1.4rem;
+	}
+}
+.guide__toc {
+	position: sticky;
+	top: 1.2rem;
+	padding: 1.1rem 1.2rem;
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	font-size: 0.88rem;
+
+	& strong {
+		display: block;
+		margin-bottom: 0.6rem;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--muted);
+	}
+	& ol {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		counter-reset: toc;
+	}
+	& li {
+		counter-increment: toc;
+		padding: 0.2rem 0;
+	}
+	& a {
+		color: var(--muted);
+		text-decoration: none;
+		display: block;
+		padding: 0.15rem 0;
+	}
+	& a:hover {
+		color: var(--fg);
+	}
+
+	@media (max-width: 820px) {
+		position: static;
+	}
+}
+.guide__body {
+	min-width: 0;
+
+	& h2 {
+		margin: 2.4rem 0 0.8rem;
+		font-size: clamp(1.4rem, 2.5vw, 1.7rem);
+		letter-spacing: -0.015em;
+		scroll-margin-top: 1rem;
+	}
+	& h2:first-child {
+		margin-top: 0;
+	}
+	& h3 {
+		margin: 1.6rem 0 0.6rem;
+		font-size: 1.15rem;
+	}
+	& p,
+	& li {
+		line-height: 1.6;
+	}
+	& code {
+		font-size: 0.86em;
+		padding: 0.05rem 0.35rem;
+		background: color-mix(in srgb, var(--accent) 8%, var(--card));
+		border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+		border-radius: 4px;
+	}
+	& pre {
+		border: 1px solid var(--line);
+		background: color-mix(in srgb, var(--card) 85%, transparent);
+		padding: 0.9rem 1rem;
+		border-radius: 10px;
+		overflow-x: auto;
+		font-size: 0.86rem;
+	}
+	& a {
+		color: var(--accent);
+		text-decoration: none;
+	}
+	& a:hover {
+		text-decoration: underline;
+	}
+	& ul {
+		padding-left: 1.4rem;
+	}
+}
+.guide__notice {
+	padding: 0.8rem 1rem;
+	margin: 0 0 1.5rem;
+	background: color-mix(in srgb, var(--accent) 10%, var(--card));
+	border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+	border-radius: 8px;
+	font-size: 0.9rem;
+	color: var(--muted);
+}

@@ -1,0 +1,61 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import plugin from '../../../src/index';
+
+const roots: string[] = [];
+afterEach(() => {
+	for (const root of roots.splice(0)) {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+describe('external MCP configuration metadata', () => {
+	it('publishes each child options, safe schema and example through activation', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'delendai-ext-metadata-'));
+		roots.push(root);
+		const server = {
+			enabled: false,
+			version: '1.2.3',
+			command: 'npx',
+			args: ['-y', '@example/server@1.2.3'],
+			env: ['EXAMPLE_TOKEN'],
+		};
+		const reg = await plugin.register({
+			options: { servers: { demo: server } },
+			args: {},
+			namespacePrefix: 'external-mcps',
+			pluginCacheDir: 'external-mcps',
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
+			workspace: {
+				root,
+				resolve: (relative: string) => join(root, relative),
+			},
+		} as never);
+		// AUD-D05: `register()` now returns an `IPluginRuntime` wrapper
+		// (`{ registrations, dispose }`) so the loader retains `dispose` —
+		// unwrap it the same way `normalizePluginRuntimeInternal` does.
+		const registrations = 'registrations' in reg ? reg.registrations : reg;
+
+		const contribution = registrations.activation?.[0];
+		expect(contribution).toMatchObject({
+			id: 'ext.demo',
+			origin: 'external',
+			configuration: { options: server, configExample: server },
+		});
+		expect(
+			contribution?.configuration?.optionsSchema?.safeParse(server)
+				.success,
+		).toBe(true);
+		expect(
+			contribution?.configuration?.optionsSchema?.safeParse({
+				...server,
+				env: ['TOKEN=cleartext'],
+			}).success,
+		).toBe(false);
+	});
+});

@@ -1,0 +1,22 @@
+---
+/**
+ * `/resources` — English resources index. See `pages/tools.astro` for
+ * the recipe.
+ */
+import ResourcesSection from '#COMPONENTS/ResourcesSection.astro';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
+
+const lang = 'en' as const;
+const t = useTranslations(lang);
+---
+
+<PageShell
+	lang={lang}
+	title={t.resources.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.resources, href: localePath(lang, 'resources') }]}
+>
+	<ResourcesSection lang={lang} heading={t.resources.title} />
+</PageShell>

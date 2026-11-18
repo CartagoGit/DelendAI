@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" role="img" aria-label="test-convention plugin logo">
+	<rect x="0" y="0" width="36" height="36" rx="8" fill="hsl(197 55% 45%)" />
+	<g transform="translate(8 8)" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></g>
+</svg>
