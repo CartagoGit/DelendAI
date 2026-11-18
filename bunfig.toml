@@ -1,6 +1,11 @@
 [install]
 hoist = ["vitest", "typescript", "@types/bun", "@types/node", "zod", "@modelcontextprotocol/sdk"]
 
+# x01095: a version younger than three days (259200 s) is not installed, so a
+# compromised release removed within hours or days never reaches the tree
+# before the advisory databases know it.
+minimumReleaseAge = 259200
+
 [run]
 # r00045 S4: force every `bun` invocation to inject the source condition.
 # Without this, `bun tools/scripts/...` resolves `@delendai/<pkg>` against
