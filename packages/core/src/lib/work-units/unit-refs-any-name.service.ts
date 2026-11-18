@@ -38,7 +38,11 @@ export const unitRefsAnyName = (
 				.flatMap(({ template }) => {
 					// A unit entered before the default changed carries the
 					// shape it replaced, whichever namespace holds it.
-					const replaced = alternateTemplate(template);
+					// Read by the one parser, a scan of the namespace finds
+					// both shapes: only a fully named unit needs its own name.
+					const replaced = namedInFull(args)
+						? alternateTemplate(template)
+						: undefined;
 					return replaced === undefined
 						? [template]
 						: [template, replaced];
@@ -48,6 +52,12 @@ export const unitRefsAnyName = (
 				),
 		),
 	];
+
+/** Whether the arguments name the unit's kind, topic and generation. */
+const namedInFull = (args: readonly string[]): boolean =>
+	['kind', 'topic', 'generation'].every(
+		(name) => scalarArg(args, name) !== undefined,
+	);
 
 const unitRefsUnder = (
 	root: string,
