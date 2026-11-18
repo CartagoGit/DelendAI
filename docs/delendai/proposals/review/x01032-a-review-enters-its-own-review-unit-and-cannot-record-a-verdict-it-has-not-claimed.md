@@ -47,7 +47,7 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
 - **Status**: review
-- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue-unit.tool.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim called outside a review unit writes nothing and refuses, naming the one way in (`review next`, which derives kind review); review_queue stays read-only and reads the caller's review unit when one exists; a spec covers the refusal."
