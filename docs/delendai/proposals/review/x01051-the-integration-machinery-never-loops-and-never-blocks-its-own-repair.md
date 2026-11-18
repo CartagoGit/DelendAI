@@ -105,7 +105,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S6 — Urgent repairs wait behind nothing in the one-by-one path, and a missing Urgent line is added
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S4]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
@@ -114,8 +114,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "A pull request whose body lacks the Urgent line but whose unit noted urgency gets the line added when the queue reads it (bodyWithUrgentLine, urgencyNotePathOfPublication)"
   - "Specs cover the shared order, the disposition order and the body line"
 - shipped-in: `5c9a30da9c2b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ## acceptance
 
