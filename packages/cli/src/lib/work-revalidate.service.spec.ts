@@ -56,6 +56,7 @@ const okPorts = (
 	developSha: async () => 'abcdef0123456789',
 	mark: () => 'mark',
 	undo: () => undefined,
+	publish: async () => ({ code: 0 }),
 	transition: async () => ({ ok: true }),
 });
 
@@ -162,7 +163,14 @@ describe('revalidateBatch units and transitions', () => {
 	];
 
 	const unit = (refusing: readonly string[] = []) => {
-		const calls = { enter: 0, undo: 0, transitions: [] as string[] };
+		const published: unknown[][] = [];
+		const transitions: string[] = [];
+		const calls = {
+			enter: 0,
+			undo: 0,
+			publish: published,
+			transitions,
+		};
 		const ports: IWorkRevalidatePorts = {
 			proposals: async () => THREE,
 			print: () => undefined,
@@ -172,6 +180,10 @@ describe('revalidateBatch units and transitions', () => {
 			},
 			developSha: async () => 'abcdef0123456789',
 			mark: () => 'mark',
+			publish: async (...given: unknown[]) => {
+				calls.publish.push(given);
+				return { code: 0 };
+			},
 			undo: () => {
 				calls.undo += 1;
 			},
@@ -209,6 +221,28 @@ describe('revalidateBatch units and transitions', () => {
 		expect(calls.transitions.filter((t) => t.startsWith('f2'))).toEqual([
 			'f2:in-progress',
 		]);
+	});
+
+	it('[<100ms] publishes once for a batch of three proposals, with no title argument', async () => {
+		const { calls, ports } = unit();
+		await revalidateBatch(ports, undefined);
+		expect(calls.publish).toEqual([[]]);
+	});
+
+	it('[<100ms] publishes nothing when every proposal failed', async () => {
+		const { calls, ports } = unit(['f1', 'f2', 'f3']);
+		await revalidateBatch(ports, undefined);
+		expect(calls.publish).toEqual([]);
+	});
+
+	it('[<100ms] fails the command when the publication fails', async () => {
+		const { ports } = unit();
+		const result = await revalidateBatch(
+			{ ...ports, publish: async () => ({ code: 2, error: 'refused' }) },
+			undefined,
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toBe('refused');
 	});
 
 	it('[<100ms] enters no unit when nothing is chosen', async () => {
