@@ -110,7 +110,7 @@ export const buildDbDoctorToolRegistration = (
 ): IToolRegistration => ({
 	id: DB_DOCTOR_REGISTRATION_ID,
 	disclosure: 'administrative',
-	summary: 'Read-only diagnostics of the proposals database.',
+	summary: 'Read-only diagnostics for the proposals SQLite database.',
 	tags: ['proposals', 'database', 'diagnostics', 'read'],
 	register: async (server) => {
 		server.registerTool(

@@ -59,7 +59,7 @@ _(none)_
 - `delendai_configuration_center` — 3,796 B total, 3,334 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_adopt_project` — 3,648 B total, 3,000 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_create_project` — 3,632 B total, 343 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_scaffold` — 3,365 B total, 1,356 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_scaffold` — 3,350 B total, 1,356 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

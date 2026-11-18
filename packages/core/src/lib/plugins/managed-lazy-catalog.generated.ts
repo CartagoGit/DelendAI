@@ -1392,9 +1392,9 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					compact_status:
 						'One-call low-token snapshot of the swarm: active locks, queue backpressure and proposal board counts.',
 					proposals_db_doctor:
-						'Read-only diagnostics of the proposals database.',
+						'Read-only diagnostics for the proposals SQLite database.',
 					proposals_search:
-						'Search proposals, plans and slices (FTS5).',
+						'Search proposals, plans, and slices with SQLite FTS5.',
 					proposals_compile_context:
 						'Compile minimal token-budgeted proposal context.',
 				},
