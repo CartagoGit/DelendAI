@@ -14,7 +14,7 @@ void _compileRejectsRawMessage;
 describe('shouldReport', () => {
 	const now = Date.parse('2026-08-24T00:00:00.000Z');
 
-	it('reports when there is no previous record', () => {
+	it('[<200ms] reports when there is no previous record', () => {
 		expect(
 			shouldReport({
 				lastSuccessAt: undefined,
@@ -24,7 +24,7 @@ describe('shouldReport', () => {
 		).toBe(true);
 	});
 
-	it('suppresses a report inside the window', () => {
+	it('[<200ms] suppresses a report inside the window', () => {
 		expect(
 			shouldReport({
 				lastSuccessAt: '2026-08-23T23:00:00.000Z',
@@ -34,7 +34,7 @@ describe('shouldReport', () => {
 		).toBe(false);
 	});
 
-	it('reports again after the window expires', () => {
+	it('[<200ms] reports again after the window expires', () => {
 		expect(
 			shouldReport({
 				lastSuccessAt: '2026-08-22T00:00:00.000Z',
@@ -44,7 +44,7 @@ describe('shouldReport', () => {
 		).toBe(true);
 	});
 
-	it('does not suppress retries when only a failed attempt timestamp exists', () => {
+	it('[<200ms] does not suppress retries when only a failed attempt timestamp exists', () => {
 		expect(
 			shouldReport({
 				lastSuccessAt: undefined,
@@ -81,7 +81,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		workspaceRootAbs: '/tmp/proj',
 	});
 
-	it('parses the created issue number from gh output', async () => {
+	it('[<200ms] parses the created issue number from gh output', async () => {
 		const exec: IIssueExec = async () => ({
 			ok: true,
 			code: 0,
@@ -98,7 +98,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		}
 	});
 
-	it('returns a structured failure when gh exits non-zero', async () => {
+	it('[<200ms] returns a structured failure when gh exits non-zero', async () => {
 		const exec: IIssueExec = async () => ({
 			ok: false,
 			code: 1,
@@ -113,7 +113,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		}
 	});
 
-	it('does not invoke gh when the network preflight is offline', async () => {
+	it('[<200ms] does not invoke gh when the network preflight is offline', async () => {
 		let execCalls = 0;
 		const exec: IIssueExec = async () => {
 			execCalls += 1;
@@ -141,7 +141,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(execCalls).toBe(0);
 	});
 
-	it('allows gh after a reachable GitHub preflight, including auth responses', async () => {
+	it('[<200ms] allows gh after a reachable GitHub preflight, including auth responses', async () => {
 		let execCalls = 0;
 		const authenticatedReporter = createSafeReporter({
 			targetRepo: 'CartagoGit/delendai',
@@ -168,7 +168,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(execCalls).toBe(1);
 	});
 
-	it('flags a missing gh binary explicitly', async () => {
+	it('[<200ms] flags a missing gh binary explicitly', async () => {
 		const exec: IIssueExec = async () => ({
 			ok: false,
 			code: 127,
@@ -183,7 +183,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		}
 	});
 
-	it('returns a typed parse failure when gh output has no issue number', async () => {
+	it('[<200ms] returns a typed parse failure when gh output has no issue number', async () => {
 		const exec: IIssueExec = async () => ({
 			ok: true,
 			code: 0,
@@ -197,7 +197,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		}
 	});
 
-	it('sends title, body and labels as gh argv', async () => {
+	it('[<200ms] sends title, body and labels as gh argv', async () => {
 		let captured: readonly string[] = [];
 		let capturedOptions: { readonly cwd?: string | undefined } | undefined;
 		const exec: IIssueExec = async (argv) => {
@@ -219,7 +219,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(joined).toContain('--label bug');
 		expect(joined).not.toContain('consumer-private-label');
 		expect(joined).toContain(
-			'[auto] PERFORMANCE @delendai/error-reporting: PLUGIN_REGISTER_TIMEOUT',
+			'fix(error-reporting): PERFORMANCE @delendai/error-reporting: PLUGIN_REGISTER_TIMEOUT',
 		);
 		expect(capturedOptions).toEqual({ cwd: '/tmp/proj' });
 	});
