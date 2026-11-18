@@ -65,7 +65,7 @@ The views ask once while the client is still connecting and nothing asks again w
 
 ### S5 — A test drives the extension against a real server
 - **Status**: pending
-- **Files**: `extensions/vscode/src/test/build-smoke.spec.ts`
+- **Files**: `new:extensions/vscode/src/test/build-smoke.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A spec activates the built extension against a real server in a throwaway project and reads a populated view model."
