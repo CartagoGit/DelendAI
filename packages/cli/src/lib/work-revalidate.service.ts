@@ -105,7 +105,7 @@ export const rewriteDeclaredPath = (
 		if (heading !== null)
 			inSlice = line.startsWith('### ') && heading[1] === sliceId;
 		if (!inSlice || !/^- \*\*Files\*\*:/.test(line)) continue;
-		const next = line.replace(`\`${from}\``, `\`${to}\``);
+		const next = line.split(`\`${from}\``).join(`\`${to}\``);
 		if (next === line) return undefined;
 		lines[index] = next;
 		return lines.join('\n');

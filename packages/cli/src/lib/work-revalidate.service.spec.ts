@@ -12,6 +12,7 @@ import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.cons
 
 import {
 	parseRevalidateProposal,
+	rewriteDeclaredPath,
 	readReadyProposals,
 	revalidateBatch,
 	selectRevalidation,
@@ -367,6 +368,50 @@ describe('revalidateBatch declared files', () => {
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.transitions).toEqual([]);
 		expect(result.data.retired).toEqual([]);
+	});
+});
+
+describe('declared paths', () => {
+	const DOC = [
+		'id: g1',
+		'## slices',
+		'### S1 — a',
+		'- **Files**: `a/old.ts`, `a/b.ts`',
+		'### S2 — b',
+		'- **Files**: `a/old.ts`',
+	].join('\n');
+
+	it('[<50ms] parses the backticked paths of a Files line', () => {
+		const read = parseRevalidateProposal(DOC, 'ready', 'docs/g1.md');
+		expect(read?.file).toBe('docs/g1.md');
+		expect(read?.slices[0]?.files).toEqual(['a/old.ts', 'a/b.ts']);
+	});
+
+	it('[<50ms] rewrites the path in the named slice only', () => {
+		const next = rewriteDeclaredPath(DOC, 'S1', 'a/old.ts', 'a/new.ts');
+		expect(next).toContain('`a/new.ts`, `a/b.ts`');
+		expect(next?.split('\n').at(-1)).toBe('- **Files**: `a/old.ts`');
+	});
+
+	it('[<50ms] answers undefined when the slice does not declare the path', () => {
+		expect(rewriteDeclaredPath(DOC, 'S1', 'zzz', 'y')).toBeUndefined();
+		expect(rewriteDeclaredPath(DOC, 'S9', 'a/old.ts', 'y')).toBeUndefined();
+	});
+
+	it('[<100ms] refuses the proposal when the rewrite is refused', async () => {
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([
+				{
+					...proposal('g1', [slice({ files: ['a/old.ts'] })]),
+					file: 'docs/g1.md',
+				},
+			]),
+			exists: (_w, path) => path === 'a/new.ts',
+			git: () => ({ ok: true, out: 'R100\ta/old.ts\ta/new.ts\n' }),
+			rewriteDeclared: () => 'no',
+		};
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.failed).toEqual([{ id: 'g1', reason: 'no' }]);
 	});
 });
 
