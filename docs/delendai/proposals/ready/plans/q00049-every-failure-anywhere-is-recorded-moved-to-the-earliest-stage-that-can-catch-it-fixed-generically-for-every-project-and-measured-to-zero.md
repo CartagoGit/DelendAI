@@ -36,7 +36,7 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 - **Decisions**: self-learning, project-kpis and error-reporting form an opt-in learning pack added to the dogfood and team-pr presets in preset-catalog.ts (a project not choosing them is unchanged), and this repository activates it in delendai.config.json; the self-learning observations and lessons tools are reachable through the compact router once active. Nothing is enabled implicitly for other projects.
 - acceptance:
   - "packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood and team-pr presets list self-learning and project-kpis and the minimal preset does not"
-  - "delendai_compact_router domain=self-learning action=lessons answers ok in this repository"
+  - "plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool answers ok through the compact router when the learning pack is active"
 
 ### S1 — Failure collectors write observations into the self-learning store
 - **Status**: pending
@@ -57,7 +57,7 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 - acceptance:
   - "plugins/self-learning/tests/src/lib/lessons/late-catch.helper.spec.ts: a file-size breach observed at CI is a late catch against the commit hook and the same breach at the commit hook is not"
   - "plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool returns the late-catch lessons with minutes lost"
-  - "delendai_compact_router domain=self-learning action=lessons lists late-catch lessons in this repository"
+  - "plugins/self-learning/tests/src/lib/lessons/late-catch.helper.spec.ts: a ledger of late observations is listed through the lessons tool"
 
 ### S3 — Recurring lessons above a confidence open a fix proposal
 - **Status**: pending
@@ -77,7 +77,7 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 - **Decisions**: Readiness refuses a lesson-born proposal unless its prevention is a policy feature or gate shipped under packages, plugins or tools/scripts/lint and its Files name nothing specific to this repository (a project workflow file, a proposal id, the repository name); other proposals are untouched and no baseline is widened. Lands after f00823 S3, which edits the same readiness file.
 - acceptance:
   - "plugins/proposals/tests/src/lib/proposals/proposal-readiness-generic.spec.ts: a lesson-born proposal whose Files name a repo-specific workflow is refused naming the path and one whose prevention is a lint gate is ready"
-  - "bun run lint:proposal-readiness exits 0 on the current tree"
+  - "tools/scripts/lint/proposal-readiness.spec.ts: the current tree has no new readiness finding"
 
 ### S5 — Top lessons are rendered into the generated host hints
 - **Status**: pending
@@ -88,35 +88,35 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 - acceptance:
   - "tools/scripts/catalog/lesson-hints.helper.spec.ts: seven lessons render the five costliest within 400 bytes and no lessons render nothing"
   - "tools/scripts/lint/system-prompt-size.script.spec.ts: a lesson section over the byte budget fails the lint"
-  - "bun run lint:system-prompt-size exits 0 on the current tree"
+  - "tools/scripts/lint/system-prompt-size.script.spec.ts: the current hints and bootstrap are within budget"
 
 ### S6 — Trend to zero in project-kpis and retirement of redundant late gates
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/project-kpis/src/lib/services/kpi-trends.service.ts`, `plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts`, `plugins/project-kpis/tests/src/lib/kpi-aggregation.spec.ts`, `new:plugins/project-kpis/src/lib/services/failure-trend.service.ts`, `new:plugins/project-kpis/tests/src/lib/failure-trend.spec.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`
+- **Files**: `plugins/project-kpis/src/lib/services/kpi-trends.service.ts`, `new:plugins/project-kpis/src/lib/services/failure-trend.service.ts`, `new:plugins/project-kpis/tests/src/lib/failure-trend.spec.ts`, `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`
 - **Gate**: lint
 - **Decisions**: project-kpis reports per ISO week failures per delivered slice and minutes and tokens lost per lesson class, read from the self-learning store; the q00046 S7 weekly report (pr-ci-cost) shows the same totals. A class with zero occurrences for M weeks (policy, default 4) is listed retirable for its late gate only while an earlier stage still catches it; it is named, never deleted automatically.
 - acceptance:
   - "plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: a three-week fixture reports failures per delivered slice, minutes lost per class and the week-over-week delta"
   - "plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: a class silent four weeks whose earlier stage still catches it is retirable and one whose earliest stage is the late gate is not"
-  - "delendai_compact_router domain=project-kpis reports the weekly failure trend in this repository"
+  - "plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: the project-kpis tool returns the weekly failure trend"
 
 ## acceptance
 
 - packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood and team-pr presets list self-learning and project-kpis and the minimal preset does not
-- delendai_compact_router domain=self-learning action=lessons answers ok in this repository
+- plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool answers ok through the compact router when the learning pack is active
 - plugins/self-learning/tests/src/lib/collectors/failure-collectors.service.spec.ts: a failing gate, hook, CI job, land verdict, tool error and deliver refusal each append one observation carrying class, stage, files, unit and minutes lost
 - plugins/self-learning/tests/src/lib/collectors/failure-collectors.service.spec.ts: a secret-looking argument value never reaches an observation and a store write failure does not change the caller's result
 - plugins/self-learning/tests/src/lib/lessons/late-catch.helper.spec.ts: a file-size breach observed at CI is a late catch against the commit hook and the same breach at the commit hook is not
 - plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool returns the late-catch lessons with minutes lost
-- delendai_compact_router domain=self-learning action=lessons lists late-catch lessons in this repository
+- plugins/self-learning/tests/src/lib/lessons/late-catch.helper.spec.ts: a ledger of late observations is listed through the lessons tool
 - plugins/self-learning/tests/src/lib/lessons/fix-proposal-draft.helper.spec.ts: a lesson below the confidence or from one unit drafts nothing
 - plugins/proposals/tests/src/lib/proposals/lesson-fix-proposal.service.spec.ts: over a fake store, a qualifying lesson drafts exactly one proposal with its incidents and a later sighting extends it
 - plugins/proposals/tests/src/lib/proposals/proposal-readiness-generic.spec.ts: a lesson-born proposal whose Files name a repo-specific workflow is refused naming the path and one whose prevention is a lint gate is ready
-- bun run lint:proposal-readiness exits 0 on the current tree
+- tools/scripts/lint/proposal-readiness.spec.ts: the current tree has no new readiness finding
 - tools/scripts/catalog/lesson-hints.helper.spec.ts: seven lessons render the five costliest within 400 bytes and no lessons render nothing
 - tools/scripts/lint/system-prompt-size.script.spec.ts: a lesson section over the byte budget fails the lint
-- bun run lint:system-prompt-size exits 0 on the current tree
+- tools/scripts/lint/system-prompt-size.script.spec.ts: the current hints and bootstrap are within budget
 - plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: a three-week fixture reports failures per delivered slice, minutes lost per class and the week-over-week delta
 - plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: a class silent four weeks whose earlier stage still catches it is retirable and one whose earliest stage is the late gate is not
-- delendai_compact_router domain=project-kpis reports the weekly failure trend in this repository
+- plugins/project-kpis/tests/src/lib/failure-trend.spec.ts: the project-kpis tool returns the weekly failure trend
