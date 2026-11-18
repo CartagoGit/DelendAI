@@ -207,26 +207,106 @@ Counts: KEEP 57, REPLACED 27, DELETED 28 (of which 7 land in S5 with the publica
 
 land runs with the workflow token, and GitHub builds nothing that token pushes: `update-branch` made bot-authored heads whose CI sat at `action_required`, and nothing merged for four hours after the cutover. A run dispatched on the same commit does not satisfy a pull request's required check (#911), so land cannot certify a combination itself. The rule is therefore: land never creates a commit, branch or pull request. It merges a pull request whose head is green and was pushed by an actor the forge builds; any other one it labels `delendai:needs-update` with the reason, and every pass prints a reason for every open pull request. The host, with the person's own git credentials, brings labelled pull requests forward (`bring-forward`: develop merged in, derived files regenerated, pushed without force, built in a throwaway clone). Batches stay off (`batches: false`) while land runs as the workflow token: overlapping pull requests land one at a time, the next brought forward after the first merges. The S5 reconciler owns the host side, and batches return only through an actor whose pushes the forge builds.
 
-### S5 — The branch flow: one reconciler, one branch per unit, draft PRs, with its migration
+### S5 — The branch flow, part 1: one reconciler core derives and converges the desired state of every ref
 - **Status**: pending
 - **DependsOn**: [S4]
-- **Files**: `tools/scripts/forge/publish-candidate.script.ts`
-- **Gate**: none
-- **Notes**: the owner, 2026-11-10: stray branches keep piling up in history and must be handled automatically, never by an agent's decision. S4 deleted the train and hydration mechanisms; S5 replaces every remaining actor on refs, branches and worktrees with one reconciler.
+- **Files**: `new:packages/core/src/lib/ref-reconciler/reconciler.service.ts`, `new:packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `new:packages/core/src/lib/contracts/interfaces/ref-reconciler.interface.ts`, `new:packages/core/src/lib/contracts/constants/ref-kinds.constant.ts`, `new:packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`, `new:tools/scripts/lint/ref-kinds-known.script.ts`, `new:tools/scripts/lint/ref-kinds-known.script.spec.ts`, `package.json`
+- **Gate**: type
+- **Decisions**: none
+- **Notes**: the owner, 2026-11-10: stray branches keep piling up in history and must be handled automatically, never by an agent's decision. S4 deleted the train and hydration mechanisms; S5–S5j replace every remaining actor on refs, branches and worktrees with one reconciler. Split on 2026-11-18 from one slice whose Files named a single script; the original acceptance is distributed below unchanged in substance.
 - acceptance:
-  - "One source of truth: the unit registry plus the forge. One core reconciler derives the desired state of every ref, branch and worktree, local and remote, from them and converges to it: a unit's branch, worktree and draft pull request are created at work enter; updated or rehydrated (fast-forwarded when it holds nothing of its own, reported when it holds work) when the integration branch moves; deleted, with the tip kept under the retired namespace, when the work lands, its pull request closes or the unit is retired"
-  - "Event-driven: land's merges, a pull request closing, work retire and work deliver run the reconciler, and a periodic safety pass (land's upkeep) catches what an event missed. No agent ever deletes, re-pushes or refreshes a ref by hand, and no other module does: work-unit-enter's ref creation, endFinishedUnits on the host follower, work reap (unit-reaper, worktree-husks, stray refs, retired machinery), ref-lifecycle-guard --reap, kept-unit-hydration and close-approved-proposals' own units are folded into it or deleted"
-  - "Idempotent and safe: a pass run twice changes nothing the second time, and no pass deletes a commit that exists nowhere else (not in the integration branch, a work, publication or retired ref); such a ref is kept and reported. A spec over the fake forge covers every transition, and a rehearsal runs the reconciler in a throwaway clone and asserts the shared clone gains no ref or worktree"
-  - "Every kind of ref the product writes is covered: work (wip), publication (pr) until it goes, retired, claims and reservations, land's batches, the retired queue's trains and culprit markers, rehearsal refs, and the unit worktrees. A ref kind under the product's namespaces that the reconciler does not know fails a lint"
-  - "Empty units end: a unit whose branch holds nothing of its own and whose worktree is clean (a review pack's spent generations, g14 and g15 of 2026-11-10) is retired by the reconciler, never left on disk"
-  - "A proposal whose every slice is approved closes in one deterministic reconciler step after a merge, with no agent involved (f00782 sat in review with every slice approved); close-approved-proposals and its review units go"
-  - "The host follower's other follow-ups settle here: certification is read from the forge by the decisions module instead of a log the owner machine writes, and open-publication-prs goes with the publication path"
-  - "The retired train prefix (`<ns>/train/`) leaves the guard and the forge ruleset (`policyNamespaces`, `allowedRefPatterns`), and the live ruleset is applied in the same change: S4 kept admitting it so the old queue worked until the cutover landed, and nothing pushes train refs after it"
-  - "Generic and policy-driven: namespaces, branches, retirement and the safety cadence come from development.branches and development.integration; nothing names this repository"
-  - "A draft PR opens at work enter, CI skips drafts and work deliver marks it ready; no pr/ ref, publication ref, checkout publishing cadence or ref-maintenance re-push exists"
-  - "A large proposal lands as sequential PRs, never stacked, and claim opens no new PRs"
-  - "Units and refs in the old layout are migrated by a command shipped in the same change, and the same change deletes the publication path the inventory marks DELETED in S5"
-  - "work status shows what is under test, what waits and why, and what landed"
+  - "reconciler.service.spec.ts, over a fake forge, covers every transition from the unit registry plus the forge: a unit's branch and worktree are created at enter; fast-forwarded when the integration branch moves and the unit holds nothing of its own, reported when it holds work; deleted with the tip kept under the retired namespace when the work lands, its pull request closes or it is retired; an empty unit with a clean worktree is retired, never left on disk."
+  - "reconciler.service.spec.ts shows a pass run twice changes nothing the second time, and no pass deletes a commit that exists nowhere else (integration branch, work, publication or retired ref): such a ref is kept and reported. Namespaces, branches, retirement and cadence come from development.branches and development.integration; nothing names this repository."
+  - "`bun run lint:ref-kinds` (ref-kinds-known.script.ts, wired in package.json and in a CI lint job) fails on a ref under the product's namespaces whose kind ref-kinds.constant.ts does not list: work, publication, retired, claims and reservations, land batches, train and culprit markers, rehearsal, unit worktrees."
+
+### S5b — The branch flow, part 2: events and land's upkeep run the reconciler
+- **Status**: pending
+- **DependsOn**: [S5]
+- **Files**: `new:packages/core/src/lib/ref-reconciler/reconciler-run.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/reconciler-run.service.spec.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `tools/scripts/host/integration-follow-ups.script.ts`, `.github/workflows/land.yml`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "reconciler-run.service.spec.ts: a land merge, a pull request closing, `work retire` and `work deliver` each run exactly one reconciler pass."
+  - "land.yml's upkeep runs the reconciler as its periodic safety pass, and `lint:ref-lifecycle -- --reap` and close-unpublished-prs leave the upkeep; `bun run lint:workflows` passes."
+
+### S5c — The branch flow, part 3: reap, husks, stray refs and retired machinery move onto the reconciler and go
+- **Status**: pending
+- **DependsOn**: [S5b]
+- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/retired-machinery-reap.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "`git grep -n 'reapDeliveredUnits\\|reapHusks\\|retiredMachinery' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler; the four modules are deleted with their specs."
+  - "work-unit-reap.service.e2e.spec.ts runs `work reap` through the reconciler and passes; the lefthook post-merge hook still reaches it."
+
+### S5d — The branch flow, part 4: hydration, finished-unit ending and the guard's --reap go
+- **Status**: pending
+- **DependsOn**: [S5c]
+- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "`git grep -n 'endFinishedUnits\\|hydrateKeptUnits\\|reenteredUnit' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler; work-unit-enter creates refs only through the reconciler."
+  - "ref-lifecycle-guard.script.spec.ts: the guard only reports; it has no --reap path."
+
+### S5e — The branch flow, part 5: a proposal whose every slice is approved closes in one reconciler step
+- **Status**: pending
+- **DependsOn**: [S5d]
+- **Files**: `new:packages/core/src/lib/ref-reconciler/proposal-close.step.ts`, `new:packages/core/tests/src/lib/ref-reconciler/proposal-close.step.spec.ts`, `tools/scripts/proposals/close-approved-proposals.script.ts`, `tools/scripts/proposals/close-approved-proposals.script.spec.ts`, `tools/scripts/forge/certify-integration.script.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "proposal-close.step.spec.ts: after a merge, a proposal whose every slice is approved closes in one deterministic step with no agent and no review unit (f00782 sat in review with every slice approved)."
+  - "close-approved-proposals.script.ts and its spec are deleted, `git grep -n close-approved-proposals` is empty, and certification is read from the forge by the decisions module, not from a log the owner machine writes."
+
+### S5f — The branch flow, part 6: a draft pull request opens at enter, deliver marks it ready, CI skips drafts
+- **Status**: pending
+- **DependsOn**: [S5e]
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts`, `.github/workflows/ci.yml`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "work-unit-enter.service.spec.ts asserts a draft pull request exists after enter; a deliver case asserts it is marked ready; claim opens no new pull request."
+  - "ci.yml skips draft pull requests; a large proposal lands as sequential pull requests, never stacked."
+
+### S5g — The branch flow, part 7: the publication path is deleted
+- **Status**: pending
+- **DependsOn**: [S5f]
+- **Files**: `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/publish-cleanup.ts`, `tools/scripts/forge/open-publication-prs.script.ts`, `tools/scripts/forge/close-unpublished-prs.script.ts`, `package.json`, `packages/core/src/cli.ts`, `packages/cli/src/index.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "`git grep -n 'forge:publish\\|open-publication-prs\\|publish-candidate' -- packages tools .github package.json lefthook.yml` is empty: no pr/ ref, publication ref, checkout publishing cadence or ref-maintenance re-push exists."
+  - "`bun run typecheck` passes with the modules and their specs deleted."
+
+### S5h — The branch flow, part 8: units and refs in the old layout are migrated by a command
+- **Status**: pending
+- **DependsOn**: [S5g]
+- **Files**: `new:packages/core/src/lib/work-units/work-migrate-layout.service.ts`, `new:packages/core/tests/src/lib/work-units/work-migrate-layout.service.spec.ts`, `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/cli/src/commands/work.command.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "work-migrate-layout.service.spec.ts, over a fake forge, migrates old-layout units (publication refs, train refs, review units) and a second run changes nothing; no ref with an open pull request is renamed."
+  - "`delendai work migrate --plan` lists what would change and writes nothing."
+
+### S5i — The branch flow, part 9: the retired train prefix leaves the guard and the forge ruleset
+- **Status**: pending
+- **DependsOn**: [S5h]
+- **Files**: `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `.github/branch-protection.ts`, `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`, `tools/scripts/lint/namespace-ruleset-guard.script.ts`, `tools/scripts/forge/train-assembly.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "forge-settings.lib.spec.ts asserts no `train/` pattern in `policyNamespaces` or `allowedRefPatterns`; train-assembly.ts is deleted; the migration of S5h ran first, so no live ref is rejected."
+  - "`bun run lint:namespace-ruleset` passes against the live ruleset, applied in the same change."
+
+### S5j — The branch flow, part 10: work status shows what is under test, what waits and why, and what landed
+- **Status**: pending
+- **DependsOn**: [S5i]
+- **Files**: `packages/core/src/lib/work-units/work-unit-status.service.ts`, `new:packages/core/src/lib/ref-reconciler/status-view.helper.ts`, `new:packages/core/tests/src/lib/ref-reconciler/status-view.helper.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "status-view.helper.spec.ts, over the fake forge, renders three groups: under test, waiting (with the reason), landed; `delendai work status` prints them."
 ### S6 — Transition commits folded
 - **Status**: pending
 - **DependsOn**: [S5]
