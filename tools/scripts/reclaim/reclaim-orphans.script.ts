@@ -40,7 +40,7 @@ import { spawnSync } from 'node:child_process';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import {
 	compileWorkRefParser,
-	reapDeliveredUnits,
+	endDeliveredUnits,
 	readUnitStandings,
 	readWorkspacePolicy,
 	type IUnitStandingEntry,
@@ -549,7 +549,7 @@ const main = async (): Promise<number> => {
 	const reaped =
 		policy === undefined
 			? []
-			: await reapDeliveredUnits({ root: args.cwd, policy, apply: true });
+			: await endDeliveredUnits({ root: args.cwd, policy, apply: true });
 	for (const unit of reaped) {
 		process.stdout.write(
 			unit.outcome === 'removed'
