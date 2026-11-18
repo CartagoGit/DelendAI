@@ -14,7 +14,7 @@ import type {
 import { DASHBOARD_SECTION_KEY } from '../contracts/constants/dashboard-section-key.constant';
 import { DashboardWebviewViewProvider } from '../providers/dashboard-webview-view-provider';
 
-const setup = (stored: Map<string, unknown>) => {
+const setup = (stored: Map<string, unknown>, calls: string[] = []) => {
 	const htmls: string[] = [];
 	let receive: ((message: unknown) => void | Promise<void>) | undefined;
 	const view = fakePartial<IWebviewPanel>({
@@ -39,7 +39,8 @@ const setup = (stored: Map<string, unknown>) => {
 	const provider = new DashboardWebviewViewProvider({
 		host: fakePartial<IHostAdapter>({}),
 		client: McpStdioClient.fromTransport({
-			async callTool() {
+			async callTool(input) {
+				calls.push(input.name);
 				return { structuredContent: {} };
 			},
 			async listTools() {
@@ -90,4 +91,28 @@ describe('dashboard section memory', () => {
 
 		expect(stored.has(DASHBOARD_SECTION_KEY)).toBe(false);
 	});
+
+	it.each(['tools', 'proposals', 'memory', 'plugins', 'agents', 'kpis'])(
+		'[<200ms] the %s section is chosen, remembered and rendered from the server',
+		async (section) => {
+			const stored = new Map<string, unknown>();
+			const calls: string[] = [];
+			const first = setup(stored, calls);
+			await first.provider.resolveWebviewView(first.view);
+			await first.send({ command: 'section', section });
+			const reloaded = setup(stored, calls);
+
+			await reloaded.provider.resolveWebviewView(reloaded.view);
+			await waitUntil(
+				'the page renders',
+				() => reloaded.htmls.length > 0,
+			);
+
+			const html = reloaded.htmls.at(-1) ?? '';
+			expect(html).toContain(`data-sidebar-trigger="${section}"`);
+			expect(html).toContain(`id="panel-${section}"`);
+			expect(html).toContain(`var s="${section}"`);
+			expect(calls.length).toBeGreaterThan(0);
+		},
+	);
 });
