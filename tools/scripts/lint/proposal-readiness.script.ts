@@ -19,6 +19,7 @@ import {
 	checkProposalReadiness,
 	describeReadinessFinding,
 } from '../../../plugins/proposals/src/lib/proposals/proposal-readiness';
+import { changedFilesScope } from '../lib/changed-files-scope';
 import { collectProposals } from './proposal-hygiene.script';
 
 const BASELINE = 'tools/scripts/lint/proposal-readiness.baseline.json';
@@ -49,6 +50,20 @@ export const freshFindings = (
 export const renderBaseline = (keys: readonly string[]): string =>
 	`${JSON.stringify([...keys].sort(), null, '\t')}\n`;
 
+/**
+ * The proposals a change judges: those whose file it touched, or all of
+ * them without a change set. A proposal nobody touched kept the verdict it
+ * had on the integration branch, so a concurrent edit elsewhere cannot fail
+ * this change.
+ */
+export const proposalsToJudge = (
+	proposals: ReadonlyMap<string, string>,
+	scope: ReadonlySet<string> | undefined,
+): ReadonlyMap<string, string> =>
+	scope === undefined
+		? proposals
+		: new Map([...proposals].filter(([path]) => scope.has(path)));
+
 const readBaseline = (): readonly string[] | undefined => {
 	try {
 		return JSON.parse(readFileSync(BASELINE, 'utf8')) as string[];
@@ -66,12 +81,19 @@ const main = (): number => {
 		);
 		return 1;
 	}
-	const findings = [...proposals.values()].flatMap((text) =>
-		checkProposalReadiness(text, {
-			exists: (path) => existsSync(join(root, path)),
-			newMustBeAbsent: false,
-		}),
-	);
+	const findingsOf = (texts: ReadonlyMap<string, string>) =>
+		[...texts.values()].flatMap((text) =>
+			checkProposalReadiness(text, {
+				exists: (path) => existsSync(join(root, path)),
+				newMustBeAbsent: false,
+			}),
+		);
+	const rewrites =
+		process.argv.includes('--init') || process.argv.includes('--update');
+	// The baseline is written and shrunk from the whole tree, never a change.
+	const scope = rewrites ? undefined : changedFilesScope(root);
+	const judged = proposalsToJudge(proposals, scope);
+	const findings = findingsOf(judged);
 	const baseline = readBaseline();
 
 	if (process.argv.includes('--init')) {
@@ -109,12 +131,12 @@ const main = (): number => {
 
 	if (fresh.length === 0) {
 		console.log(
-			`proposal-readiness: no new findings (${known.length} baselined, ${proposals.size} open proposals scanned).`,
+			`proposal-readiness: no new findings (${known.length} baselined, ${judged.size} of ${proposals.size} open proposals judged${scope === undefined ? '' : ' for the change'}).`,
 		);
 		return 0;
 	}
 	console.error(
-		`proposal-readiness: ${fresh.length} new finding(s) across ${proposals.size} open proposal(s):`,
+		`proposal-readiness: ${fresh.length} new finding(s) across ${judged.size} judged proposal(s):`,
 	);
 	for (const item of fresh)
 		console.error(`  ${describeReadinessFinding(item)}`);

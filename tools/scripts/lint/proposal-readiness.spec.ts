@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	freshFindings,
+	proposalsToJudge,
 	readinessKey,
 	renderBaseline,
 	shrinkBaseline,
@@ -38,5 +39,22 @@ describe('the readiness baseline', () => {
 	});
 	it('[<50ms] writes tab-indented JSON sorted by key', () => {
 		expect(renderBaseline(['b', 'a'])).toBe('[\n\t"a",\n\t"b"\n]\n');
+	});
+
+	it('[<50ms] judges every proposal without a change set', () => {
+		const all = new Map([
+			['a.md', 'A'],
+			['b.md', 'B'],
+		]);
+		expect(proposalsToJudge(all, undefined)).toBe(all);
+	});
+	it('[<50ms] judges only the proposals the change touches', () => {
+		const all = new Map([
+			['a.md', 'A'],
+			['b.md', 'B'],
+		]);
+		expect([...proposalsToJudge(all, new Set(['b.md', 'x.ts']))]).toEqual([
+			['b.md', 'B'],
+		]);
 	});
 });
