@@ -71,6 +71,7 @@ import {
 	delendaiToDelendAIV1,
 } from './migrations/delendai-to-delendai-v1';
 import { createPolicyAlignmentMigrator } from './migrators/policy-alignment.migrator';
+import { createLegacyResidueMigrator } from './legacy-residue/legacy-residue.migrator';
 import { recordPath } from '../shared/delendai-records';
 
 /**
@@ -128,6 +129,8 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	// After the block is written: settings an older delendai wrote that the
 	// policy now contradicts are removed, rather than warned about forever.
 	createPolicyAlignmentMigrator(),
+	// The residue registry: what an older delendai left behind, one list.
+	createLegacyResidueMigrator(),
 ] as const;
 
 /** The migrations this registry currently ships, as a frozen map. */

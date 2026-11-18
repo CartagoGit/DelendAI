@@ -2,10 +2,14 @@
 id: x01059
 title: "What an older delendai left behind is migrated wherever it lives"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-11
+last-transition-id: ecda7c8e-7eb3-4821-97c1-c8e60769366b
+last-correlation-id: ecda7c8e-7eb3-4821-97c1-c8e60769366b
+last-transition-from: ready
+last-transition-at: 2026-11-18T02:11:06.710Z
 ---
 
 # x01059 — What an older delendai left behind is migrated wherever it lives
