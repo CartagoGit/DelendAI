@@ -2,14 +2,14 @@
 id: x00975
 title: "The selectors and optimizers use every input they accept"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 99927609-81a7-481c-8875-2bb32addc2a1
-last-correlation-id: 99927609-81a7-481c-8875-2bb32addc2a1
-last-transition-from: ready
-last-transition-at: 2026-11-18T07:45:23.782Z
+last-transition-id: c26d7fcc-fc60-42c1-b07e-cddfa751b514
+last-correlation-id: c26d7fcc-fc60-42c1-b07e-cddfa751b514
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T07:47:03.227Z
 shipped-in:
   - "1f0c5d911"
 ---
@@ -33,7 +33,7 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
 - global_gate: type
 
 ### S1 — Budgets and recommendations
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/adaptive-optimizer/src/lib/services/optimize-run.service.ts`, `plugins/adaptive-optimizer/src/lib/tools/optimize-run.tool.ts`, `plugins/adaptive-optimizer/src/lib/contracts/interfaces/adaptive-optimizer.interface.ts`, `plugins/adaptive-optimizer/src/generated/tool-outputs.ts`, `plugins/adaptive-optimizer/tests/src/optimize-run.tool.spec.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.ts`, `plugins/auto-plugin-selector/src/lib/apply/config-diff.spec.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.ts`, `plugins/auto-plugin-selector/src/lib/score/recommend-plugins.spec.ts`, `plugins/auto-plugin-selector/src/lib/tools/plugins-recommend.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/rank-providers.ts`, `plugins/auto-agent-selector/src/lib/routing/task-mode.service.ts`, `plugins/auto-agent-selector/src/lib/contracts/interfaces/ranking.interface.ts`, `plugins/auto-agent-selector/src/lib/services/discover-ranked-providers.service.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/rank-providers.spec.ts`, `plugins/prompt-eval/src/lib/score/score.ts`, `plugins/prompt-eval/src/lib/score/score.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -42,13 +42,12 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "The winner is the cheapest passing provider (D106)."
 - notes: optimize_run keeps ranked candidates while their cumulative token cost stays within budget and reports `spent`; a remove names whether the plugin is outside the catalog, cut by limit/minScore, or has no positive fit; taskHint words matching a plugin's id, tags or summary add score; auto_recommend maps taskType to a ranking mode; the eval_report winner is the passing provider with the lowest cost per attempt. optimize_run plus the auto-agent-selector, prompt-eval and plugins_recommend tool files needed no description change.
 - shipped-in: `1f0c5d911`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 1f0c5d911 is stale for this slice. `git log 1f0c5d911..develop -- <S1 files>` shows post-shipped change(s), including e7c75bfcc in listed files. Please re-validate all acceptance criteria on current develop and resubmit with fresh empirical evidence.
 
 ### S2 — agent-orchestrator, triage and changelog
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/agent-orchestrator/src/lib/tools/plan.tool.ts`, `plugins/agent-orchestrator/src/lib/tools/telemetry.tool.ts`, `plugins/agent-orchestrator/tests/src/lib/tools/plan.tool.spec.ts`, `plugins/issues-triage/src/lib/tools/triage.tools.ts`, `plugins/issues-triage/tests/triage-tools.spec.ts`, `plugins/changelog/src/index.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.ts`, `plugins/changelog/src/lib/tools/discover-publish-order.service.ts`, `plugins/changelog/src/lib/tools/release-plan.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -57,9 +56,8 @@ Joint audit a00095 and gpt-6.1-sol. D52: optimize_run requires budget > 0 as a c
   - "release_plan runs with the default options (D59)."
 - notes: plan and classify now forward files and facts to the classifier and an override re-plans through the named mode so its steps change; triage_run returns the draft when it is not written and reports failed effects in `problems` with ok=false; release_plan derives its publish order from the workspace packages when none is injected. No agent-orchestrator description or output schema grew (execution_policy and the classifier already took files and facts).
 - shipped-in: `1f0c5d911`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Rework required: shipped-in 1f0c5d911 is stale for this slice. `git log 1f0c5d911..develop -- <S2 files>` shows post-shipped commits touching listed files (e.g. c5f1b175f), so acceptance needs to be re-validated against current develop with fresh reproducible evidence.
 
 ## acceptance
