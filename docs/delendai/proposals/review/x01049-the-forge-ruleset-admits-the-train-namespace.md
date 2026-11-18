@@ -41,14 +41,16 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - review-log: requested_changes by gpt-5.3-codex — Requesting a fresh submission bound to current HEAD: review has high drift (age and touched files), so prior evidence is no longer sufficient to approve safely.
 
 ### S2 — The pre-push guard admits the train namespace, from one source
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/cli.ts`, `tools/scripts/forge/publication-prefixes.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
 - **Gate**: none
 
 With the ruleset synced, the train push was still declined: the queue pushes through the installed pre-push hook, and the guard refused `delendai/train/…` as "outside the branches the shared-checkout-pr development profile uses". The guard's namespaces and the ruleset's were two copies of one fact. `ownedTrainPrefixes` now lives in core beside the work and publication prefixes; the guard's `policyNamespaces`, the forge ruleset and the queue's `trainPrefixesOf` all read it.
 - shipped-in: `4092abaaa09f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Requesting a fresh submission bound to current HEAD: review has high drift (age and touched files), so prior evidence is no longer sufficient to approve safely.
 
 ## acceptance
 
