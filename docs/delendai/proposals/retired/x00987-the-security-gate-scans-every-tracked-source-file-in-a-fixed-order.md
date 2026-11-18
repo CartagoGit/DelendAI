@@ -2,14 +2,14 @@
 id: x00987
 title: "The security gate scans every tracked source file, in a fixed order"
 kind: fix
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-10-27
-last-transition-id: 1614bcb2-a8df-47e8-990a-6fd5e54e5a67
-last-correlation-id: 1614bcb2-a8df-47e8-990a-6fd5e54e5a67
-last-transition-from: review
-last-transition-at: 2026-11-04T19:22:52.107Z
+last-transition-id: 2a448be5-9ed0-4d77-8515-364b0d300caa
+last-correlation-id: 2a448be5-9ed0-4d77-8515-364b0d300caa
+last-transition-from: ready
+last-transition-at: 2026-11-18T12:19:04.462Z
 shipped-in:
   - "53f8cbf5d"
 ---

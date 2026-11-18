@@ -2,14 +2,14 @@
 id: x01015
 title: "Hydration starves its short steps and a refused push hides its reason"
 kind: fix
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: 6347f220-a4d4-4c9d-b8ad-45e8fd69ae47
-last-correlation-id: 6347f220-a4d4-4c9d-b8ad-45e8fd69ae47
-last-transition-from: review
-last-transition-at: 2026-11-04T21:39:33.041Z
+last-transition-id: 2d8b7185-4f21-4083-8943-67ac93e99de2
+last-correlation-id: 2d8b7185-4f21-4083-8943-67ac93e99de2
+last-transition-from: ready
+last-transition-at: 2026-11-18T12:18:14.088Z
 ---
 
 # x01015 — Hydration starves its short steps and a refused push hides its reason
